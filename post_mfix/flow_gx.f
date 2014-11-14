@@ -28,13 +28,12 @@
       Use physprop
       Use geometry
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
       INTEGER I, J, K, IJK, IPJK
-!
-      INCLUDE 'function.inc'
-!
+
       IF(U_g(IJK) .GT. ZERO) THEN
         VFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK)
       ELSE
@@ -75,19 +74,18 @@
       Use physprop
       Use geometry
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, IPJK
 !
 !  Function subroutines
 !
       REAL CALC_RO_g
-!
-      INCLUDE 'function.inc'
-!
+
       IF(U_g(IJK) .GT. ZERO) THEN
-        MFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK)& 
+        MFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK)&
                    * CALC_RO_g(IJK)
       ELSE
         IPJK = IP_OF(IJK)
@@ -128,16 +126,15 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER IJK, IPJK
 !
 !  Function subroutines
 !
       REAL CALC_RO_g
-!
-      INCLUDE 'function.inc'
-!
+
       IF(U_g(IJK) .GT. ZERO) THEN
         FLUX_gx = U_g(IJK) * EP_g(IJK) &
                    * CALC_RO_g(IJK)
@@ -180,16 +177,15 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, N, IPJK
 !
 !  Function subroutines
 !
       REAL CALC_RO_g
-!
-      INCLUDE 'function.inc'
-!
+
       IF(U_g(IJK) .GT. ZERO) THEN
         XFLOW_gx = DY(J) * X_E(I) * DZ(K) * U_g(IJK) * EP_g(IJK) &
                    * CALC_RO_g(IJK) * X_g(IJK, N)

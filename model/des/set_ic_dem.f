@@ -36,6 +36,7 @@
       use geometry
 
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -46,14 +47,9 @@
       INTEGER :: NP
       INTEGER :: NINDX
 
-      LOGICAL , EXTERNAL :: COMPARE 
-
-
-      include "../function.inc"
-
+      LOGICAL , EXTERNAL :: COMPARE
 
       IF(RUN_TYPE /= 'NEW') RETURN
-
 
       CALL INIT_ERR_MSG("SET_IC_DEM")
 
@@ -138,6 +134,9 @@
          'mass fractions defined: IC_X_s(ICV,',A,',:).')
 
       ENDDO
+
+! Calculate the average solids temperature in each fluid cell
+      CALL SET_INIT_avgTs
 
       CALL FINL_ERR_MSG
 

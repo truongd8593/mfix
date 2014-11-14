@@ -17,17 +17,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -42,7 +42,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER :: G,I,J,IJK,Q,BCV
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
 !-----------------------------------------------
@@ -78,71 +78,71 @@
       ENDIF
 
       IF(USE_STL.AND.(.NOT.USE_MSH)) THEN
-         IF(DO_K) THEN 
+         IF(DO_K) THEN
             CALL GET_STL_DATA
          ELSE
             IF(MyPE == PE_IO) WRITE(*,*) &
                'ERROR: STL METHOD VALID ONLY IN 3D.'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
          IF(N_QUADRIC > 0) THEN
             IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND ',&
                'STL INPUT ARE SPECIFIED.'
             IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE ',&
                'OF SURFACE INPUT.'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
       ENDIF
 
       IF(USE_MSH.AND.(.NOT.USE_STL)) THEN
-         IF(DO_K) THEN 
+         IF(DO_K) THEN
             CALL GET_MSH_DATA
          ELSE
             IF(MyPE == PE_IO) WRITE(*,*) &
                'ERROR: MSH METHOD VALID ONLY IN 3D.'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
          IF(N_QUADRIC > 0) THEN
             IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND ',&
                'MSH INPUT ARE SPECIFIED.'
             IF(MyPE == PE_IO) WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE ',&
                'OF SURFACE INPUT.'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
       ENDIF
 
       IF(USE_POLYGON) THEN
-         IF(DO_K) THEN 
+         IF(DO_K) THEN
             IF(MyPE == PE_IO) WRITE(*,*) 'ERROR: POLYGON METHOD ',&
                'VALID ONLY IN 2D.'
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ELSE
             CALL GET_POLY_DATA
          ENDIF
       ENDIF
 
       IF(N_QUADRIC > 0) THEN
-         IF(N_POLYGON > 0) THEN 
+         IF(N_POLYGON > 0) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND POLYGON(S) ',&
                   'DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE INPUT.'
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
-         IF(N_USR_DEF > 0) THEN 
+         IF(N_USR_DEF > 0) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED ',&
                   'FUNTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
-         IF(QUADRIC_SCALE <= ZERO) THEN 
+         IF(QUADRIC_SCALE <= ZERO) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: QUADRIC_SCALE MUST BE POSITIVE.'
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ELSEIF(QUADRIC_SCALE /= ONE) THEN
             DO Q = 1, N_QUADRIC
                lambda_x(Q)  = lambda_x(Q)  * quadric_scale**2
@@ -167,17 +167,17 @@
             ENDDO
          ENDIF
       ELSE
-         IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN 
+         IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED ',&
                   'FUNTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
       ENDIF
 
-      
+
       IF(N_QUADRIC > DIM_QUADRIC) THEN
          IF(MyPE == PE_IO) THEN
             WRITE(*,*)'INPUT ERROR: INVALID VALUE OF N_QUADRIC =', &
@@ -197,13 +197,13 @@
 
 
          SELECT CASE (TRIM(QUADRIC_FORM(Q)))
-    
-            CASE ('NORMAL')       
+
+            CASE ('NORMAL')
 
                lambda_x(Q) = lambda_x(Q)
                lambda_y(Q) = lambda_y(Q)
                lambda_z(Q) = lambda_z(Q)
-               
+
                norm = dsqrt(lambda_x(Q)**2 + lambda_y(Q)**2 + &
                             lambda_z(Q)**2)
 
@@ -213,7 +213,7 @@
                         ' HAS ZERO COEFFICIENTS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
             CASE ('PLANE')   ! The quadric is predefined as a plane
@@ -235,7 +235,7 @@
                         ' HAS ZERO NORMAL VECTOR.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
               dquadric(Q) = - (lambda_x(Q)*t_x(Q) + lambda_y(Q)*t_y(Q) + &
@@ -250,7 +250,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = ZERO
                   lambda_y(Q) = ONE
@@ -267,7 +267,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = ONE
                   lambda_y(Q) = ZERO
@@ -284,7 +284,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = ONE
                   lambda_y(Q) = ONE
@@ -302,7 +302,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = ZERO
                   lambda_y(Q) = -ONE
@@ -319,7 +319,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = -ONE
                   lambda_y(Q) = ZERO
@@ -336,7 +336,7 @@
                         ' HAS ZERO RADIUS.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = -ONE
                   lambda_y(Q) = -ONE
@@ -351,14 +351,14 @@
                   WRITE(*,*)'INPUT ERROR: SPHERE:', Q, &
                      ' HAS INVALID RADIUS.'
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = ONE
                   lambda_y(Q) = ONE
                   lambda_z(Q) = ONE
                   dquadric(Q) = -Radius(Q)**2
                ENDIF
- 
+
            CASE ('SPHERE_EXT')   ! The quadric is predefined as a sphere
                                   ! External flow
 
@@ -366,14 +366,14 @@
                   WRITE(*,*)'INPUT ERROR: SPHERE:', Q, &
                      ' HAS INVALID RADIUS.'
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   lambda_x(Q) = -ONE
                   lambda_y(Q) = -ONE
                   lambda_z(Q) = -ONE
                   dquadric(Q) = Radius(Q)**2
                ENDIF
-         
+
 
             CASE ('X_CONE')    ! The quadric is predefined as a cone, along x-axis
                                ! Internal flow
@@ -384,7 +384,7 @@
                         ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
                   lambda_x(Q) = -ONE
@@ -402,7 +402,7 @@
                         ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
                   lambda_x(Q) = ONE/(tan_half_angle)**2
@@ -420,7 +420,7 @@
                         ' HAS INCORRECT HALF-ANGLE.'
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ELSE
                   tan_half_angle = DTAN(HALF_ANGLE(Q)/180.0*PI)
                   lambda_x(Q) = ONE/(tan_half_angle)**2
@@ -435,14 +435,14 @@
                CALL BUILD_CONE_FOR_C2C(Q)
 
 
-            CASE ('TORUS_INT','TORUS_EXT')      ! Torus - Hard coded in define_quadrics.f    
+            CASE ('TORUS_INT','TORUS_EXT')      ! Torus - Hard coded in define_quadrics.f
                IF((Torus_R1(Q) <= ZERO).OR.(Torus_R1(Q)==UNDEFINED)) THEN
                   IF(MyPE == PE_IO) THEN
                      WRITE(*,*)'INPUT ERROR: TORUS:', Q, &
                         ' HAS INVALID RADIUS R1:',Torus_R1(Q)
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
                IF((Torus_R2(Q) <= ZERO).OR.(Torus_R2(Q)==UNDEFINED)) THEN
                   IF(MyPE == PE_IO) THEN
@@ -450,7 +450,7 @@
                         ' HAS INVALID RADIUS R2:',Torus_R2(Q)
                      WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   ENDIF
-                  CALL MFIX_EXIT(MYPE)             
+                  CALL MFIX_EXIT(MYPE)
                ENDIF
 
             CASE DEFAULT
@@ -459,7 +459,7 @@
                      ' HAS INCORRECT FORM: ',quadric_form(Q)
                   WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                ENDIF
-               CALL MFIX_EXIT(MYPE)             
+               CALL MFIX_EXIT(MYPE)
 
          END SELECT
 
@@ -473,7 +473,7 @@
          ENDIF
 
       ENDDO
- 
+
 
       IF(N_QUADRIC>0) THEN
 
@@ -510,8 +510,8 @@
                   CALL MFIX_EXIT(MYPE)
                ENDIF
             ENDDO
-   
-            GR = TRIM(GROUP_RELATION(I)) 
+
+            GR = TRIM(GROUP_RELATION(I))
 
             IF(GR/='OR'.AND.GR/='AND'.AND.GR/='PIECEWISE') THEN
                IF(MyPE == PE_IO) THEN
@@ -526,7 +526,7 @@
 
          DO I = 2,N_GROUP
 
-            GR = TRIM(RELATION_WITH_PREVIOUS(I)) 
+            GR = TRIM(RELATION_WITH_PREVIOUS(I))
 
             IF(GR/='OR'.AND.GR/='AND') THEN
                IF(MyPE == PE_IO) THEN
@@ -536,7 +536,7 @@
                ENDIF
                CALL MFIX_EXIT(MYPE)
             ENDIF
-         
+
          ENDDO
 
       ENDIF
@@ -549,10 +549,10 @@
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
          CALL MFIX_EXIT(MYPE)
-      ENDIF   
-             
+      ENDIF
+
       IF(TOL_SNAP(2)==UNDEFINED) TOL_SNAP(2)=TOL_SNAP(1)
-   
+
       IF(TOL_SNAP(2)<ZERO.OR.TOL_SNAP(2)>HALF) THEN
          IF(MyPE == PE_IO) THEN
             WRITE(*,*)'INPUT ERROR: INVALID VALUE OF TOL_SNAP IN Y-DIRECTION =', TOL_SNAP(2)
@@ -560,8 +560,8 @@
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
          CALL MFIX_EXIT(MYPE)
-      ENDIF   
-                
+      ENDIF
+
       IF(TOL_SNAP(3)==UNDEFINED) TOL_SNAP(3)=TOL_SNAP(1)
 
       IF(TOL_SNAP(3)<ZERO.OR.TOL_SNAP(3)>HALF) THEN
@@ -571,7 +571,7 @@
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
          CALL MFIX_EXIT(MYPE)
-      ENDIF   
+      ENDIF
 
 
       IF(TOL_DELH<ZERO.OR.TOL_DELH>ONE) THEN
@@ -653,7 +653,7 @@
                WRITE(*,*)'INPUT ERROR: VTK FILES CAN BE WRITTEN ONLY WHEN CARTESIAN GRID IS ACTIVATED.'
                WRITE(*,*)'PLEASE SET WRITE_VTK_FILES = .FALSE. IN MFIX.DAT AND TRY AGAIN.'
             ENDIF
-            CALL MFIX_EXIT(MYPE) 
+            CALL MFIX_EXIT(MYPE)
          ENDIF
       ENDIF
 
@@ -757,7 +757,7 @@
 
       ENDDO
 
-  
+
       IF(RE_INDEXING) THEN
 
          IF(MyPE==0) THEN
@@ -769,7 +769,7 @@
       ENDIF
 
 
-      RETURN  
+      RETURN
       END SUBROUTINE CHECK_DATA_CARTESIAN
 
 
@@ -793,25 +793,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
-     
+
       USE fldvar
       USE cutcell
       USE quadric
       USE vtk
       USE polygon
       USE dashboard
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -819,15 +820,13 @@
       INTEGER :: I,J,IJK,IJKW,IJKS,IJKB,M,N
       INTEGER :: IJKWW,IJKSS,IJKBB
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
 !-----------------------------------------------
       DOUBLE PRECISION SUM, SUM_EP
 !-----------------------------------------------
 ! External Functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE 
-!-----------------------------------------------
-      INCLUDE '../function.inc'
+      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !======================================================================
 ! Boundary conditions
@@ -839,7 +838,7 @@
 
             IF(BC_TYPE(BCV)  == 'CG_MI') THEN
 
-               print*,'CG_MI at', IJK  ! This should not be printed on the screen anymore after conversion to point source. 
+               print*,'CG_MI at', IJK  ! This should not be printed on the screen anymore after conversion to point source.
 
 !               FLAG(IJK) = 20
 !               FLAG_E(IJK) = UNDEFINED_I
@@ -847,7 +846,7 @@
 !               FLAG_T(IJK) = UNDEFINED_I
 
             ELSEIF(BC_TYPE(BCV)  == 'CG_PO') THEN
- 
+
                FLAG(IJK) = 11
                FLAG_E(IJK) = UNDEFINED_I
                FLAG_N(IJK) = UNDEFINED_I
@@ -901,227 +900,227 @@
 !               IJKW = WEST_OF(IJK)
 !               IF(FLUID_AT(IJKW)) THEN
 !                  FLAG_E(IJKW) = 2020
-!               ENDIF           
+!               ENDIF
 
 !               IJKS = SOUTH_OF(IJK)
 !               IF(FLUID_AT(IJKS)) THEN
 !                  FLAG_N(IJKS) = 2020
-!               ENDIF           
+!               ENDIF
 
 !               IJKB = BOTTOM_OF(IJK)
 !               IF(FLUID_AT(IJKB)) THEN
 !                  FLAG_T(IJKB) = 2020
-!               ENDIF           
+!               ENDIF
 
-               IF (BC_U_G(BCV) == UNDEFINED) THEN 
-                   IF (NO_I) THEN 
-                       BC_U_G(BCV) = ZERO 
+               IF (BC_U_G(BCV) == UNDEFINED) THEN
+                   IF (NO_I) THEN
+                       BC_U_G(BCV) = ZERO
                    ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
                           BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
                           BC_VELMAG_g(BCV)==UNDEFINED) THEN
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_U_g', BCV 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_U_g', BCV
                        call mfix_exit(myPE)
-                   ENDIF 
-               ENDIF 
-               IF (BC_V_G(BCV) == UNDEFINED) THEN 
-                   IF (NO_J) THEN 
-                       BC_V_G(BCV) = ZERO 
+                   ENDIF
+               ENDIF
+               IF (BC_V_G(BCV) == UNDEFINED) THEN
+                   IF (NO_J) THEN
+                       BC_V_G(BCV) = ZERO
                    ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
                           BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
                           BC_VELMAG_g(BCV)==UNDEFINED) THEN
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_V_g', BCV 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_V_g', BCV
                        call mfix_exit(myPE)
-                   ENDIF 
-               ENDIF 
-               IF (BC_W_G(BCV) == UNDEFINED) THEN 
-                   IF (NO_K) THEN 
-                       BC_W_G(BCV) = ZERO 
+                   ENDIF
+               ENDIF
+               IF (BC_W_G(BCV) == UNDEFINED) THEN
+                   IF (NO_K) THEN
+                       BC_W_G(BCV) = ZERO
                    ELSEIF(BC_VOLFLOW_g(BCV)==UNDEFINED.AND. &
                           BC_MASSFLOW_g(BCV)==UNDEFINED.AND.&
                           BC_VELMAG_g(BCV)==UNDEFINED) THEN
-                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_W_g', BCV 
+                       IF(DMP_LOG)WRITE (UNIT_LOG, 900) 'BC_W_g', BCV
                        call mfix_exit(myPE)
-                   ENDIF 
-               ENDIF  
+                   ENDIF
+               ENDIF
                IF (K_Epsilon .AND. BC_K_Turb_G(BCV) == UNDEFINED) THEN
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_K_Turb_G', BCV 
-                   call mfix_exit(myPE) 
-               ENDIF   
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_K_Turb_G', BCV
+                   call mfix_exit(myPE)
+               ENDIF
                IF (K_Epsilon .AND. BC_E_Turb_G(BCV) == UNDEFINED) THEN
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_E_Turb_G', BCV 
-                   call mfix_exit(myPE) 
-               ENDIF 
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_E_Turb_G', BCV
+                   call mfix_exit(myPE)
+               ENDIF
 
 !               Check whether the bc velocity components have the correct sign
-!               SELECT CASE (BC_PLANE(BCV))  
-!               CASE ('W')  
-!                   IF (BC_U_G(BCV) > ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               CASE ('E')  
-!                   IF (BC_U_G(BCV) < ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               CASE ('S')  
-!                   IF (BC_V_G(BCV) > ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               CASE ('N')  
-!                   IF (BC_V_G(BCV) < ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               CASE ('B')  
-!                   IF (BC_W_G(BCV) > ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               CASE ('T')  
-!                   IF (BC_W_G(BCV) < ZERO) THEN 
-!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>' 
-!                       CALL MFIX_EXIT(myPE) 
-!                   ENDIF 
-!               END SELECT 
+!               SELECT CASE (BC_PLANE(BCV))
+!               CASE ('W')
+!                   IF (BC_U_G(BCV) > ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '<'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               CASE ('E')
+!                   IF (BC_U_G(BCV) < ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_U_g', '>'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               CASE ('S')
+!                   IF (BC_V_G(BCV) > ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '<'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               CASE ('N')
+!                   IF (BC_V_G(BCV) < ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_V_g', '>'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               CASE ('B')
+!                   IF (BC_W_G(BCV) > ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '<'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               CASE ('T')
+!                   IF (BC_W_G(BCV) < ZERO) THEN
+!                       IF(DMP_LOG)WRITE (UNIT_LOG, 1050) BCV, 'BC_W_g', '>'
+!                       CALL MFIX_EXIT(myPE)
+!                   ENDIF
+!               END SELECT
 
-               SUM_EP = BC_EP_G(BCV) 
-               DO M = 1, MMAX 
-                  IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN 
-                     IF (BC_EP_G(BCV) == ONE) THEN 
-                        BC_ROP_S(BCV,M) = ZERO 
-                     ELSEIF (MMAX == 1) THEN 
-                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M) 
-                     ELSE 
-                         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M 
+               SUM_EP = BC_EP_G(BCV)
+               DO M = 1, MMAX
+                  IF (BC_ROP_S(BCV,M) == UNDEFINED) THEN
+                     IF (BC_EP_G(BCV) == ONE) THEN
+                        BC_ROP_S(BCV,M) = ZERO
+                     ELSEIF (MMAX == 1) THEN
+                         BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
+                     ELSE
+                         IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_ROP_s', BCV, M
                          call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
+                     ENDIF
+                  ENDIF
 
-                  SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
-                  IF (SPECIES_EQ(M)) THEN 
-                     SUM = ZERO 
-                        DO N = 1, NMAX(M) 
-                           IF(BC_X_S(BCV,M,N)/=UNDEFINED)SUM=SUM+BC_X_S(BCV,M,N) 
-                        ENDDO 
+                  SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
+                  IF (SPECIES_EQ(M)) THEN
+                     SUM = ZERO
+                        DO N = 1, NMAX(M)
+                           IF(BC_X_S(BCV,M,N)/=UNDEFINED)SUM=SUM+BC_X_S(BCV,M,N)
+                        ENDDO
 
-                     IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN 
-                        BC_X_S(BCV,M,1) = ONE 
-                        SUM = ONE 
-                     ENDIF 
+                     IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN
+                        BC_X_S(BCV,M,1) = ONE
+                        SUM = ONE
+                     ENDIF
 
-                     DO N = 1, NMAX(M) 
-                        IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN 
-                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG,1110)BCV,M,N 
-                              BC_X_S(BCV,M,N) = ZERO 
-                        ENDIF 
-                     ENDDO 
+                     DO N = 1, NMAX(M)
+                        IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN
+                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG,1110)BCV,M,N
+                              BC_X_S(BCV,M,N) = ZERO
+                        ENDIF
+                     ENDDO
 
-                     IF (.NOT.COMPARE(ONE,SUM)) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M 
+                     IF (.NOT.COMPARE(ONE,SUM)) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1120) BCV, M
                            call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
+                     ENDIF
+                  ENDIF
 
-                  IF (BC_U_S(BCV,M) == UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN 
-                        BC_U_S(BCV,M) = ZERO 
+                  IF (BC_U_S(BCV,M) == UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_I) THEN
+                        BC_U_S(BCV,M) = ZERO
                    ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
                           BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
                           BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_U_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_U_s', BCV, M
                             call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
-                  
-                  IF (BC_V_S(BCV,M) == UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_J) THEN 
-                        BC_V_S(BCV,M) = ZERO 
+                     ENDIF
+                  ENDIF
+
+                  IF (BC_V_S(BCV,M) == UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_J) THEN
+                        BC_V_S(BCV,M) = ZERO
                    ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
                           BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
                           BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_V_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_V_s', BCV, M
                             call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
-                  
-                  IF (BC_W_S(BCV,M) == UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_K) THEN 
-                        BC_W_S(BCV,M) = ZERO 
+                     ENDIF
+                  ENDIF
+
+                  IF (BC_W_S(BCV,M) == UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M)==ZERO .OR. NO_K) THEN
+                        BC_W_S(BCV,M) = ZERO
                    ELSEIF(BC_VOLFLOW_s(BCV,M)==UNDEFINED.AND. &
                           BC_MASSFLOW_s(BCV,M)==UNDEFINED.AND.&
                           BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_W_s', BCV, M 
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 910) 'BC_W_s', BCV, M
                            call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
+                     ENDIF
+                  ENDIF
 
-                  IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M) == ZERO) THEN 
-                        BC_T_S(BCV,M) = BC_T_G(BCV) 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M 
+                  IF (ENERGY_EQ .AND. BC_T_S(BCV,M)==UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M) == ZERO) THEN
+                        BC_T_S(BCV,M) = BC_T_G(BCV)
+                     ELSE
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_T_s', BCV, M
                            call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
+                     ENDIF
+                  ENDIF
 
-                  IF (GRANULAR_ENERGY .AND. BC_THETA_M(BCV,M)==UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M) == ZERO) THEN 
-                        BC_THETA_M(BCV,M) = ZERO 
-                     ELSE 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Theta_m', BCV, M 
+                  IF (GRANULAR_ENERGY .AND. BC_THETA_M(BCV,M)==UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M) == ZERO) THEN
+                        BC_THETA_M(BCV,M) = ZERO
+                     ELSE
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1100) 'BC_Theta_m', BCV, M
                           call mfix_exit(myPE)
-                     ENDIF 
-                  ENDIF 
+                     ENDIF
+                  ENDIF
 
 !                   Check whether the bc velocity components have the correct sign
-!                    SELECT CASE (TRIM(BC_PLANE(BCV)))  
-!                    CASE ('W')  
-!                        IF (BC_U_S(BCV,M) > ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    CASE ('E')  
-!                        IF (BC_U_S(BCV,M) < ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    CASE ('S')  
-!                        IF (BC_V_S(BCV,M) > ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    CASE ('N')  
-!                        IF (BC_V_S(BCV,M) < ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    CASE ('B')  
-!                        IF (BC_W_S(BCV,M) > ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    CASE ('T')  
-!                        IF (BC_W_S(BCV,M) < ZERO) THEN 
-!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>' 
-!                            CALL MFIX_EXIT(myPE) 
-!                        ENDIF 
-!                    END SELECT 
+!                    SELECT CASE (TRIM(BC_PLANE(BCV)))
+!                    CASE ('W')
+!                        IF (BC_U_S(BCV,M) > ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '<'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    CASE ('E')
+!                        IF (BC_U_S(BCV,M) < ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_U_s', M, '>'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    CASE ('S')
+!                        IF (BC_V_S(BCV,M) > ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '<'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    CASE ('N')
+!                        IF (BC_V_S(BCV,M) < ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_V_s', M, '>'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    CASE ('B')
+!                        IF (BC_W_S(BCV,M) > ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '<'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    CASE ('T')
+!                        IF (BC_W_S(BCV,M) < ZERO) THEN
+!                            IF(DMP_LOG)WRITE (UNIT_LOG, 1150) BCV, 'BC_W_s', M, '>'
+!                            CALL MFIX_EXIT(myPE)
+!                        ENDIF
+!                    END SELECT
 
 
-               ENDDO 
+               ENDDO
 
-               IF (.NOT.COMPARE(ONE,SUM_EP)) THEN 
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV 
-                     call mfix_exit(myPE)  
-               ENDIF 
-       
+               IF (.NOT.COMPARE(ONE,SUM_EP)) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1125) BCV
+                     call mfix_exit(myPE)
+               ENDIF
+
                DO N = 1, NScalar
-                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN 
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N 
+                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N
                         CALL MFIX_EXIT(myPE)
-                  ENDIF 
+                  ENDIF
                ENDDO
 
 
@@ -1130,7 +1129,7 @@
                IJKW = WEST_OF(IJK)
                IF(FLUID_AT(IJKW)) THEN
                   FLAG_E(IJKW) = 2011
-               ENDIF           
+               ENDIF
 
                BCV_U = BC_U_ID(IJKW)
                IF(BCV_U>0) THEN
@@ -1138,14 +1137,14 @@
                     IJKWW = WEST_OF(IJKW)
                     IF(FLUID_AT(IJKWW)) THEN
                        FLAG_E(IJKWW) = 2011
-                    ENDIF           
+                    ENDIF
                   ENDIF
                ENDIF
 
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
                   FLAG_N(IJKS) = 2011
-               ENDIF           
+               ENDIF
 
                BCV_V = BC_V_ID(IJKS)
                IF(BCV_V>0) THEN
@@ -1153,7 +1152,7 @@
                     IJKSS = SOUTH_OF(IJKS)
                     IF(FLUID_AT(IJKSS)) THEN
                        FLAG_N(IJKSS) = 2011
-                    ENDIF           
+                    ENDIF
                   ENDIF
                ENDIF
 
@@ -1162,7 +1161,7 @@
                   IJKB = BOTTOM_OF(IJK)
                   IF(FLUID_AT(IJKB)) THEN
                      FLAG_T(IJKB) = 2011
-                  ENDIF 
+                  ENDIF
 
                   BCV_W = BC_W_ID(IJKB)
                   IF(BCV_W>0) THEN
@@ -1170,19 +1169,19 @@
                        IJKBB = BOTTOM_OF(IJKB)
                        IF(FLUID_AT(IJKBB)) THEN
                           FLAG_T(IJKBB) = 2011
-                       ENDIF           
+                       ENDIF
                      ENDIF
                   ENDIF
 
                ENDIF
 
-               IF (BC_P_G(BCV) == UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV 
-                   call mfix_exit(myPE)  
-               ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN 
-                   IF(DMP_LOG)WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV) 
-                   call mfix_exit(myPE)  
-               ENDIF 
+               IF (BC_P_G(BCV) == UNDEFINED) THEN
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1000) 'BC_P_g', BCV
+                   call mfix_exit(myPE)
+               ELSEIF (BC_P_G(BCV)<=ZERO .AND. RO_G0==UNDEFINED) THEN
+                   IF(DMP_LOG)WRITE (UNIT_LOG, 1010) BCV, BC_P_G(BCV)
+                   call mfix_exit(myPE)
+               ENDIF
 
             ENDIF
 
@@ -1190,73 +1189,73 @@
 
       ENDDO
 
-      RETURN  
+      RETURN
 
 
  900 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
          ') not specified',/1X,'One of the following must be specified:',/1X,&
-         'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/) 
+         'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/)
 
  910 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
          ') not specified',/1X,'One of the following must be specified:',/1X,&
          'BC_VOLFLOW_g, BC_MASSFLOW_g or BC_VELMAG_g',/1X,70('*')/)
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/) 
+         ') not specified',/1X,70('*')/)
  1001 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
          ' Message: Illegal BC_TYPE for BC # = ',I2,/'   BC_TYPE = ',A,/&
-         '  Valid BC_TYPE are: ') 
- 1002 FORMAT(5X,A16) 
+         '  Valid BC_TYPE are: ')
+ 1002 FORMAT(5X,A16)
  1003 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') value is unphysical',/1X,70('*')/) 
+         ') value is unphysical',/1X,70('*')/)
  1004 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ') not specified',/1X,70('*')/) 
+         ') not specified',/1X,70('*')/)
  1005 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ') value is unphysical',/1X,70('*')/) 
+         ') value is unphysical',/1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_P_g( ',I2,&
          ') = ',G12.5,/&
          ' Pressure should be greater than zero for compressible flow',/1X,70(&
-         '*')/) 
+         '*')/)
  1050 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,' should be ',A,' zero.',/1X,70('*')/) 
+         ' - ',A,' should be ',A,' zero.',/1X,70('*')/)
  1060 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_g(',I2,',',I2&
-         ,') not specified',/1X,70('*')/) 
+         ,') not specified',/1X,70('*')/)
  1065 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/) 
+         ' - Sum of gas mass fractions is NOT equal to one',/1X,70('*')/)
  1100 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') not specified',/1X,70('*')/) 
+         ') not specified',/1X,70('*')/)
  1103 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') value is unphysical',/1X,70('*')/) 
+         ') value is unphysical',/1X,70('*')/)
  1104 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') not specified',/1X,70('*')/) 
+         ',',I2,') not specified',/1X,70('*')/)
  1105 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I2,&
-         ',',I2,') value is unphysical',/1X,70('*')/) 
+         ',',I2,') value is unphysical',/1X,70('*')/)
  1110 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC_X_s(',I2,',',I2&
-         ,',',I2,') not specified',/1X,70('*')/) 
+         ,',',I2,') not specified',/1X,70('*')/)
  1120 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
          ' - Sum of solids-',I1,' mass fractions is NOT equal to one',/1X,70(&
-         '*')/) 
+         '*')/)
  1125 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/) 
+         ' - Sum of volume fractions is NOT equal to one',/1X,70('*')/)
  1150 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: BC number:',I2,&
-         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/) 
+         ' - ',A,I1,' should be ',A,' zero.',/1X,70('*')/)
  1160 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
          ' Message: Boundary condition no', &
          I2,' is a second outflow condition.',/1X,&
-         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/) 
+         '  Only one outflow is allowed.  Consider using P_OUTFLOW.',/1X, 70('*')/)
  1200 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
+         ') specified',' for an undefined BC location',/1X,70('*')/)
  1300 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/' Message: ',A,'(',I2,',',I1,&
-         ') specified',' for an undefined BC location',/1X,70('*')/) 
+         ') specified',' for an undefined BC location',/1X,70('*')/)
  1400 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
          ' Message: No initial or boundary condition specified',/&
-         '    I       J       K') 
- 1410 FORMAT(I5,3X,I5,3X,I5) 
- 1420 FORMAT(/1X,70('*')/) 
+         '    I       J       K')
+ 1410 FORMAT(I5,3X,I5,3X,I5)
+ 1420 FORMAT(/1X,70('*')/)
 
  1500 FORMAT(/1X,70('*')//' From: CHECK_BC_FLAGS',/&
          ' Message: No initial or boundary condition specified',/&
-         '    I       J       K') 
+         '    I       J       K')
 
 
       END SUBROUTINE CHECK_BC_FLAGS
@@ -1286,19 +1285,19 @@
       SUBROUTINE BUILD_CONE_FOR_C2C(Q)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -1321,7 +1320,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: Q,QM1,QP1
-      Character*80  Line(1)
+      Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: x1,x2,y1,y2,z1,z2,R1,R2
       DOUBLE PRECISION :: norm, tan_half_angle
       LOGICAL :: aligned
@@ -1343,7 +1342,7 @@
 
          QUADRIC_FORM(Q) = 'X_CONE'
 
-         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1377,13 +1376,13 @@
          HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
          lambda_x(Q) = -ONE
          lambda_y(Q) = ONE/(tan_half_angle)**2
-         lambda_z(Q) = ONE/(tan_half_angle)**2 
+         lambda_z(Q) = ONE/(tan_half_angle)**2
          dquadric(Q) = ZERO
 
          piece_xmin(Q) = x1
          piece_xmax(Q) = x2
 
-         t_x(Q) = x1 - R1/tan_half_angle 
+         t_x(Q) = x1 - R1/tan_half_angle
          t_y(Q) = t_y(QM1)
          t_z(Q) = t_z(QM1)
 
@@ -1398,7 +1397,7 @@
 
          QUADRIC_FORM(Q) = 'X_CONE'
 
-         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         aligned = (t_y(QM1)==t_y(QP1)).AND.(t_z(QM1)==t_z(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1432,13 +1431,13 @@
          HALF_ANGLE(Q) = DATAN(tan_half_angle)/PI*180.0D0
          lambda_x(Q) = ONE
          lambda_y(Q) = -ONE/(tan_half_angle)**2
-         lambda_z(Q) = -ONE/(tan_half_angle)**2 
+         lambda_z(Q) = -ONE/(tan_half_angle)**2
          dquadric(Q) = ZERO
 
          piece_xmin(Q) = x1
          piece_xmax(Q) = x2
 
-         t_x(Q) = x1 - R1/tan_half_angle 
+         t_x(Q) = x1 - R1/tan_half_angle
          t_y(Q) = t_y(QM1)
          t_z(Q) = t_z(QM1)
 
@@ -1454,7 +1453,7 @@
 
          QUADRIC_FORM(Q) = 'Y_CONE'
 
-         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1508,7 +1507,7 @@
 
          QUADRIC_FORM(Q) = 'Y_CONE'
 
-         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1)) 
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_z(QM1)==t_z(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1557,14 +1556,14 @@
             WRITE(*,*) ' WITH AN HALF-ANGLE OF ', HALF_ANGLE(Q), 'DEG.'
          ENDIF
 
-       
+
 
       ELSEIF((TRIM(QUADRIC_FORM(QM1))=='Z_CYL_INT').AND.  &
              (TRIM(QUADRIC_FORM(QP1))=='Z_CYL_INT')) THEN     !Internal flow z-direction
 
          QUADRIC_FORM(Q) = 'Z_CONE'
 
-         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1)) 
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1618,7 +1617,7 @@
 
          QUADRIC_FORM(Q) = 'Z_CONE'
 
-         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1)) 
+         aligned = (t_x(QM1)==t_x(QP1)).AND.(t_y(QM1)==t_y(QP1))
          IF(.NOT.aligned) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)' ERROR: CYLINDERS ',QM1, ' AND ', QP1, ' ARE NOT ALIGNED'
@@ -1679,8 +1678,7 @@
       ENDIF
 
       RETURN
-      END
-
+    END SUBROUTINE BUILD_CONE_FOR_C2C
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1694,15 +1692,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CG_FLOW_TO_VEL
-    
+
 
 
       USE physprop
       USE scales
-      USE funits 
+      USE funits
 
       USE param
       USE param1
@@ -1712,16 +1710,16 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
+      USE functions
 
-     
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1732,32 +1730,28 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-! 
-!     loop/variable indices 
+!
+!     loop/variable indices
       INTEGER :: IJK, M, BCV
       CHARACTER(LEN=9) :: BCT
-!     Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
-!     Solids phase volume fraction 
-      DOUBLE PRECISION :: EPS 
-!     Average molecular weight 
-      DOUBLE PRECISION :: MW 
+!     Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+!     Solids phase volume fraction
+      DOUBLE PRECISION :: EPS
+!     Average molecular weight
+      DOUBLE PRECISION :: MW
 !
       INTEGER :: iproc,IERR
-! 
+!
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
-      LOGICAL , EXTERNAL :: COMPARE 
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
 
-      include "../function.inc"
-
-     
-
-      DO BCV = 1, DIMENSION_BC 
+      DO BCV = 1, DIMENSION_BC
 
          IF (BC_TYPE(BCV)=='CG_MI') THEN
 
@@ -1765,52 +1759,52 @@
 !
 !           If gas mass flow is defined convert it to volumetric flow
 !
-               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN 
-                  IF (RO_G0 /= UNDEFINED) THEN 
-                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0 
-                  ELSE 
+               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN
+                  IF (RO_G0 /= UNDEFINED) THEN
+                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0
+                  ELSE
                      IF (BC_P_G(BCV)/=UNDEFINED .AND. BC_T_G(BCV)/=UNDEFINED) &
-                        THEN 
-                        IF (MW_AVG == UNDEFINED) THEN 
-                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G) 
-                        ELSE 
-                           MW = MW_AVG 
-                        ENDIF 
+                        THEN
+                        IF (MW_AVG == UNDEFINED) THEN
+                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G)
+                        ELSE
+                           MW = MW_AVG
+                        ENDIF
                         VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,(BC_P_G(BCV)-P_REF), &
-			                         BC_T_G(BCV))
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'CG_MO') THEN 
-                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN 
-                              VOLFLOW = ZERO 
-                           ENDIF 
-                        ELSE 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDIF 
-                  ENDIF 
+                                                 BC_T_G(BCV))
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'CG_MO') THEN
+                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN
+                              VOLFLOW = ZERO
+                           ENDIF
+                        ELSE
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ENDIF
+                  ENDIF
 !
 !             If volumetric flow is also specified compare both
 !
-                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
-                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
-                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, VOLFLOW, BC_VOLFLOW_G(BCV) 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  ELSE 
-                     BC_VOLFLOW_G(BCV) = VOLFLOW 
-                  ENDIF 
-               ENDIF 
+                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
+                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, VOLFLOW, BC_VOLFLOW_G(BCV)
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ELSE
+                     BC_VOLFLOW_G(BCV) = VOLFLOW
+                  ENDIF
+               ENDIF
 !
 !           If gas volumetric flow is defined convert it to velocity
 !
-               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
-                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN 
-                     BC_VELMAG_g(BCV) = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV)) 
-                  ELSE 
-                     RETURN                      !Error caught in Check_data_07 
-                  ENDIF 
-               ENDIF 
+               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
+                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN
+                     BC_VELMAG_g(BCV) = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV))
+                  ELSE
+                     RETURN                      !Error caught in Check_data_07
+                  ENDIF
+               ENDIF
 
             ENDIF
 
@@ -1818,92 +1812,89 @@
 !
 !  Do flow conversions for solids phases
 !
-            DO M = 1, MMAX 
+            DO M = 1, MMAX
 
                IF(BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
 !
 !             If solids mass flow is defined convert it to volumetric flow
 !
-                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
-                     IF (RO_S0(M) /= UNDEFINED) THEN 
-                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M) 
-                     ELSE 
-                        RETURN                   !  This error will be caught in a previous routine 
-                     ENDIF 
+                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN
+                     IF (RO_S0(M) /= UNDEFINED) THEN
+                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M)
+                     ELSE
+                        RETURN                   !  This error will be caught in a previous routine
+                     ENDIF
 !
 !               If volumetric flow is also specified compare both
 !
-                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
-                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
-                           IF(DMP_LOG)WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        BC_VOLFLOW_S(BCV,M) = VOLFLOW 
-                     ENDIF 
-                  ENDIF 
+                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN
+                           IF(DMP_LOG)WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        BC_VOLFLOW_S(BCV,M) = VOLFLOW
+                     ENDIF
+                  ENDIF
 
                   IF (BC_ROP_S(BCV,M)==UNDEFINED .AND. MMAX==1) BC_ROP_S(BCV,M)&
-                        = (ONE - BC_EP_G(BCV))*RO_S0(M) 
-                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
-                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
-                        EPS = BC_ROP_S(BCV,M)/RO_S0(M) 
-                        IF (EPS /= ZERO) THEN 
-                           BC_VELMAG_s(BCV,M) = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS) 
-                        ELSE 
-                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
-                              BC_VELMAG_s(BCV,M) = ZERO 
-                           ELSE 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ENDIF 
-                     ELSE 
-                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
-                           BC_VELMAG_s(BCV,M) = ZERO 
-                        ELSE 
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDIF 
-                  ENDIF 
+                        = (ONE - BC_EP_G(BCV))*RO_S0(M)
+                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN
+                        EPS = BC_ROP_S(BCV,M)/RO_S0(M)
+                        IF (EPS /= ZERO) THEN
+                           BC_VELMAG_s(BCV,M) = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS)
+                        ELSE
+                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                              BC_VELMAG_s(BCV,M) = ZERO
+                           ELSE
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ENDIF
+                     ELSE
+                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                           BC_VELMAG_s(BCV,M) = ZERO
+                        ELSE
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ENDIF
+                  ENDIF
 
                ENDIF
-            END DO 
-         ENDIF 
-      END DO 
-
-
+            END DO
+         ENDIF
+      END DO
 
 100         FORMAT(1X,A,I8)
 110         FORMAT(1X,A,A)
 120         FORMAT(1X,A,F14.8,/)
 130         FORMAT(1X,A,I8,F14.8,/)
 
-
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
 
 
  1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
-         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/) 
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
 
 
  1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
 
  1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Non-zero vol. or mass flow specified with BC_ROP_s',&
-         I1,' = 0.',/1X,70('*')/) 
+         I1,' = 0.',/1X,70('*')/)
  1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
       RETURN
 
-      
+
       END SUBROUTINE CG_FLOW_TO_VEL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1918,15 +1909,15 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CONVERT_CG_MI_TO_PS
-    
+
 
 
       USE physprop
       USE scales
-      USE funits 
+      USE funits
 
       USE param
       USE param1
@@ -1936,9 +1927,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -1946,7 +1937,8 @@
       USE vtk
 
       USE ps
-     
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1957,33 +1949,29 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-! 
-!     loop/variable indices 
+!
+!     loop/variable indices
       INTEGER :: IJK, M, N, BCV
       CHARACTER(LEN=9) :: BCT
-!     Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
-!     Solids phase volume fraction 
-      DOUBLE PRECISION :: EPS 
-!     Average molecular weight 
-      DOUBLE PRECISION :: MW 
+!     Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+!     Solids phase volume fraction
+      DOUBLE PRECISION :: EPS
+!     Average molecular weight
+      DOUBLE PRECISION :: MW
 !
       INTEGER :: iproc,jproc,IERR
       INTEGER :: I, J, K, NPS,PSV
-      
+
       LOGICAL, DIMENSION (0:NumPes) :: go
-! 
+!
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
-      LOGICAL , EXTERNAL :: COMPARE 
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
-
-      include "../function.inc"
-
-
 
 !      print*,'Entering test',MyPE
       CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
@@ -1993,8 +1981,8 @@
       do iproc = 0,NumPEs-1
          if (MyPE==iproc) Then
 
-! First, find how many point sources are already defined. This could be regular PS from mfix.dat or new ones 
-! coming from the convertion of CG_MI to PS	 
+! First, find how many point sources are already defined. This could be regular PS from mfix.dat or new ones
+! coming from the convertion of CG_MI to PS
                NPS = 0
 
                PS_LP: do PSV = 1, DIMENSION_PS
@@ -2002,21 +1990,14 @@
                   NPS = PSV
                enddo PS_LP
 
-
 !               print *,'Last PS=',NPS
 
 ! Next loop through all cells, and when a cut-cell with CG_MI is found, add a point source in this cell
 
             DO IJK = ijkstart3, ijkend3
                BCV = BC_ID(IJK)
-	       
-	       
-	       
                IF(BCV>0) THEN
-
-
                   IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
-
 
                      NPS = NPS + 1
 
@@ -2025,11 +2006,11 @@
                      PS_DEFINED(NPS) = .TRUE.
 
                      POINT_SOURCE = .TRUE.
-               
+
                      PS_I_w(NPS) = I_OF(IJK)
-                     PS_I_e(NPS) = I_OF(IJK) 
+                     PS_I_e(NPS) = I_OF(IJK)
                      PS_J_s(NPS) = J_OF(IJK)
-                     PS_J_n(NPS) = J_OF(IJK) 
+                     PS_J_n(NPS) = J_OF(IJK)
                      PS_K_b(NPS) = K_OF(IJK)
                      PS_K_t(NPS) = K_OF(IJK)
 
@@ -2040,27 +2021,26 @@
                      PS_T_g(NPS)    = BC_T_g(BCV)
 
                      IF(BC_U_g(BCV)==UNDEFINED) THEN
-                        PS_U_g(NPS)    = Normal_S(IJK,1) 
+                        PS_U_g(NPS)    = Normal_S(IJK,1)
                      ELSE
-                        PS_U_g(NPS)    = BC_U_g(BCV) 
+                        PS_U_g(NPS)    = BC_U_g(BCV)
                      ENDIF
 
                      IF(BC_V_g(BCV)==UNDEFINED) THEN
-                        PS_V_g(NPS)    = Normal_S(IJK,2) 
+                        PS_V_g(NPS)    = Normal_S(IJK,2)
                      ELSE
-                        PS_V_g(NPS)    = BC_V_g(BCV) 
+                        PS_V_g(NPS)    = BC_V_g(BCV)
                      ENDIF
 
                      IF(BC_W_g(BCV)==UNDEFINED) THEN
-                        PS_W_g(NPS)    = Normal_S(IJK,3) 
+                        PS_W_g(NPS)    = Normal_S(IJK,3)
                      ELSE
-                        PS_W_g(NPS)    = BC_W_g(BCV) 
+                        PS_W_g(NPS)    = BC_W_g(BCV)
                      ENDIF
 
                      DO N=1,NMAX(0)
                         PS_X_g(NPS,N)    = BC_X_g(BCV,N)
                      ENDDO
-
 
                      DO M=1, MMAX
                         PS_MASSFLOW_s(NPS,M) = BC_MASSFLOW_s(BCV,M) * VOL(IJK) / BC_VOL(BCV)
@@ -2068,21 +2048,21 @@
                         PS_T_s(NPS,1)  = BC_T_s(BCV,M)
 
                         IF(BC_U_s(BCV,M)==UNDEFINED) THEN
-                           PS_U_s(NPS,M)    = Normal_S(IJK,1) 
+                           PS_U_s(NPS,M)    = Normal_S(IJK,1)
                         ELSE
-                           PS_U_s(NPS,M)    = BC_U_s(BCV,M) 
+                           PS_U_s(NPS,M)    = BC_U_s(BCV,M)
                         ENDIF
 
                         IF(BC_V_s(BCV,M)==UNDEFINED) THEN
-                           PS_V_s(NPS,M)    = Normal_S(IJK,2) 
+                           PS_V_s(NPS,M)    = Normal_S(IJK,2)
                         ELSE
-                           PS_V_s(NPS,M)    = BC_V_s(BCV,M) 
+                           PS_V_s(NPS,M)    = BC_V_s(BCV,M)
                         ENDIF
 
                         IF(BC_W_s(BCV,M)==UNDEFINED) THEN
-                           PS_W_s(NPS,M)    = Normal_S(IJK,3) 
+                           PS_W_s(NPS,M)    = Normal_S(IJK,3)
                         ELSE
-                           PS_W_s(NPS,M)    = BC_W_s(BCV,M) 
+                           PS_W_s(NPS,M)    = BC_W_s(BCV,M)
                         ENDIF
 
 
@@ -2093,19 +2073,10 @@
                      ENDDO
 
 !                     print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),BC_VOL(BCV)
-
-
-
                   ENDIF
                ENDIF
-	       
-       
-	       
+
             ENDDO  ! IJK Loop
-
-
-
-
 
          endif  ! Work done by each processor in same order as rank
 
@@ -2131,23 +2102,16 @@
          call bcast(PS_X_s,iproc)
          call bcast(PS_T_s,iproc)
          call bcast(PS_VOLUME,iproc)
-      
-
 
       enddo
-
-
 
       CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
 !      print*,'Leaving test',MyPE
 !      call mfix_exit(myPE)
 
-
       RETURN
 
-      
       END SUBROUTINE CONVERT_CG_MI_TO_PS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -2161,15 +2125,13 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CONVERT_CG_MI_TO_PS_PE
-    
-
 
       USE physprop
       USE scales
-      USE funits 
+      USE funits
 
       USE param
       USE param1
@@ -2179,9 +2141,9 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
@@ -2189,7 +2151,8 @@
       USE vtk
 
       USE ps
-     
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -2200,32 +2163,29 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-! 
-!     loop/variable indices 
+!
+!     loop/variable indices
       INTEGER :: IJK, M, BCV
       CHARACTER(LEN=9) :: BCT
-!     Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
-!     Solids phase volume fraction 
-      DOUBLE PRECISION :: EPS 
-!     Average molecular weight 
-      DOUBLE PRECISION :: MW 
+!     Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+!     Solids phase volume fraction
+      DOUBLE PRECISION :: EPS
+!     Average molecular weight
+      DOUBLE PRECISION :: MW
 !
       INTEGER :: iproc,IERR
       INTEGER :: I, J, K, NPS,PSV
-! 
+!
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW 
-      LOGICAL , EXTERNAL :: COMPARE 
+      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
 
-      include "../function.inc"
-
-
-! Find the last Point source that is defined. New point sources 
+! Find the last Point source that is defined. New point sources
 ! will be added after that.
 
 !     print*,'setting bc_type to CG_NSW and exiting'
@@ -2236,8 +2196,6 @@
 !         ENDIF
 !      ENDDO
 !      RETURN
-
-
 
       NPS = 0
 
@@ -2253,25 +2211,21 @@
 ! Loop though each cell. When a CG_MI is found convert it to a single point source
 ! and change the BC_TYPE to Free-slip
 
-
       DO IJK = ijkstart3, ijkend3
          BCV = BC_ID(IJK)
          IF(BCV>0) THEN
-
-
             IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
-
 
                NPS = NPS + 1
 
                PS_DEFINED(NPS) = .TRUE.
 
                POINT_SOURCE = .TRUE.
-               
+
                PS_I_w(NPS) = I_OF(IJK)
-               PS_I_e(NPS) = I_OF(IJK) 
+               PS_I_e(NPS) = I_OF(IJK)
                PS_J_s(NPS) = J_OF(IJK)
-               PS_J_n(NPS) = J_OF(IJK) 
+               PS_J_n(NPS) = J_OF(IJK)
                PS_K_b(NPS) = K_OF(IJK)
                PS_K_t(NPS) = K_OF(IJK)
 
@@ -2282,41 +2236,39 @@
                PS_T_g(NPS)    = BC_T_g(BCV)
 
                IF(BC_U_g(NPS)==UNDEFINED) THEN
-                  PS_U_g(NPS)    = Normal_S(IJK,1) 
+                  PS_U_g(NPS)    = Normal_S(IJK,1)
                ELSE
-                  PS_U_g(NPS)    = BC_U_g(NPS) 
+                  PS_U_g(NPS)    = BC_U_g(NPS)
                ENDIF
 
                IF(BC_V_g(NPS)==UNDEFINED) THEN
-                  PS_V_g(NPS)    = Normal_S(IJK,2) 
+                  PS_V_g(NPS)    = Normal_S(IJK,2)
                ELSE
-                  PS_V_g(NPS)    = BC_V_g(NPS) 
+                  PS_V_g(NPS)    = BC_V_g(NPS)
                ENDIF
 
                IF(BC_W_g(NPS)==UNDEFINED) THEN
-                  PS_W_g(NPS)    = Normal_S(IJK,3) 
+                  PS_W_g(NPS)    = Normal_S(IJK,3)
                ELSE
-                  PS_W_g(NPS)    = BC_W_g(NPS) 
+                  PS_W_g(NPS)    = BC_W_g(NPS)
                ENDIF
-
-
 
 ! This is a temporary setting for the solids phase and will need to be generalalized
                PS_MASSFLOW_s(NPS,1) = 0.0
 
                PS_T_s(NPS,1)  = 298.0
 
-               PS_U_s(NPS,1)    = Normal_S(IJK,1) 
-               PS_V_s(NPS,1)    = Normal_S(IJK,2) 
-               PS_W_s(NPS,1)    = Normal_S(IJK,3) 
+               PS_U_s(NPS,1)    = Normal_S(IJK,1)
+               PS_V_s(NPS,1)    = Normal_S(IJK,2)
+               PS_W_s(NPS,1)    = Normal_S(IJK,3)
 
-               PS_U_s(NPS,1)    = ZERO            
-               PS_V_s(NPS,1)    = ZERO            
-               PS_W_s(NPS,1)    = ZERO            
+               PS_U_s(NPS,1)    = ZERO
+               PS_V_s(NPS,1)    = ZERO
+               PS_W_s(NPS,1)    = ZERO
 
 !               IF(Normal_S(IJK,2)/=ONE) print*,'Not vertical'
 !               IF(Normal_S(IJK,2)==ONE) print*,'    vertical'
-               
+
 !               IF(Normal_S(IJK,2)/=ONE) PS_MASSFLOW_g(NPS) = ZERO
 
 !               IF(.NOT.CUT_CELL_AT(IJK)) THEN
@@ -2339,15 +2291,15 @@
 
 !                  PS_MASSFLOW_g(NPS) = ZERO
 
-
-               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS),INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS),CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3) 
+               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS), &
+                    INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS), &
+                    CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3)
 !               ENDIF
 
 !               PS_DEFINED(NPS) = .FALSE.
             ENDIF
          ENDIF
-      ENDDO   
-
+      ENDDO
 
 !      DO BCV = 1, DIMENSION_BC
 !         IF (BC_TYPE(BCV) == 'CG_MI') THEN
@@ -2355,7 +2307,6 @@
 !            print*,'Converted CG_MI to CG_FSW for BC#',BCV
 !         ENDIF
 !      ENDDO
-
 
 100         FORMAT(1X,A,I8)
 110         FORMAT(1X,A,A)
@@ -2366,26 +2317,26 @@
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
 
 
  1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
-         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/) 
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
 
 
  1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
 
  1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Non-zero vol. or mass flow specified with BC_ROP_s',&
-         I1,' = 0.',/1X,70('*')/) 
+         I1,' = 0.',/1X,70('*')/)
  1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
       RETURN
 
-      
+
       END SUBROUTINE CONVERT_CG_MI_TO_PS_PE
 
 
@@ -2407,19 +2358,19 @@
       SUBROUTINE GET_DXYZ_FROM_CONTROL_POINTS
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -2463,7 +2414,7 @@
 !======================================================================
 
 ! Step 1.  Input verification
-!      1.1 Shift control points arrays such that the user only needs to enter 
+!      1.1 Shift control points arrays such that the user only needs to enter
 !          CPX(1) and above, and CPX(0) is automatically set to zero.
 
       DO N = MAX_CP,1,-1
@@ -2489,8 +2440,8 @@
             call mfix_exit(myPE)
          ENDIF
       ENDIF
- 
-!      1.3. Check for acceptable values, and identify independent segments. If 
+
+!      1.3. Check for acceptable values, and identify independent segments. If
 !           the first or last cell dimension is given, it is converted into an
 !           expansion ratio.
 
@@ -2581,14 +2532,14 @@
 
       DO N = 1,NX   ! For each segment
 
-         I2 = I1 + NCX(N) - 1 
+         I2 = I1 + NCX(N) - 1
 
          IF(INDEPENDENT_SEGMENT(N)) THEN
 
             L = CPX(N) - CPX(N-1)  ! Size of the current segment
 
             IF(ERX(N)/=ONE) THEN
-               CELL_RATIO = ERX(N)**(ONE/DFLOAT(NCX(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERX(N)**(ONE/DBLE(NCX(N)-1))                     ! Ratio between two consecutive cells
                DX(I1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCX(N))     ! First cell size
 
                DO I = I1+1,I2                                                   ! All other cell sizes, geometric series
@@ -2613,7 +2564,7 @@
 
       DO N = 1,NX   ! For each segment
 
-         I2 = I1 + NCX(N) - 1 
+         I2 = I1 + NCX(N) - 1
 
          IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
 
@@ -2655,7 +2606,7 @@
 !======================================================================
 
 ! Step 1.  Input verification
-!      1.1 Shift control points arrays such that the user only needs to enter 
+!      1.1 Shift control points arrays such that the user only needs to enter
 !          CPY(1) and above, and CPY(0) is automatically set to zero.
 
       DO N = MAX_CP,1,-1
@@ -2681,8 +2632,8 @@
             call mfix_exit(myPE)
          ENDIF
       ENDIF
- 
-!      1.3. Check for acceptable values, and identify independent segments. If 
+
+!      1.3. Check for acceptable values, and identify independent segments. If
 !           the first or last cell dimension is given, it is converted into an
 !           expansion ratio.
 
@@ -2773,14 +2724,14 @@
 
       DO N = 1,NY   ! For each segment
 
-         J2 = J1 + NCY(N) - 1 
+         J2 = J1 + NCY(N) - 1
 
          IF(INDEPENDENT_SEGMENT(N)) THEN
 
             L = CPY(N) - CPY(N-1)  ! Size of the current segment
 
             IF(ERY(N)/=ONE) THEN
-               CELL_RATIO = ERY(N)**(ONE/DFLOAT(NCY(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERY(N)**(ONE/DBLE(NCY(N)-1))                     ! Ratio between two consecutive cells
                DY(J1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCY(N))     ! First cell size
 
                DO J = J1+1,J2                                                   ! All other cell sizes, geometric series
@@ -2805,7 +2756,7 @@
 
       DO N = 1,NY   ! For each segment
 
-         J2 = J1 + NCY(N) - 1 
+         J2 = J1 + NCY(N) - 1
 
          IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
 
@@ -2849,7 +2800,7 @@
       IF(NO_K) RETURN
 
 ! Step 1.  Input verification
-!      1.1 Shift control points arrays such that the user only needs to enter 
+!      1.1 Shift control points arrays such that the user only needs to enter
 !          CPZ(1) and above, and CPZ(0) is automatically set to zero.
 
       DO N = MAX_CP,1,-1
@@ -2875,8 +2826,8 @@
             call mfix_exit(myPE)
          ENDIF
       ENDIF
- 
-!      1.3. Check for acceptable values, and identify independent segments. If 
+
+!      1.3. Check for acceptable values, and identify independent segments. If
 !           the first or last cell dimension is given, it is converted into an
 !           expansion ratio.
 
@@ -2967,14 +2918,14 @@
 
       DO N = 1,NZ   ! For each segment
 
-         K2 = K1 + NCZ(N) - 1 
+         K2 = K1 + NCZ(N) - 1
 
          IF(INDEPENDENT_SEGMENT(N)) THEN
 
             L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
 
             IF(ERZ(N)/=ONE) THEN
-               CELL_RATIO = ERZ(N)**(ONE/DFLOAT(NCZ(N)-1))                     ! Ratio between two consecutive cells
+               CELL_RATIO = ERZ(N)**(ONE/DBLE(NCZ(N)-1))                     ! Ratio between two consecutive cells
                DZ(K1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCZ(N))     ! First cell size
 
                DO K = K1+1,K2                                                   ! All other cell sizes, geometric series
@@ -2999,7 +2950,7 @@
 
       DO N = 1,NZ   ! For each segment
 
-         K2 = K1 + NCZ(N) - 1 
+         K2 = K1 + NCZ(N) - 1
 
          IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
 
@@ -3046,15 +2997,15 @@
 
 
       DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N)
-      USE constant 
-      USE mpi_utility    
+      USE constant
+      USE mpi_utility
 
       IMPLICIT NONE
       DOUBLE PRECISION:: ALPHAC,D,D_Target,DU,L,TOL
       INTEGER:: N
       CHARACTER (LEN=5) :: POS
 
-      DU = L / DFLOAT(N)    ! Cell size if uniform distribution
+      DU = L / DBLE(N)    ! Cell size if uniform distribution
 
       IF(ALPHAC==ONE) THEN
          D = DU
@@ -3068,7 +3019,7 @@
             call mfix_exit(myPE)
          ENDIF
       ENDIF
-       
+
 
       F = D - D_Target
 
@@ -3092,10 +3043,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE FIND_CELL_RATIO(POS,D_Target,L,N,ALPHA3)
-    
+
       USE param
       USE param1
       USE parallel
@@ -3107,7 +3058,7 @@
       USE compar
       USE sendrecv
       USE quadric
-      
+
       IMPLICIT NONE
       LOGICAL :: CLIP_FLAG,CLIP_FLAG1,CLIP_FLAG2,CLIP_FLAG3,INTERSECT_FLAG,SOLUTION_FOUND
 
@@ -3119,10 +3070,10 @@
       CHARACTER (LEN=5) :: POS
 
 
-      DU = L / DFLOAT(N)                  ! Cell size if uniform distribution
+      DU = L / DBLE(N)                  ! Cell size if uniform distribution
 
       IF(DU==D_TARGET) THEN
-         ALPHA3 = 1.0 
+         ALPHA3 = 1.0
          SOLUTION_FOUND = .TRUE.
          RETURN
       ELSE
@@ -3156,7 +3107,7 @@
 
 
 !======================================================================
-!  The cell ratio is solution of F(alpha) = zero. The root is found by 
+!  The cell ratio is solution of F(alpha) = zero. The root is found by
 !  the secant method, based on two inital guesses.
 !======================================================================
 
@@ -3165,7 +3116,7 @@
 
         if(DABS(f1)<TOL_F) then         ! First guess is solution
            SOLUTION_FOUND = .TRUE.
-           ALPHA3 = ALPHA1 
+           ALPHA3 = ALPHA1
         elseif(DABS(f2)<TOL_F) then    ! Second guess is solution
            SOLUTION_FOUND = .TRUE.
            ALPHA3 = ALPHA2
@@ -3173,18 +3124,18 @@
           niter = 0
           f3 = 2.0d0*TOL_F
           do while (   (abs(f3) > TOL_F)   .AND.   (niter<ITERMAX_INT)       )
-           
+
             ALPHA3 = ALPHA1 - f1*(ALPHA2-ALPHA1)/(f2-f1)  ! secant point
 
             f3 = F(POS,ALPHA3,D_Target,L,N)
 
-            if(f1*f3<0) then            ! Reduce size of interval 
+            if(f1*f3<0) then            ! Reduce size of interval
               ALPHA2 = ALPHA3
               f2 = f3
-            else 
+            else
               ALPHA1 = ALPHA3
               f1 = f3
-            endif   
+            endif
             niter = niter + 1
 
           end do
@@ -3200,19 +3151,19 @@
              WRITE(*,*)'Maximum number of iterations = ', ITERMAX_INT
              WRITE(*,*)   'Please increase the intersection tolerance, '
              WRITE(*,*)   'or the maximum number of iterations, and try again.'
-             WRITE(*,*)   'MFiX will exit now.'             
-             CALL MFIX_EXIT(myPE) 
+             WRITE(*,*)   'MFiX will exit now.'
+             CALL MFIX_EXIT(myPE)
              SOLUTION_FOUND = .FALSE.
           endif
         else
           WRITE(*,*)   'Unable to find a solution'
-          WRITE(*,*)   'MFiX will exit now.'             
-          CALL MFIX_EXIT(myPE) 
+          WRITE(*,*)   'MFiX will exit now.'
+          CALL MFIX_EXIT(myPE)
           SOLUTION_FOUND = .FALSE.
         endif
 
 
- 1000 FORMAT(A,3(2X,G12.5)) 
+ 1000 FORMAT(A,3(2X,G12.5))
 
 
       RETURN
@@ -3241,20 +3192,20 @@
       SUBROUTINE ADJUST_IJK_SIZE
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -3289,11 +3240,11 @@
 
       INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,IDEAL_SUM,NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,IDEAL_SUM,NCPP_WITH_GHOST
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
 
       INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
@@ -3315,7 +3266,7 @@
 !-----------------------------------------------
 !
 
-      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG 
+      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG
       IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
       IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
 
@@ -3360,30 +3311,30 @@
 
       IF(SHIFT) THEN                                           ! Shift DX,DY,DZ and store it into temporary DXT,DYT,DZT
 
-         IF (DO_I) THEN 
+         IF (DO_I) THEN
             DXT(IMAX3) = DX(IMAX-1)
             DXT(IMAX2) = DX(IMAX-1)
             DO LC = IMAX1, IMIN1, -1
-   	         DXT(LC) = DX(LC-2)
+                 DXT(LC) = DX(LC-2)
             ENDDO
-            DXT(IMIN2) = DX(IMIN1) 
-            DXT(IMIN3) =DX(IMIN2)	
+            DXT(IMIN2) = DX(IMIN1)
+            DXT(IMIN3) =DX(IMIN2)
 
             XCC(IMIN1) = HALF*DXT(IMIN1)
             DO I=IMIN1+1,IMAX1
                XCC(I) = XCC(I-1) + HALF*(DXT(I-1) + DXT(I))
             ENDDO
-   	 
-         ENDIF 
+
+         ENDIF
    !
-         IF (DO_J) THEN 
-            DYT(JMAX3) = DY(JMAX-1)	 	 
-            DYT(JMAX2) = DY(JMAX-1) 
+         IF (DO_J) THEN
+            DYT(JMAX3) = DY(JMAX-1)
+            DYT(JMAX2) = DY(JMAX-1)
             DO LC = JMAX1, JMIN1, -1
                DYT(LC) = DY(LC-2)
             ENDDO
-            DYT(JMIN2) = DY(JMIN1) 
-            DYT(JMIN3) =DY(JMIN2)	 	 
+            DYT(JMIN2) = DY(JMIN1)
+            DYT(JMIN3) =DY(JMIN2)
 
             YCC(JMIN1) = HALF*DYT(JMIN1)
             DO J=JMIN1+1,JMAX1
@@ -3391,22 +3342,22 @@
             ENDDO
 
 
-         ENDIF 
+         ENDIF
    !
-         IF (DO_K) THEN 
-            DZT(KMAX3) = DZ(KMAX-1) 
-            DZT(KMAX2) = DZ(KMAX-1) 
+         IF (DO_K) THEN
+            DZT(KMAX3) = DZ(KMAX-1)
+            DZT(KMAX2) = DZ(KMAX-1)
             DO LC = KMAX1, KMIN1, -1
                DZT(LC) = DZ(LC-2)
             ENDDO
-            DZT(KMIN2) = DZ(KMIN1) 
+            DZT(KMIN2) = DZ(KMIN1)
             DZT(KMIN3) =DZ(KMIN2)
 
             ZCC(KMIN1) = HALF*DZT(KMIN1)
             DO K=KMIN1+1,KMAX1
                ZCC(K) = ZCC(K-1) + HALF*(DZT(K-1) + DZT(K))
             ENDDO
-	 
+
          ENDIF
 
       ENDIF  ! SHIFT
@@ -3418,7 +3369,7 @@
          IF(myPE == 0.AND.NODESJ*NODESK/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -3458,7 +3409,7 @@
 
    !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
 
-            
+
                   IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
                      NUC_I(I) = NUC_I(I) + 1
                   ENDIF
@@ -3470,7 +3421,7 @@
 
 ! Gather NUC onto the head node
 
-         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)    
+         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             I_OFFSET = 0
@@ -3493,7 +3444,7 @@
          IF(myPE == 0.AND.NODESI*NODESK/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -3508,7 +3459,7 @@
 !         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
 !         IF(PRESENT) THEN
 !          WRITE(*,*)'Reading gridmap from grimap.dat...'
-!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD') 
+!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 !            DO IPROC = 0,NumPEs-1
 !                  READ(777,*) jsize_all(IPROC)
 !            ENDDO
@@ -3548,7 +3499,7 @@
 
    !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
 
-            
+
                   IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
                      NUC_J(J) = NUC_J(J) + 1
                   ENDIF
@@ -3560,7 +3511,7 @@
 
 ! Gather NUC onto the head node
 
-         CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)    
+         CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             J_OFFSET = 0
@@ -3581,7 +3532,7 @@
          IF(myPE == 0.AND.NODESI*NODESJ/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE ADJUST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -3620,7 +3571,7 @@
 
    !                CALL EVAL_STL_FCT(x1,x2,x3,Q,f,CLIP_FLAG,BCID)
 
-            
+
                   IF (F_COPY < TOL_F ) THEN      ! Interior point, counted as useful
                      NUC_K(K) = NUC_K(K) + 1
                   ENDIF
@@ -3632,7 +3583,7 @@
 
 ! Gather NUC onto the head node
 
-         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)    
+         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             K_OFFSET = 0
@@ -3700,25 +3651,25 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
-
 
             DO IPROC = 0 ,numPEs-1
                NCPP_OLD(IPROC) = (imax3-imin3+1)*(JSIZE_ALL(IPROC)+4)
                IF(DO_K) NCPP_OLD(IPROC) = NCPP_OLD(IPROC)*(kmax3-kmin3+1)
-            ENDDO 
+            ENDDO
 
 
    ! Verify that the sum of all JSIZE_ALL matches JMAX
 
-            PSUM = 0                 
+            PSUM = 0
             DO IPROC = 0,numPEs-1
                PSUM = PSUM + JSIZE_ALL(IPROC)
                IF(JSIZE_ALL(IPROC)<5) THEN
                   WRITE (*, 1010) 'ERROR: J-SIZE TOO SMALL FOR PROCESSOR:',IPROC
                   WRITE (*, 1010) 'J-SIZE = ',JSIZE_ALL(IPROC)
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
                ENDIF
 
             ENDDO
@@ -3728,29 +3679,12 @@
                WRITE (*, 1000) 'SUM OF JSIZE_ALL DOES NOT MATCH JMAX:'
                WRITE (*, 1010) 'SUM OF JSIZE_ALL = ',PSUM
                WRITE (*, 1010) 'JMAX1 = ',JMAX
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
             ENDIF
-
-
-
-
-
 
          ELSEIF(NODESK>1) THEN                            ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
-
-
-
-
-
-
-
          ENDIF !(NODESI,NODESJ, OR NODESK)
-
-
-
-
-
 
          PRINT_STATISTICS = .TRUE.
 
@@ -3760,11 +3694,11 @@
 !            MINVAL_NCPP_OLD = MINVAL(NCPP_OLD)
 !            AVG_NCPP_OLD    = SUM(NCPP_OLD)/NUMPES
 
-!            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+!            LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
 
-!            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+!            P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
 
-!            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+!            MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
 
 
 
@@ -3772,11 +3706,11 @@
             MINVAL_NCPP_OLD = MINVAL(NCPP_UNIFORM)
             AVG_NCPP_OLD    = SUM(NCPP_UNIFORM)/NUMPES
 
-            LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
+            LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
 
-            P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
+            P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
 
-            MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+            MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
 
 
 
@@ -3785,11 +3719,11 @@
             MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
             AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
 
-            LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
+            LIP = DBLE(MAXVAL_NCPP-AVG_NCPP)/DBLE(AVG_NCPP)*100.0D0
 
-            P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
+            P = DBLE(MAXVAL_NCPP)/DBLE(AVG_NCPP)
 
-!            MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+!            MAXSPEEDUP = DBLE(NumPes)*(ONE-LIP/100.0D0)
 
 
             WRITE (*, 1000) '================================================='
@@ -3806,7 +3740,7 @@
             WRITE (*, 1000) ''
             WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
             WRITE (*, 1000) ''
-!            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!            WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DBLE(NumPEs),DBLE(NumPEs)
 !            WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
 !            WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',100.0D0 - LIP_OLD,100.0D0 - LIP
 
@@ -3864,23 +3798,23 @@
       SUBROUTINE REPORT_BEST_PROCESSOR_SIZE
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
- 
+
       USE parallel
 
       USE cutcell
@@ -3914,11 +3848,11 @@
 
       INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
 
 
@@ -3946,7 +3880,7 @@
 
       IS_SERIAL=(numPEs==1)
 
-      IF(IS_SERIAL) THEN   ! Temporarily mimick a parallel run 
+      IF(IS_SERIAL) THEN   ! Temporarily mimick a parallel run
 
          NODESI = NODESI_REPORT
          NODESJ = NODESJ_REPORT
@@ -4008,23 +3942,23 @@
       SUBROUTINE REPORT_BEST_IJK_SIZE
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
- 
+
       USE parallel
 
       USE cutcell
@@ -4058,17 +3992,17 @@
 
 
       INTEGER :: ilistsize,jlistsize,klistsize             ! size of list of cells
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_I      ! Number of Useful Cells at I for all processors 
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_I      ! Number of Useful Cells at I for all processors
                                                            ! (I will repeat if decomposing in J or K direction)
       INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_I     ! List of I for all processors
       INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NUC_I   ! Number of Useful Cells at Global I
 
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_J      ! Number of Useful Cells at J for all processors 
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_J      ! Number of Useful Cells at J for all processors
                                                            ! (J will repeat if decomposing in I or K direction)
       INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_J     ! List of J for all processors
       INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NUC_J   ! Number of Useful Cells at Global J
 
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_K      ! Number of Useful Cells at K for all processors 
+      INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_NUC_K      ! Number of Useful Cells at K for all processors
                                                            ! (K will repeat if decomposing in I or J direction)
       INTEGER, ALLOCATABLE, DIMENSION(:) :: ALL_LIST_K     ! List of K for all processors
       INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NUC_K   ! Number of Useful Cells at Global K
@@ -4076,11 +4010,11 @@
 
       INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
 
 
@@ -4106,7 +4040,7 @@
 !
       IF(.NOT.REPORT_BEST_DOMAIN_SIZE)   RETURN
 
-      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG 
+      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG
 !      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
       IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
 
@@ -4115,7 +4049,7 @@
       IF(.not.allocated(KSIZE_ALL)) allocate( KSIZE_ALL(0:NODESK-1))
 
       ISIZE_ALL(0:NODESI-1) = imax1-imin1+1  ! Assign default sizes in I, J and K-direction
-      JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1         
+      JSIZE_ALL(0:NODESJ-1) = jmax1-jmin1+1
       KSIZE_ALL(0:NODESK-1) = kmax1-kmin1+1
 
 
@@ -4138,7 +4072,7 @@
 ! rcount is the size for each processor
 ! disp is the cummulative sum for each processor
 
-         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)    
+         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             I_OFFSET = 0
@@ -4151,7 +4085,7 @@
 
          CALL allgather_1i (I_OFFSET,disp,IERR)
 
-         ilistsize=SUM(rcount) 
+         ilistsize=SUM(rcount)
 
          allocate( ALL_NUC_I(ilistsize))
          allocate( ALL_LIST_I(ilistsize))
@@ -4190,7 +4124,7 @@
 ! rcount is the size for each processor
 ! disp is the cummulative sum for each processor
 
-         CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)    
+         CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             J_OFFSET = 0
@@ -4203,7 +4137,7 @@
 
          CALL allgather_1i (J_OFFSET,disp,IERR)
 
-         Jlistsize=SUM(rcount) 
+         Jlistsize=SUM(rcount)
 
          allocate( ALL_NUC_J(Jlistsize))
          allocate( ALL_LIST_J(Jlistsize))
@@ -4242,7 +4176,7 @@
 ! rcount is the size for each processor
 ! disp is the cummulative sum for each processor
 
-         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)    
+         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             K_OFFSET = 0
@@ -4255,7 +4189,7 @@
 
          CALL allgather_1i (K_OFFSET,disp,IERR)
 
-         Klistsize=SUM(rcount) 
+         Klistsize=SUM(rcount)
 
          allocate( ALL_NUC_K(Klistsize))
          allocate( ALL_LIST_K(Klistsize))
@@ -4279,7 +4213,7 @@
 
 ! DETERMINE BEST DOMAIN DECOMPOSITION FROM HEAD NODE
 
-      IF (myPE == PE_IO) THEN   
+      IF (myPE == PE_IO) THEN
 
          IF(NODESI>1) THEN      ! DOMAIN DECOMPOSITION IN I-DIRECTION
 
@@ -4296,7 +4230,9 @@
             ISIZE_ALL = ISIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESI,GLOBAL_NUC_I(IMIN1:IMAX1),IMIN1,IMAX1,ISIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESI,GLOBAL_NUC_I(IMIN1:IMAX1),IMIN1, &
+                                           IMAX1,ISIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST, &
+                                           LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESI-1))
             IDEAL_NCPP = TOTAL_NUC / NODESI
@@ -4309,7 +4245,8 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4327,18 +4264,19 @@
             WRITE (*, 1000) '   I-NODE       I-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESI-1
-               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,ISIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
 ! Verify that the sum of all ISIZE_ALL matches IMAX
-            PSUM = 0                 
+            PSUM = 0
             DO IPROC = 0,NODESI-1
                PSUM = PSUM + ISIZE_ALL(IPROC)
                IF(ISIZE_ALL(IPROC)<5) THEN
                   WRITE (*, 1010) 'ERROR: I-SIZE TOO SMALL FOR I-NODE:',IPROC
                   WRITE (*, 1010) 'I-SIZE = ',ISIZE_ALL(IPROC)
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
 
@@ -4347,11 +4285,11 @@
                WRITE (*, 1000) 'SUM OF ISIZE_ALL DOES NOT MATCH IMAX:'
                WRITE (*, 1010) 'SUM OF ISIZE_ALL = ',PSUM
                WRITE (*, 1010) 'IMAX = ',IMAX
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
             ENDIF
 
          ENDIF                  ! DOMAIN DECOMPOSITION IN I-DIRECTION
-         
+
 
          IF(NODESJ>1) THEN      ! DOMAIN DECOMPOSITION IN J-DIRECTION
 ! For comparison with old grid size, determine the size in i direction (without adjustment) and add the remainder sequentially
@@ -4367,7 +4305,8 @@
             JSIZE_ALL = JSIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL, &
+                 NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESJ-1))
             IDEAL_NCPP = TOTAL_NUC / NODESJ
@@ -4380,7 +4319,8 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4398,18 +4338,19 @@
             WRITE (*, 1000) '   J-NODE       J-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESJ-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
 ! Verify that the sum of all JSIZE_ALL matches JMAX
-            PSUM = 0                 
+            PSUM = 0
             DO IPROC = 0,NODESJ-1
                PSUM = PSUM + JSIZE_ALL(IPROC)
                IF(JSIZE_ALL(IPROC)<5) THEN
                   WRITE (*, 1010) 'ERROR: J-SIZE TOO SMALL FOR J-NODE:',IPROC
                   WRITE (*, 1010) 'J-SIZE = ',JSIZE_ALL(IPROC)
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
 
@@ -4418,7 +4359,7 @@
                WRITE (*, 1000) 'SUM OF JSIZE_ALL DOES NOT MATCH JMAX:'
                WRITE (*, 1010) 'SUM OF JSIZE_ALL = ',PSUM
                WRITE (*, 1010) 'JMAX = ',JMAX
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
             ENDIF
 
          ENDIF                  ! DOMAIN DECOMPOSITION IN J-DIRECTION
@@ -4437,7 +4378,8 @@
             KSIZE_ALL = KSIZE_OLD
 
 ! Get load imbalance before optimization
-            CALL GET_LIP_WITH_GHOST_LAYERS(NODESK,GLOBAL_NUC_K(KMIN1:KMAX1),KMIN1,KMAX1,KSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+            CALL GET_LIP_WITH_GHOST_LAYERS(NODESK,GLOBAL_NUC_K(KMIN1:KMAX1),KMIN1,KMAX1,KSIZE_ALL, &
+                 NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
             TOTAL_NUC  = SUM(NCPP_OLD_WITH_GHOST(0:NODESK-1))
             IDEAL_NCPP = TOTAL_NUC / NODESK
@@ -4450,7 +4392,8 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC),DFLOAT(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_OLD_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
@@ -4468,18 +4411,19 @@
             WRITE (*, 1000) '   K-NODE       K-SIZE   CELLS/NODE    DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,NODESK-1
-               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,KSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
             WRITE (*, 1000) '================================================='
 
 ! Verify that the sum of all KSIZE_ALL matches KMAX
-            PSUM = 0                 
+            PSUM = 0
             DO IPROC = 0,NODESK-1
                PSUM = PSUM + KSIZE_ALL(IPROC)
                IF(KSIZE_ALL(IPROC)<5) THEN
                   WRITE (*, 1010) 'ERROR: K-SIZE TOO SMALL FOR K-NODE:',IPROC
                   WRITE (*, 1010) 'K-SIZE = ',KSIZE_ALL(IPROC)
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
                ENDIF
             ENDDO
 
@@ -4488,14 +4432,14 @@
                WRITE (*, 1000) 'SUM OF KSIZE_ALL DOES NOT MATCH KMAX:'
                WRITE (*, 1010) 'SUM OF KSIZE_ALL = ',PSUM
                WRITE (*, 1010) 'KMAX = ',KMAX
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
             ENDIF
 
 
          ENDIF                  ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
 
-         OPEN(UNIT=777, FILE='suggested_gridmap.dat') 
+         OPEN(UNIT=777, FILE='suggested_gridmap.dat')
          WRITE (777, 1005) NODESI,NODESJ,NODESK, '     ! NODESI, NODESJ, NODESK'
          DO IPROC = 0,NODESI-1
                WRITE(777,1060) IPROC,Isize_all(IPROC)
@@ -4518,9 +4462,9 @@
 
       ENDIF  ! (MyPE==PE_IO)
 
-! Finalize and terminate MPI                                                                                                      
+! Finalize and terminate MPI
       call parallel_fin
-             
+
       CALL exit(0)
 
 
@@ -4533,7 +4477,7 @@
 
 !      DOMAIN_SIZE_ADJUSTED = .TRUE.
 
- 
+
 
 
 1000  FORMAT(1x,A)
@@ -4569,20 +4513,20 @@
       SUBROUTINE GET_LIP_WITH_GHOST_LAYERS(NODESL,NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -4611,7 +4555,7 @@
 
       INTEGER :: IPROC
 
-   	INTEGER, DIMENSION(0:NODESL-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
+        INTEGER, DIMENSION(0:NODESL-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
 
 
       DOUBLE PRECISION :: LIP
@@ -4623,7 +4567,7 @@
 
       IF(LCOUNT1/=LCOUNT2) THEN
          WRITE(*,*)' ERROR: SUM OF CELLS DO NOT MATCH:',LCOUNT1,LCOUNT2
-         CALL MFIX_EXIT(myPE) 
+         CALL MFIX_EXIT(myPE)
       ENDIF
 
       L1(0) = LMIN1
@@ -4643,7 +4587,7 @@
       TOTAL_NUC = 0
 
       DO L=LMIN1,LMAX1
-         TOTAL_NUC = TOTAL_NUC + NUC_L(L) 
+         TOTAL_NUC = TOTAL_NUC + NUC_L(L)
       ENDDO
 
       NCPP_WITH_GHOST(0) = NCPP(0) + 2*NUC_L(L1(0)) + NUC_L(L1(1)) + NUC_L(L1(1)+1)
@@ -4668,8 +4612,8 @@
       MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
       MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
 
-      LIP = DFLOAT(MAXVAL_NCPP-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
-!      LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+      LIP = DBLE(MAXVAL_NCPP-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+!      LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
 
       IPROC_OF_MAX = MAXLOC(NCPP_WITH_GHOST,1)-1
@@ -4703,20 +4647,20 @@
       SUBROUTINE MINIMIZE_LOAD_IMBALANCE(NODESL,NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -4749,7 +4693,7 @@
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
 
 
       DOUBLE PRECISION :: LIP,BEST_LIP
@@ -4768,8 +4712,8 @@
 
 !      print*,'INITIAL ESTIMATE OF LIP:',LIP
 !         WRITE (*, 1000) '================================================='
-!         WRITE (*, 1010) 'AFTER STEP:',N 
-!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1010) 'AFTER STEP:',N
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT
 !         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !         WRITE (*, 1000) '================================================='
 !         DO IPROC = 0,numPEs-1
@@ -4806,8 +4750,8 @@
          ENDIF
 
 !         WRITE (*, 1000) '================================================='
-!         WRITE (*, 1010) 'AFTER STEP:',N 
-!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1010) 'AFTER STEP:',N
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT
 !         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !         WRITE (*, 1000) '================================================='
 !         DO IPROC = 0,numPEs-1
@@ -4828,7 +4772,7 @@
 
 
 !      WRITE (*, 1000) '================================================='
-!      WRITE (*, 1000) 'AFTER OPTIMIZATION' 
+!      WRITE (*, 1000) 'AFTER OPTIMIZATION'
 !      WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !      WRITE (*, 1000) '================================================='
 !      DO IPROC = 0,numPEs-1
@@ -4864,23 +4808,23 @@
       SUBROUTINE REPORT_BEST_IJK_SIZE0
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
- 
+
       USE parallel
 
       USE cutcell
@@ -4914,11 +4858,11 @@
 
       INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
 
-   	INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-   	INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-   	INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
+        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
+        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
 
 
@@ -4944,7 +4888,7 @@
 !
       RETURN
 
-      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG 
+      IF(.NOT.CARTESIAN_GRID) RETURN            ! Perform adjustement only when both CG
 !      IF(.NOT.ADJUST_PROC_DOMAIN_SIZE) RETURN   ! and domain adjustment
       IF(NODESI*NODESJ*NODESK==1) RETURN         ! and parallel run are active
 
@@ -4966,7 +4910,7 @@
          IF(myPE == 0.AND.NODESJ*NODESK/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -4999,7 +4943,7 @@
 
 ! Gather NUC onto the head node
 
-         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)    
+         CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             I_OFFSET = 0
@@ -5022,7 +4966,7 @@
          IF(myPE == 0.AND.NODESI*NODESK/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -5043,7 +4987,7 @@
 
             DO I = ISTART3,IEND3
                DO K = KSTART3,KEND3
-            
+
                   IF( .NOT.DEAD_CELL_AT(I,J,K)) THEN   ! Count number of useful cells
                      NUC_J(J) = NUC_J(J) + 1
                   ENDIF
@@ -5064,7 +5008,7 @@
 
          ELSE
 
-            CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)    
+            CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)
 
             IF (myPE == 0) THEN
                J_OFFSET = 0
@@ -5094,7 +5038,7 @@
          IF(myPE == 0.AND.NODESI*NODESJ/=1) THEN
             WRITE(*,*)'ERROR IN SUBROUTINE REPORT_BEST_IJK_SIZE.'
             WRITE(*,*)'ADJUSTMENT POSSIBLE ONLY FOR DOMAIN DECOMPOSITION In ONE DIRECTION.'
-            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK 
+            WRITE(*,*)'NODESI,NODESJ,NODESK =',NODESI,NODESJ,NODESK
             WRITE(*,*)'MFIX WILL EXIT NOW.'
             CALL MFIX_EXIT(myPE)
          ENDIF
@@ -5115,7 +5059,7 @@
 
             DO I = ISTART1,IEND1
                DO J = JSTART1,JEND1
-            
+
                   IF( .NOT.DEAD_CELL_AT(I,J,K)) THEN   ! Count number of useful cells
                      NUC_K(K) = NUC_K(K) + 1
                   ENDIF
@@ -5127,7 +5071,7 @@
 
 ! Gather NUC onto the head node
 
-         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)    
+         CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)
 
          IF (myPE == 0) THEN
             K_OFFSET = 0
@@ -5171,11 +5115,8 @@
 
            JSIZE_ALL = JSIZE_OLD
 
-
-
-
-
-      CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
+      CALL GET_LIP_WITH_GHOST_LAYERS(NODESJ,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL, &
+           NCPP_OLD,NCPP_OLD_WITH_GHOST,LIP_OLD,IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD)
 
 
 !      print*,'INITIAL ESTIMATE OF LIP, before minimizing LIP:',LIP_OLD
@@ -5186,12 +5127,6 @@
 !            WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_OLD_WITH_GHOST(IPROC)
 !         ENDDO
 !         WRITE (*, 1000) '================================================='
-
-
-
-
-
-
 
            CALL MINIMIZE_LOAD_IMBALANCE(nodesj,GLOBAL_NUC_J(JMIN1:JMAX1),JMIN1,JMAX1,JSIZE_ALL,NCPP,NCPP_WITH_GHOST)
 
@@ -5207,25 +5142,26 @@
             WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   DIFF. (%)'
             WRITE (*, 1000) '================================================='
             DO IPROC = 0,numPEs-1
-               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC),DFLOAT(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
+               WRITE (*, 1020) IPROC,JSIZE_ALL(IPROC),NCPP_WITH_GHOST(IPROC), &
+                    DBLE(NCPP_WITH_GHOST(IPROC)-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
             ENDDO
 
 
 !            DO IPROC = 0 ,numPEs-1
 !               NCPP_OLD(IPROC) = (imax3-imin3+1)*(JSIZE_ALL(IPROC)+4)
 !               IF(DO_K) NCPP_OLD(IPROC) = NCPP_OLD(IPROC)*(kmax3-kmin3+1)
-!            ENDDO 
+!            ENDDO
 
 
    ! Verify that the sum of all JSIZE_ALL matches JMAX
 
-            PSUM = 0                 
+            PSUM = 0
             DO IPROC = 0,numPEs-1
                PSUM = PSUM + JSIZE_ALL(IPROC)
                IF(JSIZE_ALL(IPROC)<5) THEN
                   WRITE (*, 1010) 'ERROR: J-SIZE TOO SMALL FOR PROCESSOR:',IPROC
                   WRITE (*, 1010) 'J-SIZE = ',JSIZE_ALL(IPROC)
-                  CALL MFIX_EXIT(myPE) 
+                  CALL MFIX_EXIT(myPE)
                ENDIF
 
             ENDDO
@@ -5235,11 +5171,11 @@
                WRITE (*, 1000) 'SUM OF JSIZE_ALL DOES NOT MATCH JMAX:'
                WRITE (*, 1010) 'SUM OF JSIZE_ALL = ',PSUM
                WRITE (*, 1010) 'JMAX1 = ',JMAX
-               CALL MFIX_EXIT(myPE) 
+               CALL MFIX_EXIT(myPE)
             ENDIF
 
 
-            OPEN(UNIT=777, FILE='suggested_gridmap.dat') 
+            OPEN(UNIT=777, FILE='suggested_gridmap.dat')
             WRITE (777, 1000) 'J-SIZE DISTRIBUTION'
             WRITE (777, 1010) 'NUMBER OF PROCESSORS = ',NumPEs
             WRITE (777, 1000) '================================================='
@@ -5269,26 +5205,26 @@
          MINVAL_NCPP_OLD = MINVAL(NCPP_OLD_WITH_GHOST)
          AVG_NCPP_OLD    = SUM(NCPP_OLD_WITH_GHOST)/NUMPES
 
-!         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)*100.0D0
-         LIP_OLD = DFLOAT(MAXVAL_NCPP_OLD-MINVAL_NCPP_OLD)/DFLOAT(MINVAL_NCPP_OLD)*100.0D0
+!         LIP_OLD = DBLE(MAXVAL_NCPP_OLD-AVG_NCPP_OLD)/DBLE(AVG_NCPP_OLD)*100.0D0
+         LIP_OLD = DBLE(MAXVAL_NCPP_OLD-MINVAL_NCPP_OLD)/DBLE(MINVAL_NCPP_OLD)*100.0D0
 
-!         P = DFLOAT(MAXVAL_NCPP_OLD)/DFLOAT(AVG_NCPP_OLD)
-         P = DFLOAT(MINVAL_NCPP_OLD)/DFLOAT(MAXVAL_NCPP_OLD)
+!         P = DBLE(MAXVAL_NCPP_OLD)/DBLE(AVG_NCPP_OLD)
+         P = DBLE(MINVAL_NCPP_OLD)/DBLE(MAXVAL_NCPP_OLD)
 
-!         MAXSPEEDUP_OLD = DFLOAT(NumPes)*(ONE-LIP_OLD/100.0D0)
+!         MAXSPEEDUP_OLD = DBLE(NumPes)*(ONE-LIP_OLD/100.0D0)
          MAXSPEEDUP_OLD = ONE / ((ONE-P) + P/NumPes)
 
          MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
          MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
          AVG_NCPP    = SUM(NCPP_WITH_GHOST(0:NumPEs-1))/NUMPES
 
-!         LIP = DFLOAT(MAXVAL_NCPP-AVG_NCPP)/DFLOAT(AVG_NCPP)*100.0D0
-         LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+!         LIP = DBLE(MAXVAL_NCPP-AVG_NCPP)/DBLE(AVG_NCPP)*100.0D0
+         LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
-!         P = DFLOAT(MAXVAL_NCPP)/DFLOAT(AVG_NCPP)
-         P = DFLOAT(MINVAL_NCPP)/DFLOAT(MAXVAL_NCPP)
+!         P = DBLE(MAXVAL_NCPP)/DBLE(AVG_NCPP)
+         P = DBLE(MINVAL_NCPP)/DBLE(MAXVAL_NCPP)
 
-!         MAXSPEEDUP = DFLOAT(NumPes)*(ONE-LIP/100.0D0)
+!         MAXSPEEDUP = DBLE(NumPes)*(ONE-LIP/100.0D0)
          MAXSPEEDUP = ONE / ((ONE-P) + P/NumPes)
 
          WRITE (*, 1000) '================================================='
@@ -5305,9 +5241,9 @@
          WRITE (*, 1000) ''
          WRITE (*, 1030) 'LOAD IMBALANCE (%)    : ',LIP_OLD,LIP
          WRITE (*, 1000) ''
-!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DFLOAT(NumPEs),DFLOAT(NumPEs)
+!         WRITE (*, 1030) 'IDEAL SPEEDUP         : ',DBLE(NumPEs),DBLE(NumPEs)
 !         WRITE (*, 1030) 'MAX SPEEDUP           : ',MAXSPEEDUP_OLD,MAXSPEEDUP
-!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DFLOAT(NumPEs)*100.0,MAXSPEEDUP/DFLOAT(NumPEs)*100.0
+!         WRITE (*, 1030) 'MAX EFFICIENCY (%)    : ',MAXSPEEDUP_OLD/DBLE(NumPEs)*100.0,MAXSPEEDUP/DBLE(NumPEs)*100.0
 
          WRITE (*, 1000) '================================================='
 
@@ -5325,7 +5261,7 @@
 
 !      DOMAIN_SIZE_ADJUSTED = .TRUE.
 
- 
+
 
 
 1000  FORMAT(1x,A)
@@ -5359,20 +5295,20 @@
       SUBROUTINE GET_LIP_WITH_GHOST_LAYERS0(NODESL,NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST,LIP,IPROC_OF_MAX,IPROC_OF_MIN)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -5401,7 +5337,7 @@
 
       INTEGER :: IPROC
 
-   	INTEGER, DIMENSION(0:NODESL-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
+        INTEGER, DIMENSION(0:NODESL-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2
 
 
       DOUBLE PRECISION :: LIP
@@ -5413,7 +5349,7 @@
 
       IF(LCOUNT1/=LCOUNT2) THEN
          WRITE(*,*)' ERROR: SUM OF CELLS DO NOT MATCH:',LCOUNT1,LCOUNT2
-         CALL MFIX_EXIT(myPE) 
+         CALL MFIX_EXIT(myPE)
       ENDIF
 
       L1(0) = LMIN1
@@ -5433,7 +5369,7 @@
       TOTAL_NUC = 0
 
       DO L=LMIN1,LMAX1
-         TOTAL_NUC = TOTAL_NUC + NUC_L(L) 
+         TOTAL_NUC = TOTAL_NUC + NUC_L(L)
       ENDDO
 
       NCPP_WITH_GHOST(0) = NCPP(0) + 2*NUC_L(L1(0)) + NUC_L(L1(1)) + NUC_L(L1(1)+1)
@@ -5458,8 +5394,8 @@
       MAXVAL_NCPP = MAXVAL(NCPP_WITH_GHOST)
       MINVAL_NCPP = MINVAL(NCPP_WITH_GHOST)
 
-!      LIP = DFLOAT(MAXVAL_NCPP-IDEAL_NCPP)/DFLOAT(IDEAL_NCPP)*100.0D0
-      LIP = DFLOAT(MAXVAL_NCPP-MINVAL_NCPP)/DFLOAT(MINVAL_NCPP)*100.0D0
+!      LIP = DBLE(MAXVAL_NCPP-IDEAL_NCPP)/DBLE(IDEAL_NCPP)*100.0D0
+      LIP = DBLE(MAXVAL_NCPP-MINVAL_NCPP)/DBLE(MINVAL_NCPP)*100.0D0
 
 
       IPROC_OF_MAX = MAXLOC(NCPP_WITH_GHOST,1)-1
@@ -5493,20 +5429,20 @@
       SUBROUTINE MINIMIZE_LOAD_IMBALANCE0(NODESL,NUC_L,LMIN1,LMAX1,L_SIZE,NCPP,NCPP_WITH_GHOST)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE gridmap
-      USE param 
-      USE param1 
-      USE constant 
+      USE param
+      USE param1
+      USE constant
       USE run
       USE physprop
       USE indices
       USE scalars
       USE funits
       USE leqsol
-      USE compar             
-      USE mpi_utility        
+      USE compar
+      USE mpi_utility
       USE bc
       USE DISCRETELEMENT
 
@@ -5537,7 +5473,7 @@
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
-   	INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
 
 
       DOUBLE PRECISION :: LIP,BEST_LIP
@@ -5556,8 +5492,8 @@
 
 !      print*,'INITIAL ESTIMATE OF LIP:',LIP
 !         WRITE (*, 1000) '================================================='
-!         WRITE (*, 1010) 'AFTER STEP:',N 
-!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1010) 'AFTER STEP:',N
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT
 !         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !         WRITE (*, 1000) '================================================='
 !         DO IPROC = 0,numPEs-1
@@ -5594,8 +5530,8 @@
          ENDIF
 
 !         WRITE (*, 1000) '================================================='
-!         WRITE (*, 1010) 'AFTER STEP:',N 
-!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT 
+!         WRITE (*, 1010) 'AFTER STEP:',N
+!         WRITE (*, 1010) 'NOIMPROVEMENT=',NOIMPROVEMENT
 !         WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !         WRITE (*, 1000) '================================================='
 !         DO IPROC = 0,numPEs-1
@@ -5616,7 +5552,7 @@
 
 
 !      WRITE (*, 1000) '================================================='
-!      WRITE (*, 1000) 'AFTER OPTIMIZATION' 
+!      WRITE (*, 1000) 'AFTER OPTIMIZATION'
 !      WRITE (*, 1000) '   PROCESSOR    J-SIZE   CELLS/PROC.   ERROR (%)'
 !      WRITE (*, 1000) '================================================='
 !      DO IPROC = 0,numPEs-1

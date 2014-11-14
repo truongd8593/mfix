@@ -74,11 +74,11 @@
       ID_HOUR   = DAT(5)
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
-      
+
 !     For SGI only
 !      CALL GETHOSTNAME(ID_NODE,64)
 !     For Linux with Portland Group compilers
-      call hostnm(ID_NODE)      
+      call hostnm(ID_NODE)
 !
       RETURN
       END
@@ -112,7 +112,7 @@
 !
 !                      cpu time since start of run
       DOUBLE PRECISION CPU
-      
+
       INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
@@ -123,7 +123,7 @@
 
 !                       number of cycles per second
       INTEGER           COUNT_RATE
-      
+
 !                       max number of cycles, after which count is reset to 0
       INTEGER           COUNT_MAX
 
@@ -132,7 +132,7 @@
         WRAP = WRAP + 1
       ENDIF
       COUNT_OLD = COUNT
-      
+
       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
                      + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
 !
@@ -202,21 +202,21 @@
       end
 !
 
-      
+
       subroutine ran
       return
       end
-     
+
 !
       subroutine flush_bin(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end
       subroutine flush_res(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end

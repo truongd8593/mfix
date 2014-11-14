@@ -8,9 +8,9 @@
 
       integer :: selection , L, nt, nt2
       real    :: time_in_res
-      
+
       real, allocatable :: arr(:)
-      real*8, allocatable :: time_series(:), time_series2(:), scratch(:)
+      real(kind=8), allocatable :: time_series(:), time_series2(:), scratch(:)
 
       allocate (arr(ijkmax2))
       allocate (time_series(100000))
@@ -40,7 +40,7 @@
          call do_zonal_avg(time_in_res,arr,time_series,nt)
          call do_zonal_avg(time_in_res,arr,time_series2,nt2)
       end if
-!      
+!
       call header_low_pass(selection,0,2)
       if (selection .eq. 1) call do_low_pass(time_series,nt)
       if (selection .eq. 2) then
@@ -96,7 +96,7 @@
       WRITE (*,*)&
         ' *************************************************'
       WRITE (*,*)&
-        '  0   - Exit ORNL routines'     
+        '  0   - Exit ORNL routines'
       WRITE (*,*)&
         '  1   - do zonal average, for no averaging give the same value for minimum & maximum'
       WRITE (*,*)&
@@ -137,7 +137,7 @@
       WRITE (*,*)&
         ' *************************************************'
       WRITE (*,*)&
-        '  0   - Skip Low-pass Filter'     
+        '  0   - Skip Low-pass Filter'
       WRITE (*,*)&
         '  1   - Apply Low-pass Filter'
       WRITE (*,*)&
@@ -178,17 +178,17 @@
       WRITE (*,*)&
         ' *************************************************'
       WRITE (*,*)&
-        '  0   - Exit ORNL routines'     
+        '  0   - Exit ORNL routines'
       WRITE (*,*)&
-        '  1   - simple statistics on a 1D time series' 
+        '  1   - simple statistics on a 1D time series'
       WRITE (*,*)&
-        '  2   - auto  correlation on a 1D time series' 
+        '  2   - auto  correlation on a 1D time series'
       WRITE (*,*)&
-        '  3   - power spectral density of a 1D time series' 
+        '  3   - power spectral density of a 1D time series'
        WRITE (*,*)&
-        '  4   - cubed temporal asymmetry routine for 1D time series' 
+        '  4   - cubed temporal asymmetry routine for 1D time series'
        WRITE (*,*)&
-        '  5   - signed temporal asymmetry routine for 1D time series' 
+        '  5   - signed temporal asymmetry routine for 1D time series'
       WRITE (*,*)&
         ' *************************************************'
 !

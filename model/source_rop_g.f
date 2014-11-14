@@ -17,107 +17,103 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_ROP_G(A_M, B_M, IER) 
+      SUBROUTINE SOURCE_ROP_G(A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
       USE fldvar
       USE rxns
       USE run
       USE geometry
       USE indices
       USE pgcor
-      USE compar 
+      USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! DEL dot V 
-      DOUBLE PRECISION :: DEL_V 
-! Mass source 
-      DOUBLE PRECISION :: Src 
-! Indices 
-      INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM 
-! error message 
-      CHARACTER*80     LINE 
+! DEL dot V
+      DOUBLE PRECISION :: DEL_V
+! Mass source
+      DOUBLE PRECISION :: Src
+! Indices
+      INTEGER :: I, J, K, IJK, IMJK, IJMK, IJKM
+! error message
+      CHARACTER(LEN=80) :: LINE
 
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
-
 
 !!$omp  parallel do private( I, J, K, IJK, IMJK, IJMK, IJKM,  DEL_V, &
 !!$omp&  Src, LINE) &
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=0) THEN 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IJKM = KM_OF(IJK) 
+         IF (FLUID_AT(IJK) .AND. PHASE_4_P_G(IJK)/=0) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 
             DEL_V = U_G(IJK)*AYZ(IJK) - U_G(IMJK)*AYZ(IMJK) + &
                     V_G(IJK)*AXZ(IJK) - V_G(IJMK)*AXZ(IJMK) + &
-                    W_G(IJK)*AXY(IJK) - W_G(IJKM)*AXY(IJKM) 
+                    W_G(IJK)*AXY(IJK) - W_G(IJKM)*AXY(IJKM)
 
-            IF (ROP_G(IJK) > ZERO) THEN 
-               SRC = VOL(IJK)*ZMAX((-SUM_R_G(IJK)))/ROP_G(IJK) 
-            ELSE 
-               SRC = ZERO 
-            ENDIF 
+            IF (ROP_G(IJK) > ZERO) THEN
+               SRC = VOL(IJK)*ZMAX((-SUM_R_G(IJK)))/ROP_G(IJK)
+            ELSE
+               SRC = ZERO
+            ENDIF
 
             A_M(IJK,0,0) = -(A_M(IJK,E,0)+A_M(IJK,W,0)+A_M(IJK,N,0)+&
                              A_M(IJK,S,0)+A_M(IJK,T,0)+A_M(IJK,B,0)+&
-                             VOL(IJK)*ODT+ZMAX(DEL_V)+SRC) 
+                             VOL(IJK)*ODT+ZMAX(DEL_V)+SRC)
             B_M(IJK,0) = -(ROP_GO(IJK)*VOL(IJK)*ODT+&
                            ZMAX((-DEL_V))*ROP_G(IJK)+&
                            ZMAX(SUM_R_G(IJK))*VOL(IJK))
 
-            IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN 
-               IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN 
-                  A_M(IJK,0,0) = -ONE 
-                  B_M(IJK,0) = ZERO 
-               ELSE 
+            IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN
+               IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN
+                  A_M(IJK,0,0) = -ONE
+                  B_M(IJK,0) = ZERO
+               ELSE
 !!$omp             critical
                   WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
-                     ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0) 
-                  CALL WRITE_ERROR ('SOURCE_ROP_g', LINE, 1) 
+                     ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0)
+                  CALL WRITE_ERROR ('SOURCE_ROP_g', LINE, 1)
 !!$omp             end critical
-               ENDIF 
-            ENDIF 
-         ELSE 
+               ENDIF
+            ENDIF
+         ELSE
 ! set the value of rop_g in all wall and flow boundary cells to what is
 ! known for that cell
-            A_M(IJK,E,0) = ZERO 
-            A_M(IJK,W,0) = ZERO 
-            A_M(IJK,N,0) = ZERO 
-            A_M(IJK,S,0) = ZERO 
-            A_M(IJK,T,0) = ZERO 
-            A_M(IJK,B,0) = ZERO 
-            A_M(IJK,0,0) = -ONE 
-            B_M(IJK,0) = -ROP_G(IJK) 
-         ENDIF 
-      ENDDO 
+            A_M(IJK,E,0) = ZERO
+            A_M(IJK,W,0) = ZERO
+            A_M(IJK,N,0) = ZERO
+            A_M(IJK,S,0) = ZERO
+            A_M(IJK,T,0) = ZERO
+            A_M(IJK,B,0) = ZERO
+            A_M(IJK,0,0) = -ONE
+            B_M(IJK,0) = -ROP_G(IJK)
+         ENDIF
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE SOURCE_ROP_G 
+      RETURN
+      END SUBROUTINE SOURCE_ROP_G
 
 

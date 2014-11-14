@@ -1,59 +1,59 @@
-!	MPI Modules written at ORNL by Ed and Sreekanth for MFIX
-!	under joint effort with FETC - 06/08/99.
+!       MPI Modules written at ORNL by Ed and Sreekanth for MFIX
+!       under joint effort with FETC - 06/08/99.
 
-	module mpi_utility
+        module mpi_utility
 
-!	module to perform most of the mpi functionalities like scatter,
-!	gather, bcast, globalsum and so on.
+!       module to perform most of the mpi functionalities like scatter,
+!       gather, bcast, globalsum and so on.
 
-	use geometry
-	use compar
-	use parallel_mpi
-	use debug
-	use indices
-	implicit none
+        use geometry
+        use compar
+        use parallel_mpi
+        use debug
+        use indices
+        implicit none
 
-!	Object-oriented approach to direct to the correct procedure
-!	depending on the argument type. i stands for integer, r for real
-!	and d for double precision. 0 for scalar, 1 for vector, 2 for
-!	2-D array and similarly 3.
+!       Object-oriented approach to direct to the correct procedure
+!       depending on the argument type. i stands for integer, r for real
+!       and d for double precision. 0 for scalar, 1 for vector, 2 for
+!       2-D array and similarly 3.
 
 !==============================================================================
 !  JFD: Interfaces used for vtk file writting (Cartesian grid):
 !==============================================================================
 
-	interface allgather
-	module  procedure allgather_1i
-	end interface 
+        interface allgather
+        module  procedure allgather_1i
+        end interface
 
-	interface gatherv
-	module  procedure gatherv_1d
-	end interface 
+        interface gatherv
+        module  procedure gatherv_1d
+        end interface
 
 !==============================================================================
 !  JFD: End of Interfaces used for vtk file writting (Cartesian grid):
 !==============================================================================
 
-	interface scatter
-	module  procedure scatter_1i, scatter_2i, scatter_3i, &
+        interface scatter
+        module  procedure scatter_1i, scatter_2i, scatter_3i, &
                           scatter_1r, scatter_2r, scatter_3r, &
                           scatter_1d, scatter_2d, scatter_3d, &
-			  scatter_1c,scatter_1l
-	end interface 
+                          scatter_1c,scatter_1l
+        end interface
 
-	interface gather
-	module  procedure gather_1i, gather_2i, gather_3i, &
+        interface gather
+        module  procedure gather_1i, gather_2i, gather_3i, &
                           gather_1r, gather_2r, gather_3r, &
                           gather_1d, gather_2d, gather_3d, &
-			  gather_1c, gather_1l
-	end interface 
+                          gather_1c, gather_1l
+        end interface
 
-	interface bcast
-	module  procedure bcast_0i, bcast_1i, bcast_2i, bcast_3i, &
+        interface bcast
+        module  procedure bcast_0i, bcast_1i, bcast_2i, bcast_3i, &
                           bcast_0r, bcast_1r, bcast_2r, bcast_3r, &
                           bcast_0d, bcast_1d, bcast_2d, bcast_3d, &
-			  bcast_0l, bcast_1l, bcast_0c, bcast_1c
-	end interface 
+                          bcast_0l, bcast_1l, bcast_0c, bcast_1c
+        end interface
 
         interface global_sum
         module  procedure global_sum_0i, global_sum_1i, global_sum_2i, global_sum_3i, &
@@ -140,120 +140,11 @@
 !  JFD: Subroutines used for vtk file writting (Cartesian grid):
 !==============================================================================
 
-	subroutine allgather_1i( lbuf, gbuf, idebug )
-        integer, intent(in) :: lbuf       
+        subroutine allgather_1i( lbuf, gbuf, idebug )
+        integer, intent(in) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) ::  idebug
-	integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug,mpierr
-
-        if (.not. present(idebug)) then  
-           lidebug = 0
-        else
-           lidebug = idebug
-        endif
-
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
-
-	sendcnt = 1
-        recvcnt = sendcnt
-
-        CALL MPI_ALLGATHER(lbuf,sendcnt,sendtype,  &
-                           gbuf,recvcnt,recvtype,MPI_COMM_WORLD, IERR)
-
-	return
-	end subroutine allgather_1i
-
-	subroutine gatherv_1i( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf
-        integer, intent(in), dimension(:) :: rcount
-        integer, intent(in), dimension(:) :: disp
-        integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
-	integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
-
-!	check to see whether there is root
-
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
-	   lroot = mroot
-	endif
-
-        if (.not. present(idebug)) then  
-           lidebug = 0
-        else
-           lidebug = idebug
-        endif
-
-	recvtype = MPI_INTEGER
-	sendtype = MPI_INTEGER
-
-        CALL MPI_GATHERV(lbuf,sendcnt,sendtype,  &
-                         gbuf,rcount,disp,recvtype, &
-                         lroot,MPI_COMM_WORLD, IERR)
-
-	return
-	end subroutine gatherv_1i
-
-	subroutine gatherv_1d( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf
-        integer, intent(in), dimension(:) :: rcount
-        integer, intent(in), dimension(:) :: disp
-        double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
-	integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
-
-!	check to see whether there is root
-
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
-	   lroot = mroot
-	endif
-
-        if (.not. present(idebug)) then  
-           lidebug = 0
-        else
-           lidebug = idebug
-        endif
-
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = MPI_DOUBLE_PRECISION
-
-        CALL MPI_GATHERV(lbuf,sendcnt,sendtype,  &
-                         gbuf,rcount,disp,recvtype, &
-                         lroot,MPI_COMM_WORLD, IERR)
-
-	return
-	end subroutine gatherv_1d
-
-!==============================================================================
-!  JFD: End of Subroutines used for vtk file writting (Cartesian grid):
-!==============================================================================
-
-
-!	Routine to scatter gbuf available on root to all the processors
-
-	subroutine scatter_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: gbuf
-        integer, intent(out), dimension(:) :: lbuf
-	integer, optional, intent(in) :: mroot, idebug
-
-	integer, allocatable, dimension(:) :: gbuf_pack
-
-	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
-	integer :: i,j,k,ibuffer,iproc, ioffset
-        integer :: ijk
-        include '../function.inc'
-
-!	check to see whether there is root
-
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
-	   lroot = mroot
-	endif
+        integer, optional, intent(in) ::  idebug
+        integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug,mpierr
 
         if (.not. present(idebug)) then
            lidebug = 0
@@ -261,13 +152,126 @@
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	allocate(gbuf_pack(10))
-	endif
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	if( myPE.eq.lroot) then
+        sendcnt = 1
+        recvcnt = sendcnt
+
+        CALL MPI_ALLGATHER(lbuf,sendcnt,sendtype,  &
+                           gbuf,recvcnt,recvtype,MPI_COMM_WORLD, IERR)
+
+        return
+        end subroutine allgather_1i
+
+        subroutine gatherv_1i( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
+        integer, intent(in), dimension(:) :: rcount
+        integer, intent(in), dimension(:) :: disp
+        integer, intent(out), dimension(:) :: gbuf
+        integer, optional, intent(in) :: mroot, idebug
+        integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+
+!       check to see whether there is root
+
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
+           lroot = mroot
+        endif
+
+        if (.not. present(idebug)) then
+           lidebug = 0
+        else
+           lidebug = idebug
+        endif
+
+        recvtype = MPI_INTEGER
+        sendtype = MPI_INTEGER
+
+        CALL MPI_GATHERV(lbuf,sendcnt,sendtype,  &
+                         gbuf,rcount,disp,recvtype, &
+                         lroot,MPI_COMM_WORLD, IERR)
+
+        return
+        end subroutine gatherv_1i
+
+        subroutine gatherv_1d( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
+        integer, intent(in), dimension(:) :: rcount
+        integer, intent(in), dimension(:) :: disp
+        double precision, intent(out), dimension(:) :: gbuf
+        integer, optional, intent(in) :: mroot, idebug
+        integer :: sendtype,recvtype,sendcnt,recvcnt,lroot,ierr,lidebug
+
+!       check to see whether there is root
+
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
+           lroot = mroot
+        endif
+
+        if (.not. present(idebug)) then
+           lidebug = 0
+        else
+           lidebug = idebug
+        endif
+
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = MPI_DOUBLE_PRECISION
+
+        CALL MPI_GATHERV(lbuf,sendcnt,sendtype,  &
+                         gbuf,rcount,disp,recvtype, &
+                         lroot,MPI_COMM_WORLD, IERR)
+
+        return
+        end subroutine gatherv_1d
+
+!==============================================================================
+!  JFD: End of Subroutines used for vtk file writting (Cartesian grid):
+!==============================================================================
+
+
+!       Routine to scatter gbuf available on root to all the processors
+
+        subroutine scatter_1i( lbuf, gbuf, mroot, idebug )
+
+        use functions
+
+        implicit none
+
+        integer, intent(in), dimension(:) :: gbuf
+        integer, intent(out), dimension(:) :: lbuf
+        integer, optional, intent(in) :: mroot, idebug
+
+        integer, allocatable, dimension(:) :: gbuf_pack
+
+        integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
+        integer :: i,j,k,ibuffer,iproc, ioffset
+        integer :: ijk
+
+!       check to see whether there is root
+
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
+           lroot = mroot
+        endif
+
+        if (.not. present(idebug)) then
+           lidebug = 0
+        else
+           lidebug = idebug
+        endif
+
+        if(myPE.eq.lroot) then
+        allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+        allocate(gbuf_pack(10))
+        endif
+
+        if( myPE.eq.lroot) then
         ioffset = 0
           do iproc = 0,numPEs-1
             ibuffer = 0
@@ -277,86 +281,86 @@
 
                   ibuffer = funijk_proc(i,j,k,iproc) + ioffset
                   gbuf_pack(ibuffer) = gbuf(funijk_gl(i,j,k))
-                
+
                 enddo
               enddo
             enddo
             ioffset = ibuffer
           enddo
-	endif 
+        endif
 
-	sendtype = MPI_INTEGER
-	recvtype = sendtype
+        sendtype = MPI_INTEGER
+        recvtype = sendtype
 
-	ijk1 = ijkstart3
-	ijk2 = ijkend3
+        ijk1 = ijkstart3
+        ijk2 = ijkend3
 
-	recvcnt = ijk2-ijk1+1
+        recvcnt = ijk2-ijk1+1
 
-!	Call MPI routines
+!       Call MPI routines
 
-	call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
-			  lbuf, recvcnt, recvtype,  &
-			  lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'scatter_1i:MPI_Scatterv', ierr )
+        call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
+                          lbuf, recvcnt, recvtype,  &
+                          lroot, MPI_COMM_WORLD, ierr )
+        call MPI_Check( 'scatter_1i:MPI_Scatterv', ierr )
 
-	deallocate(gbuf_pack)
+        deallocate(gbuf_pack)
 
-	return
-	end subroutine scatter_1i
+        return
+        end subroutine scatter_1i
 
         subroutine scatter_2i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:,:) :: gbuf       
+        integer, intent(in), dimension(:,:) :: gbuf
         integer, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
-	   lroot = mroot
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
+           lroot = mroot
         endif
 
-        if (.not. present(idebug)) then 
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** scatter_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** scatter_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call scatter_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call scatter_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine scatter_2i
+        return
+        end subroutine scatter_2i
 
         subroutine scatter_3i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:,:,:) :: gbuf       
+        integer, intent(in), dimension(:,:,:) :: gbuf
         integer, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** scatter_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -364,46 +368,50 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** scatter_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call scatter_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine scatter_3i
 
-	subroutine scatter_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: gbuf       
+        subroutine scatter_1r( lbuf, gbuf, mroot, idebug )
+
+        use functions
+
+        implicit none
+
+        real, intent(in), dimension(:) :: gbuf
         real, intent(out), dimension(:) :: lbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
         real, allocatable, dimension(:) :: gbuf_pack
 
-	integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
+        integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	allocate(gbuf_pack(10))
-	endif
+        allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+        allocate(gbuf_pack(10))
+        endif
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -423,77 +431,77 @@
           enddo
         endif
 
-	sendtype = MPI_REAL
-	recvtype = sendtype
+        sendtype = MPI_REAL
+        recvtype = sendtype
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
 
-	recvcnt = ijk2-ijk1+1
+        recvcnt = ijk2-ijk1+1
 
-	call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
-			  lbuf, recvcnt, recvtype,  &
-			  lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'scatter_1r:MPI_Scatterv', ierr )
+        call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
+                          lbuf, recvcnt, recvtype,  &
+                          lroot, MPI_COMM_WORLD, ierr )
+        call MPI_Check( 'scatter_1r:MPI_Scatterv', ierr )
 
         deallocate(gbuf_pack)
 
-	return
-	end subroutine scatter_1r
+        return
+        end subroutine scatter_1r
 
-	
+
         subroutine scatter_2r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:,:) :: gbuf       
+        real, intent(in), dimension(:,:) :: gbuf
         real, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** scatter_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** scatter_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call scatter_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call scatter_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine scatter_2r
+        return
+        end subroutine scatter_2r
 
         subroutine scatter_3r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:,:,:) :: gbuf       
+        real, intent(in), dimension(:,:,:) :: gbuf
         real, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** scatter_3r: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -501,47 +509,50 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** scatter_3r: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call scatter_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine scatter_3r
 
 
-	subroutine scatter_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: gbuf       
+        subroutine scatter_1d( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
+        double precision, intent(in), dimension(:) :: gbuf
         double precision, intent(out), dimension(:) :: lbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
         double precision, allocatable, dimension(:) :: gbuf_pack
 
-	integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
+        integer :: sendtype, recvtype, ijk1,ijk2,recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	allocate(gbuf_pack(10))
-	endif
+        allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+        allocate(gbuf_pack(10))
+        endif
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -561,77 +572,77 @@
           enddo
         endif
 
-	sendtype = MPI_DOUBLE_PRECISION
-	recvtype = sendtype
+        sendtype = MPI_DOUBLE_PRECISION
+        recvtype = sendtype
 
         ijk1 = ijkstart3
         ijk2 = ijkend3
 
-	recvcnt = ijk2-ijk1+1
+        recvcnt = ijk2-ijk1+1
 
-	call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
-			  lbuf, recvcnt, recvtype,  &
-			  lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'scatter_1d:MPI_Scatterv', ierr )
+        call MPI_Scatterv( gbuf_pack, ijksize3_all, displs, sendtype, &
+                          lbuf, recvcnt, recvtype,  &
+                          lroot, MPI_COMM_WORLD, ierr )
+        call MPI_Check( 'scatter_1d:MPI_Scatterv', ierr )
 
         deallocate(gbuf_pack)
 
-	return
-	end subroutine scatter_1d
+        return
+        end subroutine scatter_1d
 
-	
+
         subroutine scatter_2d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:,:) :: gbuf       
+        double precision, intent(in), dimension(:,:) :: gbuf
         double precision, intent(out), dimension(:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** scatter_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** scatter_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call scatter_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call scatter_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine scatter_2d
+        return
+        end subroutine scatter_2d
 
         subroutine scatter_3d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:,:,:) :: gbuf       
+        double precision, intent(in), dimension(:,:,:) :: gbuf
         double precision, intent(out), dimension(:,:,:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** scatter_3d: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -639,31 +650,34 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** scatter_3d: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call scatter_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine scatter_3d
 
 
         subroutine scatter_1c( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         character(len=*), intent(in), dimension(:) :: gbuf
         character(len=*), intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
 
         integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
-	character(len=80) :: string
+        character(len=80) :: string
 
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
         integer :: lenchar, icount
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -686,22 +700,22 @@
 
         if(myPE.eq.lroot) then
           allocate(gbuf_pack(ijkmax3,lenchar))
-	else
-	  allocate(gbuf_pack(10,lenchar))
-	endif
+        else
+          allocate(gbuf_pack(10,lenchar))
+        endif
 
         allocate(lbuf1(ijk1:ijk2,lenchar))
 
-	if(myPE.eq.lroot) then
-	do i = 1,ijkmax3
-	  do j = 1,lenchar
+        if(myPE.eq.lroot) then
+        do i = 1,ijkmax3
+          do j = 1,lenchar
 
-	    string = gbuf(i)(1:lenchar)
-	    gbuf_pack(i,j) = ichar(string(j:j))
+            string = gbuf(i)(1:lenchar)
+            gbuf_pack(i,j) = ichar(string(j:j))
 
-	  enddo
-	enddo
-	endif
+          enddo
+        enddo
+        endif
 
         call scatter_2i(lbuf1,gbuf_pack)
 
@@ -721,6 +735,10 @@
 
 
         subroutine scatter_1l( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         logical, intent(in), dimension(:) :: gbuf
         logical, intent(out), dimension(:) :: lbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -730,7 +748,6 @@
         integer :: sendtype, recvtype, ijk1, ijk2, recvcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -740,17 +757,17 @@
            lroot = mroot
         endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	allocate(gbuf_pack(10))
-	endif
+        allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+        allocate(gbuf_pack(10))
+        endif
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -791,24 +808,27 @@
         end subroutine scatter_1l
 
 
-!	Routines to gather lbuf from individual processors and put it on
-!	processor root in gbuf
-!	Logic is similar to the scatter routines above.
+!       Routines to gather lbuf from individual processors and put it on
+!       processor root in gbuf
+!       Logic is similar to the scatter routines above.
 
-	subroutine gather_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine gather_1i( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
         integer, allocatable, dimension(:) :: gbuf_pack
 
-	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
-	logical :: isok_k,isok_j,isok_i, isinterior 
-	logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
+        logical :: isok_k,isok_j,isok_i, isinterior
+        logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
 
 !       check to see whether there is root
 
@@ -816,36 +836,36 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	  allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	  allocate(gbuf_pack(10))
+          allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+          allocate(gbuf_pack(10))
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
         ijk1 = ijkstart3
 !        ijk2 = ijkend3
         ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
-	sendcnt = ijk2-ijk1+1
+        sendcnt = ijk2-ijk1+1
 
         call MPI_Gatherv( lbuf, sendcnt, sendtype,  &
                            gbuf_pack, ijksize3_all, displs, recvtype, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'gather_1i:MPI_Gatherv', ierr )
+        call MPI_Check( 'gather_1i:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
-	ioffset = 0
+        ioffset = 0
           do iproc = 0,numPEs-1
             ibuffer = 0
             istartl = istart1_all(iproc)
@@ -881,48 +901,48 @@
                 enddo
               enddo
             enddo
-	    ioffset = ibuffer
+            ioffset = ibuffer
           enddo
         endif
 
 
         deallocate(gbuf_pack)
 
-	return
-	end subroutine gather_1i
+        return
+        end subroutine gather_1i
 
-	
+
         subroutine gather_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** gather_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** gather_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call gather_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call gather_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine gather_2i
+        return
+        end subroutine gather_2i
 
         subroutine gather_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -931,19 +951,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** gather_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -951,52 +971,55 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** gather_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call gather_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine gather_3i
 
-	subroutine gather_1r( lbuf, gbuf, mroot, idebug )
+        subroutine gather_1r( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
         real, allocatable, dimension(:) :: gbuf_pack
 
-	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	  allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	  allocate(gbuf_pack(10))
-	endif
+          allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+          allocate(gbuf_pack(10))
+        endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
         ijk1 = ijkstart3
 !        ijk2 = ijkend3
@@ -1004,12 +1027,12 @@
 
 
 
-	sendcnt = ijk2-ijk1+1
+        sendcnt = ijk2-ijk1+1
 
         call MPI_Gatherv( lbuf, sendcnt, sendtype,  &
                            gbuf_pack, ijksize3_all, displs, recvtype, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'gather_1r:MPI_Gatherv', ierr )
+        call MPI_Check( 'gather_1r:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -1055,41 +1078,41 @@
 
         deallocate(gbuf_pack)
 
-	return
-	end subroutine gather_1r
+        return
+        end subroutine gather_1r
 
-	
+
         subroutine gather_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** gather_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** gather_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call gather_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call gather_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine gather_2r
+        return
+        end subroutine gather_2r
 
         subroutine gather_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -1098,19 +1121,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** gather_3r: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -1118,65 +1141,67 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** gather_3r: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call gather_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine gather_3r
 
 
-	subroutine gather_1d( lbuf, gbuf, mroot, idebug )
+        subroutine gather_1d( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
         double precision, allocatable, dimension(:) :: gbuf_pack
 
-	integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
         integer :: ijk, ijk_gl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
 
-        include '../function.inc'
-
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	  allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	  allocate(gbuf_pack(10))
-	endif
+          allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+          allocate(gbuf_pack(10))
+        endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
         ijk1 = ijkstart3
 !        ijk2 = ijkend3
         ijk2 = max(ijkend3,BACKGROUND_IJKEND3)   !  For cell re-indexing
 
-	sendcnt = ijk2-ijk1+1
+        sendcnt = ijk2-ijk1+1
 
         call MPI_Gatherv( lbuf, sendcnt, sendtype,  &
                            gbuf_pack, ijksize3_all, displs, recvtype, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'gather_1d:MPI_Gatherv', ierr )
+        call MPI_Check( 'gather_1d:MPI_Gatherv', ierr )
 
         if( myPE.eq.lroot) then
         ioffset = 0
@@ -1221,41 +1246,41 @@
 
         deallocate(gbuf_pack)
 
-	return
-	end subroutine gather_1d
+        return
+        end subroutine gather_1d
 
-	
+
         subroutine gather_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** gather_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** gather_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call gather_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call gather_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine gather_2d
+        return
+        end subroutine gather_2d
 
         subroutine gather_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -1264,19 +1289,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** gather_3d: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -1284,25 +1309,29 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** gather_3d: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call gather_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine gather_3d
 
 
         subroutine gather_1c( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         character(len=*), intent(in), dimension(:) :: lbuf
         character(len=*), intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
         integer, allocatable, dimension(:,:) :: gbuf_pack,lbuf1
-	character(len=80) :: string
+        character(len=80) :: string
 
         integer :: recvtype, sendtype, ijk1,ijk2,sendcnt, ierr,lroot, lidebug
         integer :: i,j,k,ibuffer,iproc, ioffset
@@ -1311,7 +1340,6 @@
         integer :: lenchar, icount
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -1336,32 +1364,32 @@
 
         if(myPE.eq.lroot) then
         allocate(gbuf_pack(ijkmax3,lenchar))
-	else
-	allocate(gbuf_pack(10,lenchar))
-	endif
+        else
+        allocate(gbuf_pack(10,lenchar))
+        endif
 
         allocate(lbuf1(ijk1:ijk2,lenchar))
 
-	do i = ijk1,ijk2
+        do i = ijk1,ijk2
            string = lbuf(i)(1:lenchar)
-	   do j = 1,lenchar
-	   lbuf1(i,j) = ichar(string(j:j))
-	   enddo
+           do j = 1,lenchar
+           lbuf1(i,j) = ichar(string(j:j))
+           enddo
         enddo
 
         call gather_2i(lbuf1, gbuf_pack)
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         do i = 1,ijkmax3
           do j = 1,lenchar
 
             string(j:j) = char(gbuf_pack(i,j))
 
           enddo
-	  gbuf(i)(1:lenchar) = string(1:lenchar)
+          gbuf(i)(1:lenchar) = string(1:lenchar)
 
         enddo
-	endif
+        endif
 
         deallocate(gbuf_pack)
         deallocate(lbuf1)
@@ -1372,6 +1400,10 @@
 
 
         subroutine gather_1l( lbuf, gbuf, mroot, idebug )
+
+        use functions
+        implicit none
+
         logical, intent(in), dimension(:) :: lbuf
         logical, intent(out), dimension(:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
@@ -1384,7 +1416,6 @@
         integer :: istartl, iendl, jstartl, jendl, kstartl, kendl
         logical :: isok_k,isok_j,isok_i, isinterior
         logical :: isbc_k,isbc_j,isbc_i, isboundary, need_copy
-        include '../function.inc'
 
 !       check to see whether there is root
 
@@ -1394,17 +1425,17 @@
            lroot = mroot
         endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
         if(myPE.eq.lroot) then
-	allocate(gbuf_pack(sum(ijksize3_all(:))))
-	else
-	allocate(gbuf_pack(10))
-	endif
+        allocate(gbuf_pack(sum(ijksize3_all(:))))
+        else
+        allocate(gbuf_pack(10))
+        endif
 
         recvtype = MPI_LOGICAL
         sendtype = recvtype
@@ -1467,8 +1498,8 @@
         end subroutine gather_1l
 
 
-!	Routines to broadcast information from processor 0 in buffer to all
-!	the processors	
+!       Routines to broadcast information from processor 0 in buffer to all
+!       the processors
 
         subroutine bcast_0i( buffer, mroot, idebug )
         integer, intent(inout) :: buffer
@@ -1480,9 +1511,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1499,59 +1530,59 @@
         end subroutine bcast_0i
 
 
-	subroutine bcast_1i( buffer, mroot, idebug )
-        integer, intent(inout), dimension(:) :: buffer       
-	integer, optional, intent(in) :: mroot, idebug
+        subroutine bcast_1i( buffer, mroot, idebug )
+        integer, intent(inout), dimension(:) :: buffer
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: datatype, count, ierr,lroot, lidebug
+        integer :: datatype, count, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	datatype = MPI_INTEGER
+        datatype = MPI_INTEGER
 
-	count = size(buffer,1)
+        count = size(buffer,1)
 
         call MPI_Bcast( buffer, count, datatype, lroot, MPI_COMM_WORLD, ierr)
-	call MPI_Check( 'bcast_1i:MPI_Bcast', ierr )
+        call MPI_Check( 'bcast_1i:MPI_Bcast', ierr )
 
-	return
-	end subroutine bcast_1i
+        return
+        end subroutine bcast_1i
 
-	
+
         subroutine bcast_2i( buffer, mroot, idebug )
         integer, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	do j=lbound(buffer,2),ubound(buffer,2)
-	  call bcast_1i( buffer(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(buffer,2),ubound(buffer,2)
+          call bcast_1i( buffer(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine bcast_2i
+        return
+        end subroutine bcast_2i
 
         subroutine bcast_3i( buffer, mroot, idebug )
         integer, intent(inout), dimension(:,:,:) :: buffer
@@ -1559,13 +1590,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1575,7 +1606,7 @@
         do j=lbound(buffer,2),ubound(buffer,2)
           call bcast_1i( buffer(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine bcast_3i
@@ -1590,9 +1621,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1609,59 +1640,59 @@
         end subroutine bcast_0r
 
 
-	subroutine bcast_1r( buffer, mroot, idebug )
+        subroutine bcast_1r( buffer, mroot, idebug )
         real, intent(inout), dimension(:) :: buffer
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: datatype, count, ierr,lroot, lidebug
+        integer :: datatype, count, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	datatype = MPI_REAL
+        datatype = MPI_REAL
 
         count = size(buffer,1)
 
         call MPI_Bcast( buffer, count, datatype, lroot, MPI_COMM_WORLD, ierr)
-	call MPI_Check( 'bcast_1r:MPI_Bcast', ierr )
+        call MPI_Check( 'bcast_1r:MPI_Bcast', ierr )
 
-	return
-	end subroutine bcast_1r
+        return
+        end subroutine bcast_1r
 
-	
+
         subroutine bcast_2r( buffer, mroot, idebug )
         real, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	do j=lbound(buffer,2),ubound(buffer,2)
-	  call bcast_1r( buffer(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(buffer,2),ubound(buffer,2)
+          call bcast_1r( buffer(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine bcast_2r
+        return
+        end subroutine bcast_2r
 
         subroutine bcast_3r( buffer, mroot, idebug )
         real, intent(inout), dimension(:,:,:) :: buffer
@@ -1669,13 +1700,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1685,7 +1716,7 @@
         do j=lbound(buffer,2),ubound(buffer,2)
           call bcast_1r( buffer(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine bcast_3r
@@ -1700,9 +1731,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1719,59 +1750,59 @@
         end subroutine bcast_0d
 
 
-	subroutine bcast_1d( buffer, mroot, idebug )
+        subroutine bcast_1d( buffer, mroot, idebug )
         double precision, intent(inout), dimension(:) :: buffer
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: datatype, count, ierr,lroot, lidebug
+        integer :: datatype, count, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	datatype = MPI_DOUBLE_PRECISION
+        datatype = MPI_DOUBLE_PRECISION
 
         count = size(buffer,1)
 
         call MPI_Bcast( buffer, count, datatype, lroot, MPI_COMM_WORLD, ierr)
-	call MPI_Check( 'bcast_1d:MPI_Bcast', ierr )
+        call MPI_Check( 'bcast_1d:MPI_Bcast', ierr )
 
-	return
-	end subroutine bcast_1d
+        return
+        end subroutine bcast_1d
 
-	
+
         subroutine bcast_2d( buffer, mroot, idebug )
         double precision, intent(inout), dimension(:,:) :: buffer
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	do j=lbound(buffer,2),ubound(buffer,2)
-	  call bcast_1d( buffer(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(buffer,2),ubound(buffer,2)
+          call bcast_1d( buffer(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine bcast_2d
+        return
+        end subroutine bcast_2d
 
         subroutine bcast_3d( buffer, mroot, idebug )
         double precision, intent(inout), dimension(:,:,:) :: buffer
@@ -1779,13 +1810,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -1795,7 +1826,7 @@
         do j=lbound(buffer,2),ubound(buffer,2)
           call bcast_1d( buffer(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine bcast_3d
@@ -1803,7 +1834,7 @@
         subroutine bcast_0c( buffer, mroot, idebug )
         character(len=*), intent(inout) :: buffer
         integer, optional, intent(in) :: mroot, idebug
-	character, allocatable, dimension(:) :: buffer1
+        character, allocatable, dimension(:) :: buffer1
 
         integer :: datatype, count, ierr,lroot, lidebug
         integer :: lenchar,icount, i, j
@@ -1820,9 +1851,9 @@
            lidebug = idebug
         endif
 
-	lenchar = len(buffer)
+        lenchar = len(buffer)
 
-	allocate(buffer1(lenchar))
+        allocate(buffer1(lenchar))
 
         icount = 0
         do j = 1,lenchar
@@ -1860,13 +1891,13 @@
 
         integer :: datatype, count, ierr,lroot, lidebug
         integer :: lenchar,icount, i, j
-	character(len=len(buffer(1))) :: string
+        character(len=len(buffer(1))) :: string
 
         if (.not. present(mroot)) then
            lroot = 0
         else
            lroot = mroot
-        endif 
+        endif
 
         if (.not. present(idebug)) then
            lidebug = 0
@@ -1904,7 +1935,7 @@
             string(j:j) = buffer1(icount)
 
           enddo
-	    buffer(i) = string
+            buffer(i) = string
         enddo
 
         deallocate(buffer1)
@@ -1951,7 +1982,7 @@
            lroot = 0
         else
            lroot = mroot
-        endif 
+        endif
 
         if (.not. present(idebug)) then
            lidebug = 0
@@ -1970,9 +2001,9 @@
         end subroutine bcast_1l
 
 
-!	Procedures to do global operations (Sum, Min, Max). _all_ routines
-!	send the information to all the processors otherwise they are
-!	kept on processor 0.
+!       Procedures to do global operations (Sum, Min, Max). _all_ routines
+!       send the information to all the processors otherwise they are
+!       kept on processor 0.
 
         subroutine global_sum_0i( lbuf, gbuf, mroot, idebug )
         integer, intent(in) :: lbuf
@@ -1985,9 +2016,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2006,68 +2037,68 @@
         end subroutine global_sum_0i
 
 
-	subroutine global_sum_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_sum_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_SUM, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_sum_1i:MPI_Reduce', ierr )
+        call MPI_Check( 'global_sum_1i:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_sum_1i
+        return
+        end subroutine global_sum_1i
 
         subroutine global_sum_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_sum_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_sum_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_sum_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_sum_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_sum_2i
+        return
+        end subroutine global_sum_2i
 
         subroutine global_sum_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -2076,19 +2107,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_sum_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -2096,13 +2127,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_sum_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_sum_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_sum_3i
@@ -2118,9 +2149,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2139,68 +2170,68 @@
         end subroutine global_sum_0r
 
 
-	subroutine global_sum_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_sum_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_SUM, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_sum_1r:MPI_Reduce', ierr )
+        call MPI_Check( 'global_sum_1r:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_sum_1r
+        return
+        end subroutine global_sum_1r
 
         subroutine global_sum_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_sum_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_sum_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_sum_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_sum_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_sum_2r
+        return
+        end subroutine global_sum_2r
 
         subroutine global_sum_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -2209,19 +2240,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_sum_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -2229,13 +2260,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_sum_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_sum_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_sum_3r
@@ -2251,9 +2282,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2272,68 +2303,68 @@
         end subroutine global_sum_0d
 
 
-	subroutine global_sum_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_sum_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_SUM, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_sum_1d:MPI_Reduce', ierr )
+        call MPI_Check( 'global_sum_1d:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_sum_1d
+        return
+        end subroutine global_sum_1d
 
         subroutine global_sum_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_sum_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_sum_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_sum_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_sum_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_sum_2d
+        return
+        end subroutine global_sum_2d
 
         subroutine global_sum_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -2342,19 +2373,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_sum_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -2362,13 +2393,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_sum_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_sum_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_sum_3d
@@ -2500,9 +2531,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2521,66 +2552,66 @@
         end subroutine global_all_sum_0i
 
 
-	subroutine global_all_sum_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_sum_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_SUM, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_sum_1i:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_sum_1i:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_sum_1i
+        return
+        end subroutine global_all_sum_1i
 
         subroutine global_all_sum_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_sum_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_sum_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_sum_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_sum_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_sum_2i
+        return
+        end subroutine global_all_sum_2i
 
         subroutine global_all_sum_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -2589,13 +2620,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2613,7 +2644,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_sum_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_sum_3i
@@ -2629,9 +2660,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2651,66 +2682,66 @@
         end subroutine global_all_sum_0r
 
 
-	subroutine global_all_sum_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_sum_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_SUM, &
                             MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_sum_1r:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_sum_1r:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_sum_1r
+        return
+        end subroutine global_all_sum_1r
 
         subroutine global_all_sum_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_sum_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_sum_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_sum_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_sum_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_sum_2r
+        return
+        end subroutine global_all_sum_2r
 
         subroutine global_all_sum_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -2719,13 +2750,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2743,7 +2774,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_sum_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_sum_3r
@@ -2759,9 +2790,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2780,66 +2811,66 @@
         end subroutine global_all_sum_0d
 
 
-	subroutine global_all_sum_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_sum_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype,  MPI_SUM, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_sum_1d:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_sum_1d:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_sum_1d
+        return
+        end subroutine global_all_sum_1d
 
         subroutine global_all_sum_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_sum_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_sum_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_sum_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_sum_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_sum_2d
+        return
+        end subroutine global_all_sum_2d
 
         subroutine global_all_sum_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -2848,13 +2879,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2872,7 +2903,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_sum_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_sum_3d
@@ -2888,9 +2919,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -2909,68 +2940,68 @@
         end subroutine global_min_0i
 
 
-	subroutine global_min_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_min_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MIN, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_min_1i:MPI_Reduce', ierr )
+        call MPI_Check( 'global_min_1i:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_min_1i
+        return
+        end subroutine global_min_1i
 
         subroutine global_min_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_min_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_min_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_min_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_min_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_min_2i
+        return
+        end subroutine global_min_2i
 
         subroutine global_min_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -2979,19 +3010,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_min_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -2999,13 +3030,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_min_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_min_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_min_3i
@@ -3021,9 +3052,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3042,68 +3073,68 @@
         end subroutine global_min_0r
 
 
-	subroutine global_min_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_min_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MIN, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_min_1r:MPI_Reduce', ierr )
+        call MPI_Check( 'global_min_1r:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_min_1r
+        return
+        end subroutine global_min_1r
 
         subroutine global_min_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_min_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_min_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_min_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_min_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_min_2r
+        return
+        end subroutine global_min_2r
 
         subroutine global_min_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -3112,19 +3143,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_min_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -3132,13 +3163,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_min_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_min_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_min_3r
@@ -3154,9 +3185,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3175,68 +3206,68 @@
         end subroutine global_min_0d
 
 
-	subroutine global_min_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_min_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MIN, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_min_1d:MPI_Reduce', ierr )
+        call MPI_Check( 'global_min_1d:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_min_1d
+        return
+        end subroutine global_min_1d
 
         subroutine global_min_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_min_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_min_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_min_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_min_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_min_2d
+        return
+        end subroutine global_min_2d
 
         subroutine global_min_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -3245,19 +3276,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_min_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -3265,13 +3296,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_min_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_min_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_min_3d
@@ -3406,9 +3437,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3427,66 +3458,66 @@
         end subroutine global_all_min_0i
 
 
-	subroutine global_all_min_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_min_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_MIN, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_min_1i:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_min_1i:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_min_1i
+        return
+        end subroutine global_all_min_1i
 
         subroutine global_all_min_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_min_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_min_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_min_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_min_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_min_2i
+        return
+        end subroutine global_all_min_2i
 
         subroutine global_all_min_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -3495,13 +3526,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3519,7 +3550,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_min_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_min_3i
@@ -3535,9 +3566,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3557,66 +3588,66 @@
         end subroutine global_all_min_0r
 
 
-	subroutine global_all_min_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_min_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_MIN, &
                             MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_min_1r:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_min_1r:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_min_1r
+        return
+        end subroutine global_all_min_1r
 
         subroutine global_all_min_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_min_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_min_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_min_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_min_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_min_2r
+        return
+        end subroutine global_all_min_2r
 
         subroutine global_all_min_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -3625,13 +3656,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3649,7 +3680,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_min_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_min_3r
@@ -3665,9 +3696,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3686,66 +3717,66 @@
         end subroutine global_all_min_0d
 
 
-	subroutine global_all_min_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_min_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MIN, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_min_1d:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_min_1d:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_min_1d
+        return
+        end subroutine global_all_min_1d
 
         subroutine global_all_min_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_min_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_min_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_min_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_min_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_min_2d
+        return
+        end subroutine global_all_min_2d
 
         subroutine global_all_min_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -3754,13 +3785,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3778,7 +3809,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_min_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_min_3d
@@ -3794,9 +3825,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3815,68 +3846,68 @@
         end subroutine global_max_0i
 
 
-	subroutine global_max_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_max_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MAX, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_max_1i:MPI_Reduce', ierr )
+        call MPI_Check( 'global_max_1i:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_max_1i
+        return
+        end subroutine global_max_1i
 
         subroutine global_max_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_max_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_max_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_max_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_max_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_max_2i
+        return
+        end subroutine global_max_2i
 
         subroutine global_max_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -3885,19 +3916,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_max_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -3905,13 +3936,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_max_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_max_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_max_3i
@@ -3927,9 +3958,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -3948,68 +3979,68 @@
         end subroutine global_max_0r
 
 
-	subroutine global_max_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_max_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MAX, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_max_1r:MPI_Reduce', ierr )
+        call MPI_Check( 'global_max_1r:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_max_1r
+        return
+        end subroutine global_max_1r
 
         subroutine global_max_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_max_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_max_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_max_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_max_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_max_2r
+        return
+        end subroutine global_max_2r
 
         subroutine global_max_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -4018,19 +4049,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_max_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -4038,13 +4069,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_max_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_max_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_max_3r
@@ -4060,9 +4091,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4081,68 +4112,68 @@
         end subroutine global_max_0d
 
 
-	subroutine global_max_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_max_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Reduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MAX, &
                           lroot, MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_max_1d:MPI_Reduce', ierr )
+        call MPI_Check( 'global_max_1d:MPI_Reduce', ierr )
 
-	return
-	end subroutine global_max_1d
+        return
+        end subroutine global_max_1d
 
         subroutine global_max_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_max_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
-	endif
+        if(myPE.eq.lroot) then
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_max_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
+        endif
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_max_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_max_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_max_2d
+        return
+        end subroutine global_max_2d
 
         subroutine global_max_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -4151,19 +4182,19 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	if(myPE.eq.lroot) then
+        if(myPE.eq.lroot) then
         call assert( size(lbuf,2).eq.size(gbuf,2),  &
                 '** global_max_3i: size(lbuf,2).ne.size(gbuf,2) ', &
                 size(lbuf,2), size(gbuf,2) )
@@ -4171,13 +4202,13 @@
         call assert( size(lbuf,3).eq.size(gbuf,3),  &
                 '** global_max_3i: size(lbuf,3).ne.size(gbuf,3) ', &
                 size(lbuf,3), size(gbuf,3) )
-	endif
+        endif
 
         do k=lbound(lbuf,3),ubound(lbuf,3)
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_max_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_max_3d
@@ -4311,9 +4342,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4332,66 +4363,66 @@
         end subroutine global_all_max_0i
 
 
-	subroutine global_all_max_1i( lbuf, gbuf, mroot, idebug )
-        integer, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_max_1i( lbuf, gbuf, mroot, idebug )
+        integer, intent(in), dimension(:) :: lbuf
         integer, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_INTEGER
-	sendtype = recvtype
+        recvtype = MPI_INTEGER
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_MAX, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_max_1i:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_max_1i:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_max_1i
+        return
+        end subroutine global_all_max_1i
 
         subroutine global_all_max_2i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:) :: lbuf
         integer, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_max_2i: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_max_2i: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_max_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_max_1i( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_max_2i
+        return
+        end subroutine global_all_max_2i
 
         subroutine global_all_max_3i( lbuf, gbuf, mroot, idebug )
         integer, intent(in), dimension(:,:,:) :: lbuf
@@ -4400,13 +4431,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4424,7 +4455,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_max_1i( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_max_3i
@@ -4440,9 +4471,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4462,66 +4493,66 @@
         end subroutine global_all_max_0r
 
 
-	subroutine global_all_max_1r( lbuf, gbuf, mroot, idebug )
-        real, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_max_1r( lbuf, gbuf, mroot, idebug )
+        real, intent(in), dimension(:) :: lbuf
         real, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif  
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_REAL
-	sendtype = recvtype
+        recvtype = MPI_REAL
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype, MPI_MAX, &
                             MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_max_1r:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_max_1r:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_max_1r
+        return
+        end subroutine global_all_max_1r
 
         subroutine global_all_max_2r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:) :: lbuf
         real, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_max_2r: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_max_2r: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_max_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_max_1r( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_max_2r
+        return
+        end subroutine global_all_max_2r
 
         subroutine global_all_max_3r( lbuf, gbuf, mroot, idebug )
         real, intent(in), dimension(:,:,:) :: lbuf
@@ -4530,13 +4561,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4554,7 +4585,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_max_1r( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_max_3r
@@ -4570,9 +4601,9 @@
            lroot = 0
         else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4591,66 +4622,66 @@
         end subroutine global_all_max_0d
 
 
-	subroutine global_all_max_1d( lbuf, gbuf, mroot, idebug )
-        double precision, intent(in), dimension(:) :: lbuf       
+        subroutine global_all_max_1d( lbuf, gbuf, mroot, idebug )
+        double precision, intent(in), dimension(:) :: lbuf
         double precision, intent(out), dimension(:) :: gbuf
-	integer, optional, intent(in) :: mroot, idebug
+        integer, optional, intent(in) :: mroot, idebug
 
-	integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
+        integer :: recvtype, sendtype, sendcnt, ierr,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	recvtype = MPI_DOUBLE_PRECISION
-	sendtype = recvtype
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = recvtype
 
-	sendcnt = size(lbuf)
+        sendcnt = size(lbuf)
 
         call MPI_Allreduce( lbuf, gbuf, sendcnt, sendtype,  MPI_MAX, &
                           MPI_COMM_WORLD, ierr )
-	call MPI_Check( 'global_all_max_1d:MPI_Allreduce', ierr )
+        call MPI_Check( 'global_all_max_1d:MPI_Allreduce', ierr )
 
-	return
-	end subroutine global_all_max_1d
+        return
+        end subroutine global_all_max_1d
 
         subroutine global_all_max_2d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:) :: lbuf
         double precision, intent(out), dimension(:,:) :: gbuf
         integer, optional, intent(in) :: mroot, idebug
 
-	integer :: i,j,lroot, lidebug
+        integer :: i,j,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
         endif
 
-	call assert( size(lbuf,2).eq.size(gbuf,2),  &
-		'** global_all_max_2d: size(lbuf,2).ne.size(gbuf,2) ', &
-		size(lbuf,2), size(gbuf,2) )
+        call assert( size(lbuf,2).eq.size(gbuf,2),  &
+                '** global_all_max_2d: size(lbuf,2).ne.size(gbuf,2) ', &
+                size(lbuf,2), size(gbuf,2) )
 
-	do j=lbound(lbuf,2),ubound(lbuf,2)
-	  call global_all_max_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
-	enddo
+        do j=lbound(lbuf,2),ubound(lbuf,2)
+          call global_all_max_1d( lbuf(:,j), gbuf(:,j), lroot, lidebug )
+        enddo
 
-	return
-	end subroutine global_all_max_2d
+        return
+        end subroutine global_all_max_2d
 
         subroutine global_all_max_3d( lbuf, gbuf, mroot, idebug )
         double precision, intent(in), dimension(:,:,:) :: lbuf
@@ -4659,13 +4690,13 @@
 
         integer :: j,k,lroot, lidebug
 
-	if (.not. present(mroot)) then
-	   lroot = 0
-	else
+        if (.not. present(mroot)) then
+           lroot = 0
+        else
            lroot = mroot
-        endif 
+        endif
 
-        if (.not. present(idebug)) then  
+        if (.not. present(idebug)) then
            lidebug = 0
         else
            lidebug = idebug
@@ -4683,7 +4714,7 @@
         do j=lbound(lbuf,2),ubound(lbuf,2)
           call global_all_max_1d( lbuf(:,j,k), gbuf(:,j,k), lroot, lidebug )
         enddo
-	enddo
+        enddo
 
         return
         end subroutine global_all_max_3d
@@ -4923,6 +4954,6 @@
       END SUBROUTINE exitMPI
 
 
-	end module mpi_utility
+        end module mpi_utility
 
 

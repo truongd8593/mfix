@@ -1,8 +1,8 @@
 ! TODO:
-! 1. Account for solids-solids transfer terms for scalars.  Will need 
+! 1. Account for solids-solids transfer terms for scalars.  Will need
 !    to pass the exchange coefficients to this routine (unlike momentum
 !    eqs)
-! 2. repetitive code may be eliminated by defining and using functions 
+! 2. repetitive code may be eliminated by defining and using functions
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -31,66 +31,63 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_S(VAR_G, VAR_S, VXF, A_M, B_M, IER) 
+      SUBROUTINE PARTIAL_ELIM_S(VAR_G, VAR_S, VXF, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
-      USE matrix 
+      USE matrix
       USE physprop
       USE indices
-      USE compar  
+      USE compar
       USE drag
-      USE fldvar 
+      USE fldvar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! gas phase variable 
-      DOUBLE PRECISION, INTENT(IN) :: Var_g(DIMENSION_3) 
-! solids phase variable 
-      DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M) 
-! Volume x gas-solids transfer coefficient 
-      DOUBLE PRECISION, INTENT(IN) :: VxF(DIMENSION_3, DIMENSION_M) 
-! Septadiagonal matrix A_m 
+! gas phase variable
+      DOUBLE PRECISION, INTENT(IN) :: Var_g(DIMENSION_3)
+! solids phase variable
+      DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M)
+! Volume x gas-solids transfer coefficient
+      DOUBLE PRECISION, INTENT(IN) :: VxF(DIMENSION_3, DIMENSION_M)
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT 
-      INTEGER :: L, M, LP 
-! 
+! Indices
+      INTEGER :: IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT
+      INTEGER :: L, M, LP
+!
       DOUBLE PRECISION :: SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
-! a0, b0 etc. 
+! a0, b0 etc.
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M),&
                           F(0:DIMENSION_M,0:DIMENSION_M),&
-                          Saxf(0:DIMENSION_M) 
-! error message 
-      CHARACTER*80     LINE 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+                          Saxf(0:DIMENSION_M)
+! error message
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
 !!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN 
-            IJKW = WEST_OF(IJK) 
+         IF (FLUID_AT(IJK)) THEN
+            IJKW = WEST_OF(IJK)
             IJKS = SOUTH_OF(IJK)
-            IJKE = EAST_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
+            IJKE = EAST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
             DO M=0, MMAX
                A(M)=A_M(IJK,0,M)
                BB(M)=B_M(IJK,M)
@@ -99,7 +96,7 @@
                   F(M,0)=-VXF(IJK,M)
                   F(0,M)=F(M,0)
                else
-                  F(0,0) = ZERO   
+                  F(0,0) = ZERO
                endif
 
                DO L =1, MMAX
@@ -113,26 +110,26 @@
 
                IF (M == 0 ) THEN
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IJKE)+A_M(IJK,W,M)*VAR_G(IJKW&
-                       )+A_M(IJK,N,M)*VAR_G(IJKN)+A_M(IJK,S,M)*VAR_G(IJKS)) 
+                       )+A_M(IJK,N,M)*VAR_G(IJKN)+A_M(IJK,S,M)*VAR_G(IJKS))
                ELSE
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+A_M(IJK,W,M)*VAR_S(&
                        IJKW,M)+A_M(IJK,N,M)*VAR_S(IJKN,M)+A_M(IJK,S,M)*VAR_S(&
                        IJKS,M))
-               ENDIF 
+               ENDIF
 
-               IF (DO_K) THEN 
-                  IJKB = BOTTOM_OF(IJK) 
+               IF (DO_K) THEN
+                  IJKB = BOTTOM_OF(IJK)
                   IJKT = TOP_OF(IJK)
                   IF ( M ==0) THEN
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKT)+A_M(IJK,B,M)*&
-                           VAR_G(IJKB)) 
+                           VAR_G(IJKB))
                   ELSE
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+A_M(IJK,B,M)*&
-                           VAR_S(IJKB,M)) 
+                           VAR_S(IJKB,M))
                   ENDIF
                ENDIF
             ENDDO
-  
+
             DO M=0,MMAX
                SUM_A = ZERO
                SUM_B = ZERO
@@ -152,7 +149,7 @@
                      ENDIF
                   ENDDO
 
-                  DEN = A(L) + SUM_A_LPRIME + F(L,M)   
+                  DEN = A(L) + SUM_A_LPRIME + F(L,M)
                   IF ( DEN .NE. ZERO) THEN
                      SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
                      SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
@@ -163,11 +160,11 @@
                A_M(IJK,0,M)= SUM_A+A(M)
                B_M(IJK,M)  = SUM_B+BB(M)
             ENDDO
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE PARTIAL_ELIM_S 
+      RETURN
+      END SUBROUTINE PARTIAL_ELIM_S
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -190,53 +187,50 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_IA(VAR_S, VXTCSS, A_M, B_M, IER) 
+      SUBROUTINE PARTIAL_ELIM_IA(VAR_S, VXTCSS, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
-      USE matrix 
+      USE matrix
       USE physprop
       USE indices
-      USE compar  
+      USE compar
       USE drag
-      USE fldvar 
+      USE fldvar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------  
-! solids phase variable 
-      DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M) 
-! Volume x solids-solids transfer coefficient 
+!-----------------------------------------------
+! solids phase variable
+      DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M)
+! Volume x solids-solids transfer coefficient
       DOUBLE PRECISION, INTENT(IN) :: VxTCss (DIMENSION_3, DIMENSION_LM)
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
-! Indices 
+!-----------------------------------------------
+! Indices
       INTEGER :: IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT
       INTEGER :: L, M, LP, LM
 !
       DOUBLE PRECISION :: SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
-! a0, b0 etc. 
+! a0, b0 etc.
       DOUBLE PRECISION :: a(DIMENSION_M), BB(DIMENSION_M),&
                           F(DIMENSION_M,DIMENSION_M),&
-                          Saxf(DIMENSION_M) 
-! error message 
-      CHARACTER*80     LINE 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+                          Saxf(DIMENSION_M)
+! error message
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -245,11 +239,11 @@
 
       DO IJK = ijkstart3, ijkend3
 
-         IF (FLUID_AT(IJK)) THEN 
-            IJKW = WEST_OF(IJK) 
+         IF (FLUID_AT(IJK)) THEN
+            IJKW = WEST_OF(IJK)
             IJKS = SOUTH_OF(IJK)
-            IJKE = EAST_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
+            IJKE = EAST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
 
             F(:,:) = ZERO
 
@@ -259,7 +253,7 @@
 
                DO L = 1, MMAX
                   IF ( L .NE. M ) THEN
-                     LM = FUNLM(L,M)                    
+                     LM = FUNLM(L,M)
                      F(M,L)=-VxTCSS(IJK,LM)
                   ENDIF
                   F(L,M) = F(M,L)
@@ -268,14 +262,14 @@
                SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+&
                   A_M(IJK,W,M)*VAR_S(IJKW,M)+&
                   A_M(IJK,N,M)*VAR_S(IJKN,M)+&
-                  A_M(IJK,S,M)*VAR_S(IJKS,M)) 
+                  A_M(IJK,S,M)*VAR_S(IJKS,M))
 
-               IF (DO_K) THEN 
-                  IJKB = BOTTOM_OF(IJK) 
+               IF (DO_K) THEN
+                  IJKB = BOTTOM_OF(IJK)
                   IJKT = TOP_OF(IJK)
                   SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+&
-                     A_M(IJK,B,M)*VAR_S(IJKB,M)) 
-               ENDIF 
+                     A_M(IJK,B,M)*VAR_S(IJKB,M))
+               ENDIF
             ENDDO
 
             DO M = 1, MMAX
@@ -306,11 +300,11 @@
                B_M(IJK,M)  = SUM_B+BB(M)
             ENDDO
 
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE PARTIAL_ELIM_IA 
+      RETURN
+      END SUBROUTINE PARTIAL_ELIM_IA
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -338,69 +332,65 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_U(VAR_G, VAR_S, VXF, A_M, B_M, IER) 
+      SUBROUTINE PARTIAL_ELIM_U(VAR_G, VAR_S, VXF, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
-      USE matrix 
+      USE matrix
       USE physprop
       USE indices
       USE run
-      USE compar 
+      USE compar
       USE drag
-      USE fldvar       
+      USE fldvar
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! gas phase variable 
+! gas phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_g(DIMENSION_3)
-! solids phase variable 
+! solids phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M)
-! Volume x gas-solids transfer coefficient 
+! Volume x gas-solids transfer coefficient
       DOUBLE PRECISION, INTENT(IN) :: VxF(DIMENSION_3, DIMENSION_M)
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, I, IJKE 
+! Indices
+      INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, I, IJKE
       INTEGER :: L, M, LP, LM
-! 
+!
       DOUBLE PRECISION :: SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
-! a0, b0 etc. 
+! a0, b0 etc.
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M), &
                           F(0:DIMENSION_M,0:DIMENSION_M),&
-                          Saxf(0:DIMENSION_M) 
-! error message 
-      CHARACTER*80     LINE 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
+                          Saxf(0:DIMENSION_M)
+! error message
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, den) &
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
-         IF (FLOW_AT_E(IJK)) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+         IF (FLOW_AT_E(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
             F = ZERO
             DO M=0, MMAX
@@ -419,48 +409,48 @@
                DO L =1, MMAX
                   IF ((L .NE. M) .AND. (M .NE. 0)) THEN
                      LM = FUNLM(L,M)
-                     IF (.NOT.IP_AT_E(IJK)) THEN 
-                        I = I_OF(IJK) 
-                        IJKE = EAST_OF(IJK) 
-                        F(M,L) = -AVG_X(F_SS(IJK,LM),F_SS(IJKE,LM),I)*VOL_U(IJK) 
-                     ENDIF 
+                     IF (.NOT.IP_AT_E(IJK)) THEN
+                        I = I_OF(IJK)
+                        IJKE = EAST_OF(IJK)
+                        F(M,L) = -AVG_X(F_SS(IJK,LM),F_SS(IJKE,LM),I)*VOL_U(IJK)
+                     ENDIF
                   ENDIF
                   F(L,M)=F(M,L)
                ENDDO
 
                IF (M == 0) THEN
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                            )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+                            )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
                ELSE
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
                        IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
                        IJMK,M))
                ENDIF
 
-               IF (DO_K) THEN 
-                  IJKM = KM_OF(IJK) 
-                  IJKP = KP_OF(IJK) 
+               IF (DO_K) THEN
+                  IJKM = KM_OF(IJK)
+                  IJKP = KP_OF(IJK)
                   IF (M ==0) THEN
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
                         VAR_G(IJKM))
                   ELSE
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
-                        VAR_S(IJKM,M)) 
+                        VAR_S(IJKM,M))
                   ENDIF
-               ENDIF 
+               ENDIF
            ENDDO   ! end do loop for M over 0 to MMAX
- 
+
            DO M=0,MMAX
                IF (MOMENTUM_X_EQ(M)) THEN
                   SUM_A = ZERO
                   SUM_B = ZERO
 
-                  DO L =0,MMAX  
-! - should only need to loop for L/=M. since the resulting term should 
-!   evaluate to zero anyway, don't bother to add an explicit conditional. 
+                  DO L =0,MMAX
+! - should only need to loop for L/=M. since the resulting term should
+!   evaluate to zero anyway, don't bother to add an explicit conditional.
 ! - if phase L's momentum equation is not solved then do not evaluate the
 !   outer sum for phase L (as phase L has no momentum equation). however,
-!   the inner sum may include terms from phase L as all phases still see 
+!   the inner sum may include terms from phase L as all phases still see
 !   phase L and therefore experience drag with phase L
                      IF (MOMENTUM_X_EQ(L)) THEN
                         SUM_A_LPRIME = ZERO
@@ -503,8 +493,8 @@
          ENDIF      ! end if flow_at_e(ijk)
       ENDDO         ! end do loop for ijk over ijkstart3,ijkend3
 
-      RETURN  
-      END SUBROUTINE PARTIAL_ELIM_U 
+      RETURN
+      END SUBROUTINE PARTIAL_ELIM_U
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -532,69 +522,65 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_V(VAR_G, VAR_S, VXF, A_M, B_M, IER) 
+      SUBROUTINE PARTIAL_ELIM_V(VAR_G, VAR_S, VXF, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
-      USE matrix 
+      USE matrix
       USE physprop
       USE indices
       USE run
-      USE compar 
+      USE compar
       USE drag
-      USE fldvar   
+      USE fldvar
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! gas phase variable 
+! gas phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_g(DIMENSION_3)
-! solids phase variable 
+! solids phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M)
-! Volume x gas-solids transfer coefficient 
+! Volume x gas-solids transfer coefficient
       DOUBLE PRECISION, INTENT(IN) :: VxF(DIMENSION_3, DIMENSION_M)
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, IJKN, J
-      INTEGER ::  L, M, LP, LM 
+      INTEGER ::  L, M, LP, LM
 !
       DOUBLE PRECISION :: SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
-! a0, b0 etc. 
+! a0, b0 etc.
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M),&
                           F(0:DIMENSION_M,0:DIMENSION_M),&
-                          Saxf(0:DIMENSION_M) 
-! error message 
-      CHARACTER*80     LINE 
+                          Saxf(0:DIMENSION_M)
+! error message
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------  
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-!-----------------------------------------------
- 
+
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
 !!$omp&  a, bb,F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
 !!$omp&  schedule(static)
       DO IJK = ijkstart3, ijkend3
-         IF (FLOW_AT_N(IJK)) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+         IF (FLOW_AT_N(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
             F = ZERO
             DO M = 0, MMAX
@@ -613,9 +599,9 @@
                DO L =1, MMAX
                   IF ((L .NE. M) .AND. (M .NE. 0)) THEN
                      LM = FUNLM(L,M)
-                     IF (.NOT.IP_AT_N(IJK)) THEN 
+                     IF (.NOT.IP_AT_N(IJK)) THEN
                         J = J_OF(IJK)
-                        IJKN = NORTH_OF(IJK) 
+                        IJKN = NORTH_OF(IJK)
                         F(M,L)=-AVG_Y(F_SS(IJK,LM),F_SS(IJKN,LM),J)*VOL_V(IJK)
                      ENDIF
                   ENDIF
@@ -624,24 +610,24 @@
 
                IF (M == 0) THEN
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                        )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+                        )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
                ELSE
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
                        IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
                        IJMK,M))
                ENDIF
 
-               IF (DO_K) THEN 
-                  IJKM = KM_OF(IJK) 
-                  IJKP = KP_OF(IJK) 
+               IF (DO_K) THEN
+                  IJKM = KM_OF(IJK)
+                  IJKP = KP_OF(IJK)
                   IF (M == 0) THEN
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
-                        VAR_G(IJKM)) 
+                        VAR_G(IJKM))
                   ELSE
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
                         VAR_S(IJKM,M))
-                  ENDIF 
-               ENDIF 
+                  ENDIF
+               ENDIF
             ENDDO     ! end do loop for M over 0 to MMAX
 
 
@@ -666,7 +652,7 @@
                            ENDIF
                         ENDDO
 
-                        DEN = A(L) + SUM_A_LPRIME + F(L,M)   
+                        DEN = A(L) + SUM_A_LPRIME + F(L,M)
                         IF ( DEN .NE. ZERO) THEN
                            SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
                            SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
@@ -690,8 +676,8 @@
          ENDIF      ! end if flow_at_n(ijk)
       ENDDO         ! end do loop for ijk over ijkstart3,ijkend3
 
-      RETURN  
-      END SUBROUTINE PARTIAL_ELIM_V 
+      RETURN
+      END SUBROUTINE PARTIAL_ELIM_V
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -719,69 +705,65 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_W(VAR_G, VAR_S, VXF, A_M, B_M, IER) 
+      SUBROUTINE PARTIAL_ELIM_W(VAR_G, VAR_S, VXF, A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
-      USE matrix 
+      USE matrix
       USE physprop
       USE indices
       USE run
-      USE compar 
+      USE compar
       USE drag
-      USE fldvar 
+      USE fldvar
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! gas phase variable 
+! gas phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_g(DIMENSION_3)
-! solids phase variable 
+! solids phase variable
       DOUBLE PRECISION, INTENT(IN) :: Var_s(DIMENSION_3, DIMENSION_M)
-! Volume x gas-solids transfer coefficient 
+! Volume x gas-solids transfer coefficient
       DOUBLE PRECISION, INTENT(IN) :: VxF(DIMENSION_3, DIMENSION_M)
-! Septadiagonal matrix A_m 
+! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Vector b_m 
+! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, K, IJKT 
+! Indices
+      INTEGER :: IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, K, IJKT
       INTEGER :: L, M, LP, LM
 !
       DOUBLE PRECISION :: SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME, DEN
-!                      a0, b0 etc. 
+!                      a0, b0 etc.
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M), &
                           F(0:DIMENSION_M,0:DIMENSION_M),&
-                          Saxf(0:DIMENSION_M) 
-!                      error message 
-      CHARACTER*80     LINE 
+                          Saxf(0:DIMENSION_M)
+!                      error message
+      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-!-----------------------------------------------
- 
+
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &
 !!$omp&  a, bb, F, Saxf,SUM_A, SUM_B, SUM_A_LPRIME,SUM_B_LPRIME,L, M,LP, DEN) &
 !!$omp&  schedule(static)
-      DO IJK = ijkstart3, ijkend3 
-         IF (FLOW_AT_T(IJK)) THEN 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IPJK = IP_OF(IJK) 
-            IJPK = JP_OF(IJK) 
+      DO IJK = ijkstart3, ijkend3
+         IF (FLOW_AT_T(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJPK = JP_OF(IJK)
 
             F = ZERO
             DO M=0, MMAX
@@ -800,18 +782,18 @@
                DO L =1, MMAX
                   IF ((L .NE. M) .AND. (M .NE. 0)) THEN
                      LM = FUNLM(L,M)
-                     IF (.NOT.IP_AT_T(IJK)) THEN 
-                        K = K_OF(IJK) 
-                        IJKT = TOP_OF(IJK) 
-                        F(M,L) = -AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK) 
-                     ENDIF 
+                     IF (.NOT.IP_AT_T(IJK)) THEN
+                        K = K_OF(IJK)
+                        IJKT = TOP_OF(IJK)
+                        F(M,L) = -AVG_Z(F_SS(IJK,LM),F_SS(IJKT,LM),K)*VOL_W(IJK)
+                     ENDIF
                   ENDIF
                   F(L,M)=F(M,L)
                ENDDO
 
                IF (M == 0) THEN
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                       )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK)) 
+                       )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
                ELSE
                   SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
                        IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
@@ -819,18 +801,18 @@
                ENDIF
 
                IF (DO_K) THEN
-                  IJKM = KM_OF(IJK) 
-                  IJKP = KP_OF(IJK) 
+                  IJKM = KM_OF(IJK)
+                  IJKP = KP_OF(IJK)
                   IF (M == 0) THEN
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
-                               VAR_G(IJKM)) 
+                               VAR_G(IJKM))
                   ELSE
                      SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
-                               VAR_S(IJKM,M)) 
+                               VAR_S(IJKM,M))
                   ENDIF
-               ENDIF 
+               ENDIF
             ENDDO     ! end do loop for M over 0 to MMAX
-           
+
 
             DO M=0,MMAX
                IF (MOMENTUM_Z_EQ(M)) THEN
@@ -853,7 +835,7 @@
                            ENDIF
                         ENDDO
 
-                        DEN = A(L) + SUM_A_LPRIME + F(L,M)   
+                        DEN = A(L) + SUM_A_LPRIME + F(L,M)
                         IF ( DEN .NE. ZERO) THEN
                            SUM_A = SUM_A + ((F(L,M)*(A(L)+SUM_A_LPRIME))/DEN)
                            SUM_B = SUM_B + F(L,M)*(SAXF(L) + BB(L)+SUM_B_LPRIME &
@@ -871,13 +853,13 @@
 
                   A_M(IJK,0,M)=SUM_A+A(M)
                   B_M(IJK,M) = SUM_B+BB(M)
-               ENDIF    ! end if momentum_Z_eq(M) 
+               ENDIF    ! end if momentum_Z_eq(M)
             ENDDO       ! end do loop for M over 0 to MMAX
 
          ENDIF      ! end if flow_at_t(ijk)
       ENDDO         ! end do loop for ijk over ijkstart3,ijkend3
 
-      RETURN  
-      END SUBROUTINE PARTIAL_ELIM_W 
-      
-  
+      RETURN
+      END SUBROUTINE PARTIAL_ELIM_W
+
+

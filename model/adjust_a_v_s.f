@@ -10,22 +10,24 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ADJUST_A_V_S(A_M, B_M, IER) 
+      SUBROUTINE ADJUST_A_V_S(A_M, B_M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
-      USE matrix 
+      USE param
+      USE param1
+      USE parallel
+      USE matrix
       USE fldvar
       USE physprop
       USE geometry
       USE run
       USE indices
       USE compar
-      USE sendrecv  
+      USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -37,56 +39,50 @@
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
-! Local Variables 
+! Local Variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IJKN, IJMK
 ! Phase index
       INTEGER :: M
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-!-----------------------------------------------
 
-      DO M = 1, MMAX 
+      DO M = 1, MMAX
          IF (DRAG_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) CYCLE
-         IF (MOMENTUM_Y_EQ(M)) THEN 
+         IF (MOMENTUM_Y_EQ(M)) THEN
 
 !!$omp     parallel do private(IJK,IJKN,IJMK)
             DO IJK = ijkstart3, ijkend3
-               IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN 
-                  A_M(IJK,E,M) = ZERO 
-                  A_M(IJK,W,M) = ZERO 
-                  A_M(IJK,N,M) = ZERO 
-                  A_M(IJK,S,M) = ZERO 
-                  A_M(IJK,T,M) = ZERO 
-                  A_M(IJK,B,M) = ZERO 
-                  A_M(IJK,0,M) = -ONE 
-                  IF (B_M(IJK,M) < ZERO) THEN 
-                     IJKN = NORTH_OF(IJK) 
-                     IF (ROP_S(IJKN,M)*AXZ(IJK) > SMALL_NUMBER) THEN 
+               IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN
+                  A_M(IJK,E,M) = ZERO
+                  A_M(IJK,W,M) = ZERO
+                  A_M(IJK,N,M) = ZERO
+                  A_M(IJK,S,M) = ZERO
+                  A_M(IJK,T,M) = ZERO
+                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,0,M) = -ONE
+                  IF (B_M(IJK,M) < ZERO) THEN
+                     IJKN = NORTH_OF(IJK)
+                     IF (ROP_S(IJKN,M)*AXZ(IJK) > SMALL_NUMBER) THEN
                         B_M(IJK,M) = SQRT((-B_M(IJK,M)/(ROP_S(IJKN,M)*&
-                           AVG_Y_N(ONE,ZERO)*AXZ(IJK)))) 
-                     ELSE 
-                        B_M(IJK,M) = ZERO 
-                     ENDIF 
-                  ELSEIF (B_M(IJK,M) > ZERO) THEN 
-                     IJMK = JM_OF(IJK) 
-                     IF (ROP_S(IJK,M)*AXZ(IJK) > SMALL_NUMBER) THEN 
+                           AVG_Y_N(ONE,ZERO)*AXZ(IJK))))
+                     ELSE
+                        B_M(IJK,M) = ZERO
+                     ENDIF
+                  ELSEIF (B_M(IJK,M) > ZERO) THEN
+                     IJMK = JM_OF(IJK)
+                     IF (ROP_S(IJK,M)*AXZ(IJK) > SMALL_NUMBER) THEN
                         B_M(IJK,M) = SQRT(B_M(IJK,M)/(ROP_S(IJK,M)*&
-                           AVG_Y_N(ZERO,ONE)*AXZ(IJK))) 
-                     ELSE 
-                        B_M(IJK,M) = ZERO 
-                     ENDIF 
+                           AVG_Y_N(ZERO,ONE)*AXZ(IJK)))
+                     ELSE
+                        B_M(IJK,M) = ZERO
+                     ENDIF
                   ENDIF
                ENDIF    ! end if (abs(a_m(ijk,0,m))<small_number)
             ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
 
-         ENDIF   ! end if (momentum_y_eq(m))  
+         ENDIF   ! end if (momentum_y_eq(m))
       ENDDO   ! end do loop (m=1,mmax)
 
       RETURN
-      END SUBROUTINE ADJUST_A_V_S 
+      END SUBROUTINE ADJUST_A_V_S

@@ -30,7 +30,7 @@
       DOUBLE PRECISION :: OVERSHOOT
 
       DOUBLE PRECISION, SAVE :: USR_TIME = 0.0
-     
+
 
       IF(USR_TIME == 0.0) THEN
          USR_TIME = USR_DT(1)

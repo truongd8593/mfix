@@ -22,9 +22,9 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------      
-      USE param 
-      USE param1 
+!-----------------------------------------------
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE fldvar
@@ -37,6 +37,8 @@
       USE compar
       USE toleranc
       USE mpi_utility
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -51,7 +53,7 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Index corresponding to boundary condition
-      INTEGER, INTENT(IN) ::  L 
+      INTEGER, INTENT(IN) ::  L
 ! Wall momentum coefficients:
 ! 1st term on LHS
       DOUBLE PRECISION, INTENT(INOUT) :: Gw
@@ -60,7 +62,7 @@
 ! all terms appearing on RHS
       DOUBLE PRECISION, INTENT(INOUT) :: Cw
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
 ! IJK indices for fluid cell
       INTEGER :: IJK
@@ -97,7 +99,7 @@
 ! S:S
       DOUBLE PRECISION :: S_DDOT_S
 ! S_dd (d can be x, y or z)
-      DOUBLE PRECISION :: S_dd      
+      DOUBLE PRECISION :: S_dd
 ! Magnitude of gas-solids relative velocity
       DOUBLE PRECISION :: VREL
 ! slip velocity between wall and particles for Jenkins bc (sof)
@@ -107,22 +109,14 @@
 ! radial distribution function at contact
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
-      DOUBLE PRECISION :: g0EPs_avg 
+      DOUBLE PRECISION :: g0EPs_avg
 ! Error message
-      CHARACTER*80     LINE
- 
+      CHARACTER(LEN=80) :: LINE
+
 !-----------------------------------------------
 !  Function subroutines
 !-----------------------------------------------
       DOUBLE PRECISION F_HW
-!----------------------------------------------- 
-! Include statements functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
@@ -130,7 +124,7 @@
 
       smallTheta = (to_SI)**4 * ZERO_EP_S
 
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Calculations for U momentum equation
       IF (COM .EQ. 'U')THEN
 
@@ -142,18 +136,18 @@
         Mu_g_avg = AVG_X(Mu_g(IJK2), Mu_g(IJK2E), I_OF(IJK2))
         RO_g_avg = AVG_X(RO_g(IJK2), RO_g(IJK2E), I_OF(IJK2))
 
-        K_12_avg = ZERO    
+        K_12_avg = ZERO
         Tau_12_avg = ZERO
-        Tau_1_avg = ZERO        
+        Tau_1_avg = ZERO
         IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
            KT_TYPE_ENUM == AHMADI_1995) THEN
            Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-! Simonin only:           
+! Simonin only:
            K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
            Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
         ENDIF
 
-        g0EPs_avg = ZERO             
+        g0EPs_avg = ZERO
         DO MM = 1, SMAX
            g0(MM)      = G_0AVG(IJK2, IJK2E, 'X', I_OF(IJK2), M, MM)
            EPs_avg(MM) = AVG_X(EP_s(IJK2, MM), EP_s(IJK2E, MM), I_OF(IJK2))
@@ -170,7 +164,7 @@
 
 
         IF(FCELL .EQ. 'N')THEN
-          IPJMK2 = JM_OF(IPJK2) 
+          IPJMK2 = JM_OF(IPJK2)
 
 ! code modified for some corner cells
           DO MM = 1, SMAX
@@ -184,7 +178,7 @@
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK1))
              ENDIF
           ENDDO
- 
+
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)
           UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
           VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
@@ -205,12 +199,12 @@
                        I_OF(IJK1))
           WSCM = AVG_Y(WSCM2, WSCM1, J_OF(IJK1))
           VELS = USCM
- 
+
         ELSEIF(FCELL .EQ. 'S')THEN
           IPJPK2= JP_OF(IPJK2)
 
-! code modified for some corner cells          
-          DO MM = 1, SMAX                  
+! code modified for some corner cells
+          DO MM = 1, SMAX
              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
              AVGX2 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJPK2,MM),I_OF(IJK1))
              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
@@ -221,7 +215,7 @@
                 TH_avg(MM) = AVG_Y(AVGX1, AVGX2, J_OF(IJK2))
              ENDIF
           ENDDO
-      
+
 
 ! Calculate velocity components at i+1/2, j+1/2, k relative to IJK2
           UGC  = AVG_Y(U_g(IJK2),U_g(IJK1),J_OF(IJK2))
@@ -243,11 +237,11 @@
                        I_OF(IJK1))
           WSCM = AVG_Y(WSCM1, WSCM2, J_OF(IJK2))
           VELS = USCM
- 
+
         ELSEIF(FCELL .EQ. 'T')THEN
           IPJKM2= KM_OF(IPJK2)
 
-! code modified for some corner cells          
+! code modified for some corner cells
           DO MM = 1, SMAX
              AVGX1 = AVG_X(Theta_m(IJK1,MM),Theta_m(IPJKM2,MM),I_OF(IJK1))
              AVGX2 = AVG_X(Theta_m(IJK2,MM),Theta_m(IPJK2,MM),I_OF(IJK2))
@@ -280,12 +274,12 @@
           VSCM  = AVG_Z(VSCM2,VSCM1,K_OF(IJK1))
           WSCM = AVG_X(W_s(IJK1,M), W_s(IPJKM2,M), I_OF(IJK1))
           VELS = USCM
- 
+
         ELSEIF(FCELL .EQ. 'B')THEN
           IPJKP2= KP_OF(IPJK2)
 
 ! code modified for some corner cells
-          DO MM = 1, SMAX                  
+          DO MM = 1, SMAX
              AVGX1 = AVG_X(Theta_m(IJK1,MM), Theta_m(IPJKP2,MM),I_OF(IJK1))
              AVGX2 = AVG_X(Theta_m(IJK2,MM), Theta_m(IPJK2,MM),I_OF(IJK2))
              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
@@ -321,10 +315,10 @@
         ELSE
           WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
           CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
-          CALL exitMPI(myPE)                    
+          CALL exitMPI(myPE)
         ENDIF
- 
-!-----------------------------------------------      
+
+!-----------------------------------------------
 ! Calculations for V momentum equation
       ELSEIF (COM .EQ. 'V')THEN
 
@@ -336,7 +330,7 @@
         Mu_g_avg = AVG_Y(Mu_g(IJK2), Mu_g(IJK2N), J_OF(IJK2))
         RO_g_avg = AVG_Y(RO_g(IJK2), RO_g(IJK2N), J_OF(IJK2))
 
-        K_12_avg = ZERO    
+        K_12_avg = ZERO
         Tau_12_avg = ZERO
         Tau_1_avg = ZERO
         IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
@@ -365,7 +359,7 @@
         IF(FCELL .EQ. 'T')THEN
           IJPKM2 = KM_OF(IJPK2)
 
-          DO MM = 1, SMAX                    
+          DO MM = 1, SMAX
              AVGX1 = AVG_Z(Theta_m(IJK1,MM), Theta_m(IJK2,MM), K_OF(IJK1))
              AVGX2 = AVG_Z(Theta_m(IJPKM2,MM), Theta_m(IJPK2,MM), K_OF(IJPKM2))
              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
@@ -404,8 +398,8 @@
           USCM = AVG_Z(USCM1, USCM2, K_OF(IJK1))
           VSCM = AVG_Z(V_s(IJK1,M), V_s(IJK2,M),K_OF(IJK1))
           WSCM = AVG_Y(W_s(IJK1,M), W_s(IJPKM2,M), J_OF(IJK1))
-          VELS = VSCM 
- 
+          VELS = VSCM
+
         ELSEIF(FCELL .EQ. 'B')THEN
           IJPKP2 = KP_OF(IJPK2)
 
@@ -448,8 +442,8 @@
           USCM = AVG_Z(USCM2, USCM1, K_OF(IJK2))
           VSCM = AVG_Z(V_s(IJK2,M), V_s(IJK1,M),K_OF(IJK2))
           WSCM = AVG_Y(W_s(IJK2,M), W_s(IJPK2,M), J_OF(IJK2))
-          VELS = VSCM 
- 
+          VELS = VSCM
+
         ELSEIF(FCELL .EQ. 'E')THEN
           IMJPK2= IM_OF(IJPK2)
 
@@ -484,11 +478,11 @@
                        AVG_Z_T(W_s(KM_OF(IJPK2),M), W_s(IJPK2,M)),&
                        J_OF(IJK2))
           WSCM  = AVG_X(WSCM1, WSCM2, I_OF(IJK1))
-          VELS = VSCM 
- 
+          VELS = VSCM
+
         ELSEIF(FCELL .EQ. 'W')THEN
           IPJPK2= IP_OF(IJPK2)
-       
+
           DO MM = 1, SMAX
              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
              AVGX2 = AVG_X(Theta_m(IJPK2,MM),Theta_m(IPJPK2,MM),I_OF(IJPK2))
@@ -520,16 +514,16 @@
                        AVG_Z_T(W_s(KM_OF(IJPK2),M), W_s(IJPK2,M)),&
                        J_OF(IJK2))
           WSCM  = AVG_X(WSCM2, WSCM1, I_OF(IJK2))
-          VELS = VSCM 
+          VELS = VSCM
 
         ELSE
           WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
           CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
-          CALL exitMPI(myPE)                    
+          CALL exitMPI(myPE)
         ENDIF
 
 
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Calculations for W momentum equation
       ELSEIF (COM .EQ. 'W')THEN
         IJK2T = TOP_OF(IJK2)
@@ -563,7 +557,7 @@
            IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
         ENDDO
 
-        WVELS = BC_Ww_s(L,M)        
+        WVELS = BC_Ww_s(L,M)
 
         IF(FCELL .EQ. 'N')THEN
           IJMKP2 = JM_OF(IJKP2)
@@ -607,8 +601,8 @@
           USCM = AVG_Y(USCM1, USCM2, J_OF(IJK1))
           VSCM = AVG_Z(V_s(IJK1,M), V_s(IJMKP2,M),K_OF(IJK1))
           WSCM = AVG_Y(W_s(IJK1,M), W_s(IJK2,M), J_OF(IJK1))
-          VELS = WSCM 
- 
+          VELS = WSCM
+
         ELSEIF(FCELL .EQ. 'S')THEN
           IJPKP2 = JP_OF(IJKP2)
 
@@ -651,7 +645,7 @@
           USCM = AVG_Y(USCM2, USCM1, J_OF(IJK2))
           VSCM = AVG_Z(V_s(IJK2,M), V_s(IJKP2,M),K_OF(IJK2))
           WSCM = AVG_Y(W_s(IJK2,M), W_s(IJK1,M), J_OF(IJK2))
-          VELS = WSCM 
+          VELS = WSCM
 
         ELSEIF(FCELL .EQ. 'E')THEN
           IMJKP2 = IM_OF(IJKP2)
@@ -687,12 +681,12 @@
                        K_OF(IJK2))
           VSCM  = AVG_X(VSCM1,VSCM2,I_OF(IJK1))
           WSCM = AVG_X(W_s(IJK1,M), W_s(IJK2,M), I_OF(IJK1))
-          VELS = WSCM 
- 
+          VELS = WSCM
+
         ELSEIF(FCELL .EQ. 'W')THEN
           IPJKP2= IP_OF(IJKP2)
 
-          DO MM = 1, SMAX                  
+          DO MM = 1, SMAX
              AVGX1 = AVG_X(Theta_m(IJK2,MM),Theta_m(IJK1,MM),I_OF(IJK2))
              AVGX2 = AVG_X(Theta_m(IJKP2,MM),Theta_m(IPJKP2,MM),I_OF(IJKP2))
              IF(AVGX1 < ZERO .AND. AVGX2 > ZERO) AVGX1 = AVGX2
@@ -723,14 +717,14 @@
                        K_OF(IJK2))
           VSCM  = AVG_X(VSCM2,VSCM1,I_OF(IJK2))
           WSCM = AVG_X(W_s(IJK2,M), W_s(IJK1,M), I_OF(IJK2))
-          VELS = WSCM 
+          VELS = WSCM
 
         ELSE
           WRITE(LINE,'(A, A)') 'Error: Unknown FCELL'
           CALL WRITE_ERROR('CALC_GRBDRY', LINE, 1)
           CALL exitMPI(myPE)
         ENDIF
- 
+
 
       ELSE
          WRITE(LINE,'(A, A)') 'Error: Unknown COM'
@@ -742,24 +736,24 @@
       VREL =&
          DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2 )
 
-! slip velocity for use in Jenkins bc (sof)	  
+! slip velocity for use in Jenkins bc (sof)
       VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
          + (WSCM-BC_WW_S(L,M))**2 )
- 
-      IF (FRICTION .AND. (ONE-EP_G(IJK2))>EPS_F_MIN) THEN         
+
+      IF (FRICTION .AND. (ONE-EP_G(IJK2))>EPS_F_MIN) THEN
         CALL CALC_S_DDOT_S(IJK1, IJK2, FCELL, COM, M, DEL_DOT_U,&
            S_DDOT_S, S_dd)
- 
+
         CALL CALC_Gw_Hw_Cw(g0(M), EPs_avg(M), EPg_avg, ep_star_avg, &
            g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, ROs_avg, &
            DP_avg(M), K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
            DEL_DOT_U, S_DDOT_S, S_dd, VELS, WVELS, M, gw, hw, cw)
       ELSE
-         GW = 1D0               
+         GW = 1D0
          Hw = F_Hw(g0, EPs_avg, EPg_avg, ep_star_avg, &
             g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROs_avg, &
             DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP, M)
-         CW = HW*WVELS            
+         CW = HW*WVELS
       ENDIF
 
 
@@ -811,12 +805,12 @@
                                      g0EPs_avg,TH,Mu_g_avg,RO_g_avg,ROs_avg, &
                                      DP_avg,K_12_avg, Tau_12_avg, Tau_1_avg, &
                                      VREL, VSLIP, M)
- 
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE run
@@ -825,18 +819,18 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Radial distribution function of solids phase M with each
-! other solids phase 
-      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M) 
+! other solids phase
+      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M)
 ! Average solids volume fraction of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: EPS(DIMENSION_M)
 ! Average solids and gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPG, ep_star_avg
-! Sum of eps*G_0 
-      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg 
+! Sum of eps*G_0
+      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg
 ! Average theta_m
-      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)      
+      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)
 ! Average gas viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
@@ -854,7 +848,7 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
 ! Solids phase index
       INTEGER :: LL
@@ -868,7 +862,7 @@
       DOUBLE PRECISION :: Mu_b
 ! Viscosity corrected for interstitial fluid effects
       DOUBLE PRECISION :: Mu_star
-! Solids pressure 
+! Solids pressure
       DOUBLE PRECISION :: Ps
 ! Reynolds number based on slip velocity
       DOUBLE PRECISION :: Re_g
@@ -892,14 +886,14 @@
       DOUBLE PRECISION :: Chi, RdissP, Re_T, Rdiss, GamaAvg, A2_gtshW, &
                           zeta_star, nu0, nuN, NuK, EDT_s, zeta_avg, etaK, &
                           Mu_b_avg, mu2_0, mu4_0, mu4_1
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Functions
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Variable specularity coefficient
-      DOUBLE PRECISION :: PHIP_JJ 
-      DOUBLE PRECISION :: S_star  
-      DOUBLE PRECISION :: K_phi 
-!-----------------------------------------------                           
+      DOUBLE PRECISION :: PHIP_JJ
+      DOUBLE PRECISION :: S_star
+      DOUBLE PRECISION :: K_phi
+!-----------------------------------------------
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -913,11 +907,11 @@
       ENDIF
 
 
-! common variables      
+! common variables
       D_PM = DP_avg(M)
       M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
       NU_PM = (EPS(M)*ROS_avg(M))/M_PM
-         
+
 ! This is from Wen-Yu correlation, you can put here your own single particle drag
       Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
       IF (Re_g .lt. 1000.d0) THEN
@@ -934,7 +928,7 @@
 ! Also defining solids pressure according to each KT for use if JENKINS
 ! -------------------------------------------------------------------
       SELECT CASE (KT_TYPE_ENUM)
-      CASE (LUN_1984) 
+      CASE (LUN_1984)
          Mu = (5d0*DSQRT(Pi*TH(M))*DP_avg(M)*ROS_avg(M))/96d0
          Mu_b = (256d0*Mu*EPS(M)*g0EPs_avg)/(5d0*Pi)
 
@@ -946,13 +940,13 @@
             Mu_star = ROS_avg(M)*EPS(M)* g0(M)*TH(M)* Mu/ &
                (ROS_avg(M)*g0EPs_avg*TH(M) + 2.0d0*DgA/ROS_avg(M)* Mu)
          ENDIF
- 
+
          Mu_s = ((2d0+ALPHA)/3d0)*((Mu_star/(Eta*(2d0-Eta)*&
             g0(M)))*(ONE+1.6d0*Eta*g0EPs_avg)*&
             (ONE+1.6d0*Eta*(3d0*Eta-2d0)*&
             g0EPs_avg)+(0.6d0*Mu_b*Eta))
 
-! defining granular pressure (for Jenkins BC)    
+! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
 
 
@@ -1028,7 +1022,7 @@
                   MPSUM)*((M_PL*M_PM)**1.5)*NU_PM*NU_PL*&
                   (1.d0+C_E)*R1p_lm*DSQRT(TH(M))
 
-! solids phase 'viscosity' associated with the divergence 
+! solids phase 'viscosity' associated with the divergence
 ! of solids phase M
                MU_sM_ip = (MU_s_MM + MU_s_LM)
 
@@ -1049,7 +1043,7 @@
                MU_sM_LM = MU_common_term*(TH(M)*TH(M)*TH(LL)*TH(LL)*TH(LL) )
 
 ! solids phase 'viscosity' associated with the divergence
-! of solids phase M       
+! of solids phase M
                MU_sM_ip = MU_sM_LM
 
             ENDIF
@@ -1062,13 +1056,13 @@
           Mu_s = MU_sM_sum
 
 
-      CASE(GD_1999) 
+      CASE(GD_1999)
 ! Pressure/Viscosity/Bulk Viscosity
 ! Note: k_boltz = M_PM
-     
+
 ! Find pressure in the Mth solids phase
          press_star = 1.d0 + 2.d0*(1.d0+C_E)*EPS(M)*G0(M)
- 
+
 ! find bulk and shear viscosity
          c_star = 32.0d0*(1.0d0 - C_E)*(1.d0 - 2.0d0*C_E*C_E) &
             / (81.d0 - 17.d0*C_E + 30.d0*C_E*C_E*(1.0d0-C_E))
@@ -1090,45 +1084,45 @@
 
          eta0 = 5.0d0*M_PM*DSQRT(TH(M)/PI) / (16.d0*D_PM*D_PM)
 
-! added Ro_g = 0 for granular flows (no gas). 
-         IF(SWITCH == ZERO .OR. RO_g_avg == ZERO) THEN 
+! added Ro_g = 0 for granular flows (no gas).
+         IF(SWITCH == ZERO .OR. RO_g_avg == ZERO) THEN
             Mu_star = eta0
          ELSEIF(TH(M) .LT. SMALL_NUMBER)THEN
-            Mu_star = ZERO               
+            Mu_star = ZERO
          ELSE
             Mu_star = ROS_avg(M)*EPS(M)*G0(M)*TH(M)*eta0 / &
                ( ROS_avg(M)*EPS(M)*G0(M)*TH(M) + &
                (2.d0*DgA*eta0/ROS_avg(M)) )     ! Note dgA is ~F_gs/ep_s
          ENDIF
-   
+
 !  shear viscosity in Mth solids phase  (add to frictional part)
          Mu_s = Mu_star * eta_star
 
-! defining granular pressure (for Jenkins BC)    
+! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
                     ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
 
 
-      CASE (GTSH_2012) 
+      CASE (GTSH_2012)
          Chi = g0(M)
 
-         RdissP = one 
+         RdissP = one
          IF(EPS(M) > small_number) RdissP = &
             one + 3d0*dsqrt(EPS(M)/2d0) + 135d0/64d0*EPS(M)*dlog(EPS(M)) + &
             11.26d0*EPS(M)*(one-5.1d0*EPS(M)+16.57d0*EPS(M)**2-21.77d0*    &
             EPS(M)**3) - EPS(M)*Chi*dlog(epM)
-      
+
          Re_T = RO_g_avg*D_pm*dsqrt(TH(M)) / Mu_g_avg
          Re_g = EPG*RO_g_avg*D_PM*VREL/Mu_g_avg
          Rdiss = RdissP + Re_T * K_phi(EPS(M))
          GamaAvg = 3d0*Pi*Mu_g_avg*D_pm*Rdiss
          mu2_0 = dsqrt(2d0*pi) * Chi * (one-C_E**2)
-         mu4_0 = (4.5d0+C_E**2) * mu2_0 
+         mu4_0 = (4.5d0+C_E**2) * mu2_0
          mu4_1 = (6.46875d0+0.9375d0*C_E**2)*mu2_0 + 2d0*dsqrt(2d0*pi)* &
             Chi*(one+C_E)
          A2_gtshW = zero ! for eps = zero
 
-         if((EPS(M)> small_number) .and. (TH(M) > small_number)) then 
+         if((EPS(M)> small_number) .and. (TH(M) > small_number)) then
             zeta_star = 4.5d0*dsqrt(2d0*Pi)*(RO_g_avg/ROs_avg(M))**2*Re_g**2 * &
                         S_star(EPS(M),Chi) / (EPS(M)*(one-EPS(M))**2 * Re_T**4)
             A2_gtshW = (5d0*mu2_0 - mu4_0) / (mu4_1 - 5d0* &
@@ -1188,14 +1182,14 @@
 ! if solids velocity field is initialized to zero, use free slip bc
                   F_2 = zero
                ELSE
-! As I understand from soil mechanic papers, the coefficient mu in 
+! As I understand from soil mechanic papers, the coefficient mu in
 ! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
 ! 92 (1997), 61-74, equation (1). sof
 
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
                   F_2 = tan_Phi_w*Ps/VSLIP
 
-               ENDIF 
+               ENDIF
             ELSE
                IF(.NOT. BC_JJ_M) THEN
                   F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
@@ -1204,18 +1198,18 @@
                   F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3d0*TH(M))*Pi*&
                      ROS_avg(M)*EPS(M)*g0(M))/(6d0*(ONE-ep_star_avg))
                ENDIF
-            ENDIF   ! end if(Jenkins)/else 
+            ENDIF   ! end if(Jenkins)/else
 
 
         CASE (IA_2005)
 ! KTs with particle mass in their definition of granular temperature
-! and theta = granular temperature                
+! and theta = granular temperature
             IF(.NOT. BC_JJ_M) THEN
                F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*EPS(M)*&
                   g0(M))/(6.d0*(ONE-ep_star_avg))
             ELSE
                F_2 = (PHIP_JJ(vslip,th(m))*DSQRT(3.d0*TH(M)/M_PM)*PI*&
-                  ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg)) 
+                  ROS_avg(M)*EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
             ENDIF
 
 
@@ -1225,12 +1219,12 @@
             WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
             call mfix_exit(myPE)
       END SELECT
-         
+
       F_HW =  F_2/Mu_s
- 
+
       RETURN
       END FUNCTION F_HW
-      
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1244,8 +1238,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE fldvar
@@ -1258,6 +1252,8 @@
       USE compar
       Use cutcell
       use toleranc
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1269,14 +1265,14 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Index corresponding to boundary condition
-      INTEGER, INTENT(IN) ::  L      
+      INTEGER, INTENT(IN) ::  L
 
       DOUBLE PRECISION :: F_2
 
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
-! IJK indices 
+! IJK indices
       INTEGER          IJK1, IJK2
 ! Other indices
       INTEGER          IJK2E, IPJK2, IPJKM2, IPJKP2, IPJMK2, IPJPK2
@@ -1313,24 +1309,16 @@
 ! radial distribution function at contact
       DOUBLE PRECISION g0(DIMENSION_M)
 ! Sum of eps*G_0
-      DOUBLE PRECISION g0EPs_avg 
+      DOUBLE PRECISION g0EPs_avg
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 ! Radial distribution function
       DOUBLE PRECISION g_0AVG
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Function subroutines
-!----------------------------------------------- 
+!-----------------------------------------------
       DOUBLE PRECISION F_HW
-!----------------------------------------------- 
-! Include statement functions
-!----------------------------------------------- 
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------       
+!-----------------------------------------------
 
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence
 !         IJK2 (fluid cell) is used in averages.
@@ -1350,7 +1338,7 @@
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
 
-            K_12_avg = ZERO    
+            K_12_avg = ZERO
             Tau_12_avg = ZERO
             Tau_1_avg = ZERO
             IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
@@ -1373,7 +1361,7 @@
                IF(TH_avg(MM) < ZERO) TH_avg(MM) = smallTheta
             ENDDO
 
- 
+
 ! Calculate velocity components at i+1/2, j+1/2, k (relative to IJK1)  ! not converted to CG
             UGC  = AVG_Y(U_g(IJK1), U_g(IJK2),J_OF(IJK1))
             VGC  = AVG_X(V_g(IJK1), V_g(IPJMK2),I_OF(IJK1))
@@ -1398,10 +1386,10 @@
             VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
                           (WGC - WSCM)**2 )
 
-! slip velocity for use in Jenkins bc (sof)	  
+! slip velocity for use in Jenkins bc (sof)
             VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
                        + (WSCM-BC_WW_S(L,M))**2 )
- 
+
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
                       g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
                        DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
@@ -1416,8 +1404,8 @@
             ep_star_avg = (VOL(IJK)*EP_star_array(IJK) + VOL(IJK2)*EP_star_array(IJK2))/(VOL(IJK) + VOL(IJK2))
             Mu_g_avg = (VOL(IJK)*Mu_g(IJK) + VOL(IJK2)*Mu_g(IJK2))/(VOL(IJK) + VOL(IJK2))
             RO_g_avg = (VOL(IJK)*RO_g(IJK) + VOL(IJK2)*RO_g(IJK2))/(VOL(IJK) + VOL(IJK2))
-  
-            K_12_avg = ZERO    
+
+            K_12_avg = ZERO
             Tau_12_avg = ZERO
             Tau_1_avg = ZERO
             IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
@@ -1465,7 +1453,7 @@
             VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
                           (WGC - WSCM)**2 )
 
-! slip velocity for use in Jenkins bc (sof)	  
+! slip velocity for use in Jenkins bc (sof)
             VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
                         + (WSCM-BC_WW_S(L,M))**2 )
 
@@ -1491,8 +1479,8 @@
             IF(KT_TYPE_ENUM == SIMONIN_1996 .OR.&
                KT_TYPE_ENUM == AHMADI_1995) THEN  ! not converted to CG
                Tau_1_avg = AVG_X(Tau_1(IJK2), Tau_1(IJK2E), I_OF(IJK2))
-! Simonon only:               
-               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))  
+! Simonon only:
+               K_12_avg = AVG_X(K_12(IJK2), K_12(IJK2E), I_OF(IJK2))
                Tau_12_avg = AVG_X(Tau_12(IJK2), Tau_12(IJK2E), I_OF(IJK2))
             ENDIF
 
@@ -1501,7 +1489,7 @@
                g0(MM)      = G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM)
                EPs_avg(MM) = (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                DP_avg(MM)  = (VOL(IJK)*D_P(IJK, MM) + VOL(IJK2)*D_P(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
-               ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))  
+               ROS_avg(MM) = (VOL(IJK)*RO_S(IJK, MM) + VOL(IJK2)*RO_S(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
                g0EPs_avg   = g0EPs_avg + G_0AVG(IJK, IJK, 'X', I_OF(IJK), M, MM) &
                            * (VOL(IJK)*EP_s(IJK, MM) + VOL(IJK2)*EP_s(IJK2, MM))/(VOL(IJK) + VOL(IJK2))
 
@@ -1533,12 +1521,12 @@
             VREL = DSQRT( (UGC - USCM)**2 + (VGC - VSCM)**2 + &
                           (WGC - WSCM)**2 )
 
-! slip velocity for use in Jenkins bc (sof)	  
+! slip velocity for use in Jenkins bc (sof)
             VSLIP= DSQRT( (USCM-BC_UW_S(L,M))**2 + (VSCM-BC_VW_S(L,M))**2 &
                         + (WSCM-BC_WW_S(L,M))**2 )
 
 
-! why bother with this since it should not come here...                
+! why bother with this since it should not come here...
             CALL GET_CG_F2(g0, EPs_avg, EPg_avg, ep_star_avg, &
                       g0EPs_avg, TH_avg, Mu_g_avg, RO_g_avg, ROS_AVG,&
                       DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, &
@@ -1548,10 +1536,10 @@
          CASE DEFAULT
             WRITE(*,*) 'CG_CALC_GRBDRY'
             WRITE(*,*) 'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*) 'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*) 'U_MOMENTUM' 
-            WRITE(*,*) 'V_MOMENTUM' 
-            WRITE(*,*) 'W_MOMENTUM' 
+            WRITE(*,*) 'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*) 'U_MOMENTUM'
+            WRITE(*,*) 'V_MOMENTUM'
+            WRITE(*,*) 'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
           END SELECT
 
@@ -1559,7 +1547,7 @@
       RETURN
 
       END SUBROUTINE CG_CALC_GRBDRY
- 
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -1576,29 +1564,29 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE run
       USE fldvar
       USE mpi_utility
-      Use cutcell      
+      Use cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Radial distribution function of solids phase M with each
-! other solids phase 
-      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M) 
+! other solids phase
+      DOUBLE PRECISION, INTENT(IN) :: g0(DIMENSION_M)
 ! Average solids volume fraction of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: EPS(DIMENSION_M)
 ! Average solids and gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPG, ep_star_avg
-! Sum of eps*G_0 
-      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg 
+! Sum of eps*G_0
+      DOUBLE PRECISION, INTENT(INOUT) :: g0EPs_avg
 ! Average theta_m
-      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)      
+      DOUBLE PRECISION, INTENT(INOUT) :: TH (DIMENSION_M)
 ! Average gas viscosity
       DOUBLE PRECISION, INTENT(IN) :: Mu_g_avg
 ! Average gas density
@@ -1616,18 +1604,18 @@
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
-! Solids pressure 
+! Solids pressure
       DOUBLE PRECISION :: Ps
       DOUBLE PRECISION :: F_2
       DOUBLE PRECISION :: D_PM, M_PM
-!----------------------------------------------- 
-! Functions 
-!----------------------------------------------- 
+!-----------------------------------------------
+! Functions
+!-----------------------------------------------
 ! Variable specularity coefficient
-      DOUBLE PRECISION :: PHIP_JJ 
-!-----------------------------------------------                           
+      DOUBLE PRECISION :: PHIP_JJ
+!-----------------------------------------------
 
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
@@ -1640,7 +1628,7 @@
         ENDIF
       ENDIF
 
-! common variables      
+! common variables
       D_PM = DP_avg(M)
       M_PM = (PI/6.d0)*(D_PM**3)*ROS_avg(M)
 
@@ -1648,7 +1636,7 @@
 ! Also defining solids pressure according to each KT for use if JENKINS
 ! -------------------------------------------------------------------
       SELECT CASE (KT_TYPE_ENUM)
-      CASE (LUN_1984) 
+      CASE (LUN_1984)
 ! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+4.D0*Eta*g0EPs_avg)
 
@@ -1667,15 +1655,15 @@
       CASE(IA_2005)
 ! Use original IA theory if SWITCH_IA is false
 ! no ps since no jenkins for this theory
-              
-      CASE(GD_1999) 
+
+      CASE(GD_1999)
 
 ! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
                     ! ~ROs_avg(m)*EPS(M)*TH(M)*press_star
 
 
-      CASE (GTSH_2012) 
+      CASE (GTSH_2012)
 ! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
 
@@ -1704,14 +1692,14 @@
 ! if solids velocity field is initialized to zero, use free slip bc
                   F_2 = zero
                ELSE
-! As I understand from soil mechanic papers, the coefficient mu in 
+! As I understand from soil mechanic papers, the coefficient mu in
 ! Jenkins paper is tan_Phi_w. T.  See for example, G.I. Tardos, PT,
 ! 92 (1997), 61-74, equation (1). sof
 
 ! here F_2 divided by VSLIP to use the same bc as Johnson&Jackson
                   F_2 = tan_Phi_w*Ps/VSLIP
 
-               ENDIF 
+               ENDIF
             ELSE
                IF(.NOT. BC_JJ_M) THEN
                   F_2 = (PHIP*DSQRT(3d0*TH(M))*Pi*ROS_avg(M)*EPS(M)*&
@@ -1724,7 +1712,7 @@
 
          CASE(IA_2005)
 ! KTs with particle mass in their definition of granular temperature
-! and theta = granular temperature 
+! and theta = granular temperature
             IF(.NOT. BC_JJ_M) THEN
                F_2 = (PHIP*DSQRT(3.d0*TH(M)/M_PM)*PI*ROS_avg(M)*&
                   EPS(M)*g0(M))/(6.d0*(ONE-ep_star_avg))
@@ -1740,9 +1728,9 @@
             WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
             call mfix_exit(myPE)
       END SELECT
-        
+
 ! all the code used to calculate Mu_s was deleted from this routine
-!      F_HW =  F_2/Mu_s  ! Only F_2 is actually needed 
+!      F_HW =  F_2/Mu_s  ! Only F_2 is actually needed
 
 
       RETURN

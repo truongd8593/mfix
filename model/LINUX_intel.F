@@ -77,10 +77,10 @@
       ID_MINUTE = DAT(6)
       ID_SECOND = DAT(7)
 
-       
+
 
 ! Intel Linux compiler supports this function thru it's portability library
-      call hostnm(ID_NODE)      
+      call hostnm(ID_NODE)
 !
       RETURN
       END
@@ -114,7 +114,7 @@
 !
 !                      cpu time since start of run
       DOUBLE PRECISION CPU
-      
+
       INTEGER, SAVE :: COUNT_OLD=0, WRAP=0
 !
 ! local variables
@@ -125,7 +125,7 @@
 
 !                       number of cycles per second
       INTEGER           COUNT_RATE
-      
+
 !                       max number of cycles, after which count is reset to 0
       INTEGER           COUNT_MAX
 
@@ -136,7 +136,7 @@
         WRAP = WRAP + 1
       ENDIF
       COUNT_OLD = COUNT
-      
+
       CPU           = DBLE(COUNT)/DBLE(COUNT_RATE) &
                      + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
 
@@ -207,21 +207,21 @@
       end
 !
 
-      
+
       subroutine ran
       return
       end
-     
+
 !
       subroutine flush_bin(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end
       subroutine flush_res(iunit)
       implicit none
-      integer :: iunit 
+      integer :: iunit
       call flush(iunit)
       return
       end

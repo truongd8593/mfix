@@ -32,6 +32,7 @@
       Use constant
       Use funits
       Use compar
+      Use functions
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -43,11 +44,7 @@
       DOUBLE PRECISION    ARRAY(DIMENSION_3,DIMENSION_M), K_1m
       LOGICAL             INTER
       INTEGER             IER, M, IJK
-!
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       INTER = .FALSE.
 !
       IF (DO_XFORMS) THEN

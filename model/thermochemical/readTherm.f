@@ -1,21 +1,22 @@
 !      Program Test; CALL Read_Therm_tester; END Program Test
-      
-      SUBROUTINE READ_Therm_tester 
+
+      SUBROUTINE READ_Therm_tester
       Implicit none
       DOUBLE PRECISION Ahigh(7), Alow(7)
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
-      DOUBLE PRECISION Cp1, Cp2, h1, h2, T, Hf298oR
+      DOUBLE PRECISION Cp1, h1, h2, Hf298oR
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR, calc_H0oR
-      CHARACTER PATH*132, SPECIES*18
-      integer i, funit, IER
+      CHARACTER(LEN=132) :: PATH
+      CHARACTER(LEN=18) :: SPECIES
+      integer funit, IER
       CHARACTER(len=142) FILENAME
       CHARACTER(len=10) :: THERM = 'BURCAT.THR'
       LOGICAL LocalCopy
-      
+
       SPECIES = 'CH4'
       PATH = '.'
       funit = 5
-      
+
       INQUIRE(FILE=TRIM(THERM),EXIST=LocalCopy)
       IF(LocalCopy)Then
         OPEN(UNIT=funit,FILE=TRIM(THERM))
@@ -23,15 +24,15 @@
         FILENAME = TRIM(PATH) // '/'  // TRIM(THERM)
         OPEN(UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
       ENDIF
- 
+
  !      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)
       Call Read_Therm(funit, SPECIES, Thigh, Tlow, Tcom, MW, Ahigh, &
          Alow, Hf298oR, IER)
       IF(IER /= 0) GOTO 200
-      
+
       print *, SPECIES
       print *, Thigh, Tlow, Tcom, MW, Hf298oR*1.987207
-      
+
 !      print *, Hf298oR
 !      T = 300
 !      DO i = 1, 12
@@ -39,7 +40,7 @@
 !        T = T + 100
 !        print *, T, Cp1
 !      ENDDO
-      
+
 !      Cp1 = calc_CpoR(8D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
 !      h1 = calc_H0oR(4D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
 !      h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
@@ -52,7 +53,7 @@
 500   PRINT *, 'READ_Therm_tester: Cannot Open file ', TRIM(THERM), '!'
       PRINT *, 'Check path or copy mfix/model/thermochemical/', &
          TRIM(THERM), ' into run directory'
-      STOP       
+      STOP
       END Subroutine READ_Therm_tester
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  C
@@ -62,21 +63,21 @@
 !     Author: M. Syamlal                                 Date: 30-SEP-05 C
 !                                                                        C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  C
-!     
+!
       SUBROUTINE READ_Therm(funit, Sp, Thigh, Tlow, Tcom, MW, Ahigh, &
-         Alow, Hf298oR, IER) 
-!     
+         Alow, Hf298oR, IER)
+!
 !-----------------------------------------------
-!     M o d u l e s 
+!     M o d u l e s
 !-----------------------------------------------
-      
+
       IMPLICIT NONE
-      
+
       CHARACTER(*) SP
-      
+
 !     holds one line in the input file
       CHARACTER(len=80) :: LINE_STRING
-      
+
       CHARACTER(len=18) :: SPECIES, ss
       INTEGER i, funit, IER
       DOUBLE PRECISION Ahigh(7), Alow(7), Hf298oR
@@ -85,7 +86,7 @@
 
 !     Assoiciate a simple species name with that in BURCAT.THR file
       INTEGER, PARAMETER :: Max = 3
-      CHARACTER, DIMENSION(2,Max) :: SPECIES_ALIAS*18
+      CHARACTER(LEN=18), DIMENSION(2,Max) :: SPECIES_ALIAS
       SPECIES_ALIAS = RESHAPE ( (/ &
 !        common name             BURCAT.THR name
 !        123456789012345678     123456789012345678
@@ -94,7 +95,7 @@
         'CH4               ',  'CH4   ANHARMONIC  ' &
        /), (/2,Max/))
 
-      
+
       IER = 0
       SPECIES = SP
       DO i = 1, MAX
@@ -102,13 +103,13 @@
           SPECIES = SPECIES_ALIAS(2,I)
         ENDIF
       ENDDO
-       
-     
+
+
       LINE_STRING = '                '
       DO WHILE(LINE_STRING(1:11) /= 'THERMO DATA')
         READ(UNIT=funit, FMT='(A)',ERR=100,END=100)LINE_STRING
       END DO
-      
+
       ss = '                 '
       call trimTab(SPECIES)
       DO WHILE(TRIM(ss) /= TRIM(SPECIES))
@@ -119,11 +120,11 @@
       END DO
 !      print *, LINE_STRING
 
-       
+
       call get_values(LINE_STRING, Tlow, Thigh, MW)
 
 ! Tcom is almost always 1000K, however there are a few species where
-! this value is too high and causes a problem (e.g., liquid water). 
+! this value is too high and causes a problem (e.g., liquid water).
 ! Therefore, set Tcom = Thigh when Thigh < 1000K.
       Tcom = min(1.0d3, Thigh)
       READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Ahigh(1:5)
@@ -131,18 +132,18 @@
       READ(UNIT=funit, FMT='(5E15.0)',ERR=300,END=300)Alow(4:7), Hf298oR
 
 
-      
+
       RETURN
       ! species not found or THERMO DATA not found!
 100   IER = 1
       RETURN
-            
+
 300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', &
          TRIM(LINE_STRING(1:18))
-      STOP       
-     
-      END SUBROUTINE READ_Therm 
-      
+      STOP
+
+      END SUBROUTINE READ_Therm
+
 !**********************************************************************!
 ! Function: calc_CpoR                                                  !
 ! Purpose: Evaluate the polynomial form of the specific heat.          !
@@ -198,7 +199,7 @@
       ELSE
         calc_CpoR = calc_CpoR0(xT, Ahigh(1:5,M,N))
       ENDIF
-      
+
       RETURN
       END Function calc_CpoR
 
@@ -281,7 +282,7 @@
 
 ! Evaluate the polynomial.
       calc_CpoR0 = (((A(5)*T +A(4))*T + A(3))*T + A(2))*T + A(1)
-      
+
       RETURN
       END Function calc_CpoR0
 
@@ -390,8 +391,8 @@
 ! >>> This function is currently unused.                               !
 !                                                                      !
 !**********************************************************************!
-      DOUBLE PRECISION FUNCTION calc_H0oR(T, Th, Tl, Tc, Ah, Al) 
-      
+      DOUBLE PRECISION FUNCTION calc_H0oR(T, Th, Tl, Tc, Ah, Al)
+
       implicit none
 
 ! Dummy Arguments:
@@ -420,10 +421,10 @@
       else
         calc_H0oR = ICp + Ah(6)
       endif
-      
+
       return
-      END FUNCTION calc_H0oR 
-     
+      END FUNCTION calc_H0oR
+
 
 !**********************************************************************!
 ! SUBROUTINE: replaceTab                                               !
@@ -444,12 +445,12 @@
       INTEGER :: I
 
       DO I = 1, len(C)
-        IF(C(I:I) == '	')C(I:I)=' '
+        IF(C(I:I) == CHAR(9)) C(I:I)=' '
       ENDDO
 
       RETURN
       END SUBROUTINE replaceTab
-      
+
 
 !**********************************************************************!
 ! SUBROUTINE: trimTab                                                  !
@@ -476,10 +477,10 @@
 ! Initialize flag
       tabFound = .FALSE.
 
-! Look at each entry of the string. Once a tab is located, the rest of 
+! Look at each entry of the string. Once a tab is located, the rest of
 ! the string is replaced by blank spaces.
       DO I = 1, len(C)
-        IF(C(I:I) == '	')tabFound = .TRUE.
+        IF(C(I:I) == CHAR(9) ) tabFound = .TRUE.
         if(tabFound) C(I:I)=' '
       ENDDO
 

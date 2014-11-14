@@ -67,7 +67,7 @@
       contains
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C  
+!                                                                         C
 !     Module name: MCHEM_TIME_MARCH                                       C
 !     Purpose: Called in time_march.f to do rxns calcs                    C
 !                                                                         C
@@ -88,11 +88,11 @@
       use output,   only : FULL_LOG
       use run,      only : TIME
 
-
       use mpi_utility
 
       use stiff_chem_dbg
       use stiff_chem_stats
+      use functions
 
       implicit none
 
@@ -152,8 +152,6 @@
 
       LOGICAL :: lReset
       LOGICAL :: lIncpt
-
-      INCLUDE '../function.inc'
 
       lErr_l = .FALSE.
 
@@ -361,9 +359,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
 
-      use fldvar, only : ROP_s
+      use fldvar, only : ROP_s, RO_s, EP_S
       use physprop, only : MMAX
-      use fldvar, only: RO_s
       use run, only : SPECIES_EQ
 
       implicit none
@@ -374,9 +371,6 @@
       INTEGER :: M
 
       LOGICAL :: USE_SOLIDS_ODEs
-
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 
 ! Initialize.
       USE_SOLIDS_ODEs = .FALSE.
@@ -455,6 +449,7 @@
       use compar
       use mpi_utility
       use sendrecv
+      use functions
 
       implicit none
 
@@ -466,8 +461,6 @@
 ! Error flag - Unused but needed for call to BOUND_X.
       INTEGER :: IER
 
-      INCLUDE '../function.inc'
-
       CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)
       CALL send_recv(ROP_G,2)
@@ -475,7 +468,7 @@
 
       DO N=1,NMAX(0)
          CALL send_recv(X_G(:,N),2)
-         CALL BOUND_X (X_G(1,N), IJKMAX2, IER) 
+         CALL BOUND_X (X_G(1,N), IJKMAX2, IER)
       ENDDO
 
       DO M = 1, MMAX
@@ -486,9 +479,9 @@
 ! Solids phase species mass fractions.
          DO N=1,NMAX(M)
             CALL send_recv(X_S(:,M,N),2)
-            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER) 
+            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER)
          ENDDO
-      ENDDO   
+      ENDDO
 
       DO IJK = ijkStart3, ijkEnd3
          IF(.NOT.FLUID_AT(IJK)) CYCLE

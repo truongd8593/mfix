@@ -1,14 +1,14 @@
   MODULE kintheory
- 
- 
+
+
       Use param
       Use param1
- 
 
-! coefficient terms needed for stress (in addition to 
-! mu_s and lambda_s which are defined in visc_s_mod, allocated 
+
+! coefficient terms needed for stress (in addition to
+! mu_s and lambda_s which are defined in visc_s_mod, allocated
 ! in allocate_arrays and initialized in set_constprop; and
-! P_s which is defined in fldvar_mod, allocated in 
+! P_s which is defined in fldvar_mod, allocated in
 ! allocate_arrays, and initialized in init_fvars)
 !     stress term with gradient in particle M velocity
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: MU_sM_ip
@@ -34,8 +34,8 @@
 
 
 
-! coefficient terms needed for heat flux (in addition to 
-! kth_s which is defined in set_constprop, allocated 
+! coefficient terms needed for heat flux (in addition to
+! kth_s which is defined in set_constprop, allocated
 ! allocate_arrays and initialized in init_fvars)
 !     heat flux term with gradient in granular temperature of species L
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: Kth_sL_ip
@@ -48,7 +48,7 @@
 
 
 
-! coefficient terms needed for energy dissipation 
+! coefficient terms needed for energy dissipation
 !     energy dissipation with difference in species granular
 !     temperature: transfer between solid solid phases
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ED_ss_ip

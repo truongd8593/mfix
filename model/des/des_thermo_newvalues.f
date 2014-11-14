@@ -21,6 +21,7 @@
       Use param1
       Use physprop
       use run, only: ENERGY_EQ
+      use functions
 
       IMPLICIT NONE
 
@@ -41,9 +42,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE '../function.inc'
-
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       IF(.NOT.ENERGY_EQ) RETURN
 
@@ -93,9 +92,9 @@
                IF(DMP_LOG) THEN
                   IF(NP == FOCUS_PARTICLE) THEN
                      WRITE(*,"(//5X,A)")'From: DES_THERMO_NEWVALUES -'
-                     WRITE(*,"(8X,A,D12.6)")'Tp:  ',DES_T_s_NEW(NP)
-                     WRITE(*,"(8X,A,D12.6)")'Tp0: ',DES_T_s_OLD(NP)
-                     WRITE(*,"(8X,A,D12.6)")'Qsrc:',Q_Source(NP)
+                     WRITE(*,"(8X,A,D13.6)")'Tp:  ',DES_T_s_NEW(NP)
+                     WRITE(*,"(8X,A,D13.6)")'Tp0: ',DES_T_s_OLD(NP)
+                     WRITE(*,"(8X,A,D13.6)")'Qsrc:',Q_Source(NP)
                      WRITE(*,"(5X,25('-')/)")
                   ENDIF
                ENDIF
@@ -106,7 +105,7 @@
 ! Update the sum of particle temperatures in fluid cell IJK.
             SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
          ENDDO lNP_LP ! End loop over all particles
-! Average solids temperature in fluid cell IJK. The average method 
+! Average solids temperature in fluid cell IJK. The average method
 ! (over particles) will need changed for Hybrid model (area? volume?).
          avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
 
@@ -143,6 +142,7 @@
       Use param1
       Use physprop
       use run, only: ENERGY_EQ
+      use functions
       IMPLICIT NONE
 
 ! Passed variables
@@ -160,8 +160,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE '../function.inc'
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       IF(.NOT.ENERGY_EQ) RETURN
 
@@ -188,7 +187,7 @@
 ! Update the sum of particle temperatures in fluid cell IJK.
             SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
          ENDDO lNP_LP ! End loop over all particles
-! Average solids temperature in fluid cell IJK. The average method 
+! Average solids temperature in fluid cell IJK. The average method
 ! (over particles) will need changed for Hybrid model (area? volume?).
          avgDES_T_s(IJK) = SUM_T_s/PINC(IJK)
 

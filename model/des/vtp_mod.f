@@ -18,7 +18,7 @@
       INTEGER, PARAMETER :: PVD_UNIT = 2050
 
 ! formatted file name
-      CHARACTER*64 :: FNAME_VTP
+      CHARACTER(LEN=64) :: FNAME_VTP
 
       INTERFACE VTP_WRITE_DATA
          MODULE PROCEDURE VTP_WRITE_DP1
@@ -262,7 +262,7 @@
 ! logical used for testing is the data file already exists
       LOGICAL :: EXISTS_VTP
 ! status of the vtp file to be written
-      CHARACTER*8 :: STATUS_VTP
+      CHARACTER(LEN=8) :: STATUS_VTP
 
 
 ! Initial the global count.
@@ -380,15 +380,15 @@
 ! logical used for testing is the data file already exists
       LOGICAL :: EXISTS_PVD
 ! status of the vtp file to be written
-      CHARACTER*8 :: STATUS_PVD
+      CHARACTER(LEN=8) :: STATUS_PVD
 ! Generic input limited to 256 characters
-      CHARACTER*256 INPUT
+      CHARACTER(LEN=256) INPUT
 
 ! formatted file name
-      CHARACTER*64 :: FNAME_PVD = ''
+      CHARACTER(LEN=64) :: FNAME_PVD = ''
 
 ! formatted solids time
-      CHARACTER*12 :: S_TIME_CHAR = ''
+      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
 
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
@@ -530,19 +530,8 @@
          BACKSPACE(PVD_UNIT)
 
 ! Force time formatting #####.######  (Forcing leading zeros)
-         IF(S_TIME .LT. 1.0d0)THEN
-            WRITE (S_TIME_CHAR,"(A,F7.6)")"00000",S_TIME
-         ELSEIF(S_TIME .LT. 10.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F8.6)")"0000",S_TIME
-         ELSEIF(S_TIME .LT. 100.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F9.6)")"000",S_TIME
-         ELSEIF(S_TIME .LT. 1000.0d0) THEN
-            WRITE (S_TIME_CHAR,"(A,F10.6)")"00",S_TIME
-         ELSEIF(S_TIME .LT. 10000.0d0)THEN
-            WRITE (S_TIME_CHAR,"(A,F11.6)")"0",S_TIME
-         ELSE
-            WRITE (S_TIME_CHAR,"(F12.6)")S_TIME
-         ENDIF
+
+         write(*,'(I5.5,F0.6)') int(S_TIME),S_TIME-int(S_TIME)
 
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&

@@ -86,6 +86,11 @@ EXT_LIST="f F inc"
 # Parse user arguments.
 . $MFIX_CONFIG/parse_args.sh
 
+if [[ ${USE_MKL} && ! ${COMP_FILE} =~ .*intel.* ]]; then
+    echo "  Error: --mkl option only works with the Intel Fortran Compiler"
+    exit -1
+fi
+
 # Load compiler and library information.
 if test ${AUTOCOMPILE} -ne 1; then
 

@@ -16,11 +16,11 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR_INIT_NAMELIST 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR_INIT_NAMELIST
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       Use usr
       IMPLICIT NONE
@@ -29,5 +29,5 @@
 !-----------------------------------------------
 !-----------------------------------------------
 !
-      RETURN  
-      END SUBROUTINE USR_INIT_NAMELIST 
+      RETURN
+      END SUBROUTINE USR_INIT_NAMELIST

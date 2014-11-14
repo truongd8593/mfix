@@ -22,12 +22,12 @@
       SUBROUTINE PARSE_RXN(LINE, lNoOfRxns, lName, lChemEq, lDH, lFDH)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE compar
-      USE funits  
-      USE param 
-      USE param1 
+      USE funits
+      USE param
+      USE param1
       USE parse
 
       IMPLICIT NONE
@@ -59,7 +59,7 @@
 ! Positions of braces {...}
       INTEGER bIDX, eIDX
 ! Reaction Name
-      CHARACTER*128 INPUT
+      CHARACTER(LEN=128) :: INPUT
 ! Index of reaction.
       INTEGER IDX
 ! Integer for phase loops
@@ -256,7 +256,7 @@
 ! User defined splitting of heat of reaction
       DOUBLE PRECISION, INTENT(OUT) :: uFDH(0:DIM_M)
 
-! The input line contains no additional data. 
+! The input line contains no additional data.
       IF(LEN_TRIM(ADJUSTL(IN)) == 0) RETURN
 
 ! The input contains chemical equation data.
@@ -308,13 +308,13 @@
       CHARACTER(len=*), INTENT(IN) :: INPUT
 
 ! Check to see if the line contains 'END'
-      IF (INDEX(LINE(1:),"CHEM_EQ") == 0) THEN 
+      IF (INDEX(LINE(1:),"CHEM_EQ") == 0) THEN
 ! 'CHEM_EQ' was not found. This line does not contains a chemical eq.
-         isChemEq = .FALSE. 
-      ELSE 
+         isChemEq = .FALSE.
+      ELSE
 ! 'CHEM_EQ' was found. This line contains all or part of a chemical eq.
-         isChemEq = .TRUE. 
-      ENDIF 
+         isChemEq = .TRUE.
+      ENDIF
 
       END FUNCTION isChemEq
 
@@ -337,13 +337,13 @@
       CHARACTER(len=*), INTENT(IN) :: INPUT
 
 ! Check to see if the line contains 'END'
-      IF (INDEX(LINE(1:),"DH") == 0) THEN 
+      IF (INDEX(LINE(1:),"DH") == 0) THEN
 ! 'DH' was not found. This line does not contains a heat of reaction.
-         isDH = .FALSE. 
-      ELSE 
+         isDH = .FALSE.
+      ELSE
 ! 'DH' was found. This line contains the heat of reaction
-         isDH = .TRUE. 
-      ENDIF 
+         isDH = .TRUE.
+      ENDIF
 
       END FUNCTION isDH
 
@@ -365,13 +365,13 @@
       CHARACTER(len=*), INTENT(IN) :: INPUT
 
 ! Check to see if the line contains 'END'
-      IF (INDEX(LINE(1:),"FRACDH") == 0) THEN 
+      IF (INDEX(LINE(1:),"FRACDH") == 0) THEN
 ! 'FRACDH' was not found.
-         isFracDH = .FALSE. 
-      ELSE 
+         isFracDH = .FALSE.
+      ELSE
 ! 'FRACDH' was found.
-         isFracDH = .TRUE. 
-      ENDIF 
+         isFracDH = .TRUE.
+      ENDIF
 
       END FUNCTION isFracDH
 
@@ -394,7 +394,7 @@
 ! End of search location for reaction name.
       INTEGER, INTENT(IN) :: rPOS
 ! Name of reaction pulled from input.
-      CHARACTER*32, INTENT(OUT) :: lNAME
+      CHARACTER(LEN=32) , INTENT(OUT) :: lNAME
 
       INTEGER NAME_LEN
 
@@ -435,7 +435,7 @@
          ' format and make',/' the necessary corrections to the data', &
          ' file.',/1X,70('*')//)
 
-      RETURN  
+      RETURN
       END SUBROUTINE getName
 
 
@@ -526,8 +526,8 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE getFracDH(INPUT, lFracDH)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
 
       IMPLICIT NONE
 
@@ -694,7 +694,7 @@
 ! Search for the second quote mark.
          rPOS = lPOS + INDEX(IN(lPOS+1:),"'")
       ELSE
-! Different errors are thrown depending if this is a continuation 
+! Different errors are thrown depending if this is a continuation
 ! (MORE_ChemEq) or the start of a chemical equation.
          IF(.NOT.MORE_ChemEq) THEN
             WRITE(*, 1001) trim(adjustl(IN))
@@ -715,11 +715,11 @@
             ENDIF
          ENDIF
          CALL MFIX_EXIT(myPE)
-      ENDIF      
+      ENDIF
 
 ! Mismatch/Unbalanced parentheses
       IF(lPOS .EQ. rPOS) THEN
-! Different errors are thrown depending if this is a continuation 
+! Different errors are thrown depending if this is a continuation
 ! (MORE_ChemEq) or the start of a chemical equation.
          IF(.NOT.MORE_ChemEq) THEN
             WRITE(*, 1001) trim(adjustl(IN))
@@ -756,7 +756,7 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
-      RETURN  
+      RETURN
 
  1001 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
          ' Error 1001: Unbalanced or missing parentheses for chem_eq.',&

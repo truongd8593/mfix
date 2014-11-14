@@ -16,15 +16,16 @@
       use physprop, only: K_s0
 
       USE compar
-      Use des_rxns
-      Use des_thermo
-      Use discretelement
-      Use fldvar
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
-      Use interpolation
-      Use param1
-      Use run
+      USE interpolation
+      USE param1
+      USE run
 
       IMPLICIT NONE
 
@@ -51,9 +52,6 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-      INCLUDE '../function.inc'
-
 
 ! This is a quick work-around to keep the thermo routines from causes
 ! issues while the "check_data" routines are rewritten. Moving forward
@@ -120,9 +118,6 @@
 
 ! calculate heat transfer via radiation
             IF(CALC_RADT(M)) CALL DES_RADIATION(NP, M, IJK, FOCUS)
-
-! Loop over thermodynamic neighbor for conduction and radiation
-            IF(CALC_COND(M)) CALL DES_CONDUCTION(NP, M, IJK, FOCUS)
 
 ! Calculate reaction rates and interphase mass transfer
             IF(ANY_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &

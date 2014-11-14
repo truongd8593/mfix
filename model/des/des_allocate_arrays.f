@@ -26,6 +26,7 @@
       Use des_thermo
       Use des_rxns
       USE cutcell
+      USE functions
 
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
@@ -39,76 +40,37 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: I, J, K, IJK, M
+      INTEGER :: II, IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
-!-----------------------------------------------
-! Include statment functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
-      write(err_msg, 1000) Particles
- 1000 FORMAT('Total number of particles = ', 2x, i15)
-      CALL FLUSH_ERR_MSG(footer = .false.)
-
       NWALLS = merge(4,6,NO_K)
-      MAXNEIGHBORS = MN + 1 + NWALLS
 
-! defining the local variables nparticles
-!----------------------------------------------------------------->>>
-
-! +nwalls is included since calc_force_des temporarily uses the variables
-! pos, vel, etc at elements beyond the array index given by particles.
-! unclear why additional array space is needed via particles_factor
-      NPARTICLES = PARTICLES * PARTICLES_FACTOR + NWALLS
-
-! J.Musser : Dynamic Particle Info
-! no real need to print this information out
-      IF(MAX_PIS /= UNDEFINED_I .AND. MAX_PIS .GT. NPARTICLES) THEN
-         !WRITE(ERR_MSG, 1001) MAX_PIS, NPARTICLES, MAX_PIS
-         !CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
-         NPARTICLES = MAX_PIS
+! Grab the larger of PARTICLES and MAX_PIS
+      IF(MAX_PIS == UNDEFINED_I) THEN
+         NPARTICLES = PARTICLES
+      ELSE
+         NPARTICLES = max(MAX_PIS, PARTICLES)
       ENDIF
-
- 1001 FORMAT(/,'User supplied MAX_PIS (',I15,') > cummulative size ',&
-         'of particle arrays, NPARTILCES ( ', I15 , ')', /, &
-         'Therefore, setting NPARTICLES to ',I15)
-
 
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
-! with some factor
-      NPARTICLES = (NPARTICLES/numPEs)
-
-! minimum size for nparticles
-      IF(NPARTICLES.LT.1000) NPARTICLES = 1000
-
-      IF(NPARTICLES .LT. PIP) then
-         write(err_msg, 1002) mype, Nparticles, pip
-         CALL FLUSH_ERR_MSG(header = .false., footer = .false., Abort = .true.)
-      endif
- 1002 FORMAT(/,'Error 1002: For processor:', 2x, i5, /, &
-      'Particle array size determined (', 2x, I15, &
-      ') is less than number of particles (', 2x, i15, ')', /, &
-      'Increase MAX_PIS or particles_factor in the input file')
+! with some factor.
+      NPARTICLES = (NPARTICLES/numPEs)*PARTICLES_FACTOR+NWALLS
+      IF(NPARTICLES < 1000) NPARTICLES = 1000
 
 ! max_pip adjusted to accomodate temporary variables used for walls
 ! and DES_MPI stuff
-
       MAX_PIP = NPARTICLES - 2*NWALLS - 3
 
-      WRITE(err_msg, 1003)  NPARTICLES, MAX_PIP
+      WRITE(ERR_MSG,1000) trim(iVal(NPARTICLES)), trim(iVal(MAX_PIP))
+      CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
 
- 1003 FORMAT('Particle array size on each proc = ',I15, /,&
-      'Maximum possible physical particles (MAX_PIP) on each proc = ',I15,/, &
-      'Note that this value of MAX_PIP is only ',&
-      'relevant for a new run',/,'For restarts, max_pip ',&
-      'will be set later on')
-
-      CALL FLUSH_ERR_MSG(header = .false., footer = .false.)
+ 1000 FORMAT('DES Particle array size: ',A,/&
+        'DES maximum particles per process: ',A)
 
 ! DES Allocatable arrays
 !-----------------------------------------------
@@ -162,24 +124,8 @@
          Allocate(  TOW (1,NPARTICLES) )
       ENDIF
 
-! Accumulated spring force
-      Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
-
-! Save the normal direction at previous time step
-      Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
-
-! Tracking variables for particle contact history
-      Allocate(  PN (MAXNEIGHBORS, NPARTICLES) )
-      Allocate(  PN_WALL (6, NPARTICLES) )
-      Allocate(  PV (MAXNEIGHBORS, NPARTICLES) )
-      Allocate(  PV_WALL (6, NPARTICLES) )
-
-
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
-
-! Neighbor search
-      Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
 
       OLD_COLLISION_NUM = 0
       COLLISION_NUM = 0
@@ -187,18 +133,27 @@
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
       Allocate(  FC_COLL  (3,COLLISION_MAX) )
+      Allocate(  FT_COLL  (3,COLLISION_MAX) )
+      Allocate(  DIST_COLL (COLLISION_MAX) )
+      Allocate(  QQ_COLL (COLLISION_MAX) )
+      Allocate(  NORM_COLL (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
       Allocate(  PV_COLL_OLD (COLLISION_MAX) )
       Allocate(  PFT_COLL (3,COLLISION_MAX) )
       Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
       Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
-! Torque
-      IF(DO_K) THEN
-         Allocate(  TOW_COLL (DIMN,COLLISION_MAX) )
-      ELSE
-         Allocate(  TOW_COLL (1,COLLISION_MAX) )
-      ENDIF
+      Allocate(  CELLNEIGHBOR_FACET (DIMENSION_3) )
+      Allocate(  CELLNEIGHBOR_FACET_MAX (DIMENSION_3) )
+      Allocate(  CELLNEIGHBOR_FACET_NUM (DIMENSION_3) )
+      do ii = 1, DIMENSION_3
+         cellneighbor_facet_max(ii) = 4
+         allocate(cellneighbor_facet(ii)%p(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentdir(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentmin(cellneighbor_facet_max(ii)))
+         allocate(cellneighbor_facet(ii)%extentmax(cellneighbor_facet_max(ii)))
+         cellneighbor_facet_num(ii) = 0
+      enddo
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -215,8 +170,8 @@
       Allocate(  PIJK (NPARTICLES,5) )
 
       IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
+         ALLOCATE(DRAG_AM(DIMENSION_3))
+         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN))
          ALLOCATE(VEL_FP(DIMN,NPARTICLES))
          ALLOCATE(F_gp(NPARTICLES ))
          F_gp(1:NPARTICLES)  = ZERO
@@ -229,15 +184,13 @@
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
-! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(DIMN,NPARTICLES))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
- ! Volume of nodes
+! Volume of nodes
        ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
 ! Variables for hybrid model
@@ -298,12 +251,6 @@
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
 
-! variable used to identify whether a particle had been put into a
-! cluster
-      IF (DES_CALC_CLUSTER) THEN
-         ALLOCATE(InACluster(NPARTICLES))
-      ENDIF
-
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
       IF(USE_COHESION) THEN
@@ -312,9 +259,7 @@
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION
-      IF(DES_CALC_CLUSTER) Allocate(  PostCluster (NPARTICLES) )
 ! ----------------------------------------------------------------<<<
-
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation
@@ -372,13 +317,9 @@
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<
 
-      IF(DMP_LOG.AND.DEBUG_DES) WRITE(UNIT_LOG,'(1X,A)')&
-         '<---------- END DES_ALLOCATE_ARRAYS ----------'
+      CALL FINL_ERR_MSG
 
       RETURN
-      write(err_msg, '(A,/)') ''
-      call flush_err_msg(header = .false.)
-      CALL FINL_ERR_MSG
       END SUBROUTINE DES_ALLOCATE_ARRAYS
 
 
@@ -566,6 +507,7 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_scalar_tmp
 
       INTEGER :: lSIZE1, lSIZE2
 
@@ -584,11 +526,25 @@
       real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
       call move_alloc(real_tmp,fc_coll)
 
-      lSIZE1 = size(TOW_COLL,1)
-      lSIZE2 = size(TOW_COLL,2)
-      allocate(real_tmp(lSIZE1,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = tow_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,tow_coll)
+      lSIZE2 = size(FT_COLL,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE2) = ft_coll(:,1:lSIZE2)
+      call move_alloc(real_tmp,ft_coll)
+
+      lSIZE1 = size(norm_coll,2)
+      allocate(real_tmp(3,COLLISION_MAX))
+      real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
+      call move_alloc(real_tmp,norm_coll)
+
+      lSIZE1 = size(dist_coll,1)
+      allocate(real_scalar_tmp(COLLISION_MAX))
+      real_scalar_tmp(1:lSIZE1) = dist_coll(1:lSIZE1)
+      call move_alloc(real_scalar_tmp,dist_coll)
+
+      lSIZE1 = size(qq_coll,1)
+      allocate(real_scalar_tmp(COLLISION_MAX))
+      real_scalar_tmp(1:lSIZE1) = qq_coll(1:lSIZE1)
+      call move_alloc(real_scalar_tmp,qq_coll)
 
       lSIZE1 = size(pv_coll,1)
       allocate(bool_tmp(COLLISION_MAX))

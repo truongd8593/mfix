@@ -1,5 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: bulk_viscosity(s,mi,sigmai,alpha,ni,v0,mu,sigma,chi,
 !                                  beta,zeta0,theta,Ti,kappa,eta)
 !
@@ -7,16 +7,16 @@
 !
 !  Purpose: find shear viscosity according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine shear_viscosity(s,mi,sigmai,alpha,ni,v0,mu,sigma,chi, &
                                  beta,zeta0,theta,Ti,kappa,eta)
       Implicit NONE
 
-      integer s, indx(s) 
+      integer s, indx(s)
 
       double precision mi(s),sigmai(s),alpha(s,s),ni(s),v0,mu(s,s), &
                        sigma(s,s),chi(s,s),beta(s,s),zeta0,theta(s), &
@@ -37,7 +37,7 @@
          sum2(i) = 0.d0     !calculate summation used in b vector - p 10 CMH notes
       enddo
 
-      do i=1,s               
+      do i=1,s
          do j=1,s
             if (i .ne. j) then
                sum1(i) = sum1(i) + ni(j)*chi(i,j)*sigma(i,j)**2* &
@@ -46,12 +46,12 @@
                  (theta(i)**2*dsqrt(theta(i)+theta(j)))  &
                  + (9.d0-3.d0*alpha(i,j))/2.d0*mu(j,i)/theta(i)**2* &
                  dsqrt(theta(i)+theta(j))   &
-                 + 5.d0/(theta(i)*dsqrt(theta(i)+theta(j)))) 
+                 + 5.d0/(theta(i)*dsqrt(theta(i)+theta(j))))
            endif
            sum2(i) = sum2(i) + 2.d0*pi/15.d0*mi(i)*ni(i)*ni(j)*mu(j,i)* &
              sigma(i,j)**3*chi(i,j)*(1d0+alpha(i,j)) *(mu(j,i)* &
             (3.d0*alpha(i,j)-1.d0)*(Ti(i)/mi(i)+Ti(j)/mi(j)) &
-            -4.d0*(Ti(i)-Ti(j))/(mi(i)+mi(j))) 
+            -4.d0*(Ti(i)-Ti(j))/(mi(i)+mi(j)))
          enddo
       enddo
 
@@ -61,9 +61,9 @@
             if (i .eq. j) then
                tau(i,i) = 4.d0*dsqrt(pi)/15.d0*v0 *(ni(i)*sigmai(i)**2* &
                  chi(i,i)/dsqrt(2.d0*theta(i))*(9.d0-3.d0*alpha(i,i))* &
-                 (1.d0+alpha(i,i)) + 2.d0*sum1(i)) 
-               
-	       Amat(i,j) = tau(i,j) - 0.5d0*zeta0     !A matrix for solution of etajk (p 10 CMH notes)
+                 (1.d0+alpha(i,i)) + 2.d0*sum1(i))
+
+               Amat(i,j) = tau(i,j) - 0.5d0*zeta0     !A matrix for solution of etajk (p 10 CMH notes)
             else
                tau(i,j) = 8.d0*dsqrt(pi)/15.d0*v0   &
                  * ni(i)*chi(i,j)*sigma(i,j)**2*mu(i,j)*theta(j)**1.5d0 &
@@ -71,9 +71,9 @@
                  (theta(j)**2*dsqrt(theta(i)+theta(j)))   &
                  + (9.d0-3.d0*alpha(i,j))/2.d0*mu(j,i)/theta(j)**2* &
                  dsqrt(theta(i)+theta(j))   &
-                 - 5.d0/(theta(j)*dsqrt(theta(i)+theta(j)))) 
-               
-	       Amat(i,j) = tau(i,j)                 !A matrix for solution of etajk (p 10 CMH notes)
+                 - 5.d0/(theta(j)*dsqrt(theta(i)+theta(j))))
+
+               Amat(i,j) = tau(i,j)                 !A matrix for solution of etajk (p 10 CMH notes)
             endif
 !
          enddo
@@ -93,7 +93,7 @@
       do i=1,s
          do j=1,s
             etacol = etacol + 4.d0*(pi)/15.d0*ni(j)*sigma(i,j)**3 &
-                        *chi(i,j)*mu(j,i)*(1d0+alpha(i,j))*etajk(i) 
+                        *chi(i,j)*mu(j,i)*(1d0+alpha(i,j))*etajk(i)
          enddo
       enddo
       etacol = etacol + 0.6d0*kappa

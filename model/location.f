@@ -16,15 +16,15 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      DOUBLE PRECISION FUNCTION LOCATION (L2, XMIN, DX) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      DOUBLE PRECISION FUNCTION LOCATION (L2, XMIN, DX)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -47,9 +47,9 @@
       INTEGER          L
 !-----------------------------------------------
 !
-      LOCATION = XMIN - HALF*DX(1) 
-      L = 2 
-      IF (L2 - 1 > 0) THEN 
+      LOCATION = XMIN - HALF*DX(1)
+      L = 2
+      IF (L2 - 1 > 0) THEN
 
 !//EFD      since indexing of dx starts from 0
 !//         using DX(1:(L2-1)) instead of DX(:,L2)
@@ -58,6 +58,6 @@
          LOCATION = LOCATION + SUM(HALF*(DX(1:(L2-1))+DX(2:L2)))
          L = L2 + 1
 
-      ENDIF 
-      RETURN  
-      END FUNCTION LOCATION 
+      ENDIF
+      RETURN
+      END FUNCTION LOCATION

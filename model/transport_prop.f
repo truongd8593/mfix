@@ -76,5 +76,5 @@
          IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity
       ENDDO
 
-      RETURN  
+      RETURN
       END SUBROUTINE TRANSPORT_PROP

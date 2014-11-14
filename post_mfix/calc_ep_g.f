@@ -41,8 +41,8 @@
 !
       Use indices
       Use compar
-      
-      
+      Use functions
+
       IMPLICIT NONE
 !
 !  Local variables
@@ -50,11 +50,7 @@
 !                      Sum of EP_s
       DOUBLE PRECISION SUM_EPS
       INTEGER          IJK, M
-!
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       SUM_EPS = ZERO
       DO 50 M = 1, MMAX
         SUM_EPS = SUM_EPS + EP_s(IJK, M)

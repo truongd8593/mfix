@@ -1,12 +1,12 @@
 
-	module MFIX_netcdf
+        module MFIX_netcdf
 
-		include 'MFIX_netcdf_constants.fi'
-		include 'MFIX_netcdf_overloads.fi'
+                include 'MFIX_netcdf_constants.fi'
+                include 'MFIX_netcdf_overloads.fi'
 
-	contains
+        contains
 
-		include 'MFIX_netcdf_variables.fi'
-		include 'MFIX_netcdf_misc.fi'
+                include 'MFIX_netcdf_variables.fi'
+                include 'MFIX_netcdf_misc.fi'
 
-	end module MFIX_netcdf
+        end module MFIX_netcdf

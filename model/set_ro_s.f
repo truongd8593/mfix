@@ -35,6 +35,7 @@
       use compar
       use geometry
       use indices
+      use functions
 
       implicit none
 
@@ -53,8 +54,6 @@
 
 ! Function for evaluating solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
-
-      INCLUDE 'function.inc'
 
 ! Loop over all solids
       DO M=1,MMAX
@@ -130,7 +129,7 @@
 ! Error file log.
       INTEGER, parameter :: lUnit = 8454
       LOGICAL :: lExists
-      CHARACTER*64 :: lFName
+      CHARACTER(LEN=64) :: lFName
 
 ! Function for comparing two numbers.
       LOGICAL, EXTERNAL :: compare
@@ -212,17 +211,17 @@
 
       RETURN
 
- 1000 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1000:'      &
+ 1000 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1000:',     &
          ' Error 1000: One or more errors were detected. Please see',  &
          ' setROs.log',/' for specifics.',1x,70('*')/)
 
- 1100 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1100:'      &
+ 1100 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1100:',     &
          ' One or more fluid cells contain invalid species mass',/     &
          ' fractions which do NOT sum to one.'/,'   > myPE = ',I6)
 
- 1101 FORMAT('   > sum(X_s(',I6,')) = ',g11.5)
+ 1101 FORMAT('   > sum(X_s(',I6,')) = ',g12.5)
 
- 1200 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1200:'      &
+ 1200 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1200:',     &
          ' One or more fluid cells contain an invalid species mass',/  &
          ' fraction for the inert material.'/,'   > myPE = ',I6)
 
@@ -230,10 +229,10 @@
 
  1202 FORMAT('   > Inert species index: ',I4)
 
- 1203 FORMAT('   > X_s(',I6,',INERT) = ',g11.5)
+ 1203 FORMAT('   > X_s(',I6,',INERT) = ',g12.5)
 
  9999 FORMAT(1x,70('*')/)
-    
+
       END SUBROUTINE CHECK_SET_ROs
 
       END SUBROUTINE SET_RO_S

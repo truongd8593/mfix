@@ -22,11 +22,11 @@
 !  Local variables: ABORT_CONT                                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE ERROR_ROUTINE(CALL_ROUTINE,MESSAGE,ACTION_CODE,MESSAGE_CODE) 
+      SUBROUTINE ERROR_ROUTINE(CALL_ROUTINE,MESSAGE,ACTION_CODE,MESSAGE_CODE)
 
-      USE funits 
-      USE compar 
-      USE mpi_utility 
+      USE funits
+      USE compar
+      USE mpi_utility
 
       IMPLICIT NONE
 
@@ -38,14 +38,14 @@
 ! - 1 :: Write header, message, and footer.
 ! - 2 :: Write only the header and message.
 ! - 3 :: Write only the message and footer.
-      INTEGER, intent(in) ::  MESSAGE_CODE 
+      INTEGER, intent(in) ::  MESSAGE_CODE
 
 ! Name of routine calling ERROR_ROUTINE. Used in constructing
 ! the error message header.
       CHARACTER, intent(in) :: CALL_ROUTINE*(*)
 
 ! Message to be written.
-      CHARACTER, intent(in) :: MESSAGE*(*) 
+      CHARACTER, intent(in) :: MESSAGE*(*)
 
 ! Local Variables
 ! String used to format integers to characters.
@@ -63,7 +63,7 @@
             write(UNIT_LOG,1002) CALL_ROUTINE
          ENDIF
 
-         WRITE (*, 1005) MESSAGE 
+         WRITE (*, 1005) MESSAGE
          WRITE (UNIT_LOG, 1005) MESSAGE
       ENDIF
 
@@ -80,14 +80,14 @@
 
       IF (ACTION_CODE == 1) CALL MFIX_EXIT(myPE)
 
-      RETURN  
+      RETURN
 
  1000 FORMAT(2/,1X,70('*'))
  1001 FORMAT(1X,'(PE ',A,'): From : ',A)
  1002 FORMAT(1X,'From : ',A)
- 1005 FORMAT(1X,'Message : ',A) 
+ 1005 FORMAT(1X,'Message : ',A)
 
- 1100 FORMAT(1X,70('*'),2/) 
- 1101 FORMAT(/1X,'Aborting execution.',/1X,70('*'),2/) 
+ 1100 FORMAT(1X,70('*'),2/)
+ 1101 FORMAT(/1X,'Aborting execution.',/1X,70('*'),2/)
 
       END SUBROUTINE ERROR_ROUTINE

@@ -16,20 +16,20 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE USR_INIT_NAMELIST 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE USR_INIT_NAMELIST
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       IMPLICIT NONE
-      INCLUDE 'usrnlst.inc' 
+      INCLUDE 'usrnlst.inc'
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 !-----------------------------------------------
-      NAMELIST /USR_INPUT_DATA/DUMMY_DPA 
+      NAMELIST /USR_INPUT_DATA/DUMMY_DPA
 !
 !
-      RETURN  
-      END SUBROUTINE USR_INIT_NAMELIST 
+      RETURN
+      END SUBROUTINE USR_INIT_NAMELIST

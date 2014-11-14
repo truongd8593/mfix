@@ -32,6 +32,7 @@
       USE vtk
       use cdist
       USE fldvar
+      USE functions
 
       IMPLICIT NONE
 
@@ -39,8 +40,6 @@
       INTEGER :: I,J,K, COUNT
       INTEGER :: SAFE_MODE_COUNT
       DOUBLE PRECISION :: CPU_PP_START,CPU_PP_END
-
-      include "../function.inc"
 
       IF(.NOT.CG_HEADER_WAS_PRINTED) CALL PRINT_CG_HEADER
 
@@ -510,6 +509,7 @@
       USE quadric
       USE cutcell
       USE polygon
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -517,8 +517,6 @@
       DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc,Fc
       DOUBLE PRECISION :: Xi,Yi,Zi,Xc_backup,Yc_backup,Zc_backup
       LOGICAL :: INTERSECT_FLAG,CLIP_FLAG
-
-      include "../function.inc"
 
       Xi = UNDEFINED
       Yi = UNDEFINED
@@ -732,6 +730,7 @@
       USE cutcell
       USE polygon
       USE STL
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -743,9 +742,8 @@
       DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
       LOGICAL :: CLIP_FLAG,CAD,F_TEST
 
-      include "../function.inc"
 
-! When inputing geometry from CAD (STL or MSH file), the snapping procedure is 
+! When inputing geometry from CAD (STL or MSH file), the snapping procedure is
 ! dependent on the value of F at the cell corners
 ! For other gemoetry inputs (say quadrics), This is not needed, and the value
 ! of F_TEST is set to .TRUE. here
@@ -1111,11 +1109,8 @@
       USE polygon
       USE stl
 
-
       USE mpi_utility
-
-
-
+      USE functions
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1139,15 +1134,12 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
-      INTEGER :: N_UNDEFINED, N_PROP
+      INTEGER :: N_UNDEFINED, NTOTAL_UNDEFINED,N_PROP
       INTEGER, PARAMETER :: N_PROPMAX=1000
       LOGICAL:: F_FOUND
 
 
 !      CHARACTER (LEN=3) :: CAD_PROPAGATE_ORDER
-
-      include "../function.inc"
-
 
       INTERSECT_X = .FALSE.
       INTERSECT_Y = .FALSE.
@@ -1351,20 +1343,18 @@
 
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_X(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_X(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  ENDIF
 
                   IF(INTERSECT_FLAG) THEN
-
                      IF(INTERSECT_X(IJK)) THEN
-
                         IF(DABS(Xint(IJK)-xc)>TOL_STL) THEN
 
-                           INTERSECT_X(IJK) = .FALSE.        ! Ignore intersections when two intersections are detected on the same edge
-
+                           ! Ignore intersections when two intersections are detected on the same edge
+                           INTERSECT_X(IJK) = .FALSE.
                         ENDIF
-
                      ELSE
-
                         INTERSECT_X(IJK) = .TRUE.
                         Xint(IJK) = xc
 
@@ -1387,12 +1377,8 @@
                         IF(JP<=J2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPK,N)
                         IF(KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJKP,N)
                         IF(JP<=J2.AND.KP<=K2.AND.TRIM(TYPE_OF_CELL).eq.'SCALAR') CALL ADD_FACET_AND_SET_BC_ID(IJPKP,N)
-
-
                      ENDIF
-
                   ENDIF
-
 
                   IF(TYPE_OF_CELL=='U_MOMENTUM') THEN
                      IF(SNAP(IJK)) THEN
@@ -1401,16 +1387,12 @@
                      ENDIF
                   ENDIF
 
-
-
-
 !======================================================================
 !  Intersection with Edge 6 (node 6-8, Face East-Top):
 !======================================================================
                   xa = X_NODE(6)
                   ya = Y_NODE(6)
                   za = Z_NODE(6)
-
 
 ! Check if intersection occurs at corners
 
@@ -1432,7 +1414,9 @@
 
                   INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_Y(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  IF(.NOT.(INTERSECT_Y(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                     CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                  ENDIF
 
 
                   IF(INTERSECT_FLAG) THEN
@@ -1510,7 +1494,9 @@
 
                      INTERSECT_FLAG = .FALSE.
 
-                  IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                     IF(.NOT.(INTERSECT_Z(IJK).OR.INSIDE_FACET_a.OR.INSIDE_FACET_b)) THEN
+                        CALL INTERSECT_LINE_WITH_FACET(xa,ya,za,xb,yb,zb,N,INTERSECT_FLAG,xc,yc,zc)
+                     ENDIF
 
                      IF(INTERSECT_FLAG) THEN
 
@@ -1619,32 +1605,27 @@
 
       CASE ('   ')
 
+! After intersecting the edges of the background mesh with the STL facets,
+! the end points (i.e., cell corners) are assigned a value, called F_AT, where:
+! F_AT = zero if the corner point is on a facet (within some tolerance TOL_STL),
+! F_AT < zero if the corner point is inside  the fluid region,
+! F_AT > zero if the corner point is outside the fluid region.
+! At this point F_AT is only defined across edges that intersect the STL facets,
+! and it must be propagated to all cell corners to determine if uncut cells
+! are inside or outside the fluid region.
 
-         N_UNDEFINED = UNDEFINED_I
-
-         N_PROP = 0
-
-         DO WHILE(N_UNDEFINED>0)
-
-            N_UNDEFINED = 0
-
-            N_PROP = N_PROP + 1
-
-            DO IJK = IJKSTART3, IJKEND3
-
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) THEN
-
-                  N_UNDEFINED = N_UNDEFINED + 1
-
-               ENDIF
-
-            ENDDO
-
+! Only F_AT values that are defined and not zero are propagated to their direct
+! neighbors, if it is not already defined. The propagation is repeated 
+! at most N_PROPMAX. The loop is exited when all F_AT values are defined.
+! N_PROPMAX could be increased for very large domains.
+! The propagation of F_AT will stop anytime a boundary is encountered since F_AT
+! changes sign across a boundary.
+! 
+         DO N_PROP=1,N_PROPMAX
 
             DO IJK = IJKSTART3, IJKEND3
 
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
 
                      IMJK = IM_OF(IJK)
                      IF(F_AT(IMJK)==UNDEFINED.AND.F_AT(IMJK)/=ZERO)  F_AT(IMJK)=F_AT(IJK)
@@ -1664,34 +1645,37 @@
                      IJKP = KP_OF(IJK)
                      IF(F_AT(IJKP)==UNDEFINED.AND.F_AT(IJKP)/=ZERO)  F_AT(IJKP)=F_AT(IJK)
 
-
                ENDIF
 
+            ENDDO ! IJK Loop
+
+
+! Communicate F_AT accross processors for DMP runs
+            call send_recv(F_AT,2)
+
+! Count the number of undefined values of F_AT
+! and exit loop if all values of F_AT have been propagated            
+            N_UNDEFINED = 0
+            DO IJK = IJKSTART3, IJKEND3
+               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) N_UNDEFINED = N_UNDEFINED + 1
             ENDDO
 
+            call global_all_sum( N_UNDEFINED, NTOTAL_UNDEFINED )
+            IF(NTOTAL_UNDEFINED==0) EXIT
 
-!!!!            call send_recv(F_AT,2)
-
-            IF(N_PROP>N_PROPMAX.AND.N_UNDEFINED>0) THEN
-
-               WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
-               WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
-               WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
-               WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
-
-
-               exit
-!               CALL MFIX_EXIT(myPE)
-
-            ENDIF
-
-
-         ENDDO ! WHILE Loop
+         ENDDO ! N_PROP Loop
 
 
          call send_recv(F_AT,2)
 
-
+! If a process still has undefined values of F_AT, this probably means
+! that all cells belonging to that process are dead cells.
+         IF(N_UNDEFINED>0) THEN
+            WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
+            WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
+            WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
+            WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
+         ENDIF
 
 
 

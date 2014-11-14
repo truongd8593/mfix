@@ -48,24 +48,24 @@
       subroutine hpf(TS,foo,ibeg,iend,sr,cf,fo,fts)
 
       implicit none
- 
-      real*8 PI
+
+      real(kind=8) PI
       parameter (PI=3.14159265359)
 
-      real*8 TS(1:*) !.............................. time series (input)
-      real*8 foo(1:*) !........................... scratch array (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      real*8 sr !........ data sampling rate [samples/time unit] (input)
-      real*8 cf !.... filter cutoff frequency [cycles/time unit] (input)
-      integer*4 fo !............ filter order (number of passes) (input)
-      real*8 fts(1:*) !................... filtered time series (output)
-      integer*4 i !............................................. counter
-      integer*4 m !....................................... order counter
-      integer*4 nRec !................. number of records in [ibeg,iend]
-      real*8 tau !................................. filter time constant
-      real*8 dt !........ data sampling interval (inverse sampling rate)
-      real*8 alpha !...................................... filter factor
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      real(kind=8) foo(1:*) !........................... scratch array (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      real(kind=8) sr !........ data sampling rate [samples/time unit] (input)
+      real(kind=8) cf !.... filter cutoff frequency [cycles/time unit] (input)
+      integer(kind=4) fo !............ filter order (number of passes) (input)
+      real(kind=8) fts(1:*) !................... filtered time series (output)
+      integer(kind=4) i !............................................. counter
+      integer(kind=4) m !....................................... order counter
+      integer(kind=4) nRec !................. number of records in [ibeg,iend]
+      real(kind=8) tau !................................. filter time constant
+      real(kind=8) dt !........ data sampling interval (inverse sampling rate)
+      real(kind=8) alpha !...................................... filter factor
 
 ! --- Sanity and range checks ---
       nRec = iend - ibeg + 1
@@ -153,24 +153,24 @@
       subroutine lpf(TS,foo,ibeg,iend,sr,cf,fo,fts)
 
       implicit none
- 
-      real*8 PI
+
+      real(kind=8) PI
       parameter (PI=3.14159265359)
 
-      real*8 TS(1:*) !.............................. time series (input)
-      real*8 foo(1:*) !........................... scratch array (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      real*8 sr !........ data sampling rate [samples/time unit] (input)
-      real*8 cf !.... filter cutoff frequency [cycles/time unit] (input)
-      integer*4 fo !............ filter order (number of passes) (input)
-      real*8 fts(1:*) !................... filtered time series (output)
-      integer*4 i !............................................. counter
-      integer*4 m !....................................... order counter
-      integer*4 nRec !................. number of records in [ibeg,iend]
-      real*8 tau !................................. filter time constant
-      real*8 dt !........ data sampling interval (inverse sampling rate)
-      real*8 alpha !...................................... filter factor
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      real(kind=8) foo(1:*) !........................... scratch array (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      real(kind=8) sr !........ data sampling rate [samples/time unit] (input)
+      real(kind=8) cf !.... filter cutoff frequency [cycles/time unit] (input)
+      integer(kind=4) fo !............ filter order (number of passes) (input)
+      real(kind=8) fts(1:*) !................... filtered time series (output)
+      integer(kind=4) i !............................................. counter
+      integer(kind=4) m !....................................... order counter
+      integer(kind=4) nRec !................. number of records in [ibeg,iend]
+      real(kind=8) tau !................................. filter time constant
+      real(kind=8) dt !........ data sampling interval (inverse sampling rate)
+      real(kind=8) alpha !...................................... filter factor
 
 ! --- Sanity and range checks ---
       nRec = iend - ibeg + 1

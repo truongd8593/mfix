@@ -53,5 +53,5 @@
 
 !- END REMOVE --------------------------------------------------------<<
 
-      RETURN  
+      RETURN
       END SUBROUTINE DRAG_USR

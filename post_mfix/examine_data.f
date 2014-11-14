@@ -20,176 +20,176 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      
+
       ! format_one
       subroutine format_one(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(a,g12.5)'
-	 sLen = 12
+         sLen = 12
       else
          w = nPrec + 8
          spec = '(a,exx.xxE4)'
-	 write (spec(5:6),'(i2.2)') w
-	 write (spec(8:9),'(i2.2)') nPrec
-	 sLen = w + 5
+         write (spec(5:6),'(i2.2)') w
+         write (spec(8:9),'(i2.2)') nPrec
+         sLen = w + 5
       end if
       return
       end subroutine format_one
-      
+
       ! format_oneB
       subroutine format_oneB(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(1x,g12.5)'
-	 sLen = 13
+         sLen = 13
       else
          w = nPrec + 8
          spec = '(1x,exx.xxE4)'
-	 write (spec(6:7),'(i2.2)') w
-	 write (spec(9:10),'(i2.2)') nPrec
-	 sLen = w + 1
+         write (spec(6:7),'(i2.2)') w
+         write (spec(9:10),'(i2.2)') nPrec
+         sLen = w + 1
       end if
       return
       end subroutine format_oneB
-      
-      
+
+
       ! format_oneC
       subroutine format_oneC(spec,nPrec,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec,w,sLen
-      
+
       if (nPrec.lt.0) then
          spec = '(1x,1a8,a,g12.5)'
-	 sLen = 21
+         sLen = 21
       else
          w = nPrec + 8
          spec = '(1x,1a8,a,exx.xxE4)'
-	 write (spec(12:13),'(i2.2)') w
-	 write (spec(15:16),'(i2.2)') nPrec
-	 sLen = w + 9
+         write (spec(12:13),'(i2.2)') w
+         write (spec(15:16),'(i2.2)') nPrec
+         sLen = w + 9
       end if
       return
       end subroutine format_oneC
-      
+
       ! format_two
       subroutine format_two(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(a,g12.5,a,g12.5)'
-	 sLen = 24
+         sLen = 24
       else
          w1 = nPrec1 + 8
          w2 = nPrec1 + 8
          spec = '(a,exx.xxE4,a,exx.xxE4)'
-	 write (spec(5:6),'(i2.2)') w1
-	 write (spec(8:9),'(i2.2)') nPrec1
-	 write (spec(16:17),'(i2.2)') w2
-	 write (spec(19:20),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 10
+         write (spec(5:6),'(i2.2)') w1
+         write (spec(8:9),'(i2.2)') nPrec1
+         write (spec(16:17),'(i2.2)') w2
+         write (spec(19:20),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 10
       end if
       return
       end subroutine format_two
-      
+
       ! format_twoB
       subroutine format_twoB(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,A,1A8,A,G12.5,A,G12.5)'
-	 sLen = 24
+         sLen = 24
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
          spec = '(1x,a,1A8,A,exx.xxE4,a,exx.xxE4)'
-	 !       1234567890123456789012345678901
-	 write (spec(14:15),'(i2.2)') w1
-	 write (spec(17:18),'(i2.2)') nPrec1
-	 write (spec(25:26),'(i2.2)') w2
-	 write (spec(28:29),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 10
+         !       1234567890123456789012345678901
+         write (spec(14:15),'(i2.2)') w1
+         write (spec(17:18),'(i2.2)') nPrec1
+         write (spec(25:26),'(i2.2)') w2
+         write (spec(28:29),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 10
       end if
       return
       end subroutine format_twoB
-      
+
        ! format_twoC
       subroutine format_twoC(spec,nPrec1,nPrec2,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,w1,w2,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,G12.5,2X,G12.5)'
-	 sLen = 27
+         sLen = 27
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
          spec = '(1x,exx.xxE4,2x,exx.xxE4)'
-	 !       123456789012345678901234567890
-	 write (spec(6:7),'(i2.2)') w1
-	 write (spec(9:10),'(i2.2)') nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 sLen = w1 + w2 + 3
+         !       123456789012345678901234567890
+         write (spec(6:7),'(i2.2)') w1
+         write (spec(9:10),'(i2.2)') nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         sLen = w1 + w2 + 3
       end if
       return
       end subroutine format_twoC
-      
-      
+
+
       ! format_four
       subroutine format_four(spec,nPrec1,nPrec2,nPrec3,nPrec4,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,w1,w2,w3,w4,sLen
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,4(G12.5,2X))'
-	 sLen = 57 ! = 1 + 4*14
+         sLen = 57 ! = 1 + 4*14
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
          w3 = nPrec3 + 8
          w4 = nPrec4 + 8
          spec = &
-         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
-	 !123  67 90123456 89 12 4567  01 3456789  23 56
-	 write (spec(6:7),'(i2.2)')   w1
-	 write (spec(9:10),'(i2.2)')   nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 write (spec(30:31),'(i2.2)') w3
-	 write (spec(33:34),'(i2.2)') nPrec3
-	 write (spec(42:43),'(i2.2)') w4
-	 write (spec(45:46),'(i2.2)') nPrec4
-	 sLen = w1 + w2 + w3 + w4 + 7
+         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
+         !123  67 90123456 89 12 4567  01 3456789  23 56
+         write (spec(6:7),'(i2.2)')   w1
+         write (spec(9:10),'(i2.2)')   nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         write (spec(30:31),'(i2.2)') w3
+         write (spec(33:34),'(i2.2)') nPrec3
+         write (spec(42:43),'(i2.2)') w4
+         write (spec(45:46),'(i2.2)') nPrec4
+         sLen = w1 + w2 + w3 + w4 + 7
       end if
       return
       end subroutine format_four
 
-           
-      
+
+
       ! format_five
       subroutine format_five(spec,nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,sLen)
       implicit none
-      character*(*) :: spec
+      character(len=*) :: spec
       integer       :: nPrec1,nPrec2,nPrec3,nPrec4,nPrec5,w1,w2,sLen
       integer       :: w3,w4,w5
-      
+
       if (nPrec1.lt.0) then
          spec = '(1X,5(G12.5,2X))'
-	 sLen = 71 ! = 1 + 5*14
+         sLen = 71 ! = 1 + 5*14
       else
          w1 = nPrec1 + 8
          w2 = nPrec2 + 8
@@ -197,19 +197,19 @@
          w4 = nPrec4 + 8
          w5 = nPrec5 + 8
          spec = &
-         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)' 
-	 !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
-	 write (spec(6:7),'(i2.2)')   w1
-	 write (spec(9:10),'(i2.2)')   nPrec1
-	 write (spec(18:19),'(i2.2)') w2
-	 write (spec(21:22),'(i2.2)') nPrec2
-	 write (spec(30:31),'(i2.2)') w3
-	 write (spec(33:34),'(i2.2)') nPrec3
-	 write (spec(42:43),'(i2.2)') w4
-	 write (spec(45:46),'(i2.2)') nPrec4
-	 write (spec(54:55),'(i2.2)') w5
-	 write (spec(57:58),'(i2.2)') nPrec5
-	 sLen = w1 + w2 + w3 + w4 + w5 + 9
+         '(1x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4,2x,exx.xxE4)'
+         !123 56 89012345 78 01234567 90 23456789 12 45678901 34 67890
+         write (spec(6:7),'(i2.2)')   w1
+         write (spec(9:10),'(i2.2)')   nPrec1
+         write (spec(18:19),'(i2.2)') w2
+         write (spec(21:22),'(i2.2)') nPrec2
+         write (spec(30:31),'(i2.2)') w3
+         write (spec(33:34),'(i2.2)') nPrec3
+         write (spec(42:43),'(i2.2)') w4
+         write (spec(45:46),'(i2.2)') nPrec4
+         write (spec(54:55),'(i2.2)') w5
+         write (spec(57:58),'(i2.2)') nPrec5
+         sLen = w1 + w2 + w3 + w4 + w5 + 9
       end if
       return
       end subroutine format_five
@@ -217,8 +217,8 @@
 
 !        WRITE(LINE,'(1X,5(G12.5,2X))')TIME_NOW, XTMP, YTMP, ZTMP, &
 !                                      VALUE_TMP
-      
-      
+
+
       SUBROUTINE EXAMINE_DATA
 !
       Use param
@@ -234,18 +234,18 @@
       Use scalars
       Use compar
       use post_precision
-      
+      Use functions
+
       IMPLICIT NONE
       INTEGER  N_VAR
       PARAMETER (N_VAR=52)
       INCLUDE 'xforms.inc'
-!
-      CHARACTER*80 LINE
-      CHARACTER*120 STRING, SUBSTR
-      CHARACTER*8  VAR, VAR_DAT(N_VAR)
-      CHARACTER*120    FILE_NAME
+
+      CHARACTER(LEN=80)  :: LINE
+      CHARACTER(LEN=120)  :: STRING, SUBSTR
+      CHARACTER(LEN=8)   :: VAR, VAR_DAT(N_VAR)
+      CHARACTER(LEN=120) :: FILE_NAME
       INTEGER      L, L3, L4, LMAX, IANS, NSTEP_1
-      REAL         DX_E, DY_N, DZ_T
       REAL         DIST(DIMENSION_3), VALUE(DIMENSION_3)
       REAL         TIME_IN_RES
       INTEGER      DISPLAY, DIRECTION, NT
@@ -256,8 +256,8 @@
       REAL         XTMP, YTMP, ZTMP, VALUE_TMP
       INTEGER      IJK1
       INTEGER      M_LOCAL, mIJK, lIJK, IER
-      INTEGER      I, J, K, IJK, M, N   
-      REAL         DELm, DELl, FAC1, FAC2 
+      INTEGER      I, J, K, IJK, M, N
+      REAL         DELm, DELl, FAC1, FAC2
 !
       REAL              TIME_REAL(N_SPX), TIME_FOUND, TIME_NOW , TIME_OLD
       INTEGER           REC_POINTER(N_SPX)
@@ -273,48 +273,41 @@
       REAL FLUX_sx, FLUX_sy, FLUX_sz
       REAL CALC_RO_g
 !
-      INCLUDE 'function.inc'
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
-      
-!                   7      8      9      10       11     12 
+
+!                   7      8      9      10       11     12
                    'U_s', 'V_s', 'W_s', 'ROP_s', 'T_g', 'T_s', &
-     
+
 !                   13      14     15     16          17
                    'T_s2', 'X_g', 'X_s', 'XFLOW_gx', 'XFLOW_gy', &
-     
-!                   18          19          20          21     
+
+!                   18          19          20          21
                    'XFLOW_gz', 'XFLOW_sx', 'XFLOW_sy', 'XFLOW_sz', &
-     
-!                   22          23          24          25     
+
+!                   22          23          24          25
                    'MFLOW_gx', 'MFLOW_gy', 'MFLOW_gz', 'MFLOW_sx', &
-     
-!                   26          27         28           29     
+
+!                   26          27         28           29
                    'MFLOW_sy', 'MFLOW_sz', 'VFLOW_gx', 'VFLOW_gy', &
-     
+
 !                   30          31          32          33
                    'VFLOW_gz', 'VFLOW_sx', 'VFLOW_sy', 'VFLOW_sz', &
-     
-!                   34        35        36         37     
+
+!                   34        35        36         37
                    'MASS_g', 'MASS_s', 'FLUX_gx', 'FLUX_gy', &
-     
+
 !                   38         39         40         41
                    'FLUX_gz', 'FLUX_sx', 'FLUX_sy', 'FLUX_sz' ,&
-     
+
 !                   42      43     44    45     46     47
                    'KE_g', 'KE_s','P_s','PE_g','PE_s','BERN_s', &
-     
-!                   48		49          50          51
-         	   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
 
-!                   52		   
-		   'E_Turb_G'/
+!                   48          49          50          51
+                   'Theta_m', 'Scalar' , 'RRates' , 'K_Turb_G', &
 
-
-      DZ_T(K) = HALF * (DZ(K) + DZ(Kp1(K)))
-      DY_N(J) = HALF * (DY(J) + DY(Jp1(J)))
-      DX_E(I) = HALF * (DX(I) + DX(Ip1(I)))
-!
+!                   52
+                   'E_Turb_G'/
 
       integer :: gas_species_index , solid_species_index , solid_index
       logical :: bRead_all
@@ -367,7 +360,7 @@
          REC_POINTER(L) = 4
       END DO
 !
-!  
+!
       IF (DO_XFORMS) THEN
         M          = M_USE
         N          = N_USE
@@ -380,10 +373,11 @@
       ' Interactive data retrieval program. Type ? any time for help,'
       WRITE(*,*)&
       ' or press RETURN to select default values shown in parenthesis.'
-      
+
       WRITE(*,*)
-      
-9     write (*,'(A,$)') ' Write output using user-supplied precision? (T/F) '
+
+9     write (*,'(A)',ADVANCE='NO') &
+         ' Write output using user-supplied precision? (T/F) '
 !      read  (*,*) bPrecision
         READ(*,'(1A60)',ERR=9) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -393,16 +387,16 @@
         L3 = 1
         CALL GET_SUBSTR(STRING, L3, SUBSTR)
         IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=9)bPrecision
-      
+
       nPrec_location = -1  ! default value if not using precision
       nPrec_time     = -1  ! default value if not using precision
       nPrec_variable =  5  ! default value if not using precision
-      
+
       if (bPrecision) then
-         write (*,'(A,$)') ' Enter precision for location values: '
-	 read  (*,*) nPrec_location
-         write (*,'(A,$)') ' Enter precision for time values: '
-	 read  (*,*) nPrec_time
+         write (*,'(A)',ADVANCE='NO') ' Enter precision for location values: '
+         read  (*,*) nPrec_location
+         write (*,'(A)',ADVANCE='NO') ' Enter precision for time values: '
+         read  (*,*) nPrec_time
       end if
 !
 !  Read time
@@ -415,13 +409,13 @@
       bRead_all           = .true.
 
       WRITE(*,*)
-      WRITE(*,'(A,F7.3,A,F7.3,A,$)')&
+      WRITE(*,'(A,F7.3,A,F7.3,A)',ADVANCE='NO')&
        ' Time: (',TIME_START,',',TIME_END,') > '
       READ(*,'(1A60)',ERR=10) STRING
       IF(STRING(1:1) .EQ. '?') THEN
         CALL HELP(10)
         GOTO 10
-      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. & 
+      ELSEIF(STRING(1:1) .EQ. 'e' .OR. STRING(1:1) .EQ. 'E' .OR. &
              STRING(1:1) .EQ. 'q' .OR. STRING(1:1) .EQ. 'Q') THEN
         IF(FILE_NAME(1:1) .NE. '*') CLOSE(40)
         bRead_all = .true.
@@ -447,7 +441,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-11      WRITE(*, '(A,1A1,A,$)')' Time average ? (',SUBSTR(1:1),') > '
+11      WRITE(*, '(A,1A1,A)',ADVANCE='NO')' Time average ? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=11) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(11)
@@ -473,7 +467,7 @@
         SUBSTR(1:8) = VAR
         SUBSTR(9:9) = ' '
       ENDIF
-      WRITE(*,'(A,1A9,A,$)')&
+      WRITE(*,'(A,1A9,A)',ADVANCE='NO')&
        ' Variable: (', SUBSTR(1:9), ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -523,7 +517,7 @@
          (VAR_NO .EQ. 48                     ) &
                                                    )THEN
         IF(MMAX .GT. 1) THEN
-24        WRITE(*,'(A,I2,A,$)') ' Solids phase: (', M, ') > '
+24        WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Solids phase: (', M, ') > '
           READ(*,'(1A60)',ERR=24) STRING
           IF(STRING(1:1) .EQ. '?') THEN
             CALL HELP(24)
@@ -544,7 +538,7 @@
       ENDIF
 !
       IF(VAR_NO .GE. 14 .AND. VAR_NO .LE. 21)THEN
-25      WRITE(*,'(A,I2,A,$)') ' Species: (', N, ') > '
+25      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Species: (', N, ') > '
         READ(*,'(1A60)',ERR=25) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(25)
@@ -575,7 +569,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. NScalar)N = 1
-29      WRITE(*,'(A,I2,A,$)') ' Scalar: (', N, ') > '
+29      WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Scalar: (', N, ') > '
         READ(*,'(1A60)',ERR=29) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(29)
@@ -598,7 +592,7 @@
           GOTO 20
         ENDIF
         IF(N .GT. nRR)N = 1
-229     WRITE(*,'(A,I2,A,$)') ' Reaction Rate: (', N, ') > '
+229     WRITE(*,'(A,I2,A)',ADVANCE='NO') ' Reaction Rate: (', N, ') > '
         READ(*,'(1A60)',ERR=229) STRING
         IF(STRING(1:1) .EQ. '?') THEN
           CALL HELP(32)
@@ -691,7 +685,7 @@
          (VAR_NO .GE. 28 .AND. VAR_NO .LE. 30) .OR.&
          (VAR_NO .GE. 36 .AND. VAR_NO .LE. 38) .OR.&
          (VAR_NO .EQ. 42                     ) &
-                                                 ) THEN  
+                                                 ) THEN
         READ_SPX(3) = .TRUE.    ! U_g, V_g, W_g
       ENDIF
       IF((VAR_NO .GE.  7 .AND. VAR_NO .LE.  9) .OR.&
@@ -732,7 +726,7 @@
          (ANY_SOLVE_ROs.AND.(VAR_NO .GE. 31 .AND. VAR_NO .LE. 33))) THEN
         READ_SPX(7) = .TRUE.    ! X_g, X_s
       ENDIF
-      
+
       IF(VAR_NO .EQ. 48 ) THEN
         READ_SPX(8) = .TRUE.    ! Theta_m
       ENDIF
@@ -773,7 +767,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-26         WRITE(*, '(A,1A1,A,$)')&
+26         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
             ' P_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=26) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -791,7 +785,7 @@
            ELSE
              SUBSTR(1:1) = 'N'
            ENDIF
-27         WRITE(*, '(A,1A1,A,$)')&
+27         WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
              ' T_g from RES file? (',SUBSTR(1:1),') > '
            READ(*,'(1A60)',ERR=27) STRING
            IF(STRING(1:1) .EQ. '?') THEN
@@ -815,7 +809,7 @@
              ELSE
                SUBSTR(1:1) = 'N'
              ENDIF
-28           WRITE(*, '(A,1A1,A,$)')&
+28           WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
                ' X_g from RES file? (',SUBSTR(1:1),') > '
              READ(*,'(1A60)',ERR=28) STRING
              IF(STRING(1:1) .EQ. '?') THEN
@@ -846,8 +840,8 @@
 ! if doing user-specifiied precision output, get value for this variable
 !
       if (bPrecision) then
-          write (*,'(a,i2,a,$)') ' Enter precision ( ' , nPrec_variable , ') >'
-	  read (*,'(1a60)') string
+          write (*,'(a,i2,a)',ADVANCE='NO') ' Enter precision ( ' , nPrec_variable , ') >'
+          read (*,'(1a60)') string
           L3 = 1
           CALL GET_SUBSTR(STRING, L3, SUBSTR)
           IF(SUBSTR(1:1) .NE. ' ')READ(SUBSTR,*,ERR=30) nPrec_variable
@@ -855,7 +849,7 @@
 !
 !  Read I range
 !
-30    WRITE(*,'(A,I3,A,I3,A,$)')&
+30    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' I range: (', I1, ',', I2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -884,7 +878,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-31      WRITE(*, '(A,1A1,A,$)')&
+31      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over I? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=31) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -900,7 +894,7 @@
 !
 !  Read J range
 !
-40    WRITE(*,'(A,I3,A,I3,A,$)')&
+40    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' J range: (', J1,',',J2, ') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -929,7 +923,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-41      WRITE(*, '(A,1A1,A,$)')&
+41      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over J? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=41) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -945,7 +939,7 @@
 !
 !  Read K range
 !
-50    WRITE(*,'(A,I3,A,I3,A,$)')&
+50    WRITE(*,'(A,I3,A,I3,A)',ADVANCE='NO')&
        ' K range: (', K1,',',K2,') >'
       READ(*,'(1A60)') STRING
       IF(STRING(1:1) .EQ. '?') THEN
@@ -974,7 +968,7 @@
         ELSE
           SUBSTR(1:1) = 'N'
         ENDIF
-51      WRITE(*, '(A,1A1,A,$)')&
+51      WRITE(*, '(A,1A1,A)',ADVANCE='NO')&
         ' Average or sum over K? (',SUBSTR(1:1),') > '
         READ(*,'(1A60)',ERR=51) STRING
         IF(STRING(1:1) .EQ. '?') THEN
@@ -1011,7 +1005,7 @@
 !      END IF
 !
 !
-70    WRITE(*,'(A,1A30,A,$)') ' File: (', FILE_NAME,') >'
+70    WRITE(*,'(A,1A30,A)',ADVANCE='NO') ' File: (', FILE_NAME,') >'
       READ(*,'(1A60)') STRING
       IF (STRING(1:1) .EQ. '?') THEN
          CALL HELP(70)
@@ -1028,7 +1022,7 @@
             IF (FILE_NAME(1:1) .NE. '*') THEN
                INQUIRE (FILE=FILE_NAME,EXIST=FILE_EXIST)
                IF (FILE_EXIST .AND. .NOT.DO_XFORMS) THEN
-                  WRITE(*,'(A,$)')' File exists.  Over write? (1=Yes) >'
+                  WRITE(*,'(A)',ADVANCE='NO')' File exists.  Over write? (1=Yes) >'
                   READ(*,*)IANS
                   IF(IANS .NE. 1)GOTO 70
                ENDIF
@@ -1069,7 +1063,7 @@
           XTMP = XDIST_SC(I1)
         ENDIF
         DISPLAY = DISPLAY - 4
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' X = ', XTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 5)
       ELSEIF(I_AVERAGE) THEN
@@ -1104,7 +1098,7 @@
           YTMP = YDIST_SC(J1)
         ENDIF
         DISPLAY = DISPLAY - 2
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' Y = ', YTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+5)
       ELSEIF(J_AVERAGE) THEN
@@ -1139,7 +1133,7 @@
           ZTMP = ZDIST_SC(K1)
         ENDIF
         DISPLAY = DISPLAY - 1
-	call format_one(spec,nPrec_location,nPrec_length)
+        call format_one(spec,nPrec_location,nPrec_length)
         WRITE(LINE,spec)' Z = ', ZTMP
         CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+5)
       ELSEIF(K_AVERAGE) THEN
@@ -1193,7 +1187,7 @@
         WRITE(LINE,'(A,I2)') ' Species = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 13)
       ENDIF
-      IF(VAR_NO .EQ. 50) THEN 
+      IF(VAR_NO .EQ. 50) THEN
         WRITE(LINE,'(A,I2)') ' Rrates = ', N
         CALL WRITE_LINE(FILE_NAME, LINE, 12)
       ENDIF
@@ -1204,12 +1198,14 @@
       TIME_OLD = -1.
       IF(TIME_AVERAGE) THEN
         NT = 0
-        DO 90 K = K1, K2
-        DO 90 J = J1, J2
-        DO 90 I = I1, I2
-          IJK = FUNIJK(I,J,K)
-          VALUE(IJK) = ZERO
-90      CONTINUE
+        DO K = K1, K2
+           DO J = J1, J2
+              DO I = I1, I2
+                 IJK = FUNIJK_LOC(I,J,K)
+                 VALUE(IJK) = ZERO
+              ENDDO
+           ENDDO
+        ENDDO
       ENDIF
 !
       IF(MINMAX .EQ. 0) THEN
@@ -1259,21 +1255,23 @@
          (VAR_NO .GE. 25 .AND. VAR_NO .LE. 27) .OR. &
          (VAR_NO .GE. 31 .AND. VAR_NO .LE. 33) .OR.&
          (VAR_NO .EQ. 35                     ) .OR.&
-         (VAR_NO .GE. 39 .AND. VAR_NO .LE. 41) .OR. &   
+         (VAR_NO .GE. 39 .AND. VAR_NO .LE. 41) .OR. &
          (VAR_NO .EQ. 43                     ) .OR.&
          (VAR_NO .EQ. 44                     ) .OR.&
          (VAR_NO .EQ. 46                     ) .OR.&
          (VAR_NO .EQ. 47                     ) &
-	                                          ) THEN
-	  ! loop over the entire domain because mass flux calculations
-	  ! need ROP_s outside i,j,k limits specified by the user
-          DO 102 K = KMIN1, KMAX2
-          DO 102 J = JMIN1, JMAX2
-          DO 102 I = IMIN1, IMAX2
-            IJK = FUNIJK(I, J, K)
-            ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
-102       CONTINUE
-        ENDIF
+                                                  ) THEN
+          ! loop over the entire domain because mass flux calculations
+          ! need ROP_s outside i,j,k limits specified by the user
+          DO K = KMIN1, KMAX2
+             DO J = JMIN1, JMAX2
+                DO I = IMIN1, IMAX2
+                   IJK = FUNIJK_LOC(I, J, K)
+                   ROP_s(IJK, 1) = (ONE - EP_g(IJK)) * RO_s0(1)
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDIF
       ENDIF
 !
 !     FIND THETA IF CALCULATING SOLIDS PRESSURE, P_s
@@ -1287,151 +1285,154 @@
       ENDIF
 !
       NT = NT + 1
-      DO 105 K = K1, K2
-      DO 105 J = J1, J2
-      DO 105 I = I1, I2
-        IJK = FUNIJK(I, J, K)
-        IF(VAR_NO .EQ. 1) THEN
-          VALUE_TMP = EP_g(IJK)
-        ELSEIF(VAR_NO .EQ. 2)THEN
-          VALUE_TMP = P_g(IJK)
-        ELSEIF(VAR_NO .EQ. 3)THEN
-          VALUE_TMP = P_star(IJK)
-        ELSEIF(VAR_NO .EQ. 4)THEN
-          VALUE_TMP = U_g(IJK)
-        ELSEIF(VAR_NO .EQ. 5)THEN
-          VALUE_TMP = V_g(IJK)
-        ELSEIF(VAR_NO .EQ. 6)THEN
-          VALUE_TMP = W_g(IJK)
-        ELSEIF(VAR_NO .EQ. 7)THEN
-          VALUE_TMP = U_s(IJK, M)
-        ELSEIF(VAR_NO .EQ. 8)THEN
-          VALUE_TMP = V_s(IJK, M)
-        ELSEIF(VAR_NO .EQ. 9)THEN
-          VALUE_TMP = W_s(IJK, M)
-        ELSEIF(VAR_NO .EQ. 10)THEN
-          VALUE_TMP = ROP_s(IJK, M)
-        ELSEIF(VAR_NO .EQ. 11)THEN
-          VALUE_TMP = T_g(IJK)
-        ELSEIF(VAR_NO .EQ. 12)THEN
-          VALUE_TMP = T_s(IJK, M)
-        ELSEIF(VAR_NO .EQ. 13)THEN
-          VALUE_TMP = T_s(IJK, 2)
-        ELSEIF(VAR_NO .EQ. 14)THEN
-          VALUE_TMP = X_g(IJK, N)
-        ELSEIF(VAR_NO .EQ. 15)THEN
-          VALUE_TMP = X_s(IJK, M, N)
-        ELSEIF(VAR_NO .EQ. 16)THEN
-          VALUE_TMP = XFLOW_gx(I, J, K, IJK, N)
-        ELSEIF(VAR_NO .EQ. 17)THEN
-          VALUE_TMP = XFLOW_gy(I, J, K, IJK, N)
-        ELSEIF(VAR_NO .EQ. 18)THEN
-          VALUE_TMP = XFLOW_gz(I, J, K, IJK, N)
-        ELSEIF(VAR_NO .EQ. 19)THEN
-          VALUE_TMP = XFLOW_sx(I, J, K, IJK, M, N)
-        ELSEIF(VAR_NO .EQ. 20)THEN
-          VALUE_TMP = XFLOW_sy(I, J, K, IJK, M, N)
-        ELSEIF(VAR_NO .EQ. 21)THEN
-          VALUE_TMP = XFLOW_sz(I, J, K, IJK, M, N)
-        ELSEIF(VAR_NO .EQ. 22)THEN
-          VALUE_TMP = MFLOW_gx(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 23)THEN
-          VALUE_TMP = MFLOW_gy(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 24)THEN
-          VALUE_TMP = MFLOW_gz(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 25)THEN
-          VALUE_TMP = MFLOW_sx(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 26)THEN
-          VALUE_TMP = MFLOW_sy(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 27)THEN
-          VALUE_TMP = MFLOW_sz(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 28)THEN
-          VALUE_TMP = VFLOW_gx(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 29)THEN
-          VALUE_TMP = VFLOW_gy(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 30)THEN
-          VALUE_TMP = VFLOW_gz(I, J, K, IJK)
-        ELSEIF(VAR_NO .EQ. 31)THEN
-          VALUE_TMP = VFLOW_sx(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 32)THEN
-          VALUE_TMP = VFLOW_sy(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 33)THEN
-          VALUE_TMP = VFLOW_sz(I, J, K, IJK, M)
-        ELSEIF(VAR_NO .EQ. 34)THEN
-          VALUE_TMP = EP_g(IJK) * CALC_RO_g(IJK) * VOL(IJK)
-        ELSEIF(VAR_NO .EQ. 35)THEN
-          VALUE_TMP = ROP_s(IJK, M) * VOL(IJK)
-        ELSEIF(VAR_NO .EQ. 36)THEN
-          VALUE_TMP = FLUX_gx(IJK)
-        ELSEIF(VAR_NO .EQ. 37)THEN
-          VALUE_TMP = FLUX_gy(IJK)
-        ELSEIF(VAR_NO .EQ. 38)THEN
-          VALUE_TMP = FLUX_gz(IJK)
-        ELSEIF(VAR_NO .EQ. 39)THEN
-          VALUE_TMP = FLUX_sx(IJK, M)
-        ELSEIF(VAR_NO .EQ. 40)THEN
-          VALUE_TMP = FLUX_sy(IJK, M)
-        ELSEIF(VAR_NO .EQ. 41)THEN
-          VALUE_TMP = FLUX_sz(IJK, M)
-        ELSEIF(VAR_NO .EQ. 42)THEN
-          VALUE_TMP = 0.5*CALC_RO_g(IJK)*EP_g(IJK)&
-                    *(U_g(IJK)**2 + V_g(IJK)**2 + W_g(IJK)**2)
-        ELSEIF(VAR_NO .EQ. 43)THEN
-          VALUE_TMP = 0.5*ROP_s(IJK,M)&
-              *(U_s(IJK,M)**2 + V_s(IJK,M)**2 + W_s(IJK,M)**2)
-        ELSEIF(VAR_NO .EQ. 44)THEN
-          VALUE_TMP = P_s(IJK,M)
-            IF(EP_g(IJK) .LT. EP_star) THEN
-              VALUE_TMP = P_star(IJK)
-            ENDIF
-        ELSEIF(VAR_NO .EQ. 45)THEN
-          VALUE_TMP = GRAVITY*YDIST_SC(J)*CALC_RO_g(IJK)*EP_g(IJK)
-        ELSEIF(VAR_NO .EQ. 46)THEN
-          VALUE_TMP = GRAVITY*YDIST_SC(J)*ROP_s(IJK,M)
-        ELSEIF(VAR_NO .EQ. 47)THEN
-          mIJK= FUNIJK(I,J+1,K)
-          lIJK= FUNIJK(I,J-1,K)
-          DELm=YDIST_SC(J+1)-YDIST_SC(J)
-          DELl=YDIST_SC(J)-YDIST_SC(J-1)
-          FAC1= (ROP_s(mIJK,M)-ROP_s(IJK,M))/DELm &
-               +(ROP_s(IJK,M)-ROP_s(lIJK,M))/DELl
-          FAC2=P_s(IJK,M)/(ROP_s(IJK,M)**2)
-!          IF(EP_g(IJK) .LT. EP_star) THEN
-!             FAC2=P_star(IJK)/(ROP_s(IJK,M)**2)
-!          ENDIF
-          VALUE_TMP = DY(J)*FAC1*FAC2/2
-        ELSEIF(VAR_NO .EQ. 48)THEN
-          VALUE_TMP = Theta_m(IJK, M)
-        ELSEIF(VAR_NO .EQ. 49)THEN
-          VALUE_TMP = Scalar(IJK, N)
-       ELSEIF(VAR_NO .EQ. 50)THEN
-          VALUE_TMP = ReactionRates(IJK, N)
-       ELSEIF(VAR_NO .EQ. 51)THEN
-          VALUE_TMP = K_Turb_G(IJK)
-       ELSEIF(VAR_NO .EQ. 52)THEN
-          VALUE_TMP = E_Turb_G(IJK)
-        ENDIF
-	
-	
-        IF(TIME_AVERAGE)THEN
-          VALUE(IJK) = VALUE(IJK) + VALUE_TMP
-        ELSE
-          VALUE(IJK) = VALUE_TMP
-        ENDIF
-105   CONTINUE
-!
+      DO K = K1, K2
+         DO J = J1, J2
+            DO I = I1, I2
+               IJK = FUNIJK_LOC(I, J, K)
+               IF(VAR_NO .EQ. 1) THEN
+                  VALUE_TMP = EP_g(IJK)
+               ELSEIF(VAR_NO .EQ. 2)THEN
+                  VALUE_TMP = P_g(IJK)
+               ELSEIF(VAR_NO .EQ. 3)THEN
+                  VALUE_TMP = P_star(IJK)
+               ELSEIF(VAR_NO .EQ. 4)THEN
+                  VALUE_TMP = U_g(IJK)
+               ELSEIF(VAR_NO .EQ. 5)THEN
+                  VALUE_TMP = V_g(IJK)
+               ELSEIF(VAR_NO .EQ. 6)THEN
+                  VALUE_TMP = W_g(IJK)
+               ELSEIF(VAR_NO .EQ. 7)THEN
+                  VALUE_TMP = U_s(IJK, M)
+               ELSEIF(VAR_NO .EQ. 8)THEN
+                  VALUE_TMP = V_s(IJK, M)
+               ELSEIF(VAR_NO .EQ. 9)THEN
+                  VALUE_TMP = W_s(IJK, M)
+               ELSEIF(VAR_NO .EQ. 10)THEN
+                  VALUE_TMP = ROP_s(IJK, M)
+               ELSEIF(VAR_NO .EQ. 11)THEN
+                  VALUE_TMP = T_g(IJK)
+               ELSEIF(VAR_NO .EQ. 12)THEN
+                  VALUE_TMP = T_s(IJK, M)
+               ELSEIF(VAR_NO .EQ. 13)THEN
+                  VALUE_TMP = T_s(IJK, 2)
+               ELSEIF(VAR_NO .EQ. 14)THEN
+                  VALUE_TMP = X_g(IJK, N)
+               ELSEIF(VAR_NO .EQ. 15)THEN
+                  VALUE_TMP = X_s(IJK, M, N)
+               ELSEIF(VAR_NO .EQ. 16)THEN
+                  VALUE_TMP = XFLOW_gx(I, J, K, IJK, N)
+               ELSEIF(VAR_NO .EQ. 17)THEN
+                  VALUE_TMP = XFLOW_gy(I, J, K, IJK, N)
+               ELSEIF(VAR_NO .EQ. 18)THEN
+                  VALUE_TMP = XFLOW_gz(I, J, K, IJK, N)
+               ELSEIF(VAR_NO .EQ. 19)THEN
+                  VALUE_TMP = XFLOW_sx(I, J, K, IJK, M, N)
+               ELSEIF(VAR_NO .EQ. 20)THEN
+                  VALUE_TMP = XFLOW_sy(I, J, K, IJK, M, N)
+               ELSEIF(VAR_NO .EQ. 21)THEN
+                  VALUE_TMP = XFLOW_sz(I, J, K, IJK, M, N)
+               ELSEIF(VAR_NO .EQ. 22)THEN
+                  VALUE_TMP = MFLOW_gx(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 23)THEN
+                  VALUE_TMP = MFLOW_gy(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 24)THEN
+                  VALUE_TMP = MFLOW_gz(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 25)THEN
+                  VALUE_TMP = MFLOW_sx(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 26)THEN
+                  VALUE_TMP = MFLOW_sy(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 27)THEN
+                  VALUE_TMP = MFLOW_sz(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 28)THEN
+                  VALUE_TMP = VFLOW_gx(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 29)THEN
+                  VALUE_TMP = VFLOW_gy(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 30)THEN
+                  VALUE_TMP = VFLOW_gz(I, J, K, IJK)
+               ELSEIF(VAR_NO .EQ. 31)THEN
+                  VALUE_TMP = VFLOW_sx(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 32)THEN
+                  VALUE_TMP = VFLOW_sy(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 33)THEN
+                  VALUE_TMP = VFLOW_sz(I, J, K, IJK, M)
+               ELSEIF(VAR_NO .EQ. 34)THEN
+                  VALUE_TMP = EP_g(IJK) * CALC_RO_g(IJK) * VOL(IJK)
+               ELSEIF(VAR_NO .EQ. 35)THEN
+                  VALUE_TMP = ROP_s(IJK, M) * VOL(IJK)
+               ELSEIF(VAR_NO .EQ. 36)THEN
+                  VALUE_TMP = FLUX_gx(IJK)
+               ELSEIF(VAR_NO .EQ. 37)THEN
+                  VALUE_TMP = FLUX_gy(IJK)
+               ELSEIF(VAR_NO .EQ. 38)THEN
+                  VALUE_TMP = FLUX_gz(IJK)
+               ELSEIF(VAR_NO .EQ. 39)THEN
+                  VALUE_TMP = FLUX_sx(IJK, M)
+               ELSEIF(VAR_NO .EQ. 40)THEN
+                  VALUE_TMP = FLUX_sy(IJK, M)
+               ELSEIF(VAR_NO .EQ. 41)THEN
+                  VALUE_TMP = FLUX_sz(IJK, M)
+               ELSEIF(VAR_NO .EQ. 42)THEN
+                  VALUE_TMP = 0.5*CALC_RO_g(IJK)*EP_g(IJK)&
+                       *(U_g(IJK)**2 + V_g(IJK)**2 + W_g(IJK)**2)
+               ELSEIF(VAR_NO .EQ. 43)THEN
+                  VALUE_TMP = 0.5*ROP_s(IJK,M)&
+                       *(U_s(IJK,M)**2 + V_s(IJK,M)**2 + W_s(IJK,M)**2)
+               ELSEIF(VAR_NO .EQ. 44)THEN
+                  VALUE_TMP = P_s(IJK,M)
+                  IF(EP_g(IJK) .LT. EP_star) THEN
+                     VALUE_TMP = P_star(IJK)
+                  ENDIF
+               ELSEIF(VAR_NO .EQ. 45)THEN
+                  VALUE_TMP = GRAVITY*YDIST_SC(J)*CALC_RO_g(IJK)*EP_g(IJK)
+               ELSEIF(VAR_NO .EQ. 46)THEN
+                  VALUE_TMP = GRAVITY*YDIST_SC(J)*ROP_s(IJK,M)
+               ELSEIF(VAR_NO .EQ. 47)THEN
+                  mIJK= FUNIJK_LOC(I,J+1,K)
+                  lIJK= FUNIJK_LOC(I,J-1,K)
+                  DELm=YDIST_SC(J+1)-YDIST_SC(J)
+                  DELl=YDIST_SC(J)-YDIST_SC(J-1)
+                  FAC1= (ROP_s(mIJK,M)-ROP_s(IJK,M))/DELm &
+                       +(ROP_s(IJK,M)-ROP_s(lIJK,M))/DELl
+                  FAC2=P_s(IJK,M)/(ROP_s(IJK,M)**2)
+                  !          IF(EP_g(IJK) .LT. EP_star) THEN
+                  !             FAC2=P_star(IJK)/(ROP_s(IJK,M)**2)
+                  !          ENDIF
+                  VALUE_TMP = DY(J)*FAC1*FAC2/2
+               ELSEIF(VAR_NO .EQ. 48)THEN
+                  VALUE_TMP = Theta_m(IJK, M)
+               ELSEIF(VAR_NO .EQ. 49)THEN
+                  VALUE_TMP = Scalar(IJK, N)
+               ELSEIF(VAR_NO .EQ. 50)THEN
+                  VALUE_TMP = ReactionRates(IJK, N)
+               ELSEIF(VAR_NO .EQ. 51)THEN
+                  VALUE_TMP = K_Turb_G(IJK)
+               ELSEIF(VAR_NO .EQ. 52)THEN
+                  VALUE_TMP = E_Turb_G(IJK)
+               ENDIF
+
+               IF(TIME_AVERAGE)THEN
+                  VALUE(IJK) = VALUE(IJK) + VALUE_TMP
+               ELSE
+                  VALUE(IJK) = VALUE_TMP
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
 106   IF(TIME_AVERAGE)THEN
         IF(TIME_NOW .GE. TIME_END .OR. END_AVERAGE)THEN
           IF(NT .EQ. 0) THEN
             WRITE(*,*)' Could not do time averaging'
             GOTO 10
           ENDIF
-          DO 110 K = K1, K2
-          DO 110 J = J1, J2
-          DO 110 I = I1, I2
-            IJK = FUNIJK(I,J,K)
-            VALUE(IJK) = VALUE(IJK) / REAL(NT)
-110       CONTINUE
+          DO K = K1, K2
+             DO J = J1, J2
+                DO I = I1, I2
+                   IJK = FUNIJK_LOC(I,J,K)
+                   VALUE(IJK) = VALUE(IJK) / REAL(NT)
+                ENDDO
+             ENDDO
+          ENDDO
           call format_twoB(spec,nPrec_time,nPrec_time,nPrec_length)
           WRITE(LINE,spec) &
            'Time average of ',VAR, ' from Time = ',TIME_START, &
@@ -1446,352 +1447,398 @@
 !
       IF(K_AVERAGE)THEN
         K = K1
-        DO 115 J = J1, J2
-        DO 115 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IF(WALL_AT(IJK))THEN
-            VALUE(IJK) = ZERO
-            DIST(IJK)  = ZERO
-          ELSEIF(.NOT. SUM) THEN
-            IF(DIRECTION .EQ. 3)THEN
-              VALUE(IJK) = VALUE(IJK) * DZ_T(K)
-              DIST(IJK)  = DZ_T(K)
-            ELSE
-              VALUE(IJK) = VALUE(IJK) * DZ(K)
-              DIST(IJK)  = DZ(K)
-            ENDIF
-          ENDIF
-115     CONTINUE
-!
-        DO 116 K = K1+1, K2
-        DO 116 J = J1, J2
-        DO 116 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I, J, K1)
-          IF(.NOT.WALL_AT(IJK)) THEN
-            IF(SUM) THEN
-              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-            ELSE
-              IF(DIRECTION .EQ. 3)THEN
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ_T(K)
-                DIST(IJK1)  = DIST(IJK1)  + DZ_T(K)
-              ELSE
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ(K)
-                DIST(IJK1)  = DIST(IJK1)  + DZ(K)
+        DO J = J1, J2
+           DO I = I1, I2
+              IJK = FUNIJK_LOC(I, J, K)
+              IF(WALL_AT(IJK))THEN
+                 VALUE(IJK) = ZERO
+                 DIST(IJK)  = ZERO
+              ELSEIF(.NOT. SUM) THEN
+                 IF(DIRECTION .EQ. 3)THEN
+                    VALUE(IJK) = VALUE(IJK) * DZ_T(K)
+                    DIST(IJK)  = DZ_T(K)
+                 ELSE
+                    VALUE(IJK) = VALUE(IJK) * DZ(K)
+                    DIST(IJK)  = DZ(K)
+                 ENDIF
               ENDIF
-            ENDIF
-          ENDIF
-116     CONTINUE
+           ENDDO
+        ENDDO
 !
+        DO K = K1+1, K2
+           DO J = J1, J2
+              DO I = I1, I2
+                 IJK = FUNIJK_LOC(I, J, K)
+                 IJK1 = FUNIJK_LOC(I, J, K1)
+                 IF(.NOT.WALL_AT(IJK)) THEN
+                    IF(SUM) THEN
+                       VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+                    ELSE
+                       IF(DIRECTION .EQ. 3)THEN
+                          VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ_T(K)
+                          DIST(IJK1)  = DIST(IJK1)  + DZ_T(K)
+                       ELSE
+                          VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DZ(K)
+                          DIST(IJK1)  = DIST(IJK1)  + DZ(K)
+                       ENDIF
+                    ENDIF
+                 ENDIF
+              ENDDO
+           ENDDO
+        ENDDO
+
         IF(.NOT. SUM) THEN
           K = K1
-          DO 117 J = J1, J2
-          DO 117 I = I1, I2
-            IJK = FUNIJK(I, J, K)
-            IF(DIST(IJK) .NE. ZERO) THEN
-              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-              WRITE(*,*)' Error in K-averaging'
-            ENDIF
-117       CONTINUE
-        ENDIF
-        K2d = K1
-      ELSE
-        K2d = K2
-      ENDIF
-!
-      IF(J_AVERAGE)THEN
-        J = J1
-        DO 118 K = K1, K2d
-        DO 118 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
-            VALUE(IJK) = ZERO
-            DIST(IJK)  = ZERO
-          ELSEIF(.NOT. SUM) THEN
-            IF(DIRECTION .EQ. 2)THEN
-              VALUE(IJK) = VALUE(IJK) * DY_N(J)
-              DIST(IJK)  = DY_N(J)
-            ELSE
-              VALUE(IJK) = VALUE(IJK) * DY(J)
-              DIST(IJK)  = DY(J)
-            ENDIF
-          ENDIF
-118     CONTINUE
-!
-        DO 119 K = K1, K2d
-        DO 119 J = J1+1, J2
-        DO 119 I = I1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I, J1, K)
-          IF(.NOT.WALL_AT(IJK) .OR. K_AVERAGE) THEN
-            IF(SUM) THEN
-              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-            ELSE
-              IF(DIRECTION .EQ. 2)THEN
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY_N(J)
-                DIST(IJK1)  = DIST(IJK1)  + DY_N(J)
-              ELSE
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY(J)
-                DIST(IJK1)  = DIST(IJK1)  + DY(J)
-              ENDIF
-            ENDIF
-          ENDIF
-119     CONTINUE
-!
-        IF(.NOT.SUM) THEN
+          DO J = J1, J2
+             DO I = I1, I2
+                IJK = FUNIJK_LOC(I, J, K)
+                IF(DIST(IJK) .NE. ZERO) THEN
+                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+                   WRITE(*,*)' Error in K-averaging'
+                ENDIF
+             ENDDO
+          ENDDO
+       ENDIF
+       K2d = K1
+    ELSE
+       K2d = K2
+    ENDIF
+
+    IF(J_AVERAGE)THEN
+       J = J1
+       DO K = K1, K2d
+          DO I = I1, I2
+             IJK = FUNIJK_LOC(I, J, K)
+             IF(WALL_AT(IJK) .AND. .NOT.K_AVERAGE)THEN
+                VALUE(IJK) = ZERO
+                DIST(IJK)  = ZERO
+             ELSEIF(.NOT. SUM) THEN
+                IF(DIRECTION .EQ. 2)THEN
+                   VALUE(IJK) = VALUE(IJK) * DY_N(J)
+                   DIST(IJK)  = DY_N(J)
+                ELSE
+                   VALUE(IJK) = VALUE(IJK) * DY(J)
+                   DIST(IJK)  = DY(J)
+                ENDIF
+             ENDIF
+          ENDDO
+       ENDDO
+
+       DO K = K1, K2d
+          DO J = J1+1, J2
+             DO I = I1, I2
+                IJK = FUNIJK_LOC(I, J, K)
+                IJK1 = FUNIJK_LOC(I, J1, K)
+                IF(.NOT.WALL_AT(IJK) .OR. K_AVERAGE) THEN
+                   IF(SUM) THEN
+                      VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+                   ELSE
+                      IF(DIRECTION .EQ. 2)THEN
+                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY_N(J)
+                         DIST(IJK1)  = DIST(IJK1)  + DY_N(J)
+                      ELSE
+                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DY(J)
+                         DIST(IJK1)  = DIST(IJK1)  + DY(J)
+                      ENDIF
+                   ENDIF
+                ENDIF
+             ENDDO
+          ENDDO
+       ENDDO
+
+       IF(.NOT.SUM) THEN
           J = J1
-          DO 120 K = K1, K2d
-          DO 120 I = I1, I2
-            IJK = FUNIJK(I, J, K)
-            IF(DIST(IJK) .NE. ZERO) THEN
-              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-              WRITE(*,*)' Error in J-averaging'
-            ENDIF
-120       CONTINUE
-        ENDIF
-        J2d = J1
-      ELSE
-        J2d = J2
-      ENDIF
-!
-      IF(I_AVERAGE)THEN
-        I = I1
-        DO 121 K = K1, K2d
-        DO 121 J = J1, J2d
-          IJK = FUNIJK(I, J, K)
-          IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
-            VALUE(IJK) = ZERO
-            DIST(IJK)  = ZERO
-          ELSEIF(.NOT. SUM) THEN
-            IF(DIRECTION .EQ. 1)THEN
-              VALUE(IJK) = VALUE(IJK) * DX_E(I) * X_E(I)
-              DIST(IJK)  = DX_E(I) * X_E(I)
-            ELSE
-              VALUE(IJK) = VALUE(IJK) * DX(I) * X(I)
-              DIST(IJK)  = DX(I) * X(I)
-            ENDIF
-          ENDIF
-121     CONTINUE
-!
-        DO 122 K = K1, K2d
-        DO 122 J = J1, J2d
-        DO 122 I = I1+1, I2
-          IJK = FUNIJK(I, J, K)
-          IJK1 = FUNIJK(I1, J, K)
-          IF(.NOT.WALL_AT(IJK) .OR. J_AVERAGE .OR. K_AVERAGE) THEN
-            IF(SUM) THEN
-              VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
-            ELSE
-              IF(DIRECTION .EQ. 1)THEN
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX_E(I)* X_E(I)
-                DIST(IJK1)  = DIST(IJK1)  + DX_E(I) * X_E(I)
-              ELSE
-                VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX(I) * X(I)
-                DIST(IJK1)  = DIST(IJK1)  + DX(I) * X(I)
-              ENDIF
-            ENDIF
-          ENDIF
-122     CONTINUE
-!
-        IF(.NOT.SUM) THEN
+          DO K = K1, K2d
+             DO I = I1, I2
+                IJK = FUNIJK_LOC(I, J, K)
+                IF(DIST(IJK) .NE. ZERO) THEN
+                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+                   WRITE(*,*)' Error in J-averaging'
+                ENDIF
+             ENDDO
+          ENDDO
+       ENDIF
+       J2d = J1
+    ELSE
+       J2d = J2
+    ENDIF
+
+    IF(I_AVERAGE)THEN
+       I = I1
+       DO K = K1, K2d
+          DO J = J1, J2d
+             IJK = FUNIJK_LOC(I, J, K)
+             IF(WALL_AT(IJK) .AND. .NOT.J_AVERAGE .AND. .NOT.K_AVERAGE)THEN
+                VALUE(IJK) = ZERO
+                DIST(IJK)  = ZERO
+             ELSEIF(.NOT. SUM) THEN
+                IF(DIRECTION .EQ. 1)THEN
+                   VALUE(IJK) = VALUE(IJK) * DX_E(I) * X_E(I)
+                   DIST(IJK)  = DX_E(I) * X_E(I)
+                ELSE
+                   VALUE(IJK) = VALUE(IJK) * DX(I) * X(I)
+                   DIST(IJK)  = DX(I) * X(I)
+                ENDIF
+             ENDIF
+          ENDDO
+       ENDDO
+
+       DO K = K1, K2d
+          DO J = J1, J2d
+             DO I = I1+1, I2
+                IJK = FUNIJK_LOC(I, J, K)
+                IJK1 = FUNIJK_LOC(I1, J, K)
+                IF(.NOT.WALL_AT(IJK) .OR. J_AVERAGE .OR. K_AVERAGE) THEN
+                   IF(SUM) THEN
+                      VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK)
+                   ELSE
+                      IF(DIRECTION .EQ. 1)THEN
+                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX_E(I)* X_E(I)
+                         DIST(IJK1)  = DIST(IJK1)  + DX_E(I) * X_E(I)
+                      ELSE
+                         VALUE(IJK1) = VALUE(IJK1) + VALUE(IJK) * DX(I) * X(I)
+                         DIST(IJK1)  = DIST(IJK1)  + DX(I) * X(I)
+                      ENDIF
+                   ENDIF
+                ENDIF
+             ENDDO
+          ENDDO
+       ENDDO
+
+       IF(.NOT.SUM) THEN
           I = I1
-          DO 123 K = K1, K2d
-          DO 123 J = J1, J2d
-            IJK = FUNIJK(I, J, K)
-            IF(DIST(IJK) .NE. ZERO) THEN
-              VALUE(IJK) = VALUE(IJK) / DIST(IJK)
-            ELSEIF(VALUE(IJK) .NE. ZERO) THEN
-              WRITE(*,*)' Error in I-averaging'
-            ENDIF
-123       CONTINUE
-        ENDIF
-        I2d = I1
-      ELSE
-        I2d = I2
-      ENDIF
+          DO K = K1, K2d
+             DO J = J1, J2d
+                IJK = FUNIJK_LOC(I, J, K)
+                IF(DIST(IJK) .NE. ZERO) THEN
+                   VALUE(IJK) = VALUE(IJK) / DIST(IJK)
+                ELSEIF(VALUE(IJK) .NE. ZERO) THEN
+                   WRITE(*,*)' Error in I-averaging'
+                ENDIF
+             ENDDO
+          ENDDO
+       ENDIF
+       I2d = I1
+    ELSE
+       I2d = I2
+    ENDIF
 !
 !  Display data or write data to file
 !
-      IF(MINMAX .GE. 0) THEN
-        IF(MINMAX .EQ. 0)THEN
+    IF(MINMAX .GE. 0) THEN
+       IF(MINMAX .EQ. 0)THEN
           VALUE_TMP = 1E32
-          DO 128 K = K1, K2d
-          DO 128 J = J1, J2d
-          DO 128 I = I1, I2d
-            IJK = FUNIJK(I,J,K)
-            IF(WALL_AT(IJK) .AND. &
-              .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 128
-            IF(VALUE(IJK) .GE. VALUE_TMP)GOTO 128
-            XTMP = XDIST_SC(I)
-            YTMP = YDIST_SC(J)
-            ZTMP = ZDIST_SC(K)
-            IF(DIRECTION .EQ. 1) THEN
-              XTMP = XDIST_VEC(I)
-            ELSEIF(DIRECTION .EQ. 2) THEN
-              YTMP = YDIST_VEC(J)
-            ELSEIF(DIRECTION .EQ. 3) THEN
-              ZTMP = ZDIST_VEC(K)
-            ENDIF
-            VALUE_TMP = VALUE(IJK)
-128       CONTINUE
-        ELSEIF(MINMAX .EQ. 1)THEN
+          DO K = K1, K2d
+             DO J = J1, J2d
+                DO I = I1, I2d
+                   IJK = FUNIJK_LOC(I,J,K)
+                   IF(WALL_AT(IJK) .AND. &
+                        .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) ) CYCLE
+                   IF(VALUE(IJK) .GE. VALUE_TMP) CYCLE
+                   XTMP = XDIST_SC(I)
+                   YTMP = YDIST_SC(J)
+                   ZTMP = ZDIST_SC(K)
+                   IF(DIRECTION .EQ. 1) THEN
+                      XTMP = XDIST_VEC(I)
+                   ELSEIF(DIRECTION .EQ. 2) THEN
+                      YTMP = YDIST_VEC(J)
+                   ELSEIF(DIRECTION .EQ. 3) THEN
+                      ZTMP = ZDIST_VEC(K)
+                   ENDIF
+                   VALUE_TMP = VALUE(IJK)
+                ENDDO
+             ENDDO
+          ENDDO
+       ELSEIF(MINMAX .EQ. 1)THEN
           VALUE_TMP = -1E32
-          DO 129 K = K1, K2d
-          DO 129 J = J1, J2d
-          DO 129 I = I1, I2d
-            IJK = FUNIJK(I,J,K)
-            IF(WALL_AT(IJK) .AND. &
-              .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) )GOTO 129
-            IF(VALUE(IJK) .LE. VALUE_TMP)GOTO 129
-            XTMP = XDIST_SC(I)
-            YTMP = YDIST_SC(J)
-            ZTMP = ZDIST_SC(K)
-            IF(DIRECTION .EQ. 1) THEN
-              XTMP = XDIST_VEC(I)
-            ELSEIF(DIRECTION .EQ. 2) THEN
-              YTMP = YDIST_VEC(J)
-            ELSEIF(DIRECTION .EQ. 3) THEN
-              ZTMP = ZDIST_VEC(K)
-            ENDIF
-            VALUE_TMP = VALUE(IJK)
-129       CONTINUE
-        ENDIF
-        call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
-                     nPrec_location,nPrec_variable,nPrec_length)
-        WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
-                                      VALUE_TMP
-        CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-      ELSEIF(DISPLAY .EQ. 8) THEN
-        IJK = FUNIJK(I1, J1, K1)
-        IF(TIME_AVERAGE) THEN
-	  call format_oneB(spec,nPrec_variable,nPrec_length)
+          DO K = K1, K2d
+             DO J = J1, J2d
+                DO I = I1, I2d
+                   IJK = FUNIJK_LOC(I,J,K)
+                   IF(WALL_AT(IJK) .AND. &
+                        .NOT. (I_AVERAGE .OR. J_AVERAGE .OR. K_AVERAGE) ) CYCLE
+                   IF(VALUE(IJK) .LE. VALUE_TMP) CYCLE
+                   XTMP = XDIST_SC(I)
+                   YTMP = YDIST_SC(J)
+                   ZTMP = ZDIST_SC(K)
+                   IF(DIRECTION .EQ. 1) THEN
+                      XTMP = XDIST_VEC(I)
+                   ELSEIF(DIRECTION .EQ. 2) THEN
+                      YTMP = YDIST_VEC(J)
+                   ELSEIF(DIRECTION .EQ. 3) THEN
+                      ZTMP = ZDIST_VEC(K)
+                   ENDIF
+                   VALUE_TMP = VALUE(IJK)
+                ENDDO
+             ENDDO
+          ENDDO
+       ENDIF
+       call format_five(spec,nPrec_time,nPrec_location,nPrec_location, &
+            nPrec_location,nPrec_variable,nPrec_length)
+       WRITE(LINE,spec)TIME_NOW, XTMP, YTMP, ZTMP, &
+            VALUE_TMP
+       CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
+    ELSEIF(DISPLAY .EQ. 8) THEN
+       IJK = FUNIJK_LOC(I1, J1, K1)
+       IF(TIME_AVERAGE) THEN
+          call format_oneB(spec,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-        ELSE
-	  call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
+       ELSE
+          call format_twoC(spec,nPrec_time,nPrec_variable,nPrec_length)
           WRITE(LINE,spec)TIME_NOW, VALUE(IJK)
           CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length)
-        ENDIF
-      ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
-        call format_one(spec,nPrec_time,nPrec_length)
-        WRITE(LINE,spec)' Time = ',TIME_NOW
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
-        WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
-        CALL WRITE_LINE(FILE_NAME, LINE, 28)
-        DO 130 I = I1, I2d
-          IJK = FUNIJK(I, J1, K1)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+       ENDIF
+    ELSEIF(DISPLAY .EQ. 4 .OR. DISPLAY .EQ. 12) THEN
+       call format_one(spec,nPrec_time,nPrec_length)
+       WRITE(LINE,spec)' Time = ',TIME_NOW
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 8)
+       WRITE(LINE,'(6X,A,13X,1A8)')'X', VAR
+       CALL WRITE_LINE(FILE_NAME, LINE, 28)
+       DO I = I1, I2d
+          IJK = FUNIJK_LOC(I, J1, K1)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 1)THEN
-            WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
+             WRITE(LINE,spec)XDIST_VEC(I), VALUE(IJK)
           ELSE
-            WRITE(LINE,spec)XDIST_SC(I), VALUE(IJK)
+             WRITE(LINE,spec)XDIST_SC(I), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-130     CONTINUE
-      ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
-        call format_one(spec,nPrec_time,nPrec_length)
-        WRITE(LINE,spec)' Time = ',TIME_NOW
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-        WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
-        CALL WRITE_LINE(FILE_NAME, LINE, 28)
-        DO 140 J = J1, J2d
-          IJK = FUNIJK(I1, J, K1)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+       ENDDO
+    ELSEIF(DISPLAY .EQ. 2 .OR. DISPLAY .EQ. 10) THEN
+       call format_one(spec,nPrec_time,nPrec_length)
+       WRITE(LINE,spec)' Time = ',TIME_NOW
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+       WRITE(LINE,'(6X,A,13X,1A8)')'Y', VAR
+       CALL WRITE_LINE(FILE_NAME, LINE, 28)
+       DO J = J1, J2d
+          IJK = FUNIJK_LOC(I1, J, K1)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 2)THEN
-            WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
+             WRITE(LINE,spec)YDIST_VEC(J), VALUE(IJK)
           ELSE
-            WRITE(LINE,spec)YDIST_SC(J), VALUE(IJK)
+             WRITE(LINE,spec)YDIST_SC(J), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-140     CONTINUE
-      ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
-        call format_one(spec,nPrec_time,nPrec_length)
-        WRITE(LINE,spec)' Time = ',TIME_NOW
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-        WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
-        CALL WRITE_LINE(FILE_NAME, LINE, 28)
-        DO 150 K = K1, K2d
-          IJK = FUNIJK(I1, J1, K)
-	  call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
+       ENDDO
+    ELSEIF(DISPLAY .EQ. 1 .OR. DISPLAY .EQ. 9) THEN
+       call format_one(spec,nPrec_time,nPrec_length)
+       WRITE(LINE,spec)' Time = ',TIME_NOW
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+       WRITE(LINE,'(6X,A,13X,1A8)')'Z', VAR
+       CALL WRITE_LINE(FILE_NAME, LINE, 28)
+       DO K = K1, K2d
+          IJK = FUNIJK_LOC(I1, J1, K)
+          call format_twoC(spec,nPrec_location,nPrec_variable,nPrec_length)
           IF(DIRECTION .EQ. 3)THEN
-            WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
+             WRITE(LINE,spec)ZDIST_VEC(K), VALUE(IJK)
           ELSE
-            WRITE(LINE,spec)ZDIST_SC(K), VALUE(IJK)
+             WRITE(LINE,spec)ZDIST_SC(K), VALUE(IJK)
           ENDIF
           CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-150     CONTINUE
-      ELSEIF(DISPLAY .EQ. 0) THEN
-        call format_one(spec,nPrec_time,nPrec_length)
-        WRITE(LINE,spec)' Time = ',TIME_NOW
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-        IJK = FUNIJK(I1, J1, K1)
-	call format_oneC(spec,nPrec_variable,nPrec_length)
-        WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
-      ELSE
-        call format_one(spec,nPrec_time,nPrec_length)
-        WRITE(LINE,spec)' Time = ',TIME_NOW
-        CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
-        WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
-        CALL WRITE_LINE(FILE_NAME, LINE, 56)
-        DO 250 K = K1, K2d
-        DO 250 J = J1, J2d
-        DO 250 I = I1, I2d
-          IJK = FUNIJK(I,J,K)
-          XTMP = XDIST_SC(I)
-          YTMP = YDIST_SC(J)
-          ZTMP = ZDIST_SC(K)
-          IF(DIRECTION .EQ. 1) THEN
-            XTMP = XDIST_VEC(I)
-          ELSEIF(DIRECTION .EQ. 2) THEN
-            YTMP = YDIST_VEC(J)
-          ELSEIF(DIRECTION .EQ. 3) THEN
-            ZTMP = ZDIST_VEC(K)
-          ENDIF
-	  call format_four(spec,nPrec_location,nPrec_location, &
-	                        nPrec_location, &
-	                        nPrec_variable,nPrec_length)
-				
-          WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
-          CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
-250     CONTINUE
-      ENDIF
-!
-      IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
-        IF (DO_XFORMS) THEN
-           IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
-           RETURN
-        ELSE
-           IF (FILE_NAME(1:1) .NE. '*') then
-              close (40)
-              open (unit=40,file=file_name,access='append')
-           end if
-           GOTO 10
-        END IF
-      END IF
-!
-      IF(TIME_NOW .GE. TIME_END) THEN
-        IF (DO_XFORMS) THEN
-           IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
-           RETURN
-        ELSE
-           IF (FILE_NAME(1:1) .NE. '*') then
-              close (40)
-              open (unit=40,file=file_name,access='append')
-           end if
-           GOTO 10
-        END IF
-      END IF
-!
-      GOTO 100
+       ENDDO
+    ELSEIF(DISPLAY .EQ. 0) THEN
+       call format_one(spec,nPrec_time,nPrec_length)
+       WRITE(LINE,spec)' Time = ',TIME_NOW
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+       IJK = FUNIJK_LOC(I1, J1, K1)
+       call format_oneC(spec,nPrec_variable,nPrec_length)
+       WRITE(LINE,spec)VAR,' = ',VALUE(IJK)
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length + 3)
+    ELSE
+       call format_one(spec,nPrec_time,nPrec_length)
+       WRITE(LINE,spec)' Time = ',TIME_NOW
+       CALL WRITE_LINE(FILE_NAME,LINE,nPrec_length+8)
+       WRITE(LINE,'(6X,A,13X,A,13X,A,13X,1A8)')'X','Y','Z',VAR
+       CALL WRITE_LINE(FILE_NAME, LINE, 56)
+       DO K = K1, K2d
+          DO J = J1, J2d
+             DO I = I1, I2d
+                IJK = FUNIJK_LOC(I,J,K)
+                XTMP = XDIST_SC(I)
+                YTMP = YDIST_SC(J)
+                ZTMP = ZDIST_SC(K)
+                IF(DIRECTION .EQ. 1) THEN
+                   XTMP = XDIST_VEC(I)
+                ELSEIF(DIRECTION .EQ. 2) THEN
+                   YTMP = YDIST_VEC(J)
+                ELSEIF(DIRECTION .EQ. 3) THEN
+                   ZTMP = ZDIST_VEC(K)
+                ENDIF
+                call format_four(spec,nPrec_location,nPrec_location, &
+                     nPrec_location, &
+                     nPrec_variable,nPrec_length)
+
+                WRITE(LINE,spec)XTMP, YTMP, ZTMP, VALUE(IJK)
+                CALL WRITE_LINE(FILE_NAME, LINE, nPrec_length)
+             ENDDO
+          ENDDO
+       ENDDO
+    ENDIF
+
+    IF (TIME_AVERAGE .AND. END_AVERAGE) THEN
+       IF (DO_XFORMS) THEN
+          IF (FILE_NAME(1:1) .NE. '*') CLOSE(40)
+          RETURN
+       ELSE
+          IF (FILE_NAME(1:1) .NE. '*') then
+             close (40)
+             open (unit=40,file=file_name,access='append')
+          end if
+          GOTO 10
+       END IF
+    END IF
+
+    IF(TIME_NOW .GE. TIME_END) THEN
+       IF (DO_XFORMS) THEN
+          IF (FILE_NAME(1:1) .NE. '*') CLOSE(UNIT=40)
+          RETURN
+       ELSE
+          IF (FILE_NAME(1:1) .NE. '*') then
+             close (40)
+             open (unit=40,file=file_name,access='append')
+          end if
+          GOTO 10
+       END IF
+    END IF
+
+    GOTO 100
+
+    CONTAINS
+
+      ! This routine appears to need its own version of the funijk routine
+      DOUBLE PRECISION FUNCTION FUNIJK_LOC(LI, LJ, LK)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: LI, LJ, LK
+        FUNIJK_LOC = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+      END FUNCTION FUNIJK_LOC
+
+      DOUBLE PRECISION FUNCTION DZ_T(K)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: K
+        DZ_T = HALF * (DZ(K) + DZ(KP1(K)))
+      END FUNCTION DZ_T
+
+      DOUBLE PRECISION FUNCTION DY_N(J)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: J
+        DY_N = HALF * (DY(J) + DY(JP1(J)))
+      END FUNCTION DY_N
+
+      DOUBLE PRECISION FUNCTION DX_E(I)
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) :: I
+        DX_E = HALF * (DX(I) + DX(IP1(I)))
+      END FUNCTION DX_E
+
       END
 !
       SUBROUTINE WRITE_LINE(FILE_NAME,LINE,NCHARS)
       IMPLICIT NONE
-      CHARACTER*(*) FILE_NAME, LINE
-      CHARACTER*81  LINE2
+      CHARACTER(LEN=*) :: FILE_NAME, LINE
+      CHARACTER(LEN=81):: LINE2
       INTEGER       NCHARS
 !
       INCLUDE 'xforms.inc'

@@ -16,15 +16,15 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RRATES(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE RRATES(IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE rxns
       USE energy
@@ -33,7 +33,7 @@
       USE indices
       USE physprop
       USE constant
-      USE funits 
+      USE funits
       USE compar        !//d
       USE sendrecv      !// 400
 
@@ -45,5 +45,5 @@
 ! Return on error as the file is empty.
       IER = 1
 
-      RETURN  
-      END SUBROUTINE RRATES 
+      RETURN
+      END SUBROUTINE RRATES

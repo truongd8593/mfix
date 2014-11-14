@@ -6,7 +6,7 @@
 !  Author: P. Nicoletti                               Date: 27-NOV-91  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_NUMERICS 
+      SUBROUTINE CHECK_NUMERICS
 
 
 ! Global Variables:
@@ -72,7 +72,7 @@
          'DISCRETIZE >= 2',/'for all equations. Please correct the ',  &
          'mfix.dat file.')
       ENDIF
-      
+
 
 ! Check chi scheme requirements.
       IF(CHI_SCHEME)THEN

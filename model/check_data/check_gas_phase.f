@@ -55,28 +55,28 @@
 
 
 ! CHECK MU_g0
-      IF (MU_G0 <= ZERO) THEN 
+      IF (MU_G0 <= ZERO) THEN
          WRITE(ERR_MSG,1001) 'MU_G0', iVal(MU_G0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! CHECK K_g0
-      IF (K_G0 < ZERO) THEN 
+      IF (K_G0 < ZERO) THEN
          WRITE(ERR_MSG,1001) 'K_G0', iVal(K_G0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! CHECK C_pg0
-      IF (C_PG0 < ZERO) THEN 
+      IF (C_PG0 < ZERO) THEN
          WRITE(ERR_MSG,1001) 'C_PG0', iVal(C_PG0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! CHECK DIF_g0
       IF (DIF_G0 < ZERO) THEN
          WRITE(ERR_MSG,1001) 'DIF_g0', iVal(DIF_g0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! Check the input specifications for gas species.
       IF(USE_RRATES)THEN
@@ -90,35 +90,35 @@
 ! MW_AVG is defined and the gas phase species equations are solved, then
 ! the user specified average molecular weight is ignored. The gas phase
 ! mixture molecular weight (MW_MIX_g) is used instead.
-         IF (MW_AVG /= UNDEFINED) THEN 
+         IF (MW_AVG /= UNDEFINED) THEN
             WRITE (ERR_MSG, 1100) 'solving species equations'
             CALL FLUSH_ERR_MSG
-            MW_AVG = UNDEFINED 
-         ENDIF 
-      ELSE 
+            MW_AVG = UNDEFINED
+         ENDIF
+      ELSE
 ! When the species equations are not solved and the gas phase is
 ! compressible, verify that the user provided average molecular weight
 ! has a physical value. (This does not include the case where MW_AVG
 ! is UNDEFINED.)
-         IF (RO_G0 == UNDEFINED) THEN 
-            IF (MW_AVG <= ZERO) THEN 
+         IF (RO_G0 == UNDEFINED) THEN
+            IF (MW_AVG <= ZERO) THEN
                WRITE(ERR_MSG, 1001) 'MW_AVG', iVal(MW_AVG)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
+            ENDIF
+         ELSE
 ! Gas density for incompressible flows must be positive.
             IF (RO_G0 < ZERO) THEN
                WRITE(ERR_MSG, 1001) 'RO_G0', iVal(RO_G0)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-! Incompressible simulations do not need MW_AVG. Notify the user that 
+! Incompressible simulations do not need MW_AVG. Notify the user that
 ! the provided data is ignored.
             IF (MW_AVG /= UNDEFINED)THEN
                WRITE(ERR_MSG, 1100) 'RO_g0 is specified'
                CALL FLUSH_ERR_MSG
             ENDIF
 
-         ENDIF 
+         ENDIF
       ENDIF
 
 
@@ -126,7 +126,7 @@
       CALL FINL_ERR_MSG
 
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
@@ -204,7 +204,7 @@
 ! If true, a call to the thermochemical database is made.
       LOGICAL MWg_ROg
 
-! Flag that the gas phase species equations are solved and the 
+! Flag that the gas phase species equations are solved and the
 ! molecular weight for a species is not given in the data file.
 ! If true, a call to the thermochemical database is made.
       LOGICAL SEQ_MWg
@@ -408,22 +408,22 @@
          IF(NMAX(0) == UNDEFINED_I) NMAX(0) = 1
       ENDIF
 
-! Check MW_g if solids species are present    
+! Check MW_g if solids species are present
       DO N = 1, NMAX(0)
-         IF(MW_G(N) == UNDEFINED) THEN 
+         IF(MW_G(N) == UNDEFINED) THEN
             WRITE(ERR_MSG,2000)trim(iVar('MW_g',N)), 'specified'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(MW_G(N) <= ZERO) THEN 
-            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N)) 
+         ELSEIF(MW_G(N) <= ZERO) THEN
+            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO ! Loop over species
       DO N = NMAX(0) + 1, DIM_N_G
-         IF(MW_G(N) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N)) 
+         IF(MW_G(N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1001)trim(iVar('MW_g',N)), iVal(MW_G(N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-      ENDDO 
+      ENDDO
 
       CALL FINL_ERR_MSG
 
@@ -435,7 +435,7 @@
  1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
 
- 2000 FORMAT('Error 2000: Invalid input. ',A,' must be 'A,/'when ',    &
+ 2000 FORMAT('Error 2000: Invalid input. ',A,' must be ',A,/'when ',    &
          'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
 
       END SUBROUTINE CHECK_GAS_SPECIES_LEGACY

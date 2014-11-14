@@ -20,14 +20,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+MODULE IN_BINARY_512I
+
+CONTAINS
+
+      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE machine 
+      USE machine
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -68,115 +72,123 @@
       INTEGER          N1 , N2
 !-----------------------------------------------
 !
-!
-      NWORDS = NWORDS_I 
-      IF (N <= NWORDS) THEN 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N) 
-         NEXT_REC = NEXT_REC + 1 
-         RETURN  
-      ENDIF 
-!
-      NSEG = N/NWORDS 
-      NREM = MOD(N,NWORDS) 
-      N1 = 1 
-      N2 = NWORDS 
+      NWORDS = NWORDS_I
+      IF (N <= NWORDS) THEN
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N)
+         NEXT_REC = NEXT_REC + 1
+         RETURN
+      ENDIF
+
+      NSEG = N/NWORDS
+      NREM = MOD(N,NWORDS)
+      N1 = 1
+      N2 = NWORDS
 !
 ! read the full 512 byte segments
 !
-      DO LC = 1, NSEG 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2) 
-         N1 = N1 + NWORDS 
-         N2 = N2 + NWORDS 
-         NEXT_REC = NEXT_REC + 1 
-      END DO 
-      IF (NREM /= 0) THEN 
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N) 
-         NEXT_REC = NEXT_REC + 1 
-      ENDIF 
-!
-      RETURN  
-      END SUBROUTINE IN_BIN_512I 
-!
-!
-      subroutine convert_from_io_i(arr_io,arr_internal,n)
-!
-      use geometry
-      use indices
-      USE compar 
-!
-      implicit none
-!
-      integer   arr_io(*) , arr_internal(*)
-      integer   n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
-!
-      do k = 1,kmax2
-         do j = 1,jmax2
-            do i = 1,imax2
-               ijk    = funijk_gl(i,j,k)
-               ijk_io = funijk_io(i,j,k)
-               arr_internal(ijk) = arr_io(ijk_io)
-            end do
-         end do
-      end do
-!
-      return
-      end
-!
-!
-      subroutine convert_to_io_i(arr_internal,arr_io,n)
-!
-      use geometry
-      use indices
-      USE compar   
-!
-      implicit none
-!
-      integer   arr_io(*) , arr_internal(*)
-      integer   n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
-!
-      do k = 1,kmax2
-         do j = 1,jmax2
-            do i = 1,imax2
-               ijk    = funijk_gl(i,j,k)
-               ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
-            end do
-         end do
-      end do
-!
-      return
-      end
-!
-!
-      subroutine convert_to_io_c(arr_internal,arr_io,n)
-!
-      use geometry
-      use indices
-      USE compar 
-!
-      implicit none
-!
-      character*4   arr_io(*) , arr_internal(*)
-      integer       n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
-!
-      do k = 1,kmax2
-         do j = 1,jmax2
-            do i = 1,imax2
-               ijk    = funijk_gl(i,j,k)
-               ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
-            end do
-         end do
-      end do
-!
-      return
-      end
+      DO LC = 1, NSEG
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2)
+         N1 = N1 + NWORDS
+         N2 = N2 + NWORDS
+         NEXT_REC = NEXT_REC + 1
+      END DO
+      IF (NREM /= 0) THEN
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N)
+         NEXT_REC = NEXT_REC + 1
+      ENDIF
 
-!// Comments on the modifications for DMP version implementation      
+      RETURN
+      END SUBROUTINE IN_BIN_512I
+
+      subroutine convert_from_io_i(arr_io,arr_internal,n)
+
+      use geometry
+      use indices
+      use compar
+      use functions
+
+      implicit none
+
+      integer, intent(in) :: arr_io(:)
+      integer, intent(out) :: arr_internal(:)
+      integer   n,i,j,k,ijk,ijk_io
+
+!     write(*,*) 'C0:',C0
+!     write(*,*) 'C1:',C1
+!     write(*,*) 'C2:',C2
+
+!     write(*,*) 'io:',size(arr_io)
+!     write(*,*) 'int:',size(arr_internal)
+
+     if(size(arr_io) == size(arr_internal)) then
+         arr_internal = arr_io
+     else
+         do k = 1,kmax2
+         do j = 1,jmax2
+         do i = 1,imax2
+            ijk    = funijk_gl(i,j,k)
+            ijk_io = funijk_io(i,j,k)
+            arr_internal(ijk) = arr_io(ijk_io)
+           write(*,*)i,j,k,ijk, ijk_io
+         end do
+         end do
+         end do
+     endif
+
+      return
+    end subroutine convert_from_io_i
+
+      subroutine convert_to_io_i(arr_internal,arr_io,n)
+
+      use geometry
+      use indices
+      use compar
+      use functions
+
+      implicit none
+
+      integer   arr_io(*) , arr_internal(*)
+      integer   n,i,j,k,ijk,ijk_io
+
+      do k = 1,kmax2
+         do j = 1,jmax2
+            do i = 1,imax2
+               ijk    = funijk_gl(i,j,k)
+               ijk_io = funijk_io(i,j,k)
+               arr_io(ijk_io) = arr_internal(ijk)
+            end do
+         end do
+      end do
+
+      return
+    end subroutine convert_to_io_i
+
+      subroutine convert_to_io_c(arr_internal,arr_io,n)
+
+      use geometry
+      use indices
+      use compar
+      use functions
+
+      implicit none
+
+      character(LEN=4)   arr_io(*) , arr_internal(*)
+      integer       n,i,j,k,ijk,ijk_io
+
+      do k = 1,kmax2
+         do j = 1,jmax2
+            do i = 1,imax2
+               ijk    = funijk_gl(i,j,k)
+               ijk_io = funijk_io(i,j,k)
+               arr_io(ijk_io) = arr_internal(ijk)
+            end do
+         end do
+      end do
+!
+      return
+    end subroutine convert_to_io_c
+
+END MODULE IN_BINARY_512I
+
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization

@@ -26,6 +26,8 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !------------------------------------------------
 ! Local variables
@@ -39,7 +41,7 @@
 !     Temporary variables when des_continuum_coupled is T to track
 !     changes in solid time step
       DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
-      CHARACTER*5 FILENAME
+      CHARACTER(LEN=5) :: FILENAME
 
 
 !     Logical to see whether this is the first entry to this routine
@@ -58,10 +60,6 @@
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
 
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
-
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
       S_TIME = TIME
@@ -69,7 +67,7 @@
       !compute the gas-phase pressure gradient at the beginning of the
       !des loop as the gas-phase pressure field will not change during
       !des calls
-      IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
+      IF(DES_CONTINUUM_COUPLED)   CALL CALC_PG_GRAD
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
       PIC_ITERS = 0
@@ -123,7 +121,7 @@
          CALL PARTICLES_IN_CELL
 
          CALL MPPIC_COMPUTE_PS_GRAD
-         IF(DES_CONTINUUM_COUPLED)   CALL CALC_DES_DRAG_GS
+         IF(DES_CONTINUUM_COUPLED)   CALL CALC_DRAG_DES
          CALL CFUPDATEOLD
 
          CALL CFNEWVALUES
@@ -155,7 +153,7 @@
                      ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
                      + 1 )*DES_SPX_DT
                   CALL WRITE_DES_DATA
-                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
                      'DES data file written at time =', S_TIME
                ENDIF
             ENDIF
@@ -170,7 +168,7 @@
 ! Write RES1 here since it won't be called in time_march.  This will
 ! also keep track of TIME
                CALL WRITE_RES1
-               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,X,ES15.5)') &
+               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
                'DES.RES and .RES files written at time =', S_TIME
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
@@ -180,13 +178,23 @@
 
       ENDDO
 
-      IF(DMP_LOG)       WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
-      IF(mype.eq.pe_IO) WRITE(*,'(/5x, A, 2(2x, i10))') 'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      IF(DMP_LOG) THEN
+         WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') &
+              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      ENDIF
+
+      IF(mype.eq.pe_IO) THEN
+         WRITE(*,'(/5x, A, 2(2x, i10))') &
+              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
+      ENDIF
 
 !      IJK_BOT = funijk(imin1, 2,kmin1)
 !      IJK_TOP = funijk(imin1, jmax1, kmin1)
-!      WRITE(*,'(/5X, A, 3(2x,g17.8))') 'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
-      !WRITE(*,'(/5X, A, 3(2x,g17.8))') 'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
+!      WRITE(*,'(/5X, A, 3(2x,g17.8))') &
+!         'MPPIC: PRES BOTTOM, TOP, AND DIFF KPA', P_G(IJK_BOT)/10000.d0, &
+!         P_G(IJK_TOP)/10000.d0, (P_G(IJK_BOT) -  P_G(IJK_TOP))/10000.d0
+      !WRITE(*,'(/5X, A, 3(2x,g17.8))') &
+      !'PRES BOTTOM, TOP, AND DIFF ', P_G(IJK_BOT), P_G(IJK_TOP), P_G(IJK_BOT) -  P_G(IJK_TOP)
       IF(.NOT.DES_CONTINUUM_COUPLED)then
          if(dmp_log)write(unit_log,'(1X,A)')&
          '<---------- END MPPIC_TIME_MARCH ----------'
@@ -219,6 +227,7 @@
       use desmpi
       !USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -231,11 +240,6 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
 
       DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK)
@@ -297,6 +301,7 @@
       use desmpi
       USE cutcell
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -309,10 +314,6 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -390,6 +391,8 @@
       USE mfix_pic
       USE cutcell
       USE fldvar, only: ep_g
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: L
 !-----------------------------------------------
@@ -417,15 +420,6 @@
 
       LOGICAL :: INSIDE_DOMAIN
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-!-----------------------------------------------
-
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       M = PIJK(L,5)
       IJK = PIJK(L,4)
@@ -582,7 +576,8 @@
       !TOT_CASE = case1_count + case2_count + case3_count + case4_count
       !IF(TOT_CASE.GT.0) THEN
       !WRITE(*,'(A, 4(2x,i10))') 'CASE COUNT NUMBERS  = ', case1_count ,case2_count ,case3_count ,case4_count
-      !WRITE(*,'(A, 4(2x,g12.7))') 'CASE COUNT %AGE = ', real(case1_count)*100./real(tot_case),real(case2_count)*100./real(tot_case), real(case3_count)*100./real(tot_case), real(case4_count)*100./real(tot_case)
+      !WRITE(*,'(A, 4(2x,g12.7))') 'CASE COUNT %AGE = ', real(case1_count)*100./real(tot_case), &
+      !     real(case2_count)*100./real(tot_case), real(case3_count)*100./real(tot_case), real(case4_count)*100./real(tot_case)
       !ENDIF
       RETURN
 
@@ -622,6 +617,8 @@
       USE cutcell
       USE interpolation
       USE mfix_pic
+      USE fun_avg
+      USE functions
       implicit none
 
       ! general i, j, k indices
@@ -637,15 +634,12 @@
       double precision :: vol_ijk, vol_ipjk, vol_ijpk, vol_ipjpk
       double precision :: vol_ijkp, vol_ipjkp, vol_ijpkp, vol_ipjpkp
 
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
-
       if(MPPIC_SOLID_STRESS_SNIDER) then
 
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
-               PIC_P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - EP_G(IJK))**FRIC_EXP_PIC)/ MAX(EP_G(IJK) - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
+               PIC_P_S(IJK,1) = PSFAC_FRIC_PIC * ((1.d0 - EP_G(IJK))**FRIC_EXP_PIC)/ MAX(EP_G(IJK) &
+                    - EP_STAR, FRIC_NON_SING_FAC*EP_G(IJK))
                !write(102,'(2(2x,i4),2(2x,g17.8))') I_OF(IJK), J_OF(IJK), EP_S(IJK,1), P_STAR(IJK)
             ELSE
                !So that ghost cells have higher pressure
@@ -829,10 +823,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
 
                   vol_ijk = zero
                   vol_ipjk = zero
@@ -851,10 +845,10 @@
 
 
                   if(DO_K) then
-                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
-                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
-                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+                     ijkp    = funijk_map_c(ii,jj,kk+1)
+                     ijpkp   = funijk_map_c(ii,jj+1,kk+1)
+                     ipjkp   = funijk_map_c(ii+1,jj,kk+1)
+                     ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
 
 
                      if(fluid_at(ijkp))     vol_ijkp   = vol(ijkp)
@@ -900,8 +894,10 @@
                      sstencil(i,j,k) = sstencil(i,j,k) + ep_g(ijkp)*vol_ijkp + ep_g(ipjkp)*vol_ipjkp &
                      & + ep_g(ijpkp)*vol_ijpkp + ep_g(ipjpkp)*vol_ipjpkp
 
-                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1)+PS_FORCE_PIC(ijkp,1)*VOL(ijkp) + PS_FORCE_PIC(ijpkp,1)*vol(ijpkp)
-                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2)+PS_FORCE_PIC(ijkp,2)*vol(ijkp) + PS_FORCE_PIC(ipjkp,2)*vol(ipjkp)
+                     psgradstencil(i,j,k,1) = psgradstencil(i,j,k,1) &
+                          + PS_FORCE_PIC(ijkp,1)*VOL(ijkp) + PS_FORCE_PIC(ijpkp,1)*vol(ijpkp)
+                     psgradstencil(i,j,k,2) = psgradstencil(i,j,k,2) &
+                          + PS_FORCE_PIC(ijkp,2)*vol(ijkp) + PS_FORCE_PIC(ipjkp,2)*vol(ipjkp)
                      psgradstencil(i,j,k,3) = PS_FORCE_PIC(cur_ijk,3)*vol(cur_ijk)+&
                      & PS_FORCE_PIC(ijpk,3)*vol(ijpk)+PS_FORCE_PIC(ipjk,3)*vol(ipjk)+&
                      & PS_FORCE_PIC(ipjpk,3)*vol(ipjpk)
@@ -1002,6 +998,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1014,11 +1011,6 @@
       INTEGER :: I, J, K, IM, I1, I2, J1, J2, K1, K2, IJK,&
                  JM, KM, IJKW, IMJK, IPJK, IP, IJK_WALL
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-!-----------------------------------------------
-
 
 ! Set the default boundary conditions
       IF (DO_K) THEN
@@ -1086,6 +1078,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1097,10 +1090,6 @@
 ! Indices
       INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
                        IM, KM, IJKS, IJMK, IJPK, IJK_WALL
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1167,6 +1156,7 @@
       USE indices
       USE compar
       USE mfix_pic
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1178,10 +1168,6 @@
 ! Indices
       INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
                  IM, JM, IJKB, IJKM, IJKP, IJK_WALL
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1237,15 +1223,14 @@
       USE compar
       USE discretelement
       use desmpi
+      USE functions
+      USE fun_avg
 
       IMPLICIT NONE
       integer, intent(in) :: funit
       double precision, dimension(:), intent(in)  :: bufin
 
       integer :: ijk, i, j,k
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
 
@@ -1276,23 +1261,22 @@
       USE fldvar, only : ep_g
       USE discretelement
       USE mfix_pic
+      USE functions
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
-      character*100 :: filename
+      character(LEN=100) :: filename
       logical finish
-      INCLUDE '../function.inc'
-
-!      INCLUDE '../ep_s1.inc'
-!      INCLUDE '../ep_s2.inc'
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
       IF(DIMN.eq.2) then
-         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
+         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+              ' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
          write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       else
-         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "EP_s " ', ' "U_S" ', ' "V_S" ', ' "W_S" ',' "DES_U_s" ', ' "DES_V_s" ', ' "DES_W_s" '!, &
+         write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+              ' "EP_s " ', ' "U_S" ', ' "V_S" ', ' "W_S" ',' "DES_U_s" ', ' "DES_V_s" ', ' "DES_W_s" '!, &
         ! & ' "P_S_FOR1" ', ' "P_S_FOR2" ', ' "P_S_FOR3" '
          write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       ENDIF
@@ -1326,8 +1310,10 @@
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') TRIM(RUN_NAME)//'_PS_FORCE_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
 
-      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
-      IF(DIMN.eq.2) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , '"EP_S_part"'
+      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
+           ' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
+      IF(DIMN.eq.2) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ', &
+           ' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , '"EP_S_part"'
 
       PC = 1
       DO LL = 1, MAX_PIP
@@ -1337,9 +1323,10 @@
          pc = pc+1
          IF(PEA(LL,4)) CYCLE
 
-         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
+         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
+              (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
       ENDDO
-               close(1000, status='keep')
+      close(1000, status='keep')
 
       !write(*,*) 'want to quit ?', LL, mAX_PIP, PIP
       !read(*,*) finish

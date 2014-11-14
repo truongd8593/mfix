@@ -39,7 +39,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! shift DX, DY and DZ values 
+! shift DX, DY and DZ values
       LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
 
@@ -49,7 +49,7 @@
       CALL READ_NAMELIST(0)
 
 ! Initialize the error manager. This call occurs after the mfix.dat
-! is read so that message verbosity can be set and the .LOG file 
+! is read so that message verbosity can be set and the .LOG file
 ! can be opened.
       CALL INIT_ERROR_MANAGER
 
@@ -156,7 +156,7 @@
 
 ! This is all that happens in SET_L_SCALE so it needs moved, maybe
 ! this should go in int_fluid_var.?
-!     CALL SET_L_SCALE 
+!     CALL SET_L_SCALE
       L_SCALE(:) = L_SCALE0
 
 

@@ -1,18 +1,18 @@
 
-      SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS  
-      
+      SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  Module name: ALLOCATE_ARRAYS                                     
+!
+!  Module name: ALLOCATE_ARRAYS
 !  Purpose: allocate arrays
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
-!  Reviewer: 
-!                                                                     
+!  Reviewer:
+!
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       Use indices
 
@@ -21,7 +21,6 @@
       USE discretelement
 
       IMPLICIT NONE
-      INTEGER :: IJK
 
       DIMENSION_MAX_CUT_CELL = INT(FAC_DIM_MAX_CUT_CELL*DIMENSION_3G)
 
@@ -73,9 +72,9 @@
       Allocate(  NUMBER_OF_W_NODES  (DIMENSION_3) )
 
      NUMBER_OF_NODES   = 0
-     NUMBER_OF_U_NODES = 0  
-     NUMBER_OF_V_NODES = 0 
-     NUMBER_OF_W_NODES = 0 
+     NUMBER_OF_U_NODES = 0
+     NUMBER_OF_V_NODES = 0
+     NUMBER_OF_W_NODES = 0
 
       Allocate(  CONNECTIVITY  (DIMENSION_3,15) )
       Allocate(  CONNECTIVITY_U  (DIMENSION_3,15) )
@@ -251,7 +250,7 @@
 
       Allocate(  SNAP (DIMENSION_3) )
 
-      SNAP = .FALSE. 
+      SNAP = .FALSE.
 
       Allocate(  CUT_TREATMENT_AT (DIMENSION_3) )
       Allocate(  CUT_U_TREATMENT_AT (DIMENSION_3) )
@@ -275,10 +274,10 @@
       CUT_W_CELL_AT = .FALSE.
 
       Allocate( SMALL_CELL_AT  (DIMENSION_3) )
-      SMALL_CELL_AT = .FALSE.       
+      SMALL_CELL_AT = .FALSE.
 
       Allocate( SMALL_CELL_FLAG  (DIMENSION_3) )
-      SMALL_CELL_FLAG = 0 
+      SMALL_CELL_FLAG = 0
 
       Allocate(  BLOCKED_CELL_AT (DIMENSION_3) )
       Allocate(  BLOCKED_U_CELL_AT (DIMENSION_3) )
@@ -343,8 +342,8 @@
 
       Allocate(  DWALL (DIMENSION_3) )
 
- 
+
       RETURN
-      END SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS 
-      
+      END SUBROUTINE ALLOCATE_CUT_CELL_ARRAYS
+
 

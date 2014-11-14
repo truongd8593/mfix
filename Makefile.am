@@ -5,6 +5,7 @@
 	$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c $< -o $@
 
 AM_FCFLAGS = -I$(top_srcdir)/model
+AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 
@@ -17,9 +18,10 @@ nodist_postmfix_SOURCES =
 noinst_LIBRARIES = libodepack.a
 libodepack_a_SOURCES = model/ODEPACK.F
 mfix_LDADD = libodepack.a
+postmfix_LDADD = libodepack.a
 
 EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
-EXTRA_DIST += CHANGES mfix_user_guide.pdf readme 
+EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 $(top_srcdir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
@@ -43,8 +45,6 @@ species.inc:
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
 common_SOURCES = \
-	model/BLAS.f \
-	model/DGTSV.f \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -85,12 +85,11 @@ common_SOURCES = \
 	model/adjust_theta.f \
 	model/allocate_arrays.f \
 	model/ambm_mod.f \
-	model/b_force1.inc \
-	model/b_force2.inc \
 	model/b_m_p_star.f \
 	model/bc_mod.f \
 	model/bc_phi.f \
 	model/bc_theta.f \
+	model/bodyforce_mod.f \
 	model/bound_x.f \
 	model/boundfunijk3_mod.f \
 	model/boundfunijk_mod.f \
@@ -120,7 +119,6 @@ common_SOURCES = \
 	model/calc_trd_s.f \
 	model/calc_u_friction.f \
 	model/calc_vol_fr.f \
-	model/calc_xsi.f \
 	model/cartesian_grid/CG_set_bc0.f \
 	model/cartesian_grid/CG_set_outflow.f \
 	model/cartesian_grid/CG_source_u_g.f \
@@ -196,7 +194,10 @@ common_SOURCES = \
 	model/check_mass_balance.f \
 	model/check_mod.f \
 	model/check_plane.f \
+	model/chem/stiff_chem_dbg_mod.f \
 	model/chem/stiff_chem_maps_mod.f \
+	model/chem/stiff_chem_mod.f \
+	model/chem/stiff_chem_rrates.f \
 	model/chem/stiff_chem_stats_mod.f \
 	model/chischeme_mod.f \
 	model/cn_extrapol.f \
@@ -221,12 +222,13 @@ common_SOURCES = \
 	model/corner_mod.f \
 	model/correct_0.f \
 	model/correct_1.f \
-	model/cp_fun1.inc \
-	model/cp_fun2.inc \
 	model/dbg_mod.f \
 	model/deprecated.f \
-	model/des/calc_collision_wall.f \
+	model/des/calc_collision_wall_mod.f \
+	model/des/calc_drag_des.f \
+	model/des/calc_dtpic.f \
 	model/des/calc_force_dem.f \
+	model/des/calc_pg_grad.f \
 	model/des/calc_rrate_des.f \
 	model/des/calc_thermo_des.f \
 	model/des/cfassign.f \
@@ -237,9 +239,10 @@ common_SOURCES = \
 	model/des/cfupdateold.f \
 	model/des/cfwallcontact.f \
 	model/des/cfwallposvel.f \
+	model/des/check_cell_movement.f \
+	model/des/comp_mean_fields.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
-	model/des/des_cluster_identification.f \
 	model/des/des_cluster_mod.f \
 	model/des/des_functions.f \
 	model/des/des_granular_temperature.f \
@@ -252,20 +255,23 @@ common_SOURCES = \
 	model/des/des_rrates0.f \
 	model/des/des_rxns_mod.f \
 	model/des/des_stl_functions_mod.f \
-	model/des/des_thermo_cond.f \
+	model/des/des_thermo_cond_mod.f \
 	model/des/des_thermo_conv.f \
 	model/des/des_thermo_mod.f \
 	model/des/des_thermo_newvalues.f \
 	model/des/des_thermo_rad.f \
 	model/des/des_time_march.f \
-	model/des/desgrid_functions.inc \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
 	model/des/desnamelist.inc \
 	model/des/discretelement_mod.f \
-	model/des/drag_fgs.f \
+	model/des/drag_gp_des.f \
+	model/des/drag_gs_des_interp0.f \
+	model/des/drag_gs_des_noninterp.f \
+	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
 	model/des/generate_particle_config.f \
+	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
 	model/des/make_arrays_des.f \
@@ -279,6 +285,8 @@ common_SOURCES = \
 	model/des/pic_bc_routines.f \
 	model/des/pic_routines.f \
 	model/des/randomno_mod.f \
+	model/des/read_particle_input.f \
+	model/des/set_phase_index.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/sendrecvnode_mod.f \
@@ -290,7 +298,6 @@ common_SOURCES = \
 	model/des/set_bc_pic_mo.f \
 	model/des/set_geometry_des.f \
 	model/des/set_ic_dem.f \
-	model/des/softspring_funcs_cutcell_mod.f \
 	model/des/solid_drag.f \
 	model/des/vtp_mod.f \
 	model/des/write_des_data.f \
@@ -317,8 +324,6 @@ common_SOURCES = \
 	model/energy_mod.f \
 	model/eosg.f \
 	model/eoss.f \
-	model/ep_s1.inc \
-	model/ep_s2.inc \
 	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \
@@ -326,11 +331,9 @@ common_SOURCES = \
 	model/exit.f \
 	model/fldvar_mod.f \
 	model/flow_to_vel.f \
-	model/fun_avg1.inc \
-	model/fun_avg2.inc \
-	model/function.inc \
-	model/function3.inc \
-	model/function_mod.f \
+	model/fun_avg_mod.f \
+	model/function3_mod.f \
+	model/functions_mod.f \
 	model/funits_mod.f \
 	model/g_0.f \
 	model/geometry_mod.f \
@@ -345,6 +348,8 @@ common_SOURCES = \
 	model/get_stats.f \
 	model/get_walls_bc.f \
 	model/ic_mod.f \
+	model/in_binary_512_mod.f \
+	model/in_binary_512i_mod.f \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
@@ -415,8 +420,6 @@ common_SOURCES = \
 	model/qmomk/qmomk_write_restart.f \
 	model/qmomk/qmomknamelist.inc \
 	model/radial_vel_correction.f \
-	model/radtn1.inc \
-	model/radtn2.inc \
 	model/read_database.f \
 	model/read_namelist.f \
 	model/read_res0.f \
@@ -430,10 +433,6 @@ common_SOURCES = \
 	model/run_mod.f \
 	model/rxn_com_mod.f \
 	model/rxns_mod.f \
-	model/s_pr1.inc \
-	model/s_pr2.inc \
-	model/sc_p_g1.inc \
-	model/sc_p_g2.inc \
 	model/scalar_prop.f \
 	model/scalars_mod.f \
 	model/scales_mod.f \
@@ -465,6 +464,7 @@ common_SOURCES = \
 	model/set_ro_s.f \
 	model/set_wall_bc.f \
 	model/shift_dxyz.f \
+	model/solids_pressure_mod.f \
 	model/solve_continuity.f \
 	model/solve_energy_eq.f \
 	model/solve_epp.f \
@@ -538,18 +538,23 @@ common_SOURCES = \
 	model/write_spx0.f \
 	model/write_spx1.f \
 	model/write_table.f \
-	model/write_usr0.f \
-	model/write_usr1.f \
 	model/xerbla.f \
-	model/xsi1.inc \
-	model/xsi2.inc \
 	model/xsi_array_mod.f \
+	model/xsi_mod.f \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
+if MKL
+AM_FCFLAGS += -mkl
+AM_LDFLAGS += -mkl
+else
+common_SOURCES += model/BLAS.f
+common_SOURCES += model/DGTSV.f
+endif
+
 if OPENMP
 AM_FCFLAGS += $(OPENMP_FCFLAGS)
-AM_LDFLAGS = $(OPENMP_FCFLAGS)
+AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI
@@ -574,136 +579,145 @@ dist_mfix_SOURCES += $(common_SOURCES)
 dist_postmfix_SOURCES += $(common_SOURCES)
 
 if USR0
-dist_mfix_SOURCES += usr0.f
-dist_postmfix_SOURCES += usr0.f
+nodist_mfix_SOURCES += usr0.f
+nodist_postmfix_SOURCES += usr0.f
 else
 dist_mfix_SOURCES += model/usr0.f
 dist_postmfix_SOURCES += model/usr0.f
 endif
 
 if USR1
-dist_mfix_SOURCES += usr1.f
-dist_postmfix_SOURCES += usr1.f
+nodist_mfix_SOURCES += usr1.f
+nodist_postmfix_SOURCES += usr1.f
 else
 dist_mfix_SOURCES += model/usr1.f
 dist_postmfix_SOURCES += model/usr1.f
 endif
 
 if USR2
-dist_mfix_SOURCES += usr2.f
-dist_postmfix_SOURCES += usr2.f
+nodist_mfix_SOURCES += usr2.f
+nodist_postmfix_SOURCES += usr2.f
 else
 dist_mfix_SOURCES += model/usr2.f
 dist_postmfix_SOURCES += model/usr2.f
 endif
 
 if USR3
-dist_mfix_SOURCES += usr3.f
-dist_postmfix_SOURCES += usr3.f
+nodist_mfix_SOURCES += usr3.f
+nodist_postmfix_SOURCES += usr3.f
 else
 dist_mfix_SOURCES += model/usr3.f
 dist_postmfix_SOURCES += model/usr3.f
 endif
 
 if USR_MOD
-dist_mfix_SOURCES += usr_mod.f
-dist_postmfix_SOURCES += usr_mod.f
+nodist_mfix_SOURCES += usr_mod.f
+nodist_postmfix_SOURCES += usr_mod.f
 else
 dist_mfix_SOURCES += model/usr_mod.f
 dist_postmfix_SOURCES += model/usr_mod.f
 endif
 
 if USR_WRITE_OUT0
-dist_mfix_SOURCES += usr_write_out0.f
-dist_postmfix_SOURCES += usr_write_out0.f
+nodist_mfix_SOURCES += usr_write_out0.f
+nodist_postmfix_SOURCES += usr_write_out0.f
 else
 dist_mfix_SOURCES += model/usr_write_out0.f
 dist_postmfix_SOURCES += model/usr_write_out0.f
 endif
 
 if USR_DRAG
-dist_mfix_SOURCES += usr_drag.f
-dist_postmfix_SOURCES += usr_drag.f
+nodist_mfix_SOURCES += usr_drag.f
+nodist_postmfix_SOURCES += usr_drag.f
 else
 dist_mfix_SOURCES += model/usr_drag.f
 dist_postmfix_SOURCES += model/usr_drag.f
 endif
 
 if USR_RATES
-dist_mfix_SOURCES += species.inc usr_rates.f
-dist_postmfix_SOURCES += species.inc usr_rates.f
+nodist_mfix_SOURCES += species.inc usr_rates.f
+nodist_postmfix_SOURCES += species.inc usr_rates.f
 else
 dist_mfix_SOURCES += model/usr_rates.f
 dist_postmfix_SOURCES += model/usr_rates.f
 endif
 
 if DES_USR0_DES
-dist_mfix_SOURCES += des/usr0_des.f
-dist_postmfix_SOURCES += des/usr0_des.f
+nodist_mfix_SOURCES += des/usr0_des.f
+nodist_postmfix_SOURCES += des/usr0_des.f
 else
 dist_mfix_SOURCES += model/des/usr0_des.f
 dist_postmfix_SOURCES += model/des/usr0_des.f
 endif
 
 if DES_USR1_DES
-dist_mfix_SOURCES += des/usr1_des.f
-dist_postmfix_SOURCES += des/usr1_des.f
+nodist_mfix_SOURCES += des/usr1_des.f
+nodist_postmfix_SOURCES += des/usr1_des.f
 else
 dist_mfix_SOURCES += model/des/usr1_des.f
 dist_postmfix_SOURCES += model/des/usr1_des.f
 endif
 
 if DES_USR2_DES
-dist_mfix_SOURCES += des/usr2_des.f
-dist_postmfix_SOURCES += des/usr2_des.f
+nodist_mfix_SOURCES += des/usr2_des.f
+nodist_postmfix_SOURCES += des/usr2_des.f
 else
 dist_mfix_SOURCES += model/des/usr2_des.f
 dist_postmfix_SOURCES += model/des/usr2_des.f
 endif
 
 if DES_USR3_DES
-dist_mfix_SOURCES += des/usr3_des.f
-dist_postmfix_SOURCES += des/usr3_des.f
+nodist_mfix_SOURCES += des/usr3_des.f
+nodist_postmfix_SOURCES += des/usr3_des.f
 else
 dist_mfix_SOURCES += model/des/usr3_des.f
 dist_postmfix_SOURCES += model/des/usr3_des.f
 endif
 
 if DES_USR4_DES
-dist_mfix_SOURCES += des/usr4_des.f
-dist_postmfix_SOURCES += des/usr4_des.f
+nodist_mfix_SOURCES += des/usr4_des.f
+nodist_postmfix_SOURCES += des/usr4_des.f
 else
 dist_mfix_SOURCES += model/des/usr4_des.f
 dist_postmfix_SOURCES += model/des/usr4_des.f
 endif
 
 if DES_USR_RATES_DES
-dist_mfix_SOURCES += des/usr_rates_des.f
-dist_postmfix_SOURCES += des/usr_rates_des.f
+nodist_mfix_SOURCES += des/usr_rates_des.f
+nodist_postmfix_SOURCES += des/usr_rates_des.f
 else
 dist_mfix_SOURCES += model/des/usr_rates_des.f
 dist_postmfix_SOURCES += model/des/usr_rates_des.f
 endif
 
 if DQMOM_USR_DQMOM
-dist_mfix_SOURCES += dqmom/usr_dqmom.f
-dist_postmfix_SOURCES += dqmom/usr_dqmom.f
+nodist_mfix_SOURCES += dqmom/usr_dqmom.f
+nodist_postmfix_SOURCES += dqmom/usr_dqmom.f
 else
 dist_mfix_SOURCES += model/dqmom/usr_dqmom.f
 dist_postmfix_SOURCES += model/dqmom/usr_dqmom.f
 endif
 
+if WRITE_USR0
+nodist_mfix_SOURCES += write_usr0.f
+nodist_postmfix_SOURCES += write_usr0.f
+else
+dist_mfix_SOURCES += model/write_usr0.f
+dist_postmfix_SOURCES += model/write_usr0.f
+endif
 
+if WRITE_USR1
+nodist_mfix_SOURCES += write_usr1.f
+nodist_postmfix_SOURCES += write_usr1.f
+else
+dist_mfix_SOURCES += model/write_usr1.f
+dist_postmfix_SOURCES += model/write_usr1.f
+endif
 
 # The following files conflict with definitions in postmfix_SOURCES
 dist_mfix_SOURCES += \
 	model/check_data/check_odepack_stiff_chem.f \
-	model/chem/stiff_chem_dbg_mod.f \
-	model/chem/stiff_chem_mod.f \
-	model/chem/stiff_chem_rrates.f \
 	model/get_data.f \
-	model/in_bin_512.f \
-	model/in_bin_512i.f \
 	model/out_array.f \
 	model/out_array_c.f \
 	model/out_array_k.f \
@@ -727,7 +741,6 @@ dist_postmfix_SOURCES += \
 	post_mfix/calc_quantities.f \
 	post_mfix/calc_ro_g.f \
 	post_mfix/calc_vol.f \
-	post_mfix/chem/stiff_chem_mod.f \
 	post_mfix/correl_mod.f \
 	post_mfix/deallocate_arrays.f \
 	post_mfix/examine_data.f \
@@ -740,7 +753,6 @@ dist_postmfix_SOURCES += \
 	post_mfix/flow_sx.f \
 	post_mfix/flow_sy.f \
 	post_mfix/flow_sz.f \
-	post_mfix/function.inc \
 	post_mfix/gas_flux.f \
 	post_mfix/get_file_name.f \
 	post_mfix/get_file_status.f \

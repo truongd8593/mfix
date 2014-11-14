@@ -34,13 +34,13 @@
       INTEGER :: ITER_TOT(10) = 0
 !
 !                      linear equation solver sweep direction
-      CHARACTER*4 ::   LEQ_SWEEP(9)
+      CHARACTER(LEN=4) ::   LEQ_SWEEP(9)
 !
 !                      linear equation solver tolerance
       DOUBLE PRECISION LEQ_TOL(9)
 !
-!		       Preconditioner option
-      CHARACTER*4 ::   LEQ_PC(9)
+!                      Preconditioner option
+      CHARACTER(LEN=4) ::   LEQ_PC(9)
 !
 !                      Option to minimize dot products
       LOGICAL     ::   minimize_dotproducts
@@ -62,4 +62,4 @@
 !
 !
 
-      END MODULE leqsol                                                                          
+      END MODULE leqsol

@@ -1,10 +1,10 @@
       MODULE pgcor
- 
- 
+
+
       Use param
       Use param1
- 
- 
+
+
 !
 !  Variables for gas pressure correction equation
 !
@@ -25,8 +25,8 @@
 !                      pressure correction
       LOGICAL          SWITCH_4_P_g
 !
- 
- 
+
+
 !!!HPF$ align d_e(:, *) with TT(:)
 !!!HPF$ align d_n(:, *) with TT(:)
 !!!HPF$ align d_t(:, *) with TT(:)

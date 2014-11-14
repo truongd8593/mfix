@@ -33,7 +33,7 @@
       INTEGER   REC_POINTER(*) , NSTEP_1
       INTEGER   L
       LOGICAL   READ_SPX(*) , READ_SPX_STORE(N_SPX), AT_EOF(*)
-      REAL      TDIFF , TIME_REAL(*), TIME_NOW
+      REAL      TIME_REAL(*), TIME_NOW
 !
       TIME_NOW = -ONE
 !

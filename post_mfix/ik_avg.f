@@ -29,6 +29,7 @@
       Use indices
       Use geometry
       Use compar
+      Use functions
 !
       IMPLICIT NONE
 !
@@ -42,8 +43,6 @@
 !     local variables
 !
       REAL              TOTVOL
-!
-      INCLUDE 'function.inc'
 !
       TOTVOL = 0.0
       AVG    = 0.0

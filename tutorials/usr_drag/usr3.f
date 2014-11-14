@@ -4,7 +4,7 @@
 ! Purpose: Collect some information at the end of the run.             !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE USR3 
+      SUBROUTINE USR3
 
       use discretelement, only: DES_MMAX
       use discretelement, only: DES_VEL_NEW
@@ -46,5 +46,5 @@
 
 
 
-      RETURN  
-      END SUBROUTINE USR3 
+      RETURN
+      END SUBROUTINE USR3

@@ -1,20 +1,20 @@
 ! vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: INTERPOLATION                                          C
-!  Purpose: Contains number of generic interfaces that are used if     
-!           DES_INTERP_ON is TRUE                                     
+!  Purpose: Contains number of generic interfaces that are used if
+!           DES_INTERP_ON is TRUE
 !                                                                      C
 !                                                                      C
 !  Author: Chidambaram Narayanan and Rahul Garg       Date: 01-Aug-07  C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
 MODULE interpolation
-  
+
   USE constant
   USE discretelement
   IMPLICIT NONE
-  
-  PRIVATE 
+
+  PRIVATE
 
   PUBLIC:: set_interpolation_stencil,  set_interpolation_scheme, set_interpolation_pstencil, array_dot_product
   PUBLIC:: INTERPOLATE_CC
@@ -33,44 +33,43 @@ MODULE interpolation
   END INTERFACE
 
   INTERFACE array_dot_product
-      Module procedure array_dot_product_1d
       Module procedure array_dot_product_2d
       Module procedure array_dot_product_3d
   END INTERFACE
 
   SAVE
 
-! the interpolator subroutine essentially returns the value of interp_scl/interp_vec 
+! the interpolator subroutine essentially returns the value of interp_scl/interp_vec
 ! which is the interpolated value of the quantity passed through 'scalar/vector'.
-! the value is interpolated based on grid (x,y,z position of grid)  passed 
+! the value is interpolated based on grid (x,y,z position of grid)  passed
 ! through coor at the x,y,z position of the particle passed through ppos
 ! the interpolation order is specified by order and the interpolation scheme is
-! specified by isch/fun 
+! specified by isch/fun
 
-! interp_oned_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
-!    REAL coor(:), scalar(:), PPOS, INTERP_SCL 
+! interp_oned_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer)
+!    REAL coor(:), scalar(:), PPOS, INTERP_SCL
 !    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:)
 ! interp_oned_vector  (coor,vector,ppos,interp_vec,order, fun, weight_pointer)
-!    REAL coor(:), vector(:,:), PPOS, INTERP_VEC(:) 
+!    REAL coor(:), vector(:,:), PPOS, INTERP_VEC(:)
 !    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:)
-! interp_twod_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
-!    REAL coor(:,:,:), scalar(:,:), PPOS(2), INTERP_SCL 
+! interp_twod_scalar  (coor,scalar,ppos,interp_scl,order, isch,weight_pointer)
+!    REAL coor(:,:,:), scalar(:,:), PPOS(2), INTERP_SCL
 !    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:,:,:)
 ! interp_twod_vector  (coor,vector,ppos,interp_vec,order, fun, weight_pointer)
-!    REAL coor(:,:,:), vector(:,:,:), PPOS(2), INTERP_VEC(:) 
+!    REAL coor(:,:,:), vector(:,:,:), PPOS(2), INTERP_VEC(:)
 !    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:,:,:)
-! interp_threed_scalar(coor,scalar,ppos,interp_scl,order, isch,weight_pointer) 
-!    REAL coor(:,:,:,:), scalar(:,:,:), PPOS(3), INTERP_SCL 
+! interp_threed_scalar(coor,scalar,ppos,interp_scl,order, isch,weight_pointer)
+!    REAL coor(:,:,:,:), scalar(:,:,:), PPOS(3), INTERP_SCL
 !    INTEGER ORDER; CHARACTER ISCH; REAL WEIGHT_POINTER(:,:,:)
-! interp_threed_vector(coor,vector,ppos,interp_vec,order, fun, weight_pointer) 
-!    REAL coor(:,:,:,:), vector(:,:,:,:), PPOS(3), INTERP_VEC(:) 
+! interp_threed_vector(coor,vector,ppos,interp_vec,order, fun, weight_pointer)
+!    REAL coor(:,:,:,:), vector(:,:,:,:), PPOS(3), INTERP_VEC(:)
 !    INTEGER ORDER; CHARACTER FUN; REAL WEIGHT_POINTER(:,:,:)
 
   INTEGER, PARAMETER :: prcn=8
   INTEGER, PARAMETER :: iprec=8
   !double precision, Parameter:: zero = 0.0_iprec
   !double precision, Parameter:: one  = 1.0_iprec
-  DOUBLE PRECISION, PARAMETER  :: two = 2.0_iprec  
+  DOUBLE PRECISION, PARAMETER  :: two = 2.0_iprec
   DOUBLE PRECISION, PARAMETER  :: three = 3.0_iprec
   DOUBLE PRECISION, PARAMETER  :: four = 4.0_iprec
   DOUBLE PRECISION, PARAMETER :: six = 6.0_iprec
@@ -94,7 +93,7 @@ MODULE interpolation
   FUNCTION array_dot_product_3d(A,B)  !3D Arrays
     Real(prcn):: array_dot_product_3d
 
-    Integer:: i, j, k, s1, s2, s3
+    Integer:: j, k, s1, s2, s3
     Real(prcn), Dimension(:,:,:), Intent(in):: A, B
 
     s1 = SIZE(A,1)
@@ -102,95 +101,75 @@ MODULE interpolation
     s3 = SIZE(A,3)
 
     array_dot_product_3d = zero
-    Do 10 i = 1,s1
-    Do 10 j = 1,s2
-    Do 10 k = 1,s3
-      array_dot_product_3d = array_dot_product_3d   &
-                            + A(i,j,k)*B(i,j,k)
-    10 Continue
+    DO k = 1,s3
+       DO j = 1,s2
+          array_dot_product_3d = array_dot_product_3d + dot_product(A(:,j,k), B(1:s1,j,k))
+       ENDDO
+    ENDDO
   END FUNCTION array_dot_product_3d
 
   FUNCTION array_dot_product_2d(A,B)  !2D Arrays
     Real(prcn):: array_dot_product_2d
 
-    Integer:: i, j, s1, s2
+    Integer:: j, s2
     Real(prcn), Dimension(:,:), Intent(in):: A, B
 
-    s1 = SIZE(A,1)
     s2 = SIZE(A,2)
 
     array_dot_product_2d = zero
-    Do 10 i = 1,s1
-    Do 10 j = 1,s2
-      array_dot_product_2d = array_dot_product_2d   &
-                            + A(i,j)*B(i,j)
-    10 Continue
+    DO j = 1,s2
+       array_dot_product_2d = array_dot_product_2d + dot_product(A(:,j), B(:,j))
+    ENDDO
   END FUNCTION array_dot_product_2d
-
-  FUNCTION array_dot_product_1d(A,B)  !1D Arrays
-    Real(prcn):: array_dot_product_1d
-
-    Integer:: i, s1
-    Real(prcn), Dimension(:), Intent(in):: A, B
-
-    s1 = SIZE(A,1)
-
-    array_dot_product_1d = zero
-    Do 10 i = 1,s1
-      array_dot_product_1d = array_dot_product_1d   &
-                            + A(i)*B(i)
-    10 Continue
-  END FUNCTION array_dot_product_1d
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE set_interpolation_stencil(PC, IW, IE, JS, JN, KB, KTP,&
       isch,dimprob,ordernew)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^       
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
        !USE discretelement, ONLY : order,ob2l,ob2r, des_periodic_walls_x,y,z
 
-    USE geometry 
-  
-    IMPLICIT NONE 
+    USE geometry
+
+    IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
     INTEGER, DIMENSION(3), INTENT(in):: pc   ! i,j,k indices of particle - 1
-    INTEGER, INTENT(out):: IW, IE, JS, JN, KB, KTP 
-    CHARACTER*5, INTENT(in) :: isch   ! interpolation scheme 
+    INTEGER, INTENT(out):: IW, IE, JS, JN, KB, KTP
+    CHARACTER(LEN=5), INTENT(in) :: isch   ! interpolation scheme
     INTEGER, INTENT(in) :: dimprob   ! dimension of system = DIMN
     INTEGER, OPTIONAL :: ordernew   ! interpolation order
 
     INTEGER :: im, jm, km   ! local variables assigned maximum i,j,k fluid cell indices
     INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
-!----------------------------------------------- 
+!-----------------------------------------------
 
 ! reassigning ob2l and ob2r ?
     ob2l = (order+1)/2
-    ob2r = order/2 
+    ob2r = order/2
 ! local variables for maximum fluid cell indices
-    im = imax1    
+    im = imax1
     jm = jmax1
     km = kmax1
 
     SELECT CASE(isch)
     CASE('csi')
-       
+
        ob2rtmp = ob2r
        ob2ltmp = ob2l
        ordertemp = order
 
 ! lowest IW will be assigned is 1 (ghost cell)
-       IW = MAX(1 ,pc(1) - (ob2l - 1)) 
+       IW = MAX(1 ,pc(1) - (ob2l - 1))
 ! highest IE will be assigned is maximum fluid cell index
        IE = MIN(im,pc(1) + ob2r)
 ! if IW is west ghost cell and/or IE is maximum fluid cell
 ! reassign IW and/or IE accordingly
-       IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+       IF(.NOT.DES_PERIODIC_WALLS_X) THEN
           IF (IW.EQ.1 ) IE = IW + order - 1
           IF (IE.EQ.im) IW = IE - order + 1
-       ELSE 
+       ELSE
           IF (IW.EQ.1 ) IW = IE - order + 1
           IF (IE.EQ.im) IE = IW + order - 1
        ENDIF
@@ -207,7 +186,7 @@ MODULE interpolation
 
        KB = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
        KTP = MIN(km,pc(3) + ob2r)
-       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN
           IF (KB.EQ.1 ) KTP = KB + order - 1
           IF (KTP.EQ.km) KB = KTP - order + 1
        ELSE
@@ -215,19 +194,19 @@ MODULE interpolation
           IF (KTP.EQ.km) KTP = KB + order - 1
        ENDIF
 
-       ob2r =  ob2rtmp 
+       ob2r =  ob2rtmp
        ob2l = ob2ltmp
-       ordernewtmp = order       
+       ordernewtmp = order
        order = ordertemp !reset the order
 
     CASE('lpi')
 
        IW = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
        IE = MIN(im,pc(1) + ob2r)
-       IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+       IF(.NOT.DES_PERIODIC_WALLS_X) THEN
           IF (IW.EQ.1 ) IE = IW + order - 1
           IF (IE.EQ.im) IW = IE - order + 1
-       ELSE 
+       ELSE
           IF (IW.EQ.1 ) IW = IE - order + 1
           IF (IE.EQ.im) IE = IW + order - 1
        ENDIF
@@ -244,7 +223,7 @@ MODULE interpolation
 
        KB = MAX(1 ,pc(3) - (ob2l - 1)) !non-periodic
        KTP = MIN(km,pc(3) + ob2r)
-       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+       IF(.NOT.DES_PERIODIC_WALLS_Z) THEN
           IF (KB.EQ.1 ) KTP = KB + order - 1
           IF (KTP.EQ.km) KB = KTP - order + 1
        ELSE
@@ -252,17 +231,17 @@ MODULE interpolation
           IF (KTP.EQ.km) KTP = KB + order - 1
        ENDIF
        ordernewtmp = order
-       
+
     END SELECT
 
-    IF(dimprob == 2) THEN 
+    IF(dimprob == 2) THEN
        KB = pc(3)
        KTP = pc(3)
     ENDIF
 
-! for debugging    
+! for debugging
     !print*, 'order in set stencil = ', order,pc(3)
-    !Print*,'IW, IE = ', pc(1), IW, IE    
+    !Print*,'IW, IE = ', pc(1), IW, IE
 
     IF(PRESENT(ordernew)) ordernew = ordernewtmp
 
@@ -285,7 +264,7 @@ MODULE interpolation
       USE discretelement
       USE geometry
       USE param1
-      
+
       IMPLICIT NONE
 
 ! I, J, K indices of the cell containing the particle.
@@ -296,12 +275,12 @@ MODULE interpolation
 ! These values indicate the I,J,K starting indices used to select the
 ! nodes for interpolation.
       INTEGER, INTENT(OUT) :: IW, JS, KB
-! flag to tell whether local debugging was called in drag_fgs      
+! flag to tell whether local debugging was called in drag_fgs
       LOGICAL, INTENT(IN) :: FOCUS
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
 ! indices
       INTEGER I, J, K, II, JJ, KK
       INTEGER I_SHIFT, J_SHIFT, K_SHIFT, IE, JN, KTP
@@ -334,13 +313,13 @@ MODULE interpolation
       IW = MAX( 1, (PC(1) + I_SHIFT-1))
 ! Restrict the east I index to a maximum of IMAX1
       IE = MIN( IMAX2, PC(1) + I_SHIFT)
-      IF(.NOT.DES_PERIODIC_WALLS_X) THEN 
+      IF(.NOT.DES_PERIODIC_WALLS_X) THEN
 ! If the YZ walls are not periodic, ensure that the indices used for
 ! interpolation stay within the domain. This may require a shift in the
 ! indices for cells near the walls and interpolation schemes of high
 ! order.
          IF (IE .EQ. IMAX2) IW = IMAX2 - 1
-      ELSE 
+      ELSE
 ! If the YZ walls are periodic, the starting index can been less than 1.
 ! This is accounted for when filling GSTENCIL. corrected later.
          IF (IW .EQ. 1) IW = IE - 1
@@ -370,7 +349,7 @@ MODULE interpolation
          KB = MAX( 1, PC(3)+K_SHIFT-1)
 ! Restric the top K index to a maximum  of KMAX1
          KTP = MIN( KMAX2, PC(3) + K_SHIFT)
-         IF(.NOT.DES_PERIODIC_WALLS_Z) THEN 
+         IF(.NOT.DES_PERIODIC_WALLS_Z) THEN
 ! Shift indices for non periodic boundaries if needed.
             IF (KTP .EQ. KMAX1) KB = KTP - 1
          ELSE
@@ -401,7 +380,8 @@ MODULE interpolation
       USE indices
       USE param
       USE param1
-      
+      USE functions
+
       IMPLICIT NONE
 
 ! Particle index number
@@ -417,7 +397,7 @@ MODULE interpolation
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------      
+!-----------------------------------------------
 
 ! Starting grid indices used in interpolation
       INTEGER IW, JS, KB
@@ -441,10 +421,8 @@ MODULE interpolation
       DOUBLE PRECISION INTERP_scalar
 ! Interpolatin scheme. It is 'hard coded' so that only a second order
 ! Lagrange polynomial is used. Higher order isn't necessary.
-      CHARACTER*5 :: INTP_SCHM = 'LPI'
-!-----------------------------------------------  
-
-      INCLUDE '../function.inc'
+      CHARACTER(LEN=5) :: INTP_SCHM = 'LPI'
+!-----------------------------------------------
 
 ! Obtain the starting cell index values for interpolation around
 ! particle NP
@@ -476,7 +454,7 @@ MODULE interpolation
                      STNCL_GEMTY(I,J,K,1) = XE(II) - HALF*DX(II)
                   ENDIF
                ELSE
-! If the YZ plane is not periodic, calculate the position of the node. 
+! If the YZ plane is not periodic, calculate the position of the node.
                   STNCL_GEMTY(I,J,K,1) = XE(II) - HALF*DX(II)
 ! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
 ! Shift the II east/west to reflect the cell value at the boundary.
@@ -500,7 +478,7 @@ MODULE interpolation
                      STNCL_GEMTY(I,J,K,2) = YN(JJ) - HALF*DY(JJ)
                   ENDIF
                ELSE
-! If the XZ plane is not periodic, calculate the position of the node. 
+! If the XZ plane is not periodic, calculate the position of the node.
                   STNCL_GEMTY(I,J,K,2) = YN(JJ) - HALF*DY(JJ)
 ! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
 ! Shift the II east/west to reflect the cell value at the boundary.
@@ -525,7 +503,7 @@ MODULE interpolation
                         STNCL_GEMTY(I,J,K,3) = ZT(KK) - HALF*DZ(KK)
                      ENDIF
                   ELSE
-! If the XY plane is not periodic, calculate the position of the node. 
+! If the XY plane is not periodic, calculate the position of the node.
                      STNCL_GEMTY(I,J,K,3) = ZT(KK) - HALF*DZ(KK)
 ! Due to the restrictions on non periodic 1 <= II and II <= IMAX2.
 ! Shift the II east/west to reflect the cell value at the boundary.
@@ -549,14 +527,14 @@ MODULE interpolation
 ! Call the interpolation routine. If the call to this routine originates
 ! from the continuum phase, the interpolation weights are of interest.
 ! Otherwise, the interpolated scalar value (INTERP_scalar) is desired.
-      IF(DIMN.EQ.2) THEN 
+      IF(DIMN.EQ.2) THEN
          CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1, 1:DIMN), &
             STNCL_FEILD(1:2, 1:2, 1), DES_POS_NEW(1:2,NP), INTERP_scalar,&
             2, INTP_SCHM, WEIGHTS_CC )
-      ELSE 
+      ELSE
          CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1:2, 1:DIMN), &
             STNCL_FEILD(1:2, 1:2, 1:2), DES_POS_NEW(:,NP), INTERP_scalar,&
-            2, INTP_SCHM, WEIGHTS_CC )  
+            2, INTP_SCHM, WEIGHTS_CC )
       ENDIF
 ! Store interpolation weights in an array for calling routine.
       LC = 0
@@ -579,7 +557,7 @@ MODULE interpolation
          WRITE(*,"(5X,A)")'| Fluid Cell | Interp. Weight |'
          WRITE(*,"(5X,'|',12('-'),'|',16('-'),'|')")
          DO LC = 1, 2**DIMN
-            WRITE(*,"(5X,'|',2X,I8,2X,'|',2X,F12.10,2X,'|')")&
+            WRITE(*,"(5X,'|',2X,I8,2X,'|',2X,F13.10,2X,'|')")&
                INTP_IJK(LC), INTP_WEIGHTS(LC)
          ENDDO
          WRITE(*,"(5X,'|',29('-'),'|'//)")
@@ -593,32 +571,32 @@ MODULE interpolation
   SUBROUTINE set_interpolation_pstencil(pc, ib,ie,jb,je,kb,ke, isch&
        &,dimprob, ordernew)
        !USE discretelement, ONLY : order,ob2l,ob2r,  intx_per, inty_per, intz_per
-    USE geometry 
-    
-    IMPLICIT NONE 
+    USE geometry
+
+    IMPLICIT NONE
     INTEGER, DIMENSION(3), INTENT(in):: pc
     INTEGER :: im,jm,km
-    INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke 
+    INTEGER, INTENT(out):: ib, ie, jb, je, kb, ke
     INTEGER, INTENT(in) :: dimprob
     INTEGER, OPTIONAL :: ordernew
-    CHARACTER*5, INTENT(in) :: isch 
+    CHARACTER(LEN=5), INTENT(in) :: isch
     INTEGER :: ob2rtmp, ob2ltmp, ordertemp, ordernewtmp
     ob2l = (order+1)/2
-    ob2r = order/2 
+    ob2r = order/2
     im = imax1
     jm = jmax1
     km = kmax1
-    
+
     SELECT CASE(isch)
     CASE('csi')
-       
+
        ob2rtmp = ob2r
        ob2ltmp = ob2l
        ordertemp = order
 !!$       IF(order.NE.3.AND.(pc(1).EQ.1.OR.pc(1).EQ.im&
 !!$            &-1.OR.pc(2).EQ.1.OR.pc(2).EQ.jm&
 !!$            &-1.OR.pc(3).EQ.1.OR.pc(3).EQ.km-1)) order = 3
-       !To make the order at boundary cells for csi equal to 3. 
+       !To make the order at boundary cells for csi equal to 3.
        !print*,'ob2l = ',ob2l,ob2r
        ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
        ie = MIN(im,pc(1) + ob2r)
@@ -640,7 +618,7 @@ MODULE interpolation
           IF (ke.EQ.km) kb = ke - order + 1
 
 
-       ob2r =  ob2rtmp 
+       ob2r =  ob2rtmp
        ob2l = ob2ltmp
        ordernewtmp = order
 
@@ -652,8 +630,8 @@ MODULE interpolation
     CASE('lpi')
        !print*, 'order in set stencil = ', order,pc(3)
        !Print*,'ib, ie = ', pc(1), ib, ie
-       
-       
+
+
        ib = MAX(1 ,pc(1) - (ob2l - 1)) !non-periodic
        ie = MIN(im,pc(1) + ob2r)
 
@@ -676,7 +654,7 @@ MODULE interpolation
 
        ordernewtmp = order
     END SELECT
-    IF(dimprob == 2) THEN 
+    IF(dimprob == 2) THEN
        kb = pc(3)
        ke = pc(3)
        !Print*,'kb,ke  =', kb,ke
@@ -686,26 +664,26 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_oned_scalar(coor,scalar,ppos,interp_scl,order, &
-      isch, weight_pointer) 
+      isch, weight_pointer)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:), INTENT(in):: coor, scalar
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:), ALLOCATABLE:: zetacsi
     INTEGER ::  iorig, i
     REAL(prcn):: zeta
-!----------------------------------------------- 
+!-----------------------------------------------
 
     DO i = 1,order-1
        dx(i) = coor(i+1) - coor(i)
@@ -754,7 +732,7 @@ MODULE interpolation
        ALLOCATE(zetacsi(order))
        !Zetacsi as defined in Yueng and Pope hence the name
        !The defintions for zetacsi are true only for a structured grid
-       !if (order.eq.4) then 
+       !if (order.eq.4) then
 
        !end if
        !-------
@@ -766,13 +744,13 @@ MODULE interpolation
              zetacsi(i) = (-ppos + coor(i))/dx(1)
           END DO
           DO i = 1,order
-             xval(i) = shape4csi(zetacsi(i),i,dx,1) 
+             xval(i) = shape4csi(zetacsi(i),i,dx,1)
           ENDDO
 
        end SELECT
 
        DEALLOCATE(zetacsi)
-    end SELECT !Scheme 
+    end SELECT !Scheme
 
     !-------
     ! Calculate interpolated value
@@ -793,29 +771,29 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_oned_vector(coor,vector,ppos,interp_vec,order,&
       fun, weight_pointer)
 
 ! Interpolate an arbitrary sized array in one space dimension.
 ! Uses the scalar interpolation to obtain the weights.
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!----------------------------------------------- 
+!-----------------------------------------------
     REAL(prcn), DIMENSION(:), INTENT(in):: coor
     REAL(prcn), DIMENSION(:,:), INTENT(in):: vector
     REAL(prcn), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
-    INTEGER, INTENT(in) :: order 
-    CHARACTER*5 :: fun
+    INTEGER, INTENT(in) :: order
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER:: vec_size, nv, i
     REAL(prcn), DIMENSION(:), POINTER:: weights_scalar
-!----------------------------------------------- 
+!-----------------------------------------------
 
     !order    = SIZE(coor)
     !print*,'In Interp_onedvector:order = ',order
@@ -851,11 +829,11 @@ MODULE interpolation
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_twod_scalar(coor,scalar,ppos,interp_scl,order,&
-      isch,weight_pointer) 
+      isch,weight_pointer)
 
 ! Interpolate a scalar quantity in two dimensions.
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -865,19 +843,19 @@ MODULE interpolation
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
     INTEGER:: i, j, k
     INTEGER:: iorig
-    REAL(prcn), DIMENSION(2):: zeta 
-!----------------------------------------------- 
+    REAL(prcn), DIMENSION(2):: zeta
+!-----------------------------------------------
 
     !-------
     ! Get order of interpolation
     !-------
-    ! 
+    !
     weights  = zero
     DO i = 1,order-1
        dx(i) = coor(i+1,1,1)-coor(i,1,1)
@@ -919,7 +897,7 @@ MODULE interpolation
              !zval(i) = shape3(zeta(3),i,dz)
           ENDDO
        CASE (4)
-          DO i = 1,order 
+          DO i = 1,order
              ! print*, 'in interp....zetayp(3,i) = ', zetayp(3,i),zval(i),i
              xval(i) = shape4(zeta(1),i,dx)
              yval(i) = shape4(zeta(2),i,dy)
@@ -968,7 +946,7 @@ MODULE interpolation
           DO i = 1,order
              xval(i) = shape4csi(zetacsi(1,i),i,dx,1)
              yval(i) = shape4csi(zetacsi(2,i),i,dy,2)
-             !zval(i) = shape4csi(zetacsi(3,i),i,dz,3) 
+             !zval(i) = shape4csi(zetacsi(3,i),i,dz,3)
 
              !Print*,'zetacsi  = ', zetacsi(3,i), coor(1,1,i,3), zval(i)
           ENDDO
@@ -981,22 +959,22 @@ MODULE interpolation
 !!$             zetacsi(1,i) = (ppos(1) - coor(1,1,1,1))/(coor(order,1,1&
 !!$                  &,1)-coor(1,1,1,1))
 !!$             zetacsi(2,i) = (ppos(2) - coor(1,1,1,2))/(coor(1,order,1&
-!!$                  &,2)-coor(1,1,1,2)) 
+!!$                  &,2)-coor(1,1,1,2))
 !!$             zetacsi(3,i) = (ppos(3) - coor(1,1,1,3))/(coor(1,1,order&
 !!$                  &,3)-coor(1,1,1,3))
           END DO
           DO i = 1,order
-             if((xval(1)-coor(1,1,1)).lt.dx(1)) then 
+             if((xval(1)-coor(1,1,1)).lt.dx(1)) then
                 xval(i) = shape3csileft(zetacsi(1,i),i,dx,1)
-             else 
+             else
                 xval(i) = shape3csiright(zetacsi(1,i),i,dx,1)
              endif
-             if((yval(1)-coor(1,1,2)).lt.dy(1)) then 
+             if((yval(1)-coor(1,1,2)).lt.dy(1)) then
 
-                yval(i) = shape3csileft(zetacsi(2,i),i,dy,2) 
-             else 
+                yval(i) = shape3csileft(zetacsi(2,i),i,dy,2)
+             else
 
-                yval(i) = shape3csiright(zetacsi(2,i),i,dy,2) 
+                yval(i) = shape3csiright(zetacsi(2,i),i,dy,2)
              end if
 
              print*,'zeta = ',zetacsi(1,i), xval(i),i
@@ -1004,7 +982,7 @@ MODULE interpolation
        END SELECT
 
        DEALLOCATE(zetacsi)
-    END SELECT !SCHEME 
+    END SELECT !SCHEME
     !-------
     ! Calculate weights for the different nodes
     !-------
@@ -1041,12 +1019,12 @@ MODULE interpolation
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_twod_vector(coor,vector,ppos,interp_vec,order,&
-      fun,weight_pointer) 
+      fun,weight_pointer)
 
 ! Interpolate an arbitrary sized array in two dimensions.
 ! Uses the scalar interpolation to obtain the weights.
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -1055,7 +1033,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(2), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
     INTEGER, INTENT(in):: order
-    CHARACTER*5 :: fun
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER :: vec_size
@@ -1099,13 +1077,13 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_threed_scalar(coor,scalar,ppos,interp_scl,order,&
-      isch,weight_pointer) 
+      isch,weight_pointer)
 
 ! Interpolate a scalar quantity in three dimensions.
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -1115,7 +1093,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), INTENT(out):: interp_scl
     INTEGER, INTENT(in):: order
-    CHARACTER*5, INTENT(in) :: isch
+    CHARACTER(LEN=5), INTENT(in) :: isch
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
@@ -1128,7 +1106,7 @@ MODULE interpolation
     !-------
     ! Get order of interpolation
     !-------
-    ! 
+    !
     weights  = zero
     DO i = 1,order-1
        dx(i) = coor(i+1,1,1,1)-coor(i,1,1,1)
@@ -1138,7 +1116,7 @@ MODULE interpolation
 
     !Print*,'In interpolator', isch
     SELECT CASE(isch)
-       
+
     CASE('lpi')
        calcwts = .true.
        !order = SIZE(coor,1)
@@ -1173,7 +1151,7 @@ MODULE interpolation
              zval(i) = shape3(zeta(3),i,dz)
           ENDDO
        CASE (4)
-          DO i = 1,order 
+          DO i = 1,order
              ! print*, 'in interp....zetayp(3,i) = ', zetayp(3,i),zval(i),i
              xval(i) = shape4(zeta(1),i,dx)
              yval(i) = shape4(zeta(2),i,dy)
@@ -1199,7 +1177,7 @@ MODULE interpolation
        END SELECT
 
     CASE('csi')
-       
+
        calcwts = .true.
        ! order = SIZE(coor,1)
        iorig = (order+1)/2
@@ -1224,7 +1202,7 @@ MODULE interpolation
           DO i = 1,order
              xval(i) = shape4csi(zetacsi(1,i),i,dx,1)
              yval(i) = shape4csi(zetacsi(2,i),i,dy,2)
-             zval(i) = shape4csi(zetacsi(3,i),i,dz,3) 
+             zval(i) = shape4csi(zetacsi(3,i),i,dz,3)
 
              !Print*,'zetacsi  = ', zetacsi(3,i), coor(1,1,i,3), zval(i)
           ENDDO
@@ -1237,28 +1215,28 @@ MODULE interpolation
 !!$             zetacsi(1,i) = (ppos(1) - coor(1,1,1,1))/(coor(order,1,1&
 !!$                  &,1)-coor(1,1,1,1))
 !!$             zetacsi(2,i) = (ppos(2) - coor(1,1,1,2))/(coor(1,order,1&
-!!$                  &,2)-coor(1,1,1,2)) 
+!!$                  &,2)-coor(1,1,1,2))
 !!$             zetacsi(3,i) = (ppos(3) - coor(1,1,1,3))/(coor(1,1,order&
 !!$                  &,3)-coor(1,1,1,3))
           END DO
           DO i = 1,order
-             if((xval(1)-coor(1,1,1,1)).lt.dx(1)) then 
+             if((xval(1)-coor(1,1,1,1)).lt.dx(1)) then
                 xval(i) = shape3csileft(zetacsi(1,i),i,dx,1)
-             else 
+             else
                 xval(i) = shape3csiright(zetacsi(1,i),i,dx,1)
              endif
-             if((yval(1)-coor(1,1,1,2)).lt.dy(1)) then 
+             if((yval(1)-coor(1,1,1,2)).lt.dy(1)) then
 
-                yval(i) = shape3csileft(zetacsi(2,i),i,dy,2) 
-             else 
-
-                yval(i) = shape3csiright(zetacsi(2,i),i,dy,2) 
-             end if
-             if((zval(1)-coor(1,1,1,3)).lt.dz(1)) then 
-                zval(i) = shape3csileft(zetacsi(3,i),i,dz,3) 
+                yval(i) = shape3csileft(zetacsi(2,i),i,dy,2)
              else
 
-                zval(i) = shape3csiright(zetacsi(3,i),i,dz,3) 
+                yval(i) = shape3csiright(zetacsi(2,i),i,dy,2)
+             end if
+             if((zval(1)-coor(1,1,1,3)).lt.dz(1)) then
+                zval(i) = shape3csileft(zetacsi(3,i),i,dz,3)
+             else
+
+                zval(i) = shape3csiright(zetacsi(3,i),i,dz,3)
              endif
 
              print*,'zeta = ',zetacsi(1,i), xval(i),i
@@ -1272,12 +1250,12 @@ MODULE interpolation
        iorig = (order+1)/2
        calcwts = .false.
        !-------
-       SELECT CASE (order)        
+       SELECT CASE (order)
        CASE (4)
           bandwidth  = one*(dx(1)*dy(1))**(half)
-          sigma = one/pi  
-          do k = 1, order 
-             do j = 1, order 
+          sigma = one/pi
+          do k = 1, order
+             do j = 1, order
                 DO i = 1, order
                    zetasph = (-ppos(1) + coor(i,j,k,1))**2.0
                    zetasph = zetasph + (-ppos(2) + coor(i,j,k,2))**2.0
@@ -1285,29 +1263,29 @@ MODULE interpolation
                    zetasph = sqrt(zetasph)
 
                    zetasph = zetasph/bandwidth
-                   
-                   if(zetasph.ge.zero.and.zetasph.lt.one) then 
+
+                   if(zetasph.ge.zero.and.zetasph.lt.one) then
                       weights(i,j,k) = one - (three/two)*zetasph**two&
                            & + (three/four)*zetasph**three
-                   elseif(zetasph.ge.one.and.zetasph.lt.two) then 
+                   elseif(zetasph.ge.one.and.zetasph.lt.two) then
                       weights(i,j,k) = fourth*(two-zetasph)**three
-                   else 
+                   else
                       weights(i,j,k) = zero
                    end if
                    weights(i,j,k) = (sigma*weights(i,j,k))!/bandwidth&
                         !&**three
-                   
+
                    !Print*,weights(i,j,k), i,j,k
                 END DO
              end do
           end DO
        END SELECT
 
-    END SELECT !SCHEME 
+    END SELECT !SCHEME
     !-------
     ! Calculate weights for the different nodes
     !-------
-    if(calcwts) then 
+    if(calcwts) then
        DO  k = 1,order
           DO  j = 1,order
              DO  i = 1,order
@@ -1316,7 +1294,7 @@ MODULE interpolation
           end DO
        end DO
     end if
-    
+
     !If(order.eq.3) Print*,'in interpo...sum wt=,',sum(weights),order
 
     !-------
@@ -1343,14 +1321,14 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE interp_threed_vector(coor,vector,ppos,interp_vec,order,&
-      fun,weight_pointer) 
+      fun,weight_pointer)
 
 ! Interpolate an arbitrary sized array in three dimensions.
 ! Uses the scalar interpolation to obtain the weights.
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -1359,7 +1337,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(3), INTENT(in):: ppos
     REAL(prcn), DIMENSION(:), INTENT(out):: interp_vec
     INTEGER, INTENT(in):: order
-    CHARACTER*5 :: fun
+    CHARACTER(LEN=5) :: fun
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER :: vec_size
@@ -1403,10 +1381,10 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE calc_weightderiv_threed(coor,ppos,weight_pointer,order, isch)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -1422,7 +1400,7 @@ MODULE interpolation
     INTEGER :: iorig
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(3,order) :: zetacsi !right now only
-    ! for cubic spline interp rg 03/14/05 
+    ! for cubic spline interp rg 03/14/05
 !-----------------------------------------------
 
     weight_pointer = zero
@@ -1444,7 +1422,7 @@ MODULE interpolation
 
     !Zetacsi as defined in Yueng and Pope hence the name
     !The defintions for zetacsi are true only for a structured grid
-    !if (order.eq.4) then 
+    !if (order.eq.4) then
 
     !end if
     !-------
@@ -1456,7 +1434,7 @@ MODULE interpolation
     ! Get shape function values
     !-------
     SELECT CASE (isch)
-    CASE ('csi') 
+    CASE ('csi')
        !Allocate(zetacsi(3,order))
 
        DO k = 1,3
@@ -1468,8 +1446,8 @@ MODULE interpolation
                 zetacsi(3,i) = (-ppos(3) + coor(1,1,i,3))/dz(1)
              END DO
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape4deriv_csi(zetacsi(1,i),i,dx))/dx(1)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape4deriv_csi(zetacsi(1,i),i,dx))/dx(1)
                    yval(i) = shape4csi(zetacsi(2,i),i,dy,2)
                    zval(i) = shape4csi(zetacsi(3,i),i,dz,3)
                 ELSEIF(k.EQ.2) THEN
@@ -1490,7 +1468,7 @@ MODULE interpolation
              zetacsi(2,i) = (ppos(2) - coor(1,1,1,2))/dy1
              zetacsi(3,i) = (ppos(3) - coor(1,1,1,3))/dz1
              DO i = 1,order
-                IF(k.EQ.1) THEN 
+                IF(k.EQ.1) THEN
                    xval(i) = (shape3deriv_csi(zetacsi(1,i),i,dx))/dx1
                    yval(i) = shape3csileft(zetacsi(2,i),i,dy,2)
                    zval(i) = shape3csileft(zetacsi(3,i),i,dz,3)
@@ -1523,8 +1501,8 @@ MODULE interpolation
           SELECT CASE(order)
           CASE(4)
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape4deriv(zeta(1),i,dx))/dx(iorig)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape4deriv(zeta(1),i,dx))/dx(iorig)
                    yval(i) = shape4(zeta(2),i,dy)
                    zval(i) = shape4(zeta(3),i,dz)
                 ELSEIF(k.EQ.2) THEN
@@ -1537,10 +1515,10 @@ MODULE interpolation
                    zval(i) = (shape4deriv(zeta(3),i,dz))/(dz(iorig))
                 ENDIF
              ENDDO
-          CASE(2) 
+          CASE(2)
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape2deriv(zeta(1),i))/dx(iorig)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape2deriv(zeta(1),i))/dx(iorig)
                    yval(i) = shape2(zeta(2),i)
                    zval(i) = shape2(zeta(3),i)
                 ELSEIF(k.EQ.2) THEN
@@ -1566,13 +1544,13 @@ MODULE interpolation
 
     CASE('sph')
        SELECT CASE (order)
-          
+
        CASE (4)
                     bandwidth  = one*(dx(1)*dy(1))**(half)
           sigma = one/pi
 
-          do k = 1, order 
-             do j = 1, order 
+          do k = 1, order
+             do j = 1, order
                 DO i = 1, order
                    zetasph = (-ppos(1) + coor(i,j,k,1))**2.0
                    zetasph = zetasph + (-ppos(2) + coor(i,j,k,2))**2.0
@@ -1580,26 +1558,26 @@ MODULE interpolation
                    zetasph = sqrt(zetasph)
 
                    zetasph = zetasph/bandwidth
-                   
-                   if(zetasph.ge.zero.and.zetasph.lt.one) then 
+
+                   if(zetasph.ge.zero.and.zetasph.lt.one) then
                       tmp = -two*(three/two)*zetasph &
                            & + three*(three/four)*zetasph**two
-                   elseif(zetasph.ge.one.and.zetasph.lt.two) then 
+                   elseif(zetasph.ge.one.and.zetasph.lt.two) then
                       tmp = -three*fourth*(two-zetasph)**two
-                   else 
+                   else
                       tmp = zero
                    end if
-                   
+
                    weight_pointer(i,j,k,1) = (tmp/zetasph)*(-ppos(1) &
-                        &+ coor(i,j,k,1)) 
+                        &+ coor(i,j,k,1))
                    weight_pointer(i,j,k,2) = (tmp/zetasph)*(-ppos(2) &
-                        &+ coor(i,j,k,2)) 
+                        &+ coor(i,j,k,2))
                    weight_pointer(i,j,k,3) = (tmp/zetasph)*(-ppos(3) &
-                        &+ coor(i,j,k,3)) 
+                        &+ coor(i,j,k,3))
                    weight_pointer(i,j,k,:) = (sigma*weight_pointer(i,j&
-                        &,k,:))/bandwidth& 
+                        &,k,:))/bandwidth&
                         &**two
-                   
+
                    !Print*,weights(i,j,k), i,j,k
                 END DO
              end do
@@ -1611,10 +1589,10 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE calc_weightderiv_twod(coor,ppos,weight_pointer,order, isch)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
@@ -1630,7 +1608,7 @@ MODULE interpolation
     INTEGER :: iorig
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
     REAL(prcn), DIMENSION(2,order) :: zetacsi !right now only
-    ! for cubic spline interp rg 03/14/05 
+    ! for cubic spline interp rg 03/14/05
 !-----------------------------------------------
 
     weight_pointer = zero
@@ -1651,7 +1629,7 @@ MODULE interpolation
 
     !Zetacsi as defined in Yueng and Pope hence the name
     !The defintions for zetacsi are true only for a structured grid
-    !if (order.eq.4) then 
+    !if (order.eq.4) then
 
     !end if
     !-------
@@ -1663,7 +1641,7 @@ MODULE interpolation
     ! Get shape function values
     !-------
     SELECT CASE (isch)
-    CASE ('csi') 
+    CASE ('csi')
        !Allocate(zetacsi(3,order))
 
        DO k = 1,2
@@ -1672,11 +1650,11 @@ MODULE interpolation
              DO i = 1, order
                 zetacsi(1,i) = (-ppos(1) + coor(i,1,1))/dx(1)
                 zetacsi(2,i) = (-ppos(2) + coor(1,i,2))/dy(1)
-                
+
              END DO
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape4deriv_csi(zetacsi(1,i),i,dx))/dx(1)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape4deriv_csi(zetacsi(1,i),i,dx))/dx(1)
                    yval(i) = shape4csi(zetacsi(2,i),i,dy,2)
                 ELSEIF(k.EQ.2) THEN
                    xval(i) = shape4csi(zetacsi(1,i),i,dx,1)
@@ -1689,7 +1667,7 @@ MODULE interpolation
              zetacsi(1,i) = (ppos(1) - coor(1,1,1))/dx1
              zetacsi(2,i) = (ppos(2) - coor(1,1,2))/dy1
              DO i = 1,order
-                IF(k.EQ.1) THEN 
+                IF(k.EQ.1) THEN
                    xval(i) = (shape3deriv_csi(zetacsi(1,i),i,dx))/dx1
                    yval(i) = shape3csileft(zetacsi(2,i),i,dy,2)
                 ELSEIF(k.EQ.2) THEN
@@ -1713,18 +1691,18 @@ MODULE interpolation
           SELECT CASE(order)
           CASE(4)
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape4deriv(zeta(1),i,dx))/dx(iorig)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape4deriv(zeta(1),i,dx))/dx(iorig)
                    yval(i) = shape4(zeta(2),i,dy)
                 ELSEIF(k.EQ.2) THEN
                    xval(i) = shape4(zeta(1),i,dx)
                    yval(i) = (shape4deriv(zeta(2),i,dy))/(dy(iorig))
                 ENDIF
              ENDDO
-          CASE(2) 
+          CASE(2)
              DO i = 1,order
-                IF(k.EQ.1) THEN 
-                   xval(i) = (shape2deriv(zeta(1),i))/dx(iorig)  
+                IF(k.EQ.1) THEN
+                   xval(i) = (shape2deriv(zeta(1),i))/dx(iorig)
                    yval(i) = shape2(zeta(2),i)
                 ELSEIF(k.EQ.2) THEN
                    xval(i) = shape2(zeta(1),i)
@@ -1732,7 +1710,7 @@ MODULE interpolation
                 ENDIF
              ENDDO
           end SELECT
-          
+
           DO j = 1,order
                 DO i = 1,order
                    weight_pointer(i,j,1,k) = -xval(i)*yval(j)
@@ -1742,12 +1720,12 @@ MODULE interpolation
 
     CASE('sph')
        SELECT CASE (order)
-          
+
        CASE (4)
           bandwidth  = one*(dx(1)*dy(1))**(half)
           sigma = one/pi
-          
-          do j = 1, order 
+
+          do j = 1, order
              DO i = 1, order
                 zetasph = (-ppos(1) + coor(i,j,1))**2.0
                 zetasph = zetasph + (-ppos(2) + coor(i,j,2))**2.0
@@ -1755,26 +1733,26 @@ MODULE interpolation
                 zetasph = sqrt(zetasph)
 
                 zetasph = zetasph/bandwidth
-                   
-                if(zetasph.ge.zero.and.zetasph.lt.one) then 
+
+                if(zetasph.ge.zero.and.zetasph.lt.one) then
                    tmp = -two*(three/two)*zetasph &
                         & + three*(three/four)*zetasph**two
-                elseif(zetasph.ge.one.and.zetasph.lt.two) then 
+                elseif(zetasph.ge.one.and.zetasph.lt.two) then
                    tmp = -three*fourth*(two-zetasph)**two
-                else 
+                else
                    tmp = zero
                 end if
-                
+
                 weight_pointer(i,j,1,1) = (tmp/zetasph)*(-ppos(1) &
-                        &+ coor(i,j,1)) 
+                        &+ coor(i,j,1))
                    weight_pointer(i,j,1,2) = (tmp/zetasph)*(-ppos(2) &
-                        &+ coor(i,j,2)) 
+                        &+ coor(i,j,2))
                    !weight_pointer(i,j,1,3) = (tmp/zetasph)*(-ppos(3) &
-                   !     &+ coor(i,j,3)) 
+                   !     &+ coor(i,j,3))
                    weight_pointer(i,j,1,:) = (sigma*weight_pointer(i,j&
-                        &,1,:))/bandwidth& 
+                        &,1,:))/bandwidth&
                         &**two
-                   
+
                    !Print*,weights(i,j,k), i,j,k
                 END DO
              end do
@@ -1786,15 +1764,15 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION justweights(coor,ppos)
-! To calculate just the weights using trilinear interpolation 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+! To calculate just the weights using trilinear interpolation
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
-    REAL(prcn), DIMENSION(:,:,:), POINTER:: justweights 
+!-----------------------------------------------
+    REAL(prcn), DIMENSION(:,:,:), POINTER:: justweights
     REAL(prcn), DIMENSION(:,:,:,:), INTENT(IN):: coor
     REAL(prcn), DIMENSION(3), INTENT(IN):: ppos
 
@@ -1838,18 +1816,18 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape2(zeta,i)
-! Second-order (linear) shape functions  
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+! Second-order (linear) shape functions
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------    
+!-----------------------------------------------
     REAL(prcn):: shape2
     REAL(prcn):: zeta
     INTEGER:: i
-!-----------------------------------------------  
+!-----------------------------------------------
     SELECT CASE (i)
     CASE (1)
        shape2 = 1 - zeta
@@ -1858,22 +1836,22 @@ MODULE interpolation
     END SELECT
   END FUNCTION shape2
 
- 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape3(zeta,i,dx)
-! Third-order (quadratic) shape functions  
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+! Third-order (quadratic) shape functions
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
     REAL(prcn):: shape3
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn):: zh, num, denom
-!-----------------------------------------------  
+!-----------------------------------------------
 
     SELECT CASE (i)
     CASE (1)
@@ -1896,14 +1874,14 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape4(zeta,i,dx)
 ! Fourth-order (cubic) shape functions
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
     REAL(prcn):: shape4
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
@@ -1938,21 +1916,21 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape5(zeta,i,dx)
-! Fifth-order (power of 4) shape functions  
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+! Fifth-order (power of 4) shape functions
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
     REAL(prcn):: shape5
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn):: d1, d2, d3, d4
     REAL(prcn):: num, denom, zh
-!-----------------------------------------------  
+!-----------------------------------------------
 
     SELECT CASE (i)
     CASE (1)
@@ -1964,7 +1942,7 @@ MODULE interpolation
        zh = zeta*dx(2)
        num = zh*(zh -dx(2))*(zh -dx(2) -dx(3)) &
             *(zh -dx(2) -dx(3) -dx(4))
-       shape5 = num/denom 
+       shape5 = num/denom
     CASE (2)
        d1 =  dx(1)
        d2 = -dx(2)
@@ -1974,7 +1952,7 @@ MODULE interpolation
        zh = zeta*dx(2)
        num = (zh +dx(1))*(zh -dx(2))*(zh -dx(2) -dx(3)) &
             *(zh -dx(2) -dx(3) -dx(4))
-       shape5 = num/denom 
+       shape5 = num/denom
     CASE (3)
        d1 =  dx(1) + dx(2)
        d2 =  dx(2)
@@ -1984,7 +1962,7 @@ MODULE interpolation
        zh = zeta*dx(2)
        num = (zh +dx(1))*(zh)*(zh -dx(2) -dx(3)) &
             *(zh -dx(2) -dx(3) -dx(4))
-       shape5 = num/denom 
+       shape5 = num/denom
     CASE (4)
        d1 =  dx(1) + dx(2) + dx(3)
        d2 =  d1 - dx(1)
@@ -1994,7 +1972,7 @@ MODULE interpolation
        zh = zeta*dx(2)
        num = (zh +dx(1))*(zh)*(zh -dx(2)) &
             *(zh -dx(2) -dx(3) -dx(4))
-       shape5 = num/denom 
+       shape5 = num/denom
     CASE (5)
        d1 =  dx(1) + dx(2) + dx(3) + dx(4)
        d2 =  d1 - dx(1)
@@ -2004,16 +1982,16 @@ MODULE interpolation
        zh = zeta*dx(2)
        num = (zh +dx(1))*(zh)*(zh -dx(2)) &
             *(zh -dx(2) -dx(3))
-       shape5 = num/denom 
+       shape5 = num/denom
     END SELECT
   END FUNCTION shape5
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape6(zeta,i,dx)
-! Sixth-order (power of 5) shape functions  
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+! Sixth-order (power of 5) shape functions
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -2036,7 +2014,7 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh + dx(2))*(zh)*(zh - dx(3)) &
             *(zh -dx(3) -dx(4))*(zh - dx(3) -dx(4) -dx(5))
-       shape6 = num/denom 
+       shape6 = num/denom
     CASE (2)
        d1 =  dx(1)
        d2 = -dx(2)
@@ -2047,7 +2025,7 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh +dx(1) +dx(2))*(zh)*(zh -dx(3)) &
             *(zh -dx(3) -dx(4))*(zh - dx(3) -dx(4) -dx(5))
-       shape6 = num/denom 
+       shape6 = num/denom
     CASE (3)
        d1 =  dx(1) + dx(2)
        d2 =  dx(2)
@@ -2058,7 +2036,7 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh +dx(1) +dx(2))*(zh +dx(2))*(zh -dx(3)) &
             *(zh -dx(3) -dx(4))*(zh - dx(3) -dx(4) -dx(5))
-       shape6 = num/denom 
+       shape6 = num/denom
     CASE (4)
        d1 =  dx(1) + dx(2) + dx(3)
        d2 =  d1 - dx(1)
@@ -2069,7 +2047,7 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh +dx(1) +dx(2))*(zh +dx(2))*(zh) &
             *(zh -dx(3) -dx(4))*(zh - dx(3) -dx(4) -dx(5))
-       shape6 = num/denom 
+       shape6 = num/denom
     CASE (5)
        d1 =  dx(1) + dx(2) + dx(3) + dx(4)
        d2 =  d1 - dx(1)
@@ -2080,7 +2058,7 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh +dx(1) +dx(2))*(zh +dx(2))*(zh) &
             *(zh -dx(3))*(zh - dx(3) -dx(4) -dx(5))
-       shape6 = num/denom 
+       shape6 = num/denom
     CASE (6)
        d1 =  dx(1) + dx(2) + dx(3) + dx(4) + dx(5)
        d2 =  d1 - dx(1)
@@ -2091,18 +2069,18 @@ MODULE interpolation
        zh = zeta*dx(3)
        num = (zh +dx(1) +dx(2))*(zh +dx(2))*(zh) &
             *(zh -dx(3))*(zh - dx(3) -dx(4))
-       shape6 = num/denom 
+       shape6 = num/denom
     END SELECT
   END FUNCTION shape6
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape3deriv_csi(zeta,i,dx)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
     REAL(prcn):: shape3deriv_csi
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
@@ -2110,17 +2088,17 @@ MODULE interpolation
     REAL(prcn) :: tmp
 !-----------------------------------------------
 
-!!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
+!!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
 !!$       shape3deriv_csi = (half)*(two+zeta)**2.0
-!!$    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN 
+!!$    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN
 !!$       shape3deriv_csi = (one/six)*(-9.0*zeta**2.0-12.0*zeta)
-!!$    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+!!$    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
 !!$       shape3deriv_csi = (one/six)*(9.0*zeta**2.0-12.0*zeta)
-!!$    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN 
+!!$    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN
 !!$       shape3deriv_csi = (-half)*(two-zeta)**2.0
 !!$    ELSE
 !!$       shape3deriv_csi = zero
-!!$    ENDIF 
+!!$    ENDIF
     SELECT CASE (i)
     CASE (1)
        shape3deriv_csi = -two*(1-zeta)
@@ -2133,27 +2111,27 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape4deriv_csi(zeta,i,dx)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------   
+!-----------------------------------------------
     REAL(prcn):: shape4deriv_csi
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn) :: tmp
-!----------------------------------------------- 
+!-----------------------------------------------
 
-    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
+    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
        shape4deriv_csi = (half)*(two+zeta)**2.0
-    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN 
+    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN
        shape4deriv_csi = (one/six)*(-9.0*zeta**2.0-12.0*zeta)
-    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
        shape4deriv_csi = (one/six)*(9.0*zeta**2.0-12.0*zeta)
-    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN 
+    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN
        shape4deriv_csi = (-half)*(two-zeta)**2.0
     ELSE
        shape4deriv_csi = zero
@@ -2161,20 +2139,20 @@ MODULE interpolation
   END FUNCTION shape4deriv_csi
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv    
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape4deriv(zeta,i,dx)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------     
+!-----------------------------------------------
     REAL(prcn):: shape4deriv
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
     REAL(prcn) :: tmp
     REAL(prcn):: r1, r2, c1, c2, c3
-!-----------------------------------------------   
+!-----------------------------------------------
 
     r1 = dx(2)/dx(1)
     r2 = dx(3)/dx(1)
@@ -2216,13 +2194,13 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape2deriv(zeta,i)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
     REAL(prcn):: shape2deriv
     REAL(prcn):: zeta
     INTEGER:: i
@@ -2238,26 +2216,26 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape4csi(zeta,i,dx,dim)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------    
+!-----------------------------------------------
     REAL(prcn):: shape4csi
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
-!-----------------------------------------------  
+!-----------------------------------------------
 
-    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
+    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
        shape4csi = (one/six)*(two+zeta)**3.0
-    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN 
+    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN
        shape4csi = (one/six)*(-3.0*zeta**3.0-six*zeta**2.0+4.0)
-    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
        shape4csi = (one/six)*(3.0*zeta**3.0-six*zeta**2.0+4.0)
-    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN 
+    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN
        shape4csi = (one/six)*(two-zeta)**3.0
     ELSE
        shape4csi = zero
@@ -2268,37 +2246,37 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape3csileft(zeta,i,dx,dim)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------    
+!-----------------------------------------------
     REAL(prcn):: shape3csileft
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
-!-----------------------------------------------  
+!-----------------------------------------------
 
-    IF (zeta.GE.-one.AND.zeta.LE.zero) THEN 
+    IF (zeta.GE.-one.AND.zeta.LE.zero) THEN
        shape3csileft = (half)*(zeta+one)**2.0
-    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
        shape3csileft = (half)*(-two*zeta**2.+2.0*zeta+1.0)
-    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN 
+    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN
        shape3csileft = (half)*(zeta-two)**2.0
     ELSE
        shape3csileft = zero
        !print*,'shape4rg .... zeta=',zeta,dim
     ENDIF
 
-!!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
+!!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
 !!$       shape3csileft = (half)*(two+zeta)**2.0
-!!$    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN 
+!!$    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN
 !!$       shape3csileft = (half)*(-two*zeta**2.-two*zeta+one)
-!!$    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+!!$    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
 !!$       shape3csileft = (half)*(one-zeta)**2.0
-!!$    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN 
+!!$    ELSEIF(zeta.GT.one.AND.zeta.LE.two) THEN
 !!$       shape3csileft = (half)*(two-zeta)**2.0
 !!$    ELSE
 !!$       shape3csileft = zero
@@ -2317,24 +2295,24 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape3csiright(zeta,i,dx,dim)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------      
+!-----------------------------------------------
     REAL(prcn):: shape3csiright
     REAL(prcn),INTENT(in):: zeta
     REAL(prcn), DIMENSION(:),INTENT(in):: dx
     INTEGER,INTENT(in):: i,dim
-!-----------------------------------------------    
+!-----------------------------------------------
 
-    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN 
+    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
        shape3csiright = (half)*(two+zeta)**2.0
-    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN 
+    ELSEIF(zeta.GT.-one.AND.zeta.LE.zero) THEN
        shape3csiright = (half)*(-two*zeta**2.-two*zeta+one)
-    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN 
+    ELSEIF(zeta.GT.zero.AND.zeta.LE.one) THEN
        shape3csiright = (half)*(one-zeta)**2.0
     ELSE
        shape3csiright = zero
@@ -2344,64 +2322,64 @@ MODULE interpolation
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   FUNCTION shape4new(pos,x,i)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------   
+!-----------------------------------------------
     REAL(prcn):: shape4new
     REAL(prcn):: pos
     REAL(prcn), DIMENSION(:):: x
     INTEGER:: i
     REAL(prcn):: r1, r2,num,den
-!-----------------------------------------------    
+!-----------------------------------------------
 
     SELECT CASE (i)
-    CASE (1) 
+    CASE (1)
        num = (pos-x(2))*(pos - x(3))*(pos - x(4))
        den = (x(1) - x(2))*(x(1) - x(3))*(x(1) - x(4))
        shape4new = num/den
     CASE (2)
        num = (pos-x(1))*(pos - x(3))*(pos - x(4))
        den = (x(2) - x(1))*(x(2) - x(3))*(x(2) - x(4))
-       shape4new = num/den 
+       shape4new = num/den
     CASE (3)
        num = (pos-x(1))*(pos - x(2))*(pos - x(4))
        den = (x(3) - x(1))*(x(3) - x(2))*(x(3) - x(4))
-       shape4new = num/den 
+       shape4new = num/den
     CASE (4)
        num = (pos-x(1))*(pos - x(2))*(pos - x(3))
        den = (x(4) - x(1))*(x(4) - x(2))*(x(4) - x(3))
-       shape4new = num/den 
+       shape4new = num/den
     END SELECT
   END FUNCTION shape4new
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv   
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
   SUBROUTINE set_interpolation_scheme(choice)
 
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     !USE discretelement, ONLY : scheme, interp_scheme, order,ob2l,ob2r,&
     !     & gstencil, vstencil, sstencil, wtderivp
-      USE param 
-    IMPLICIT NONE 
+      USE param
+    IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------     
+!-----------------------------------------------
     INTEGER, INTENT(in) :: choice
     INTEGER :: order_orig
-!-----------------------------------------------     
+!-----------------------------------------------
 
     order_orig = order
-    IF(choice.EQ.1) THEN 
+    IF(choice.EQ.1) THEN
        interp_scheme = 'lpi'
        scheme = '4-order'
-    ELSE IF(choice.EQ.2) THEN 
+    ELSE IF(choice.EQ.2) THEN
        interp_scheme = 'lpi'
        scheme = '2-order'
-    ELSE IF(choice.EQ.3) THEN 
+    ELSE IF(choice.EQ.3) THEN
        interp_scheme = 'csi'
        scheme = '4-order'
     ENDIF
@@ -2420,52 +2398,52 @@ MODULE interpolation
 
 ! if ob2l is even then ob2l will equal ob2r since results after decimal are
 ! discarded (truncated)
-    ob2l = (order+1)/2  
-    ob2r = order/2 
+    ob2l = (order+1)/2
+    ob2r = order/2
 
     IF(.not.allocated(gstencil)) THEN
-! max(1*(3-dimn), order*(dimn-2)) =order (in 3D) or =1 (in 2D)            
+! max(1*(3-dimn), order*(dimn-2)) =order (in 3D) or =1 (in 2D)
        ALLOCATE(gstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    ELSEIF(ALLOCATED(gstencil).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(gstencil) 
+    ELSEIF(ALLOCATED(gstencil).AND.order_orig.NE.order) THEN
+       DEALLOCATE(gstencil)
        ALLOCATE(gstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
     ENDIF
-    
+
     IF(.not.allocated(vstencil)) THEN
        ALLOCATE(vstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    ELSEIF(ALLOCATED(vstencil).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(vstencil) 
+    ELSEIF(ALLOCATED(vstencil).AND.order_orig.NE.order) THEN
+       DEALLOCATE(vstencil)
        ALLOCATE(vstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
     ENDIF
 
     IF(.not.allocated(pgradstencil)) THEN
        ALLOCATE(pgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    ELSEIF(ALLOCATED(pgradstencil).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(pgradstencil) 
+    ELSEIF(ALLOCATED(pgradstencil).AND.order_orig.NE.order) THEN
+       DEALLOCATE(pgradstencil)
        ALLOCATE(pgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
     ENDIF
 
     IF(.not.allocated(psgradstencil)) THEN
        ALLOCATE(psgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
-    ELSEIF(ALLOCATED(psgradstencil).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(psgradstencil) 
+    ELSEIF(ALLOCATED(psgradstencil).AND.order_orig.NE.order) THEN
+       DEALLOCATE(psgradstencil)
        ALLOCATE(psgradstencil  (order,order,max(1*(3-dimn), order*(dimn-2)),3))
     ENDIF
-      
+
     IF(.not.allocated(VEL_SOL_STENCIL)) THEN
        ALLOCATE(VEL_SOL_STENCIL  (order,order,max(1*(3-dimn), order*(dimn-2)),3, DIM_M))
-    ELSEIF(ALLOCATED(VEL_SOL_STENCIL).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(VEL_SOL_STENCIL) 
+    ELSEIF(ALLOCATED(VEL_SOL_STENCIL).AND.order_orig.NE.order) THEN
+       DEALLOCATE(VEL_SOL_STENCIL)
        ALLOCATE(VEL_SOL_STENCIL  (order,order,max(1*(3-dimn), order*(dimn-2)),3, DIM_M))
     ENDIF
 
     IF(.not.allocated(sstencil)) THEN
        ALLOCATE(sstencil  (order,order,max(1*(3-dimn), order*(dimn-2))))
-    ELSEIF(ALLOCATED(sstencil).AND.order_orig.NE.order) THEN 
-       DEALLOCATE(sstencil) 
+    ELSEIF(ALLOCATED(sstencil).AND.order_orig.NE.order) THEN
+       DEALLOCATE(sstencil)
        ALLOCATE(sstencil  (order,order,max(1*(3-dimn), order*(dimn-2))))
     ENDIF
-    
+
   END SUBROUTINE set_interpolation_scheme
 
 

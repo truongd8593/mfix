@@ -1,9 +1,9 @@
   MODULE ghdtheory
- 
- 
+
+
       Use param
       Use param1
- 
+
 !
 !     Zeroth order dissipation term
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Zeta0
@@ -70,8 +70,8 @@
 !
 !     Species mass flux Without Drag term in Z-direction
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: JoiMinusDragZ
-       
-       
+
+
 !     Everything that does not depend on the velocity of ith particle
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DELTAU
 !
@@ -116,26 +116,26 @@
 !
 !     drag force in Z-direction
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: beta_ij_cell_Z
- 
-!	decide whether to do harmonic or arithmetic thermal diffusivity east
+
+!       decide whether to do harmonic or arithmetic thermal diffusivity east
        LOGICAL, DIMENSION(:), ALLOCATABLE :: DiT_HarmE
-!	decide whether to do harmonic or arithmetic thermal diffusivity north
+!       decide whether to do harmonic or arithmetic thermal diffusivity north
        LOGICAL, DIMENSION(:), ALLOCATABLE :: DiT_HarmN
-!	decide whether to do harmonic or arithmetic thermal diffusivity top
+!       decide whether to do harmonic or arithmetic thermal diffusivity top
        LOGICAL, DIMENSION(:), ALLOCATABLE :: DiT_HarmT
 
-!	decide whether to do harmonic or arithmetic mass mobility east
+!       decide whether to do harmonic or arithmetic mass mobility east
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: DijF_HarmE
-!	decide whether to do harmonic or arithmetic mass mobility north
+!       decide whether to do harmonic or arithmetic mass mobility north
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: DijF_HarmN
-!	decide whether to do harmonic or arithmetic mass mobility top
+!       decide whether to do harmonic or arithmetic mass mobility top
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: DijF_HarmT
 
-!	decide whether to do harmonic or arithmetic ordinary diffusivity east
+!       decide whether to do harmonic or arithmetic ordinary diffusivity east
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: Dij_HarmE
-!	decide whether to do harmonic or arithmetic ordinary diffusivity north
+!       decide whether to do harmonic or arithmetic ordinary diffusivity north
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: Dij_HarmN
-!	decide whether to do harmonic or arithmetic ordinary diffusivity top
+!       decide whether to do harmonic or arithmetic ordinary diffusivity top
        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: Dij_HarmT
- 
+
       END MODULE ghdtheory

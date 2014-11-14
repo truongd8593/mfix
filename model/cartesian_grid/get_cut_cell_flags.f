@@ -39,6 +39,7 @@
 
       USE cutcell
       USE quadric
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,L
@@ -67,8 +68,6 @@
       DOUBLE PRECISION :: DIST, NORM1, NORM2, NORM3,Diagonal
       INTEGER :: IJK2, I1, I2, J1, J2, K1, K2, II, JJ, KK
       LOGICAL :: COND_1, COND_2
-
-      include "../function.inc"
 
       allocate(X_OLD_POINT(DIMENSION_MAX_CUT_CELL))
       allocate(Y_OLD_POINT(DIMENSION_MAX_CUT_CELL))
@@ -119,7 +118,7 @@
          END DO
       ENDIF
 
-      PARTITION = DFLOAT(myPE)       ! ASSIGN processor ID (for vizualisation)
+      PARTITION = DBLE(myPE)       ! ASSIGN processor ID (for vizualisation)
 
       CALL SET_GEOMETRY1   ! INITIALIZE ALL VOLUMES AND AREAS
 
@@ -386,7 +385,8 @@
             print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
             DO NODE = 1,NUMBER_OF_NODES(IJK)
                IF(CONNECTIVITY(IJK,NODE)>IJKEND3) THEN
-                  print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE),X_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3),Y_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3)
+                  print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE), &
+                       X_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3),Y_NEW_POINT(CONNECTIVITY(IJK,NODE)-IJKEND3)
                ELSE
                   print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE)
                ENDIF
@@ -455,12 +455,13 @@
                               Y2 = Y_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
                               Z2 = Z_NEW_POINT(OLD_CONNECTIVITY(IJK_NB,NODE_NB)-IJKEND3)
 
-                              D = (X2-X1)**2 + (Y2-Y1)**2 + (Z2-Z1)**2         ! compare coordinates of cut-face nodes
+                              ! compare coordinates of cut-face nodes
+                              D = (X2-X1)**2 + (Y2-Y1)**2 + (Z2-Z1)**2
 
-                              IF(D<TOL_MERGE*Diagonal) THEN                    ! Duplicate nodes have identical coordinates (within tolerance TOL_MERGE times diagonal)
-                                                                               ! keep the smallest node ID
-!                                 print*,'DULICATE NODES:',NODE,NODE_NB,OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB)
-
+                              ! Duplicate nodes have identical coordinates (within tolerance TOL_MERGE times diagonal)
+                              IF(D<TOL_MERGE*Diagonal) THEN ! keep the smallest node ID
+                                 !  print*,'DULICATE NODES:', &
+                                 ! NODE,NODE_NB,OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB)
                                  NC = MIN(OLD_CONNECTIVITY(IJK,NODE),OLD_CONNECTIVITY(IJK_NB,NODE_NB))
                                  CONNECTIVITY(IJK   ,NODE   ) = NC
                                  CONNECTIVITY(IJK_NB,NODE_NB) = NC
@@ -569,7 +570,10 @@
                         COND_2 = .true.
                      ENDIF
                   ENDIF
-                  !if(II == 1) write(*,'(10x, A, 4(2x,i10),3(2x,L2))') 'I1,J1, I, J, ATWALL, COND1, COND2 =  ', II, JJ, I, J,  SCALAR_NODE_ATWALL(IJK2), COND_1, COND_2
+                  !if(II == 1) then
+                  ! write(*,'(10x, A, 4(2x,i10),3(2x,L2))') &
+                  ! 'I1,J1, I, J, ATWALL, COND1, COND2 =  ', II, JJ, I, J,  SCALAR_NODE_ATWALL(IJK2), COND_1, COND_2
+                  !endif
                ENDDO
             ENDDO
          ENDDO
@@ -582,7 +586,8 @@
          print*,'IJK,  I,J=',IJK,I_OF(IJK),J_OF(IJK)
          print*,'NUMBER_OF_NODES=',NUMBER_OF_NODES(IJK)
          DO NODE = 1,NUMBER_OF_NODES(IJK)
-            print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),1),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),2)
+            print*,'CNCT=',NODE,CONNECTIVITY(IJK,NODE), &
+                 SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),1),SCALAR_NODE_XYZ(CONNECTIVITY(IJK,NODE),2)
          ENDDO
          print*,''
       ENDDO
@@ -671,6 +676,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -685,8 +691,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH U-MOMENTUM CELLS...'
@@ -925,6 +929,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -939,8 +944,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'INTERSECTING GEOMETRY WITH V-MOMENTUM CELLS...'
@@ -1177,6 +1180,7 @@
       USE cutcell
       USE polygon
       USE stl
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -1190,8 +1194,6 @@
       DOUBLE PRECISION :: MIN_CUT,MAX_CUT
       DOUBLE PRECISION :: F_NODE_02
       INTEGER :: BCID
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH W-MOMENTUM CELLS...'
@@ -1403,13 +1405,11 @@
       USE quadric
       USE cutcell
       Use vtk
-
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IM,IP,JM,JP,KM,KP
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'SETTING CUT CELL TREATMENT FLAGS...'
@@ -1553,6 +1553,7 @@
       USE sendrecv
       USE quadric
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
@@ -1561,8 +1562,6 @@
       INTEGER :: TOTAL_NUMBER_OF_INTERSECTIONS
       INTEGER :: NODE
       LOGICAL :: CLIP_FLAG
-      include "../function.inc"
-
 
 !     EAST BOUNDARY
       I = IEND1
@@ -1924,8 +1923,7 @@
 
       USE cutcell
       USE quadric
-
-
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,II,JJ,KK
@@ -1940,14 +1938,9 @@
 
       LOGICAL, DIMENSION(DIMENSION_3) ::POSITIVE_F_AT
 
-      include "../function.inc"
-
-
       POTENTIAL_CUT_CELL_AT=.TRUE.
 
-
       RETURN  ! This subroutine is currently disabled
-
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'ESTIMATING POTENTIAL SCALAR CUT CELLS...'

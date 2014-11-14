@@ -22,27 +22,28 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE READ_RES1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE READ_RES1
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE geometry
       USE physprop
       USE run
       USE rxns
       USE scalars
-      USE funits 
+      USE funits
       USE energy
-      USE compar     
-      USE cdist 
-      USE mpi_utility 
-      USE sendrecv    
+      USE compar
+      USE cdist
+      USE mpi_utility
+      USE sendrecv
+      USE in_binary_512
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -56,8 +57,8 @@
 !-----------------------------------------------
 !
 !             loop counter
-      INTEGER LC 
-! 
+      INTEGER LC
+!
 !                      Local species index
       INTEGER          N
 !
@@ -65,7 +66,7 @@
       INTEGER NEXT_REC
 !
 !                file version id
-      CHARACTER  VERSION*512
+      CHARACTER(LEN=512) :: VERSION
 !
 !                version number
       REAL       VERSION_NUMBER
@@ -90,41 +91,41 @@
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 !
 !     Use DT from data file if DT_FAC is set to 1.0
-      IF (DT_FAC == ONE) DT_SAVE = DT 
+      IF (DT_FAC == ONE) DT_SAVE = DT
 !
 
 !//PAR_I/O only PE_IO reads the restart file
       if (myPE == PE_IO .or. (bDist_IO .and. .not.bStart_with_one_RES)) then
-         READ (UNIT_RES, REC=1) VERSION 
-         READ (VERSION(6:512), *) VERSION_NUMBER 
+         READ (UNIT_RES, REC=1) VERSION
+         READ (VERSION(6:512), *) VERSION_NUMBER
 
-         READ (UNIT_RES, REC=3) NEXT_REC 
-         IF (VERSION_NUMBER >= 1.12) THEN 
-            READ (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP 
-         ELSE 
-            READ (UNIT_RES, REC=NEXT_REC) TIME, NSTEP 
-         ENDIF 
-         NEXT_REC = NEXT_REC + 1 
+         READ (UNIT_RES, REC=3) NEXT_REC
+         IF (VERSION_NUMBER >= 1.12) THEN
+            READ (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP
+         ELSE
+            READ (UNIT_RES, REC=NEXT_REC) TIME, NSTEP
+         ENDIF
+         NEXT_REC = NEXT_REC + 1
       end if
 
 
 
       if (.not.bDist_IO  .or. bStart_with_one_RES) then
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
-      
+
          call bcast(VERSION, PE_IO)        !//PAR_I/O BCAST0c
          call bcast(VERSION_NUMBER, PE_IO) !//PAR_I/O BCAST0r
          call bcast(TIME, PE_IO)           !//PAR_I/O BCAST0d
          call bcast(NSTEP, PE_IO)          !//PAR_I/O BCAST0i
-         if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d	  
-	end if   
+         if (VERSION_NUMBER >= 1.12) call bcast(DT, PE_IO)   !//PAR_I/O BCAST0d
+        end if
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 !AE TIME 091501 Store the timestep counter level at the begin of RESTART run
         NSTEPRST = NSTEP
 
 ! for now ... do not do RES1 file in netCDF format
-!	call read_res1_netcdf
+!       call read_res1_netcdf
 !        goto 999
 !
 
@@ -143,28 +144,28 @@
       call readScatterRes(T_G,array2, array1, 1, NEXT_REC)
 !
 
-      IF (VERSION_NUMBER < 1.15) THEN 
+      IF (VERSION_NUMBER < 1.15) THEN
          call readScatterRes (T_s(:,1),array2, array1, 1, NEXT_REC)
 
-         IF (MMAX >= 2) THEN 
+         IF (MMAX >= 2) THEN
             call readScatterRes (T_s(:,2),array2, array1, 1, NEXT_REC)
-         ELSE 
+         ELSE
             if (myPE == PE_IO) &
-                   CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-         ENDIF 
-      ENDIF 
+                   CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
+         ENDIF
+      ENDIF
 
-      IF (VERSION_NUMBER >= 1.05) THEN 
-         DO N = 1, NMAX(0) 
+      IF (VERSION_NUMBER >= 1.05) THEN
+         DO N = 1, NMAX(0)
             call readScatterRes (X_g(:,n),array2, array1, 1, NEXT_REC)
-         END DO 
-      ENDIF 
+         END DO
+      ENDIF
 
       call readScatterRes(U_G, array2, array1, 0, NEXT_REC)
       call readScatterRes(V_G, array2, array1, 0, NEXT_REC)
       call readScatterRes(W_G, array2, array1, 0, NEXT_REC)
 !
-      DO LC = 1, MMAX 
+      DO LC = 1, MMAX
          call readScatterRes(ROP_S(:,LC), array2, array1, 0, NEXT_REC)
 
          IF(ANY(SOLVE_ROs)) &
@@ -180,30 +181,30 @@
          IF (VERSION_NUMBER >= 1.2) then
             call readScatterRes(THETA_M(:,LC), array2, array1, 1, NEXT_REC)
          end if
-         IF (VERSION_NUMBER >= 1.05) THEN 
-            DO N = 1, NMAX(LC) 
+         IF (VERSION_NUMBER >= 1.05) THEN
+            DO N = 1, NMAX(LC)
                call readScatterRes(X_S(:,LC,N), array2, array1, 1, NEXT_REC)
-            END DO 
-         ENDIF 
-      END DO 
+            END DO
+         ENDIF
+      END DO
 
       IF (VERSION_NUMBER >= 1.3) THEN
-        DO N = 1, NScalar 
+        DO N = 1, NScalar
           call readScatterRes(Scalar(:,N), array2, array1, 1, NEXT_REC)
-        END DO 
+        END DO
       ENDIF
 
       IF (VERSION_NUMBER >= 1.4) THEN
         call readScatterRes(GAMA_RG, array2, array1, 1, NEXT_REC)
- 
+
         call readScatterRes(T_RG, array2, array1, 0, NEXT_REC)
 
-        DO LC = 1, MMAX 
+        DO LC = 1, MMAX
           call readScatterRes(GAMA_RS(1,LC), array2, array1, 1, NEXT_REC)
 
           call readScatterRes(T_RS(1,LC), array2, array1, 0, NEXT_REC)
 
-        ENDDO 
+        ENDDO
       ELSE
         GAMA_RG(:)   = ZERO
         T_RG (:)     = ZERO
@@ -213,12 +214,12 @@
 
 
       IF (VERSION_NUMBER >= 1.5) THEN
-        DO N = 1, nRR 
+        DO N = 1, nRR
           call readScatterRes(ReactionRates(:,N), array2, array1, 1, NEXT_REC)
-        END DO 
-      ENDIF 
+        END DO
+      ENDIF
 
-      IF (VERSION_NUMBER >= 1.6 .AND. K_Epsilon) THEN 
+      IF (VERSION_NUMBER >= 1.6 .AND. K_Epsilon) THEN
           call readScatterRes(K_Turb_G, array2, array1, 1, NEXT_REC)
           call readScatterRes(E_Turb_G, array2, array1, 1, NEXT_REC)
       ENDIF
@@ -238,47 +239,48 @@
       end if
 
 
-      IF (DT_FAC == ONE) DT = DT_SAVE 
+      IF (DT_FAC == ONE) DT = DT_SAVE
 !
 
-      RETURN  
-      END SUBROUTINE READ_RES1 
-      
+      RETURN
+      END SUBROUTINE READ_RES1
+
       subroutine readScatterRes(VAR, array2, array1, init, NEXT_REC)
         USE geometry
-        USE funits 
-        USE compar      
-	  USE cdist     
-        USE mpi_utility      
-        USE sendrecv         
+        USE funits
+        USE compar
+          USE cdist
+        USE mpi_utility
+        USE sendrecv
+        USE in_binary_512
         IMPLICIT NONE
-        double precision, dimension(ijkmax2) :: array1       
-        double precision, dimension(ijkmax3) :: array2     
+        double precision, dimension(ijkmax2) :: array1
+        double precision, dimension(ijkmax3) :: array2
         double precision, dimension(DIMENSION_3) :: VAR
         INTEGER :: init  ! define VAR initialization, 0: undefin, 1: zero
-        INTEGER :: NEXT_REC 
+        INTEGER :: NEXT_REC
 
 !// Reset global scratch arrays
         if( init==0 ) then
-	  array1(:) = Undefined
+          array1(:) = Undefined
           array2(:) = Undefined
         else
-	  array1(:) = zero
+          array1(:) = zero
           array2(:) = zero
         endif
-	   
-	if (.not.bDist_IO .or. bStart_with_one_RES) then 
+
+        if (.not.bDist_IO .or. bStart_with_one_RES) then
          if (myPE == PE_IO) then
-            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
-            CALL convert_from_io_dp(array1, array2, IJKMAX2) 
+            CALL IN_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
+            CALL convert_from_io_dp(array1, array2, IJKMAX2)
          end if
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
          call scatter(VAR, array2, PE_IO)
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
       else
-         CALL IN_BIN_512 (UNIT_RES, var, size(var) , NEXT_REC) 
-	end if
-      
+         CALL IN_BIN_512 (UNIT_RES, var, size(var) , NEXT_REC)
+        end if
+
       End subroutine readScatterRes
 
 
@@ -290,6 +292,7 @@
       USE mpi_utility
       USE sendrecv
       USE MFIX_netcdf
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -302,7 +305,7 @@
 
 
       if (myPE .eq. PE_IO) then
-	 call MFIX_check_netcdf( MFIX_nf90_get_var(ncid , varid   , array1   ) )
+         call MFIX_check_netcdf( MFIX_nf90_get_var(ncid , varid   , array1   ) )
          call convert_from_io_dp(array1,array2,ijkmax2)
       end if
 
@@ -316,7 +319,7 @@
 
 
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization: array1, array2
 !// 400 Added sendrecv module and send_recv calls for COMMunication
@@ -330,30 +333,30 @@
 !                                                                              !
       subroutine read_res1_netcdf
 
-	USE param 
-	USE param1 
-	USE fldvar
-	USE geometry
-	USE physprop
-	USE run
-!	USE funits 
-	USE scalars
-!	USE output
-	USE rxns
-	USE cdist
-	USE compar 
-	USE mpi_utility  
-	USE MFIX_netcdf
+        USE param
+        USE param1
+        USE fldvar
+        USE geometry
+        USE physprop
+        USE run
+!       USE funits
+        USE scalars
+!       USE output
+        USE rxns
+        USE cdist
+        USE compar
+        USE mpi_utility
+        USE MFIX_netcdf
 !       USE tmp_array
         USE energy
 
 
-	implicit none
+        implicit none
 
-	integer :: L , unit_add , I , n
+        integer :: L , unit_add , I , n
 
-	integer   :: ncid , xyz_dimid
-        integer   :: varid_time , t_dimid 
+        integer   :: ncid , xyz_dimid
+        integer   :: varid_time , t_dimid
         integer   :: dimids(2) , varid_epg , varid_pg,dims_time(1)
         integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
         integer   :: varid_tg
@@ -373,18 +376,18 @@
         integer   :: varid_kturbg , varid_eturbg
 
 
-        character :: fname*80 , var_name*80
+        character(LEN=80) :: fname, var_name
 
         double precision :: the_time
 
 
-	integer nDim , nVars , nAttr , unID , formatNUM
+        integer nDim , nVars , nAttr , unID , formatNUM
 
         integer ndims , include_parents !, nf90_inq_dimids
 
         integer xyz_id , xyz_dim
 
-        character varname*80
+        character(LEN=80) :: varname
         integer vartype,nvdims,vdims(10),nvatts,rcode
 
         double precision, allocatable :: array1(:)
@@ -395,10 +398,10 @@
 !        integer :: MFIX_nf90_def_dim
 !        integer :: MFIX_nf90_close
 !        integer :: MFIX_nf90_open
-!	integer :: MFIX_nf90_inquire
-!	integer :: MFIX_nf90_inq_dimid
-!	integer :: MFIX_nf90_inquire_dimension
-!	integer :: MFIX_nf90_inq_varid
+!       integer :: MFIX_nf90_inquire
+!       integer :: MFIX_nf90_inq_dimid
+!       integer :: MFIX_nf90_inquire_dimension
+!       integer :: MFIX_nf90_inq_varid
 
 
 
@@ -428,7 +431,7 @@
 
   !    return
 
-	if (.not. MFIX_usingNETCDF()) return
+        if (.not. MFIX_usingNETCDF()) return
 
       if (myPE .eq. PE_IO) then
          allocate (array1(ijkmax2))
@@ -438,47 +441,47 @@
          allocate (array2(1))
       end if
 
- 
- 		
+
+
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
       if (myPE .eq. PE_IO) then
          fname = trim(run_name) // "_RES1.nc"
 
-	 call MFIX_check_netcdf( MFIX_nf90_open(fname, NF90_NOWRITE, ncid) )
+         call MFIX_check_netcdf( MFIX_nf90_open(fname, NF90_NOWRITE, ncid) )
 
-	 call MFIX_check_netcdf( MFIX_nf90_inquire(ncid, nDim , nVars , nAttr , unID , formatNUM) )
+         call MFIX_check_netcdf( MFIX_nf90_inquire(ncid, nDim , nVars , nAttr , unID , formatNUM) )
 
-!         write (*,*) ' nDim      = ' , nDim 
+!         write (*,*) ' nDim      = ' , nDim
 !         write (*,*) ' nVars     = ' , nVars
 !         write (*,*) ' nAttr     = ' , nAttr
 !         write (*,*) ' unID      = ' , unID
 !         write (*,*) ' formatNum = ' , formatNum
 
-	 call MFIX_check_netcdf( MFIX_nf90_inq_dimid(ncid,"xyz",xyz_id) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_dimid(ncid,"xyz",xyz_id) )
          call MFIX_check_netcdf( MFIX_nf90_inquire_dimension(ncid,xyz_id,len=xyz_dim) )
 
 
          do i = 1,nVars
             call MFIX_ncvinq(ncid,i,varname,vartype,nvdims,vdims,nvatts,rcode)
          end do
- 
+
          call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid ,"time"  , varid_time  ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "EP_g"  , varid_epg   ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "P_g"   , varid_pg    ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "P_star", varid_pstar ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "U_g"   , varid_ug    ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "V_g"   , varid_vg    ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "W_g"   , varid_wg    ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "T_g"   , varid_tg    ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "RO_g"   , varid_rog  ) )
-	 call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "ROP_g"  , varid_ropg ) )
-	 call MFIX_check_netcdf( MFIX_nf90_get_var(ncid,varid_time,time) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "EP_g"  , varid_epg   ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "P_g"   , varid_pg    ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "P_star", varid_pstar ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "U_g"   , varid_ug    ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "V_g"   , varid_vg    ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "W_g"   , varid_wg    ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "T_g"   , varid_tg    ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "RO_g"   , varid_rog  ) )
+         call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, "ROP_g"  , varid_ropg ) )
+         call MFIX_check_netcdf( MFIX_nf90_get_var(ncid,varid_time,time) )
 
       end if
 
 
 !      if (myPE .eq. PE_IO) then
-!	 call check_netcdf( nf90_get_var(ncid , varid_epg   , array1   ) )
+!        call check_netcdf( nf90_get_var(ncid , varid_epg   , array1   ) )
 !         call convert_from_io_dp(array1,array2,ijkmax2)
 !      end if
 !      call scatter(EP_g,array2,PE_IO)
@@ -498,56 +501,56 @@
          if (myPe .eq. PE_IO) then
             var_name = 'U_s_xxx'
             write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_us(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_us(I)) )
          end if
          call readScatterRes_netcdf(U_s(:,i) , array2, array1, ncid , varid_us(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'V_s_xxx'
             write (var_name(5:7),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_vs(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_vs(I)) )
          end if
          call readScatterRes_netcdf(V_s(:,i) , array2, array1, ncid , varid_vs(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'W_s_xxx'
             write (var_name(5:7),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_ws(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_ws(I)) )
          end if
          call readScatterRes_netcdf(W_s(:,i) , array2, array1, ncid , varid_ws(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'ROP_s_xxx'
             write (var_name(7:10),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_rops(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_rops(I)) )
          end if
          call readScatterRes_netcdf(ROP_s(:,i) , array2, array1, ncid , varid_rops(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'T_s_xxx'
             write (var_name(5:7),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_ts(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_ts(I)) )
          end if
          call readScatterRes_netcdf(T_s(:,i) , array2, array1, ncid , varid_ts(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'Theta_m_xxx'
             write (var_name(9:11),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_thetam(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_thetam(I)) )
          end if
          call readScatterRes_netcdf(theta_m(:,i) , array2, array1, ncid , varid_thetam(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'gamaRS_xxx'
             write (var_name(8:10),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_gamaRS(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_gamaRS(I)) )
          end if
          call readScatterRes_netcdf(gama_rs(:,i) , array2, array1, ncid , varid_gamaRS(i))
 
          if (myPe .eq. PE_IO) then
             var_name = 'TRS_xxx'
             write (var_name(5:7),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_TRS(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_TRS(I)) )
          end if
          call readScatterRes_netcdf(T_rs(:,i) , array2, array1, ncid , varid_TRS(i))
 
@@ -556,7 +559,7 @@
                var_name = 'X_s_xxx_xxx'
                write (var_name(5:7) ,'(i3.3)') I
                write (var_name(9:11),'(i3.3)') n
-	       call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xs(I,n)) )
+               call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xs(I,n)) )
             end if
             call readScatterRes_netcdf(X_s(:,i,n) , array2, array1, ncid , varid_xs(i,n))
          END DO
@@ -567,7 +570,7 @@
          if (myPe .eq. PE_IO) then
             var_name = 'X_g_xxx'
             write (var_name(5:7),'(i3.3)') I
-	    call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xg(I)) )
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xg(I)) )
          end if
          call readScatterRes_netcdf(X_g(:,i) , array2, array1, ncid , varid_xg(i))
       end do
@@ -576,7 +579,7 @@
          if (myPe .eq. PE_IO) then
             var_name = 'Scalar_xxx'
             write (var_name(8:10),'(i3.3)') I
-            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_scalar(I)) ) 
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_scalar(I)) )
          end if
          call readScatterRes_netcdf(scalar(:,i) , array2, array1, ncid , varid_scalar(i))
       end do
@@ -585,45 +588,45 @@
          if (myPe .eq. PE_IO) then
             var_name = 'RRates_xxx'
             write (var_name(8:10),'(i3.3)') I
-            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_rr(I)) ) 
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_rr(I)) )
          end if
          call readScatterRes_netcdf(ReactionRates(:,i) , array2, array1, ncid , varid_rr(i))
       end do
 
       if (k_Epsilon) then
          if (myPe .eq. PE_IO) then
-            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'k_turb_g', varid_kturbg) ) 
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'k_turb_g', varid_kturbg) )
          end if
          call readScatterRes_netcdf(k_turb_g , array2, array1, ncid , varid_kturbg)
 
          if (myPe .eq. PE_IO) then
-            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'e_turb_g', varid_eturbg) ) 
+            call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'e_turb_g', varid_eturbg) )
          end if
          call readScatterRes_netcdf(e_turb_g , array2, array1, ncid , varid_eturbg)
       end if
 
      if (myPe .eq. PE_IO) then
-        call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'gamaRG', varid_gamaRG) ) 
+        call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'gamaRG', varid_gamaRG) )
      end if
      call readScatterRes_netcdf(gama_rg , array2, array1, ncid , varid_gamaRG)
 
      if (myPe .eq. PE_IO) then
-        call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'TRG', varid_TRG) ) 
+        call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, 'TRG', varid_TRG) )
      end if
      call readScatterRes_netcdf(T_rg , array2, array1, ncid , varid_TRG)
 
-	! Close the file. This frees up any internal netCDF resources
-	! associated with the file, and flushes any buffers.
+        ! Close the file. This frees up any internal netCDF resources
+        ! associated with the file, and flushes any buffers.
  1234   continue
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
         if (myPE .eq. PE_IO) then
-	   call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
+           call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
        end if
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
   !      stop
 
 
-	return
+        return
 
       end subroutine read_res1_netcdf

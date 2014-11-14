@@ -4,7 +4,7 @@
 
 !     ..    Scalar Arguments ..
       INTEGER            INFO
-      CHARACTER*6        SRNAME
+      CHARACTER(LEN=6)        SRNAME
 !     ..
 !
 !  Purpose
@@ -43,4 +43,4 @@
          ' had an illegal value' )
 !     End of XERBLA.
       END SUBROUTINE XERBLA
-      
+

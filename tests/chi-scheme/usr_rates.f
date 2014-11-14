@@ -28,6 +28,8 @@
 
       USE toleranc
       USE usr
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -38,14 +40,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 
       INCLUDE 'usrnlst.inc'
 
@@ -62,6 +56,6 @@
       RATES(O2_to_O3) = EP_g(IJK) * c(1) * c_O2 / 3.0d0
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

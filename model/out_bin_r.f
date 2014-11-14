@@ -20,13 +20,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE OUT_BIN_R(IUNIT, ARRAY, IJKMAX2, NEXT_REC) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE OUT_BIN_R(IUNIT, ARRAY, IJKMAX2, NEXT_REC)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
+      USE param
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -49,25 +49,25 @@
 !                      single precision version of ARRAY
 !//     REAL             ARRAY_REAL(DIMENSION_3)
 !
-      real, allocatable :: array_real(:)   
+      real, allocatable :: array_real(:)
 !                      loop counter
       INTEGER          LC
 !-----------------------------------------------
 !
-      allocate (array_real(ijkmax2)) 
+      allocate (array_real(ijkmax2))
 
-      LC = 1 
-      IF (IJKMAX2 > 0) THEN 
-         ARRAY_REAL(:IJKMAX2) = SNGL(ARRAY(:IJKMAX2)) 
-         LC = IJKMAX2 + 1 
-      ENDIF 
-      CALL OUT_BIN_512R (IUNIT, ARRAY_REAL, IJKMAX2, NEXT_REC) 
+      LC = 1
+      IF (IJKMAX2 > 0) THEN
+         ARRAY_REAL(:IJKMAX2) = SNGL(ARRAY(:IJKMAX2))
+         LC = IJKMAX2 + 1
+      ENDIF
+      CALL OUT_BIN_512R (IUNIT, ARRAY_REAL, IJKMAX2, NEXT_REC)
 
-      deallocate (array_real)     
+      deallocate (array_real)
 !
-      RETURN  
-      END SUBROUTINE OUT_BIN_R 
+      RETURN
+      END SUBROUTINE OUT_BIN_R
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization, array_real(ijkmax2)

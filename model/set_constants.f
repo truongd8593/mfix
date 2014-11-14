@@ -29,13 +29,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SET_CONSTANTS 
+      SUBROUTINE SET_CONSTANTS
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE visc_s
       USE energy
@@ -44,7 +44,7 @@
       USE physprop
       USE constant
       USE run
-      USE funits 
+      USE funits
       USE drag
       USE compar
       IMPLICIT NONE
@@ -70,10 +70,10 @@
          GAS_CONST = 8314.56D4                   !g.cm2/s2.mol.K
          to_SI = ONE                             !does not do anything in CGS,  see s_pr2.inc, see calc_mu_g.f
          IF (LAM_HYS == UNDEFINED) LAM_HYS = 0.0001d0    ! cm
-      ELSE 
+      ELSE
          IF(DMP_LOG)WRITE (UNIT_LOG, 1000) UNITS
-         CALL MFIX_EXIT(myPE) 
-      ENDIF 
+         CALL MFIX_EXIT(myPE)
+      ENDIF
 
 ! If the gravitational acceleration vector is undefined, then used default value in negative y-direction
 ! This ensured backward compatibility with the old (legacy) GRAVITY keyword.
@@ -86,8 +86,8 @@
 
 
 
-      RETURN  
+      RETURN
  1000 FORMAT(/1X,70('*')//'From: SET_CONSTANTS',/&
          ' Message: Unknown UNITS: ',1A16,/1X,70('*')/)
 
-      END SUBROUTINE SET_CONSTANTS 
+      END SUBROUTINE SET_CONSTANTS

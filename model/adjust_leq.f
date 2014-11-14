@@ -17,29 +17,29 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE ADJUST_LEQ(RESID, LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE ADJUST_LEQ(RESID, LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE toleranc 
-      USE leqsol 
+      USE param
+      USE param1
+      USE toleranc
+      USE leqsol
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER 
-      DOUBLE PRECISION RESID 
+      INTEGER LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER
+      DOUBLE PRECISION RESID
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !                      Linear equation solver parameters used when
 !                      a particular equation set has converged
-      INTEGER, PARAMETER :: LEQ_IT_CONV = 5 
-      INTEGER, PARAMETER :: LEQ_METHOD_CONV = 1 
+      INTEGER, PARAMETER :: LEQ_IT_CONV = 5
+      INTEGER, PARAMETER :: LEQ_METHOD_CONV = 1
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
@@ -47,13 +47,13 @@
 !
 !  The adjustment is disabled, because it was adversely affecting species
 !  conservation
-!      IF (LEQ_ADJUST .AND. RESID<=TOL_RESID*0.1) THEN 
-!         LEQM = LEQ_METHOD_CONV 
-!         LEQI = MIN(LEQ_IT_CONV,LEQ_ITL) 
-!      ELSE 
-         LEQM = LEQ_METHODL 
-         LEQI = LEQ_ITL 
-!      ENDIF 
+!      IF (LEQ_ADJUST .AND. RESID<=TOL_RESID*0.1) THEN
+!         LEQM = LEQ_METHOD_CONV
+!         LEQI = MIN(LEQ_IT_CONV,LEQ_ITL)
+!      ELSE
+         LEQM = LEQ_METHODL
+         LEQI = LEQ_ITL
+!      ENDIF
 !
-      RETURN  
-      END SUBROUTINE ADJUST_LEQ 
+      RETURN
+      END SUBROUTINE ADJUST_LEQ

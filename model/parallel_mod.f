@@ -15,4 +15,4 @@
       LOGICAL          IS_SERIAL
 
 
-      END MODULE parallel                                                                        
+      END MODULE parallel

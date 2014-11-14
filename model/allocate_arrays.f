@@ -442,7 +442,7 @@
       use geometry, only: FLAG, FLAG3
       use geometry, only: FLAG_E, FLAG_N, FLAG_T
 ! Domain volumes and areas.
-      use geometry, only: VOL, AYZ, AXZ, AXY          ! Scalar grid
+      use geometry, only: VOL, VOL_SURR, AYZ, AXZ, AXY! Scalar grid
       use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
       use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
       use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
@@ -471,7 +471,7 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: ZERO, HALF, ONE, UNDEFINED 
+      use param1, only: ZERO, HALF, ONE, UNDEFINED
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -487,10 +487,18 @@
 ! Error Flag
       INTEGER :: IER
 ! Flag indicating that the arrays were previously allocated.
-      LOGICAL, SAVE :: ALREADY_ALLOCATED = .FALSE.
+      INTEGER, SAVE :: CALLED = -1
 !......................................................................!
 
-      IF(ALREADY_ALLOCATED) RETURN
+      CALLED = CALLED + 1
+
+      IF(CALLED > 0) THEN
+         IF(.NOT.bDoing_postmfix) THEN
+            RETURN 
+         ELSEIF(mod(CALLED,2) /= 0) THEN
+            RETURN
+         ENDIF
+      ENDIF
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("ALLOCATE_ARRAYS_GEOMETRY")
@@ -553,6 +561,9 @@
       Allocate( AXY (DIMENSION_3P), STAT=IER )
       IF(IER /= 0) goto 500
 
+      ! total volume of each cell's surrounding stencil cells
+      Allocate( VOL_SURR (DIMENSION_3), STAT=IER )
+
 ! Volume and face-areas of X-Momentumn grid.
       Allocate( VOL_U (DIMENSION_3),  STAT=IER )
       Allocate( AYZ_U (DIMENSION_3P), STAT=IER )
@@ -587,11 +598,9 @@
 
  1100 FORMAT('Error 1100: Failure during array allocation.')
 
-      ALREADY_ALLOCATED = .TRUE.
-
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE ALLOCATE_ARRAYS_GEOMETRY
 
 
@@ -608,16 +617,16 @@
 !           neighboring cell type, i.e. wall or fluid.                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS 
+      SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE geometry
       USE compar
       USE physprop
       USE fldvar
-      USE funits 
+      USE funits
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -703,5 +712,5 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE ALLOCATE_ARRAYS_INCREMENTS

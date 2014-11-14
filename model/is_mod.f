@@ -80,7 +80,7 @@
 !                      Type of internal surface: IMPERMEABLE - no gas or solids
 !                      flow through the surface; SEMIPERMEABLE - only gas flows
 !                      through the surface
-      CHARACTER*16     IS_TYPE (DIMENSION_IS)
+      CHARACTER(LEN=16)     IS_TYPE (DIMENSION_IS)
 !
 !                      Logical variable to determine whether an IS is defined
        LOGICAL         IS_DEFINED (DIMENSION_IS)
@@ -102,4 +102,4 @@
 !
 
 
-      END MODULE is                                                                              
+      END MODULE is

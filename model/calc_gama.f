@@ -9,7 +9,7 @@
       SUBROUTINE CALC_GAMA(HEAT_TR, IER)
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE param
       USE param1
@@ -23,6 +23,7 @@
       USE compar
       USE sendrecv
       USE discretelement
+      USE functions
 
       IMPLICIT NONE
 
@@ -44,8 +45,8 @@
       INTEGER          M
 
 !                      Cell center value of U_g, Vg, and Wg [Recall
-!                      U_g(IJK) refers to U_g at I+1/2, J, K 
-!                      V_g(IJK) refers to V_g at I, J+1/2, K and 
+!                      U_g(IJK) refers to U_g at I+1/2, J, K
+!                      V_g(IJK) refers to V_g at I, J+1/2, K and
 !                      W_g [W_G(IJK) refers to W_G at I, J, K+1/2]
       DOUBLE PRECISION UGC, VGC, WGC
 
@@ -70,10 +71,6 @@
       INTEGER          LM
 
 !-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-
 
       IF (DISCRETE_ELEMENT) RETURN
 
@@ -136,7 +133,7 @@
                      ENDIF
                   ENDIF   ! end if gama_gs(ijk,M) > 0
 
-               ENDIF   ! end if (fluidorp_flow_at(ijk) 
+               ENDIF   ! end if (fluidorp_flow_at(ijk)
             ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
          ENDIF    ! end if (heat_tr(0,m))
       ENDDO    ! end do loop (m=1,smax)

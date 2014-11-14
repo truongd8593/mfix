@@ -35,10 +35,11 @@
       USE compar
       USE sendrecv
       USE toleranc
+      USE fun_avg
       USE usr
+      USE functions
 
       IMPLICIT NONE
-
 
       INTEGER, INTENT(IN) :: IJK
 
@@ -78,15 +79,6 @@
 
 !`````````````````````````````````````````````````````````````````````//
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
       INCLUDE 'usrnlst.inc'
 !`````````````````````````````````````````````````````````````````````//
 
@@ -133,7 +125,7 @@
 ! SiH4 <--> SiH2 + H2  (g-mole/cm^3.s)
 !---------------------------------------------------------------------//
 ! REF: Table 2, Caussat, Hemati, and Couderc (1995)
-      FWD = 1.08d13 * exp(-2.56d4/xTg) * EP_g(IJK) * c_SiH4 
+      FWD = 1.08d13 * exp(-2.56d4/xTg) * EP_g(IJK) * c_SiH4
       RVS = 1.26d12 * exp(-2.52d3/xTg) * EP_g(IJK) * c_SiH2 * c_H2
 
       NET = FWD - RVS
@@ -190,7 +182,7 @@
 ! layer resistance.
 
 ! Diffusion coefficient.
-! This is based on Chapman-Enskog theory for diffusion in gases at low 
+! This is based on Chapman-Enskog theory for diffusion in gases at low
 ! density. Approximately self-diffusivity of N2.
          DIFF_SiH2 = 3.45d-5*(xTg**1.5)  ! (cm^2/sec)
 ! SiH2 Gas constant. (Pa.m^3)/(kmol.K) == (KPa.cm^3)/(mol.K)
@@ -201,6 +193,6 @@
          RATES(RX4)  =  Sa * K_f * (p_SiH2 / MW_g(SiH2))
       ENDIF
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

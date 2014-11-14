@@ -1,16 +1,5 @@
 # Ensure that we are in the post directory.
 echo "Copying model directory incs"
-/bin/cp -f ${MFIX_SRC}/ep_s1.inc ${MFIX_POST}/.
-/bin/cp -f ${MFIX_SRC}/ep_s2.inc ${MFIX_POST}/.
-
-/bin/cp -f ${MFIX_SRC}/fun_avg1.inc ${MFIX_POST}/.
-/bin/cp -f ${MFIX_SRC}/fun_avg2.inc ${MFIX_POST}/.
-
-/bin/cp -f ${MFIX_SRC}/s_pr1.inc ${MFIX_POST}/.
-/bin/cp -f ${MFIX_SRC}/s_pr2.inc ${MFIX_POST}/.
-
-/bin/cp -f ${MFIX_SRC}/sc_p_g1.inc ${MFIX_POST}/.
-/bin/cp -f ${MFIX_SRC}/sc_p_g2.inc ${MFIX_POST}/.
 
 /bin/cp -f ${MFIX_SRC}/namelist.inc ${MFIX_POST}/.
 

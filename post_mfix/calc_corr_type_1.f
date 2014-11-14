@@ -37,20 +37,19 @@
       Use physprop
       Use correl
       Use compar
-      
+      Use functions
+
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !
       REAL              TIME_REAL(N_SPX) , TIME_1 , TIME_2, TIME_FOUND
       REAL              TIME_NOW
-      INTEGER           NSTEP_1 
+      INTEGER           NSTEP_1
       INTEGER           NX , NY , NZ
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX) , FINISH
       LOGICAL           INTER
       INTEGER           I, J, K, IJK
-!
-      INCLUDE 'function.inc'
 !
       INTER = .FALSE.
       IF (.NOT.DO_XFORMS) THEN
@@ -116,7 +115,7 @@
          DO J = JMIN1,JMAX1
             DO I = IMIN1,IMAX1
                IJK = FUNIJK(I,J,K)
-               WRITE (40,*) AVG_EP_g(IJK) 
+               WRITE (40,*) AVG_EP_g(IJK)
             END DO
          END DO
       END DO

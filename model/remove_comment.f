@@ -10,14 +10,14 @@
 !                     OUT > LINE ::  "MW_g( 3 ) =  32.0         "      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REMOVE_COMMENT(LINE, LSTART, MAXCOL) 
+      SUBROUTINE REMOVE_COMMENT(LINE, LSTART, MAXCOL)
 
       IMPLICIT NONE
 
 ! Passed Variables: Dummy argument format required by ODEPACK.
 !---------------------------------------------------------------------//
 ! Input data line
-      CHARACTER*(*), intent(INOUT) :: LINE
+      CHARACTER(len=*), intent(INOUT) :: LINE
 !Start of comments
       INTEGER, intent(IN) :: LSTART
 ! Maximum column of input data line to search
@@ -26,13 +26,13 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop index
-      INTEGER :: L 
+      INTEGER :: L
 
-      DO L = LSTART, MAXCOL 
-         LINE(L:L) = ' ' 
-      END DO 
+      DO L = LSTART, MAXCOL
+         LINE(L:L) = ' '
+      END DO
 
-      RETURN  
+      RETURN
       END SUBROUTINE REMOVE_COMMENT
 
 
@@ -62,7 +62,7 @@
 ! String size
       INTEGER :: sSize
 ! Loop index
-      INTEGER :: L 
+      INTEGER :: L
 ! Search positions
       INTEGER :: POS, lP, rP
 ! Flag for space replacement

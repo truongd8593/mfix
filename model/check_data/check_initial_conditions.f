@@ -69,17 +69,17 @@
 
 
 
-! Check the initial conditions for the DEM and MPPIC models as well 
+! Check the initial conditions for the DEM and MPPIC models as well
       IF(DEM_SOLIDS.OR.PIC_SOLIDS) &
-      CALL CHECK_IC_COMMON_DISCRETE       
+      CALL CHECK_IC_COMMON_DISCRETE
       IF(DEM_SOLIDS) CALL CHECK_IC_DEM
       IF(PIC_SOLIDS) CALL CHECK_IC_MPPIC
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
 
-      RETURN  
-      END SUBROUTINE CHECK_INITIAL_CONDITIONS 
+      RETURN
+      END SUBROUTINE CHECK_INITIAL_CONDITIONS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -137,82 +137,82 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_GEOMETRY")
 
-! Check geometry of any specified IC region      
-      DO ICV = 1, DIMENSION_IC 
+! Check geometry of any specified IC region
+      DO ICV = 1, DIMENSION_IC
 
-         IC_DEFINED(ICV) = .FALSE. 
-         IF (IC_X_W(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_X_E(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Y_S(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Y_N(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Z_B(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_Z_T(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_I_W(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_I_E(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_J_S(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_J_N(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_K_B(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
-         IF (IC_K_T(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE. 
+         IC_DEFINED(ICV) = .FALSE.
+         IF (IC_X_W(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_X_E(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_Y_S(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_Y_N(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_Z_B(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_Z_T(ICV) /= UNDEFINED)   IC_DEFINED(ICV) = .TRUE.
+         IF (IC_I_W(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
+         IF (IC_I_E(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
+         IF (IC_J_S(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
+         IF (IC_J_N(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
+         IF (IC_K_B(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
+         IF (IC_K_T(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
 
 ! For restart runs IC is defined only if IC_TYPE='PATCH'
          IF(RUN_TYPE/='NEW' .AND. IC_TYPE(ICV)/='PATCH') &
-            IC_DEFINED(ICV) = .FALSE. 
+            IC_DEFINED(ICV) = .FALSE.
 
          IF(.NOT.IC_DEFINED(ICV)) CYCLE
 
-         IF (IC_X_W(ICV)==UNDEFINED .AND. IC_I_W(ICV)==UNDEFINED_I) THEN 
-            IF (NO_I) THEN 
-               IC_X_W(ICV) = ZERO 
+         IF (IC_X_W(ICV)==UNDEFINED .AND. IC_I_W(ICV)==UNDEFINED_I) THEN
+            IF (NO_I) THEN
+               IC_X_W(ICV) = ZERO
             ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_X_w and IC_I_w'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
-
-         IF (IC_X_E(ICV)==UNDEFINED .AND. IC_I_E(ICV)==UNDEFINED_I) THEN 
-            IF (NO_I) THEN 
-               IC_X_E(ICV) = XLENGTH 
-            ELSE 
-               WRITE(ERR_MSG, 1100) ICV, 'IC_X_e and IC_I_e'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
-
-         IF (IC_Y_S(ICV)==UNDEFINED .AND. IC_J_S(ICV)==UNDEFINED_I) THEN 
-            IF (NO_J) THEN 
-               IC_Y_S(ICV) = ZERO 
-            ELSE 
-               WRITE(ERR_MSG, 1100) ICV, 'IC_Y_s and IC_J_s'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
-
-         IF (IC_Y_N(ICV)==UNDEFINED .AND. IC_J_N(ICV)==UNDEFINED_I) THEN 
-            IF (NO_J) THEN 
-               IC_Y_N(ICV) = YLENGTH 
-            ELSE 
-               WRITE(ERR_MSG, 1100) ICV, 'IC_Y_n and IC_J_n'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
+            ENDIF
          ENDIF
 
-         IF (IC_Z_B(ICV)==UNDEFINED .AND. IC_K_B(ICV)==UNDEFINED_I) THEN 
-            IF (NO_K) THEN 
-               IC_Z_B(ICV) = ZERO 
-            ELSE 
+         IF (IC_X_E(ICV)==UNDEFINED .AND. IC_I_E(ICV)==UNDEFINED_I) THEN
+            IF (NO_I) THEN
+               IC_X_E(ICV) = XLENGTH
+            ELSE
+               WRITE(ERR_MSG, 1100) ICV, 'IC_X_e and IC_I_e'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF (IC_Y_S(ICV)==UNDEFINED .AND. IC_J_S(ICV)==UNDEFINED_I) THEN
+            IF (NO_J) THEN
+               IC_Y_S(ICV) = ZERO
+            ELSE
+               WRITE(ERR_MSG, 1100) ICV, 'IC_Y_s and IC_J_s'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF (IC_Y_N(ICV)==UNDEFINED .AND. IC_J_N(ICV)==UNDEFINED_I) THEN
+            IF (NO_J) THEN
+               IC_Y_N(ICV) = YLENGTH
+            ELSE
+               WRITE(ERR_MSG, 1100) ICV, 'IC_Y_n and IC_J_n'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF (IC_Z_B(ICV)==UNDEFINED .AND. IC_K_B(ICV)==UNDEFINED_I) THEN
+            IF (NO_K) THEN
+               IC_Z_B(ICV) = ZERO
+            ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Z_b and IC_K_b'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
-         IF (IC_Z_T(ICV)==UNDEFINED .AND. IC_K_T(ICV)==UNDEFINED_I) THEN 
-            IF (NO_K) THEN 
-               IC_Z_T(ICV) = ZLENGTH 
-            ELSE 
+         IF (IC_Z_T(ICV)==UNDEFINED .AND. IC_K_T(ICV)==UNDEFINED_I) THEN
+            IF (NO_K) THEN
+               IC_Z_T(ICV) = ZLENGTH
+            ELSE
                WRITE(ERR_MSG, 1100) ICV, 'IC_Z_t and IC_K_t'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
       ENDDO   ! end loop over (icv = 1,dimension_ic)
 
@@ -226,23 +226,23 @@
 ! Skip this check if the IC region is not specified.
          IF(.NOT.IC_DEFINED(ICV)) CYCLE
 
-         IF (IC_X_W(ICV)/=UNDEFINED .AND. IC_X_E(ICV)/=UNDEFINED) THEN 
-            IF (NO_I) THEN 
-               I_W = 1 
-               I_E = 1 
-            ELSE 
-               CALL CALC_CELL (XMIN, IC_X_W(ICV), DX, IMAX, I_W) 
-               I_W = I_W + 1 
-               CALL CALC_CELL (XMIN, IC_X_E(ICV), DX, IMAX, I_E) 
-            ENDIF 
-            IF (IC_I_W(ICV)/=UNDEFINED_I .OR. IC_I_E(ICV)/=UNDEFINED_I) THEN 
-               CALL LOCATION_CHECK (IC_I_W(ICV), I_W, ICV, 'IC - west') 
-               CALL LOCATION_CHECK (IC_I_E(ICV), I_E, ICV, 'IC - east') 
-            ELSE 
-               IC_I_W(ICV) = I_W 
-               IC_I_E(ICV) = I_E 
-            ENDIF 
-         ENDIF 
+         IF (IC_X_W(ICV)/=UNDEFINED .AND. IC_X_E(ICV)/=UNDEFINED) THEN
+            IF (NO_I) THEN
+               I_W = 1
+               I_E = 1
+            ELSE
+               CALL CALC_CELL (XMIN, IC_X_W(ICV), DX, IMAX, I_W)
+               I_W = I_W + 1
+               CALL CALC_CELL (XMIN, IC_X_E(ICV), DX, IMAX, I_E)
+            ENDIF
+            IF (IC_I_W(ICV)/=UNDEFINED_I .OR. IC_I_E(ICV)/=UNDEFINED_I) THEN
+               CALL LOCATION_CHECK (IC_I_W(ICV), I_W, ICV, 'IC - west')
+               CALL LOCATION_CHECK (IC_I_E(ICV), I_E, ICV, 'IC - east')
+            ELSE
+               IC_I_W(ICV) = I_W
+               IC_I_E(ICV) = I_E
+            ENDIF
+         ENDIF
 
 ! Report problems with calculated bounds.
          IF(IC_I_W(ICV) > IC_I_E(ICV)) THEN
@@ -263,23 +263,23 @@
              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
-         IF (IC_Y_S(ICV)/=UNDEFINED .AND. IC_Y_N(ICV)/=UNDEFINED) THEN 
-            IF (NO_J) THEN 
-               J_S = 1 
-               J_N = 1 
-            ELSE 
-               CALL CALC_CELL (ZERO, IC_Y_S(ICV), DY, JMAX, J_S) 
-               J_S = J_S + 1 
-               CALL CALC_CELL (ZERO, IC_Y_N(ICV), DY, JMAX, J_N) 
-            ENDIF 
-            IF (IC_J_S(ICV)/=UNDEFINED_I .OR. IC_J_N(ICV)/=UNDEFINED_I) THEN 
-               CALL LOCATION_CHECK (IC_J_S(ICV), J_S, ICV, 'IC - south') 
-               CALL LOCATION_CHECK (IC_J_N(ICV), J_N, ICV, 'IC - north') 
-            ELSE 
-               IC_J_S(ICV) = J_S 
-               IC_J_N(ICV) = J_N 
-            ENDIF 
-         ENDIF 
+         IF (IC_Y_S(ICV)/=UNDEFINED .AND. IC_Y_N(ICV)/=UNDEFINED) THEN
+            IF (NO_J) THEN
+               J_S = 1
+               J_N = 1
+            ELSE
+               CALL CALC_CELL (ZERO, IC_Y_S(ICV), DY, JMAX, J_S)
+               J_S = J_S + 1
+               CALL CALC_CELL (ZERO, IC_Y_N(ICV), DY, JMAX, J_N)
+            ENDIF
+            IF (IC_J_S(ICV)/=UNDEFINED_I .OR. IC_J_N(ICV)/=UNDEFINED_I) THEN
+               CALL LOCATION_CHECK (IC_J_S(ICV), J_S, ICV, 'IC - south')
+               CALL LOCATION_CHECK (IC_J_N(ICV), J_N, ICV, 'IC - north')
+            ELSE
+               IC_J_S(ICV) = J_S
+               IC_J_N(ICV) = J_N
+            ENDIF
+         ENDIF
 
          IF(IC_J_S(ICV) > IC_J_N(ICV)) THEN
              WRITE(ERR_MSG, 1101) ICV, 'IC_J_S > IC_J_N'
@@ -299,23 +299,23 @@
          ENDIF
 
 
-         IF (IC_Z_B(ICV)/=UNDEFINED .AND. IC_Z_T(ICV)/=UNDEFINED) THEN 
-            IF (NO_K) THEN 
-               K_B = 1 
-               K_T = 1 
-            ELSE 
-               CALL CALC_CELL (ZERO, IC_Z_B(ICV), DZ, KMAX, K_B) 
-               K_B = K_B + 1 
-               CALL CALC_CELL (ZERO, IC_Z_T(ICV), DZ, KMAX, K_T) 
-            ENDIF 
-            IF (IC_K_B(ICV)/=UNDEFINED_I .OR. IC_K_T(ICV)/=UNDEFINED_I) THEN 
-               CALL LOCATION_CHECK (IC_K_B(ICV), K_B, ICV, 'IC - bottom') 
-               CALL LOCATION_CHECK (IC_K_T(ICV), K_T, ICV, 'IC - top') 
-            ELSE 
-               IC_K_B(ICV) = K_B 
-               IC_K_T(ICV) = K_T 
-            ENDIF 
-         ENDIF 
+         IF (IC_Z_B(ICV)/=UNDEFINED .AND. IC_Z_T(ICV)/=UNDEFINED) THEN
+            IF (NO_K) THEN
+               K_B = 1
+               K_T = 1
+            ELSE
+               CALL CALC_CELL (ZERO, IC_Z_B(ICV), DZ, KMAX, K_B)
+               K_B = K_B + 1
+               CALL CALC_CELL (ZERO, IC_Z_T(ICV), DZ, KMAX, K_T)
+            ENDIF
+            IF (IC_K_B(ICV)/=UNDEFINED_I .OR. IC_K_T(ICV)/=UNDEFINED_I) THEN
+               CALL LOCATION_CHECK (IC_K_B(ICV), K_B, ICV, 'IC - bottom')
+               CALL LOCATION_CHECK (IC_K_T(ICV), K_T, ICV, 'IC - top')
+            ELSE
+               IC_K_B(ICV) = K_B
+               IC_K_T(ICV) = K_T
+            ENDIF
+         ENDIF
 
          IF(IC_K_B(ICV) > IC_K_T(ICV)) THEN
              WRITE(ERR_MSG, 1101) ICV, 'IC_K_B > IC_K_T'
@@ -410,7 +410,7 @@
 ! Sum of mass fraction.
       DOUBLE PRECISION :: SUM
 ! External function for comparing two values.
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
 
 
@@ -419,48 +419,48 @@
 
 
 ! Check that gas phase velocity components are initialized
-      IF(IC_U_G(ICV) == UNDEFINED) THEN 
-         IF(NO_I) THEN 
-            IC_U_G(ICV) = ZERO 
-         ELSE 
+      IF(IC_U_G(ICV) == UNDEFINED) THEN
+         IF(NO_I) THEN
+            IC_U_G(ICV) = ZERO
+         ELSE
             WRITE(ERR_MSG, 1000) trim(iVar('IC_U_g',ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
       IF(IC_V_G(ICV) == UNDEFINED) THEN
-         IF(NO_J) THEN 
-            IC_V_G(ICV) = ZERO 
-         ELSE 
+         IF(NO_J) THEN
+            IC_V_G(ICV) = ZERO
+         ELSE
             WRITE(ERR_MSG, 1000) trim(iVar('IC_V_g',ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
       IF(IC_W_G(ICV) == UNDEFINED) THEN
-         IF (NO_K) THEN 
-            IC_W_G(ICV) = ZERO 
-         ELSE 
+         IF (NO_K) THEN
+            IC_W_G(ICV) = ZERO
+         ELSE
             WRITE(ERR_MSG, 1000) trim(iVar('IC_W_g',ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
 ! check that gas phase void fraction is initialized
-      IF(IC_EP_G(ICV) == UNDEFINED) THEN 
+      IF(IC_EP_G(ICV) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('IC_EP_g',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
 
 ! Check that if the gas phase pressure is initialized and the gas is
 ! compressible that the gas phase pressure is not zero or negative
       IF(IC_P_G(ICV) /= UNDEFINED) THEN
-         IF(RO_G0==UNDEFINED .AND. IC_P_G(ICV)<=ZERO) THEN 
+         IF(RO_G0==UNDEFINED .AND. IC_P_G(ICV)<=ZERO) THEN
             WRITE(ERR_MSG, 1100) trim(iVar('IC_P_g',ICV)),             &
                iVal(IC_P_G(ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
  1100 FORMAT('Error 1100: Pressure must be greater than 0.0 for ',     &
          'compressible flow',/'Illegal value: ',A,' = ',A,/'Please ',  &
@@ -471,22 +471,22 @@
          IF(IC_T_G(ICV)==UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) trim(iVar('IC_T_g',ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
 ! Gas phase radiation values.
-      IF (ENERGY_EQ) THEN 
-         IF (IC_GAMA_RG(ICV) < ZERO) THEN 
+      IF (ENERGY_EQ) THEN
+         IF (IC_GAMA_RG(ICV) < ZERO) THEN
             WRITE(ERR_MSG, 1001) trim(iVar('IC_GAMA_Rg',ICV)),         &
                iVal(IC_GAMA_RG(ICV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF (IC_GAMA_RG(ICV) > ZERO) THEN 
-            IF (IC_T_RG(ICV) == UNDEFINED) THEN 
+         ELSEIF (IC_GAMA_RG(ICV) > ZERO) THEN
+            IF (IC_T_RG(ICV) == UNDEFINED) THEN
                WRITE(ERR_MSG, 1000) iVar('IC_T_Rg',ICV)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
-      ENDIF 
+            ENDIF
+         ENDIF
+      ENDIF
 
 
 ! First: sum together defiend gas phase species mass fractions.
@@ -497,7 +497,7 @@
          ELSE
             IC_X_G(ICV,N) = ZERO
          ENDIF
-      ENDDO 
+      ENDDO
 
 
 ! Enforce that the species mass fractions must sum to one.
@@ -531,16 +531,16 @@
             IC_X_G(ICV,:) = ZERO
             IC_X_G(ICV,1) = ONE
          ENDIF
-      ENDIF 
+      ENDIF
 
 
       DO N = 1, NScalar
-         IF(IC_Scalar(ICV,N) == UNDEFINED) IC_Scalar(ICV,N) = ZERO 
-      ENDDO  
+         IF(IC_Scalar(ICV,N) == UNDEFINED) IC_Scalar(ICV,N) = ZERO
+      ENDDO
 
 
       IF(K_Epsilon) THEN
-         IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN 
+         IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) iVar('IC_K_Turb_G',ICV)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -641,7 +641,7 @@
 ! External function to calculate solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
 ! External function for comparing two values.
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
 
 
@@ -656,7 +656,7 @@
          IC_EP_S(ICV,1) = ONE - IC_EP_g(ICV)
       ENDIF
 
-! Bulk density or solids volume fraction must be explicitly defined 
+! Bulk density or solids volume fraction must be explicitly defined
 ! if there are more than one solids phase.
       IF(MMAX_TOT > 1 .AND. .NOT.COMPARE(IC_EP_g(ICV),ONE)) THEN
          DO M = 1, SMAX + DES_MMAX
@@ -683,63 +683,63 @@
       DO M=1, MMAX_TOT
 
 ! check that solids phase m velocity components are initialized
-         IF(IC_U_S(ICV,M) == UNDEFINED) THEN 
+         IF(IC_U_S(ICV,M) == UNDEFINED) THEN
             IF (SKIP(M) .OR. NO_I) THEN
-               IC_U_S(ICV,M) = ZERO 
+               IC_U_S(ICV,M) = ZERO
             ELSE
                WRITE(ERR_MSG, 1000)trim(iVar('IC_U_s',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
-         IF(IC_V_S(ICV,M) == UNDEFINED) THEN 
-            IF(SKIP(M) .OR. NO_J) THEN 
-               IC_V_S(ICV,M) = ZERO 
-            ELSE 
+         IF(IC_V_S(ICV,M) == UNDEFINED) THEN
+            IF(SKIP(M) .OR. NO_J) THEN
+               IC_V_S(ICV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG, 1000)trim(iVar('IC_V_s',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
-         IF(IC_W_S(ICV,M) == UNDEFINED) THEN 
+         IF(IC_W_S(ICV,M) == UNDEFINED) THEN
             IF(SKIP(M) .OR. NO_K) THEN
-               IC_W_S(ICV,M) = ZERO 
-            ELSE 
+               IC_W_S(ICV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG, 1000)trim(iVar('IC_W_s',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
          IF(ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN
             IF(SKIP(M)) THEN
                IC_T_S(ICV,M) = IC_T_G(ICV)
-            ELSE 
+            ELSE
                WRITE(ERR_MSG, 1000)trim(iVar('IC_T_s',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
+            ENDIF
+         ENDIF
 
          IF(GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN
-            IF(SKIP(M)) THEN 
-               IC_THETA_M(ICV,M) = ZERO 
-            ELSE 
+            IF(SKIP(M)) THEN
+               IC_THETA_M(ICV,M) = ZERO
+            ELSE
                WRITE(ERR_MSG, 1000)trim(iVar('IC_Theta_M',ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDIF 
-   
+            ENDIF
+         ENDIF
+
          IF(ENERGY_EQ) THEN
             IF(IC_GAMA_RS(ICV,M) < ZERO) THEN
                WRITE(ERR_MSG, 1001)trim(iVar('IC_GAMA_Rs',ICV,M)),     &
                   iVal(IC_GAMA_RS(ICV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (IC_GAMA_RS(ICV,M) > ZERO) THEN 
+            ELSEIF (IC_GAMA_RS(ICV,M) > ZERO) THEN
                IF(IC_T_RS(ICV,M) == UNDEFINED) THEN
                   WRITE(ERR_MSG, 1001)trim(iVar('IC_T_Rs',ICV,M))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF 
-            ENDIF 
-         ENDIF 
+               ENDIF
+            ENDIF
+         ENDIF
 
 
 ! First: sum together defiend species mass fractions.
@@ -750,7 +750,7 @@
             ELSE
                IC_X_S(ICV,M,N) = ZERO
             ENDIF
-         ENDDO 
+         ENDDO
 
 ! Enforce that the species mass fractions must sum to one.
          IF(.NOT.COMPARE(ONE,SUM)) THEN
@@ -783,7 +783,7 @@
                IC_X_S(ICV,M,:) = ZERO
                IC_X_S(ICV,M,1) = ONE
             ENDIF
-         ENDIF 
+         ENDIF
 
 ! Set the solids density for the IC region.
          IF(SKIP(M)) THEN
@@ -948,43 +948,43 @@
 
 
 ! GAS PHASE quantities
-! -------------------------------------------->>>                
-      IF(IC_U_G(ICV) /= UNDEFINED) THEN 
+! -------------------------------------------->>>
+      IF(IC_U_G(ICV) /= UNDEFINED) THEN
           WRITE(ERR_MSG, 1010) trim(iVar('IC_U_g',ICV))
-          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_V_G(ICV) /= UNDEFINED) THEN 
+          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_V_G(ICV) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1010) trim(iVar('IC_V_g',ICV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_W_G(ICV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_W_G(ICV) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1010) trim(iVar('IC_W_g',ICV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_EP_G(ICV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_EP_G(ICV) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1010) trim(iVar('IC_EP_g',ICV))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_T_G(ICV) /= UNDEFINED) THEN 
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_T_G(ICV) /= UNDEFINED) THEN
           WRITE(ERR_MSG, 1010) trim(iVar('IC_T_g',ICV))
-          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_T_RG(ICV) /= UNDEFINED) THEN 
+          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_T_RG(ICV) /= UNDEFINED) THEN
           WRITE(ERR_MSG, 1010) trim(iVar('IC_T_Rg',ICV))
-          CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-      ELSEIF(IC_K_Turb_G(ICV) /= UNDEFINED) THEN 
+          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(IC_K_Turb_G(ICV) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1010) trim(iVar('IC_K_Turb_G',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(IC_E_Turb_G(ICV) /= UNDEFINED) THEN 
+      ELSEIF(IC_E_Turb_G(ICV) /= UNDEFINED) THEN
          WRITE(ERR_MSG, 1010) trim(iVar('IC_E_Turb_G',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
       DO N = 1, DIM_N_G
-         IF(IC_X_G(ICV,N) /= UNDEFINED) THEN 
+         IF(IC_X_G(ICV,N) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_X_g',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
-      ENDDO 
-      DO N = 1, DIM_SCALAR
-         IF(IC_Scalar(ICV,N) /= UNDEFINED) THEN 
-            WRITE(ERR_MSG, 1010) trim(iVar('IC_Scalar',ICV)) 
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
+      ENDDO
+      DO N = 1, DIM_SCALAR
+         IF(IC_Scalar(ICV,N) /= UNDEFINED) THEN
+            WRITE(ERR_MSG, 1010) trim(iVar('IC_Scalar',ICV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
       ENDDO
 ! --------------------------------------------<<<
 
@@ -992,38 +992,38 @@
 ! SOLIDS PHASE quantities
 ! -------------------------------------------->>>
       DO M=1, DIM_M
-         IF(IC_ROP_S(ICV,M) /= UNDEFINED) THEN 
+         IF(IC_ROP_S(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_ROP_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ELSEIF(IC_U_S(ICV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(IC_U_S(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_U_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ELSEIF(IC_V_S(ICV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(IC_V_S(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_V_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ELSEIF(IC_W_S(ICV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(IC_W_S(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_W_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ELSEIF(IC_T_S(ICV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(IC_T_S(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_T_s',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ELSEIF(IC_T_RS(ICV,M) /= UNDEFINED) THEN 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(IC_T_RS(ICV,M) /= UNDEFINED) THEN
             WRITE(ERR_MSG, 1010) trim(iVar('IC_T_Rs',ICV,M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-         ENDIF 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
          DO N = 1, DIM_N_S
-            IF(IC_X_S(ICV,M,N) /= UNDEFINED) THEN 
+            IF(IC_X_S(ICV,M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG, 1010) trim(iVar('IC_X_s',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.) 
-            ENDIF 
-         ENDDO 
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDDO
       ENDDO
 ! --------------------------------------------<<<
 
       CALL FINL_ERR_MSG
       RETURN
 
- 1010 FORMAT('Error 1010: ',A,' specified in an undefined IC region') 
+ 1010 FORMAT('Error 1010: ',A,' specified in an undefined IC region')
 
 
       END SUBROUTINE CHECK_IC_OVERFLOW

@@ -24,7 +24,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR1 
+      SUBROUTINE USR1
 
       use ps
       use constant
@@ -61,5 +61,5 @@
          PS_W_s(1,M) = lW
       enddo
 
-      RETURN  
+      RETURN
       END SUBROUTINE USR1

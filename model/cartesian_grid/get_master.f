@@ -9,10 +9,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_U_MASTER_CELLS
-    
+
       USE param
       USE param1
       USE parallel
@@ -20,19 +20,18 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+      USE functions
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,L,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'FINDING MASTER CELLS FOR U-MOMENTUM CELLS...'
@@ -40,11 +39,11 @@
 10    FORMAT(1X,A)
 
 !======================================================================
-! Loop though all BC's and create a default NSW BC in case it is needed 
+! Loop though all BC's and create a default NSW BC in case it is needed
 ! when the search for a master cell fails
 !======================================================================
-      DO L = 1, DIMENSION_BC 
-         IF (.NOT.BC_DEFINED(L).AND.BC_TYPE(L)(1:2)/='CG') THEN  
+      DO L = 1, DIMENSION_BC
+         IF (.NOT.BC_DEFINED(L).AND.BC_TYPE(L)(1:2)/='CG') THEN
             BC_TYPE(L)='CG_NSW'
             NSW_GHOST_BC_ID = L
             EXIT
@@ -66,15 +65,15 @@
             MASTER_FOUND = .FALSE.
             NC = NC + 1
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
-            DIR(1) = EAST_OF(IJK) 
-            DIR(2) = WEST_OF(IJK) 
+            DIR(1) = EAST_OF(IJK)
+            DIR(2) = WEST_OF(IJK)
 
-            DIR(3) = NORTH_OF(IJK) 
-            DIR(4) = SOUTH_OF(IJK) 
+            DIR(3) = NORTH_OF(IJK)
+            DIR(4) = SOUTH_OF(IJK)
 
 
             DIR(5) = EAST_OF(DIR(3))   ! NORTH-EAST
@@ -83,8 +82,8 @@
             DIR(7) = WEST_OF(DIR(3))   ! NORTH-WEST
             DIR(8) = WEST_OF(DIR(4))   ! SOUTH-WEST
 
-            DIR(9) = TOP_OF(IJK) 
-            DIR(10) = BOTTOM_OF(IJK) 
+            DIR(9) = TOP_OF(IJK)
+            DIR(10) = BOTTOM_OF(IJK)
 
             DIR(11) = NORTH_OF(DIR(9)) ! NORTH-TOP
             DIR(12) = SOUTH_OF(DIR(9)) ! SOUTH-TOP
@@ -132,14 +131,14 @@
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_U_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR U_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'
-                     BC_U_ID(IJK) = NSW_GHOST_BC_ID                  
+                     BC_U_ID(IJK) = NSW_GHOST_BC_ID
                      WRITE(*,*) ' BC_U_ID(IJK) = ', BC_U_ID(IJK)
                   ENDIF
 !               WRITE(*,*) ' ERROR IN SUBROUTINE: GET_U_MASTER_CELLS:'
 !               WRITE(*,*) ' NO MASTER CELL FOUND FOR U_MOMENTUM WALL CELL:', IJK,I,J,K
 !               WRITE(*,*) ' MFIX WILL EXIT NOW.'
-!               CALL MFIX_EXIT(myPE) 
-           
+!               CALL MFIX_EXIT(myPE)
+
                ENDIF
             ENDIF
          ENDIF
@@ -149,7 +148,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE GET_U_MASTER_CELLS
 
 
@@ -165,10 +164,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_V_MASTER_CELLS
-    
+
       USE param
       USE param1
       USE parallel
@@ -176,19 +175,18 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+      USE functions
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'FINDING MASTER CELLS FOR V-MOMENTUM CELLS...'
@@ -210,16 +208,16 @@
             MASTER_FOUND = .FALSE.
             NC = NC + 1
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
 
-            DIR(1) = EAST_OF(IJK) 
-            DIR(2) = WEST_OF(IJK) 
+            DIR(1) = EAST_OF(IJK)
+            DIR(2) = WEST_OF(IJK)
 
-            DIR(3) = NORTH_OF(IJK) 
-            DIR(4) = SOUTH_OF(IJK) 
+            DIR(3) = NORTH_OF(IJK)
+            DIR(4) = SOUTH_OF(IJK)
 
 
             DIR(5) = EAST_OF(DIR(3))   ! NORTH-EAST
@@ -228,8 +226,8 @@
             DIR(7) = WEST_OF(DIR(3))   ! NORTH-WEST
             DIR(8) = WEST_OF(DIR(4))   ! SOUTH-WEST
 
-            DIR(9) = TOP_OF(IJK) 
-            DIR(10) = BOTTOM_OF(IJK) 
+            DIR(9) = TOP_OF(IJK)
+            DIR(10) = BOTTOM_OF(IJK)
 
             DIR(11) = NORTH_OF(DIR(9)) ! NORTH-TOP
             DIR(12) = SOUTH_OF(DIR(9)) ! SOUTH-TOP
@@ -278,13 +276,13 @@
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_V_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR V_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'
-                     BC_V_ID(IJK) = NSW_GHOST_BC_ID          
-                     WRITE(*,*) ' BC_V_ID(IJK) = ', BC_V_ID(IJK)       
+                     BC_V_ID(IJK) = NSW_GHOST_BC_ID
+                     WRITE(*,*) ' BC_V_ID(IJK) = ', BC_V_ID(IJK)
                   ENDIF
 !               WRITE(*,*) ' ERROR IN SUBROUTINE: GET_V_MASTER_CELLS:'
 !               WRITE(*,*) ' NO MASTER CELL FOUND FOR V_MOMENTUM WALL CELL:', IJK,I,J,K
 !               WRITE(*,*) ' MFIX WILL EXIT NOW.'
-!               CALL MFIX_EXIT(myPE) 
+!               CALL MFIX_EXIT(myPE)
                ENDIF
             ENDIF
          ENDIF
@@ -294,7 +292,7 @@
 
 
       RETURN
-      
+
       END SUBROUTINE GET_V_MASTER_CELLS
 
 
@@ -309,10 +307,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_W_MASTER_CELLS
-    
+
       USE param
       USE param1
       USE parallel
@@ -320,19 +318,18 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE bc
       USE quadric
       USE cutcell
-      
+      USE functions
+
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB,IJKC,D,DIR(18),DMAX
       LOGICAL :: U_NODE,V_NODE,W_NODE,VEL_NODE,MASTER_FOUND
       INTEGER :: NC,BCV
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'FINDING MASTER CELLS FOR W-MOMENTUM CELLS...'
@@ -354,16 +351,16 @@
             MASTER_FOUND = .FALSE.
             NC = NC + 1
 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
 
-            DIR(1) = EAST_OF(IJK) 
-            DIR(2) = WEST_OF(IJK) 
+            DIR(1) = EAST_OF(IJK)
+            DIR(2) = WEST_OF(IJK)
 
-            DIR(3) = NORTH_OF(IJK) 
-            DIR(4) = SOUTH_OF(IJK) 
+            DIR(3) = NORTH_OF(IJK)
+            DIR(4) = SOUTH_OF(IJK)
 
 
             DIR(5) = EAST_OF(DIR(3))   ! NORTH-EAST
@@ -372,8 +369,8 @@
             DIR(7) = WEST_OF(DIR(3))   ! NORTH-WEST
             DIR(8) = WEST_OF(DIR(4))   ! SOUTH-WEST
 
-            DIR(9) = TOP_OF(IJK) 
-            DIR(10) = BOTTOM_OF(IJK) 
+            DIR(9) = TOP_OF(IJK)
+            DIR(10) = BOTTOM_OF(IJK)
 
             DIR(11) = NORTH_OF(DIR(9)) ! NORTH-TOP
             DIR(12) = SOUTH_OF(DIR(9)) ! SOUTH-TOP
@@ -422,13 +419,13 @@
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_W_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR W_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'
-                     BC_W_ID(IJK) = NSW_GHOST_BC_ID                  
+                     BC_W_ID(IJK) = NSW_GHOST_BC_ID
                      WRITE(*,*) ' BC_W_ID(IJK) = ', BC_W_ID(IJK)
                   ENDIF
 !               WRITE(*,*) ' ERROR IN SUBROUTINE: GET_W_MASTER_CELLS:'
 !               WRITE(*,*) ' NO MASTER CELL FOUND FOR W_MOMENTUM WALL CELL:', IJK,I,J,K
 !               WRITE(*,*) ' MFIX WILL EXIT NOW.'
-!               CALL MFIX_EXIT(myPE) 
+!               CALL MFIX_EXIT(myPE)
                ENDIF
 
             ENDIF
@@ -437,5 +434,5 @@
 
 
       RETURN
-      
+
       END SUBROUTINE GET_W_MASTER_CELLS

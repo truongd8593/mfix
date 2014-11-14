@@ -21,4 +21,4 @@
 !                      Function of ash-layer void fraction
       DOUBLE PRECISION f_EP_A
 
-      END MODULE usr                                                                             
+      END MODULE usr

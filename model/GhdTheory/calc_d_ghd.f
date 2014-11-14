@@ -37,23 +37,25 @@
 !
       SUBROUTINE CALC_D_ghd_E(A_M, VXF_GS, D_E, IER)
 !
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
       USE physprop
       USE run
-      USE scales 
+      USE scales
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -71,7 +73,7 @@
 !
 !                      Volume x average at momentum cell centers
       DOUBLE PRECISION VxF_gs(DIMENSION_3, DIMENSION_M)
-!                      
+!
       DOUBLE PRECISION d_e(DIMENSION_3, 0:DIMENSION_M)
 !
 !                      Average volume fraction at momentum cell centers
@@ -95,13 +97,6 @@
 !          total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
-      INCLUDE '../ep_s2.inc'
-
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -131,10 +126,10 @@
         EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
 
         SUM_VXF_GS = ZERO
-	EPSA(MMAX) = ZERO
+        EPSA(MMAX) = ZERO
         DO M= 1, SMAX
           EPSA(M) = AVG_X(EP_S(IJK,M),EP_S(IJKE,M),I)
-	  EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
+          EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
           SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
         END DO
 
@@ -204,7 +199,7 @@
        IJKE = EAST_OF(IJK)
        EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
 
-       
+
        SUM_VXF_GS = VXF_GS(IJK,MMAX)              !Gas - All Solids VolxDrag summation
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
@@ -239,7 +234,7 @@
           EPStmp = EPStmp+ AVG_X(EP_S(IJK,L),EP_S(IJKE,L),I)
        ENDDO
        EPSA(M) = EPStmp
-       
+
        !Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
        M = MMAX
          if ( MOMENTUM_X_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
@@ -293,25 +288,27 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_D_ghd_N(A_M, VXF_GS, D_N, IER) 
+      SUBROUTINE CALC_D_ghd_N(A_M, VXF_GS, D_N, IER)
 !
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
       USE physprop
       USE run
-      USE scales 
+      USE scales
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -328,7 +325,7 @@
 !
 !                      Volume x average at momentum cell centers
       DOUBLE PRECISION VxF_gs(DIMENSION_3, DIMENSION_M)
-!                      
+!
       DOUBLE PRECISION d_n(DIMENSION_3, 0:DIMENSION_M)
 !
 !                      Average volume fraction at momentum cell centers
@@ -352,13 +349,6 @@
 !          total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
-      INCLUDE '../ep_s2.inc'
-
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -391,7 +381,7 @@
        EPSA(MMAX) = ZERO
        DO M= 1, SMAX
          EPSA(M) = AVG_Y(EP_S(IJK,M),EP_S(IJKN,M),J)
-	 EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
+         EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
        END DO
 
@@ -461,7 +451,7 @@
        IJKN = NORTH_OF(IJK)
        EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
 
-       
+
        SUM_VXF_GS = VXF_GS(IJK,MMAX)              !Gas - All Solids VolxDrag summation
 
        IF ( ((-A_M(IJK,0,0))>SMALL_NUMBER) .OR. (SUM_VXF_GS>SMALL_NUMBER) ) THEN
@@ -552,23 +542,25 @@
 !
       SUBROUTINE CALC_D_ghd_T(A_M, VXF_GS, D_T, IER)
 !
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
       USE physprop
       USE run
-      USE scales 
+      USE scales
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -585,7 +577,7 @@
 !
 !                      Volume x average at momentum cell centers
       DOUBLE PRECISION VxF_gs(DIMENSION_3, DIMENSION_M)
-!                      
+!
       DOUBLE PRECISION d_t(DIMENSION_3, 0:DIMENSION_M)
 !
 !                      Average volume fraction at momentum cell centers
@@ -609,13 +601,6 @@
 !          tmp variable for total solids volume fraction
       DOUBLE PRECISION  EPStmp
 !-----------------------------------------------
-!-----------------------------------------------
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
-      INCLUDE '../ep_s2.inc'
-
 
    Pass1 = .FALSE.     !initialization
    Pass2 = .FALSE.
@@ -648,7 +633,7 @@
        EPSA(MMAX) = ZERO
        DO M= 1, SMAX
          EPSA(M) = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K)
-	 EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
+         EPSA(MMAX) = EPSA(MMAX) + EPSA(M)
          SUM_VXF_GS = SUM_VXF_GS + VXF_GS(IJK,M)              !Gas - All Solids VolxDrag summation
        END DO
 
@@ -752,7 +737,7 @@
          EPStmp = EPStmp+ AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)
        ENDDO
        EPSA(M) = EPStmp
-       
+
        !Linking velocity correction coefficient to pressure - SOLID Phase (Model_A only)
        M = MMAX
          if ( MOMENTUM_Z_EQ(M) .AND. ( (-A_M(IJK,0,M)>SMALL_NUMBER) .OR. &
@@ -770,6 +755,6 @@
  RETURN
  END SUBROUTINE CALC_D_ghd_T
 
-!// Comments on the modifications for DMP version implementation      
-!// 001 Include header file and common declarations for parallelization 
+!// Comments on the modifications for DMP version implementation
+!// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

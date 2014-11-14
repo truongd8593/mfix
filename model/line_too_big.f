@@ -22,8 +22,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      INTEGER FUNCTION LINE_TOO_BIG (LINE, LINE_LEN, MAXCOL) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      INTEGER FUNCTION LINE_TOO_BIG (LINE, LINE_LEN, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       IMPLICIT NONE
 !-----------------------------------------------
@@ -31,7 +31,7 @@
 !-----------------------------------------------
 !
 !                   input data line
-      CHARACTER*(*) LINE
+      CHARACTER(LEN=*) :: LINE
 !
 !                   length of input data line
       INTEGER       LINE_LEN
@@ -44,19 +44,19 @@
 !-----------------------------------------------
 !
 !               loop index
-      INTEGER :: L 
+      INTEGER :: L
 !-----------------------------------------------
 !
 !     The function LINE_TOO_BIG returns a value greater than 0 to
 !     indicate an error condition (data passed column MAXCOL in LINE)
 !
 !
-      DO L = MAXCOL + 1, LINE_LEN 
-         IF (LINE(L:L) /= ' ') THEN 
-            LINE_TOO_BIG = L 
-            RETURN  
-         ENDIF 
-      END DO 
-      LINE_TOO_BIG = 0 
-      RETURN  
-      END FUNCTION LINE_TOO_BIG 
+      DO L = MAXCOL + 1, LINE_LEN
+         IF (LINE(L:L) /= ' ') THEN
+            LINE_TOO_BIG = L
+            RETURN
+         ENDIF
+      END DO
+      LINE_TOO_BIG = 0
+      RETURN
+      END FUNCTION LINE_TOO_BIG

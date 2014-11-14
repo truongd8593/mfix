@@ -76,10 +76,10 @@
 
       CALL MFIX_EXIT(myPE)
 
- 1000 FORMAT(//1X,70('*')/' From: EOSS',/,' Error 1300:'               &
-         ' Unphysical baseline density calculated:',/' RO_s(',I2,') = '&
-         ,A,/' Please refer to the Readme file on the required input', &
-         ' and make',/' the necessary corrections to the data file.',  &
+ 1000 FORMAT(//1X,70('*')/' From: EOSS',/,' Error 1300:',               &
+         ' Unphysical baseline density calculated:',/' RO_s(',I2,') = ' &
+         ,A,/' Please refer to the Readme file on the required input',  &
+         ' and make',/' the necessary corrections to the data file.',   &
          /1X,70('*')//)
 
       END FUNCTION EOSS0
@@ -116,5 +116,5 @@
 ! Evaluate the solids EOS.
       EOSS = pBase * Xs0_INERT / max(Xs_INERT, 1.0d-8)
 
-      RETURN  
+      RETURN
       END FUNCTION EOSS

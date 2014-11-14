@@ -28,7 +28,11 @@
 !       no 4, pp 868-884, 2009.                                        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DES_CONDUCTION(I, iM, iIJK, FOCUS)
+MODULE DES_THERMO_COND
+
+CONTAINS
+
+      FUNCTION DES_CONDUCTION(I, J, CENTER_DIST, iM, iIJK)
 
       use constant
       use des_thermo
@@ -41,18 +45,17 @@
 ! Passed variables
 !---------------------------------------------------------------------//
 ! Index of particle being looped over
-      INTEGER, INTENT(IN) :: I
+      INTEGER, INTENT(IN) :: I,J
 ! Index of fluid cell containing particle I
       INTEGER, INTENT(IN) :: iIJK
 ! Solid phase indices for the given particles
       INTEGER, INTENT(IN) :: iM
-! Indicates that debugging information for the particle
-      LOGICAL, INTENT(IN) :: FOCUS
+! Distance between the centers of particle I and particle J (magnitude)
+      DOUBLE PRECISION, INTENT(IN) :: CENTER_DIST
+      DOUBLE PRECISION :: DES_CONDUCTION
 
 ! Local variables
 !---------------------------------------------------------------------//
-! Index of neighbor particle
-      INTEGER JJ, J ! local, global
 ! Solid phase indices for the given particles
       INTEGER jM
 ! Radius of smaller particle
@@ -73,8 +76,6 @@
       DOUBLE PRECISION DeltaTp
 ! Distance between the centers of particle I and particle J (component)
       DOUBLE PRECISION DISTVEC(3)
-! Distance between the centers of particle I and particle J (magnitude)
-      DOUBLE PRECISION CENTER_DIST
 ! Effective thermal conductivity
       DOUBLE PRECISION lK_eff
 ! Radius of contact area
@@ -82,25 +83,6 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-
-! Particle I has no neighbors therefore no conduction can take place.
-      IF(NEIGHBOURS(I,1).LE.0) RETURN
-
-! Loop over neibhbors
-      NEIGH_LP: DO JJ = 2, NEIGHBOURS(I,1)+1
-! Set the index of the neighbor particle
-         J = NEIGHBOURS(I,JJ)
-! Skip the neighbor if it does not exist (should not be a problem)
-         IF(.NOT.PEA(J,1) ) CYCLE NEIGH_LP
-! Only do conduction calculations for particles with an index value
-! higher than the current particle. The opposite heat transfer will be
-! applied to the neighbor.
-         IF(J.LT.I) CYCLE NEIGH_LP
-
-! Calculate the center distance between the two particles
-         DISTVEC(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,J)
-         CENTER_DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
 
 ! Identify the solid phases of the neighbor particle
          jM = PIJK(J,5) + SMAX
@@ -111,9 +93,10 @@
 
          DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
 
-! Calculate the particle-particle conduction 
+! Calculate the particle-particle conduction
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
 !---------------------------------------------------------------------//
+         Q_pp = 0.0
          IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
 ! Effective thermal conductivity
             lK_eff = K_eff(K_s0(iM),K_s0(jM))
@@ -122,11 +105,9 @@
 ! Inter-particle heat transfer
             Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
 ! Assign the inter-particle heat transfer to both particles.
-            Q_Source(I)  = Q_Source(I) + Q_pp
-            Q_Source(J)  = Q_Source(J) - Q_pp
          ENDIF
 
-! Calculate the particle-fluid-particle conduction 
+! Calculate the particle-fluid-particle conduction
 ! REF: Rong and Horio, 1999 (MODIFIED)
 !---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
@@ -141,10 +122,11 @@
 ! surrounding the larger particle does not intersect with the surface
 ! of the smaller particle. In this case, particle-fluild-particle
 ! conduction does not occur.
+         Q_pfp = 0.0
          IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
-! zero if the particles are not touching and is the radius of the 
+! zero if the particles are not touching and is the radius of the
 ! shared contact area otherwise.
             RD_IN = ZERO
             IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
@@ -154,31 +136,12 @@
             Q_pfp = K_g(iIJK) * DeltaTp * &
                ADPT_SIMPSON(RD_IN,RD_OUT)
 
-! Assign the heat flux to both particles.
-            Q_Source(I) = Q_Source(I) + Q_pfp
-            Q_Source(J) = Q_Source(J) - Q_pfp
-
          ENDIF ! RD_OUT > ZERO
 
-
-! Write debug messages
-!         IF(FOCUS)THEN
-!            WRITE(*,"(//5X,A)")'From: DES_CONDUCTION -'
-!            WRITE(*,"(8X,A,D12.6)")'Tp: ',DES_T_s_NEW(I)
-!            WRITE(*,"(8X,A,D12.6)")'Qpp: ',Q_pp
-!            WRITE(*,"(8X,A,D12.6)")'Qpfp: ',Q_pfp
-!            WRITE(*,"(5X,25('-')/)")
-!         ENDIF
-      ENDDO NEIGH_LP! Looping over neighbors
+         ! Return total heat flux
+         DES_CONDUCTION = Q_pp + Q_pfp
 
       RETURN
-
- 1000 FORMAT(/1X,70('*'),/' From: DES_COND_EQ',/, ' Message: ',&
-         'Fatal Error calculating Qpfp! Check the log file for ',&
-         'detials!',/70('*'))
-
- 1001 FORMAT(1X,70('*'))
-
 
       CONTAINS
 
@@ -206,7 +169,7 @@
 ! Check to ensure that VALUE is less than or equal to one. If VALUE is
 ! greater than one, the triangle inequality has been violated. Therefore
 ! there is no intersection between the fluid lens surrounding the larger
-! particle and the surface of the smaller particle. 
+! particle and the surface of the smaller particle.
 ! Thus, there is no particle-fluid-particle heat transfer.
       IF( VALUE .GT. 1.0d0) THEN
          RADIUS = -1.0d0
@@ -294,7 +257,7 @@
       DOUBLE PRECISION :: H
 ! Simpson's Rule evaluated on the left and right intervals
       DOUBLE PRECISION :: lS, rS
-! Value of the function F evaluate at the midpoints of the left and 
+! Value of the function F evaluate at the midpoints of the left and
 ! right intervals
       DOUBLE PRECISION :: rF, lF
 ! Local error bound
@@ -306,7 +269,7 @@
       LOGICAL, SAVE :: ADPT_SIMPSON_ERR = .FALSE.
 
 ! Initialize variables
-      V(:,:) = 0.0d0   ! 
+      V(:,:) = 0.0d0   !
       ADPT_SIMPSON = 0.0d0   ! Integral value
       H = (B-A)/2.0d0 ! Dynamic interval length
 ! Calculate Simpson's Rule over the interval [A,B]
@@ -368,4 +331,6 @@
 
       END FUNCTION ADPT_SIMPSON
 
-      END SUBROUTINE DES_CONDUCTION
+    END FUNCTION DES_CONDUCTION
+
+  END MODULE DES_THERMO_COND

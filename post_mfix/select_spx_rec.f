@@ -41,8 +41,8 @@
       LOGICAL  AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
       INTEGER  REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
       INTEGER  NSTEP_1 , ERROR_CODE
-      CHARACTER*1  IANS 
-      CHARACTER*13 LINE
+      CHARACTER(LEN=1)  IANS
+      CHARACTER(LEN=13) LINE
       REAL     TIME_REAL(N_SPX) , tstart
       LOGICAL  ERROR
 !!      double precision :: uavg(20000) , vavg(20000) , wavg(20000)
@@ -62,9 +62,9 @@
       L_SPX  = SPX_NUM
 !
       IF (.NOT.DO_XFORMS) THEN
-         WRITE (*,'(A,$)') 'Enter the number of Spx file > '
+         WRITE (*,'(A)',ADVANCE='NO') 'Enter the number of Spx file > '
          READ  (*,*) L_SPX
-10       WRITE (*,'(A,$)') 'Enter the name of new file > '
+10       WRITE (*,'(A)',ADVANCE='NO') 'Enter the name of new file > '
          READ  (*,'(A60)') TEMP_FILE
          unit_add = 10
          OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
@@ -95,7 +95,7 @@
          L = L + 1
          IF (.NOT.DO_XFORMS) THEN
 
-!            WRITE(*,'(A,G12.5,A,$)')&
+!            WRITE(*,'(A,G12.5,A)',ADVANCE='NO')&
 !                 'Write time ', TIME_REAL(L_SPX), '(Y/N) [N]'
 !            READ(*,'(A1)')IANS
 !            IF (IANS .EQ. 'y' .OR. IANS .EQ. 'Y') THEN

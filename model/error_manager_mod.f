@@ -103,11 +103,11 @@
 ! RUN_NAME length too short.
       IF(RUN_NAME == UNDEFINED_C .OR. NB <= 1) THEN
          IF(myPE  == PE_IO) WRITE (*, 1000) 'short'
-         CALL MFIX_EXIT(myPE) 
+         CALL MFIX_EXIT(myPE)
 ! RUN_NAME length too long.
       ELSEIF(NB + 10 > LEN(LOGFILE)) THEN
          IF(myPE == PE_IO) WRITE (*, 1000) 'long'
-         CALL MFIX_EXIT(myPE) 
+         CALL MFIX_EXIT(myPE)
 ! RUN_NAME legnth just right.
       ELSE
 ! Specify the .LOG file name based on MPI Rank extenion.
@@ -285,7 +285,7 @@
          ' occur if a call to',/' FINL_ERR_MSG was made without a',    &
          ' corresponding call to INIT_ERR_MSG.',/' Aborting MFIX.'/    &
          1x,70('*'),2/)
- 
+
  1001 FORMAT(/1X,70('*')/' From: ERROR_MANAGER --> FINL_ERR_MSG',/     &
          ' Error 1001: Error container ERR_MSG not empty.',/           &
          ' CALLERS: ',A,2/' Contents:')
@@ -357,7 +357,7 @@
 ! Set the local debug flag. Suppress debugging messages by default.
       IF(PRESENT(DEBUG)) THEN
          D_FLAG = DEBUG
-      ELSE 
+      ELSE
          D_FLAG = .FALSE.
       ENDIF
 
@@ -396,7 +396,7 @@
       ENDIF
 
 ! Find the end of the message.
-      LAST_LINE = 0 
+      LAST_LINE = 0
       DO LC = 1, LINE_COUNT
          LINE = ERR_MSG(LC)
          LENGTH = len_trim(LINE)
@@ -501,7 +501,7 @@
       LOGICAL :: F_FLAG
 ! Generic loop counters.
       INTEGER ::  LC, SL
- 
+
 ! Set the header flag. Write the header by default.
       H_FLAG = merge(HEADER, .TRUE., PRESENT(HEADER))
 ! Set the footer flag. Write the footer by default.
@@ -604,7 +604,7 @@
       ELSE
          WRITE(dASc,"(G18.4)") VAL
       ENDIF
-      
+
       iVal_dbl = trim(adjustl(dASc))
 
       END FUNCTION iVal_dbl

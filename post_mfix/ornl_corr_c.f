@@ -11,20 +11,19 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
-      real*8    :: time_series(*)
+      real(kind=8)    :: time_series(*)
 
-      real*8, allocatable    :: acf(:,:)
+      real(kind=8), allocatable    :: acf(:,:)
       integer, allocatable   :: lags(:)
-
-      include 'function.inc'
 
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
@@ -96,22 +95,19 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag , lagstep
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
 
       real    :: time_series(*) , time_series2(*)
 
-      real*8, allocatable    :: ccf(:,:)
+      real(kind=8), allocatable    :: ccf(:,:)
       integer, allocatable   :: lags(:)
 
-
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag, lagstep'
       read  (*,*) minlag , maxlag, lagstep
 !
@@ -184,22 +180,20 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
-      real*8    :: time_series(100000)
+      real(kind=8)    :: time_series(100000)
 
-      real*8, allocatable    :: tlag(:)
-      real*8, allocatable    :: tsym(:)
+      real(kind=8), allocatable    :: tlag(:)
+      real(kind=8), allocatable    :: tsym(:)
 
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
 
@@ -273,22 +267,20 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
-      
+
 
       integer :: minlag , maxlag
       integer :: i , j , k , ijk , L , spx_num , nt , nstep_1
-      integer :: lagstep 
+      integer :: lagstep
 
-      real*8    :: time_series(*)
+      real(kind=8)    :: time_series(*)
 
-      real*8, allocatable    :: tlag(:)
-      real*8, allocatable    :: tsym(:)
+      real(kind=8), allocatable    :: tlag(:)
+      real(kind=8), allocatable    :: tsym(:)
 
-      include 'function.inc'
-
-!
       write (*,*) ' enter minlag , maxlag'
       read  (*,*) minlag , maxlag
 

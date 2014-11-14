@@ -21,8 +21,6 @@
       USE mfix_pic, only: MPPIC
 ! Runtime Flag: Invoke TFM/DEM hybrid model.
       USE discretelement, only: DES_CONTINUUM_HYBRID
-! Runtime Flag: Invoke DEM cluster detection.
-      USE discretelement, only: DES_CALC_CLUSTER
 ! Runtime Flag: Utilize cutcell geometry.
       USE cutcell, only: CARTESIAN_GRID
 ! Runtime Flag: Interpolate DEM field quanties.
@@ -48,13 +46,15 @@
       USE discretelement, only: DES_OUTPUT_TYPE
 ! Max/Min particle radi
       USE discretelement, only: MAX_RADIUS, MIN_RADIUS
-! Max distance between two particles in a cluster.
-      USE discretelement, only: CLUSTER_LENGTH_CUTOFF
 ! Runtime Flag: Periodic boundaries
       USE discretelement, only: DES_PERIODIC_WALLS
       USE discretelement, only: DES_PERIODIC_WALLS_X
       USE discretelement, only: DES_PERIODIC_WALLS_Y
       USE discretelement, only: DES_PERIODIC_WALLS_Z
+! Flag: Solve variable solids density.
+      use run, only: SOLVE_ROs
+! Calculated baseline variable solids density.
+      use physprop, only: BASE_ROs
 
 ! Number of ranks.
       use run, only: SOLIDS_MODEL
@@ -109,7 +109,7 @@
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
          DES_D_p0(M) = D_p0(lM)
-         DES_RO_s(M) = RO_s0(lM)
+         DES_RO_s(M) = merge(BASE_ROs(lM), RO_s0(lM), SOLVE_ROs(lM))
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks
          MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
@@ -189,7 +189,7 @@
          WRITE(ERR_MSG,2010) trim(DES_OUTPUT_TYPE)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2010 FORMAT('Error 2010:Invalid DES_OUTPUT_TYPE: ',A,/'Please '       &
+ 2010 FORMAT('Error 2010:Invalid DES_OUTPUT_TYPE: ',A,/'Please ',       &
          'correct the mfix.dat file.')
 
       END SELECT
@@ -209,7 +209,7 @@
          WRITE(ERR_MSG,2020) trim(DES_INTG_METHOD)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 2020 FORMAT('Error 2020:Invalid DES_INGT_METHOD: ',A,/'Please '      &
+ 2020 FORMAT('Error 2020:Invalid DES_INGT_METHOD: ',A,/'Please ',      &
          'correct the mfix.dat file.')
 
       END SELECT
@@ -402,10 +402,10 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_THERMO")
 
-! Check the number of processors. DES reactive chemistry is currently 
+! Check the number of processors. DES reactive chemistry is currently
 ! limited to serial runs.
       IF(ANY_SPECIES_EQ) THEN
-         IF((NODESI*NODESJ*NODESK) /= 1) THEN 
+         IF((NODESI*NODESJ*NODESK) /= 1) THEN
             WRITE(ERR_MSG, 9001)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF

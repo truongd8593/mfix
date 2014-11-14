@@ -20,17 +20,17 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE WRITE_USR1(L) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE WRITE_USR1(L)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER L 
+      INTEGER L
 !-----------------------------------------------
 !
 !  Local variables
 !
-      RETURN  
-      END SUBROUTINE WRITE_USR1 
+      RETURN
+      END SUBROUTINE WRITE_USR1

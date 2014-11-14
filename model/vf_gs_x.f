@@ -15,47 +15,43 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE VF_GS_X(VXF_GS, IER) 
+      SUBROUTINE VF_GS_X(VXF_GS, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
       USE physprop
-      USE compar  
-      USE drag  
+      USE compar
+      USE drag
       USE discretelement
-      
+      USE fun_avg
+      USE functions
+
       use run, only: SOLIDS_MODEL
-      use run, only: DEM_SOLIDS, PIC_SOLIDS 
+      use run, only: DEM_SOLIDS, PIC_SOLIDS
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
-! Volume x Drag 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+! Volume x Drag
       DOUBLE PRECISION, INTENT(INOUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: I, IJK, IJKE 
-! Index of continuum solids phases 
+! Indices
+      INTEGER :: I, IJK, IJKE
+! Index of continuum solids phases
       INTEGER :: M
 ! Index of discrete solids 'phases'
       INTEGER :: DM, MTOT
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-!----------------------------------------------- 
 
       MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
 
@@ -93,7 +89,7 @@
          ENDDO         ! end do loop (dm=1,des_mmax)
       ENDIF
 
-      RETURN  
+      RETURN
       END SUBROUTINE VF_GS_X
 
 
@@ -127,33 +123,30 @@
       USE compar
       USE drag
       USE discretelement
+      USE fun_avg
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
-! Volume x Drag 
+! Volume x Drag
       DOUBLE PRECISION, INTENT(INOUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: I, IJK, IJKE
-! Index of continuum solids phases 
+! Index of continuum solids phases
       INTEGER :: L, M, LM
 ! Index of discrete solids 'phases'
       INTEGER :: DM
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-!-----------------------------------------------
 
-! initialize every call 
-      VXF_SS(:,:) = ZERO 
+! initialize every call
+      VXF_SS(:,:) = ZERO
 
       DO M = 1, MMAX
          DO L = 1, MMAX
@@ -168,14 +161,14 @@
                   ELSE     !Impermeable wall
                      VXF_SS(IJK,LM) = ZERO
                   ENDIF
-               ENDDO 
-            ENDIF   
+               ENDDO
+            ENDIF
          ENDDO   ! end do loop (l=1,mmax)
       ENDDO   ! end do loop (m=1,mmax
 
       IF (DES_CONTINUUM_HYBRID) THEN
-! initialize every call 
-         VXF_SDS(:,:,:) = ZERO                 
+! initialize every call
+         VXF_SDS(:,:,:) = ZERO
          DO M = 1, MMAX
             DO DM = 1, DES_MMAX
 !!$omp  parallel do private(I,IJK,IJKE)

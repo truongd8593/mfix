@@ -1734,7 +1734,7 @@
 !<keyword category="Initial Condition" required="false">
 !  <description>
 !    Solids phase-m radiation coefficient in the IC region. Modify file
-!    radtn2.inc to change the source term.
+!    energy_mod.f to change the source term.
 !  </description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>

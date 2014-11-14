@@ -17,16 +17,16 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE compar       
-      USE funits 
+      USE compar
+      USE funits
 !-----------------------------------------------
 
 ! linear equation matrix and vector
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_m
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: B_m
-    
+
       LOGICAL :: ambm_locked = .false.
-      
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -49,7 +49,7 @@
       SUBROUTINE unlock_ambm
       ambm_locked = .false.
       END SUBROUTINE unlock_ambm
-      
+
       END MODULE ambm
 
 

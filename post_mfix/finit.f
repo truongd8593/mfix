@@ -39,7 +39,7 @@
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
 !
-      CHARACTER*30  FILE_NAME
+      CHARACTER(LEN=30)  FILE_NAME
       INTEGER L
       INTEGER REC_POINTER(N_SPX)
       LOGICAL READ_SPX(N_SPX)
@@ -85,7 +85,7 @@
          GOTO 20
       END IF
 !
-10    WRITE (*,'(A,$)') ' Enter the RUN_NAME to post_process > '
+10    WRITE (*,'(A)',ADVANCE='NO') ' Enter the RUN_NAME to post_process > '
       READ  (*,'(A)') RUN_NAME
       CALL MAKE_UPPER_CASE(RUN_NAME,60)
  20   IF(.NOT. OPEN_FILEP(RUN_NAME,'RESTART_1',N_SPX))GOTO 10
@@ -224,7 +224,7 @@
       subroutine scavenger
       Use param
       Use param1
-      Use run      
+      Use run
       Use geometry
       Use fldvar
       Use ParallelData
@@ -304,11 +304,11 @@
         deAllocate(  E_Turb_G )
         deAllocate(  E_Turb_Go )
       ENDIF
-      
+
       IF(DIMENSION_Scalar /= 0)then
         deAllocate(  Scalar  )
         deAllocate(  Scalaro  )
-      
+
       ENDIF
 
       ext = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -340,7 +340,7 @@
       allocate ( ke3(np) )
       allocate ( n_cells(np) )
       allocate ( cr(np) )
-      
+
 ! DETERMINE THE FIRST BLANK CHARCATER IN RUN_NAME
 
       DO L = 1,LEN(RUN_NAME)
@@ -356,11 +356,11 @@
       call OpenScavengerFiles(NB,kfile)
 
 
-      ! process the files 
+      ! process the files
 
 
       do L = 1,N_SPX
- 
+
          nArrays = 0
          if (L .eq.  1) nArrays = 1
          if (L .eq.  2) nArrays = 2
@@ -411,7 +411,7 @@
 
       Use param
       Use param1
-      Use run      
+      Use run
       Use geometry
       Use ParallelData
 
@@ -426,7 +426,7 @@
 
       if (nArrays.eq.0) then
          write (*,*) fname_scav(1:nb+8) , ' : no time records added'
-	 if (kfile .gt. 0) write (*,*) ' '
+         if (kfile .gt. 0) write (*,*) ' '
          return
       end if
 
@@ -453,7 +453,7 @@
            open(unit=20,file=fname_dist,status='old',recl=512, &
                          access='direct',form='unformatted')
 
-           read (20,rec=3) last_r 
+           read (20,rec=3) last_r
 
            if (cr(n).ge.last_r .and. n.eq.np) then
               close(unit=20)
@@ -489,7 +489,7 @@
            end if
 
            close (unit=20)
-          
+
          end do
 
          if (tstep .ne. -1) then
@@ -511,7 +511,7 @@
 
       close (unit=10)
 
-      return 
+      return
       end
 
 ! *************************  subroutine ReadProcessInfo *********************
@@ -520,7 +520,7 @@
 
       Use param
       Use param1
-      Use run      
+      Use run
       Use geometry
       Use ParallelData
 
@@ -531,7 +531,7 @@
       integer , allocatable :: cell_index(:)
 
       character :: fname*80
-      
+
       ! read in the cell info for each processor (using p_info_xxxxx.txt'
       ! (xxxx = processor number)
 
@@ -555,32 +555,32 @@
 
          open (unit=10,file=fname,status='old')
 
- 101     continue       
+ 101     continue
          read (10,*)
-         read (10,*) idummy , is3(L) , ie3(L) 
-         read (10,*) idummy , js3(L) , je3(L) 
-         read (10,*) idummy , ks3(L) , ke3(L) 
+         read (10,*) idummy , is3(L) , ie3(L)
+         read (10,*) idummy , js3(L) , je3(L)
+         read (10,*) idummy , ks3(L) , ke3(L)
          read (10,*)
          read (10,*)
          read (10,*)
-       
+
          n_cells(L) = (ie3(L)-is3(L)+1) * (je3(L)-js3(L)+1) * &
                                         (ke3(L)-ks3(L)+1)
 
  !        if (n_cells(L) .gt. ncells_max) ncells_max = n_cells(L)
-                        
+
          cr(L) = 4
-          
+
          do i = 1,n_cells(L)
             read (10,*) idummy,idummy,idummy,idummy,idummy, &
                       ijk_proc , ijk_io
-              
+
             if (ijk_io .gt. 0  .and. ijk_io .le. ijkmax2) then
                cell_map(ijk_io)%proc = L
                cell_map(ijk_io)%ijk  = ijk_proc
             end if
          end do
-       
+
          close (unit=10)
       end do
 
@@ -593,7 +593,7 @@
       do l = 1,np
          if (cellcount(l) .gt. cellcount_max) cellcount_max = cellcount(l)
       end do
- 
+
       allocate(cell_map_v2(np,cellcount_max))
 
       do L = 1,ijkmax2
@@ -611,7 +611,7 @@
 
       Use param
       Use param1
-      Use run      
+      Use run
       Use ParallelData
 
       implicit none
@@ -621,35 +621,35 @@
       if (kfile .eq. 0) return  ! only doing RES file
 
       fname_scav = run_name(1:NB-1) // '_SCAV.SPx'
- 
+
       ! create the scavenger files ... write out the first 3 records
       do L = 1,N_SPX
 
          if (kfile.gt.0 .and. l.ne.kfile) goto 100
 
          write (fname_scav(NB+8:NB+8),'(a1)') ext(L:L)
-       
+
          open (unit=10,file=fname_scav,status='unknown',recl=512, &
                          access='direct',form='unformatted')
-       
+
          fname_dist = run_name(1:NB-1) // '_00000.SPx'
          write (fname_dist(nb+9:nb+9),'(a1)') ext(L:L)
-          
+
          open(unit=20,file=fname_dist,status='old',recl=512, &
                          access='direct',form='unformatted')
-                 
+
          read(20,rec=1)  pbuffer
          write(10,rec=1) pbuffer
          read(20,rec=2)  pbuffer
          write(10,rec=2) pbuffer
-          
+
          write(10,rec=3) 4,-1
          close (unit=20)
          close (unit=10)
 
  100     continue
 
-      end do     
+      end do
 
       return
       end
@@ -663,7 +663,7 @@
 
       Use param
       Use param1
-      Use run      
+      Use run
       Use geometry
       Use fldvar
       Use ParallelData
@@ -712,7 +712,7 @@
       write (10,rec=3) next_rec
       next_rec = next_rec + 1
       close(unit=20)
- 
+
       ! calculate the maximum dimesnion needed for all processors
       max_dim = 0
       do L = 1,np
@@ -739,7 +739,7 @@
 
       ! calculate the number of arrays in the RES1 section
 
-      ntot = 6                ! EP_g , P_g , P_star , RO_g , ROP_g , T_g 
+      ntot = 6                ! EP_g , P_g , P_star , RO_g , ROP_g , T_g
       ntot = ntot + NMAX(0)   ! X_g
       ntot = ntot + 3         ! U_g , V_g , W_g
 
@@ -806,7 +806,7 @@
       implicit none
 
       integer :: nb,L
-      character*(*) :: run_name , fname
+      character(len=*) :: run_name , fname
 
       if (l .eq. 1) then
          fname = run_name(1:nb-1) // '.RES'

@@ -5,7 +5,6 @@
 *.mod
 *.0f
 *.0inc
-post_mfix
 Makefile
 model/mpif.h
 model/dmp_modules/mpif.h
@@ -13,3 +12,4 @@ model/mfix_directory_path.inc
 model/files.lis
 OBJ*/
 tmp.*
+*~

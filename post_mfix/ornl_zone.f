@@ -11,19 +11,18 @@
       use indices
       use compar
       use usr_input
+      use functions
 
       implicit none
-      
+
 
       integer   :: i , j , k , ijk , L , spx_num , nt , nstep_1
 
       real      :: time_in_res , time_now , value, time_prev
       real      :: arr(*)
-      real*8    :: time_series(*)
+      real(kind=8)    :: time_series(*)
 
       logical :: ask_for_times , init_read_res
-
-      include 'function.inc'
 
       ask_for_times = .true.
       init_read_res = .true.
@@ -61,7 +60,7 @@
 !
       call usr_set_array(ijkmax2,arr,usr_var_num,usr_m,usr_n)
       call spatial_averaging(arr,usr_i1,usr_i2,usr_j1,usr_j2, &
-		usr_k1,usr_k2,usr_i_avg,usr_j_avg,usr_k_avg)
+                usr_k1,usr_k2,usr_i_avg,usr_j_avg,usr_k_avg)
 
       IJK = FUNIJK(usr_i1,usr_j1,usr_k1)
       time_series(nt+1) = arr(ijk)

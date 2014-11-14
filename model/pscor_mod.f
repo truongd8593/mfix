@@ -1,13 +1,13 @@
       MODULE pscor
- 
- 
+
+
       Use param
       Use param1
- 
- 
+
+
       INTEGER          P_star_bdry
       PARAMETER        (P_star_bdry = 100)
- 
+
 !
 !  Variables for solids pressure correction equation
 !
@@ -37,8 +37,8 @@
 !                      Index for close-packed solids phase
       INTEGER          Mcp
 !
- 
- 
+
+
 !!!HPF$ align e_e(:) with TT(:)
 !!!HPF$ align e_n(:) with TT(:)
 !!!HPF$ align e_t(:) with TT(:)

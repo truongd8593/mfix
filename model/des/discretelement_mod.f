@@ -25,7 +25,7 @@
             INTEGER :: LIM1, LIM2
             DOUBLE PRECISION :: PART_POS
             DOUBLE PRECISION, DIMENSION(:) :: GRID_POS
-            CHARACTER*1 :: AXIS,AXIS_INDEX
+            CHARACTER(LEN=1) :: AXIS,AXIS_INDEX
          END FUNCTION DES_GETINDEXFROMPOS
       END INTERFACE
 
@@ -142,7 +142,7 @@
 ! options are :
 !    TECPLOT - data is written in Tecplot format
 !    undefined - data is written in ParaView format (default)
-      CHARACTER*64 DES_OUTPUT_TYPE
+      CHARACTER(LEN=64) :: DES_OUTPUT_TYPE
 
 ! Used sporadically to control screen dumps (for debug purposes)
       LOGICAL :: DEBUG_DES
@@ -203,7 +203,7 @@
 ! Collision model, options are as follows
 !   linear spring dashpot model (default/undefined)
 !   'hertzian' model
-      CHARACTER*64 DES_COLL_MODEL
+      CHARACTER(LEN=64) :: DES_COLL_MODEL
       INTEGER DES_COLL_MODEL_ENUM
       INTEGER,PARAMETER ::  HERTZIAN=0
       INTEGER,PARAMETER ::  LSD=1
@@ -211,7 +211,7 @@
 ! Integration method, options are as follows
 !   'euler' first-order scheme (default)
 !   'adams_bashforth' second-order scheme (by T.Li)
-      CHARACTER*64 DES_INTG_METHOD
+      CHARACTER(LEN=64) :: DES_INTG_METHOD
       LOGICAL INTG_ADAMS_BASHFORTH
       LOGICAL INTG_EULER
 
@@ -237,27 +237,22 @@
 ! for detecting particle contacts
       DOUBLE PRECISION FACTOR_RLM
 
-! User specified value for the max number of neighbors any particle is
-! allowed
-      INTEGER MN
-
-! Slightly larger than MN: used to specify the max number of neighbors
-! any particle is allowed plus the number of walls in the simulation
-! plus one
-      INTEGER MAXNEIGHBORS
-
 ! Stores number of neighbors based on neighbor search
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS  !(PARTICLES, MAXNEIGHBORS)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL  !(#collisions < MAXNEIGHBORS*PARTICLES)
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD  !(#collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: NORM_COLL
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DIST_COLL
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: QQ_COLL
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: COLLISION_NUM,OLD_COLLISION_NUM,COLLISION_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
@@ -314,7 +309,7 @@
 !   2D options are DUDY or DVDX
 !   3D options are DUDY, DUDZ, DVDX, DVDZ, DWDX or DWDY
 !   Note that all other directions are treated as periodic boundaries
-      CHARACTER*4 DES_LE_SHEAR_DIR
+      CHARACTER(LEN=4) :: DES_LE_SHEAR_DIR
 ! End LE BC
 !-----------------------------------------------------------------<<<
 
@@ -397,22 +392,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
-! Save the accumulated tangential displacement that occurs during
-! collision (particle-particle or particle-wall)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT_WALL !(PARTICLES,3,MAXNEIGHBORS)
-! Save the normal direction at previous time step
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN_WALL ! (PARTICLES,3,MAXNEIGHBORS)
-
-! Variables used to track/store particle contact history
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES,MAXNEIGHBORS)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN_WALL !(PARTICLES,MAXNEIGHBORS)
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES,MAXNEIGHBORS)
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV_WALL !(PARTICLES,MAXNEIGHBORS)
-
-! Gas-solids drag force on partaicle
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
-                        !(PARTICLES,3)
-
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
 ! Dynamic variable. for each ijk computational fluid cell store the
@@ -420,9 +399,18 @@
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
+
+      TYPE cnaa1
+         INTEGER, DIMENSION(:), ALLOCATABLE:: p
+         INTEGER, DIMENSION(:), ALLOCATABLE:: extentdir
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmin
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmax
+      END TYPE cnaa1
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
       TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
+
+      TYPE(cnaa1), DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
@@ -482,10 +470,10 @@
 ! START interpolation related data
 !----------------------------------------------------------------->>>
 ! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_AM
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::DRAG_AM
                         !(DIMENSION_3,DES_MMAX)
 ! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_BM
                         !(DIMENSION_3,3,DES_MMAX)
 ! fluid velocity at particle position
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP
@@ -597,21 +585,9 @@
       !make this a short integer
       !array to specify the facet type
       Integer, dimension(:), allocatable :: STL_FACET_TYPE
+      Logical, dimension(:), allocatable :: IS_AUTOGENERATED
 
       Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
-! Start Cluster Identification
-!----------------------------------------------------------------->>>
-! keyword determining whether to activate cluster identification
-! algorithm
-      LOGICAL :: DES_CALC_CLUSTER
-
-! the maximum distance between two particles for them to be
-! considered a cluster
-      DOUBLE PRECISION :: Cluster_Length_Cutoff
-
-! indicates whether particle is currently in a cluster. this allows us
-! to skip particles that have already been identified as in a cluster
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: InACluster
 !-----------------------------------------------------------------<<<
 
 

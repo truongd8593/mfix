@@ -1,6 +1,6 @@
-      MODULE cutcell 
- 
-      Use param 
+      MODULE cutcell
+
+      Use param
       Use param1
       USE progress_bar
 
@@ -8,7 +8,7 @@
       INTEGER  UNIT_CUT_CELL_LOG
       PARAMETER (UNIT_CUT_CELL_LOG = 111)
 
-!     Flag to activate Cartesian grid 
+!     Flag to activate Cartesian grid
 
       LOGICAL :: CARTESIAN_GRID
 
@@ -27,19 +27,19 @@
 !     Factor used to allocate cut cells arrays
       DOUBLE PRECISION :: FAC_DIM_MAX_CUT_CELL
 
-!     Flag to identify interior cells. 
-!     This flag is true for any cell within the range 
-!     istart1 <= i <= iend1 and so on for j and k. 
+!     Flag to identify interior cells.
+!     This flag is true for any cell within the range
+!     istart1 <= i <= iend1 and so on for j and k.
 !     Caution: it is local to each processor and this array
-!     is not shared accross processor boundaries. 
-!     For example, consider 1-D decomposition over two procs. 
-!     on each proc, INTERIOR_CELL_AT will be true for 
+!     is not shared accross processor boundaries.
+!     For example, consider 1-D decomposition over two procs.
+!     on each proc, INTERIOR_CELL_AT will be true for
 !     istart1 <= i <= iend1. On processor 1, it will be false
-!     at i=iend2 even though i=iend2 is an interior cell in the 
-!     global sense! 
+!     at i=iend2 even though i=iend2 is an interior cell in the
+!     global sense!
       LOGICAL, DIMENSION(:), ALLOCATABLE :: INTERIOR_CELL_AT
 
-!     One-Dimensional Arrays for East, North, Top location of 
+!     One-Dimensional Arrays for East, North, Top location of
 !     original (uncut) scalar cells
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::XG_E
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::YG_N
@@ -393,10 +393,10 @@
       INTEGER :: PG_OPTION
 
 !     Number of cells
-      INTEGER NUMBER_OF_U_CUT_CELLS 
-      INTEGER NUMBER_OF_V_CUT_CELLS 
-      INTEGER NUMBER_OF_W_CUT_CELLS 
-      INTEGER NUMBER_OF_SMALL_CELLS 
+      INTEGER NUMBER_OF_U_CUT_CELLS
+      INTEGER NUMBER_OF_V_CUT_CELLS
+      INTEGER NUMBER_OF_W_CUT_CELLS
+      INTEGER NUMBER_OF_SMALL_CELLS
 
       INTEGER NUMBER_OF_U_WALL_CELLS
       INTEGER NUMBER_OF_V_WALL_CELLS
@@ -486,9 +486,9 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  F_AT
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DWALL
-! Grid partition for reporting best size 
-      INTEGER :: NODESI_REPORT,NODESJ_REPORT,NODESK_REPORT  
-      
+! Grid partition for reporting best size
+      INTEGER :: NODESI_REPORT,NODESJ_REPORT,NODESK_REPORT
+
       LOGICAL :: MINIMIZE_SEND_RECV
 
 

@@ -16,7 +16,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SET_MAX2 
+      SUBROUTINE SET_MAX2
 
 ! X-Axix partition specifications.
       USE compar, only: NODESI
@@ -52,14 +52,14 @@
 
 ! Set the domain specific values.
       IF(DO_I) THEN
-         IMIN1 = 2 
-         IMAX1 = IMAX + 1 
-         IMAX2 = IMAX + 2 
-         IMIN2 = 1 
+         IMIN1 = 2
+         IMAX1 = IMAX + 1
+         IMAX2 = IMAX + 2
+         IMIN2 = 1
          IF(NODESI.NE.1) THEN
-            IMIN3 = 0 
-            IMAX3 = IMAX + 3 	 
-            IMIN4 = -1 
+            IMIN3 = 0
+            IMAX3 = IMAX + 3
+            IMIN4 = -1
             IMAX4 = IMAX + 4
          ELSE
             IMIN3 = IMIN2
@@ -67,7 +67,7 @@
             IMIN4 = IMIN3
             IMAX4 = IMAX3
          ENDIF
-      ENDIF 
+      ENDIF
 
 
 ! Initialize J's
@@ -77,11 +77,11 @@
       DO_J=.NOT.NO_J
 
 ! Set the domain specific values.
-      IF(DO_J) THEN 
+      IF(DO_J) THEN
          JMIN1 = 2
          JMAX1 = JMAX + 1
          JMAX2 = JMAX + 2
-         JMIN2 = 1 
+         JMIN2 = 1
          IF(NODESJ.NE.1) THEN
             JMIN3 = 0
             JMAX3 = JMAX + 3
@@ -93,7 +93,7 @@
             JMIN4 = JMIN3
             JMAX4 = JMAX3
          ENDIF
-      ENDIF 
+      ENDIF
 
 
 ! Initialize J's
@@ -103,11 +103,11 @@
       DO_K=.NOT.NO_K
 
 ! Set the domain specific values.
-      IF (DO_K) THEN 
-         KMIN1 = 2 
-         KMAX1 = KMAX + 1 
-         KMAX2 = KMAX + 2 
-         KMIN2 = 1 
+      IF (DO_K) THEN
+         KMIN1 = 2
+         KMAX1 = KMAX + 1
+         KMAX2 = KMAX + 2
+         KMIN2 = 1
          IF(NODESK.NE.1) THEN
             KMIN3 = 0
             KMAX3 = KMAX + 3
@@ -119,25 +119,25 @@
             KMIN4 = KMIN3
             KMAX4 = KMAX3
          ENDIF
-      ENDIF 
+      ENDIF
 
 ! Number of cells in I/J plane.
-      IJMAX2 = IMAX2*JMAX2 
+      IJMAX2 = IMAX2*JMAX2
 ! Totoal number of possible fluid cells.
-      IJKMAX2 = IMAX2*JMAX2*KMAX2 
+      IJKMAX2 = IMAX2*JMAX2*KMAX2
 
-      IF (DO_K) THEN 
-         IJKMIN1 = IJMAX2 + 1 
-         IJKMAX1 = IJKMAX2 - IJMAX2 
-      ELSE 
-         IJKMIN1 = IMAX2 + 1 
-         IJKMAX1 = IJKMAX2 - IMAX2 
-      ENDIF 
+      IF (DO_K) THEN
+         IJKMIN1 = IJMAX2 + 1
+         IJKMAX1 = IJKMAX2 - IJMAX2
+      ELSE
+         IJKMIN1 = IMAX2 + 1
+         IJKMAX1 = IJKMAX2 - IMAX2
+      ENDIF
 
 ! Max cell count with one layer of ghost cells.
       IJKMAX3 = (IMAX3-IMIN3+1)*(JMAX3-JMIN3+1)*(KMAX3-KMIN3+1)
 ! Max cell count with two layers of ghost cells.
       IJKMAX4 = (IMAX4-IMIN4+1)*(JMAX4-JMIN4+1)*(KMAX4-KMIN4+1)
 
-      RETURN  
-      END SUBROUTINE SET_MAX2 
+      RETURN
+      END SUBROUTINE SET_MAX2

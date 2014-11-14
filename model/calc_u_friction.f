@@ -24,7 +24,7 @@
 !     See calc_mu_s.f for references on Ahmadi and Simonin models      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
- 
+
       SUBROUTINE CALC_Gw_Hw_Cw(g0, EPS, EPG, ep_star_avg, &
             g0EP_avg, TH, Mu_g_avg, RO_g_avg, ROs_avg, &
             DP_avg, K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
@@ -32,9 +32,9 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------              
-      USE param 
-      USE param1 
+!-----------------------------------------------
+      USE param
+      USE param1
       USE constant
       USE physprop
       USE fldvar
@@ -44,16 +44,16 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Radial distribution function of solids phase M with each
-! other solids phase 
+! other solids phase
       DOUBLE PRECISION, INTENT(IN) :: g0
 ! Average solids volume fraction of each solids phase
       DOUBLE PRECISION, INTENT(IN) :: EPS
 ! Average solids and gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPG, ep_star_avg
-! Sum of eps*G_0 
-      DOUBLE PRECISION, INTENT(IN) :: g0EP_avg 
+! Sum of eps*G_0
+      DOUBLE PRECISION, INTENT(IN) :: g0EP_avg
 ! Average theta_m
       DOUBLE PRECISION, INTENT(INOUT) :: TH
 ! Average gas viscosity
@@ -90,7 +90,7 @@
 ! all terms appearing on RHS
       DOUBLE PRECISION, INTENT(INOUT) :: Cw
 !-----------------------------------------------
-! Local Variables      
+! Local Variables
 !-----------------------------------------------
 ! Part of wall momentum coefficient in 1st term of LHS
       DOUBLE PRECISION :: Mu_s
@@ -121,13 +121,13 @@
       DOUBLE PRECISION :: Tau_2, zeta_c_2, MU_2_T_Kin, Mu_2_Col
       DOUBLE PRECISION :: Tmp_Ahmadi_Const
 ! Error message
-      CHARACTER*80     LINE
+      CHARACTER(LEN=80) :: LINE
 ! Other local terms
       DOUBLE PRECISION :: dpc_dphi
-! Local variable for rdf      
+! Local variable for rdf
       DOUBLE PRECISION :: g0_loc
-!----------------------------------------------- 
-      
+!-----------------------------------------------
+
 ! This is done here similar to bc_theta to avoid small negative values of
 ! Theta coming most probably from linear solver
       IF(TH .LE. ZERO)THEN
@@ -140,8 +140,8 @@
       ENDIF
 
       g0_loc = g0
-      
-! modify F_2 if Jenkins BC is used (sof)    
+
+! modify F_2 if Jenkins BC is used (sof)
       IF(JENKINS) THEN
 
         IF (VSLIP == ZERO) THEN
@@ -171,13 +171,13 @@
          F_2 = (PHIP*DSQRT(3d0*TH)*Pi*ROS_avg*EPS*g0_loc)&
               /(6d0*(ONE-ep_star_avg))
 
-      ENDIF   ! end if(Jenkins)/else 
- 
+      ENDIF   ! end if(Jenkins)/else
 
-      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*ROS_avg)/96d0 
-      Mu_b = (256d0*Mu*EPS*g0EP_avg)/(5d0*Pi) 
 
-! This is from Wen-Yu correlation, you can put here your own single particle drag 
+      Mu = (5d0*DSQRT(Pi*TH)*Dp_avg*ROS_avg)/96d0
+      Mu_b = (256d0*Mu*EPS*g0EP_avg)/(5d0*Pi)
+
+! This is from Wen-Yu correlation, you can put here your own single particle drag
       Re_g = EPG*RO_g_avg*Dp_avg*VREL/Mu_g_avg
       IF (Re_g.lt.1000d0) THEN
          C_d = (24.d0/(Re_g+SMALL_NUMBER))*(ONE + 0.15d0 * Re_g**0.687d0)
@@ -187,7 +187,7 @@
       DgA = 0.75d0*C_d*Ro_g_avg*EPG*VREL/(Dp_avg*EPG**(2.65d0))
       IF(VREL == ZERO) DgA = LARGE_NUMBER
       Beta = SWITCH*EPS*DgA
- 
+
 ! SWITCH enables us to turn on/off the modification to the
 ! particulate phase viscosity. If we want to simulate gas-particle
 ! flow then SWITCH=1 to incorporate the effect of drag on the
@@ -233,7 +233,7 @@
              *0.1045D0*(ONE/g0_loc+3.2D0*EPS+12.1824D0*g0_loc*EPS*EPS)  &
              *Dp_avg*ROS_avg* DSQRT(TH)
       ENDIF
- 
+
 ! Calculating frictional terms
       IF ((ONE-EPG)<= EPS_f_min) THEN
          Pf = ZERO
@@ -243,13 +243,13 @@
          IF (SAVAGE.EQ.1) THEN    !form of Savage
             ZETA = ((48d0*Eta*(1d0-Eta)*ROS_avg*EPS*EPS*g0_loc*&
                     (TH**1.5d0))/&
-                    (SQRT_Pi*Dp_avg*2d0*Mu_s))**0.5d0 
+                    (SQRT_Pi*Dp_avg*2d0*Mu_s))**0.5d0
          ELSEIF (SAVAGE.EQ.0)  THEN !S:S form
-            ZETA = DSQRT(S_S) 
+            ZETA = DSQRT(S_S)
          ELSE
             ZETA = DSQRT(S_S + (TH/(Dp_avg*Dp_avg)))
          ENDIF
-  
+
          IF (EPG < ep_star_avg) THEN
             dpc_dphi = (to_SI*Fr)*((delta**5)*(2d0*(ONE-ep_star_avg-delta) - &
                2d0*eps_f_min)+((ONE-ep_star_avg-delta)-eps_f_min)&
@@ -261,13 +261,13 @@
             Pc = Fr*(((ONE-EPG) - EPS_f_min)**N_Pc)/ &
                (((ONE-ep_star_avg) - (ONE-EPG) + SMALL_NUMBER)**D_Pc)
          ENDIF
- 
+
          IF (DEL_U .GE. ZERO) THEN
             N_Pff = DSQRT(3d0)/(2d0*Sin_Phi) !dilatation
          ELSE
             N_Pff = N_Pf !compaction
          ENDIF
-  
+
          IF ((DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)) .GT. 1d0) THEN
             Pf = ZERO
          ELSEIF( DEL_U == ZERO ) THEN
@@ -276,31 +276,31 @@
             Pf = Pc*(1d0 - (DEL_U/(ZETA*N_Pff*DSQRT(2d0)*Sin_Phi)))**&
                (N_Pff-1d0)
          ENDIF
- 
+
          Chi =  DSQRT(2d0)*Pf*Sin_Phi*(N_Pff - (N_Pff-1d0)*&
             ((Pf/Pc)**(1d0/(N_Pff-1d0))))
-  
+
          IF (Chi< ZERO) THEN
             Pf = Pc*((N_Pff/(N_Pff-1d0))**(N_Pff-1d0))
             Chi = ZERO
          ENDIF
 
-! by writing Pf & Chi in the following form, we ensure distribution 
+! by writing Pf & Chi in the following form, we ensure distribution
 ! of stresses amoung all solids phases (sof, Oct 24 2005)
 
          Pf = Pf * EPS/(ONE-EPG)
          Chi = Chi * EPS/(ONE-EPG)
- 
+
       ENDIF
- 
+
 ! Calculating gw, hw, cw
- 
+
       Gw = (MU_s + Chi/(2d0*ZETA))*DABS(VEL - W_VEL)
- 
+
       Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w
       IF(ZETA .NE. ZERO) Hw = Hw - Chi*S_dd*tan_Phi_w/ZETA
-      
+
       Cw = hw * W_VEL
- 
+
       RETURN
       END SUBROUTINE CALC_Gw_Hw_Cw

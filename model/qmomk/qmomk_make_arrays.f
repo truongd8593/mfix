@@ -16,7 +16,7 @@ SUBROUTINE qmomk_make_arrays
   USE param1
   USE geometry
   USE funits
-  USE compar  
+  USE compar
   USE qmom_kinetic_equation
   USE run
 
@@ -52,7 +52,7 @@ SUBROUTINE qmomk_make_arrays
      CALL QMOMK_READ_RESTART
      WRITE(*,*) 'QMOMK_RES file read at Time= ', TIME
      WRITE(UNIT_LOG,*) 'QMOMK_RES file read at Time= ', TIME
-  ELSE IF (RUN_TYPE == 'RESTART_2') THEN 
+  ELSE IF (RUN_TYPE == 'RESTART_2') THEN
      WRITE(UNIT_LOG,*) 'Restart 2 is not implemented with QMOMK'
      WRITE(*,*) 'Restart 2 is not implemented with QMOMK'
      CALL MFIX_EXIT(myPE)

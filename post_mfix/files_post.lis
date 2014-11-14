@@ -10,9 +10,13 @@ correl_mod.f
 ../model/drag_mod.f
 ../model/energy_mod.f
 ../model/fldvar_mod.f
+../model/fun_avg_mod.f
+functions_mod.f
 ../model/funits_mod.f
 ../model/geometry_mod.f
 ../model/ic_mod.f
+../model/in_binary_512_mod.f
+../model/in_binary_512i_mod.f
 ../model/indices_mod.f
 ../model/is_mod.f
 ../model/kintheory_mod.f
@@ -37,6 +41,7 @@ post3d_mod.f
 ../model/rxns_mod.f
 ../model/scalars_mod.f
 ../model/scales_mod.f
+../model/solids_pressure_mod.f
 ../model/tau_g_mod.f
 ../model/tau_s_mod.f
 ../model/time_cpu_mod.f
@@ -231,4 +236,14 @@ usr_input_mod.f
 ../model/kintheory_energy_dissipation_ss.f
 ../model/check_data/check_geometry.f
 ../model/check_data/check_axis.f
+../model/check_data/check_geometry_prereqs.f
+../model/check_data/check_dmp_prereqs.f
+../model/check_data/check_solids_model_prereqs.f
+../model/check_data/check_gas_phase.f
+../model/check_data/check_solids_phases.f
+../model/check_data/check_solids_common_all.f
+../model/check_data/check_solids_common_discrete.f
+../model/check_data/check_solids_continuum.f
+../model/check_data/check_solids_dem.f
+../model/check_data/check_solids_mppic.f
 ../model/set_param.f

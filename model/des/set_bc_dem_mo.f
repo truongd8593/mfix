@@ -20,6 +20,7 @@
 
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -39,10 +40,6 @@
 
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
-
-
-      INCLUDE '../function.inc'
-
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MO")
 
@@ -227,7 +224,7 @@
             WRITE(UNIT_LOG, 1060)
             CALL MFIX_EXIT(myPE)
          ENDIF
-! not all possible shear directions are fully coded         
+! not all possible shear directions are fully coded
          IF (DIMN .EQ. 2) THEN
             IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY' .AND. &
                TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX') THEN
@@ -235,7 +232,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSEIF(DIMN.EQ.3) THEN
-            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY') THEN ! .AND. & 
+            IF(TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDY') THEN ! .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DUDZ' .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDX' .AND. &
 !               TRIM(DES_LE_SHEAR_DIR) .NE. 'DVDZ' .AND. &

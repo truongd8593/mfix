@@ -51,6 +51,8 @@
       USE rxns
       USE run
       USE usr
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -89,15 +91,6 @@
       DOUBLE PRECISION Tp, Dp0
 
       INCLUDE '../species.inc'
-
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../fun_avg1.inc'
-
-      INCLUDE '../function.inc'
-
-      INCLUDE '../ep_s2.inc'
-      INCLUDE '../fun_avg2.inc'
-
       INCLUDE '../usrnlst.inc'
 
 ! Alias particle temperature.
@@ -137,7 +130,7 @@
          DES_RATES(Evaporation) = ZERO
       ENDIF
 
-      RETURN  
+      RETURN
 
       CONTAINS
 !----------------------------------------------------------------------!
@@ -250,16 +243,16 @@
 
 ! Calculate velocity components at i, j, k
 ! Gas
-      UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I) 
-      VGC = AVG_Y_N(V_G(IJMK),V_G(IJK)) 
-      WGC = AVG_Z_T(W_G(IJKM),W_G(IJK)) 
+      UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+      VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
+      WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
 ! Solids
       USCM = DES_VEL_NEW(NP,1)
       VSCM = DES_VEL_NEW(NP,2)
       WSCM = DES_VEL_NEW(NP,3)
 
 ! magnitude of gas-solids relative velocity
-      VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2) 
+      VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 
 ! Reynods Number
       IF(MU_g(IJK) > ZERO) THEN
@@ -279,7 +272,7 @@
       DOUBLE PRECISION FUNCTION cal_NSc(Diff_Coeff)
 ! Diffustion coefficient
       DOUBLE PRECISION, intent(IN) :: Diff_Coeff
-      
+
 ! Schmidt Number
       cal_NSc = MU_g(IJK)/(RO_g(IJK)*Diff_Coeff)
 

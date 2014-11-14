@@ -37,20 +37,20 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      LOGICAL, intent(in) :: DO_VEL_CHECK 
+      LOGICAL, intent(in) :: DO_VEL_CHECK
 
-! loop/variable indices 
+! loop/variable indices
       INTEGER, intent(in) :: M_TOT
       LOGICAL, intent(in) :: SKIP(DIM_M)
 
-! loop/variable indices 
+! loop/variable indices
       INTEGER, intent(in) :: BCV
 
-! Whether any volumetric flow conversion was done 
+! Whether any volumetric flow conversion was done
       LOGICAL :: CONVERTED = .FALSE.
 
 ! Loop index
-      INTEGER :: M 
+      INTEGER :: M
 
 
       CALL INIT_ERR_MSG("FLOW_TO_VEL_NEW")
@@ -86,7 +86,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1100 FORMAT('Warning 1100: Some volumetric or mass flow rates have ', &
          'been converted',/'velocity. Ensure that the third (unused) ',&
@@ -130,14 +130,14 @@
 
       INTEGER, INTENT(in) :: BCV
 
-! Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
-! Average molecular weight 
-      DOUBLE PRECISION :: MW 
+! Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+! Average molecular weight
+      DOUBLE PRECISION :: MW
 
       DOUBLE PRECISION, EXTERNAL :: EOSG
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW 
-      LOGICAL, EXTERNAL :: COMPARE 
+      DOUBLE PRECISION, EXTERNAL :: CALC_MW
+      LOGICAL, EXTERNAL :: COMPARE
 
 
       CALL INIT_ERR_MSG("GAS_MASSFLOW_TO_VOLFLOW")
@@ -149,14 +149,14 @@
 
 ! Incompressible gas BC.
       ELSEIF(RO_G0 /= UNDEFINED) THEN
-         VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0 
+         VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0
 
 ! Well-defined compresible gas BC.
       ELSEIF(BC_P_G(BCV)/=UNDEFINED .AND. BC_T_G(BCV)/=UNDEFINED) THEN
          IF(MW_AVG == UNDEFINED) THEN
-            MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G) 
-         ELSE 
-            MW = MW_AVG 
+            MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G)
+         ELSE
+            MW = MW_AVG
          ENDIF
          VOLFLOW = BC_MASSFLOW_G(BCV) / &
             EOSG(MW,(BC_P_G(BCV)-P_REF),BC_T_G(BCV))
@@ -164,7 +164,7 @@
 ! Fails. This shouldn't happen as previous checks should catch any
 ! errors leading to this routine.
       ELSE
-         WRITE(ERR_MSG, 1100) BCV 
+         WRITE(ERR_MSG, 1100) BCV
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1100 FORMAT('Error 1100: Boundary condition ',I3,' failed sanity ',   &
@@ -174,16 +174,16 @@
 
 ! Check that a specified volumetric flow matches the calculated value.
       IF(BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
-         IF(.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
+         IF(.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN
             WRITE(ERR_MSG,1101) trim(iVar('BC_MASSFLOW_g',BCV)), BCV,  &
-               VOLFLOW, BC_VOLFLOW_g(BCV) 
+               VOLFLOW, BC_VOLFLOW_g(BCV)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ELSE 
+         ENDIF
+      ELSE
 
 ! Store the calculated volumetric flow rate.
-         BC_VOLFLOW_G(BCV) = VOLFLOW 
-      ENDIF 
+         BC_VOLFLOW_G(BCV) = VOLFLOW
+      ENDIF
 
  1101 FORMAT('Error 1101: Volumetric flow rate calculated from ',A,/   &
          'does NOT equal the specified volumetric flow rate for BC',I3,&
@@ -223,17 +223,17 @@
 
       IMPLICIT NONE
 
-! loop/variable indices 
-      INTEGER, INTENT(in) :: BCV, M 
+! loop/variable indices
+      INTEGER, INTENT(in) :: BCV, M
       LOGICAL, INTENT(in) :: SKIP_M
 
-! Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
+! Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
 ! Index of inert species
       INTEGER :: INERT
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 
 
       CALL INIT_ERR_MSG("SOLIDS_MASSFLOW_TO_VOLFLOW")
@@ -265,14 +265,14 @@
 
 ! If volumetric flow is also specified compare both
       IF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
-         IF(.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
+         IF(.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN
             WRITE(ERR_MSG,1101) trim(iVar('BC_MASSFLOW_S',BCV,M)), BCV, &
-               VOLFLOW, BC_VOLFLOW_S(BCV,M) 
+               VOLFLOW, BC_VOLFLOW_S(BCV,M)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ELSE 
-         BC_VOLFLOW_S(BCV,M) = VOLFLOW 
-      ENDIF 
+         ENDIF
+      ELSE
+         BC_VOLFLOW_S(BCV,M) = VOLFLOW
+      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -299,8 +299,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
@@ -308,8 +308,8 @@
       USE bc
       USE scales
       USE indices
-      USE funits 
-      USE compar 
+      USE funits
+      USE compar
       USE discretelement
       USE mfix_pic
 
@@ -319,20 +319,20 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! loop/variable indices 
-      INTEGER, INTENT(in) :: BCV 
+! loop/variable indices
+      INTEGER, INTENT(in) :: BCV
 
-! Whether any volumetric flow conversion was done 
-      LOGICAL, INTENT(in) :: DO_VEL_CHECK 
+! Whether any volumetric flow conversion was done
+      LOGICAL, INTENT(in) :: DO_VEL_CHECK
 
 
       DOUBLE PRECISION :: SGN, OFF
 
-! Velocity computed from volumetric flow rate 
-      DOUBLE PRECISION :: VEL 
+! Velocity computed from volumetric flow rate
+      DOUBLE PRECISION :: VEL
 
 
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 
@@ -354,7 +354,7 @@
       END SELECT
 
 
-! Calculate the velocity based on the volumetric flow rate, 
+! Calculate the velocity based on the volumetric flow rate,
 ! BC area and BC volume fraction.
       VEL = SGN*BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV))
 
@@ -366,28 +366,28 @@
       IF(BC_PLANE(BCV) == 'W' .OR. BC_PLANE(BCV)== 'E') THEN
 
          IF(BC_U_G(BCV) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
-            IF(.NOT.COMPARE(VEL,BC_U_G(BCV))) THEN 
+            IF(.NOT.COMPARE(VEL,BC_U_G(BCV))) THEN
                WRITE(ERR_MSG,1100) BCV, VEL, 'BC_U_g', BC_U_G(BCV)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-         ELSE 
-            BC_U_G(BCV) = VEL 
+         ELSE
+            BC_U_G(BCV) = VEL
             BC_V_G(BCV) = OFF * BC_V_G(BCV)
-            BC_W_G(BCV) = OFF * BC_W_G(BCV) 
+            BC_W_G(BCV) = OFF * BC_W_G(BCV)
          ENDIF
 
 
       ELSEIF(BC_PLANE(BCV) == 'S' .OR. BC_PLANE(BCV)== 'N') THEN
-         IF(BC_V_G(BCV) /= UNDEFINED .AND. DO_VEL_CHECK) THEN 
+         IF(BC_V_G(BCV) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
             IF(.NOT.COMPARE(VEL,BC_V_G(BCV))) THEN
                WRITE(ERR_MSG, 1100) BCV, VEL, 'BC_V_g', BC_V_G(BCV)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
-            BC_V_G(BCV) = VEL 
+            ENDIF
+         ELSE
+            BC_V_G(BCV) = VEL
             BC_U_G(BCV) = OFF * BC_U_G(BCV)
             BC_W_G(BCV) = OFF * BC_W_G(BCV)
-         ENDIF 
+         ENDIF
 
 
       ELSEIF(BC_PLANE(BCV) == 'B' .OR. BC_PLANE(BCV)== 'T') THEN
@@ -395,14 +395,14 @@
             IF(.NOT.COMPARE(VEL, BC_W_G(BCV))) THEN
                WRITE(ERR_MSG, 1100) BCV, VEL, 'BC_W_g', BC_W_G(BCV)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
+            ENDIF
+         ELSE
             BC_W_G(BCV) = VEL
             BC_U_G(BCV) = OFF * BC_U_G(BCV)
             BC_V_G(BCV) = OFF * BC_V_G(BCV)
-         ENDIF 
+         ENDIF
 
-      ENDIF 
+      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -411,7 +411,7 @@
  1100 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed velocity is not equal to specified value',/,&
          ' Value computed from vol. or mass flow  = ',G14.7,/,&
-         ' Specified value (',A,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (',A,') = ',G14.7,/1X,70('*')/)
 
       END SUBROUTINE GAS_VOLFLOW_TO_VELOCITY
 
@@ -430,8 +430,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SOLIDS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV, M, SKIP_M)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
@@ -439,8 +439,8 @@
       USE bc
       USE scales
       USE indices
-      USE funits 
-      USE compar 
+      USE funits
+      USE compar
       USE discretelement
       USE mfix_pic
 
@@ -450,17 +450,17 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! loop/variable indices 
-      INTEGER, INTENT(in) :: BCV, M 
+! loop/variable indices
+      INTEGER, INTENT(in) :: BCV, M
 ! Logical to preform velocity check.
       LOGICAL, INTENT(in) :: DO_VEL_CHECK, SKIP_M
 
-! Velocity computed from volumetric flow rate 
-      DOUBLE PRECISION :: VEL 
+! Velocity computed from volumetric flow rate
+      DOUBLE PRECISION :: VEL
 
       DOUBLE PRECISION :: SGN, OFF
 
-      LOGICAL, EXTERNAL :: COMPARE 
+      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 
@@ -493,56 +493,56 @@
       END SELECT
 
       IF(BC_EP_S(BCV,M) /= ZERO) THEN
-         VEL = SGN * BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*BC_EP_S(BCV,M)) 
-      ELSE 
+         VEL = SGN * BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*BC_EP_S(BCV,M))
+      ELSE
          IF(BC_VOLFLOW_S(BCV,M) == ZERO) THEN
-            VEL = ZERO 
-         ELSE 
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1101) BCV, M 
+            VEL = ZERO
+         ELSE
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1101) BCV, M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
  1101 FORMAT('Error 1101: BC No:',I2,' Non-zero vol. or mass flow ',&
-         'specified with BC_ROP_s', I1,' = 0.') 
+         'specified with BC_ROP_s', I1,' = 0.')
 
 
       IF(BC_PLANE(BCV) == 'W' .OR. BC_PLANE(BCV)== 'E') THEN
          IF(BC_U_S(BCV,M) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
             IF(.NOT.COMPARE(VEL, BC_U_S(BCV,M))) THEN
-              WRITE(ERR_MSG, 1300) BCV, (-VEL), 'BC_U_s', M, BC_U_S(BCV,M) 
+              WRITE(ERR_MSG, 1300) BCV, (-VEL), 'BC_U_s', M, BC_U_S(BCV,M)
               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
-            BC_U_S(BCV,M) = VEL 
-            BC_V_S(BCV,M) = OFF * BC_V_S(BCV,M) 
+            ENDIF
+         ELSE
+            BC_U_S(BCV,M) = VEL
+            BC_V_S(BCV,M) = OFF * BC_V_S(BCV,M)
             BC_W_S(BCV,M) = OFF * BC_W_S(BCV,M)
-         ENDIF 
+         ENDIF
 
       ELSEIF(BC_PLANE(BCV) == 'S' .OR. BC_PLANE(BCV)== 'N') THEN
          IF(BC_V_S(BCV,M) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
             IF(.NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN
-               WRITE(ERR_MSG,1300) BCV, VEL, 'BC_V_s', M, BC_V_S(BCV,M) 
+               WRITE(ERR_MSG,1300) BCV, VEL, 'BC_V_s', M, BC_V_S(BCV,M)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
-            BC_V_S(BCV,M) = VEL 
-            BC_U_S(BCV,M) = OFF * BC_U_S(BCV,M) 
+            ENDIF
+         ELSE
+            BC_V_S(BCV,M) = VEL
+            BC_U_S(BCV,M) = OFF * BC_U_S(BCV,M)
             BC_W_S(BCV,M) = OFF * BC_W_S(BCV,M)
-         ENDIF 
+         ENDIF
 
       ELSEIF(BC_PLANE(BCV) == 'B' .OR. BC_PLANE(BCV)== 'T') THEN
-         IF(BC_W_S(BCV,M) /= UNDEFINED .AND. DO_VEL_CHECK) THEN 
+         IF(BC_W_S(BCV,M) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
             IF(.NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN
                WRITE(ERR_MSG, 1300) BCV, VEL, 'BC_W_s', M, BC_W_S(BCV,M)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ELSE 
-            BC_W_S(BCV,M) = VEL 
+            ENDIF
+         ELSE
+            BC_W_S(BCV,M) = VEL
             BC_U_S(BCV,M) = OFF * BC_U_S(BCV,M)
             BC_V_S(BCV,M) = OFF * BC_V_S(BCV,M)
-         ENDIF 
-      ENDIF 
+         ENDIF
+      ENDIF
 
 
       CALL FINL_ERR_MSG
@@ -552,7 +552,7 @@
  1300 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed velocity is not equal to specified value',/,&
          ' Value computed from vol. or mass flow  = ',G14.7,/,&
-         ' Specified value (',A,I1,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (',A,I1,') = ',G14.7,/1X,70('*')/)
 
       END SUBROUTINE SOLIDS_VOLFLOW_TO_VELOCITY
 
@@ -665,8 +665,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
@@ -674,8 +674,8 @@
       USE bc
       USE scales
       USE indices
-      USE funits 
-      USE compar 
+      USE funits
+      USE compar
       USE discretelement
       USE mfix_pic
 
@@ -683,18 +683,18 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! loop/variable indices 
-      INTEGER :: BCV, M 
-! Volumetric flow rate computed from mass flow rate 
-      DOUBLE PRECISION :: VOLFLOW 
-! Velocity computed from volumetric flow rate 
-      DOUBLE PRECISION :: VEL 
-! Solids phase volume fraction 
-      DOUBLE PRECISION :: EPS 
-! Whether any volumetric flow conversion was done 
-      LOGICAL :: CONVERTED,DO_VEL_CHECK 
-! Average molecular weight 
-      DOUBLE PRECISION :: MW 
+! loop/variable indices
+      INTEGER :: BCV, M
+! Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+! Velocity computed from volumetric flow rate
+      DOUBLE PRECISION :: VEL
+! Solids phase volume fraction
+      DOUBLE PRECISION :: EPS
+! Whether any volumetric flow conversion was done
+      LOGICAL :: CONVERTED,DO_VEL_CHECK
+! Average molecular weight
+      DOUBLE PRECISION :: MW
 ! Index of inert species
       INTEGER :: INERT
 ! Solids density at BC plane
@@ -703,16 +703,16 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG, EOSS
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW 
-      LOGICAL, EXTERNAL :: COMPARE 
+      DOUBLE PRECISION, EXTERNAL :: CALC_MW
+      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 ! When both flow rates and velocities are specified, a consistency check is done
-! The first time flow_to_vel is called in 
+! The first time flow_to_vel is called in
 ! by setting the logical DO_VEL_CHECK to .TRUE.
 ! If cut-cells are not used, flow_to_vel is only called once.
 ! When cut-cells are used, flow_to_vel is called another time after
-! the cut-cell preprocessing stage. During, the second call, the velocity check 
+! the cut-cell preprocessing stage. During, the second call, the velocity check
 ! should not be performed, because the velocity assigned suring the first call
 ! will not match the flow rate. Therfore, when called from cut_cell_preprocessing.f
 ! DO_VEL_CHECK is set to .FALSE.
@@ -723,32 +723,32 @@
 ! initialize
       VOLFLOW = UNDEFINED
 
-      CONVERTED = .FALSE. 
-      DO BCV = 1, DIMENSION_BC 
-         IF (BC_DEFINED(BCV)) THEN 
+      CONVERTED = .FALSE.
+      DO BCV = 1, DIMENSION_BC
+         IF (BC_DEFINED(BCV)) THEN
             IF (BC_TYPE(BCV)=='MASS_INFLOW' .OR.&
-                BC_TYPE(BCV)=='MASS_OUTFLOW') THEN 
+                BC_TYPE(BCV)=='MASS_OUTFLOW') THEN
 
 ! If gas mass flow is defined convert it to volumetric flow
 ! ---------------------------------------------------------------->>>
-               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN 
-                  IF (RO_G0 /= UNDEFINED) THEN 
-                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0 
-                  ELSE 
+               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN
+                  IF (RO_G0 /= UNDEFINED) THEN
+                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0
+                  ELSE
                      IF (BC_P_G(BCV)/=UNDEFINED .AND. &
                          BC_T_G(BCV)/=UNDEFINED) THEN
-                        IF (MW_AVG == UNDEFINED) THEN 
-                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G) 
-                        ELSE 
-                           MW = MW_AVG 
-                        ENDIF 
+                        IF (MW_AVG == UNDEFINED) THEN
+                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G)
+                        ELSE
+                           MW = MW_AVG
+                        ENDIF
                         VOLFLOW = BC_MASSFLOW_G(BCV)/&
                            EOSG(MW,(BC_P_G(BCV)-P_REF),BC_T_G(BCV))
-                          
+
                      ELSE
 ! for mass_inflow, check_data_07 has already required that either ro_g0
 ! be defined or bc_p_g and bc_t_g be defined. So this branch will never
-! be entered when mass_inflow. if mass_outflow, ro_g0 and either bc_p_g, 
+! be entered when mass_inflow. if mass_outflow, ro_g0 and either bc_p_g,
 ! or bc_t_g, or both, must be undefined.
 ! if the code comes through this branch without exiting and massflow is
 ! non-zero, then volflow will remain undefined.
@@ -759,237 +759,237 @@
 ! otherwise check that the value of velocity component through the
 ! boundary plane is defined, and is non-zero (otherwise would be caught
 ! by bc_massflow_g == zero branch)
-                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN 
-                              VOLFLOW = ZERO 
+                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN
+                              VOLFLOW = ZERO
                            ELSEIF (BC_PLANE(BCV)=='W' .OR. &
-                                   BC_PLANE(BCV)=='E') THEN 
+                                   BC_PLANE(BCV)=='E') THEN
                               IF (BC_U_G(BCV)==UNDEFINED .OR. &
-                                  BC_U_G(BCV)/=ZERO) THEN 
+                                  BC_U_G(BCV)/=ZERO) THEN
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010)&
-                                    BCV, 'BC_U_g' 
-                                 call mfix_exit(myPE)  
-                              ENDIF 
+                                    BCV, 'BC_U_g'
+                                 call mfix_exit(myPE)
+                              ENDIF
                            ELSEIF (BC_PLANE(BCV)=='N' .OR. &
-                                   BC_PLANE(BCV)=='S') THEN 
+                                   BC_PLANE(BCV)=='S') THEN
                               IF (BC_V_G(BCV)==UNDEFINED .OR. &
-                                  BC_V_G(BCV)/=ZERO) THEN 
+                                  BC_V_G(BCV)/=ZERO) THEN
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) &
-                                    BCV, 'BC_V_g' 
-                                 call mfix_exit(myPE)  
-                              ENDIF 
+                                    BCV, 'BC_V_g'
+                                 call mfix_exit(myPE)
+                              ENDIF
                            ELSEIF (BC_PLANE(BCV)=='T' .OR. &
-                                   BC_PLANE(BCV)=='B') THEN 
+                                   BC_PLANE(BCV)=='B') THEN
                               IF (BC_W_G(BCV)==UNDEFINED .OR. &
-                                  BC_W_G(BCV)/=ZERO) THEN 
+                                  BC_W_G(BCV)/=ZERO) THEN
                                  IF(DMP_LOG)WRITE (UNIT_LOG, 1010) &
-                                    BCV, 'BC_W_g' 
-                                 call mfix_exit(myPE)  
-                              ENDIF 
+                                    BCV, 'BC_W_g'
+                                 call mfix_exit(myPE)
+                              ENDIF
                            ENDIF
                         ELSE   ! else branch if(bc_type='mass_outflow')
 ! not sure how this branch will be reached by mass_inflow
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV 
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV
                            call mfix_exit(myPE)
                         ENDIF   ! end if (bc_type(bcv)=='mass_outflow')
-                     ENDIF 
+                     ENDIF
                   ENDIF   ! end if/else (ro_g0 /=undefined)
 
 ! If volumetric flow is also specified compare both
-                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
+                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
 ! volflow may be undefined for mass_outflow boundaries wherein ro_g0 and
-! either bc_p_g, or bc_t_g, or both, were undefined.                       
-                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN 
+! either bc_p_g, or bc_t_g, or both, were undefined.
+                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN
                         IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, &
-                           VOLFLOW, BC_VOLFLOW_G(BCV) 
-                        call mfix_exit(myPE)  
-                     ENDIF 
-                  ELSE 
-                     BC_VOLFLOW_G(BCV) = VOLFLOW 
-                  ENDIF 
+                           VOLFLOW, BC_VOLFLOW_G(BCV)
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ELSE
+                     BC_VOLFLOW_G(BCV) = VOLFLOW
+                  ENDIF
                ENDIF   ! end if (bc_massflow_g(bcv) /= undefined)
-! end gas mass flow conversion to volumetric flow               
+! end gas mass flow conversion to volumetric flow
 ! ----------------------------------------------------------------<<<
 
 
 
 ! If gas volumetric flow is defined convert it to velocity
 ! ---------------------------------------------------------------->>>
-               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN 
+               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
 
                   IF (BC_EP_G(BCV) /= UNDEFINED) THEN
 ! volumetric flow rate and void fraction at the boundary are specified
 ! (known) so that the corresponding gas velocity through the boundary
-! plane may be calculated. 
+! plane may be calculated.
                      VEL = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV))
-                  ELSE  
+                  ELSE
 ! for mass_inflow, check_data_07 has already required that bc_ep_g be
 ! defined (i.e., this section will not happen for MI). For mass_outflow
 ! the routine will exit here if bc_ep_g is not defined.  However, for
 ! this MO the boundary velocities must also be set or mfix will exit due
 ! to later checks in check_data_07.
-                     RETURN          
-                  ENDIF 
+                     RETURN
+                  ENDIF
 
 ! if the user also defined the boundary velocity through the plane, then
 ! check that the calculated value agrees with the specified value. if
 ! the user did not define the boundary velocity through the plane, then
 ! if mass_inflow set the value of the boundary velocity to the
 ! calculated value. otherwise do nothing.
-                  CONVERTED = .TRUE. 
-                  SELECT CASE (TRIM(BC_PLANE(BCV)))  
-                  CASE ('W')  
-                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                  CONVERTED = .TRUE.
+                  SELECT CASE (TRIM(BC_PLANE(BCV)))
+                  CASE ('W')
+                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                            .NOT.COMPARE((-VEL),BC_U_G(BCV))) THEN 
+                            .NOT.COMPARE((-VEL),BC_U_G(BCV))) THEN
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
-                              (-VEL), 'BC_U_g', BC_U_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
+                              (-VEL), 'BC_U_g', BC_U_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_U_G(BCV))) THEN 
+                            .NOT.COMPARE(VEL,BC_U_G(BCV))) THEN
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, &
-                              VEL, 'BC_U_g', BC_U_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                           BC_U_G(BCV) = -VEL 
-                           BC_V_G(BCV) = ZERO 
-                           BC_W_G(BCV) = ZERO 
-                        ELSE 
-                           BC_U_G(BCV) = VEL 
-                        ENDIF 
-                     ENDIF 
-                  CASE ('E')  
-                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_U_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
-                              'BC_U_g', BC_U_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE((-VEL),BC_U_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, &
-                              (-VEL), 'BC_U_g', BC_U_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                           BC_U_G(BCV) = VEL 
+                              VEL, 'BC_U_g', BC_U_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                           BC_U_G(BCV) = -VEL
                            BC_V_G(BCV) = ZERO
                            BC_W_G(BCV) = ZERO
-                        ELSE 
-                           BC_U_G(BCV) = -VEL 
-                        ENDIF 
-                     ENDIF 
-                  CASE ('S')  
-                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                        ELSE
+                           BC_U_G(BCV) = VEL
+                        ENDIF
+                     ENDIF
+                  CASE ('E')
+                     IF (BC_U_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                            .NOT.COMPARE((-VEL),BC_V_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
-                              (-VEL), 'BC_V_g', BC_V_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_V_G(BCV))) THEN 
+                            .NOT.COMPARE(VEL,BC_U_G(BCV))) THEN
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
-                              'BC_V_g', BC_V_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                           BC_U_G(BCV) = ZERO 
-                           BC_V_G(BCV) = -VEL 
-                           BC_W_G(BCV) = ZERO 
-                        ELSE 
-                           BC_V_G(BCV) = VEL 
-                        ENDIF 
-                     ENDIF 
-                  CASE ('N')  
-                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_V_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
-                              'BC_V_g', BC_V_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
+                              'BC_U_g', BC_U_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE((-VEL),BC_V_G(BCV))) THEN 
+                            .NOT.COMPARE((-VEL),BC_U_G(BCV))) THEN
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, &
-                              (-VEL), 'BC_V_g', BC_V_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                           BC_U_G(BCV) = ZERO
-                           BC_V_G(BCV) = VEL 
+                              (-VEL), 'BC_U_g', BC_U_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                           BC_U_G(BCV) = VEL
+                           BC_V_G(BCV) = ZERO
                            BC_W_G(BCV) = ZERO
-                        ELSE 
-                           BC_V_G(BCV) = -VEL 
-                        ENDIF 
-                     ENDIF 
-                  CASE ('B')  
-                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                        ELSE
+                           BC_U_G(BCV) = -VEL
+                        ENDIF
+                     ENDIF
+                  CASE ('S')
+                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                            .NOT.COMPARE((-VEL),BC_V_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
+                              (-VEL), 'BC_V_g', BC_V_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                            .NOT.COMPARE(VEL,BC_V_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
+                              'BC_V_g', BC_V_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                           BC_U_G(BCV) = ZERO
+                           BC_V_G(BCV) = -VEL
+                           BC_W_G(BCV) = ZERO
+                        ELSE
+                           BC_V_G(BCV) = VEL
+                        ENDIF
+                     ENDIF
+                  CASE ('N')
+                     IF (BC_V_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                            .NOT.COMPARE(VEL,BC_V_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
+                              'BC_V_g', BC_V_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                            .NOT.COMPARE((-VEL),BC_V_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, &
+                              (-VEL), 'BC_V_g', BC_V_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                           BC_U_G(BCV) = ZERO
+                           BC_V_G(BCV) = VEL
+                           BC_W_G(BCV) = ZERO
+                        ELSE
+                           BC_V_G(BCV) = -VEL
+                        ENDIF
+                     ENDIF
+                  CASE ('B')
+                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                         IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND.  &
-                            .NOT.COMPARE((-VEL),BC_W_G(BCV))) THEN 
+                            .NOT.COMPARE((-VEL),BC_W_G(BCV))) THEN
                            IF(DMP_LOG)WRITE (UNIT_LOG, 1100) BCV,&
-                              (-VEL), 'BC_W_g', BC_W_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
+                              (-VEL), 'BC_W_g', BC_W_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
                         IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_W_G(BCV))) THEN 
+                            .NOT.COMPARE(VEL,BC_W_G(BCV))) THEN
                            IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
-                              'BC_W_g', BC_W_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                           BC_U_G(BCV) = ZERO 
-                           BC_V_G(BCV) = ZERO 
-                           BC_W_G(BCV) = -VEL 
-                        ELSE 
-                           BC_W_G(BCV) = VEL 
-                        ENDIF 
-                     ENDIF 
-                  CASE ('T')  
-                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                            .NOT.COMPARE(VEL,BC_W_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
-                              'BC_W_g', BC_W_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                            .NOT.COMPARE((-VEL),BC_W_G(BCV))) THEN 
-                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
-                              (-VEL), 'BC_W_g', BC_W_G(BCV) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
+                              'BC_W_g', BC_W_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
                            BC_U_G(BCV) = ZERO
                            BC_V_G(BCV) = ZERO
-                           BC_W_G(BCV) = VEL 
-                        ELSE 
-                           BC_W_G(BCV) = -VEL 
-                        ENDIF 
-                     ENDIF 
+                           BC_W_G(BCV) = -VEL
+                        ELSE
+                           BC_W_G(BCV) = VEL
+                        ENDIF
+                     ENDIF
+                  CASE ('T')
+                     IF (BC_W_G(BCV) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                        IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                            .NOT.COMPARE(VEL,BC_W_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV, VEL,&
+                              'BC_W_g', BC_W_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                        IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                            .NOT.COMPARE((-VEL),BC_W_G(BCV))) THEN
+                           IF(DMP_LOG) WRITE (UNIT_LOG, 1100) BCV,&
+                              (-VEL), 'BC_W_g', BC_W_G(BCV)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                           BC_U_G(BCV) = ZERO
+                           BC_V_G(BCV) = ZERO
+                           BC_W_G(BCV) = VEL
+                        ELSE
+                           BC_W_G(BCV) = -VEL
+                        ENDIF
+                     ENDIF
                   END SELECT    ! end select (trim(bc_plane(bcv))
                ENDIF   ! end if (bc_volflow_g(bcv)/=undefined)
 ! end gas volumetric flow conversion to velocity
-! ----------------------------------------------------------------<<<               
-               
+! ----------------------------------------------------------------<<<
+
                IF (.NOT.DISCRETE_ELEMENT .OR. (DISCRETE_ELEMENT &
                    .AND. DES_CONTINUUM_HYBRID).OR. (DISCRETE_ELEMENT &
                    .AND. MPPIC)) THEN
 ! The following quantities should not be required for DEM simulations
 ! To ensure this is the case leave them undefined in mfix.dat
-! MPPIC BC's are based on Two Fluid Model based specification. 
-! So call the below for MPPIC. 
+! MPPIC BC's are based on Two Fluid Model based specification.
+! So call the below for MPPIC.
 
 ! Do flow conversions for solids phases
-               DO M = 1, SMAX 
+               DO M = 1, SMAX
 
 ! initialize
                   VOLFLOW = UNDEFINED
@@ -1031,7 +1031,7 @@
 
 ! If solids mass flow is defined convert it to volumetric flow
 ! ---------------------------------------------------------------->>>
-                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN 
+                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN
 
 ! Sanity check on solids phase density.
                      IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
@@ -1045,31 +1045,31 @@
                      VOLFLOW = BC_MASSFLOW_S(BCV,M)/BC_ROs
 
 ! If volumetric flow is also specified compare both
-                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
-                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN 
+                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN
                            IF(DMP_LOG) WRITE(UNIT_LOG,1200) &
-                              BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M) 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ELSE 
-                        BC_VOLFLOW_S(BCV,M) = VOLFLOW 
-                     ENDIF 
+                              BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        BC_VOLFLOW_S(BCV,M) = VOLFLOW
+                     ENDIF
                   ENDIF   ! end if (bc_massflow_s(bcv,m)/=undefined)
 ! end solids mass flow conversion to volumetric flow
 ! ----------------------------------------------------------------<<<
 
-                  
+
 ! if possible, define bulk density based on ep_g. note if mass_outflow,
-! bc_ep_g may still be undefined at this point wherein bc_rop_s would 
-! become set as 1-undefined. to avoid this issue, a check for bc_ep_g 
+! bc_ep_g may still be undefined at this point wherein bc_rop_s would
+! become set as 1-undefined. to avoid this issue, a check for bc_ep_g
 ! defined was added. note if mass_inflow, check_data_07 later performs
 ! the same calculations as below but with additional checks.
                   IF (BC_ROP_S(BCV,M) == UNDEFINED .AND. &
-                     BC_EP_G(BCV) /= UNDEFINED ) THEN 
-                     IF (BC_EP_G(BCV) == ONE) THEN 
-                         BC_ROP_S(BCV,M) = ZERO 
+                     BC_EP_G(BCV) /= UNDEFINED ) THEN
+                     IF (BC_EP_G(BCV) == ONE) THEN
+                         BC_ROP_S(BCV,M) = ZERO
                      ELSEIF (SMAX == 1 .AND. &
-                              .NOT.DES_CONTINUUM_HYBRID) THEN 
+                              .NOT.DES_CONTINUUM_HYBRID) THEN
 
 ! Sanity check on solids phase density.
                         IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
@@ -1091,7 +1091,7 @@
 
 ! If solids volumetric flow is defined convert it to velocity
 ! ---------------------------------------------------------------->>>
-                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN 
+                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
 
 ! Sanity check on solids phase density.
                      IF(BC_ROs <= ZERO .OR. BC_ROs==UNDEFINED) THEN
@@ -1102,177 +1102,177 @@
                         CALL MFIX_EXIT(myPE)
                      ENDIF
 
-                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN 
+                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN
                         EPS = BC_ROP_S(BCV,M)/BC_ROs
 ! volumetric flow rate and solids volume fraction at the boundary are
 ! specified (known) so that the corresponding solids velocity through
-! the boundary plane may be calculated. 
-                        IF (EPS /= ZERO) THEN 
-                           VEL = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS) 
-                        ELSE 
-                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
-                              VEL = ZERO 
-                           ELSE 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M 
-                              call mfix_exit(myPE)  
-                           ENDIF 
+! the boundary plane may be calculated.
+                        IF (EPS /= ZERO) THEN
+                           VEL = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS)
+                        ELSE
+                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                              VEL = ZERO
+                           ELSE
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M
+                              call mfix_exit(myPE)
+                           ENDIF
                         ENDIF
                      ELSE   ! bc_rop_s is undefined
-                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN 
-                           VEL = ZERO 
-                        ELSE 
+                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                           VEL = ZERO
+                        ELSE
 ! if bc_rop_s is undefined and bc_volflow_s is not zero exit MFIX with
-! error                                
-                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M 
-                           call mfix_exit(myPE)  
-                        ENDIF 
-                     ENDIF   
+! error
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ENDIF
 
 ! if the user also defined the boundary velocity through the plane, then
 ! check that the calculated value agrees with the specified value. if
 ! the user did not define the boundary velocity through the plane, then
 ! if mass_inflow set the value of the boundary velocity to the
 ! calculated value. otherwise do nothing.
-                     CONVERTED = .TRUE. 
-                     SELECT CASE (TRIM(BC_PLANE(BCV)))  
-                     CASE ('W')  
-                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                     CONVERTED = .TRUE.
+                     SELECT CASE (TRIM(BC_PLANE(BCV)))
+                     CASE ('W')
+                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE((-VEL),BC_U_S(BCV,M))) THEN 
+                               .NOT.COMPARE((-VEL),BC_U_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_U_s', M, BC_U_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
+                                 (-VEL), 'BC_U_s', M, BC_U_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_U_S(BCV,M))) THEN 
+                               .NOT.COMPARE(VEL,BC_U_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_U_s', M, BC_U_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = -VEL 
-                              BC_V_S(BCV,M) = ZERO 
-                              BC_W_S(BCV,M) = ZERO 
-                           ELSE 
-                              BC_U_S(BCV,M) = VEL 
-                           ENDIF 
-                        ENDIF 
-                     CASE ('E')  
-                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_U_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_U_s', M, BC_U_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                               .NOT.COMPARE((-VEL),BC_U_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_U_s', M, BC_U_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = VEL 
-                              BC_V_S(BCV,M) = ZERO 
-                              BC_W_S(BCV,M) = ZERO 
-                           ELSE 
-                              BC_U_S(BCV,M) = -VEL 
-                           ENDIF 
-                        ENDIF 
-                     CASE ('S')  
-                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE((-VEL),BC_V_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_V_s', M, BC_V_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_V_s', M, BC_V_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = ZERO 
-                              BC_V_S(BCV,M) = -VEL 
-                              BC_W_S(BCV,M) = ZERO 
-                           ELSE 
-                              BC_V_S(BCV,M) = VEL 
-                           ENDIF 
-                        ENDIF 
-                     CASE ('N')  
-                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
-                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_V_s', M, BC_V_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                               .NOT.COMPARE((-VEL),BC_V_S(BCV,M))) THEN 
-                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_V_s', M, BC_V_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = ZERO
-                              BC_V_S(BCV,M) = VEL 
+                                 VEL, 'BC_U_s', M, BC_U_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = -VEL
+                              BC_V_S(BCV,M) = ZERO
                               BC_W_S(BCV,M) = ZERO
-                           ELSE 
-                              BC_V_S(BCV,M) = -VEL 
-                           ENDIF 
-                        ENDIF 
-                     CASE ('B')  
-                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                           ELSE
+                              BC_U_S(BCV,M) = VEL
+                           ENDIF
+                        ENDIF
+                     CASE ('E')
+                        IF (BC_U_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE((-VEL),BC_W_S(BCV,M))) THEN 
+                               .NOT.COMPARE(VEL,BC_U_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_W_s', M, BC_W_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
+                                 VEL, 'BC_U_s', M, BC_U_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN 
+                               .NOT.COMPARE((-VEL),BC_U_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_W_s', M, BC_W_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = ZERO 
-                              BC_V_S(BCV,M) = ZERO 
-                              BC_W_S(BCV,M) = -VEL 
-                           ELSE 
-                              BC_W_S(BCV,M) = VEL 
-                           ENDIF 
-                        ENDIF 
-                     CASE ('T')  
-                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN 
+                                 (-VEL), 'BC_U_s', M, BC_U_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = VEL
+                              BC_V_S(BCV,M) = ZERO
+                              BC_W_S(BCV,M) = ZERO
+                           ELSE
+                              BC_U_S(BCV,M) = -VEL
+                           ENDIF
+                        ENDIF
+                     CASE ('S')
+                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
                            IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
-                               .NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN 
+                               .NOT.COMPARE((-VEL),BC_V_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 VEL, 'BC_W_s', M, BC_W_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
+                                 (-VEL), 'BC_V_s', M, BC_V_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
                            IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
-                              .NOT.COMPARE((-VEL),BC_W_S(BCV,M))) THEN 
+                               .NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN
                               IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
-                                 (-VEL), 'BC_W_s', M, BC_W_S(BCV,M) 
-                              call mfix_exit(myPE)  
-                           ENDIF 
-                        ELSE 
-                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN 
-                              BC_U_S(BCV,M) = ZERO 
-                              BC_V_S(BCV,M) = ZERO 
-                              BC_W_S(BCV,M) = VEL 
-                           ELSE 
-                              BC_W_S(BCV,M) = -VEL 
-                           ENDIF 
-                        ENDIF 
+                                 VEL, 'BC_V_s', M, BC_V_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = ZERO
+                              BC_V_S(BCV,M) = -VEL
+                              BC_W_S(BCV,M) = ZERO
+                           ELSE
+                              BC_V_S(BCV,M) = VEL
+                           ENDIF
+                        ENDIF
+                     CASE ('N')
+                        IF (BC_V_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                               .NOT.COMPARE(VEL,BC_V_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 VEL, 'BC_V_s', M, BC_V_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                               .NOT.COMPARE((-VEL),BC_V_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 (-VEL), 'BC_V_s', M, BC_V_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = ZERO
+                              BC_V_S(BCV,M) = VEL
+                              BC_W_S(BCV,M) = ZERO
+                           ELSE
+                              BC_V_S(BCV,M) = -VEL
+                           ENDIF
+                        ENDIF
+                     CASE ('B')
+                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                               .NOT.COMPARE((-VEL),BC_W_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 (-VEL), 'BC_W_s', M, BC_W_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                               .NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 VEL, 'BC_W_s', M, BC_W_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = ZERO
+                              BC_V_S(BCV,M) = ZERO
+                              BC_W_S(BCV,M) = -VEL
+                           ELSE
+                              BC_W_S(BCV,M) = VEL
+                           ENDIF
+                        ENDIF
+                     CASE ('T')
+                        IF (BC_W_S(BCV,M) /= UNDEFINED.AND.DO_VEL_CHECK) THEN
+                           IF (BC_TYPE(BCV)=='MASS_INFLOW' .AND. &
+                               .NOT.COMPARE(VEL,BC_W_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 VEL, 'BC_W_s', M, BC_W_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                           IF (BC_TYPE(BCV)=='MASS_OUTFLOW' .AND. &
+                              .NOT.COMPARE((-VEL),BC_W_S(BCV,M))) THEN
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1300) BCV, &
+                                 (-VEL), 'BC_W_s', M, BC_W_S(BCV,M)
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ELSE
+                           IF (BC_TYPE(BCV) == 'MASS_INFLOW') THEN
+                              BC_U_S(BCV,M) = ZERO
+                              BC_V_S(BCV,M) = ZERO
+                              BC_W_S(BCV,M) = VEL
+                           ELSE
+                              BC_W_S(BCV,M) = -VEL
+                           ENDIF
+                        ENDIF
                      END SELECT    ! end select (trim(bc_plane(bcv))
                   ENDIF   ! end if (bc_volflow_s(bcv,m) /= undefined)
 ! end solids volumetric flow conversion to velocity
@@ -1282,49 +1282,49 @@
                ENDIF   ! end if (.not.discrete_element)
 
             ENDIF   ! end if (bc_type(bcv)=='mass_inflow' or 'mass_outflow')
-         ENDIF   ! end if (bc_defined(bcv)) 
+         ENDIF   ! end if (bc_defined(bcv))
       ENDDO   ! end do (bcv =1,dimension_bc)
 
 
       IF (CONVERTED .AND. (NO_I .OR. NO_J .OR. NO_K) &
-          .AND. DMP_LOG)WRITE (UNIT_LOG, 1500) 
+          .AND. DMP_LOG)WRITE (UNIT_LOG, 1500)
 
-      RETURN  
+      RETURN
 
  1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
  1010 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
          '  BC_P_g, BC_T_g, and BC_X_g or',/' a nonzero value for ',A,&
-         ' should be specified',/1X,70('*')/) 
+         ' should be specified',/1X,70('*')/)
  1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
          '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
  1100 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed velocity is not equal to specified value',/,&
          ' Value computed from vol. or mass flow  = ',G14.7,/,&
-         ' Specified value (',A,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (',A,') = ',G14.7,/1X,70('*')/)
  1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed volumetric flow is not equal to specified value',/,&
          ' Value computed from mass flow  = ',G14.7,/,&
-         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
  1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Non-zero vol. or mass flow specified with BC_ROP_s',&
-         I1,' = 0.',/1X,70('*')/) 
+         I1,' = 0.',/1X,70('*')/)
  1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
-         ' BC_ROP_s',I1,' not specified',/1X,70('*')/) 
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
  1300 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
          ' Computed velocity is not equal to specified value',/,&
          ' Value computed from vol. or mass flow  = ',G14.7,/,&
-         ' Specified value (',A,I1,') = ',G14.7,/1X,70('*')/) 
+         ' Specified value (',A,I1,') = ',G14.7,/1X,70('*')/)
  1500 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/&
          ' Message: Some volumetric or mass flow rates have been',/&
          '   converted to velocity values.  In 2D simulations ensure',/&
          '   that the third (unused) dimension is correctly specified;',/&
          '   e.g. in axisymmetric cylindrical coordinates ZLENGTH = 2*Pi'/1X,70&
-         ('*')/) 
+         ('*')/)
 
- 1401 FORMAT(//1X,70('*')/' From: FLOW_TO_VEL',/,' Error 1401:'        &
+ 1401 FORMAT(//1X,70('*')/' From: FLOW_TO_VEL',/,' Error 1401:',       &
          ' Solids phase ',I2,' failed sanity check in BC region ',I3,  &
          '. ',/' Please check mfix.dat file.',/1X,70('*')//)
 

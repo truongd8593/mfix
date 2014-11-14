@@ -51,6 +51,7 @@
       USE sendrecv
       USE toleranc
       USE usr
+      USE fun_avg
 
       IMPLICIT NONE
 
@@ -59,15 +60,6 @@
       DOUBLE PRECISION, DIMENSION(NO_OF_RXNS), INTENT(OUT) :: RATES
 
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:
@@ -82,6 +74,6 @@
 
       RATES(:) = ZERO
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

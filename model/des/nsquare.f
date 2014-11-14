@@ -120,41 +120,13 @@
 ! ------------------------------
 
             IF (DIST < R_LM**2) THEN
-
-               NEIGHBOURS(L,1) = NEIGHBOURS(L,1)+1
-               NEIGHBOURS(LL,1) = NEIGHBOURS(LL,1)+1
-               NEIGH_L = NEIGHBOURS(L,1)
-               NEIGH_LL = NEIGHBOURS(LL,1)
-
-               IF (NEIGH_L.LE.MN) THEN
-                  NEIGHBOURS(L,NEIGH_L+1) = LL
-               ELSE
-                  WRITE(*,1000)
-                  PRINT *, L, ':', (NEIGHBOURS(L,II), II=1,MN+1)
-                  WRITE(*,1001)
-                  STOP
-               ENDIF
-
-               IF (NEIGH_LL.LE.MN) THEN
-                  NEIGHBOURS(LL,NEIGH_LL+1) = L
-               ELSE
-                  WRITE(*,1000)
-                  PRINT *, LL, ':', (NEIGHBOURS(LL,II), II=1,MN+1)
-                  WRITE(*,1001)
-                  STOP
-               ENDIF
-
+               call collision_add(L, LL)
             ENDIF
             PNPC = PNPC - 1
          ENDDO   ! end loop over LL
 
          PC = PC + 1
       ENDDO   ! end loop over L
-
- 1000 FORMAT(/1X,70('*')//&
-         ' From: NSQUARE -',/&
-         ' Message: Neighbors GT MN')
- 1001 FORMAT(/,1X,70('*')/)
 
       RETURN
       END SUBROUTINE NSQUARE

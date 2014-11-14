@@ -24,7 +24,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR0 
+      SUBROUTINE USR0
 
       Use usr
 
@@ -32,5 +32,5 @@
 
       Allocate(  N_Sh (DIMENSION_3, DIMENSION_M) )
 
-      RETURN  
-      END SUBROUTINE USR0 
+      RETURN
+      END SUBROUTINE USR0

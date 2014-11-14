@@ -182,7 +182,7 @@
       countINCPT = 0
 
       if(myPE == PE_IO) &
-         write(*,"(/3x,'Integrating stiff chemistry...',$)")
+         write(*,"(/3x,'Integrating stiff chemistry...')",ADVANCE="NO")
 
       RETURN
       END SUBROUTINE INIT_STIFF_CHEM_STATS
@@ -275,7 +275,7 @@
       implicit none
 
 ! Message buffer.
-      CHARACTER*64 :: lMsg0, lMsg1
+      CHARACTER(LEN=64) :: lMsg0, lMsg1
 
       DOUBLE PRECISION :: lODE_EndTime, lODE_RunTime
 
@@ -298,7 +298,7 @@
       Homogns_all = 0;
       CALL global_sum(Homogns, Homogns_all)
 
-! Collect stats on the number of cells with heterogeneous and 
+! Collect stats on the number of cells with heterogeneous and
 ! homogeneous reactions.
       Hetrgns_all = 0
       CALL global_sum(Hetrgns, Hetrgns_all)

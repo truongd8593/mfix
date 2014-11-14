@@ -19,7 +19,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_USR1(L) 
+      SUBROUTINE WRITE_USR1(L)
 
       use run, only: TIME
 
@@ -30,7 +30,7 @@
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: L 
+      INTEGER, INTENT(IN) :: L
 
       INTEGER :: lUNIT
       INTEGER :: NP, M
@@ -48,5 +48,5 @@
 
  1100 FORMAT(3x,F6.2,3x,F7.2,3x,F5.2)
 
-      RETURN  
-      END SUBROUTINE WRITE_USR1 
+      RETURN
+      END SUBROUTINE WRITE_USR1

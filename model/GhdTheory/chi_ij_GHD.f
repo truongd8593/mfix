@@ -1,7 +1,7 @@
       subroutine chi_ij_GHD(s,i,j,sigmai,phi,ni,chi_ij)
       Implicit NONE
-      
-      integer s 
+
+      integer s
       double precision pi
       parameter (pi=3.14159265458979323846d0)
 

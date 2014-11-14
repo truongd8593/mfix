@@ -31,7 +31,7 @@
 ! Number of spcies comprising each phase
       use physprop, only: NMAX
 
-! 
+!
       use param1, only: UNDEFINED_I
 
       use rxn_com, only: checkSpeciesInc
@@ -61,8 +61,6 @@
       IF(NO_OF_RXNS == 0) allocate(RXN_NAME(1))
       IF(NO_OF_DES_RXNS == 0) allocate(DES_RXN_NAME(1))
 
-
-
 ! Initialize the number of solids phases.
       lMMAX = SMAX + DES_MMAX
 
@@ -70,7 +68,7 @@
       CALL checkDuplicateAliases(NMAX(0), SPECIES_ALIAS_g(:), &
          lMMAX, NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:))
 
-! Verify that species aliases in the datafile match those in the 
+! Verify that species aliases in the datafile match those in the
 ! species.inc file.
       CALL checkSpeciesInc(NMAX(0), SPECIES_ALIAS_g(:), lMMAX,         &
          NMAX(1:lMMAX), SPECIES_ALIAS_s(:,:), NO_OF_RXNS, RXN_NAME(:), &

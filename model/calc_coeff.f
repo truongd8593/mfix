@@ -14,7 +14,7 @@
 !  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_COEFF_ALL(FLAG, IER) 
+      SUBROUTINE CALC_COEFF_ALL(FLAG, IER)
 
 ! Global variables:
 !-----------------------------------------------------------------------
@@ -49,7 +49,7 @@
 ! Note that 'FLAG' is hard coded to 0 in time march and reset_new.
       IF(FLAG == 0) THEN
         loc_UR_F_gs = UR_F_gs;          UR_F_gs = ONE
-        loc_UR_Kth_sml = UR_Kth_sml;    UR_Kth_sml = ONE        
+        loc_UR_Kth_sml = UR_Kth_sml;    UR_Kth_sml = ONE
       ENDIF
 
 ! Calculate all physical properties, transport properties, and exchange
@@ -64,7 +64,7 @@
         UR_F_gs = loc_UR_F_gs
         UR_Kth_sml = loc_UR_Kth_sml
       ENDIF
-     
+
       RETURN
       END SUBROUTINE CALC_COEFF_ALL
 
@@ -129,7 +129,7 @@
 ! Modules
 !-----------------------------------------------
       USE rxns,           only : RRATE, USE_RRATES
-      USE funits,         only : DMP_LOG, UNIT_LOG 
+      USE funits,         only : DMP_LOG, UNIT_LOG
       USE compar,         only : myPE
       USE discretelement, only : DISCRETE_ELEMENT
       use run, only: ANY_SPECIES_EQ
@@ -145,7 +145,7 @@
       INTEGER, INTENT(INOUT) :: IER
 
 ! For DEM simulations that do not have a homogeneous gas phase reaction,
-! the gas phase arrays phase change arrays need to be cleared in 
+! the gas phase arrays phase change arrays need to be cleared in
 ! CALC_RRATE_DES. Other
       LOGICAL CLEAR_ARRAYS
 
@@ -160,25 +160,25 @@
             IF(IER .EQ. 1) THEN
                CALL START_LOG
                IF(DMP_LOG) WRITE (UNIT_LOG, 1000)
-               CALL END_LOG 
-               CALL MFIX_EXIT(myPE)  
+               CALL END_LOG
+               CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
             CALL RRATES0 (IER)
             CLEAR_ARRAYS = .FALSE.
          ENDIF
-      ENDIF 
+      ENDIF
 
       IF(DISCRETE_ELEMENT .AND. ANY_SPECIES_EQ) &
          CALL CALC_RRATE_DES(CLEAR_ARRAYS)
 
-      RETURN  
+      RETURN
  1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&
          ' Species balance equations are being solved; but chemical',/,&
          ' reactions are not specified in mfix.dat or in rrates.f.',/,&
          ' Copy the file mfix/model/rrates.f into the run directory ',/,&
          ' and remove the initial section that returns IER=1.'&
-         ,/1X,70('*')/) 
+         ,/1X,70('*')/)
 
       END SUBROUTINE CALC_RRATE
 
@@ -204,7 +204,7 @@
 
 ! Stress tensor trace.
       USE visc_g, only : TRD_g
-      USE visc_s, only : TRD_S 
+      USE visc_s, only : TRD_S
 ! Stress tensor cross terms.
       USE tau_g, only : TAU_U_G, TAU_V_G, TAU_W_G
       USE tau_s, only : TAU_U_S, TAU_V_S, TAU_W_S
@@ -223,21 +223,21 @@
 !-----------------------------------------------------------------------
 
 ! Calculate the trace of the stress tensor (gas phase; m=0)
-      CALL CALC_TRD_G (TRD_G, IER) 
+      CALL CALC_TRD_G (TRD_G, IER)
 
 ! Calculate the cross terms of the stress tensor (gas phase; m=0)
-      CALL CALC_TAU_U_G (TAU_U_G, IER) 
-      CALL CALC_TAU_V_G (TAU_V_G, IER) 
-      CALL CALC_TAU_W_G (TAU_W_G, IER) 
+      CALL CALC_TAU_U_G (TAU_U_G, IER)
+      CALL CALC_TAU_V_G (TAU_V_G, IER)
+      CALL CALC_TAU_W_G (TAU_W_G, IER)
 
 ! Bypass the following calculations if there are no TFM solids.
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 ! Calculate the cross terms of the stress tensor (solids phases; m>0)
          CALL CALC_TRD_S (TRD_S, IER)
 ! Calculate the trace of the stress tensor (solids phases; m>0)
-         CALL CALC_TAU_U_S (TAU_U_S, IER) 
-         CALL CALC_TAU_V_S (TAU_V_S, IER) 
-         CALL CALC_TAU_W_S (TAU_W_S, IER) 
+         CALL CALC_TAU_U_S (TAU_U_S, IER)
+         CALL CALC_TAU_V_S (TAU_V_S, IER)
+         CALL CALC_TAU_W_S (TAU_W_S, IER)
       ENDIF
 
       RETURN

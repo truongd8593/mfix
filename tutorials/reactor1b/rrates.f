@@ -12,8 +12,8 @@
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
 !  Literature/Document References:                                     C
-!  O. Levenspiel, "Chemical Reaction Engineering," Wiley Eastern,   
-!       New Delhi (1974)                                        
+!  O. Levenspiel, "Chemical Reaction Engineering," Wiley Eastern,
+!       New Delhi (1974)
 !                                                                      C
 !                                                                      C
 !                                                                      C
@@ -22,15 +22,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
 !
-      SUBROUTINE RRATES(IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE RRATES(IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE rxns
       USE energy
@@ -39,9 +39,10 @@
       USE indices
       USE physprop
       USE constant
-      USE funits 
+      USE funits
       USE compar        !//d
       USE sendrecv      !// 400
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,7 +59,7 @@
 
 !                      cell index
       INTEGER          IJK
-      
+
       DOUBLE PRECISION R_tmp(0:MMAX, 0:MMAX), RxH_xfr(0:MMAX, 0:MMAX)
       DOUBLE PRECISION X_tmp(0:MMAX, 0:MMAX, Dimension_n_all)
       DOUBLE PRECISION RXNA, Trxn
@@ -68,8 +69,6 @@
       DOUBLE PRECISION :: refT_L
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-      
       IER =0
       R_tmp = UNDEFINED
 !
@@ -77,9 +76,9 @@
 !  ---- processing
 !$omp  parallel do private(ijk, R_tmp, L, LM, M, N)
 
-      DO IJK = IJKSTART3, IJKEND3 
-      
-         IF (FLUID_AT(IJK)) THEN 
+      DO IJK = IJKSTART3, IJKEND3
+
+         IF (FLUID_AT(IJK)) THEN
 !
 !
 !  User input is required in sections 1 through 4.
@@ -169,12 +168,12 @@
 !     between phase-M and phase-L. If the destination phase is M, then N is the
 !     index of the species in phase-M, otherwise N is the index of the species
 !     in phase-L; e.g. (1) In the reaction C+1/2O2 --> CO,
-!     the destination phase is gas phase. Then N will be equal to the index of CO 
+!     the destination phase is gas phase. Then N will be equal to the index of CO
 !     in gas phase. (2) If H2O is trasferred between liquid and gas phases either
 !     evaporation or condensation, then the index must change depending upon the
 !     direction of mass transfer. For condensation, N is the species index
 !     of H2O in the liquid phase and for evaporation it is the species index
-!     of H2O in the gas phase. Also Sum_over_N (X_tmp(M,L, N)) should be equal to 1. 
+!     of H2O in the gas phase. Also Sum_over_N (X_tmp(M,L, N)) should be equal to 1.
 !
       if(MMAX > 0) then
         R_tmp(0,1) =  ZERO
@@ -196,9 +195,9 @@
 !     heat of Reaction for the C + O2 reaction is split into parts;
 !     CO formation is assigned to the solid phase and CO2 formation from CO to
 !     the gas phase.
-!     *** This section is no longer needed as the heats of reactions are  
-!         calculated below.  If you need to override the automatic calculation, 
-!         comment out the calculations below.   
+!     *** This section is no longer needed as the heats of reactions are
+!         calculated below.  If you need to override the automatic calculation,
+!         comment out the calculations below.
 !
 !==============================================================================
 !
@@ -207,11 +206,11 @@
 !   Determine g/(cm^3.s) of mass generation for each of the phases by adding
 !   the reaction rates of all the individual species.
 
-            SUM_R_G(IJK) = ZERO 
-            IF (SPECIES_EQ(0)) THEN 
-               IF (NMAX(0) > 0) THEN 
+            SUM_R_G(IJK) = ZERO
+            IF (SPECIES_EQ(0)) THEN
+               IF (NMAX(0) > 0) THEN
                   SUM_R_G(IJK) = SUM_R_G(IJK) + SUM(R_GP(IJK,:NMAX(0))-ROX_GC(&
-                     IJK,:NMAX(0))*X_G(IJK,:NMAX(0))) 
+                     IJK,:NMAX(0))*X_G(IJK,:NMAX(0)))
                ENDIF
 	    ELSE
 	      DO M = 1, MMAX
@@ -220,16 +219,16 @@
 		ELSEIF(R_tmp(M,0) .NE. UNDEFINED)THEN
 		  SUM_R_G(IJK) = SUM_R_G(IJK) - R_tmp(M,0)
 		ENDIF
-	      ENDDO 
-            ENDIF 
+	      ENDDO
+            ENDIF
 !
-            DO M = 1, MMAX 
-               SUM_R_S(IJK,M) = ZERO 
-               IF (SPECIES_EQ(M)) THEN 
-                  IF (NMAX(M) > 0) THEN 
+            DO M = 1, MMAX
+               SUM_R_S(IJK,M) = ZERO
+               IF (SPECIES_EQ(M)) THEN
+                  IF (NMAX(M) > 0) THEN
                      SUM_R_S(IJK,M) = SUM_R_S(IJK,M) + SUM(R_SP(IJK,M,:NMAX(M))&
-                        -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M))) 
-                  ENDIF 
+                        -ROX_SC(IJK,M,:NMAX(M))*X_S(IJK,M,:NMAX(M)))
+                  ENDIF
 	       ELSE
  	         DO L = 0, MMAX
 	           IF(R_tmp(M,L) .NE. UNDEFINED)THEN
@@ -237,10 +236,10 @@
 		   ELSEIF(R_tmp(L,M) .NE. UNDEFINED)THEN
 		     SUM_R_s(IJK,M) = SUM_R_s(IJK,M) - R_tmp(L,M)
 		   ENDIF
-	         ENDDO 
-               ENDIF 
-            END DO 
-	    
+	         ENDDO
+               ENDIF
+            END DO
+
 !
 !           Calculate the enthalpy of transferred material
 !
@@ -256,14 +255,14 @@
                refT_L = T_S(IJK,L)
 
 
-	        RxH_xfr(M, L) = zero 
+	        RxH_xfr(M, L) = zero
 	        IF(R_tmp(M,L) .NE. UNDEFINED)THEN
 		   IF(R_tmp(M,L) > ZERO) then ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
 			                              CALC_H(refT_M, M, N)
-	                   
-                     END DO 
+
+                     END DO
 		   else    ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) + R_tmp(M,L) * X_tmp(M,L, N) * &
@@ -274,23 +273,23 @@
 		   IF(R_tmp(L,M)> ZERO) then ! phase-L is generated from phase-M
                      DO N = 1, NMAX(L)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
-			                              CALC_H(refT_L, L, N) 
+			                              CALC_H(refT_L, L, N)
                      END DO
 		   else ! phase-M is generated from phase-L
                      DO N = 1, NMAX(M)
                        RxH_xfr(M, L) =  RxH_xfr(M, L) - R_tmp(L,M) * X_tmp(L,M, N) * &
 			                              CALC_H(refT_M, M, N)
-                     END DO 
+                     END DO
 		   endif
 	        ENDIF
-	      ENDDO 
-            END DO 
-	    
+	      ENDDO
+            END DO
+
             DO M = 1, MMAX
  	      DO L = 0, M-1
-	        RxH_xfr(M, L) = -RxH_xfr(L, M) 
-	      ENDDO 
-            END DO 
+	        RxH_xfr(M, L) = -RxH_xfr(L, M)
+	      ENDDO
+            END DO
 
 !
 !           Calculate heats of reactions
@@ -299,52 +298,52 @@
             DO N = 1, NMAX(0)
               HOR_G(IJK) = HOR_G(IJK) + &
 	         (R_gp(IJK, N) - RoX_gc(IJK, N) * X_g(IJK, N)) * CALC_H(T_G(IJK), 0, N)
-            END DO 
+            END DO
             DO L = 1, MMAX
 	      HOR_G(IJK) = HOR_G(IJK) - RxH_xfr(0, L)
 	    ENDDO
             IF (UNITS == 'SI') HOR_G(IJK) = 4183.925D0*HOR_G(IJK)    !in J/kg K
-	    
-            DO M = 1, MMAX 
+
+            DO M = 1, MMAX
               HOR_s(IJK, M) = zero
               DO N = 1, NMAX(M)
                 HOR_s(IJK, M) = HOR_s(IJK, M) + &
 		  (R_sp(IJK, M, N) - RoX_sc(IJK, M, N) * X_s(IJK, M, N)) * &
               CALC_H(T_S(IJK,M), M, N)
-              END DO 
+              END DO
               DO L = 0, MMAX
 	        if(M .NE. L) HOR_s(IJK, M) = HOR_s(IJK, M) - RxH_xfr(M, L)
 	      ENDDO
               IF (UNITS == 'SI') HOR_s(IJK, M) = 4183.925D0*HOR_s(IJK, M)    !in J/kg K
-            END DO 
+            END DO
             ENDIF ! for energy_eq
 !
 !
 !     Store R_tmp values in an array.  Only store the upper triangle without
 !     the diagonal of R_tmp array.
 !
-            DO L = 0, MMAX 
-               DO M = L + 1, MMAX 
-                  LM = L + 1 + (M - 1)*M/2 
-                  IF (R_TMP(L,M) /= UNDEFINED) THEN 
-                     R_PHASE(IJK,LM) = R_TMP(L,M) 
-                  ELSE IF (R_TMP(M,L) /= UNDEFINED) THEN 
-                     R_PHASE(IJK,LM) = -R_TMP(M,L) 
-                  ELSE 
-                     CALL START_LOG 
+            DO L = 0, MMAX
+               DO M = L + 1, MMAX
+                  LM = L + 1 + (M - 1)*M/2
+                  IF (R_TMP(L,M) /= UNDEFINED) THEN
+                     R_PHASE(IJK,LM) = R_TMP(L,M)
+                  ELSE IF (R_TMP(M,L) /= UNDEFINED) THEN
+                     R_PHASE(IJK,LM) = -R_TMP(M,L)
+                  ELSE
+                     CALL START_LOG
                      IF(.not.DMP_LOG)call open_pe_log(ier)
-                     WRITE (UNIT_LOG, 1000) L, M 
-                     CALL END_LOG 
-                     call mfix_exit(myPE)  
-                  ENDIF 
-               END DO 
-            END DO 
-	   
-         ENDIF 
-      END DO 
-      
+                     WRITE (UNIT_LOG, 1000) L, M
+                     CALL END_LOG
+                     call mfix_exit(myPE)
+                  ENDIF
+               END DO
+            END DO
+
+         ENDIF
+      END DO
+
  1000 FORMAT(/1X,70('*')//' From: RRATES',/&
          ' Message: Mass transfer between phases ',I2,' and ',I2,&
-         ' (R_tmp) not specified',/1X,70('*')/) 
-      RETURN  
-      END SUBROUTINE RRATES 
+         ' (R_tmp) not specified',/1X,70('*')/)
+      RETURN
+      END SUBROUTINE RRATES

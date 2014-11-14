@@ -22,22 +22,22 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE WRITE_RES1 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE WRITE_RES1
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE geometry
       USE physprop
       USE run
       USE scalars
       USE rxns
-      USE funits 
+      USE funits
       USE output
       USE energy
       USE cdist
@@ -68,24 +68,24 @@
       INTEGER :: LC, N
 !
 !             pointer to first time-dependent record in restart file
-      INTEGER :: NEXT_REC 
+      INTEGER :: NEXT_REC
 !-----------------------------------------------
 !
 
-!//d pnicol      
+!//d pnicol
 !      if (myPE.eq.PE_IO .and. .not.distio) then
-         allocate (array1(ijkmax2)) 
-         allocate (array2(ijkmax3))  
+         allocate (array1(ijkmax2))
+         allocate (array2(ijkmax3))
 !      else
-!         allocate (array1(1)) 
-!         allocate (array2(1))  
+!         allocate (array1(1))
+!         allocate (array2(1))
 !      end if
 
 
       if (myPE.eq.PE_IO .or. bDist_IO) then
-         READ (UNIT_RES, REC=3) NEXT_REC 
-         WRITE (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP 
-         NEXT_REC = NEXT_REC + 1 
+         READ (UNIT_RES, REC=3) NEXT_REC
+         WRITE (UNIT_RES, REC=NEXT_REC) TIME, DT, NSTEP
+         NEXT_REC = NEXT_REC + 1
       end if
 !
 !\\SP Local Send Receive - need to be moved to source later!!
@@ -135,9 +135,9 @@
 !
       call gatherWriteRes (T_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      DO N = 1, NMAX(0) 
+      DO N = 1, NMAX(0)
             call gatherWriteRes (X_g(:,n),array2, array1, NEXT_REC)  !//d pnicol
-      END DO 
+      END DO
 !
       call gatherWriteRes (U_g,array2, array1, NEXT_REC)  !//d pnicol
 !
@@ -145,12 +145,12 @@
 !
       call gatherWriteRes (W_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      DO LC = 1, MMAX 
+      DO LC = 1, MMAX
 !
         call gatherWriteRes (ROP_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 
         IF(ANY(SOLVE_ROs)) &
-            call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)  !//d pnicol        
+            call gatherWriteRes (RO_S(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
         call gatherWriteRes (T_s(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
@@ -162,33 +162,33 @@
 !
         call gatherWriteRes (THETA_M(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         DO N = 1, NMAX(LC) 
+         DO N = 1, NMAX(LC)
             call gatherWriteRes (X_s(:,LC,N),array2, array1, NEXT_REC)  !//d pnicol
-         END DO 
-      END DO 
+         END DO
+      END DO
 !
 !     Version 1.3
 
-      DO LC = 1, NScalar 
+      DO LC = 1, NScalar
             call gatherWriteRes (Scalar(:,LC),array2, array1, NEXT_REC)  !//d pnicol
       END DO
 !
-!     Version 1.4 -- write radiation variables in write_res1 
+!     Version 1.4 -- write radiation variables in write_res1
       call gatherWriteRes (GAMA_RG,array2, array1, NEXT_REC)  !//d pnicol
- 
+
       call gatherWriteRes (T_RG,array2, array1, NEXT_REC)  !//d pnicol
 
-      DO LC = 1, MMAX 
+      DO LC = 1, MMAX
         call gatherWriteRes (GAMA_RS(1,LC),array2, array1, NEXT_REC)  !//d pnicol
 
         call gatherWriteRes (T_RS(1,LC),array2, array1, NEXT_REC)  !//d pnicol
-      ENDDO 
+      ENDDO
 
 !
 !     Version 1.5
-      DO LC = 1, nRR 
+      DO LC = 1, nRR
             call gatherWriteRes (ReactionRates(:,LC),array2, array1, NEXT_REC)  !//d pnicol
-      END DO 
+      END DO
 !
 !     Version 1.6
 
@@ -196,10 +196,10 @@
             call gatherWriteRes (K_turb_G,array2, array1, NEXT_REC)  !//d pnicol
           call gatherWriteRes (E_turb_G,array2, array1, NEXT_REC)
       endif
-!--------------------------------------------------------------------- 
- 
-      if ( (myPE.eq.PE_IO .and. .not.bDist_IO) .or. bDist_IO) then 
-           CALL FLUSH_res (UNIT_RES) 
+!---------------------------------------------------------------------
+
+      if ( (myPE.eq.PE_IO .and. .not.bDist_IO) .or. bDist_IO) then
+           CALL FLUSH_res (UNIT_RES)
         end if
 
 !      call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
@@ -210,55 +210,56 @@
 
       call write_res1_netcdf
 !
-      RETURN  
-      END SUBROUTINE WRITE_RES1 
-      
+      RETURN
+      END SUBROUTINE WRITE_RES1
+
       subroutine gatherWriteRes(VAR, array2, array1, NEXT_REC)
 
       USE geometry
-      USE funits 
+      USE funits
       USE cdist
       USE compar           !//
       USE mpi_utility      !//d pnicol : for gather
       USE sendrecv         !//d pnicol : for gather
 
       USE cutcell
+      USE in_binary_512
 
       IMPLICIT NONE
 
-      double precision, dimension(ijkmax2) :: array1       
-      double precision, dimension(ijkmax3) :: array2     
-      double precision, dimension(DIMENSION_3) :: VAR,TMP_VAR   
+      double precision, dimension(ijkmax2) :: array1
+      double precision, dimension(ijkmax3) :: array2
+      double precision, dimension(DIMENSION_3) :: VAR,TMP_VAR
 
-      INTEGER :: NEXT_REC 
+      INTEGER :: NEXT_REC
 
 !     call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
       if (.not.bDist_IO) then
 
 
-         IF(RE_INDEXING) THEN                                                                                                                                        
+         IF(RE_INDEXING) THEN
             CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
             CALL gather (TMP_VAR,array2,root)
-         ELSE   
+         ELSE
             CALL gather (VAR,array2,root)
-         ENDIF 
+         ENDIF
 !         call gather (VAR,array2,root)  !//d pnicol
 
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
          if (myPE.eq.PE_IO) then
-            call convert_to_io_dp(array2,array1,ijkmax2)  
-            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC) 
+            call convert_to_io_dp(array2,array1,ijkmax2)
+            CALL OUT_BIN_512 (UNIT_RES, array1, IJKMAX2, NEXT_REC)
          end if
 
       else
 
-         IF(RE_INDEXING) THEN                                                                                                                                        
+         IF(RE_INDEXING) THEN
             CALL UNSHIFT_DP_ARRAY(VAR,TMP_VAR)
-            CALL OUT_BIN_512 (UNIT_RES, TMP_VAR, size(TMP_VAR), NEXT_REC) 
-         ELSE   
-            CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
-         ENDIF 
-!         CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC) 
+            CALL OUT_BIN_512 (UNIT_RES, TMP_VAR, size(TMP_VAR), NEXT_REC)
+         ELSE
+            CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC)
+         ENDIF
+!         CALL OUT_BIN_512 (UNIT_RES, var, size(var), NEXT_REC)
 
       end if
 
@@ -270,28 +271,29 @@
 !                                                                              !
       subroutine write_res1_netcdf
 
-	USE param 
-	USE param1 
-	USE fldvar
-	USE geometry
-	USE physprop
-	USE run
-	USE scalars
-	USE rxns
-	USE cdist
-	USE compar 
-	USE mpi_utility  
-	USE MFIX_netcdf
+        USE param
+        USE param1
+        USE fldvar
+        USE geometry
+        USE physprop
+        USE run
+        USE scalars
+        USE rxns
+        USE cdist
+        USE compar
+        USE mpi_utility
+        USE MFIX_netcdf
         USE energy
+        USE in_binary_512
 !       USE tmp_array
 
 
-	implicit none
+        implicit none
 
-	integer :: L , unit_add , I , n
+        integer :: L , unit_add , I , n
 
-	integer   :: ncid , xyz_dimid
-        integer   :: varid_time , t_dimid 
+        integer   :: ncid , xyz_dimid
+        integer   :: varid_time , t_dimid
         integer   :: dimids(1) , varid_epg , varid_pg,dims_time(1)
         integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
         integer   :: varid_tg  , varid_ropg
@@ -311,7 +313,7 @@
         integer   :: varid_kturbg , varid_eturbg
 
 
-        character :: fname*80 , var_name*80
+        character(LEN=80) :: fname, var_name
 
         double precision :: the_time
 
@@ -334,11 +336,11 @@
 ! bWrite_netCDF(13) : ReactionRates
 ! bWrite_netCDF(14) : k_turb_g , e_turb_g
 
-	if (.not. MFIX_usingNETCDF()) return
+        if (.not. MFIX_usingNETCDF()) return
         if (.not. bGlobalNetcdf) return
 
         return ! for now ... do not write restart files using netCDF
- 
+
         if (myPE .eq. PE_IO) then
            allocate (arr1(ijkmax2))
            allocate (arr2(ijkmax3))
@@ -347,72 +349,72 @@
            allocate (arr2(1))
         end if
 
-!	call mpi$barrier(MPI_COMM_WORLD,mpierr)
+!       call mpi$barrier(MPI_COMM_WORLD,mpierr)
         if (myPE .ne. PE_IO) goto 1234
-		
+
         fname = trim(run_name) // "_RES1.nc"
-	call MFIX_check_netcdf( MFIX_nf90_create(fname, NF90_CLOBBER, ncid) )
- 
-	call MFIX_check_netcdf( MFIX_nf90_def_dim(ncid, "xyz", ijkmax2, xyz_dimid) )
+        call MFIX_check_netcdf( MFIX_nf90_create(fname, NF90_CLOBBER, ncid) )
+
+        call MFIX_check_netcdf( MFIX_nf90_def_dim(ncid, "xyz", ijkmax2, xyz_dimid) )
         call MFIX_check_netcdf( MFIX_nf90_def_dim(ncid, "t"  ,         1        ,   t_dimid) )
 
-	! The dimids array is used to pass the IDs of the dimensions of
-	! the variables. Note that in fortran arrays are stored in
-	! column-major format.
+        ! The dimids array is used to pass the IDs of the dimensions of
+        ! the variables. Note that in fortran arrays are stored in
+        ! column-major format.
         dims_time(1) = t_dimid
-	dimids =  (/ xyz_dimid /)
+        dimids =  (/ xyz_dimid /)
 
         call MFIX_check_netcdf( MFIX_nf90_def_var(ncid ,"time"  , NF90_DOUBLE ,dims_time , varid_time ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "EP_g"  , NF90_DOUBLE, dimids    , varid_epg  ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "P_g"   , NF90_DOUBLE, dimids    , varid_pg   ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "P_star", NF90_DOUBLE, dimids    , varid_pstar) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "U_g"   , NF90_DOUBLE, dimids    , varid_ug   ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "V_g"   , NF90_DOUBLE, dimids    , varid_vg   ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "W_g"   , NF90_DOUBLE, dimids    , varid_wg   ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "T_g"   , NF90_DOUBLE, dimids    , varid_tg   ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "ROP_g" , NF90_DOUBLE, dimids    , varid_ropg ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "RO_g"  , NF90_DOUBLE, dimids    , varid_rog  ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "gamaRG"  , NF90_DOUBLE, dimids    , varid_gamaRG  ) )
-	call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "TRG"  , NF90_DOUBLE, dimids       , varid_TRG  ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "EP_g"  , NF90_DOUBLE, dimids    , varid_epg  ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "P_g"   , NF90_DOUBLE, dimids    , varid_pg   ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "P_star", NF90_DOUBLE, dimids    , varid_pstar) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "U_g"   , NF90_DOUBLE, dimids    , varid_ug   ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "V_g"   , NF90_DOUBLE, dimids    , varid_vg   ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "W_g"   , NF90_DOUBLE, dimids    , varid_wg   ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "T_g"   , NF90_DOUBLE, dimids    , varid_tg   ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "ROP_g" , NF90_DOUBLE, dimids    , varid_ropg ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "RO_g"  , NF90_DOUBLE, dimids    , varid_rog  ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "gamaRG"  , NF90_DOUBLE, dimids    , varid_gamaRG  ) )
+        call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, "TRG"  , NF90_DOUBLE, dimids       , varid_TRG  ) )
 
         do i = 1,1   ! mmax
            var_name = 'U_s_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_us(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_us(I)) )
 
            var_name = 'V_s_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_vs(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_vs(I)) )
 
            var_name = 'W_s_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_ws(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_ws(I)) )
 
            var_name = 'ROP_s_xxx'
            write (var_name(7:10),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_rops(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_rops(I)) )
 
            var_name = 'T_s_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_ts(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_ts(I)) )
 
            var_name = 'Theta_m_xxx'
            write (var_name(9:11),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_thetam(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_thetam(I)) )
 
            var_name = 'gamaRS_xxx'
            write (var_name(8:10),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_gamaRS(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_gamaRS(I)) )
 
            var_name = 'TRS_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_trs(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_trs(I)) )
 
            DO N = 1, NMAX(i)
               var_name = 'X_s_xxx_xxx'
               write (var_name(5:7) ,'(i3.3)') I
               write (var_name(9:11),'(i3.3)') n
-	      call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,n)) )
+              call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,n)) )
            END DO
 
 
@@ -421,103 +423,103 @@
         do i = 1,nmax(0)
            var_name = 'X_g_xxx'
            write (var_name(5:7),'(i3.3)') I
-	   call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xg(I)) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xg(I)) )
         end do
 
         do i = 1,nscalar
            var_name = 'Scalar_xxx'
            write (var_name(8:10),'(i3.3)') I
-           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_scalar(I)) ) 
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_scalar(I)) )
         end do
 
         do i = 1,nRR
            var_name = 'RRates_xxx'
            write (var_name(8:10),'(i3.3)') I
-           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_rr(I)) ) 
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_rr(I)) )
         end do
 
 
         if (k_Epsilon) then
-           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, 'k_turb_g', NF90_DOUBLE, dimids, varid_kturbg) ) 
-           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, 'e_turb_g', NF90_DOUBLE, dimids, varid_eturbg) ) 
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, 'k_turb_g', NF90_DOUBLE, dimids, varid_kturbg) )
+           call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, 'e_turb_g', NF90_DOUBLE, dimids, varid_eturbg) )
         end if
 
 
-	call MFIX_check_netcdf( MFIX_nf90_enddef(ncid) )
+        call MFIX_check_netcdf( MFIX_nf90_enddef(ncid) )
 
  1234   continue
-!	call mpi$barrier(MPI_COMM_WORLD,mpierr)
-        
+!       call mpi$barrier(MPI_COMM_WORLD,mpierr)
+
         if (myPE .eq. PE_IO) then
 !           call check_netcdf( nf90_put_var(ncid,varid_time,the_time) )   ! ???
            call MFIX_check_netcdf( MFIX_nf90_put_var(ncid,varid_time,time) )       ! ???
         end if
 
         call gather(EP_g,arr2,root)
-        
+
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_epg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_epg, arr1) )
         end if
 
         call gather(P_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_pg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_pg, arr1) )
         end if
 
         call gather(P_Star,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_pstar, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_pstar, arr1) )
         end if
 
         call gather(U_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
- 	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ug, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ug, arr1) )
         end if
 
         call gather(V_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_vg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_vg, arr1) )
         end if
 
         call gather(W_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_wg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_wg, arr1) )
         end if
 
         call gather(T_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_tg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_tg, arr1) )
         end if
 
         call gather(gama_rg,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_gamarg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_gamarg, arr1) )
         end if
 
         call gather(ro_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rog, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rog, arr1) )
         end if
 
         call gather(rop_g,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ropg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ropg, arr1) )
         end if
 
         call gather(t_rg,arr2,root)
         if (myPE .eq. PE_IO) then
            call convert_to_io_dp(arr2,arr1,ijkmax2)
-	   call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_trg, arr1) )
+           call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_trg, arr1) )
         end if
 
         do i = 1,1   ! mmax
@@ -525,57 +527,57 @@
            call gather(U_s(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_us(i), arr1) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_us(i), arr1) )
            end if
 
            call gather(V_s(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_vs(i), arr1) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_vs(i), arr1) )
            end if
 
 
            call gather(W_s(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ws(i), arr1) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ws(i), arr1) )
            end if
- 
+
            call gather(ROP_s(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rops(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rops(i), arr1 ) )
            end if
 
            call gather(T_s(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ts(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_ts(i), arr1 ) )
            end if
 
            call gather(Theta_m(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_thetam(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_thetam(i), arr1 ) )
            end if
 
            call gather(gama_rs(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_gamaRS(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_gamaRS(i), arr1 ) )
            end if
 
            call gather(T_rs(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_TRS(i) , arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_TRS(i) , arr1 ) )
            end if
- 
+
            do N = 1,nmax(i)
               call gather(X_s(:,i,N),arr2,root)
               if (myPE .eq. PE_IO) then
                  call convert_to_io_dp(arr2,arr1,ijkmax2)
- 	         call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xs(i,N), arr1 ) )
+                 call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xs(i,N), arr1 ) )
               end if
            end do
 
@@ -585,7 +587,7 @@
            call gather(X_g(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xg(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xg(i), arr1 ) )
            end if
         end do
 
@@ -593,7 +595,7 @@
            call gather(Scalar(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_scalar(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_scalar(i), arr1 ) )
            end if
         end do
 
@@ -601,7 +603,7 @@
            call gather(ReactionRates(:,i),arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rr(i), arr1 ) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_rr(i), arr1 ) )
            end if
         end do
 
@@ -609,28 +611,28 @@
            call gather(k_turb_g,arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_kturbg, arr1) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_kturbg, arr1) )
            end if
 
            call gather(e_turb_g,arr2,root)
            if (myPE .eq. PE_IO) then
               call convert_to_io_dp(arr2,arr1,ijkmax2)
-	      call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_eturbg, arr1) )
+              call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_eturbg, arr1) )
            end if
         end if
 
  2222   continue
 
-	! Close the file. This frees up any internal netCDF resources
-	! associated with the file, and flushes any buffers.
+        ! Close the file. This frees up any internal netCDF resources
+        ! associated with the file, and flushes any buffers.
         if (myPE .eq. PE_IO) then
-	   call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
+           call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
         end if
 
         deallocate (arr1)
         deallocate (arr2)
 
-	return
+        return
 
       end subroutine write_res1_netcdf
 

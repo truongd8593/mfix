@@ -19,18 +19,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOLVE_EPP(NORMS, RESS, IER) 
+      SUBROUTINE SOLVE_EPP(NORMS, RESS, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE fldvar
       USE geometry
       USE pscor
       USE residual
-      USE leqsol 
+      USE leqsol
       USE physprop
       Use ambm
       Use tmp_array1, B_mMAX => ARRAYm1
@@ -41,16 +41,16 @@
 ! Local parameters
 !-----------------------------------------------
 ! Parameter to make tolerance for residual scaled with max value
-! compatible with residual scaled with first iteration residual.  
+! compatible with residual scaled with first iteration residual.
 ! Increase it to tighten convergence.
-      DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1 !5.0D2  
+      DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1 !5.0D2
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Normalization factor for solids volume fraction correction residual.
 ! At start of the iterate loop norms will either be 1 (i.e. not
 ! normalized) or a user defined value given by norm_s.  If norm_s
-! was set to zero then the normalization is based on dominate 
+! was set to zero then the normalization is based on dominate
 ! term in the equation
       DOUBLE PRECISION, INTENT(IN) :: NORMs
 ! solids volume fraction correction residual
@@ -60,18 +60,18 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! solids phase index locally assigned to mcp 
+! solids phase index locally assigned to mcp
 ! mcp is the lowest index of those solids phases that are close_packed
 ! and of the solids phase that is used for the solids correction
 ! equation.
-      INTEGER :: M 
+      INTEGER :: M
 ! Normalization factor for solids volume fraction correction residual
       DOUBLE PRECISION :: NORMSloc
 ! linear equation solver method and iterations
       INTEGER :: LEQM, LEQI
 
 ! temporary use of global arrays:
-! arraym1 (locally b_mmax) 
+! arraym1 (locally b_mmax)
 ! vector B_M based on dominate term in correction equation
 !      DOUBLE PRECISION :: B_MMAX(DIMENSION_3, DIMENSION_M)
 ! Septadiagonal matrix A_m, vector B_m
@@ -84,26 +84,26 @@
 
 ! Form the sparse matrix equation.  Note that the index 0 is explicitly
 ! used throughout this routine for creating the matrix equation.
-! However, the equation is based on the index of MCP.  
+! However, the equation is based on the index of MCP.
 
-! initializing      
-      CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
-      CALL ZERO_ARRAY (EPP, IER) 
+! initializing
+      CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
+      CALL ZERO_ARRAY (EPP, IER)
 
-! for consistency set m=mcp and use m rather than specifically using 
+! for consistency set m=mcp and use m rather than specifically using
 ! value of 1 since m=mcp is used in related subroutines.  this requires
-! mcp be defined before this routine is called, which it should be. 
+! mcp be defined before this routine is called, which it should be.
 
 ! Note that currently this subroutine is only called when MMAX=1.
 ! Therefore, if solids phase 1 can close pack then MCP will be defined
 ! as 1 otherwise MCP will be undefined.
       IF (MCP /= UNDEFINED_I) THEN
          M = MCP
-      ELSE  ! current fail safe condition - goes through routines 
+      ELSE  ! current fail safe condition - goes through routines
          M = 1
       ENDIF
 
-      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER) 
+      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER)
 
 ! Add point source contributions.
       IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax, IER)
@@ -117,18 +117,18 @@
 ! Find average residual, maximum residual and location
       NORMSloc = NORMS
       IF(NORMS == ZERO) THEN
-! calculate the residual based on dominate term in correction equation              
+! calculate the residual based on dominate term in correction equation
 ! and use this to form normalization factor
          CALL CALC_RESID_PP (B_MMAX, ONE, NUM_RESID(RESID_P,M), &
             DEN_RESID(RESID_P,M), RESID(RESID_P,M), &
-            MAX_RESID(RESID_P,M), IJK_RESID(RESID_P,M), IER) 
+            MAX_RESID(RESID_P,M), IJK_RESID(RESID_P,M), IER)
          NORMSloc = RESID(RESID_P,M)/DEN
       ENDIF
 
       CALL CALC_RESID_PP (B_M, NORMSloc, NUM_RESID(RESID_P,M), &
          DEN_RESID(RESID_P,M), RESID(RESID_P,M), MAX_RESID(RESID_P,M), &
-         IJK_RESID(RESID_P,M), IER) 
-      RESS = RESID(RESID_P,M) 
+         IJK_RESID(RESID_P,M), IER)
+      RESS = RESID(RESID_P,M)
 !      write(*,*) resid(resid_p, 1), max_resid(resid_p, 1), &
 !         ijk_resid(resid_p, 1)
 
@@ -137,14 +137,14 @@
       CALL ADJUST_LEQ(RESID(RESID_P,M), LEQ_IT(2), LEQ_METHOD(2),&
                       LEQI, LEQM, IER)
 ! note index 0 is used here since that is the index that was used for
-! creating this matrix equation                      
+! creating this matrix equation
       CALL SOLVE_LIN_EQ ('EPp', 2, EPP, A_M, B_M, 0, LEQI, LEQM, &
-                         LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER) 
+                         LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER)
 
 !      call out_array(EPp, 'EPp')
 
       call unlock_tmp_array1
       call unlock_ambm
 
-      RETURN  
-      END SUBROUTINE SOLVE_EPP 
+      RETURN
+      END SUBROUTINE SOLVE_EPP

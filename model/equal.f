@@ -10,13 +10,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE EQUAL(ARRAY1, IJK1, SIGN0, ARRAY2, IJK2) 
+      SUBROUTINE EQUAL(ARRAY1, IJK1, SIGN0, ARRAY2, IJK2)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE indices
       USE physprop, only : MMAX
       IMPLICIT NONE
@@ -39,9 +39,9 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-      IF (MMAX > 0) THEN 
-         ARRAY1(IJK1,:MMAX) = SIGN0*ARRAY2(IJK2,:MMAX) 
+      IF (MMAX > 0) THEN
+         ARRAY1(IJK1,:MMAX) = SIGN0*ARRAY2(IJK2,:MMAX)
       ENDIF
 
-      RETURN  
-      END SUBROUTINE EQUAL 
+      RETURN
+      END SUBROUTINE EQUAL

@@ -21,24 +21,25 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE GET_SMASS(SMASS) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE GET_SMASS(SMASS)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE geometry
       USE fldvar
       USE indices
-      USE compar 
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -46,34 +47,33 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-! 
-!                      Total Weight of solids in the reactor 
-      DOUBLE PRECISION SMASS 
-! 
-!                      Weight of mth solids phase 
-      DOUBLE PRECISION SUM 
-! 
-!                      Indices 
-      INTEGER          I, J, K, IJK 
-! 
-!                      Solids phase 
-      INTEGER          M 
-! 
-!                      Functions 
-      DOUBLE PRECISION Accumulation 
-! 
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !
-      SMASS = ZERO 
-      DO M = 1, MMAX 
-         SMASS = SMASS + Accumulation(ROP_s(1, M))
-      END DO 
-      
-      RETURN  
-      END SUBROUTINE GET_SMASS 
+!                      Total Weight of solids in the reactor
+      DOUBLE PRECISION SMASS
+!
+!                      Weight of mth solids phase
+      DOUBLE PRECISION SUM
+!
+!                      Indices
+      INTEGER          I, J, K, IJK
+!
+!                      Solids phase
+      INTEGER          M
+!
+!                      Functions
+      DOUBLE PRECISION Accumulation
+!
+!-----------------------------------------------
 
-!// Comments on the modifications for DMP version implementation      
+      SMASS = ZERO
+      DO M = 1, MMAX
+         SMASS = SMASS + Accumulation(ROP_s(1, M))
+      END DO
+
+      RETURN
+      END SUBROUTINE GET_SMASS
+
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !// 400 Added mpi_utility module and other global reduction (global_all_sum) call

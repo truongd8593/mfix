@@ -26,31 +26,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE scales
+      USE bc
+      USE bodyforce
+      USE compar
       USE constant
-      USE physprop
+      USE cutcell
+      USE drag
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
+      USE ghdtheory
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE vshear
-      USE compar
-      USE sendrecv
-      USE ghdtheory
-      USE drag
-      USE cutcell
-      USE quadric
+      USE matrix
       USE mms
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE rxns
+      USE scales
+      USE sendrecv
+      USE tau_g
+      USE toleranc
+      USE visc_g
+      USE vshear
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -96,17 +99,7 @@
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
 ! error message
-      CHARACTER*80     LINE
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
+      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -395,6 +388,8 @@
       USE bc
       USE output
       USE compar
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -417,16 +412,6 @@
       INTEGER :: M
 ! Turbulent shear stress
       DOUBLE PRECISION :: W_F_Slip
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'b_force1.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'b_force2.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -942,6 +927,7 @@
       use physprop
       use ps
       use run
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -963,10 +949,6 @@
       INTEGER :: lJN, lJS
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 ! Set reference phase to gas

@@ -7,7 +7,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE drag
- 
+
 ! Gas-solids drag
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  F_gs
 
@@ -19,10 +19,10 @@
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  F_ss
 
 ! Off diagonal friction coefficient in HYS drag relation
-      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  beta_ij 
+      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  beta_ij
 
 ! Temporary storage: Volume x average at momentum cell centers
 !      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  VxF_gs
- 
+
 
       END MODULE drag

@@ -19,7 +19,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_USR0 
+      SUBROUTINE WRITE_USR0
 
       use discretelement, only: DES_MMAX
 
@@ -35,5 +35,5 @@
          open(UNIT=lUNIT, FILE=trim(adjustl(FNAME)), STATUS='NEW')
       ENDDO
 
-      RETURN  
-      END SUBROUTINE WRITE_USR0 
+      RETURN
+      END SUBROUTINE WRITE_USR0

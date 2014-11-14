@@ -17,99 +17,93 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE DRAG_SS(L, M, IER) 
+      SUBROUTINE DRAG_SS(L, M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE constant
       USE fldvar
       USE geometry
       USE indices
       USE physprop
-      USE compar 
-      USE sendrecv 
+      USE compar
+      USE sendrecv
       USE drag
       USE discretelement
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-! Index of solids phases 
-      INTEGER, INTENT(IN) :: L, M 
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Index of solids phases
+      INTEGER, INTENT(IN) :: L, M
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! indices 
+! indices
       INTEGER :: I, IJK, IMJK, IJMK, IJKM
-      INTEGER :: CM, DM 
-! index for storing solids-solids drag coefficients in the upper 
+      INTEGER :: CM, DM
+! index for storing solids-solids drag coefficients in the upper
 ! triangle of the matrix
-      INTEGER :: LM 
+      INTEGER :: LM
 ! cell center value of U_sm, U_sl, V_sm, V_sl, W_sm, W_sl
       DOUBLE PRECISION :: USCM, USCL, VSCM, VSCL, WSCM, WSCL
-! relative velocity between solids phase m and l 
-      DOUBLE PRECISION :: VREL 
-! particle diameters of phase M and phase L 
-      DOUBLE PRECISION :: D_pm, D_pl 
-! particle densities of phase M and phase L 
-      DOUBLE PRECISION :: RO_M, RO_L 
+! relative velocity between solids phase m and l
+      DOUBLE PRECISION :: VREL
+! particle diameters of phase M and phase L
+      DOUBLE PRECISION :: D_pm, D_pl
+! particle densities of phase M and phase L
+      DOUBLE PRECISION :: RO_M, RO_L
 ! radial distribution function between phases M and L
       DOUBLE PRECISION :: G0_ML
 ! void fraction and solids volume fraction
       DOUBLE PRECISION :: EPg, EPs
 ! sum over all phases of ratio volume fraction over particle diameter
       DOUBLE PRECISION :: EPSoDP
-! solid-solid drag coefficient 
+! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
 !-----------------------------------------------
 ! External Functions
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_0 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       LM = FUNLM(L,M)
-   
+
       DO IJK = ijkstart3, ijkend3
 
-         IF (.NOT.WALL_AT(IJK)) THEN 
+         IF (.NOT.WALL_AT(IJK)) THEN
 ! Evaluate at all flow boundaries and fluid cells
 ! This is unlike the fluid-solid drag coefficient, which is only
 ! evluated in fluid cells and pressure inflow cells
 
-            I = I_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IJKM = KM_OF(IJK) 
+            I = I_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 
 ! calculating velocity components at i, j, k (cell center)
-            USCL = AVG_X_E(U_S(IMJK,L),U_S(IJK,L),I) 
-            VSCL = AVG_Y_N(V_S(IJMK,L),V_S(IJK,L)) 
-            WSCL = AVG_Z_T(W_S(IJKM,L),W_S(IJK,L)) 
+            USCL = AVG_X_E(U_S(IMJK,L),U_S(IJK,L),I)
+            VSCL = AVG_Y_N(V_S(IJMK,L),V_S(IJK,L))
+            WSCL = AVG_Z_T(W_S(IJKM,L),W_S(IJK,L))
 
-            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I) 
-            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M)) 
-            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M)) 
+            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
+            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
+            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
 
 ! magnitude of solids-solids relative velocity
             VREL = SQRT((USCL - USCM)**2 + (VSCL - VSCM)**2 + &
-                        (WSCL - WSCM)**2) 
+                        (WSCL - WSCM)**2)
 
 ! setting aliases for easy reference
-            D_PM = D_P(IJK,M) 
+            D_PM = D_P(IJK,M)
             D_PL = D_P(IJK,L)
             RO_M = RO_S(IJK,M)
             RO_L = RO_S(IJK,L)
@@ -140,12 +134,12 @@
 
             F_SS(IJK,LM) = lDss*ROP_S(IJK,M)*ROP_S(IJK,L)
 
-! Gera: accounting for particle-particle drag due to enduring contact in a 
+! Gera: accounting for particle-particle drag due to enduring contact in a
 ! close-packed system. Note the check for mmax >= 2 below is unnecessary
 ! since this routine will not be entered unless mmax >=2
             IF(CLOSE_PACKED(M) .AND. CLOSE_PACKED(L) .AND. &
               (MMAX >= 2))  F_SS(IJK,LM) = F_SS(IJK,LM) + &
-               SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK) 
+               SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 
           ELSE   ! elseif (.not.wall_at(ijk))
 
@@ -154,11 +148,11 @@
          ENDIF   ! end if (.not.wall_at(ijk))
 
       ENDDO    ! end do (ijk=ijkstart3,ijkend3)
-           
-      RETURN  
-      END SUBROUTINE DRAG_SS 
 
-      
+      RETURN
+      END SUBROUTINE DRAG_SS
+
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -180,7 +174,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
+      USE param
       USE param1
       USE constant
       use run
@@ -200,27 +194,27 @@
       DOUBLE PRECISION, INTENT(IN) :: RO_L
 ! radial distribution function between phases M and L
       DOUBLE PRECISION, INTENT(IN) :: G0_ML
-! relative velocity between solids phase m and l 
+! relative velocity between solids phase m and l
       DOUBLE PRECISION, INTENT(IN) :: VREL
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Sum of particle diameters 
+! Sum of particle diameters
       DOUBLE PRECISION :: DPSUM
 ! Intermediate calculation
-      DOUBLE PRECISION :: const      
+      DOUBLE PRECISION :: const
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
 !-----------------------------------------------
-     
+
       DPSUM = D_PL + D_PM
 
       const = 3.d0*(ONE + C_E)*(PI/2.d0 + C_F*PI*PI/8.d0)*&
-         DPSUM**2/(2.d0*PI*(RO_L*D_PL**3+RO_M*D_PM**3)) 
+         DPSUM**2/(2.d0*PI*(RO_L*D_PL**3+RO_M*D_PM**3))
 
       ldss = const * G0_ML * VREL
-         
+
       RETURN
       END SUBROUTINE DRAG_SS_SYAM
 
@@ -242,61 +236,58 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE DRAG_SS_IA(L, M, IER) 
+      SUBROUTINE DRAG_SS_IA(L, M, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param1 
+      USE param1
       USE constant
       USE physprop
       USE fldvar
-      USE sendrecv 
+      USE sendrecv
       USE drag
       use kintheory
-      USE compar 
+      USE compar
       USE geometry
       USE indices
-      
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 ! Solids phase index
       INTEGER, INTENT(IN) :: M, L
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices 
+! Indices
       INTEGER :: IJK
-! Index for storing solids-solids drag coefficients 
-! in the upper triangle of the matrix 
-      INTEGER :: LM 
-! Particle diameters 
-      DOUBLE PRECISION :: D_PM, D_PL 
-! Sum of particle diameters 
-      DOUBLE PRECISION :: DPSUM 
-! 
+! Index for storing solids-solids drag coefficients
+! in the upper triangle of the matrix
+      INTEGER :: LM
+! Particle diameters
+      DOUBLE PRECISION :: D_PM, D_PL
+! Sum of particle diameters
+      DOUBLE PRECISION :: DPSUM
+!
       DOUBLE PRECISION :: M_PM, M_PL, MPSUM, DPSUMo2, NU_PL, NU_PM
-      DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R2p_lm, R3p_lm, & 
+      DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R2p_lm, R3p_lm, &
                           R4p_lm, R10p_lm, Bp_lm
       DOUBLE PRECISION :: Fss_ip, Fnus_ip, FTsM_ip, FTsL_ip, &
                           F_common_term
-!----------------------------------------------- 
+!-----------------------------------------------
 ! Function subroutines
-!----------------------------------------------- 
-      DOUBLE PRECISION , EXTERNAL :: G_0 
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+      DOUBLE PRECISION , EXTERNAL :: G_0
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
-         
-          IF (.NOT.WALL_AT(IJK)) THEN 
+
+          IF (.NOT.WALL_AT(IJK)) THEN
 
                LM = FUNLM(L,M)
 
@@ -306,10 +297,10 @@
                     FT_sM_ip(IJK,M,L) = ZERO
                     FT_sL_ip(IJK,M,L) = ZERO
 
-               ELSE 
-                    D_PM = D_P(IJK,M) 
-                    D_PL = D_P(IJK,L) 
-                    DPSUM = D_PL + D_PM 
+               ELSE
+                    D_PM = D_P(IJK,M)
+                    D_PL = D_P(IJK,L)
+                    DPSUM = D_PL + D_PM
                     M_PM = (Pi/6.d0) * D_PM**3 *RO_S(IJK,M)
                     M_PL = (Pi/6.d0) * D_PL**3 *RO_S(IJK,L)
                     MPSUM = M_PM + M_PL
@@ -325,23 +316,23 @@
                          (2.d0*MPSUM)
                     Dp_lm = (M_PL*M_PM*(M_PM*Theta_m(IJK,M)+M_PL*Theta_m(IJK,L) ))/&
                          (2.d0*MPSUM*MPSUM)
-                    
+
                     R0p_lm = ( 1.d0/( Ap_lm**1.5 * Dp_lm**2.5 ) )+ &
                               ( (15.d0*Bp_lm*Bp_lm)/( 2.d0* Ap_lm**2.5 * Dp_lm**3.5 ) )+&
                               ( (175.d0*(Bp_lm**4))/( 8.d0*Ap_lm**3.5 * Dp_lm**4.5 ) )
-                    
+
                     R2p_lm = ( 1.d0/( 2.d0*Ap_lm**1.5 * Dp_lm*Dp_lm ) )+&
                               ( (3.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**3 ) )+&
                               ( (15.d0*Bp_lm**4)/( 2.d0*Ap_lm**3.5 * Dp_lm**4 ) )
-                    
+
                     R3p_lm = ( 1.d0/( (Ap_lm**1.5)*(Dp_lm**3.5) ) )+&
                               ( (21.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**2.5 * Dp_lm**4.5 ) )+&
                               ( (315.d0*Bp_lm**4)/( 8.d0 * Ap_lm**3.5 *Dp_lm**5.5 ) )
-                    
+
                     R4p_lm = ( 3.d0/( Ap_lm**2.5 * Dp_lm**3.5 ) )+&
                               ( (35.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**3.5 * Dp_lm**4.5 ) )+&
                               ( (441.d0*Bp_lm**4)/( 8.d0 * Ap_lm**4.5 * Dp_lm**5.5 ) )
-                    
+
                     R10p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**2.5 ) )+&
                               ( (25.d0*Bp_lm*Bp_lm)/( 2.d0* Ap_lm**3.5 * Dp_lm**3.5 ) )+&
                               ( (1225.d0*Bp_lm**4)/( 24.d0* Ap_lm**4.5 * Dp_lm**4.5 ) )
@@ -349,7 +340,7 @@
                     F_common_term = (DPSUMo2*DPSUMo2/4.d0)*(M_PM*M_PL/MPSUM)*&
                          G_0(IJK,M,L)*(1.d0+C_E)*(M_PM*M_PL)**1.5
 
-! Momentum source associated with relative velocity between solids 
+! Momentum source associated with relative velocity between solids
 ! phase m and solid phase l
                     Fss_ip = F_common_term*NU_PM*NU_PL*DSQRT(PI)*R2p_lm*&
                            (Theta_m(IJK,M)*Theta_m(IJK,L))**2
@@ -378,8 +369,8 @@
                               (5.d0*M_PM*M_PL/(96.d0*MPSUM) *R4p_lm*Bp_lm)  )  )
 
                     F_SS(IJK,LM) = Fss_ip
-               
-                    Fnu_s_ip(IJK,M,L) = Fnus_ip 
+
+                    Fnu_s_ip(IJK,M,L) = Fnus_ip
 
 ! WARNING: the following two terms have caused some convergence problems
 ! earlier. Set them to ZERO for debugging in case of converegence
@@ -395,8 +386,8 @@
                  ENDIF
                ENDIF
           ENDIF
-      ENDDO 
-           
-      RETURN  
-      END SUBROUTINE DRAG_SS_IA      
+      ENDDO
+
+      RETURN
+      END SUBROUTINE DRAG_SS_IA
 

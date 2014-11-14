@@ -56,14 +56,14 @@
 !*          dimensioned 1:*                                            *
 !***********************************************************************
 !* Changes:                                                            *
-!*   2001-02-25 ceaf => changed TS to real*4, retained all others as   *
-!*              real*8; renamed variable first->ibeg, last->iend,      *
+!*   2001-02-25 ceaf => changed TS to real(kind=4), retained all others as   *
+!*              real(kind=8); renamed variable first->ibeg, last->iend,      *
 !*              minlag->lmin, maxlag->lmax; added parameter lstp;      *
 !*              split acf into lag and acf                             *
 !*   2001-02-28 ceaf => fixed ck denominator (added +1)                *
 !*   2001-03-20 ceaf => changed double to dble                         *
 !*   2001-12-06 sp+ceaf => added "implicit none"; renamed erroneous    *
-!*              variable lagstep to lstp; changed TS to real*8;        *
+!*              variable lagstep to lstp; changed TS to real(kind=8);        *
 !*              changed denominator in variance calculation from       *
 !*              nRec-1 to nRec                                         *
 !***********************************************************************
@@ -72,24 +72,24 @@
 
       implicit none
 
-      real*8 TS(1:*) !.............................. time series (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      integer*4 lmin !.......... minimal value of lag to compute (input)
-      integer*4 lmax !.......... maximal value of lag to compute (input)
-      integer*4 lstp !............................ lag increment (input)
-      integer*4 lag(1:*) !........................ list of lags (output)
-      real*8 acf(1:*) !................. autocorrelation values (output)
-      integer*4 lk !............................................ counter
-      integer*4 ll !...................................... write counter
-      integer*4 k !......................................... lag counter
-      integer*4 nRec !................. number of records in [ibeg,iend]
-      real*8 avg !................................................. mean
-      real*8 ck !................................. lag-k correlation sum
-      real*8 var !............................................. variance
-      real*8 sum !.................................................. sum
-      integer*4 begidx !...................... first record in TS to use
-      integer*4 endidx !....................... last record in TS to use
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      integer(kind=4) lmin !.......... minimal value of lag to compute (input)
+      integer(kind=4) lmax !.......... maximal value of lag to compute (input)
+      integer(kind=4) lstp !............................ lag increment (input)
+      integer(kind=4) lag(1:*) !........................ list of lags (output)
+      real(kind=8) acf(1:*) !................. autocorrelation values (output)
+      integer(kind=4) lk !............................................ counter
+      integer(kind=4) ll !...................................... write counter
+      integer(kind=4) k !......................................... lag counter
+      integer(kind=4) nRec !................. number of records in [ibeg,iend]
+      real(kind=8) avg !................................................. mean
+      real(kind=8) ck !................................. lag-k correlation sum
+      real(kind=8) var !............................................. variance
+      real(kind=8) sum !.................................................. sum
+      integer(kind=4) begidx !...................... first record in TS to use
+      integer(kind=4) endidx !....................... last record in TS to use
 
 ! --- Sanity and range checks ---
       nRec = iend - ibeg + 1
@@ -181,14 +181,14 @@
 !*          dimensioned 1:*                                            *
 !***********************************************************************
 !* Changes:                                                            *
-!*   2001-02-25 ceaf => changed TS to real*4, retained all others as   *
-!*              real*8; renamed variable first->ibeg, last->iend,      *
+!*   2001-02-25 ceaf => changed TS to real(kind=4), retained all others as   *
+!*              real(kind=8); renamed variable first->ibeg, last->iend,      *
 !*              minlag->lmin, maxlag->lmax; added parameter lstp;      *
 !*              split ccf into lag and ccf                             *
 !*   2001-02-28 ceaf => fixed ck denominator (added +1)                *
 !*   2001-03-20 ceaf => changed double to dble                         *
 !*   2001-12-06 sp+ceaf => added "implicit none"; added lstp to input  *
-!*              argument list; changed TS to real*8; changed           *
+!*              argument list; changed TS to real(kind=8); changed           *
 !*              denominator in variance calculation from nRec-1 to     *
 !*              nRec; changed 1 to ibeg in assignment of begidx;       *
 !*              removed **2 from scaling of ck by number of differences*
@@ -198,28 +198,28 @@
 
       implicit none
 
-      real*8 TSx(1:*) !................... reference time series (input)
-      real*8 TSy(1:*) !........................ test time series (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      integer*4 lmin !.......... minimal value of lag to compute (input)
-      integer*4 lmax !.......... maximal value of lag to compute (input)
-      integer*4 lstp !............................ lag increment (input)
-      integer*4 lag(1:*) !........................ list of lags (output)
-      real*8 ccf(1:*) !................ crosscorrelation values (output)
-      integer*4 lk !............................................ counter
-      integer*4 ll !...................................... write counter
-      integer*4 k !......................................... lag counter
-      integer*4 nrec !................. number of records in [ibeg,iend]
-      real*8 avgx !......................................... mean of TSx
-      real*8 avgy !......................................... mean of TSy
-      real*8 ck !................................. lag-k correlation sum
-      real*8 varx !..................................... variance of TSx
-      real*8 vary !..................................... variance of TSy
-      real*8 scale !..................... scale factor (sqrt(varx*vary))
-      real*8 sum !.................................................. sum
-      integer*4 begidx !...................... first record in TS to use
-      integer*4 endidx !....................... last record in TS to use
+      real(kind=8) TSx(1:*) !................... reference time series (input)
+      real(kind=8) TSy(1:*) !........................ test time series (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      integer(kind=4) lmin !.......... minimal value of lag to compute (input)
+      integer(kind=4) lmax !.......... maximal value of lag to compute (input)
+      integer(kind=4) lstp !............................ lag increment (input)
+      integer(kind=4) lag(1:*) !........................ list of lags (output)
+      real(kind=8) ccf(1:*) !................ crosscorrelation values (output)
+      integer(kind=4) lk !............................................ counter
+      integer(kind=4) ll !...................................... write counter
+      integer(kind=4) k !......................................... lag counter
+      integer(kind=4) nrec !................. number of records in [ibeg,iend]
+      real(kind=8) avgx !......................................... mean of TSx
+      real(kind=8) avgy !......................................... mean of TSy
+      real(kind=8) ck !................................. lag-k correlation sum
+      real(kind=8) varx !..................................... variance of TSx
+      real(kind=8) vary !..................................... variance of TSy
+      real(kind=8) scale !..................... scale factor (sqrt(varx*vary))
+      real(kind=8) sum !.................................................. sum
+      integer(kind=4) begidx !...................... first record in TS to use
+      integer(kind=4) endidx !....................... last record in TS to use
 
 ! --- Sanity and range checks ---
       nrec = iend - ibeg + 1
@@ -277,7 +277,7 @@
        lag(ll) = k
        ! The following line was
        !   ccf(ll) = (ck / (dble(endidx - k - begidx + 1)**2)) / scale
-       ! and gave wrong scaling. <- 2001-12-06 ceaf    
+       ! and gave wrong scaling. <- 2001-12-06 ceaf
        ccf(ll) = ck / (dble(endidx - k - begidx + 1) * scale)
        ll = ll + 1
       enddo ! k
@@ -325,8 +325,8 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-02-14 ceaf => changed mif from two to one-dimensional array  *
-!*              and stored lags in separate array; changed real*8 to   *
-!*              real*4; changed output units from bits to dimensionless*
+!*              and stored lags in separate array; changed real(kind=8) to   *
+!*              real(kind=4); changed output units from bits to dimensionless*
 !*              after Darbellay; externalized "symbolization"          *
 !*   2001-02-15 ceaf => changed probability matrices to be indexed     *
 !*              from 0                                                 *
@@ -340,26 +340,26 @@
 
       implicit none
 
-      integer*4 MAXBIN
+      integer(kind=4) MAXBIN
       parameter (MAXBIN=100)
 
-      integer*4 SS(1:*) !................ symbolized time series (input)
-      integer*4 ibeg !....... index of first record in SS to use (input)
-      integer*4 iend !........ index of last record in SS to use (input)
-      integer*4 lmin !.......... minimal value of lag to compute (input)
-      integer*4 lmax !.......... maximal value of lag to com ute (input)
-      integer*4 lstp !.......................... lag incrementer (input)
-      integer*4 nbin ! number of bins for observed probabilities (input)
-      integer*4 lag(1:*) !........................ list of lags (output)
-      real*4 mif(1:*) !.............. mutual information values (output)
-      real*4 mi !.................................... mutual information
-      integer*4 i,j,k,l,ll !................................... counters
-      integer*4 begidx !...................... first record in SS to use
-      integer*4 endidx !....................... last record in SS to use
-      real*4 pi(0:MAXBIN-1) !.. observed probabilities of leading points
-      real*4 pj(0:MAXBIN-1) !. observed probabilities of trailing points
-      real*4 pij(0:MAXBIN-1,0:MAXBIN-1) !.. joint observed probabilities
-      real*4 hi,hj,hij !......................... entropies of pi,pj,pij
+      integer(kind=4) SS(1:*) !................ symbolized time series (input)
+      integer(kind=4) ibeg !....... index of first record in SS to use (input)
+      integer(kind=4) iend !........ index of last record in SS to use (input)
+      integer(kind=4) lmin !.......... minimal value of lag to compute (input)
+      integer(kind=4) lmax !.......... maximal value of lag to com ute (input)
+      integer(kind=4) lstp !.......................... lag incrementer (input)
+      integer(kind=4) nbin ! number of bins for observed probabilities (input)
+      integer(kind=4) lag(1:*) !........................ list of lags (output)
+      real(kind=4) mif(1:*) !.............. mutual information values (output)
+      real(kind=4) mi !.................................... mutual information
+      integer(kind=4) i,j,k,l,ll !................................... counters
+      integer(kind=4) begidx !...................... first record in SS to use
+      integer(kind=4) endidx !....................... last record in SS to use
+      real(kind=4) pi(0:MAXBIN-1) !.. observed probabilities of leading points
+      real(kind=4) pj(0:MAXBIN-1) !. observed probabilities of trailing points
+      real(kind=4) pij(0:MAXBIN-1,0:MAXBIN-1) !.. joint observed probabilities
+      real(kind=4) hi,hj,hij !......................... entropies of pi,pj,pij
 
 ! --- Sanity and range checks ---
       if ((iend-ibeg+1).le.0) then ! invalid ranges ? abort
@@ -463,34 +463,34 @@
 !*   tsym => t3 functional value at each lag in lag                    *
 !***********************************************************************
 !* Changes:                                                            *
-!*   2001-12-10 ceaf => added "implicit none"; changed TS to real*8    *
+!*   2001-12-10 ceaf => added "implicit none"; changed TS to real(kind=8)    *
 !***********************************************************************
 
       subroutine t3sym(TS,ibeg,iend,lmin,lmax,lstp,lag,tsym)
 
       implicit none
 
-      real*8 TS(1:*) !.............................. time series (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      integer*4 lmin !.......... minimal value of lag to compute (input)
-      integer*4 lmax !.......... maximal value of lag to compute (input)
-      integer*4 lstp !............................ lag increment (input)
-      real*8 lag(1:*) !......... time lags matching tsym values (output)
-      real*8 tsym(1:*) !........... asymmetry for all intervals (output)
-      real*8 d !...................................... lagged difference
-      real*8 s2, s3 !......................... lagged-difference summers
-      integer*4 i,j,k !........................................ counters
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      integer(kind=4) lmin !.......... minimal value of lag to compute (input)
+      integer(kind=4) lmax !.......... maximal value of lag to compute (input)
+      integer(kind=4) lstp !............................ lag increment (input)
+      real(kind=8) lag(1:*) !......... time lags matching tsym values (output)
+      real(kind=8) tsym(1:*) !........... asymmetry for all intervals (output)
+      real(kind=8) d !...................................... lagged difference
+      real(kind=8) s2, s3 !......................... lagged-difference summers
+      integer(kind=4) i,j,k !........................................ counters
 
       if (lstp.eq.0) lstp = 1
-      k = 1 ! initialize write index 
+      k = 1 ! initialize write index
       do i=lmin,lmax,lstp
        s2 = 0.d0
        s3 = 0.d0
        do j=ibeg,iend-i,1
         d = TS(j+i) - TS(j)
         s2 = s2 + d**2
-        s3 = s3 + d**3	 
+        s3 = s3 + d**3
        enddo ! j
        lag(k) = i
        tsym(k) = 0.d0
@@ -540,20 +540,20 @@
       implicit none
 
       external sgn_d
-      real*8 sgn_d !........................... algebraic sign of double
+      real(kind=8) sgn_d !........................... algebraic sign of double
 
-      real*8 TS(1:*) !.............................. time series (input)
-      integer*4 ibeg !................ first record in TS to use (input)
-      integer*4 iend !................. last record in TS to use (input)
-      integer*4 lmin !.......... minimal value of lag to compute (input)
-      integer*4 lmax !.......... maximal value of lag to compute (input)
-      integer*4 lstp !.......................... lag incrementer (input)
-      integer*4 lag(1:*) !...... time lags matching tsgn values (output)
-      real*8 tsgn(1:*) !........... asymmetry for all intervals (output)
-      real*8 sum !............................. lagged-difference summer
-      integer*4 j,k,l !........................................ counters
-      integer*4 begidx !...................... first record in SS to use
-      integer*4 endidx !....................... last record in SS to use
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      integer(kind=4) ibeg !................ first record in TS to use (input)
+      integer(kind=4) iend !................. last record in TS to use (input)
+      integer(kind=4) lmin !.......... minimal value of lag to compute (input)
+      integer(kind=4) lmax !.......... maximal value of lag to compute (input)
+      integer(kind=4) lstp !.......................... lag incrementer (input)
+      integer(kind=4) lag(1:*) !...... time lags matching tsgn values (output)
+      real(kind=8) tsgn(1:*) !........... asymmetry for all intervals (output)
+      real(kind=8) sum !............................. lagged-difference summer
+      integer(kind=4) j,k,l !........................................ counters
+      integer(kind=4) begidx !...................... first record in SS to use
+      integer(kind=4) endidx !....................... last record in SS to use
 
 ! --- Sanity and range checks ---
       if ((iend-ibeg+1).le.0) then ! invalid ranges ? abort
@@ -572,7 +572,7 @@
       endidx = iend
 
 ! --- Estimate temporal-symmetry function ---
-      k = 1 ! initialize write index 
+      k = 1 ! initialize write index
       do l=lmin,lmax,lstp
        sum = 0.d0
        do j=begidx,(endidx-l),1

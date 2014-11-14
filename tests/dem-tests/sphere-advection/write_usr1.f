@@ -4,7 +4,7 @@
 !  Purpose: Write user-defined output                                  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE WRITE_USR1(L) 
+      SUBROUTINE WRITE_USR1(L)
 
       use constant
       use discretelement
@@ -13,7 +13,7 @@
 
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: L 
+      INTEGER, INTENT(IN) :: L
 
       INTEGER :: NP
 
@@ -74,5 +74,5 @@
 
       CLOSE(FUNIT)
 
-      RETURN  
+      RETURN
       END SUBROUTINE WRITE_USR1

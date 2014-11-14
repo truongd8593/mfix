@@ -25,7 +25,7 @@
       Use param
       Use param1
       Use post3d
-      
+
       IMPLICIT NONE
 !
 !
@@ -35,7 +35,7 @@
         '  1   - Print (ASCII) MU_s and THETA calculated from RES file'
       WRITE (*,*) &
         '  2   - Write MU_s and THETA in .SP1 format'
-      WRITE (*,*)& 
+      WRITE (*,*)&
         '  3   - Calculate Gas Flux : AVG(EP_g * V_g)'
       WRITE (*,*) &
         '  4   - Calculate Solids Flux AVG(EP_sm * V_sm)'
@@ -56,6 +56,6 @@
       ELSEIF (SELECTION.EQ.5) THEN
          CALL CALC_CORR_TYPE_1
       END IF
-      GOTO 10 
+      GOTO 10
 !
       END

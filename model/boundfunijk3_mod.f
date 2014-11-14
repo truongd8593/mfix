@@ -14,6 +14,7 @@
       USE compar
       USE fldvar
       USE indices
+      USE function3
       IMPLICIT NONE
 !
 !                      Dummy indices for I, J, K
@@ -25,9 +26,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER IJK
-
 !-----------------------------------------------
-      INCLUDE 'function3.inc'
 
       BOUND_FUNIJK3  = FUNIJK3 ( MIN( IEND4, MAX (ISTART4, pLI) ),&
                                MIN( JEND4, MAX (JSTART4, pLJ) ),&

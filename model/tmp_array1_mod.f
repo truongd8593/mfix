@@ -26,7 +26,7 @@
          ARRAYm1
 
       LOGICAL :: tmp_array1_locked = .false.
-      
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -48,5 +48,5 @@
       SUBROUTINE unlock_tmp_array1
       tmp_array1_locked = .false.
       END SUBROUTINE unlock_tmp_array1
-      
+
       END MODULE tmp_array1

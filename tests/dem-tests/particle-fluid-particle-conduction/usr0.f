@@ -10,7 +10,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR0 
+      SUBROUTINE USR0
 
       use discretelement, only: DTSOLID
       use constant, only: C
@@ -24,5 +24,5 @@
       DTSOLID = C(1)
 
 
-      RETURN  
-      END SUBROUTINE USR0 
+      RETURN
+      END SUBROUTINE USR0

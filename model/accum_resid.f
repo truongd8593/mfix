@@ -19,18 +19,18 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE ACCUM_RESID
-!     
+!
 !-----------------------------------------------
-!     M o d u l e s 
+!     M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
-      USE parallel 
+      USE param
+      USE param1
+      USE matrix
+      USE parallel
       USE geometry
       USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE residual
       USE run
       IMPLICIT NONE
@@ -49,7 +49,7 @@
 
 !
       IF(DEBUG_RESID) Return
-!     
+!
       LOCAL_INDEX = 0
 
 ! Pack the numerators and denominators into one vector for performing single global operation
@@ -85,15 +85,15 @@
 !!!$omp parallel do private( NN,M )
       DO NN = 2, NRESID
          DO M = 0, DIMENSION_M
-            IF (DEN_RESID(NN,M) > ZERO) THEN 
-               RESID(NN,M) = NUM_RESID(NN,M)/DEN_RESID(NN,M) 
-            ELSE IF (NUM_RESID(NN,M) == ZERO) THEN 
-               RESID(NN,M) = ZERO 
-            ELSE 
-               RESID(NN,M) = UNDEFINED 
-!     WRITE (LINE, *) 'Warning: All center coefficients are zero.' 
-!     CALL WRITE_ERROR ('ACCUM_RESID', LINE, 1) 
-            ENDIF 
+            IF (DEN_RESID(NN,M) > ZERO) THEN
+               RESID(NN,M) = NUM_RESID(NN,M)/DEN_RESID(NN,M)
+            ELSE IF (NUM_RESID(NN,M) == ZERO) THEN
+               RESID(NN,M) = ZERO
+            ELSE
+               RESID(NN,M) = UNDEFINED
+!     WRITE (LINE, *) 'Warning: All center coefficients are zero.'
+!     CALL WRITE_ERROR ('ACCUM_RESID', LINE, 1)
+            ENDIF
          ENDDO
       ENDDO
 

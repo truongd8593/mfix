@@ -61,13 +61,6 @@
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
 
-      PN(:,:) = -1
-      PN_WALL(:,:) = -1
-      PN(1,:) = 0
-      PN_WALL(1,:) = 0
-      PV(:,:) = .TRUE.
-      PV_WALL(:,:) = .TRUE.
-      PFT_WALL(:,:,:) = ZERO
       PPOS(:,:) = ZERO
 
       PINC(:) = ZERO
@@ -82,8 +75,8 @@
       P_FORCE(:,:) = ZERO
 
       IF (DES_INTERP_ON) THEN
-         DRAG_AM(:,:) = ZERO
-         DRAG_BM(:,:,:) = ZERO
+         DRAG_AM(:) = ZERO
+         DRAG_BM(:,:) = ZERO
       ENDIF
 
       IF (DES_CONTINUUM_HYBRID) THEN
@@ -93,22 +86,11 @@
          VXF_SDS(:,:,:) = ZERO
       ENDIF
 
-
-
       GRAV(:) = ZERO
-
-      NEIGHBOURS(:,:) = -1
-      NEIGHBOURS(:,1) = 0
-
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN
          PostCohesive (:) = ZERO
-      ENDIF
-
-      IF(DES_CALC_CLUSTER) THEN
-         InACluster(:) = .FALSE.
-         PostCluster(:) = ZERO
       ENDIF
 
 ! J.Musser: DEM particle tracking quantity

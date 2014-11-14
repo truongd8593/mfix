@@ -72,7 +72,7 @@
       USE run, only: ghd_2007
       USE run, only: kt_type
 ! filtered subgrid model
-      USE run, only: subgrid_type
+      USE run, only: subgrid_type_enum, milioli, igci, undefined_subgrid_type
 ! frictional theories
       USE run, only: friction, schaeffer
 ! runtime flag for blending stress (only with schaeffer)
@@ -104,6 +104,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -124,10 +125,6 @@
 ! Functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      Include 'function.inc'
 !-----------------------------------------------
 
 ! GHD Theory is called only for the mixture granular energy, i.e. for m == mmax
@@ -162,10 +159,10 @@
 ! if QMOMK then do not solve algebraic or PDE form of granular
 ! temperature governing equation
          IF(.NOT.GRANULAR_ENERGY) THEN
-            IF(SUBGRID_TYPE /= UNDEFINED_C) THEN
-               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+            IF(SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
+               IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
                   CALL SUBGRID_STRESS_IGCI(M, IER)
-               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+               ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
                   CALL SUBGRID_STRESS_MILIOLI(M, IER)
                ENDIF
             ELSE
@@ -276,6 +273,7 @@
       USE physprop
       USE run
       USE constant
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -301,12 +299,6 @@
       DOUBLE PRECISION :: SUM_EPS_CP
 ! factor in frictional-flow stress terms
       DOUBLE PRECISION :: qxP_s
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -388,6 +380,7 @@
       USE run
       USE constant
       USE trace
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -426,12 +419,6 @@
 !-----------------------------------------------
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 !$omp parallel do default(shared)                                    &
@@ -537,7 +524,9 @@
 ! granular temperature
       USE fldvar, only: theta_m
 ! viscous solids pressure
-      USE fldvar, only: p_s_v
+      USE fldvar, only: p_s_v, ep_s
+! solid volume fraction
+      USE fldvar, only: ep_s
 ! viscous solids transport coefficients
       USE visc_s, only: mu_s_v, mu_b_v, lambda_s_v
 ! number of solids phases
@@ -557,6 +546,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -584,12 +574,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -727,6 +711,7 @@
       USE toleranc
       USE turb
       USE drag
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -756,12 +741,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -876,6 +855,7 @@
       USE toleranc
       USE turb
       USE drag
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -905,12 +885,6 @@
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1062,6 +1036,7 @@
       USE toleranc
       USE drag
       use kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1096,12 +1071,6 @@
       DOUBLE PRECISION, EXTERNAL :: G_0
 ! dg0/dep
       DOUBLE PRECISION, EXTERNAL :: DG_0DNU
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1273,6 +1242,7 @@
       USE toleranc
       USE drag
       use kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1310,12 +1280,6 @@
       DOUBLE PRECISION, EXTERNAL :: S_star
       DOUBLE PRECISION, EXTERNAL :: K_phi
       DOUBLE PRECISION, EXTERNAL :: R_d
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1416,9 +1380,9 @@
                 1.5d0*dsqrt(EP_SM/2d0)+135d0/64d0*EP_SM*(dlog(EP_SM)+one) +&
                 11.26d0*EP_SM*(one-10.2*EP_SM+49.71d0*EP_SM**2-87.08d0* &
                 EP_SM**3) - EP_SM*dlog(epM)*(Chi+EP_SM*dChiOdphi)
-
-             Kphidphi = EP_SM*(0.212d0*0.142d0*EP_SM**0.788d0/&
-                (one-EP_SM)**4.454d0 - 4.454d0*K_phi(EP_SM)/(one-EP_SM))
+! corrections due to W. Fullmer
+             Kphidphi = EP_SM*(0.212d0*0.142d0/(EP_SM**0.788d0*&
+                (one-EP_SM)**4.454d0) + 4.454d0*K_phi(EP_SM)/(one-EP_SM))
              Kphidphi = zero  ! this is compatible with K_phi = zero
 
              Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
@@ -1521,6 +1485,7 @@
       USE drag
       USE kintheory
       USE ur_facs
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1556,12 +1521,6 @@
 !-----------------------------------------------
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1915,6 +1874,7 @@
       USE run
       USE constant
       USE trace
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1943,12 +1903,6 @@
 ! radial distribution function
       DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
 
@@ -1967,7 +1921,7 @@
                   dp_avg = dp_avg + D_p(IJK,MM)
                      IF (CLOSE_PACKED(MM)) SUM_EPS_CP=SUM_EPS_CP+EP_S(IJK,MM)
                   END DO
-                  dp_avg = dp_avg/DFLOAT(SMAX)
+                  dp_avg = dp_avg/DBLE(SMAX)
 ! end of part copied
 
                   IF (SAVAGE.EQ.1) THEN !form of Savage (not to be used with GHD theory)
@@ -2108,6 +2062,8 @@
       USE physprop
       USE run
       USE constant
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2134,14 +2090,6 @@
       DOUBLE PRECISION :: vt
 ! the filter size which is a function of each grid cell volume
       DOUBLE PRECISION :: filtersize
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2297,6 +2245,8 @@
       USE physprop
       USE run
       USE constant
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2321,14 +2271,6 @@
       DOUBLE PRECISION :: vt
 ! the filter size which is a function of each grid cell volume
       DOUBLE PRECISION :: filtersize
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -2523,6 +2465,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2534,10 +2477,6 @@
 !-----------------------------------------------
 ! cell index
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !     $omp parallel do private(IJK)
@@ -2568,6 +2507,7 @@
       USE compar
       USE geometry
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -2579,10 +2519,6 @@
 !-----------------------------------------------
 ! cell index
       INTEGER :: IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
 !     $omp parallel do private(IJK)
@@ -2660,6 +2596,8 @@
       USE fldvar, only: rop_s, ro_s, d_p
 ! k and epsilon for gas turbulence
       USE fldvar, only: e_turb_g, k_turb_g
+! solid volume fraction
+      USE fldvar, only: ep_s
 
 ! excluded volume for boyle-massoudi stress tensor
       USE constant, only: v_ex
@@ -2689,6 +2627,8 @@
       USE compar
       USE geometry
       USE indices
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2770,14 +2710,6 @@
 !     Functions
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: G_0
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 !-----------------------------------------------
 
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech

@@ -20,14 +20,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE OUT_BIN_512R(IUNIT, ARRAY, N, NEXT_REC) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE OUT_BIN_512R(IUNIT, ARRAY, N, NEXT_REC)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE machine 
+      USE machine
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -70,30 +70,30 @@
 !-----------------------------------------------
 !
 !
-      NWORDS = NWORDS_R 
-      IF (N <= NWORDS) THEN 
-         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N) 
-         NEXT_REC = NEXT_REC + 1 
-         RETURN  
-      ENDIF 
+      NWORDS = NWORDS_R
+      IF (N <= NWORDS) THEN
+         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N)
+         NEXT_REC = NEXT_REC + 1
+         RETURN
+      ENDIF
 !
-      NSEG = N/NWORDS 
-      NREM = MOD(N,NWORDS) 
-      N1 = 1 
-      N2 = NWORDS 
+      NSEG = N/NWORDS
+      NREM = MOD(N,NWORDS)
+      N1 = 1
+      N2 = NWORDS
 !
 ! write out the full 512 byte segments
 !
-      DO LC = 1, NSEG 
-         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2) 
-         N1 = N1 + NWORDS 
-         N2 = N2 + NWORDS 
-         NEXT_REC = NEXT_REC + 1 
-      END DO 
-      IF (NREM /= 0) THEN 
-         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N) 
-         NEXT_REC = NEXT_REC + 1 
-      ENDIF 
+      DO LC = 1, NSEG
+         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N2)
+         N1 = N1 + NWORDS
+         N2 = N2 + NWORDS
+         NEXT_REC = NEXT_REC + 1
+      END DO
+      IF (NREM /= 0) THEN
+         WRITE (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N)
+         NEXT_REC = NEXT_REC + 1
+      ENDIF
 !
-      RETURN  
-      END SUBROUTINE OUT_BIN_512R 
+      RETURN
+      END SUBROUTINE OUT_BIN_512R

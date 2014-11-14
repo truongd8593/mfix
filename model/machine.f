@@ -65,7 +65,7 @@
 !
 !             temporary array to hold time data
       INTEGER DAT(8)
-      CHARACTER*10 DATE, TIM, ZONE
+      CHARACTER(LEN=10) DATE, TIM, ZONE
 
       CALL DATE_AND_TIME(DATE, TIM, ZONE, DAT)
       ID_YEAR   = DAT(1)

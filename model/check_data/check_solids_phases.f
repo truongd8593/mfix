@@ -80,8 +80,6 @@
       use run, only: ENERGY_EQ
 ! Runtime Flag: Sovle species equations
       use run, only: SPECIES_EQ
-! Runtime Flag: Calculate clusters in DES model
-      use discretelement, only: DES_CALC_CLUSTER
 
 ! Number of solid phases specified by the user/TFM model.
       use physprop, only: SMAX
@@ -122,20 +120,6 @@
  2000 FORMAT('Error 2000: The solids cohesion model is only available',&
          ' for DEM',/' solids. Please correct the mfix.dat file.')
       ENDIF
-
-
-! The cluster calculation only works at the particle level 
-! (i.e., for DEM simulations)
-      IF(DES_CALC_CLUSTER) THEN
-         IF(TFM_SOLIDS .OR. PIC_SOLIDS) THEN
-            WRITE(ERR_MSG, 2001)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
- 2001 FORMAT('Error 2001: DES_CALC_CLUSTER is only available for DEM ',&
-         /' solids. Please correct the mfix.dat file.')
-      ENDIF
-
 
 ! Place holder
       IF(ENERGY_EQ .AND. (TFM_SOLIDS .OR. PIC_SOLIDS)) THEN

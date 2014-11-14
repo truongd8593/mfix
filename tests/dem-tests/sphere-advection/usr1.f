@@ -24,12 +24,12 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE USR1 
+      SUBROUTINE USR1
 
       Use usr
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE geometry
       USE fldvar
@@ -39,8 +39,9 @@
       USE compar
       USE run
       USE turb
-      USE sendrecv  
+      USE sendrecv
       USE discretelement
+      USE functions
 
       IMPLICIT NONE
 
@@ -50,12 +51,9 @@
 ! Cycle length (time)
       DOUBLE PRECISION, PARAMETER :: T_per=0.25d0
 
-      INCLUDE 'function.inc'
-
-
       DO IJK = ijkstart3, ijkend3
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
          K = K_OF(IJK)
 
          XX = XE(I)
@@ -73,5 +71,5 @@
 
       END DO
 
-      RETURN  
-      END SUBROUTINE USR1 
+      RETURN
+      END SUBROUTINE USR1

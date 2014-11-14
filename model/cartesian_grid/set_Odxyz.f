@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_U_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for U-Momentun cell               C 
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for U-Momentun cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -10,10 +10,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_ODXYZ_U_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -21,20 +21,19 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          IF(NO_K) THEN
@@ -47,9 +46,9 @@
 
       DO IJK = IJKSTART3, IJKEND3
 
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
 
 !======================================================================
 !  1/dx at East face of U-Momentume cell
@@ -127,13 +126,13 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_ODXYZ_U_CUT_CELL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_V_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for V-Momentun cell               C 
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for V-Momentun cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -142,10 +141,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_ODXYZ_V_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -153,20 +152,19 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          IF(NO_K) THEN
@@ -179,9 +177,9 @@
 
       DO IJK = IJKSTART3, IJKEND3
 
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
 
 !======================================================================
 !  1/dx at East face of V-Momentume cell
@@ -262,14 +260,14 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_ODXYZ_V_CUT_CELL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_W_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for W-Momentun cell               C 
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for W-Momentun cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -278,10 +276,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_ODXYZ_W_CUT_CELL
-    
+
       USE param
       USE param1
       USE parallel
@@ -289,20 +287,19 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
-      USE mpi_utility 
+      USE mpi_utility
       USE sendrecv
       USE quadric
       USE cutcell
-      Use vtk
+      USE vtk
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
       INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
       INTEGER :: IJK1,IJK2
-
-      include "../function.inc"
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'COMPUTING 1/DX, 1/DY, 1/DZ FOR W-MOMENTUM CELLS...'
@@ -311,9 +308,9 @@
 
       DO IJK = IJKSTART3, IJKEND3
 
-         I = I_OF(IJK) 
-         J = J_OF(IJK) 
-         K = K_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
 
 !======================================================================
 !  1/dx at East face of V-Momentume cell
@@ -387,5 +384,5 @@
 
       RETURN
 
-      
+
       END SUBROUTINE SET_ODXYZ_W_CUT_CELL

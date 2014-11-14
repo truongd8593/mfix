@@ -40,15 +40,15 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-     
-      SUBROUTINE CALC_DRAG(DRAGD, IER) 
+
+      SUBROUTINE CALC_DRAG(DRAGD, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
@@ -57,7 +57,7 @@
       USE drag
       USE compar
       USE discretelement
-      USE qmom_kinetic_equation      
+      USE qmom_kinetic_equation
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -74,35 +74,35 @@
 ! Flag only used when the hybrid model is invoked and notifies the
 ! routine that the solid phase index M refers to the indice of a
 ! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.  This is currently required until moves 
-! are made to fully separate use of F_GS from DEM (i.e. strictly 
-! assign F_GS for use with gas-continuum solids drag and assign a 
+! variables are referenced.  This is currently required until moves
+! are made to fully separate use of F_GS from DEM (i.e. strictly
+! assign F_GS for use with gas-continuum solids drag and assign a
 ! new variable, like F_GDS, when refering to gas-discrete solids drag)
-      LOGICAL :: DISCRETE_FLAG 
+      LOGICAL :: DISCRETE_FLAG
 !-----------------------------------------------
-    
-! Alberto Passalacqua:  QMOMB       
+
+! Alberto Passalacqua:  QMOMB
       IF (QMOMK) RETURN
 
 
-! calculate drag between continuum phases (gas-solid & solids-solids)      
+! calculate drag between continuum phases (gas-solid & solids-solids)
       IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
-         DISCRETE_FLAG = .FALSE.   ! only matters if des_continuum_hybrid   
-         DO M = 1, SMAX 
-            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN 
+         DISCRETE_FLAG = .FALSE.   ! only matters if des_continuum_hybrid
+         DO M = 1, SMAX
+            IF (DRAGD(0,M) .AND. RO_G0/=ZERO) THEN
                CALL DRAG_GS (M, DISCRETE_FLAG, IER)
             ENDIF
          ENDDO
-      
+
          IF (GRANULAR_ENERGY) THEN
             SELECT CASE (KT_TYPE_ENUM)
                CASE(LUN_1984, SIMONIN_1996, AHMADI_1995)
-                  DO M = 1, SMAX 
-                     DO L = 1, M - 1 
+                  DO M = 1, SMAX
+                     DO L = 1, M - 1
                         IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
                      ENDDO
                   ENDDO
-               CASE(IA_2005) 
+               CASE(IA_2005)
                   DO M= 1, SMAX
                      DO L = 1, SMAX
                         IF (DRAGD(L,M)) CALL DRAG_SS_IA (L,M,IER)
@@ -121,7 +121,7 @@
             END SELECT
          ELSE
             DO M = 1,SMAX
-               DO L = 1, M - 1 
+               DO L = 1, M - 1
                   IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
                ENDDO
             ENDDO
@@ -130,16 +130,8 @@
 
 ! calculate drag between continuum phases and discrete particles
 ! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED) THEN
-         CALL DES_DRAG_GS
+      IF (DES_CONTINUUM_COUPLED) CALL CALC_DRAG_DES_2FLUID
 
-! calculate drag between continuum solids and discrete solids
-! for now non-interpolated solid-solid version is only option
-         IF(DES_CONTINUUM_HYBRID) THEN   
-            CALL DES_DRAG_SS
-         ENDIF
-      ENDIF         
- 
 
-      RETURN  
-      END SUBROUTINE CALC_DRAG 
+      RETURN
+      END SUBROUTINE CALC_DRAG

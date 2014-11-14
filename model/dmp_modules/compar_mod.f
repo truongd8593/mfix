@@ -44,20 +44,20 @@
 
 ! -istart1_all contains the starting i value for all the processors
 !  excluding the ghost regions. istart2_all is for one extra ghost
-!  layer and istart3_all is for two ghost layers. Similarly 
-!  iend1_all, iend2_all and iend3_all contain the ending values. 
+!  layer and istart3_all is for two ghost layers. Similarly
+!  iend1_all, iend2_all and iend3_all contain the ending values.
 !  Similarly for j and k, jstart..., kstart.... are  prescribed.
-! -All the variables without the '_all' represent that processor 
-!  values. So ijkstart3 denotes the starting value of ijk, which 
-!  belongs to the processor = funijk(istart3_all(myid), 
+! -All the variables without the '_all' represent that processor
+!  values. So ijkstart3 denotes the starting value of ijk, which
+!  belongs to the processor = funijk(istart3_all(myid),
 !  jstart3_all(myid), kstart3_all(myid) for a 1-d decompostion of a
-!  3D problem. For more details see gridmap_mod.f90. Similarly the 
+!  3D problem. For more details see gridmap_mod.f90. Similarly the
 !  end values are denoted by ijkend3_all
 ! -displs has the necessary shift information to position the buffer
 !  in the scatterv and gatherv routines.
 ! -ijksize3 is the size of the element owned by each processor plus
 !  the ghost regions.
-! -'_all' has information about all the processor mapping based on 
+! -'_all' has information about all the processor mapping based on
 !  above convention
       integer, allocatable,dimension(:) ::  &
                 ijkstart3_all,ijkend3_all,    &
@@ -69,7 +69,7 @@
                 kend_all,kend1_all,kend2_all,kend3_all, &
                 ijksize3_all, displs
 
-! Variables used for mapping i, j, k to ii, jj, kk to take care of 
+! Variables used for mapping i, j, k to ii, jj, kk to take care of
 ! of cyclic conditions...
       integer, allocatable,dimension(:) :: imap, jmap, kmap
       integer, allocatable,dimension(:) :: imap_c, jmap_c, kmap_c
@@ -84,7 +84,7 @@
       integer :: istart, iend, jstart, jend, kstart, kend
 
 ! Variables used for fourth order methods
-      integer, allocatable,dimension(:) ::  & 
+      integer, allocatable,dimension(:) ::  &
                 ijkstart4_all,ijkend4_all, ijksize4_all,&
                 istart4_all, jstart4_all, kstart4_all, &
                 iend4_all, jend4_all, kend4_all
@@ -106,11 +106,11 @@
 
 !       Integer Array of IJK values at each (I,J,K) cell
 
-        integer, allocatable, dimension(:,:,:) :: IJK_ARRAY_OF
+        integer, allocatable, dimension(:,:,:) :: IJK_ARRAY_OF,FUNIJK_MAP_C
 
 !        integer, allocatable, dimension(:,:,:) :: funijk
 
-!       Integer Array of neighbor cells 
+!       Integer Array of neighbor cells
 
         integer, allocatable, dimension(:)     :: WEST_ARRAY_OF,EAST_ARRAY_OF
         integer, allocatable, dimension(:)     :: SOUTH_ARRAY_OF,NORTH_ARRAY_OF
@@ -127,22 +127,22 @@
 
         LOGICAL :: INCREMENT_ARRAYS_ALLOCATED
 
-!       Number of Ghost Cells 
+!       Number of Ghost Cells
 
-        INTEGER :: NGC_EAST                       
-        INTEGER :: NGC_WEST  
-        INTEGER :: NGC_NORTH 
-        INTEGER :: NGC_SOUTH 
-        INTEGER :: NGC_TOP   
+        INTEGER :: NGC_EAST
+        INTEGER :: NGC_WEST
+        INTEGER :: NGC_NORTH
+        INTEGER :: NGC_SOUTH
+        INTEGER :: NGC_TOP
         INTEGER :: NGC_BOTTOM
 
 !       List of Ghost Cells
 
-        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_EAST 
-        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_WEST 
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_EAST
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_WEST
         INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_NORTH
         INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_SOUTH
-        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_TOP 
+        INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_TOP
         INTEGER, ALLOCATABLE, DIMENSION(:) ::  LGC_BOTTOM
 
 !       Domain size of each processor

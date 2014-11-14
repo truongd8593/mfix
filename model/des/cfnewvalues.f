@@ -182,7 +182,9 @@
       USE cutcell
       USE mfix_pic
       USE randomno
-      use geometry, only: DO_K, NO_K
+      USE geometry, only: DO_K, NO_K
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -225,10 +227,6 @@
       DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 !-----------------------------------------------
-
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
 
       PC = 1
       FOCUS_PARTICLE = -1
@@ -451,13 +449,18 @@
          LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT
          CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL)
          IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN
-            IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-                 & FREQUENTLY: MONITOR THIS MESSAGE'
+            IF(PRINT_DES_SCREEN) THEN
+               WRITE(*,'(/,2x,A,2x,i10,/,A)') &
+                    'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), &
+                    'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
+            ENDIF
 
-            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-                 & FREQUENTLY: MONITOR THIS MESSAGE'
+            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
+                 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), &
+                 'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
             !DO IPROC = 0, NUMPES-1
-            !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
+            !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
+            !   'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
             !ENDDO
 
          ENDIF
@@ -524,6 +527,8 @@
       USE mfix_pic
       USE randomno
       USE cutcell
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -569,9 +574,6 @@
 
 !-----------------------------------------------
 
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
       OUTER_STABILITY_COND = .false.
       DES_FIXED_BED = .false.
       PC = 1
@@ -815,13 +817,18 @@
       LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT
       CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL)
       IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN
-         IF(PRINT_DES_SCREEN) WRITE(*,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-         & FREQUENTLY: MONITOR THIS MESSAGE'
+         IF(PRINT_DES_SCREEN) THEN
+            WRITE(*,'(/,2x,A,2x,i10,/,A)') &
+                 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), &
+                 'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
+         ENDIF
 
-         WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), 'THIS SHOULD NOT HAPPEN &
-         & FREQUENTLY: MONITOR THIS MESSAGE'
+         WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
+              'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), &
+              'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
          !DO IPROC = 0, NUMPES-1
-         !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
+         !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
+         !     'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
          !ENDDO
 
       ENDIF

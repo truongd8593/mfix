@@ -11,10 +11,9 @@
       USE param, only: DIM_M
       USE param1, only: UNDEFINED
       USE param1, only: ZERO
-      use physprop, only: RO_g0
+      use physprop, only: RO_g0, RO_s0
 
       use discretelement
-      use physprop
 
       use bc
 
@@ -41,7 +40,7 @@
       IF (BC_EP_G(BCV) /= UNDEFINED) THEN
          SUM_EP = BC_EP_G(BCV)
 
-! Unclear how the discrete solids volume fraction can be dictated at 
+! Unclear how the discrete solids volume fraction can be dictated at
 ! the boundary, so it is currently prevented!
          IF (DISCRETE_ELEMENT) THEN
             WRITE(ERR_MSG, 1101) trim(iVar('BC_EP_g',BCV))
@@ -54,7 +53,7 @@
 
 ! by this point the code has checked that no discrete solids are present
 ! otherwise the routine will have exited
-            DO M = 1, M_TOT 
+            DO M = 1, M_TOT
                IF(BC_ROP_S(BCV,M) == UNDEFINED) THEN
                   IF(BC_EP_G(BCV) == ONE) THEN
 ! what does it mean to force the bulk density to zero at the
@@ -62,7 +61,7 @@
                      BC_ROP_S(BCV,M) = ZERO
 
                   ELSEIF(M_TOT == 1 ) THEN
-! no discrete solids are present so a bulk density can be defined from 
+! no discrete solids are present so a bulk density can be defined from
 ! 1-bc_ep_g even for hybrid model
                      BC_ROP_S(BCV,M) = (ONE - BC_EP_G(BCV))*RO_S0(M)
                   ELSE
@@ -82,9 +81,9 @@
                   ENDIF
                ENDIF  ! end if(bc_rop_s(bcv,m) == undefined)
 ! by this point bc_rop_s should either be defined or mfix exited
-! therefore we can check that sum of void fraction and solids volume 
+! therefore we can check that sum of void fraction and solids volume
 ! fractions
-               SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M) 
+               SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
             ENDDO
 
          ENDIF   ! end if/else (.not.discrete_element)
@@ -171,23 +170,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_MASS_OUTFLOW(M_TOT, SKIP, BCV)
 
-      USE param 
-      USE param1 
-      USE geometry
+      USE bc
+      USE compar
+      USE cutcell
+      USE discretelement
+      USE error_manager
       USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE mfix_pic
+      USE param
+      USE param1
       USE physprop
       USE run
-      USE bc
-      USE indices
-      USE funits 
       USE scalars
-      USE compar
       USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE cutcell
-
-      use error_manager
 
       IMPLICIT NONE
 
@@ -205,7 +203,7 @@
       CALL INIT_ERR_MSG("CHECK_BC_MASS_OUTFLOW")
 
 
-      IF(BC_DT_0(BCV) == UNDEFINED) THEN 
+      IF(BC_DT_0(BCV) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('BC_DT_0',BCV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -215,19 +213,19 @@
          BC_T_G(BCV) == UNDEFINED) .AND.BC_MASSFLOW_G(BCV) /= ZERO) THEN
 
          IF(BC_PLANE(BCV)=='W' .OR. BC_PLANE(BCV)=='E') THEN
-            IF(BC_U_G(BCV) /= ZERO) THEN 
+            IF(BC_U_G(BCV) /= ZERO) THEN
                WRITE(ERR_MSG, 1100) BCV, 'BC_U_g'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-            ENDIF 
-         ELSEIF(BC_PLANE(BCV)=='N' .OR. BC_PLANE(BCV)=='S') THEN 
-            IF(BC_V_G(BCV) /= ZERO) THEN 
-               WRITE(ERR_MSG, 1100) BCV, 'BC_V_g' 
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
-            ENDIF 
-         ELSEIF (BC_PLANE(BCV)=='T' .OR. BC_PLANE(BCV)=='B') THEN 
-            IF(BC_W_G(BCV) /= ZERO) THEN 
-               WRITE(ERR_MSG, 1100)  BCV, 'BC_W_g' 
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)  
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ELSEIF(BC_PLANE(BCV)=='N' .OR. BC_PLANE(BCV)=='S') THEN
+            IF(BC_V_G(BCV) /= ZERO) THEN
+               WRITE(ERR_MSG, 1100) BCV, 'BC_V_g'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ELSEIF (BC_PLANE(BCV)=='T' .OR. BC_PLANE(BCV)=='B') THEN
+            IF(BC_W_G(BCV) /= ZERO) THEN
+               WRITE(ERR_MSG, 1100)  BCV, 'BC_W_g'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
       ENDIF   ! end if/else (ro_g0 /=undefined)
@@ -242,6 +240,6 @@
       RETURN
 
  1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/) 
+         ') not specified',/1X,70('*')/)
 
       END SUBROUTINE CHECK_BC_MASS_OUTFLOW

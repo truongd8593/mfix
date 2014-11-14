@@ -16,40 +16,37 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_VTC_SS(VXTC_SS, IER) 
+      SUBROUTINE CALC_VTC_SS(VXTC_SS, IER)
 !
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
 !     Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
       USE physprop
-      USE compar  
+      USE compar
       USE kintheory
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
-!----------------------------------------------- 
-!                      Error index 
-      INTEGER          IER 
-! 
-!                      Indices 
-      INTEGER          I, IJK, IJKE 
-! 
-!                      Index of both solids phases 
+!-----------------------------------------------
+!                      Error index
+      INTEGER          IER
+!
+!                      Indices
+      INTEGER          I, IJK, IJKE
+!
+!                      Index of both solids phases
       INTEGER          L, M, LM
-! 
-!                      Volume x interphase transfer coefficient 
-      DOUBLE PRECISION VxTC_ss(DIMENSION_3, DIMENSION_LM) 
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+!
+!                      Volume x interphase transfer coefficient
+      DOUBLE PRECISION VxTC_ss(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
 !
       DO M = 1, MMAX
@@ -58,7 +55,7 @@
                IF (L .NE. M) THEN
 !!!$omp  parallel do private(IJK)
                     DO IJK = ijkstart3, ijkend3
-                         IF (FLUID_AT(IJK)) THEN 
+                         IF (FLUID_AT(IJK)) THEN
                               VXTC_SS(IJK,LM) = ED_ss_ip(IJK,LM)*VOL(IJK)
                          ELSE
                               VXTC_SS(IJK,LM) = ZERO
@@ -68,10 +65,10 @@
           ENDDO
       ENDDO
 !
-      RETURN  
+      RETURN
       END SUBROUTINE CALC_VTC_SS
 !-----------------------------------------------
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

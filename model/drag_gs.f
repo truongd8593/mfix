@@ -39,6 +39,8 @@
       USE ur_facs
       USE funits
       USE mms
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -103,14 +105,6 @@
 ! void fraction, gas density, gas bulk density, solids volume fraction
 ! particle diameter, particle density
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 !$omp  parallel do default(shared)                                   &
@@ -204,7 +198,7 @@
                WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
             ENDIF
 ! magnitude of gas-solids relative velocity
-            VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2) 
+            VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
 
 ! Laminar viscosity at a pressure boundary is given the value of the
 ! fluid cell next to it. This applies just to the calculation of the
@@ -342,10 +336,10 @@
             ENDIF   ! end if/elseif/else (ep_sm <= zero, ep_g==0)
 
 ! modify the drag coefficient to account for subgrid domain effects
-            IF (SUBGRID_TYPE /= UNDEFINED_C) THEN
-               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+            IF (SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
+               IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
                   CALL SUBGRID_DRAG_IGCI(DgA,EPg,Mu,ROg,DPM,ROs,IJK)
-               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+               ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
                   CALL SUBGRID_DRAG_MILIOLI(DgA,EPg,Mu,ROg,VREL,&
                        DPM,ROs,IJK)
                ENDIF
@@ -434,7 +428,7 @@
 !  Purpose:                                                            C
 !     Calculate single sphere drag correlation multiplied by           C
 !     the Reynolds number or                                           C
-!     Calculate the single sphere drag correlation                     C      
+!     Calculate the single sphere drag correlation                     C
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
@@ -615,7 +609,7 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 
-! 
+!
       DOUBLE PRECISION, EXTERNAL :: C_DS_SN
 
 !-----------------------------------------------

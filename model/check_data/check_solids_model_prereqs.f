@@ -73,8 +73,8 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_MODEL_PREREQS")
 
-! Moved this here but will need to discuss if this is best route 
-! going forward      
+! Moved this here but will need to discuss if this is best route
+! going forward
       ERR_MMAX = .FALSE.
       IF (MMAX < 0) ERR_MMAX = .TRUE.
       IF(TRIM(KT_TYPE) == 'GHD') THEN
@@ -112,7 +112,7 @@
 
 ! Set the number of TFM phases.  (should be equivalent to tfm_count)
       MMAX = MMAX - DES_MMAX
-      SMAX = MMAX   ! USE smax in the code for the number of TFM phases 
+      SMAX = MMAX   ! USE smax in the code for the number of TFM phases
 ! For GHD theory increase MMAX by one to serve as 'mixture' phase
       IF(TRIM(KT_TYPE) == 'GHD') THEN
          MMAX = MMAX + 1
@@ -145,7 +145,7 @@
  1003 FORMAT('Error 1003: MPPIC solids and DES solids cannot be ',     &
          'combined.',/'Please correct the mfix.dat file.')
 
-! temporary move for now since these rely on definition of mmax/smax      
+! temporary move for now since these rely on definition of mmax/smax
 ! Set variable ANY_SPECIES_EQ
       M = max(SMAX, DES_MMAX)
       ANY_SPECIES_EQ = any(SPECIES_EQ(:M))

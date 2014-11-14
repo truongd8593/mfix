@@ -16,11 +16,12 @@
       use physprop
       use fldvar
       use constant
-      use mpi_utility 
+      use mpi_utility
+      use functions
 
       IMPLICIT NONE
 
-! phase index 
+! phase index
       INTEGER :: M
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: Wg_Temp, Wg_Temp_GL
@@ -40,8 +41,6 @@
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
 
-      INCLUDE 'function.inc'
-
       IF(NO_K .OR. KMAX==1) RETURN
 
       I1=1
@@ -49,7 +48,7 @@
 
 ! Fukagata Scheme
 
-! Implement for gas 
+! Implement for gas
       ALLOCATE (Wg_Temp(ijkstart3:ijkend3))
 
       DO J1 = JSTART3, JEND3
@@ -89,7 +88,7 @@
 
       DO J1= JSTART3, JEND3
          DO K1= KSTART3, KEND3
-            !abIJK in local 
+            !abIJK in local
             abIJK = FUNIJK (I1,J1,K1)
             Angle_Temp = (-Pi/KMAX)+((K1-1)*2*(Pi/KMAX))
             U_g(abIJK)=(SUMX_G(J1)*cos(Angle_Temp)) + &
@@ -104,7 +103,7 @@
 
 
 
-! Implement for Solid 
+! Implement for Solid
       ALLOCATE (Ws_Temp(ijkstart3:ijkend3))
       ALLOCATE (Ws_Temp_GL(ijkmax3))
       ALLOCATE (SUMX_S(JMAX3))

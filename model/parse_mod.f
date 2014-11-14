@@ -2,19 +2,19 @@
 
       Use param
       Use param1
-      USE funits 
+      USE funits
       USE compar
 
       IMPLICIT NONE
 
 ! Strings indicating arithmetic operation and reaction blocks.
-      CHARACTER*2, PARAMETER :: START_STR = '@('  ! start
-      CHARACTER*1, PARAMETER :: END_STR = ')'     ! end
+      CHARACTER(LEN=2), PARAMETER :: START_STR = '@('  ! start
+      CHARACTER(LEN=1), PARAMETER :: END_STR = ')'     ! end
 
 ! Strings indicating reaction blocks.
-      CHARACTER*4, PARAMETER :: RXN_BLK     = 'RXNS'      ! start block
-      CHARACTER*8, PARAMETER :: DES_RXN_BLK = 'DES_RXNS'  ! start block
-      CHARACTER*3, PARAMETER :: END_BLK     = 'END'       ! end block
+      CHARACTER(LEN=4), PARAMETER :: RXN_BLK     = 'RXNS'      ! start block
+      CHARACTER(LEN=8), PARAMETER :: DES_RXN_BLK = 'DES_RXNS'  ! start block
+      CHARACTER(LEN=3), PARAMETER :: END_BLK     = 'END'       ! end block
 
       LOGICAL READING_RXN
       LOGICAL READING_RATE
@@ -94,7 +94,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Alias, phase, species, stoich coeff :: Reactants    Products
-      CHARACTER*32, DIMENSION(50)     :: rAlias    ,  pAlias
+      CHARACTER(LEN=32), DIMENSION(50)     :: rAlias    ,  pAlias
       INTEGER, DIMENSION(50)          :: rPhase    ,  pPhase
       INTEGER, DIMENSION(50)          :: rSpecies  ,  pSpecies
       DOUBLE PRECISION, DIMENSION(50) :: rCoeff    ,  pCoeff
@@ -110,9 +110,9 @@
 ! by the user, they must sum to one over all phases.
       DOUBLE PRECISION sumFDH
 ! Local storage for chemical equations, left-adjusted and trimmed
-      CHARACTER*512 lChemEq
+      CHARACTER(LEN=512) lChemEq
 ! Local storage for reaction name, left-adjusted and trimmed
-      CHARACTER*32  lName
+      CHARACTER(LEN=32)  lName
 ! Logical indicating the reaction is skipped.
       LOGICAL Skip
 ! External Function for comparing two numbers.
@@ -133,7 +133,7 @@
       RxN%nSpecies = 0
       RxN%nPhases = 0
 
-! Verify that the reactants are separated by --> or = signs. If the 
+! Verify that the reactants are separated by --> or = signs. If the
 ! chemical equation is NONE, the reaction is skipped.
       CALL checkSplit(lName, lChemEq, rEnd, pStart, Skip)
       IF(Skip) THEN
@@ -194,7 +194,7 @@
 ! The user specified the heat of reaction.
       IF(.NOT.RxN%Calc_DH) THEN
 ! Allocate and initialize the heat of reaction storage array.
-         Allocate( RxN%HoR( 0:lM ))         
+         Allocate( RxN%HoR( 0:lM ))
          RxN%HoR(:) = ZERO
          DO M=0,lM
 ! The phase is referenced by the reaction and heat of reaction is
@@ -309,10 +309,10 @@
       INTEGER hArr, tArr
 ! Postion of the head and tail of equal signs (=, ==, ===, ...)
       INTEGER hEqs, tEqs
-! Position of the head/tail of a reverse arrow (<--) 
+! Position of the head/tail of a reverse arrow (<--)
       INTEGER hRArr, tRArr
 ! A flag generated to point out the location of the entry error.
-      CHARACTER*512 FLAG
+      CHARACTER(LEN=512) FLAG
       FLAG = ''
 
 ! If the chemical equation is set to 'none', then the reaction is
@@ -509,7 +509,7 @@
 ! The number of individual species found in lSpecies.
       INTEGER, INTENT(OUT) :: lNo
 ! Species Aliases from the chemical equation.
-      CHARACTER*32, DIMENSION(50), INTENT(OUT) :: lAlias
+      CHARACTER(LEN=32), DIMENSION(50), INTENT(OUT) :: lAlias
 ! Stoichiometric coefficient pulled from the chemical equation.
       DOUBLE PRECISION, DIMENSION(50), INTENT(OUT) :: lCoeff
 
@@ -538,7 +538,7 @@
          rPOS = (lPOS-1) + INDEX(lChemEq(lPOS:lEnd),"+", BACK=.FALSE.)
 ! A plus sign was found.
          IF(rPOS .GT. lPOS) THEN
-! Extract the entry and split it into the species alias and 
+! Extract the entry and split it into the species alias and
 ! stoichiometric coefficient.
             CALL splitAliasAndCoeff(lName, lChemEq, lPOS, rPOS-1,      &
                lAlias(lNo), lCoeff(lNo))
@@ -546,7 +546,7 @@
             MORE = .TRUE.
 ! No plus sign was found. This is the last entry.
          ELSE
-! Extract the entry and split it into the species alias and 
+! Extract the entry and split it into the species alias and
 ! stoichiometric coefficient.
             CALL splitAliasAndCoeff(lName, lChemEq, lPOS, lEnd,        &
                lAlias(lNo), lCoeff(lNo))
@@ -591,7 +591,7 @@
 ! Ending position for substring analysis.
       INTEGER, INTENT(IN) :: lEnd
 ! Species Aliases from the chemical equation.
-      CHARACTER*32, INTENT(OUT) :: lAlias
+      CHARACTER(LEN=32), INTENT(OUT) :: lAlias
 ! Stoichiometric coefficient pulled from the chemical equation.
       DOUBLE PRECISION, INTENT(OUT) :: lCoeff
 
@@ -603,10 +603,10 @@
 
       INTEGER L, N, IOS, aPOS, a2POS
 
-      CHARACTER*12, PARAMETER :: Numbers = '.0123456789'
+      CHARACTER(LEN=12), PARAMETER :: Numbers = '.0123456789'
 
 ! A flag generated to point out the location of the entry error.
-      CHARACTER*512 FLAG
+      CHARACTER(LEN=512) FLAG
       FLAG = ''
 
 ! Locate the first asterisk (if any). Search left-to-right.
@@ -839,7 +839,7 @@
 ! Number of products (or reactants)
       INTEGER, INTENT(IN) :: lNo
 ! Species Alaises pulled from the chemical equation.
-      CHARACTER*32, DIMENSION(50), INTENT(IN) :: lAlias
+      CHARACTER(LEN=32), DIMENSION(50), INTENT(IN) :: lAlias
 
       DOUBLE PRECISION, DIMENSION(50), INTENT(IN) :: lCoeff
 
@@ -858,7 +858,7 @@
 ! Loop counters.
       INTEGER L, M, N
 ! A flag generated to point out the location of the entry error.
-      CHARACTER*512 FLAG
+      CHARACTER(LEN=512) FLAG
 ! Location in string to locate error.
       INTEGER lPOS, rPOS
 
@@ -940,11 +940,11 @@
 
 ! Pass Arguments:
 !---------------------------------------------------------------------//
-      CHARACTER*32, INTENT(IN) :: lSA, ceSA
+      CHARACTER(LEN=32), INTENT(IN) :: lSA, ceSA
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-      CHARACTER*32 tlSA
+      CHARACTER(LEN=32) tlSA
 
 ! Copy species alias.
       tlSA = lSA
@@ -1100,7 +1100,7 @@
          IF(flg1 < flg2) THEN
             FILL1 = flg1 - 1
             FILL2 = (flg2-flg1) - 1
-         ELSE         
+         ELSE
             FILL1 = flg2 - 1
             FILL2 = (flg1-flg2) - 1
          ENDIF
@@ -1124,4 +1124,4 @@
 
       END FUNCTION setFlag
 
-      END MODULE parse                                                                           
+      END MODULE parse

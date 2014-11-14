@@ -62,9 +62,9 @@
 !*   p => power at each corresponding bin in f                         *
 !***********************************************************************
 !* Changes:                                                            *
-!*   2001-11-02 ceaf => changed hng from integer*4 to real*4 to allow  *
+!*   2001-11-02 ceaf => changed hng from integer(kind=4) to real*4 to allow  *
 !*              exotic windowing powers; added nrm input parameter.    *
-!*   2001-12-20 ceaf => changed all floats from real*4 to real*8       *
+!*   2001-12-20 ceaf => changed all floats from real*4 to real(kind=8)       *
 !*   2005-01-03 ceaf => changed default values for nb,ol and ranges in *
 !*              variance calculation/normalization to improve accuracy *
 !***********************************************************************
@@ -73,30 +73,30 @@
 
       external fft
 
-      integer*4 NUMAX !................. maximal value of nu (parameter)
+      integer(kind=4) NUMAX !................. maximal value of nu (parameter)
       parameter (NUMAX=16)
-      integer*4 NMAX !................... maximal value of n (parameter)
+      integer(kind=4) NMAX !................... maximal value of n (parameter)
       parameter (NMAX=2**NUMAX)
 
-      real*8 TS(1:*) !.............................. time series (input)
-      real*8 sr !............................ data sampling rate (input)
-      integer*4 nu !............. binary power of FFT block size (input)
-      integer*4 nb !................. number of averaging blocks (input)
-      real*8 ol !...................... block overlap percentage (input)
-      real*8 hng !......................... Hanning-window power (input)
-      integer*4 nrm !... normalization (1=sum power, 2=variance) (input)
-      real*8 f(1:*) !.................... frequency bin centers (output)
-      real*8 p(1:*) !..... power at each corresponding bin in f (output)
-      integer*4 n !...................................... FFT block size
-      integer*4 n2 !................................ FFT half block size
-      integer*4 nol !......................... number of overlap records
-      real*8 yr(0:NMAX-1) !.............................. real component
-      real*8 yi(0:NMAX-1) !......................... imaginary component
-      integer*4 k,l !........................................... indices
-      integer*4 bi,ei !.......... pointers in TS for block begin and end
-      real*8 var !........................................ data variance
-      real*8 sum !........................... sum of block data or power
-      real*8 avg !...................................... block data mean
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      real(kind=8) sr !............................ data sampling rate (input)
+      integer(kind=4) nu !............. binary power of FFT block size (input)
+      integer(kind=4) nb !................. number of averaging blocks (input)
+      real(kind=8) ol !...................... block overlap percentage (input)
+      real(kind=8) hng !......................... Hanning-window power (input)
+      integer(kind=4) nrm !... normalization (1=sum power, 2=variance) (input)
+      real(kind=8) f(1:*) !.................... frequency bin centers (output)
+      real(kind=8) p(1:*) !..... power at each corresponding bin in f (output)
+      integer(kind=4) n !...................................... FFT block size
+      integer(kind=4) n2 !................................ FFT half block size
+      integer(kind=4) nol !......................... number of overlap records
+      real(kind=8) yr(0:NMAX-1) !.............................. real component
+      real(kind=8) yi(0:NMAX-1) !......................... imaginary component
+      integer(kind=4) k,l !........................................... indices
+      integer(kind=4) bi,ei !.......... pointers in TS for block begin and end
+      real(kind=8) var !........................................ data variance
+      real(kind=8) sum !........................... sum of block data or power
+      real(kind=8) avg !...................................... block data mean
 
 ! --- Sanity and range checks ---
 ! !!! Calling program should verify that TS is long enough for nb*n. !!!
@@ -180,7 +180,7 @@
 
 ! --- Normalize if requested ---
 ! ... Normalize by sum of power ...
-      if (nrm.eq.1) then 
+      if (nrm.eq.1) then
        ! find sum
        sum = 0.
        do k=1,n2
@@ -192,7 +192,7 @@
        enddo ! k
       endif
 ! ... Standardize by data variance ...
-      if (nrm.eq.2) then 
+      if (nrm.eq.2) then
        ! find data mean
        sum = 0.
 ! 2005-01-03 ceaf: changed loop to 1,ei from nb*n to calculate
@@ -251,28 +251,28 @@
 !*   yi => imaginary component of Fourier transform                    *
 !***********************************************************************
 !* Changes:                                                            *
-!*   2001-11-02 ceaf => changed hng from integer*4 to real*4 to allow  *
+!*   2001-11-02 ceaf => changed hng from integer(kind=4) to real*4 to allow  *
 !*              exotic windowing powers                                *
-!*   2001-12-20 ceaf => changed all floats to real*8; added declaration*
+!*   2001-12-20 ceaf => changed all floats to real(kind=8); added declaration*
 !*              for bitrev; changed calls to bitrev for new order of   *
 !*              input arguments                                        *
 !*   2002-02-11 ceaf => removed external and declaration statement for *
 !*              bitrev - caused compilation errors on some systems     *
-!*   2006-03-01 sp => Changed real*4 to real*8 to match the calling    *
-!*              routine                                                * 
+!*   2006-03-01 sp => Changed real*4 to real(kind=8) to match the calling    *
+!*              routine                                                *
 !***********************************************************************
 
       subroutine fft(yr,yi,nu,dir,hng)
 
-      real*8 yr(0:*) !.................... real component (input/output)
-      real*8 yi(0:*) !............... imaginary component (input/output)
-      integer*4 nu !............. binary power of FFT block size (input)
-      integer*4 dir !....................... transform direction (input)
-      real*8 hng !......................... Hanning-window power (input)
-      real*8 pi
-      integer*4 n !...................................... FFT block size
-      integer*4 k,n2,nu1,l,i,a,b,kn2
-      real*8 hn,arg,s,c,tr,ti,yt
+      real(kind=8) yr(0:*) !.................... real component (input/output)
+      real(kind=8) yi(0:*) !............... imaginary component (input/output)
+      integer(kind=4) nu !............. binary power of FFT block size (input)
+      integer(kind=4) dir !....................... transform direction (input)
+      real(kind=8) hng !......................... Hanning-window power (input)
+      real(kind=8) pi
+      integer(kind=4) n !...................................... FFT block size
+      integer(kind=4) k,n2,nu1,l,i,a,b,kn2
+      real(kind=8) hn,arg,s,c,tr,ti,yt
 
       pi = 3.141592654
       n = 2 ** nu
@@ -301,7 +301,7 @@
       n2 = n / 2
       nu1 = nu - 1
       k = 0
-     
+
       do l = 1, nu
  1     do i = 1,n2
         a = int(k / (2 ** nu1))
@@ -375,13 +375,13 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-12-20 ceaf => changed order of input arguments; changed types*
-!*              from integer to integer*4                              *
+!*              from integer to integer(kind=4)                              *
 !***********************************************************************
 
       subroutine bitrev(a,nu,b)
 
-      integer*4 a,b,nu
-      integer*4 a1,i,a12
+      integer(kind=4) a,b,nu
+      integer(kind=4) a1,i,a12
 
       a1 = a
       b = 0

@@ -36,6 +36,9 @@
       USE drag
       USE bc
       use scales
+      use bodyforce
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !     Local variables
@@ -58,9 +61,6 @@
 !     mass, volume of species
       DOUBLE PRECISION Mj, Vj
 !
-!     mixture density at cell faces
-      DOUBLE PRECISION ropsE, ropsN, ropsT
-!
 !     drag force on a particle
       DOUBLE PRECISION dragFc, dragFe, dragFn, dragFt
 !
@@ -72,16 +72,6 @@
 !
 !-----------------------------------------------
 !     Function subroutines
-!-----------------------------------------------
-
-!-----------------------------------------------
-!     Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../fun_avg2.inc'
-      INCLUDE '../b_force1.inc'
-      INCLUDE '../b_force2.inc'
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3

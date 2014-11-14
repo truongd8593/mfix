@@ -3,7 +3,6 @@ omp=
 mpi=
 mkl=
 
-mkl_libs=
 mpi_libs=
 misc_libs=
 
@@ -22,7 +21,6 @@ if test ! -d $DPO; then  mkdir $DPO; fi
 # Set OpenMP flags.
 if test $USE_SMP = 1; then omp="-openmp"; fi
 
-
 # Set compiler commands for DMP or serial.
 if test $USE_DMP = 1; then
   FORTRAN_CMD=mpiifort
@@ -32,9 +30,7 @@ else
   LINK_CMD=ifort
 fi
 
-
 # --> Verify compiler is in $PATH <-- #
-
 
 SET_MPI_INCLUDE
 if test $USE_DMP = 1; then
@@ -47,31 +43,13 @@ ode="${DPO}odepack.a"
 blas="${DPO}blas90.a"
 dgtsv="${DPO}dgtsv90.a"
 
+LIB_FLAGS="${ode} ${mpi_libs} ${misc_libs}"
 
-# 12-05-2013 // Intel Math Kernel Library Link Line Advisor
-# http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
-#
-# Product: Intel MKL 11.1, OS: Linux, Coprocessor: None
-# Compiler: Intel Fortran, Architecture: Intel 64
-# Static Linking, Interface Layer:  ILP64, Sequential
-# with Fortran 95 interfaces for BLAS95 and LAPACK95
-#
-# Compile line options.
-# These compile line options cause MPI runtime issues.
-#mkl="-i8 -I${MKL}/include/intel64/ilp64 -I${MKL}/include"
-#
-# Link line
-##kl_libs="-L ${MKLPATH} ${MKLPATH}/libmkl_blas95_ilp64.a "
-#mkl_libs=${mkl_libs}" ${MKLPATH}/libmkl_lapack95_ilp64.a"
-#mkl_libs=${mkl_libs}" -Wl,--start-group  ${MKLPATH}/libmkl_intel_ilp64.a "
-#mkl_libs=${mkl_libs}" ${MKLPATH}/libmkl_core.a ${MKLPATH}/libmkl_sequential.a"
-#mkl_libs=${mkl_libs}" -Wl,--end-group -lpthread -lm"
-
-# The Intel MKL is disabled .
-mkl_libs="${blas} ${dgtsv}"
-
-
-LIB_FLAGS="${ode} ${mkl_libs} ${mpi_libs} ${misc_libs}"
+if [[ -n $USE_MKL ]]; then
+    mkl='-mkl'
+else
+    LIB_FLAGS="${LIB_FLAGS} ${blas} ${dgtsv}"
+fi
 
 # Setup inline object lists.
 inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o"
@@ -82,7 +60,7 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
-common="-c -I. -grecord-gcc-switches -convert big_endian -assume byterecl  -diag-disable remark"
+common="-c -I. -grecord-gcc-switches -convert big_endian -assume byterecl"
 
 # To display the flags mfix.exe is compiled with, run:
 # >
@@ -102,22 +80,22 @@ case $OPT in
     if [[ -z $USE_MIC ]]; then dbg="$dbg -fpe:0" ; fi
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR ${dbg} -g"
     FORT_FLAGS3="${common} ${mkl} -O0 -g"
-    LINK_FLAGS="${omp} -g";;
+    LINK_FLAGS="${omp} ${mkl} -g";;
 
   1)echo "Setting flags for low optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O1 ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O1 ${dbg}"
-    LINK_FLAGS="${omp} ${dbg}";;
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O2 ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O2 ${dbg}"
-    LINK_FLAGS="${omp} ${dbg}";;
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
     FORT_FLAGS="${omp} ${mpi} ${mkl} ${common} -FR -O3 -no-prec-div -static ${dbg}"
     FORT_FLAGS3="${common} ${mkl} -O3 -no-prec-div -static ${dbg}"
-    LINK_FLAGS="${omp} ${dbg}";;
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
 
   *)echo "Unsupported optimization level."
     exit;;

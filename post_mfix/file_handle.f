@@ -24,7 +24,7 @@
 !
 !
       Use machine
-      
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -375,10 +375,10 @@
 ! passed arguments
 !
 !                   run_name (as specified in input file)
-      CHARACTER*(*) RUN_NAME
+      CHARACTER(LEN=*) RUN_NAME
 !
 !                   run type
-      CHARACTER*(*) RUN_TYPE
+      CHARACTER(LEN=*) RUN_TYPE
 !
 ! local variables
 !
@@ -495,7 +495,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -504,7 +505,7 @@
       DOUBLE PRECISION  ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*) :: MESSAGE
 !
 ! local variables
 !
@@ -513,9 +514,7 @@
 !
 !                       loop counter
       INTEGER           L
-!
-      INCLUDE 'function.inc'
-!
+
       DO 100 L = 1,KMAX2
          IJK = FUNIJK (1,1,L)
          WRITE (UNIT_OUT,1100) MESSAGE , L
@@ -558,16 +557,17 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
 !
 !                       array to print out
-      CHARACTER*3       ARRAY(*)
+      CHARACTER(LEN=3) ::       ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*)     MESSAGE
 !
 ! local variables
 !
@@ -576,8 +576,6 @@
 !
 !                       loop counter
       INTEGER           L
-!
-      INCLUDE 'function.inc'
 !
       DO 100 L = 1,KMAX2
          IJK = FUNIJK (1,1,L)
@@ -620,7 +618,8 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
@@ -645,8 +644,6 @@
 !
 !                      start 'IJ' and end 'IJ' for a given 'J' to print out
       INTEGER          IJ1 , IJ2
-!
-      INCLUDE 'function.inc'
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
@@ -703,13 +700,14 @@
       Use indices
       Use funits
       Use compar
-!
+      Use functions
+
       IMPLICIT NONE
 !
 ! passed arguments
 !
 !                      2D array to print out
-      CHARACTER*3      ARRAY(*)
+      CHARACTER(LEN=3) :: ARRAY(*)
 !
 ! local variables
 !
@@ -728,8 +726,6 @@
 !
 !                      start 'IJ' and end 'IJ' for a given 'J' to print out
       INTEGER          IJ1 , IJ2
-!
-      INCLUDE 'function.inc'
 !
 ! NOTE:  IF NCOL IS CHANGED TO A NUMBER GREATER THAN 30, THEN THE "30"
 !        IN FORMATS 5050 AND 5100 MUST BE CHANGED TO THAT NUMBER.
@@ -1101,13 +1097,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1128,20 +1123,19 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       double precision   arr_io(*) , arr_internal(*)
       integer            n,i,j,k,ijk,ijk_io
 !
-      include 'function.inc'
-!
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -1156,13 +1150,12 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       integer   arr_io(*) , arr_internal(*)
       integer   n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
@@ -1183,20 +1176,19 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
       integer   arr_io(*) , arr_internal(*)
       integer   n,i,j,k,ijk,ijk_io
 !
-      include 'function.inc'
-!
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do
@@ -1210,20 +1202,19 @@
       use geometry
       use indices
       use compar
+      use functions
 !
       implicit none
 !
-      character*3   arr_io(*) , arr_internal(*)
+      character(len=3)   arr_io(*) , arr_internal(*)
       integer       n,i,j,k,ijk,ijk_io
-!
-      include 'function.inc'
 !
       do k = 1,kmax2
          do j = 1,jmax2
             do i = 1,imax2
                ijk    = funijk(i,j,k)
                ijk_io = funijk_io(i,j,k)
-               arr_io(ijk_io) = arr_internal(ijk) 
+               arr_io(ijk_io) = arr_internal(ijk)
             end do
          end do
       end do

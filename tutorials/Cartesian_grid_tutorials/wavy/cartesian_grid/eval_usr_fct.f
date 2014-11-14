@@ -15,10 +15,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE EVAL_USR_FCT(x1,x2,x3,BCID,f_usr,CLIP_FLAG)
-    
+
       USE param
       USE param1
       USE parallel
@@ -26,13 +26,13 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE fldvar
       USE quadric
       USE cutcell
-      
+
       IMPLICIT NONE
 
 
@@ -88,6 +88,6 @@
       CLIP_FLAG = .TRUE.
       RETURN
 
-      
+
       END SUBROUTINE EVAL_USR_FCT
 

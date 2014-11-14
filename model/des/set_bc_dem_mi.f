@@ -63,7 +63,7 @@
       DOUBLE PRECISION EPs_TMP(DIM_M)
 
 ! Minimum/maximum solids velocity at inlet.  Also used in the iterative
-! steps as the starting and ending velocities 
+! steps as the starting and ending velocities
       DOUBLE PRECISION  MIN_VEL, MAX_VEL
 
       DOUBLE PRECISION  MINIPV, MAXIPV
@@ -101,7 +101,7 @@
 ! The max diameter of incoming particles at this inlet
          MAX_DIA = ZERO
 
-! Determine if the inlet is mono or polydisperse               
+! Determine if the inlet is mono or polydisperse
          DO M=1, SMAX + DES_MMAX
             IF(SOLIDS_MODEL(M) /= 'DEM') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
@@ -137,7 +137,7 @@
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
             VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M+SMAX)
-! Calculate the number of particles of mass phase M are injected per 
+! Calculate the number of particles of mass phase M are injected per
 ! second for each solid phase present at the boundary
             NPMpSEC(M) = VOL_FLOW / (PI/6.d0*DES_D_P0(M)**3)
 ! Write some debugging information if needed.
@@ -147,10 +147,10 @@
 ! Total number of particles at BCV injected per second
          NPpSEC = sum(NPMpSEC)
 
- 1100 FORMAT(/2x,'Conversion Info: Phase ',I2,/4x,'Velocity: ',g11.5,/ &
+ 1100 FORMAT(/2x,'Conversion Info: Phase ',I2,/4x,'Velocity: ',g12.5,/ &
          4X,'NPMpSEC = ',F11.1)
 
-         if(dFlag) write(*,"(/2x,'Max Velocity:',3x,g11.5)") MAX_VEL
+         if(dFlag) write(*,"(/2x,'Max Velocity:',3x,g12.5)") MAX_VEL
          if(dFlag) write(*,"( 2x,'NPpSEC:',3x,F11.1)") NPpSEC
 
 ! The number of total particles per solid time step DTSOLID
@@ -178,8 +178,8 @@
          MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(     &
             FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I)))))
 
-         if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g11.5)") MAXIPV
-         if(dFlag) write(*,"( 2x,'MinIPV:',3x,g11.5)") MINIPV
+         if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g12.5)") MAXIPV
+         if(dFlag) write(*,"( 2x,'MinIPV:',3x,g12.5)") MINIPV
 
          IF(MAX_VEL < MINIPV) THEN
             WRITE(ERR_MSG,1110) BCV, MAX_VEL, MINIPV
@@ -193,9 +193,8 @@
          'velocity normal to the flow plane.',//' > If MASSFLOW or ', &
          'VOLFLOW are defined, decrease the solids volume',/3x,       &
          'fraction to increase solids velocity.',//2x,'Max user-',    &
-         'specified BC velocity:   ',g11.5,/2x,'Minimum required ',   &
-         'solids Velocity: ',g11.5)
-
+         'specified BC velocity:   ',g12.5,/2x,'Minimum required ',   &
+         'solids Velocity: ',g12.5)
 
 ! Set all BC solids velocities to the largest velocity and recalculate
 ! BC_EP_s to determine the magnitude of the change.
@@ -226,7 +225,7 @@
                CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
                FATAL = .TRUE.
 
-! Report the amount of changes imposed on the BC in setting a 
+! Report the amount of changes imposed on the BC in setting a
 ! uniform inlet velocity.
             ELSE
                WRITE(ERR_MSG,1205) BCV, MAX_VEL, EPs_ERR
@@ -335,6 +334,7 @@
 
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -354,13 +354,7 @@
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
 
-
-      INCLUDE '../function.inc'
-
-
       CALL INIT_ERR_MSG("SET_DEM_BCMI_IJK")
-
-
 
       dFlag = (DMP_LOG .AND. setDBG)
 

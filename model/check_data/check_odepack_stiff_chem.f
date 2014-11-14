@@ -40,15 +40,13 @@
       use indices
 
       use error_manager
+      use functions
 
       implicit none
 
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: I, J, K, IJK
-
-      include '../function.inc'
-
 
       CALL INIT_ERR_MSG('CHECK_ODEPACK_STIFF_CHEM')
 
@@ -73,7 +71,7 @@
          ENDIF
 
 ! The stiff chemistry solver only needs to loop over physical cells
-! owned by a process (e.g., not ghost cells). To avoid having a 
+! owned by a process (e.g., not ghost cells). To avoid having a
 ! triple do loop, this array is populated to identify the cells that
 ! are not owned.
          ALLOCATE( notOwner(DIMENSION_3) ); notOwner = .TRUE.
@@ -89,7 +87,7 @@
 ! Initialize ODEPACK operating parameters.
          CALL ODEPACK_INIT
 
-! Clear the interphase mass transfer terms as the stiff solver 
+! Clear the interphase mass transfer terms as the stiff solver
 ! does no use them.
          IF(allocated(SUM_R_g)) SUM_R_g = ZERO
          IF(allocated(SUM_R_s)) SUM_R_s = ZERO
@@ -115,7 +113,7 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                         C  
+!                                                                         C
 !     Module name: MCHEM_ODEPACK_INIT                                     C
 !     Purpose: controlling values for ODEAPCK(reference to ODEPACK manual)C
 !                                                                         C

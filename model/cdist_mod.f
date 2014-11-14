@@ -1,5 +1,5 @@
       module cdist
-      
+
       logical :: bDist_IO
       logical :: bStart_with_one_RES
       logical :: bDoing_postmfix
@@ -11,8 +11,5 @@
       logical :: bFirst_netcdf_write = .true.
 
       logical :: bGlobalNetcdf = .true.
-     
+
       end module cdist
-    
-      
- 

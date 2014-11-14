@@ -10,11 +10,11 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CONNECTIVITY(IJK,TYPE_OF_CELL,N_NEW_POINTS,N_NODES,CONNECT,X_NP,Y_NP,Z_NP,TOTAL_NUMBER_OF_INTERSECTIONS,&
              X_intersect,Y_intersect,Z_intersect)
-    
+
       USE param
       USE param1
       USE parallel
@@ -22,14 +22,15 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE polygon
       USE stl
-      
+      USE functions
+
       IMPLICIT NONE
       INTEGER :: I,J,K,L,IM,JM,KM
       INTEGER :: IJK,IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
@@ -45,22 +46,20 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION :: F_NODE_2,F2
 
-      include "../function.inc"
-
 !======================================================================
 !  Get coordinates of eight nodes
 !======================================================================
 
       CALL GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK)      
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
-      IM = I - 1 
-      JM = J - 1 
+      IM = I - 1
+      JM = J - 1
       KM = K - 1
-    
+
       IMJK   = FUNIJK(IM,J,K)
       IJMK   = FUNIJK(I,JM,K)
       IJKM   = FUNIJK(I,J,KM)
@@ -79,7 +78,7 @@
          N_NODES = 0
 
          CORNER_INTERSECTION = .FALSE.
-         NUMBER_OF_CORNER_INTERSECTIONS = 0  
+         NUMBER_OF_CORNER_INTERSECTIONS = 0
          NUMBER_OF_EDGE_INTERSECTIONS = 0
 
          IF(NO_K) THEN
@@ -130,7 +129,7 @@
 
                IF(INTERSECT_X(IJMKM)) THEN  ! Edge 1  = Nodes 1-2
                   IF((.NOT.CORNER_INTERSECTION(1)).AND.(.NOT.CORNER_INTERSECTION(2))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_intersect(IJMKM)
                      Y_NP(N_NEW_POINTS) = Y_NODE(1)
@@ -142,7 +141,7 @@
 
                IF(INTERSECT_Y(IJKM)) THEN  ! Edge 2  = Nodes 2-4
                   IF((.NOT.CORNER_INTERSECTION(2)).AND.(.NOT.CORNER_INTERSECTION(4))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(2)
                      Y_NP(N_NEW_POINTS) = Y_intersect(IJKM)
@@ -154,7 +153,7 @@
 
                IF(INTERSECT_X(IJKM)) THEN  ! Edge 3  = Nodes 3-4
                   IF((.NOT.CORNER_INTERSECTION(3)).AND.(.NOT.CORNER_INTERSECTION(4))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_intersect(IJKM)
                      Y_NP(N_NEW_POINTS) = Y_NODE(3)
@@ -166,7 +165,7 @@
 
                IF(INTERSECT_Y(IMJKM)) THEN  ! Edge 4  = Nodes 1-3
                   IF((.NOT.CORNER_INTERSECTION(1)).AND.(.NOT.CORNER_INTERSECTION(3))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(1)
                      Y_NP(N_NEW_POINTS) = Y_intersect(IMJKM)
@@ -181,7 +180,7 @@
 
             IF(INTERSECT_X(IJMK)) THEN  ! Edge 5  = Nodes 5-6
                IF((.NOT.CORNER_INTERSECTION(5)).AND.(.NOT.CORNER_INTERSECTION(6))) THEN
-                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                   N_NEW_POINTS = N_NEW_POINTS + 1
                   X_NP(N_NEW_POINTS) = X_intersect(IJMK)
                   Y_NP(N_NEW_POINTS) = Y_NODE(5)
@@ -193,7 +192,7 @@
 
             IF(INTERSECT_Y(IJK)) THEN  ! Edge 6  = Nodes 6-8
                IF((.NOT.CORNER_INTERSECTION(6)).AND.(.NOT.CORNER_INTERSECTION(8))) THEN
-                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                   N_NEW_POINTS = N_NEW_POINTS + 1
                   X_NP(N_NEW_POINTS) = X_NODE(6)
                   Y_NP(N_NEW_POINTS) = Y_intersect(IJK)
@@ -205,7 +204,7 @@
 
             IF(INTERSECT_X(IJK)) THEN  ! Edge 7  = Nodes 7-8
                IF((.NOT.CORNER_INTERSECTION(7)).AND.(.NOT.CORNER_INTERSECTION(8))) THEN
-                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                   N_NEW_POINTS = N_NEW_POINTS + 1
                   X_NP(N_NEW_POINTS) = X_intersect(IJK)
                   Y_NP(N_NEW_POINTS) = Y_NODE(7)
@@ -217,7 +216,7 @@
 
             IF(INTERSECT_Y(IMJK)) THEN  ! Edge 8  = Nodes 5-7
                IF((.NOT.CORNER_INTERSECTION(5)).AND.(.NOT.CORNER_INTERSECTION(7))) THEN
-                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                  NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                   N_NEW_POINTS = N_NEW_POINTS + 1
                   X_NP(N_NEW_POINTS) = X_NODE(5)
                   Y_NP(N_NEW_POINTS) = Y_intersect(IMJK)
@@ -232,7 +231,7 @@
 
                IF(INTERSECT_Z(IMJMK)) THEN  ! Edge 9  = Nodes 1-5
                   IF((.NOT.CORNER_INTERSECTION(1)).AND.(.NOT.CORNER_INTERSECTION(5))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(1)
                      Y_NP(N_NEW_POINTS) = Y_NODE(1)
@@ -244,7 +243,7 @@
 
                IF(INTERSECT_Z(IJMK))  THEN  ! Edge 10 = Nodes 2-6
                   IF((.NOT.CORNER_INTERSECTION(2)).AND.(.NOT.CORNER_INTERSECTION(6))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(2)
                      Y_NP(N_NEW_POINTS) = Y_NODE(2)
@@ -256,7 +255,7 @@
 
                IF(INTERSECT_Z(IJK))  THEN  ! Edge 11 = Nodes 4-8
                   IF((.NOT.CORNER_INTERSECTION(4)).AND.(.NOT.CORNER_INTERSECTION(8))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(4)
                      Y_NP(N_NEW_POINTS) = Y_NODE(4)
@@ -268,14 +267,14 @@
 
                IF(INTERSECT_Z(IMJK)) THEN  ! Edge 12 = Nodes 3-7
                   IF((.NOT.CORNER_INTERSECTION(3)).AND.(.NOT.CORNER_INTERSECTION(7))) THEN
-                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1  
+                     NUMBER_OF_EDGE_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + 1
                      N_NEW_POINTS = N_NEW_POINTS + 1
                      X_NP(N_NEW_POINTS) = X_NODE(3)
                      Y_NP(N_NEW_POINTS) = Y_NODE(3)
                      Z_NP(N_NEW_POINTS) = Z_intersect(IMJK)
                      N_NODES = N_NODES + 1
                      CONNECT(IJK,N_NODES) = N_NEW_POINTS + IJKEND3
-                  ENDIF 
+                  ENDIF
                ENDIF
 
             ENDIF
@@ -290,7 +289,7 @@
                MAX_CORNER_INTERSECTIONS = 4
             ENDIF
 
-           
+
            IF(NUMBER_OF_CORNER_INTERSECTIONS > MAX_CORNER_INTERSECTIONS) THEN
               IF(PRINT_WARNINGS) THEN
                  WRITE(*,*)'WARNING:',NUMBER_OF_CORNER_INTERSECTIONS,&
@@ -300,17 +299,21 @@
                  WRITE(*,*)'REMOVING CUT CELL'
               ENDIF
 !              NUMBER_OF_CORNER_INTERSECTIONS = MAX_CORNER_INTERSECTIONS
-!              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
-              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS -1  ! Force the total number of intersections to be -one, and therefore, the cell will be considered as a non-cut cell
+
+              ! Force the total number of intersections to be zero, and therefore, the cell will be considered as a non-cut cell
+!              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS
+
+              ! Force the total number of intersections to be -one, and therefore, the cell will be considered as a non-cut cell
+              NUMBER_OF_CORNER_INTERSECTIONS = -NUMBER_OF_EDGE_INTERSECTIONS -1
 
 
            ENDIF
-         
+
             TOTAL_NUMBER_OF_INTERSECTIONS = NUMBER_OF_EDGE_INTERSECTIONS + NUMBER_OF_CORNER_INTERSECTIONS
 
       RETURN
 
-      
+
       END SUBROUTINE GET_CONNECTIVITY
 
 
@@ -326,10 +329,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
-    
+
       USE param
       USE param1
       USE parallel
@@ -337,33 +340,32 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
-      
+      USE functions
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys,Zb,Zt
       INTEGER :: I,J,K,IP,JP,KP,IM,JM,KM
       INTEGER :: IJK,IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
 
-      include "../function.inc"
-
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK)      
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
       IP = I + 1
       JP = J + 1
       KP = K + 1
 
-      IM = I - 1 
-      JM = J - 1 
+      IM = I - 1
+      JM = J - 1
       KM = K - 1
-    
+
       IMJK   = FUNIJK(IM,J,K)
       IJMK   = FUNIJK(I,JM,K)
       IJKM   = FUNIJK(I,J,KM)
@@ -393,14 +395,14 @@
 
             Ys = YG_N(J) - DY(J)          ! south face location
             Yn = YG_N(J)                  ! north face location
- 
+
             IF(NO_K) THEN
                Zb = ZERO                  ! bottom face location
                Zt = ZERO                  ! top face location
             ELSE
                Zb = ZG_T(K) - DZ(K)       ! bottom face location
                Zt = ZG_T(K)               ! top face location
-            ENDIF 
+            ENDIF
 
          CASE('U_MOMENTUM')
             Xw = XG_E(I) - HALF * DX(I)   ! west face location
@@ -446,11 +448,11 @@
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CELL_NODE_COORDINATES'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'SCALAR' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'SCALAR'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
 
@@ -501,7 +503,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE GET_CELL_NODE_COORDINATES
 
 
@@ -516,10 +518,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_GLOBAL_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
-    
+
       USE param
       USE param1
       USE parallel
@@ -527,14 +529,15 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE quadric
       USE cutcell
       USE fldvar
       USE vtk
-      
+      USE functions
+
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: Xw,Xe,Yn,Ys,Zb,Zt
@@ -542,20 +545,18 @@
       INTEGER :: IJK,IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       INTEGER :: NODE
 
-      include "../function.inc"
-
-      I = GLOBAL_I_OF(IJK) 
-      J = GLOBAL_J_OF(IJK) 
-      K = GLOBAL_K_OF(IJK)      
+      I = GLOBAL_I_OF(IJK)
+      J = GLOBAL_J_OF(IJK)
+      K = GLOBAL_K_OF(IJK)
 
       IP = I + 1
       JP = J + 1
       KP = K + 1
 
-      IM = I - 1 
-      JM = J - 1 
+      IM = I - 1
+      JM = J - 1
       KM = K - 1
-    
+
       IMJK   = FUNIJK_GL(IM,J,K)
       IJMK   = FUNIJK_GL(I,JM,K)
       IJKM   = FUNIJK_GL(I,J,KM)
@@ -582,14 +583,14 @@
 
             Ys = YG_N(J) - DY(J)          ! south face location
             Yn = YG_N(J)                  ! north face location
- 
+
             IF(NO_K) THEN
                Zb = ZERO                  ! bottom face location
                Zt = ZERO                  ! top face location
             ELSE
                Zb = ZG_T(K) - DZ(K)       ! bottom face location
                Zt = ZG_T(K)               ! top face location
-            ENDIF 
+            ENDIF
 
          CASE('U_MOMENTUM')
             Xw = XG_E(I) - HALF * DX(I)   ! west face location
@@ -635,11 +636,11 @@
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_CELL_NODE_COORDINATES'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
-            WRITE(*,*)'ACCEPTABLE TYPES ARE:' 
-            WRITE(*,*)'SCALAR' 
-            WRITE(*,*)'U_MOMENTUM' 
-            WRITE(*,*)'V_MOMENTUM' 
-            WRITE(*,*)'W_MOMENTUM' 
+            WRITE(*,*)'ACCEPTABLE TYPES ARE:'
+            WRITE(*,*)'SCALAR'
+            WRITE(*,*)'U_MOMENTUM'
+            WRITE(*,*)'V_MOMENTUM'
+            WRITE(*,*)'W_MOMENTUM'
             CALL MFIX_EXIT(myPE)
       END SELECT
 
@@ -690,5 +691,5 @@
 
       RETURN
 
-      
+
       END SUBROUTINE GET_GLOBAL_CELL_NODE_COORDINATES

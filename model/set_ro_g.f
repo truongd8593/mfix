@@ -20,20 +20,21 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SET_RO_G 
+      SUBROUTINE SET_RO_G
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE physprop
       USE geometry
       USE fldvar
       USE constant
       USE indices
-      USE compar       
+      USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -42,44 +43,40 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+      DOUBLE PRECISION , EXTERNAL :: EOSG
 !-----------------------------------------------
 
 
       IF (RO_G0 == UNDEFINED) THEN   ! compressible case
 
-!!$omp parallel do private(IJK)  
-         DO IJK = ijkstart3, ijkend3 
-! calculate ro_g and rop_g in all fluid and flow boundary cells 
-            IF (.NOT.WALL_AT(IJK)) THEN 
-! set_bc0 will have already defined ro_g and rop_g in MI and PI 
+!!$omp parallel do private(IJK)
+         DO IJK = ijkstart3, ijkend3
+! calculate ro_g and rop_g in all fluid and flow boundary cells
+            IF (.NOT.WALL_AT(IJK)) THEN
+! set_bc0 will have already defined ro_g and rop_g in MI and PI
 ! boundary cells (redundant-remove in set_bc0?)
-               RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK)) 
-               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
-            ENDIF 
-         ENDDO 
+               RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G(IJK),T_G(IJK))
+               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
+            ENDIF
+         ENDDO
 
       ELSE   ! incompressible case
 
-!!$omp   parallel do private(ijk)  
-         DO IJK = ijkstart3, ijkend3 
-            IF (.NOT.WALL_AT(IJK)) THEN 
+!!$omp   parallel do private(ijk)
+         DO IJK = ijkstart3, ijkend3
+            IF (.NOT.WALL_AT(IJK)) THEN
 ! assign ro_g and calculate rop_g in all fluid and flow boundary cells
 ! set_constprop will have already defined ro_g in fluid and flow
 ! boundary cells (redundant- remove here?)
-               RO_G(IJK) = RO_G0 
+               RO_G(IJK) = RO_G0
 ! set_bc0 will have already defined rop_g in MI and PI boundary cells
 ! (redundant-remove in set_bc0?)
-               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK) 
-            ENDIF 
-         ENDDO 
-      ENDIF 
+               ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
+            ENDIF
+         ENDDO
+      ENDIF
 
-      RETURN  
-      END SUBROUTINE SET_RO_G 
+      RETURN
+      END SUBROUTINE SET_RO_G
 
 

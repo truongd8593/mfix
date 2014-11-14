@@ -82,7 +82,7 @@
       CALL DES_GRANULAR_TEMPERATURE
 
       GRAN_TEMP = (1.0/wDIMN)*SUM( GLOBAL_GRAN_TEMP(1:wDIMN) )
-      AVG_VEL = (1.0/wDIMN)*SUM( DES_VEL_AVG(1:wDIMN) )         
+      AVG_VEL = (1.0/wDIMN)*SUM( DES_VEL_AVG(1:wDIMN) )
 
 
       FNAME = 'POST_GT.dat'

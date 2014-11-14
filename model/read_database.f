@@ -19,13 +19,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE constant
       USE compar
       USE rxns
-      USE funits 
+      USE funits
       USE discretelement
       USE des_rxns
 
@@ -62,7 +62,7 @@
 ! Full path to Burcat and Ruscic database
       CHARACTER(len=147) FILENAME
 
-! External function. Integrates the temperature-dependent specific 
+! External function. Integrates the temperature-dependent specific
 ! heat from zero to Tref.
       DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
 ! Tcom +/- SMALL_NUMBER: This is done so that the specific heat poly-
@@ -110,7 +110,7 @@
           ENDIF
 
          REWIND(UNIT=funit)
- 
+
 ! Initialize the error flag
          IER = 0
 
@@ -135,11 +135,11 @@
 ! Calculate the integral of specific heat from zero to Tref using the
 ! Alow coefficients.
                ICpoR_TrL = calc_ICpoR(T_ref, lM, lN, IER)
-! Calculate the integral of specific heat from zero to Tcom using the 
+! Calculate the integral of specific heat from zero to Tcom using the
 ! Alow coefficients.
             xTc = Tcom(lM,lN)-SMALL_NUMBER
             ICpoR_TcL = calc_ICpoR(xTc, lM, lN, IER)
-! Calculate the integral of specific heat from zero to Tcom using the 
+! Calculate the integral of specific heat from zero to Tcom using the
 ! Ahigh coefficients.
             xTc = Tcom(lM,lN)+SMALL_NUMBER
             ICpoR_TcH = calc_ICpoR(xTc, lM, lN, IER)
@@ -173,7 +173,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
 
 ! Messages
@@ -208,13 +208,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE READ_DATABASE0(Ier)
 
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE constant
       USE compar
       USE rxns
-      USE funits 
+      USE funits
       USE discretelement
       USE des_rxns
 
@@ -253,7 +253,7 @@
 
 ! Read species data for the continuum solids phases.
 !-----------------------------------------------------------------------
-! Skip reading the database for the continuum solids phase if the 
+! Skip reading the database for the continuum solids phase if the
 ! simulation is only employing discrete solids.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID)THEN
           DO M = 1, MMAX
@@ -270,7 +270,7 @@
           ENDDO   ! M=1, MMAX
       ENDIF
 
-      RETURN  
+      RETURN
 
 ! Error Messages
 !-----------------------------------------------------------------------
@@ -333,13 +333,13 @@
       write(*,"(2/,3x,'Specific Heat report for ',A)")trim(lName)
 
       write(*,"(/12x,'Low',9x,'High')")
-      write(*,"(6x,'T',3x,g11.5,2x,g11.5)") Tlow(lM,lN), Thigh(lM,lN)
+      write(*,"(6x,'T',3x,g12.5,2x,g12.5)") Tlow(lM,lN), Thigh(lM,lN)
       DO lc=1,5
-         write(*,"(4x,'A(',I1,')',2(2x,g11.5))") lc, &
+         write(*,"(4x,'A(',I1,')',2(2x,g12.5))") lc, &
             Alow(lc,lM,lN), Ahigh(lc,lM,lN)
       ENDDO
       write(*,"('')")
-      write(*,"(5x,'Tcom: ',g11.5)")Tcom(lM,lN)
+      write(*,"(5x,'Tcom: ',g12.5)")Tcom(lM,lN)
       write(*,"('')")
 
       write(*,"(5x,'Temperature',8x,'Cp',11x,'ICp')")
@@ -350,13 +350,13 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5,$)") T
+         write(*,"(7x,g12.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5),$)")lCP, lICP
+         write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 
-         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
-         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")
          write(*,"('')")
 
          T = T + 5.0
@@ -369,13 +369,13 @@
          IER1 = 0
          IER2 = 0
 
-         write(*,"(7x,g11.5,$)") T
+         write(*,"(7x,g12.5)",ADVANCE="NO") T
          lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
-         write(*,"(2(3x,g11.5),$)")lCP, lICP
+         write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 
-         IF(IER1 /= 0) write(*,"(3x,'Cp Error!',$)")
-         IF(IER2 /= 0) write(*,"(3x,'ICp Error!',$)")
+         IF(IER1 /= 0) write(*,"(3x,'Cp Error!')",ADVANCE="NO")
+         IF(IER2 /= 0) write(*,"(3x,'ICp Error!')",ADVANCE="NO")
          write(*,"('')")
 
          T = T + 5.0

@@ -25,9 +25,11 @@
       USE funits
       USE compar
       USE sendrecv
+      USE fun_avg
 
       USE toleranc
       USE usr
+      USE functions
 
       IMPLICIT NONE
 
@@ -38,15 +40,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:
@@ -64,6 +57,6 @@
          RATES(Phase_Change) = ZERO
       ENDIF
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

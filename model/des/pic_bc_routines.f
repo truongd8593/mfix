@@ -25,6 +25,7 @@
       USE stl
       USE des_stl_functions
       USE mpi_utility
+      USE functions
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
@@ -51,8 +52,6 @@
       logical :: ontriangle
       !The line and plane intersection point
       double precision, dimension(dimn) :: point_onplane
-
-      INCLUDE '../function.inc'
 
       FOCUS_PARTICLE = -1
 
@@ -179,7 +178,7 @@
       double precision, intent(in), dimension(dimn) :: position, velocity
       Integer, intent(in) :: fid
       Integer :: stl_unit, vtp_unit , k
-      CHARACTER*100 :: stl_fname, vtp_fname
+      CHARACTER(LEN=100) :: stl_fname, vtp_fname
       real :: temp_array(3)
 
       stl_unit = 1001
@@ -203,7 +202,7 @@
            '<PointData Scalars="Diameter" Vectors="Velocity">'
       write(vtp_unit,"(12x,a)")&
            '<DataArray type="Float32" Name="Diameter" format="ascii">'
-      write (vtp_unit,"(15x,es12.6)") (1.d0)
+      write (vtp_unit,"(15x,es13.6)") (1.d0)
       write(vtp_unit,"(12x,a)") '</DataArray>'
 
       temp_array = zero
@@ -271,8 +270,8 @@
       USE mpi_utility
       use error_manager
       USE pic_bc
+      USE functions
       Implicit none
-
 
       INTEGER I, J, K, IJK, NF, LL
 
@@ -302,7 +301,6 @@
 !      INTEGER :: FOCUS_CELLID
 
       double precision :: veldotnorm
-      INCLUDE '../function.inc'
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
@@ -591,6 +589,7 @@
       USE param1
       USE physprop
       USE mfix_pic
+      USE functions
 
       IMPLICIT NONE
 
@@ -612,7 +611,6 @@
 ! Logical for local debug warnings
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
-      INCLUDE '../function.inc'
 
       PEA(NP,:) = .FALSE.
 
@@ -657,6 +655,7 @@
       USE mpi_utility
       USE randomno
       use error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -695,11 +694,6 @@
            prev_spotlist => NULL(), &
            temp_spotlist => NULL()
 
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("PIC_MI_BC")
@@ -846,8 +840,10 @@
                      ENDIF
 
 
-                     !WRITE(*,'(A,2(2x,i5), 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') 'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
-                     !IF(DMP_LOG) WRITE(UNIT_LOG,'(A,2x,i5, 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') 'NEW PART AT ', NEW_SPOT, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
+                     !WRITE(*,'(A,2(2x,i5), 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') &
+                     !   'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
+                     !IF(DMP_LOG) WRITE(UNIT_LOG,'(A,2x,i5, 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') &
+                     !    'NEW PART AT ', NEW_SPOT, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
 
                      !WRITE(*,*) 'WDIR, DOML = ', WDIR, DOML(:)
                   END DO
@@ -946,12 +942,12 @@
 
  2001 FORMAT(/,5X,  &
       & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
-      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/5X &
+      & 'NO MORE EMPTY SPOT IN THE PARTICLE ARRAY TO ADD A NEW PARTICLE',/5X, &
       & 'TERMINAL ERROR: STOPPING')
 
  2002 FORMAT(/,5X,  &
       & 'ERROR IN PIC_FIND_EMPTY_SPOT', /5X, &
-      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/5X &
+      & 'COULD NOT FIND A SPOT FOR ADDING NEW PARTICLE',/5X, &
       & 'INCREASE THE SIZE OF THE INITIAL ARRAYS', 5X, &
       & 'TERMINAL ERROR: STOPPING')
 
@@ -1040,6 +1036,7 @@
       USE discretelement
       use mpi_utility
       USE cutcell
+      USE functions
 
       IMPLICIT NONE
 
@@ -1052,10 +1049,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS
       INTEGER :: I, J, K, IJK
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 !-----------------------------------------------
 
       I = PIJK(LL,1)

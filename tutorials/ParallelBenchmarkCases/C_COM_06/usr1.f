@@ -38,8 +38,10 @@
       USE constant
       USE funits
       USE compar
+      USE fun_avg
 
       USE usr
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -54,14 +56,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
 
       N_Sh = ZERO
       DO IJK = IJKSTART3, IJKEND3

@@ -55,7 +55,7 @@
       DOUBLE PRECISION Sa
 ! Convection source
       DOUBLE PRECISION Qcv
-      
+
 
 ! Obtain the temperature of the gas. --> Not interpolated.
       Tg = T_g(IJK)
@@ -111,8 +111,10 @@
       Use fldvar
       USE geometry
       USE indices
-      Use param1
-      Use physprop
+      USE param1
+      USE physprop
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -144,11 +146,7 @@
 
 ! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT 
-
-      INCLUDE '../fun_avg1.inc'
-      INCLUDE '../function.inc'
-      INCLUDE '../fun_avg2.inc'
+      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 ! Initialization
       IMJK  = IM_OF(IJK)
@@ -182,7 +180,7 @@
             IF(K_G(IJK) > ZERO) THEN
                N_Pr = (C_PG(IJK)*MU_G(IJK))/K_G(IJK)
             ELSE
-               N_Pr = LARGE_NUMBER 
+               N_Pr = LARGE_NUMBER
             ENDIF
 
 ! Calculate the particle Reynolds Number
@@ -234,14 +232,15 @@
       Use physprop
 
       use run, only: ODT
+      use functions
 
       IMPLICIT NONE
 
 ! Passed Variables
 !---------------------------------------------------------------------//
-! Source term on LHS.  Must be positive. 
+! Source term on LHS.  Must be positive.
       DOUBLE PRECISION, INTENT(INOUT) :: S_P(DIMENSION_3)
-! Source term on RHS 
+! Source term on RHS
       DOUBLE PRECISION, INTENT(INOUT) :: S_C(DIMENSION_3)
 
 ! Local variables
@@ -252,7 +251,6 @@
       DOUBLE PRECISION :: DEM_to_TFM
 
 !---------------------------------------------------------------------//
-      INCLUDE '../function.inc'
 
 ! Loop over fluid cells.
       IJK_LP: DO IJK = IJKSTART3, IJKEND3
@@ -293,5 +291,5 @@
 
 
       RETURN
-      END SUBROUTINE ZERO_ENERGY_SOURCE 
+      END SUBROUTINE ZERO_ENERGY_SOURCE
 

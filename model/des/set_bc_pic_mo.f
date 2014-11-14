@@ -20,6 +20,7 @@
 
       use mpi_utility
       use error_manager
+      use functions
 
       IMPLICIT NONE
 
@@ -39,10 +40,6 @@
 
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
-
-
-      INCLUDE '../function.inc'
-
 
       CALL INIT_ERR_MSG("SET_BC_PIC_MO")
 
@@ -121,7 +118,7 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-! Limit only to fluid cells 
+! Limit only to fluid cells
             IF(.NOT.IS_ON_myPE_wobnd(I,J,K)) CYCLE
             IJK = FUNIJK(I,J,K)
 

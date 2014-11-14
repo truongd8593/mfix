@@ -56,5 +56,5 @@
       ENDIF
       IF (DO_XFORMS) RETURN
       GOTO 10
-! 
+!
       END

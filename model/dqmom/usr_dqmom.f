@@ -17,7 +17,8 @@
       USE geometry
       USE indices
       USE compar
-      Use usr
+      USE usr
+      USE functions
 
       IMPLICIT NONE
 
@@ -32,13 +33,8 @@
       integer nok, nbad,I,J,K
       double precision YY,XX
       double precision max1, min1, max_min
-!
-!  Include files defining statement functions here
-      INCLUDE '../function.inc'
-
 
       IF(.NOT.CALL_DQMOM) RETURN
-
 
 !  Insert user-defined code here
       IF(time<= 1E-15) THEN

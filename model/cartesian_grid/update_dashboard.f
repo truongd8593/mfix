@@ -21,10 +21,10 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UPDATE_DASHBOARD(NIT,TLEFT,TUNIT) 
+      SUBROUTINE UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE compar
       USE parallel
@@ -39,12 +39,12 @@
       IMPLICIT NONE
 
       DOUBLE PRECISION :: Smass,TLEFT
-      DOUBLE PRECISION :: CPU_NOW 
+      DOUBLE PRECISION :: CPU_NOW
       INTEGER :: NIT
       CHARACTER(LEN=4)  :: TUNIT,CPU_TUNIT
 !     temporary array to hold time data
       INTEGER DAT(8)
-      CHARACTER*10 DATE, TIM, ZONE
+      CHARACTER(LEN=10) DATE, TIM, ZONE
       LOGICAL :: Sm_flag
 
 ! Intel Linux compiler supports this function thru it's portability library
@@ -57,22 +57,22 @@
       ID_SECOND = DAT(7)
 
       CALL CPU_TIME (CPU_NOW)
-      CALL GET_TUNIT(CPU_NOW,CPU_TUNIT) 
+      CALL GET_TUNIT(CPU_NOW,CPU_TUNIT)
 
-      IF (CPU_NOW > 60.0d0 .AND. CPU_TUNIT == 's') THEN 
-         CPU_NOW = CPU_NOW/60.0d0 
-         CPU_TUNIT = 'min' 
-      ENDIF 
+      IF (CPU_NOW > 60.0d0 .AND. CPU_TUNIT == 's') THEN
+         CPU_NOW = CPU_NOW/60.0d0
+         CPU_TUNIT = 'min'
+      ENDIF
 
-      IF (TLEFT > 60.0d0 .AND. TUNIT == 's') THEN 
-         TLEFT = TLEFT/60.0d0 
-         TUNIT = 'min' 
-      ENDIF 
+      IF (TLEFT > 60.0d0 .AND. TUNIT == 's') THEN
+         TLEFT = TLEFT/60.0d0
+         TUNIT = 'min'
+      ENDIF
 
       Sm_flag = (TRIM(RUN_STATUS)=='In Progress...'.OR.TRIM(RUN_STATUS)=='Complete.')
 
       IF(Sm_flag) THEN
-         CALL GET_SMASS (SMASS)  
+         CALL GET_SMASS (SMASS)
 
          SMMIN = DMIN1(SMASS,SMMIN)
          SMMAX = DMAX1(SMASS,SMMAX)
@@ -126,26 +126,26 @@
       WRITE(111,30) ' |  Name   |  Value  |   Min   |   Max   | % of max|0%       Progress      100%|'
       WRITE(111,30) ' |_________|_________|_________|_________|_________|___________________________|'
       WRITE(111,30) ' |         |         |         |         |         |                           |'
-      WRITE(111,40)' Time    ',Time,Init_Time,Tstop
+      WRITE(111,40,ADVANCE='NO')' Time    ',Time,Init_Time,Tstop
       CALL WRITE_SIMPLE_PROGRESS_BAR(Time,TStop-Init_Time)
       IF(DT_DIR>0) THEN
-         WRITE(111,40)' DT (+)  ',DT,DTMIN,DTMAX
-!         WRITE(111,40)' DT      ',DT,DTMIN,DTMAX
+         WRITE(111,40,ADVANCE='NO')' DT (+)  ',DT,DTMIN,DTMAX
+!         WRITE(111,40,ADVANCE='NO')' DT      ',DT,DTMIN,DTMAX
       ELSE
-         WRITE(111,40)' DT (-)  ',DT,DTMIN,DTMAX
+         WRITE(111,40,ADVANCE='NO')' DT (-)  ',DT,DTMIN,DTMAX
       ENDIF
       CALL WRITE_SIMPLE_PROGRESS_BAR(DT,DTMAX)
       IF(Sm_flag) THEN
-         WRITE(111,40)' Sm      ',SMASS,SMMIN,SMMAX
+         WRITE(111,40,ADVANCE='NO')' Sm      ',SMASS,SMMIN,SMMAX
          CALL WRITE_SIMPLE_PROGRESS_BAR(SMASS,SMMAX)
       ELSE
       WRITE(111,30) ' | Sm      |         |         |         |         |                           |'
       ENDIF
-      WRITE(111,50)' NIT     ',NIT,NIT_MIN,NIT_MAX
-      CALL WRITE_SIMPLE_PROGRESS_BAR(dfloat(NIT),dfloat(NIT_MAX))
-      IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN 
-         WRITE (111,55) ' Max res ',RESID_STRING(8) 
-      ENDIF 
+      WRITE(111,50,ADVANCE='NO')' NIT     ',NIT,NIT_MIN,NIT_MAX
+      CALL WRITE_SIMPLE_PROGRESS_BAR(dble(NIT),dble(NIT_MAX))
+      IF (RESID_INDEX(8,1) == UNDEFINED_I) THEN
+         WRITE (111,55) ' Max res ',RESID_STRING(8)
+      ENDIF
       WRITE(111,30)' |_________|_________|_________|_________|_________|___________________________|'
       WRITE(111,60)'  Last updated at: ',ID_HOUR,ID_MINUTE,ID_SECOND,' on: ',ID_MONTH,ID_DAY,ID_YEAR
 10    FORMAT(A,A,T80,A)
@@ -153,10 +153,10 @@
 20    FORMAT(A, F9.3, 1X, A,T80,A)
 25    FORMAT(A,I6,T80,A)
 30    FORMAT(A)
-40    FORMAT(' |',A,'|',3(E9.2,'|'),$)
-50    FORMAT(' |',A,'|',3(I9,'|'),$)
+40    FORMAT(' |',A,'|',3(E9.2,'|'))
+50    FORMAT(' |',A,'|',3(I9,'|'))
 55    FORMAT(' |',A,'|',A7,'  |         |         |         |                           |')
-60    FORMAT(A,I2.2,':',I2.2,':',I2.2,A,I2.2,'/',I2.2,'/',I4) 
+60    FORMAT(A,I2.2,':',I2.2,':',I2.2,A,I2.2,'/',I2.2,'/',I4)
       CLOSE(111)
 
       RETURN
@@ -188,7 +188,7 @@
       SUBROUTINE WRITE_SIMPLE_PROGRESS_BAR(x,x_MAX)
 
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
       USE param1, only: zero
 
@@ -216,9 +216,9 @@
       BAR_WIDTH = 27
       BAR_CHAR = '='
       BAR_RESOLUTION = 1.0
-    
+
       PERCENT  = x/x_MAX * 100.0
-      PROGRESS = INT(PERCENT * BAR_WIDTH)  
+      PROGRESS = INT(PERCENT * BAR_WIDTH)
 
       WRITE(TEXT,10) PERCENT
 10    FORMAT(' ',F5.1,' % ')

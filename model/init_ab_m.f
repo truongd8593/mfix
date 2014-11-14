@@ -17,20 +17,20 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE INIT_AB_M(A_M, B_M, IJKMAX2A, M, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE INIT_AB_M(A_M, B_M, IJKMAX2A, M, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
+      USE param
+      USE param1
+      USE matrix
       USE parallel
-      USE compar 
+      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -59,8 +59,8 @@
 !
 !-----------------------------------------------
 !
-!      IJK = 1 
-      IF (IJKMAX2A > 0) THEN 
+!      IJK = 1
+      IF (IJKMAX2A > 0) THEN
        IF (USE_DOLOOP) THEN
 !!!$omp    parallel do private( IJK )
          DO IJK = ijkstart3, ijkend3
@@ -75,23 +75,23 @@
            B_M(IJK,M) = ZERO
          ENDDO
        ELSE
-         A_M(:,B,M) = ZERO 
-         A_M(:,S,M) = ZERO 
-         A_M(:,W,M) = ZERO 
-         A_M(:,0,M) = -ONE 
-         A_M(:,E,M) = ZERO 
-         A_M(:,N,M) = ZERO 
-         A_M(:,T,M) = ZERO 
-         B_M(:,M) = ZERO 
+         A_M(:,B,M) = ZERO
+         A_M(:,S,M) = ZERO
+         A_M(:,W,M) = ZERO
+         A_M(:,0,M) = -ONE
+         A_M(:,E,M) = ZERO
+         A_M(:,N,M) = ZERO
+         A_M(:,T,M) = ZERO
+         B_M(:,M) = ZERO
 
-!         IJK = IJKMAX2A + 1 
+!         IJK = IJKMAX2A + 1
        ENDIF
-      ENDIF 
-      RETURN  
-      END SUBROUTINE INIT_AB_M 
+      ENDIF
+      RETURN
+      END SUBROUTINE INIT_AB_M
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
-!// 120 Replaced the index for initialization, :IJKMAX2A => : 
+!// 120 Replaced the index for initialization, :IJKMAX2A => :
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 !

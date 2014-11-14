@@ -56,7 +56,7 @@
       INTEGER :: IC_K_t (DIMENSION_IC)
 
 ! Type of initial condition: PATCH
-      CHARACTER*16 :: IC_TYPE(DIMENSION_IC)
+      CHARACTER(LEN=16) :: IC_TYPE(DIMENSION_IC)
 
 ! Initial gas phase volume fraction
       DOUBLE PRECISION :: IC_EP_g (DIMENSION_IC)
@@ -126,25 +126,25 @@
 
 ! Initial scalar value in a region
       DOUBLE PRECISION :: IC_Scalar(DIMENSION_IC, DIM_scalar)
- 
+
 ! Initial K & Epsilon values in a region
       DOUBLE PRECISION :: IC_K_Turb_G(DIMENSION_IC)
       DOUBLE PRECISION :: IC_E_Turb_G(DIMENSION_IC)
 
-! Initial conditions for DES cases (such as, DEM, MPPIC, hybrid) 
-      
+! Initial conditions for DES cases (such as, DEM, MPPIC, hybrid)
+
 ! Flag to extend the lattice distribution in a given IC to available area
-      LOGICAL :: IC_DES_FIT_TO_REGION (DIMENSION_IC) 
+      LOGICAL :: IC_DES_FIT_TO_REGION (DIMENSION_IC)
 
 ! Flag to specify the initial constant number of particles per cell
 ! for the MPPIC method initialization.
 ! Statistical weight of parcels will be calculated by the code
       INTEGER :: IC_PIC_CONST_NPC(DIMENSION_IC, DIM_M)
-      
+
 ! Flag to specify the initial constant statistical weight.
 ! for the MPPIC method initialization.
 ! Number of computational particles/parcels will be calculated by the code
       DOUBLE PRECISION :: IC_PIC_CONST_STATWT(DIMENSION_IC, DIM_M)
 
-      
+
       END MODULE ic

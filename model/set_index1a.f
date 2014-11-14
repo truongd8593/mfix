@@ -32,23 +32,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SET_INDEX1A(I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-         IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+         IJKW, IJKE, IJKS, IJKN, IJKB, IJKT)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE geometry
       USE compar
       USE fldvar
       USE indices
       USE boundfunijk
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,19 +58,17 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IJKW, IJKE, &
-         IJKS, IJKN, IJKB, IJKT 
+         IJKS, IJKN, IJKB, IJKT
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: COMPARE, TRUE_CORNER 
-      LOGICAL :: TRUE_CORNER_1, TRUE_CORNER_2 
+      LOGICAL :: COMPARE, TRUE_CORNER
+      LOGICAL :: TRUE_CORNER_1, TRUE_CORNER_2
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       IMJK = UNDEFINED_I
       IPJK = UNDEFINED_I
       IJMK = UNDEFINED_I
@@ -96,16 +95,16 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IMJK = IJK
         ELSE
-           IMJK = BOUND_FUNIJK(IM1(I),J,K) 
+           IMJK = BOUND_FUNIJK(IM1(I),J,K)
         ENDIF
 !
 !  IJKW
 !
-        IF (WALL_AT(IMJK)) THEN 
-           IJKW = IJK 
-        ELSE 
-           IJKW = IMJK 
-        ENDIF 
+        IF (WALL_AT(IMJK)) THEN
+           IJKW = IJK
+        ELSE
+           IJKW = IMJK
+        ENDIF
       ENDIF
 
       IF(IP1(I).NE.UNDEFINED_I) THEN
@@ -119,16 +118,16 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IPJK = IJK
         ELSE
-           IPJK = BOUND_FUNIJK(IP1(I),J,K) 
+           IPJK = BOUND_FUNIJK(IP1(I),J,K)
         ENDIF
 !
 !  IJKE
 !
-        IF (WALL_AT(IPJK)) THEN 
-           IJKE = IJK 
-        ELSE 
-           IJKE = IPJK 
-        ENDIF 
+        IF (WALL_AT(IPJK)) THEN
+           IJKE = IJK
+        ELSE
+           IJKE = IPJK
+        ENDIF
       ENDIF
 
       IF(JM1(J).NE.UNDEFINED_I) THEN
@@ -142,16 +141,16 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IJMK = IJK
         ELSE
-           IJMK = BOUND_FUNIJK(I,JM1(J),K) 
+           IJMK = BOUND_FUNIJK(I,JM1(J),K)
         ENDIF
 !
 !  IJKS
 !
-        IF (WALL_AT(IJMK)) THEN 
-           IJKS = IJK 
-        ELSE 
-           IJKS = IJMK 
-        ENDIF 
+        IF (WALL_AT(IJMK)) THEN
+           IJKS = IJK
+        ELSE
+           IJKS = IJMK
+        ENDIF
       ENDIF
 
       IF(JP1(J).NE.UNDEFINED_I) THEN
@@ -165,16 +164,16 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IJPK = IJK
         ELSE
-           IJPK = BOUND_FUNIJK(I,JP1(J),K) 
+           IJPK = BOUND_FUNIJK(I,JP1(J),K)
         ENDIF
 !
 !  IJKN
 !
-        IF (WALL_AT(IJPK)) THEN 
-           IJKN = IJK 
-        ELSE 
-           IJKN = IJPK 
-        ENDIF 
+        IF (WALL_AT(IJPK)) THEN
+           IJKN = IJK
+        ELSE
+           IJKN = IJPK
+        ENDIF
       ENDIF
 
       IF(KM1(K).NE.UNDEFINED_I) THEN
@@ -188,16 +187,16 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IJKM = IJK
         ELSE
-           IJKM = BOUND_FUNIJK(I,J,KM1(K)) 
+           IJKM = BOUND_FUNIJK(I,J,KM1(K))
         ENDIF
 !
 !  IJKB
 !
-        IF (WALL_AT(IJKM)) THEN 
-           IJKB = IJK 
-        ELSE 
-           IJKB = IJKM 
-        ENDIF 
+        IF (WALL_AT(IJKM)) THEN
+           IJKB = IJK
+        ELSE
+           IJKB = IJKM
+        ENDIF
       ENDIF
 
       IF(KP1(K).NE.UNDEFINED_I) THEN
@@ -211,20 +210,20 @@
         IF((WALL_AT(IJK).OR.FLOW_AT(IJK)).AND.TRUE_CORNER) THEN
            IJKP = IJK
         ELSE
-           IJKP = BOUND_FUNIJK(I,J,KP1(K)) 
+           IJKP = BOUND_FUNIJK(I,J,KP1(K))
         ENDIF
 !
 !  IJKT
 !
-        IF (WALL_AT(IJKP)) THEN 
-           IJKT = IJK 
-        ELSE 
-           IJKT = IJKP 
-        ENDIF 
+        IF (WALL_AT(IJKP)) THEN
+           IJKT = IJK
+        ELSE
+           IJKT = IJKP
+        ENDIF
       ENDIF
 !
-      RETURN  
-      END SUBROUTINE SET_INDEX1A 
+      RETURN
+      END SUBROUTINE SET_INDEX1A
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// Modified calls to BOUND_FUNIJK to have a self consistent formulation

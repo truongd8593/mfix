@@ -192,6 +192,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_POS(lNEXT_REC)
 
+      USE in_binary_512
+
       implicit none
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -361,8 +363,8 @@
 
  1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
          3x,'Particle Number:',A)
- 1001 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5)
- 1002 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5,/3x,'Z POS: ',g11.5)
+ 1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
+ 1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)
@@ -481,6 +483,8 @@
 ! read data to the correct rank.                                       !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_COL(lNEXT_REC)
+
+      USE in_binary_512i
 
       implicit none
 
@@ -640,8 +644,8 @@
 
  1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
          3x,'Particle Number:',A)
- 1001 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5)
- 1002 FORMAT(3x,'X POS: ',g11.5,/3x,'Y POS: ',g11.5,/3x,'Z POS: ',g11.5)
+ 1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
+ 1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)
@@ -788,6 +792,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1I(lNEXT_REC, INPUT_I)
 
+      USE in_binary_512i
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -827,7 +833,7 @@
          CALL BCAST(INPUT_D, PE_IO)
       ENDIF
       lNEXT_REC = lNEXT_REC + 1
-      
+
       RETURN
       END SUBROUTINE READ_RES_DES_0D
 
@@ -838,6 +844,8 @@
 ! Purpose: Write scalar integers to RES file.                          !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1D(lNEXT_REC, INPUT_D)
+
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -896,6 +904,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1L(lNEXT_REC, INPUT_L)
 
+      USE in_binary_512i
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -939,6 +949,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -954,14 +965,14 @@
       INTEGER, ALLOCATABLE :: lBUF_I(:)
       INTEGER, ALLOCATABLE :: lCOUNT(:)
 
-         
+
       allocate(iPROCBUF(pPROCCNT))
       allocate(iROOTBUF(pROOTCNT))
 
       iDISPLS = pDISPLS
       iScr_RecvCNT = pRECV
       iScatterCNTS = pSCATTER
-         
+
       IF(bDIST_IO) THEN
          CALL IN_BIN_512i(RDES_UNIT, OUTPUT_I, pIN_COUNT, lNEXT_REC)
       ELSE
@@ -1006,6 +1017,7 @@
 
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -1069,6 +1081,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1145,6 +1158,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1208,6 +1222,7 @@
 
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
+      USE in_binary_512
 
       IMPLICIT NONE
 
@@ -1225,7 +1240,7 @@
 
       allocate(dPROCBUF(cPROCCNT))
       allocate(dROOTBUF(cROOTCNT))
-      
+
       iDISPLS = cDISPLS
       iScr_RecvCNT = cRECV
       iScatterCNTS = cSCATTER
@@ -1272,6 +1287,7 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      USE in_binary_512i
 
       IMPLICIT NONE
 
@@ -1289,7 +1305,7 @@
 
       allocate(iPROCBUF(cPROCCNT))
       allocate(iROOTBUF(cROOTCNT))
-      
+
       iDISPLS = cDISPLS
       iScr_RecvCNT = cRECV
       iScatterCNTS = cSCATTER

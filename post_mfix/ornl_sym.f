@@ -45,22 +45,22 @@
 !***********************************************************************
 !* Changes:                                                            *
 !*   2001-02-17 ceaf => added part to argument list                    *
-!*   2001-12-20 ceaf => changed TS to real*8                           *
+!*   2001-12-20 ceaf => changed TS to real(kind=8)                           *
 !***********************************************************************
 
       subroutine ts2ss_es(TS,ibeg,iend,nsym,SS,part)
 
-      real*8 TS(1:*) !.............................. time series (input)
-      integer*4 ibeg !....... index of first record in TS to use (input)
-      integer*4 iend !........ index of last record in TS to use (input)
-      integer*4 nsym !....... number of symbols (histogram bins) (input)
-      integer*4 SS(1:*) !............... symbolized time series (output)
-      real*8 part(1:*) !.................. partition boundaries (output)
-      integer*4 l,ll !......................................... counters
-      integer*4 begidx !...................... first record in SS to use
-      integer*4 endidx !....................... last record in SS to use
-      real*8 min,max !........................ minimum and maximum of TS
-      real*8 dx !.............................................. bin size
+      real(kind=8) TS(1:*) !.............................. time series (input)
+      integer(kind=4) ibeg !....... index of first record in TS to use (input)
+      integer(kind=4) iend !........ index of last record in TS to use (input)
+      integer(kind=4) nsym !....... number of symbols (histogram bins) (input)
+      integer(kind=4) SS(1:*) !............... symbolized time series (output)
+      real(kind=8) part(1:*) !.................. partition boundaries (output)
+      integer(kind=4) l,ll !......................................... counters
+      integer(kind=4) begidx !...................... first record in SS to use
+      integer(kind=4) endidx !....................... last record in SS to use
+      real(kind=8) min,max !........................ minimum and maximum of TS
+      real(kind=8) dx !.............................................. bin size
 
 ! --- Sanity and range checks ---
       if ((iend-ibeg+1).le.0) then ! invalid ranges ? abort

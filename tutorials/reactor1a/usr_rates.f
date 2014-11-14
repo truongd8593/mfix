@@ -25,12 +25,13 @@
       USE funits
       USE compar
       USE sendrecv
+      USE fun_avg
 
       USE toleranc
       USE usr
+      USE functions
 
       IMPLICIT NONE
-
 
       INTEGER, INTENT(IN) :: IJK
 
@@ -38,15 +39,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:
@@ -60,6 +52,6 @@
 
       RATES(AtoR) = EP_g(IJK) * C(1) * (c_A)**C(2)
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES

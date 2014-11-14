@@ -12,8 +12,6 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: DES_CALC_CLUSTER
-      use discretelement, only: CLUSTER_LENGTH_CUTOFF
       use discretelement, only: FACTOR_RLM
       use discretelement, only: MAX_RADIUS
 
@@ -27,14 +25,8 @@
 
       implicit none
 
-! Local Variables:
-!---------------------------------------------------------------------//
-      DOUBLE PRECISION :: CLUSTER_RLM
-! NONE
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM")
-
 
 ! Particle-particle collision parameters.
       CALL CHECK_SOLIDS_DEM_COLLISION
@@ -42,26 +34,6 @@
       CALL CHECK_SOLIDS_DEM_COHESION
 ! Particle-particle conduction model parameters.
       CALL CHECK_SOLIDS_DEM_ENERGY
-
-
-      IF(DES_CALC_CLUSTER) THEN
-
-! Verify that a cutoff distance was provided.
-         IF(CLUSTER_LENGTH_CUTOFF .EQ. UNDEFINED) THEN
-            WRITE(ERR_MSG,1000) 'CLUSTER_LENGTH_CUTOFF'
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
-! Verify that a cutoff distance lands with the neighbor search region.
-         CLUSTER_RLM = 1.d0 + CLUSTER_LENGTH_CUTOFF/(2.d0*MAX_RADIUS)
-         IF(FACTOR_RLM < CLUSTER_RLM) THEN
-            WRITE(ERR_MSG,2000)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
- 2000 FORMAT('Error 2000: CLUSTER_LENGTH_CUTOFF exceeds of neighbor',  &
-         ' search',/'distance. Increase FACTOR_RLM.')
-      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -74,9 +46,6 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -142,7 +111,7 @@
 ! Largest discrete particle diameter.
       use discretelement, only: MAX_RADIUS
 
-! Runtime Flag: Invoke Square Well 
+! Runtime Flag: Invoke Square Well
       use discretelement, only: SQUARE_WELL
 ! Runtime Flag: Invoke Van der Waals model.
       use discretelement, only: VAN_DER_WAALS
@@ -157,11 +126,15 @@
       use discretelement, only: WALL_VDW_OUTER_CUTOFF
       use discretelement, only: WALL_HAMAKER_CONSTANT
       use discretelement, only: ASPERITIES
+      use discretelement, only: SURFACE_ENERGY
+      use discretelement, only: WALL_SURFACE_ENERGY
+
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
       use param1, only: ZERO
-
+      use constant, only: Pi
 
       use error_manager
 
@@ -175,7 +148,7 @@
 
 ! Override the following settings if cohesion not used.
       IF(.NOT.USE_COHESION) THEN
-!No more square well in the code 
+!No more square well in the code
          SQUARE_WELL = .FALSE.
          VAN_DER_WAALS = .FALSE.
          WALL_VDW_OUTER_CUTOFF = ZERO
@@ -242,6 +215,13 @@
             WRITE(ERR_MSG,1001) 'ASPERITIES', trim(iVal(ASPERITIES))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
+
+         SURFACE_ENERGY=HAMAKER_CONSTANT/&
+            (24.d0*Pi*VDW_INNER_CUTOFF**2)
+
+         WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
+            (24.d0*Pi*WALL_VDW_INNER_CUTOFF**2)
+
       ENDIF
 
 
@@ -452,7 +432,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Check for particle-particle tangential spring constant factors. 
+! Check for particle-particle tangential spring constant factors.
       IF(KT_FAC == UNDEFINED) THEN
          WRITE (ERR_MSG, 2100) 'KT_FAC'
          CALL FLUSH_ERR_MSG()
@@ -470,7 +450,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Check for particle-wall tangential spring constant factors. 
+! Check for particle-wall tangential spring constant factors.
       IF(KT_W_FAC == UNDEFINED) THEN
          WRITE (ERR_MSG, 2100) 'KT_W_FAC'
          CALL FLUSH_ERR_MSG()

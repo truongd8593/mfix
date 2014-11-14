@@ -11,7 +11,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE physprop
- 
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -21,7 +21,7 @@
 
 ! Scale factor for gas turbulence length scale
       DOUBLE PRECISION :: K_scale
- 
+
 ! Number of solids phases
       INTEGER :: MMAX
 
@@ -45,7 +45,7 @@
 ! Density of solid species (constant)
       DOUBLE PRECISION :: RO_Xs0(DIM_M, DIM_N_s)
 
-! The index of an inert solids phase species. This is needed for 
+! The index of an inert solids phase species. This is needed for
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
 
@@ -68,7 +68,7 @@
       DOUBLE PRECISION Cv
 
 ! Gas viscosity
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_g 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_g
 
 ! Average molecular weight of gas
       DOUBLE PRECISION MW_AVG
@@ -80,43 +80,43 @@
       DOUBLE PRECISION, PARAMETER :: T_ref = 298
 
 ! Constant pressure specific heat of gas
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  C_pg
 
 ! Constant constant-pressure specific heat of solids
       DOUBLE PRECISION C_ps0(DIM_M)
 
 ! Constant pressure specific heat of solids
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  C_ps 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  C_ps
 
 ! Specified constant gas conductivity
       DOUBLE PRECISION :: K_g0
 
 ! Conductivity of gas
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_g 
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  K_g
 
 ! Specified constant solids conductivity
       DOUBLE PRECISION K_s0(DIM_M)
 
 ! Conductivity of solids
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  K_s 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  K_s
 
 ! Granular Temperature Conductivity (associated with temperature grad)
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kth_s 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kth_s
 
 ! Granular Temperature Conductivity (associated with volume fraction grad)
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kphi_s 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  Kphi_s
 
 ! Specified constant gas diffusivity
       DOUBLE PRECISION DIF_g0
 
 ! Diffusivity of gas species N
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g 
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g
 
 ! Specified constant solids diffusivity
       DOUBLE PRECISION DIF_s0
 
 ! Diffusivity of solids species N
-      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s 
+      DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s
 
 ! Total number of gas or solids species
       INTEGER :: NMAX(0:DIM_M) ! Runtime (all phases)

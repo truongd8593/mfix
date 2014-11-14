@@ -7,7 +7,7 @@
 !          J.Musser                                   Date: 31-JAN-14  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_RUN_CONTROL 
+      SUBROUTINE CHECK_RUN_CONTROL
 
 
 ! Global Variables:
@@ -52,7 +52,7 @@
 
 
 ! Clear out the run description if not specified.
-      IF (DESCRIPTION == UNDEFINED_C) DESCRIPTION = ' ' 
+      IF (DESCRIPTION == UNDEFINED_C) DESCRIPTION = ' '
 
 ! Verify UNITS input.
       IF(UNITS == UNDEFINED_C) THEN
@@ -70,13 +70,13 @@
 
 ! Steady-state simulation.
       ELSEIF(DT == UNDEFINED .OR. DT == ZERO) THEN
-         ODT = ZERO 
-         TIME = ZERO 
+         ODT = ZERO
+         TIME = ZERO
 
 ! Transient simulation.
       ELSE
 ! Calculate one over the initial timestep.
-         ODT = ONE/DT 
+         ODT = ONE/DT
 ! Verify the remaining time settings.
          IF (TIME == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) 'TIME'
@@ -93,7 +93,7 @@
          ELSEIF (TSTOP < ZERO) THEN
             WRITE(ERR_MSG,1002) 'TSTOP', TSTOP
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
       ENDIF
 
 ! Verify the run type.
@@ -105,7 +105,7 @@
 
 ! Turbulence model:
       IF (K_Epsilon .AND. L_SCALE0 /= ZERO) THEN
-         WRITE(ERR_MSG,2001) 
+         WRITE(ERR_MSG,2001)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
  2001 FORMAT('Error 2001: Cannot set K_EPSILON = .T. and specify ',    &
          'L_SCALE0 /= ZERO')
@@ -114,9 +114,9 @@
 
 ! Clear the error manager
       CALL FINL_ERR_MSG
-      
 
-      RETURN  
+
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')
@@ -130,7 +130,7 @@
  1003 FORMAT('Error 1003: Illegal or unknown input: ',A,' = ',I4,/     &
          'Please correct the mfix.dat file.')
 
-      END SUBROUTINE CHECK_RUN_CONTROL 
+      END SUBROUTINE CHECK_RUN_CONTROL
 
 
 

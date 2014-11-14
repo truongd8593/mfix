@@ -228,26 +228,20 @@
       SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
+      USE calc_collision_wall
+      USE compar
+      USE cutcell, only : cut_cell_at
       USE des_linked_list_funcs
       USE discretelement, only: dimn
-
-      USE cutcell, only : cut_cell_at
-      USE softspring_funcs_cutcell
-      USE indices
+      USE error_manager
+      USE functions
       USE geometry
-      USE compar
-      use error_manager
+      USE indices
 
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -306,18 +300,13 @@
       USE indices
       USE geometry
       USE compar
-      use error_manager
+      USE error_manager
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! This call will delete the particles outside the domain. It will then
 ! re-arrange the arrays such that the active particles are in a block.
@@ -370,15 +359,12 @@
       USE mpi_utility
       USE discretelement, only:DES_GETINDEXFROMPOS
       USE error_manager
+      USE functions
 
       IMPLICIT NONE
       INTEGER :: I, J, K, IJK, M
       LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("BIN_PARTICLES_TO_CELL")
@@ -488,7 +474,6 @@
       USE randomno
       USE mpi_utility
 
-      USE compar
       use error_manager
 
 
@@ -497,6 +482,7 @@
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
       USE des_linked_list_funcs
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -526,13 +512,7 @@
 
       type(particle), pointer :: part_list_byic, part => NULL(), part_old => NULL()
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
-
 
 ! initializing particle count
       lproc_parcount = 0
@@ -896,7 +876,8 @@
       USE mpi_utility
 
       USE randomno
-      use error_manager
+      USE error_manager
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -925,11 +906,6 @@
       double precision, dimension(:,:), allocatable :: pvel_temp
 
       type(particle), pointer :: part_list_byic, part => null()
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE '../function.inc'
-
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
       !ALLOCATE(CNP_ARRAY(DIM3_TEMP, DES_MMAX))
@@ -1245,7 +1221,7 @@
 
 2023  FORMAT(/5x, &
            'For solid phase M:                          ',  I5, /5x, &
-           'Total number of parcels                    = ', I15, /5x &
+           'Total number of parcels                    = ', I15, /5x, &
            'Total number of implied physical particles = ', ES15.7)
 
       WRITE(ERR_MSG,*) ''
@@ -1290,7 +1266,7 @@
       logical , intent(in) :: writeindomain
       !facet id and particle id
       Integer ::  vtp_unit , i,j,k,l, nparts, pvd_unit, ipe
-      CHARACTER*100 :: vtp_fname, pvd_fname
+      CHARACTER(LEN=100) :: vtp_fname, pvd_fname
 
       type(particle), pointer :: part => null()
       real,dimension(:,:), allocatable :: ltemp_array
@@ -1299,7 +1275,7 @@
 
 
 ! formatted solids time
-      CHARACTER*12 :: S_TIME_CHAR = ''
+      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("WRITE_PARTICLE_VTP_FILE")
       vtp_unit = 1002
@@ -1377,9 +1353,9 @@
       part => orig_part_list
       DO WHILE (ASSOCIATED(part))
          if(part%INDOMAIN.and.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          endif
          part => part%next
       ENDDO

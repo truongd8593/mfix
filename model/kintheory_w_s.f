@@ -8,7 +8,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_KTMOMSOURCE_W_S(IER) 
+      SUBROUTINE CALC_KTMOMSOURCE_W_S(IER)
 
 !-----------------------------------------------
 ! Modules
@@ -23,30 +23,30 @@
 ! number of solids phases
       USE physprop, only: smax
 
-! solids source term       
+! solids source term
       USE kintheory, only: ktmom_w_s
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Solids phase index 
+! Solids phase index
       INTEGER :: M
 !-----------------------------------------------
 
-      DO M = 1, SMAX 
+      DO M = 1, SMAX
          KTMOM_W_s(:,M) = ZERO
          IF (KT_TYPE_ENUM == IA_2005) THEN
             CALL CALC_IA_MOMSOURCE_W_S (M)
          ENDIF
-      ENDDO 
+      ENDDO
 
-      RETURN  
+      RETURN
       END SUBROUTINE CALC_KTMOMSOURCE_W_S
 
 
@@ -67,7 +67,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_IA_MOMSOURCE_W_S(M) 
+      SUBROUTINE CALC_IA_MOMSOURCE_W_S(M)
 
 !-----------------------------------------------
 ! Modules
@@ -86,15 +86,17 @@
 ! particle diameter, bulk density, material density
       USE fldvar, only: d_p, rop_s, ro_s
 ! granular temperature
-      USE fldvar, only: theta_m
-! dilute threshold      
-      USE toleranc, only: dil_ep_s 
+      USE fldvar, only: theta_m, ep_s
+! dilute threshold
+      USE toleranc, only: dil_ep_s
 
       Use kintheory
 
       USE geometry
       USE indices
-      USE compar 
+      USE compar
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -107,38 +109,30 @@
 !-----------------------------------------------
 ! Temporary variable
       DOUBLE PRECISION :: STRESS_TERMS, DRAG_TERMS
-! Indices 
-      INTEGER :: IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,& 
-                 IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,& 
+! Indices
+      INTEGER :: IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,&
+                 IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,&
                  IMJKP, K, IJKT, JM, KP, IJKM, IPJK,&
                  IJPK
-! Phase index 
+! Phase index
       INTEGER :: L
 ! Viscosity values
       DOUBLE PRECISION :: MU_sL_pE, MU_sL_pW, MU_sL_pN, MU_sL_pS, MU_sL_pT,&
                           MU_sL_pB, MU_sL_p
 ! Bulk viscosity values
-      DOUBLE PRECISION :: XI_sL_pT, XI_sL_pB, LAMBDA_sL_pT, LAMBDA_sL_pB 
+      DOUBLE PRECISION :: XI_sL_pT, XI_sL_pB, LAMBDA_sL_pT, LAMBDA_sL_pB
 ! Variables for drag calculations
       DOUBLE PRECISION :: M_PM, M_PL, D_PM, D_PL, NU_PM_pT, NU_PM_pB, NU_PM_p, &
                           NU_PL_pT, NU_PL_pB, NU_PL_p, T_PM_pT, T_PM_pB,&
-                          T_PL_pT, T_PL_pB, Fnu_s_p, FT_sM_p, FT_sL_p    
-! Average velocity gradients 
-      DOUBLE PRECISION :: duodz 
-! Average volume fraction 
-      DOUBLE PRECISION :: EPSA 
-! Source terms (Surface) 
+                          T_PL_pT, T_PL_pB, Fnu_s_p, FT_sM_p, FT_sL_p
+! Average velocity gradients
+      DOUBLE PRECISION :: duodz
+! Average volume fraction
+      DOUBLE PRECISION :: EPSA
+! Source terms (Surface)
       DOUBLE PRECISION :: sswx, sswy, sswz, ssx, ssy, ssz, ssbv, tauxz_x
-! Source terms (Volumetric) 
+! Source terms (Volumetric)
       DOUBLE PRECISION :: tauxz_ox, DS1, DS2, DS3, DS4, DS1plusDS2
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
 !-----------------------------------------------
 
 ! section largely based on tau_w_g:
@@ -148,38 +142,38 @@
 ! Skip walls where some values are undefined.
          IF(WALL_AT(IJK)) cycle
 
-          D_PM = D_P(IJK,M) 
+          D_PM = D_P(IJK,M)
           M_PM = (Pi/6d0)*(D_PM**3.)*RO_S(IJK,M)
 
-          K = K_OF(IJK) 
-          IJKT = TOP_OF(IJK) 
-          EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
-          IF ( .NOT.SIP_AT_T(IJK) .AND. EPSA>DIL_EP_S) THEN 
+          K = K_OF(IJK)
+          IJKT = TOP_OF(IJK)
+          EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K)
+          IF ( .NOT.SIP_AT_T(IJK) .AND. EPSA>DIL_EP_S) THEN
 
-               J = J_OF(IJK) 
-               I = I_OF(IJK) 
-               KP = KP1(K) 
-               IM = IM1(I) 
-               JM = JM1(J) 
+               J = J_OF(IJK)
+               I = I_OF(IJK)
+               KP = KP1(K)
+               IM = IM1(I)
+               JM = JM1(J)
                IMJK = IM_OF(IJK)
                IJMK = JM_OF(IJK)
-               IJKM = KM_OF(IJK) 
-               IJKP = KP_OF(IJK) 
+               IJKM = KM_OF(IJK)
+               IJKP = KP_OF(IJK)
                IJMKP = JM_OF(IJKP)
                IMJKP = KP_OF(IMJK)
 
-               IJKN = NORTH_OF(IJK) 
+               IJKN = NORTH_OF(IJK)
                IJKS = SOUTH_OF(IJK)
-               IJKNT = TOP_OF(IJKN) 
-               IJKST = TOP_OF(IJKS) 
+               IJKNT = TOP_OF(IJKN)
+               IJKST = TOP_OF(IJKS)
 
-               IJKE = EAST_OF(IJK) 
-               IJKW = WEST_OF(IJK) 
-               IJKTE = EAST_OF(IJKT) 
+               IJKE = EAST_OF(IJK)
+               IJKW = WEST_OF(IJK)
+               IJKTE = EAST_OF(IJKT)
                IJKTW = WEST_OF(IJKT)
 
 ! additional required quantities:
-               IPJK = IP_OF(IJK) 
+               IPJK = IP_OF(IJK)
                IJPK = JP_OF(IJK)
 
 ! initialize variable
@@ -230,7 +224,7 @@
                          SSZ = SSWZ
 
 ! special terms for cylindrical coordinates
-                         IF (CYLINDRICAL) THEN 
+                         IF (CYLINDRICAL) THEN
 ! tau_zz term: modify Ssz: (1/x) (d/dz) (tau_zz)
 !                             integral of (1/x) (d/dz) (2mu*(u/x))
 !                             (normally part of tau_w_s) - explicit
@@ -239,14 +233,14 @@
                                    (MU_sL_pB*(U_S(IJK,L)+U_S(IMJK,L))*OX(I)*AXY_W(IJKM)))
 
                               MU_sL_p = AVG_Z(MU_sL_ip(IJK,M,L),MU_sL_ip(IJKT,M,L),K)
-! tau_xz/x terms: (tau_xz/x) 
-!                             integral of (1/x)*(mu/x)*du/dz 
+! tau_xz/x terms: (tau_xz/x)
+!                             integral of (1/x)*(mu/x)*du/dz
 !                             (normally part of tau_w_s) - explicit
-                              IF (OX_E(IM) /= UNDEFINED) THEN 
-                                   DUODZ = (U_S(IMJKP,L)-U_S(IMJK,L))*OX_E(IM)*ODZ_T(K) 
-                              ELSE 
-                                   DUODZ = ZERO 
-                              ENDIF 
+                              IF (OX_E(IM) /= UNDEFINED) THEN
+                                   DUODZ = (U_S(IMJKP,L)-U_S(IMJK,L))*OX_E(IM)*ODZ_T(K)
+                              ELSE
+                                   DUODZ = ZERO
+                              ENDIF
 
                               tauxz_ox = MU_sL_p*OX(I)*HALF*(&
                                    (OX_E(I)*(U_S(IJKP,L)-U_S(IJK,L))*ODZ_T(K))+&
@@ -259,7 +253,7 @@
                                    (W_S(IJK,L)-W_S(IMJK,L))*ODX_E(IM) ) )
 
 !                             integral of (1/x)*(-mu/x)*w
-!                             (normally part of source_w_s)             
+!                             (normally part of source_w_s)
                               tauxz_ox = tauxz_ox - (OX(I)*OX(I)*MU_sL_p*W_S(IJK,L))
 
 !                             multiply all tau_xz/x terms by volume:
@@ -282,8 +276,8 @@
 
 !--------------------- Sources from Momentum Source Term ---------------------
 ! Momentum source associated with the difference in the gradients in
-! number density of solids phase m and all other solids phases			
-                         D_PL = D_P(IJK,L) 
+! number density of solids phase m and all other solids phases
+                         D_PL = D_P(IJK,L)
                          M_PL = (Pi/6d0)*(D_PL**3.)*RO_S(IJK,L)
 
                          NU_PM_pT = ROP_S(IJKT,M)/M_PM
@@ -322,13 +316,13 @@
                         SSBV + SSX + SSY + SSZ + tauxz_ox + tauxz_x
                     DRAG_TERMS = DRAG_TERMS + (DS1plusDS2+DS3+DS4)*VOL_W(IJK)
 
-                    ELSE ! if m .ne. L 
+                    ELSE ! if m .ne. L
 ! for m = l all stress terms should already be handled in existing routines
 ! for m = l all drag terms should become zero
                          STRESS_TERMS = STRESS_TERMS + ZERO
                          DRAG_TERMS = DRAG_TERMS + ZERO
                     ENDIF ! if m .ne. L
-               ENDDO     ! over L			
+               ENDDO     ! over L
 
                KTMOM_W_S(IJK,M) = STRESS_TERMS + DRAG_TERMS
           ELSE
@@ -336,5 +330,5 @@
           ENDIF     ! dilute
       ENDDO     ! over ijk
 
-      RETURN  
-      END SUBROUTINE CALC_IA_MOMSOURCE_W_S 
+      RETURN
+      END SUBROUTINE CALC_IA_MOMSOURCE_W_S

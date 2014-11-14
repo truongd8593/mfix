@@ -23,16 +23,16 @@
 !
       IMPLICIT NONE
 !
-      CHARACTER*(*) FILE_NAME
+      CHARACTER(LEN=*) FILE_NAME
       LOGICAL       FILE_EXIST
       CHARACTER   ANSWER
 !
-100   WRITE (*,'(A,$)') 'Enter Filename for this data > '
+100   WRITE (*,'(A)',ADVANCE='NO') 'Enter Filename for this data > '
       READ  (*,'(A)') FILE_NAME
       INQUIRE (FILE=FILE_NAME,EXIST=FILE_EXIST)
       IF (FILE_EXIST) THEN
          WRITE (*,*) ' '
-         WRITE (*,'(A,$)')&
+         WRITE (*,'(A)',ADVANCE='NO')&
              'File already exists.  Overwrite ? (Y/N) > '
          READ (*,'(A)') ANSWER
          IF(ANSWER .EQ. 'Y' .OR. ANSWER .EQ. 'y') RETURN

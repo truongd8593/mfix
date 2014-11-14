@@ -16,7 +16,7 @@
 
       SUBROUTINE LEQ_GMRES(VNAME, VNO, VAR, A_M, B_M, &
                     cmethod, TOL, ITMAX, MAX_IT, IER)
-      
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -33,12 +33,12 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
 ! Septadiagonal matrix A_m
@@ -47,23 +47,23 @@
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
-      INTEGER, INTENT(IN) :: ITMAX      
+      INTEGER, INTENT(IN) :: ITMAX
 ! maximum number of outer iterations
 ! (currently set to 1 by calling subroutine-solve_lin_eq)
       INTEGER, INTENT(IN) :: MAX_IT
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 !-------------------------------------------------
-! Local Variables      
+! Local Variables
 !-------------------------------------------------
       LOGICAL :: IS_BM_ZERO, ALL_IS_BM_ZERO
-!------------------------------------------------- 
-! External subroutines 
-!------------------------------------------------- 
+!-------------------------------------------------
+! External subroutines
+!-------------------------------------------------
 ! These procedures are effectively dummy arguments (procedures as
 ! arguments within the subroutine leq_gmres0)
       EXTERNAL LEQ_MATVEC, LEQ_MSOLVE
@@ -76,7 +76,7 @@
           VAR(:) = ZERO
           RETURN
       ENDIF
-      
+
       CALL LEQ_GMRES0( VNAME, VNO, VAR, A_M, B_M,  &
            CMETHOD, TOL, ITMAX, MAX_IT, LEQ_MATVEC, LEQ_MSOLVE, IER )
 
@@ -86,7 +86,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: LEQ_GMRES0                                              C 
+!  Subroutine: LEQ_GMRES0                                              C
 !  Purpose: Compute residual of linear system                          C
 !                                                                      C
 !  Author: Ed D'Azevedo                               Date: 21-JAN-99  C
@@ -116,6 +116,7 @@
       USE funits
       USE gridmap
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! External functions
@@ -130,12 +131,12 @@
 ! Dummy arguments/procedure
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -144,7 +145,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
@@ -154,9 +155,9 @@
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 ! dummy arguments/procedures set as indicated
-!     matvec->leq_matvec      
+!     matvec->leq_matvec
 ! for preconditioner (leq_pc)
-!     msolve->leq_msolve 
+!     msolve->leq_msolve
       EXTERNAL MATVEC, MSOLVE
 !-----------------------------------------------
 ! Local parameters
@@ -178,7 +179,7 @@
       DOUBLE PRECISION R(IJKSTART3:IJKEND3)
       DOUBLE PRECISION TEMP(IJKSTART3:IJKEND3)
       DOUBLE PRECISION WW(IJKSTART3:IJKEND3)
-      
+
       DOUBLE PRECISION E1(ITMAX+2)
       DOUBLE PRECISION SS(ITMAX+2)
 
@@ -195,19 +196,15 @@
 
       LOGICAL IS_BM_ZERO, IS_ERROR, IS_CONVERGED
       LOGICAL ALL_IS_BM_ZERO, ALL_IS_ERROR, ALL_IS_CONVERGED
-     
-      CHARACTER*40 NAME
-!-----------------------------------------------
-! Include statement functions      
-!-----------------------------------------------
-      INCLUDE 'function.inc'
+
+      CHARACTER(LEN=40) :: NAME
 !-----------------------------------------------
 
 
-! initializing      
+! initializing
       NAME = 'LEQ_GMRES0 ' // TRIM(VNAME)
       RESTRT = ITMAX
-      M = RESTRT 
+      M = RESTRT
       ITER = 0
       IER = 0
 
@@ -294,7 +291,7 @@
 ! Solve A*R(:) = TEMP(:)
          CALL MSOLVE(VNAME, TEMP, A_M, R, CMETHOD)   ! returns R
 
-         NORM_R =  DOT_PRODUCT_PAR( R, R ) 
+         NORM_R =  DOT_PRODUCT_PAR( R, R )
          NORM_R = SQRT( NORM_R )
          INV_NORM_R = ONE / NORM_R
 
@@ -318,7 +315,7 @@
 ! w = M \ (A*V(:,i))
 ! --------------------------------
             CALL MATVEC(VNAME, V(:,I), A_M, TEMP)   ! returns TEMP=A*V
-! Solve A*WW(:) = TEMP(:)            
+! Solve A*WW(:) = TEMP(:)
             CALL MSOLVE(VNAME, TEMP, A_M, WW, CMETHOD)   ! returns WW
 
             DO K=1,I
@@ -337,7 +334,7 @@
                ENDDO
             ENDDO
 
-            NORM_W =  DOT_PRODUCT_PAR( WW(:), WW(:) ) 
+            NORM_W =  DOT_PRODUCT_PAR( WW(:), WW(:) )
             NORM_W = SQRT( NORM_W )
             H(I+1,I) = NORM_W
 !            V(:,I+1) = WW(:) / H(I+1,I)
@@ -379,7 +376,7 @@
 ! --------------------------------
 
 ! triangular solve with y = H(1:i,1:i) \ s(1:i)
-! --------------------------------                    
+! --------------------------------
                MDIM = I
                DO II=1,MDIM
                  Y(II) = SS(II)
@@ -410,8 +407,8 @@
                   CONDH = MAXH/MINH
 
                   TEMP(1:MDIM) = SS(1:MDIM) - &
-                  MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )   
-                  DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) ) 
+                  MATMUL( H(1:MDIM,1:MDIM ), Y(1:MDIM) )
+                  DTEMP = DOT_PRODUCT( TEMP(1:MDIM), TEMP(1:MDIM) )
                   DTEMP = SQRT( DTEMP )
 
                   NORM_S = DOT_PRODUCT( SS(1:MDIM),SS(1:MDIM) )
@@ -448,7 +445,7 @@
                ENDDO
 
                EXIT
-            ENDIF   !end if(all_is_converged) 
+            ENDIF   !end if(all_is_converged)
          ENDDO   !end do I=1,m (construct orthonormal basis using Gram-Schmidt)
 ! ----------------------------------------------------------------<<<
 
@@ -526,7 +523,7 @@
              ENDDO
            ENDDO
          ENDDO
- 
+
          CALL MATVEC(VNAME, VAR, A_M, R)   ! returns R=A*VAR
 
 !         TEMP(:) = B_M(:) - R(:)
@@ -542,7 +539,7 @@
 
 ! Solve A*R(:)=TEMP(:)
          CALL MSOLVE( VNAME, TEMP, A_M, R, CMETHOD)   ! Returns R
-         NORM_R =  DOT_PRODUCT_PAR( R, R ) 
+         NORM_R =  DOT_PRODUCT_PAR( R, R )
          NORM_R = SQRT( NORM_R )
 
          SS(I+1) = NORM_R
@@ -554,7 +551,7 @@
                ERROR, NORM_R )
          ENDIF
 
-         IS_CONVERGED = (ERROR .LE. TOL*ERROR0) 
+         IS_CONVERGED = (ERROR .LE. TOL*ERROR0)
          CALL GLOBAL_ALL_AND( IS_CONVERGED, ALL_IS_CONVERGED )
          IF (ALL_IS_CONVERGED)  THEN
             EXIT
@@ -610,7 +607,7 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------        
+!-----------------------------------------------
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -671,6 +668,7 @@
       USE debug
       USE compar
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -678,10 +676,10 @@
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_M(IJKSTART3:IJKEND3, -3:3)
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: VNAME
+      CHARACTER(LEN=*), INTENT(IN) :: VNAME
 !-----------------------------------------------
 ! Local parameters
-!-----------------------------------------------      
+!-----------------------------------------------
       logical, parameter :: do_reset = .true.
 !-----------------------------------------------
 ! Local variables
@@ -692,10 +690,6 @@
       integer :: nerror, all_nerror
       logical :: is_in_k, is_in_j, is_in_i, is_in
       logical :: is_bc_k, is_bc_j, is_bc_i, is_bc, is_ok
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       kstartl = kstart2
@@ -749,7 +743,7 @@
             is_bc_k = (kk < kstart2) .or. (kk > kend2)
             is_bc_j = (jj < jstart2) .or. (jj > jend2)
             is_bc_i = (ii < istart2) .or. (ii > iend2)
-            is_bc = is_bc_k .or. is_bc_j .or. is_bc_i 
+            is_bc = is_bc_k .or. is_bc_j .or. is_bc_i
             if (is_bc) then
                is_ok = (A_m(ijk,el).eq.zero)
                if (.not.is_ok) then

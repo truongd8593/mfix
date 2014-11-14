@@ -81,12 +81,12 @@
          IF(D_P0(M) /= UNDEFINED)THEN
             WRITE(ERR_MSG,1002) trim(iVar('D_p0',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
 ! Check K_s0
       DO M=1, MMAX_L
-         IF (K_S0(M) < ZERO) THEN 
+         IF (K_S0(M) < ZERO) THEN
             WRITE(ERR_MSG, 1001) trim(iVar('K_s0',M)), iVal(K_s0(M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -133,7 +133,7 @@
 ! Finalize the error messges
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')
@@ -257,7 +257,7 @@
 ! Ratio of filter size to computational cell size
       USE run, only: FILTER_SIZE_RATIO
 ! User specifed subgrid model: IGCI or MILIOLI
-      USE run, only: SUBGRID_TYPE
+      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM, UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
 ! Initial turbulcence length scale
@@ -303,10 +303,18 @@
           'without',/'specifying a SUBGRID_TYPE.',/'Please correct ',  &
           'the mfix.dat file.')
 
-      IF(SUBGRID_TYPE /= 'IGCI' .AND. SUBGRID_TYPE /= 'MILIOLI') THEN
+      IF(SUBGRID_TYPE_ENUM .ne. IGCI .AND. SUBGRID_TYPE_ENUM .ne. MILIOLI) THEN
          WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
+
+      SELECT CASE(trim(adjustl(SUBGRID_TYPE)))
+
+      CASE ('IGCI'); SUBGRID_TYPE_ENUM = IGCI
+      CASE ('MILIOLI'); SUBGRID_TYPE_ENUM = MILIOLI
+      CASE DEFAULT
+         SUBGRID_TYPE_ENUM = UNDEFINED_SUBGRID_TYPE
+      END SELECT
 
       IF(DRAG_TYPE /= 'WEN_YU')THEN
          WRITE(ERR_MSG, 2012)
@@ -362,7 +370,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2010 FORMAT('Error 2010: Invalid input. ',A,' must be 'A,/'when ',    &
+ 2010 FORMAT('Error 2010: Invalid input. ',A,' must be ',A,/'when ',    &
          'using the SUBGRID model.'/,'Please correct the mfix.dat',    &
          ' file.')
 
@@ -442,7 +450,7 @@
 ! If true, a call to the thermochemical database is made.
       LOGICAL EEQ_CPS
 
-! Flag that the solids phase species equations are solved and the 
+! Flag that the solids phase species equations are solved and the
 ! molecular weight for a species are not given in the data file.
 ! If true, a call to the thermochemical database is made.
       LOGICAL SEQ_MWs
@@ -547,12 +555,12 @@
          ENDIF
 
 ! Verify that no additional species information was given.
-         DO N = NMAX(M) + 1, DIM_N_S 
+         DO N = NMAX(M) + 1, DIM_N_S
             IF(MW_S(M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG, 1002) trim(iVar('MW_s',M,N))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDDO 
+            ENDIF
+         ENDDO
       ENDDO ! Loop over solids phases
 
       CALL FINL_ERR_MSG
@@ -647,7 +655,7 @@
          ENDIF
       ENDDO
 
-! Check MW_s if solids species are present    
+! Check MW_s if solids species are present
       DO M = 1, MMAX_LL
 ! Initialize flag indicating the database was read for a species.
          DO N = 1, NMAX(M)
@@ -656,11 +664,11 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDDO ! Loop over species
-         DO N = NMAX(M) + 1, DIM_N_S 
-            IF(MW_S(M,N) /= UNDEFINED) THEN 
+         DO N = NMAX(M) + 1, DIM_N_S
+            IF(MW_S(M,N) /= UNDEFINED) THEN
                WRITE(ERR_MSG,1002) trim(iVar('MW_s',M,N))
-            ENDIF 
-         ENDDO 
+            ENDIF
+         ENDDO
       ENDDO ! Loop over solids phases
 
 ! Set the legacy database flag. (Also in check_gas_phase.f)
@@ -679,13 +687,13 @@
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
          ,/'Please correct the mfix.dat file.')
 
- 2000 FORMAT('Error 2000: Invalid input. ',A,' must be 'A,/'when ',    &
+ 2000 FORMAT('Error 2000: Invalid input. ',A,' must be ',A,/'when ',   &
          'USE_RRATES is .TRUE.'/,'Please correct the mfix.dat file')
 
       END SUBROUTINE CHECK_SOLIDS_SPECIES_LEGACY
 
 
- 
+
 !----------------------------------------------------------------------!
 !  Subroutine: CHECK_SOLIDS_DENSITY                                    !
 !  Purpose: check the solid phase density input                        !
@@ -768,7 +776,7 @@
 
 ! Verify that one -and only one- solids density model is in use.
          IF(RO_S0(M) == UNDEFINED .AND. .NOT.SOLVE_ROs(M)) THEN
-            WRITE(ERR_MSG, 1101) M
+            WRITE(ERR_MSG, 1100) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1100 FORMAT('Error 1101: No solids density information for phase ',  &
@@ -776,7 +784,7 @@
 
 ! Check if the constant solids phase density is physical.
          ELSEIF(RO_S0(M) /= UNDEFINED .AND. SOLVE_ROs(M)) THEN
-            WRITE(ERR_MSG, 1100) M
+            WRITE(ERR_MSG, 1101) M
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1101 FORMAT('Error 1101: Conflicting solids density input specified ',&
@@ -815,7 +823,7 @@
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ELSEIF(X_s0(M,N) < ZERO .OR. X_s0(M,N) >= ONE) THEN
                   WRITE(ERR_MSG,1001) trim(iVar('X_s0',M,N)),        &
-                     trim(iVal(X_s0(M,N))) 
+                     trim(iVal(X_s0(M,N)))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
             ENDDO
@@ -879,7 +887,7 @@
 ! Finalize the error messges
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
@@ -889,8 +897,5 @@
 
  1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of range.'&
          ,/'Please correct the mfix.dat file.')
-
- 1300 FORMAT(//1X,70('*')/' From: CHECK_SOLIDS_COMMON',/,' Error 1300:'      &
-         ' No solids density information for phase ',I2,'.')
 
       END SUBROUTINE CHECK_SOLIDS_DENSITY

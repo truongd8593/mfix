@@ -19,15 +19,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE RESET_NEW
 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
@@ -55,58 +55,58 @@
 
 !-----------------------------------------------
 
-      EP_G(:) = EP_GO(:) 
-      P_G(:) = P_GO(:) 
-      P_STAR(:) = P_STARO(:) 
-      RO_G(:) = RO_GO(:) 
-      ROP_G(:) = ROP_GO(:) 
-      U_G(:) = U_GO(:) 
-      V_G(:) = V_GO(:) 
-      W_G(:) = W_GO(:) 
-      IF (ENERGY_EQ) T_G(:) = T_GO(:) 
-      IF (SPECIES_EQ(0)) THEN 
-        IF (NMAX(0) > 0) THEN 
-          X_G(:,:NMAX(0)) = X_GO(:,:NMAX(0)) 
-        ENDIF 
-      ENDIF 
-      
-      IF (NScalar > 0) THEN 
-        Scalar(:,:NScalar) = ScalarO(:,:NScalar) 
-      ENDIF 
+      EP_G(:) = EP_GO(:)
+      P_G(:) = P_GO(:)
+      P_STAR(:) = P_STARO(:)
+      RO_G(:) = RO_GO(:)
+      ROP_G(:) = ROP_GO(:)
+      U_G(:) = U_GO(:)
+      V_G(:) = V_GO(:)
+      W_G(:) = W_GO(:)
+      IF (ENERGY_EQ) T_G(:) = T_GO(:)
+      IF (SPECIES_EQ(0)) THEN
+        IF (NMAX(0) > 0) THEN
+          X_G(:,:NMAX(0)) = X_GO(:,:NMAX(0))
+        ENDIF
+      ENDIF
 
-      IF (K_Epsilon) THEN 
-        K_Turb_G(:) = K_Turb_GO(:) 
+      IF (NScalar > 0) THEN
+        Scalar(:,:NScalar) = ScalarO(:,:NScalar)
+      ENDIF
+
+      IF (K_Epsilon) THEN
+        K_Turb_G(:) = K_Turb_GO(:)
         E_Turb_G(:) = E_Turb_GO(:)
-      ENDIF     
+      ENDIF
 
-      DO M = 1, MMAX 
-        ROP_S(:,M) = ROP_SO(:,M) 
+      DO M = 1, MMAX
+        ROP_S(:,M) = ROP_SO(:,M)
 ! add by rong
         If (Call_DQMOM) D_P(:,M)=D_Po(:,M)
 !       If (NScalar>0) ome(:,M)=ome_o(:,M)
 ! add by rong
-        IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M) 
-        IF (GRANULAR_ENERGY) THEN 
-          THETA_M(:,M) = THETA_MO(:,M) 
+        IF (ENERGY_EQ) T_S(:,M) = T_SO(:,M)
+        IF (GRANULAR_ENERGY) THEN
+          THETA_M(:,M) = THETA_MO(:,M)
           TRD_S_C(:,M) = TRD_S_CO(:,M)
-	ENDIF 
-        U_S(:,M) = U_SO(:,M) 
-        V_S(:,M) = V_SO(:,M) 
-        W_S(:,M) = W_SO(:,M) 
-        IF (SPECIES_EQ(M)) THEN 
-          IF (NMAX(M) > 0) THEN 
-            X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M)) 
-          ENDIF 
+        ENDIF
+        U_S(:,M) = U_SO(:,M)
+        V_S(:,M) = V_SO(:,M)
+        W_S(:,M) = W_SO(:,M)
+        IF (SPECIES_EQ(M)) THEN
+          IF (NMAX(M) > 0) THEN
+            X_S(:,M,:NMAX(M)) = X_SO(:,M,:NMAX(M))
+          ENDIF
 
           RO_S(:,M) = RO_SO(:,M)
-        ENDIF 
-      END DO 
+        ENDIF
+      END DO
 
 !     Recalculate all coefficients
       CALL CALC_COEFF_ALL (0, IER)
- 
-      RETURN  
-      END SUBROUTINE RESET_NEW 
 
-!// Comments on the modifications for DMP version implementation      
+      RETURN
+      END SUBROUTINE RESET_NEW
+
+!// Comments on the modifications for DMP version implementation
 !// 120 Replaced the index for initialization: (:IJKMAX2) to just (:)

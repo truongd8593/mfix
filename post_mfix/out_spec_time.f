@@ -32,6 +32,7 @@
       Use indices
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
 !
 !     Passed Arguments
@@ -44,8 +45,6 @@
       INTEGER   NX, NY, NZ
 
       INTEGER   I, J, K, IJK
-!
-      INCLUDE 'function.inc'
 !
       NX = IMAX1 - IMIN1 + 1
       NY = JMAX1 - JMIN1 + 1

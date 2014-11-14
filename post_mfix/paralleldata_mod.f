@@ -1,24 +1,24 @@
 ! *************************  module ParallelData *********************
 
       module ParallelData
-      
+
       type CellMap
          integer :: proc
          integer :: ijk
       end type CellMap
-      
+
 
       ! given IJK_IO (from 1 to ijkmax2) , then the value for that
-      ! cell is found 
+      ! cell is found
       !
-      ! on processor : cell_map(ijk_io)%proc 
+      ! on processor : cell_map(ijk_io)%proc
       ! and ijk      : cell_map(ijk_io)%ijk
       TYPE (CellMap) , dimension (:) , allocatable :: cell_map
 
       integer , allocatable :: cell_map_v2(:,:)
 
 
-      
+
       ! the following are defined for each processor
       integer , dimension(:), allocatable  :: is3       ! istart3
       integer , dimension(:), allocatable  :: ie3       ! iend3
@@ -29,7 +29,7 @@
       integer , dimension(:), allocatable  :: n_cells   ! number of cells
 
       ! current record for each processor file
-      integer , dimension(:), allocatable  :: cr 
+      integer , dimension(:), allocatable  :: cr
 
 
       ! the array used to hold the processor IO data
@@ -39,14 +39,14 @@
       integer :: np  ! mumber of processors for this run
 
 
-      character :: fname_scav*80 , fname_dist*80
-      
-      character :: ext*35
+      character(LEN=80) :: fname_scav, fname_dist
 
-      character :: pbuffer*512
+      character(LEN=35) :: ext
+
+      character(LEN=512) :: pbuffer
 
       integer , allocatable :: cellcount(:)
 
-     
+
       end module ParallelData
 

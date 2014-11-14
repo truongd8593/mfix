@@ -17,6 +17,7 @@
       use compar
       use geometry
       use mpi_utility
+      use functions
 
       implicit none
 
@@ -24,7 +25,7 @@
 
       INTEGER PSV
 
-      CHARACTER*64 eMsg
+      CHARACTER(LEN=64) :: eMsg
 
       DOUBLE PRECISION lSum
 
@@ -34,9 +35,6 @@
       DOUBLE PRECISION, allocatable :: gData_dp(:)
 
       LOGICAL, parameter :: dbg_PS = .FALSE.
-
-      INCLUDE 'function.inc'
-
 
       if(.NOT.POINT_SOURCE) return
 
@@ -63,7 +61,7 @@
          enddo
 
 
-! Calculate the number of cells comprising the point source. This 
+! Calculate the number of cells comprising the point source. This
 ! information is used to allocate some temp arrays.
 !---------------------------------------------------------------------//
          PS_SIZE = (PS_I_E(PSV) - PS_I_W(PSV) + 1) * &
@@ -72,7 +70,7 @@
 
          if(PS_SIZE < 1) then
              eMsg = ''; write(eMsg,"('Invalid PS size: ', I4)")PS_SIZE
-             goto 500 
+             goto 500
          endif
 
 
@@ -187,7 +185,7 @@
          CpxMFLOW = ZERO
          do N = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(N) * (GAS_CONST_cal / lMW(N)) * &
-              calc_CpoR(PS_T, lM, N, IER) 
+              calc_CpoR(PS_T, lM, N, IER)
          enddo
       else
          CpxMFLOW = Cp0
@@ -275,6 +273,7 @@
       use rxns
       use ps
       use mpi_utility
+      use functions
 
       IMPLICIT NONE
 
@@ -290,10 +289,6 @@
 
       INTEGER, allocatable :: lFlags_i(:,:)
       INTEGER, allocatable :: gFlags_i(:,:)
-
-
-      INCLUDE 'function.inc'
-
 
       if(myPE == PE_IO) then
          write(*,"(3/,3x,'Debug Point Source Index: ',I3)") lPSV
@@ -328,30 +323,30 @@
 ! Write some information to the screen.
       if(myPE == PE_IO) then
          write(*,"(/5x,'Location:')")
-         write(*,"( 5x,'X:',2(2x,g11.5),' :: ',2(2x,I4))")&
+         write(*,"( 5x,'X:',2(2x,g12.5),' :: ',2(2x,I4))")&
             PS_X_w(lPSV), PS_X_e(lPSV), PS_I_w(lPSV), PS_I_e(lPSV)
-         write(*,"( 5x,'Y:',2(2x,g11.5),' :: ',2(2x,I4))")&
+         write(*,"( 5x,'Y:',2(2x,g12.5),' :: ',2(2x,I4))")&
             PS_Y_s(lPSV), PS_Y_n(lPSV), PS_J_s(lPSV), PS_J_n(lPSV)
-         if(DO_K)write(*,"( 5x,'Z:',2(2x,g11.5),' :: ',2(2x,I4))")&
+         if(DO_K)write(*,"( 5x,'Z:',2(2x,g12.5),' :: ',2(2x,I4))")&
             PS_Z_b(lPSV), PS_Z_t(lPSV), PS_K_b(lPSV), PS_K_t(lPSV)
 
-         write(*,"(/5x,'Volume: ',g11.5)") PS_VOLUME(lPSV)
+         write(*,"(/5x,'Volume: ',g12.5)") PS_VOLUME(lPSV)
 
 
          if(PS_MASSFLOW_G(lPSV) > small_number) then
             write(*,"(//5x,'Point Source Gas Phase:')")
-            write(*,"(7x,'Mass Flow Rate: ',g11.5)")PS_MASSFLOW_G(lPSV)
-            write(*,"(7x,'Velocity Magnitude: ',g11.5)") PS_VEL_MAG_g(lPSV)
+            write(*,"(7x,'Mass Flow Rate: ',g12.5)")PS_MASSFLOW_G(lPSV)
+            write(*,"(7x,'Velocity Magnitude: ',g12.5)") PS_VEL_MAG_g(lPSV)
             write(*,"(7x,'Normal:')")
-            write(*,"(9x,'x-Axis: ',g11.5)")PS_U_g(lPSV)
-            write(*,"(9x,'y-Axis: ',g11.5)")PS_V_g(lPSV)
-            if(DO_K) write(*,"(9x,'z-Axis: ',g11.5)")PS_W_g(lPSV)
+            write(*,"(9x,'x-Axis: ',g12.5)")PS_U_g(lPSV)
+            write(*,"(9x,'y-Axis: ',g12.5)")PS_V_g(lPSV)
+            if(DO_K) write(*,"(9x,'z-Axis: ',g12.5)")PS_W_g(lPSV)
             if(energy_eq) &
-               write(*,"(7x,'Temperature: ',g11.5)")PS_T_g(lPSV)
+               write(*,"(7x,'Temperature: ',g12.5)")PS_T_g(lPSV)
             if(species_eq(0)) then
                write(*,"(7x,'Species Composition:')")
                do n=1,nmax(0)
-                  write(*,"(9x,A,': ',g11.5)") &
+                  write(*,"(9x,A,': ',g12.5)") &
                      trim(SPECIES_ALIAS_g(n)), PS_X_g(lPSV,N)
                enddo
             endif
@@ -363,18 +358,18 @@
          do m=1,mmax
             if(PS_MASSFLOW_S(lPSV,M) > small_number) then
                write(*,"(//5x,'Point Source Solids Phase ',I1,':')")M
-               write(*,"(7x,'Mass Flow Rate: ',g11.5)")PS_MASSFLOW_S(lPSV,M)
-               write(*,"(7x,'Velocity Magnitude: ',g11.5)") PS_VEL_MAG_s(lPSV,M)
+               write(*,"(7x,'Mass Flow Rate: ',g12.5)")PS_MASSFLOW_S(lPSV,M)
+               write(*,"(7x,'Velocity Magnitude: ',g12.5)") PS_VEL_MAG_s(lPSV,M)
                write(*,"(7x,'Normal:')")
-               write(*,"(9x,'x-Axis: ',g11.5)")PS_U_s(lPSV,M)
-               write(*,"(9x,'y-Axis: ',g11.5)")PS_V_s(lPSV,M)
-               if(DO_K) write(*,"(9x,'z-Axis: ',g11.5)")PS_W_s(lPSV,M)
+               write(*,"(9x,'x-Axis: ',g12.5)")PS_U_s(lPSV,M)
+               write(*,"(9x,'y-Axis: ',g12.5)")PS_V_s(lPSV,M)
+               if(DO_K) write(*,"(9x,'z-Axis: ',g12.5)")PS_W_s(lPSV,M)
                if(energy_eq) &
-                  write(*,"(7x,'Temperature: ',g11.5)")PS_T_s(lPSV,M)
+                  write(*,"(7x,'Temperature: ',g12.5)")PS_T_s(lPSV,M)
                if(species_eq(m)) then
                   write(*,"(7x,'Species Composition:')")
                   do n=1,nmax(m)
-                     write(*,"(9x,A,': ',g11.5)") &
+                     write(*,"(9x,A,': ',g12.5)") &
                         trim(SPECIES_ALIAS_s(m,n)), PS_X_s(lPSV,m,N)
                   enddo
                endif

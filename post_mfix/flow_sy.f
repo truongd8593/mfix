@@ -29,14 +29,11 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, M, IJPK
-!
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
-!
+
       IF(V_s(IJK, M) .GT. ZERO) THEN
         VFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * EP_s(IJK, M)
       ELSE
@@ -77,14 +74,13 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, M, IJPK
-!
-      INCLUDE 'function.inc'
-!
+
       IF(V_s(IJK, M) .GT. ZERO) THEN
-        MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJK, M) 
+        MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJPK = JP_OF(IJK)
         MFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M) * ROP_s(IJPK, M)
@@ -123,14 +119,13 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER IJK, M, IJPK
-!
-      INCLUDE 'function.inc'
-!
+
       IF(V_s(IJK, M) .GT. ZERO) THEN
-        FLUX_sy = V_s(IJK, M) * ROP_s(IJK, M) 
+        FLUX_sy = V_s(IJK, M) * ROP_s(IJK, M)
       ELSE
         IJPK = JP_OF(IJK)
         FLUX_sy = V_s(IJK, M) * ROP_s(IJPK, M)
@@ -169,12 +164,11 @@
       Use physprop
       Use geometry
       Use compar
+      Use functions
       IMPLICIT NONE
-!
+
       INTEGER I, J, K, IJK, M, N, IJPK
-!
-      INCLUDE 'function.inc'
-!
+
       IF(V_s(IJK, M) .GT. ZERO) THEN
         XFLOW_sy = DX(I) * X(I) * DZ(K) * V_s(IJK, M)&
                    * ROP_s(IJK, M) * X_s(IJK, M, N)

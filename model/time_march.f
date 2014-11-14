@@ -128,10 +128,11 @@
       INTEGER :: CHKBATCHQ_FLAG
       LOGICAL :: bWrite_netCDF_files
 
+      DOUBLE PRECISION :: TIME_START
       DOUBLE PRECISION :: WALL_START ! wall time at the beginning
       DOUBLE PRECISION :: WALL_NOW   ! wall time at the end of each timestep
       DOUBLE PRECISION :: WALL_LEFT
-      CHARACTER*4 TUNIT
+      CHARACTER(LEN=4) TUNIT
 
 !-----------------------------------------------
 ! External functions
@@ -144,9 +145,6 @@
       LOGICAL , EXTERNAL :: ADJUST_DT
       DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
-
-
-      WALL_START = WALL_TIME()
 
       IF(AUTOMATIC_RESTART) RETURN
 
@@ -217,7 +215,7 @@
       IF(WRITE_VTK_FILES) THEN
          VTK_TIME = UNDEFINED
          IF (VTK_DT /= UNDEFINED) THEN
-            IF (RUN_TYPE == 'NEW') THEN
+            IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
                VTK_TIME = TIME
             ELSE
                VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
@@ -256,7 +254,6 @@
       CALL ZERO_ARRAY (E_N, IER)
       CALL ZERO_ARRAY (E_T, IER)
 
-
 ! Initialize adjust_ur
       dummy = ADJUST_DT(100, 0)
 
@@ -290,6 +287,9 @@
          CALL PARALLEL_FIN
          STOP
       ENDIF
+
+      WALL_START = WALL_TIME()
+      TIME_START = TIME
 
 ! The TIME loop begins here.............................................
  100  CONTINUE
@@ -419,9 +419,6 @@
             IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
                .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
                      NFACTOR >0 .AND. TIME == ZERO)) THEN
-! the call to identify clusters is done only when des data are written
-! move this call in des_time_march if higher frequency is required.
-                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
             ENDIF
 
@@ -445,8 +442,8 @@
 
       IF (.NOT.SPX_MSG) THEN
          DO L = 1, N_SPX - ISPX
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(A,$)') '   '
-            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A,$)') '   ' !//
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(A)', ADVANCE='NO') '   '
+            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A)', ADVANCE='NO') '   ' !//
          ENDDO
          IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT
          IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
@@ -600,7 +597,7 @@
       ENDDO
 
       WALL_NOW = WALL_TIME()
-      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME,0.000001)
+      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
       IF(DMP_LOG) WRITE (*, '(/" Wall time remaining = ",F9.3,1X,A)') &
          WALL_LEFT, TUNIT
@@ -638,7 +635,8 @@
       Call check_mass_balance (1)
 
 ! DES
-      IF (DISCRETE_ELEMENT.AND.DES_CONTINUUM_COUPLED) CALL DES_TIME_MARCH
+      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
 
 
 ! Alberto Passalacqua: QMOMK

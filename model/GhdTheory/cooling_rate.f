@@ -1,14 +1,14 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: cooling_rate(s,mi,ni,n,m,T,chi,sigmai,alpha,rhoi,xvec)
 !
 !  author:  C. Hrenya, Jan 2009
 !
 !  Purpose: find theta, Ti, and zeta0 according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine cooling_rate(s,mi,ni,n,m,Ti,T,chi,sigmai,alpha,rhoi,xvec)
@@ -16,7 +16,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      integer, INTENT(IN) :: s 
+      integer, INTENT(IN) :: s
       double precision :: mi(s)
       double precision :: ni(s)
       double precision :: n, m
@@ -29,7 +29,7 @@
       double precision :: xvec(s)
 
 !-----------------------------------------------
-! Local variables      
+! Local variables
 !-----------------------------------------------
       integer :: L
       integer :: ntrial
@@ -44,7 +44,7 @@
       DO L = 1, s
           xvec(L) = mi(L) / m
       ENDDO
-      
+
       CALL MNEWT(ntrial, xvec, s, tolx, tolf, &
                  mi,ni,n,m,chi,sigmai,alpha,rhoi)
 
@@ -53,17 +53,17 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: MNEWT(ntrial, x, mmax, tolx, tolf, mi,ni,n,m,chi,sigmai,alpha,rhoi)
-!  Purpose: use Newton-Raphson method to solve set of non-linear 
+!  Purpose: use Newton-Raphson method to solve set of non-linear
 !           equations to be used for GHD polydisperse KT
 !
-!  Literature/Document References:    
-!     Numerical Recipies in Fortran 77, page 374 
+!  Literature/Document References:
+!     Numerical Recipies in Fortran 77, page 374
 !
 !  Note:  this subroutine has been modified by CMH from Sofiane original
 !         to accommodate the inputs/outputs of the stand-along program ghd
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine MNEWT(ntrial, x, s, tolx, tolf, &
@@ -73,7 +73,7 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      INTEGER, intent(in) :: s 
+      INTEGER, intent(in) :: s
       INTEGER, intent(in) :: ntrial
       DOUBLE PRECISION, intent(in) :: tolx, tolf
       DOUBLE PRECISION :: mi(s)
@@ -86,9 +86,9 @@
       DOUBLE PRECISION :: X(s)
 !-----------------------------------------------
 ! Local parameters
-!-----------------------------------------------      
+!-----------------------------------------------
       INTEGER :: NP
-      PARAMETER (NP=15)  ! solves up to NP variable/equations; 
+      PARAMETER (NP=15)  ! solves up to NP variable/equations;
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -100,12 +100,12 @@
 
       DO K = 1, NTRIAL
         CALL FUNC_JACOBI_EVAL(X, s, FVEC, FJAC, &
-                              mi,ni,n,m,chi,sigmai,alpha,rhoi) 
+                              mi,ni,n,m,chi,sigmai,alpha,rhoi)
         ERRF = 0d0
         DO I = 1, s
              ERRF = ERRF + DABS(FVEC(I))
         ENDDO
-        
+
         IF(ERRF <= TOLF) RETURN
         DO I = 1, s
             P(I) = -FVEC(I) ! RHS of linear equations.
@@ -113,7 +113,7 @@
 
         CALL LUDCMP(fjac, s, NP, indx, d, 'MNewt')  ! solve system of s linear equations using
         CALL LUBKSB(fjac, s, NP, indx, p)  ! LU decomposition
-                  
+
         ERRX = 0d0
         DO I = 1, s
             ERRX = ERRX + DABS(P(I))
@@ -121,22 +121,22 @@
         ENDDO
         IF(ERRX <= TOLX) RETURN
       ENDDO  ! for K trials
-      
+
       RETURN
       END SUBROUTINE MNEWT
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  Module name: FUNC_JACOBI_EVAL(X, s, FVEC, FJAC, mi,ni,n,m,chi,sigmai,alpha,rhoi)
-!  Purpose: computes values of functions and Jacobians of homogenous 
+!  Purpose: computes values of functions and Jacobians of homogenous
 !           cooling rates to get values of theta_i (or Ti)
-!  Literature/Document References:    
+!  Literature/Document References:
 !     C. Hrenya handnotes and S. Benyahia derivation, Dec-2008
 !
 !  Note:  this subroutine has been modified by CMH from Sofiane original
 !         to accommodate the inputs/outputs of the stand-along program ghd
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       SUBROUTINE FUNC_JACOBI_EVAL(X, s, FVEC, FJAC, &
@@ -145,12 +145,12 @@
 
 !-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------      
-      INTEGER, intent(in) :: s 
+!-----------------------------------------------
+      INTEGER, intent(in) :: s
       DOUBLE PRECISION :: X(s)
 ! vector function and matrix jacobian
       DOUBLE PRECISION :: FVEC(s), FJAC(s,s)
-      
+
       DOUBLE PRECISION :: mi(s)
       DOUBLE PRECISION :: ni(s)
       DOUBLE PRECISION :: n, m
@@ -158,7 +158,7 @@
                           rhoi(s)
 !-----------------------------------------------
 ! Local parameters
-!-----------------------------------------------      
+!-----------------------------------------------
       double precision :: pi
       parameter (pi=3.14159265458979323846d0)
       double precision :: one
@@ -167,7 +167,7 @@
       parameter (zero=0.d0)
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
 ! indices
       INTEGER :: I, J, K
 ! various quantities
@@ -175,14 +175,14 @@
       DOUBLE PRECISION :: gamma(s,s), sqrtXiXj(s,s)
       DOUBLE PRECISION :: oneMGama(s,s)
 !-----------------------------------------------
-      
+
       DO i = 1, s
         DO j = 1, s
              ETA(i,j) = (one + alpha(i,j))/2.d0
              lambda(i,j) = chi(i,j)* ni(j)*(mi(j)/(mi(j)+mi(i)))*  &
-                         ((sigmai(i)+sigmai(j))/2d0)**2 * (ETA(I,J)*2d0)  
+                         ((sigmai(i)+sigmai(j))/2d0)**2 * (ETA(I,J)*2d0)
 ! eta = (1+e)/2
-             gamma(i,j) = (mi(j)/(mi(j)+mi(i)))* (ETA(I,J))   
+             gamma(i,j) = (mi(j)/(mi(j)+mi(i)))* (ETA(I,J))
 ! The "2" in mu_ji/2 and 2 * eta will cancel
              sqrtXiXj(i,j) = dsqrt((x(i)+x(j))/(x(i)*x(j)))
              oneMGama(i,j) = (one-gamma(i,j)*((x(i)+x(j))/x(j)))
@@ -206,7 +206,7 @@
                   - lambda(1,k) * sqrtXiXj(1,k) * oneMGama(1,k)
           ENDDO
         ENDIF
-      ENDDO 
+      ENDDO
 ! End of computing values of the function FVEC(i)
 
 ! Evaluation of functions FVEC(i) is done above, and their Jacobian is computed below.
@@ -220,7 +220,7 @@
 
           ELSEIF(i==j) THEN
             FJAC(j,j) = ZERO
-  
+
             DO k = 1, s
               IF(k==i) THEN
                 FJAC(i,j) = FJAC(i,j)  &
@@ -242,18 +242,18 @@
               ENDIF
             ENDDO
 
-          ELSEIF(j==1) THEN ! for i /= 1 and i /= j and j == 1            
+          ELSEIF(j==1) THEN ! for i /= 1 and i /= j and j == 1
             k = 1  ! k =1 is a special case for computing Jacobioan
             FJAC(i,j)  = -lambda(i,k)*oneMGama(i,1)/ &
                              (x(1)**2*sqrtXiXj(i,1)*2.0d0)  &
                     + lambda(i,k)*sqrtXiXj(i,1)*gamma(i,k)*x(i)/x(1)**2  &
                          + dsqrt(2d0)*(one-2d0*gamma(1,k))* &
-                            lambda(1,k)*x(1)**((-3.0d0)/2.0d0)/2.0d0 
+                            lambda(1,k)*x(1)**((-3.0d0)/2.0d0)/2.0d0
             DO k = 2, s
                 FJAC(i,j) = FJAC(i,j)  &
                             + gamma(1,k)*lambda(1,k)*sqrtXiXj(k,1)/x(k)  &
                             + lambda(1,k)*oneMGama(1,k)/ &
-                              (x(1)**2*sqrtXiXj(k,1)*2.0d0) 
+                              (x(1)**2*sqrtXiXj(k,1)*2.0d0)
             ENDDO
 
           ELSE ! for i /= 1 and i /= j and j /= 1
@@ -263,26 +263,26 @@
                           (x(j)**2*sqrtXiXj(j,i)*2d0)  &
                 + lambda(i,k)*sqrtXiXj(j,i)*gamma(i,k)*x(i)/x(j)**2  &
                 + lambda(1,k)*oneMGama(1,k)/(x(j)**2*sqrtXiXj(j,1)*2d0)  &
-                - lambda(1,k)*sqrtXiXj(j,1)*gamma(1,k)*x(1)/x(j)**2     
+                - lambda(1,k)*sqrtXiXj(j,1)*gamma(1,k)*x(1)/x(j)**2
 
           ENDIF ! for checks on i
         ENDDO ! for j
       ENDDO ! for i
-! End of computing jacobian (J_ij).      
+! End of computing jacobian (J_ij).
 
       RETURN
       END SUBROUTINE FUNC_JACOBI_EVAL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: ludcmp(a,n,np,indx,d, calledFrom)
-!  Purpose: Replaces matrix a (n,n) by the LU decomposition of a rowwise 
+!  Purpose: Replaces matrix a (n,n) by the LU decomposition of a rowwise
 !           permutation of itself. Used in combination with lubksb.
 !
-!  Literature/Document References:    
-!     Numerical Recipies in Fortran 77, page 38-39 
-!                                                         
+!  Literature/Document References:
+!     Numerical Recipies in Fortran 77, page 38-39
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !
       subroutine ludcmp(a,n,np,indx,d,calledFrom)
@@ -370,14 +370,14 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
-!  subroutine name: lubksb (a,n,np,indx,b)
-!  Purpose: solves the set of n linear equations A(n,n).X(n) = B(n). 
-!           
 !
-!  Literature/Document References:    
+!  subroutine name: lubksb (a,n,np,indx,b)
+!  Purpose: solves the set of n linear equations A(n,n).X(n) = B(n).
+!
+!
+!  Literature/Document References:
 !     Numerical Recipies in Fortran 77, page 39.
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine lubksb (a,n,np,indx,b)

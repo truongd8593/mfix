@@ -19,24 +19,25 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_TRD_S(TRD_S, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_TRD_S(TRD_S, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !     Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
       USE fldvar
       USE indices
       USE physprop
       USE compar
       USE sendrecv
+      USE functions
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -80,20 +81,17 @@
 !=======================================================================
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
-      DO M = 1, MMAX 
+      DO M = 1, MMAX
 !!!!$omp    parallel do private(ijk,i,j,k,im,imjk,ijmk,ijkm)
          DO IJK = ijkstart3, ijkend3
-            IF (.NOT.WALL_AT(IJK)) THEN 
-               I = I_OF(IJK) 
-               J = J_OF(IJK) 
-               K = K_OF(IJK) 
-               IM = IM1(I) 
-               IMJK = IM_OF(IJK) 
-               IJMK = JM_OF(IJK) 
-               IJKM = KM_OF(IJK) 
+            IF (.NOT.WALL_AT(IJK)) THEN
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
+               IM = IM1(I)
+               IMJK = IM_OF(IJK)
+               IJMK = JM_OF(IJK)
+               IJKM = KM_OF(IJK)
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -102,7 +100,7 @@
 
                   TRD_S(IJK,M) = (X_E(I)*U_S(IJK,M)-X_E(IM)*U_S(IMJK,M))*OX(I)*ODX&
                      (I) + (V_S(IJK,M)-V_S(IJMK,M))*ODY(J) + (W_S(IJK,M)-W_S(IJKM,&
-                     M))*(OX(I)*ODZ(K)) 
+                     M))*(OX(I)*ODZ(K))
 
                ELSE  ! CUT CELL
 
@@ -128,7 +126,7 @@
                      CASE('CG_PSW')
 
                         IF(BC_JJ_PS(BCV)==1) THEN   ! Johnson-Jackson partial slip bc
-                           NOC_TRDS = .FALSE. 
+                           NOC_TRDS = .FALSE.
                            UW_s = BC_UW_S(BCV,M)
                            VW_s = BC_VW_S(BCV,M)
                            WW_s = BC_WW_S(BCV,M)
@@ -148,15 +146,15 @@
                         ENDIF
                      CASE ('CG_MI')
                          TRD_S(IJK,M) = ZERO
-                        RETURN 
+                        RETURN
                      CASE ('CG_PO')
                          TRD_S(IJK,M) = ZERO
-                        RETURN 
-                  END SELECT 
+                        RETURN
+                  END SELECT
 
                   IF(FLOW_AT(IJK)) THEN
                       TRD_S(IJK,M) = ZERO
-                     RETURN 
+                     RETURN
                   ENDIF
 
 !              du/dx
@@ -178,7 +176,7 @@
 
                      IF(Sx /= ZERO) THEN
                         dudx =  (U_S(IJK,M) - U_S(IMJK,M))/Sx
-                        IF(NOC_TRDS) dudx = dudx - ((Ui-UW_s)/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))  
+                        IF(NOC_TRDS) dudx = dudx - ((Ui-UW_s)/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))
                      ELSE
                         dudx = ZERO
                      ENDIF
@@ -206,7 +204,7 @@
 
                      IF(Sy /= ZERO) THEN
                         dvdy =  (V_S(IJK,M) - V_S(IJMK,M))/Sy
-                        IF(NOC_TRDS) dvdy = dvdy - ((Vi-VW_s)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))  
+                        IF(NOC_TRDS) dvdy = dvdy - ((Vi-VW_s)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))
                      ELSE
                         dvdy =  ZERO
                      ENDIF
@@ -217,12 +215,12 @@
 
 !              dw/dz
 
-                  IF(NO_K) THEN 
+                  IF(NO_K) THEN
 
                      dwdz = ZERO
 
                   ELSE
-   
+
                      W_NODE_AT_T = ((.NOT.BLOCKED_W_CELL_AT(IJK)) .AND.(.NOT.WALL_W_AT(IJK)))
                      W_NODE_AT_B = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
 
@@ -232,7 +230,7 @@
                         Xi = HALF * (X_W(IJK) + X_W(IJKM))
                         Yi = HALF * (Y_W(IJK) + Y_W(IJKM))
                         Zi = HALF * (Z_W(IJK) + Z_W(IJKM))
-                        Sx = X_W(IJK) - X_W(IJKM)   
+                        Sx = X_W(IJK) - X_W(IJKM)
                         Sy = Y_W(IJK) - Y_W(IJKM)
                         Sz = Z_W(IJK) - Z_W(IJKM)
 
@@ -240,7 +238,7 @@
 
                         IF(Sz /= ZERO) THEN
                            dwdz =  (W_S(IJK,M) - W_S(IJKM,M))/Sz
-                           IF(NOC_TRDS) dwdz = dwdz - ((Wi-WW_s)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))  
+                           IF(NOC_TRDS) dwdz = dwdz - ((Wi-WW_s)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))
                         ELSE
                            dwdz = ZERO
                         ENDIF
@@ -258,17 +256,17 @@
 ! Original term:
 !               TRD_S(IJK,M) = (X_E(I)*U_S(IJK,M)-X_E(IM)*U_S(IMJK,M))*OX(I)*ODX&
 !                  (I) + (V_S(IJK,M)-V_S(IJMK,M))*ODY(J) + (W_S(IJK,M)-W_S(IJKM,&
-!                  M))*(OX(I)*ODZ(K)) 
+!                  M))*(OX(I)*ODZ(K))
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            ENDIF 
-         END DO 
-      END DO 
+            ENDIF
+         END DO
+      END DO
 
-      END SUBROUTINE CALC_TRD_S 
+      END SUBROUTINE CALC_TRD_S
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
@@ -293,18 +291,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !     Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
       USE fldvar
       USE indices
@@ -313,6 +311,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -348,7 +347,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
@@ -359,13 +357,13 @@
 
       IF (.NOT.CUT_CELL_AT(IJK)) RETURN
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
-      IMJK = IM_OF(IJK) 
-      IJMK = JM_OF(IJK) 
-      IJKM = KM_OF(IJK) 
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
 
       BCV = BC_ID(IJK)
 
@@ -391,7 +389,7 @@
          CASE('CG_PSW')
 
             IF(BC_JJ_PS(BCV)==1) THEN   ! Johnson-Jackson partial slip bc
-               NOC_TRDS = .FALSE. 
+               NOC_TRDS = .FALSE.
                UW_s = BC_UW_S(BCV,M)
                VW_s = BC_VW_S(BCV,M)
                WW_s = BC_WW_S(BCV,M)
@@ -411,18 +409,18 @@
             ENDIF
          CASE ('CG_MI')
             DELV = ZERO
-            RETURN 
+            RETURN
          CASE ('CG_PO')
             DELV = ZERO
-            RETURN 
+            RETURN
          CASE ('NONE')
             DELV = ZERO
-            RETURN 
-      END SELECT 
+            RETURN
+      END SELECT
 
       IF(FLOW_AT(IJK)) THEN
          DELV = ZERO
-         RETURN 
+         RETURN
       ENDIF
 
 !=======================================================================
@@ -505,7 +503,7 @@
             dvdz =  ZERO
             IF(NOC_TRDS) THEN
                dvdx = (Vi-VW_s) / DEL_H * Nx
-               dvdy = dvdy - ((Vi-VW_s)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz)) 
+               dvdy = dvdy - ((Vi-VW_s)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))
                dvdz = (Vi-VW_s) / DEL_H * Nz
             ENDIF
          ELSE
@@ -539,13 +537,13 @@
 !              dw/dx, dw/dy, dw/dz
 !=======================================================================
 
-      IF(NO_K) THEN 
+      IF(NO_K) THEN
 
          dwdx = ZERO
          dwdy = ZERO
          dwdz = ZERO
 
-      ELSE   
+      ELSE
 
          W_NODE_AT_T = ((.NOT.BLOCKED_W_CELL_AT(IJK)) .AND.(.NOT.WALL_W_AT(IJK)))
          W_NODE_AT_B = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
@@ -569,8 +567,8 @@
                IF(NOC_TRDS) THEN
                   dwdx = (Wi-WW_s) / DEL_H * Nx
                   dwdy = (Wi-WW_s) / DEL_H * Ny
-                  dwdz = dwdz - ((Wi-WW_s)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))    
-               ENDIF 
+                  dwdz = dwdz - ((Wi-WW_s)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))
+               ENDIF
             ELSE
                dwdx = ZERO
                dwdy = ZERO
@@ -600,7 +598,7 @@
       DELV(3,1) = dwdx
       DELV(3,2) = dwdy
       DELV(3,3) = dwdz
-      
+
       DO P = 1,3
          DO Q = 1,3
             D_s(P,Q) = HALF * (DELV(P,Q)+DELV(Q,P))
@@ -608,10 +606,10 @@
       ENDDO
 
 
-      RETURN  
+      RETURN
       END SUBROUTINE CG_CALC_VEL_S_GRAD
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 

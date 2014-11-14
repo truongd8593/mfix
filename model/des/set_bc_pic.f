@@ -6,7 +6,7 @@
 !  Purpose: Check the data provided for the pic mass inflow boundary   !
 !  condition and flag errors if the data is improper.  This module is  !
 !  also used to convert the proveded information into the format       !
-!  necessary for the dependent subrountines to function properly.      ! 
+!  necessary for the dependent subrountines to function properly.      !
 !  Rehack of set_bc_dem                                                !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -35,7 +35,7 @@
       CALL INIT_ERR_MSG("SET_BC_PIC")
 
 ! The variable PARTICLES should already be set by this point if using
-! gener_part_config option      
+! gener_part_config option
       IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
          PARTICLES = 0
 
@@ -57,7 +57,7 @@
 
 ! If the system is started without any particles and an inlet is not
 ! specified, the run is likely aborted.
-! Inlet/outlet for MPPIC are based off the regular mfix declarations, 
+! Inlet/outlet for MPPIC are based off the regular mfix declarations,
 ! and so PIC_BCMI could still be zero.
       IF(PARTICLES == 0 .AND. PIC_BCMI == 0) THEN
          WRITE(ERR_MSG, 1202)

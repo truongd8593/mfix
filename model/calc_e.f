@@ -17,14 +17,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_E(A_M, MCP, E_E, IER) 
+      SUBROUTINE CALC_E_E(A_M, MCP, E_E, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
@@ -33,20 +33,22 @@
       USE constant
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Index of close packed solids phase. note mcp is the lowest index of 
-! those solids phases that have close_packed=t and of the solids 
-! phase that is used for the solids correction equation (when mmax=1).      
+! Index of close packed solids phase. note mcp is the lowest index of
+! those solids phases that have close_packed=t and of the solids
+! phase that is used for the solids correction equation (when mmax=1).
       INTEGER, INTENT(IN) :: Mcp
 ! Coefficient for solids correction equation. These coefficients are
 ! initialized to zero in the subroutine time_march before the time loop.
 ! Note that the E_e coefficients are only used when mcp is assigned
-! (when any solids phase has close_packed=T). 
+! (when any solids phase has close_packed=T).
       DOUBLE PRECISION, INTENT(INOUT) :: e_e(DIMENSION_3)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
@@ -56,38 +58,30 @@
 ! Indices
       INTEGER :: IJK
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
 
-! returning if mcp is not defined. 
+! returning if mcp is not defined.
       IF (MCP == UNDEFINED_I) RETURN
 
-! returning if the x-momentum equation of this phase is not to be 
+! returning if the x-momentum equation of this phase is not to be
 ! solved.
-      IF (.NOT.MOMENTUM_X_EQ(MCP)) RETURN  
+      IF (.NOT.MOMENTUM_X_EQ(MCP)) RETURN
 
 !!$omp parallel do private(ijk)
       DO IJK = ijkstart3, ijkend3
-         IF (SIP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN 
-            E_E(IJK) = ZERO 
-         ELSE 
+         IF (SIP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN
+            E_E(IJK) = ZERO
+         ELSE
             IF (A_M(IJK,0,MCP) /= ZERO) THEN
-! calculating the correction coefficient                    
-               E_E(IJK) = AYZ(IJK)/(-A_M(IJK,0,MCP)) 
-            ELSE 
-               E_E(IJK) = LARGE_NUMBER 
-            ENDIF 
-         ENDIF 
-      ENDDO 
+! calculating the correction coefficient
+               E_E(IJK) = AYZ(IJK)/(-A_M(IJK,0,MCP))
+            ELSE
+               E_E(IJK) = LARGE_NUMBER
+            ENDIF
+         ENDIF
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE CALC_E_E 
+      RETURN
+      END SUBROUTINE CALC_E_E
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -105,14 +99,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_N(A_M, MCP, E_N, IER) 
+      SUBROUTINE CALC_E_N(A_M, MCP, E_N, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
@@ -121,20 +115,22 @@
       USE constant
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy arguments      
+! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Index of close packed solids phase. note mcp is the lowest index of 
-! those solids phases that have close_packed=t and of the solids 
+! Index of close packed solids phase. note mcp is the lowest index of
+! those solids phases that have close_packed=t and of the solids
 ! phase that is used for the solids correction equation (when mmax=1).
       INTEGER, INTENT(IN) :: Mcp
 ! Coefficient for solids correction equation. These coefficients are
 ! initialized to zero in the subroutine time_march before the time loop.
 ! Note that the E_n coefficients are only used when mcp is assigned
-! (when the solids phase has close_packed=T)                       
+! (when the solids phase has close_packed=T)
       DOUBLE PRECISION, INTENT(INOUT) :: e_n(DIMENSION_3)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
@@ -144,37 +140,29 @@
 ! Indices
       INTEGER :: IJK
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
 
-! returning if mcp is not defined. 
+! returning if mcp is not defined.
       IF (MCP == UNDEFINED_I) RETURN
 ! returning if the y-momentum equation of this phase is not to be
 ! solved.
-      IF (.NOT.MOMENTUM_Y_EQ(MCP)) RETURN  
+      IF (.NOT.MOMENTUM_Y_EQ(MCP)) RETURN
 
 !!$omp parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3
-         IF (SIP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN 
-            E_N(IJK) = ZERO 
-         ELSE 
+         IF (SIP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN
+            E_N(IJK) = ZERO
+         ELSE
             IF ((-A_M(IJK,0,MCP)) /= ZERO) THEN
-! calculating the correction coefficient                    
-               E_N(IJK) = AXZ(IJK)/(-A_M(IJK,0,MCP)) 
-            ELSE 
-               E_N(IJK) = LARGE_NUMBER 
+! calculating the correction coefficient
+               E_N(IJK) = AXZ(IJK)/(-A_M(IJK,0,MCP))
+            ELSE
+               E_N(IJK) = LARGE_NUMBER
             ENDIF
-         ENDIF 
+         ENDIF
       ENDDO
 
-      RETURN  
-      END SUBROUTINE CALC_E_N 
+      RETURN
+      END SUBROUTINE CALC_E_N
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -192,14 +180,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_T(A_M, MCP, E_T, IER) 
+      SUBROUTINE CALC_E_T(A_M, MCP, E_T, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE fldvar
       USE geometry
       USE indices
@@ -208,20 +196,22 @@
       USE constant
       USE compar
       USE sendrecv
+      USE fun_avg
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy arguments      
+! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(IN) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Index of close packed solids phase. note mcp is the lowest index of 
-! those solids phases that have close_packed=t and of the solids 
+! Index of close packed solids phase. note mcp is the lowest index of
+! those solids phases that have close_packed=t and of the solids
 ! phase that is used for the solids correction equation (when mmax=1).
       INTEGER, INTENT(IN) :: Mcp
 ! Coefficient for solids correction equation. These coefficients are
 ! initialized to zero in the subroutine time_march before the time loop.
 ! Note that the E_t coefficients are only used when mcp is assigned
-! (when the solids phase has close_packed=T)                      
+! (when the solids phase has close_packed=T)
       DOUBLE PRECISION, INTENT(INOUT) :: e_t(DIMENSION_3)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
@@ -231,35 +221,27 @@
 ! Indices
       INTEGER :: IJK
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
-!-----------------------------------------------
 
-! returning if mcp is not defined.  
+! returning if mcp is not defined.
       IF (MCP == UNDEFINED_I) RETURN
-! returning if the z-momentum equation of this phase is not to be 
+! returning if the z-momentum equation of this phase is not to be
 ! solved
       IF (.NOT.MOMENTUM_Z_EQ(MCP)) RETURN
 
 !!$omp parallel do private(IJK)
       DO IJK = ijkstart3, ijkend3
-         IF (SIP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN 
-            E_T(IJK) = ZERO 
-         ELSE 
+         IF (SIP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN
+            E_T(IJK) = ZERO
+         ELSE
             IF ((-A_M(IJK,0,MCP)) /= ZERO) THEN
-! calculating the correction coefficient                    
-               E_T(IJK) = AXY(IJK)/(-A_M(IJK,0,MCP)) 
-            ELSE 
-               E_T(IJK) = LARGE_NUMBER 
-            ENDIF 
-         ENDIF 
-      ENDDO 
+! calculating the correction coefficient
+               E_T(IJK) = AXY(IJK)/(-A_M(IJK,0,MCP))
+            ELSE
+               E_T(IJK) = LARGE_NUMBER
+            ENDIF
+         ENDIF
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE CALC_E_T 
+      RETURN
+      END SUBROUTINE CALC_E_T
 

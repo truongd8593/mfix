@@ -15,10 +15,11 @@
 
       USE geometry, only: ICBC_FLAG
 
-      USE compar 
-      USE mpi_utility 
+      USE compar
+      USE mpi_utility
 
       use error_manager
+      USE functions
 
       IMPLICIT NONE
 
@@ -40,8 +41,6 @@
 
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-
 
       CALL INIT_ERR_MSG("MOD_BC_J")
 
@@ -60,19 +59,19 @@
          IJK  = FUNIJK(I_W, J_S,   K_B)
          IJPK = FUNIJK(I_W, J_S+1, K_B)
 
-         IF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJPK)(1:1)=='.') THEN 
-            J_S = J_S 
-            J_N = J_N 
-            BC_PLANE(BCV) = 'N' 
+         IF (WALL_ICBC_FLAG(IJK) .AND. ICBC_FLAG(IJPK)(1:1)=='.') THEN
+            J_S = J_S
+            J_N = J_N
+            BC_PLANE(BCV) = 'N'
 
-         ELSE IF (WALL_ICBC_FLAG(IJPK) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN 
-            J_S = J_S + 1 
-            J_N = J_N + 1 
-            BC_PLANE(BCV) = 'S' 
+         ELSE IF (WALL_ICBC_FLAG(IJPK) .AND. ICBC_FLAG(IJK)(1:1)=='.') THEN
+            J_S = J_S + 1
+            J_N = J_N + 1
+            BC_PLANE(BCV) = 'S'
 
          ELSE
             BC_PLANE(BCV) = '.'
-         ENDIF 
+         ENDIF
       ENDIF
 
       CALL BCAST(J_S,OWNER)
@@ -85,7 +84,7 @@
          CALL BCAST(IJK, OWNER)
 
          WRITE(ERR_MSG, 1100) BCV, J_S, J_N, I_W, K_B,                 &
-            IJK, ICBC_FLAG(IJK),  IJPK, ICBC_FLAG(IJPK) 
+            IJK, ICBC_FLAG(IJK),  IJPK, ICBC_FLAG(IJPK)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
@@ -108,14 +107,14 @@
 ! First pass through all of the BC region and verify that you have
 ! inflow/outflow specified against a wall. Flag any errors.
       ERROR = .FALSE.
-      DO K = BC_K_B(BCV), BC_K_T(BCV) 
-      DO I = BC_I_W(BCV), BC_I_E(BCV) 
+      DO K = BC_K_B(BCV), BC_K_T(BCV)
+      DO I = BC_I_W(BCV), BC_I_E(BCV)
          IF(.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
          IF(.NOT.IS_ON_myPE_plus2layers(I,J_WALL, K)) CYCLE
          IF(DEAD_CELL_AT(I,J_FLUID,K)) CYCLE
          IF(DEAD_CELL_AT(I,J_WALL, K)) CYCLE
 
-         IJK_WALL  = FUNIJK(I,J_WALL, K) 
+         IJK_WALL  = FUNIJK(I,J_WALL, K)
          IJK_FLUID = FUNIJK(I,J_FLUID,K)
 
           IF(.NOT.(WALL_ICBC_FLAG(IJK_WALL) .AND. &
@@ -140,8 +139,8 @@
 
  1200 FORMAT('Error 1200: Illegal geometry for boundary condition:',I3)
 
-         DO K = BC_K_B(BCV), BC_K_T(BCV) 
-         DO I = BC_I_W(BCV), BC_I_E(BCV) 
+         DO K = BC_K_B(BCV), BC_K_T(BCV)
+         DO I = BC_I_W(BCV), BC_I_E(BCV)
 
             IF(.NOT.IS_ON_myPE_plus2layers(I,J_FLUID,K)) CYCLE
             IF(.NOT.IS_ON_myPE_plus2layers(I,J_WALL, K)) CYCLE
@@ -158,13 +157,13 @@
                   I, J_WALL,  K, IJK_WALL, ICBC_FLAG(IJK_WALL),        &
                   I, J_FLUID, K, IJK_FLUID, ICBC_FLAG(IJK_FLUID)
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ENDIF 
+            ENDIF
 
  1201 FORMAT(' ',/14X,'I',7X,'J',7X,'K',7X,'IJK',4x,'FLAG',/3x,        &
          'WALL ',3(2x,I6),2x,I9,3x,A,/3x,'FLUID',3(2x,I6),2x,I9,3x,A)
 
-         ENDDO 
-         ENDDO 
+         ENDDO
+         ENDDO
 
          WRITE(ERR_MSG,"('Please correct the mfix.dat file.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)

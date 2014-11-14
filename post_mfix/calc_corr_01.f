@@ -26,15 +26,16 @@
       SUBROUTINE CALC_CORR_01(FINISH,INTER)
 !
 !
-	Use param
-	Use param1
+        Use param
+        Use param1
         Use fldvar
         Use physprop
         Use geometry
         Use indices
         Use correl
         Use compar
-	
+        Use functions
+
       IMPLICIT NONE
 !
 !                      A flag to check whether the subroutine is called for
@@ -58,8 +59,6 @@
 !                       indices
       INTEGER           I, J, K, IJK
 !
-      INCLUDE 'function.inc'
-!
 !  If finish command is not given, do summations for correlations.
 !
       IF(.NOT.FINISH)THEN
@@ -69,12 +68,12 @@
 !  subroutine is called the first time, do initializations.
 !
         IF(STARTED .NE. RAND_NO)THEN
-      
+
           Allocate(  SUM_EP_g (DIMENSION_3) )
           Allocate(  SUM_EPxEP_g (DIMENSION_3) )
           Allocate(  SUM_V_g (DIMENSION_3) )
           Allocate(  SUM_VxV_g (DIMENSION_3) )
-      
+
           Allocate(  AVG_EP_g (DIMENSION_3) )
           Allocate(  SDV_EP_g (DIMENSION_3) )
           Allocate(  AVG_V_g  (DIMENSION_3) )
@@ -91,17 +90,19 @@
 !       Sum field variable values in all fluid cells
 !
         NSUM = NSUM + 1
-        DO 1000 K = 1, KMAX2
-        DO 1000 J = 1, JMAX2
-        DO 1000 I = 1, IMAX2
-          IJK = FUNIJK(I, J, K)
-          IF( FLUID_AT(IJK) ) THEN
-            SUM_EP_g(IJK) = SUM_EP_g(IJK) + EP_g(IJK)
-            SUM_EPxEP_g(IJK) = SUM_EPxEP_g(IJK) + EP_g(IJK)**2
-            SUM_V_g(IJK) = SUM_V_g(IJK) + V_g(IJK)
-            SUM_VxV_g(IJK) = SUM_VxV_g(IJK) + V_g(IJK)**2
-          ENDIF
-1000    CONTINUE
+        DO K = 1, KMAX2
+           DO J = 1, JMAX2
+              DO I = 1, IMAX2
+                 IJK = FUNIJK(I, J, K)
+                 IF( FLUID_AT(IJK) ) THEN
+                    SUM_EP_g(IJK)    = SUM_EP_g(IJK)    + EP_g(IJK)
+                    SUM_EPxEP_g(IJK) = SUM_EPxEP_g(IJK) + EP_g(IJK)**2
+                    SUM_V_g(IJK)     = SUM_V_g(IJK)     + V_g(IJK)
+                    SUM_VxV_g(IJK)   = SUM_VxV_g(IJK)   + V_g(IJK)**2
+                 ENDIF
+              ENDDO
+           ENDDO
+        ENDDO
 !
 !  If finish command is given, calculate averages, variances,
 !  and correlations
@@ -111,28 +112,30 @@
           WRITE(*,5000)
           STOP
         ENDIF
-        DO 2000 K = 1, KMAX2
-        DO 2000 J = 1, JMAX2
-        IF (DO_XFORMS) THEN
-           CALL CHECK_INTER(INTER)
-           IF (INTER) RETURN
-        END IF
-        DO 2000 I = 1, IMAX2
-          IJK = FUNIJK(I, J, K)
-          IF( FLUID_AT(IJK) ) THEN
-            AVG_EP_g(IJK) = SUM_EP_g(IJK) / NSUM
-            SDV_2 = SUM_EPxEP_g(IJK) / NSUM - AVG_EP_g(IJK)**2 
-            SDV_2 = MAX(ZERO,SDV_2)
-            SDV_EP_g(IJK) = SQRT( SDV_2 )
-            AVG_V_g(IJK) = SUM_V_g(IJK) / NSUM
-            SDV_2 = SUM_VxV_g(IJK) / NSUM - AVG_V_g(IJK)**2
-            SDV_2 = MAX(ZERO,SDV_2)
-            SDV_V_g(IJK) = SQRT( SDV_2 )
-          ENDIF
-2000    CONTINUE
-      ENDIF
-      RETURN
-5000  FORMAT(/1X,70('*')//' From: CALC_CORR',&
-      /' Message: Attempting averaging before doing summations',&
-      /1X, 70('*')/)
-      END
+        DO K = 1, KMAX2
+           DO J = 1, JMAX2
+              IF (DO_XFORMS) THEN
+                 CALL CHECK_INTER(INTER)
+                 IF (INTER) RETURN
+              END IF
+              DO I = 1, IMAX2
+                 IJK = FUNIJK(I, J, K)
+                 IF( FLUID_AT(IJK) ) THEN
+                    AVG_EP_g(IJK) = SUM_EP_g(IJK) / NSUM
+                    SDV_2 = SUM_EPxEP_g(IJK) / NSUM - AVG_EP_g(IJK)**2
+                    SDV_2 = MAX(ZERO,SDV_2)
+                    SDV_EP_g(IJK) = SQRT( SDV_2 )
+                    AVG_V_g(IJK) = SUM_V_g(IJK) / NSUM
+                    SDV_2 = SUM_VxV_g(IJK) / NSUM - AVG_V_g(IJK)**2
+                    SDV_2 = MAX(ZERO,SDV_2)
+                    SDV_V_g(IJK) = SQRT( SDV_2 )
+                 ENDIF
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDIF
+     RETURN
+5000 FORMAT(/1X,70('*')//' From: CALC_CORR',&
+          /' Message: Attempting averaging before doing summations',&
+          /1X, 70('*')/)
+   END SUBROUTINE CALC_CORR_01

@@ -75,7 +75,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
       END SUBROUTINE CHECK_BC_WALLS
 
 
@@ -130,27 +130,27 @@
 ! Initialize the error manger.
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_GAS")
 
-! The wall velocities are not needed for no-slip or free-slip                
-      IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN 
+! The wall velocities are not needed for no-slip or free-slip
+      IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN
          IF(BC_UW_G(BCV) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(BC_VW_G(BCV) == UNDEFINED) THEN 
+         ELSEIF(BC_VW_G(BCV) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_Vw_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ELSEIF(BC_WW_G(BCV) == UNDEFINED) THEN
             IF(DO_K)THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_Ww_g',BCV))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSE 
-               BC_WW_G(BCV) = ZERO 
+            ELSE
+               BC_WW_G(BCV) = ZERO
             ENDIF
          ENDIF
       ENDIF
 
 ! Check energy equation input.
       IF(ENERGY_EQ) THEN
-         IF(BC_HW_T_G(BCV) < ZERO) THEN 
+         IF(BC_HW_T_G(BCV) < ZERO) THEN
             WRITE(ERR_MSG,1001) trim(iVar('BC_HW_T_g',BCV)),           &
                trim(iVal(BC_HW_T_G(BCV)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -161,7 +161,7 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
          IF(BC_HW_T_G(BCV)/=UNDEFINED .AND.                            &
-            BC_C_T_G(BCV)==UNDEFINED) THEN 
+            BC_C_T_G(BCV)==UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_C_T_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -185,15 +185,15 @@
                BC_C_X_G(BCV,N)==UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_g',BCV,N))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
-         ENDDO 
+            ENDIF
+         ENDDO
       ENDIF
 
 
 ! Clear the error manager.
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
@@ -249,7 +249,7 @@
 ! angle of internal friction at walls (degrees)
       use constant, only: e_w, phi_w
 ! Used by jenkins or revised phip bcs
-      use constant, only: tan_phi_w 
+      use constant, only: tan_phi_w
 ! Used by revised phip for jj bc
       use constant, only: k4phi, phip0
 ! User-Input: number of reactionrates
@@ -313,7 +313,7 @@
       IF(.NOT.GRANULAR_ENERGY .AND. BC_JJ_PS(BCV) == 1) THEN
          WRITE(ERR_MSG, 1101)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF 
+      ENDIF
  1101 FORMAT('Error 1101: Invoking BC_JJ_PS requires GRANULAR_ENERGY', &
          '=.TRUE.',/ 'Please correct the mfix.dat file.')
 
@@ -325,15 +325,15 @@
             IF(BC_UW_S(BCV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(BC_VW_S(BCV,M) == UNDEFINED) THEN 
+            ELSEIF(BC_VW_S(BCV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_Vw_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ELSEIF(BC_WW_S(BCV,M) == UNDEFINED) THEN
                IF(DO_K)THEN
                   WRITE(ERR_MSG,1000) trim(iVar('BC_Ww_s',BCV,M))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ELSE 
-                  BC_WW_S(BCV,M) = ZERO 
+               ELSE
+                  BC_WW_S(BCV,M) = ZERO
                ENDIF
             ENDIF
          ENDIF
@@ -343,14 +343,14 @@
                WRITE(ERR_MSG,1001) trim(iVar('BC_HW_Theta_M',BCV,M)),  &
                   trim(iVal(BC_HW_Theta_M(BCV,M)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
+            ENDIF
             IF(BC_HW_THETA_M(BCV,M)/=ZERO .AND.                        &
-               BC_THETAW_M(BCV,M)==UNDEFINED) THEN 
+               BC_THETAW_M(BCV,M)==UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_ThetaW_M',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF 
+            ENDIF
             IF(BC_HW_THETA_M(BCV,M)/=UNDEFINED .AND.                   &
-               BC_C_THETA_M(BCV,M)==UNDEFINED) THEN 
+               BC_C_THETA_M(BCV,M)==UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_C_THETA_M',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -360,7 +360,7 @@
 
       IF(CHECK_SCALARS)THEN
          IF(ENERGY_EQ) THEN
-            IF(BC_HW_T_S(BCV,M) < ZERO) THEN 
+            IF(BC_HW_T_S(BCV,M) < ZERO) THEN
                WRITE(ERR_MSG,1001) trim(iVar('BC_HW_T_s',BCV,M)),      &
                   trim(iVal(BC_HW_T_S(BCV,M)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -371,7 +371,7 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
             IF(BC_HW_T_S(BCV,M)/=UNDEFINED .AND.                       &
-               BC_C_T_S(BCV,M)==UNDEFINED) THEN 
+               BC_C_T_S(BCV,M)==UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_C_T_s',BCV,M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -393,8 +393,8 @@
                   BC_C_X_S(BCV,M,N)==UNDEFINED) THEN
                   WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_s',BCV,M,N))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF 
-            ENDDO 
+               ENDIF
+            ENDDO
          ENDIF ! Species Equation
       ELSE
       ENDIF ! Check Scalars
@@ -415,7 +415,7 @@
             WRITE(ERR_MSG, 1202)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
- 
+
 ! small frictional boundary condition model
          IF(JENKINS) THEN
             IF (BC_JJ_M) THEN
@@ -428,9 +428,9 @@
                WRITE(ERR_MSG, 1001) 'E_W', E_W
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-! PHI_W is given in degrees but calculated in radian within 
-! the fortran codes 
-            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+! PHI_W is given in degrees but calculated in radian within
+! the fortran codes
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0)
          ENDIF
 
 ! k4phi, phip0 for variable specularity coefficient
@@ -446,9 +446,9 @@
                WRITE(ERR_MSG, 1001) 'E_W', E_W
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-! PHI_W is given in degrees but calculated in radian within 
-! the fortran codes 
-            TAN_PHI_W = TAN(PHI_W*PI/180.D0) 
+! PHI_W is given in degrees but calculated in radian within
+! the fortran codes
+            TAN_PHI_W = TAN(PHI_W*PI/180.D0)
 
             k4phi = 7.d0/2.d0*tan_phi_w*(1.d0+e_w)
             IF (phip0 .eq. UNDEFINED) THEN
@@ -484,7 +484,7 @@
 
       CALL FINL_ERR_MSG
 
-      RETURN  
+      RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
             'correct the mfix.dat file.')
@@ -493,29 +493,29 @@
          'Please correct the mfix.dat file.')
 
  1201 FORMAT('Error 1201: KT_TYPE = "GHD" cannot be used with ',&
-         ' BC_JJ_PS',/'Please correct the mfix.dat file.') 
- 
+         ' BC_JJ_PS',/'Please correct the mfix.dat file.')
+
  1202 FORMAT('Error 1202: CARTESIAN_GRID cannot be used with ',&
-         ' BC_JJ_PS',/'Please correct the mfix.dat file.') 
- 
+         ' BC_JJ_PS',/'Please correct the mfix.dat file.')
+
  1203 FORMAT('Error 1203: JENKINS and BC_JJ_M cannot be used at the',&
          ' same time',/'Please correct the mfix.dat file.')
  1204 FORMAT('Error 1204: Angle of particle-wall friction (PHI_W) not',&
          ' specified.',/'Please correct the mfix.dat file.')
 
- 1208 FORMAT('Error 1208: phip0 less than zero.') 
+ 1208 FORMAT('Error 1208: phip0 less than zero.')
  1209 FORMAT('Error 1209: nRR should be at least 1 for storing ',&
              'specularity.')
- 
+
  1207 FORMAT(/1X,70('*')//' From: CHECK_BC_WALLS_TFM',/' Message: ',&
          'No input for phip0 available, working expression is used.',/ &
-         'phip0=',G12.5,/1X,70('*')/)          
+         'phip0=',G12.5,/1X,70('*')/)
  1210 FORMAT(/1X,70('*')//' From: CHECK_BC_WALLS_TFM',/' Message: ',&
          'Specularity will be stored as the first element of ', &
          'ReactionRates',/1X,'array in WALL CELLS. Please avoid ', &
          'overwriting it when reacting flow',/1X,' is simulated.', &
-         /1X,70('*')/)          
- 
+         /1X,70('*')/)
+
       END SUBROUTINE CHECK_BC_WALLS_TFM
 
 
@@ -586,7 +586,7 @@
       ELSEIF(BC_TW_S(BCV,M) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_Tw_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(BC_C_T_S(BCV,M) /= UNDEFINED) THEN 
+      ELSEIF(BC_C_T_S(BCV,M) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_C_T_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -604,7 +604,7 @@
       IF(BC_UW_S(BCV,M) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Uw_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(BC_VW_S(BCV,M) /= UNDEFINED) THEN 
+      ELSEIF(BC_VW_S(BCV,M) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Vw_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ELSEIF(BC_WW_S(BCV,M) /= UNDEFINED) THEN
@@ -623,10 +623,10 @@
          ELSEIF(BC_C_X_S(BCV,M,N) /= UNDEFINED) THEN
             WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_C_X_s',BCV,M,N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
-      ENDDO 
+         ENDIF
+      ENDDO
 
- 1101 FORMAT('Error 1101: Illegal input for boundary condition: 'I3,/  &
+ 1101 FORMAT('Error 1101: Illegal input for boundary condition: ',I3,/ &
          A,' should not be specified for DEM/PIC simulations.',/       &
          'Please correct the mfix.dat file.')
 
@@ -684,20 +684,20 @@
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_SCALAR_EQ")
 
       DO N=1, NSCALAR
-         IF(BC_HW_Scalar(BCV,N) < ZERO) THEN 
+         IF(BC_HW_Scalar(BCV,N) < ZERO) THEN
             WRITE(ERR_MSG,1001) trim(iVar('BC_HW_SCALAR',BCV,N)),      &
                trim(iVal(BC_HW_Scalar(BCV,N)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF 
+         ENDIF
          IF(BC_HW_SCALAR(BCV,N) /= ZERO .AND.                          &
-            BC_SCALARw(BCV,N) == UNDEFINED) THEN 
+            BC_SCALARw(BCV,N) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_SCALARw',BCV,N))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
          IF(BC_HW_SCALAR(BCV,N) /= UNDEFINED .AND.                     &
             BC_C_Scalar(BCV,N) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_C_SCALAR',BCV,N))
-         ENDIF 
+         ENDIF
       ENDDO
 
       CALL FINL_ERR_MSG

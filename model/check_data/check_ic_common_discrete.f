@@ -138,8 +138,8 @@
                ic2_max = ic2_END(idim)
 
 ! Check for separating axis. If the separating axis exists, then the IC
-! regions can't overlap generally equality implies lack of sep_axis, 
-! and thus, overlapping. However, doing so will flag all IC's as 
+! regions can't overlap generally equality implies lack of sep_axis,
+! and thus, overlapping. However, doing so will flag all IC's as
 ! overlapping since IC's have to share common edges. So here the
 ! equality is considered as existence of a separating axis, and hence,
 ! no overlap equality is also considered as separating axis which is

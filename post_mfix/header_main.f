@@ -39,9 +39,9 @@
       WRITE (*,*)&
         ' *************************************************'
       WRITE (*,*)&
-        '  0   - Exit POST_MFIX'     
+        '  0   - Exit POST_MFIX'
       WRITE (*,*)&
-        '  1   - Examine/print data' 
+        '  1   - Examine/print data'
       WRITE (*,*)&
         '  2   - Write .RES from data in .SPx files'
       WRITE (*,*)&

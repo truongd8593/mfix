@@ -16,14 +16,14 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOLVE_SPECIES_EQ(IER) 
+      SUBROUTINE SOLVE_SPECIES_EQ(IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE toleranc 
+      USE param
+      USE param1
+      USE toleranc
       USE run
       USE physprop
       USE geometry
@@ -32,44 +32,45 @@
       USE indices
       USE drag
       USE residual
-      USE ur_facs 
+      USE ur_facs
       USE pgcor
       USE pscor
-      USE leqsol 
+      USE leqsol
       USE bc
       USE energy
       USE rxns
       Use ambm
-      USE matrix 
+      USE matrix
       USE ChiScheme
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
-      USE compar       
-      USE mpi_utility      
-      USE sendrecv 
-      USE mflux    
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE mflux
       use ps
- 
+      use functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index 
-      INTEGER, INTENT(INOUT) :: IER 
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! phase index 
+! phase index
       INTEGER :: M
-! species index 
+! species index
       INTEGER :: LN
 ! previous time step term
       DOUBLE PRECISION :: apo
-! Indices 
-      INTEGER :: IJK, IMJK, IJMK, IJKM 
-! linear equation solver method and iterations 
-      INTEGER :: LEQM, LEQI 
+! Indices
+      INTEGER :: IJK, IMJK, IJMK, IJKM
+! linear equation solver method and iterations
+      INTEGER :: LEQM, LEQI
 ! tmp array to pass to set_chi
-      DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s) 
+      DOUBLE PRECISION :: X_s_temp(DIMENSION_3, DIMENSION_N_s)
 
 ! Arrays for storing errors:
 ! 130 - Gas phase species equation diverged
@@ -81,15 +82,15 @@
 
       DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
-! array1 (locally s_p) 
+! array1 (locally s_p)
 ! source lhs: coefficient of dependent variable
 ! becomes part of a_m matrix; must be positive
 !      DOUBLE PRECISION :: S_P(DIMENSION_3)
-! array2 (locally s_c) 
+! array2 (locally s_c)
 ! source rhs vector: constant part becomes part of b_m vector
 !      DOUBLE PRECISION :: S_C(DIMENSION_3)
 ! array3 (locally eps)
-! alias for solids volume fraction      
+! alias for solids volume fraction
 !      DOUBLE PRECISION :: eps(DIMENSION_3)
 ! array4 (locally vxgama)
 !      DOUBLE PRECISION :: vxgama(DIMENSION_3)
@@ -100,49 +101,43 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: IS_SMALL 
-      DOUBLE PRECISION , EXTERNAL :: Check_conservation 
-!-----------------------------------------------
-! Local statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'ep_s2.inc'
+      LOGICAL , EXTERNAL :: IS_SMALL
+      DOUBLE PRECISION , EXTERNAL :: Check_conservation
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrys a_m and b_m
       call lock_tmp_array  ! locks array1,array2,array3,array4
-                           ! (locally s_p, s_c, eps, vxgama) 
+                           ! (locally s_p, s_c, eps, vxgama)
 
 ! Initialize error flag.
       Err_l = 0
 
 ! Fluid phase species mass balance equations
 ! ---------------------------------------------------------------->>>
-      IF (SPECIES_EQ(0)) THEN 
+      IF (SPECIES_EQ(0)) THEN
          IF(chi_scheme) call set_chi(DISCRETIZE(7), X_g, NMAX(0), &
                                      U_g, V_g, W_g, IER)
 
-! looping over species         
-         DO LN = 1, NMAX(0) 
-            CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER) 
+! looping over species
+         DO LN = 1, NMAX(0)
+            CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
 !!$omp    parallel do private(IJK, APO)
-            DO IJK = ijkstart3, ijkend3 
+            DO IJK = ijkstart3, ijkend3
                IF (FLUID_AT(IJK)) THEN
 ! calculate the source terms to be used in the a matrix and b vector
-                   APO = ROP_GO(IJK)*VOL(IJK)*ODT 
+                   APO = ROP_GO(IJK)*VOL(IJK)*ODT
                    S_P(IJK) = APO+&
-                      (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK) 
+                      (ZMAX(SUM_R_G(IJK))+ROX_GC(IJK,LN))*VOL(IJK)
                    S_C(IJK) = APO*X_GO(IJK,LN) + &
                       X_G(IJK,LN)*ZMAX((-SUM_R_G(IJK)))*VOL(IJK) +&
                       R_GP(IJK,LN)*VOL(IJK)
-               ELSE 
-                  S_P(IJK) = ZERO 
-                  S_C(IJK) = ZERO 
-               ENDIF 
+               ELSE
+                  S_P(IJK) = ZERO
+                  S_C(IJK) = ZERO
+               ENDIF
             ENDDO
 
-! calculate the convection-diffusion terms 
+! calculate the convection-diffusion terms
             IF(.NOT.ADDED_MASS) THEN
                CALL CONV_DIF_PHI (X_G(1,LN), DIF_G(1,LN), &
                   DISCRETIZE(7), U_G, V_G, W_G, &
@@ -155,7 +150,7 @@
 
 ! calculate standard bc
             CALL BC_PHI (X_G(1,LN), BC_X_G(1,LN), BC_XW_G(1,LN), &
-               BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M, IER) 
+               BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
@@ -168,61 +163,61 @@
                NUM_RESID(RESID_X+(LN-1),0), &
                DEN_RESID(RESID_X+(LN-1),0), RESID(RESID_X+(LN-1),0), &
                MAX_RESID(RESID_X+(LN-1),0), IJK_RESID(RESID_X+(LN-1),0), &
-               ZERO_X_GS, IER) 
+               ZERO_X_GS, IER)
 
-            CALL UNDER_RELAX_S (X_G(1,LN), A_M, B_M, 0, UR_FAC(7), IER) 
+            CALL UNDER_RELAX_S (X_G(1,LN), A_M, B_M, 0, UR_FAC(7), IER)
 
             CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),0), LEQ_IT(7), &
                LEQ_METHOD(7), LEQI, LEQM, IER)
 
-! solve the phi equation 
+! solve the phi equation
             CALL SOLVE_LIN_EQ ('X_g', 7, X_G(1,LN), A_M, B_M, 0, &
-               LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
+               LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER)
 
 ! Check for linear solver divergence.
                IF(ier == -2) Err_l(myPE) = 130
 
-            CALL BOUND_X (X_G(1,LN), IJKMAX2, IER) 
+            CALL BOUND_X (X_G(1,LN), IJKMAX2, IER)
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
          IF(chi_scheme) call unset_chi(IER)
-      ENDIF 
-! end fluid phase species equations      
+      ENDIF
+! end fluid phase species equations
 ! ----------------------------------------------------------------<<<
 
 ! Solids phase species balance equations
 ! ---------------------------------------------------------------->>>
-      DO M = 1, SMAX 
-         IF (SPECIES_EQ(M)) THEN 
+      DO M = 1, SMAX
+         IF (SPECIES_EQ(M)) THEN
             IF(chi_scheme) THEN
                DO LN = 1, NMAX(M)
                   DO IJK = ijkstart3, ijkend3
                      X_S_temp(IJK, LN) = X_S(IJK,M,LN)
                   ENDDO
-                ENDDO 
+                ENDDO
               call set_chi(DISCRETIZE(7), X_S_temp, NMAX(M), &
                            U_S(1,M), V_S(1,M), W_S(1,M), IER)
             ENDIF ! for chi_scheme
 
-            DO LN = 1, NMAX(M) 
-               CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER) 
+            DO LN = 1, NMAX(M)
+               CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
 
 !!$omp    parallel do private(IJK, APO)
-               DO IJK = ijkstart3, ijkend3 
-                  IF (FLUID_AT(IJK)) THEN 
-                    APO = ROP_SO(IJK,M)*VOL(IJK)*ODT 
+               DO IJK = ijkstart3, ijkend3
+                  IF (FLUID_AT(IJK)) THEN
+                    APO = ROP_SO(IJK,M)*VOL(IJK)*ODT
                     S_P(IJK) = APO + &
-                       (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*VOL(IJK) 
+                       (ZMAX(SUM_R_S(IJK,M))+ROX_SC(IJK,M,LN))*VOL(IJK)
                     S_C(IJK) = APO*X_SO(IJK,M,LN) + &
                        X_S(IJK,M,LN)*ZMAX((-SUM_R_S(IJK,M)))*VOL(IJK) + &
                        R_SP(IJK,M,LN)*VOL(IJK)
-                    EPS(IJK) = EP_S(IJK,M) 
-                  ELSE 
-                     S_P(IJK) = ZERO 
-                     S_C(IJK) = ZERO 
-                     EPS(IJK) = ZERO 
-                  ENDIF 
-               ENDDO 
+                    EPS(IJK) = EP_S(IJK,M)
+                  ELSE
+                     S_P(IJK) = ZERO
+                     S_C(IJK) = ZERO
+                     EPS(IJK) = ZERO
+                  ENDIF
+               ENDDO
 
                IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
                   CALL CONV_DIF_PHI (X_S(1,M,LN), DIF_S(1,M,LN), &
@@ -236,7 +231,7 @@
 
                CALL BC_PHI (X_S(1,M,LN), BC_X_S(1,M,LN), &
                   BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
-                  BC_C_X_S(1,M,LN), M, A_M, B_M, IER) 
+                  BC_C_X_S(1,M,LN), M, A_M, B_M, IER)
 
                CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
 
@@ -248,9 +243,9 @@
                   NUM_RESID(RESID_X+(LN-1),M), &
                   DEN_RESID(RESID_X+(LN-1),M), RESID(RESID_X+(LN-1),&
                   M), MAX_RESID(RESID_X+(LN-1),M), IJK_RESID(RESID_X+(LN-1),M), &
-                  ZERO_X_GS, IER) 
+                  ZERO_X_GS, IER)
 
-               CALL UNDER_RELAX_S (X_S(1,M,LN), A_M, B_M, M, UR_FAC(7), IER) 
+               CALL UNDER_RELAX_S (X_S(1,M,LN), A_M, B_M, M, UR_FAC(7), IER)
 
 !               call check_ab_m(a_m, b_m, m, .false., ier)
 !               write(*,*) resid(resid_x+(LN-1), m), &
@@ -262,25 +257,25 @@
 !                  1, DO_K, ier)
 
                CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),M), LEQ_IT(7), &
-                  LEQ_METHOD(7), LEQI, LEQM, IER) 
+                  LEQ_METHOD(7), LEQI, LEQM, IER)
 
                CALL SOLVE_LIN_EQ ('X_s', 7, X_S(1,M,LN), A_M, B_M, M,&
-                  LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER) 
+                  LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER)
 
 ! Check for linear solver divergence.
                IF(ier == -2) Err_l(myPE) = 131
 
-               CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER) 
+               CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER)
 !               call out_array(X_s(1,m,LN), 'X_s')
 
-            END DO 
+            END DO
 
             if(chi_scheme) call unset_chi(IER)
          ENDIF ! check for any species in phase m
       END DO ! for m = 1, mmax
-! end solids phases species equations      
+! end solids phases species equations
 ! ----------------------------------------------------------------<<<
-      
+
       call unlock_ambm
       call unlock_tmp_array
 
@@ -292,5 +287,5 @@
       CALL global_all_sum(Err_l, Err_g)
       IER = maxval(Err_g)
 
-      RETURN  
-      END SUBROUTINE SOLVE_SPECIES_EQ 
+      RETURN
+      END SUBROUTINE SOLVE_SPECIES_EQ

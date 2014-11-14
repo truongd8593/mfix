@@ -19,21 +19,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE WRITE_AB_M(A_M, B_M, IJKMAX2A, M, IER)    ! pnicol
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE matrix 
+      USE param
+      USE param1
+      USE matrix
 
-      USE compar      
-      USE mpi_utility  
-      USE indices       
+      USE compar
+      USE mpi_utility
+      USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -69,20 +70,19 @@
 !-----------------------------------------------
 !
       integer i, j, k
-      include 'function.inc'
 
       if (myPE == PE_IO) then
-         allocate (array1(ijkmax3))    
-         allocate (array2(ijkmax3))    
-         allocate (am(ijkmax3,-3:3))    
+         allocate (array1(ijkmax3))
+         allocate (array2(ijkmax3))
+         allocate (am(ijkmax3,-3:3))
       else
-         allocate (array1(1))          
-         allocate (array2(1))          
-         allocate (am(1,-3:3))          
+         allocate (array1(1))
+         allocate (array2(1))
+         allocate (am(1,-3:3))
       end if
 
       if (myPE == PE_IO) then
-         CALL START_LOG 
+         CALL START_LOG
          IF(DMP_LOG)WRITE (UNIT_LOG,*) ' Note : write_am_m is VERY inefficient '
          IF(DMP_LOG)WRITE (UNIT_LOG,*) '  '
          IF(DMP_LOG)WRITE (UNIT_LOG,*) ' A_m and B_m arrays below are in the '
@@ -90,12 +90,12 @@
          IF(DMP_LOG)WRITE (UNIT_LOG,*) ' '
          IF(DMP_LOG)WRITE (UNIT_LOG, '(A,A)') &
            '  IJK  I  J  K   b         s         w         p         e       ', &
-           '  n         t        Source' 
+           '  n         t        Source'
       end if
 
 
 
-      call gather(b_m(:,M),array2,root) 
+      call gather(b_m(:,M),array2,root)
 
 
       do L = -3,3
@@ -114,9 +114,9 @@
       if (myPE == PE_IO) am(ijk,l) = array1(ijk)
 
 
-      END DO 
-      END DO 
-      END DO 
+      END DO
+      END DO
+      END DO
 
       end do
 
@@ -128,23 +128,23 @@
 
       IJK = FUNIJK_GL(I,J,K)
 
-	if (myPE == PE_IO .AND. DMP_LOG)WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
+        if (myPE == PE_IO .AND. DMP_LOG)WRITE (UNIT_LOG, '(I5, 3(I3), 8(1X,G9.2))') FUNIJK_IO(I,J,K), I, J, K,&
                                     (AM(ijk,L),L=-3,3), array2(IJK)
 
       END DO
       END DO
       END DO
 
-      if (myPE == PE_IO) CALL END_LOG 
+      if (myPE == PE_IO) CALL END_LOG
 
 
       deallocate (array1)    !//
       deallocate (array2)    !//
 
-      RETURN  
-      END SUBROUTINE WRITE_AB_M 
-      
-!// Comments on the modifications for DMP version implementation      
+      RETURN
+      END SUBROUTINE WRITE_AB_M
+
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization: array1,array2,i,j,k
 !// 400 Added mpi_utility module and other global reduction (gather) calls

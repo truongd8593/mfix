@@ -36,22 +36,21 @@
       Use post3d
       Use physprop
       Use compar
-      
+      Use functions
+
       IMPLICIT NONE
 !
       REAL              TIME_START , TIME_REAL(N_SPX), TIME_FOUND
       REAL              TIME_LAST, TIME_NOW
       CHARACTER         FILE_NAME*60
       INTEGER           NX , NY , NZ, NSTEP_1
-      INTEGER           REC_POINTER(N_SPX) , L 
+      INTEGER           REC_POINTER(N_SPX) , L
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
-      
+
       REAL              SUMI, SUM(JMAX2)
 !
       INTEGER           NT, NI
       INTEGER           I, J, IJK
-!
-      INCLUDE 'function.inc'
 !
       WRITE (*,*) ' Enter start-time and end-time'
       READ  (*,*) TIME_START, TIME_LAST
@@ -102,22 +101,22 @@
 !  DO required computations
 !
       DO J = 2, JMAX1
-      
-	NI = 0
-	SUMI = ZERO
-	
+
+        NI = 0
+        SUMI = ZERO
+
         DO I = 2, IMAX1
-	  IJK = funijk(I, J, 1)
+          IJK = funijk(I, J, 1)
           IF(FLUID_AT(IJK)) THEN
-	    IF(EP_g(IJK) < 0.5)THEN
-	      NI = NI + 1
-	      SUMI = SUMI + X_g(IJK, 1)
-	    ENDIF
+            IF(EP_g(IJK) < 0.5)THEN
+              NI = NI + 1
+              SUMI = SUMI + X_g(IJK, 1)
+            ENDIF
           ENDIF
-	ENDDO
-	
-	IF(NI /= 0) &
-  	  SUM(J) = SUM(J) + SUMI/REAL(NI)
+        ENDDO
+
+        IF(NI /= 0) &
+          SUM(J) = SUM(J) + SUMI/REAL(NI)
       ENDDO
 !
       GOTO 100
@@ -140,11 +139,11 @@
       RETURN
       END
 !
-!  The following routines are not active.  To make a routine active replace the 
+!  The following routines are not active.  To make a routine active replace the
 !  above routine with the desired routine and change its name to USR_POST
 !
 
-!     subroutine for cluster size statistics      
+!     subroutine for cluster size statistics
       SUBROUTINE USR_POST1
 !
 !
@@ -157,7 +156,8 @@
       Use post3d
       Use physprop
       Use compar
-      
+      Use functions
+
       IMPLICIT NONE
       INTEGER MAX_COUNT
       PARAMETER (MAX_COUNT=1000)
@@ -179,8 +179,6 @@
 !
       INTEGER           FC_COUNT(MAX_COUNT)
       INTEGER           IJK
-!
-      INCLUDE 'function.inc'
 !
       WRITE (*,*) ' Enter start-time and end-time'
       READ  (*,*) TIME_START, TIME_LAST

@@ -23,8 +23,8 @@
       LOGICAL FUNCTION ANY_MORE_DATA(READ_SPX,AT_EOF)
 !
 !
-	Use param
-	Use param1
+        Use param
+        Use param1
       IMPLICIT NONE
 !
 !     passed arguments

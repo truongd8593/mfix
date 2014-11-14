@@ -28,6 +28,9 @@
       USE physprop
       USE sendrecv
       USE des_bc
+
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -48,6 +51,13 @@
 ! Invoke at own risk
       IF (.FALSE.) CALL WRITE_DES_THETA
       IF (.FALSE.) CALL WRITE_DES_BEDHEIGHT
+
+! Notify that output was written.
+      WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT('DES particle data written at time = ',A)
+
 
       RETURN
       END SUBROUTINE WRITE_DES_DATA
@@ -88,7 +98,6 @@
       use des_thermo, only: DES_T_s_NEW
       use discretelement, only: DES_RADIUS
       use discretelement, only: USE_COHESION, PostCohesive
-      use discretelement, only: DES_CALC_CLUSTER, PostCluster
       use des_rxns, only: DES_X_s
       use run, only: ANY_SPECIES_EQ
       use param, only: DIMENSION_N_S
@@ -151,11 +160,7 @@
       IF(USE_COHESION) &
          CALL VTP_WRITE_DATA('CohesiveForce', PostCohesive)
 
-      IF(DES_CALC_CLUSTER) &
-         CALL VTP_WRITE_DATA('ClusterSize', PostCluster)
-
       CALL VTP_WRITE_ELEMENT('</PointData>')
-
 
 ! Open/Close the unused VTP tags.
 !----------------------------------------------------------------------/
@@ -210,10 +215,11 @@
       USE physprop
       USE sendrecv
       USE des_bc
-      use compar
-      use cdist
-      use desmpi
-      use mpi_utility
+      USE compar
+      USE cdist
+      USE desmpi
+      USE mpi_utility
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -232,18 +238,18 @@
 
 ! output file for basic DES variables including: position, velocity,
 ! radius, density, mark (flag)
-      CHARACTER*50     :: FNAME_DATA
+      CHARACTER(LEN=50)     :: FNAME_DATA
 
 ! output file for extra DES variables including:
 ! solids time (S_TIME), maximum neighbor count, maximum overlap
 ! granular energy and granular temperature
-      CHARACTER*50     :: FNAME_EXTRA
+      CHARACTER(LEN=50)     :: FNAME_EXTRA
 
 ! output file for axial solids volume fraction and granular temp
-      CHARACTER*50     :: FNAME_EPS
+      CHARACTER(LEN=50)     :: FNAME_EPS
 
 ! tmp character value
-      CHARACTER*150    :: TMP_CHAR
+      CHARACTER(LEN=150)    :: TMP_CHAR
 
 ! dummy indices
       INTEGER L, I, J, K, M, IJK
@@ -261,15 +267,6 @@
       real,dimension(:,:), allocatable :: ltemp_array
 
       INTEGER :: wDIMN
-
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-!-----------------------------------------------
-
-      INCLUDE '../function.inc'
-      INCLUDE '../ep_s1.inc'
-      INCLUDE '../ep_s2.inc'
 
 ! Set output dimnensions
       wDIMN = merge(2,3,NO_K)
@@ -433,7 +430,7 @@
 ! logical used for testing is the data files already exists
       LOGICAL :: F_EXISTS
 ! output file for the bed height data
-      CHARACTER*50     :: FNAME_BH
+      CHARACTER(LEN=50)     :: FNAME_BH
 ! file unit for the bed height data
       INTEGER, PARAMETER :: BH_UNIT = 2010
 ! dummy index values
@@ -542,6 +539,7 @@
       USE physprop
       USE sendrecv
       USE des_bc
+      USE functions
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -559,11 +557,8 @@
 ! file unit for the granular temperature data
       INTEGER, PARAMETER :: GT_UNIT = 2020
 ! output file for the granular temperature data
-      CHARACTER*50  :: FNAME_GT
+      CHARACTER(LEN=50)  :: FNAME_GT
 !-----------------------------------------------
-
-      INCLUDE '../function.inc'
-
 
       FNAME_GT = TRIM(RUN_NAME)//'_DES_THETA.dat'
       IF (FIRST_PASS) THEN
@@ -597,10 +592,10 @@
 
       WRITE(GT_UNIT,*) ''
       WRITE(GT_UNIT,'(A6,ES24.16)') 'Time=', S_TIME
-      WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8,$)') 'IJK', &
+      WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8)',ADVANCE="NO") 'IJK', &
          'I', 'J', 'K', 'NP'
       DO M = 1,DES_MMAX
-         WRITE(GT_UNIT,'(7X,A6,I1,$)') 'THETA_',M
+         WRITE(GT_UNIT,'(7X,A6,I1)',ADVANCE="NO") 'THETA_',M
       ENDDO
       WRITE(GT_UNIT,*) ''
       DO IJK = IJKSTART3, IJKEND3

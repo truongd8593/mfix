@@ -32,23 +32,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE SET_INDEX1A3(I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-         IJKW, IJKE, IJKS, IJKN, IJKB, IJKT) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+         IJKW, IJKE, IJKS, IJKN, IJKB, IJKT)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE physprop
       USE geometry
       USE compar
       USE fldvar
       USE indices
       USE boundfunijk3
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -57,18 +58,16 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
       INTEGER I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IJKW, IJKE, &
-         IJKS, IJKN, IJKB, IJKT 
+         IJKS, IJKN, IJKB, IJKT
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: COMPARE 
+      LOGICAL :: COMPARE
 !-----------------------------------------------
-      INCLUDE 'function.inc'
-!
-!
+
       IMJK = UNDEFINED_I
       IPJK = UNDEFINED_I
       IJMK = UNDEFINED_I
@@ -78,31 +77,31 @@
 
 
       IF(IM1_3(I).NE.UNDEFINED_I) THEN
-        IMJK = BOUND_FUNIJK3(IM1_3(I),J,K) 
+        IMJK = BOUND_FUNIJK3(IM1_3(I),J,K)
       ENDIF
 
       IF(IP1_3(I).NE.UNDEFINED_I) THEN
-        IPJK = BOUND_FUNIJK3(IP1_3(I),J,K) 
+        IPJK = BOUND_FUNIJK3(IP1_3(I),J,K)
       ENDIF
 
       IF(JM1_3(J).NE.UNDEFINED_I) THEN
-        IJMK = BOUND_FUNIJK3(I,JM1_3(J),K) 
+        IJMK = BOUND_FUNIJK3(I,JM1_3(J),K)
       ENDIF
 
       IF(JP1_3(J).NE.UNDEFINED_I) THEN
-        IJPK = BOUND_FUNIJK3(I,JP1_3(J),K) 
+        IJPK = BOUND_FUNIJK3(I,JP1_3(J),K)
       ENDIF
 
       IF(KM1_3(K).NE.UNDEFINED_I) THEN
-        IJKM = BOUND_FUNIJK3(I,J,KM1_3(K)) 
+        IJKM = BOUND_FUNIJK3(I,J,KM1_3(K))
       ENDIF
 
       IF(KP1_3(K).NE.UNDEFINED_I) THEN
-        IJKP = BOUND_FUNIJK3(I,J,KP1_3(K)) 
+        IJKP = BOUND_FUNIJK3(I,J,KP1_3(K))
       ENDIF
 !
-      RETURN  
-      END SUBROUTINE SET_INDEX1A3 
+      RETURN
+      END SUBROUTINE SET_INDEX1A3
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// Modified calls to BOUND_FUNIJK to have a self consistent formulation

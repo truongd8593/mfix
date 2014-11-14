@@ -29,7 +29,8 @@
       Use physprop
       Use geometry
       Use compar
-      
+      Use functions
+
       IMPLICIT NONE
 !
 !              Passed value of IJK index
@@ -40,8 +41,6 @@
 !     Function subroutines
 !
       DOUBLE PRECISION CALC_MW, EOSG
-!
-      INCLUDE 'function.inc'
 !
         IF(RO_g0 .EQ. UNDEFINED .AND. .NOT.WALL_AT(L)) THEN
           IF(MW_AVG .EQ. UNDEFINED) THEN

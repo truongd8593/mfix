@@ -8,6 +8,12 @@
       INTEGER, PARAMETER          :: DIM_STL = 10000000   !10 Million
 !     Number of facets
       INTEGER                     :: N_FACETS
+      INTEGER, PARAMETER :: WEST_FACEID = 9000000
+      INTEGER, PARAMETER :: EAST_FACEID = 9000001
+      INTEGER, PARAMETER :: SOUTH_FACEID = 9000002
+      INTEGER, PARAMETER :: NORTH_FACEID = 9000003
+      INTEGER, PARAMETER :: BOTTOM_FACEID = 9000004
+      INTEGER, PARAMETER :: TOP_FACEID = 9000005
 
 !     Number of facets for des. This could be a diiferent number from
 ! N_FACETS if the outer boundary is triangulated here

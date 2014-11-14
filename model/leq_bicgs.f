@@ -40,7 +40,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -59,12 +59,12 @@
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
 ! Note: this setting only seems to matter when leq_pc='line'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
 !     options = 'line' (default), 'diag', 'none'
-      CHARACTER*4, INTENT(IN) ::  PC
+      CHARACTER(LEN=4), INTENT(IN) ::  PC
 ! maximum number of iterations (generally leq_it)
       INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
@@ -132,12 +132,14 @@
       USE indices
       USE leqsol
       USE cutcell
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
 ! variable
@@ -154,7 +156,7 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
@@ -206,16 +208,13 @@
          FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
          use compar
          USE param
+         USE functions
          DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
                                        R1, R2, R3, R4
          DOUBLE PRECISION, DIMENSION(2) :: DOT_PRODUCT_PAR2
          END FUNCTION DOT_PRODUCT_PAR2
       END INTERFACE
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       allocate(R(DIMENSION_3))
@@ -720,6 +719,7 @@
       USE funits
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -727,7 +727,7 @@
 !  Line position
       INTEGER, INTENT(IN) :: I
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -741,17 +741,12 @@
       INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, K, IM1JK, IP1JK
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
 
       NEND = JEND
       NSTART = JSTART
       K = 1
 
       DO J=NSTART, NEND
-!         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
@@ -809,6 +804,7 @@
       USE indices
       USE sendrecv
       USE mpi_utility
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -816,7 +812,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: I, K
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -829,10 +825,6 @@
       DOUBLE PRECISION, DIMENSION(JSTART:JEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO
       INTEGER :: IJK, J, IM1JK, IP1JK, IJKM1, IJKP1
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = JEND
@@ -903,6 +895,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -910,7 +903,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: J, K
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -922,10 +915,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (ISTART:IEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO, IJK, I
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = IEND
@@ -990,6 +979,7 @@
       USE funits
       USE compar
       USE indices
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -997,7 +987,7 @@
 ! Line position
       INTEGER, INTENT(IN) :: I, J
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -1009,10 +999,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION (KSTART:KEND) :: CC, DD, EE, BB
       INTEGER :: NEND, NSTART, INFO, IJK, K
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       NEND = KEND
@@ -1080,12 +1066,13 @@
       USE sendrecv
       USE mpi_utility
       USE cutcell
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Variable
 !      DOUBLE PRECISION, INTENT(IN) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: Var(DIMENSION_3)
@@ -1101,10 +1088,6 @@
 ! Variable
       INTEGER :: I, J, K, IJK
       integer :: im1jk, ip1jk, ijm1k, ijp1k, ijkm1, ijkp1
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 
       IF(RE_INDEXING) THEN
@@ -1223,12 +1206,13 @@
       USE compar
       USE indices
       USE sendrecv
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1240,7 +1224,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: Var(DIMENSION_3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -1256,15 +1240,11 @@
       INTEGER :: ISIZE, JSIZE, KSIZE
       INTEGER :: ICASE
 
-!     CHARACTER*4, PARAMETER :: CMETHOD = 'II'
+!     CHARACTER(LEN=4), PARAMETER :: CMETHOD = 'II'
       CHARACTER :: CH
       LOGICAL :: DO_ISWEEP, DO_JSWEEP, DO_KSWEEP
       LOGICAL :: DO_SENDRECV, DO_REDBLACK, DO_ALL
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
 !-----------------------------------------------
 !!$      double precision omp_start, omp_end
 !!$      double precision omp_get_wtime
@@ -1560,7 +1540,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1571,7 +1551,7 @@
 !      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1623,12 +1603,13 @@
       use parallel
 !      USE cutcell, only: RE_INDEXING,INTERIOR_CELL_AT
       USE cutcell
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
 ! Variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! Vector b_m
 !      DOUBLE PRECISION, INTENT(IN) :: B_m(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(IN) :: B_m(DIMENSION_3)
@@ -1639,15 +1620,11 @@
 !      DOUBLE PRECISION, INTENT(OUT) :: Var(ijkstart3:ijkend3)
       DOUBLE PRECISION, INTENT(OUT) :: Var(DIMENSION_3)
 ! sweep direction
-      CHARACTER*4, INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=4), INTENT(IN) :: CMETHOD
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       integer :: i,j,k, ijk
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
 !-----------------------------------------------
 
       if (use_doloop) then   ! mfix.dat keyword default=false
@@ -1698,7 +1675,8 @@
       use geometry
       use compar
       use indices
-      Use cutcell
+      use cutcell
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -1716,16 +1694,13 @@
       double precision :: prod
       integer :: i, j, k, ijk
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
-!-----------------------------------------------
 
       if(do_global_sum) then
          prod = 0.0d0
 
          IF(RE_INDEXING) THEN
-!         IF(.FALSE.) THEN                  ! Somehow, looping in his order leads to smaller time step than k,i,j nested loop below ....
+!         IF(.FALSE.) THEN    
+            ! Somehow, looping in this order leads to smaller time step than k,i,j nested loop below ....
             DO IJK = IJKSTART3,IJKEND3
                IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk)
             ENDDO
@@ -1741,8 +1716,7 @@
             do k = kstart1, kend1
                do i = istart1, iend1
                   do j = jstart1, jend1
-                     ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-   !                  ijk = funijk (i,j,k)
+                     ijk = funijk_map_c (i,j,k)
                      prod = prod + r1(ijk)*r2(ijk)
                   enddo
                enddo
@@ -1805,6 +1779,7 @@
       use geometry
       use compar
       use indices
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -1821,10 +1796,6 @@
       double precision, Dimension(2) :: prod, dot_product_par2
       integer :: i, j, k, ijk
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include 'function.inc'
-!-----------------------------------------------
 
       if(do_global_sum) then
 
@@ -1837,8 +1808,7 @@
 
                   IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
-                  ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-!                  ijk = funijk (i,j,k)
+                  ijk = funijk_map_c (i,j,k)
                   prod(1) = prod(1) + r1(ijk)*r2(ijk)
                   prod(2) = prod(2) + r3(ijk)*r4(ijk)
                enddo

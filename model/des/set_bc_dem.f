@@ -34,7 +34,7 @@
       CALL INIT_ERR_MSG("SET_BC_DEM")
 
 ! The variable PARTICLES should already be set by this point if using
-! gener_part_config option      
+! gener_part_config option
       IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
          PARTICLES = 0
 
@@ -56,7 +56,7 @@
 
 ! If the system is started without any particles and an inlet is not
 ! specified, the run is likely aborted.
-! Inlet/outlet for MPPIC are based off the regular mfix declarations, 
+! Inlet/outlet for MPPIC are based off the regular mfix declarations,
 ! and so DEM_BCMI could still be zero.
       IF(PARTICLES == 0 .AND. DEM_BCMI == 0) THEN
          WRITE(ERR_MSG, 1202)

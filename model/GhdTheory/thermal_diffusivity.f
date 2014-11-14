@@ -1,5 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name: thermal_diffusivity(s,alpha,ni,mi,rho,v0,mu,sigma,chi,
 !                                       zeta0,theta,Ti,p,DT,nu)
 !
@@ -7,17 +7,17 @@
 !
 !  Purpose: find thermal diffusivity according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine thermal_diffusivity(s,alpha,ni,mi,rho,v0,mu,sigma, &
                                      chi,zeta0,theta,Ti,p,DT,nu)
-      
+
       Implicit NONE
 
-      integer s, indx(s) 
+      integer s, indx(s)
 
       double precision alpha(s,s),ni(s),mi(s),rho,v0,mu(s,s), &
                        sigma(s,s),chi(s,s),zeta0,theta(s), &
@@ -37,32 +37,32 @@
          sum2(i) = 0.d0     !calculate summation used in b vector - p 7 CMH notes
       enddo
 
-      do i=1,s               
+      do i=1,s
          do j=1,s
             if (i .ne. j) then
                sum1(i) = sum1(i) + ni(j)*sigma(i,j)**2*chi(i,j) &
                     *mu(j,i)*v0*(1.d0+alpha(i,j)) &
-                    *dsqrt((theta(i)+theta(j))/(theta(i)*theta(j))) 
+                    *dsqrt((theta(i)+theta(j))/(theta(i)*theta(j)))
             endif
             sum2(i) = sum2(i) + ni(j)*mu(i,j)*chi(i,j)* &
-                      sigma(i,j)**3*Ti(j)*(1.d0+alpha(i,j)) 
+                      sigma(i,j)**3*Ti(j)*(1.d0+alpha(i,j))
          enddo
       enddo
 
       do i=1,s
          do j=1,s
             if (i .eq. j) then
-               nu(i,i) = 4.d0*dsqrt(pi)/3.d0*sum1(i) 
-               
-	       Amat(i,j) = nu(i,j)-zeta0                    !A matrix for solution of DT (p 7 CMH notes)
+               nu(i,i) = 4.d0*dsqrt(pi)/3.d0*sum1(i)
+
+               Amat(i,j) = nu(i,j)-zeta0                    !A matrix for solution of DT (p 7 CMH notes)
             else
                nu(i,j) = -4.d0*dsqrt(pi)/3.d0*ni(i)*sigma(i,j)**2 &
                   *chi(i,j)*mu(i,j)*v0*(1.d0+alpha(i,j))   &
-                  *dsqrt((theta(i)+theta(j))/(theta(i)*theta(j))) 
-               
-	       Amat(i,j) = nu(i,j)                          !A matrix for solution of DT (p 7 CMH notes)
+                  *dsqrt((theta(i)+theta(j))/(theta(i)*theta(j)))
+
+               Amat(i,j) = nu(i,j)                          !A matrix for solution of DT (p 7 CMH notes)
             endif
-	 enddo
+         enddo
          bmat(i) = -p*ni(i)*mi(i)/rho**2*(1.d0-rho*Ti(i) &  !b matrix for solution of DT (p 7 CMH notes)
                       /(mi(i)*p))+2d0*pi/3d0*ni(i)/rho*sum2(i)
       enddo

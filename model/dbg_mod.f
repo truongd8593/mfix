@@ -240,14 +240,15 @@
 !      use indices
 !      use run
 !      use sendrecv
+      use functions
 
 
       IMPLICIT NONE
 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION, intent(in) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M) 
-! Vector b_m 
-      DOUBLE PRECISION, intent(in) :: B_m(DIMENSION_3, 0:DIMENSION_M) 
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, intent(in) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, intent(in) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 
       INTEGER, intent(in) :: M
 
@@ -255,9 +256,9 @@
 
       INTEGER, intent(in), optional :: PASS
 
-! Septadiagonal matrix A_m 
-      DOUBLE PRECISION :: lA_m(-3:3) 
-! Vector b_m 
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION :: lA_m(-3:3)
+! Vector b_m
       DOUBLE PRECISION :: lB_m
 ! Neighbor info for debugging.
       INTEGER :: NBGHS(-3:3)
@@ -271,9 +272,6 @@
 
       INTEGER :: IJK, I, J, K, OWNER
 
-
-      include 'function.inc'
-
 ! If the initialization routine was not called, flag the error and exit.
       IF(initNotCalled)THEN
          IF(DMP_LOG) THEN
@@ -284,7 +282,7 @@
          ENDIF
          CALL MFIX_EXIT(myPE)
       ENDIF
- 
+
       AmFName=''
       BmFName=''
       IF(present(VAR) .AND. present(PASS)) THEN
@@ -600,7 +598,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -740,7 +738,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -764,7 +762,7 @@
 
 
 !----------------------------------------------------------------------!
-!                            	                                         !
+!                                                                        !
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -824,7 +822,7 @@
 
       RETURN
       END SUBROUTINE arrayExtract_prnt
-   
+
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -966,6 +964,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -983,8 +982,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
 
       MSG='Entered arrayExtract_int'
       if(dbgMode) CALL DBG_WRITE(trim(MSG),FLUSH=.TRUE.)
@@ -1075,6 +1072,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -1093,9 +1091,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
-
 
       MSG='Entered arrayExtract_dbl'
       CALL DBG_WRITE(trim(MSG), flush=.TRUE.)
@@ -1184,6 +1179,7 @@
       use run
       use sendrecv
       USE mpi_utility
+      USE functions
 
       implicit none
 
@@ -1201,8 +1197,6 @@
       INTEGER :: I, J, K, IJK, dbgIJK
 ! Debugging message.
       CHARACTER(len=64) :: MSG
-
-      include 'function.inc'
 
       MSG='Entered arrayExtract_log'
       if(dbgMode) CALL DBG_WRITE(trim(MSG),FLUSH=.TRUE.)

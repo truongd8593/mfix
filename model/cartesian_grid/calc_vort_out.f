@@ -9,10 +9,10 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CALC_VORTICITY
-    
+
       USE param
       USE param1
       USE parallel
@@ -20,13 +20,14 @@
       USE run
       USE toleranc
       USE geometry
-      USE indices  
+      USE indices
       USE compar
       USE sendrecv
       USE fldvar
       USE quadric
       USE cutcell
-      
+      USE functions
+
       IMPLICIT NONE
       INTEGER :: I,J,K,IJK,IP,IM,JP,JM,KP,KM,IJKE,IJKN,IJKT,IJKW,IJKS,IJKB
       DOUBLE PRECISION :: DU_DX,DU_DY,DU_DZ,DV_DX,DV_DY,DV_DZ,DW_DX,DW_DY,DW_DZ
@@ -35,13 +36,11 @@
       DOUBLE PRECISION,DIMENSION(3,3) :: OMEGA,SS,AA
       DOUBLE PRECISION,DIMENSION(4) :: POLY
 
-      include "../function.inc"   
-
       DO IJK = IJKSTART3, IJKEND3
 
-         I = I_OF(IJK)  
-         J = J_OF(IJK) 
-         K = K_OF(IJK) 
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
 
          IM = I - 1
          IP = I + 1
@@ -58,10 +57,10 @@
          IJKT = FUNIJK(I,J,KP)
 
          IJKW = FUNIJK(IM,J,K)
-         IJKS = FUNIJK(I,JM,K) 
-         IJKB = FUNIJK(I,J,KM) 
+         IJKS = FUNIJK(I,JM,K)
+         IJKB = FUNIJK(I,J,KM)
 
-          
+
 
          IF (FLUID_AT(IJK).AND.INTERIOR_CELL_AT(IJK)) THEN
 
@@ -121,7 +120,7 @@
 !  du/dz
 !======================================================================
 
-            IF(DO_K) THEN    
+            IF(DO_K) THEN
                IF ((FLUID_AT(IJKT)).AND.(FLUID_AT(IJKB)))  THEN
 
                   DU_DZ = (U_g(IJKT) - U_g(IJKB)) / (Z_U(IJKT) - Z_U(IJKB))
@@ -177,7 +176,7 @@
 !  dv/dz
 !======================================================================
 
-            IF(DO_K) THEN    
+            IF(DO_K) THEN
                IF ((FLUID_AT(IJKT)).AND.(FLUID_AT(IJKB)))  THEN
 
                   DV_DZ = (V_g(IJKT) - V_g(IJKB)) / (Z_V(IJKT) - Z_V(IJKB))
@@ -197,7 +196,7 @@
 !  dw/dx
 !======================================================================
 
-            IF(DO_K) THEN     
+            IF(DO_K) THEN
                IF ((FLUID_AT(IJKE)).AND.(FLUID_AT(IJKW)))  THEN
 
                   DW_DX = (W_g(IJKE) - W_g(IJKW)) / (X_W(IJKE) - X_W(IJKW))
@@ -257,7 +256,7 @@
             OMEGA_Y = DU_DZ - DW_DX
             OMEGA_Z = DV_DX - DU_DY
 
-        
+
             VORTICITY(IJK) = DSQRT(OMEGA_X**2 + OMEGA_Y**2 + OMEGA_Z**2)
 
 !======================================================================
@@ -303,7 +302,7 @@
             POLY(1) = -  ONE
             POLY(2) =    AA(1,1) + AA(2,2) + AA(3,3)
             POLY(3) =    AA(2,1)*AA(1,2) + AA(3,1)*AA(1,3) + AA(3,2)*AA(2,3) &
-                       -( AA(1,1)*AA(2,2) + AA(1,1)*AA(3,3) + AA(2,2)*AA(3,3) ) 
+                       -( AA(1,1)*AA(2,2) + AA(1,1)*AA(3,3) + AA(2,2)*AA(3,3) )
             POLY(4) =    AA(1,1)*AA(2,2)*AA(3,3) + AA(1,2)*AA(2,3)*AA(3,1) + AA(2,1)*AA(3,2)*AA(1,3) &
                        -( AA(3,1)*AA(2,2)*AA(1,3) + AA(1,2)*AA(2,1)*AA(3,3) + AA(2,3)*AA(3,2)*AA(1,1) )
 
@@ -324,7 +323,7 @@
 
       RETURN
 
-      
+
       END SUBROUTINE CALC_VORTICITY
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -332,7 +331,7 @@
 !  Module name: BAIRSTOW                                               C
 !  Purpose: FIND THE ROOTS OF A POLYNOMIAL USING BAIRSTOW METHOD       C
 !           LIMITED TO POLYNOMIALS OF DEGREE 3                         C
-!           (USED TO FIND THE EIGENVALUES OF A 3x3 MATRIX)             C  
+!           (USED TO FIND THE EIGENVALUES OF A 3x3 MATRIX)             C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 17-Jul-08  C
 !  Reviewer:                                          Date:            C
@@ -340,7 +339,7 @@
 !  Revision Number #                                  Date: ##-###-##  C
 !  Author: #                                                           C
 !  Purpose: #                                                          C
-!                                                                      C 
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE BAIRSTOW(A,X1,X2,X3)
       USE param1
@@ -366,7 +365,7 @@
 !     POLYNOMIAL REDUCTION
 !     ALWAYS START WITH INITIAL GUESS R = - 0.9 AND S = -1.0
 !     AND ITERATE
-!=======================================================================      
+!=======================================================================
 
       R = -0.9D0
       S = -1.0D0
@@ -384,8 +383,8 @@
       C(1) = B(1)
       C(2) = B(2) + R * C(1)
       B(3) = A(3) + R * B(2) + S * B(1)
-      C(3) = B(3) + R * C(2) + S * C(1)      
-      B(4) = A(4) + R * B(3) + S * B(2) 
+      C(3) = B(3) + R * C(2) + S * C(1)
+      B(4) = A(4) + R * B(3) + S * B(2)
 
 !=======================================================================
 !     UPDATING VALUES OF R AND S
@@ -404,7 +403,7 @@
 !=======================================================================
 !     CHECKING CONVERGENCE
 !=======================================================================
-        
+
       TEST1 = (ABS( B(N) ) > EPS)
       TEST2 = (ABS( B(N+1)) > EPS)
       TEST3 = (ITER <= ITERMAX)
@@ -412,8 +411,8 @@
       IF(TEST1.AND.TEST2.AND.TEST3) GOTO 20
 
       IF (.NOT.TEST3) THEN
-!	  WRITE(*,*)'ERROR IN BAIRSTOW SUBROUTINE:'
-!	  WRITE(*,*)'DIVERGENCE... THE PROGRAM WILL BE TERMINATED NOW.'
+!         WRITE(*,*)'ERROR IN BAIRSTOW SUBROUTINE:'
+!         WRITE(*,*)'DIVERGENCE... THE PROGRAM WILL BE TERMINATED NOW.'
 !         CALL MFIX_EXIT(myPE)
          X1 = UNDEFINED
          X2 = UNDEFINED
@@ -439,7 +438,7 @@
 
          X1 = ( R + DSQRT(DELTA)) / ( 2.0D0 )
          X2 = ( R - DSQRT(DELTA)) / ( 2.0D0 )
- 
+
       ENDIF
 
 !=======================================================================

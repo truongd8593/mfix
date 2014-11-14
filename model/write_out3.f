@@ -26,7 +26,7 @@
       CHARACTER(len=4) :: UNIT_IO
 
 
-      WRITE(ERR_MSG, "(2/1x,70('*'))") 
+      WRITE(ERR_MSG, "(2/1x,70('*'))")
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       CALL GET_TUNIT(CPU, UNIT_CPU)
@@ -41,7 +41,7 @@
       WRITE(ERR_MSG, 1000) 'wall time', trim(iVal(WALL)), UNIT_WALL
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-      WRITE(ERR_MSG, "(1x,70('*'))") 
+      WRITE(ERR_MSG, "(1x,70('*'))")
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
  1000 FORMAT(' Total ',A,' used = ',A,1x,A)

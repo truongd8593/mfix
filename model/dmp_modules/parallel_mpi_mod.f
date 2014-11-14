@@ -1,39 +1,39 @@
-	module parallel_mpi
+        module parallel_mpi
 
-!	A module to carry out init, finalize and check for any parallel errors
+!       A module to carry out init, finalize and check for any parallel errors
 
-	use geometry
-	use compar
-	implicit none
+        use geometry
+        use compar
+        implicit none
 
-	contains
+        contains
 
-	subroutine parallel_init()
-	
-	integer :: ierr
+        subroutine parallel_init()
+
+        integer :: ierr
 
 
-	call MPI_Init(ierr)
-	call MPI_Check( 'parallel_init:MPI_Init ', ierr)
+        call MPI_Init(ierr)
+        call MPI_Check( 'parallel_init:MPI_Init ', ierr)
 
-	call MPI_COMM_SIZE( MPI_COMM_WORLD, numPEs, ierr )
-	call MPI_Check( 'parallel_init:MPI_Comm_size ', ierr )
+        call MPI_COMM_SIZE( MPI_COMM_WORLD, numPEs, ierr )
+        call MPI_Check( 'parallel_init:MPI_Comm_size ', ierr )
 
-	call MPI_COMM_RANK( MPI_COMM_WORLD, myPE, ierr )
-	call MPI_Check( 'parallel_init:MPI_Comm_size ', ierr )
+        call MPI_COMM_RANK( MPI_COMM_WORLD, myPE, ierr )
+        call MPI_Check( 'parallel_init:MPI_Comm_size ', ierr )
 
-	return
-	end subroutine parallel_init
+        return
+        end subroutine parallel_init
 
-	subroutine parallel_fin()
+        subroutine parallel_fin()
 
-	integer :: ierr
+        integer :: ierr
 
-	call MPI_Finalize(ierr)
+        call MPI_Finalize(ierr)
         call MPI_Check( 'parallel_init:MPI_Finalize ', ierr)
 
-	return
-	end subroutine parallel_fin
+        return
+        end subroutine parallel_fin
 
         subroutine MPI_Check( msg, ierr )
         character(len=*),intent(in) :: msg
@@ -53,5 +53,5 @@
         end subroutine MPI_Check
 
 
-	end module parallel_mpi
-	
+        end module parallel_mpi
+

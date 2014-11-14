@@ -20,21 +20,23 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE OUT_ARRAY_C(ARRAY, MESSAGE) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE OUT_ARRAY_C(ARRAY, MESSAGE)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE fldvar
       USE physprop
       USE indices
-      USE funits 
+      USE funits
       USE compar
+      USE functions
+      USE in_binary_512i
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -44,10 +46,10 @@
 !-----------------------------------------------
 !
 !                       array to print out
-      CHARACTER*4       ARRAY(*)
+      CHARACTER(LEN=4) :: ARRAY(*)
 !
 !                       message to print out
-      CHARACTER*(*)     MESSAGE
+      CHARACTER(LEN=*) :: MESSAGE
 !
 ! local variables
 !
@@ -57,30 +59,29 @@
 !                       K
       INTEGER           K
 
-      character*4,  allocatable :: array1c(:)  
+      character(LEN=4),  allocatable :: array1c(:)
 
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !//d      call lock_tmp_array
 
-      allocate (array1c(ijkmax2))  
+      allocate (array1c(ijkmax2))
       call convert_to_io_c(array,array1c,ijkmax2)
 !
-      DO K = 1, KMAX2 
-         IJK = FUNIJK_IO(1,1,K) 
+      DO K = 1, KMAX2
+         IJK = FUNIJK_IO(1,1,K)
 !
-         WRITE (UNIT_OUT, 1100) MESSAGE, K 
-         CALL OUT_ARRAY_KC (ARRAY1C(IJK), K) 
-      END DO 
- 1100 FORMAT(/,1X,A,' at K = ',I4,/) 
+         WRITE (UNIT_OUT, 1100) MESSAGE, K
+         CALL OUT_ARRAY_KC (ARRAY1C(IJK), K)
+      END DO
+ 1100 FORMAT(/,1X,A,' at K = ',I4,/)
 !
 !//d      call unlock_tmp_array
-      deallocate (array1c) 
+      deallocate (array1c)
 
-      RETURN  
-      END SUBROUTINE OUT_ARRAY_C 
+      RETURN
+      END SUBROUTINE OUT_ARRAY_C
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 020 New local variables for parallelization, array1c(ijkmax2)

@@ -73,7 +73,7 @@
 ! (1) Number of ODEs to be solve
 ! (2) Fluid cell index
       INTEGER, intent(in) :: lNEQ(NEQ_DIMN)
-! Independent variable (not used) 
+! Independent variable (not used)
       INTEGER, intent(in) :: lTime
 ! Array of dependent variable initial values.
       DOUBLE PRECISION, dimension(ODE_DIMN_all), intent(in)  :: Y
@@ -168,7 +168,7 @@
             M = Reaction(H)%Species(lN)%pMap
 ! Global species index.
             N = Reaction(H)%Species(lN)%sMap
-! Index for interphase mass transfer. For a gas/solid reaction, the 
+! Index for interphase mass transfer. For a gas/solid reaction, the
 ! index is stored with the gas phase. For solid/solid mass transfer
 ! the index is stored with the source phase.
             mXfr = Reaction(H)%Species(lN)%mXfr
@@ -270,7 +270,7 @@
                ENDDO
             ENDDO
 
-! Convert the heat of reaction to the appropriate units (if SI), and 
+! Convert the heat of reaction to the appropriate units (if SI), and
 ! store in the global array.
             IF(UNITS == 'SI') THEN
                lHORg = lHORg + 4.183925d3*rHORg

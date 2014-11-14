@@ -1,5 +1,5 @@
       MODULE post3d
-      
+
       Use param
       Use param1
 
@@ -20,9 +20,9 @@
       INTEGER       LOC_X,LOC_Y,LOC_Z
       INTEGER       PLOT_TYPE,PLOT_TYPE2
       INTEGER       SELECTION
-      INTEGER       COUNT 
-      CHARACTER*60  PLOT_MENU(N_PLOT_MENU)
-      CHARACTER*60  VAR_MENU(N_VAR_MENU)
+      INTEGER       COUNT
+      CHARACTER(LEN=60) ::  PLOT_MENU(N_PLOT_MENU)
+      CHARACTER(LEN=60) ::  VAR_MENU(N_VAR_MENU)
       REAL          VERSION_NUMBER
       REAL          XDIST_SC(DIM_I) , XDIST_VEC(DIM_I)
       REAL          YDIST_SC(DIM_J) , YDIST_VEC(DIM_J)

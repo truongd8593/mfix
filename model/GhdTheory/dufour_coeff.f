@@ -1,5 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!                                                                      
+!
 !  subroutine name:  dufour_coeff(s,mi,alpha,T,ni,rho,v0,
 !            mu,sigma,chi,beta,zeta0,theta,Ti,Dij,lambdai,gammaij,
 !            omega,I_ilj,dTl_dnj,dzeta0_dnj,dchi0il_dnj,Dq)
@@ -8,12 +8,12 @@
 !
 !  Purpose: find dufour coefficient according to GHD polydisperse KT
 !
-!  Literature/References:  
+!  Literature/References:
 !     C. Hrenya handwritten notes & Garzo, Hrenya, Dufty papers (PRE, 2007)
 !
 !  Modifications:
 !     Sof: removed divisions by ni.
-!                                                         
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       subroutine dufour_coeff(s,mi,alpha,T,ni,rho,v0, &
@@ -21,7 +21,7 @@
              omega,I_ilj,dTl_dnj,dzeta0_dnj,dchi0il_dnj,Dq)
       Implicit NONE
 
-      integer s, indx(s) 
+      integer s, indx(s)
 
       double precision mi(s),alpha(s,s),T,ni(s),rho,v0,mu(s,s), &
                       sigma(s,s),chi(s,s),beta(s,s),zeta0,theta(s), &
@@ -29,7 +29,7 @@
                       omega(s,s),I_ilj(s,s,s),Dtl_dnj(s,s), &
                       dzeta0_dnj(s),dchi0il_dnj(s,s,s),Dq(s,s)
 
-      integer i,j,k,l,p,kk
+      integer i,j,l,p,kk
       double precision kronecker(s,s),integ1(s,s,s),integ2(s,s,s), &
                       integ(s,s,s),sum1(s,s),sum2(s,s), &
                       dq_bar(s,s),dqlj(s,s), &
@@ -71,7 +71,7 @@
                  /mi(l)**2+(5.d0*mu(i,l)**2+(1.d0-9.d0*alpha(i,l)) &
                  *mu(i,l)*mu(l,i)+(2.d0+3.d0*alpha(i,l)+6.d0 &
                  *alpha(i,l)**2)*mu(l,i)**2)*Ti(i)*Ti(l)/mi(i)/mi(l)  &
-                 -5.d0*(Ti(i)/mi(i)+Ti(l)/mi(l))*Ti(i)/mi(i)) 
+                 -5.d0*(Ti(i)/mi(i)+Ti(l)/mi(l))*Ti(i)/mi(i))
                !integral 2 - p 18.2 of CMH notes
                integ2(i,l,j) = 0.5d0*ni(j)/Ti(l)*dTl_dnj(l,j)  &
                   *2.d0*pi*ni(i)*ni(l)*mu(i,l)*chi(i,l)*sigma(i,l)**3 &
@@ -80,9 +80,9 @@
                   +(1.d0-9.d0*alpha(i,l))*mu(i,l)*mu(l,i)  &
                   +(2.d0+3.d0*alpha(i,l)+6.d0*alpha(i,l)**2) &
                   *mu(l,i)**2)  &
-                  +6.d0*Ti(l)/mi(l)*mu(l,i)**2*(1.d0+alpha(i,l))**2) 
+                  +6.d0*Ti(l)/mi(l)*mu(l,i)**2*(1.d0+alpha(i,l))**2)
                !summation
-               integ(i,l,j) = integ1(i,l,j) + integ2(i,l,j) 
+               integ(i,l,j) = integ1(i,l,j) + integ2(i,l,j)
             enddo
          enddo
       enddo
@@ -93,14 +93,14 @@
          do j=1,s
             do l=1,s  ! modification to ni(l) > 0 same as in thermal_mobility.f
                if(ni(l) > 0d0) sum1(i,j) = sum1(i,j) + mi(l)*(omega(i,l)-zeta0 &
-                          *kronecker(i,l))/ni(l)/Ti(l)*Dij(l,j) 
-               sum2(i,j) = sum2(i,j) + integ(i,l,j) 
+                          *kronecker(i,l))/ni(l)/Ti(l)*Dij(l,j)
+               sum2(i,j) = sum2(i,j) + integ(i,l,j)
             enddo
             dq_bar(i,j) = -2.5d0*ni(j)*Ti(i)**3/mi(i)/T**2   &
                         *(mi(j)/rho/Ti(i)*sum1(i,j)*ni(i)  &
                         -0.4d0*mi(i)*T/Ti(i)**3*dzeta0_dnj(j) &           ! ni(i)/ni(i) cancels
                         *lambdai(i) - dTl_dnj(i,j)/3.d0/Ti(i)**2*ni(i))  &
-                        +sum2(i,j)/3.d0/T**2 
+                        +sum2(i,j)/3.d0/T**2
          enddo
       enddo
 
@@ -112,10 +112,10 @@
          enddo
       enddo
 
-! this extra kk loop and addition of Amat0 and bmat0 is necessary 
+! this extra kk loop and addition of Amat0 and bmat0 is necessary
 ! since x & b in Ax=b are s by s matrices rather than vectors of length s,
 ! whereas LUBSKB is specific to x & b vectors of length s
-      do kk=1,s 
+      do kk=1,s
          do i=1,s
             do j=1,s
                 Amat0(i,j) = Amat(i,j)
@@ -137,7 +137,7 @@
       do l=1,s
          do j=1,s
             Dqkin(l,j) = dqlj(l,j)   &
-              +2.5d0/T**2*mi(j)*ni(j)*Ti(l)/rho*Dij(l,j) 
+              +2.5d0/T**2*mi(j)*ni(j)*Ti(l)/rho*Dij(l,j)
          enddo
       enddo
 
@@ -156,13 +156,13 @@
                  *(mu(p,i)-mu(i,p))*((theta(i)+theta(p))/theta(i) &
                  /theta(p))**1.5d0   &
                  *(kronecker(j,p)+1.5d0*theta(i)/(theta(i)+theta(p))  &
-                 *ni(j)/Ti(p)*dTl_dnj(p,j)) 
+                 *ni(j)/Ti(p)*dTl_dnj(p,j))
             enddo
          enddo
       enddo
 
 !find collisional contribution - p 18.3 CMH notes
-      Dqcol(1:s,1:s) = 0.d0 
+      Dqcol(1:s,1:s) = 0.d0
       do i=1,s
          do j=1,s
             do p=1,s
@@ -175,10 +175,10 @@
                  +16.d0*pi/5.d0*ni(i)*(2.d0*mu(p,i)/mi(p)*Dqkin(p,j)  &
                  -5.d0*(2.d0*mu(i,p)-mu(p,i))*Ti(i)/T**2*ni(j)*mi(j) &
                  /rho/mi(i)*Dij(p,j)) &
-                 -sigma(i,j)/T**2*CipjT(i,p,j)) 
+                 -sigma(i,j)/T**2*CipjT(i,p,j))
             enddo
             !final total Dufour coefficient - p 18 CMH notes
-            Dq(i,j) = Dqkin(i,j) + Dqcol(i,j) 
+            Dq(i,j) = Dqkin(i,j) + Dqcol(i,j)
          enddo
       enddo
 

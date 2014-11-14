@@ -16,16 +16,17 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ADJUST_ROP(ROP, IER) 
+      SUBROUTINE ADJUST_ROP(ROP, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param 
-      USE param1 
+      USE param
+      USE param1
       USE geometry
       USE indices
       USE compar
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -36,20 +37,16 @@
       DOUBLE PRECISION, INTENT(INOUT) :: ROP(DIMENSION_3)
 !-----------------------------------------------
 ! Local variables
-!-----------------------------------------------      
+!-----------------------------------------------
 ! Indices
       INTEGER :: IJK
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
 
-      DO IJK = ijkstart3, ijkend3 
-         IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK)) 
-      ENDDO 
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK))
+      ENDDO
 
-      RETURN  
-      END SUBROUTINE ADJUST_ROP 
+      RETURN
+      END SUBROUTINE ADJUST_ROP
 
 

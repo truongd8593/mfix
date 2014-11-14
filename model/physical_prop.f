@@ -37,7 +37,7 @@
       use physprop
 
       use coeff, only: DENSITY  ! Density
-      use coeff, only: SP_HEAT  ! Specific heat 
+      use coeff, only: SP_HEAT  ! Specific heat
       use coeff, only: PSIZE    ! Particle diameter
 
       implicit none
@@ -145,6 +145,7 @@
       use toleranc, only: OMW_MAX
 ! Run time flag for generating negative gas density log files
       use run, only: REPORT_NEG_DENSITY
+      use functions
 
       implicit none
 
@@ -163,8 +164,6 @@
 
 ! Flag to write log header
       LOGICAL wHeader
-
-      include 'function.inc'
 
 ! Initialize:
       wHeader = .TRUE.
@@ -227,6 +226,7 @@
       use run, only: REPORT_NEG_DENSITY
 ! Minimum solids volume fraction
       use toleranc, only: DIL_EP_s
+      use functions
 
       implicit none
 
@@ -244,8 +244,6 @@
 
 ! Equation of State - Solid
       DOUBLE PRECISION, EXTERNAL :: EOSS
-
-      include 'function.inc'
 
       M_LP: DO M=1, MMAX
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP
@@ -305,6 +303,7 @@
       use fldvar, only: T_g
 ! Units: CGS/SI
       use run, only: UNITS
+      use functions
 
       implicit none
 
@@ -324,8 +323,6 @@
 
 ! Function to evaluate Cp polynomial.
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-
-      include 'function.inc'
 
 !-----------------------------------------------------------------------
 
@@ -378,6 +375,7 @@
       use toleranc, only: OMW_MAX
       use fldvar, only: T_s
       use fldvar, only: X_s
+      use functions
 
       implicit none
 
@@ -393,8 +391,6 @@
 
 ! Function to evaluate Cp polynomial.
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-
-      include 'function.inc'
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_data_05 but this call remains to prevent an accident.
@@ -444,7 +440,8 @@
 
       use fldvar, only: ROP_s
       use fldvar, only: RO_s
-      use fldvar, only: D_p
+      use fldvar, only: D_p, EP_S
+      use functions
 
       implicit none
 
@@ -454,11 +451,6 @@
 
 ! Map from true index to map.
       INTEGER :: lM
-
-      include 'ep_s1.inc'
-      include 'function.inc'
-      include 'ep_s2.inc'
-
 
       IF(.NOT.CALL_DQMOM) return
 
@@ -506,7 +498,7 @@
       LOGICAL, intent(inout) :: tHeader
 
       LOGICAL :: lExists
-      CHARACTER*32 :: lFile
+      CHARACTER(LEN=32) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
 
@@ -531,16 +523,16 @@
       endif
 
       if(tHeader) then
-         write(lUnit,"(/2x,'Simulation time: ',g11.5)") TIME
+         write(lUnit,"(/2x,'Simulation time: ',g12.5)") TIME
          tHeader = .FALSE.
       endif
 
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
-      write(lUnit,"(6x,A,1X,g11.5,$)") 'RO_g:', RO_g(IJK)
-      write(lUnit,"(2x,A,1X,g11.5,$)") 'P_g:', P_g(IJK)
-      write(lUnit,"(2x,A,1X,g11.5)") 'T_g:', T_g(IJK)
+      write(lUnit,"(6x,A,1X,g12.5)",ADVANCE='NO') 'RO_g:', RO_g(IJK)
+      write(lUnit,"(2x,A,1X,g12.5)",ADVANCE='NO') 'P_g:', P_g(IJK)
+      write(lUnit,"(2x,A,1X,g12.5)") 'T_g:', T_g(IJK)
       if(CARTESIAN_GRID) then
-         write(lUnit,"(6x,A,1X,L1,$)") 'Cut Cell:', CUT_CELL_AT(IJK)
+         write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)
          write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
          write(lUnit,"(6x,'Coordinates (E/N/T): ',1X,3(2x, g17.8))") &
             xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
@@ -600,7 +592,7 @@
       INTEGER :: N
 ! Local file values.
       LOGICAL :: lExists
-      CHARACTER*32 :: lFile
+      CHARACTER(LEN=32) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
 
@@ -625,20 +617,20 @@
       endif
 
       if(tHeader) then
-         write(lUnit,"(/2x,'Simulation time: ',g11.5,'  Phase: ',I2)")&
+         write(lUnit,"(/2x,'Simulation time: ',g12.5,'  Phase: ',I2)")&
              TIME, M
          tHeader = .FALSE.
       endif
 
       N = INERT_SPECIES(M)
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
-      write(lUnit,"(6x,A,1X,g11.5)",advance='no') 'RO_s:', RO_s(IJK,M)
-      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'Base:', BASE_ROs(M)
-      write(lUnit,"(2x,A,1X,g11.5)",advance='no') 'X_s0:', X_s0(M,N)
-      write(lUnit,"(2x,A,1X,g11.5)") 'X_s:', X_s(IJK,M,N)
+      write(lUnit,"(6x,A,1X,g12.5)",advance='no') 'RO_s:', RO_s(IJK,M)
+      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'Base:', BASE_ROs(M)
+      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'X_s0:', X_s0(M,N)
+      write(lUnit,"(2x,A,1X,g12.5)") 'X_s:', X_s(IJK,M,N)
 
       if(CARTESIAN_GRID) then
-         write(lUnit,"(6x,A,1X,L1,$)") 'Cut Cell:', CUT_CELL_AT(IJK)
+         write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)
          write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
          write(lUnit,"(6x,'Coordinates (E/N/T): ',1X,3(2x, g17.8))") &
             xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))

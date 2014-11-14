@@ -1,19 +1,19 @@
       MODULE RXN_COM
- 
+
       Use param
       Use param1
       USE compar
       Use funits
- 
+
 ! The following data types are used to group chemical reaction data.
 !-----------------------------------------------------------------------
 
 ! Species belong to PHASE_ associated with a particular reaction.
       TYPE SPECIES_
-! A link between the reacting species' arbitrary index and the 
+! A link between the reacting species' arbitrary index and the
 ! associated phase index in MFiX.
          INTEGER pMap
-! A link between the reacting species' arbitrary index and the 
+! A link between the reacting species' arbitrary index and the
 ! associated species index in MFiX.
          INTEGER sMap
 ! Stoichiometric coefficient of the species from chemical equation.
@@ -31,11 +31,11 @@
 ! Grouping of reaction information.
       TYPE REACTION_BLOCK
 ! Name of reaction construct from data file.
-         CHARACTER*32 Name
+         CHARACTER(LEN=32) :: Name
 ! User defined chemical equation from data file.
-         CHARACTER*512 ChemEq
+         CHARACTER(LEN=512) :: ChemEq
 ! Reaction classification: Homogeneous, Heterogeneous, Catalytic.
-         CHARACTER*16 Classification
+         CHARACTER(LEN=16) :: Classification
 ! Indicates if the automated heat of reaction is to be calculated (T) or
 ! if the user has supplied a heat of reaction (F).
          LOGICAL Calc_DH
@@ -203,7 +203,7 @@
 ! Length of noncomment string
       INTEGER :: LINE_LEN
 ! Integer function which returns COMMENT_INDEX
-      INTEGER, EXTERNAL :: SEEK_COMMENT 
+      INTEGER, EXTERNAL :: SEEK_COMMENT
 ! Blank line function
       LOGICAL, EXTERNAL :: BLANK_LINE
 
@@ -263,10 +263,10 @@
             ENDIF
 
 ! Clean up the input.
-            LINE_LEN = SEEK_COMMENT(INPUT,LEN(INPUT)) - 1 
-            CALL REMOVE_COMMENT(INPUT, LINE_LEN + 1, LEN(INPUT)) 
-            CALL MAKE_UPPER_CASE(INPUT, LINE_LEN) 
-            CALL REPLACE_TAB(INPUT, LINE_LEN) 
+            LINE_LEN = SEEK_COMMENT(INPUT,LEN(INPUT)) - 1
+            CALL REMOVE_COMMENT(INPUT, LINE_LEN + 1, LEN(INPUT))
+            CALL MAKE_UPPER_CASE(INPUT, LINE_LEN)
+            CALL REPLACE_TAB(INPUT, LINE_LEN)
 
 ! Skip empty entires.
             IF(LINE_LEN <= 0) CYCLE READ_LP
@@ -339,7 +339,7 @@
       CLOSE(FUNIT)
       CALL FINL_ERR_MSG
       RETURN
- 
+
       END SUBROUTINE checkSpeciesInc
 
 
@@ -363,8 +363,8 @@
 
       INTEGER, OPTIONAL, INTENT(IN) :: N1, N2
 
-      CALL MAKE_UPPER_CASE (lS1, len(lS1)) 
-      CALL MAKE_UPPER_CASE (lS2, len(lS2)) 
+      CALL MAKE_UPPER_CASE (lS1, len(lS1))
+      CALL MAKE_UPPER_CASE (lS2, len(lS2))
 
       compareAliases = .FALSE.
       IF(trim(lS1) == trim(lS2)) compareAliases = .TRUE.
@@ -413,10 +413,9 @@
 ! Optional file unit.
       INTEGER, OPTIONAL :: fUNIT
 
-      CHARACTER*72, OUTPUT
-      CHARACTER*72, full, divided, empty
+      CHARACTER(LEN=72) :: OUTPUT, full, divided, empty
 
-      CHARACTER*32 lSP
+      CHARACTER(LEN=32) :: lSP
 
       INTEGER lN, M, N
       INTEGER lS, lE
@@ -439,12 +438,12 @@
       WRITE(full,2000)
 
       divided = ''
-      WRITE(divided,2005) 
+      WRITE(divided,2005)
 
 ! Lead bar
       CALL WRITE_RS0(full, UNIT_FLAG)
 ! Reaction Nmae
-      OUTPUT = ''      
+      OUTPUT = ''
       WRITE(OUTPUT, 2001)trim(RxN%Name)
       OUTPUT(72:72) = '|'
       CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
@@ -461,7 +460,7 @@
 
       IF(RxN%nSpecies > 0) THEN
 
-         OUTPUT = ''      
+         OUTPUT = ''
          WRITE(OUTPUT, 2007)trim(RxN%Classification)
          OUTPUT(72:72) = '|'
          CALL WRITE_RS0(OUTPUT, UNIT_FLAG)
@@ -819,7 +818,7 @@
          ENDIF
       ENDDO
 ! Verify that the mass of products equlas reactants: (Mass Balance)
-      IF (.NOT.COMPARE(rSUM,pSUM)) THEN 
+      IF (.NOT.COMPARE(rSUM,pSUM)) THEN
          IF(DMP_LOG) THEN
             WRITE(*,1001) trim(CALLER), trim(RxN%Name), rSUM, pSUM
             WRITE(UNIT_LOG,1001) trim(CALLER), trim(RxN%Name), rSUM,pSUM
@@ -900,7 +899,7 @@
 ! Initialize interphase exchange terms.
       IF(Allocated(RxN%rPhase)) RxN%rPhase(:) = ZERO
 
-! If there is only one phase referenced by the reaction, there there 
+! If there is only one phase referenced by the reaction, there there
 ! should be no interphase mass transfer.
       IF(RxN%nPhases == 1) THEN
 ! Interphase mass transfer is set to zero. Small inconsistancies with
@@ -913,30 +912,30 @@
             RxN%Species(lN)%mXfr = M
          ENDDO
          RxN%Classification = "Homogeneous"
-! This is a multiphase reaction. 
+! This is a multiphase reaction.
       ELSE
 ! Initialize.
-         toPhaseCount = 0 
+         toPhaseCount = 0
          fromPhaseCount = 0
          DO M = 0, lMMx
 ! Determine the number of phases with a net mass gain. Record the index
 ! of the last phase with a net mass gain.
-            IF (lnMT(M) > massBalanceTol) THEN 
-               toPhaseCount = toPhaseCount + 1 
+            IF (lnMT(M) > massBalanceTol) THEN
+               toPhaseCount = toPhaseCount + 1
                toPhase = M
 ! Determine the number of phases with a net mass loss. Record the index
 ! index of the last phase with a net mass loss.
-            ELSEIF(lnMT(M) < -massBalanceTol) THEN 
-               fromPhaseCount = fromPhaseCount + 1 
+            ELSEIF(lnMT(M) < -massBalanceTol) THEN
+               fromPhaseCount = fromPhaseCount + 1
                fromPhase = M
-            ENDIF 
+            ENDIF
          ENDDO
 
 ! Only one phase has a net mass gain.
-         IF(toPhaseCount == 1) THEN 
+         IF(toPhaseCount == 1) THEN
 ! Interphase mass transfer flag.
             RxN%Classification = "Heterogeneous"
-            DO M = 0, lMMx 
+            DO M = 0, lMMx
                IF(M /= toPhase) THEN
                   IF (toPhase < M) THEN
                      LM = 1 + toPhase + ((M-1)*M)/2
@@ -946,7 +945,7 @@
                      RxN%rPhase(LM) = lnMT(M)
                   ENDIF
 
-! Verify that if one phase's species equations are solved, that the 
+! Verify that if one phase's species equations are solved, that the
 ! other phase's species equations are solved.
 
                   IF(abs(RxN%rPhase(LM)) > SMALL_NUMBER) THEN
@@ -976,17 +975,17 @@
                      ENDIF
                   ENDIF
                ENDIF
-            ENDDO 
+            ENDDO
 
 ! Set flags for enthalpy transfer associated with mass transfer.
             IF(lEEq .AND. RxN%Calc_DH) THEN
                DO lN = 1, RxN%nSpecies
                   M = RxN%Species(lN)%pMap
-! The gas phase is referenced by the reaction. 
+! The gas phase is referenced by the reaction.
                   IF(M == 0) THEN
 ! The gas phase is the destination phase.
                      IF(toPhase == 0) THEN
-! Counter for the number of solids phases transfering mass to the 
+! Counter for the number of solids phases transfering mass to the
 ! gas phase.
                         mCount = 0
 ! Check to see if phase M transfer mass to another solids phase.
@@ -1064,7 +1063,7 @@
 ! interphase mass transfer.
          ELSEIF(fromPhaseCount == 1) THEN
             RxN%Classification = "Heterogeneous"
-            DO M = 0, lMMx 
+            DO M = 0, lMMx
                IF (M /= fromPhase) THEN
                   IF(M < fromPhase) THEN
                      LM = 1 + M + ((fromPhase-1)*fromPhase)/2
@@ -1074,7 +1073,7 @@
                      RxN%rPhase(LM) = -lnMT(M)
                   ENDIF
 
-! Verify that if one phase's species equations are solved, that the 
+! Verify that if one phase's species equations are solved, that the
 ! other phase's species equations are solved.
                   IF(abs(RxN%rPhase(LM)) > SMALL_NUMBER) THEN
                      IF((lSEq(fromPhase) .AND. .NOT.lSEq(M)) .OR.   &
@@ -1102,7 +1101,7 @@
                      ENDIF
                   ENDIF
                ENDIF
-            END DO 
+            END DO
 
 ! Set flags for enthalpy transfer associated with mass transfer.
             IF(lEEq .AND. RxN%Calc_DH) THEN
@@ -1113,7 +1112,7 @@
                   IF(M == 0) THEN
 ! Gas phase is the source phase.
                      IF(fromPhase == 0) THEN
-! Counter for the number of solids phases transfering mass to the 
+! Counter for the number of solids phases transfering mass to the
 ! gas phase.
                         mCount = 0
 ! Check to see if phase M transfer mass to another solids phase.

@@ -22,15 +22,13 @@
       INTEGER, INTENT(IN) :: BCV_I      ! BC loop counter
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
 
-
       CALL INIT_ERR_MSG("LAYOUT_MI_DEM")
-
 
 ! This subroutine determines the pattern that the particles will need to
 ! enter the system, if any. This routine only needs to be called if a
 ! run is new.  If a run is a RESTART_1, all of the setup information
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
-! This is done due to this routine's strong dependence on the 
+! This is done due to this routine's strong dependence on the
 ! RANDOM_NUMBER() subroutine.
       IF(RUN_TYPE == 'NEW') THEN
 
@@ -44,15 +42,10 @@
          CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ENDIF
 
-
-
       CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE LAYOUT_MI_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -89,6 +82,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -138,9 +132,6 @@
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
-
-      INCLUDE '../function.inc'
-
 !-----------------------------------------------
 
 ! Initialize the error manager.
@@ -174,15 +165,15 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'N')
       DEM_MI(BCV_I)%OFFSET = BC_Y_s(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = J + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -214,7 +205,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
@@ -325,14 +316,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g11.5)
+ 9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)
@@ -389,6 +380,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -438,9 +430,6 @@
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
-
-      INCLUDE '../function.inc'
-
 !-----------------------------------------------
 
 ! Initialize the error manager.
@@ -472,15 +461,15 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'E')
       DEM_MI(BCV_I)%OFFSET = BC_X_w(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = I + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -512,7 +501,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(XMIN, BC_X_w(BCV), DX, IMAX, I)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
@@ -623,14 +612,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g11.5)
+ 9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)
@@ -687,6 +676,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -736,9 +726,6 @@
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
-
-      INCLUDE '../function.inc'
-
 !-----------------------------------------------
 
 ! Initialize the error manager.
@@ -772,15 +759,15 @@
       SHIFT = merge(-ONE, ONE, BC_PLANE(BCV) == 'T')
       DEM_MI(BCV_I)%OFFSET = BC_Z_b(BCV) + MAX_DIA*SHIFT
       DEM_MI(BCV_I)%L = K + int(SHIFT)
-      if(dFlag) write(*,"(2x,'Offset: '3x,I4,3x,g11.5)") &
+      if(dFlag) write(*,"(2x,'Offset: ',3x,I4,3x,g12.5)") &
          DEM_MI(BCV_I)%L, DEM_MI(BCV_I)%OFFSET
 
 
 ! Dimension of grid cell for seeding particles; this may be larger than
-! than the particle diameter but not smaller: 
+! than the particle diameter but not smaller:
       DEM_MI(BCV_I)%WINDOW = MIN(PLEN/WMAX, QLEN/HMAX)
       WINDOW = DEM_MI(BCV_I)%WINDOW
-      if(dFlag) write(*,"(2x,'Windows size: ',g11.5)") WINDOW
+      if(dFlag) write(*,"(2x,'Windows size: ',g12.5)") WINDOW
 
 ! Setup the first direction.
       SHIFT = HALF*(PLEN - WMAX*WINDOW)
@@ -807,7 +794,7 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(ZERO, BC_Z_b(BCV), DZ, KMAX, K)
 
-! If the computationsl cell adjacent to the DEM_MI mesh cell is a 
+! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
@@ -918,14 +905,14 @@
 
  8010 FORMAT(2/,2x,'Storing DEM_MI data:',/4X,'OWNER',5X,'W',5X,'H',   &
          5X,'L',7X,'P',12X,'Q',12X,'R')
- 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g11.5))
+ 8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
 
       if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
       if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
       if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
       if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
- 9000 FORMAT(2x,A,g11.5)
+ 9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.
       IF( allocated(MESH_H)) deallocate(MESH_H)
@@ -976,6 +963,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
+      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -988,8 +976,6 @@
 ! Generic loop counter
       INTEGER :: LC1, OCCUPANTS
       INTEGER :: IJK, I, J, K
-
-      INCLUDE '../function.inc'
 
       OCCUPANTS = DEM_MI(BCV_I)%OCCUPANTS
       allocate(DEM_MI(BCV_I)%OWNER(OCCUPANTS))

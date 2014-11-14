@@ -61,10 +61,10 @@
 
       use des_thermo, only: DES_T_S_NEW
       use des_rxns, only: DES_X_s
- 
+
       use discretelement, only: S_TIME
       use discretelement, only: PMASS
-      use discretelement, only: PIJK 
+      use discretelement, only: PIJK
 
       use fldvar, only: T_g
 
@@ -111,7 +111,7 @@
       DOUBLE PRECISION :: lt, lTs, lTg
 
       DOUBLE PRECISION :: M_p ! Particle Mass
-      DOUBLE PRECISION :: X_B ! Solids species B 
+      DOUBLE PRECISION :: X_B ! Solids species B
       DOUBLE PRECISION :: X_D ! Solids species D
       DOUBLE PRECISION :: X_I ! Solids species I
 
@@ -205,7 +205,7 @@
       ELSE
          OPEN(UNIT=lUNIT,FILE=FNAME,&
             POSITION="APPEND",STATUS='OLD')
-      ENDIF 
+      ENDIF
 
       XD = X_D(T_COMP)
       ABS_ERR = ABS(XD - DES_X_s(2,Ds))

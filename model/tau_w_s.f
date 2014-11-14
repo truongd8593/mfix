@@ -14,12 +14,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_TAU_W_S(TAU_W_S, IER) 
+      SUBROUTINE CALC_TAU_W_S(TAU_W_S, IER)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-     USE param1, only: zero, half, one
+      USE param1, only: zero, half, one
+      USE fun_avg
 
 ! number of solids phases
       USE physprop, only: smax, mmax
@@ -27,17 +28,16 @@
 ! x,y,z-components of solids velocity
       USE fldvar, only: u_s, v_s, w_s
 ! solids phase particle bulk density and material density
-! (needed for ep_s2.inc)
-      USE fldvar, only: rop_s, ro_s
+      USE fldvar, only: rop_s, ro_s, ep_s
 
 ! viscous solids transport coefficients
       USE visc_s, only: mu_s, lambda_s
 ! trace of rate of strain tensor
       USE visc_s, only: trd_s
 
-! dilute threshold      
-      USE toleranc, only: dil_ep_s 
-      
+! dilute threshold
+      USE toleranc, only: dil_ep_s
+
 ! kinetic theories
       USE run, only: kt_type_enum, ghd_2007
 ! runtime flag for treating the system as if shearing
@@ -58,33 +58,35 @@
       USE quadric
       USE cutcell
 
+      USE functions
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! TAU_W_s 
+! TAU_W_s
       DOUBLE PRECISION, INTENT(OUT) :: TAU_W_s(DIMENSION_3, DIMENSION_M)
-! Error index 
+! Error index
       INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! Indices 
-      INTEGER :: IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,& 
-                 IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,& 
-                 IMJKP, K, IJKT, JM, KP, IJKM, IPJK 
-! Phase index 
-      INTEGER :: M, L 
-! Average volume fraction 
+! Indices
+      INTEGER :: IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,&
+                 IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,&
+                 IMJKP, K, IJKT, JM, KP, IJKM, IPJK
+! Phase index
+      INTEGER :: M, L
+! Average volume fraction
       DOUBLE PRECISION :: EPSA, EPStmp
-! Average velocity gradients 
-      DOUBLE PRECISION :: dWoXdz, duodz 
-! Source terms (Surface) 
-      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz 
-! Source terms (Volumetric) 
-      DOUBLE PRECISION :: Vxz 
-! error message 
-      CHARACTER*80     LINE 
+! Average velocity gradients
+      DOUBLE PRECISION :: dWoXdz, duodz
+! Source terms (Surface)
+      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
+! Source terms (Volumetric)
+      DOUBLE PRECISION :: Vxz
+! error message
+      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
       INTEGER :: IP,JP,KM
@@ -101,18 +103,10 @@
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
       INTEGER :: N_SUM
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-      INCLUDE 'function.inc'
-      INCLUDE 'fun_avg2.inc'
-      INCLUDE 'ep_s2.inc'
+      CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
 
-      DO M = 1, MMAX 
+      DO M = 1, MMAX
         IF(KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) CYCLE
 
 
@@ -130,39 +124,39 @@
 ! Skip walls where some values are undefined.
           IF(WALL_AT(IJK)) cycle
 
-          K = K_OF(IJK) 
+          K = K_OF(IJK)
           IJKT = TOP_OF(IJK)
 
           IF (KT_TYPE_ENUM == GHD_2007) THEN
              EPStmp = ZERO
              DO L = 1, SMAX
-                EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)  
+                EPStmp = EPStmp + AVG_Z(EP_S(IJK,L),EP_S(IJKT,L),K)
              ENDDO
              EPSA = EPStmp
-          ELSE                  
-             EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K) 
+          ELSE
+             EPSA = AVG_Z(EP_S(IJK,M),EP_S(IJKT,M),K)
           ENDIF
 
-          IF ( .NOT.SIP_AT_T(IJK) .AND. EPSA>DIL_EP_S) THEN 
-            J = J_OF(IJK) 
-            I = I_OF(IJK) 
-            IM = IM1(I) 
-            JM = JM1(J) 
-            IJKP = KP_OF(IJK) 
-            IMJK = IM_OF(IJK) 
-            IJKN = NORTH_OF(IJK) 
-            IJKNT = TOP_OF(IJKN) 
-            IJKS = SOUTH_OF(IJK) 
-            IJKST = TOP_OF(IJKS) 
-            IJMKP = JM_OF(IJKP) 
-            IJMK = JM_OF(IJK) 
-            IJKE = EAST_OF(IJK) 
-            IJKTE = EAST_OF(IJKT) 
-            IJKW = WEST_OF(IJK) 
-            IJKTW = WEST_OF(IJKT) 
-            IMJKP = KP_OF(IMJK) 
-            KP = KP1(K) 
-            IJKM = KM_OF(IJK) 
+          IF ( .NOT.SIP_AT_T(IJK) .AND. EPSA>DIL_EP_S) THEN
+            J = J_OF(IJK)
+            I = I_OF(IJK)
+            IM = IM1(I)
+            JM = JM1(J)
+            IJKP = KP_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IJKN = NORTH_OF(IJK)
+            IJKNT = TOP_OF(IJKN)
+            IJKS = SOUTH_OF(IJK)
+            IJKST = TOP_OF(IJKS)
+            IJMKP = JM_OF(IJKP)
+            IJMK = JM_OF(IJK)
+            IJKE = EAST_OF(IJK)
+            IJKTE = EAST_OF(IJKT)
+            IJKW = WEST_OF(IJK)
+            IJKTW = WEST_OF(IJKT)
+            IMJKP = KP_OF(IMJK)
+            KP = KP1(K)
+            IJKM = KM_OF(IJK)
 
             IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(5)==1)) THEN
 ! NON CARTESIAN GRID CASE
@@ -171,7 +165,7 @@
 
 ! bulk viscosity term
               SBV = (LAMBDA_S(IJKT,M)*TRD_S(IJKT,M)-&
-                     LAMBDA_S(IJK,M)*TRD_S(IJK,M))*AXY(IJK) 
+                     LAMBDA_S(IJK,M)*TRD_S(IJK,M))*AXY(IJK)
 
 ! shear stress terms
               SSX = AVG_Z_H(AVG_X_H(MU_S(IJK,M),MU_S(IJKE,M),I),&
@@ -179,7 +173,7 @@
                     (U_S(IJKP,M)-U_S(IJK,M))*OX_E(I)*ODZ_T(K)*AYZ_W(IJK) - &
                     AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJK,M),IM),&
                             AVG_X_H(MU_S(IJKTW,M),MU_S(IJKT,M),IM),K)*&
-                    (U_S(IMJKP,M)-U_S(IMJK,M))*ODZ_T(K)*DY(J)*(HALF*(DZ(K)+DZ(KP))) 
+                    (U_S(IMJKP,M)-U_S(IMJK,M))*ODZ_T(K)*DY(J)*(HALF*(DZ(K)+DZ(KP)))
                     !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
               SSY = AVG_Z_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),&
                             AVG_Y_H(MU_S(IJKT,M),MU_S(IJKNT,M),J),K)*&
@@ -190,10 +184,10 @@
               SSZ = MU_S(IJKT,M)*(W_S(IJKP,M)-W_S(IJK,M))*&
                     OX(I)*ODZ(KP)*AXY_W(IJK) - &
                     MU_S(IJK,M)*(W_S(IJK,M)-W_S(IJKM,M))*&
-                    OX(I)*ODZ(K)* AXY_W(IJKM) 
+                    OX(I)*ODZ(K)* AXY_W(IJKM)
 ! ----------------------------------------------------------------<<<
 
-            ELSE 
+            ELSE
 
 ! CARTESIAN GRID CASE
 ! ---------------------------------------------------------------->>>
@@ -201,7 +195,7 @@
 
 ! bulk viscosity term
               SBV =  (LAMBDA_S(IJKT,M)*TRD_S(IJKT,M)) * AXY_W(IJK) - &
-                     (LAMBDA_S(IJK,M) *TRD_S(IJK,M) ) * AXY_W(IJKM) 
+                     (LAMBDA_S(IJK,M) *TRD_S(IJK,M) ) * AXY_W(IJKM)
 
 ! shear stress terms
               IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
@@ -216,7 +210,7 @@
                       (V_S(IJKP,M)-V_S(IJK,M))*ONEoDZ_T_V(IJK)*AXZ_W(IJK) - &
                       AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJK,M),JM),&
                               AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
-                      (V_S(IJMKP,M)-V_S(IJMK,M))*ONEoDZ_T_V(IJMK)*AXZ_W(IJMK) 
+                      (V_S(IJMKP,M)-V_S(IJMK,M))*ONEoDZ_T_V(IJMK)*AXZ_W(IJMK)
                 SSZ = MU_S(IJKT,M)*(W_S(IJKP,M)-W_S(IJK,M))*&
                       ONEoDZ_T_W(IJK)*AXY_W(IJK) - &
                       MU_S(IJK,M)*(W_S(IJK,M)-W_S(IJKM,M))*&
@@ -230,7 +224,7 @@
                    BCT = 'NONE'
                 ENDIF
 
-                SELECT CASE (BCT) 
+                SELECT CASE (BCT)
                   CASE ('CG_NSW')
                      CUT_TAU_WS = .TRUE.
                      NOC_WS     = .TRUE.
@@ -261,9 +255,9 @@
                         NOC_WS     = .FALSE.
                      ENDIF
                   CASE ('NONE')
-                     TAU_W_S(IJK,M) = ZERO 
-                     CYCLE 
-                END SELECT 
+                     TAU_W_S(IJK,M) = ZERO
+                     CYCLE
+                END SELECT
 
                 IF(CUT_TAU_WS) THEN
                    MU_S_CUT = (VOL(IJK)*MU_S(IJK,M) + &
@@ -314,7 +308,7 @@
                    CALL GET_DEL_H(IJK,'W_MOMENTUM',X_U(IJK),Y_U(IJK),&
                                   Z_U(IJK),Del_H,Nx,Ny,Nz)
                    SSX_CUT = - MU_S_CUT * (U_S(IJK,M) - UW_s) / DEL_H * &
-                             (Nz*Nx) * Area_W_CUT(IJK)   
+                             (Nz*Nx) * Area_W_CUT(IJK)
                 ELSE
                    SSX_CUT =  ZERO
                 ENDIF
@@ -372,7 +366,7 @@
                 ELSE
                    SSY_CUT =  ZERO
                 ENDIF
-    
+
                 SSY = AVG_Z_H(AVG_Y_H(MU_S(IJK,M),MU_S(IJKN,M),J),&
                               AVG_Y_H(MU_S(IJKT,M),MU_S(IJKNT,M),J),K)*&
                       dvdz_at_N*AXZ_W(IJK) - &
@@ -388,7 +382,7 @@
                       MU_S(IJK,M)*(W_S(IJK,M)-W_S(IJKM,M))*&
                       OX(I)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM) &
                       - MU_S_CUT * (W_S(IJK,M) - WW_s) / DEL_H * &
-                      (Nz**2) * Area_W_CUT(IJK)        
+                      (Nz**2) * Area_W_CUT(IJK)
 
               ENDIF  ! end if/else cut_cell
 ! ----------------------------------------------------------------<<<
@@ -396,35 +390,33 @@
 
 
 ! Special terms for cylindrical coordinates
-            IF (CYLINDRICAL) THEN 
+            IF (CYLINDRICAL) THEN
 ! modify Szz to include integral of (1/x)*(d/dz)(2*u/x)
                SSZ = SSZ + &
                   MU_S(IJKT,M)*(U_S(IJKP,M)+U_S(IMJKP,M))*OX(I)*AXY_W(IJK) - &
-                  MU_S(IJK,M)*(U_S(IJK,M)+U_S(IMJK,M))*OX(I)*AXY_W(IJKM) 
+                  MU_S(IJK,M)*(U_S(IJK,M)+U_S(IMJK,M))*OX(I)*AXY_W(IJKM)
 
 ! (mu_s/x)* part of tau_xz/X
-               IF (OX_E(IM) /= UNDEFINED) THEN 
-                  DUODZ = (U_S(IMJKP,M)-U_S(IMJK,M))*OX_E(IM)*ODZ_T(K) 
-               ELSE 
-                  DUODZ = ZERO 
-               ENDIF 
+               IF (OX_E(IM) /= UNDEFINED) THEN
+                  DUODZ = (U_S(IMJKP,M)-U_S(IMJK,M))*OX_E(IM)*ODZ_T(K)
+               ELSE
+                  DUODZ = ZERO
+               ENDIF
                VXZ = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I)*HALF*&
-                  ((U_S(IJKP,M)-U_S(IJK,M))*OX_E(I)*ODZ_T(K)+DUODZ) 
-            ELSE 
-               VXZ = ZERO 
-            ENDIF 
+                  ((U_S(IJKP,M)-U_S(IJK,M))*OX_E(I)*ODZ_T(K)+DUODZ)
+            ELSE
+               VXZ = ZERO
+            ENDIF
 
 ! Add the terms
-              TAU_W_S(IJK,M) = SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK) 
-          ELSE 
-            TAU_W_S(IJK,M) = ZERO 
+              TAU_W_S(IJK,M) = SBV + SSX + SSY + SSZ + VXZ*VOL_W(IJK)
+          ELSE
+            TAU_W_S(IJK,M) = ZERO
           ENDIF   ! end if/else .not.sip_at_t .and. epsa>dil_ep_s
 
         ENDDO   ! end do ijk
-      ENDDO 
+      ENDDO
 
       call send_recv(tau_w_s,2)
-      RETURN  
-      END SUBROUTINE CALC_TAU_W_S 
-
-
+      RETURN
+      END SUBROUTINE CALC_TAU_W_S

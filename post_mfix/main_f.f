@@ -16,9 +16,9 @@
       ENTRY       SPX_DESELECT_TIME(i1)
       ENTRY       GET_PTX_G
 !
-      integer       :: inter , i1 , i2
-      character*(*) :: line
-      logical       :: sel
+      integer          :: inter , i1 , i2
+      character(len=*) :: line
+      logical          :: sel
 !
       RETURN
       END

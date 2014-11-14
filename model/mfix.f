@@ -13,13 +13,13 @@
 !! Energy Technology Laboratory, NETL, for describing the hydrodynamics,
 !! heat transfer, and chemical reactions in fluid-solid systems.
 !!
-!! It has been used for describing bubbling and circulating fluidized 
-!! beds and spouted beds. MFiX calculations give transient data on the 
+!! It has been used for describing bubbling and circulating fluidized
+!! beds and spouted beds. MFiX calculations give transient data on the
 !! three-dimensional distribution of pressure, velocity, temperature,
 !! and species mass fractions. MFiX code is based on a generally
-!! accepted set of multiphase flow equations. The code is used as a 
+!! accepted set of multiphase flow equations. The code is used as a
 !! "test-stand" for testing and developing multiphase flow constitutive
-!!  equations. 
+!!  equations.
 !!
 !! \section Notice
 !! Neither the United States Government nor any agency thereof, nor any
@@ -30,7 +30,7 @@
 !! privately owned rights.
 !!
 !! * MFIX is provided without any user support for applications in the
-!!   user's immediate organization. It should not be redistributed in 
+!!   user's immediate organization. It should not be redistributed in
 !!   whole or in part.
 !!
 !! * The use of MFIX is to be acknowledged in any published paper based
@@ -44,21 +44,21 @@
 !!   accounts of practical applications of this software.
 !!
 !! \section Disclaimer
-!! This report was prepared as an account of work sponsored by an agency 
-!! of the United States Government. Neither the United States Government 
-!! nor any agency thereof, nor any of their employees, makes any 
-!! warranty, express or implied, or assumes any legal liability or 
+!! This report was prepared as an account of work sponsored by an agency
+!! of the United States Government. Neither the United States Government
+!! nor any agency thereof, nor any of their employees, makes any
+!! warranty, express or implied, or assumes any legal liability or
 !! responsibility for the accuracy, completeness, or usefulness of any
-!! information, apparatus, product, or process disclosed, or represents 
+!! information, apparatus, product, or process disclosed, or represents
 !! that its use would not infringe privately owned rights. Reference
 !! herein to any specific commercial product, process, or service by
 !! trade name, trademark, manufacturer, or otherwise does not
-!! necessarily constitute or imply its endorsement, recommendation, or 
-!! favoring by the United States Government or any agency thereof. The 
-!! views and opinions of authors expressed herein do not necessarily 
-!! state or reflect those of the United States Government or any 
+!! necessarily constitute or imply its endorsement, recommendation, or
+!! favoring by the United States Government or any agency thereof. The
+!! views and opinions of authors expressed herein do not necessarily
+!! state or reflect those of the United States Government or any
 !! agency thereof.
-                           
+
       PROGRAM MFIX
 
 !-----------------------------------------------
@@ -82,6 +82,7 @@
       USE quadric
       USE dashboard
       USE qmom_kinetic_equation
+      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -104,21 +105,17 @@
 ! Error index
       INTEGER :: IER
 ! DISTIO variable for specifying the mfix version
-      CHARACTER :: version*512
+      CHARACTER(LEN=512) :: version
 ! environment variable
-      CHARACTER :: omp_num_threads*512
+      CHARACTER(LEN=512) :: omp_num_threads
       INTEGER :: length
       INTEGER :: status
-      CHARACTER :: arg*512
+      CHARACTER(LEN=512) :: arg
 
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER mp_numthreads, omp_get_num_threads
 !$      INTEGER omp_get_thread_num
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      INCLUDE 'function.inc'
       DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
 
@@ -258,12 +255,19 @@
          if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP
          IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP
          CALL WRITE_RES0
-         CALL WRITE_RES1
-         DO L = 1, N_SPX
-            CALL WRITE_SPX0 (L, 0)
-            CALL WRITE_SPX1 (L, 0)
-         END DO
-         call write_netcdf(0,0,time)
+
+! Writing the RES1 and SPX1 can only be done here when re-indexing is turned off
+! This will be done after the cell re-indexing is done later in this file.
+! This allows restarting independently of the re-indexing setting between
+! the previous and current run.
+         IF(.NOT.RE_INDEXING) THEN
+            CALL WRITE_RES1
+            DO L = 1, N_SPX
+               CALL WRITE_SPX0 (L, 0)
+               CALL WRITE_SPX1 (L, 0)
+            END DO
+            call write_netcdf(0,0,time)
+         ENDIF   
 
       CASE DEFAULT
          CALL START_LOG
@@ -370,6 +374,17 @@
 
          IF(myPE == PE_IO) WRITE(*,"(72('='))")
 
+! In case of a RESTART_2, write the RES1 and SPX1 files here
+! This was commented out earlier in this file.
+      IF(RUN_TYPE == 'RESTART_2') THEN
+         CALL WRITE_RES1
+         DO L = 1, N_SPX
+            CALL WRITE_SPX0 (L, 0)
+            CALL WRITE_SPX1 (L, 0)
+         END DO
+         call write_netcdf(0,0,time)
+      ENDIF   
+
       ENDIF
 
 !=======================================================================
@@ -379,9 +394,9 @@
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
 
-! Set the inflow/outflow BCs for DEM solids 
+! Set the inflow/outflow BCs for DEM solids
       IF(DEM_SOLIDS) CALL SET_BC_DEM
-! Set the inflow/outflow BC for PIC solids 
+! Set the inflow/outflow BC for PIC solids
       IF(PIC_SOLIDS) CALL SET_BC_PIC
 
 ! Set the inital properties of each particle.
@@ -521,6 +536,7 @@
       USE funits
       USE run
       USE time_cpu
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -537,23 +553,13 @@
 ! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-      integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
       integer :: indxG, indxG_gl, indxH, indxH_gl
 !
       logical :: amgdbg = .TRUE.
 
-      character fname*80
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-
-      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)* &
-                           (jmax3-jmin3+1))) - 1)/(jmax3-jmin3+1)) + imin3
-      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
-
+      character(LEN=80) :: fname
 
 !DISTIO
 !      fname = "layout_xxxx.txt"
@@ -825,6 +831,7 @@
       USE funits
       USE run
       USE time_cpu
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -841,24 +848,14 @@
 ! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-      integer :: i_of_g, j_of_g, k_of_g
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
       integer :: indxG, indxG_gl, indxH, indxH_gl
 !
       logical :: amgdbg = .TRUE.
 
-      character fname*80
+      character(LEN=80) :: fname
 !-----------------------------------------------
-
-      INCLUDE 'function.inc'
-
-
-      k_of_g(ijk) = int( (ijk-1)/( (imax3-imin3+1)*(jmax3-jmin3+1) ) ) + kmin3
-      i_of_g(ijk) = int( ( (ijk-  (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1))) &
-                     - 1)/(jmax3-jmin3+1)) + imin3
-      j_of_g(ijk) = ijk - (i_of_g(ijk)-imin3)*(jmax3-jmin3+1) - &
-                     (k_of_g(ijk)-kmin3)*((imax3-imin3+1)*(jmax3-jmin3+1)) - 1 + jmin3
 
 !DISTIO
 !      fname = "p_info_xxxx.txt"

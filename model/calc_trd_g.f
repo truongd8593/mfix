@@ -19,18 +19,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_TRD_G(TRD_G, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CALC_TRD_G(TRD_G, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !     Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
       USE fldvar
       USE indices
@@ -42,6 +42,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -78,27 +79,26 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
 !!!!$omp& schedule(dynamic,chunk_size)
-      DO IJK = ijkstart3, ijkend3 
-         IF (.NOT.WALL_AT(IJK)) THEN 
-            I = I_OF(IJK) 
-            J = J_OF(IJK) 
-            K = K_OF(IJK) 
-            IM = IM1(I) 
-            IMJK = IM_OF(IJK) 
-            IJMK = JM_OF(IJK) 
-            IJKM = KM_OF(IJK) 
+      DO IJK = ijkstart3, ijkend3
+         IF (.NOT.WALL_AT(IJK)) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IM = IM1(I)
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
             IF(.NOT.CUT_CELL_AT(IJK)) THEN
 
                TRD_G(IJK) = (X_E(I)*U_G(IJK)-X_E(IM)*U_G(IMJK))*OX(I)*ODX(I) + (&
-                 V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
+                 V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K))
 
             ELSE  ! CUT CELL
 
@@ -137,19 +137,19 @@
                      ENDIF
                   CASE ('CG_MI')
                      TRD_G(IJK) = ZERO
-                     RETURN 
+                     RETURN
                   CASE ('CG_PO')
                      TRD_G(IJK) = ZERO
-                     RETURN 
+                     RETURN
                   CASE ('NONE')
                      TRD_G(IJK) = ZERO
-                     RETURN 
-               END SELECT 
+                     RETURN
+               END SELECT
 
 
                IF(FLOW_AT(IJK)) THEN
                   TRD_G(IJK) = ZERO
-                  RETURN 
+                  RETURN
                ENDIF
 
 !              du/dx
@@ -171,7 +171,7 @@
 
                   IF(Sx /= ZERO) THEN
                      dudx =  (U_G(IJK) - U_G(IMJK))/Sx
-                     IF(NOC_TRDG) dudx = dudx - ((Ui-UW_g)/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))    
+                     IF(NOC_TRDG) dudx = dudx - ((Ui-UW_g)/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))
                   ELSE
                      dudx = ZERO
                   ENDIF
@@ -199,7 +199,7 @@
 
                   IF(Sy /= ZERO) THEN
                      dvdy =  (V_G(IJK) - V_G(IJMK))/Sy
-                     IF(NOC_TRDG) dvdy = dvdy - ((Vi-VW_g)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz)) 
+                     IF(NOC_TRDG) dvdy = dvdy - ((Vi-VW_g)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))
                   ELSE
                      dvdy =  ZERO
                   ENDIF
@@ -219,11 +219,11 @@
 
 !              dw/dz
 
-               IF(NO_K) THEN 
+               IF(NO_K) THEN
 
                   dwdz = ZERO
 
-               ELSE   
+               ELSE
 
                   W_NODE_AT_T = ((.NOT.BLOCKED_W_CELL_AT(IJK)) .AND.(.NOT.WALL_W_AT(IJK)))
                   W_NODE_AT_B = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
@@ -242,7 +242,7 @@
 
                      IF(Sz /= ZERO) THEN
                         dwdz =  (W_G(IJK) - W_G(IJKM))/Sz
-                        IF(NOC_TRDG) dwdz = dwdz - ((Wi-WW_g)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))  
+                        IF(NOC_TRDG) dwdz = dwdz - ((Wi-WW_g)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))
                      ELSE
                         dwdz = ZERO
                      ENDIF
@@ -269,17 +269,17 @@
 
 ! Original term:
 !            TRD_G(IJK) = (X_E(I)*U_G(IJK)-X_E(IM)*U_G(IMJK))*OX(I)*ODX(I) + (&
-!               V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) 
+!               V_G(IJK)-V_G(IJMK))*ODY(J) + (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K))
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-         ENDIF 
-      END DO 
+         ENDIF
+      END DO
 
-      RETURN  
-      END SUBROUTINE CALC_TRD_G 
+      RETURN
+      END SUBROUTINE CALC_TRD_G
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
@@ -303,18 +303,18 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_CALC_VEL_G_GRAD(IJK,DELV, IER) 
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+      SUBROUTINE CG_CALC_VEL_G_GRAD(IJK,DELV, IER)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !     Include param.inc file to specify parameter values
 !
 !-----------------------------------------------
-!   M o d u l e s 
+!   M o d u l e s
 !-----------------------------------------------
-      USE param 
-      USE param1 
-      USE parallel 
+      USE param
+      USE param1
+      USE parallel
       USE geometry
       USE fldvar
       USE indices
@@ -323,6 +323,7 @@
       USE bc
       USE cutcell
       USE quadric
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -355,7 +356,6 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------
-      INCLUDE 'function.inc'
 !
 !
 !!!!$omp  parallel do private( IJK, I,J,K, IM,IMJK,IJMK,IJKM ) &
@@ -365,13 +365,13 @@
 
       IF (.NOT.CUT_CELL_AT(IJK)) RETURN
 
-      I = I_OF(IJK) 
-      J = J_OF(IJK) 
-      K = K_OF(IJK) 
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
 
-      IMJK = IM_OF(IJK) 
-      IJMK = JM_OF(IJK) 
-      IJKM = KM_OF(IJK) 
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
 
       BCV = BC_ID(IJK)
 
@@ -408,18 +408,18 @@
             ENDIF
          CASE ('CG_MI')
             DELV = ZERO
-            RETURN 
+            RETURN
          CASE ('CG_PO')
             DELV = ZERO
-            RETURN 
+            RETURN
          CASE ('NONE')
             DELV = ZERO
-            RETURN 
-      END SELECT 
+            RETURN
+      END SELECT
 
       IF(FLOW_AT(IJK)) THEN
          DELV = ZERO
-         RETURN 
+         RETURN
       ENDIF
 
 !=======================================================================
@@ -507,7 +507,7 @@
             dvdz =  ZERO
             IF(NOC_TRDG) THEN
                dvdx = (Vi-VW_g) / DEL_H * Nx
-               dvdy = dvdy - ((Vi-VW_g)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz)) 
+               dvdy = dvdy - ((Vi-VW_g)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))
                dvdz = (Vi-VW_g) / DEL_H * Nz
             ENDIF
          ELSE
@@ -542,13 +542,13 @@
 !              dw/dx, dw/dy, dw/dz
 !=======================================================================
 
-      IF(NO_K) THEN 
+      IF(NO_K) THEN
 
          dwdx = ZERO
          dwdy = ZERO
          dwdz = ZERO
 
-      ELSE   
+      ELSE
 
          W_NODE_AT_T = ((.NOT.BLOCKED_W_CELL_AT(IJK)) .AND.(.NOT.WALL_W_AT(IJK)))
          W_NODE_AT_B = ((.NOT.BLOCKED_W_CELL_AT(IJKM)).AND.(.NOT.WALL_W_AT(IJKM)))
@@ -572,8 +572,8 @@
                IF(NOC_TRDG) THEN
                   dwdx = (Wi-WW_g) / DEL_H * Nx
                   dwdy = (Wi-WW_g) / DEL_H * Ny
-                  dwdz = dwdz - ((Wi-WW_g)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))    
-               ENDIF 
+                  dwdz = dwdz - ((Wi-WW_g)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))
+               ENDIF
             ELSE
                dwdx = ZERO
                dwdy = ZERO
@@ -603,11 +603,11 @@
       DELV(3,1) = dwdx
       DELV(3,2) = dwdy
       DELV(3,3) = dwdz
-      
-      RETURN  
+
+      RETURN
       END SUBROUTINE CG_CALC_VEL_G_GRAD
 
-!// Comments on the modifications for DMP version implementation      
+!// Comments on the modifications for DMP version implementation
 !// 001 Include header file and common declarations for parallelization
 !// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 

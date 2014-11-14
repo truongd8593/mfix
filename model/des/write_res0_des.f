@@ -19,19 +19,19 @@
       use mfix_pic, only: MPPIC
       use mfix_pic, only: DES_STAT_WT
 
+      use error_manager
       use write_res1_des
-
       use mpi_utility
 
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1
       INTEGER :: lNEXT_REC
       INTEGER :: lDIMN
 
-      DOUBLE PRECISION :: VERSION 
+      DOUBLE PRECISION :: VERSION
 
 
 ! Set the version of the DES RES file.
@@ -73,44 +73,20 @@
          CALL WRITE_RES_pARRAY(lNEXT_REC, DES_T_s_NEW)
 
       IF(ANY_SPECIES_EQ) THEN
-         DO LC1=1, DIMENSION_N_S 
+         DO LC1=1, DIMENSION_N_S
             CALL WRITE_RES_pARRAY(lNEXT_REC, DES_X_s(:,LC1))
          ENDDO
       ENDIF
 
-      CALL WRITE_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,1))
-      CALL WRITE_RES_pARRAY(lNEXT_REC, PN(1,:))
-      CALL WRITE_RES_pARRAY(lNEXT_REC, PN_WALL(1,:))
-
-      DO LC1=2, MAXNEIGHBORS
-         CALL WRITE_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,LC1), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PN(LC1,:), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PV(LC1,:))
-      ENDDO
-
-      DO LC1=1, 6
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PN_WALL(LC1,:), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PV_WALL(LC1,:))
-
-         DO LC2=1, lDIMN
-            CALL WRITE_RES_pARRAY(lNEXT_REC, PFT_WALL(:,LC1,LC2))
-         ENDDO
-      ENDDO
-
-
-!----------------------------------------------------------------------------------------------
       DO LC1=1,2
          CALL WRITE_RES_cARRAY(lNEXT_REC, COLLISIONS(LC1,:), pLOC2GLB=.TRUE.)
       ENDDO
 
       CALL WRITE_RES_cARRAY(lNEXT_REC, PV_COLL(:))
       DO LC1=1, lDIMN
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC2,:))
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC2,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC1,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC1,:))
       ENDDO
-!----------------------------------------------------------------------------------------------
-
-
 
       CALL WRITE_RES_DES(lNEXT_REC, DEM_BCMI)
       DO LC1=1, DEM_BCMI
@@ -127,6 +103,12 @@
       ENDDO
 
       CALL FINL_WRITE_RES_DES
+
+! Notify that output was written.
+      WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT('DES restart data written at time = ',A)
 
       RETURN
       END SUBROUTINE WRITE_RES0_DES

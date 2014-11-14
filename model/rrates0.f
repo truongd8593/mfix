@@ -25,7 +25,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RRATES0(IER) 
+      SUBROUTINE RRATES0(IER)
 
 ! Global domain parameters.
 !`````````````````````````````````````````````````````````````````````//
@@ -102,10 +102,9 @@
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Small value for species mass fractions
       use toleranc, only: ZERO_X_gs
-
+      use functions
 
       implicit none
-
 
 ! Dummy Arguments:
 !`````````````````````````````````````````````````````````````````````//
@@ -150,7 +149,7 @@
       DOUBLE PRECISION :: l_2SI
 
 ! Reaction limiters. If a species mass fraction is less than this
-! value, then the reaction is suppressed. 
+! value, then the reaction is suppressed.
       DOUBLE PRECISION :: speciesLimiter
 
 
@@ -160,13 +159,6 @@
       DOUBLE PRECISION, EXTERNAL :: CALC_H
 ! Comparing two double precision numbers.
       LOGICAL, EXTERNAL :: COMPARE
-
-
-! Included Files:
-!`````````````````````````````````````````````````````````````````````//
-! Functions for evaluating fluid cell properties.
-      include 'function.inc'
-
 
 ! Initialize global storage arrays to zero
 !---------------------------------------------------------------------//
@@ -190,7 +182,7 @@
 
 ! Loop over each fluid cell.
       DO IJK = ijkstart3, ijkend3
-      IF (FLUID_AT(IJK)) THEN 
+      IF (FLUID_AT(IJK)) THEN
 
       RATES(:) = ZERO
 
@@ -217,7 +209,7 @@
             M = Reaction(H)%Species(lN)%pMap
 ! Global species index.
             N = Reaction(H)%Species(lN)%sMap
-! Index for interphase mass transfer. For a gas/solid reaction, the 
+! Index for interphase mass transfer. For a gas/solid reaction, the
 ! index is stored with the gas phase. For solid/solid mass transfer
 ! the index is stored with the source phase.
             mXfr = Reaction(H)%Species(lN)%mXfr

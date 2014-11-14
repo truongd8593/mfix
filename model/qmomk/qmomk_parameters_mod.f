@@ -30,7 +30,7 @@ MODULE qmomk_parameters
   DOUBLE PRECISION, PARAMETER  :: wleft = 1.D-4
   DOUBLE PRECISION, PARAMETER  :: wright = 1.D-4
 
-  !	Granular temperature lower limit
+  !     Granular temperature lower limit
   DOUBLE PRECISION, PARAMETER  :: MINIMUM_THETA = 1.0D-6
   DOUBLE PRECISION, PARAMETER  :: MAXIMUM_SIGMA = 1.0D-6
 

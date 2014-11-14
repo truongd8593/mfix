@@ -12,11 +12,11 @@
 !     6   T
 !     7   X
 !     8   Th
-!     9   S	
+!     9   S
 
 ! Under relaxation factors
       DOUBLE PRECISION UR_FAC(9)
-      
+
       INTEGER           STEPS_LAST
 
 
@@ -32,4 +32,4 @@
 ! other solid phases for IA theory
       DOUBLE PRECISION UR_kth_sml
 
-      END MODULE ur_facs 
+      END MODULE ur_facs

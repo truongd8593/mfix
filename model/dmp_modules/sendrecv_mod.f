@@ -1,11 +1,11 @@
 !--------------------------------------------------------------------
 ! Purpose:
-! Contains following subroutines: 
+! Contains following subroutines:
 !    ijk_of, ijk_of_gl, sendrecv_init
 !    sendrecv_begin_1d, sendrecv_begin_1i, sendrecv_begin_1c
 !    sendrecv_end_1dm, sendrecv_end_1c, sendrecv_end_1i
-!    send_recv_1c, send_recv_1d, send_recv_2d, send_recv_3d      
-!    send_recv_1i      
+!    send_recv_1c, send_recv_1d, send_recv_2d, send_recv_3d
+!    send_recv_1i
 !--------------------------------------------------------------------
       module sendrecv
 
@@ -17,6 +17,7 @@
       use geometry
       use compar
       use indices
+      use functions
       implicit none
 !-----------------------------------------------
 
@@ -54,20 +55,20 @@
       integer :: communicator
 
 ! -----------------
-! generic interface 
+! generic interface
 ! -----------------
       interface sendrecv_begin
          module procedure &
             sendrecv_begin_1d, &
             sendrecv_begin_1i, &
-            sendrecv_begin_1c 
+            sendrecv_begin_1c
       end interface
 
       interface sendrecv_end
          module procedure &
             sendrecv_end_1d, &
             sendrecv_end_1i, &
-            sendrecv_end_1c  
+            sendrecv_end_1c
       end interface
 
       interface send_recv
@@ -81,7 +82,7 @@
       contains
 
 !--------------------------------------------------------------------
-! Purpose: 
+! Purpose:
 !--------------------------------------------------------------------
       subroutine ijk_of( ijkp, i,j,k )
 
@@ -99,7 +100,7 @@
       character(len=32), parameter :: name = "ijk_of"
       logical :: isok_k, isok_j, isok_i, is_same, isok
 !-----------------------------------------------
-        
+
       ijk = ijkp
 
       i1 = istart3_all(myPE)
@@ -113,7 +114,7 @@
       jsize = (j2-j1+1)
       isize = (i2-i1+1)
 
-      
+
       if (mod(ijk,isize*jsize).ne.0) then
          k = int( ijk/(isize*jsize) ) + k1
       else
@@ -149,7 +150,7 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
+! Purpose:
 !--------------------------------------------------------------------
       subroutine ijk_of_gl( ijkp, i,j,k )
 
@@ -194,7 +195,7 @@
          j = int( ijk/isize ) + j1 - 1
       endif
       ijk = ijk - (j-j1)*isize
-      
+
       i = (ijk-1) + i1
 
 ! double check
@@ -215,10 +216,10 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
+! Purpose:
 ! set up tables and data structures for exchanging ghost regions
 !--------------------------------------------------------------------
-        
+
       subroutine sendrecv_init(comm, &
          cyclic_i,cyclic_j,cyclic_k, idebug )
 
@@ -265,10 +266,6 @@
 ! Inline functions
 !-----------------------------------------------
       integer :: message_tag
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
       message_tag(src,dest) = message_tag_offset + (1+src + dest*numPEs)
@@ -401,7 +398,7 @@
                 imax3, maxval(iend3_all(:)) )
 
 
-        
+
       call assert( jmin1 .le. jmax1, &
               '** sendrecv_init: jmin1,jmax1 ', jmin1,jmax1 )
       call assert( jmin2 .le. jmax2, &
@@ -472,7 +469,7 @@
          call write_debug( name, 'jmap ', jmap )
          call write_debug( name, 'kmap ', kmap )
       endif
-    
+
 
 ! ----------------------------
 ! set up table ijk2proc(:,:,:)
@@ -610,7 +607,7 @@
                   call assert( isvalid, '** sendrecv_init: invalid ii ', ii )
                   jproc = ijk2proc( ii,jj,kk )
 
-                  ismine = (jproc .eq. myPE) 
+                  ismine = (jproc .eq. myPE)
                   if (ismine) then
                      ncount(iproc) = ncount(iproc) + 1
                   endif
@@ -619,7 +616,7 @@
                enddo
             endif
          enddo   ! end do (iproc=0,numPEs-1)
-! ----------------------------------------------------------------<<<  
+! ----------------------------------------------------------------<<<
 
 ! prepare arrays
 ! ---------------------------------------------------------------->>>
@@ -702,7 +699,7 @@
                         ijk = funijk(ii,jj,kk)
                         ipos = xsend(iter)-1 + icount
                        sendijk( ipos ) = ijk
-                     endif   
+                     endif
                   enddo
                   enddo
                endif
@@ -720,7 +717,7 @@
 
 ! ---------------------------
 ! determine recv schedule
-! examine nodes in my ghost region and see what data is needed from 
+! examine nodes in my ghost region and see what data is needed from
 ! my neighbors
 ! ---------------------------
 
@@ -755,7 +752,7 @@
 
              iproc = ijk2proc(ii,jj,kk)
              is_halobc = (iproc.eq.-1)
-             ismine = (iproc.eq.myPE) 
+             ismine = (iproc.eq.myPE)
              if (.not.ismine) then
                 isvalid = (0 .le. iproc) .and. &
                           (iproc.le.numPEs-1) .and. &
@@ -773,7 +770,7 @@
 
          ntotal = 0
          do iproc=0,numPEs-1
-            ntotal = ntotal + ncount(iproc) 
+            ntotal = ntotal + ncount(iproc)
          enddo
 
          nrecv = count( ncount(:) .ne. 0)
@@ -802,7 +799,7 @@
          do iter=1,nrecv
             iproc = recvproc(iter)
             src = iproc
-            dest = myPE 
+            dest = myPE
             recvtag(iter) = message_tag( src, dest )
          enddo
 ! ----------------------------------------------------------------<<<
@@ -845,11 +842,11 @@
                      ii = imap(i)
                      jj = jmap(j)
                      kk = kmap(k)
-   
+
                      iproc = ijk2proc(ii,jj,kk)
                      is_halobc = (iproc.eq.-1)
                      ismine = (iproc.eq.myPE)
-        
+
                      if ((.not.ismine) .and. (iproc.eq.jproc)) then
                         ijk = funijk( i,j,k)
                         recvijk( ipos ) = ijk
@@ -907,9 +904,9 @@
       deallocate( istartx )
       deallocate( jstartx )
       deallocate( kstartx )
-      deallocate( iendx ) 
-      deallocate( jendx ) 
-      deallocate( kendx ) 
+      deallocate( iendx )
+      deallocate( jendx )
+      deallocate( kendx )
 
       nullify( ncount )
       nullify( ijk2proc )
@@ -1049,7 +1046,7 @@
       allocate( recv_persistent_request2( isize ) )
 
 
-! preallocate buffers for common case 
+! preallocate buffers for common case
       recvsize1 = xrecv1( nrecv1+1)-1
       recvsize2 = xrecv2( nrecv2+1)-1
 
@@ -1106,18 +1103,18 @@
                icount = j2-j1+1
                source = recvproc( ii )
                tag = recvtag( ii )
-     
+
                if (lidebug.ge.2) then
                   call write_debug(name, 'mpi_recv_init: ii,j1,j2 ', &
                      ii,j1,j2 )
                   call write_debug(name, 'icount, source, tag ', &
                      icount,source,tag )
                endif
-     
+
                call MPI_RECV_INIT( drecvbuffer(j1), icount, datatype, &
                    source, tag, comm, request, ierror )
                call MPI_Check( 'sendrecv_begin_1d:MPI_IRECV ', ierror )
-     
+
                recv_persistent_request(ii) = request
             enddo   ! end do (ii=1,nrecv)
 
@@ -1127,19 +1124,19 @@
                dest = sendproc( ii )
                tag = sendtag( ii )
                icount = j2-j1+1
-      
+
                if (lidebug.ge.2) then
                   call write_debug(name, 'mpi_send_init: ii,j1,j2 ', &
                                   ii,j1,j2)
                  call write_debug(name, 'icount, dest, tag ', &
                                   icount,dest,tag )
                endif
-      
+
                call MPI_SEND_INIT( dsendbuffer(j1), icount, datatype, &
                   dest, tag, comm, request, ierror )
                call MPI_Check( 'sendrecv_begin_1d:MPI_SEND_INIT ', &
                   ierror)
-      
+
                send_persistent_request( ii ) = request
             enddo   ! end do (ii=1,nsend)
          enddo   ! end do (layer=1,2)
@@ -1154,17 +1151,17 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1d( X, ilayer, idebug )
+      subroutine sendrecv_begin_1d( XX, ilayer, idebug )
 
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      double precision, intent(inout), dimension(:) :: X
+      double precision, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1175,26 +1172,22 @@
                  request, count, source,dest, tag, ierror
       integer :: ijk, jj, j1, j2, ii
 
-!	interface
+!       interface
 !
-!	subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
+!       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
 !                        comm, request, ierror )
-!	double precision buffer(*)
-!	integer count,datatype,dest,tag,comm,request,ierror
-!	end subroutine MPI_ISEND
+!       double precision buffer(*)
+!       integer count,datatype,dest,tag,comm,request,ierror
+!       end subroutine MPI_ISEND
 !
 !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-!			comm, request, ierror )
-!	double precision buffer(*)
-!	integer count,datatype,source,tag,comm,request,ierror
-!	end subroutine MPI_IRECV
+!                       comm, request, ierror )
+!       double precision buffer(*)
+!       integer count,datatype,source,tag,comm,request,ierror
+!       end subroutine MPI_IRECV
 !
-!	end interface
+!       end interface
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
       lidebug = 0
 
@@ -1240,7 +1233,7 @@
         recv_persistent_request => recv_persistent_request2
 
       endif   ! end if/else (layer.eq.1)
-  
+
 
 ! post asynchronous receives
 ! ---------------------------------------------------------------->>>
@@ -1308,7 +1301,7 @@
                recvrequest( ii ) = request
             enddo
          endif   ! end if/else (use_persistent_message)
-      endif   ! end if (nrecv.ge.1) 
+      endif   ! end if (nrecv.ge.1)
 ! ----------------------------------------------------------------<<<
 
 ! post asynchronous sends
@@ -1346,7 +1339,7 @@
 
             do jj=j1,j2
                ijk = sendijk( jj )
-               dsendbuffer( jj )  = X(ijk)
+               dsendbuffer( jj )  = XX(ijk)
             enddo
 
             if (lidebug.ge.2) then
@@ -1373,7 +1366,7 @@
 
                do jj=j1,j2
                   ijk = sendijk( jj )
-                  dsendbuffer(jj) = X(ijk)
+                  dsendbuffer(jj) = XX(ijk)
                enddo
 
                dest = sendproc( ii )
@@ -1400,19 +1393,19 @@
       end subroutine sendrecv_begin_1d
 
 
-      
+
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1i( X, ilayer, idebug )
-      
+      subroutine sendrecv_begin_1i( XX, ilayer, idebug )
+
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      integer, intent(inout), dimension(:) :: X
+      integer, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1423,26 +1416,22 @@
                  request, count, source, dest, tag, ierror
       integer :: ijk, jj, j1, j2, ii
 
-!	interface
+!       interface
 !
-!	subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
+!       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
 !                        comm, request, ierror )
-!	integer buffer(*)
-!	integer count,datatype,dest,tag,comm,request,ierror
-!	end subroutine MPI_ISEND
+!       integer buffer(*)
+!       integer count,datatype,dest,tag,comm,request,ierror
+!       end subroutine MPI_ISEND
 !
 !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-!			comm, request, ierror )
-!	integer buffer(*)
-!	integer count,datatype,source,tag,comm,request,ierror
-!	end subroutine MPI_IRECV
+!                       comm, request, ierror )
+!       integer buffer(*)
+!       integer count,datatype,source,tag,comm,request,ierror
+!       end subroutine MPI_IRECV
 !
-!	end interface
+!       end interface
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
       lidebug = 0
@@ -1480,7 +1469,7 @@
          sendijk => sendijk2
          xsend => xsend2
       endif   ! end if/else (layer.eq.1)
-        
+
 
 ! post asynchronous receives
 ! ---------------------------------------------------------------->>>
@@ -1567,7 +1556,7 @@
 
             do jj=j1,j2
                ijk = sendijk( jj )
-               isendbuffer(jj) = X(ijk)
+               isendbuffer(jj) = XX(ijk)
             enddo
 
             dest = sendproc( ii )
@@ -1593,17 +1582,20 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_begin_1c( X, ilayer, idebug )
+      subroutine sendrecv_begin_1c( XX, ilayer, idebug )
+
+      use functions
+
       implicit none
 
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
       integer, intent(in),optional :: ilayer
-      character(len=*), intent(inout), dimension(:) :: X
+      character(len=*), intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
 ! Local variables
@@ -1615,26 +1607,22 @@
       integer :: ijk, jj, j1, j2, ii
       integer :: ic, clen, jpos
 
-!	interface
+!       interface
 !
-!	subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
+!       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
 !                        comm, request, ierror )
-!	character(len=*) buffer(*)
-!	integer count,datatype,dest,tag,comm,request,ierror
-!	end subroutine MPI_ISEND
+!       character(len=*) buffer(*)
+!       integer count,datatype,dest,tag,comm,request,ierror
+!       end subroutine MPI_ISEND
 !
 !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-!			comm, request, ierror )
-!	character(len=*) buffer(*)
-!	integer count,datatype,source,tag,comm,request,ierror
-!	end subroutine MPI_IRECV
+!                       comm, request, ierror )
+!       character(len=*) buffer(*)
+!       integer count,datatype,source,tag,comm,request,ierror
+!       end subroutine MPI_IRECV
 !
-!	end interface
+!       end interface
 
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
       lidebug = 0
@@ -1647,8 +1635,8 @@
          layer = ilayer
       endif
 
-      jpos = lbound(X,1)
-      clen = len( X( jpos ) )
+      jpos = lbound(XX,1)
+      clen = len( XX( jpos ) )
 
       if (layer.eq.1) then
          nrecv = nrecv1
@@ -1675,7 +1663,7 @@
          sendijk => sendijk2
          xsend => xsend2
       endif   ! end if/else (layer.eq.1)
-  
+
 
 ! post asynchronous receives
 ! ---------------------------------------------------------------->>>
@@ -1727,7 +1715,7 @@
 
             recvrequest( ii ) = request
          enddo   ! end do (ii=1,nrecv)
-      endif   ! end if (nrecv.ge.1) 
+      endif   ! end if (nrecv.ge.1)
 ! ----------------------------------------------------------------<<<
 
 
@@ -1769,7 +1757,7 @@
                ijk = sendijk( jj )
                do ic=1,clen
                   jpos = (jj-1)*clen + ic
-                  csendbuffer(jpos) = X(ijk)(ic:ic)
+                  csendbuffer(jpos) = XX(ijk)(ic:ic)
                enddo
             enddo
 
@@ -1796,19 +1784,21 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1d( X, idebug )
+      subroutine sendrecv_end_1d( XX, idebug )
+
+      use functions
 
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision, intent(inout), dimension(:) :: X
+      double precision, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 
-!-----------------------------------------------      
+!-----------------------------------------------
       interface
          subroutine MPI_WAITANY(count, array_of_requests, jindex, &
             status, ierror)
@@ -1840,10 +1830,6 @@
       integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -1903,11 +1889,11 @@
 
                do jj=j1,j2
                   ijk = recvijk( jj )
-                  X(ijk) = drecvbuffer(jj)
+                  XX(ijk) = drecvbuffer(jj)
                enddo
             enddo   ! end do (ii=nrecv)
 
-         else   
+         else
 
             allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             if (use_persistent_message) then
@@ -1927,7 +1913,7 @@
             j2 = xrecv( nrecv +1)-1
             do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = drecvbuffer(jj)
+               XX(ijk) = drecvbuffer(jj)
             enddo
          endif   ! end if/else (use_waitany)
       endif   ! end if (nrecv.ge.1)
@@ -1937,17 +1923,19 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1c( X, idebug )
+      subroutine sendrecv_end_1c( XX, idebug )
+
+      use functions
 
       implicit none
 
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      character(len=*), intent(inout), dimension(:) :: X
+      character(len=*), intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 
 !-----------------------------------------------
@@ -1984,10 +1972,6 @@
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
 !-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
-!-----------------------------------------------
 
 
 ! wait for sends to complete
@@ -1996,8 +1980,8 @@
          lidebug = idebug
       endif
 
-      jpos = lbound(X,1)
-      clen = len(X(jpos))
+      jpos = lbound(XX,1)
+      clen = len(XX(jpos))
 
       if (nsend.ge.1) then
          if (lidebug.ge.1) then
@@ -2044,12 +2028,12 @@
 
                   do ic=1,clen
                      jpos = (jj-1)*clen + ic
-                     X(ijk)(ic:ic) = crecvbuffer(jpos)
+                     XX(ijk)(ic:ic) = crecvbuffer(jpos)
                   enddo
                enddo
             enddo   ! end do (ii=1,nrecv)
 
-         else 
+         else
 
             allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
@@ -2064,7 +2048,7 @@
                ijk = recvijk( jj )
                do ic=1,clen
                   jpos = (jj-1)*clen + ic
-                  X(ijk)(ic:ic) = crecvbuffer(jpos)
+                  XX(ijk)(ic:ic) = crecvbuffer(jpos)
                enddo
             enddo
          endif   ! end if/else (use_waitany)
@@ -2078,16 +2062,18 @@
       end subroutine sendrecv_end_1c
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine sendrecv_end_1i( X, idebug )
+      subroutine sendrecv_end_1i( XX, idebug )
+
+      use functions
 
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      integer, intent(inout), dimension(:) :: X
+      integer, intent(inout), dimension(:) :: XX
       integer, intent(in), optional :: idebug
 !-----------------------------------------------
       interface
@@ -2121,10 +2107,6 @@
       integer, dimension(MPI_STATUS_SIZE) :: recv_status_any
       integer, dimension(:,:), pointer :: recv_status
       integer, dimension(:,:), pointer :: send_status
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-      include '../function.inc'
 !-----------------------------------------------
 
 
@@ -2176,10 +2158,10 @@
 
                do jj=j1,j2
                   ijk = recvijk( jj )
-                  X(ijk) = irecvbuffer(jj)
+                  XX(ijk) = irecvbuffer(jj)
                enddo
             enddo    ! end do (ii=1,nrecv)
-         else 
+         else
             allocate( recv_status(MPI_STATUS_SIZE,nrecv))
             call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
             call MPI_Check( 'sendrecv_end_1i:MPI_WAITALL recv ', ierror )
@@ -2190,7 +2172,7 @@
             j2 = xrecv( nrecv +1)-1
             do jj=j1,j2
                ijk = recvijk( jj )
-               X(ijk) = irecvbuffer(jj)
+               XX(ijk) = irecvbuffer(jj)
             enddo
          endif   ! end if/else (use_waitany)
 
@@ -2203,17 +2185,17 @@
       end subroutine sendrecv_end_1i
 
 
-      
+
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine send_recv_1c( X, ilayer, idebug )
+      subroutine send_recv_1c( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      character(len=*),  dimension(:), intent(inout) :: X
+      character(len=*),  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2231,23 +2213,23 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
-      return 
+      return
       end subroutine send_recv_1c
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine send_recv_1d( X, ilayer, idebug )
+      subroutine send_recv_1d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:), intent(inout) :: X
+      double precision,  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2265,23 +2247,23 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
-      return 
+      return
       end subroutine send_recv_1d
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine send_recv_2d( X, ilayer, idebug )
+      subroutine send_recv_2d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:,:), intent(inout) :: X
+      double precision,  dimension(:,:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2300,9 +2282,9 @@
          layer = ilayer
       endif
 
-      do j=lbound(X,2),ubound(X,2)
-         call sendrecv_begin(X(:,j),layer,lidebug)
-         call sendrecv_end( X(:,j), lidebug )
+      do j=lbound(XX,2),ubound(XX,2)
+         call sendrecv_begin(XX(:,j),layer,lidebug)
+         call sendrecv_end( XX(:,j), lidebug )
       enddo
 
       return
@@ -2310,15 +2292,15 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine send_recv_3d( X, ilayer, idebug )
+      subroutine send_recv_3d( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      double precision,  dimension(:,:,:), intent(inout) :: X
+      double precision,  dimension(:,:,:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2336,10 +2318,10 @@
          layer = ilayer
       endif
 
-      do k=lbound(X,3),ubound(X,3)
-         do j=lbound(X,2),ubound(X,2)
-            call sendrecv_begin(X(:,j,k),layer,lidebug)
-            call sendrecv_end( X(:,j,k), lidebug )
+      do k=lbound(XX,3),ubound(XX,3)
+         do j=lbound(XX,2),ubound(XX,2)
+            call sendrecv_begin(XX(:,j,k),layer,lidebug)
+            call sendrecv_end( XX(:,j,k), lidebug )
          enddo
       enddo
 
@@ -2348,15 +2330,15 @@
 
 
 !--------------------------------------------------------------------
-! Purpose: 
-! 
+! Purpose:
+!
 !--------------------------------------------------------------------
-      subroutine send_recv_1i( X, ilayer, idebug )
+      subroutine send_recv_1i( XX, ilayer, idebug )
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-      integer,  dimension(:), intent(inout) :: X
+      integer,  dimension(:), intent(inout) :: XX
       integer, intent(in), optional :: ilayer,idebug
 !-----------------------------------------------
 ! Local variables
@@ -2373,75 +2355,74 @@
          layer = ilayer
       endif
 
-      call sendrecv_begin(X,layer,lidebug)
-      call sendrecv_end( X, lidebug )
+      call sendrecv_begin(XX,layer,lidebug)
+      call sendrecv_end( XX, lidebug )
 
-      return 
+      return
       end subroutine send_recv_1i
 
-      
 
-! Re-initialize send/receive after re-indexing 
-	subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
+
+! Re-initialize send/receive after re-indexing
+        subroutine sendrecv_re_init_after_re_indexing(comm, idebug )
+
+        use functions
+
         implicit none
 
-	integer, intent(in) :: comm
+        integer, intent(in) :: comm
 
-	integer, intent(in), optional :: idebug
+        integer, intent(in), optional :: idebug
 
-!	-------------------------------------
-!	set up tables and data structures for
-!	exchanging ghost regions
-!	-------------------------------------
+!       -------------------------------------
+!       set up tables and data structures for
+!       exchanging ghost regions
+!       -------------------------------------
 
-!	---------------
-!	local variables
-!	---------------
-	character(len=80), parameter :: name = 'sendrecv_init'
+!       ---------------
+!       local variables
+!       ---------------
+        character(len=80), parameter :: name = 'sendrecv_init'
 
-	character(len=80), pointer, dimension(:) :: line
-	integer :: ip, lmax
+        character(len=80), pointer, dimension(:) :: line
+        integer :: ip, lmax
 
         integer :: layer,request, source, tag, datatype
 
-	integer :: lidebug
-	integer :: isize,jsize,ksize, ijksize
+        integer :: lidebug
+        integer :: isize,jsize,ksize, ijksize
         integer :: recvsize1, recvsize2, &
                    sendsize1, sendsize2
 
-	integer :: iter, i,j,k, ii, jj,kk, &
-		ntotal, icount,ipos, &
-		ilayer,        i1,i2,  j1,j2, k1,k2,  &
-		ijk, ijk2, iproc, jproc, src,dest, &
-		ierror
+        integer :: iter, i,j,k, ii, jj,kk, &
+                ntotal, icount,ipos, &
+                ilayer,        i1,i2,  j1,j2, k1,k2,  &
+                ijk, ijk2, iproc, jproc, src,dest, &
+                ierror
 
-	logical :: isok, isvalid, ismine, is_halobc
+        logical :: isok, isvalid, ismine, is_halobc
 
-	integer, dimension(:,:,:), pointer :: ijk2proc
+        integer, dimension(:,:,:), pointer :: ijk2proc
         integer, pointer, dimension(:) :: &
-		istartx,iendx, jstartx,jendx, kstartx,kendx, &
-		ncount, &
-		recvproc, recvtag, xrecv, recvijk,  &
-		sendproc, sendtag, xsend, sendijk
+                istartx,iendx, jstartx,jendx, kstartx,kendx, &
+                ncount, &
+                recvproc, recvtag, xrecv, recvijk,  &
+                sendproc, sendtag, xsend, sendijk
 
         logical, parameter :: jfastest = .true.
 
 
-	integer, parameter :: message_tag_offset = 11
+        integer, parameter :: message_tag_offset = 11
 
 
-!	----------------
-!	inline functions
-!	----------------
-	integer :: message_tag
-	
-!//DEEP moved include function before message_tag declaration
-	include '../function.inc'
-
+!       ----------------
+!       inline functions
+!       ----------------
+        integer :: message_tag
 
 !  NEW SEND_RECV INIT HERE
       if (use_persistent_message) then
-  
+
          datatype = MPI_DOUBLE_PRECISION
 
          do layer=1,2
@@ -2489,11 +2470,11 @@
                icount = j2-j1+1
                source = recvproc( ii )
                tag = recvtag( ii )
-     
+
 
 
                if (lidebug.ge.2) then
-     
+
 !                  call write_debug(name, 'mpi_recv_init: ii,j1,j2 ', &
 !                                             ii,j1,j2 )
 !                  call write_debug(name, 'icount, source, tag ', &
@@ -2502,9 +2483,9 @@
 
 
                call MPI_RECV_INIT( drecvbuffer(j1), icount, datatype, &
-					source, tag, comm, request, ierror )
+                                        source, tag, comm, request, ierror )
                call MPI_Check( 'sendrecv_begin_1d:MPI_IRECV ', ierror )
-     
+
                recv_persistent_request(ii) = request
             enddo
 
@@ -2515,21 +2496,21 @@
                dest = sendproc( ii )
                tag = sendtag( ii )
                icount = j2-j1+1
-      
+
                if (lidebug.ge.2) then
-      
+
 !                  call write_debug(name, 'mpi_send_init: ii,j1,j2 ', &
 !                                         ii,j1,j2)
 !                  call write_debug(name, 'icount, dest, tag ', &
 !                                         icount,dest,tag )
                endif
-      
-      
+
+
                call MPI_SEND_INIT( dsendbuffer(j1), icount, datatype, &
                                      dest, tag, &
                                         comm, request, ierror )
                call MPI_Check( 'sendrecv_begin_1d:MPI_SEND_INIT ', ierror )
-      
+
                send_persistent_request( ii ) = request
             enddo
 
@@ -2538,8 +2519,8 @@
       endif  ! use_persistent_message
 
 
-	return	
-	end subroutine sendrecv_re_init_after_re_indexing
-      
-      
+        return
+        end subroutine sendrecv_re_init_after_re_indexing
+
+
       end module sendrecv

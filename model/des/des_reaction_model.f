@@ -23,6 +23,7 @@
       use run, only: ANY_SPECIES_EQ, SPECIES_EQ
       use physprop, only: SMAX, NMAX
       use run, only: SOLVE_ROs
+      use functions
 
       IMPLICIT NONE
 
@@ -31,7 +32,7 @@
 ! None
 
 ! Local variables
-!-----------------------------------------------  
+!-----------------------------------------------
 ! Index of neighbor particle of particle I such that I < J
       INTEGER IJK
 ! Index value of particle
@@ -52,9 +53,7 @@
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-! Functions
 !---------------------------------------------------------------------//
-      INCLUDE '../function.inc'
 
       IF(.NOT.ANY_SPECIES_EQ) RETURN
 
@@ -116,7 +115,7 @@
             ENDDO
 
 ! Update the particle's mass.
-! The mass of the particle is updated first so that it can be used in 
+! The mass of the particle is updated first so that it can be used in
 ! updating the species mass percent of the particle.
 !---------------------------------------------------------------------//
             dMdt = SUM_DES_Rs
@@ -170,7 +169,7 @@
             ENDIF
 
 ! Update one over the particle's moment of inertia
-            OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2) 
+            OMOI(NP) = 5.0d0 / (2.0d0 * PMASS(NP) * DES_RADIUS(NP)**2)
 
          ENDDO lNP_LP ! End loop over all particles
       ENDDO IJK_LP ! End loop over fluid cells

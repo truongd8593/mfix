@@ -16,7 +16,7 @@
 !
       SUBROUTINE LEQ_CG(VNAME, VNO, VAR, A_M, B_m, cmethod, &
                         TOL, PC, ITMAX, IER)
-      
+
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
@@ -33,12 +33,12 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here; see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
 ! Septadiagonal matrix A_m
@@ -47,23 +47,23 @@
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
-! Note: this setting only seems to matter when leq_pc='line'      
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+! Note: this setting only seems to matter when leq_pc='line'
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! preconditioner (leq_pc)
-!     options = 'line' (default), 'diag', 'none'      
-      CHARACTER*4, INTENT(IN) ::  PC
+!     options = 'line' (default), 'diag', 'none'
+      CHARACTER(LEN=4), INTENT(IN) ::  PC
 ! maximum number of iterations (generally leq_it)
-      INTEGER, INTENT(IN) :: ITMAX      
+      INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 !-------------------------------------------------
-! Local Variables      
-!-------------------------------------------------      
-!------------------------------------------------- 
-! External subroutines 
-!------------------------------------------------- 
+! Local Variables
+!-------------------------------------------------
+!-------------------------------------------------
+! External subroutines
+!-------------------------------------------------
 ! These procedures are effectively dummy arguments (procedures as
 ! arguments within the subroutine leq_cg0)
       EXTERNAL LEQ_MATVEC, LEQ_MSOLVE, LEQ_MSOLVE0, LEQ_MSOLVE1
@@ -104,7 +104,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE LEQ_CG0(VNAME, VNO, VAR, A_M, B_m, cmethod, &
-                         TOL, ITMAX, MATVEC, MSOLVE, IER ) 
+                         TOL, ITMAX, MATVEC, MSOLVE, IER )
 
 !-----------------------------------------------
 ! Modules
@@ -119,17 +119,18 @@
       USE sendrecv
       USE indices
       USE leqsol
+      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure
 !-----------------------------------------------
 ! variable name
-      CHARACTER*(*), INTENT(IN) :: Vname
+      CHARACTER(LEN=*), INTENT(IN) :: Vname
 ! variable number (not really used here-see calling subroutine)
       INTEGER, INTENT(IN) :: VNO
-! variable 
+! variable
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
-!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G, 
+!     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
       DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
 ! Septadiagonal matrix A_m
@@ -138,15 +139,15 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
 ! Sweep direction of leq solver (leq_sweep)
 !     options = 'isis', 'rsrs' (default), 'asas'
-      CHARACTER*(*), INTENT(IN) :: CMETHOD
+      CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
 ! convergence tolerance (generally leq_tol)
       DOUBLE PRECISION, INTENT(IN) :: TOL
 ! maximum number of iterations (generally leq_it)
-      INTEGER, INTENT(IN) :: ITMAX      
+      INTEGER, INTENT(IN) :: ITMAX
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 ! dummy arguments/procedures set as indicated
-!     matvec->leq_matvec      
+!     matvec->leq_matvec
 ! for preconditioner (leq_pc)
 !    'line' msolve->leq_msolve  (default)
 !    'diag' msolve->leq_msolve1
@@ -184,18 +185,14 @@
       END INTERFACE
 
 !-----------------------------------------------
-! Include statement functions      
-!-----------------------------------------------
-      INCLUDE 'function.inc'
-!-----------------------------------------------
 
       is_serial = numPEs.eq.1.and.is_serial
 
-! these scalars should not be necessary to initialize but done as failsafe      
+! these scalars should not be necessary to initialize but done as failsafe
       rnorm = ZERO
       rnorm0 = ZERO
 
-! initializing      
+! initializing
       alpha(:)  = zero
       beta(:)   = zero
       rho(:)    = zero
@@ -229,7 +226,7 @@
                do j = jstart2,jend2
                   IJK = funijk(i,j,k)
 !                  aijmax = maxval(abs(A_M(ijk,:)) )
-!                  if(aijmax.ne.abs(A_M(ijk,0))) & 
+!                  if(aijmax.ne.abs(A_M(ijk,0))) &
 !                  write(*,*) 'Not positive definite', k,i,j,(A_M(ijk,:))
                   OAM = one/A_M(ijk,0)
                   A_M(IJK,:) = A_M(IJK,:)*OAM
@@ -240,7 +237,7 @@
       endif
 ! ----------------------------------------------------------------<<<
 
-     
+
 ! assume initial guess in Var + some small random number
 ! r = b - A*x : Line 1
 !     call random_number(Xinit(:))
@@ -259,7 +256,7 @@
       endif
 
 
-! Compute initial residual, R = b - A*x 
+! Compute initial residual, R = b - A*x
 ! ---------------------------------------------------------------->>>
       call MATVEC(Vname, Var, A_M, R)   ! returns R=A_M*Var
 
@@ -347,7 +344,7 @@
          else
 ! beta = rho(i-1)/rho(i-2) : Line 8
 ! P = Z + beta*P : Line 9
-! -------------------------------- 
+! --------------------------------
             beta(i-1) = ( rho(i-1)/rho(i-2) )
             if (use_doloop) then
 !!!$omp        parallel do private(ijk)
@@ -360,9 +357,9 @@
          endif                  ! i.eq.1
 
 ! Q(:) = A*P(:) : Line 10
-! -------------------------------- 
+! --------------------------------
          call MATVEC(Vname, P, A_m, Q)   ! Returns Q = A_m*P
-         
+
          if(is_serial) then
             if (use_doloop) then
                PxQ = zero
@@ -378,12 +375,12 @@
          endif                  ! is_serial
 
 !  alpha = rho/PxQ : Line 11
-! -------------------------------- 
+! --------------------------------
          alpha(i) = rho(i-1)/PxQ
 
 ! x = x + alpha*p : Line 12
 ! r = r - alpha*q : Line 13
-! -------------------------------- 
+! --------------------------------
          if (use_doloop) then
 !!$omp     parallel do private(ijk)
             do ijk=ijkstart3,ijkend3
@@ -396,7 +393,7 @@
          endif                  ! use_doloop
 
 ! Check norm of R(:); if small enough, Exit
-! -------------------------------- 
+! --------------------------------
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
@@ -420,7 +417,7 @@
                print*,'alpha(i), beta(i-1) ', alpha(i), beta(i-1)
             endif
          endif
-     
+
          isconverged = (Rnorm <= TOL*Rnorm0)
 
          if (isconverged) then
@@ -432,7 +429,7 @@
          iter = iter + 1
 
       enddo
-! end of linear solver loop 
+! end of linear solver loop
 ! ----------------------------------------------------------------<<<
 
 
@@ -466,7 +463,7 @@
 
          if(myPE.eq.0)  print*,'leq_cg ratio : ', Vname,' ',iter,     &
          ' L-2', Rnorm/Rnorm0
-      endif 
+      endif
 
       IER = 0
       if (.not.isconverged) then
@@ -478,6 +475,6 @@
       endif
 
       call send_recv(var,2)
-      
+
       return
       end subroutine LEQ_CG0

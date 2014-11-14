@@ -28,6 +28,8 @@
 
       USE toleranc
       USE usr
+      USE fun_avg
+      USE functions
 
       IMPLICIT NONE
 
@@ -38,15 +40,6 @@
 
 !-----------------------------------------------
       INCLUDE 'species.inc'
-
-      INCLUDE 'ep_s1.inc'
-      INCLUDE 'fun_avg1.inc'
-
-      INCLUDE 'function.inc'
-
-      INCLUDE 'ep_s2.inc'
-      INCLUDE 'fun_avg2.inc'
-
       INCLUDE 'usrnlst.inc'
 
 ! Reaction specific variables:
@@ -67,6 +60,6 @@
       RATES(CH4_Comb) = C(1) * EP_g(IJK) * c_O2 * c_CH4
 
 
-      RETURN  
+      RETURN
 
       END SUBROUTINE USR_RATES
