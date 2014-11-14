@@ -531,7 +531,7 @@
 
 ! Force time formatting #####.######  (Forcing leading zeros)
 
-         write(*,'(I5.5,F0.6)') int(S_TIME),S_TIME-int(S_TIME)
+         write(S_TIME_CHAR,'(I5.5,F0.6)') int(S_TIME),S_TIME-int(S_TIME)
 
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&

@@ -614,7 +614,8 @@
             DO LC2=1, lROOTCNT
                IF(iPAR_COL(1,LC1) == iROOTBUF(LC2)) THEN
                   DO lPROC = 0, numPEs-1
-                     IF(LC2 >= iDISPLS(lPROC)) THEN
+                     IF(iDISPLS(lPROC) < LC2 .AND. &
+                        LC2 < sum(iGatherCnts(:lPROC))) THEN
                         cRestartMap(LC1) = lPROC
                         lCOL_CNT(lPROC) = lCOL_CNT(lPROC) + 1
                         CYCLE LC1_LP
@@ -626,15 +627,9 @@
          DO LC1 = 1, cIN_COUNT
             IF (cRestartMap(LC1) == -1) THEN
                IER(myPE) = -1
-               WRITE(ERR_MSG,1000) trim(iVal(LC1))
-               CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
-               IF(NO_K) THEN
-                  WRITE(ERR_MSG,1001) dPAR_POS(1:2,LC1)
-                  CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
-               ELSE
-                  WRITE(ERR_MSG,1002) dPAR_POS(1:3,LC1)
-                  CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
-               ENDIF
+               WRITE(ERR_MSG,1000) trim(iVal(LC1)), trim(iVal(         &
+                  iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC2)))
+               CALL FLUSH_ERR_MSG
             ENDIF
          ENDDO
       ENDIF
@@ -642,10 +637,8 @@
       deallocate(iPROCBUF)
       deallocate(iROOTBUF)
 
- 1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
-         3x,'Particle Number:',A)
- 1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
- 1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
+ 1000 FORMAT('Error 1000: Unable to locate collision owner:',/         &
+         3x,'Collision Number:',A,/3x,'Particles: ',A,' and ',A)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)
