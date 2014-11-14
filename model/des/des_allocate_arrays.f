@@ -169,12 +169,10 @@
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
       Allocate(  PIJK (NPARTICLES,5) )
 
-      IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_3))
-         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN))
-         ALLOCATE(F_gp(NPARTICLES ))
-         F_gp(1:NPARTICLES)  = ZERO
-      ENDIF
+      ALLOCATE(DRAG_AM(DIMENSION_3))
+      ALLOCATE(DRAG_BM(DIMENSION_3, DIMN))
+      ALLOCATE(F_gp(NPARTICLES ))
+      F_gp(1:NPARTICLES)  = ZERO
 
       IF(DES_INTERP_MEAN_FIELDS) THEN
          ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
