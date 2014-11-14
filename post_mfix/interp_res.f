@@ -147,10 +147,12 @@
 !
 !  Read old RES file
 !
+      WRITE(*,*)' Reading old RES file ...'
       CALL READ_RES1
 !
 !  Save old values
 !
+      WRITE(*,*)' Saving old values ...'
       DO K = 1, KMAX2
          DO J = 1, JMAX2
             DO I = 1, IMAX2
@@ -237,6 +239,7 @@
 !
 !  Read the new data file
 !
+      WRITE(*,*)' Reading new mfix.dat ...'
       CALL DEALLOCATE_ARRAYS
 
       CALL INIT_NAMELIST
@@ -279,6 +282,7 @@
 ! set smax value since check_data_01 and constant_prop are not called in post_mfix.
       SMAX = MMAX
 
+      WRITE(*,*)' New grid size (IMAX,JMAX,KMAX) = ',IMAX,JMAX,KMAX
 !
 !  Open new RES files
 !
@@ -306,7 +310,9 @@
       DO K = 1, KMAX2
          DO J = 1, JMAX2
             DO I = 1, IMAX2
-               IJK = FUNIJK(I, J, K)
+! We cannot use funijk anymore since the IJK_array_of has not been populated            
+!               IJK = FUNIJK(I, J, K)
+               IJK  = I + (J - 1) * IMAX2 + (K - 1) * IJMAX2
                INTERNAL = .TRUE.
 !
 !  compute I, J, and K for the old coordinate system
