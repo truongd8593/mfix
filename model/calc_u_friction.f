@@ -295,9 +295,13 @@
 
 ! Calculating gw, hw, cw
 
-      Gw = (MU_s + Chi/(2d0*ZETA))*DABS(VEL - W_VEL)
-
-      Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w
+      IF(VSLIP == ZERO) THEN
+        Gw = one
+	Hw = zero
+      ELSE
+        Gw = (MU_s + Chi/(2d0*ZETA))*DABS(VEL - W_VEL)/VSLIP
+        Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w*DABS(VEL - W_VEL)/VSLIP
+      ENDIF
       IF(ZETA .NE. ZERO) Hw = Hw - Chi*S_dd*tan_Phi_w/ZETA
 
       Cw = hw * W_VEL
