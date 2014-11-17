@@ -680,16 +680,14 @@
       DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF, RED_MASS_EFF
 ! Alias for coefficient restitution
       DOUBLE PRECISION :: EN, ET
-
-
+! Shear modules for wall
+      DOUBLE PRECISION :: G_MOD_WALL
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_COLL_HERTZ")
 
 ! Initialize.
       TCOLL = UNDEFINED
-
-
 
 ! check young's modulus and poisson ratio
       IF(Ew_YOUNG == UNDEFINED ) THEN
@@ -707,9 +705,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-
-
-
+      G_MOD_WALL = 0.5d0*Ew_YOUNG/(1.d0+Vw_POISSON)
 
       LC = 0
       DO M=1,DES_MMAX
@@ -847,7 +843,9 @@
          E_EFF = E_YOUNG(M)*Ew_YOUNG /                                 &
             (E_YOUNG(M)*(1.d0-Vw_POISSON**2) +                         &
              Ew_YOUNG  *(1.d0-V_POISSON(M)**2))
-         G_MOD_EFF = G_MOD(M)/(2.d0-V_POISSON(M))
+         G_MOD_EFF = G_MOD(M)*G_MOD_WALL /                             &
+            (G_MOD(M)*(2.d0 - Vw_POISSON) +                            &
+             G_MOD_WALL*(2.d0 - V_POISSON(M)))
 
 ! Calculate the spring properties.
          HERT_Kwn(M) = ( 4.d0/3.d0)*SQRT(R_EFF)*E_EFF
