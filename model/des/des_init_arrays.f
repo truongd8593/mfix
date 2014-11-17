@@ -32,13 +32,6 @@
 ! Pradeep: parallel processing
       iglobal_id = 0
 
-! T.Li: Hertzian collision model
-      g_mod(:) = zero
-      hert_kn(:,:) = zero
-      hert_kwn(:) = zero
-      hert_kt(:,:) = zero
-      hert_kwt(:) = zero
-
 ! particle properties
       DES_RADIUS(:) = ZERO
       PMASS(:) = ZERO
