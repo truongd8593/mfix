@@ -294,16 +294,15 @@
       ENDIF
 
 ! Calculating gw, hw, cw
-
-      IF(VSLIP == ZERO) THEN
-        Gw = one
-	Hw = zero
+ 
+      Gw = ONE   ! we write this in the exact same form as non-frictional JJ BC
+ 
+      IF(VSLIP == ZERO .OR. ZETA == ZERO) THEN
+        Hw = ZERO
       ELSE
-        Gw = (MU_s + Chi/(2d0*ZETA))*DABS(VEL - W_VEL)/VSLIP
-        Hw = F_2*DABS(VEL - W_VEL) + Pf*tan_Phi_w*DABS(VEL - W_VEL)/VSLIP
+        Hw = F_2 + Pf*tan_Phi_w - Chi*S_dd*tan_Phi_w/ZETA
+        Hw = Hw / (MU_s + Chi/(2d0*ZETA))  ! this is because Gw is set to one.
       ENDIF
-      IF(ZETA .NE. ZERO) Hw = Hw - Chi*S_dd*tan_Phi_w/ZETA
-
       Cw = hw * W_VEL
 
       RETURN
