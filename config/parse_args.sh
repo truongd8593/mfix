@@ -65,6 +65,11 @@ echo "    gcc_default.sh         - same as gcc"
 echo "    intel_default.sh       - same as intel"
 echo "    portland_default.sh    - same as portland"
 echo ""
+echo "    Apple MacOS system files:"
+echo "    gnu_mac_os.sh         - same as gcc"
+echo "    intel_mac_os.sh       - same as intel"
+echo "    portland_mac_os.sh    - same as portland"
+echo ""
 echo "    SBEUC system files:"
 echo "      sbeuc_gcc-46.sh      - GCC 4.6 and Open MPI 1.5.5"
 echo "      sbeuc_intel-131.sh   - Intel 13.1 and Intel MPI"
@@ -205,6 +210,7 @@ for arg in $input; do
         O1) OPT=1;;
         O2) OPT=2;;
         O3) OPT=3;;
+        O4) OPT=4;;
         *) echo "Error unknown optimization level: ${arg}"
            echo "First character is upper case letter O, not zero"
            echo "Aborting."

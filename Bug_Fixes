@@ -1,0 +1,19 @@
+This file lists bug fixes committed to the 2014-1 Release, starting October 1st, 2014.
+
+==================================================================================================
+Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)    
+==================================================================================================
+10/06/2014        | Fixed uninitialized   | Minor    |  calc_grbdry.f
+                  | variables             |          |  cartesian_grid/CG_source_u_g.f
+                  |                       |          |  cartesian_grid/vtk_out.f
+==================================================================================================
+10/06/2014        | Fixed index error in  | Minor    |  check_data/check_solids_common_discrete.f
+                  | TFM/DEM hybrid        |          |
+==================================================================================================
+10/09/2014        | Shift radiation arrays| Minor    |  set_increments.f
+                  | when re-indexing      |          |
+==================================================================================================
+10/09/2014        | Work-around for Intel | Minor    |  check_data/check_chemical_rxns.f
+                  | compiler              |          |
+==================================================================================================
+

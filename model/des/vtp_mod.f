@@ -529,13 +529,9 @@
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
 
-! Force time formatting #####.######  (Forcing leading zeros)
-
-         write(S_TIME_CHAR,'(I5.5,F0.6)') int(S_TIME),S_TIME-int(S_TIME)
-
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
-         '<DataSet timestep="',TRIM(S_TIME_CHAR),'" ',& ! simulation time
+         '<DataSet timestep="',TRIM(iVal(S_TIME)),'" ',&
          'group="" part="0" ',& ! necessary file data
          'file="',TRIM(FNAME_VTP),'"/>' ! file name of vtp
 
