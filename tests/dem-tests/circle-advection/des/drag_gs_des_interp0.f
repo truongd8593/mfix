@@ -78,11 +78,6 @@
 ! velocity and the fluid velocity interpolated to particle
 ! position.
 !----------------------------------------------------------------->>>
-! initializing
-! RG: I do not understand the need for this large array. It is not
-! used anywhere else except the same subroutine it is calculated.
-! A local single rank array (like in the old implementation) was just fine
-      vel_fp = ZERO
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = merge(0.50d0, 0.25d0, NO_K)
 
@@ -124,10 +119,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
 
                   gst_tmp(i,j,k,1) = xe(ii)
                   gst_tmp(i,j,k,2) = yn(jj)
@@ -136,10 +131,10 @@
                   vst_tmp(i,j,k,2) = avg_factor*(v_g(cur_ijk)+v_g(ipjk))
 
                   if(DO_K) then
-                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
-                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
-                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
-                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
+                     ijpkp   = funijk_map_c(ii,jj+1,kk+1)
+                     ipjkp   = funijk_map_c(ii+1,jj,kk+1)
+                     ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
+                     ijkp    = funijk_map_c(ii,jj,kk+1)
                                          vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
@@ -151,7 +146,7 @@
             ENDDO
          ENDDO
 ! loop through particles in the cell
-! interpolate the fluid velocity (VEL_FP) to the particle's position.
+! interpolate the fluid velocity (VELFP) to the particle's position.
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
@@ -160,15 +155,13 @@
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(1:3,np) = velfp(1:3)
-
 
 !**********************************************************************!
 !                      TEST CASE MODIFICATIONS                         !
 !``````````````````````````````````````````````````````````````````````!
 !          Massless particles for the circle advection test            !
 !----------------------------------------------------------------------!
-                   DES_VEL_NEW(:,NP) = VEL_FP(:,NP)
+                   DES_VEL_NEW(:,NP) = VELFP
 !......................................................................!
 
 ! Calculate the particle centered drag coefficient (F_GP) using the
@@ -179,15 +172,15 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp(1:3), VEL_NEW)
+            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
 ! implicit treatment of the drag term for mppic
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP))
+               D_FORCE(1:3) = F_GP(NP)*(VELFP)
             ELSE
 ! default case
-               D_FORCE(1:3) = F_GP(NP)*(VEL_FP(1:3,NP)-VEL_NEW)
+               D_FORCE(1:3) = F_GP(NP)*(VELFP-VEL_NEW)
             ENDIF
 
 ! Update the contact forces (FC) on the particle to include gas
@@ -219,7 +212,7 @@
 !       interpolated fluid velocity. It then determines the            C
 !       the contributions of fluid-particle drag to the center         C
 !       coefficient of the A matrix and the b (source) vector in the   C
-!       matrix equation (A*VEL_FP=b) equation for the fluid phase      C
+!       matrix equation (A*VELFP=b) equation for the fluid phase       C
 !       x, y and z momentum balances using F_GP.                       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -258,7 +251,6 @@
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
                  IPJPK, IPJKP, IJPKP, IPJPKP, &
                  IMJMK, IMJKM, IJMKM, IMJMKM
-      INTEGER :: ICUR, JCUR, KCUR
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
@@ -307,7 +299,7 @@
 ! initializations
       drag_am = ZERO
       drag_bm = ZERO
-      vel_fp = ZERO
+
 ! avg_factor=0.25 (in 3D) or =0.5 (in 2D)
       AVG_FACTOR = merge(0.50d0, 0.25d0, NO_K)
 
@@ -323,7 +315,7 @@
 !!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
 !!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
 !!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
-!!$omp             icur,jcur,kcur,vcell,ovol)
+!!$omp             vcell,ovol)
 !!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
@@ -351,10 +343,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
                   GST_TMP(I,J,K,1) = XE(II)
                   GST_TMP(I,J,K,2) = YN(JJ)
                   GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
@@ -362,10 +354,10 @@
                   VST_TMP(I,J,K,2) = AVG_FACTOR*(V_G(CUR_IJK)+V_G(IPJK))
 
                   IF(DO_K) THEN
-                     IJPKP   = FUNIJK(IMAP_C(II),JMAP_C(JJ+1),KMAP_C(KK+1))
-                     IPJKP   = FUNIJK(IMAP_C(II+1),JMAP_C(JJ),KMAP_C(KK+1))
-                     IPJPKP  = FUNIJK(IMAP_C(II+1),JMAP_C(JJ+1),KMAP_C(KK+1))
-                     IJKP    = FUNIJK(IMAP_C(II),JMAP_C(JJ),KMAP_C(KK+1))
+                     IJPKP   = FUNIJK_MAP_C(II,JJ+1,KK+1)
+                     IPJKP   = FUNIJK_MAP_C(II+1,JJ,KK+1)
+                     IPJPKP  = FUNIJK_MAP_C(II+1,JJ+1,KK+1)
+                     IJKP    = FUNIJK_MAP_C(II,JJ,KK+1)
                      VST_TMP(I,J,K,1) = VST_TMP(I,J,K,1) + &
                      AVG_FACTOR*(U_G(IJKP) + U_G(IJPKP))
 
@@ -381,7 +373,7 @@
             ENDDO
          ENDDO
 ! loop through particles in the cell
-! interpolate the fluid velocity (VEL_FP) to the particle's position.
+! interpolate the fluid velocity (VELFP) to the particle's position.
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
@@ -389,7 +381,6 @@
             if(pea(np,4)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
-            vel_fp(1:3,np) = velfp(1:3)
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
@@ -399,8 +390,7 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp(1:3), &
-               VEL_NEW)
+            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in
 ! the gas phase momentum balances.
@@ -420,10 +410,7 @@
 ! The interpolation is done using node. so one should use consistent
 ! numbering system. in the current version imap_c is used instead of
 ! ip_of or im_of
-                     icur = imap_c(ii)
-                     jcur = jmap_c(jj)
-                     kcur = kmap_c(kk)
-                     cur_ijk = funijk(icur, jcur, kcur)
+                     cur_ijk = funijk_map_c(ii, jj, kk)
 
 ! Replacing the volume of cell to volume at the node
                      vcell = des_vol_node(cur_ijk)
@@ -454,7 +441,7 @@
 ! quantities are needed at the time of this call.
       call des_addnodevalues
 !-----------------------------------------------------------------<<<
-! Calculate/update the cell centered drag coefficient F_GS for use
+! Calculate/update the cell centered drag coefficient F_GDS for use
 ! in the pressure correction equation
 !----------------------------------------------------------------->>>
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
@@ -473,40 +460,25 @@
             if (i.lt.istart2 .or. i.gt.iend2) cycle
             if (j.lt.jstart2 .or. j.gt.jend2) cycle
             if (k.lt.kstart2 .or. k.gt.kend2) cycle
-            imjk = funijk(imap_c(i-1),jmap_c(j),kmap_c(k))
-            ijmk = funijk(imap_c(i),jmap_c(j-1),kmap_c(k))
-            imjmk = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k))
+            imjk = funijk_map_c(i-1,j,k)
+            ijmk = funijk_map_c(i,j-1,k)
+            imjmk = funijk_map_c(i-1,j-1,k)
 
-            IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-               f_gs(ijk,:) = avg_factor*&
-                  (drag_am(ijk)   + drag_am(ijmk) +&
-                   drag_am(imjmk) + drag_am(imjk))
-            ELSE
-               f_gds(ijk,:) = avg_factor*&
-                  (drag_am(ijk)   + drag_am(ijmk) +&
-                   drag_am(imjmk) + drag_am(imjk))
-            ENDIF
+            f_gds(ijk) = avg_factor*&
+               (drag_am(ijk)   + drag_am(ijmk) +&
+                drag_am(imjmk) + drag_am(imjk))
+
             IF(DO_K) THEN
-               ijkm = funijk(imap_c(i),jmap_c(j),kmap_c(k-1))
-               imjkm = funijk(imap_c(i-1),jmap_c(j),kmap_c(k-1))
-               ijmkm = funijk(imap_c(i),jmap_c(j-1),kmap_c(k-1))
-               imjmkm = funijk(imap_c(i-1),jmap_c(j-1),kmap_c(k-1))
-               IF(.NOT.DES_CONTINUUM_HYBRID) THEN
-                  f_gs(ijk,:) = f_gs(ijk,:) + avg_factor*&
-                       (drag_am(ijkm) + drag_am(ijmkm) +&
-                        drag_am(imjmkm)+drag_am(imjkm) )
-               ELSE
-                  f_gds(ijk,:) = f_gds(ijk,:) + avg_factor*&
-                       (drag_am(ijkm) + drag_am(ijmkm) +&
-                        drag_am(imjmkm)+drag_am(imjkm) )
-               ENDIF
+               ijkm = funijk_map_c(i,j,k-1)
+               imjkm = funijk_map_c(i-1,j,k-1)
+               ijmkm = funijk_map_c(i,j-1,k-1)
+               imjmkm = funijk_map_c(i-1,j-1,k-1)
+               f_gds(ijk) = f_gds(ijk) + avg_factor*&
+                  (drag_am(ijkm) + drag_am(ijmkm) +&
+                  drag_am(imjmkm)+drag_am(imjkm) )
             ENDIF   ! end if
          ELSE   ! else branch of if (fluid_at(ijk))
-            IF (DES_CONTINUUM_HYBRID) THEN
-               F_GDS(IJK,:) = ZERO
-            ELSE
-               F_GS(IJK,:) = ZERO
-            ENDIF
+            F_GDS(IJK) = ZERO
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
