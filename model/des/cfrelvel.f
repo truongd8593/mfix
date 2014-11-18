@@ -35,9 +35,9 @@
 ! particle L to particle II
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
 ! slip velocity at point of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: VSLIP(3)
+      DOUBLE PRECISION, INTENT(OUT) :: VSLIP(3)
 ! normal component of relative contact velocity (scalar)
-      DOUBLE PRECISION, INTENT(INOUT) :: VRN
+      DOUBLE PRECISION, INTENT(OUT) :: VRN
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

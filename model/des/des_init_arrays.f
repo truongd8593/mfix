@@ -27,6 +27,8 @@
       USE des_thermo
       USE des_rxns
       IMPLICIT NONE
+
+      INTEGER :: II
 !-----------------------------------------------
 
 ! Pradeep: parallel processing
@@ -80,6 +82,10 @@
       ENDIF
 
       GRAV(:) = ZERO
+
+      DO II = 1, SIZE(particle_wall_collisions)
+         nullify(particle_wall_collisions(II)%pp)
+      ENDDO
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN
