@@ -280,76 +280,50 @@
 ! order and allocates arrays necessary for interpolation
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!Handan Liu added on Jan 17 2013; again on June 2013
-!$omp   parallel default(shared)                                             &
-!$omp   private(IJK,I,J,K,PCELL,COUNT_NODES_INSIDE,II,JJ,KK,IW,              &
-!$omp           IE,JS,JN,KB,KTP,ONEW,CUR_IJK,gst_tmp,nindx,np,wtp,m, &
-!$omp           weight_ft,icur,jcur,kcur,vol_ratio,                          &
-!$omp           I1, I2, J1, J2, K1, K2, IDIM,IJK2,NORM_FACTOR,               &
-!$omp           RESID_ROPS,RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
+!$omp parallel default(shared)                                             &
+!$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, GST_TMP, &
+!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M, ICUR, &
+!$omp    JCUR, KCUR, WEIGHT_FT, VOL_RATIO, I1, I2, J1, J2, K1, K2, IDIM,   &
+!$omp    IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
-      !IJKLOOP: DO IJK = IJKSTART3,IJKEND3      ! Removed by Handan Liu
       DO IJK = IJKSTART3,IJKEND3
 
 ! Cycle this cell if not in the fluid domain or if it contains no
 ! particle/parcel
-         IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK).EQ.0) CYCLE
+         IF(.NOT.FLUID_AT(IJK)) CYCLE
+         IF( PINC(IJK) == 0) CYCLE
 
-         I = I_OF(IJK)
-         J = J_OF(IJK)
-         K = K_OF(IJK)
-
-         IF(.NOT.IS_ON_myPE_owns(I,J,K)) THEN
-! PINC array count reflects only the acutal particles and does not
-! include the ghost particles. Therefore, PINC can only be non-zero
-! for scalar cells that belong to this processor. So this is just
-! a sanity check that will ensure an error is flagged if the logic
-! is broken elsewhere in the code.
-            IF(DMP_LOG) THEN
-               WRITE(UNIT_LOG,*) &
-                  'Critical Error in compute_mean_fields_interp:', &
-                  'This cell does not belong to this proc ', myPE
-               WRITE(UNIT_LOG,'(A,10(2x,i5))') &
-                  'PINC in I, J, K, IJP, NP = ', &
-                  I_OF(IJK), J_OF(IJK), K_OF(IJK), PINC(IJK), &
-                  PINC(IM_OF(IJK)), PINC(IP_OF(IJK))
-            ENDIF
-            WRITE(*,*) 'Critical Error in compute_mean_fields_interp:', &
-               'This cell does not belong to this proc ', myPE, &
-               'Exiting the code, check the log file for details'
-            CALL MFIX_EXIT(myPE)
-         ENDIF
-
-         PCELL(1) = I-1
-         PCELL(2) = J-1
-         PCELL(3) = merge(1, K-1, NO_K)
+         PCELL(1) = I_OF(IJK)-1
+         PCELL(2) = J_OF(IJK)-1
+         PCELL(3) = merge(K_OF(IJK)-1, 1, DO_K)
 
 ! setup the stencil based on the order of interpolation and factoring in
 ! whether the system has any periodic boundaries. sets onew to order.
-         CALL SET_INTERPOLATION_STENCIL(PCELL,IW,IE,JS,JN,KB,&
-            KTP,INTERP_SCHEME,DIMN,ORDERNEW = ONEW)
+         CALL SET_INTERPOLATION_STENCIL(PCELL, IW, IE, JS, JN, KB, KTP,&
+            INTERP_SCHEME, DIMN, ORDERNEW=ONEW)
 
          COUNT_NODES_OUTSIDE = 0
 ! Computing/setting the geometric stencil
-         DO K = 1,merge(1, ONEW, NO_K)
-            DO J = 1,ONEW
-               DO I = 1,ONEW
-                  II = IW + I-1
-                  JJ = JS + J-1
-                  KK = KB + K-1
-                  CUR_IJK = funijk_map_c(II,JJ,KK)
+         DO K=1, merge(1, ONEW, NO_K)
+         DO J=1, ONEW
+         DO I=1, ONEW
 
-                  GST_TMP(I,J,K,1) = XE(II)
-                  GST_TMP(I,J,K,2) = YN(JJ)
-                  GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
-!===================================================================>>> Handan Liu
+            II = IW + I-1
+            JJ = JS + J-1
+            KK = KB + K-1
+            CUR_IJK = funijk_map_c(II,JJ,KK)
 
-                  IF(CARTESIAN_GRID) THEN
-                     IF(SCALAR_NODE_ATWALL(CUR_IJK)) COUNT_NODES_OUTSIDE = &
-                     & COUNT_NODES_OUTSIDE + 1
-                  ENDIF
-               ENDDO
-            ENDDO
+            GST_TMP(I,J,K,1) = XE(II)
+            GST_TMP(I,J,K,2) = YN(JJ)
+            GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
+
+            IF(CARTESIAN_GRID) THEN
+               IF(SCALAR_NODE_ATWALL(CUR_IJK))                   &
+                  COUNT_NODES_OUTSIDE = COUNT_NODES_OUTSIDE + 1
+            ENDIF
+
+         ENDDO
+         ENDDO
          ENDDO
 
 
@@ -357,60 +331,38 @@
 !----------------------------------------------------------------->>>
 
 ! looping through particles in the cell
-         DO NINDX = 1,PINC(IJK)
+         DO NINDX=1, PINC(IJK)
             NP = PIC(IJK)%P(NINDX)
 
-! conducting some sanity checks
-            IF(PEA(NP, 4)) THEN
-               IF(DMP_LOG) THEN
-                  WRITE(UNIT_LOG,*) 'Encountered a ghost ',&
-                     'particle in compute_mean_fields_interp'
-                  WRITE(UNIT_LOG,'(A,10(2x,i5))') &
-                     'PINC in I, J, K, IJP, NP = ', I_OF(IJK), &
-                     J_OF(IJK), K_OF(IJK), PINC(IJK), PINC(IM_OF(IJK)),&
-                     PINC(IP_OF(IJK))
-               ENDIF
-               WRITE(*,*) 'Encountered a ghost particle ',&
-                  'in compute_mean_fields_interp'
-               WRITE(*,'(A,10(2x,i5))') &
-                  'PINC in I, J, K, IJP, NP = ', I_OF(IJK), J_OF(IJK), &
-                  K_OF(IJK), PINC(IJK), PINC(IM_OF(IJK)), &
-                  PINC(IP_OF(IJK))
-               CALL MFIX_EXIT(myPE)
-            ENDIF
-
             call DRAG_WEIGHTFACTOR(gst_tmp,des_pos_new(:,np),weight_ft)
-!===================================================================>>> Handan Liu
 
             M = PIJK(NP,5)
             WTP = ONE
             IF(MPPIC) WTP = DES_STAT_WT(NP)
+
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
 
             TEMP2 = DES_RO_S(M)*PVOL(NP)*WTP
 
             DO K = 1, merge(1, ONEW, NO_K)
-               DO J = 1, ONEW
-                  DO I = 1, ONEW
+            DO J = 1, ONEW
+            DO I = 1, ONEW
 ! shift loop index to new variables for manipulation
-                     II = IW + I-1
-                     JJ = JS + J-1
-                     KK = KB + K-1
+               II = IW + I-1
+               JJ = JS + J-1
+               KK = KB + K-1
 
-! The interpolation is done using node. so one should use consistent
-! numbering system in the current version imap_c is used instead of
-! ip_of or im_of
-                     CUR_IJK = funijk_map_c(ii,jj,kk)
+               CUR_IJK = FUNIJK_MAP_C(II,JJ,KK)
 
-                     !TEMP1 = WEIGHTP(I,J,K)*DES_RO_S(M)*PVOL(NP)*WTP
-! Changed TEMP1 as an array TEMP1(NP) to ensure different TEMP1
-! for each particle in an ijk cell <June 18 2013>
-                     TEMP1 = WEIGHT_FT(I,J,K)*TEMP2
-                     DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) + TEMP1
-                     DES_VEL_NODE(CUR_IJK,:,M) = &
-                        DES_VEL_NODE(CUR_IJK,:,M) + TEMP1*DES_VEL_NEW(:,NP)
-                  ENDDO
-               ENDDO
+               TEMP1 = WEIGHT_FT(I,J,K)*TEMP2
+
+               DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) +   &
+                  TEMP1
+
+               DES_VEL_NODE(CUR_IJK,:,M) = DES_VEL_NODE(CUR_IJK,:,M) + &
+                  TEMP1*DES_VEL_NEW(:,NP)
+            ENDDO
+            ENDDO
             ENDDO
          ENDDO   ! end do (nindx=1,pinc(ijk))
 !-----------------------------------------------------------------<<<
@@ -455,54 +407,53 @@
 ! computed on nodes that do not belong to the domain
 
                DO KK = K1, K2
-                  DO JJ = J1, J2
-                     DO II = I1, I2
-                        IJK2 = funijk(II, JJ, KK)
+               DO JJ = J1, J2
+               DO II = I1, I2
 
-                        IF(SCALAR_NODE_ATWALL(IJK2)) THEN
-                           RESID_ROPS(1:DES_MMAX) = &
-                              RESID_ROPS(1:DES_MMAX) +&
-                              DES_ROPS_NODE(IJK2,1:DES_MMAX)
-                           DES_ROPS_NODE(IJK2,1:DES_MMAX) = ZERO
-                           DO IDIM = 1, merge(2,3,NO_K)
-                              RESID_VEL(IDIM, 1:DES_MMAX) = &
-                                 RESID_VEL(IDIM, 1:DES_MMAX) + &
-                                 DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX)
-                              DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = ZERO
-                           ENDDO
-                        ENDIF
+                  IJK2 = funijk(II, JJ, KK)
 
+                  IF(SCALAR_NODE_ATWALL(IJK2)) THEN
+                     RESID_ROPS(1:DES_MMAX) = RESID_ROPS(1:DES_MMAX) + &
+                        DES_ROPS_NODE(IJK2,1:DES_MMAX)
+
+                     DES_ROPS_NODE(IJK2,1:DES_MMAX) = ZERO
+                     DO IDIM = 1, merge(2,3,NO_K)
+                        RESID_VEL(IDIM, 1:DES_MMAX) =                  &
+                            RESID_VEL(IDIM, 1:DES_MMAX) +              &
+                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX)
+                        DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = ZERO
                      ENDDO
-                  ENDDO
+                  ENDIF
+               ENDDO
+               ENDDO
                ENDDO
 
 ! now add this residual equally to the remaining nodes
                NORM_FACTOR = ONE/REAL(COUNT_NODES_INSIDE)
                DO KK = K1, K2
-                  DO JJ = J1, J2
-                     DO II = I1, I2
-                        IJK2 = funijk(II, JJ, KK)
+               DO JJ = J1, J2
+               DO II = I1, I2
+                  IJK2 = funijk(II, JJ, KK)
 
-                        IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN
-                           DES_ROPS_NODE(IJK2,1:DES_MMAX) = &
-                              DES_ROPS_NODE(IJK2,1:DES_MMAX) + &
-                              RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
-                           DO IDIM = 1, merge(2,3,NO_K)
-                              DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = &
-                                 DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) + &
-                                 RESID_VEL(IDIM, 1:DES_MMAX)*NORM_FACTOR
-                           ENDDO
-                        ENDIF
-
+                  IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN
+                     DES_ROPS_NODE(IJK2,1:DES_MMAX) =                  &
+                        DES_ROPS_NODE(IJK2,1:DES_MMAX) +               &
+                        RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
+                     DO IDIM = 1, merge(2,3,NO_K)
+                        DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) =          &
+                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) +       &
+                           RESID_VEL(IDIM, 1:DES_MMAX)*NORM_FACTOR
                      ENDDO
-                  ENDDO
+                  ENDIF
+
+               ENDDO
+               ENDDO
                ENDDO
             ENDIF
          ENDIF   ! end if (cartesian_grid)
-!-----------------------------------------------------------------<<<
-      !ENDDO IJKLOOP   ! end do ijkloop (ijk=ijkstart3,ijkend3)
       ENDDO
 !$omp end parallel
+
 
 ! At the interface des_rops_node has to be added since particles
 ! across the processors will contribute to the same scalar node.
@@ -533,68 +484,60 @@
 ! vol(ijk2) is the volume of the scalar cell in consideration and
 ! vol_sur is the sum of all the scalar cell volumes that have this node
 ! as the common node.
-
-! looping over all fluid cells
-!Handan Liu added here on Feb. 28 2013
-!$omp   parallel do default(none)             &
-!$omp   shared(ISTART2,KSTART2,JSTART2,IEND1,JEND1,KEND1,DEAD_CELL_AT,                &
-!$omp          DO_K,DES_MMAX,IMAP_C,DES_ROPS_NODE,DES_VEL_NODE,FUNIJK_MAP_C,VOL)      &
-!$omp   private(K,J,I,IJK,I1,I2,J1,J2,K1,K2,II,JJ,KK,IJK2,M,VOL_SURR,DES_ROP_DENSITY, &
-!$omp           DES_VEL_DENSITY,DES_ROP_S,DES_U_S,DES_V_S,DES_W_S)   collapse (3)
+!---------------------------------------------------------------------//
+!$omp parallel do default(none) collapse (3)                           &
+!$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, VOL,&
+!$omp   DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, DES_MMAX, DES_ROPS_NODE, &
+!$omp   DES_VEL_NODE)                                                  &
+!$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY,      &
+!$omp   DES_VEL_DENSITY)                                               &
+!$omp reduction(+:DES_ROP_S, DES_U_S, DES_V_S, DES_W_S)
       DO K = KSTART2, KEND1
-         DO J = JSTART2, JEND1
-            DO I = ISTART2, IEND1
-               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-               IJK = funijk(I,J,K)
-               if (VOL_SURR(IJK).eq.ZERO) CYCLE ! no FLUID_AT any of the stencil points have
-               I1 = I
-               I2 = I+1
-               J1 = J
-               J2 = J+1
-               K1 = K
-               K2 = merge(K+1, K, DO_K)
+      DO J = JSTART2, JEND1
+      DO I = ISTART2, IEND1
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+         IJK = funijk(I,J,K)
+         if (VOL_SURR(IJK).eq.ZERO) CYCLE ! no FLUID_AT any of the stencil points have
 
 ! looping over stencil points (NODE VALUES)
-               DO M = 1, DES_MMAX
+         DO M = 1, DES_MMAX
 
-                  DES_ROP_DENSITY = DES_ROPS_NODE(IJK, M)/VOL_SURR(IJK)
-                  DES_VEL_DENSITY(:) = DES_VEL_NODE(IJK, :, M)/VOL_SURR(IJK)
+            DES_ROP_DENSITY = DES_ROPS_NODE(IJK, M)/VOL_SURR(IJK)
+            DES_VEL_DENSITY(:) = DES_VEL_NODE(IJK, :, M)/VOL_SURR(IJK)
 
-                  DO KK = K1, K2
-                     DO JJ = J1, J2
-                        DO II = I1, I2
-                           IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
+            DO KK = K, merge(K+1, K, DO_K)
+            DO JJ = J, J+1
+            DO II = I, I+1
+               IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
 
-                           IJK2 = funijk_map_c(II, JJ, KK)
-                           IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN
+               IJK2 = funijk_map_c(II, JJ, KK)
+               IF(FLUID_AT(IJK2).and.(IS_ON_myPE_wobnd(II, JJ, KK))) THEN
 ! Since the data in the ghost cells is spurious anyway and overwritten during
 ! subsequent send receives, do not compute any value here as this will
 ! mess up the total mass value that is computed below to ensure mass conservation
 ! between Lagrangian and continuum representations
-
-                              DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + DES_ROP_DENSITY*VOL(IJK2)
-                              DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + DES_VEL_DENSITY(1)*VOL(IJK2)
-                              DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + DES_VEL_DENSITY(2)*VOL(IJK2)
-                              IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + DES_VEL_DENSITY(3)*VOL(IJK2)
-                           ENDIF
-                        ENDDO  ! end do (ii=i1,i2)
-                     ENDDO  ! end do (jj=j1,j2)
-                  ENDDO  ! end do (kk=k1,k2)
-               ENDDO
-            ENDDO   ! end do (i=istart2,iend1)
-         ENDDO   ! end do (j=jstart2,jend1)
+                  DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + DES_ROP_DENSITY*VOL(IJK2)
+                  DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + DES_VEL_DENSITY(1)*VOL(IJK2)
+                  DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + DES_VEL_DENSITY(2)*VOL(IJK2)
+                  IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + DES_VEL_DENSITY(3)*VOL(IJK2)
+               ENDIF
+            ENDDO  ! end do (ii=i1,i2)
+            ENDDO  ! end do (jj=j1,j2)
+            ENDDO  ! end do (kk=k1,k2)
+         ENDDO
+      ENDDO   ! end do (i=istart2,iend1)
+      ENDDO   ! end do (j=jstart2,jend1)
       ENDDO   ! end do (k=kstart2,kend1)
+!omp end parallel do
 
 !-----------------------------------------------------------------<<<
 
-!Handan Liu added here on Feb. 28 2013
-!$omp   parallel do default(shared)             &
-!$omp   private(K,J,I,IJK,M) reduction(+:MASS_SOL2)
+
+!$omp parallel do default(none) private(IJK, M)                        &
+!$omp shared(IJKSTART3, IJKEND3, DO_K, DES_MMAX, DES_ROP_s, DES_U_S,   &
+!$omp   DES_V_S, DES_W_S, VOL)
       DO IJK = IJKSTART3, IJKEND3
-         IF(.not.FLUID_AT(IJK)) cycle
-         I = I_OF(IJK)
-         J = J_OF(IJK)
-         K = K_OF(IJK)
+         IF(.NOT.FLUID_AT(IJK)) CYCLE
 
          DO M = 1, DES_MMAX
             IF(DES_ROP_S(IJK, M).GT.ZERO) THEN
@@ -602,22 +545,14 @@
                DES_V_S(IJK, M) = DES_V_S(IJK,M)/DES_ROP_S(IJK, M)
                IF(DO_K) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
 
-! Finally divide by scalar cell volume to obtain \eps * \rho_s
+! Divide by scalar cell volume to obtain the bulk density
                DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
-
-! Note that for cut-cell, it is important to check both fluid_at and
-! is_on_mype_wobnd.  Fluid_at is not enough as it is shared between procs
-! and fluid_at(ijkend3) might be true when in fact it does not belong to
-! that proc
-               IF(IS_ON_myPE_wobnd(I, J, K)) MASS_SOL2 = MASS_SOL2 + &
-               DES_ROP_S(IJK, M)*VOL(IJK)
-
-               !WRITE(*,*) 'ROP_S = ', DES_ROP_S(IJK, M), DES_ROP_S(IJK, M)/DES_RO_S(M)
 
             ENDIF
          ENDDO   ! end loop over M=1,DES_MMAX
-      ENDDO                     ! end loop over IJK=ijkstart3,ijkend3
-!$omp end parallel do
+      ENDDO  ! end loop over IJK=ijkstart3,ijkend3
+!omp end parallel do
+
 
 ! RG: Aug, 20, 2012.
 ! -------------------------------------------------------------------
@@ -687,6 +622,21 @@
 ! between discrete and continuum representations. Should be turned to
 ! false for any production runs.
       IF(DES_REPORT_MASS_INTERP) THEN
+
+
+         DO IJK = IJKSTART3, IJKEND3
+            IF(.NOT.FLUID_AT(IJK)) CYCLE
+
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+
+! It is important to check both FLUID_AT and IS_ON_MYPE_WOBND. 
+            IF(IS_ON_myPE_wobnd(I,J,K)) MASS_SOL2 = MASS_SOL2 +        &
+               sum(DES_ROP_S(IJK,1:DES_MMAX))*VOL(IJK)
+         ENDDO
+
+
          CALL GLOBAL_SUM(MASS_SOL1, MASS_SOL1_ALL)
          CALL GLOBAL_SUM(MASS_SOL2, MASS_SOL2_ALL)
          if(myPE.eq.pe_IO) THEN
@@ -700,96 +650,146 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: COMP_EPG_ROP_G_FROM_ROP_S                               !
+!  Author: R.Garg                                     Date: ??-???-??  !
+!                                                                      !
+!  Purpose: Calculate the gas phase volume fraction (and in turn the   !
+!  gas phase bulk density) from the sum of the solids volume fractions.!
+!                                                                      !
+!  NOTE: This routine uses a global communication to notify all ranks  !
+!  of potential errors. Therefore all ranks can call MFIX_EXIT and     !
+!  prevent dead-lock. Communications may be reduced by passing the     !
+!  flag back to the caller and combining with other error checks.      !
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE COMP_EPG_ROP_G_FROM_ROP_S
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE geometry
-      USE funits
-      USE indices
-      USE compar
-      USE physprop
-      USE fldvar
-      USE discretelement
-      USE cutcell
-      USE mfix_pic
-      USE functions
-      use desmpi_wrapper
-      implicit none
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! general i, j, k indices
-      INTEGER :: IJK
-! solids phase indices
-      INTEGER :: CM, M
-! solids volume fraction of mth solids phase
-      DOUBLE PRECISION EP_SM
-! total solids volume fraction of continuum solids phases
+! Global Variables:
+!---------------------------------------------------------------------//
+! Flag: Coupled gas-solids DEM simulation
+      use discretelement, only: DES_CONTINUUM_HYBRID
+! Flag: Discrete and continuum solids co-exist
+      use discretelement, only: DES_CONTINUUM_COUPLED
+! Number of discrete solids phases
+      use discretelement, only: DES_MMAX
+! Number of continuum solids phases
+      use physprop, only: SMAX
+! Discrete particle material and bulk densities
+      use discretelement, only: DES_RO_S, DES_ROP_s
+! Number of particles in indexed fluid cell
+      use discretelement, only: PINC
+! Gas phae volume fraction, density, and build density
+      use fldvar, only: EP_G, RO_G, ROP_G
+! Bulk density of continuum solids phases
+      use fldvar, only: EP_S
+! Flag: Status of indexed cell
+      use cutcell, only: CUT_CELL_AT
+! Flag: Indexed cell contains fluid
+      USE functions, only: FLUID_AT
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! Flag: Fluid exists at indexed cell
+      use functions, only: FLUID_AT
+! The I, J, and K values that comprise an IJK
+      use indices, only: I_OF, J_OF, K_OF
+! Rank ID of current process
+      use compar, only: myPE
+! Global communication function to sum to all ranks.
+      use mpi_utility, only: GLOBAL_ALL_SUM
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      USE param1, only: ZERO, ONE
+
+      use error_manager
+
+      IMPLICIT NONE
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop indices
+      INTEGER :: IJK, M
+! Total solids volume fraction
       DOUBLE PRECISION SUM_EPS
-!-----------------------------------------------
+! Integer Error Flag
+      INTEGER :: IER
+!......................................................................!
 
-!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!$omp private(ijk,cm,m,sum_eps,ep_sm)
+
+! Initialize error flag.
+      IER = 0
+
+! Calculate gas volume fraction from solids volume fraction:
+!---------------------------------------------------------------------//
+!$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
+!$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, SMAX,&
+!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID) &
+!$omp private(IJK, SUM_EPs, M)
       DO IJK = IJKSTART3, IJKEND3
+! Skip wall cells.
          IF(.NOT.FLUID_AT(IJK)) CYCLE
-
-         IF (.NOT.DES_CONTINUUM_HYBRID) THEN
-            EP_G(IJK) = ONE
-         ELSE
-! summing together total continuum solids volume
-            SUM_EPS = ZERO
-            DO CM = 1,SMAX
-               SUM_EPS = SUM_EPS + EP_S(IJK,CM)
-            ENDDO
-            EP_G(IJK) = ONE - SUM_EPS
-         ENDIF  ! end if/else (.not.des_continuum_hybrid)
-
+! Initialize EP_g and the accumulator.
+         EP_G(IJK) = ONE
+         SUM_EPS = ZERO
+! Sum the DES solids volume fraction.
          DO M = 1, DES_MMAX
-! calculating void fraction in fluid cell based on value of bulk density
-            IF(DES_ROP_S(IJK, M).GT.ZERO) THEN
-               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
-               !IF(.NOT.DES_ONEWAY_COUPLED)
-               EP_G(IJK) = EP_G(IJK) - EP_SM
-               ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+            SUM_EPS = SUM_EPS + DES_ROP_S(IJK,M)/DES_RO_S(M)
+         ENDDO
+! Add in TFM solids contributions.
+         IF(DES_CONTINUUM_HYBRID) THEN
+            DO M = 1,SMAX
+               SUM_EPS = SUM_EPS + EP_S(IJK,M)
+            ENDDO
+         ENDIF
+! Calculate the gas phase volume fraction and bulk density.
+         EP_G(IJK) = ONE - SUM_EPS
+         ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
+! Flag an error if gas volume fraction is unphysical.
+         IF(DES_CONTINUUM_COUPLED) THEN
+            IF(EP_G(IJK) <= ZERO .OR. EP_G(IJK) > ONE) IER = IER + 1
+         ENDIF
+      ENDDO
+!omp end parallel do
 
-! ep_g does not matter if granular flow simulation (i.e. no fluid)
-              IF(EP_G(IJK)<ZERO .AND.DES_CONTINUUM_COUPLED) THEN
-                  IF(DMP_LOG) THEN
-                     WRITE(UNIT_LOG,1004) EP_G(IJK), IJK, I_OF(IJK), &
-                        J_OF(IJK), K_OF(IJK), EP_SM, PINC(IJK), &
-                        CUT_CELL_AT(IJK)
-                  ENDIF
-                  WRITE(*,1004) EP_G(IJK), IJK, &
-                     I_OF(IJK), J_OF(IJK), K_OF(IJK), EP_SM, &
-                     PINC(IJK), CUT_CELL_AT(IJK)
 
-                  IF(CARTESIAN_GRID) THEN
-                     CALL WRITE_DES_DATA
-!                     CALL WRITE_VTU_FILE
-                  ENDIF
+      CALL GLOBAL_ALL_SUM(IER)
+      IF(IER == 0) RETURN
 
-!                 CALL MFIX_EXIT(myPE)
-                  call des_mpi_stop
-               ENDIF
+
+! Report any errors. Volume fraction errors are fatal.
+!---------------------------------------------------------------------//
+      CALL INIT_ERR_MSG("COMP_EPG_ROP_G_FROM_ROP_S")
+      CALL OPEN_PE_LOG(IER)
+
+      WRITE(ERR_MSG, 1100)
+      CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+
+ 1100 FORMAT('Error 1100: Unphysical gas phase volume fraction ',      &
+         'calculated. A .vtp',/'file will be written and the code ',   &
+         'will exit. Fluid cell details:')
+
+         DO IJK=IJKSTART3, IJKEND3
+            IF(.NOT.FLUID_AT(IJK)) CYCLE
+            IF(EP_G(IJK) <= ZERO .OR. EP_G(IJK) > ONE) THEN
+
+            WRITE(ERR_MSG,1101) trim(iVal(IJK)), trim(iVal(I_OF(IJK))),&
+               trim(iVal(J_OF(IJK))), trim(iVal(K_OF(IJK))),EP_G(IJK), &
+               CUT_CELL_AT(IJK), PINC(IJK)
+
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
-         ENDDO                  ! end loop over M=1,DES_MMAX
-      ENDDO                     ! end loop over IJK=ijkstart3,ijkend3
-!$omp end parallel do
- 1004 FORMAT(/5X, 'Message from comp_epg_rop_g_from_rop_s', &
-      /,5X,'Warning, EP_G = ', g17.8, 2x, 'LT Zero at IJK', I20, &
-      /,5X,'I,J,K = ', I10, 2X, I10, 2x, I10, &
-      /,5X,'EP_S=', ES16.9, &
-      /,5X,'PINC (number of particles in cell)= ',I10, &
-      /,5X,'Cut cell ? ', L2,/)
+         ENDDO
 
+ 1101 FORMAT(3x,'Fluid Cell IJK: ',A,6x,'I/J/K: (',A,',',A,',',A,')',/ &
+         6x,'EP_G = ',g11.4,6x,'CUT_CELL_AT = ',L1,/6x,'PINC: ',A)
+
+      WRITE(ERR_MSG, 1102)
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+ 1102 FORMAT('This is a fatal error. A particle output file (vtp) ',   &
+         'will be written',/'to aid debugging.')
+
+      CALL WRITE_DES_DATA
+      CALL MFIX_EXIT(myPE)
 
       END SUBROUTINE COMP_EPG_ROP_G_FROM_ROP_S
 
