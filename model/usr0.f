@@ -8,36 +8,40 @@
 !           data.  This routine is not called from an IJK loop, hence  C
 !           all indices are undefined.                                 C
 !                                                                      C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE USR0
-
-      use run
-      use usr
-      use discretelement
-
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+      Use usr
       IMPLICIT NONE
-
-      if(particles /= 1) then
-         write(*,"(3x, 'invalid setup for test case')")
-         call mfix_exit(0)
-      endif
-
-! Store the intial translational velocity.
-      v0 = des_vel_new(1,1)
-
-! Calculate the end of the slip
-      end_slip = -(2.0d0*v0)/(7.0d0*MEW_w*Grav(2))
-
-
-      write(*,"(//3x,'Initial translational velocity:',g18.8)") v0
-      write(*,"(3x,'Gravity:  ',g18.8)") GRAV(2)
-      write(*,"(3x,'End of slip: ',g18.8)") end_slip
-
-      if(tstop < end_slip) then
-         write(*,"(/3x,'Simulation too short. It will not catch')")
-         write(*,"( 3x,'the end of particle/wall slip.')")
-         call mfix_exit(0)
-      endif
-
-      return
+!-----------------------------------------------
+!
+!  Include files defining common blocks here
+!
+!
+!  Define local variables here
+!
+!
+!  Include files defining statement functions here
+!
+!
+!  Insert user-defined code here
+!
+      RETURN
       END SUBROUTINE USR0
