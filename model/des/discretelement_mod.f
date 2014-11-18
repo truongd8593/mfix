@@ -121,8 +121,6 @@
 ! within particle_input.dat)
       DOUBLE PRECISION pvel_mean, PVEL_StDev
 
-
-
 ! Output/debug controls
 !----------------------------------------------------------------->>>
 ! Logic that controls whether to print data dem simulations (granular or
@@ -399,6 +397,18 @@
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
+
+      TYPE facet_linked_list
+         INTEGER :: facet_id
+         DOUBLE PRECISION, DIMENSION(3):: PFT
+         type(facet_linked_list), pointer :: next => null()
+      END TYPE facet_linked_list
+
+      TYPE facet_linked_list_p
+         type(facet_linked_list), POINTER :: pp => null()
+      END TYPE facet_linked_list_p
+
+      TYPE(facet_linked_list_p), DIMENSION(:), ALLOCATABLE :: particle_wall_collisions
 
       TYPE cnaa1
          INTEGER, DIMENSION(:), ALLOCATABLE:: p

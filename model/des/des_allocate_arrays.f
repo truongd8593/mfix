@@ -124,6 +124,8 @@
          Allocate(  TOW (1,NPARTICLES) )
       ENDIF
 
+      Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
+
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
