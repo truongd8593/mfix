@@ -278,7 +278,7 @@
       DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP
 
 
-      DOUBLE PRECISION :: MAX_DISTSQ
+      DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
       INTEGER :: MAX_NF, axis
       DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX
 
@@ -334,6 +334,29 @@
             axis = cellneighbor_facet(cell_id)%extentdir(cell_count)
 
             NF = cellneighbor_facet(cell_id)%p(cell_count)
+
+! Compute particle-particle VDW cohesive short-range forces
+            IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
+
+               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
+               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
+               DISTSQ = DOT_PRODUCT(DIST, DIST)
+               R_LM = 2*DES_RADIUS(LL)
+
+               IF(DISTSQ < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
+                  IF(DISTSQ > (VDW_INNER_CUTOFF+R_LM)**2) THEN
+                     DistApart = (SQRT(DISTSQ)-R_LM)
+                     FORCE_COH = HAMAKER_CONSTANT * DES_RADIUS(LL) /           &
+                          (12d0*DistApart**2) * (Asperities/(Asperities+    &
+                          DES_RADIUS(LL)) + ONE/(ONE+Asperities/DistApart)**2 )
+                  ELSE
+                     FORCE_COH = 2d0 * PI * SURFACE_ENERGY * DES_RADIUS(LL) *  &
+                          (Asperities/(Asperities+DES_RADIUS(LL)) + ONE/          &
+                          (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                  ENDIF
+                  FC(:,LL) = FC(:,LL) + DIST(:)*FORCE_COH/SQRT(DISTSQ)
+               ENDIF
+            ENDIF
 
             if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
                call remove_collision()
@@ -543,13 +566,13 @@
 
 ! Save the tangential displacement history with the correction of Coulomb's law
                IF (PARTICLE_SLIDE) THEN
-! Since FT might be corrected during the call to cfslide, the tangental
+! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
                   current_p%PFT(:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
                ELSE
                   current_p%PFT(:) = FORCE_HISTORY(:)
                ENDIF
-               
+
                PARTICLE_SLIDE = .FALSE.
 
          ENDDO

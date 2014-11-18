@@ -108,7 +108,7 @@
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_COLL(CC) = dot_product(DIST,DIST)
 
-! Cmpute particle-particle VDW cohesive short-range forces
+! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
             IF(DIST_COLL(CC) < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
                EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) /        &
@@ -138,7 +138,7 @@
          IF(DIST_COLL(CC) == 0) THEN
             WRITE(*,8550) LL, I
             STOP "division by zero"
- 8550 FORMAT('distance betwen particles is zero:',2(2x,I10))
+ 8550 FORMAT('distance between particles is zero:',2(2x,I10))
          ENDIF
          DIST_COLL(cc) = SQRT(DIST_COLL(CC))
          NORM_COLL(:,CC)= DIST(:)/DIST_COLL(cc)
