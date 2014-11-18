@@ -60,7 +60,6 @@
 
 ! west wall; in 3D on yz plane (x=wx1->0)
       IF(IW.EQ.1) THEN
-         print *,"WEST"
          WALL_POS(1) = WX1 - DES_R
          WALL_POS(2) = DES_POS_NEW(2,L)
          IF(DO_K) WALL_POS(3) = DES_POS_NEW(3,L)
@@ -75,7 +74,6 @@
 
 ! east wall; in 3D on yz plane (x=ex2->xlength)
       ELSEIF(IW.EQ.2) THEN
-         print *,"EAST"
          WALL_POS(1) = EX2 + DES_R
          WALL_POS(2) = DES_POS_NEW(2,L)
          IF(DO_K) WALL_POS(3) = DES_POS_NEW(3,L)
@@ -90,7 +88,6 @@
 
 ! bottom wall; in 3D on xz plane (y=by1->0)
       ELSEIF(IW.EQ.3) THEN
-         print *,"BOTTOM"
          WALL_POS(1) = DES_POS_NEW(1,L)
          WALL_POS(2) = BY1 - DES_R
          IF(DO_K) WALL_POS(3) = DES_POS_NEW(3,L)
@@ -105,7 +102,6 @@
 
 ! top wall; in 3D on xz plane (y=ty2->ylength)
       ELSEIF(IW.EQ.4) THEN
-         print *,"TOP"
          WALL_POS(1) = DES_POS_NEW(1,L)
          WALL_POS(2) = TY2 + DES_R
          IF(DO_K) WALL_POS(3) = DES_POS_NEW(3,L)
@@ -120,7 +116,6 @@
 
 ! south wall; in 3D on xy plane (z=sz1->0)
       ELSEIF(IW.EQ.5) THEN
-         print *,"SOUTH"
          WALL_POS(1) = DES_POS_NEW(1,L)
          WALL_POS(2) = DES_POS_NEW(2,L)
          WALL_POS(3) = SZ1 - DES_R
@@ -135,7 +130,6 @@
 
 ! north wall; in 3D on xy plane (z=nz2->zlength)
       ELSEIF(IW.EQ.6) THEN
-         print *,"NORTH"
          WALL_POS(1) = DES_POS_NEW(1,L)
          WALL_POS(2) = DES_POS_NEW(2,L)
          WALL_POS(3) = NZ2 + DES_R

@@ -224,9 +224,6 @@
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*lpacketsize
-      print *,"lmaxlen1 = ",lmaxlen1
-      print *,"lmaxlen2 = ",lmaxlen2
-      print *,"imaxbuf = ",imaxbuf
 
       allocate (isendindices(lmaxarea,lfaces),irecvindices(lmaxarea,lfaces))
       isendindices =0

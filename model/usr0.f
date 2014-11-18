@@ -8,117 +8,36 @@
 !           data.  This routine is not called from an IJK loop, hence  C
 !           all indices are undefined.                                 C
 !                                                                      C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE USR0
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
+
+      use run
       use usr
       use discretelement
 
       IMPLICIT NONE
-
-      double precision :: t_r
-
-      double precision :: lRad
-      double precision :: lGrav
-
-      double precision :: ly, ldydt
-
-      integer lc1
-      integer, parameter :: lc_max = 1000
-
-      logical converged
-
-return
 
       if(particles /= 1) then
          write(*,"(3x, 'invalid setup for test case')")
          call mfix_exit(0)
       endif
 
-      lRad  = des_radius(1)
-      h0    = des_pos_new(2,1)
-      lGrav = -grav(2)
+! Store the intial translational velocity.
+      v0 = des_vel_new(1,1)
 
-! Calculate the start time of particle/wall collision.
-      time_c =  dsqrt(2.0d0*(h0 - lRad)/lGrav)
-      print *,"time_c = ",time_c
-! Calculate the particle's velocity at the start of the collision.
-      vel_c  = -dsqrt(2.0d0*lGrav*h0)
-
-      b_r  = DES_ETAN_WALL(1)/ (2.0d0 * dsqrt(KN_W * PMASS(1)))
-      w0_r = dsqrt(KN_W / PMASS(1))
-      print *,"PMASS(1) - ",PMASS(1)
-
-! Initial loop parameters.
-      time_r = time_c + 0.05d0
-      print *,"time_r = ",time_r
-      lc1 = 0
-      converged = .false.
-
-! Calculate the start time for the rebound stage.
-      do while (.not.converged)
-         lc1 = lc1 + 1
-
-         ly    = y_s2(h0, lRad, b_r, w0_r, lGrav, time_r) - lRad
-         ldydt = dydt_s2(h0, lRad, b_r, w0_r, lGrav, time_r)
-         print *," ldydt = ",ldydt
-
-         if(ldydt /= 0.0d0) then
-            t_r = time_r - ly/ldydt
-         else
-            write(*,"(3x, 'Fatal Error: ldydt == 0')")
-            call mfix_exit(0)
-         endif
-         print *," t_r = ",t_r
-
-         if(abs(t_r - time_r) < 10.0d-16) then
-            converged = .true.
-         else
-            converged = .false.
-
-            write(*,"(3x,I4,2(3x,F14.8))") lc1, t_r, time_r
-
-         endif
-
-         time_r = t_r
-
-         if(lc1 > lc_max) then
-            write(*,"(3x, 'Fatal Error: lc1 > lc_max')")
-            call mfix_exit(0)
-         endif
-
-      enddo
-! Calculate the velocity at the end of the rebound stage.
-      vel_r = dydt_s2(h0, lRad, b_r, w0_r, lGrav, time_r)
+! Calculate the end of the slip
+      end_slip = -(2.0d0*v0)/(7.0d0*MEW_w*Grav(2))
 
 
-      write(*,"(//3x,'Collision:')")
-      write(*,"(5x,'Time:     ',F14.8)") time_c
-      write(*,"(5x,'Velocity: ',F14.8)") vel_c
+      write(*,"(//3x,'Initial translational velocity:',g18.8)") v0
+      write(*,"(3x,'Gravity:  ',g18.8)") GRAV(2)
+      write(*,"(3x,'End of slip: ',g18.8)") end_slip
 
-      write(*,"(/3x,'Rebound:')")
-      write(*,"(5x,'Time: ',F14.8)") time_r
-      write(*,"(5x,'Velocity: ',F14.8)") vel_r
-
-      write(*,"(//' ')")
+      if(tstop < end_slip) then
+         write(*,"(/3x,'Simulation too short. It will not catch')")
+         write(*,"( 3x,'the end of particle/wall slip.')")
+         call mfix_exit(0)
+      endif
 
       return
-
       END SUBROUTINE USR0
