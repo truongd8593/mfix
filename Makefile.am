@@ -96,7 +96,9 @@ common_SOURCES = \
 	model/cal_d.f \
 	model/calc_cell.f \
 	model/calc_coeff.f \
-	model/calc_d.f \
+	model/calc_d_e.f \
+	model/calc_d_n.f \
+	model/calc_d_t.f \
 	model/calc_dif_g.f \
 	model/calc_dif_s.f \
 	model/calc_drag.f \
