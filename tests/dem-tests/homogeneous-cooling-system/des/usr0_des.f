@@ -48,7 +48,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_GRAN_TEMP
 
-      use discretelement, only: NEIGH_MAX
       use discretelement, only: OVERLAP_MAX
 
       use discretelement, only: DES_MMAX
@@ -91,7 +90,7 @@
       IF(.NOT.F_EXISTS) THEN
          OPEN(UNIT=GT_UNIT,FILE=FNAME,STATUS='NEW')
          WRITE(GT_UNIT,"(6(2X,A))") 'SOLIDS-TIME', 'GRAN-ENERGY', &
-            'KNTC-ENERGY', 'VG-VELOCTY','MAX-OVERLAP','MAX-NEIGH'
+            'KNTC-ENERGY', 'VG-VELOCTY','MAX-OVERLAP'
       ELSE
          OPEN(UNIT=GT_UNIT,FILE=FNAME,&
             POSITION="APPEND",STATUS='OLD')
@@ -100,8 +99,8 @@
 !  SOLIDS-TIME  GRAN-ENERGY  KNTC-ENERGY  AVG-VELOCTY  MAX-OVERLAP  MAX-NEIGH
 !xxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxiiiiiiiii
 
-      WRITE(GT_UNIT,"(5(2x,g11.5),2X,I5)") S_TIME, GRAN_TEMP, DES_KE,  &
-          AVG_VEL, OVERLAP_MAX, NEIGH_MAX
+      WRITE(GT_UNIT,"(5(2x,g11.5))") S_TIME, GRAN_TEMP, DES_KE,  &
+          AVG_VEL, OVERLAP_MAX
 
       CLOSE(GT_UNIT)
 

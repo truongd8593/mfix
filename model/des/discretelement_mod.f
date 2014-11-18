@@ -255,7 +255,6 @@
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation
-      INTEGER NEIGH_MAX
       DOUBLE PRECISION OVERLAP_MAX
 
 ! The number of i, j, k divisions in the grid used to perform the
