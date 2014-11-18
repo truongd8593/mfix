@@ -228,16 +228,15 @@
       SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
+      USE calc_collision_wall
+      USE compar
+      USE cutcell, only : cut_cell_at
       USE des_linked_list_funcs
       USE discretelement, only: dimn
-
-      USE cutcell, only : cut_cell_at
-      USE softspring_funcs_cutcell
-      USE indices
-      USE geometry
-      USE compar
       USE error_manager
       USE functions
+      USE geometry
+      USE indices
 
       IMPLICIT NONE
       INTEGER :: IJK

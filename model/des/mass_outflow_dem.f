@@ -142,10 +142,6 @@
       FC(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
-      PN_WALL(:,NP) = -1
-      PN_WALL(1,NP) = 0
-      PV_WALL(:,NP) = .FALSE.
-      PFT_WALL(NP,:,:) = ZERO
       PPOS(:,NP) = ZERO
 
 ! Note that if particle NP has any neighbors then the particle NP will

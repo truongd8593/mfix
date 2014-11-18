@@ -7,6 +7,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MAKE_ARRAYS_DES
 
+      USE calc_collision_wall
       USE compar
       USE cutcell
       USE des_rxns
@@ -21,7 +22,6 @@
       USE mpi_utility
       USE param1
       USE run
-      USE softspring_funcs_cutcell
       USE stl
       IMPLICIT NONE
 !-----------------------------------------------

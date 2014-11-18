@@ -23,7 +23,6 @@
       use functions
       use mpi_utility
       use sendrecv
-      use softspring_funcs_cutcell
       use stl
 
       IMPLICIT NONE
