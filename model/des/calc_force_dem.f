@@ -128,6 +128,14 @@
             ENDIF
          ENDIF
 
+         IF (ENERGY_EQ) THEN
+            ! Calculate conduction and radiation for thermodynamic neighbors
+            QQ_COLL(CC) = ZERO
+            IF(K_s0(PIJK(LL,5)) > ZERO) THEN
+               QQ_COLL(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_COLL(CC)), PIJK(LL,5), PIJK(LL,4))
+            ENDIF
+         ENDIF
+
          IF(DIST_COLL(CC) > (R_LM + SMALL_NUMBER)**2) THEN
             PV_COLL(CC) = .false.
             PFT_COLL(:,CC) = 0.0
@@ -205,14 +213,6 @@
             PFT_COLL(:,CC) = -( FT_COLL(:,CC) - FTS2(:) ) / KT_DES
          ELSE
             PFT_COLL(:,CC) = PFT_TMP(:)
-         ENDIF
-
-         IF (ENERGY_EQ) THEN
-            ! Calculate conduction and radiation for thermodynamic neighbors
-            QQ_COLL(CC) = ZERO
-            IF(K_s0(phaseLL) > ZERO) THEN
-               QQ_COLL(CC) = DES_CONDUCTION(LL, I, DIST_COLL(CC), phaseLL, PIJK(LL,4))
-            ENDIF
          ENDIF
 
       ENDDO
