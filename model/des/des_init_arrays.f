@@ -42,16 +42,18 @@
       RO_Sol(:) = ZERO
 
 ! particle position, velocity, etc
-      DES_POS_OLD(:,:) = ZERO
+
       DES_POS_NEW(:,:) = ZERO
-      DES_VEL_OLD(:,:) = ZERO
       DES_VEL_NEW(:,:) = ZERO
-
-      DES_ACC_OLD(:,:) = ZERO
-
-      OMEGA_OLD(:,:) = ZERO
       OMEGA_NEW(:,:) = ZERO
-      ROT_ACC_OLD(:,:) = ZERO
+
+      IF (INTG_ADAMS_BASHFORTH) THEN
+         DES_POS_OLD(:,:) = ZERO
+         DES_VEL_OLD(:,:) = ZERO
+         DES_ACC_OLD(:,:) = ZERO
+         OMEGA_OLD(:,:) = ZERO
+         ROT_ACC_OLD(:,:) = ZERO
+      ENDIF
 
       FC(:,:) = ZERO
       TOW(:,:) = ZERO

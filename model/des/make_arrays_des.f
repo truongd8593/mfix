@@ -203,10 +203,13 @@
          call global_all_max(imax_global_id)
 
 ! Initialize old values
-         omega_old(:,:)   = zero
          omega_new(:,:)   = zero
-         des_pos_old(:,:) = des_pos_new(:,:)
-         des_vel_old(:,:) = des_vel_new(:,:)
+
+         IF (INTG_ADAMS_BASHFORTH) THEN
+            omega_old(:,:)   = zero
+            des_pos_old(:,:) = des_pos_new(:,:)
+            des_vel_old(:,:) = des_vel_new(:,:)
+         ENDIF
 
 ! Read the restart file.
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN

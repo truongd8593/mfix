@@ -93,15 +93,15 @@
 ! Advance particle position, velocity
         IF (INTG_EULER) THEN
 ! first-order method
-            DES_VEL_NEW(:,L) = DES_VEL_OLD(:,L) + FC(:,L)*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-               DES_VEL_NEW(:,L)*DTSOLID
+            DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + FC(:,L)*DTSOLID
+            D(:) = DES_VEL_NEW(:,L)*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + D(:)
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
 !         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
 !             (DES_VEL_NEW(:,L)+DES_VEL_OLD(:,L))*DTSOLID
 
 
-            OMEGA_NEW(:,L)   = OMEGA_OLD(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
+            OMEGA_NEW(:,L)   = OMEGA_NEW(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
@@ -109,8 +109,8 @@
                ( 3.d0*FC(:,L)-DES_ACC_OLD(:,L) )*DTSOLID
             OMEGA_NEW(:,L)   =  OMEGA_OLD(:,L) + 0.5d0*&
                ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(:,L) )*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
-               ( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
+            D(:) = 0.5d0*( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + D(:)
             DES_ACC_OLD(:,L) = FC(:,L)
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
@@ -129,7 +129,6 @@
 
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
-         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
          IF(dot_product(D,D).GE.DES_RADIUS(L)**2) THEN
             WRITE(*,1002) L, sqrt(dot_product(D,D)), DES_RADIUS(L)
             WRITE(*,'(5X,A,3(ES17.9))') &
@@ -539,7 +538,7 @@
       DOUBLE PRECISION D(3), DIST, &
                        NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3), VEL_ORIG(3)
+      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -636,8 +635,6 @@
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-         VEL_ORIG(:) = DES_VEL_NEW(:,L)
-
 
          DES_VEL_NEW(:,L) = (DES_VEL_OLD(:,L) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
