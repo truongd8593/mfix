@@ -539,6 +539,8 @@
                FTS2(:) = -ETAT_DES_W * TANGENT(:)
                FTAN(:) =  FTS1(:) + FTS2(:)
 
+               PARTICLE_SLIDE = .FALSE.
+
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
                FTMD = DOT_PRODUCT(FTAN, FTAN)
@@ -572,8 +574,6 @@
                ELSE
                   current_p%PFT(:) = FORCE_HISTORY(:)
                ENDIF
-
-               PARTICLE_SLIDE = .FALSE.
 
          ENDDO
 
