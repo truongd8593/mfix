@@ -500,7 +500,8 @@
                   current_p%facet_id = nf
                else
                   current_p => particle_wall_collisions(LL)%pp
-                  do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                  do while (associated(current_p))
+                     if (current_p%facet_id .eq. nf) exit
                      previous_p => current_p
                      current_p => current_p%next
                   enddo
@@ -599,7 +600,8 @@
                      previous_p => current_p
                      current_p => current_p%next
 
-                     do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                     do while (associated(current_p))
+                        if (current_p%facet_id .eq. nf) exit
                         previous_p => current_p
                         current_p => current_p%next
                      enddo
