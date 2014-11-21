@@ -500,7 +500,8 @@
                   current_p%facet_id = nf
                else
                   current_p => particle_wall_collisions(LL)%pp
-                  do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                  do while (associated(current_p))
+                     if (current_p%facet_id .eq. nf) exit
                      previous_p => current_p
                      current_p => current_p%next
                   enddo
@@ -539,6 +540,8 @@
                FTS2(:) = -ETAT_DES_W * TANGENT(:)
                FTAN(:) =  FTS1(:) + FTS2(:)
 
+               PARTICLE_SLIDE = .FALSE.
+
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
                FTMD = DOT_PRODUCT(FTAN, FTAN)
@@ -573,8 +576,6 @@
                   current_p%PFT(:) = FORCE_HISTORY(:)
                ENDIF
 
-               PARTICLE_SLIDE = .FALSE.
-
          ENDDO
 
 !         ENDIF
@@ -599,7 +600,8 @@
                      previous_p => current_p
                      current_p => current_p%next
 
-                     do while (associated(current_p) .and. current_p%facet_id .ne. nf)
+                     do while (associated(current_p))
+                        if (current_p%facet_id .eq. nf) exit
                         previous_p => current_p
                         current_p => current_p%next
                      enddo

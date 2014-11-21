@@ -230,6 +230,9 @@
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       LOGICAL DO_NSEARCH
 
+! Flag on whether to have DES_*_OLD arrays, if either Adams Bashforth or PIC is used
+      LOGICAL DO_OLD
+
 ! Factor muliplied by sum of radii in grid based neighbor search and
 ! nsquare search method.  increases the effective radius of a particle
 ! for detecting particle contacts

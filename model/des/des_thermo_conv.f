@@ -143,10 +143,7 @@
 ! Fluid velocity
       DOUBLE PRECISION cUg, cVg, cWg
       DOUBLE PRECISION Us, Vs, Ws
-
-! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
 ! Initialization
       IMJK  = IM_OF(IJK)

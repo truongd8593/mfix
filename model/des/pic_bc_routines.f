@@ -397,7 +397,6 @@
                norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
                ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
 
-
                VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN), &
                     DES_VEL_NEW(:, LL))
                !If the normal velocity of parcel is in the same

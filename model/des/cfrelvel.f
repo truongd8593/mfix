@@ -48,10 +48,6 @@
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION :: DIST_CL, DIST_CI
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-!-----------------------------------------------
 
 ! translational relative velocity
          VRELTRANS(:) = (DES_VEL_NEW(:,L) - DES_VEL_NEW(:,II))
@@ -80,7 +76,7 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+      VRN = DOT_PRODUCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992
@@ -138,10 +134,6 @@
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION :: DIST_CL
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-!-----------------------------------------------
 
 ! translational relative velocity
          VRELTRANS(:) = DES_VEL_NEW(:,L) - WALL_VEL(:)
@@ -163,7 +155,7 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+      VRN = DOT_PRODUCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992

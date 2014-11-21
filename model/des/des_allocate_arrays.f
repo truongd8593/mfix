@@ -43,6 +43,8 @@
       INTEGER :: II, IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
+! dimensions of a cross product vector
+      INTEGER :: CROSS_DIMN
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
@@ -93,22 +95,24 @@
       Allocate(  PMASS (NPARTICLES) )
       Allocate(  OMOI (NPARTICLES) )
 
+      IF (DO_K) THEN
+         CROSS_DIMN = DIMN
+      ELSE
+         CROSS_DIMN = 1
+      ENDIF
+
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
       Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
       Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_ACC_OLD (DIMN,NPARTICLES) )
+      Allocate(  OMEGA_NEW (CROSS_DIMN,NPARTICLES) )
 
-      IF(DO_K) THEN
-         Allocate(  OMEGA_OLD (DIMN,NPARTICLES) )
-         Allocate(  OMEGA_NEW (DIMN,NPARTICLES) )
-         ALLOCATE(  ROT_ACC_OLD (DIMN,NPARTICLES))
-      ELSE
-         Allocate(  OMEGA_OLD (1,NPARTICLES) )
-         Allocate(  OMEGA_NEW (1,NPARTICLES) )
-         ALLOCATE(  ROT_ACC_OLD (1,NPARTICLES))
+      IF (DO_OLD) THEN
+         Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
+         Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
+         Allocate(  DES_ACC_OLD (CROSS_DIMN,NPARTICLES) )
+         Allocate(  OMEGA_OLD (CROSS_DIMN,NPARTICLES) )
+         Allocate(  ROT_ACC_OLD (CROSS_DIMN,NPARTICLES))
       ENDIF
 
 ! Particle positions at the last call neighbor search algorithm call
@@ -118,11 +122,7 @@
       Allocate(  FC (DIMN,NPARTICLES) )
 
 ! Torque
-      IF(DO_K) THEN
-         Allocate(  TOW (DIMN,NPARTICLES) )
-      ELSE
-         Allocate(  TOW (1,NPARTICLES) )
-      ENDIF
+      Allocate(  TOW (CROSS_DIMN,NPARTICLES) )
 
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 

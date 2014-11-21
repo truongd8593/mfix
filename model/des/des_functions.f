@@ -1,46 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  Function: DES_DOTPRDCT
-!  Purpose: Calculate the dot product of two vectors and return the
-!           result
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-      DOUBLE PRECISION FUNCTION DES_DOTPRDCT(XX,YY)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry, only: NO_K
-      USE discretelement
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! vectors
-      DOUBLE PRECISION, INTENT(IN) :: XX(3), YY(3)
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: II
-      DOUBLE PRECISION :: DOTP
-!-----------------------------------------------
-
-      DOTP = ZERO
-
-      DO II = 1, merge(2,3,NO_K)
-         DOTP = DOTP + XX(II)*YY(II)
-      ENDDO
-      DES_DOTPRDCT = DOTP
-
-      RETURN
-      END FUNCTION DES_DOTPRDCT
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
 !  Subroutine: DES_CROSSPRDCT
 !  Purpose: Calculate the cross product of two vectors that both have
 !           either 2 or 3 elements and return the result in the first
