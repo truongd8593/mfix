@@ -16,7 +16,7 @@
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(DES_INTERP_ON) THEN
-            CALL DRAG_GS_DES_INTERP0
+            CALL DRAG_GS_DES_INTERP1
          ELSE
             CALL DRAG_GS_DES_NONINTERP
          ENDIF
@@ -47,7 +47,7 @@
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(DES_INTERP_ON) THEN
-            CALL DRAG_GS_GAS_INTERP0
+            CALL DRAG_GS_GAS_INTERP1
          ELSE
             CALL DRAG_GS_GAS_NONINTERP
          ENDIF

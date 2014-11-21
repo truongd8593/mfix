@@ -153,6 +153,9 @@
          particle_count(IJK) = particle_count(IJK) + 1
       ENDDO
 
+! Calculate interpolation weights
+      IF(DES_INTERP_ON) CALL CALC_INTERP_WEIGHTS
+
 ! Calculate mean fields using either interpolation or cell averaging.
       CALL COMP_MEAN_FIELDS
 

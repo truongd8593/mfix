@@ -389,6 +389,13 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
+
+
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: FILTER_CELL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FILTER_WEIGHT
+
+
+
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
 ! Dynamic variable. for each ijk computational fluid cell store the

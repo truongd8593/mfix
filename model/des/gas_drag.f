@@ -79,7 +79,8 @@
       IF(DES_ONEWAY_COUPLED) RETURN
 
 ! Average the interpoalted drag force from the cell corners to the cell face.
-      IF(DES_INTERP_ON)THEN
+!      IF(DES_INTERP_ON)THEN
+      IF(.FALSE.)THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -218,7 +219,8 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-      IF(DES_INTERP_ON) THEN
+!      IF(DES_INTERP_ON) THEN
+      IF(.FALSE.) THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -358,7 +360,8 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-      IF(DES_INTERP_ON) THEN
+!     IF(DES_INTERP_ON) THEN
+      IF(.FALSE.) THEN
 
          AVG_FACTOR = 0.25d0
 

@@ -135,7 +135,7 @@
                      ipjkp   = funijk_map_c(ii+1,jj,kk+1)
                      ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
                      ijkp    = funijk_map_c(ii,jj,kk+1)
-                                         vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                     vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
