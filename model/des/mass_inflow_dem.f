@@ -295,17 +295,18 @@
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)
-      DES_POS_OLD(:,lNP) = lPOS(:)
+      DES_VEL_NEW(1,lNP) = BC_U_s(lBCV,BC_M)
+      DES_VEL_NEW(2,lNP) = BC_V_s(lBCV,BC_M)
+      DES_VEL_NEW(3,lNP) = BC_W_s(lBCV,BC_M)
 
 ! Set the initial velocity values
-      DES_VEL_OLD(1,lNP) = BC_U_s(lBCV,BC_M)
-      DES_VEL_OLD(2,lNP) = BC_V_s(lBCV,BC_M)
-      DES_VEL_OLD(3,lNP) = BC_W_s(lBCV,BC_M)
-
-      DES_VEL_NEW(:,lNP) = DES_VEL_OLD(:,lNP)
+      IF (INTG_ADAMS_BASHFORTH) THEN
+         DES_POS_OLD(:,lNP) = lPOS(:)
+         DES_VEL_OLD(:,lNP) = DES_VEL_NEW(:,lNP)
+         OMEGA_OLD(:,lNP) = 0
+      ENDIF
 
 ! Set the initial angular velocity values
-      OMEGA_OLD(:,lNP) = 0
       OMEGA_NEW(:,lNP) = 0
 
 ! Set the particle radius value

@@ -219,9 +219,11 @@
          call global_all_max(imax_global_id)
 
 ! Initizlie the old values.
-         omega_old(:,:)   = omega_new(:,:)
-         des_pos_old(:,:) = des_pos_new(:,:)
-         des_vel_old(:,:) = des_vel_new(:,:)
+         IF (INTG_ADAMS_BASHFORTH) THEN
+            omega_old(:,:)   = omega_new(:,:)
+            des_pos_old(:,:) = des_pos_new(:,:)
+            des_vel_old(:,:) = des_vel_new(:,:)
+         ENDIF
          IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
       ELSE

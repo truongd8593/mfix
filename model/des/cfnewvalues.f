@@ -131,8 +131,7 @@
 ! its radius during one solids time step. if so, call stop
          IF(dot_product(D,D).GE.DES_RADIUS(L)**2) THEN
             WRITE(*,1002) L, sqrt(dot_product(D,D)), DES_RADIUS(L)
-            WRITE(*,'(5X,A,3(ES17.9))') &
-               'old particle pos = ', DES_POS_OLD(:,L)
+            IF (INTG_ADAMS_BASHFORTH) WRITE(*,'(5X,A,3(ES17.9))') 'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &
                'new particle pos = ', DES_POS_NEW(:,L)
             WRITE(*,'(5X,A,3(ES17.9))')&

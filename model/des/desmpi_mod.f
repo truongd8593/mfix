@@ -940,9 +940,11 @@
             lbuf = lbuf + 1
             pijk(llocpar,5) = drecvbuf(lbuf,pface)
             lbuf = lbuf + 1
-            des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
-            des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
-            omega_old(:,llocpar)= omega_new(:,llocpar)
+            IF (INTG_ADAMS_BASHFORTH) THEN
+               des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
+               des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
+               omega_old(:,llocpar)= omega_new(:,llocpar)
+            ENDIF
             des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
             des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
@@ -987,9 +989,12 @@
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
-            des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
-            des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
-            omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
+
+            IF (INTG_ADAMS_BASHFORTH) THEN
+               des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
+               des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
+               omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
+            ENDIF
          enddo
       endif
 
@@ -1025,9 +1030,11 @@
                pea(lcurpar,1:4) = .false.
                fc(:,lcurpar) = 0.0
                des_pos_new(:,lcurpar)=0
-               des_pos_old(:,lcurpar)=0
+               IF (INTG_ADAMS_BASHFORTH) THEN
+                  des_pos_old(:,lcurpar)=0
+                  des_vel_old(:,lcurpar)=0
+               ENDIF
                des_vel_new(:,lcurpar)=0
-               des_vel_old(:,lcurpar)=0
                omega_new(:,lcurpar)=0
             end do
          end do
@@ -1106,22 +1113,24 @@
             dsendbuf(lbuf,pface) = pvol(lcurpar)        ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = pmass(lcurpar)       ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = omoi(lcurpar)        ;lbuf = lbuf+1
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-            lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
-            lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
+            IF (INTG_ADAMS_BASHFORTH) THEN
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
+               lbuf = lbuf+ltordimn
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
+               lbuf = lbuf+ltordimn
+            ENDIF
             dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
             lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(1:ltordimn,lcurpar)
@@ -1279,22 +1288,24 @@
          lbuf = lbuf + 1
          omoi(llocpar)        = drecvbuf(lbuf,pface)
          lbuf = lbuf + 1
-         des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
          des_pos_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
          des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
          omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
-         des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
+         IF (INTG_ADAMS_BASHFORTH) THEN
+            des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
+            des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
+         ENDIF
          fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
          tow(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
