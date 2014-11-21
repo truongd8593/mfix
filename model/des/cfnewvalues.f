@@ -109,17 +109,6 @@
 
 
 ! Check if the particle has moved a distance greater than or equal to
-! its radius since the last time a neighbor search was called. if so,
-! make sure that neighbor is called in des_time_march
-         IF(.NOT.DO_NSEARCH) THEN
-            DD(:) = DES_POS_NEW(:,L) - PPOS(:,L)
-            NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
-               DES_RADIUS(L)
-            IF(dot_product(DD,DD).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
-         ENDIF
-
-
-! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
          IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
             WRITE(*,1002) L, sqrt(dot_product(DD,DD)), DES_RADIUS(L)
@@ -130,6 +119,16 @@
                'new particle vel = ', DES_VEL_NEW(:,L)
             WRITE(*,1003)
             STOP 1
+         ENDIF
+
+! Check if the particle has moved a distance greater than or equal to
+! its radius since the last time a neighbor search was called. if so,
+! make sure that neighbor is called in des_time_march
+         IF(.NOT.DO_NSEARCH) THEN
+            DD(:) = DES_POS_NEW(:,L) - PPOS(:,L)
+            NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
+               DES_RADIUS(L)
+            IF(dot_product(DD,DD).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
          ENDIF
 
 ! Reset total contact force and torque
