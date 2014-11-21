@@ -95,17 +95,17 @@
       Allocate(  PMASS (NPARTICLES) )
       Allocate(  OMOI (NPARTICLES) )
 
-! Old and new particle positions, velocities (translational and
-! rotational)
-      Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
-      Allocate(  OMEGA_NEW (DIMN*(DIMN-1)/2,NPARTICLES) )
-
       IF (DO_K) THEN
          CROSS_DIMN = DIMN
       ELSE
          CROSS_DIMN = 1
       ENDIF
+
+! Old and new particle positions, velocities (translational and
+! rotational)
+      Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
+      Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
+      Allocate(  OMEGA_NEW (CROSS_DIMN,NPARTICLES) )
 
       IF (INTG_ADAMS_BASHFORTH) THEN
          Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
