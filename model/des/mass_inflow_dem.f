@@ -300,7 +300,7 @@
       DES_VEL_NEW(3,lNP) = BC_W_s(lBCV,BC_M)
 
 ! Set the initial velocity values
-      IF (INTG_ADAMS_BASHFORTH) THEN
+      IF (DO_OLD) THEN
          DES_POS_OLD(:,lNP) = lPOS(:)
          DES_VEL_OLD(:,lNP) = DES_VEL_NEW(:,lNP)
          OMEGA_OLD(:,lNP) = 0

@@ -205,7 +205,7 @@
 ! Initialize old values
          omega_new(:,:)   = zero
 
-         IF (INTG_ADAMS_BASHFORTH) THEN
+         IF (DO_OLD) THEN
             omega_old(:,:)   = zero
             des_pos_old(:,:) = des_pos_new(:,:)
             des_vel_old(:,:) = des_vel_new(:,:)
@@ -219,7 +219,7 @@
          call global_all_max(imax_global_id)
 
 ! Initizlie the old values.
-         IF (INTG_ADAMS_BASHFORTH) THEN
+         IF (DO_OLD) THEN
             omega_old(:,:)   = omega_new(:,:)
             des_pos_old(:,:) = des_pos_new(:,:)
             des_vel_old(:,:) = des_vel_new(:,:)

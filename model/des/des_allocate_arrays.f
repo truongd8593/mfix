@@ -107,7 +107,7 @@
       Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
       Allocate(  OMEGA_NEW (CROSS_DIMN,NPARTICLES) )
 
-      IF (INTG_ADAMS_BASHFORTH) THEN
+      IF (DO_OLD) THEN
          Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
          Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
          Allocate(  DES_ACC_OLD (CROSS_DIMN,NPARTICLES) )

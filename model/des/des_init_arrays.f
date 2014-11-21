@@ -47,7 +47,7 @@
       DES_VEL_NEW(:,:) = ZERO
       OMEGA_NEW(:,:) = ZERO
 
-      IF (INTG_ADAMS_BASHFORTH) THEN
+      IF (DO_OLD) THEN
          DES_POS_OLD(:,:) = ZERO
          DES_VEL_OLD(:,:) = ZERO
          DES_ACC_OLD(:,:) = ZERO

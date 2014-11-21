@@ -462,7 +462,6 @@
       !local vars
       double precision :: denom
 
-
       denom = DOT_PRODUCT(dir_line, norm_plane)
       if(denom*denom.gt.zero) then
          line_param = DOT_PRODUCT(ref_plane(:) - ref_line(:), norm_plane(:))

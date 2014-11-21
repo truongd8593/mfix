@@ -266,7 +266,7 @@
 
 ! Update the old values of particle position and velocity with the new
 ! values computed
-      IF (INTG_ADAMS_BASHFORTH) CALL CFUPDATEOLD
+      IF (DO_OLD) CALL CFUPDATEOLD
 
       RETURN
 

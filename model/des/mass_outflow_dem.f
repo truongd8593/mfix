@@ -130,7 +130,7 @@
       DES_VEL_NEW(:,NP) = ZERO
       OMEGA_NEW(:,NP) = ZERO
 
-      IF (INTG_ADAMS_BASHFORTH) THEN
+      IF (DO_OLD) THEN
          DES_POS_OLD(:,NP) = ZERO
          DES_VEL_OLD(:,NP) = ZERO
          OMEGA_OLD(:,NP) = ZERO

@@ -19,6 +19,8 @@
       USE discretelement, only: DES_INTERP_ON
 ! Runtime Flag: Invoke MPPIC model.
       USE mfix_pic, only: MPPIC
+! Runtime Flag: Store DES_*_OLD arrays.
+      USE discretelement, only: DO_OLD
 ! Runtime Flag: Invoke TFM/DEM hybrid model.
       USE discretelement, only: DES_CONTINUUM_HYBRID
 ! Runtime Flag: Utilize cutcell geometry.
@@ -213,6 +215,8 @@
          'correct the mfix.dat file.')
 
       END SELECT
+
+      DO_OLD = INTG_ADAMS_BASHFORTH .OR. MPPIC
 
 ! Set flags for energy equations
       IF(ENERGY_EQ) CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY

@@ -187,7 +187,7 @@
             PIJK(count_part,1:4) = part%cell(1:4)
             PIJK(count_part,5) = part%M
             phase  = part%M
-            IF (INTG_ADAMS_BASHFORTH) THEN
+            IF (DO_OLD) THEN
                des_vel_old(:, count_part) = des_vel_new(:, count_part)
                des_pos_old(:, count_part) = des_pos_new(:, count_part)
             ENDIF
@@ -197,7 +197,7 @@
             IF(SOLIDS_MODEL(phase).eq.'PIC') then
                DES_STAT_WT(count_part) = part%STATWT
             ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
-               IF (INTG_ADAMS_BASHFORTH) OMEGA_OLD(:, count_part) = zero
+               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
                OMEGA_NEW(:, count_part) = zero
             ENDIF
 
