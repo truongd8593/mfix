@@ -52,7 +52,6 @@
             ENDDO
          ENDDO
 
-
 ! Check if any particles need seeded this time step.
          IF(DEM_MI_TIME(BCV_I) > S_TIME) CYCLE
 
@@ -398,7 +397,6 @@
 ! for parallel processing
       integer listart,liend,ljstart,ljend,lkstart,lkend
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
 !-----------------------------------------------
 
@@ -441,9 +439,9 @@
                DO LL = 1, NPG
                   NP2 = PIC(IJK)%P(LL)
                   DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(:,NP2)
-                  DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+                  DIST = DOT_PRODUCT(DISTVEC,DISTVEC)
                   R_LM = ppar_rad + DES_RADIUS(NP2)
-                  IF(DIST .LE. R_LM) TOUCHING = .TRUE.
+                  IF(DIST .LE. R_LM*R_LM) TOUCHING = .TRUE.
                ENDDO
              ENDIF
            ENDDO
