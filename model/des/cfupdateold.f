@@ -24,9 +24,9 @@
       INTEGER LL
 !-----------------------------------------------
 
-!$omp parallel do if(max_pip .ge. 10000) default(shared)         &
-!$omp private(ll)                    &
-!$omp schedule (guided,50)
+!!$omp parallel do if(max_pip .ge. 10000) default(shared)         &
+!!$omp private(ll)                    &
+!!$omp schedule (guided,50)
       DO LL = 1, MAX_PIP
          IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE
 
@@ -35,7 +35,7 @@
          OMEGA_OLD(:,LL)    = OMEGA_NEW(:,LL)
 
       ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
       END SUBROUTINE CFUPDATEOLD

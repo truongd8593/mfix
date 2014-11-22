@@ -88,11 +88,13 @@
 ! There is some issue associated to gstencil, vstencil which are
 ! allocatable variables
 
-!$omp parallel do default(shared)                                       &
+!$omp parallel do default(none)                                       &
+!$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new,des_vel_new, &
+!$omp      mppic, mppic_pdrag_implicit,p_force,u_g,v_g,w_g,model_b,pvol,fc,f_gp)                                       &
 !$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
 !$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,              &
 !$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp, &
-!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force)
+!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force, vel_new)
       DO ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle
          i = i_of(ijk)
@@ -302,13 +304,13 @@
 ! allocatable variables
 
 
-!!$omp parallel default(shared)                                        &
-!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                &
-!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
-!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
-!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
-!!$omp             vcell,ovol)
-!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
+!!!$omp parallel default(shared)                                        &
+!!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                &
+!!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
+!!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
+!!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
+!!!$omp             vcell,ovol)
+!!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
          i = i_of(ijk)
@@ -408,7 +410,7 @@
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
 
-!!$omp critical
+!!!$omp critical
                      drag_am(cur_ijk) = drag_am(cur_ijk) + &
                         f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
@@ -416,14 +418,14 @@
                         drag_bm(cur_ijk,1:3) + &
                         f_gp(np) * vel_new(1:3) * &
                         weight_ft(i,j,k)*ovol*wtp
-!!$omp end critical
+!!!$omp end critical
                   ENDDO
                ENDDO
             ENDDO
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!!$omp end parallel
+!!!$omp end parallel
 
 
 ! At the interface drag_am and drag_bm have to be added
@@ -439,10 +441,10 @@
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = merge(0.25d0, 0.125D0, NO_K)
 
-!$omp parallel do default(shared)                               &
-!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
-!$omp         imjmkm)                                           &
-!$omp schedule (guided,20)
+!!$omp parallel do default(shared)                               &
+!!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
+!!$omp         imjmkm)                                           &
+!!$omp schedule (guided,20)
       DO ijk = ijkstart3, ijkend3
          IF(FLUID_AT(IJK)) THEN
 
@@ -474,7 +476,7 @@
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
       END SUBROUTINE DRAG_GS_GAS_INTERP0

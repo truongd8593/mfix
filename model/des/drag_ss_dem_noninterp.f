@@ -77,12 +77,12 @@
 
 ! Calculate the solid-solid drag for each particle.
 !---------------------------------------------------------------------//
-!$omp parallel do schedule(guided, 50) default(none)              &
-!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW,     &
-!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
-!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
-!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
-!$omp   VELCS, VSLP, VREL, lDss)
+!!$omp parallel do schedule(guided, 50) default(none)              &
+!!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW,     &
+!!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
+!!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
+!!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
+!!$omp   VELCS, VSLP, VREL, lDss)
       DO IJK = IJKSTART3, IJKEND3
 
          IF(.NOT.FLUID_AT(IJK)) CYCLE
@@ -142,7 +142,7 @@
 
          ENDDO ! END DO LOOP (NP=1,MAX_PIP)
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
-!$omp end parallel do
+!!$omp end parallel do
 
 
 

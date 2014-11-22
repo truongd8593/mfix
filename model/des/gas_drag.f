@@ -83,10 +83,10 @@
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
-!$omp parallel do schedule(guided,50) default(none)                    &
-!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
-!$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)    &
-!$omp private(IJK, I, J, K, IJMK, IJKM, IJMKM, tmp_A, tmp_B)
+!!$omp parallel do schedule(guided,50) default(none)                    &
+!!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
+!!$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)    &
+!!$omp private(IJK, I, J, K, IJMK, IJKM, IJMKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
 
             IF(.NOT.FLUID_AT(IJK)) CYCLE
@@ -113,14 +113,14 @@
             B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_U(IJK)
 
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
 
       ELSE
 
-!$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(IJKSTART3,IJKEND3,I_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)&
-!$omp private(IJK, I, IJKE)
+!!$omp parallel do default(none) schedule(guided, 50)                   &
+!!$omp shared(IJKSTART3,IJKEND3,I_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)&
+!!$omp private(IJK, I, IJKE)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                I = I_OF(IJK)
@@ -131,7 +131,7 @@
                   AVG_X(DRAG_BM(IJK,1), DRAG_BM(IJKE,1), I)
             ENDIF
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
       ENDIF
 
       END SUBROUTINE GAS_DRAG_U
@@ -222,10 +222,10 @@
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
-!$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
-!$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)    &
-!$omp private(IJK, I, J, K, IMJK, IJKM, IMJKM, tmp_A, tmp_B)
+!!$omp parallel do schedule (guided,50) default(none)                   &
+!!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
+!!$omp    K_OF, DO_K, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)    &
+!!$omp private(IJK, I, J, K, IMJK, IJKM, IMJKM, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
             IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -253,14 +253,14 @@
             B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_V(IJK)
 
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
 
       ELSE
 
-!$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(IJKSTART3,IJKEND3,J_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)&
-!$omp private(IJK, J, IJKN)
+!!$omp parallel do default(none) schedule(guided, 50)                   &
+!!$omp shared(IJKSTART3,IJKEND3,J_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)&
+!!$omp private(IJK, J, IJKN)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                J = J_OF(IJK)
@@ -271,7 +271,7 @@
                   AVG_Y(DRAG_BM(IJK,2), DRAG_BM(IJKN,2), J)
             ENDIF
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
       ENDIF
 
@@ -362,10 +362,10 @@
 
          AVG_FACTOR = 0.25d0
 
-!$omp parallel do schedule (guided,50) default(none)                   &
-!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
-!$omp    K_OF, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)          &
-!$omp private(IJK, I, J, K, IMJK, IJMK, IMJMK, tmp_A, tmp_B)
+!!$omp parallel do schedule (guided,50) default(none)                   &
+!!$omp shared(IJKSTART3, IJKEND3, FUNIJK_MAP_C, I_OF, J_OF,             &
+!!$omp    K_OF, AVG_FACTOR, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)          &
+!!$omp private(IJK, I, J, K, IMJK, IJMK, IMJMK, tmp_A, tmp_B)
          DO IJK = IJKSTART3, IJKEND3
             IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -387,13 +387,13 @@
             B_M(IJK,0) = B_M(IJK,0) + tmp_B*VOL_W(IJK)
 
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
       ELSE
 
-!$omp parallel do default(none) schedule(guided, 50)                   &
-!$omp shared(IJKSTART3,IJKEND3,K_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)&
-!$omp private(IJK, K, IJKT)
+!!$omp parallel do default(none) schedule(guided, 50)                   &
+!!$omp shared(IJKSTART3,IJKEND3,K_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)&
+!!$omp private(IJK, K, IJKT)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                K = K_OF(IJK)
@@ -404,7 +404,7 @@
                   AVG_Z(DRAG_BM(IJK,3), DRAG_BM(IJKT,3), K)
             ENDIF
          ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
       ENDIF
 

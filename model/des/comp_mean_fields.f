@@ -65,7 +65,7 @@
 
 ! Add particle values (volume, velocity) to ongoing summations
 !!$      omp_start1=omp_get_wtime()
-!!$omp single private(l,wtp,i,j,k,ijk,m)
+!!!$omp single private(l,wtp,i,j,k,ijk,m)
       PC = 1
       DO L = 1, MAX_PIP
 ! exiting loop if reached max number of particles in processor
@@ -98,9 +98,9 @@
 
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.
-!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!$omp private(ijk,i,j,k,cm,m,sum_eps,ep_sm,                    &
-!$omp         osolvol,ovol)
+!!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
+!!$omp private(ijk,i,j,k,cm,m,sum_eps,ep_sm,                    &
+!!$omp         osolvol,ovol)
       DO IJK = ijkstart3, ijkend3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -156,7 +156,7 @@
          ENDDO   ! end loop over M=1,DES_MMAX
 
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
-!$omp end parallel do
+!!$omp end parallel do
 
 
  1000 FORMAT(3X,'---------- FROM COMPUTE_MEAN_FIELDS_ZERO_ORDER ',&
@@ -280,12 +280,12 @@
 ! order and allocates arrays necessary for interpolation
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!$omp parallel default(shared)                                             &
-!$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, GST_TMP, &
-!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M, ICUR, &
-!$omp    JCUR, KCUR, WEIGHT_FT, VOL_RATIO, I1, I2, J1, J2, K1, K2, IDIM,   &
-!$omp    IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
-!$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
+!!$omp parallel default(shared)                                             &
+!!$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, GST_TMP, &
+!!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M, ICUR, &
+!!$omp    JCUR, KCUR, WEIGHT_FT, VOL_RATIO, I1, I2, J1, J2, K1, K2, IDIM,   &
+!!$omp    IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
+!!$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       DO IJK = IJKSTART3,IJKEND3
 
 ! Cycle this cell if not in the fluid domain or if it contains no
@@ -452,7 +452,7 @@
             ENDIF
          ENDIF   ! end if (cartesian_grid)
       ENDDO
-!$omp end parallel
+!!$omp end parallel
 
 
 ! At the interface des_rops_node has to be added since particles
@@ -485,13 +485,13 @@
 ! vol_sur is the sum of all the scalar cell volumes that have this node
 ! as the common node.
 !---------------------------------------------------------------------//
-!$omp parallel do default(none) collapse (3)                           &
-!$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, VOL,&
-!$omp   DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, DES_MMAX, DES_ROPS_NODE, &
-!$omp   DES_VEL_NODE)                                                  &
-!$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY,      &
-!$omp   DES_VEL_DENSITY)                                               &
-!$omp reduction(+:DES_ROP_S, DES_U_S, DES_V_S, DES_W_S)
+!!$omp parallel do default(none) collapse (3)                           &
+!!$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, VOL,&
+!!$omp   DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, DES_MMAX, DES_ROPS_NODE, &
+!!$omp   DES_VEL_NODE)                                                  &
+!!$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY,      &
+!!$omp   DES_VEL_DENSITY)                                               &
+!!$omp reduction(+:DES_ROP_S, DES_U_S, DES_V_S, DES_W_S)
       DO K = KSTART2, KEND1
       DO J = JSTART2, JEND1
       DO I = ISTART2, IEND1
@@ -533,9 +533,9 @@
 !-----------------------------------------------------------------<<<
 
 
-!$omp parallel do default(none) private(IJK, M)                        &
-!$omp shared(IJKSTART3, IJKEND3, DO_K, DES_MMAX, DES_ROP_s, DES_U_S,   &
-!$omp   DES_V_S, DES_W_S, VOL)
+!!$omp parallel do default(none) private(IJK, M)                        &
+!!$omp shared(IJKSTART3, IJKEND3, DO_K, DES_MMAX, DES_ROP_s, DES_U_S,   &
+!!$omp   DES_V_S, DES_W_S, VOL)
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -721,10 +721,10 @@
 
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//
-!$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
-!$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, SMAX,&
-!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID) &
-!$omp private(IJK, SUM_EPs, M)
+!!$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
+!!$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, SMAX,&
+!!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID) &
+!!$omp private(IJK, SUM_EPs, M)
       DO IJK = IJKSTART3, IJKEND3
 ! Skip wall cells.
          IF(.NOT.FLUID_AT(IJK)) CYCLE
