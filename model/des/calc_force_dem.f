@@ -87,16 +87,16 @@
       FC_COLL(:,:) = 0
       FT_COLL(:,:) = 0
 
-!!$omp parallel do default(none) private(cc,ll,i,dist,r_lm,             &
-!!$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
-!!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,       &
-!!$omp    eq_radius,distapart,force_coh,qq_coll,k_s0)                   &
-!!$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
-!!$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
-!!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
-!!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
-!!$omp    hamaker_constant,asperities,surface_energy,ft_coll, pea, energy_eq)
+!$omp parallel do default(none) private(cc,ll,i,dist,r_lm,             &
+!$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
+!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
+!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,       &
+!$omp    eq_radius,distapart,force_coh,qq_coll,k_s0)                   &
+!$omp    shared(collisions,collision_num,des_pos_new,des_radius,       &
+!$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
+!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
+!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
+!$omp    hamaker_constant,asperities,surface_energy,ft_coll, pea, energy_eq)
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -216,13 +216,16 @@
          ENDIF
 
       ENDDO
-!!$omp end parallel do
+!$omp end parallel do
 
       magGravity = SQRT(dot_product(GRAV,GRAV))
 
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
+
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(.NOT.PEA(I, 1)) CYCLE
 
          FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
          FC(:,I) = FC(:,I) - FC_COLL(:,CC)
