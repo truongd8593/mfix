@@ -98,8 +98,8 @@
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.
 !----------------------------------------------------------------//
-!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!$omp private(IJK,M,OoSOLVOL)
+!!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
+!!$omp private(IJK,M,OoSOLVOL)
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -119,7 +119,7 @@
          ENDDO   ! end loop over M=1,DES_MMAX
 
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
-!$omp end parallel do
+!!$omp end parallel do
 
 ! Halo exchange of solids volume fraction data.
       CALL SEND_RECV(DES_ROP_S,2)
