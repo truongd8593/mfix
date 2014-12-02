@@ -246,7 +246,7 @@
 ! zero out R, Rtilde, P, Phat, Svec, Shat, Tvec, V
 ! --------------------------------
       if (use_doloop) then   ! mfix.dat keyword default=false
-!$omp  parallel do default(shared) private(ijk)
+!!$omp  parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = zero
             Rtilde(ijk) = zero
@@ -277,7 +277,7 @@
 
 
          IF(RE_INDEXING) THEN  ! Loop only over active cells
-!$omp parallel do default(shared) private(ijk,oam,aijmax)
+!!$omp parallel do default(shared) private(ijk,oam,aijmax)
             DO IJK = IJKSTART3,IJKEND3
                aijmax = maxval(abs(A_M(ijk,:)) )
                OAM = one/aijmax
@@ -287,7 +287,7 @@
 
          ELSE
 
-!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
+!!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
             do k = kstart2,kend2
                do i = istart2,iend2
                   do j = jstart2,jend2
@@ -313,7 +313,7 @@
       call MATVEC(Vname, Var, A_M, R)   ! returns R=A*Var
 
       if (use_doloop) then   ! mfix.dat keyword default=false
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             R(ijk) = B_m(ijk) - R(ijk)
          enddo
@@ -326,7 +326,7 @@
       if(is_serial) then
          Rnorm0 = zero
          if (use_doloop) then   ! mfix.dat keyword default=false
-!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm0)
+!!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm0)
             do ijk=ijkstart3,ijkend3
                Rnorm0 = Rnorm0 + R(ijk)*R(ijk)
             enddo
@@ -350,7 +350,7 @@
 
 
       if (use_doloop) then   ! mfix.dat keyword default=false
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
          do ijk=ijkstart3,ijkend3
             Rtilde(ijk) = R(ijk) + (2.0d0*Rtilde(ijk)-1.0d0)*1.0d-6*Rnorm0
          enddo
@@ -372,7 +372,7 @@
          if(is_serial) then
             if (use_doloop) then   ! mfix.dat keyword default=false
                RtildexR = zero
-!$omp parallel do default(shared) private(ijk) reduction(+:RtildexR)
+!!$omp parallel do default(shared) private(ijk) reduction(+:RtildexR)
                do ijk=ijkstart3,ijkend3
                   RtildexR = RtildexR + Rtilde(ijk) * R(ijk)
                enddo
@@ -403,8 +403,8 @@
 
          if (i .eq. 1) then
             if (use_doloop) then
-!!$omp        parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)
+!!!$omp        parallel do private(ijk)
+!!$omp parallel do default(shared) private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk)
                enddo
@@ -414,7 +414,7 @@
          else
             beta(i-1) = ( rho(i-1)/rho(i-2) )*( alpha(i-1) / omega(i-1) )
             if (use_doloop) then
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
                do ijk=ijkstart3,ijkend3
                   P(ijk) = R(ijk) + beta(i-1)*( P(ijk) - omega(i-1)*V(ijk) )
                enddo
@@ -433,7 +433,7 @@
          if(is_serial) then
             if (use_doloop) then
                RtildexV = zero
-!$omp  parallel do default(shared) private(ijk) reduction(+:RtildexV)
+!!$omp  parallel do default(shared) private(ijk) reduction(+:RtildexV)
                do ijk=ijkstart3,ijkend3
                   RtildexV = RtildexV + Rtilde(ijk) * V(ijk)
                enddo
@@ -453,12 +453,12 @@
 ! compute Svec
 ! --------------------------------
          if (use_doloop) then
-!!$omp     parallel do private(ijk)
-!$omp parallel do default(shared) private(ijk)
+!!!$omp     parallel do private(ijk)
+!!$omp parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                Svec(ijk) = R(ijk) - alpha(i) * V(ijk)
             enddo
-!!$omp end parallel do
+!!!$omp end parallel do
          else
             Svec(:) = R(:) - alpha(i) * V(:)
          endif ! use_doloop
@@ -471,7 +471,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Snorm = zero
-!$omp parallel do default(shared) private(ijk) reduction(+:Snorm)
+!!$omp parallel do default(shared) private(ijk) reduction(+:Snorm)
                   do ijk=ijkstart3,ijkend3
                      Snorm = Snorm + Svec(ijk) * Svec(ijk)
                   enddo
@@ -487,7 +487,7 @@
 
             if (Snorm <= TOLMIN) then
                if (use_doloop) then
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
                   do ijk=ijkstart3,ijkend3
                      Var(ijk) = Var(ijk) + alpha(i)*Phat(ijk)
                   enddo
@@ -503,7 +503,7 @@
 !                  print*,'leq_bicgs, initial: ', Vname,' Vnorm ', Rnorm
 
                   if (use_doloop) then
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
                      do ijk=ijkstart3,ijkend3
                         R(ijk) = B_m(ijk) - R(ijk)
                      enddo
@@ -514,7 +514,7 @@
                   if(is_serial) then
                      if (use_doloop) then
                         Rnorm = zero
-!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
+!!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                         do ijk=ijkstart3,ijkend3
                            Rnorm = Rnorm + R(ijk)*R(ijk)
                         enddo
@@ -544,7 +544,7 @@
             if (use_doloop) then
                TxS = zero
                TxT = zero
-!$omp  parallel do default(shared) private(ijk) reduction(+:TxS,TxT)
+!!$omp  parallel do default(shared) private(ijk) reduction(+:TxS,TxT)
                do ijk=ijkstart3,ijkend3
                   TxS = TxS + Tvec(ijk)  * Svec(ijk)
                   TxT = TxT + Tvec(ijk)  * Tvec(ijk)
@@ -573,7 +573,7 @@
 ! compute new guess for Var
 ! --------------------------------
          if (use_doloop) then
-!$omp parallel do default(shared) private(ijk)
+!!$omp parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                Var(ijk) = Var(ijk) +  &
                   alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
@@ -591,7 +591,7 @@
             if(is_serial) then
                if (use_doloop) then
                   Rnorm = zero
-!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
+!!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                   do ijk=ijkstart3,ijkend3
                      Rnorm = Rnorm + R(ijk) * R(ijk)
                   enddo
@@ -635,7 +635,7 @@
       if (idebugl >= 1) then
          call MATVEC(Vname, Var, A_m, R)   ! returns R=A*Var
          if (use_doloop) then
-!$omp  parallel do default(shared) private(ijk)
+!!$omp  parallel do default(shared) private(ijk)
             do ijk=ijkstart3,ijkend3
                R(ijk) = R(ijk) - B_m(ijk)
             enddo
@@ -646,7 +646,7 @@
          if(is_serial) then
             if (use_doloop) then
                Rnorm = zero
-!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
+!!$omp parallel do default(shared) private(ijk) reduction(+:Rnorm)
                do ijk=ijkstart3,ijkend3
                   Rnorm = Rnorm + R(ijk) * R(ijk)
                enddo
@@ -830,7 +830,7 @@
       NEND = JEND
       NSTART = JSTART
 
-!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
+!!!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
 !         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IJK = FUNIJK(I,J,K)
@@ -1124,10 +1124,10 @@
 
 
          if (do_k) then
-!$omp    parallel  do &
-!$omp&   private(     &
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
+!!$omp    parallel  do &
+!!$omp&   private(     &
+!!$omp&           ijk,i,j,k, &
+!!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
             do k = kstart,kend
                do i = istart,iend
                   do j = jstart,jend
@@ -1151,7 +1151,7 @@
 
          else
             k = 1
-!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
+!!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
             do i = istart,iend
                do j = jstart,jend
                   IJK = funijk(i,j,k)
@@ -1252,7 +1252,7 @@
 !!$      omp_start=omp_get_wtime()
 
       IF (SETGUESS) THEN
-!$omp   parallel do private(i,j,k,ijk)
+!!$omp   parallel do private(i,j,k,ijk)
          do k = kstart3,kend3
             do i = istart3,iend3
                do j = jstart3,jend3
@@ -1281,7 +1281,7 @@
          IF (NO_K) THEN   ! two dimensional
 ! 2D run no need to enable openmp parallel
             IF ( DO_ISWEEP ) THEN
-!!$omp   parallel do private(I)
+!!!$omp   parallel do private(I)
                DO I=istart,iend,1
                   CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                ENDDO
@@ -1289,11 +1289,11 @@
 ! ----------------------------------------------------------------<<<
 ! Handan Liu added 2D RSRS sweep and parallelized this loop on Jan 22 2013:
                     IF (DO_REDBLACK) THEN
-!$omp parallel do private(I)
+!!$omp parallel do private(I)
                               DO I=istart,iend,2
                                      CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                   ENDDO
-!$omp parallel do private(I)
+!!$omp parallel do private(I)
                   DO I=istart+1,iend,2
                      CALL LEQ_ISWEEP( I, Vname, Var, A_m, B_m )
                   ENDDO
@@ -1314,7 +1314,7 @@
                jsize = j2-j1+1
                ksize = k2-k1+1
                DO icase = 1, 2
-!!$omp   parallel do private(K,J,JK)
+!!!$omp   parallel do private(K,J,JK)
                   DO JK=icase, ksize*jsize, 2
                      if (mod(jk,jsize).ne.0) then
                         k = int( jk/jsize ) + k1
@@ -1338,7 +1338,7 @@
                isize = i2-i1+1
                jsize = j2-j1+1
                DO icase = 1, 2
-!!$omp   parallel do private(J,I,IJ)
+!!!$omp   parallel do private(J,I,IJ)
                   DO IJ=icase, jsize*isize, 2
                      if (mod(ij,isize).ne.0) then
                         j = int( ij/isize ) + j1
@@ -1363,7 +1363,7 @@
                ksize = k2-k1+1
 
                DO icase = 1, 2
-!!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=icase, ksize*isize, 2
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1389,7 +1389,7 @@
                !isize = i2-i1+1
                !ksize = k2-k1+1
 !               DO icase = 1, 2
-!!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
 !                  DO IK=icase, ksize*isize, 2
 !                     if (mod(ik,isize).ne.0) then
 !                        k = int( ik/isize ) + k1
@@ -1403,7 +1403,7 @@
 !               ENDDO
 !             ELSE
 ! Handan Liu split above loop for OpenMP at May 22 2013, modified at July 17
-!$omp parallel do default(shared) private(I,K) schedule(auto)
+!!$omp parallel do default(shared) private(I,K) schedule(auto)
                DO k=kstart,kend
                              IF(mod(k,2).ne.0)THEN
                                     DO I=istart+1,iend,2
@@ -1415,8 +1415,8 @@
                                     ENDDO
                              ENDIF
                        ENDDO
-!$omp end parallel do
-!$omp parallel do default(shared) private(I,K) schedule(auto)
+!!$omp end parallel do
+!!$omp parallel do default(shared) private(I,K) schedule(auto)
                DO k=kstart,kend
                              IF(mod(k,2).ne.0)THEN
                                    DO I=istart,iend,2
@@ -1428,7 +1428,7 @@
                                    ENDDO
                              ENDIF
                        ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
             ENDIF       ! end if(do_redblack)
 ! ----------------------------------------------------------------<<<
@@ -1445,7 +1445,7 @@
                isize = i2-i1+1
                ksize = k2-k1+1
                IF (DO_ISWEEP) THEN
-!!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,isize).ne.0) then
                         k = int( ik/isize ) + k1
@@ -1457,7 +1457,7 @@
                   ENDDO
                ENDIF
                IF (DO_KSWEEP) THEN
-!!$omp   parallel do private(K,I,IK)
+!!!$omp   parallel do private(K,I,IK)
                   DO IK=1, ksize*isize
                      if (mod(ik,ksize).ne.0) then
                         i = int( ik/ksize ) + i1
@@ -1474,7 +1474,7 @@
 !  The SMP directives below need review                        !Tingwen Jan 2012
 ! ---------------------------------------------------------------->>>
                IF (DO_ISWEEP) THEN
-!!$omp   parallel do private(K,I)
+!!!$omp   parallel do private(K,I)
                   DO K=kstart,kend
                      DO I=istart,iend
                         CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
@@ -1482,7 +1482,7 @@
                   ENDDO
                ENDIF
                IF (DO_KSWEEP) THEN
-!!$omp   parallel do private(K,I)
+!!!$omp   parallel do private(K,I)
                   DO I=istart,iend
                      DO K=kstart,kend
                         CALL LEQ_IKSWEEP(I, K, Vname, Var, A_m, B_m)
@@ -1560,7 +1560,7 @@
 
 ! do nothing or no preconditioning
       if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp  parallel do private(ijk)
+!!!$omp  parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             var(ijk) = b_m(ijk)
          enddo
@@ -1628,7 +1628,7 @@
 !-----------------------------------------------
 
       if (use_doloop) then   ! mfix.dat keyword default=false
-!!$omp    parallel do private(ijk)
+!!!$omp    parallel do private(ijk)
          do ijk=ijkstart3,ijkend3
             var(ijk) = zero
          enddo
@@ -1638,7 +1638,7 @@
 
 ! diagonal scaling
       IF(.NOT.RE_INDEXING) THEN
-!$omp   parallel do private(i,j,k,ijk)  collapse (3)
+!!$omp   parallel do private(i,j,k,ijk)  collapse (3)
          do k=kstart2,kend2
             do i=istart2,iend2
                do j=jstart2,jend2
@@ -1648,7 +1648,7 @@
             enddo
          enddo
       ELSE
-!$omp   parallel do private(ijk)  collapse (1)
+!!$omp   parallel do private(ijk)  collapse (1)
          DO IJK=IJKSTART3,IJKEND3
             var(ijk) = b_m(ijk)/A_m(ijk,0)
          ENDDO
@@ -1712,7 +1712,7 @@
 
 
 
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
+!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kstart1, kend1
                do i = istart1, iend1
                   do j = jstart1, jend1
@@ -1740,7 +1740,7 @@
          if(myPE.eq.root) then
             prod = 0.0d0
 
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
+!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1
@@ -1801,7 +1801,7 @@
 
          prod(:) = 0.0d0
 
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
+!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
          do k = kstart1, kend1
             do i = istart1, iend1
                do j = jstart1, jend1
@@ -1833,7 +1833,7 @@
 
          if(myPE.eq.root) then
             prod = 0.0d0
-!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
+!!$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
             do k = kmin1, kmax1
                do i = imin1, imax1
                   do j = jmin1, jmax1

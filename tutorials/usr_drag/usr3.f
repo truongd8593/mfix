@@ -27,10 +27,6 @@
       DOUBLE PRECISION, DIMENSION(5) :: lTHL = &
          (/35.40d0, 24.27d0, 34.43d0, 13.62d0, 23.52d0/)
 
-
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-
       DO NP=1, PIP
          IF(.NOT.PEA(NP,1)) CYCLE
          M =  PIJK(NP,5)
@@ -39,7 +35,7 @@
          WRITE(lUNIT,"(   4x,'Theoretical:  ',F5.2)") lTHL(M)
          WRITE(lUNIT,"(   4x,'Experimental: ',F5.2)") lEXP(M)
          WRITE(lUNIT,"(   4x,'Simulated:    ',F5.2)") &
-            sqrt(DES_DOTPRDCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
+            sqrt(DOT_PRODUCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
 
          close(lUNIT)
       ENDDO

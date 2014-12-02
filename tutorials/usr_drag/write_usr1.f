@@ -35,15 +35,13 @@
       INTEGER :: lUNIT
       INTEGER :: NP, M
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
       IF( L /= 1) RETURN
 
       DO NP=1, PIP
          IF(.NOT.PEA(NP,1)) CYCLE
          lUNIT = 750 + PIJK(NP,5)
          WRITE(lUNIT,1100) TIME, DES_POS_NEW(2,NP),                    &
-            sqrt(DES_DOTPRDCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
+            sqrt(DOT_PRODUCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
       ENDDO
 
  1100 FORMAT(3x,F6.2,3x,F7.2,3x,F5.2)

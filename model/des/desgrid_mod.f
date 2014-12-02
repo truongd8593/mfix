@@ -546,8 +546,8 @@
       end if
 
 ! redfine the array of dg_pic
-!$omp parallel do default(shared)                               &
-!$omp private(lijk,lcurpic) schedule (guided,50)
+!!$omp parallel do default(shared)                               &
+!!$omp private(lijk,lcurpic) schedule (guided,50)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
          if(dg_pic(lijk)%isize.ne.lcurpic) then
@@ -556,7 +556,7 @@
             dg_pic(lijk)%isize = lcurpic
          end if
       end do
-!$omp end parallel do
+!!$omp end parallel do
 
 
 ! assign the particle info in pic array

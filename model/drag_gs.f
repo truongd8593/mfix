@@ -102,12 +102,12 @@
       DOUBLE PRECISION :: EPG, ROg, ROPg, EP_SM, DPM, ROs
 !-----------------------------------------------
 
-!$omp  parallel do default(shared)                                   &
-!$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, CM, L,          &
-!$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, USCM_HYS,     &
-!$omp           VSCM_HYS, WSCM_HYS, tmp_sum, tmp_fac, Y_i, F_cor,    &
-!$omp           EP_SM, EPs_loc, ROs_loc, DP_loc, DPA, DPM, ROs,      &
-!$omp           phis, EPg, ROg, ROPg, Mu, DgA, F_gstmp)
+!!$omp  parallel do default(shared)                                   &
+!!$omp  private( I,  IJK, IMJK, IJMK, IJKM, DM, MAXM, CM, L,          &
+!!$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, VREL, USCM_HYS,     &
+!!$omp           VSCM_HYS, WSCM_HYS, tmp_sum, tmp_fac, Y_i, F_cor,    &
+!!$omp           EP_SM, EPs_loc, ROs_loc, DP_loc, DPA, DPM, ROs,      &
+!!$omp           phis, EPg, ROg, ROPg, Mu, DgA, F_gstmp)
 
 
       DO IJK = ijkstart3, ijkend3

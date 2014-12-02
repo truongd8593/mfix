@@ -224,6 +224,9 @@
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
 
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(.NOT.PEA(I, 1)) CYCLE
+
          FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
          FC(:,I) = FC(:,I) - FC_COLL(:,CC)
 

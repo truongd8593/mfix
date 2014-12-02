@@ -89,10 +89,10 @@
 ! by definition M must be close_packed (this is a redundant check)
       IF(CLOSE_PACKED(M)) THEN
 
-!$omp    parallel do default(shared)                  &
-!$omp    private( IJK, DPcoDEPS, Pc,                  &
-!$omp             Mu, Mu_b, Mu_zeta, ZETA, N_Pff,     &
-!$omp             F2, DF2oDEPs, Pf, Pfmax, blend )
+!!$omp    parallel do default(shared)                  &
+!!$omp    private( IJK, DPcoDEPS, Pc,                  &
+!!$omp             Mu, Mu_b, Mu_zeta, ZETA, N_Pff,     &
+!!$omp             F2, DF2oDEPs, Pf, Pfmax, blend )
 
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK))THEN

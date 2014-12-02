@@ -63,8 +63,8 @@
 
 ! Use an incremental approach to determine the new particle location.
 !-----------------------------------------------------------------------
-!$omp parallel default(shared) private(L, I, J, K, IJK)
-!$omp do reduction(+:PINC) schedule (guided,50)
+!!$omp parallel default(shared) private(L, I, J, K, IJK)
+!!$omp do reduction(+:PINC) schedule (guided,50)
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
@@ -108,7 +108,7 @@
          PIJK(L,4) = IJK
 
       ENDDO
-!$omp end parallel
+!!$omp end parallel
 
       CALL CHECK_CELL_MOVEMENT(RECOVERED, DELETED)
 
@@ -117,8 +117,8 @@
 ! in the cell previously. If different reallocate. Store the particle
 ! ids
 ! ---------------------------------------------------------------->>>
-!$omp parallel do if(ijkend3 .ge. 2000) default(shared)           &
-!$omp private(ijk,npic) !schedule (guided,50)
+!!$omp parallel do if(ijkend3 .ge. 2000) default(shared)           &
+!!$omp private(ijk,npic) !schedule (guided,50)
       DO IJK = IJKSTART3, IJKEND3
 
 ! checking all cells (including ghost cells); updating entering/exiting
@@ -133,7 +133,7 @@
             IF (NPIC.GT.0) ALLOCATE(PIC(IJK)%p(NPIC))
          ENDIF
       ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
 
       particle_count(:) = 1
@@ -227,9 +227,9 @@
 ! composite ijk index. If first_pass, also assigning PIJK(L,5) the
 ! solids phase index of particle.
 ! ---------------------------------------------------------------->>>
-!$omp parallel default(shared)                                       &
-!$omp private(L,M,lPOS,I,J,K,IJK)
-!$omp do reduction(+:PINC) schedule (guided,50)
+!!$omp parallel default(shared)                                       &
+!!$omp private(L,M,lPOS,I,J,K,IJK)
+!!$omp do reduction(+:PINC) schedule (guided,50)
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1)) CYCLE
@@ -272,7 +272,7 @@
 
          PINC(IJK) = PINC(IJK) + 1
       ENDDO
-!$omp end parallel
+!!$omp end parallel
 ! Calling exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
 ! unclear why this needs to be called again.

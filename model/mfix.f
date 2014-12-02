@@ -344,8 +344,8 @@
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P
 
 ! Initialize densities.
-      CALL SET_RO_G
-      CALL SET_RO_S
+      IF (RUN_TYPE == 'NEW') CALL SET_RO_G
+      IF (RUN_TYPE == 'NEW') CALL SET_RO_S
 
 ! Initialize time dependent boundary conditions
       CALL SET_BC1

@@ -66,10 +66,10 @@
 
 ! Calculate the drag on each particle using scalar center gas velocity
 !---------------------------------------------------------------------//
-!$omp parallel do default(none)                                        &
-!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
-!$omp   FC, P_FORCE, PVOL, MPPIC, MPPIC_PDRAG_IMPLICIT, MODEL_A)       & 
-!$omp private(IJK, VELFP, NINDX, NP, D_FORCE)
+!!$omp parallel do default(none)                                        &
+!!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
+!!$omp   FC, P_FORCE, PVOL, MPPIC, MPPIC_PDRAG_IMPLICIT, MODEL_A)       & 
+!!$omp private(IJK, VELFP, NINDX, NP, D_FORCE)
       DO IJK = IJKSTART3,IJKEND3
 
          IF(.NOT.FLUID_AT(IJK)) CYCLE
@@ -107,7 +107,7 @@
          ENDDO ! end do (nindx = 1,pinc(ijk))
 
       ENDDO ! end do (ijk=ijkstart3,ijkend3)
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
       END SUBROUTINE DRAG_GS_DES_NONINTERP
@@ -174,10 +174,10 @@
 
 ! Calculate the drag for each fluid cell if it contains particles.
 !---------------------------------------------------------------------//
-!$omp parallel do default(none)                                        &
-!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
-!$omp   VOL, F_GDS, DRAG_AM, DRAG_BM, MPPIC, DES_STAT_WT)              & 
-!$omp private(IJK, VELFP, NINDX, NP, OoVol, lFORCE)
+!!$omp parallel do default(none)                                        &
+!!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
+!!$omp   VOL, F_GDS, DRAG_AM, DRAG_BM, MPPIC, DES_STAT_WT)              & 
+!!$omp private(IJK, VELFP, NINDX, NP, OoVol, lFORCE)
       DO IJK = IJKSTART3,IJKEND3
 
 ! Initialize fluid cell values.
@@ -215,7 +215,7 @@
 ! Store the drag force to use in the gas phase pressure correction eq.
           F_GDS(IJK) = DRAG_AM(IJK)
       ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
 
       RETURN
