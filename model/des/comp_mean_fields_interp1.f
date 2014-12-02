@@ -19,7 +19,8 @@
       use desmpi
       USE mfix_pic
       USE functions
-
+      use particle_filter, only: FILTER_WEIGHT
+      use particle_filter, only: FILTER_CELL
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -36,7 +37,6 @@
       DOUBLE PRECISION :: VOL_WT, VOLxWEIGHT
 ! Loop bound for filter
       INTEGER :: LP_BND
-
 
 
 !-----------------------------------------------
@@ -102,7 +102,8 @@
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 !$omp end parallel do
 
-! Calculate EPg and ROPg from DES_ROP_s
-      CALL CALC_EPG_DES
+
+! Halo exchange of solids volume fraction data.
+      CALL SEND_RECV(DES_ROP_S,2)
 
       END SUBROUTINE COMP_MEAN_FIELDS_INTERP1

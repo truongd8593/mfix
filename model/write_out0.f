@@ -66,6 +66,7 @@
       USE discretelement
       USE rxns
       USE mfix_pic
+      use particle_filter
 
       IMPLICIT NONE
 !-----------------------------------------------

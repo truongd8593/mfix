@@ -185,6 +185,10 @@
 
       IF(CALL_USR) CALL USR3_DES
 
+
+      CALL DIFFUSE_MEAN_FIELDS
+      CALL CALC_EPG_DES
+
 ! When coupled the granular temperature subroutine is only calculated at end
 ! of the current DEM simulation
       IF(DES_CONTINUUM_COUPLED) THEN

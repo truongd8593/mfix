@@ -64,7 +64,6 @@
       INTEGER :: IER
 !......................................................................!
 
-
 ! Initialize error flag.
       IER = 0
 
@@ -107,7 +106,7 @@
 
 ! Report any errors. Volume fraction errors are fatal.
 !---------------------------------------------------------------------//
-      CALL INIT_ERR_MSG("COMP_EPG_DES")
+      CALL INIT_ERR_MSG("CALC_EPG_DES")
       CALL OPEN_PE_LOG(IER)
 
       WRITE(ERR_MSG, 1100)
@@ -123,13 +122,13 @@
 
             WRITE(ERR_MSG,1101) trim(iVal(IJK)), trim(iVal(I_OF(IJK))),&
                trim(iVal(J_OF(IJK))), trim(iVal(K_OF(IJK))),EP_G(IJK), &
-               CUT_CELL_AT(IJK), PINC(IJK)
+               CUT_CELL_AT(IJK), trim(iVal(PINC(IJK)))
 
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
          ENDDO
 
- 1101 FORMAT(3x,'Fluid Cell IJK: ',A,6x,'I/J/K: (',A,',',A,',',A,')',/ &
+ 1101 FORMAT(/3x,'Fluid Cell IJK: ',A,6x,'I/J/K: (',A,',',A,',',A,')',/&
          6x,'EP_G = ',g11.4,6x,'CUT_CELL_AT = ',L1,/6x,'PINC: ',A)
 
       WRITE(ERR_MSG, 1102)

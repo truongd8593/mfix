@@ -31,6 +31,13 @@
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
 
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_GARG
+      use particle_filter, only: DES_INTERP_DPVM
+      use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: FILTER_CELL 
+      use particle_filter, only: FILTER_WEIGHT
+
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -176,10 +183,6 @@
       ALLOCATE(F_gp(NPARTICLES ))
       F_gp(1:NPARTICLES)  = ZERO
 
-      IF(DES_INTERP_MEAN_FIELDS) THEN
-         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
-      ENDIF
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
@@ -195,13 +198,19 @@
       ALLOCATE(F_GDS(DIMENSION_3))
       ALLOCATE(VXF_GDS(DIMENSION_3))
 
-      IF(DO_K) THEN
-         ALLOCATE(FILTER_CELL(27, NPARTICLES))
-         ALLOCATE(FILTER_WEIGHT(27, NPARTICLES))
-      ELSE
-         ALLOCATE(FILTER_CELL(9, NPARTICLES))
-         ALLOCATE(FILTER_WEIGHT(9, NPARTICLES))
-      ENDIF
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+      CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+         IF(DO_K) THEN
+            ALLOCATE(FILTER_CELL(27, NPARTICLES))
+            ALLOCATE(FILTER_WEIGHT(27, NPARTICLES))
+         ELSE
+            ALLOCATE(FILTER_CELL(9, NPARTICLES))
+            ALLOCATE(FILTER_WEIGHT(9, NPARTICLES))
+         ENDIF
+      CASE(DES_INTERP_GARG)
+         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
+      END SELECT
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN

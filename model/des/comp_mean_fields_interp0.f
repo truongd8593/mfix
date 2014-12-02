@@ -24,6 +24,8 @@
       USE cutcell
       USE mfix_pic
       USE mpi_utility
+      use particle_filter, only: DES_REPORT_MASS_INTERP
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -379,46 +381,12 @@
 !omp end parallel do
 
 
-! RG: Aug, 20, 2012.
-! -------------------------------------------------------------------
-! Decoupling the computation of ep_g and rop_g from the computation
-! of des_rop_s. In the current implementation, des_rop_s (or rop_s)
-! and epg and also rop_g are first calculated and then sent
-! received. However, ep_g (and also rop_g) are simply functions of
-! des_rop_s. Therefore, once des_rop_s is sent received, ep_g and
-! rop_g can be correctly computed even for the ghost cells; thus, not
-! requiring additional send_recv calls for ep_g and rop_g.
+      IF (MPPIC) CALL SEND_RECV(DES_ROP_S,2)
 
-! DES_ROP_S is not exchanged across the interface.
-! ROP_S and EP_G are done at the end of the DEM time step in
-! des_time_march.f.
-! -------------------------------------------------------------------
-
-      IF (.NOT.MPPIC) THEN
-! According to the current DEM implementation, the mean fields are
-! communicated (i.e., sent received) following the inner DEM
-! time steps. Since the number of these inner time steps could be large
-! in DEM and the cell centered DES mean fields (such as des_rop_s,
-! des_u_s, etc.) in the ghost cells (across processor boundaries)
-! are not used during these substeps, the sent receive of these mean
-! fields at the end of DEM substeps does not result in any error.
-
-! It should be noted above that the ep_g values in the ghost cells
-! are not correct, and if any future development requires the correct
-! value of ep_g in ghost cells during DEM substeps, a send_recv
-! of des_rop_s should be done before calling the following routine.
-! This will impose a substantial penalty on computational time since
-! communication overheads will go up.
-         CALL CALC_EPG_DES
+      CALL CALC_EPG_DES
 
 
-      ELSE
-
-! share the des_rop_s array across the processors
-         CALL SEND_RECV(DES_ROP_S,2)
-! compute the arrays epg and rop_g. This negates the need for further
-! communication of these arrays.
-         CALL CALC_EPG_DES
+      IF(MPPIC) THEN
 
 ! Now calculate Eulerian mean velocity fields like U_S, V_S, and W_S.
          CALL SEND_RECV(DES_U_S,2)

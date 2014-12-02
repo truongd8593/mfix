@@ -39,6 +39,9 @@
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
 
+! Check interpolation input.
+      CALL SET_FILTER_DES
+
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
 
@@ -267,6 +270,8 @@
          CALL INIT_SETTLING_DEM
       ENDIF
 
+      CALL DIFFUSE_MEAN_FIELDS
+      CALL CALC_EPG_DES
 
       IF(MPPIC) CALL CALC_DTPIC
 

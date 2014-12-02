@@ -13,7 +13,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
@@ -79,8 +79,7 @@
       IF(DES_ONEWAY_COUPLED) RETURN
 
 ! Average the interpoalted drag force from the cell corners to the cell face.
-!      IF(DES_INTERP_ON)THEN
-      IF(.FALSE.)THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -154,7 +153,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
@@ -219,8 +218,7 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-!      IF(DES_INTERP_ON) THEN
-      IF(.FALSE.) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -295,7 +293,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
@@ -360,8 +358,7 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-!     IF(DES_INTERP_ON) THEN
-      IF(.FALSE.) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = 0.25d0
 

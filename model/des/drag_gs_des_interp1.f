@@ -24,8 +24,8 @@
       use fldvar, only: U_G, V_G, W_G
 
       use discretelement, only: MAX_PIP
-      use discretelement, only: FILTER_CELL
-      use discretelement, only: FILTER_WEIGHT
+      use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_WEIGHT
 
 ! Flags indicating the state of particle
       use discretelement, only: PEA
@@ -170,8 +170,8 @@
       use fldvar, only: U_G, V_G, W_G
 
       use discretelement, only: MAX_PIP
-      use discretelement, only: FILTER_CELL
-      use discretelement, only: FILTER_WEIGHT
+      use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_WEIGHT
 
 ! Flags indicating the state of particle
       use discretelement, only: PEA

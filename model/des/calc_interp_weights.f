@@ -6,8 +6,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_INTERP_WEIGHTS
 
-      CALL CALC_INTERP_WEIGHTS1
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_DPVM
+      use particle_filter, only: DES_INTERP_GAUSS
 
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+      CASE(DES_INTERP_DPVM);  CALL CALC_INTERP_WEIGHTS1
+      CASE(DES_INTERP_GAUSS); CALL CALC_INTERP_WEIGHTS1
+      END SELECT
+
+      RETURN
       END SUBROUTINE CALC_INTERP_WEIGHTS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -23,8 +31,8 @@
       use discretelement, only: PIJK
       use discretelement, only: DES_POS_NEW
       use discretelement, only: XE, YN, ZT
-      use discretelement, only: FILTER_CELL
-      use discretelement, only: FILTER_WEIGHT
+      use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_WEIGHT
       use geometry, only: DO_K
 
       use functions, only: FUNIJK
@@ -80,7 +88,6 @@
          IJK = PIJK(L,4)
          IDX=0
 
-
 ! Calculate weights for ghost particles. Only store weights that the
 ! current process owns.
          DO KC=Km,Kp
@@ -101,8 +108,6 @@
                FILTER_CELL(IDX,L) = IJK
                FILTER_WEIGHT(IDX,L) = WEIGHT
             ENDIF
-
-
          ENDDO
          ENDDO
          ENDDO
@@ -116,30 +121,22 @@
 !``````````````````````````````````````````````````````````````````````!
       DOUBLE PRECISION FUNCTION CALC_FILTER_WEIGHTS(POS1, POS2)
 
+      use particle_filter, only: FILTER_WIDTH_INTERP
+      use particle_filter, only: OoFILTER_VOL
+      use particle_filter, only: FILTER_WIDTH_INTERPx3
+
       DOUBLE PRECISION, INTENT(IN) :: POS1, POS2
       DOUBLE PRECISION :: OVERLAP, HEIGHT
 
-      DOUBLE PRECISION, PARAMETER :: FILTER_MOD    = 3.0d0
-      DOUBLE PRECISION, PARAMETER :: FILTER_CUTOFF = 0.9999d0
-
-      DOUBLE PRECISION :: FILTER_VOL
-      DOUBLE PRECISION :: FILTER_WIDTH
-
-
-!      FILTER_WIDTH = FILTER_MOD * MAX_RADIUS
-      FILTER_WIDTH = FILTER_MOD * MAX_RADIUS
-      FILTER_VOL = 0.25d0/(FILTER_WIDTH**3)
-
       OVERLAP = POS1 - POS2
-      IF(OVERLAP < FILTER_WIDTH) THEN
-         HEIGHT = FILTER_WIDTH - OVERLAP
+      IF(OVERLAP < FILTER_WIDTH_INTERP) THEN
+         HEIGHT = FILTER_WIDTH_INTERP - OVERLAP
          CALC_FILTER_WEIGHTS = HEIGHT**2 * &
-            (3.d0*FILTER_WIDTH - HEIGHT)/FILTER_VOL
+            (FILTER_WIDTH_INTERPx3 - HEIGHT)*OoFILTER_VOL
       ELSE
          CALC_FILTER_WEIGHTS = ZERO
       ENDIF
+
       END FUNCTION CALC_FILTER_WEIGHTS
 
       END SUBROUTINE CALC_INTERP_WEIGHTS1
-
-
