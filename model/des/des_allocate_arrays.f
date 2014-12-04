@@ -152,17 +152,6 @@
       Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
       Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
-      Allocate(  CELLNEIGHBOR_FACET (DIMENSION_3) )
-      Allocate(  CELLNEIGHBOR_FACET_MAX (DIMENSION_3) )
-      Allocate(  CELLNEIGHBOR_FACET_NUM (DIMENSION_3) )
-      do ii = 1, DIMENSION_3
-         cellneighbor_facet_max(ii) = 4
-         allocate(cellneighbor_facet(ii)%p(cellneighbor_facet_max(ii)))
-         allocate(cellneighbor_facet(ii)%extentdir(cellneighbor_facet_max(ii)))
-         allocate(cellneighbor_facet(ii)%extentmin(cellneighbor_facet_max(ii)))
-         allocate(cellneighbor_facet(ii)%extentmax(cellneighbor_facet_max(ii)))
-         cellneighbor_facet_num(ii) = 0
-      enddo
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat

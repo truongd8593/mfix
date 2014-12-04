@@ -23,6 +23,7 @@
 
       use mpi_utility
       use error_manager
+      USE desgrid
 
       IMPLICIT NONE
 
@@ -38,7 +39,7 @@
 ! Loop indicies:
       INTEGER :: L, I, J, K, IJK
 ! Integer error flag.
-      INTEGER :: IER
+      INTEGER :: IER, CELL_ID
 
 
 ! Initialize local variables.
@@ -56,13 +57,26 @@
          IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
 
 ! assigning local aliases for particle i, j, k fluid grid indices
+
          I = PIJK(L,1)
          J = PIJK(L,2)
          K = PIJK(L,3)
 
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
+         CELL_ID = DG_PIJK(L)
+
+         I = DG_IOF_GL(CELL_ID)
+         J = DG_JOF_GL(CELL_ID)
+         K = DG_KOF_GL(CELL_ID)
+
+         IF(I > DG_IEND1 .OR. I < DG_ISTART1) THEN
+            IER = 1
+         ENDIF
+         IF(J > DG_JEND1 .OR. J < DG_JSTART1) THEN
+            IER = 1
+         ENDIF
+         IF(DO_K .AND. (K > DG_KEND1 .OR. K < DG_KSTART1)) THEN
+            IER = 1
+         ENDIF
       ENDDO
 !!$omp end parallel
 
