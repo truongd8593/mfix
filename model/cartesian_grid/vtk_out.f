@@ -3352,8 +3352,9 @@
       ENDDO
 
 
-      GLOBAL_INTERIOR_CELL_AT  = .FALSE.
-      GLOBAL_BLOCKED_CELL_AT   = .FALSE.
+      GLOBAL_INTERIOR_CELL_AT = .FALSE.
+      GLOBAL_BLOCKED_CELL_AT  = .FALSE.
+      GLOBAL_CUT_CELL_AT      = .FALSE.
       call gather (I_OF,GLOBAL_I_OF,root)
       call gather (J_OF,GLOBAL_J_OF,root)
       call gather (K_OF,GLOBAL_K_OF,root)

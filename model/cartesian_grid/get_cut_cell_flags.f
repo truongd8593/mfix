@@ -178,17 +178,10 @@
          END DO
 
 !======================================================================
-!  Clean-up intersection flags in preparaton of small cells removal
+!  Clean-up intersection flags by snapping intersection points to close 
+!  corner (within tolerance TOL_SNAP)
 !======================================================================
-         DO IJK = IJKSTART3, IJKEND3
-            IF(INTERIOR_CELL_AT(IJK)) THEN
-!             IF(POTENTIAL_CUT_CELL_AT(IJK))  CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-               CALL CLEAN_INTERSECT(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
-            ENDIF
-         END DO
-
-         call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
-
+         CALL CLEAN_INTERSECT_SCALAR
 
       ELSE
          CALL CAD_INTERSECT('SCALAR',Xn_int,Ye_int,Zt_int)
@@ -290,7 +283,6 @@
                IF(F_NODE(0) < ZERO) THEN
                   IF((FLAG(IJK)>=100).AND.(FLAG(IJK)<=102)) THEN
                      BLOCKED_CELL_AT(IJK) = .TRUE.
-                     STANDARD_CELL_AT(IJK) = .FALSE.          ! Blocked cell = wall cell
                   ELSE
                      BLOCKED_CELL_AT(IJK) = .FALSE.
                      STANDARD_CELL_AT(IJK) = .TRUE.           ! Regular fluid cell
@@ -336,18 +328,7 @@
 
                ENDIF
 
-               FLAG(IJK) = 100
                BLOCKED_CELL_AT(IJK) = .TRUE.               ! Blocked fluid cell
-               STANDARD_CELL_AT(IJK) = .FALSE.
-               CUT_CELL_AT(IJK) = .FALSE.
-               AXY(IJK) = ZERO
-               AXZ(IJK) = ZERO
-               AYZ(IJK) = ZERO
-               VOL(IJK) = ZERO
-
-               AXY(BOTTOM_OF(IJK)) = ZERO
-               AXZ(SOUTH_OF(IJK)) = ZERO
-               AYZ(WEST_OF(IJK)) = ZERO
 
             ELSE                                         ! Cut cell
 
@@ -376,6 +357,41 @@
       ENDIF
       END DO          ! IJK Loop
 
+
+      call SEND_RECEIVE_1D_LOGICAL(SMALL_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(STANDARD_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(BLOCKED_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(CUT_CELL_AT,2)
+
+! Consolidate blocked cells
+      DO IJK = IJKSTART3, IJKEND3
+         IF(BLOCKED_CELL_AT(IJK)) THEN
+            STANDARD_CELL_AT(IJK) = .FALSE.
+            CUT_CELL_AT(IJK)      = .FALSE.
+
+            FLAG(IJK)             = 100
+
+            VOL(IJK)              = ZERO
+            AXY(IJK)              = ZERO
+            AXZ(IJK)              = ZERO
+            AYZ(IJK)              = ZERO
+
+            AXY(BOTTOM_OF(IJK))   = ZERO
+            AXZ(SOUTH_OF(IJK))    = ZERO
+            AYZ(WEST_OF(IJK))     = ZERO
+         ENDIF
+      ENDDO
+
+      call SEND_RECEIVE_1D_LOGICAL(SMALL_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(STANDARD_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(BLOCKED_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(CUT_CELL_AT,2)
+
+      call send_recv(FLAG,2)
+      call send_recv(VOL,2)
+      call send_recv(AXY,2)
+      call send_recv(AXZ,2)
+      call send_recv(AYZ,2)
 
 !      print*,'Before removing duplicate nodes:'
       DO IJK = IJKSTART3, IJKEND3,-1

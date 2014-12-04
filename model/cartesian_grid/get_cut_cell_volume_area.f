@@ -327,35 +327,13 @@
 
          SELECT CASE (TYPE_OF_CELL)
             CASE('SCALAR')
-               FLAG(IJK) = 100
-               CUT_CELL_AT(IJK) = .FALSE.
                BLOCKED_CELL_AT(IJK) = .TRUE.
-               STANDARD_CELL_AT(IJK) = .FALSE.
-               AYZ(IJK) = ZERO
-               AXZ(IJK) = ZERO
-               AXY(IJK) = ZERO
-               VOL(IJK) = ZERO
             CASE('U_MOMENTUM')
-               CUT_U_CELL_AT(IJK) = .FALSE.
                BLOCKED_U_CELL_AT(IJK) = .TRUE.
-               AYZ_U(IJK) = ZERO
-               AXZ_U(IJK) = ZERO
-               AXY_U(IJK) = ZERO
-               VOL_U(IJK) = ZERO
             CASE('V_MOMENTUM')
-               CUT_V_CELL_AT(IJK) = .FALSE.
                BLOCKED_V_CELL_AT(IJK) = .TRUE.
-               AYZ_V(IJK) = ZERO
-               AXZ_V(IJK) = ZERO
-               AXY_V(IJK) = ZERO
-               VOL_V(IJK) = ZERO
             CASE('W_MOMENTUM')
-               CUT_W_CELL_AT(IJK) = .FALSE.
                BLOCKED_W_CELL_AT(IJK) = .TRUE.
-               AYZ_W(IJK) = ZERO
-               AXZ_W(IJK) = ZERO
-               AXY_W(IJK) = ZERO
-               VOL_W(IJK) = ZERO
             CASE DEFAULT
                WRITE(*,*)'SUBROUTINE: GET_CUT_CELL_VOLUME_AND_AREAS'
                WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
@@ -511,14 +489,7 @@
                   PRINT*,'REMOVING CUT CELL FROM COMPUTATION (FLAGGED AS BLOCKED CELL)'
                ENDIF
 
-               FLAG(IJK) = 100
-               CUT_CELL_AT(IJK) = .FALSE.
                BLOCKED_CELL_AT(IJK) = .TRUE.
-               STANDARD_CELL_AT(IJK) = .FALSE.
-               AYZ(IJK) = ZERO
-               AXZ(IJK) = ZERO
-               AXY(IJK) = ZERO
-               VOL(IJK) = ZERO
 
             ENDIF
 
