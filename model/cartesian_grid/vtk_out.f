@@ -63,10 +63,6 @@
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
-      DX(IEND3+1) = DX(IEND3)
-      DY(JEND3+1) = DY(JEND3)
-      DZ(KEND3+1) = DZ(KEND3)
-
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
         XG_E(1) = ZERO
