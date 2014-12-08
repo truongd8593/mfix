@@ -288,41 +288,41 @@
          ENDIF
          IF(FLUID_AT(IJKW)) THEN
             X_COUNT = X_COUNT + 1
-            P_FORCE(IJK, 1) = P_FORCE(IJK, 1) +                        &
+            P_FORCE(1,IJK) = P_FORCE(1,IJK) +                          &
                2.d0*(P_G(IJK) - P_G(IJKW))/(DX(I) + DX(I_OF(IJKW)))
          ENDIF
          X_COUNT = MAX(1, X_COUNT) !to prevent division from zero
 ! P_FORCE (by convention) is stored as -dp/dx. MPG_CYCLIC is already -dp/dx.
 ! therefore, P_force is multiplied by "-" for consistency
-         P_FORCE(IJK, 1) = MPG_CYCLIC(1) - P_FORCE(1,IJK)/REAL(X_COUNT)
+         P_FORCE(1,IJK) = MPG_CYCLIC(1) - P_FORCE(1,IJK)/REAL(X_COUNT)
 
          IF(FLUID_AT(IJKN)) THEN
             Y_COUNT = Y_COUNT + 1
-            P_FORCE(IJK, 2) = P_FORCE(IJK, 2) +                        &
+            P_FORCE(2,IJK) = P_FORCE(2,IJK) +                          &
                2.d0*(P_G(IJKN) - P_G(IJK))/(DY(J) + DY(J_OF(IJKN)))
          ENDIF
 
          IF(FLUID_AT(IJKS)) THEN
             Y_COUNT = Y_COUNT + 1
-            P_FORCE(IJK, 2) = P_FORCE(IJK, 2) +                        &
+            P_FORCE(2,IJK) = P_FORCE(2,IJK) +                          &
                2.d0*(P_G(IJK) - P_G(IJKS))/(DY(J) + DY(J_OF(IJKS)))
          ENDIF
          Y_COUNT = MAX(1, Y_COUNT) !to prevent division from zero
-         P_FORCE(IJK, 2) = MPG_CYCLIC(2) - P_FORCE(2,IJK)/REAL(Y_COUNT)
+         P_FORCE(2,IJK) = MPG_CYCLIC(2) - P_FORCE(2,IJK)/REAL(Y_COUNT)
 
          IF(DO_K) THEN
             IF(FLUID_AT(IJKT)) THEN
                Z_COUNT = Z_COUNT + 1
-               P_FORCE(IJK, 3) = P_FORCE(IJK, 3) +                     &
+               P_FORCE(3,IJK) = P_FORCE(3,IJK) +                       &
                   2.d0*(P_G(IJKT) - P_G(IJK))/(DZ(K) + DZ(K_OF(IJKT)))
             ENDIF
             IF(FLUID_AT(IJKB)) THEN
                Z_COUNT = Z_COUNT + 1
-               P_FORCE(IJK, 3) = P_FORCE(IJK, 3) +                     &
+               P_FORCE(3,IJK) = P_FORCE(3,IJK) +                       &
                   2.d0*(P_G(IJK) - P_G(IJKB))/(DZ(K) + DZ(K_OF(IJKB)))
             ENDIF
             Z_COUNT = MAX(1, Z_COUNT) !to prevent division from zero
-            P_FORCE(IJK, 3) = MPG_CYCLIC(3)-P_FORCE(3,IJK)/REAL(Z_COUNT)
+            P_FORCE(3,IJK) = MPG_CYCLIC(3)-P_FORCE(3,IJK)/REAL(Z_COUNT)
          ENDIF
 
       ENDDO
