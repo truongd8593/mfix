@@ -280,7 +280,7 @@
 
       DES_INTERP_SCHEME = 'NONE'
       FILTER_WIDTH = UNDEFINED
-
+      EXPLICITLY_COUPLED = .FALSE.
 
 !<keyword category="Discrete Element Simulation" required="false" dem="true">
 !  <description>

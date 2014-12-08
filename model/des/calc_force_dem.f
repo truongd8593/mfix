@@ -264,13 +264,6 @@
 
       ENDDO
 
-! Calculate drag
-      CALL CALC_DRAG_DES
-
-! Update the old values of particle position and velocity with the new
-! values computed
-      IF (DO_OLD) CALL CFUPDATEOLD
-
       RETURN
 
       contains

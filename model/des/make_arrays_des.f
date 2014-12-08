@@ -23,6 +23,9 @@
       USE param1
       USE run
       USE stl
+      use desmpi, only: DES_PAR_EXCHANGE
+
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -263,6 +266,7 @@
 
 ! do_nsearch should be set before calling particle in cell
       DO_NSEARCH =.TRUE.
+      CALL DES_PAR_EXCHANGE
       CALL PARTICLES_IN_CELL
 
       IF(DEM_SOLIDS) THEN
@@ -270,8 +274,10 @@
          CALL INIT_SETTLING_DEM
       ENDIF
 
-      CALL DIFFUSE_MEAN_FIELDS
-      CALL CALC_EPG_DES
+! Calculate interpolation weights
+      CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields using either interpolation or cell averaging.
+      CALL COMP_MEAN_FIELDS
 
       IF(MPPIC) CALL CALC_DTPIC
 

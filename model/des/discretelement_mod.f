@@ -413,8 +413,6 @@
 !-----------------------------------------------------------------<<<
 
 
-! Hybrid model related variables/data
-!----------------------------------------------------------------->>>
 ! note that thse variables are needed since the existing variables (i.e.
 ! f_gs, f_ss, etc) are also being used to store the information between
 ! the gas and continuous solids phases.
@@ -439,17 +437,18 @@
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SDRAG_BM
-!-----------------------------------------------------------------<<<
 
 
-! START interpolation related data
-!----------------------------------------------------------------->>>
-! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::DRAG_AM
-                        !(DIMENSION_3,DES_MMAX)
-! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_BM
-                        !(DIMENSION_3,3,DES_MMAX)
+! the coefficient add to gas momentum A matrix
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DRAG_AM
+! the coefficient add to gas momentum B matrix
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
+
+
+!
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
+
+
 
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
@@ -597,5 +596,12 @@
 
 ! END Cohesion
 !-----------------------------------------------------------------<<<
+
+
+
+
+      LOGICAL :: EXPLICITLY_COUPLED
+
+
 
       END MODULE DISCRETELEMENT

@@ -25,7 +25,10 @@
       USE compar
       USE discretelement
       USE qmom_kinetic_equation
+
+      use discretelement, only: EXPLICITLY_COUPLED
       IMPLICIT NONE
+
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
@@ -86,7 +89,8 @@
 
 ! calculate drag between continuum phases and discrete particles
 ! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED) CALL CALC_DRAG_DES_2FLUID
+      IF (DES_CONTINUUM_COUPLED .AND. .NOT.EXPLICITLY_COUPLED) &
+         CALL CALC_DRAG_DES_2FLUID
 
 
       RETURN

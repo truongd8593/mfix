@@ -35,7 +35,7 @@
       use discretelement, only: DES_VEL_NEW
 ! Total forces acting on particle
       use discretelement, only: FC
-! Gas pressure force by fluid cell 
+! Gas pressure force by fluid cell
       use discretelement, only: P_FORCE
 ! Particle volume.
       use discretelement, only: PVOL
@@ -115,7 +115,7 @@
             VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
             VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
 ! Gas pressure force.
-            lPF = lPF + P_FORCE(IJK,:)*WEIGHT
+            lPF = lPF + P_FORCE(:,IJK)*WEIGHT
          ENDDO
 
          CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
@@ -147,12 +147,12 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DES_DRAG_GS                                             !
+!  Subroutine: DRAG_GS_GAS_INTERP1                                     !
 !  Author: J.Musser                                   Date: 21-NOV-14  !
 !                                                                      !
 !                                                                      !
 !  Purpose: This routine is called from the CONTINUUM. It calculates   !
-!  the scalar cell center drag force acting on the fluid using         ! 
+!  the scalar cell center drag force acting on the fluid using         !
 !  interpolated values for the gas velocity and volume fraction. The   !
 !  The resulting sources are interpolated back to the fluid grid.      !
 !                                                                      !
@@ -179,10 +179,8 @@
       use discretelement, only: F_GP
 ! Particle velocity
       use discretelement, only: DES_VEL_NEW
-! Particle volume.
-!      use discretelement, only: PVOL
 ! Contribution to gas momentum equation due to drag
-      use discretelement, only: DRAG_AM, DRAG_BM
+      use discretelement, only: DRAG_BM
 ! Scalar cell center total drag force
       use discretelement, only: F_GDS
 ! Flag for MPPIC runs
@@ -222,12 +220,11 @@
 ! Drag force (intermediate calculation)
       DOUBLE PRECISION :: lFORCE
 ! Drag sources for fluid (intermediate calculation)
-      DOUBLE PRECISION :: lDRAG_AM, lDRAG_BM(3)
+      DOUBLE PRECISION :: lDRAG_BM(3)
 
 
 ! Initialize fluid cell values.
       F_GDS = ZERO
-      DRAG_AM = ZERO
       DRAG_BM = ZERO
 
 ! Loop bounds for interpolation.
@@ -262,16 +259,13 @@
          lFORCE = F_GP(NP)
          IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
 
-         lDRAG_AM = lFORCE
          lDRAG_BM = lFORCE*DES_VEL_NEW(:,NP)
 
          DO LC=1,LP_BND
             IJK = FILTER_CELL(LC,NP)
             WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
 
-            DRAG_AM(IJK) = DRAG_AM(IJK) + lDRAG_AM*WEIGHT
             DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
-
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
          ENDDO
 
@@ -282,13 +276,155 @@
 
 ! Update the drag force and sources in ghost layers.
       CALL SEND_RECV(F_GDS, 2)
-      CALL SEND_RECV(DRAG_AM, 2)
       CALL SEND_RECV(DRAG_BM, 2)
 
 
       RETURN
       END SUBROUTINE DRAG_GS_GAS_INTERP1
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DRAG_GS_EXPLICIT_INTERP1                                !
+!  Author: J.Musser                                   Date: 21-NOV-14  !
+!                                                                      !
+!                                                                      !
+!  Purpose: This routine is called from the CONTINUUM. It calculates   !
+!  the scalar cell center drag force acting on the fluid using         !
+!  interpolated values for the gas velocity and volume fraction. The   !
+!  The resulting sources are interpolated back to the fluid grid.      !
+!                                                                      !
+!  NOTE: The loop over particles includes ghost particles so that MPI  !
+!  communications are needed to distribute overlapping force between   !
+!  neighboring grid cells. This is possible because only cells "owned" !
+!  by the current process will have non-zero weights.                  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DRAG_GS_EXPLICIT_INTERP1
+
+! Gas phase volume fraction
+      use fldvar, only: EP_G
+! Gas phase velocities
+      use fldvar, only: U_G, V_G, W_G
+
+      use discretelement, only: MAX_PIP
+      use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_WEIGHT
+
+! Flags indicating the state of particle
+      use discretelement, only: PEA
+! Drag force on each particle
+      use discretelement, only: F_GP
+! Particle velocity
+      use discretelement, only: DES_VEL_NEW
+! Particle drag force
+      use discretelement, only: DRAG_FC
+! Contribution to gas momentum equation due to drag
+      use discretelement, only: DRAG_BM
+! Scalar cell center total drag force
+      use discretelement, only: F_GDS
+! Flag for MPPIC runs
+      use mfix_pic, only: MPPIC
+! Statical weight of each MPPIC parcel
+      use mfix_pic, only: DES_STAT_WT
+! Volume of scalar cell.
+      use geometry, only: VOL
+! Flag for 3D simulatoins.
+      use geometry, only: DO_K
+! Cell-center gas velocities.
+      use tmp_array, only: UGC => ARRAY1
+      use tmp_array, only: VGC => ARRAY2
+      use tmp_array, only: WGC => ARRAY3
+! Lock/Unlock the temp arrays to prevent double usage.
+      use tmp_array, only: LOCK_TMP_ARRAY
+      use tmp_array, only: UNLOCK_TMP_ARRAY
+! MPI wrapper for halo exchange.
+      use sendrecv, only: SEND_RECV
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Double precision values.
+      use param1, only: ZERO
+
+      IMPLICIT NONE
+
+! Loop counters: Particle, fluid cell, neighbor cells
+      INTEGER :: NP, IJK, LC
+! Interpolation weight
+      DOUBLE PRECISION :: WEIGHT
+! Interpolated gas phase quanties.
+      DOUBLE PRECISION :: lEPg, VELFP(3)
+! Loop bound for
+      INTEGER :: LP_BND
+! Drag force (intermediate calculation)
+      DOUBLE PRECISION :: lFORCE
+! Drag source for fluid (intermediate calculation)
+      DOUBLE PRECISION :: lDRAG_BM(3)
+
+
+! Initialize fluid cell values.
+      F_GDS = ZERO
+      DRAG_BM = ZERO
+
+! Loop bounds for interpolation.
+      LP_BND = merge(27,9,DO_K)
+
+! Lock the temp arrays.
+      CALL LOCK_TMP_ARRAY
+
+! Calculate the cell center gas velocities.
+      CALL CALC_CELL_CENTER_GAS_VEL
+
+! Calculate the gas phae forces acting on each particle.
+      DO NP=1,MAX_PIP
+         IF(.NOT.PEA(NP,1)) CYCLE
+
+         lEPG = ZERO
+         VELFP = ZERO
+
+         DO LC=1,LP_BND
+            IJK = FILTER_CELL(LC,NP)
+            WEIGHT = FILTER_WEIGHT(LC,NP)
+! Gas phase volume fraction.
+            lEPG = lEPG + EP_G(IJK)*WEIGHT
+! Gas phase velocity.
+            VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
+            VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
+            VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
+         ENDDO
+
+         CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
+
+! Evaluate the drag force acting on the particle.
+         DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
+! Include gas pressure and gas-solids drag
+
+! Calculate the force on the fluid.
+         lFORCE = F_GP(NP)
+         IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
+
+         lDRAG_BM = lFORCE*(DES_VEL_NEW(:,NP) - VELFP)
+
+         DO LC=1,LP_BND
+            IJK = FILTER_CELL(LC,NP)
+            WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
+
+            DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
+            F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
+         ENDDO
+
+      ENDDO
+
+! Unlock the temp arrays.
+      CALL UNLOCK_TMP_ARRAY
+
+! Update the drag force and sources in ghost layers.
+      CALL SEND_RECV(F_GDS, 2)
+      CALL SEND_RECV(DRAG_BM, 2)
+
+
+      RETURN
+      END SUBROUTINE DRAG_GS_EXPLICIT_INTERP1
 
 
 

@@ -1,5 +1,16 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+!                                                                      !
+!  Subroutine: COMP_MEAN_FIELDS                                        !
+!  Author: J.Musser                                   Date: 11-NOV-14  !
+!                                                                      !
+!  Purpose: Driver routine for calculating field variables (DES_ROP_s, !
+!   DES_U_S, DES_V_S, DES_W_S) from particle data.                     !
+!                                                                      !
+!  o The diffusion filter is only applied to the the solids bulk       !
+!    density because DEM simulations do not utilize the other field    !
+!    variables within a time loop.                                     !
+!                                                                      !
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE COMP_MEAN_FIELDS
 
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
@@ -7,7 +18,20 @@
       use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
 
+      use discretelement, only: DES_MMAX
+      use discretelement, only: DES_ROP_S
 
+! Flag: Diffuse DES field variables.
+      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
+
+      IMPLICIT NONE
+
+! Loop counter.
+      INTEGER :: M
+
+!......................................................................!
+
+! Calculate field variables from particle data:
       IF(DES_INTERP_MEAN_FIELDS) THEN
          SELECT CASE(DES_INTERP_SCHEME_ENUM)
          CASE(DES_INTERP_NONE) ; CALL COMP_MEAN_FIELDS_ZERO_ORDER
@@ -18,11 +42,17 @@
          CALL COMP_MEAN_FIELDS_ZERO_ORDER
       ENDIF
 
-!      CALL DIFFUSE_MEAN_FIELDS
+! Apply the diffusion filter.
+      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
+         DO M=1, DES_MMAX
+            CALL DIFFUSE_MEAN_FIELD(DES_ROP_S(:,M),'DES_ROP_S')
+         ENDDO
+      ENDIF
 
+! Calculate the gas phase volume fraction from DES_ROP_s.
       CALL CALC_EPG_DES
 
-
+      RETURN
       END SUBROUTINE COMP_MEAN_FIELDS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

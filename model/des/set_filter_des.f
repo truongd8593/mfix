@@ -54,8 +54,6 @@
          DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
          IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
 
-         write(*,*) 'DXYZ_MIN',DXYZ_MIN
-
          IF(0.5d0*FILTER_WIDTH < DXYZ_MIN) THEN
              FILTER_WIDTH_INTERP = 0.500d0*FILTER_WIDTH
          ELSEIF(0.5d0*FILTER_WIDTH == DXYZ_MIN) THEN
@@ -83,14 +81,15 @@
 
             IF(DIF_TSTOP == 0.0) THEN
                WRITE(ERR_MSG,2131)
-               CALL FLUSH_ERR_MSG()
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
          ENDIF
 
- 2131 FORMAT('Message 2131: The FILTER_WIDTH is too small for ',       &
-         'diffusive filtering ',/'on the current mesh and will have ', &
-         'no effect.')
+ 2131 FORMAT('Error 2131: The FILTER_WIDTH is too small for ',       &
+         'diffusive filtering ',/'on the current mesh and will ',    &
+         'have no effect. Either increase the',/'FILTER_WIDTH or ',  &
+         'set DES_DIFFUSE_MEAN_FIELDS=.FALSE.')
 
       ENDIF
 

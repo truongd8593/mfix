@@ -57,10 +57,6 @@
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
-! Call exchange particles - this will exchange particle crossing
-! boundaries as well as updates ghost particles information
-      CALL DES_PAR_EXCHANGE
-
 ! Use an incremental approach to determine the new particle location.
 !-----------------------------------------------------------------------
 !!$omp parallel default(shared) private(L, I, J, K, IJK)
@@ -154,12 +150,12 @@
       ENDDO
 
 ! Calculate interpolation weights
-      CALL CALC_INTERP_WEIGHTS
+!      CALL CALC_INTERP_WEIGHTS
 
 ! Calculate mean fields using either interpolation or cell averaging.
-      CALL COMP_MEAN_FIELDS
+!      CALL COMP_MEAN_FIELDS
 
-      IF(MPPIC) CALL REPORT_PIC_STATS(RECOVERED, DELETED)
+!      IF(MPPIC) CALL REPORT_PIC_STATS(RECOVERED, DELETED)
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL

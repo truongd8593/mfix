@@ -183,9 +183,11 @@
       ALLOCATE(F_gp(NPARTICLES ))
       F_gp(1:NPARTICLES)  = ZERO
 
+! Explict drag force acting on a particle.
+      Allocate(DRAG_FC (DIMN,NPARTICLES) )
 
 ! force due to gas-pressure gradient
-      ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
+      ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
