@@ -235,6 +235,7 @@
 
       USE run
       USE param1
+      USE desgrid
       USE discretelement
       USE geometry
       USE compar
@@ -322,7 +323,7 @@
 ! Check particle LL for wall contacts
 
          LIST_OF_CELLS(:) = -1
-         CELL_ID = PIJK(LL,4)
+         CELL_ID = DG_PIJK(LL)
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
