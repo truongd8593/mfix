@@ -597,15 +597,21 @@
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
             !NORM_FACE(:,NF) = (/zero, zero, zero/)
-            !For stl, the vertices are stored in CCW order looking from outside.
-            !In the stl convention, the normal points outwards.
-            !However, in MFIX, cutcell and facets normals point into the fluid
-            !So, the normal's are written as pointing to the fluid but when the stl
-            !is viewed in paraview, it will surely calculate its own normals based on the
-            !order ot the vertices specified here and may look opposite.
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+
+! For stl, the vertices are stored in CCW order looking from outside.
+! In the stl convention, the normal points outwards. However, in MFIX,
+! cutcell and facets normals point into the fluid. So, the normals are
+! written as pointing to the fluid but when the stl is viewed in 
+! paraview, it will surely calculate its own normals based on the order
+! to the vertices specified here and may look opposite.
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
+
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -614,9 +620,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),             &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'w'),             &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'w'),             &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
          enddo
       enddo
 
@@ -636,9 +645,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -647,9 +659,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
          enddo
       enddo
 
@@ -669,9 +684,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -680,9 +698,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
          enddo
       enddo
 
@@ -702,9 +723,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k, 't')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -713,9 +737,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
 
 
          enddo
@@ -738,9 +765,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -749,9 +779,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 'b')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 'b')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'b')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'b')/)
          enddo
          enddo
 
@@ -771,9 +804,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
 
             COUNT_FACET_TEMP = COUNT_FACET_TEMP + 1
             NF = COUNT_FACET_TEMP
@@ -782,9 +818,12 @@
             facet_count_cellwise(ijk) = facet_count_cellwise(ijk)+1
             facet_id_cellwise(IJK,facet_count_cellwise(ijk))  = NF
 
-            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k, 'w'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 'n'), get_nodes(i,j,k, 't')/)
-            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k, 'e'), get_nodes(i,j,k, 's'), get_nodes(i,j,k, 't')/)
+            VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(2,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'n'), get_nodes(i,j,k,'t')/)
+            VERTEX_TEMP(3,:,NF) = (/get_nodes(i,j,k,'e'),              &
+               get_nodes(i,j,k,'s'), get_nodes(i,j,k,'t')/)
          enddo
          enddo
       endif
@@ -798,9 +837,10 @@
             ELSEIF (BC_TYPE(L)=='P_OUTFLOW' ) THEN
                IF(.not.BC_PO_APPLY_TO_DES(L)) THEN
                   write(err_msg,'(/2x,A,2x,i4,2x,A,/2x,A)') &
-                       'Pressure outflow  BC # ', L, &
-                       ' will not be applied to the discrete phase', &
-                       'i.e., particles will not exit the domain from this boundary plane'
+                 'Pressure outflow  BC # ', L, &
+                 ' will not be applied to the discrete phase', &
+                 'i.e., particles will not exit the domain ', &
+                 'from this boundary plane'
 
                   CALL flush_err_msg
 
@@ -1157,19 +1197,28 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE ADD_FACET_FOR_DES(I,J,K,IJK,N)
+      SUBROUTINE ADD_FACET_FOR_DES(I,J,K,IJK,N)
+
       USE param1, only: zero, one
-      USE discretelement, only: dimn, xe, yn, zt
+      use geometry, only: DO_K, ZLENGTH
+
+      use run, only: RUN_NAME
+
+      use compar, only: myPE
+      use compar, only: NODESi, NODESj, NODESk
+
+      use desgrid, only: dg_xstart, dg_dxinv
+      use desgrid, only: dg_ystart, dg_dyinv
+      use desgrid, only: dg_zstart, dg_dzinv
+
       Use stl
-      USE indices
-      USE geometry
-      USE mpi_utility
-      USE error_manager
-      USE run
-      USE functions
+      use error_manager
+
       IMPLICIT NONE
+
       INTEGER, INTENT(IN) :: I,j,k,IJK, N
       !Local variables
+
       INTEGER ::  CURRENT_COUNT, COUNT
 
       double precision ::   box_origin(3), box_extents(3), tri_norm(3)
@@ -1180,43 +1229,35 @@
       integer :: stl_unit, fid
 
       stl_unit = 1001
-      IF (I.lt.IMIN1.OR.I.gt.IMAX1) RETURN
-      IF (J.lt.JMIN1.OR.J.gt.JMAX1) RETURN
-      IF (K.lt.KMIN1.OR.K.gt.KMAX1) RETURN
+
+!     IF (I < IMIN1 .OR. I > IMAX1) RETURN
+!     IF (J < JMIN1 .OR. J > JMAX1) RETURN
+!     IF (K < KMIN1 .OR. K > KMAX1) RETURN
+
+      box_origin(1) = dg_xstart + (I-2)/dg_dxinv
+      box_extents(1) = 1.0/dg_dxinv
+
+      box_origin(2) = dg_ystart + (J-2)/dg_dyinv
+      box_extents(2) = 1.0/dg_dyinv
+
+      IF(DO_K)THEN
+         box_origin(3) = dg_zstart + (K-2)/dg_dzinv
+         box_extents(3) = 1.0/dg_dzinv
+      ELSE
+         box_origin(3) = 0.0d0
+         box_extents(3) = ZLENGTH
+      ENDIF
 
 
-      box_origin(1) = xe(I) - dx(I)
-      box_origin(2) = yn(J) - dy(J)
-      box_origin(3) = merge(0.0d0, zt(K) - dz(K), NO_K)
 
-      box_extents(1) = dx(I)
-      box_extents(2) = dy(J)
-      box_extents(3) = merge(ZLENGTH, dz(K), NO_K)
-
-      !Do the separating axis test to check if a separating axis exist. If the separating
-      !axis exsit then the cell and facet cannot intersect, so return without adding.
+!Do the separating axis test to check if a separating axis exist. If the separating
+!axis exsit then the cell and facet cannot intersect, so return without adding.
       CALL TestTriangleAABB(vertex(:,:,N), norm_face(:,N), &
       box_origin(:), box_extents(:), sa_exist, sep_axis,i,j,k )
 
-      IF (I .eq. 2.and.j.eq.3.and.k.eq.2.and..not.sa_exist.and..false.) then
 
-         write(*, *) box_origin(:)
-         write(*, '(5x,A10, 2x, i10) ') 'Facet number: ', N
-         write(*,'(5x,A10, 3(2x, g17.8))') 'vert1: ', vertex(1,:,N)
-         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(2,:,N)
-         write(*,'(5x,A10,3(2x, g17.8))') 'vert1: ', vertex(3,:,N)
-         write(*,'(5x,A10,3(2x, g17.8))') 'norm: ', norm_face(:,N)
-         write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', &
-         sa_exist, sep_axis
-         read(*,*)
-      endif
-
-      IF (sa_exist) then
-         !write(*,'(5x,A25, L2, 2x, i2)') 'sep_axis exist, axis #:', &
-         !sa_exist, sep_axis
-         return
-      ENDIF
-      !separating axis does not exist ==> cell and the triangle do intersect.
+      IF(sa_exist) RETURN
+! separating axis does not exist ==> cell and the triangle do intersect.
 
       CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 
@@ -1225,10 +1266,9 @@
          LIST_FACET_AT_DES(IJK)%FACET_LIST(CURRENT_COUNT+1) = N
 
       ELSE
-         CALL INIT_ERR_MSG("add_facets_for_des  under des_stl_functions_mod")
+         CALL INIT_ERR_MSG("des_stl_functions_mod::add_facets_for_des")
          WRITE(err_msg, 200) MAX_FACETS_PER_CELL_DES, IJK, &
-         I, J, K, mype, &
-         IS_ON_myPE_owns(I, J, K)
+            I, J, K, mype, .FALSE.
          CALL flush_err_msg(footer = .false.)
 
 
@@ -1278,12 +1318,11 @@
 
 
 
- 200  FORMAT(&
-      & 'ERROR MESSAGE FROM CUT_CELL_PREPROCESSING', /10x, &
-      & 'INCREASE MAX_FACETS_PER_CELL_DES from the current value of', i3, /10x, &
-      & 'Happening for cell IJK, I, J, K = ', 4(2x, i5), /10X, &
-      & 'mype, Is on myPe? ', I6, L2, /10X, &
-      & 'see the file TROUBLE_CELL for all the current facets in this cell')
+ 200  FORMAT('ERROR MESSAGE FROM CUT_CELL_PREPROCESSING', /10x,        &
+         'INCREASE MAX_FACETS_PER_CELL_DES from the current value of', &
+         I3, /10x,'Happening for cell IJK, I, J, K = ', 4(2x, i5),/10X,&
+         'mype, Is on myPe? ', I6, L2, /10X,'see the file ',&
+         'TROUBLE_CELL for all the current facets in this cell')
 
       END SUBROUTINE ADD_FACET_FOR_DES
 
@@ -1325,14 +1364,15 @@
                CELL_ID = FUNIJK(I,J,K)
                COUNT_FACETS =  LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
                IF(COUNT_FACETS.eq.0) cycle
-               WRITE(1001, '("**************************************************")')
 
-               WRITE(1001, '(2X, "CELL IJK, I, J, K =        = ", i20, 2x, 4(2x,i10))') CELL_ID, I, J, K
+               WRITE(1001,2000) CELL_ID, I, J, K,  COUNT_FACETS
 
-               WRITE(1001, '(2x, "TOTAL FACETS                  = ", 3(2x, i10))') COUNT_FACETS
+ 2000 FORMAT(50('*'),/2X,'CELL IJK, I, J, K =        = ', i20, 2x,     &
+          4(2x,i10),/2X,'TOTAL FACETS',18(' '),'= '3(2x, i10))
 
                DO COUNT = 1, COUNT_FACETS
-                  WRITE(1001, '(2x, i20)')  LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
+                  WRITE(1001, '(2x, i20)')                             &
+                     LIST_FACET_AT_DES(CELL_ID)%FACET_LIST(COUNT)
                ENDDO
 
             ENDDO
