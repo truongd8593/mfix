@@ -123,8 +123,6 @@
 
 ! Torque
       Allocate(  TOW (CROSS_DIMN,NPARTICLES) )
-      Allocate(  TOW_COLL (CROSS_DIMN,2,COLLISION_MAX) )
-
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
 ! Temporary variables to store wall position, velocity and normal vector
@@ -133,22 +131,23 @@
       OLD_COLLISION_NUM = 0
       COLLISION_NUM = 0
       COLLISION_MAX = 1024
-      Allocate(  COLLISIONS (2,COLLISION_MAX) )
-      Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
-      Allocate(  FC_COLL  (3,COLLISION_MAX) )
-      Allocate(  FT_COLL  (3,COLLISION_MAX) )
-      Allocate(  DIST_COLL (COLLISION_MAX) )
-      Allocate(  QQ_COLL (COLLISION_MAX) )
-      Allocate(  NORM_COLL (3,COLLISION_MAX) )
-      Allocate(  PV_COLL (COLLISION_MAX) )
-      Allocate(  PV_COLL_OLD (COLLISION_MAX) )
-      Allocate(  PFT_COLL (3,COLLISION_MAX) )
-      Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
-      Allocate(  PFN_COLL (3,COLLISION_MAX) )
-      Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  CELLNEIGHBOR_FACET (DIMENSION_3) )
       Allocate(  CELLNEIGHBOR_FACET_MAX (DIMENSION_3) )
       Allocate(  CELLNEIGHBOR_FACET_NUM (DIMENSION_3) )
+      Allocate(  COLLISIONS (2,COLLISION_MAX) )
+      Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
+      Allocate(  DIST_COLL (COLLISION_MAX) )
+      Allocate(  FC_COLL  (3,COLLISION_MAX) )
+      Allocate(  FT_COLL  (3,COLLISION_MAX) )
+      Allocate(  NORM_COLL (3,COLLISION_MAX) )
+      Allocate(  PFN_COLL (3,COLLISION_MAX) )
+      Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
+      Allocate(  PFT_COLL (3,COLLISION_MAX) )
+      Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
+      Allocate(  PV_COLL (COLLISION_MAX) )
+      Allocate(  PV_COLL_OLD (COLLISION_MAX) )
+      Allocate(  QQ_COLL (COLLISION_MAX) )
+      Allocate(  TOW_COLL (3,2,COLLISION_MAX) )
       do ii = 1, DIMENSION_3
          cellneighbor_facet_max(ii) = 4
          allocate(cellneighbor_facet(ii)%p(cellneighbor_facet_max(ii)))
@@ -508,9 +507,10 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: real_tmp3
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_scalar_tmp
 
-      INTEGER :: lSIZE1, lSIZE2
+      INTEGER :: lSIZE1, lSIZE2, lSIZE3
 
       lSIZE2 = size(collisions,2)
       allocate(int_tmp(2,COLLISION_MAX))
@@ -521,6 +521,11 @@
       allocate(int_tmp(2,COLLISION_MAX))
       int_tmp(:,1:lSIZE2) = collisions_old(:,1:lSIZE2)
       call move_alloc(int_tmp,collisions_old)
+
+      lSIZE3 = size(TOW_COLL,3)
+      allocate(real_tmp3(3,2,COLLISION_MAX))
+      real_tmp3(:,:,1:lSIZE3) = tow_coll(:,:,1:lSIZE3)
+      call move_alloc(real_tmp3,tow_coll)
 
       lSIZE2 = size(FC_COLL,2)
       allocate(real_tmp(3,COLLISION_MAX))
