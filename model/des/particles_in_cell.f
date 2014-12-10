@@ -34,6 +34,10 @@
       USE error_manager
       USE functions
 
+! Number of particles in the I/J/K direction
+      use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -52,7 +56,6 @@
       INTEGER :: RECOVERED
       INTEGER :: DELETED
 
-!-----------------------------------------------
 
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
@@ -68,28 +71,55 @@
 ! skipping ghost particles
          IF(PEA(L,4)) CYCLE
 
+
          I = PIJK(L,1)
-         IF(DES_POS_NEW(1,L) < XE(I-1)) THEN
-            I = I-1
-         ELSEIF(DES_POS_NEW(1,L) >= XE(I)) THEN
+         IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                        &
+            (DES_POS_NEW(1,L) <  XE(I))) THEN
+            I = I
+         ELSEIF((DES_POS_NEW(1,L) >= XE(I)) .AND.                      &
+            (DES_POS_NEW(1,L) < XE(I+1))) THEN
             I = I+1
+         ELSEIF((DES_POS_NEW(1,L) >= XE(I-2)) .AND.                    &
+            (DES_POS_NEW(1,L) < XE(I-1))) THEN
+            I = I-1
+         ELSE
+            CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                   &
+               DIMENSION_I, ISTART2, IEND2)
          ENDIF
 
+
          J = PIJK(L,2)
-         IF(DES_POS_NEW(2,L)< YN(J-1)) THEN
-            J = J-1
-         ELSEIF(DES_POS_NEW(2,L) >= YN(J))THEN
+         IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                        &
+            (DES_POS_NEW(2,L) < YN(J))) THEN
+            J = J
+         ELSEIF((DES_POS_NEW(2,L) >= YN(J)) .AND.                      &
+            (DES_POS_NEW(2,L) < YN(J+1))) THEN
             J = J+1
+         ELSEIF((DES_POS_NEW(2,L) >= YN(J-2)) .AND.                    &
+            (DES_POS_NEW(2,L) < YN(J-1)))THEN
+            J = J-1
+         ELSE
+            CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                   &
+               DIMENSION_J, JSTART2, JEND2)
          ENDIF
+
 
          IF(NO_K) THEN
             K = 1
          ELSE
             K = PIJK(L,3)
-            IF(DES_POS_NEW(3,L) < ZT(K-1)) THEN
-               K = K-1
-            ELSEIF(DES_POS_NEW(3,L) >= ZT(K)) THEN
+            IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                     &
+               (DES_POS_NEW(3,L) < ZT(K))) THEN
+               K = K
+            ELSEIF((DES_POS_NEW(3,L) >= ZT(K)) .AND.                   &
+               (DES_POS_NEW(3,L) < ZT(K+1))) THEN
                K = K+1
+            ELSEIF((DES_POS_NEW(3,L) >= ZT(K-2)) .AND.                 &
+               (DES_POS_NEW(3,L) >= ZT(K-1))) THEN
+               K = K-1
+            ELSE
+               CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                &
+                  DIMENSION_K, KSTART2, KEND2)
             ENDIF
          ENDIF
 
@@ -102,6 +132,7 @@
          PIJK(L,2) = J
          PIJK(L,3) = K
          PIJK(L,4) = IJK
+
 
       ENDDO
 !!$omp end parallel
@@ -188,6 +219,9 @@
       USE run, only: RUN_TYPE
       USE run, only: ANY_SPECIES_EQ
 
+! Number of particles in the I/J/K direction
+      use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+
       use mpi_utility
       use sendrecv
 
@@ -231,35 +265,25 @@
          IF(.NOT.PEA(L,1)) CYCLE
 ! skipping ghost particles
          IF(PEA(L,4)) CYCLE
+
 ! Use a brute force technique to determine the particle locations in
 ! the Eulerian fluid grid.
-         lPOS = DES_POS_NEW(1,L)
-         DO I = ISTART2,IEND2
-            IF( lPOS >= XE(I-1) .and. lPOS < XE(I)) THEN
-               PIJK(L,1) = I
-               EXIT
-            ENDIF
-         ENDDO
 
-         lPOS = DES_POS_NEW(2,L)
-         DO J = jstart2,jend2
-            IF(lPOS >= YN(J-1) .and. lPOS < YN(J)) THEN
-               PIJK(L,2) = J
-               EXIT
-            ENDIF
-         ENDDO
+         CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                      &
+            DIMENSION_I, ISTART2, IEND2)
+         PIJK(L,1) = I
+
+         CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                      &
+            DIMENSION_J, JSTART2, JEND2)
+         PIJK(L,2) = J
 
          IF(NO_K) THEN
             K=1
             PIJK(L,3) = 1
          ELSE
-            lPOS = DES_POS_NEW(3,L)
-            DO K = KSTART2, KEND2
-               IF(lPOS >= ZT(K-1) .and. lPOS < ZT(K)) THEN
-                  PIJK(L,3) = K
-                  EXIT
-               ENDIF
-            ENDDO
+            CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                   &
+               DIMENSION_K, KSTART2, KEND2)
+            PIJK(L,3) = K
          ENDIF
 
 ! Assigning PIJK(L,4) now that particles have been located on the fluid
@@ -279,3 +303,36 @@
       RETURN
       END SUBROUTINE INIT_PARTICLES_IN_CELL
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: PIC_SEARCH                                              !
+!                                                                      !
+!  Purpose: Identify the I (or J or K) index of the fluid cell that    !
+!  contains the particle centroid.                                     !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE PIC_SEARCH(IDX, lPOS, ENT_POS, lDIMN, lSTART, lEND)
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+! Index being searched for (I, J, or K)
+      INTEGER, INTENT(OUT) :: IDX
+! Particle x,y,z position
+      DOUBLE PRECISION, INTENT(IN) :: lPOS
+! East, North, or Top cell face location
+      DOUBLE PRECISION, INTENT(IN) :: ENT_POS(0:lDIMN)
+! Dimension of ENT_POS array
+      INTEGER, INTENT(IN) :: lDIMN
+! Search bounds (by rank)
+      INTEGER, INTENT(IN) :: lSTART, lEND
+
+      DO IDX = lSTART,lEND
+         IF(lPOS >= ENT_POS(IDX-1) .AND. lPOS < ENT_POS(IDX)) EXIT
+      ENDDO
+
+      RETURN
+      END SUBROUTINE PIC_SEARCH
