@@ -11,7 +11,7 @@
 !     Current Quadric
       INTEGER :: QUADRIC_ID
 !     form of quadric : 'normal' or one of the pre-defined quadrics
-      CHARACTER (LEN=10), DIMENSION(DIM_QUADRIC) :: quadric_form
+      CHARACTER (LEN=12), DIMENSION(DIM_QUADRIC) :: quadric_form
 !     Scale factor for quadrics
       DOUBLE PRECISION :: quadric_scale
 !     Characteristic values of the quadrics
@@ -26,6 +26,18 @@
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Radius
 !     Radii for Torus
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Torus_R1, Torus_R2
+!     Radii for U-coil
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: UCOIL_R1, UCOIL_R2
+      !     Y-location of bends for U-coil
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: UCOIL_Y1, UCOIL_Y2
+!     Radii for Bend
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: BEND_R1, BEND_R2
+!     Angles for Bend
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: BEND_THETA1, BEND_THETA2
+!     Y-locations of cylinder-cone-cylinder 
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: C2C_Y1, C2C_Y2
+!     Radii of cylinder-cone-cylinder
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: C2C_R1, C2C_R2
 !     Half-angle for cone (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Half_angle
 !     Normal vector components for plane (pre-defined quadrics)

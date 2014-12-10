@@ -453,6 +453,111 @@
                   CALL MFIX_EXIT(MYPE)
                ENDIF
 
+            CASE ('Y_UCOIL_EXT')      ! UCOIL - Hard coded in define_quadrics.f
+               IF((UCOIL_R1(Q) <= ZERO).OR.(UCOIL_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL_EXT:', Q, &
+                        ' HAS INVALID RADIUS R1:',UCOIL_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+               IF((UCOIL_R2(Q) <= ZERO).OR.(UCOIL_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL_EXT:', Q, &
+                        ' HAS INVALID RADIUS R2:',UCOIL_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(UCOIL_Y2(Q)<UCOIL_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL_EXT:', Q, &
+                        ' COIL_Y2 < COIL_Y1: Y2,Y1=',UCOIL_Y2(Q),UCOIL_Y1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+            CASE ('XY_BEND_INT')       ! Bend  - Hard coded in define_quadrics.f
+               IF((BEND_R1(Q) <= ZERO).OR.(BEND_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: XY_BEND_INT:', Q, &
+                        ' HAS INVALID RADIUS R1:',BEND_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((BEND_R2(Q) <= ZERO).OR.(BEND_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: XY_BEND_INT:', Q, &
+                        ' HAS INVALID RADIUS R2:',BEND_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((BEND_THETA1(Q) < ZERO).OR.(BEND_THETA1(Q)>360.0)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: XY_BEND_INT:', Q, &
+                        ' HAS INVALID ANGLE THETA1:',BEND_THETA1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((BEND_THETA2(Q) < ZERO).OR.(BEND_THETA2(Q)>360.0)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: XY_BEND_INT:', Q, &
+                        ' HAS INVALID ANGLE THETA2:',BEND_THETA2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+            CASE ('Y_C2C_INT')       ! Cylinder-cone-cylinder  - Hard coded in define_quadrics.f
+               IF((C2C_R1(Q) <= ZERO).OR.(C2C_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_C2C_INT:', Q, &
+                        ' HAS INVALID RADIUS R1:',C2C_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((C2C_R2(Q) <= ZERO).OR.(C2C_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: C2C_XY_INT:', Q, &
+                        ' HAS INVALID RADIUS R2:',C2C_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(C2C_Y2(Q) < C2C_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_C2C_INT:', Q
+                     WRITE(*,*)'MUST HAVE C2C_Y2 >= C2C_Y1.'
+                     WRITE(*,*)'C2C_Y1,C2C_Y2 =', C2C_Y1(Q),C2C_Y2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((C2C_Y1(Q) == C2C_Y2(Q)).AND.(C2C_R1(Q)/=C2C_R2(Q))) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_C2C_INT:', Q, &
+                        ' C2C_Y1=C2C_Y2 BUT C2C_R1/=C2C_R2:'
+                     WRITE(*,*)'C2C_Y1,C2C_Y2 =', C2C_Y1(Q),C2C_Y2(Q)
+                     WRITE(*,*)'C2C_R1,C2C_R2 =', C2C_R1(Q),C2C_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+
             CASE DEFAULT
                IF(MyPE == PE_IO) THEN
                   WRITE(*,*)'INPUT ERROR: QUADRIC:', Q, &

@@ -95,10 +95,16 @@
 
       USE quadric
 
+      USE constant, only: pi
+
 
       IMPLICIT NONE
 
-      DOUBLE PRECISION :: x1,x2,x3,xt,yt,zt,R1,R2
+      DOUBLE PRECISION :: x1,x2,x3,xt,yt,zt,R1,R2,xtr,ytr,ztr
+      DOUBLE PRECISION :: THETA,THETA1,THETA2,THETA3m,THETA3
+      DOUBLE PRECISION :: THETA1CYL1,THETA2TOR,THETA3CYL2,THETA_MIN
+      DOUBLE PRECISION :: Y1,Y2,R
+      DOUBLE PRECISION :: c,s,ytest1,ytest2
       DOUBLE PRECISION :: f,fq,fxe,fxw,fyn,fys,fzt,fzb,fclip
       DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
@@ -151,10 +157,212 @@
             yt = x2-t_y(Q_ID)
             zt = x3-t_z(Q_ID)
 
+            xtr = xt*0.866  - yt*0.5
+            ytr = xt*0.5    + yt*0.8665
+            ztr = zt
+
             R1 = Torus_R1(Q_ID)
             R2 = Torus_R2(Q_ID)
 
-            f = 4*(xt**2+zt**2)*R1**2-(xt**2+yt**2+zt**2+R1**2-R2**2)**2
+            f = 4*(xtr**2+ztr**2)*R1**2-(xtr**2+ytr**2+ztr**2+R1**2-R2**2)**2
+
+
+         ELSEIF(TRIM(quadric_form(Q_ID))=='Y_UCOIL_EXT') THEN
+! This shape represents a pair of parallel cylinders (y-direction)
+! capped at both ends by half a torus
+! to create a U-shaped coil
+! UCOIL_Y1 and UCOIL_Y2 are the min and max y-values of the coil 
+! The coil is translated in the x and z direction (t_x, t_z)
+! and can be rotated about the y-direction, centered about (t_x,t_z)
+! by the angle THETA_Y
+
+            c = DCOS(THETA_Y(Q_ID))
+            s = DSIN(THETA_Y(Q_ID))
+
+!           Translation
+            xt = x1-t_x(Q_ID)
+            zt = x3-t_z(Q_ID)
+
+!           Rotation
+            xtr =  xt*c + zt*s
+            ztr = -xt*s + zt*c
+
+            R1 = UCOIL_R1(Q_ID)
+            R2 = UCOIL_R2(Q_ID)
+
+! Limits of the cylinders.
+! There is half a torus above ytest1 and half a torus below ytest2
+            ytest1 = UCOIL_Y1(Q_ID) + R1 + R2
+            ytest2 = UCOIL_Y2(Q_ID) - (R1 + R2)
+
+            IF(x2>=ytest2) THEN
+               ytr = x2 - ytest2
+               ELSEIF(x2<=ytest1) THEN
+               ytr = ytest1 - x2
+            ELSE
+               ytr = ZERO ! setting ytr = zero degenerates a torus into a pair of cylinders
+            ENDIF
+
+            f = 4*(xtr**2+ytr**2)*R1**2-(xtr**2+ytr**2+ztr**2+R1**2-R2**2)**2
+
+
+         ELSEIF(TRIM(quadric_form(Q_ID))=='XY_BEND_INT') THEN
+! This shape represent a bend between two cylinders in the XY plane
+! BEND_R1 is the radius of the bend
+! BEND_R2 is the cylinders radius
+! BEND_THETA1 is the orientation of the first cylinder (Deg.)
+! BEND_THETA2 is the orientation of the second cylinder (Deg.).
+! The orientation is measured from the y-axis.
+! For example BEND_THETA1=0.0 and BEND_THETA2=90.0
+! represents a 90 deg bend between a vertical (first cylinder) 
+! and a horizontal (second) cylinder.
+! The bend itself is represented by a section of a torus
+! The translation (t_x,t_y,t_z) defines the center of the bend (torus)
+! The shape is defines as three pieces: 2 cylinders and a torus
+! The switch between these pieces occur bases on angular position
+! There is a complicated definition of intermediate angles to allow
+! for a wide range of angles. This may be simplified in the future.
+! Both BEND_THETA1 and BEND_THETA2 must be between zero and 360.0 degrees.
+! Typically, BEND_THETA2 > BEND_THETA1, unless for a left bend,
+! For example, BEND_THETA1=330.0 and BEND_THETA2=30.0
+! will define a 60.0 deg. left-bend.
+! Specifying a bend angle larger that 180 degrees will likey fail
+! unless the bend is clipped somewhere else.
+
+!           Translation
+            xt = x1-t_x(Q_ID)
+            yt = x2-t_y(Q_ID)
+            zt = x3-t_z(Q_ID)
+
+            R1 = BEND_R1(Q_ID)
+            R2 = BEND_R2(Q_ID)
+! Convert angles from degrees to radians
+            THETA1 = BEND_THETA1(Q_ID)*(pi/180.0D0) 
+            THETA2 = BEND_THETA2(Q_ID)*(pi/180.0D0) 
+
+! Convert (x,y) into angle theta, and adjust its range from zero to 2*pi
+            THETA  = ATAN2(yt,xt) ! Result is from -pi to pi
+            IF(THETA<ZERO) THETA = THETA + 2.0D0*PI
+
+! THETA3 correspond to the point on a unit circle between THETA1 and THETA2             
+            IF(THETA2>THETA1) THEN
+               THETA3m = HALF*(THETA1+THETA2)
+               IF(THETA3m<PI) THEN
+                  THETA3 = THETA3m + PI
+               ELSE
+                  THETA3 = THETA3m - PI
+               ENDIF
+            ELSE
+               THETA3 = THETA2 + HALF * (THETA1-THETA2)
+            ENDIF
+
+! This angles are adjusted to wrap nicely along the discontinuity where
+! Theta=zero or 2*pi. There may be a simpler way to do this...
+
+            IF(THETA1>THETA3) THEN
+               THETA1CYL1 = THETA1
+            ELSE
+               THETA1CYL1 = THETA1 + 2.0*PI
+            ENDIF
+
+            IF(THETA2>THETA1) THEN
+               THETA2TOR = THETA2
+            ELSE
+               THETA2TOR = THETA2 + 2.0*PI
+            ENDIF
+
+            IF(THETA3>THETA2) THEN
+               THETA3CYL2 = THETA3
+            ELSE
+               THETA3CYL2 = THETA3 + 2.0*PI
+            ENDIF
+
+            THETA_MIN = DMIN1(THETA1,THETA2,THETA3,THETA1CYL1,THETA2TOR,THETA3CYL2)
+
+            IF(THETA<THETA_MIN) THETA = THETA + 2.0*PI
+
+! Now join the pieces together:            
+            IF(THETA3<=THETA.AND.THETA<=THETA1CYL1) THEN  ! cylinder 1
+               c = DCOS(THETA1)
+               s = DSIN(THETA1)
+!              translation
+               xt = x1-(t_x(Q_ID)+R1*c)
+               yt = x2-(t_y(Q_ID)+R1*s)
+               zt = x3-t_z(Q_ID)
+!              Rotation
+               xtr =  xt*c  + yt*s
+               ytr = -xt*s  + yt*c    
+               ztr = zt    
+
+               f = (xtr/R2)**2 + (ztr/R2)**2 -1.0
+
+            ELSEIF(THETA1<=THETA.AND.THETA<=THETA2TOR) THEN  ! Torus=elbow
+!              translation
+               xt = x1-t_x(Q_ID)
+               yt = x2-t_y(Q_ID)
+               zt = x3-t_z(Q_ID)
+!              Rotation
+               xtr = xt
+               ytr = yt
+               ztr = zt    
+
+               f = -4*(xtr**2+ytr**2)*R1**2+(xtr**2+ytr**2+ztr**2+R1**2-R2**2)**2
+
+            ELSEIF(THETA2<=THETA.AND.THETA<=THETA3CYL2) THEN  ! cylinder 2
+               c = DCOS(THETA2)
+               s = DSIN(THETA2)
+!              translation
+               xt = x1-(t_x(Q_ID)+R1*c)
+               yt = x2-(t_y(Q_ID)+R1*s)
+               zt = x3-t_z(Q_ID)
+!              Rotation
+               xtr =  xt*c  + yt*s
+               ytr = -xt*s  + yt*c    
+               ztr = zt    
+
+               f = (xtr/R2)**2 + (ztr/R2)**2 -1.0
+
+            ELSE
+               WRITE(*,*)' Error in processing elbow.','THETA = ',THETA/PI*180.0
+               CALL MFIX_EXIT(myPE)
+            ENDIF
+
+         ELSEIF(TRIM(quadric_form(Q_ID))=='Y_C2C_INT') THEN
+! This shape connects two vertical cylinders by a conical section
+! This is a more convenient way of doing it the traditional way
+! with three quadrics (cylinder-cone-cylinder)
+
+!           Translation
+            xt = x1-t_x(Q_ID)
+            yt = x2-t_y(Q_ID)
+            zt = x3-t_z(Q_ID)
+
+!           Rotation
+            xtr = xt
+            ytr = yt
+            ztr = zt    
+
+! Radii
+            R1 = C2C_R1(Q_ID)
+            R2 = C2C_R2(Q_ID)
+! Extent of the conical section
+            Y1 = C2C_Y1(Q_ID)
+            Y2 = C2C_Y2(Q_ID)
+
+            IF(ytr>=Y2) THEN
+               R = R2
+            ELSEIF(ytr<=Y1) THEN
+               R = R1
+            ELSE
+               IF(Y2/=Y1) THEN ! when Y2=Y1, then R2=R1 (see check_data_cartesian)
+                  R = R1 + (R2-R1)/(Y2-Y1)*(ytr-Y1)
+               ELSE
+                  R = R1
+               ENDIF
+            ENDIF
+
+            f = (xtr/R)**2 + (ztr/R)**2 - 1.0
+            
 
 
          ELSE
