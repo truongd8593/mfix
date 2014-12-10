@@ -47,7 +47,7 @@
   DES_CONTINUUM_COUPLED  = .T.  ! Coupled gas/solid model
   DES_INTERP_ON  = .T.          ! interpolate for drag force
   DES_INTERP_MEAN_FIELDS = .T.  ! interpolate mean fields (volume frac)
-
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 #_______________________________________________________________________
 # NUMERICAL PARAMETERS
