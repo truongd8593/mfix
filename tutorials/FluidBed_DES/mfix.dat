@@ -34,7 +34,9 @@
   DRAG_TYPE = 'GIDASPOW'
 
   DES_CONTINUUM_COUPLED = .T.
-#  DES_INTERP_ON = .T.
+
+  DES_INTERP_ON = .T.
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 #_______________________________________________________________________
 # NUMERICAL SECTION
