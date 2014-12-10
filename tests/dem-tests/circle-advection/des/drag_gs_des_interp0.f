@@ -189,7 +189,7 @@
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
-               FC(:3,NP) = FC(:3,NP) + p_force(ijk,1:3)*pvol(NP)
+               FC(:3,NP) = FC(:3,NP) + p_force(1:3,IJK)*pvol(NP)
             ENDIF
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
