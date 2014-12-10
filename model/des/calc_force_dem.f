@@ -81,8 +81,6 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
-      magGravity = SQRT(dot_product(GRAV,GRAV))
-
 ! Check particle LL neighbour contacts
 !---------------------------------------------------------------------//
 
@@ -100,8 +98,9 @@
 !$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
 !$omp    hamaker_constant,asperities,surface_energy,ft_coll, pea,      &
-!$omp     energy_eq, q_source, postcohesive, tow, fc, do_k, pmass, grav, magGravity)
-!$omp  do
+!$omp    tow, tow_coll, fc, do_k, energy_eq, grav, magGravity, postcohesive, pmass, q_source)
+
+!$omp do
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -207,6 +206,18 @@
          CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,              &
              FT_COLL(:,CC), FN(:))
 
+
+! calculate the distance from the particles' centers to the contact point,
+! which is taken as the radical line
+! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
+         DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - &
+              DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+
+         DIST_CI = DIST_COLL(CC) - DIST_CL
+         CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT_COLL(:,CC))
+         TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
+         TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
+
 ! Calculate the total force FC of a collision
 ! total contact force ( FC_COLL may already include cohesive force)
          FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT_COLL(:,CC)
@@ -223,7 +234,9 @@
       ENDDO
 !$omp end do
 
-!$omp do reduction(+:FC,TOW)
+!$omp sections
+
+!$omp section
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
          I  = COLLISIONS(2,CC)
@@ -233,46 +246,52 @@
 
          FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
          FC(:,I) = FC(:,I) - FC_COLL(:,CC)
+      ENDDO
 
-! calculate the distance from the particles' centers to the contact point,
-! which is taken as the radical line
-! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
-      DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - &
-         DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+!$omp section
+      DO CC = 1, COLLISION_NUM
+         LL = COLLISIONS(1,CC)
+         I  = COLLISIONS(2,CC)
 
-      DIST_CI = DIST_COLL(CC) - DIST_CL
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(.NOT.PEA(I, 1)) CYCLE
+
 ! total torque
       IF(DO_K) THEN
 ! for particle i flip the signs of both norm and ft, so we get the same
-         CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT_COLL(:,CC))
-         TOW(:,LL) = TOW(:,LL) + DIST_CL*TOW_tmp(:)
-         TOW(:,I) = TOW(:,I) + DIST_CI*TOW_tmp(:)
+         TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,1,CC)
+         TOW(:,I)  = TOW(:,I)  + TOW_COLL(:,2,CC)
       ELSE
-         TOW_tmp(1) = (NORM_COLL(1,CC)*FT_COLL(2,CC) -                 &
-            NORM_COLL(2,CC)*FT_COLL(1,CC))
-         TOW(1,LL) = TOW(1,LL) + DIST_CL*TOW_tmp(1)
-         TOW(1,I)  = TOW(1,I)  + DIST_CI*TOW_tmp(1)
+         TOW(1,LL) = TOW(1,LL) + TOW_COLL(1,1,CC)
+         TOW(1,I)  = TOW(1,I)  + TOW_COLL(1,2,CC)
       ENDIF
       ENDDO
-!$omp end do
-!$omp end parallel
 
+!$omp section
+      magGravity = SQRT(dot_product(GRAV,GRAV))
 ! just for post-processing mag. of cohesive forces on each particle
-      IF(USE_COHESION .OR. ENERGY_EQ)THEN
+      IF(USE_COHESION)THEN
          DO CC = 1, COLLISION_NUM
             LL = COLLISIONS(1,CC)
             I  = COLLISIONS(2,CC)
-            IF(USE_COHESION)THEN
-               PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
-               if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
-                    SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
-            ENDIF
-            IF(ENERGY_EQ .and. QQ_COLL(CC).ne.ZERO) THEN
-               Q_Source(LL) = Q_Source(LL) + QQ_COLL(CC)
-               Q_Source(I) = Q_Source(I) - QQ_COLL(CC)
-            ENDIF
+            PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
+            if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
+                 SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDDO
       ENDIF ! for cohesion model
+
+!$omp section
+
+      IF(ENERGY_EQ) THEN
+         DO CC = 1, COLLISION_NUM
+            LL = COLLISIONS(1,CC)
+            I  = COLLISIONS(2,CC)
+            Q_Source(LL) = Q_Source(LL) + QQ_COLL(CC)
+            Q_Source(I) = Q_Source(I) - QQ_COLL(CC)
+         ENDDO
+      ENDIF
+!$omp end sections
+!$omp end parallel
 
 ! Calculate drag
       CALL CALC_DRAG_DES

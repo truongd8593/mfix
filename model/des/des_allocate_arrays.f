@@ -123,6 +123,7 @@
 
 ! Torque
       Allocate(  TOW (CROSS_DIMN,NPARTICLES) )
+      Allocate(  TOW_COLL (CROSS_DIMN,2,COLLISION_MAX) )
 
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
