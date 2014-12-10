@@ -56,7 +56,6 @@
       INTEGER :: RECOVERED
       INTEGER :: DELETED
 
-
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
@@ -73,34 +72,44 @@
 
 
          I = PIJK(L,1)
-         IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                        &
-            (DES_POS_NEW(1,L) <  XE(I))) THEN
-            I = I
-         ELSEIF((DES_POS_NEW(1,L) >= XE(I)) .AND.                      &
-            (DES_POS_NEW(1,L) < XE(I+1))) THEN
-            I = I+1
-         ELSEIF((DES_POS_NEW(1,L) >= XE(I-2)) .AND.                    &
-            (DES_POS_NEW(1,L) < XE(I-1))) THEN
-            I = I-1
-         ELSE
+         IF(I <= ISTART2 .OR. I >= IEND2) THEN
             CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                   &
                DIMENSION_I, ISTART2, IEND2)
+         ELSE
+            IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                     &
+               (DES_POS_NEW(1,L) <  XE(I))) THEN
+               I = I
+            ELSEIF((DES_POS_NEW(1,L) >= XE(I)) .AND.                   &
+               (DES_POS_NEW(1,L) < XE(I+1))) THEN
+              I = I+1
+            ELSEIF((DES_POS_NEW(1,L) >= XE(I-2)) .AND.                 &
+               (DES_POS_NEW(1,L) < XE(I-1))) THEN
+               I = I-1
+            ELSE
+               CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                &
+                  DIMENSION_I, ISTART2, IEND2)
+            ENDIF
          ENDIF
 
 
          J = PIJK(L,2)
-         IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                        &
-            (DES_POS_NEW(2,L) < YN(J))) THEN
-            J = J
-         ELSEIF((DES_POS_NEW(2,L) >= YN(J)) .AND.                      &
-            (DES_POS_NEW(2,L) < YN(J+1))) THEN
-            J = J+1
-         ELSEIF((DES_POS_NEW(2,L) >= YN(J-2)) .AND.                    &
-            (DES_POS_NEW(2,L) < YN(J-1)))THEN
-            J = J-1
-         ELSE
+         IF(J <= JSTART2 .OR. J >= JEND2) THEN
             CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                   &
                DIMENSION_J, JSTART2, JEND2)
+         ELSE
+            IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                     &
+               (DES_POS_NEW(2,L) < YN(J))) THEN
+               J = J
+            ELSEIF((DES_POS_NEW(2,L) >= YN(J)) .AND.                   &
+               (DES_POS_NEW(2,L) < YN(J+1))) THEN
+               J = J+1
+            ELSEIF((DES_POS_NEW(2,L) >= YN(J-2)) .AND.                 &
+               (DES_POS_NEW(2,L) < YN(J-1)))THEN
+               J = J-1
+            ELSE
+               CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                &
+                  DIMENSION_J, JSTART2, JEND2)
+            ENDIF
          ENDIF
 
 
@@ -108,18 +117,23 @@
             K = 1
          ELSE
             K = PIJK(L,3)
-            IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                     &
-               (DES_POS_NEW(3,L) < ZT(K))) THEN
-               K = K
-            ELSEIF((DES_POS_NEW(3,L) >= ZT(K)) .AND.                   &
-               (DES_POS_NEW(3,L) < ZT(K+1))) THEN
-               K = K+1
-            ELSEIF((DES_POS_NEW(3,L) >= ZT(K-2)) .AND.                 &
-               (DES_POS_NEW(3,L) >= ZT(K-1))) THEN
-               K = K-1
-            ELSE
+            IF(K <= KSTART2 .OR. K >= KEND2) THEN
                CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                &
                   DIMENSION_K, KSTART2, KEND2)
+            ELSE
+               IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                  &
+                  (DES_POS_NEW(3,L) < ZT(K))) THEN
+                  K = K
+                ELSEIF((DES_POS_NEW(3,L) >= ZT(K)) .AND.               &
+                  (DES_POS_NEW(3,L) < ZT(K+1))) THEN
+                  K = K+1
+               ELSEIF((DES_POS_NEW(3,L) >= ZT(K-2)) .AND.              &
+                  (DES_POS_NEW(3,L) >= ZT(K-1))) THEN
+                  K = K-1
+               ELSE
+                  CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,             &
+                     DIMENSION_K, KSTART2, KEND2)
+               ENDIF
             ENDIF
          ENDIF
 
