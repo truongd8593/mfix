@@ -10,21 +10,42 @@
       SUBROUTINE CALC_DRAG_DES
 
       use discretelement, only: DES_CONTINUUM_COUPLED
-      use discretelement, only: DES_INTERP_ON
       use discretelement, only: DES_CONTINUUM_HYBRID
 
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
+
+      use discretelement, only: EXPLICITLY_COUPLED
+
+      use discretelement, only: DRAG_FC, FC
+
+      IMPLICIT NONE
+
+! Apply the drag force calculated by the gas phase.
+      IF(EXPLICITLY_COUPLED) THEN
+
+         IF(DES_CONTINUUM_COUPLED) FC = FC + DRAG_FC
+
+
+      ELSE
+
 ! Calculate gas-solids drag force on particle
-      IF(DES_CONTINUUM_COUPLED) THEN
-         IF(DES_INTERP_ON) THEN
-            CALL DRAG_GS_DES_INTERP0
-         ELSE
-            CALL DRAG_GS_DES_NONINTERP
+         IF(DES_CONTINUUM_COUPLED) THEN
+            SELECT CASE(DES_INTERP_SCHEME_ENUM)
+            CASE(DES_INTERP_NONE) ; CALL DRAG_GS_DES_NONINTERP
+            CASE(DES_INTERP_GARG) ; CALL DRAG_GS_DES_INTERP0
+            CASE DEFAULT; CALL DRAG_GS_DES_INTERP1
+            END SELECT
+         ENDIF
+
+! Calculate solids-solids drag force on particle.
+         IF(DES_CONTINUUM_HYBRID) THEN
+            SELECT CASE(DES_INTERP_SCHEME_ENUM)
+            CASE DEFAULT; CALL DRAG_SS_DEM_NONINTERP
+            END SELECT
          ENDIF
       ENDIF
-
-! Calculate solids-solids drag force on particle. 
-      IF(DES_CONTINUUM_HYBRID) CALL DRAG_SS_DEM_NONINTERP
-
 
       RETURN
       END SUBROUTINE CALC_DRAG_DES
@@ -41,21 +62,94 @@
       SUBROUTINE CALC_DRAG_DES_2FLUID
 
       use discretelement, only: DES_CONTINUUM_COUPLED
-      use discretelement, only: DES_INTERP_ON
       use discretelement, only: DES_CONTINUUM_HYBRID
 
-! Calculate gas-solids drag force on particle
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
+
+      IMPLICIT NONE
+
+
+! Calculate gas-solids drag force.
       IF(DES_CONTINUUM_COUPLED) THEN
-         IF(DES_INTERP_ON) THEN
-            CALL DRAG_GS_GAS_INTERP0
-         ELSE
-            CALL DRAG_GS_GAS_NONINTERP
-         ENDIF
+         SELECT CASE(DES_INTERP_SCHEME_ENUM)
+         CASE(DES_INTERP_NONE) ; CALL DRAG_GS_GAS_NONINTERP
+         CASE(DES_INTERP_GARG) ; CALL DRAG_GS_GAS_INTERP0
+         CASE DEFAULT; CALL DRAG_GS_GAS_INTERP1
+         END SELECT
       ENDIF
 
-! Calculate solids-solids drag force on particle. 
-      IF(DES_CONTINUUM_HYBRID) CALL DRAG_SS_TFM_NONINTERP
-
+! Calculate solids-solids drag force.
+      IF(DES_CONTINUUM_HYBRID) THEN
+         SELECT CASE(DES_INTERP_SCHEME_ENUM)
+         CASE DEFAULT; CALL DRAG_SS_TFM_NONINTERP
+         END SELECT
+      ENDIF
 
       RETURN
       END SUBROUTINE CALC_DRAG_DES_2FLUID
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CALC_DRAG_DES_EXPLICIT                                  !
+!                                                                      !
+!  Purpose: This subroutine is only called from the CONTINUUM side.    !
+!  Moreover, it is only called once per time step so that the total    !
+!  drag force is calculated explicitly for the fluid phase and DEM     !
+!  particles. This is done to ensure momentum conservation and reduce  !
+!  computational overhead.                                             !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_DRAG_DES_EXPLICIT
+
+      use discretelement, only: DES_CONTINUUM_COUPLED
+      use discretelement, only: DES_CONTINUUM_HYBRID
+
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
+
+      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
+
+      use discretelement, only: EXPLICITLY_COUPLED
+
+! Contribution to gas momentum equation due to drag
+      use discretelement, only: DRAG_BM
+! Scalar cell center total drag force
+      use discretelement, only: F_GDS
+! Flag for 3D simulatoins.
+      use geometry, only: DO_K
+
+      use rxns
+
+      IMPLICIT NONE
+
+! Bin particles to the fluid grid.
+      CALL PARTICLES_IN_CELL
+! Calculate interpolation weights
+      CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields (EPg).
+      CALL COMP_MEAN_FIELDS
+! Calculate the pressure graident.
+      CALL CALC_PG_GRAD
+
+! Calculate gas-solids drag force on particle
+      IF(DES_CONTINUUM_COUPLED) THEN
+         SELECT CASE(DES_INTERP_SCHEME_ENUM)
+         CASE(DES_INTERP_NONE) ; CALL DRAG_GS_EXPLICIT_NONINTERP
+         CASE DEFAULT; CALL DRAG_GS_EXPLICIT_INTERP1
+         END SELECT
+      ENDIF
+
+! Apply the diffusion filter.
+      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
+         CALL DIFFUSE_MEAN_FIELD(F_GDS,'F_GDS')
+         CALL DIFFUSE_MEAN_FIELD(DRAG_BM(:,1),'DRAG_BM(1)')
+         CALL DIFFUSE_MEAN_FIELD(DRAG_BM(:,2),'DRAG_BM(2)')
+         IF(DO_K) CALL DIFFUSE_MEAN_FIELD(DRAG_BM(:,3),'DRAG_BM(3)')
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CALC_DRAG_DES_EXPLICIT

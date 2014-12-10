@@ -1,45 +1,12 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: CALC_DRAG                                               C
-!  Purpose: Calculate the gas solids and solids-solids drag terms if   C
-!           directed to do so by the corresponding flags               C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 29-JAN-92  C
-!  Reviewer: P. Nicoletti, W. Rogers, S. Venkatesan   Date: 29-JAN-92  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Modifications for variable grid size capability,           C
-!           logic for volume-weighted averaging                        C
-!  Author: W. Rogers                                  Date: 20-JUL-92  C
-!  Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
-!                                                                      C
-!  Revision Number: 2                                                  C
-!  Purpose: MFIX 2.0 mods                                              C
-!  Author: M. Syamlal                                 Date: 25-APR-96  C
-!                                                                      C
-!  Revision Number: 3                                                  C
-!  Purpose: To call solids drag Drag_SS only when not using DES        C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!                                                                      C
-!  Revision Number 4                                  Date: 2-July-07  C
-!  Author: Rahul Garg                                                  C
-!  Purpose: If DES_INTERP_ON is true, then additional call is made     C
-!           to des/drag_fgs.f in order to obtain cell corner drag      C
-!           related AM and BM coeff's                                  C
-!                                                                      C
-!  Revision Number: 5                                                  C
-!  Purpose: To incorporate calls and checks for QMOM for               C
-!           solution of the particle phase kinetic equation            C
-!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: CALC_DRAG                                               !
+!  Author: M. Syamlal                                 Date: 29-JAN-92  !
+!                                                                      !
+!  Purpose: Calculate the gas solids and solids-solids drag terms if   !
+!           directed to do so by the corresponding flags               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE CALC_DRAG(DRAGD, IER)
 
@@ -58,7 +25,10 @@
       USE compar
       USE discretelement
       USE qmom_kinetic_equation
+
+      use discretelement, only: EXPLICITLY_COUPLED
       IMPLICIT NONE
+
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
@@ -119,7 +89,8 @@
 
 ! calculate drag between continuum phases and discrete particles
 ! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED) CALL CALC_DRAG_DES_2FLUID
+      IF (DES_CONTINUUM_COUPLED .AND. .NOT.EXPLICITLY_COUPLED) &
+         CALL CALC_DRAG_DES_2FLUID
 
 
       RETURN

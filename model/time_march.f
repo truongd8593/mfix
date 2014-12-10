@@ -258,9 +258,7 @@
       dummy = ADJUST_DT(100, 0)
 
 ! calculate shear velocities if periodic shear BCs are used
-      IF (SHEAR) THEN
-         call CAL_D(V_sh)
-      ENDIF
+      IF(SHEAR) CALL CAL_D(V_sh)
 
 ! Initialize check_mass_balance.  This routine is not active by default.
 ! Specify a reporting interval (hard-wired in the routine) to activate
@@ -276,9 +274,7 @@
 ! uncoupled discrete element simulations do not need to be within
 ! the two fluid model time-loop
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
-         IF(WRITE_VTK_FILES) THEN
-            CALL WRITE_VTU_FILE
-         ENDIF
+         IF(WRITE_VTK_FILES) CALL WRITE_VTU_FILE
          CALL DES_TIME_MARCH
          CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
@@ -297,51 +293,7 @@
 
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates
-      IF (CHK_BATCHQ_END) THEN
-         CHKBATCHQ_FLAG = 0
-         IF (myPE.eq.PE_IO) THEN
-            CALL CPU_TIME(CPU_STOP)
-! need to use CPU00, a timestamp from first line of mfix.f to take
-! account the time spent in I/O
-            CPU_STOP = CPU_STOP - CPU00
-            write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
-
-            IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
-               write(*,'(/,A,A)') '=============== REQUESTED CPU ',&
-                  'TIME LIMIT REACHED ==========='
-               write(*,*) 'Elapsed CPU time                        = ',&
-                  CPU_STOP,' sec'
-               write(*,*) 'Buffer CPU time before triggering abort = ',&
-                  TERM_BUFFER,' sec'
-               write(*,*) 'Elapsed+Buffer CPU time = ',&
-                  (CPU_STOP+TERM_BUFFER), &
-                  ' sec >= Allocated Wallclock ',&
-                  BATCH_WALLCLOCK, ' sec'
-               write(*,'(A,A,/)') '=============== REQUESTED CPU ',&
-                  'TIME LIMIT REACHED ==========='
-               eofBATCHQ = .TRUE.
-               CHKBATCHQ_FLAG = 1
-            ENDIF
-
-            INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
-            IF (AlreadyThere) THEN
-               write(*,'(/,A,A)') '=============== MFIX STOP SIGNAL ',&
-                  'DETECTED ==========='
-               write(*,'(A,A)') '  MFIX.STOP file detected in ',&
-                  'working directory, terminating MFIX run'
-               write(*,'(A,A)') '  Please DO NOT FORGET to erase ',&
-                  'MFIX.STOP file before next run'
-               write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
-               write(*,'(A,A,/)') '=============== MFIX STOP ',&
-                  'SIGNAL DETECTED ==========='
-               eofBATCHQ = .TRUE.
-               CHKBATCHQ_FLAG = 1
-               AlreadyThere = .FALSE.
-            ENDIF
-         ENDIF     ! myPE = PE_IO
-! Try to move this bcast call to another location where there is barrier or bcast
-         call bcast (eofBATCHQ,PE_IO)
-      ENDIF
+      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END
 
       IF (CALL_USR) CALL USR1
 
@@ -355,7 +307,6 @@
          ENDIF
       ENDIF
 
-
 ! sof modification: uncomment code below and modify MARK_PHASE_4_COR to
 ! use previous MFIX algorithm. Nov 22 2010.
 ! Mark the phase whose continuity will be solved and used to correct
@@ -368,144 +319,7 @@
 
       CALL CPU_TIME(CPU0_IO)
 
-! Write standard output, if needed
-      IF (OUT_DT /= UNDEFINED) THEN
-         IF (DT == UNDEFINED) THEN
-            CALL WRITE_OUT1
-         ELSE IF (TIME + 0.1d0*DT>=OUT_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN
-            OUT_TIME = (INT((TIME + 0.1d0*DT)/OUT_DT) + 1)*OUT_DT
-            CALL WRITE_OUT1
-         ENDIF
-      ENDIF
-
-! Write SPx files, if needed
-      bWrite_netCDF_files = .false.
-      ISPX = 0
-      DO L = 1, N_SPX
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) THEN
-               bWrite_netCDF_files = .true.
-               CALL WRITE_SPX1 (L, 0)
-               DISK_TOT = DISK_TOT + DISK(L)
-               ISPX = ISPX + 1
-
-               IF (SPX_MSG) THEN
-                  IF (RES_MSG) THEN
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
-                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
-                  ELSE
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
-                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
-                  ENDIF
-                  SPX_MSG = .FALSE.
-               ENDIF
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-               IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
-            ENDIF
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-         ELSEIF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. &
-                 TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN
-            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L)
-            CALL WRITE_SPX1 (L, 0)
-            bWrite_netCDF_files = .true.
-            DISK_TOT = DISK_TOT + DISK(L)
-            ISPX = ISPX + 1
-! remove this redundant call here to write_des_data in case of new
-! coupled runs that contain at least a particle and involve some initial
-! settling of the system.
-! the call made in des_time_march is a better call for capturing the
-! initial state of such a des continuum coupled system
-            IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
-               .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
-                     NFACTOR >0 .AND. TIME == ZERO)) THEN
-                  CALL WRITE_DES_DATA
-            ENDIF
-
-            IF (SPX_MSG) THEN
-               IF (RES_MSG) THEN
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
-                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
-               ELSE
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
-                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
-               ENDIF
-               SPX_MSG = .FALSE.
-            ENDIF
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-            IF (FULL_LOG .and. myPE.eq.PE_IO) &
-               WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
-         ENDIF
-      ENDDO
-
-      if (bWrite_netCDF_files) call write_netcdf(0,0,time)
-
-      IF (.NOT.SPX_MSG) THEN
-         DO L = 1, N_SPX - ISPX
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(A)', ADVANCE='NO') '   '
-            IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, '(A)', ADVANCE='NO') '   ' !//
-         ENDDO
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT
-         IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
-      ELSEIF (.NOT.RES_MSG) THEN
-         IF(DMP_LOG)WRITE (UNIT_LOG, *)
-         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
-      ENDIF
-
-! Write restart file, if needed
-      CALL START_LOG
-      IF (DT == UNDEFINED) THEN
-         IF (FINISH) THEN
-            CALL WRITE_RES1
-            RES_MSG = .FALSE.
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME
-            IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
-               WRITE (*, 1000,  ADVANCE="NO") TIME
-            ENDIF
-         ENDIF
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-      ELSEIF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP &
-              .OR. eofBATCHQ) THEN
-         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
-         CALL WRITE_RES1
-         IF(DISCRETE_ELEMENT) CALL WRITE_RES0_DES
-         IF(QMOMK) CALL QMOMK_WRITE_RESTART
-         RES_MSG = .FALSE.
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME
-         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME
-      ENDIF
-
-      RES_MSG = .TRUE.
-      SPX_MSG = .TRUE.
-      CALL END_LOG
-
-      CALL CPU_TIME(CPU1_IO)
-      CPU_IO = CPU_IO + (CPU1_IO-CPU0_IO)
-
-! Write special output, if needed
-      DO L = 1, DIMENSION_USR
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) CALL WRITE_USR1 (L)
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-         ELSEIF (USR_TIME(L)/=UNDEFINED .AND. &
-                 TIME+0.1d0*DT>=USR_TIME(L) .OR. eofBATCHQ) THEN
-            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
-            CALL WRITE_USR1 (L)
-         ENDIF
-      ENDDO
-
-! JFD modification: cartesian grid implementation
-! Write vtk file, if needed
-      IF(WRITE_VTK_FILES) THEN
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) CALL WRITE_VTU_FILE
-         ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
-            VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
-            CALL WRITE_VTU_FILE
-         ENDIF
-      ENDIF
+      CALL OUTPUT_MANAGEMENT
 
 
       IF (DT == UNDEFINED) THEN
@@ -686,17 +500,229 @@
 ! The TIME loop ends here....................................................
 
 
-!     1000  FORMAT(' t=',F10.4, '  Wrote RES;',$)
-!     1001  FORMAT(' t=',F10.4, '  Wrote      SPx:',$)
-!     1002  FORMAT(' SPx:',$)
-!     1010  FORMAT(I2,',',$)
-!     1015  FORMAT(14X, 'Disk=', F7.2,' Mb')
+
+
+
+      contains
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: CHECK_BATCH_QUEUE_END                                   !
+!  Author: A.Gel                                      Date:            !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_BATCH_QUEUE_END
+
+      CHKBATCHQ_FLAG = 0
+      IF (myPE.eq.PE_IO) THEN
+         CALL CPU_TIME(CPU_STOP)
+! need to use CPU00, a timestamp from first line of mfix.f to take
+! account the time spent in I/O
+         CPU_STOP = CPU_STOP - CPU00
+         write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+
+         IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
+            write(*,'(/,A,A)') '=============== REQUESTED CPU ',&
+               'TIME LIMIT REACHED ==========='
+            write(*,*) 'Elapsed CPU time                        = ',&
+               CPU_STOP,' sec'
+            write(*,*) 'Buffer CPU time before triggering abort = ',&
+               TERM_BUFFER,' sec'
+            write(*,*) 'Elapsed+Buffer CPU time = ',&
+               (CPU_STOP+TERM_BUFFER), &
+               ' sec >= Allocated Wallclock ',&
+               BATCH_WALLCLOCK, ' sec'
+            write(*,'(A,A,/)') '=============== REQUESTED CPU ',&
+               'TIME LIMIT REACHED ==========='
+            eofBATCHQ = .TRUE.
+            CHKBATCHQ_FLAG = 1
+         ENDIF
+
+         INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
+         IF (AlreadyThere) THEN
+            write(*,'(/,A,A)') '=============== MFIX STOP SIGNAL ',&
+               'DETECTED ==========='
+            write(*,'(A,A)') '  MFIX.STOP file detected in ',&
+               'working directory, terminating MFIX run'
+            write(*,'(A,A)') '  Please DO NOT FORGET to erase ',&
+               'MFIX.STOP file before next run'
+            write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
+            write(*,'(A,A,/)') '=============== MFIX STOP ',&
+               'SIGNAL DETECTED ==========='
+            eofBATCHQ = .TRUE.
+            CHKBATCHQ_FLAG = 1
+            AlreadyThere = .FALSE.
+         ENDIF
+      ENDIF     ! myPE = PE_IO
+! Try to move this bcast call to another location where there is barrier or bcast
+      call bcast (eofBATCHQ,PE_IO)
+
+      END SUBROUTINE CHECK_BATCH_QUEUE_END
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: OUTPUT_MANAGEMENT                                       !
+!  Author: J.Musser                                   Date:            !
+!                                                                      !
+!  Purpose: Relocate calls to write output files (RES, SPx, VTP). This !
+!  was done to simplify the time_march code.                           !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE OUTPUT_MANAGEMENT
+
+! Write standard output, if needed
+      IF (OUT_DT /= UNDEFINED) THEN
+         IF (DT == UNDEFINED) THEN
+            CALL WRITE_OUT1
+         ELSE IF (TIME + 0.1d0*DT>=OUT_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN
+            OUT_TIME = (INT((TIME + 0.1d0*DT)/OUT_DT) + 1)*OUT_DT
+            CALL WRITE_OUT1
+         ENDIF
+      ENDIF
+
+! Write SPx files, if needed
+      bWrite_netCDF_files = .false.
+      ISPX = 0
+      DO L = 1, N_SPX
+         IF (DT == UNDEFINED) THEN
+            IF (FINISH) THEN
+               bWrite_netCDF_files = .true.
+               CALL WRITE_SPX1 (L, 0)
+               DISK_TOT = DISK_TOT + DISK(L)
+               ISPX = ISPX + 1
+
+               IF (SPX_MSG) THEN
+                  IF (RES_MSG) THEN
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
+                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
+                  ELSE
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
+                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
+                  ENDIF
+                  SPX_MSG = .FALSE.
+               ENDIF
+               IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+               IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
+            ENDIF
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates
+         ELSEIF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. &
+                 TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN
+            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L)
+            CALL WRITE_SPX1 (L, 0)
+            bWrite_netCDF_files = .true.
+            DISK_TOT = DISK_TOT + DISK(L)
+            ISPX = ISPX + 1
+! remove this redundant call here to write_des_data in case of new
+! coupled runs that contain at least a particle and involve some initial
+! settling of the system.
+! the call made in des_time_march is a better call for capturing the
+! initial state of such a des continuum coupled system
+            IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
+               .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
+                     NFACTOR >0 .AND. TIME == ZERO)) THEN
+                  CALL WRITE_DES_DATA
+            ENDIF
+
+            IF (SPX_MSG) THEN
+               IF (RES_MSG) THEN
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
+                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
+               ELSE
+                  IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
+                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
+               ENDIF
+               SPX_MSG = .FALSE.
+            ENDIF
+            IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
+            IF (FULL_LOG .and. myPE.eq.PE_IO) &
+               WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
+         ENDIF
+      ENDDO
+
+      if (bWrite_netCDF_files) call write_netcdf(0,0,time)
+
+      IF (.NOT.SPX_MSG) THEN
+         DO L = 1, N_SPX - ISPX
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(A)', ADVANCE='NO') '   '
+            IF (FULL_LOG .and. myPE.eq.PE_IO) &
+               WRITE (*, '(A)', ADVANCE='NO') '   ' !//
+         ENDDO
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT
+         IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
+      ELSEIF (.NOT.RES_MSG) THEN
+         IF(DMP_LOG)WRITE (UNIT_LOG, *)
+         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
+      ENDIF
+
+
+! Write restart file, if needed
+      CALL START_LOG
+      IF (DT == UNDEFINED) THEN
+         IF (FINISH) THEN
+            CALL WRITE_RES1
+            RES_MSG = .FALSE.
+            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME
+            IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
+               WRITE (*, 1000,  ADVANCE="NO") TIME
+            ENDIF
+         ENDIF
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates
+      ELSEIF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP &
+              .OR. eofBATCHQ) THEN
+         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
+         CALL WRITE_RES1
+         IF(DISCRETE_ELEMENT) CALL WRITE_RES0_DES
+         IF(QMOMK) CALL QMOMK_WRITE_RESTART
+         RES_MSG = .FALSE.
+         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME
+         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME
+      ENDIF
+
+      RES_MSG = .TRUE.
+      SPX_MSG = .TRUE.
+      CALL END_LOG
+
+      CALL CPU_TIME(CPU1_IO)
+      CPU_IO = CPU_IO + (CPU1_IO-CPU0_IO)
+
+! Write special output, if needed
+      DO L = 1, DIMENSION_USR
+         IF (DT == UNDEFINED) THEN
+            IF (FINISH) CALL WRITE_USR1 (L)
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates
+         ELSEIF (USR_TIME(L)/=UNDEFINED .AND. &
+                 TIME+0.1d0*DT>=USR_TIME(L) .OR. eofBATCHQ) THEN
+            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
+            CALL WRITE_USR1 (L)
+         ENDIF
+      ENDDO
+
+! JFD modification: cartesian grid implementation
+! Write vtk file, if needed
+      IF(WRITE_VTK_FILES) THEN
+         IF (DT == UNDEFINED) THEN
+            IF (FINISH) CALL WRITE_VTU_FILE
+         ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
+            VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
+            CALL WRITE_VTU_FILE
+         ENDIF
+      ENDIF
+
  1000 FORMAT(' t=',F10.4,'  Wrote RES;')
  1001 FORMAT(' t=',F10.4,'  Wrote      SPx:')
  1002 FORMAT(' SPx:')
  1010 FORMAT(I2,',')
  1011 FORMAT(A2,',')
  1015 FORMAT(14X,'Disk=',F7.2,' Mb')
+
+      END SUBROUTINE OUTPUT_MANAGEMENT
+
 
       END SUBROUTINE TIME_MARCH
 

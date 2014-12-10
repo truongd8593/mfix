@@ -30,7 +30,7 @@
       use discretelement, only: DES_VEL_NEW
 ! Total forces acting on particle
       use discretelement, only: FC
-! Gas pressure force by fluid cell 
+! Gas pressure force by fluid cell
       use discretelement, only: P_FORCE
 ! Particle volume.
       use discretelement, only: PVOL
@@ -59,7 +59,7 @@
 ! Drag force acting on each particle.
       DOUBLE PRECISION :: D_FORCE(3)
 ! Flag for Model A momentum equation
-      LOGICAL :: MODEL_A 
+      LOGICAL :: MODEL_A
 
 ! Set flag for Model A momentum equation.
       MODEL_A = .NOT.MODEL_B
@@ -68,7 +68,7 @@
 !---------------------------------------------------------------------//
 !!$omp parallel do default(none)                                        &
 !!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
-!!$omp   FC, P_FORCE, PVOL, MPPIC, MPPIC_PDRAG_IMPLICIT, MODEL_A)       & 
+!!$omp   FC, P_FORCE, PVOL, MPPIC, MPPIC_PDRAG_IMPLICIT, MODEL_A)       &
 !!$omp private(IJK, VELFP, NINDX, NP, D_FORCE)
       DO IJK = IJKSTART3,IJKEND3
 
@@ -103,7 +103,7 @@
             FC(:,NP) = FC(:,NP) + D_FORCE(:)
 
 ! P_force is evaluated as -dp/dx
-            IF(MODEL_A) FC(:,NP) = FC(:,NP) + P_FORCE(IJK,:)*PVOL(NP)
+            IF(MODEL_A) FC(:,NP) = FC(:,NP) + P_FORCE(:,IJK)*PVOL(NP)
          ENDDO ! end do (nindx = 1,pinc(ijk))
 
       ENDDO ! end do (ijk=ijkstart3,ijkend3)
@@ -119,7 +119,7 @@
 !  Subroutine: DRAG_GS_GAS_NONINTERP                                   !
 !                                                                      !
 !  Purpose: This routine is called from the CONTINUUM. It calculates   !
-!  the scalar cell center drag force acting on the fluid using the     !   
+!  the scalar cell center drag force acting on the fluid using the     !
 !  scalar cell center gas velocity.                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -134,9 +134,9 @@
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle velocity
-      use discretelement, only: DES_VEL_NEW 
+      use discretelement, only: DES_VEL_NEW
 ! Contribution to gas momentum equation due to drag
-      use discretelement, only: DRAG_AM, DRAG_BM
+      use discretelement, only: DRAG_BM
 ! Scalar cell center total drag force
       use discretelement, only: F_GDS
 ! Flag for MPPIC runs
@@ -176,13 +176,12 @@
 !---------------------------------------------------------------------//
 !!$omp parallel do default(none)                                        &
 !!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW, F_GP,    &
-!!$omp   VOL, F_GDS, DRAG_AM, DRAG_BM, MPPIC, DES_STAT_WT)              & 
+!!$omp   VOL, F_GDS, DRAG_BM, MPPIC, DES_STAT_WT)                       &
 !!$omp private(IJK, VELFP, NINDX, NP, OoVol, lFORCE)
       DO IJK = IJKSTART3,IJKEND3
 
 ! Initialize fluid cell values.
          F_GDS(IJK) = ZERO
-         DRAG_AM(IJK) = ZERO
          DRAG_BM(IJK,:) = ZERO
 
 ! Skip non-fluid cells and cells without particles.
@@ -208,18 +207,126 @@
             lFORCE = OoVOL*F_GP(NP)
             IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
 
-            DRAG_AM(IJK) = DRAG_AM(IJK) + lFORCE
+            F_GDS(IJK) = F_GDS(IJK) + lFORCE
             DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lFORCE*DES_VEL_NEW(:,NP)
          ENDDO
 
-! Store the drag force to use in the gas phase pressure correction eq.
-          F_GDS(IJK) = DRAG_AM(IJK)
       ENDDO
 !!$omp end parallel do
 
 
       RETURN
       END SUBROUTINE DRAG_GS_GAS_NONINTERP
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DRAG_GS_EXPLICIT_NONINTERP                              !
+!                                                                      !
+!  Purpose: This routine is called from the CONTINUUM. It calculates   !
+!  the scalar cell center drag force acting on the fluid using the     !
+!  scalar cell center gas velocity.                                    !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DRAG_GS_EXPLICIT_NONINTERP
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! The count and a list of particles in IJK
+      use discretelement, only: PINC, PIC
+! Flags indicating the state of particle
+      use discretelement, only: PEA
+! Drag force on each particle
+      use discretelement, only: F_GP
+! Particle drag force
+      use discretelement, only: DRAG_FC
+! Particle velocity
+      use discretelement, only: DES_VEL_NEW
+! Contribution to gas momentum equation due to drag
+      use discretelement, only: DRAG_BM
+! Scalar cell center total drag force
+      use discretelement, only: F_GDS
+! Gas pressure force by fluid cell
+      use discretelement, only: P_FORCE
+! Flag for MPPIC runs
+      use mfix_pic, only: MPPIC
+! Statical weight of each MPPIC parcel
+      use mfix_pic, only: DES_STAT_WT
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! Function to deterine if a cell contains fluid.
+      use functions, only: FLUID_AT
+! Volume of scalar cell.
+      use geometry, only: VOL
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+! Double precision values.
+      use param1, only: ZERO, ONE
+
+      IMPLICIT NONE
+
+! Local variables:
+!---------------------------------------------------------------------//
+! Loop counter for fluid grid
+      INTEGER :: IJK
+! Loop counters for particles
+      INTEGER :: NP, NINDX
+! Scalar cell center fluid velocity
+      DOUBLE PRECISION :: VelFp(3)
+! One divided by fluid cell volume
+      DOUBLE PRECISION :: OoVOL
+! Drag force (intermediate calculation)
+      DOUBLE PRECISION :: lFORCE
+
+!......................................................................!
+
+
+! Calculate the drag for each fluid cell if it contains particles.
+!---------------------------------------------------------------------//
+      DO IJK = IJKSTART3,IJKEND3
+
+! Initialize fluid cell values.
+         F_GDS(IJK) = ZERO
+         DRAG_BM(IJK,:) = ZERO
+
+! Skip non-fluid cells and cells without particles.
+         IF(.NOT.FLUID_AT(IJK)) CYCLE
+         IF(PINC(IJK) == 0)  CYCLE
+
+! Calculate the average fluid velocity at scalar cell center.
+         CALL CALC_NONINTERP_VELFP_GAS(IJK, VELFP)
+
+         OoVOL = ONE/VOL(IJK)
+
+! loop through particles in the cell
+         DO NINDX = 1,PINC(IJK)
+            NP = PIC(IJK)%P(NINDX)
+! skipping indices that do not represent particles and ghost particles
+            IF(.NOT.PEA(NP,1)) CYCLE
+            IF(PEA(NP,4)) CYCLE
+
+! Calculate the particle centered drag coefficient (F_GP) using the
+! particle velocity and the cell averaged gas velocity.
+            CALL DES_DRAG_GP(NP, VelFp, DES_VEL_NEW(:,NP))
+
+! Evaluate the drag force acting on the particle.
+            DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
+
+            lFORCE = OoVOL*F_GP(NP)
+            IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
+
+            F_GDS(IJK) = F_GDS(IJK) + lFORCE
+            DRAG_BM(IJK,:) = DRAG_BM(IJK,:) +                          &
+               lFORCE*(DES_VEL_NEW(:,NP)-VELFP)
+         ENDDO
+
+      ENDDO
+
+
+      RETURN
+      END SUBROUTINE DRAG_GS_EXPLICIT_NONINTERP
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

@@ -79,6 +79,8 @@
 ! linear equation solver method and iterations
       INTEGER :: LEQM, LEQI
 
+      LOGICAL :: DO_SOLIDS
+
 ! temporary use of global arrays:
 ! arraym1 (locally vxf_gs)
 ! the volume x average gas-solids drag at momentum cell centers
@@ -121,6 +123,9 @@
          ENDIF
       ENDDO
 
+      DO_SOLIDS = .NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID
+
 
 ! Calculate U_m_star and residuals
 ! ---------------------------------------------------------------->>>
@@ -132,17 +137,13 @@
 ! calculate the convection-diffusion terms for the gas and solids phase
 ! u-momentum equations
       CALL CONV_DIF_U_G (A_M, B_M, IER)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         CALL CONV_DIF_U_S (A_M, B_M, IER)
-      ENDIF
+      IF(DO_SOLIDS) CALL CONV_DIF_U_S (A_M, B_M, IER)
 
 ! calculate the source terms for the gas and solids phase u-momentum
 ! equations
       CALL SOURCE_U_G (A_M, B_M, IER)
       IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M, IER)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          CALL SOURCE_U_S (A_M, B_M, IER)
          IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M, IER)
       ENDIF
@@ -152,8 +153,7 @@
 ! former is also used in the subroutine partial_elim_u while the latter
 ! is effectively re-evaluated within said subroutine
       CALL VF_GS_X (VXF_GS, IER)
-      IF((.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)
       ENDIF
 
@@ -164,8 +164,7 @@
          CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)
       ENDIF
 
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids volume correction equation
          IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER)
 
@@ -180,10 +179,7 @@
 
 ! handle special case where center coefficient is zero
       CALL ADJUST_A_U_G (A_M, B_M, IER)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         CALL ADJUST_A_U_S (A_M, B_M, IER)
-      ENDIF
+      IF(DO_SOLIDS) CALL ADJUST_A_U_S (A_M, B_M, IER)
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for treating DEM drag terms
@@ -210,8 +206,7 @@
 !            ijk_resid(resid_u, 0)
       ENDIF
 
-      IF (.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-          DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
             IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
               (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
@@ -242,8 +237,7 @@
 !         call out_array(u_g, 'u_g')
       ENDIF
 
-      IF (.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-          DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
             IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
               (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
@@ -272,24 +266,19 @@
 
       CALL CONV_DIF_V_G (A_M, B_M, IER)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         CALL CONV_DIF_V_S (A_M, B_M, IER)
-      ENDIF
+      IF(DO_SOLIDS) CALL CONV_DIF_V_S (A_M, B_M, IER)
 
       CALL SOURCE_V_G (A_M, B_M, IER)
       IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M, IER)
 
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          CALL SOURCE_V_S (A_M, B_M, IER)
          IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M, IER)
       END IF
 
       CALL VF_GS_Y (VXF_GS, IER)
-      IF((.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)
       ENDIF
 
@@ -300,8 +289,7 @@
          CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)
       ENDIF
 
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids pressure correction equation
          IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER)
 
@@ -346,8 +334,7 @@
 !            ijk_resid(resid_v, 0)
       ENDIF
 
-      IF (.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-          DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
             IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
               (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
@@ -377,8 +364,7 @@
 !         call out_array(v_g, 'v_g')
       ENDIF
 
-      IF (.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-          DES_CONTINUUM_HYBRID) THEN
+      IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
             IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
               (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
@@ -408,24 +394,19 @@
          ENDDO
 
          CALL CONV_DIF_W_G (A_M, B_M, IER)
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
-            CALL CONV_DIF_W_S (A_M, B_M, IER)
-         ENDIF
+         IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M, IER)
 
          CALL SOURCE_W_G (A_M, B_M, IER)
          IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M, IER)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
+         IF(DO_SOLIDS) THEN
             CALL SOURCE_W_S (A_M, B_M, IER)
             IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M, IER)
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 
          CALL VF_GS_Z (VXF_GS, IER)
-         IF((.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+         IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
             IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)
          ENDIF
 
@@ -436,8 +417,7 @@
             CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)
          ENDIF
 
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
+         IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids pressure correction equation
             IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER)
 
@@ -456,15 +436,14 @@
             CALL ADJUST_A_W_S (A_M, B_M, IER)
          ENDIF
 
-         IF(DO_K) THEN
-            IF(DES_CONTINUUM_COUPLED) THEN
-               CALL GAS_DRAG_W(A_M, B_M, IER)
-               IF (DISCRETE_ELEMENT .AND. DES_CONTINUUM_HYBRID) &
-                  CALL SOLID_DRAG_W(A_M, B_M, IER)
-            ENDIF
-            IF(QMOMK .AND. QMOMK_COUPLED) THEN
-               CALL QMOMK_GAS_DRAG(A_M, B_M, IER, 0, 0, 1)
-            ENDIF
+         IF(DES_CONTINUUM_COUPLED) THEN
+            CALL GAS_DRAG_W(A_M, B_M, IER)
+            IF (DISCRETE_ELEMENT .AND. DES_CONTINUUM_HYBRID) &
+               CALL SOLID_DRAG_W(A_M, B_M, IER)
+         ENDIF
+
+         IF(QMOMK .AND. QMOMK_COUPLED) THEN
+            CALL QMOMK_GAS_DRAG(A_M, B_M, IER, 0, 0, 1)
          ENDIF
 
          IF (MOMENTUM_Z_EQ(0)) THEN
@@ -479,8 +458,7 @@
 !               ijk_resid(resid_w, 0)
          ENDIF
 
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
+         IF(DO_SOLIDS) THEN
             DO M = 1, MMAX
                IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
                  (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
@@ -511,8 +489,7 @@
 !            call out_array(w_g, 'w_g')
          ENDIF
 
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
+         IF(DO_SOLIDS) THEN
             DO M = 1, MMAX
                IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
                  (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN

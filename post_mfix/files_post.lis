@@ -180,8 +180,14 @@ usr_input.f
 ../model/GhdTheory/ordinary_diff.f
 ../model/GhdTheory/dufour_coeff.f
 ../model/GhdTheory/chi_ij_GHD.f
+../model/des/des_allocate_arrays.f
 ../model/des/des_init_namelist.f
 ../model/des/des_stl_functions_mod.f
+../model/des/desgrid_mod.f
+../model/des/desmpi_mod.f
+../model/des/mpi_donothing/desmpi_wrapper_mod.f
+../model/des/particle_filter_mod.f
+../model/des/sendrecvnode_mod.f
 ornl_header.f
 ornl_util.f
 ornl_stats.f

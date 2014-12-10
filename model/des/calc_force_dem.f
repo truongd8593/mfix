@@ -81,6 +81,7 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
+
 ! Check particle LL neighbour contacts
 !---------------------------------------------------------------------//
 
@@ -205,8 +206,6 @@
          PARTICLE_SLIDE = .FALSE.
          CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,              &
              FT_COLL(:,CC), FN(:))
-
-
 ! calculate the distance from the particles' centers to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
@@ -255,7 +254,6 @@
 
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
-
 ! total torque
       IF(DO_K) THEN
 ! for particle i flip the signs of both norm and ft, so we get the same
@@ -270,15 +268,15 @@
 !$omp section
       magGravity = SQRT(dot_product(GRAV,GRAV))
 ! just for post-processing mag. of cohesive forces on each particle
-      IF(USE_COHESION)THEN
+         IF(USE_COHESION)THEN
          DO CC = 1, COLLISION_NUM
             LL = COLLISIONS(1,CC)
             I  = COLLISIONS(2,CC)
             PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
             if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
-                 SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
+               SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
          ENDDO
-      ENDIF ! for cohesion model
+         ENDIF ! for cohesion model
 
 !$omp section
 
@@ -293,12 +291,6 @@
 !$omp end sections
 !$omp end parallel
 
-! Calculate drag
-      CALL CALC_DRAG_DES
-
-! Update the old values of particle position and velocity with the new
-! values computed
-      IF (DO_OLD) CALL CFUPDATEOLD
 
       RETURN
 

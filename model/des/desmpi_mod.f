@@ -197,6 +197,10 @@
 !                    sets the flag related to periodic and processor interfaces
 !------------------------------------------------------------------------
       subroutine desmpi_init
+
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_GARG
+
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
@@ -254,7 +258,7 @@
 ! call node exchange init in case
 ! this could be needed if des_interp_on is true (i.e., drag is interpolated)
 ! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)
-      IF(DES_INTERP_ON.OR.DES_INTERP_MEAN_FIELDS) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
          &setting the node indices &
          &for MPI communication', 'of nodal information needed for backward &
@@ -264,7 +268,7 @@
          &for MPI communication', 'of nodal information needed for backward &
          &interpolation'
          call des_setnodeindices
-         ENDIF
+      ENDIF
 
 
 ! set the communication flags

@@ -66,12 +66,10 @@
       DOUBLE PRECISION A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
       DOUBLE PRECISION B_M(DIMENSION_3, 0:DIMENSION_M)
       DOUBLE PRECISION VXF_GS(DIMENSION_3, DIMENSION_M)
-      Logical DES_ON_TMP
       DOUBLE PRECISION tmp_A, tmp_B
- !
+
 !-----------------------------------------------
       AVG_FACTOR = 0.25D0*(DIMN-2) + 0.5D0*(3-DIMN)
-      DES_ON_TMP = DES_INTERP_ON
       IF(UV.EQ.1) THEN
          DO M = 1, MMAX
             DO IJK = IJKSTART3, IJKEND3

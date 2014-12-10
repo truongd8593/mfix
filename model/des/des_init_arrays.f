@@ -26,6 +26,7 @@
       use desmpi
       USE des_thermo
       USE des_rxns
+
       IMPLICIT NONE
 
       INTEGER :: II
@@ -71,10 +72,8 @@
 
       P_FORCE(:,:) = ZERO
 
-      IF (DES_INTERP_ON) THEN
-         DRAG_AM(:) = ZERO
-         DRAG_BM(:,:) = ZERO
-      ENDIF
+      IF(allocated(DRAG_AM)) DRAG_AM = ZERO
+      IF(allocated(DRAG_BM)) DRAG_BM = ZERO
 
       F_GDS = ZERO
       VXF_GDS = ZERO

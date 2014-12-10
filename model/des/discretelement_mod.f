@@ -175,26 +175,6 @@
 ! is started (i.e. for particle settling w/o fluid forces)
       INTEGER NFACTOR
 
-! Switch to decide whether to call drag_gs or to call des_drag_gs via
-! drag_fgs to calculate the gas-solids drag coefficient.  if false
-! then drag_gs is used, otherwise des_drag_gs via drag_fgs is used
-! At a more fundamental level, when des_interp_on is true, then the
-! drag on particle is obtained by interpolating the carrier flow
-! velocity at the particle location. Similarly the drag force on the
-! Eulerian grid is obtained by backward of interpolaiton of the above
-! calculated drag force. See the DEM doc for more details.
-      LOGICAL DES_INTERP_ON
-
-! Switch to decide if the mean fields (such as solids volume fraction
-! and mean solids velocity) are obtained by interpolation or by the more
-! crude cell artihmetic averages. For MPPIC, this will switch will always
-! be true.
-      LOGICAL DES_INTERP_MEAN_FIELDS
-
-! Flag to check if mass is conserved between discrete and continuum
-! representations when mean fields are computed by backward interpolation.
-! Critical for cut-cells.
-      LOGICAL DES_REPORT_MASS_INTERP
 ! Drag
       LOGICAL TSUJI_DRAG
 
@@ -434,8 +414,6 @@
 !-----------------------------------------------------------------<<<
 
 
-! Hybrid model related variables/data
-!----------------------------------------------------------------->>>
 ! note that thse variables are needed since the existing variables (i.e.
 ! f_gs, f_ss, etc) are also being used to store the information between
 ! the gas and continuous solids phases.
@@ -460,17 +438,18 @@
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
       DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SDRAG_BM
-!-----------------------------------------------------------------<<<
 
 
-! START interpolation related data
-!----------------------------------------------------------------->>>
-! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::DRAG_AM
-                        !(DIMENSION_3,DES_MMAX)
-! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_BM
-                        !(DIMENSION_3,3,DES_MMAX)
+! the coefficient add to gas momentum A matrix
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DRAG_AM
+! the coefficient add to gas momentum B matrix
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
+
+
+!
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
+
+
 
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
@@ -618,5 +597,12 @@
 
 ! END Cohesion
 !-----------------------------------------------------------------<<<
+
+
+
+
+      LOGICAL :: EXPLICITLY_COUPLED
+
+
 
       END MODULE DISCRETELEMENT

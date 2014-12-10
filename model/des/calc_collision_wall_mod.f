@@ -235,6 +235,7 @@
 
       USE run
       USE param1
+      USE desgrid
       USE discretelement
       USE geometry
       USE compar
@@ -301,10 +302,10 @@
          IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
+         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) cycle
 !         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
 
-         IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
+        IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
             IJK = PIJK(LL,4)
             COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 
@@ -322,7 +323,7 @@
 ! Check particle LL for wall contacts
 
          LIST_OF_CELLS(:) = -1
-         CELL_ID = PIJK(LL,4)
+         CELL_ID = DG_PIJK(LL)
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 

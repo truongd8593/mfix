@@ -18,6 +18,8 @@
       use run, only: RUN_TYPE
       use run, only: TIME, TSTOP, DT
 
+      use desmpi, only: DES_PAR_EXCHANGE
+
       use discretelement
       use error_manager
       use functions
@@ -92,11 +94,14 @@
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
 
 
-      IF(DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
-      IF(DES_CONTINUUM_COUPLED) CALL CALC_PG_GRAD
-
-      IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
-      IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
+      IF(DES_CONTINUUM_COUPLED) THEN
+         DES_SPX_DT = SPX_DT(1)
+         CALL CALC_PG_GRAD
+         IF(.NOT.EXPLICITLY_COUPLED) THEN
+            IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
+            IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
+         ENDIF
+      ENDIF
 
 
       IF(CALL_USR) CALL USR0_DES
@@ -120,6 +125,12 @@
 
 ! Calculate forces acting on particles (collisions, drag, etc).
          CALL CALC_FORCE_DEM
+! Calculate or distribute fluid-particle drag force.
+         CALL CALC_DRAG_DES
+
+! Update the old values of particle position and velocity with the new
+! values computed
+         IF (DO_OLD) CALL CFUPDATEOLD
 ! Calculate thermochemical sources (energy and  rates of formation).
          CALL CALC_THERMO_DES
 ! Call user functions.
@@ -131,10 +142,22 @@
 ! Update particle from reactive chemistry process.
          CALL DES_REACTION_MODEL
 
-! Set DO_NSEARCH before calling particle_in_cell.
+! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
-         CALL PARTICLES_IN_CELL
-         IF (DO_NSEARCH) CALL NEIGHBOUR
+! Call exchange particles - this will exchange particle crossing
+! boundaries as well as updates ghost particles information
+         CALL DES_PAR_EXCHANGE
+         IF(DO_NSEARCH) CALL NEIGHBOUR
+
+
+         IF(.NOT.EXPLICITLY_COUPLED) THEN
+! Bin particles to fluid grid.
+            CALL PARTICLES_IN_CELL
+! Calculate interpolation weights
+            CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields (EPg).
+            CALL COMP_MEAN_FIELDS
+         ENDIF
 
 ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
@@ -184,6 +207,10 @@
 !-----------------------------------------------------------------<<<
 
       IF(CALL_USR) CALL USR3_DES
+
+
+!      CALL DIFFUSE_MEAN_FIELDS
+!      CALL CALC_EPG_DES
 
 ! When coupled the granular temperature subroutine is only calculated at end
 ! of the current DEM simulation

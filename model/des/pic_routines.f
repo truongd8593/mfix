@@ -26,6 +26,8 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
+      use desmpi, only: DES_PAR_EXCHANGE
+
       USE fun_avg
       USE functions
       IMPLICIT NONE
@@ -118,7 +120,16 @@
             DTSOLID = TEND_PIC_LOOP - S_TIME
          ENDIF
 
+! exchange particle crossing boundaries
+         CALL DES_PAR_EXCHANGE
+
          CALL PARTICLES_IN_CELL
+! Calculate mean fields using either interpolation or cell averaging.
+         CALL COMP_MEAN_FIELDS
+
+! This was moved from particles in cell and the passed variables should be
+! added to particles in cell or made global.
+         !CALL REPORT_PIC_STATS(RECOVERED, DELETED)
 
          CALL MPPIC_COMPUTE_PS_GRAD
          IF(DES_CONTINUUM_COUPLED)   CALL CALC_DRAG_DES

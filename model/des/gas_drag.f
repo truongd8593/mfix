@@ -13,23 +13,21 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
+! Flag: The fluid and discrete solids are explictly coupled.
+      use discretelement, only: EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
-      use discretelement, only: DRAG_AM
+      use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
-! Volume averaged solids velocity.
-      use discretelement, only: DES_U_s
-! Number of discrete solids phases
-      use discretelement, only: DES_MMAX
-! Gas source for coupling gas/solids flows.
-      use discretelement, only: VxF_GDS
 ! Volume of X-momentum cell
       use geometry, only: VOL_U
+! Gas velococity component
+      use fldvar, only: U_GO
 ! Flag to calculate Z direction
       use geometry, only: DO_K
 
@@ -37,6 +35,8 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
+! Double precision small number
+      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
@@ -70,7 +70,10 @@
       DOUBLE PRECISION :: tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
+! Function to compare to values
+      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
+
 
 ! Initialize error flag.
       IER = 0
@@ -79,7 +82,7 @@
       IF(DES_ONEWAY_COUPLED) RETURN
 
 ! Average the interpoalted drag force from the cell corners to the cell face.
-      IF(DES_INTERP_ON)THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -119,20 +122,26 @@
       ELSE
 
 !!$omp parallel do default(none) schedule(guided, 50)                   &
-!!$omp shared(IJKSTART3,IJKEND3,I_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_U)&
+!!$omp shared(IJKSTART3,IJKEND3,I_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_U)  &
 !!$omp private(IJK, I, IJKE)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                I = I_OF(IJK)
                IJKE = EAST_OF(IJK)
-               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_U(IJK) *              &
-                  AVG_X(DRAG_AM(IJK), DRAG_AM(IJKE), I)
-               B_M(IJK,0) = B_M(IJK,0) - VOL_U(IJK) *                  &
-                  AVG_X(DRAG_BM(IJK,1), DRAG_BM(IJKE,1), I)
+
+               tmp_A = AVG_X(F_GDS(IJK), F_GDS(IJKE), I)
+               tmp_B = AVG_X(DRAG_BM(IJK,1), DRAG_BM(IJKE,1), I)
+
+               IF(EXPLICITLY_COUPLED) tmp_B = tmp_B + tmp_A*U_GO(IJK)
+
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_U(IJK) * tmp_A
+               B_M(IJK,0) = B_M(IJK,0) - VOL_U(IJK) * tmp_B
             ENDIF
          ENDDO
 !!$omp end parallel do
       ENDIF
+
+!      write(*,*) 'U_G',count1, count2
 
       END SUBROUTINE GAS_DRAG_U
 
@@ -153,23 +162,21 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
+! Flag: The fluid and discrete solids are explictly coupled.
+      use discretelement, only: EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
-      use discretelement, only: DRAG_AM
+      use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
-! Volume averaged solids velocity.
-      use discretelement, only: DES_V_s
-! Number of discrete solids phases
-      use discretelement, only: DES_MMAX
-! Gas source for coupling gas/solids flows.
-      use discretelement, only: VxF_GDS
 ! Volume of Y-momentum cell
       use geometry, only: VOL_V
+! Gas velococity component
+      use fldvar, only: V_GO
 ! Flag to calculate Z direction
       use geometry, only: DO_K
 
@@ -177,6 +184,8 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
+! Double precision small number
+      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
@@ -210,6 +219,9 @@
       DOUBLE PRECISION tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
+! Function to compare to values
+      LOGICAL, EXTERNAL :: COMPARE
+
 !......................................................................!
 
 ! Initialize error flag.
@@ -218,7 +230,7 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-      IF(DES_INTERP_ON) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = merge(0.25d0, 0.5d0, DO_K)
 
@@ -265,15 +277,20 @@
             IF(FLUID_AT(IJK)) THEN
                J = J_OF(IJK)
                IJKN = NORTH_OF(IJK)
-               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_V(IJK) *              &
-                  AVG_Y(DRAG_AM(IJK), DRAG_AM(IJKN), J)
-               B_M(IJK,0) = B_M(IJK,0) - VOL_V(IJK) *                  &
-                  AVG_Y(DRAG_BM(IJK,2), DRAG_BM(IJKN,2), J)
+
+               tmp_A = AVG_Y(F_GDS(IJK), F_GDS(IJKN), J)
+               tmp_B = AVG_Y(DRAG_BM(IJK,2), DRAG_BM(IJKN,2), J)
+
+               IF(EXPLICITLY_COUPLED) tmp_B = tmp_B + tmp_A*V_GO(IJK)
+
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_V(IJK) * tmp_A
+               B_M(IJK,0) = B_M(IJK,0) - VOL_V(IJK) * tmp_B
             ENDIF
          ENDDO
 !!$omp end parallel do
 
       ENDIF
+
 
       END SUBROUTINE GAS_DRAG_V
 
@@ -293,30 +310,30 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Interpolate DES values
-      use discretelement, only: DES_INTERP_ON
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
+! Flag: The fluid and discrete solids are explictly coupled.
+      use discretelement, only: EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
-      use discretelement, only: DRAG_AM
+      use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
-! Volume averaged solids velocity.
-      use discretelement, only: DES_W_s
-! Number of discrete solids phases
-      use discretelement, only: DES_MMAX
-! Gas source for coupling gas/solids flows.
-      use discretelement, only: VxF_GDS
 ! Volume of Z-momentum cell
       use geometry, only: VOL_W
 ! Flag to calculate Z direction
       use geometry, only: DO_K
+! Gas velococity component
+      use fldvar, only: W_GO
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
+! Double precision small number
+      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
@@ -350,6 +367,8 @@
 ! Averaging factor
 ! (=0.25 in 3D and =0.5 in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
+! Function to compare to values
+      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
 
 ! Initialize error flag.
@@ -358,7 +377,7 @@
 ! Skip this routine if the gas/solids are only one-way coupled.
       IF(DES_ONEWAY_COUPLED) RETURN
 
-      IF(DES_INTERP_ON) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG)THEN
 
          AVG_FACTOR = 0.25d0
 
@@ -392,21 +411,26 @@
       ELSE
 
 !!$omp parallel do default(none) schedule(guided, 50)                   &
-!!$omp shared(IJKSTART3,IJKEND3,K_OF, DRAG_AM, DRAG_BM, A_M, B_M, VOL_W)&
+!!$omp shared(IJKSTART3,IJKEND3,K_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_W)  &
 !!$omp private(IJK, K, IJKT)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                K = K_OF(IJK)
                IJKT = TOP_OF(IJK)
-               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_W(IJK) *              &
-                  AVG_Z(DRAG_AM(IJK), DRAG_AM(IJKT), K)
-               B_M(IJK,0) = B_M(IJK,0) - VOL_W(IJK) *                  &
-                  AVG_Z(DRAG_BM(IJK,3), DRAG_BM(IJKT,3), K)
+
+               tmp_A = AVG_Z(F_GDS(IJK), F_GDS(IJKT), K)
+               tmp_B = AVG_Z(DRAG_BM(IJK,3), DRAG_BM(IJKT,3), K)
+
+               IF(EXPLICITLY_COUPLED) tmp_B = tmp_B + tmp_A*W_GO(IJK)
+
+               A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_W(IJK) * tmp_A
+               B_M(IJK,0) = B_M(IJK,0) - VOL_W(IJK) * tmp_B
             ENDIF
          ENDDO
 !!$omp end parallel do
 
       ENDIF
+
 
       RETURN
       END SUBROUTINE GAS_DRAG_W

@@ -15,20 +15,12 @@
       USE discretelement, only: DES_CONTINUUM_COUPLED
 ! Runtime Flag: Generate initial particle configuation.
       USE discretelement, only: GENER_PART_CONFIG
-! Runtime Flag: Interpolate mean field quantities.
-      USE discretelement, only: DES_INTERP_ON
 ! Runtime Flag: Invoke MPPIC model.
       USE mfix_pic, only: MPPIC
 ! Runtime Flag: Store DES_*_OLD arrays.
       USE discretelement, only: DO_OLD
 ! Runtime Flag: Invoke TFM/DEM hybrid model.
       USE discretelement, only: DES_CONTINUUM_HYBRID
-! Runtime Flag: Utilize cutcell geometry.
-      USE cutcell, only: CARTESIAN_GRID
-! Runtime Flag: Interpolate DEM field quanties.
-      USE discretelement, only: DES_INTERP_MEAN_FIELDS
-! Runtime Flag: Invoke gas/solids coupled simulation.
-      USE discretelement, only: DES_CONTINUUM_COUPLED
 ! Runtime Flag: Solve energy equations
       USE run, only: ENERGY_EQ
 ! Number of DEM solids phases.
@@ -145,19 +137,6 @@
       DES_PERIODIC_WALLS = (DES_PERIODIC_WALLS_X .OR.                  &
         DES_PERIODIC_WALLS_Y .OR. DES_PERIODIC_WALLS_Z)
 
-! Overwrite user's input in case of DEM (no fluid)
-      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
-         DES_INTERP_ON = .FALSE.
-
-      ELSE
-! MPPIC and DES/CUTCELL simulations require that the mean fields be
-! interpolated without regard to user specifications.
-         IF(MPPIC.OR.CARTESIAN_GRID) DES_INTERP_MEAN_FIELDS = .TRUE.
-
-! DES_INTERP_MEAN_FIELDS is invoked if des_interp_on is true to remain
-! consistent with previous implementations.
-         IF(DES_INTERP_ON)  DES_INTERP_MEAN_FIELDS= .TRUE.
-      ENDIF
 
 ! Overrite for restart cases.
       IF(TRIM(RUN_TYPE) .NE. 'NEW') GENER_PART_CONFIG = .FALSE.
@@ -227,12 +206,8 @@
 ! Check geometry constrains.
       CALL CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
 
-
-! Check TFM/DEM Hybrid model settings.
-!      IF (DES_CONTINUUM_HYBRID) CALL CHECK_DES_HYBRID
-
-! Check settings for particle generation.
-!      IF(GENER_PART_CONFIG) CALL CHECK_DES_PCONFIG
+! Check interpolation input.
+      CALL CHECK_SOLIDS_COMMON_DISCRETE_INTERP
 
 
       CALL FINL_ERR_MSG
@@ -460,24 +435,14 @@
       USE discretelement, only: DES_CONTINUUM_COUPLED
       USE discretelement, only: MAX_RADIUS
 
-! flag to tell if using stl represenation in discrete models
+! Flag: Use STL for DEM walls
       USE discretelement, only: USE_STL_DES
-! flag to tell if using CG
-      USE cutcell, only: cartesian_grid
-! flag to tell if using stl represenation in CG
-      USE cutcell, only: use_stl
+! Flag: Use Cartesian grid cut-cell implementation
+      USE cutcell, only: CARTESIAN_GRID
+! Flag: Use STL represenation in CG
+      USE cutcell, only: USE_STL
 
       use param1, only: UNDEFINED_I
-
-!flag to force conversion of regular bounding box to
-!triangular facets for particle-wall interactions in discrete models
-      use discretelement, only: des_convert_box_to_facets
-
-! Flag: Use cohesion
-      use discretelement, only: USE_COHESION
-
-! Flag: Use MPPIC E-L model
-      use mfix_pic, only: MPPIC
 
       use error_manager
 
@@ -531,59 +496,19 @@
          'file.')
 
 
-      IF(CARTESIAN_GRID.and.discrete_element.and..not.use_stl) then
-         write(err_msg, '((A, A,/, A, /, A, /))')&
-         'cartesian grid and discrete modeds (DEM or PIC) only', &
-         'work with stl representation for walls', &
-         'Quadrics and polygons are no longer supported for discrete models', &
-         'Switch to STL representation for using PIC or DEM models with cartesian grid'
-         CALL FLUSH_ERR_MSG(abort = .true.)
-      endif
-
-      IF(CARTESIAN_GRID.and.USE_STL.and..not.use_stl_des) then
-         write(err_msg, '(3(A,/))')'Detected cartesian grid using STL representation', &
-         'USE_STL_DES either not specified or set as false in the input file', &
-         'Forcing the discrete model to use STL for particle-wall interactions as well'
-         CALL FLUSH_ERR_MSG
-         USE_STL_DES = .true.
-      endif
-
-      IF(MPPIC.AND..NOT.USE_STL_DES) THEN
-         write(err_msg, '(3(A,/))') &
-         'PIC model detected but USE_STL_DES left undefined or specified as false', &
-         'Particle-wall interactions in PIC model resoved as triangle-parcel', &
-         'Forcing USE_STL_DES to true for PIC model. Bounding box will be converted to facets.'
-         CALL FLUSH_ERR_MSG
-         USE_STL_DES = .true.
+      IF(CARTESIAN_GRID .AND. .NOT.USE_STL) THEN
+         WRITE(ERR_MSG,1400)
+         CALL FLUSH_ERR_MSG(ABORT =.TRUE.)
       ENDIF
 
-
-      IF(use_stl_des.and.use_cohesion) then
-         write(err_msg, '(3(A,/))') &
-         'The cohesion force model has not been implemented in new', &
-         'routines for STL facet based particle-wall interactions', &
-         'This will be restored shortly. Sorry :('
-         CALL FLUSH_ERR_MSG(abort = .true.)
-      endif
+ 1400 FORMAT('Error 1400: Cartesian grid and discrete models (DEM or ',&
+         'PIC) only',/'support STL wall representations. Quadrics ',   &
+         'and polygons are not',/'supported.')
 
 
-! Verify that there are no internal obstacles.
-!      IF(.NOT.CARTESIAN_GRID) THEN
-!         DO K = KSTART1, KEND1
-!         DO J = JSTART1, JEND1
-!         DO I = ISTART1, IEND1
-!            IJK  = FUNIJK(I,J,K)
-!            IF(.NOT.FLUID_AT(IJK)) THEN
-!               WRITE(ERR_MSG,1400)
-!               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-!            ENDIF
-!         ENDDO
-!         ENDDO
-!         ENDDO
-!      ENDIF
+      IF(CARTESIAN_GRID.AND.USE_STL.AND..NOT.USE_STL_DES)              &
+         USE_STL_DES = .TRUE.
 
-! 1400 FORMAT('Error 1400: DES simulations cannot have defined ',       &
-!         'internal obstacles.',/'Please correct the data file')
 
       CALL FINL_ERR_MSG
 
@@ -596,3 +521,155 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_SOLIDS_COMMON_DISCRETE_INTERP                     !
+!  Author: J.Musser                                   Date: 25-Nov-14  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_INTERP
+
+! Runtime Flag: Utilize cutcell geometry.
+      use cutcell, only: CARTESIAN_GRID
+! Runtime Flag: Invoke gas/solids coupled simulation.
+      use discretelement, only: DES_CONTINUUM_COUPLED
+! Runtime Flag: Invoke MPPIC model.
+      USE mfix_pic, only: MPPIC
+! User input for DES interpolation scheme.
+      use particle_filter, only: DES_INTERP_SCHEME
+! Enumerated interpolation scheme for faster access
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
+      use particle_filter, only: DES_INTERP_DPVM
+      use particle_filter, only: DES_INTERP_GAUSS
+! User specified filter width
+      use particle_filter, only: FILTER_WIDTH
+! Flag: Diffuse DES field variables.
+      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
+! Flag: Interpolate continuum fields
+      use particle_filter, only: DES_INTERP_MEAN_FIELDS
+! Flag: Interplate variables for drag calculation.
+      use particle_filter, only: DES_INTERP_ON
+
+      use param1, only: UNDEFINED, UNDEFINED_C
+
+      use error_manager
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION :: DXYZ_MIN
+
+
+!......................................................................!
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_INTERP")
+
+
+! Set the interpolation ENUM value.
+      SELECT CASE(trim(adjustl(DES_INTERP_SCHEME)))
+      CASE ('NONE')
+         DES_INTERP_SCHEME_ENUM = DES_INTERP_NONE
+! Cannot use interpolation when no scheme is selected.
+         IF(DES_INTERP_ON)THEN
+            WRITE(ERR_MSG,2001) 'DES_INTERP_ON'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSEIF(DES_INTERP_MEAN_FIELDS)THEN
+            WRITE(ERR_MSG,2001) 'DES_INTERP_MEAN_FIELDS'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+         ELSEIF(DES_CONTINUUM_COUPLED) THEN
+            IF(MPPIC) THEN
+               WRITE(ERR_MSG,2002) 'MPPIC solids'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF(MPPIC) THEN
+               WRITE(ERR_MSG,2002) 'Cartesian grid cut-cells'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+      CASE ('GARG_2012')
+         DES_INTERP_SCHEME_ENUM = DES_INTERP_GARG
+
+      CASE ('DPVM')
+         DES_INTERP_SCHEME_ENUM = DES_INTERP_DPVM
+
+      CASE ('DPVM_GAUSS')
+         DES_INTERP_SCHEME_ENUM = DES_INTERP_GAUSS
+
+      CASE DEFAULT
+         WRITE(ERR_MSG,2000) trim(adjustl(DES_INTERP_SCHEME))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 2000 FORMAT('Error 2000: Invalid DES_INTERP_SCHEME: ',A,/'Please ',   &
+         'correct the mfix.dat file.')
+
+ 2001 FORMAT('Error 2001: No interpolation scheme specified when ',A,/ &
+         'is enabled. Please correct the mfix.dat file.')
+
+ 2002 FORMAT('Error 2002: DES simulations utilizing ',A,' require',/   &
+         'interpolation (DES_INTERP_ON and DES_INTERP_MEANFIELDS). ',/ &
+         'Please correct the mfix.dat file.')
+
+
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+
+      CASE(DES_INTERP_NONE)
+
+         IF(.NOT.DES_DIFFUSE_MEAN_FIELDS .AND.                         &
+            FILTER_WIDTH /= UNDEFINED) THEN
+            WRITE(ERR_MSG,2100) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 2100 FORMAT('Error 2100: The selected interpolation scheme (',A,') ', &
+         'only',/'supports an adjustable filter size when the mean ',  &
+         'fields are diffused.',/'Please correct the input file.')
+
+      CASE(DES_INTERP_GARG)
+         DES_INTERP_MEAN_FIELDS= .TRUE.
+
+         IF(DES_DIFFUSE_MEAN_FIELDS) THEN
+            WRITE(ERR_MSG,2110) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 2110 FORMAT('Error 2110: The selected interpolation scheme (',A,') ', &
+         'does not',/'support diffusive filtering of mean field ',     &
+          'quantites. Please correct',/'the input file.')
+
+         IF(FILTER_WIDTH /= UNDEFINED) THEN
+            WRITE(ERR_MSG,2111) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 2111 FORMAT('Error 2111: The selected interpolation scheme (',A,') ', &
+         'does not',/'support an adjustable filter size. Please ',     &
+         'correct',/'the input file.')
+
+
+      CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+         DES_INTERP_MEAN_FIELDS= .TRUE.
+
+         IF(FILTER_WIDTH == UNDEFINED) THEN
+            WRITE(ERR_MSG,2120) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 2120 FORMAT('Error 2120: The selected interpolation scheme (',A,') ', &
+         'requires',/'a FILTER_WIDTH. Please correct the input file.')
+
+      END SELECT
+
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_INTERP
