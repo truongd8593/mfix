@@ -303,10 +303,6 @@
           'without',/'specifying a SUBGRID_TYPE.',/'Please correct ',  &
           'the mfix.dat file.')
 
-      IF(SUBGRID_TYPE_ENUM .ne. IGCI .AND. SUBGRID_TYPE_ENUM .ne. MILIOLI) THEN
-         WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
 
       SELECT CASE(trim(adjustl(SUBGRID_TYPE)))
 
@@ -315,6 +311,11 @@
       CASE DEFAULT
          SUBGRID_TYPE_ENUM = UNDEFINED_SUBGRID_TYPE
       END SELECT
+
+      IF(SUBGRID_TYPE_ENUM .ne. IGCI .AND. SUBGRID_TYPE_ENUM .ne. MILIOLI) THEN
+         WRITE(ERR_MSG,1001) 'SUBGRID_TYPE', SUBGRID_TYPE
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
 
       IF(DRAG_TYPE /= 'WEN_YU')THEN
          WRITE(ERR_MSG, 2012)
