@@ -5,7 +5,7 @@
       Use param1
 
 !     Maximum of the number of quadrics that can be read
-      INTEGER, PARAMETER          :: DIM_QUADRIC = 100
+      INTEGER, PARAMETER          :: DIM_QUADRIC = 500
 !     Nnumber of quadrics
       INTEGER                     :: N_QUADRIC
 !     Current Quadric
