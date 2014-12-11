@@ -25,6 +25,7 @@
       Use param1
       Use physprop
       Use usr
+      Use compar,only: mype
 
       IMPLICIT NONE
 
@@ -67,6 +68,8 @@
       Qcv = GAMMA_CP * Sa * (Tg - DES_T_s_NEW(NP))
 ! Store convection source in global energy source array.
       Q_Source(NP) = Q_Source(NP) + Qcv
+!      if(abs(Q_Source(NP)).GT.10000)  & 
+!            write(*,*) "test--",myPE,NP,PEA(NP,1),PEA(NP,2),PEA(NP,3),PEA(NP,4)
 
 ! Calculate the source term components --> Not interpolated.
       DES_ENERGY_SOURCE(IJK) = DES_ENERGY_SOURCE(IJK) - Qcv * DTSOLID

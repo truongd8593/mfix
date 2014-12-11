@@ -31,7 +31,7 @@
 
 
 ! Keep the particles stationary.
-      FC(:,:) = ZERO
+      FC(1,:) = ZERO
       TOW(:,:) = ZERO
       GRAV(:) = ZERO
 

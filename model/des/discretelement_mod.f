@@ -76,6 +76,8 @@
 
 ! Number of particles in the system (current)
       INTEGER PIP
+! Global sum of particles (excluding ghost) in the system (Added by Surya Oct 31, 2014) 
+      INTEGER TOT_PAR
 ! Maximum particles permitted in the system at once
       INTEGER MAX_PIS, MAX_PIP
 
@@ -394,6 +396,8 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS         !(PARTICLES,3)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD  !(PARTICLES,3)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,3)
+! Defining user defined allocatable array (Surya Dec 10, 2014)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_USR_VAR  !(PARTICLES,3)
 
 ! Total force and torque on each particle
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
@@ -568,7 +572,8 @@
 
 ! Kinetic and potential energy of the system: obtained by averaging
 ! over all particles
-      DOUBLE PRECISION DES_KE, DES_PE
+! Added rotational kinetic energy (DES_ROTE) by Surya Oct 30, 2014
+      DOUBLE PRECISION DES_KE, DES_PE, DES_ROTE
 
 ! This quantity is used purely for post processing.  Originally coded to
 ! aid visualization of mixing process.  It is left here for those who

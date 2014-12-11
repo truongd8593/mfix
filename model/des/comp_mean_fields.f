@@ -83,7 +83,6 @@
          K = PIJK(L,3)
          IJK = FUNIJK(I,J,K)
          M = PIJK(L,5)
-
          WTP = ONE
          IF(MPPIC) WTP = DES_STAT_WT(L)
 ! adding particle volume to ongoing summation of solids volume

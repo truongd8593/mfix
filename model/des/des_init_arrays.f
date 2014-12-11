@@ -58,6 +58,9 @@
       OMEGA_NEW(:,:) = ZERO
       ROT_ACC_OLD(:,:) = ZERO
 
+! Initializing user defined array (Surya Dec 10, 2014)
+      DES_USR_VAR(:,:) = ZERO   
+
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
 
@@ -116,9 +119,10 @@
 
 ! J.Musser: Energy and Species Equation Arrays
       IF(ENERGY_EQ)THEN
-         DES_T_s_OLD(:) = UNDEFINED
-         DES_T_s_NEW(:) = UNDEFINED
-         DES_C_PS(:) = UNDEFINED
+         DES_T_s_OLD(:) = ZERO  !Changed from Undefined to Zero to avoid mpi problems (Surya Oct 29, 2014)
+         DES_T_s_NEW(:) = ZERO  !Changed from Undefined to Zero to avoid mpi problems (Surya OCt 29, 2014)
+!        DES_C_PS(:) = UNDEFINED
+         DES_C_PS(:) = ZERO
          DES_X_s(:,:) = ZERO
          Q_Source(:) = ZERO
          avgDES_T_s(:) = ZERO

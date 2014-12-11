@@ -112,6 +112,10 @@
          ALLOCATE(  ROT_ACC_OLD (1,NPARTICLES))
       ENDIF
 
+! Allocating user defined array (Surya Dec 10, 2014)
+      Allocate(  DES_USR_VAR(3,NPARTICLES) )
+      
+
 ! Particle positions at the last call neighbor search algorithm call
       Allocate(  PPOS (DIMN,NPARTICLES) )
 

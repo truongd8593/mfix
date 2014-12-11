@@ -91,19 +91,21 @@
 
 
       FNAME = 'POST_Tp.dat'
+      if(mype.eq.pe_io)then
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
       IF (.NOT.F_EXISTS) THEN
          OPEN(UNIT=TP_UNIT,FILE=FNAME,STATUS='NEW')
-         WRITE(TP_UNIT,"(7X,'Time',12X,'Tp')")
+         WRITE(TP_UNIT,"(7X,'Time',12X,'Tp',12X,'Xs',12X,'YPos')")
       ELSE
          OPEN(UNIT=TP_UNIT,FILE=FNAME,&
             POSITION="APPEND",STATUS='OLD')
       ENDIF
 
 ! Write the data to a file.
-      WRITE(TP_UNIT,"(2(3X,F12.8))")lTime, (DES_T_S_NEW(1)-273.15d0)
+      WRITE(TP_UNIT,"(4(3X,F12.8))")lTime, (DES_T_S_NEW(1)-273.15d0),DES_X_S(1,1),DES_POS_NEW(2,1)
       CLOSE(TP_UNIT)
-
+      endif
+   
       RETURN
       END SUBROUTINE WRITE_DES_Tp
 

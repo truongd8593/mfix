@@ -87,6 +87,7 @@
 ! file unit for heat transfer data
       INTEGER, PARAMETER :: uPos = 2030
       INTEGER, PARAMETER :: uVel = 2031
+      INTEGER, PARAMETER :: uTemp = 2032
 
 ! Absolute relative error between MFIX solution and analytic solution.
 
@@ -96,7 +97,7 @@
 
       integer, allocatable :: lgID(:)
 
-      double precision, allocatable :: lRad(:)
+      double precision, allocatable :: lRad(:),lTemp(:)
 
       double precision, allocatable :: lPos_Y(:),  lVel_Y(:)
       double precision              :: aPos_Y   ,  aVel_Y
@@ -144,6 +145,7 @@
       allocate( lRad   (lglocnt) )
       allocate( lPos_Y (lglocnt) )
       allocate( lVel_Y (lglocnt) )
+      allocate( lTemp  (lglocnt) ) !Added by Surya Oct 10, 2014
       allocate( lgID   (lglocnt) )
 
 ! Gather global particle IDs for map.
@@ -158,9 +160,13 @@
       call des_gather(des_POS_new(2,:))
       if (mype.eq.pe_io) lPos_Y = drootbuf
 
-! Gather particle position (Y-axis only)
+! Gather particle velocity (Y-axis only)
       call des_gather(des_VEL_new(2,:))
       if (mype.eq.pe_io) lVel_Y = drootbuf
+
+! Gather particle temperature (Added by Surya Oct 10, 2014)
+      call des_gather(des_t_s_new(:))
+      if (mype.eq.pe_io) lTemp = drootbuf
 
 ! Set local variables.
       lGrav = -grav(2)
@@ -196,6 +202,20 @@
                write(uVel,"(3X,'Time, Stage, Vel, Vel_MFIX, aErr')")
             endif
 
+            filename = ''
+            write(filename,"('POST_TEMP_',I1,'.dat')") lc2
+            inquire(file=filename, exist=exists)
+            if(exists) then
+               open(unit=uTemp, file=filename,&
+                  position="APPEND",status='OLD')
+            else
+               open(unit=uTemp, file=filename, status='NEW')
+               write(uTemp,"(3X,'Time, Stage, Temp')")
+            endif
+
+
+
+
 ! Initialize the stage.
             aStage = 0
 ! Calculate the position and velocity of the particle
@@ -229,7 +249,12 @@
             WRITE(uVel,9000) lTime, aStage, aVel_Y, lVel_Y(lc1),Vel_rErr
             CLOSE(uVel)
 
+            WRITE(uTemp,9001) lTime, aStage,lTemp(lc1)
+            CLOSE(uVel)
+
+
  9000 FORMAT(3x,F15.8,',',1X,I1,3(',',1X,F15.8))
+ 9001 FORMAT(3x,F15.8,',',1X,I1,1(',',1X,F15.8))
 
          enddo
       endif
@@ -243,6 +268,7 @@
       if(allocated(lPos_Y  )) deallocate( lPos_Y   )
       if(allocated(lVel_Y  )) deallocate( lVel_Y   )
       if(allocated(lgID    )) deallocate( lgID     )
+      if(allocated(lTemp    )) deallocate( lTemp   )
 
 
       END SUBROUTINE WRITE_DES_Out

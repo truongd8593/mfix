@@ -107,6 +107,7 @@
          PIJK(L,3) = K
          PIJK(L,4) = IJK
 
+         PIJK(L,5) = 1   !Hardcoding the phase to be 1 for restarts (Surya Dec 4, 2014)
       ENDDO
 !$omp end parallel
 

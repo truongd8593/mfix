@@ -100,7 +100,7 @@
 !         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
 !             (DES_VEL_NEW(:,L)+DES_VEL_OLD(:,L))*DTSOLID
 
-
+            DES_USR_VAR(1,L) = DES_VEL_NEW(1,L) ! Surya, testing out the new variable 
             OMEGA_NEW(:,L)   = OMEGA_OLD(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 

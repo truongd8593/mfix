@@ -28,6 +28,7 @@
       USE physprop
       USE fun_avg
       USE functions
+      USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -43,7 +44,7 @@
 ! accounted for particles
       INTEGER :: PC
 ! squared particle velocity v.v
-      DOUBLE PRECISION :: SQR_VEL
+      DOUBLE PRECISION :: SQR_VEL, SQR_ROT_VEL
 !-----------------------------------------------
 
 ! Calculate a local species granular temperature for current instant of
@@ -107,6 +108,7 @@
 
 ! initialization for calculations
       DES_KE = ZERO
+      DES_ROTE = ZERO
       DES_PE = ZERO
       DES_VEL_AVG(:) = ZERO
 
@@ -119,11 +121,19 @@
          IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
 
          SQR_VEL = ZERO
+         SQR_ROT_VEL = ZERO
          DO I = 1, DIMN
             SQR_VEL = SQR_VEL + DES_VEL_NEW(I,LL)**2
          ENDDO
 
+         DO I = 1, merge(1,3,NO_K)
+            SQR_ROT_VEL = SQR_ROT_VEL + OMEGA_NEW(I,LL)**2 !Added by Surya Oct 30, 2014
+         ENDDO
+
+
          DES_KE = DES_KE + PMASS(LL)/2.d0 * SQR_VEL
+! Calculation of rotational kinetic energy (Added by Surya Oct 30, 2014)
+         DES_ROTE = DES_ROTE + (0.4D0*PMASS(LL)*DES_RADIUS(LL)**2)/2.d0 * SQR_ROT_VEL
          DES_PE = DES_PE + PMASS(LL)*DBLE(ABS(GRAV(2)))*&
             DES_POS_NEW(2,LL)
          DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(:,LL)
@@ -131,9 +141,15 @@
          IF(PC .EQ. PIP) EXIT
       ENDDO
 
+!Calculating total number of particles in the entire domain
+!Needed for correct average velocities and granular temp.
+!Added by Surya Oct 31, 2014   
+          CALL GLOBAL_ALL_SUM(PIP-iGHOST_CNT,TOT_PAR)
+          CALL GLOBAL_ALL_SUM(DES_VEL_AVG(1:DIMN))
+       
 !J.Musser changed PARTICLES TO PIP
-      IF(PIP > 0) DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(PIP)
-
+      IF(TOT_PAR > 0) DES_VEL_AVG(:) = DES_VEL_AVG(:)/DBLE(TOT_PAR)
+      
 ! The following quantities are primarily used for debugging/developing
 ! and allow a quick check of the energy conservation in the system.
 ! In their current form they are best applied to monodisperse cases.
@@ -154,8 +170,16 @@
          IF(PC .EQ. PIP) EXIT
       ENDDO
 
-      IF(PIP > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(PIP)
-      IF(PIP > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(PIP)
+      CALL GLOBAL_ALL_SUM(GLOBAL_GRAN_TEMP)
+      CALL GLOBAL_ALL_SUM(GLOBAL_GRAN_ENERGY)
+      CALL GLOBAL_ALL_SUM(DES_KE)
+      CALL GLOBAL_ALL_SUM(DES_PE)
+      CALL GLOBAL_ALL_SUM(DES_ROTE)
+      
+      IF(TOT_PAR > 0) GLOBAL_GRAN_ENERGY(:) =  GLOBAL_GRAN_ENERGY(:)/DBLE(TOT_PAR)
+      IF(TOT_PAR > 0) GLOBAL_GRAN_TEMP(:) =  GLOBAL_GRAN_TEMP(:)/DBLE(TOT_PAR)
+
+
 !-----------------------------------------------------------------<<<
 
       RETURN

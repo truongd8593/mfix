@@ -54,12 +54,18 @@
       use discretelement, only: DES_MMAX
       use discretelement, only: GLOBAL_GRAN_TEMP
       use discretelement, only: DES_VEL_AVG
-      use discretelement, only: des_ke
+      use discretelement, only: des_ke,des_rote
       use discretelement, only: S_TIME
       use geometry, only: NO_K
 
       Use run, only: RUN_NAME
 
+
+      use desmpi
+      use mpi_utility
+      use parallel
+      use sendrecv
+      
       IMPLICIT NONE
 
 ! Local variables
@@ -81,27 +87,31 @@
 
       CALL DES_GRANULAR_TEMPERATURE
 
+
+      if(mype.eq.pe_io)then
+
       GRAN_TEMP = (1.0/wDIMN)*SUM( GLOBAL_GRAN_TEMP(1:wDIMN) )
       AVG_VEL = (1.0/wDIMN)*SUM( DES_VEL_AVG(1:wDIMN) )
-
+   
 
       FNAME = 'POST_GT.dat'
       INQUIRE(FILE=FNAME,EXIST=F_EXISTS)
 
       IF(.NOT.F_EXISTS) THEN
          OPEN(UNIT=GT_UNIT,FILE=FNAME,STATUS='NEW')
-         WRITE(GT_UNIT,"(6(2X,A))") 'SOLIDS-TIME', 'GRAN-ENERGY', &
-            'KNTC-ENERGY', 'VG-VELOCTY','MAX-OVERLAP','MAX-NEIGH'
+         WRITE(GT_UNIT,"(7(2X,A))") 'SOLIDS-TIME', 'GRAN-ENERGY', &
+            'KNTC-ENERGY','ROT-ENERGY', 'VG-VELOCTY','MAX-OVERLAP','MAX-NEIGH'
       ELSE
          OPEN(UNIT=GT_UNIT,FILE=FNAME,&
             POSITION="APPEND",STATUS='OLD')
       ENDIF
+      endif
 
 !  SOLIDS-TIME  GRAN-ENERGY  KNTC-ENERGY  AVG-VELOCTY  MAX-OVERLAP  MAX-NEIGH
 !xxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxFFFFFFFFFFFxxiiiiiiiii
 
-      WRITE(GT_UNIT,"(5(2x,g11.5),2X,I5)") S_TIME, GRAN_TEMP, DES_KE,  &
-          AVG_VEL, OVERLAP_MAX, NEIGH_MAX
+      WRITE(GT_UNIT,"(6(2x,g11.5),2X,I5)") S_TIME, GRAN_TEMP, DES_KE,  &
+          DES_ROTE,AVG_VEL, OVERLAP_MAX, NEIGH_MAX
 
       CLOSE(GT_UNIT)
 

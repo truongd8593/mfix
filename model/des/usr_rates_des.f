@@ -58,9 +58,13 @@
       USE physprop
       USE rxns
       USE run
-      USE usr
-      USE fun_avg
-      USE functions
+      use functions
+
+! User input: Proximate analysis
+      use usr, only: PAC  ! Char
+      use usr, only: PAV  ! Volatiles
+      use usr, only: PAM  ! Moisture
+      use usr, only: PAA  ! Ash
 
       IMPLICIT NONE
 
@@ -74,19 +78,74 @@
 
 ! Reaction specific variables:
 !`````````````````````````````````````````````````````````````````````//
+! Particle temperature (K), Mass (kg)
+      DOUBLE PRECISION :: Tp, Mp
+
+
+! Logicals used to 'order' heterogeneous reactions.
+! Drying --> Pyrolysis --> Gasification & Combustion
+      LOGICAL :: DRIED      ! Initial moisture is gone
+
+! Drying specific variables:
+!---------------------------------------------------------------------//
+! The amount of energy required to vaporize all the particle's moisture.
+      DOUBLE PRECISION :: reqd_Q
+! The amount of energy availble to dry the particle.
+      DOUBLE PRECISION :: aval_Q
+! The amount of energy used to dry the particle.
+      DOUBLE PRECISION :: used_Q
+! Heat of Vaporization of water at 100 C
+      DOUBLE PRECISION, PARAMETER :: Hv_H2O = 2259.95d3 ! (J/kg-H2O)
+
+! Minimum amount of inital species required to stage reactions.
+      DOUBLE PRECISION, parameter :: PA_Limiter = 1.0d-4
+! Minimum amount of species required to facilitate a reaction.
+      DOUBLE PRECISION, parameter :: c_Limiter = 1.0d-6
+
 
       INCLUDE '../species.inc'
-      INCLUDE '../usrnlst.inc'
+
+
+! Initialization:
+!`````````````````````````````````````````````````````````````````````//
+! Set the particle temperature and mass.
+      Tp = DES_T_s_NEW(NP)
+      Mp = PMASS(NP)
+
+! Logical set true if the majority of the intial moisture was driven
+! from the solids. Used to suppress pyrolysis. The secondary logical 
+! check is included for initially dry coal.
+      DRIED = ((PAA * DES_X_s(NP,Moisture)) .LE.                       &
+         (PAM * DES_X_s(NP,Ash) * 1.0d-3))  .OR.                       &
+         (PAM .LT. PA_Limiter)
 
 ! Reaction rates:
 !`````````````````````````````````````````````````````````````````````//
-! Include reaction rates here. Reaction rates should be stored in the
-! variable DES_RATES. The reaction name given in the data file can be
-! used to store the rate in the appropriate array location. Additional
-! input format parameters are given in Section 4.11 of the code Readme.
 
-      DES_RATES(:) = ZERO
+! Enact the Boiling Law.
+      IF(.NOT.DRIED .AND. Tp >= 373.15d0) THEN
+! Calculate the total amount of energy required to vaporize all of the
+! moisture contained in the particle. (J/sec)
+         reqd_Q = ((Mp/DTSOLID)*DES_X_s(NP,Moisture))*Hv_H2O
+         aval_Q = max(0.0d0, Q_Source(NP))
+! Take whatever energy is available to vaporize the moisture. (J/sec)
+         used_Q = merge(reqd_Q, aval_Q, aval_Q > reqd_Q)
+! Updated the energy source term to account for any loss.
+         Q_Source(NP) = Q_Source(NP) - used_Q
+! Calculate the drying rate based on the usable energy. (kmole/sec)
+         DES_RATES(Drying) = used_Q/(MW_s(pM,Moisture)*Hv_H2O)
+      ENDIF
+
+
+! Pyrolysis:  Volatiles --> 
+!---------------------------------------------------------------------//
+! NOTE: Pyrolysis is suppressed if the majority of moisture has not
+! been driven off.
+         IF(DRIED) THEN
+            IF(Tp > 373.0d0 .AND. DES_X_s(NP, Volatiles) > c_Limiter)  &
+               DES_RATES(Pyrolysis) = 3.5930d4 * exp(-4.571d3/Tp) *    &
+               (Mp*DES_X_s(NP,Volatiles)) / MW_s(pM,Volatiles)
+         ENDIF
 
       RETURN
-
       END SUBROUTINE USR_RATES_DES

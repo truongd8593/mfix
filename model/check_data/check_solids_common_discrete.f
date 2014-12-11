@@ -56,6 +56,12 @@
       USE discretelement, only: DES_PERIODIC_WALLS_Y
       USE discretelement, only: DES_PERIODIC_WALLS_Z
 
+! Flag: Solve variable solids density.
+      USE run, only: SOLVE_ROs
+! Calculated baseline variable solids density.
+      USE physprop, only: BASE_ROs
+ 
+
 ! Number of ranks.
       use run, only: SOLIDS_MODEL
 
@@ -109,7 +115,8 @@
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
          DES_D_p0(M) = D_p0(lM)
-         DES_RO_s(M) = RO_s0(lM)
+!        DES_RO_s(M) = RO_s0(lM)
+         DES_RO_s(M) = merge(BASE_ROs(lM),RO_s0(lM),SOLVE_ROs(lM))
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks
          MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
@@ -315,10 +322,10 @@
 ! Check the number of processors. DES reactive chemistry is currently
 ! limited to serial runs.
       CHECK_MPI = NODESI * NODESJ * NODESK
-      IF(CHECK_MPI.NE.1) THEN
-         WRITE(ERR_MSG, 2000)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
+!     IF(CHECK_MPI.NE.1) THEN
+!        WRITE(ERR_MSG, 2000)
+!        CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+!     ENDIF
 
  2000 FORMAT('Error 2000: Currently, simulations with discrete solids',&
         ' heat transfer',/'modules are limited to serial runs. Please',&
@@ -404,12 +411,12 @@
 
 ! Check the number of processors. DES reactive chemistry is currently
 ! limited to serial runs.
-      IF(ANY_SPECIES_EQ) THEN
-         IF((NODESI*NODESJ*NODESK) /= 1) THEN
-            WRITE(ERR_MSG, 9001)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
+!     IF(ANY_SPECIES_EQ) THEN
+!        IF((NODESI*NODESJ*NODESK) /= 1) THEN
+!           WRITE(ERR_MSG, 9001)
+!           CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+!        ENDIF
+!     ENDIF
 
  9001 FORMAT('Error 9001: DES reactive chemistry is limited to ',      &
          'serail  runs.',/'NODESI, NODESJ, and NODESK must equal 1. ', &

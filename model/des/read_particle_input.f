@@ -99,7 +99,6 @@
             ALLOCATE (dpar_vel(particles,3)); dpar_vel=0.0
             ALLOCATE (dpar_rad(particles));   dpar_rad=0.0
             ALLOCATE (dpar_den(particles));   dpar_den = 0.0
-
 ! Loop through the input file.
             DO lcurpar = 1, particles
                read (lunit,*,IOSTAT=IOS)                               &
@@ -127,6 +126,7 @@
                ENDIF
 
             ENDDO
+ 
          ENDIF
 
          CALL GLOBAL_ALL_SUM(IOS)
