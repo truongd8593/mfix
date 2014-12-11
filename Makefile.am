@@ -229,7 +229,9 @@ common_SOURCES = \
 	model/des/calc_collision_wall_mod.f \
 	model/des/calc_drag_des.f \
 	model/des/calc_dtpic.f \
+	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
+	model/des/calc_interp_weights.f \
 	model/des/calc_pg_grad.f \
 	model/des/calc_rrate_des.f \
 	model/des/calc_thermo_des.f \
@@ -243,6 +245,8 @@ common_SOURCES = \
 	model/des/cfwallposvel.f \
 	model/des/check_cell_movement.f \
 	model/des/comp_mean_fields.f \
+	model/des/comp_mean_fields_interp0.f \
+	model/des/comp_mean_fields_interp1.f \
 	model/des/des_allocate_arrays.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_mod.f \
@@ -266,9 +270,15 @@ common_SOURCES = \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
 	model/des/desnamelist.inc \
+	model/des/dif_phi_bc_des.f \
+	model/des/dif_phi_des.f \
+	model/des/dif_phi_source_des.f \
+	model/des/diffuse_mean_fields.f \
 	model/des/discretelement_mod.f \
 	model/des/drag_gp_des.f \
+	model/des/drag_gp_des1.f \
 	model/des/drag_gs_des_interp0.f \
+	model/des/drag_gs_des_interp1.f \
 	model/des/drag_gs_des_noninterp.f \
 	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
@@ -282,13 +292,13 @@ common_SOURCES = \
 	model/des/mfix_pic_mod.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
+	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
 	model/des/pic_bc_mod.f \
 	model/des/pic_bc_routines.f \
 	model/des/pic_routines.f \
 	model/des/randomno_mod.f \
 	model/des/read_particle_input.f \
-	model/des/set_phase_index.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/sendrecvnode_mod.f \
@@ -298,8 +308,10 @@ common_SOURCES = \
 	model/des/set_bc_pic.f \
 	model/des/set_bc_pic_mi.f \
 	model/des/set_bc_pic_mo.f \
+	model/des/set_filter_des.f \
 	model/des/set_geometry_des.f \
 	model/des/set_ic_dem.f \
+	model/des/set_phase_index.f \
 	model/des/solid_drag.f \
 	model/des/vtp_mod.f \
 	model/des/write_des_data.f \
