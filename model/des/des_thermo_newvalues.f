@@ -39,10 +39,7 @@
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 ! Sum of particle temperatures in fluid cell.
       DOUBLE PRECISION SUM_T_s
-
-! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       IF(.NOT.ENERGY_EQ) RETURN
 
@@ -157,10 +154,7 @@
       INTEGER NP, lNP
 ! Sum of particle temperatures in fluid cell.
       DOUBLE PRECISION SUM_T_s
-
-! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 
       IF(.NOT.ENERGY_EQ) RETURN
 

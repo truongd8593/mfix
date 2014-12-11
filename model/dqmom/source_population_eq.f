@@ -10,7 +10,7 @@
       IMPLICIT NONE
 
       double precision x,y(*),dydx(*)
-      double precision K_v,a1,a2
+      double precision K_v
       double precision m1,m2, dav,theta,c11
       double precision, external :: g_0
       double precision epstotal

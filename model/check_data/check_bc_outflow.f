@@ -11,10 +11,9 @@
       USE param, only: DIM_M
       USE param1, only: UNDEFINED
       USE param1, only: ZERO
-      use physprop, only: RO_g0
+      use physprop, only: RO_g0, RO_s0
 
       use discretelement
-      use physprop
 
       use bc
 
@@ -171,23 +170,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_MASS_OUTFLOW(M_TOT, SKIP, BCV)
 
+      USE bc
+      USE compar
+      USE cutcell
+      USE discretelement
+      USE error_manager
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE mfix_pic
       USE param
       USE param1
-      USE geometry
-      USE fldvar
       USE physprop
       USE run
-      USE bc
-      USE indices
-      USE funits
       USE scalars
-      USE compar
       USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE cutcell
-
-      use error_manager
 
       IMPLICIT NONE
 

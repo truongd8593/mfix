@@ -218,6 +218,90 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
+!  <description>U-shaped coil Radius 1 (used when quadric_form = UCOIL*), UCOIL_R1>UCOIL_R2 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      UCOIL_R1 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>U-shaped coil Radius 2 (used when quadric_form = UCOIL*), UCOIL_R1>UCOIL_R2 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      UCOIL_R2 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>U-shaped coil ymax (used when quadric_form = UCOIL*), UCOIL_Y2>UCOIL_Y1 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      UCOIL_Y1 = -UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>U-shaped coil ymin (used when quadric_form = UCOIL*), UCOIL_Y2>UCOIL_Y1 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      UCOIL_Y2 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Bend Radius 1 (used when quadric_form = BEND*), BEND_R1>BEND_R2 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      BEND_R1 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Bend Radius 2 (used when quadric_form = BEND*), BEND_R1>BEND_R2 .</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      BEND_R2 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Bend start angle, in degrees (used when quadric_form = BEND*).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      BEND_THETA1 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Bend end angle, in degrees (used when quadric_form = BEND*).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      BEND_THETA2 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Cylinder-cone_cylinder Radius 1 (used when quadric_form = C2C*).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      C2C_R1 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Cylinder-cone_cylinder Radius 2 (used when quadric_form = C2C*).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      C2C_R2 = ZERO
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Cylinder-cone_cylinder Y1 (used when quadric_form = C2C*). If Y1=Y2, then R1=R2.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      C2C_Y1 = -UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Cylinder-cone_cylinder Y2 (used when quadric_form = C2C*). If Y1=Y2, then R1=R2.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      C2C_Y2 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
 !  <description>X-component of normal vector defining the plane (used when quadric_form = plane)</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

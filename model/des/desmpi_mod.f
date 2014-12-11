@@ -87,10 +87,7 @@
          module procedure des_gather_l,des_gather_i,des_gather_d
       end interface
 
-
       contains
-
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_par_exchange
@@ -206,6 +203,10 @@
 !                    sets the flag related to periodic and processor interfaces
 !------------------------------------------------------------------------
       subroutine desmpi_init
+
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_GARG
+
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
@@ -263,7 +264,7 @@
 ! call node exchange init in case
 ! this could be needed if des_interp_on is true (i.e., drag is interpolated)
 ! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)
-      IF(DES_INTERP_ON.OR.DES_INTERP_MEAN_FIELDS) THEN
+      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG) THEN
          IF(DMP_LOG) WRITE(UNIT_LOG,'(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
          &setting the node indices &
          &for MPI communication', 'of nodal information needed for backward &
@@ -273,7 +274,7 @@
          &for MPI communication', 'of nodal information needed for backward &
          &interpolation'
          call des_setnodeindices
-         ENDIF
+      ENDIF
 
 
 ! set the communication flags
@@ -964,10 +965,12 @@
             lbuf = lbuf + 1
             pijk(llocpar,5) = drecvbuf(lbuf,pface)
             lbuf = lbuf + 1
-            des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
-            des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
-            if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)  !Added by Surya Oct 7, 2014
-            omega_old(:,llocpar)= omega_new(:,llocpar)
+            IF (DO_OLD) THEN
+               des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
+               des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
+               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)  !Added by Surya Oct 7, 2014
+               omega_old(:,llocpar)= omega_new(:,llocpar)
+            ENDIF
             des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
             des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
@@ -1042,10 +1045,13 @@
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
-            des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
-            des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
-            if(ENERGY_EQ)des_t_s_old(ispot) = des_t_s_new(ispot)
-            omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
+
+            IF (DO_OLD) THEN
+               des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
+               des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
+               if(ENERGY_EQ)des_t_s_old(ispot) = des_t_s_new(ispot)
+               omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
+            ENDIF
          enddo
       endif
 
@@ -1080,11 +1086,11 @@
                ighost_cnt = ighost_cnt-1
                pea(lcurpar,1:4) = .false.
                fc(:,lcurpar) = 0.0
-               pn(:,lcurpar) = 0 ; pv(:,lcurpar) = .false.
-               pn_wall(:,lcurpar) = 0 ; pv_wall(:,lcurpar) = .false.
-               pft_wall(lcurpar,:,:) = 0
                des_pos_new(:,lcurpar)=0
-               des_pos_old(:,lcurpar)=0
+               IF (DO_OLD) THEN
+                  des_pos_old(:,lcurpar)=0
+                  des_vel_old(:,lcurpar)=0
+               ENDIF
                des_vel_new(:,lcurpar)=0
                des_vel_old(:,lcurpar)=0
 
@@ -1102,7 +1108,6 @@
 
 
                omega_new(:,lcurpar)=0
-               neighbours(lcurpar,:)=0
             end do
          end do
       end do
@@ -1139,7 +1144,7 @@
 
 ! pack the particle crossing the boundary
       ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+7) + 15
+      lpacketsize = 9*dimn + ltordimn*4 + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
 
@@ -1180,11 +1185,7 @@
             dsendbuf(lbuf,pface) = pvol(lcurpar)        ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = pmass(lcurpar)       ;lbuf = lbuf+1
             dsendbuf(lbuf,pface) = omoi(lcurpar)        ;lbuf = lbuf+1
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-            lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
             lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf+dimn
@@ -1209,51 +1210,22 @@
             lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
+            IF (DO_OLD) THEN
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
+               lbuf = lbuf+ltordimn
+               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
+               lbuf = lbuf+dimn
+               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
+               lbuf = lbuf+ltordimn
+            ENDIF
             dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
             lbuf = lbuf+dimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
-
-! build the neighbour with global number and current and previous pijk
-            dsendbuf(lbuf,pface) = neighbours(lcurpar,1)
-            ltmpbuf = lbuf+1
-            do lneighindx = 2,neighbours(lcurpar,1)+1
-               lneigh = neighbours(lcurpar,lneighindx)
-               dsendbuf(ltmpbuf,pface) = iglobal_id(lneigh)
-               ltmpbuf = ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface))
-               ltmpbuf = ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface))
-               ltmpbuf = ltmpbuf+1
-            enddo
-
-            lbuf = lbuf+3*maxneighbors
-! build contact list with global number
-            dsendbuf(lbuf,pface) = pn(1,lcurpar);ltmpbuf=lbuf+1
-            do lcontactindx = 2,pn(1,lcurpar)+1
-               lcontact = pn(lcontactindx,lcurpar)
-               dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
-               ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = merge(1,0,pv(lcontactindx,lcurpar))
-               ltmpbuf=ltmpbuf+1
-            enddo
-            lbuf = lbuf+2*maxneighbors
-
-            dsendbuf(lbuf,pface) = pn_wall(1,lcurpar);ltmpbuf=lbuf+1
-            do lcontactindx = 2,pn_wall(1,lcurpar)+1
-               lcontact = pn_wall(lcontactindx,lcurpar)
-               dsendbuf(ltmpbuf,pface) = iglobal_id(lcontact)
-               ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf,pface) = merge(1,0,pv_wall(lcontactindx,lcurpar))
-               ltmpbuf=ltmpbuf+1
-               dsendbuf(ltmpbuf:ltmpbuf+dimn-1,pface) = pft_wall(lcurpar,lcontactindx,1:dimn)
-               ltmpbuf=ltmpbuf+dimn
-            enddo
-            lbuf = lbuf+(2+dimn)*maxneighbors
 
 ! In case of mppic remove the particles else
 ! Convert the particle as ghost and set the forces zero
@@ -1264,12 +1236,6 @@
                ighost_cnt = ighost_cnt + 1
             end if
             fc(:,lcurpar) = 0.
-            neighbours(lcurpar,:)=0
-            pn(:,lcurpar) = 0
-            pn_wall(:,lcurpar) = 0
-            pv(:,lcurpar) = .false.
-            pv_wall(:,lcurpar) = .false.
-            pft_wall(lcurpar,:,:) = 0
 
             lparcnt = lparcnt + 1
          end do
@@ -1361,7 +1327,7 @@
 
 ! loop through particles and locate them and make changes
       ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+7) + 15
+      lpacketsize = 9*dimn + ltordimn*4 + 15
       lparcnt = drecvbuf(1,pface)
 
 ! if mppic make sure enough space available
@@ -1413,11 +1379,7 @@
          lbuf = lbuf + 1
          omoi(llocpar)        = drecvbuf(lbuf,pface)
          lbuf = lbuf + 1
-         des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
          des_pos_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
          des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
@@ -1442,107 +1404,22 @@
          lbuf = lbuf + ltordimn
          omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
-         des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
+         IF (DO_OLD) THEN
+            des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
+            des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+            rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            lbuf = lbuf + ltordimn
+         ENDIF
          fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
          tow(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
-
-! get the neighbour id based on its global number, current and previous pijk and extensive search
-         neighbours(llocpar,1) = drecvbuf(lbuf,pface)
-         ltmpbuf=lbuf +1
-         lcount = 0
-         do lneighindx = 2,neighbours(llocpar,1)+1
-            lneighfound = .false.
-            lneighid = drecvbuf(ltmpbuf,pface)
-            ltmpbuf = ltmpbuf+1
-            lneighijk = drecvbuf(ltmpbuf,pface)
-            ltmpbuf = ltmpbuf+1
-            lneighprvijk = drecvbuf(ltmpbuf,pface)
-            ltmpbuf = ltmpbuf+1
-            lneighfound = locate_par(lneighid,lneighprvijk,lneigh)
-            if (.not.lneighfound) lneighfound = locate_par(lneighid,lneighijk,lneigh)
-            if (.not.lneighfound) lneighfound = exten_locate_par(lneighid,lparijk,lneigh)
-            if (.not.lneighfound) then
-               WRITE(*,701)
-               cycle
-            endif
-            lcount = lcount+1
-            neighbours(llocpar,lcount+1) = lneigh
-         enddo
-         neighbours(llocpar,1) = lcount
-         lbuf = lbuf+3*maxneighbors
-
-! loop through contact list and find local particle number using neighbor list
-         pn(1,llocpar) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
-         pv(1,llocpar) = .false.
-         lcount = 0
-         do lcontactindx = 2,pn(1,llocpar)+1
-            lcontactfound = .false.
-            lcontactid = drecvbuf(ltmpbuf,pface)
-            ltmpbuf=ltmpbuf+1
-            do lneighindx = 2,neighbours(llocpar,1)+1
-               if (iglobal_id(neighbours(llocpar,lneighindx)).eq.lcontactid) then
-                  lcontact = neighbours(llocpar,lneighindx)
-                  lcontactfound = .true.
-                  exit
-               endif
-            enddo
-            if (.not.lcontactfound) then
-!check for wall contact and if not print warning message
-               if(lcontactid .lt. 0) then
-                  lcontact = max_pip + (-1) * lcontactid
-               else
-                  WRITE(*,702) lcontactid
-                  ltmpbuf = ltmpbuf + 1 ! necessary as pv and pft not yet read for this particle
-                  cycle
-               endif
-            endif
-            lcount = lcount+1
-            pn(lcount+1,llocpar) = lcontact
-            pv(lcount+1,llocpar) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
-            ltmpbuf=ltmpbuf+1
-         enddo
-         pn(1,llocpar)=lcount
-         lbuf = lbuf+2*maxneighbors
-
-! loop through contact list and find local particle number using neighbor list
-         pn_wall(1,llocpar) = drecvbuf(lbuf,pface);ltmpbuf=lbuf+1
-         pv_wall(1,llocpar) = .false.
-         lcount = 0
-         do lcontactindx = 2,pn_wall(1,llocpar)+1
-            lcontactfound = .false.
-            lcontactid = drecvbuf(ltmpbuf,pface)
-            ltmpbuf=ltmpbuf+1
-            do lneighindx = 2,neighbours(llocpar,1)+1
-               if (iglobal_id(neighbours(llocpar,lneighindx)).eq.lcontactid) then
-                  lcontact = neighbours(llocpar,lneighindx)
-                  lcontactfound = .true.
-                  exit
-               endif
-            enddo
-            if (.not.lcontactfound) then
-!check for wall contact and if not print warning message
-               if(lcontactid .lt. 0) then
-                  lcontact = max_pip + (-1) * lcontactid
-               else
-                  WRITE(*,702) lcontactid
-                  ltmpbuf = ltmpbuf + 1 + dimn ! necessary as pv_wall and pft_wall not yet read for this particle
-                  cycle
-               endif
-            endif
-            lcount = lcount+1
-            pn_wall(lcount+1,llocpar) = lcontact
-            pv_wall(lcount+1,llocpar) = merge(.true.,.false.,drecvbuf(ltmpbuf,pface).gt.0.5)
-            ltmpbuf=ltmpbuf+1
-            pft_wall(llocpar,lcount+1,1:dimn) = drecvbuf(ltmpbuf:ltmpbuf+dimn-1,pface)
-            ltmpbuf=ltmpbuf+dimn
-         enddo
-         pn_wall(1,llocpar)=lcount
-         lbuf = lbuf+(2+dimn)*maxneighbors
 
       end do
 
@@ -1787,11 +1664,9 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer
-      do lm = 1,DES_MMAX
-         call des_exchangenode(drag_am(:,lm),padd=.true.)
-         do li =1,dimn
-            call des_exchangenode(drag_bm(:,li,lm),padd=.true.)
-         end do
+      call des_exchangenode(drag_am, padd=.true.)
+      do li =1,dimn
+         call des_exchangenode(drag_bm(:,li), padd=.true.)
       end do
 
 ! adjust for periodic boundaries with no domain decomposition
@@ -1800,10 +1675,10 @@
          do lj = jstart2,jend2
             lijkmin = funijk(1,lj,lk)
             lijkmax = funijk(imax1,lj,lk)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
@@ -1812,10 +1687,10 @@
          do li = istart2,iend2
             lijkmin = funijk(li,1,lk)
             lijkmax = funijk(li,jmax1,lk)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
@@ -1824,10 +1699,10 @@
          do lj = jstart2,jend2
             lijkmin = funijk(li,lj,1)
             lijkmax = funijk(li,lj,kmax1)
-            drag_am(lijkmin,:) = drag_am(lijkmin,:)+drag_am(lijkmax,:)
-            drag_bm(lijkmin,:,:) = drag_bm(lijkmin,:,:)+drag_bm(lijkmax,:,:)
-            drag_am(lijkmax,:) = drag_am(lijkmin,:)
-            drag_bm(lijkmax,:,:) = drag_bm(lijkmin,:,:)
+            drag_am(lijkmin) = drag_am(lijkmin)+drag_am(lijkmax)
+            drag_bm(lijkmin,:) = drag_bm(lijkmin,:)+drag_bm(lijkmax,:)
+            drag_am(lijkmax) = drag_am(lijkmin)
+            drag_bm(lijkmax,:) = drag_bm(lijkmin,:)
          end do
          end do
       end if
@@ -2092,85 +1967,6 @@
       enddo
       call des_mpi_barrier
 
-! loop through particles neighbour and contact list and find the local particles number
-      lparcnt = 1
-      do lcurpar =1,max_pip
-! pradeep skip ghost particles
-         if(lparcnt.gt.pip) exit
-         if(.not.pea(lcurpar,1)) cycle
-         lparcnt = lparcnt+1
-         if(pea(lcurpar,4)) cycle
-
-         lcurijk = dg_pijk(lcurpar)
-         lcount = 0
-         do lneighindx = 2,neighbours(lcurpar,1)+1
-            lneighfound = .false.
-            lneighid = neighbours(lcurpar,lneighindx)
-            lneighfound = locate_par(lneighid,lcurijk,lneigh)
-            if (.not.lneighfound) lneighfound = &
-               exten_locate_par(lneighid,lcurijk,lneigh)
-            if (.not.lneighfound) then
-               WRITE(*,800)
-               cycle
-            endif
-            lcount = lcount + 1
-            neighbours(lcurpar,lcount+1) = lneigh
-         enddo
-         neighbours(lcurpar,1) = lcount
-
-! loop through contact list and find local particle number using neighbor list
-         lcount = 0
-         do lcontactindx = 2,pn(1,lcurpar)+1
-            lcontactfound = .false.
-            lcontactid = pn(lcontactindx,lcurpar)
-            do lneighindx = 2,neighbours(lcurpar,1)+1
-               if (iglobal_id(neighbours(lcurpar,lneighindx)).eq.lcontactid) then
-                  lcontact = neighbours(lcurpar,lneighindx)
-                  lcontactfound = .true.
-                  exit
-               endif
-            enddo
-            if (.not.lcontactfound) then
-! check for wall contact and if not print warning message
-               if(lcontactid .lt. 0) then
-                  lcontact = max_pip + (-1) * lcontactid
-               else
-                  WRITE(*,801)
-                  cycle
-               endif
-            endif
-            lcount = lcount+1
-            pn(lcount+1,lcurpar) = lcontact
-         enddo
-         pn(1,lcurpar) = lcount
-
-! loop through contact list and find local particle number using neighbor list
-         lcount = 0
-         do lcontactindx = 2,pn_wall(1,lcurpar)+1
-            lcontactfound = .false.
-            lcontactid = pn_wall(lcontactindx,lcurpar)
-            do lneighindx = 2,neighbours(lcurpar,1)+1
-               if (iglobal_id(neighbours(lcurpar,lneighindx)).eq.lcontactid) then
-                  lcontact = neighbours(lcurpar,lneighindx)
-                  lcontactfound = .true.
-                  exit
-               endif
-            enddo
-            if (.not.lcontactfound) then
-! check for wall contact and if not print warning message
-               if(lcontactid .lt. 0) then
-                  lcontact = max_pip + (-1) * lcontactid
-               else
-                  WRITE(*,801)
-                  cycle
-               endif
-            endif
-            lcount = lcount+1
-            pn_wall(lcount+1,lcurpar) = lcontact
-         enddo
-         pn_wall(1,lcurpar) = lcount
-      enddo
-
  800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
          'WARNING: Unable to locate neighbor during restart (0)',/)
  801  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
@@ -2316,7 +2112,7 @@
           end do
       case (5)
          ltordimn = merge(1,3,NO_K)
-         lpacketsize = 9*dimn + ltordimn*4 + maxneighbors * (dimn+5) + 13
+         lpacketsize = 9*dimn + ltordimn*4 + 13
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
             lparcnt = dsendbuf(1,lface)
@@ -2406,23 +2202,10 @@
             if(pea(lcurpar,4)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
             write(44,*) "position new ", des_pos_new(:,lcurpar)
-            lcurijk = dg_pijk(lcurpar)
-            write(44,*) "Total Neighbours", neighbours(lcurpar,1)
-            do lneighindx = 2,neighbours(lcurpar,1)+1
-               write(44,*)"Neghibour ",neighbours(lcurpar,lneighindx)
-               write(44,*)"Neighbour par position",des_pos_new(:,neighbours(lcurpar,lneighindx))
-            end do
-            write(44,*) "Total contacts", pn(1,lcurpar)
-            do lcontactindx = 2,pn(1,lcurpar)+1
-               write(44,*)"contact ", pn(lcontactindx,lcurpar)
-               write(44,*)"incontact ", pv(lcontactindx,lcurpar)
-               write(44,*)"contact par position",des_pos_new(:,pn(lcontactindx,lcurpar))
-            end do
          end do
          write(44,*) "-----------------------------------------------"
       end select
       close(44)
       end subroutine des_dbgmpi
-
 
       end module

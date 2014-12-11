@@ -256,6 +256,9 @@
 !
 !                      Cell volume - scalar cell
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL
+
+!                      Total volume of cell's DES stencil neighbors
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  VOL_SURR
 !
 !                      East face area - U cell
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  AYZ_U

@@ -16,7 +16,7 @@
 
       integer s, indx(s)
 
-      double precision mi(s),sigmai(s),ni(s),n,rho, &
+      double precision mi(s),ni(s),rho, &
                       zeta0,theta(s),nu(s,s),DF(s,s)
 
       integer i,j,kk

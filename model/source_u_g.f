@@ -26,34 +26,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE scales
+      USE bc
+      USE bodyforce
+      USE compar
       USE constant
-      USE physprop
+      USE cutcell
+      USE drag
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
+      USE fun_avg
+      USE functions
       USE geometry
+      USE ghdtheory
       USE indices
       USE is
-      USE tau_g
-      USE bc
-      USE compar
-      USE sendrecv
-      USE ghdtheory
-      USE drag
-      USE cutcell
-      USE quadric
+      USE matrix
       USE mms
-      USE bodyforce
-      USE fun_avg
-      USE fldvar, ONLY: EP_s
-      USE functions
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE rxns
+      USE scales
+      USE sendrecv
+      USE tau_g
+      USE toleranc
+      USE visc_g
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -110,13 +110,13 @@
       IF (.NOT.MOMENTUM_X_EQ(0)) RETURN
 
 
-!$omp  parallel do default(shared)                                   &
-!$omp  private(I, J, K, IJK, IJKE, IJKM, IPJK, IMJK, IPJKM,          &
-!$omp          IJMK, IPJMK, IJPK, IJKP, EPGA, PGE, SDP, ROPGA,       &
-!$omp           ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,          &
-!$omp           U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse,        &
-!$omp           Usb, Ust, F_vir, WGE, Vcf, EPMUGA, VTZA,             &
-!$omp           Ghd_drag, L, MM, avgRop, HYS_drag, avgDrag)
+!!$omp  parallel do default(shared)                                   &
+!!$omp  private(I, J, K, IJK, IJKE, IJKM, IPJK, IMJK, IPJKM,          &
+!!$omp          IJMK, IPJMK, IJPK, IJKP, EPGA, PGE, SDP, ROPGA,       &
+!!$omp           ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,          &
+!!$omp           U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse,        &
+!!$omp           Usb, Ust, F_vir, WGE, Vcf, EPMUGA, VTZA,             &
+!!$omp           Ghd_drag, L, MM, avgRop, HYS_drag, avgDrag)
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -343,7 +343,7 @@
                B_M(IJK,M) - MMS_U_G_SRC(IJK)*VOL_U(IJK)
          ENDIF   ! end branching on cell type (ip/dilute/block/else branches)
       ENDDO   ! end do loop over ijk
-!$omp end parallel do
+!!$omp end parallel do
 
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)

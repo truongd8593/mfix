@@ -46,17 +46,8 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,R,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N,R,IJK
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
 
       INTEGER :: SPECIES_COUNTER,LT
@@ -64,17 +55,13 @@
       CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
 
       IF(.NOT.CARTESIAN_GRID) RETURN
-
-      DX(IEND3+1) = DX(IEND3)
-      DY(JEND3+1) = DY(JEND3)
-      DZ(KEND3+1) = DZ(KEND3)
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
@@ -407,9 +394,6 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
 
@@ -428,9 +412,6 @@
          FRAME = FRAME + 1
       ENDIF
 
-
-
-
       IF (BDIST_IO) THEN
 ! For distributed I/O, define the file name for each processor
          IF(TIME_DEPENDENT_FILENAME) THEN
@@ -447,7 +428,6 @@
             ENDIF
          END IF
       END IF
-
 
 ! Add the VTU directory path if necessary
 
@@ -506,11 +486,6 @@
       BUFFER='  <UnstructuredGrid>'
       WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-
-
-
-
-
 ! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
 ! this is a simple ASCII file
 
@@ -533,15 +508,13 @@
 
          WRITE(PVTU_UNIT,100) '  <PUnstructuredGrid GhostLevel="0">'
          WRITE(PVTU_UNIT,100) '      <PPoints>'
-         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset=" 0" />'
+         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+              &format="appended" offset=" 0" />'
          WRITE(PVTU_UNIT,100) '      </PPoints>'
          WRITE(PVTU_UNIT,100) ''
          WRITE(PVTU_UNIT,100) '      <PCellData Scalars="scalars">'
 
-
       ENDIF
-
-
 
 100   FORMAT(A)
 110   FORMAT(A,E14.7,A)
@@ -558,10 +531,6 @@
       RETURN
 
       END SUBROUTINE OPEN_VTU_FILE_BIN
-
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -599,15 +568,12 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET,OFFSET
+      INTEGER :: IJK,L
+      INTEGER :: OFFSET
 
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
       INTEGER :: CELL_TYPE
 
-      REAL(4) :: float,SP_X,SP_Y,SP_Z
+      REAL(4) :: float
       INTEGER :: int
 
       INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
@@ -668,7 +634,8 @@
             WRITE(BUFFER,110)'      <Points>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset="',offset_xyz,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+                 &format="appended" offset="',offset_xyz,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'      </Points>'
@@ -677,7 +644,8 @@
             WRITE(BUFFER,110)'      <Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="',offset_connectivity,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="', &
+                 offset_connectivity,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,100)'        <DataArray type="Int32" Name="offsets" format="appended" offset="',offset_offset,'" />'
@@ -720,16 +688,19 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)
 
 ! X,Y,Z coordinates
-            WRITE(VTU_UNIT) nbytes_xyz,(REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK))), IJK = 1,IJKMAX3), &
-                                       (REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK)),IJK = 1,&
-                                        GLOBAL_NUMBER_OF_NEW_POINTS)
+            WRITE(VTU_UNIT) nbytes_xyz, &
+                 (REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK))), IJK = 1,IJKMAX3), &
+                 (REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK)),IJK = 1, &
+                 GLOBAL_NUMBER_OF_NEW_POINTS)
 
 ! Conectivity
             WRITE(VTU_UNIT) nbytes_connectivity
 
             DO IJK = 1,IJKMAX3
                IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                     WRITE(VTU_UNIT) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+                  ENDIF
                ENDIF
             END DO
 
@@ -808,8 +779,6 @@
          offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
          offset_type         = offset_offset       + sizeof(int) + nbytes_offset
 
-
-
          IF(PASS==WRITE_HEADER) THEN
 
             WRITE(BUFFER,100)'    <Piece NumberOfPoints="',NUMBER_OF_POINTS,'" NumberOfCells="',NUMBER_OF_VTK_CELLS,'" >'
@@ -818,7 +787,8 @@
             WRITE(BUFFER,110)'      <Points>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" format="appended" offset="',offset_xyz,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+                 &format="appended" offset="',offset_xyz,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,110)'      </Points>'
@@ -828,7 +798,8 @@
             WRITE(BUFFER,110)'      <Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="',offset_connectivity,'" />'
+            WRITE(BUFFER,100)'        <DataArray type="Int32" Name="connectivity" format="appended" offset="', &
+                 offset_connectivity,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             WRITE(BUFFER,100)'        <DataArray type="Int32" Name="offsets" format="appended" offset="',offset_offset,'" />'
@@ -840,7 +811,8 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type  ! Store offset for first variable to be written
+            ! Store offset for first variable to be written
+            VTU_offset =  offset_type       + sizeof(int) + nbytes_type
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -921,8 +893,6 @@
 
 100   FORMAT(A,I12,A,I12,A)
 110   FORMAT(A)
-120   FORMAT(10X,3(E16.8E3,2X))
-130   FORMAT(10X,15(I12,2X))
 
       RETURN
 
@@ -965,15 +935,13 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-
-      INTEGER :: int
       REAL(4) :: float
 
       INTEGER :: nbytes_scalar
@@ -995,7 +963,8 @@
                IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
             ENDDO
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
@@ -1046,7 +1015,8 @@
                IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
             ENDDO
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1068,7 +1038,8 @@
 
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,90) '        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(PVTU_UNIT,90) '        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
          ENDIF
 
 
@@ -1079,9 +1050,6 @@
 
 10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
-100   FORMAT(A)
-110   FORMAT(A,A,A)
-120   FORMAT(10X,E16.8E3)
 
       RETURN
 
@@ -1123,15 +1091,13 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-
-      INTEGER :: int
       REAL(4) :: float
 
       INTEGER :: nbytes_vector
@@ -1147,7 +1113,8 @@
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1190,8 +1157,10 @@
             WRITE(VTU_UNIT) nbytes_vector
 
             DO IJK = 1,IJKMAX3
-               IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT) REAL(GLOBAL_VARX(IJK)),REAL(GLOBAL_VARY(IJK)),REAL(GLOBAL_VARZ(IJK))
+               IF (GLOBAL_INTERIOR_CELL_AT(IJK)) THEN
+                  IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                     WRITE(VTU_UNIT) REAL(GLOBAL_VARX(IJK)),REAL(GLOBAL_VARY(IJK)),REAL(GLOBAL_VARZ(IJK))
+                  ENDIF
                ENDIF
             ENDDO
 
@@ -1212,7 +1181,8 @@
 !           For each vector, write a tag, with corresponding offset
 
 
-            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
@@ -1234,7 +1204,8 @@
 
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,90)'        <DataArray type="Float32" Name="',TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(PVTU_UNIT,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
          ENDIF
 
       ENDIF
@@ -1244,17 +1215,10 @@
 
 10    FORMAT(A)
 90    FORMAT(A,A,A,I12,A)
-100   FORMAT(A)
-110   FORMAT(A,A,A)
-120   FORMAT(10X,3(E16.8E3,2X))
-
 
       RETURN
 
       END SUBROUTINE WRITE_VECTOR_IN_VTU_BIN
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1374,23 +1338,14 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N,IJK
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       INTEGER :: SPECIES_COUNTER,LT
 
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC,IJK_ARRAY
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -1683,9 +1638,6 @@
       use functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT
 
@@ -1839,13 +1791,9 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
-      LOGICAL :: PVD_EXISTS,VTU_FRAME_FILE_EXISTS
+      LOGICAL :: PVD_EXISTS
 
       IF (myPE /= PE_IO) RETURN
-
 
       PVD_FILENAME = TRIM(RUN_NAME) // '.pvd'
 
@@ -1858,8 +1806,8 @@
 
       IF(.NOT.PVD_FILE_INITIALIZED) THEN
 
-         IF(RUN_TYPE == 'NEW')THEN
-            ! For a new run, the pvd file should not exist, and is created with appropriate header
+         IF(RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2')THEN
+            ! For a new or RESTART_2 run, the pvd file should not exist, and is created with appropriate header
             IF (.NOT.PVD_EXISTS) THEN
                OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
                WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
@@ -1873,7 +1821,7 @@
                CALL MFIX_EXIT(myPE)
             ENDIF
          ELSE
-            ! For a restart run, the pvd file must exist
+            ! For a restart_1 run, the pvd file must exist
             IF (.NOT.PVD_EXISTS) THEN
                ! If the pvd file does not exist, print error message and exits
                WRITE(*,1003) TRIM(PVD_FILENAME)
@@ -1887,7 +1835,9 @@
                PVD_FILE_INITIALIZED=.TRUE.
             ENDIF
          ENDIF
-      ELSE ! When properly initialized, open the file and go to the bottom of the file and prepare to append data (remove last two lines)
+      ELSE
+         ! When properly initialized, open the file and go to the
+         ! bottom of the file and prepare to append data (remove last two lines)
          OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
@@ -1906,21 +1856,9 @@
            ' and must be present for a restart run.',/10X,              &
          'Terminating run.',/1X,70('*')/)
 
-1004  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/10X,                              &
-         ' (from ',A,').',/1X,70('*')/)
-
-1005  FORMAT(/1X,70('*')/,' From: OPEN_PVD_FILE',/,' Message: ',       &
-         ' Current VTU frame is ',I10,/10X,                              &
-           ' (from mfix.dat).',/1X,70('*')/)
-
-
-
       RETURN
 
       END SUBROUTINE OPEN_PVD_FILE
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1958,12 +1896,8 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET,OFFSET
-
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+      INTEGER :: IJK,L
+      INTEGER :: OFFSET
       INTEGER :: CELL_TYPE
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
@@ -1990,7 +1924,9 @@
 
          DO IJK = 1,IJKMAX3
             IF (GLOBAL_INTERIOR_CELL_AT(IJK))      THEN
-               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT,130) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK)) THEN
+                  WRITE(VTU_UNIT,130) (GLOBAL_CONNECTIVITY(IJK,L)-1,L=1,GLOBAL_NUMBER_OF_NODES(IJK))
+               ENDIF
             ENDIF
          END DO
 
@@ -2144,7 +2080,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
@@ -2250,7 +2186,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
@@ -2300,7 +2236,8 @@
          WRITE(VTU_UNIT,100) '        </DataArray>'
 
          IF (myPE == PE_IO) THEN       ! Update pvtu file with variable name
-            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="',TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii"/>'
+            WRITE(PVTU_UNIT,110) '        <PDataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" NumberOfComponents="3"  format="ascii"/>'
          ENDIF
 
       ENDIF
@@ -2493,23 +2430,14 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,M,N,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
+      INTEGER :: I,J,K,L,M,N
 
-      INTEGER sw,se,ne,nw
-      INTEGER, DIMENSION(10) :: additional_node
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  X_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Y_OF
-      DOUBLE PRECISION, DIMENSION(2*DIMENSION_3) ::  Z_OF
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_E_ADD_NODE
-      INTEGER, DIMENSION(DIMENSION_3) ::  INDEX_OF_N_ADD_NODE
       INTEGER :: SPECIES_COUNTER,LT
 
       CHARACTER (LEN=32) :: SUBM,SUBN
       CHARACTER (LEN=64) :: VAR_NAME
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, COUNT_DES_BC
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID
 
       IF(.NOT.CARTESIAN_GRID) RETURN
 
@@ -2738,9 +2666,6 @@
       USE functions
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: Xw,Xe,Yn,Ys
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2829,12 +2754,7 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET
-
-      INTEGER :: iproc,IERR
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+      INTEGER :: IJK,L
 
       IF (myPE /= PE_IO) RETURN
 
@@ -2924,7 +2844,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,L
+      INTEGER :: I,IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VAR
@@ -2999,7 +2919,7 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: IJK,L
+      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  VARX,VARY,VARZ
@@ -3107,15 +3027,14 @@
 
       IMPLICIT NONE
 
-      INTEGER :: I,J,K,L,IM,JM,KM,IP,JP,KP,IJK,NODE
-      INTEGER :: IMJK,IJMK,IJKM,IMJMK,IMJKM,IJMKM,IMJMKM
-      INTEGER :: POINT_ID,POLY_COUNT,FACE_ID,Q_ID,Q_ID2
-      INTEGER :: N_CUT_FACE_NODES,BCID2
+      INTEGER :: L,IJK,NODE
+      INTEGER :: POINT_ID,POLY_COUNT,FACE_ID,Q_ID
+      INTEGER :: N_CUT_FACE_NODES
 
       INTEGER NUMBER_OF_FACES
       INTEGER NUMBER_OF_SURFACE_POINTS
 
-      DOUBLE PRECISION, DIMENSION(15,3) :: COORD_CUT_FACE_NODES
+      DOUBLE PRECISION, DIMENSION(3,15) :: COORD_CUT_FACE_NODES
       DOUBLE PRECISION, DIMENSION(3)    :: NORMAL
 
       INTEGER, DIMENSION(DIMENSION_MAX_CUT_CELL,6) ::  FACE_CONNECTIVITY
@@ -3125,9 +3044,9 @@
       DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) ::  Y_FACE_POINT
       DOUBLE PRECISION, DIMENSION(DIMENSION_MAX_CUT_CELL) ::  Z_FACE_POINT
 
-      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY,F2
+      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
 
-      LOGICAL :: CLIP_FLAG,INTERSECT_FLAG,PRINT_FLAG
+      LOGICAL :: CLIP_FLAG
 
       CHARACTER (LEN=32) :: FILENAME
 
@@ -3178,17 +3097,14 @@
 
                         IF (GLOBAL_SNAP(IJK_OF_NODE(NODE))) THEN ! One of the snapped corner point which now belongs to the cut face
                            N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-                           COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+                           COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+                           COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+                           COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
                         ENDIF
                      ENDIF
                   END DO
 
                ENDIF
-
-
-
 
                IF(CORNER_POINT) THEN
                   Q_ID = 1
@@ -3208,9 +3124,9 @@
 
                IF (ABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
                   N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,1) = X_COPY
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,2) = Y_COPY
-                  COORD_CUT_FACE_NODES(N_CUT_FACE_NODES,3) = Z_COPY
+                  COORD_CUT_FACE_NODES(1,N_CUT_FACE_NODES) = X_COPY
+                  COORD_CUT_FACE_NODES(2,N_CUT_FACE_NODES) = Y_COPY
+                  COORD_CUT_FACE_NODES(3,N_CUT_FACE_NODES) = Z_COPY
                ENDIF
 
             END DO
@@ -3232,17 +3148,15 @@
                   CALL MFIX_EXIT(myPE)
                ENDIF
 
-               X_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,1)
-               Y_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,2)
-               Z_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(NODE,3)
+               X_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(1,NODE)
+               Y_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(2,NODE)
+               Z_FACE_POINT(NUMBER_OF_SURFACE_POINTS) = COORD_CUT_FACE_NODES(3,NODE)
                FACE_CONNECTIVITY(NUMBER_OF_FACES,NODE) = NUMBER_OF_SURFACE_POINTS
             ENDDO
 
          ENDIF
 
       END DO
-
-
 
       FILENAME= TRIM(RUN_NAME) // '_boundary.vtk'
       FILENAME = TRIM(FILENAME)
@@ -3290,10 +3204,6 @@
 1020  FORMAT(3(E16.8,2X))
 1030  FORMAT(A,2(I8,2X))
 1040  FORMAT(20(I8,2X))
-1050  FORMAT(A,I8)
-1060  FORMAT(E16.8)
-1070  FORMAT(3(E16.8,2X))
-1080  FORMAT(I5)
 3000  FORMAT(1X,A)
 3010  FORMAT(1X,A,F8.4)
 3020  FORMAT(1X,A,I8)
@@ -3438,8 +3348,9 @@
       ENDDO
 
 
-      GLOBAL_INTERIOR_CELL_AT  = .FALSE.
-      GLOBAL_BLOCKED_CELL_AT   = .FALSE.
+      GLOBAL_INTERIOR_CELL_AT = .FALSE.
+      GLOBAL_BLOCKED_CELL_AT  = .FALSE.
+      GLOBAL_CUT_CELL_AT      = .FALSE.
       call gather (I_OF,GLOBAL_I_OF,root)
       call gather (J_OF,GLOBAL_J_OF,root)
       call gather (K_OF,GLOBAL_K_OF,root)
@@ -3528,10 +3439,9 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,L
-      INTEGER :: IJK_OFFSET
+      INTEGER :: IJK
 
-      INTEGER :: iproc,IERR
+      INTEGER :: IERR
 
       DOUBLE PRECISION :: MIN_VOL, MAX_VOL, GLOBAL_MIN_VOL,GLOBAL_MAX_VOL
       DOUBLE PRECISION :: MIN_AYZ, MAX_AYZ, GLOBAL_MIN_AYZ,GLOBAL_MAX_AYZ
@@ -4166,6 +4076,5 @@
       ENDIF
 
       RETURN
-
 
       END SUBROUTINE PRINT_GRID_STATISTICS

@@ -187,15 +187,17 @@
             PIJK(count_part,1:4) = part%cell(1:4)
             PIJK(count_part,5) = part%M
             phase  = part%M
-            des_vel_old(:, count_part) = des_vel_new(:, count_part)
-            des_pos_old(:, count_part) = des_pos_new(:, count_part)
+            IF (DO_OLD) THEN
+               des_vel_old(:, count_part) = des_vel_new(:, count_part)
+               des_pos_old(:, count_part) = des_pos_new(:, count_part)
+            ENDIF
 
             PEA(count_part,1) = .TRUE.
 
             IF(SOLIDS_MODEL(phase).eq.'PIC') then
                DES_STAT_WT(count_part) = part%STATWT
             ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
-               OMEGA_OLD(:, count_part) = zero
+               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
                OMEGA_NEW(:, count_part) = zero
             ENDIF
 
@@ -228,16 +230,15 @@
       SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
+      USE calc_collision_wall
+      USE compar
+      USE cutcell, only : cut_cell_at
       USE des_linked_list_funcs
       USE discretelement, only: dimn
-
-      USE cutcell, only : cut_cell_at
-      USE softspring_funcs_cutcell
-      USE indices
-      USE geometry
-      USE compar
       USE error_manager
       USE functions
+      USE geometry
+      USE indices
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -475,7 +476,6 @@
       USE randomno
       USE mpi_utility
 
-      USE compar
       use error_manager
 
 
@@ -1355,9 +1355,9 @@
       part => orig_part_list
       DO WHILE (ASSOCIATED(part))
          if(part%INDOMAIN.and.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-            write (vtp_unit,"(15x,es12.6)") (real(2.d0*part%rad))
+            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
          endif
          part => part%next
       ENDDO

@@ -66,6 +66,7 @@
       USE discretelement
       USE rxns
       USE mfix_pic
+      use particle_filter
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -678,15 +679,15 @@
          '                        UR_FAC',2X,'LEQ_IT','  LEQ_METHOD',&
          '  LEQ_SWEEP', '  LEQ_TOL', '    LEQ_PC', '  DISCRETIZE')
  1159 FORMAT(9X,&
-         'Fluid cont.  and P_g  = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'Solids cont. and P_s  = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'U velocity            = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'V velocity            = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'W velocity            = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'Energy                = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'Species               = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'Granular Energy       = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
-         'User scalar           = ',F5.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/)
+         'Fluid cont.  and P_g  = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Solids cont. and P_s  = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'U velocity            = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'V velocity            = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'W velocity            = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Energy                = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Species               = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'Granular Energy       = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/9X,&
+         'User scalar           = ',F6.3,2X,I4,6X,A8,5x,A4,4X,G11.4,3X,A4,3X,A12/)
  1190 FORMAT(7X,1A20,'- C(',I2,') = ',G12.5)
 !
  1200 FORMAT(//,3X,'3. GEOMETRY AND DISCRETIZATION',/)

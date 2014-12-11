@@ -28,6 +28,7 @@
       USE des_thermo
       USE des_rxns
       USE pic_bc
+      USE particle_filter
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -247,8 +248,8 @@
 
 !<keyword category="Discrete Element Simulation" required="false">
 !  <description>
-!    Use an interpolation suite to calculate the drag force on each
-!    particle based on particle location rather than cell averages.
+!    Use interpolate to calculate field variables at the particle's
+!    position when evaluating fuild-particle interactions.
 !  </description>
       DES_INTERP_ON = .FALSE.
 !</keyword>
@@ -256,16 +257,30 @@
 !<keyword category="Discrete Element Simulation" required="false">
 !  <description>
 !    Use interpolation to compute dispersed phase average fields, such
-!    as, solids volume fraction, solids velocity fields. If false, the
-!    average fields are obtained by simple arithmetic averaging.
+!    as, solids volume fraction. This is enabled automatically when
+!    using particle interpolation (DES_INTERP_ON), when using the
+!    MPPIC solids model, or the DES cut-cell implementation.
 !  </description>
-!  <valid value=".true." note="If drag is interpolated
-! (i.e., DES_INTERP_ON = .TRUE.), then it is forced to
-! true for backward compatibility.
-! Additionally, if MPPIC or Cut-cells are used (DEM or MPPIC), then
-! also the mean field interpolation is forced. "/>
-      DES_INTERP_MEAN_FIELDS = .false.
+!  <valid value=".TRUE." 
+!    note="Use interpolation to calculate field quantities."/>
+!  <valid value=".FALSE."
+!    note="Use cell-based averaging to calculate field quantities."/>
+      DES_INTERP_MEAN_FIELDS = .FALSE.
 !</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false">
+!  <description>
+!    Solve a diffusion equation to smooth Lagrangian data mapped to
+!    the Eulerian grid (e.g., volume fraction).
+!  </description>
+      DES_DIFFUSE_MEAN_FIELDS = .FALSE.
+!</keyword>
+
+
+      DES_INTERP_SCHEME = 'NONE'
+      FILTER_WIDTH = UNDEFINED
+      EXPLICITLY_COUPLED = .FALSE.
 
 !<keyword category="Discrete Element Simulation" required="false" dem="true">
 !  <description>
@@ -361,16 +376,6 @@
 !  </description>
       FACTOR_RLM = 1.2
 !</keyword>
-
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Maximum number of neighbors per particle.
-!  </description>
-!  <range min="0" max="+Inf" />
-      MN = 10
-!</keyword>
-
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
@@ -662,27 +667,6 @@
 !  <dependent keyword="USE_COHESION" value=".TRUE."/>
       Asperities = ZERO
 !</keyword>
-
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Flag to turn on runtime cluster data calculations. These routines
-!    are very time consuming and can dramatically slow down simulations.
-!  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-      DES_CALC_CLUSTER = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    The physical distance relative to a particle for performing cluster
-!    statistics calculations.
-!  </description>
-!  <conflict keyword="MPPIC" value=".TRUE."/>
-!  <dependent keyword="DES_CALC_CLUSTER" value=".TRUE."/>
-      CLUSTER_LENGTH_CUTOFF = UNDEFINED
-!</keyword>
-
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>

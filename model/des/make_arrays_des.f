@@ -7,32 +7,44 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MAKE_ARRAYS_DES
 
-      USE param1
-      USE funits
-      USE run
+      USE calc_collision_wall
       USE compar
-      USE discretelement
       USE cutcell
-      USE desmpi
-      USE mpi_utility
-      USE geometry
       USE des_rxns
-      USE des_thermo
       USE des_stl_functions
-      use error_manager
+      USE des_thermo
+      USE desgrid
+      USE desmpi
+      USE discretelement
+      USE error_manager
       USE functions
+      USE funits
+      USE geometry
+      USE mpi_utility
+      USE param1
+      USE run
+      USE stl
+      use desmpi, only: DES_PAR_EXCHANGE
+
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
       INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
+      INTEGER :: CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
+      INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
       INTEGER :: FACTOR
 
 ! MPPIC related quantities
       DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
+
+! Check interpolation input.
+      CALL SET_FILTER_DES
 
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
@@ -41,6 +53,128 @@
 ! since it relies on setting/checking of des_mio
       call desgrid_init
       call desmpi_init
+
+
+! Setup DES boundaries.
+      IF(DISCRETE_ELEMENT) then
+         CALL DES_STL_PREPROCESSING
+         IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
+            IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
+         ENDIF
+      ENDIF
+
+      VOL_SURR(:) = ZERO
+
+      ! initialize VOL_SURR array
+      DO K = KSTART2, KEND1
+         DO J = JSTART2, JEND1
+            DO I = ISTART2, IEND1
+               IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+               IJK = funijk(I,J,K)
+               I1 = I
+               I2 = I+1
+               J1 = J
+               J2 = J+1
+               K1 = K
+               K2 = merge(K, K+1, NO_K)
+
+! looping over stencil points (node values)
+               DO KK = K1, K2
+                  DO JJ = J1, J2
+                     DO II = I1, I2
+                        IF (DEAD_CELL_AT(II,JJ,KK)) CYCLE  ! skip dead cells
+                        IJK2 = funijk_map_c(II, JJ, KK)
+                        IF(FLUID_AT(IJK2)) VOL_SURR(IJK) = &
+                           VOL_SURR(IJK)+VOL(IJK2)
+                     ENDDO
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+
+      VERTEX(1,:,WEST_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,WEST_FACEID) = (/zero, 2*YLENGTH, zero/)
+      VERTEX(3,:,WEST_FACEID) = (/zero, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,EAST_FACEID) = (/XLENGTH, zero, zero/)
+      VERTEX(2,:,EAST_FACEID) = (/XLENGTH, 2*YLENGTH, zero/)
+      VERTEX(3,:,EAST_FACEID) = (/XLENGTH, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,SOUTH_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,SOUTH_FACEID) = (/2*XLENGTH, zero, zero/)
+      VERTEX(3,:,SOUTH_FACEID) = (/zero, zero, 2*ZLENGTH/)
+
+      VERTEX(1,:,NORTH_FACEID) = (/zero, YLENGTH, zero/)
+      VERTEX(2,:,NORTH_FACEID) = (/2*XLENGTH, YLENGTH, zero/)
+      VERTEX(3,:,NORTH_FACEID) = (/zero, YLENGTH, 2*ZLENGTH/)
+
+      VERTEX(1,:,BOTTOM_FACEID) = (/zero, zero, zero/)
+      VERTEX(2,:,BOTTOM_FACEID) = (/2*XLENGTH, zero, zero/)
+      VERTEX(3,:,BOTTOM_FACEID) = (/zero, 2*YLENGTH, zero/)
+
+      VERTEX(1,:,TOP_FACEID) = (/zero, zero, ZLENGTH/)
+      VERTEX(2,:,TOP_FACEID) = (/2*XLENGTH, zero, ZLENGTH/)
+      VERTEX(3,:,TOP_FACEID) = (/zero, 2*YLENGTH, ZLENGTH/)
+
+
+      NORM_FACE(:,WEST_FACEID) = (/one, zero, zero/)
+      NORM_FACE(:,EAST_FACEID) = (/-one, zero, zero/)
+      NORM_FACE(:,SOUTH_FACEID) = (/zero, one, zero/)
+      NORM_FACE(:,NORTH_FACEID) = (/zero, -one, zero/)
+      NORM_FACE(:,BOTTOM_FACEID) = (/zero, zero, one/)
+      NORM_FACE(:,TOP_FACEID) = (/zero, zero, -one/)
+
+
+      STL_FACET_TYPE(WEST_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(EAST_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(NORTH_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(SOUTH_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(TOP_FACEID) = FACET_TYPE_NORMAL
+      STL_FACET_TYPE(BOTTOM_FACEID) = FACET_TYPE_NORMAL
+
+      ! initialize CELLNEIGHBOR_FACET array
+      DO CELL_ID = DG_IJKSTART2, DG_IJKEND2
+
+         I_CELL = DG_IOF_GL(CELL_ID)
+         J_CELL = DG_JOF_GL(CELL_ID)
+         K_CELL = DG_KOF_GL(CELL_ID)
+
+         IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
+         IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
+
+         JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
+         JMINUS1 =  MAX (J_CELL - 1, DG_JSTART2)
+
+         KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
+         KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
+
+         IJK = DG_FUNIJK(I_CELL,J_CELL,K_CELL)
+
+         IF(I_CELL == DG_IMIN1) CALL ADD_FACET(CELL_ID,WEST_FACEID)
+         IF(I_CELL == DG_IMAX1) CALL ADD_FACET(CELL_ID,EAST_FACEID)
+
+         IF(J_CELL == DG_JMIN1) CALL ADD_FACET(CELL_ID,SOUTH_FACEID)
+         IF(J_CELL == DG_JMAX1) CALL ADD_FACET(CELL_ID,NORTH_FACEID)
+
+         IF (DO_K) THEN
+            IF(K_CELL == DG_KMIN1) CALL ADD_FACET(CELL_ID,BOTTOM_FACEID)
+            IF(K_CELL == DG_KMAX1) CALL ADD_FACET(CELL_ID,TOP_FACEID)
+         ENDIF
+
+         DO KK = KMINUS1, KPLUS1
+            DO JJ = JMINUS1, JPLUS1
+               DO II = IMINUS1, IPLUS1
+                  IJK = DG_FUNIJK(II,JJ,KK)
+
+                  DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+                     NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+                     CALL ADD_FACET(CELL_ID,NF)
+                  ENDDO
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
 
 ! Set the initial particle data.
       IF(RUN_TYPE == 'NEW') THEN
@@ -68,10 +202,13 @@
          call global_all_max(imax_global_id)
 
 ! Initialize old values
-         omega_old(:,:)   = zero
          omega_new(:,:)   = zero
-         des_pos_old(:,:) = des_pos_new(:,:)
-         des_vel_old(:,:) = des_vel_new(:,:)
+
+         IF (DO_OLD) THEN
+            omega_old(:,:)   = zero
+            des_pos_old(:,:) = des_pos_new(:,:)
+            des_vel_old(:,:) = des_vel_new(:,:)
+         ENDIF
 
 ! Read the restart file.
       ELSEIF(RUN_TYPE == 'RESTART_1') THEN
@@ -81,9 +218,11 @@
          call global_all_max(imax_global_id)
 
 ! Initizlie the old values.
-         omega_old(:,:)   = omega_new(:,:)
-         des_pos_old(:,:) = des_pos_new(:,:)
-         des_vel_old(:,:) = des_vel_new(:,:)
+         IF (DO_OLD) THEN
+            omega_old(:,:)   = omega_new(:,:)
+            des_pos_old(:,:) = des_pos_new(:,:)
+            des_vel_old(:,:) = des_vel_new(:,:)
+         ENDIF
          IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
       ELSE
@@ -120,6 +259,7 @@
 
 ! do_nsearch should be set before calling particle in cell
       DO_NSEARCH =.TRUE.
+      CALL DES_PAR_EXCHANGE
       CALL PARTICLES_IN_CELL
 
       IF(DEM_SOLIDS) THEN
@@ -127,6 +267,10 @@
          CALL INIT_SETTLING_DEM
       ENDIF
 
+! Calculate interpolation weights
+      CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields using either interpolation or cell averaging.
+      CALL COMP_MEAN_FIELDS
 
       IF(MPPIC) CALL CALC_DTPIC
 

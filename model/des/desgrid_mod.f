@@ -546,8 +546,8 @@
       end if
 
 ! redfine the array of dg_pic
-!$omp parallel do default(shared)                               &
-!$omp private(lijk,lcurpic) schedule (guided,50)
+!!$omp parallel do default(shared)                               &
+!!$omp private(lijk,lcurpic) schedule (guided,50)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
          if(dg_pic(lijk)%isize.ne.lcurpic) then
@@ -556,7 +556,7 @@
             dg_pic(lijk)%isize = lcurpic
          end if
       end do
-!$omp end parallel do
+!!$omp end parallel do
 
 
 ! assign the particle info in pic array
@@ -671,15 +671,6 @@
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if(lneighcnt .gt. MN) then
-                  write(*,'(A,I7,A,I3,A)') 'Particle ', &
-                     IGLOBAL_ID(LCURPAR), &
-                     'has more than allowed maximum ', MN, &
-                     'neighbours'
-                  call des_mpi_stop
-               end if
-               neighbours(lcurpar,1) = lneighcnt
-               neighbours(lcurpar,lneighcnt+1) = lneigh
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
                   call collision_add(lcurpar, lneigh)
                endif

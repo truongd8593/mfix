@@ -4,11 +4,11 @@
       Implicit none
       DOUBLE PRECISION Ahigh(7), Alow(7)
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
-      DOUBLE PRECISION Cp1, Cp2, h1, h2, T, Hf298oR
+      DOUBLE PRECISION Cp1, h1, h2, Hf298oR
       DOUBLE PRECISION, EXTERNAL :: calc_CpoR, calc_H0oR
       CHARACTER(LEN=132) :: PATH
       CHARACTER(LEN=18) :: SPECIES
-      integer i, funit, IER
+      integer funit, IER
       CHARACTER(len=142) FILENAME
       CHARACTER(len=10) :: THERM = 'BURCAT.THR'
       LOGICAL LocalCopy

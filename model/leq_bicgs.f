@@ -747,7 +747,6 @@
       K = 1
 
       DO J=NSTART, NEND
-!         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
          IJK = FUNIJK(I,J,K)
          IM1JK = IM_OF(IJK)
          IP1JK = IP_OF(IJK)
@@ -1717,8 +1716,7 @@
             do k = kstart1, kend1
                do i = istart1, iend1
                   do j = jstart1, jend1
-                     ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-   !                  ijk = funijk (i,j,k)
+                     ijk = funijk_map_c (i,j,k)
                      prod = prod + r1(ijk)*r2(ijk)
                   enddo
                enddo
@@ -1810,8 +1808,7 @@
 
                   IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
 
-                  ijk = funijk (imap_c(i),jmap_c(j),kmap_c(k))
-!                  ijk = funijk (i,j,k)
+                  ijk = funijk_map_c (i,j,k)
                   prod(1) = prod(1) + r1(ijk)*r2(ijk)
                   prod(2) = prod(2) + r3(ijk)*r4(ijk)
                enddo

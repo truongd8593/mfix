@@ -98,7 +98,6 @@
       use des_thermo, only: DES_T_s_NEW
       use discretelement, only: DES_RADIUS
       use discretelement, only: USE_COHESION, PostCohesive
-      use discretelement, only: DES_CALC_CLUSTER, PostCluster
       use des_rxns, only: DES_X_s
       use run, only: ANY_SPECIES_EQ
       use param, only: DIMENSION_N_S
@@ -162,11 +161,7 @@
       IF(USE_COHESION) &
          CALL VTP_WRITE_DATA('CohesiveForce', PostCohesive)
 
-      IF(DES_CALC_CLUSTER) &
-         CALL VTP_WRITE_DATA('ClusterSize', PostCluster)
-
       CALL VTP_WRITE_ELEMENT('</PointData>')
-
 
 ! Open/Close the unused VTP tags.
 !----------------------------------------------------------------------/

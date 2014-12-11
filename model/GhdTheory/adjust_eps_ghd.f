@@ -59,7 +59,7 @@
       INTEGER          I, J, K, IJK, IJKE, IJKN, IJKT
 !
 !                      Solids phase
-      INTEGER          M, L
+      INTEGER          M
 !                      Sum of (very small) solids volume fractions that
 !                      are set to zero.
       DOUBLE PRECISION epsMixE, epsMixN, epsMixT, epSolid, epSolidE(smax), epSolidN(smax), epSolidT(smax)

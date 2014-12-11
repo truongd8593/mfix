@@ -157,7 +157,9 @@
 
 ! Flag to choose if the drag force on parcels (and as well
 ! as on the Eulerian grid) is obtained by interpolation or not.
-  DES_INTERP_ON = .f.
+  DES_INTERP_MEAN_FIELDS = .T.
+  DES_INTERP_ON = .T.
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 
 ! Flag to decide if initial parcel config is read in or 

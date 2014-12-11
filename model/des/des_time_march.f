@@ -8,7 +8,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_MARCH
 
-      use run, only: TIME, TSTOP, DT
+      use des_bc, only: DEM_BCMI, DEM_BCMO
+      use fldvar, only: EP_g, ROP_g, ROP_s
+      use mfix_pic, only: MPPIC
+      use output, only: SPX_DT
+      use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
       use run, only: ENERGY_EQ
       use run, only: RUN_TYPE
@@ -17,14 +21,16 @@
       use output, only: SPX_DT
       USE fldvar, only: EP_g, ROP_g, ROP_s
       use des_thermo, only: DES_ENERGY_SOURCE !Added by Surya Oct 22, 2014    
+      use run, only: TIME, TSTOP, DT
 
-      use mfix_pic, only: MPPIC
-      use des_bc, only: DEM_BCMI, DEM_BCMO
+      use desmpi, only: DES_PAR_EXCHANGE
 
       use discretelement
-      use sendrecv
-      use mpi_utility
       use error_manager
+      use functions
+      use mpi_utility
+      use sendrecv
+      use stl
 
       IMPLICIT NONE
 !------------------------------------------------
@@ -37,6 +43,9 @@
       INTEGER :: NN
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
+
+      INTEGER :: II, JJ, KK, IJK, CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
+      INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP
 
 ! Local variables to keep track of time when dem restart and des
 ! write data need to be written when des_continuum_coupled is F
@@ -90,15 +99,17 @@
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
 
 
-      IF(DES_CONTINUUM_COUPLED) DES_SPX_DT = SPX_DT(1)
-      IF(DES_CONTINUUM_COUPLED) CALL COMPUTE_PG_GRAD
-
-      IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
-      IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
+      IF(DES_CONTINUUM_COUPLED) THEN
+         DES_SPX_DT = SPX_DT(1)
+         CALL CALC_PG_GRAD
+         IF(.NOT.EXPLICITLY_COUPLED) THEN
+            IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
+            IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
+         ENDIF
+      ENDIF
 
 
       IF(CALL_USR) CALL USR0_DES
-
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
@@ -119,6 +130,12 @@
 
 ! Calculate forces acting on particles (collisions, drag, etc).
          CALL CALC_FORCE_DEM
+! Calculate or distribute fluid-particle drag force.
+         CALL CALC_DRAG_DES
+
+! Update the old values of particle position and velocity with the new
+! values computed
+         IF (DO_OLD) CALL CFUPDATEOLD
 ! Calculate thermochemical sources (energy and  rates of formation).
          CALL CALC_THERMO_DES
 ! Call user functions.
@@ -130,10 +147,22 @@
 ! Update particle from reactive chemistry process.
          CALL DES_REACTION_MODEL
 
-! Set DO_NSEARCH before calling particle_in_cell.
+! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
-         CALL PARTICLES_IN_CELL
-         IF (DO_NSEARCH) CALL NEIGHBOUR
+! Call exchange particles - this will exchange particle crossing
+! boundaries as well as updates ghost particles information
+         CALL DES_PAR_EXCHANGE
+         IF(DO_NSEARCH) CALL NEIGHBOUR
+
+
+         IF(.NOT.EXPLICITLY_COUPLED) THEN
+! Bin particles to fluid grid.
+            CALL PARTICLES_IN_CELL
+! Calculate interpolation weights
+            CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields (EPg).
+            CALL COMP_MEAN_FIELDS
+         ENDIF
 
 ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
@@ -158,7 +187,6 @@
 ! writing DES data
                   CALL DES_GRANULAR_TEMPERATURE
                   IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
-                  IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
                   CALL WRITE_DES_DATA
                ENDIF
             ENDIF
@@ -185,6 +213,10 @@
 
       IF(CALL_USR) CALL USR3_DES
 
+
+!      CALL DIFFUSE_MEAN_FIELDS
+!      CALL CALC_EPG_DES
+
 ! When coupled the granular temperature subroutine is only calculated at end
 ! of the current DEM simulation
       IF(DES_CONTINUUM_COUPLED) THEN
@@ -192,7 +224,6 @@
          IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
 ! the call to identify clusters is now done in time_march, uncomment
 ! line below to compute clusters each fluid time step.
-!         IF (DES_CALC_CLUSTER) CALL IDENTIFY_SYSTEM_CLUSTERS()
       ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly

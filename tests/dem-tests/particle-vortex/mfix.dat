@@ -42,7 +42,7 @@
 
   DES_CONTINUUM_COUPLED = .T.
   DES_INTERP_ON=.T.
-
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 #_______________________________________________________________________
 # NUMERICAL SECTION
@@ -98,8 +98,6 @@
 
   DES_NEIGHBOR_SEARCH =   4  ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   =   1  ! Steps between neighbor search
-  MN = 14
-
 
 ! Solids phase 1:
 !---------------------------------------------------------------------//

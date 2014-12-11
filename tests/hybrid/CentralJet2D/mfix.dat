@@ -47,7 +47,7 @@
   DES_CONTINUUM_COUPLED  = .T.  ! Coupled gas/solid model
   DES_INTERP_ON  = .T.          ! interpolate for drag force
   DES_INTERP_MEAN_FIELDS = .T.  ! interpolate mean fields (volume frac)
-
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 #_______________________________________________________________________
 # NUMERICAL PARAMETERS
@@ -85,7 +85,6 @@
   C_F = 0.1
 
   NEIGHBOR_SEARCH_N  = 2 ! solids time steps between neighbor search
-  MN  = 20               ! maximum number of neighbors allowed per particle
 
   KN = 1.0d+6     ! inter-particle collision spring constant (dyne/cm)
   KN_W = 1.0d+6   ! particle-wall collision spring constant (dyne/cm)

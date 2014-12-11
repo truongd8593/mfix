@@ -543,13 +543,13 @@
       N_int_x = 0
       INTERSECT_X(IJK) = .FALSE.
       Q_ID = 1
-         CALL INTERSECT_LINE('QUADRIC',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_FLAG,xc,yc,zc)
-         IF ((INTERSECT_FLAG).AND.(xc/=Xi)) THEN
-            N_int_x = N_int_x + 1
-            INTERSECT_X(IJK) = .TRUE.
-            xc_backup = Xi
-            Xi = xc
-         ENDIF
+      CALL INTERSECT_LINE('QUADRIC',xa,ya,za,xb,yb,zb,Q_ID,INTERSECT_FLAG,xc,yc,zc)
+      IF ((INTERSECT_FLAG).AND.(xc/=Xi)) THEN
+         N_int_x = N_int_x + 1
+         INTERSECT_X(IJK) = .TRUE.
+         xc_backup = Xi
+         Xi = xc
+      ENDIF
 
       IF(N_int_x /= 1) THEN
          Xi = UNDEFINED
@@ -1017,6 +1017,375 @@
       END SUBROUTINE CLEAN_INTERSECT
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CLEAN_INTERSECT_SCALAR                                 C
+!  Purpose: Remove Intersection flags in preparation of small cell     C
+!           removal                                                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 04-Dec-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CLEAN_INTERSECT_SCALAR
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE polygon
+      USE STL
+      USE functions
+
+      IMPLICIT NONE
+      INTEGER :: IJK
+      
+
+
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
+      call send_recv(Xn_int,2)
+      call send_recv(Ye_int,2)
+      call send_recv(Zt_int,2)
+
+      DO IJK = IJKSTART3, IJKEND3
+         CALL SET_SNAP_FLAG(IJK,'SCALAR',Xn_int(IJK),Ye_int(IJK),Zt_int(IJK))
+      END DO
+
+      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
+      call send_recv(Xn_int,2)
+      call send_recv(Ye_int,2)
+      call send_recv(Zt_int,2)
+
+      DO IJK = IJKSTART3, IJKEND3
+         CALL REMOVE_INTERSECT_FLAG(IJK)
+      END DO
+
+      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Y,2)
+      call SEND_RECEIVE_1D_LOGICAL(INTERSECT_Z,2)
+      call send_recv(Xn_int,2)
+      call send_recv(Ye_int,2)
+      call send_recv(Zt_int,2)
+
+      RETURN
+
+      END SUBROUTINE CLEAN_INTERSECT_SCALAR
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SET_SNAP_FLAG                                          C
+!  Purpose: Set SNAP flag in preparation of intersection flag removal  C
+!           removal                                                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 04-Dec-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE SET_SNAP_FLAG(IJK,TYPE_OF_CELL,Xi,Yi,Zi)
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE polygon
+      USE STL
+      USE functions
+
+      IMPLICIT NONE
+      CHARACTER (LEN=*) :: TYPE_OF_CELL
+      INTEGER :: IJK,I,J,K,IM,JM,KM,IP,JP,KP
+      INTEGER :: BCID
+      INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP,IMJPK,IMJKP,IPJMK,IJMKP,IPJKM,IJPKM
+      DOUBLE PRECISION :: xa,ya,za,xb,yb,zb,xc,yc,zc
+      DOUBLE PRECISION :: Xi,Yi,Zi
+      DOUBLE PRECISION :: DFC,DFC_MAX,Fa,Fb,F4,F6,F7,F8
+      LOGICAL :: CLIP_FLAG,CAD,F_TEST
+
+
+! When inputing geometry from CAD (STL or MSH file), the snapping procedure is 
+! dependent on the value of F at the cell corners
+! For other gemoetry inputs (say quadrics), This is not needed, and the value
+! of F_TEST is set to .TRUE. here
+      CAD = USE_MSH.OR.USE_STL
+      F_TEST = .TRUE.
+
+!======================================================================
+!  Get coordinates of eight nodes
+!======================================================================
+
+      CALL GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
+
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+
+      IM = I - 1
+      JM = J - 1
+      KM = K - 1
+
+      IMJK = FUNIJK(IM,J,K)
+      IJMK = FUNIJK(I,JM,K)
+      IJKM = FUNIJK(I,J,KM)
+
+      IF(IMJK<1.OR.IMJK>DIMENSION_3) IMJK = IJK
+      IF(IJMK<1.OR.IJMK>DIMENSION_3) IJMK = IJK
+      IF(IJKM<1.OR.IJKM>DIMENSION_3) IJKM = IJK
+
+!======================================================================
+!  Clean Intersection with Edge 7 (node 7-8, Face North-Top):
+!======================================================================
+
+      xa = X_NODE(7)
+      ya = Y_NODE(7)
+      za = Z_NODE(7)
+
+      xb = X_NODE(8)
+      yb = Y_NODE(8)
+      zb = Z_NODE(8)
+
+
+      DFC_MAX = TOL_SNAP(1) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+
+      IF(INTERSECT_X(IJK)) THEN
+
+         DFC = DABS(Xi-xa) ! DISTANCE FROM CORNER (NODE 7)
+
+         IF(CAD) F_TEST = (F_AT(IMJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
+            IF(PRINT_WARNINGS) THEN
+               WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 7'
+               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+            ENDIF
+
+            IF(I>=IMIN1) SNAP(IMJK) = .TRUE.
+
+         ENDIF
+
+
+         DFC = DABS(Xi-xb) ! DISTANCE FROM CORNER (NODE 8)
+
+         IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
+            IF(PRINT_WARNINGS) THEN
+               WRITE(*,*)'MERGING X-INTERSECTION ALONG EDGE 7 ONTO NODE 8'
+               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+            ENDIF
+
+            SNAP(IJK) = .TRUE.
+
+         ENDIF
+
+         IF(USE_STL.OR.USE_MSH) THEN
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,7,F7,CLIP_FLAG,BCID)
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+            IF(F7*F8>TOL_STL**2) INTERSECT_X(IJK)  = .FALSE.
+         ENDIF
+
+      ENDIF
+
+
+!======================================================================
+!  Clean Intersection with Edge 6 (node 6-8, Face East-Top):
+!======================================================================
+
+      xa = X_NODE(6)
+      ya = Y_NODE(6)
+      za = Z_NODE(6)
+
+      DFC_MAX = TOL_SNAP(2) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+
+
+      IF(INTERSECT_Y(IJK)) THEN
+
+         DFC = DABS(Yi-ya) ! DISTANCE FROM CORNER (NODE 6)
+
+         IF(CAD) F_TEST = (F_AT(IJMK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
+            IF(PRINT_WARNINGS) THEN
+               WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 6'
+               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+            ENDIF
+
+            IF(J>=JMIN1) SNAP(IJMK) = .TRUE.
+
+         ENDIF
+
+
+         DFC = DABS(Yi-yb) ! DISTANCE FROM CORNER (NODE 8)
+
+         IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+         IF(DFC < DFC_MAX.AND.F_TEST) THEN
+            IF(PRINT_WARNINGS) THEN
+               WRITE(*,*)'MERGING Y-INTERSECTION ALONG EDGE 6 ONTO NODE 8'
+               WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+            ENDIF
+
+            SNAP(IJK) = .TRUE.
+
+
+         ENDIF
+
+
+         IF(USE_STL.OR.USE_MSH) THEN
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,6,F6,CLIP_FLAG,BCID)
+            CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+            IF(F6*F8>TOL_STL**2) INTERSECT_Y(IJK)  = .FALSE.
+         ENDIF
+
+      ENDIF
+
+
+      IF(DO_K) THEN
+!======================================================================
+!  Intersection with Edge 11 (node 4-8, Face East-North):
+!======================================================================
+
+         xa = X_NODE(4)
+         ya = Y_NODE(4)
+         za = Z_NODE(4)
+
+         DFC_MAX = TOL_SNAP(3) * DSQRT((xb-xa)**2+(yb-ya)**2+(zb-za)**2)  ! MAXIMUM DISTANCE FROM CORNER
+
+         IF(INTERSECT_Z(IJK)) THEN
+
+            DFC = DABS(Zi-Za) ! DISTANCE FROM CORNER (NODE 4)
+
+            IF(CAD) F_TEST = (F_AT(IJKM)/=ZERO)
+            IF(DFC < DFC_MAX.AND.F_TEST) THEN
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 4'
+                  WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+               ENDIF
+
+               IF(K>=KMIN1) SNAP(IJKM) = .TRUE.
+
+            ENDIF
+
+            DFC = DABS(Zi-Zb) ! DISTANCE FROM CORNER (NODE 8)
+
+            IF(CAD) F_TEST = (F_AT(IJK)/=ZERO)
+            IF(DFC < DFC_MAX.AND.F_TEST) THEN
+               IF(PRINT_WARNINGS) THEN
+                  WRITE(*,*)'MERGING Z-INTERSECTION ALONG EDGE 11 ONTO NODE 8'
+                  WRITE(*,*)'AT IJK,I,J,K=',IJK,I,J,K
+               ENDIF
+
+               SNAP(IJK) = .TRUE.
+
+            ENDIF
+
+
+            IF(USE_STL.OR.USE_MSH) THEN
+               CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,4,F4,CLIP_FLAG,BCID)
+               CALL EVAL_STL_FCT_AT(TYPE_OF_CELL,IJK,8,F8,CLIP_FLAG,BCID)
+               IF(F4*F8>TOL_STL**2) INTERSECT_Z(IJK)  = .FALSE.
+            ENDIF
+
+         ENDIF
+
+      ENDIF
+
+
+      RETURN
+
+      END SUBROUTINE SET_SNAP_FLAG
+      
+      !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: REMOVE_INTERSECT_FLAG                                  C
+!  Purpose: Remove Intersection flags                                  C
+!           removal                                                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 04-Dec-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE REMOVE_INTERSECT_FLAG(IJK)
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE polygon
+      USE STL
+      USE functions
+
+      IMPLICIT NONE
+      INTEGER :: IJK,I,J,K,IP,JP,KP
+      INTEGER :: IPJK,IJPK,IJKP
+
+
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+
+      IP = I + 1
+      JP = J + 1
+      KP = K + 1
+
+      IPJK = FUNIJK(IP,J,K)
+      IJPK = FUNIJK(I,JP,K)
+      IJKP = FUNIJK(I,J,KP)
+
+      IF(IPJK<1.OR.IPJK>DIMENSION_3) IPJK = IJK
+      IF(IJPK<1.OR.IJPK>DIMENSION_3) IJPK = IJK
+      IF(IJKP<1.OR.IJKP>DIMENSION_3) IJKP = IJK
+
+       IF(SNAP(IJK)) THEN
+          INTERSECT_X(IJK) = .FALSE.
+          INTERSECT_Y(IJK) = .FALSE.
+          INTERSECT_Z(IJK) = .FALSE.  
+          IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
+          IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
+          IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
+       ENDIF
+
+
+      RETURN
+
+      END SUBROUTINE REMOVE_INTERSECT_FLAG
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1134,7 +1503,7 @@
 
       INTEGER :: IJK2,CURRENT_I,CURRENT_J,CURRENT_K
 
-      INTEGER :: N_UNDEFINED, N_PROP
+      INTEGER :: N_UNDEFINED, NTOTAL_UNDEFINED,N_PROP
       INTEGER, PARAMETER :: N_PROPMAX=1000
       LOGICAL:: F_FOUND
 
@@ -1605,32 +1974,27 @@
 
       CASE ('   ')
 
+! After intersecting the edges of the background mesh with the STL facets,
+! the end points (i.e., cell corners) are assigned a value, called F_AT, where:
+! F_AT = zero if the corner point is on a facet (within some tolerance TOL_STL),
+! F_AT < zero if the corner point is inside  the fluid region,
+! F_AT > zero if the corner point is outside the fluid region.
+! At this point F_AT is only defined across edges that intersect the STL facets,
+! and it must be propagated to all cell corners to determine if uncut cells
+! are inside or outside the fluid region.
 
-         N_UNDEFINED = UNDEFINED_I
-
-         N_PROP = 0
-
-         DO WHILE(N_UNDEFINED>0)
-
-            N_UNDEFINED = 0
-
-            N_PROP = N_PROP + 1
-
-            DO IJK = IJKSTART3, IJKEND3
-
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) THEN
-
-                  N_UNDEFINED = N_UNDEFINED + 1
-
-               ENDIF
-
-            ENDDO
-
+! Only F_AT values that are defined and not zero are propagated to their direct
+! neighbors, if it is not already defined. The propagation is repeated 
+! at most N_PROPMAX. The loop is exited when all F_AT values are defined.
+! N_PROPMAX could be increased for very large domains.
+! The propagation of F_AT will stop anytime a boundary is encountered since F_AT
+! changes sign across a boundary.
+! 
+         DO N_PROP=1,N_PROPMAX
 
             DO IJK = IJKSTART3, IJKEND3
 
-               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
-
+               IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
 
                      IMJK = IM_OF(IJK)
                      IF(F_AT(IMJK)==UNDEFINED.AND.F_AT(IMJK)/=ZERO)  F_AT(IMJK)=F_AT(IJK)
@@ -1650,34 +2014,37 @@
                      IJKP = KP_OF(IJK)
                      IF(F_AT(IJKP)==UNDEFINED.AND.F_AT(IJKP)/=ZERO)  F_AT(IJKP)=F_AT(IJK)
 
-
                ENDIF
 
+            ENDDO ! IJK Loop
+
+
+! Communicate F_AT accross processors for DMP runs
+            call send_recv(F_AT,2)
+
+! Count the number of undefined values of F_AT
+! and exit loop if all values of F_AT have been propagated            
+            N_UNDEFINED = 0
+            DO IJK = IJKSTART3, IJKEND3
+               IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) N_UNDEFINED = N_UNDEFINED + 1
             ENDDO
 
+            call global_all_sum( N_UNDEFINED, NTOTAL_UNDEFINED )
+            IF(NTOTAL_UNDEFINED==0) EXIT
 
-!!!!            call send_recv(F_AT,2)
-
-            IF(N_PROP>N_PROPMAX.AND.N_UNDEFINED>0) THEN
-
-               WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
-               WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
-               WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
-               WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
-
-
-               exit
-!               CALL MFIX_EXIT(myPE)
-
-            ENDIF
-
-
-         ENDDO ! WHILE Loop
+         ENDDO ! N_PROP Loop
 
 
          call send_recv(F_AT,2)
 
-
+! If a process still has undefined values of F_AT, this probably means
+! that all cells belonging to that process are dead cells.
+         IF(N_UNDEFINED>0) THEN
+            WRITE(*,*)'WARNING: UNABLE TO PROPAGATE F_AT ARRAY FROM myPE=.', MyPE
+            WRITE(*,*)'         THIS USUALLY INDICATE A RANK WITH NO ACTIVE CELL'
+            WRITE(*,*)'         YOU MAY NEED TO ADJUST THE GRID PARTITIONNING'
+            WRITE(*,*)'         TO GET BETTER LOAD_BALANCE.'
+         ENDIF
 
 
 

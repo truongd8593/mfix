@@ -45,7 +45,7 @@
   DES_INTERP_ON=.T.
 
   DRAG_TYPE = 'USER_DRAG'
-
+  DES_INTERP_SCHEME = 'GARG_2012'
 
 #_______________________________________________________________________
 # NUMERICAL SECTION

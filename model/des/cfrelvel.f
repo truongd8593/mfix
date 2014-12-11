@@ -35,24 +35,18 @@
 ! particle L to particle II
       DOUBLE PRECISION, INTENT(IN) :: NORM(3)
 ! slip velocity at point of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: VSLIP(3)
+      DOUBLE PRECISION, INTENT(OUT) :: VSLIP(3)
 ! normal component of relative contact velocity (scalar)
-      DOUBLE PRECISION, INTENT(INOUT) :: VRN
+      DOUBLE PRECISION, INTENT(OUT) :: VRN
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! magnitude of tangent vector to plane of contact
-      DOUBLE PRECISION :: TANMOD
 ! translational relative velocity
       DOUBLE PRECISION :: VRELTRANS(3)
 ! rotational velocity at point of contact
       DOUBLE PRECISION :: V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION :: DIST_CL, DIST_CI
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 !-----------------------------------------------
 
 ! translational relative velocity
@@ -82,7 +76,7 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+      VRN = DOT_PRODUCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992
@@ -133,18 +127,12 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! magnitude of tangent vector to plane of contact
-      DOUBLE PRECISION :: TANMOD
 ! translational relative velocity
       DOUBLE PRECISION :: VRELTRANS(3)
 ! rotational velocity at point of contact
       DOUBLE PRECISION :: V_ROT(3), OMEGA_SUM(3)
 ! distance from the contact point to the particle centers
       DOUBLE PRECISION :: DIST_CL
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
 !-----------------------------------------------
 
 ! translational relative velocity
@@ -167,7 +155,7 @@
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
 
 ! normal component of relative velocity (scalar)
-      VRN = DES_DOTPRDCT(VRELTRANS,NORM)
+      VRN = DOT_PRODUCT(VRELTRANS,NORM)
 
 ! slip velocity of the contact point
 ! Equation (8) in Tsuji et al. 1992

@@ -12,8 +12,6 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: DES_CALC_CLUSTER
-      use discretelement, only: CLUSTER_LENGTH_CUTOFF
       use discretelement, only: FACTOR_RLM
       use discretelement, only: MAX_RADIUS
 
@@ -27,14 +25,8 @@
 
       implicit none
 
-! Local Variables:
-!---------------------------------------------------------------------//
-      DOUBLE PRECISION :: CLUSTER_RLM
-! NONE
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM")
-
 
 ! Particle-particle collision parameters.
       CALL CHECK_SOLIDS_DEM_COLLISION
@@ -42,26 +34,6 @@
       CALL CHECK_SOLIDS_DEM_COHESION
 ! Particle-particle conduction model parameters.
       CALL CHECK_SOLIDS_DEM_ENERGY
-
-
-      IF(DES_CALC_CLUSTER) THEN
-
-! Verify that a cutoff distance was provided.
-         IF(CLUSTER_LENGTH_CUTOFF .EQ. UNDEFINED) THEN
-            WRITE(ERR_MSG,1000) 'CLUSTER_LENGTH_CUTOFF'
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
-! Verify that a cutoff distance lands with the neighbor search region.
-         CLUSTER_RLM = 1.d0 + CLUSTER_LENGTH_CUTOFF/(2.d0*MAX_RADIUS)
-         IF(FACTOR_RLM < CLUSTER_RLM) THEN
-            WRITE(ERR_MSG,2000)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
- 2000 FORMAT('Error 2000: CLUSTER_LENGTH_CUTOFF exceeds of neighbor',  &
-         ' search',/'distance. Increase FACTOR_RLM.')
-      ENDIF
 
       CALL FINL_ERR_MSG
 
@@ -74,9 +46,6 @@
          'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -157,11 +126,15 @@
       use discretelement, only: WALL_VDW_OUTER_CUTOFF
       use discretelement, only: WALL_HAMAKER_CONSTANT
       use discretelement, only: ASPERITIES
+      use discretelement, only: SURFACE_ENERGY
+      use discretelement, only: WALL_SURFACE_ENERGY
+
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
       use param1, only: ZERO
-
+      use constant, only: Pi
 
       use error_manager
 
@@ -242,6 +215,13 @@
             WRITE(ERR_MSG,1001) 'ASPERITIES', trim(iVal(ASPERITIES))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
+
+         SURFACE_ENERGY=HAMAKER_CONSTANT/&
+            (24.d0*Pi*VDW_INNER_CUTOFF**2)
+
+         WALL_SURFACE_ENERGY=WALL_HAMAKER_CONSTANT/&
+            (24.d0*Pi*WALL_VDW_INNER_CUTOFF**2)
+
       ENDIF
 
 
@@ -700,16 +680,14 @@
       DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF, RED_MASS_EFF
 ! Alias for coefficient restitution
       DOUBLE PRECISION :: EN, ET
-
-
+! Shear modules for wall
+      DOUBLE PRECISION :: G_MOD_WALL
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_COLL_HERTZ")
 
 ! Initialize.
       TCOLL = UNDEFINED
-
-
 
 ! check young's modulus and poisson ratio
       IF(Ew_YOUNG == UNDEFINED ) THEN
@@ -727,9 +705,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-
-
-
+      G_MOD_WALL = 0.5d0*Ew_YOUNG/(1.d0+Vw_POISSON)
 
       LC = 0
       DO M=1,DES_MMAX
@@ -867,7 +843,9 @@
          E_EFF = E_YOUNG(M)*Ew_YOUNG /                                 &
             (E_YOUNG(M)*(1.d0-Vw_POISSON**2) +                         &
              Ew_YOUNG  *(1.d0-V_POISSON(M)**2))
-         G_MOD_EFF = G_MOD(M)/(2.d0-V_POISSON(M))
+         G_MOD_EFF = G_MOD(M)*G_MOD_WALL /                             &
+            (G_MOD(M)*(2.d0 - Vw_POISSON) +                            &
+             G_MOD_WALL*(2.d0 - V_POISSON(M)))
 
 ! Calculate the spring properties.
          HERT_Kwn(M) = ( 4.d0/3.d0)*SQRT(R_EFF)*E_EFF

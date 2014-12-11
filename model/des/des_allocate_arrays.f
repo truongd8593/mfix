@@ -31,6 +31,12 @@
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
 
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_GARG
+      use particle_filter, only: DES_INTERP_DPVM
+      use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: FILTER_CELL 
+      use particle_filter, only: FILTER_WEIGHT
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -40,15 +46,16 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: I, J, K, IJK, M
+      INTEGER :: II, IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
+! dimensions of a cross product vector
+      INTEGER :: CROSS_DIMN
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
       NWALLS = merge(4,6,NO_K)
-      MAXNEIGHBORS = MN + 1 + NWALLS
 
 ! Grab the larger of PARTICLES and MAX_PIS
       IF(MAX_PIS == UNDEFINED_I) THEN
@@ -94,22 +101,24 @@
       Allocate(  PMASS (NPARTICLES) )
       Allocate(  OMOI (NPARTICLES) )
 
+      IF (DO_K) THEN
+         CROSS_DIMN = DIMN
+      ELSE
+         CROSS_DIMN = 1
+      ENDIF
+
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
       Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
       Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_ACC_OLD (DIMN,NPARTICLES) )
+      Allocate(  OMEGA_NEW (CROSS_DIMN,NPARTICLES) )
 
-      IF(DO_K) THEN
-         Allocate(  OMEGA_OLD (DIMN,NPARTICLES) )
-         Allocate(  OMEGA_NEW (DIMN,NPARTICLES) )
-         ALLOCATE(  ROT_ACC_OLD (DIMN,NPARTICLES))
-      ELSE
-         Allocate(  OMEGA_OLD (1,NPARTICLES) )
-         Allocate(  OMEGA_NEW (1,NPARTICLES) )
-         ALLOCATE(  ROT_ACC_OLD (1,NPARTICLES))
+      IF (DO_OLD) THEN
+         Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
+         Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
+         Allocate(  DES_ACC_OLD (CROSS_DIMN,NPARTICLES) )
+         Allocate(  OMEGA_OLD (CROSS_DIMN,NPARTICLES) )
+         Allocate(  ROT_ACC_OLD (CROSS_DIMN,NPARTICLES))
       ENDIF
 
 ! Allocating user defined array (Surya Dec 10, 2014)
@@ -123,30 +132,12 @@
       Allocate(  FC (DIMN,NPARTICLES) )
 
 ! Torque
-      IF(DO_K) THEN
-         Allocate(  TOW (DIMN,NPARTICLES) )
-      ELSE
-         Allocate(  TOW (1,NPARTICLES) )
-      ENDIF
+      Allocate(  TOW (CROSS_DIMN,NPARTICLES) )
 
-! Accumulated spring force
-      Allocate(  PFT_WALL (NPARTICLES,6,DIMN) )
-
-! Save the normal direction at previous time step
-      Allocate(  PFN_WALL (NPARTICLES,6,DIMN) )
-
-! Tracking variables for particle contact history
-      Allocate(  PN (MAXNEIGHBORS, NPARTICLES) )
-      Allocate(  PN_WALL (6, NPARTICLES) )
-      Allocate(  PV (MAXNEIGHBORS, NPARTICLES) )
-      Allocate(  PV_WALL (6, NPARTICLES) )
-
+      Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
-
-! Neighbor search
-      Allocate(  NEIGHBOURS (NPARTICLES, MAXNEIGHBORS) )
 
       OLD_COLLISION_NUM = 0
       COLLISION_NUM = 0
@@ -154,8 +145,8 @@
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
       Allocate(  FC_COLL  (3,COLLISION_MAX) )
-      Allocate(  FT_COLL  (3,COLLISION_MAX) )
       Allocate(  DIST_COLL (COLLISION_MAX) )
+      Allocate(  QQ_COLL (COLLISION_MAX) )
       Allocate(  NORM_COLL (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
       Allocate(  PV_COLL_OLD (COLLISION_MAX) )
@@ -163,6 +154,7 @@
       Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
       Allocate(  PFN_COLL (3,COLLISION_MAX) )
       Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
+      Allocate(  TOW_COLL (3,2,COLLISION_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -178,23 +170,16 @@
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
       Allocate(  PIJK (NPARTICLES,5) )
 
-      IF(DES_INTERP_ON) THEN
-         ALLOCATE(DRAG_AM(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DRAG_BM(DIMENSION_3, DIMN, DES_MMAX))
-         ALLOCATE(VEL_FP(DIMN,NPARTICLES))
-         ALLOCATE(F_gp(NPARTICLES ))
-         F_gp(1:NPARTICLES)  = ZERO
-      ENDIF
+      ALLOCATE(DRAG_AM(DIMENSION_3))
+      ALLOCATE(DRAG_BM(DIMENSION_3, DIMN))
+      ALLOCATE(F_gp(NPARTICLES ))
+      F_gp(1:NPARTICLES)  = ZERO
 
-      IF(DES_INTERP_MEAN_FIELDS) THEN
-         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
-      ENDIF
+! Explict drag force acting on a particle.
+      Allocate(DRAG_FC (DIMN,NPARTICLES) )
 
 ! force due to gas-pressure gradient
-      ALLOCATE(P_FORCE(DIMENSION_3,DIMN))
-! force due to gas-solids drag on a particle
-      ALLOCATE(GD_FORCE(DIMN,NPARTICLES))
+      ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
 
 ! Volume averaged solids volume in a computational fluid cell
       Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
@@ -202,15 +187,32 @@
       Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
 
 ! Volume of nodes
-       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
+      ALLOCATE(DES_VOL_NODE(DIMENSION_3))
+
+      ALLOCATE(F_GDS(DIMENSION_3))
+      ALLOCATE(VXF_GDS(DIMENSION_3))
+
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+      CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+         IF(DO_K) THEN
+            ALLOCATE(FILTER_CELL(27, NPARTICLES))
+            ALLOCATE(FILTER_WEIGHT(27, NPARTICLES))
+         ELSE
+            ALLOCATE(FILTER_CELL(9, NPARTICLES))
+            ALLOCATE(FILTER_WEIGHT(9, NPARTICLES))
+         ENDIF
+      CASE(DES_INTERP_GARG)
+         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
+      END SELECT
 
 ! Variables for hybrid model
       IF (DES_CONTINUUM_HYBRID) THEN
-         ALLOCATE(F_GDS(DIMENSION_3,DES_MMAX))
-         ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(VXF_GDS(DIMENSION_3,DES_MMAX))
-         ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M,DES_MMAX))
-         ALLOCATE(SD_FORCE(DIMN,NPARTICLES))
+         ALLOCATE(SDRAG_AM(DIMENSION_3,DIMENSION_M))
+         ALLOCATE(SDRAG_BM(DIMENSION_3, DIMN,DIMENSION_M))
+
+         ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M))
+         ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M))
       ENDIF
 ! Bulk density in a computational fluid cell / for communication with
 ! MFIX continuum
@@ -223,8 +225,6 @@
             ALLOCATE(F_GP(NPARTICLES ))
             F_GP(1:NPARTICLES)  = ZERO
          ENDIF
-
-         IF(.NOT.ALLOCATED(VEL_FP)) ALLOCATE(VEL_FP(DIMN,NPARTICLES))
 
          Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
@@ -262,12 +262,6 @@
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
 
-! variable used to identify whether a particle had been put into a
-! cluster
-      IF (DES_CALC_CLUSTER) THEN
-         ALLOCATE(InACluster(NPARTICLES))
-      ENDIF
-
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
       IF(USE_COHESION) THEN
@@ -276,9 +270,7 @@
          Allocate(  PostCohesive (NPARTICLES) )
       ENDIF
 ! END COHESION
-      IF(DES_CALC_CLUSTER) Allocate(  PostCluster (NPARTICLES) )
 ! ----------------------------------------------------------------<<<
-
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN Thermodynamic Allocation
@@ -526,9 +518,10 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: real_tmp3
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_scalar_tmp
 
-      INTEGER :: lSIZE1, lSIZE2
+      INTEGER :: lSIZE1, lSIZE2, lSIZE3
 
       lSIZE2 = size(collisions,2)
       allocate(int_tmp(2,COLLISION_MAX))
@@ -540,15 +533,15 @@
       int_tmp(:,1:lSIZE2) = collisions_old(:,1:lSIZE2)
       call move_alloc(int_tmp,collisions_old)
 
+      lSIZE3 = size(TOW_COLL,3)
+      allocate(real_tmp3(3,2,COLLISION_MAX))
+      real_tmp3(:,:,1:lSIZE3) = tow_coll(:,:,1:lSIZE3)
+      call move_alloc(real_tmp3,tow_coll)
+
       lSIZE2 = size(FC_COLL,2)
       allocate(real_tmp(3,COLLISION_MAX))
       real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
       call move_alloc(real_tmp,fc_coll)
-
-      lSIZE2 = size(FT_COLL,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = ft_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,ft_coll)
 
       lSIZE1 = size(norm_coll,2)
       allocate(real_tmp(3,COLLISION_MAX))
@@ -559,6 +552,11 @@
       allocate(real_scalar_tmp(COLLISION_MAX))
       real_scalar_tmp(1:lSIZE1) = dist_coll(1:lSIZE1)
       call move_alloc(real_scalar_tmp,dist_coll)
+
+      lSIZE1 = size(qq_coll,1)
+      allocate(real_scalar_tmp(COLLISION_MAX))
+      real_scalar_tmp(1:lSIZE1) = qq_coll(1:lSIZE1)
+      call move_alloc(real_scalar_tmp,qq_coll)
 
       lSIZE1 = size(pv_coll,1)
       allocate(bool_tmp(COLLISION_MAX))

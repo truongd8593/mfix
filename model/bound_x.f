@@ -38,9 +38,6 @@
 !                      Error index
       INTEGER          IER
 !
-!                      cell index
-      INTEGER          IJK
-!
 !                      Maximum dimension
       INTEGER          IJKMAX2
 !

@@ -37,14 +37,9 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: L
-      DOUBLE PRECISION :: D(3), NEIGHBOR_SEARCH_DIST
+      DOUBLE PRECISION :: DD(3), NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-!-----------------------------------------------
-
 
       IF(MPPIC) THEN
          IF(MPPIC_SOLID_STRESS_SNIDER) THEN
@@ -55,7 +50,6 @@
          ENDIF
          RETURN
       ENDIF
-
 
 ! Adams-Bashforth defaults to Euler for the first time step.
       IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
@@ -68,9 +62,9 @@
          ENDDO
       ENDIF
 
-
-!$omp parallel do if(max_pip .ge. 10000) default(shared)   &
-!$omp private(l,d,neighbor_search_dist)                    &
+!$omp parallel do if(max_pip .ge. 10000) default(none)   &
+!$omp shared(MAX_PIP,pea,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old,ppos,neighbor_search_rad_ratio,des_radius,DO_OLD) &
+!$omp private(l,dd,neighbor_search_dist)                    &
 !$omp reduction(.or.:do_nsearch) schedule (auto)
 
       DO L = 1, MAX_PIP
@@ -89,19 +83,19 @@
             TOW(:,L) = ZERO
          ENDIF
 
-
 ! Advance particle position, velocity
         IF (INTG_EULER) THEN
 ! first-order method
-            DES_VEL_NEW(:,L) = DES_VEL_OLD(:,L) + FC(:,L)*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-               DES_VEL_NEW(:,L)*DTSOLID
+            DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + FC(:,L)*DTSOLID
+            DD(:) = DES_VEL_NEW(:,L)*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + DD(:)
 ! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
 !         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
 !             (DES_VEL_NEW(:,L)+DES_VEL_OLD(:,L))*DTSOLID
 
             DES_USR_VAR(1,L) = DES_VEL_NEW(1,L) ! Surya, testing out the new variable 
-            OMEGA_NEW(:,L)   = OMEGA_OLD(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
+            OMEGA_NEW(:,L)   = OMEGA_NEW(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
+
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
@@ -109,37 +103,34 @@
                ( 3.d0*FC(:,L)-DES_ACC_OLD(:,L) )*DTSOLID
             OMEGA_NEW(:,L)   =  OMEGA_OLD(:,L) + 0.5d0*&
                ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(:,L) )*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
-               ( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
+            DD(:) = 0.5d0*( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
+            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + DD(:)
             DES_ACC_OLD(:,L) = FC(:,L)
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
 
 ! Check if the particle has moved a distance greater than or equal to
-! its radius since the last time a neighbor search was called. if so,
-! make sure that neighbor is called in des_time_march
-         IF(.NOT.DO_NSEARCH) THEN
-            D(:) = DES_POS_NEW(:,L) - PPOS(:,L)
-            NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
-               DES_RADIUS(L)
-            IF(dot_product(D,D).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
-         ENDIF
-
-
-! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
-         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-         IF(dot_product(D,D).GE.DES_RADIUS(L)**2) THEN
-            WRITE(*,1002) L, sqrt(dot_product(D,D)), DES_RADIUS(L)
-            WRITE(*,'(5X,A,3(ES17.9))') &
-               'old particle pos = ', DES_POS_OLD(:,L)
+         IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
+            WRITE(*,1002) L, sqrt(dot_product(DD,DD)), DES_RADIUS(L)
+            IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') 'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &
                'new particle pos = ', DES_POS_NEW(:,L)
             WRITE(*,'(5X,A,3(ES17.9))')&
                'new particle vel = ', DES_VEL_NEW(:,L)
             WRITE(*,1003)
             STOP 1
+         ENDIF
+
+! Check if the particle has moved a distance greater than or equal to
+! its radius since the last time a neighbor search was called. if so,
+! make sure that neighbor is called in des_time_march
+         IF(.NOT.DO_NSEARCH) THEN
+            DD(:) = DES_POS_NEW(:,L) - PPOS(:,L)
+            NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
+               DES_RADIUS(L)
+            IF(dot_product(DD,DD).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
          ENDIF
 
 ! Reset total contact force and torque
@@ -193,10 +184,10 @@
       INTEGER L, M, IDIM
       INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
 
-      DOUBLE PRECISION D(3), DIST, &
+      DOUBLE PRECISION DD(3), DIST, &
                        NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3), VEL_ORIG(3)
+      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -222,14 +213,8 @@
       double precision  sig_u, mean_u,ymid
       double precision, allocatable, dimension(:,:) ::  rand_vel
 !-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
-!-----------------------------------------------
 
       PC = 1
-      FOCUS_PARTICLE = -1
       DTPIC_CFL = LARGE_NUMBER
 
       if(NO_K) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
@@ -297,25 +282,13 @@
          COEFF_EN =  MPPIC_COEFF_EN1
          UPRIMETAU(:) = ZERO
 
-         VEL_ORIG(:) = DES_VEL_NEW(:,L)
-
-         DES_VEL_NEW(:,L) = (DES_VEL_OLD(:,L) + &
+         DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
          do idim = 1, merge(2,3,NO_K)
             SIG_U = 0.05D0
             rand_vel(idim, L)  = sig_u*DES_VEL_NEW(IDIM,L)*rand_vel(idim, L)
          enddo
-
-
-         IF(L.EQ.FOCUS_PARTICLE) THEN
-
-            WRITE(*,'(A20,2x,3(2x,i4))') 'CELL ID = ', PIJK(L,1:3)
-            WRITE(*,'(A20,2x,3(2x,g17.8))') 'EPS = ', 1.d0 - EP_g(PIJK(L,4))
-            WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', DES_VEL_NEW(:,L)
-
-            WRITE(*,'(A20,2x,3(2x,g17.8))') 'FC = ', FC(:,L)
-         ENDIF
 
          !MEANVEL(1) = DES_U_S(IJK_OLD,M)
          !MEANVEL(2) = DES_V_S(IJK_OLD,M)
@@ -341,9 +314,7 @@
          ENDDO
 
          DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + UPRIMETAU(:)
-         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-         DES_VEL_NEW(:,L)*DTSOLID
-
+         DD(:) = DES_VEL_NEW(:,L)*DTSOLID
 
          UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(1:,L), DES_VEL_NEW(1:,L)))
 
@@ -356,10 +327,7 @@
          !   DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
          !ENDIF
 
-          D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-
-          DIST = SQRT(DES_DOTPRDCT(D,D))
-
+          DIST = SQRT(DOT_PRODUCT(DD,DD))
 
          CALL PIC_FIND_NEW_CELL(L)
 
@@ -370,44 +338,27 @@
          INSIDE_DOMAIN = FLUID_AT(IJK)
 
          IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD) then
-
-            IF(CUT_CELL_AT(IJK)) then
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(:, L)*dtsolid
-               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
-            ELSE
-               !IF(IJK.NE.IJK_OLD) THEN
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + rand_vel(:, L)*dtsolid
-               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
-               !ENDIF
-            ENDIF
+            DD(:) = rand_vel(:, L)*dtsolid
+            DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
          ENDIF
 
+
+
          PIJK(L,:) = PIJK_OLD(:)
-         DIST = SQRT(DES_DOTPRDCT(D,D))
+         DIST = SQRT(DOT_PRODUCT(DD,DD))
 
           IF(DIST.GT.MEAN_FREE_PATH) THEN
-          !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
-          !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
-
-             DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-             DES_VEL_NEW(:,L)*DTSOLID*MEAN_FREE_PATH/DIST
-
-             !D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-
-                                !DIST = SQRT(DES_DOTPRDCT(D,D))
-             !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
+             DD(:) =  DES_VEL_NEW(:,L)*DTSOLID*MEAN_FREE_PATH/DIST
           ENDIF
 
+         DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + DD(:)
 
-         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-         D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
-         D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
+         D_GRIDUNITS(1) = ABS(DD(1))/DX(PIJK(L,1))
+         D_GRIDUNITS(2) = ABS(DD(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
-         IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
+         IF(DO_K) D_GRIDUNITS(3) = ABS(DD(3))/DZ(PIJK(L,3))
 
-         DIST = SQRT(DES_DOTPRDCT(D,D))
+         DIST = SQRT(DOT_PRODUCT(DD,DD))
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
          DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(2,L))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
@@ -536,10 +487,10 @@
       INTEGER L, M, IDIM
       INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
 
-      DOUBLE PRECISION D(3), DIST, &
+      DOUBLE PRECISION DD(3), DIST, &
                        NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3), VEL_ORIG(3)
+      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -566,18 +517,11 @@
 
       double precision :: norm1, norm2, norm3
       Logical :: OUTER_STABILITY_COND, DES_FIXED_BED
-
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
-
 !-----------------------------------------------
 
       OUTER_STABILITY_COND = .false.
       DES_FIXED_BED = .false.
       PC = 1
-      FOCUS_PARTICLE = -1
       DTPIC_CFL = LARGE_NUMBER
       DTPIC_MIN_X =  LARGE_NUMBER
       DTPIC_MIN_Y =  LARGE_NUMBER
@@ -636,10 +580,8 @@
          I = I_OF(IJK)
          J = J_OF(IJK)
          K = K_OF(IJK)
-         VEL_ORIG(:) = DES_VEL_NEW(:,L)
 
-
-         DES_VEL_NEW(:,L) = (DES_VEL_OLD(:,L) + &
+         DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L) + &
          & FC(:,L)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
          IF(DES_FIXED_BED) DES_VEL_NEW(:,L) = ZERO
@@ -671,13 +613,7 @@
             DES_VEL_NEW(idim,L) = DES_VEL_NEW(idim,L) + rand_vel(idim, L)
          enddo
 
-         !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + VELP_INT(:)*DTSOLID
-
-                                !if(mod(L,400).eq.0) write(*,'(A,2x,10(2x,g17.8))') 'rand vel = ', rand_vel(:,1), sig_u
-
-
          IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(L)
-
 
          UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(1:,L), DES_VEL_NEW(1:,L)))
 
@@ -685,10 +621,11 @@
          !   DES_VEL_NEW(:,L) = (DES_VEL_NEW(:,L)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
          !ENDIF
 
-         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-         DES_VEL_NEW(:,L)*DTSOLID !+ rand_vel(:, L)*dtsolid
-
-         IF(DES_FIXED_BED) DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
+         IF(DES_FIXED_BED) THEN
+            DD(:) = ZERO
+         ELSE
+            DD(:) = DES_VEL_NEW(:,L)*DTSOLID !+ rand_vel(:, L)*dtsolid
+         ENDIF
 
          CALL PIC_FIND_NEW_CELL(L)
 
@@ -713,51 +650,22 @@
          !IF((EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN)) then
          !IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN) then
          IF(1.d0 - EP_G(IJK).GT. 1.3d0*(1.d0 - EP_STAR).and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD.and.OUTER_STABILITY_COND) then
-
-            IF(CUT_CELL_AT(IJK)) then
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(:, L)*dtsolid
-               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
-               !DES_VEL_NEW(:,L) = VELP_INT(:)
-            ELSE
-               DES_POS_NEW(:,L) = DES_POS_OLD(:,L)
-               !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) !+ rand_vel(:, L)*dtsolid
-               DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
-               !DES_VEL_NEW(:,L) = VELP_INT(:)
-            ENDIF
+            DD(:) = ZERO
+            DES_VEL_NEW(:,L) = 0.8d0*DES_VEL_NEW(:,L)
          ENDIF
 
          PIJK(L,:) = PIJK_OLD(:)
 
-         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
+         DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + DD(:)
 
-         DIST = SQRT(DES_DOTPRDCT(D,D))
+         DIST = SQRT(DOT_PRODUCT(DD,DD))
 
-         !IF(DIST.GT.MEAN_FREE_PATH) THEN
-          !WRITE(*,*) 'UPRIME OLD = ', UPRIMETAU(:)
-          !WRITE(*,*) 'DIST GT MEAN FREE PATH= ', DIST, MEAN_FREE_PATH
-
-         !    DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-         !    DES_VEL_NEW(:,L)*DTSOLID*MEAN_FREE_PATH/DIST
-
-             !DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + &
-             !VELP_INT(:)*DTSOLID*MEAN_FREE_PATH/DIST
-
-                                !D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-
-                                !DIST = SQRT(DES_DOTPRDCT(D,D))
-             !WRITE(*,*) 'new moved distance  = ', dist,1. -  ep_g(ijk)
-        !  ENDIF
-
-
-
-         D(:) = DES_POS_NEW(:,L) - DES_POS_OLD(:,L)
-         D_GRIDUNITS(1) = ABS(D(1))/DX(PIJK(L,1))
-         D_GRIDUNITS(2) = ABS(D(2))/DY(PIJK(L,2))
+         D_GRIDUNITS(1) = ABS(DD(1))/DX(PIJK(L,1))
+         D_GRIDUNITS(2) = ABS(DD(2))/DY(PIJK(L,2))
          D_GRIDUNITS(3) = 1.d0
-         IF(DO_K) D_GRIDUNITS(3) = ABS(D(3))/DZ(PIJK(L,3))
+         IF(DO_K) D_GRIDUNITS(3) = ABS(DD(3))/DZ(PIJK(L,3))
 
-         DIST = SQRT(DES_DOTPRDCT(D,D))
+         DIST = SQRT(DOT_PRODUCT(DD,DD))
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/(ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
          DTPIC_TMPY = (CFL_PIC*DY(PIJK(L,2)))/(ABS(DES_VEL_NEW(2,L))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
@@ -773,14 +681,14 @@
 
                   WRITE(UNIT_LOG, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
+                  IF (DO_OLD) WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
 
                   WRITE(*, 2001) L, D_GRIDUNITS(:), DES_VEL_NEW(:,L)
 
                   WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,L)
-                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
+                  IF (DO_OLD) WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,l)
                   WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,L)
                   WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(:,L)
                   read(*,*)

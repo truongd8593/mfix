@@ -72,7 +72,7 @@
       USE run, only: ghd_2007
       USE run, only: kt_type
 ! filtered subgrid model
-      USE run, only: subgrid_type
+      USE run, only: subgrid_type_enum, milioli, igci, undefined_subgrid_type
 ! frictional theories
       USE run, only: friction, schaeffer
 ! runtime flag for blending stress (only with schaeffer)
@@ -159,10 +159,10 @@
 ! if QMOMK then do not solve algebraic or PDE form of granular
 ! temperature governing equation
          IF(.NOT.GRANULAR_ENERGY) THEN
-            IF(SUBGRID_TYPE /= UNDEFINED_C) THEN
-               IF (TRIM(SUBGRID_TYPE) .EQ. 'IGCI') THEN
+            IF(SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
+               IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
                   CALL SUBGRID_STRESS_IGCI(M, IER)
-               ELSEIF (TRIM(SUBGRID_TYPE) .EQ. 'MILIOLI') THEN
+               ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
                   CALL SUBGRID_STRESS_MILIOLI(M, IER)
                ENDIF
             ELSE
@@ -421,9 +421,9 @@
       DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
-!$omp parallel do default(shared)                                    &
-!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m, temp_local,         &
-!$omp         aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)
+!!$omp parallel do default(shared)                                    &
+!!$omp private(IJK, K_1m, K_2m, K_3m, K_4m, K_5m, temp_local,         &
+!!$omp         aq, bq, cq, EP_sxSQRTHETA, EP_s2xTHETA)
 
        DO IJK = ijkstart3, ijkend3
 
@@ -484,7 +484,7 @@
 
          ENDIF   ! Fluid_at
       ENDDO
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
       END SUBROUTINE GT_ALGEBRAIC
@@ -1380,9 +1380,9 @@
                 1.5d0*dsqrt(EP_SM/2d0)+135d0/64d0*EP_SM*(dlog(EP_SM)+one) +&
                 11.26d0*EP_SM*(one-10.2*EP_SM+49.71d0*EP_SM**2-87.08d0* &
                 EP_SM**3) - EP_SM*dlog(epM)*(Chi+EP_SM*dChiOdphi)
-
-             Kphidphi = EP_SM*(0.212d0*0.142d0*EP_SM**0.788d0/&
-                (one-EP_SM)**4.454d0 - 4.454d0*K_phi(EP_SM)/(one-EP_SM))
+! corrections due to W. Fullmer
+             Kphidphi = EP_SM*(0.212d0*0.142d0/(EP_SM**0.788d0*&
+                (one-EP_SM)**4.454d0) + 4.454d0*K_phi(EP_SM)/(one-EP_SM))
              Kphidphi = zero  ! this is compatible with K_phi = zero
 
              Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
@@ -2479,7 +2479,7 @@
       INTEGER :: IJK
 !-----------------------------------------------
 
-!     $omp parallel do private(IJK)
+!!     $omp parallel do private(IJK)
       DO IJK= ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
             V_s(ijk,m)=V_s(IJK,m)+VSH(IJK)
@@ -2521,7 +2521,7 @@
       INTEGER :: IJK
 !-----------------------------------------------
 
-!     $omp parallel do private(IJK)
+!!     $omp parallel do private(IJK)
       DO IJK= ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
             V_s(IJK,m)=V_s(IJK,m)-VSH(IJK)
@@ -2740,17 +2740,17 @@
 
       IF (SHEAR) SRT=(2d0*V_sh/XLENGTH)
 
-!$omp  parallel do default(shared)                                             &
-!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,  &
-!$omp           IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP, &
-!$omp           IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B, &
-!$omp           V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C, &
-!$omp           W_s_C, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,        &
-!$omp           Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C,               &
-!$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, USCM1, VSCM1, WSCM1,          &
-!$omp           SqrtVs, SqrtVgMinusVs,                                         &
-!$omp           D_s, D_sl, L, C_d, Re,                                         &
-!$omp           DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)
+!!$omp  parallel do default(shared)                                             &
+!!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,  &
+!!$omp           IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP, &
+!!$omp           IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B, &
+!!$omp           V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C, &
+!!$omp           W_s_C, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,        &
+!!$omp           Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C,               &
+!!$omp           UGC, VGC, WGC, USCM, VSCM, WSCM, USCM1, VSCM1, WSCM1,          &
+!!$omp           SqrtVs, SqrtVgMinusVs,                                         &
+!!$omp           D_s, D_sl, L, C_d, Re,                                         &
+!!$omp           DEP_soDX, DEP_soDY, DEP_soXDZ, M_s, I1, I2)
 
       DO IJK = ijkstart3, ijkend3
 
@@ -3152,7 +3152,7 @@
 
          ENDIF   ! end if (fluid_at)
       ENDDO   ! end outer IJK loop
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
       END SUBROUTINE INIT_MU_S

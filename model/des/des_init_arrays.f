@@ -26,18 +26,14 @@
       use desmpi
       USE des_thermo
       USE des_rxns
+
       IMPLICIT NONE
+
+      INTEGER :: II
 !-----------------------------------------------
 
 ! Pradeep: parallel processing
       iglobal_id = 0
-
-! T.Li: Hertzian collision model
-      g_mod(:) = zero
-      hert_kn(:,:) = zero
-      hert_kwn(:) = zero
-      hert_kt(:,:) = zero
-      hert_kwt(:) = zero
 
 ! particle properties
       DES_RADIUS(:) = ZERO
@@ -47,16 +43,18 @@
       RO_Sol(:) = ZERO
 
 ! particle position, velocity, etc
-      DES_POS_OLD(:,:) = ZERO
+
       DES_POS_NEW(:,:) = ZERO
-      DES_VEL_OLD(:,:) = ZERO
       DES_VEL_NEW(:,:) = ZERO
-
-      DES_ACC_OLD(:,:) = ZERO
-
-      OMEGA_OLD(:,:) = ZERO
       OMEGA_NEW(:,:) = ZERO
-      ROT_ACC_OLD(:,:) = ZERO
+
+      IF (DO_OLD) THEN
+         DES_POS_OLD(:,:) = ZERO
+         DES_VEL_OLD(:,:) = ZERO
+         DES_ACC_OLD(:,:) = ZERO
+         OMEGA_OLD(:,:) = ZERO
+         ROT_ACC_OLD(:,:) = ZERO
+      ENDIF
 
 ! Initializing user defined array (Surya Dec 10, 2014)
       DES_USR_VAR(:,:) = ZERO   
@@ -64,13 +62,6 @@
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
 
-      PN(:,:) = -1
-      PN_WALL(:,:) = -1
-      PN(1,:) = 0
-      PN_WALL(1,:) = 0
-      PV(:,:) = .TRUE.
-      PV_WALL(:,:) = .TRUE.
-      PFT_WALL(:,:,:) = ZERO
       PPOS(:,:) = ZERO
 
       PINC(:) = ZERO
@@ -84,34 +75,28 @@
 
       P_FORCE(:,:) = ZERO
 
-      IF (DES_INTERP_ON) THEN
-         DRAG_AM(:,:) = ZERO
-         DRAG_BM(:,:,:) = ZERO
-      ENDIF
+      IF(allocated(DRAG_AM)) DRAG_AM = ZERO
+      IF(allocated(DRAG_BM)) DRAG_BM = ZERO
+
+      F_GDS = ZERO
+      VXF_GDS = ZERO
 
       IF (DES_CONTINUUM_HYBRID) THEN
-         F_GDS(:,:) = ZERO
-         F_SDS(:,:,:) = ZERO
-         VXF_GDS(:,:) = ZERO
-         VXF_SDS(:,:,:) = ZERO
+         F_SDS = ZERO
+         VXF_SDS = ZERO
+         SDRAG_AM = ZERO
+         SDRAG_BM = ZERO
       ENDIF
-
-
 
       GRAV(:) = ZERO
 
-      NEIGHBOURS(:,:) = -1
-      NEIGHBOURS(:,1) = 0
-
+      DO II = 1, SIZE(particle_wall_collisions)
+         nullify(particle_wall_collisions(II)%pp)
+      ENDDO
 
 ! Cohesion VDW forces
       IF(USE_COHESION) THEN
          PostCohesive (:) = ZERO
-      ENDIF
-
-      IF(DES_CALC_CLUSTER) THEN
-         InACluster(:) = .FALSE.
-         PostCluster(:) = ZERO
       ENDIF
 
 ! J.Musser: DEM particle tracking quantity

@@ -126,13 +126,16 @@
 !-----------------------------------------------
 
       PEA(NP,:) = .FALSE.
-
-      DES_POS_OLD(:,NP) = ZERO
       DES_POS_NEW(:,NP) = ZERO
-      DES_VEL_OLD(:,NP) = ZERO
       DES_VEL_NEW(:,NP) = ZERO
-      OMEGA_OLD(:,NP) = ZERO
       OMEGA_NEW(:,NP) = ZERO
+
+      IF (DO_OLD) THEN
+         DES_POS_OLD(:,NP) = ZERO
+         DES_VEL_OLD(:,NP) = ZERO
+         OMEGA_OLD(:,NP) = ZERO
+      ENDIF
+
       DES_RADIUS(NP) = ZERO
       PMASS(NP) = ZERO
       PVOL(NP) = ZERO
@@ -142,22 +145,7 @@
       FC(:,NP) = ZERO
       TOW(:,NP) = ZERO
 
-      PN(:,NP) = -1
-      PN_WALL(:,NP) = -1
-      PN(1,NP) = 0
-      PN_WALL(1,NP) = 0
-      PV(:,NP) = .FALSE.
-      PV_WALL(:,NP) = .FALSE.
-      PFT_WALL(NP,:,:) = ZERO
       PPOS(:,NP) = ZERO
-
-! Note that if particle NP has any neighbors then the particle NP will
-! still exist in the neighbor's neighbours list.  This information would
-! eventually be cleared in the second call to calc_force_des following
-! the removal of NP but is forceably removed here to keep the dem
-! inlet/outlet code self contained (does not rely on other code)
-      NEIGHBOURS(NP,:) = -1
-      NEIGHBOURS(NP,1) = 0
 
       PIP = PIP - 1
 

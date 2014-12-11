@@ -32,8 +32,6 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Flag: Fluid affects particles, but particles do not impact fluid.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Flag: Interpolate between gas/solids
-      use discretelement, only: DES_INTERP_ON
 ! Number of discrtete solids phases.
       use discretelement, only: DES_MMAX
 ! Number of phases specified by the user.
@@ -174,7 +172,6 @@
 ! Overwrite user settings if no Lagrangian solids
       IF(.NOT.DISCRETE_ELEMENT) THEN
          DES_CONTINUUM_COUPLED = .FALSE.   ! This keyword might get removed.
-         DES_INTERP_ON = .FALSE.
          PRINT_DES_DATA = .FALSE.
          DES_ONEWAY_COUPLED = .FALSE.
       ENDIF

@@ -26,6 +26,8 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
+      use desmpi, only: DES_PAR_EXCHANGE
+
       USE fun_avg
       USE functions
       IMPLICIT NONE
@@ -67,7 +69,7 @@
       !compute the gas-phase pressure gradient at the beginning of the
       !des loop as the gas-phase pressure field will not change during
       !des calls
-      IF(DES_CONTINUUM_COUPLED)   CALL COMPUTE_PG_GRAD
+      IF(DES_CONTINUUM_COUPLED)   CALL CALC_PG_GRAD
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
       PIC_ITERS = 0
@@ -118,11 +120,20 @@
             DTSOLID = TEND_PIC_LOOP - S_TIME
          ENDIF
 
+! exchange particle crossing boundaries
+         CALL DES_PAR_EXCHANGE
+
          CALL PARTICLES_IN_CELL
+! Calculate mean fields using either interpolation or cell averaging.
+         CALL COMP_MEAN_FIELDS
+
+! This was moved from particles in cell and the passed variables should be
+! added to particles in cell or made global.
+         !CALL REPORT_PIC_STATS(RECOVERED, DELETED)
 
          CALL MPPIC_COMPUTE_PS_GRAD
-         IF(DES_CONTINUUM_COUPLED)   CALL CALC_DES_DRAG_GS
-         CALL CFUPDATEOLD
+         IF(DES_CONTINUUM_COUPLED)   CALL CALC_DRAG_DES
+         IF (DO_OLD) CALL CFUPDATEOLD
 
          CALL CFNEWVALUES
 
@@ -823,10 +834,10 @@
                   ii = iw + i-1
                   jj = js + j-1
                   kk = kb + k-1
-                  cur_ijk = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk))
-                  ipjk    = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk))
-                  ijpk    = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk))
-                  ipjpk   = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk))
+                  cur_ijk = funijk_map_c(ii,jj,kk)
+                  ipjk    = funijk_map_c(ii+1,jj,kk)
+                  ijpk    = funijk_map_c(ii,jj+1,kk)
+                  ipjpk   = funijk_map_c(ii+1,jj+1,kk)
 
                   vol_ijk = zero
                   vol_ipjk = zero
@@ -845,10 +856,10 @@
 
 
                   if(DO_K) then
-                     ijkp    = funijk(imap_c(ii),jmap_c(jj),kmap_c(kk+1))
-                     ijpkp   = funijk(imap_c(ii),jmap_c(jj+1),kmap_c(kk+1))
-                     ipjkp   = funijk(imap_c(ii+1),jmap_c(jj),kmap_c(kk+1))
-                     ipjpkp  = funijk(imap_c(ii+1),jmap_c(jj+1),kmap_c(kk+1))
+                     ijkp    = funijk_map_c(ii,jj,kk+1)
+                     ijpkp   = funijk_map_c(ii,jj+1,kk+1)
+                     ipjkp   = funijk_map_c(ii+1,jj,kk+1)
+                     ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
 
 
                      if(fluid_at(ijkp))     vol_ijkp   = vol(ijkp)
@@ -967,8 +978,8 @@
             endif
 
             do idim = 1,  merge(2,3,NO_K)
-               AVGSOLVEL_P(IDIM,NP) = ARRAY_DOT_PRODUCT(VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
-               VEL_FP(IDIM,NP) = ARRAY_DOT_PRODUCT(VSTENCIL(:,:,:,IDIM),WEIGHTP(:,:,:))
+               AVGSOLVEL_P(IDIM,NP) = ARRAY_DOT_PRODUCT(               &
+                  VEL_SOL_STENCIL(:,:,:,IDIM,M),WEIGHTP(:,:,:))
             ENDDO
 
             EPG_P(NP) = ARRAY_DOT_PRODUCT(SSTENCIL(:,:,:),WEIGHTP(:,:,:))

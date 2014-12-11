@@ -164,7 +164,7 @@
 ! Indices
       INTEGER :: I, J
 
-      DOUBLE PRECISION :: xbar
+!      DOUBLE PRECISION :: xbar
 
 ! start sof modifications (02-May-05)
 ! maximum packing for the mixture

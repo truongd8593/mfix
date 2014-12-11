@@ -27,7 +27,7 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1
       INTEGER :: lNEXT_REC
       INTEGER :: lDIMN
 
@@ -78,33 +78,14 @@
          ENDDO
       ENDIF
 
-      CALL WRITE_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,1))
-      CALL WRITE_RES_pARRAY(lNEXT_REC, PN(1,:))
-      CALL WRITE_RES_pARRAY(lNEXT_REC, PN_WALL(1,:))
-
-      DO LC1=2, MAXNEIGHBORS
-         CALL WRITE_RES_pARRAY(lNEXT_REC, NEIGHBOURS(:,LC1), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PN(LC1,:), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PV(LC1,:))
-      ENDDO
-
-      DO LC1=1, 6
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PN_WALL(LC1,:), pLOC2GLB=.TRUE.)
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PV_WALL(LC1,:))
-
-         DO LC2=1, lDIMN
-            CALL WRITE_RES_pARRAY(lNEXT_REC, PFT_WALL(:,LC1,LC2))
-         ENDDO
-      ENDDO
-
       DO LC1=1,2
          CALL WRITE_RES_cARRAY(lNEXT_REC, COLLISIONS(LC1,:), pLOC2GLB=.TRUE.)
       ENDDO
 
       CALL WRITE_RES_cARRAY(lNEXT_REC, PV_COLL(:))
       DO LC1=1, lDIMN
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC2,:))
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC2,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_COLL(LC1,:))
+         CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_COLL(LC1,:))
       ENDDO
 
       CALL WRITE_RES_DES(lNEXT_REC, DEM_BCMI)

@@ -156,7 +156,7 @@
          IF (DT == UNDEFINED) THEN
             CALL GET_SMASS (SMASS)
             IF(myPE.eq.PE_IO) THEN
-               WRITE (*, '(/A,G10.5, A,F9.3,1X,A)') &
+               WRITE (*, '(/A,G12.5, A,F9.3,1X,A)') &
                   ' Starting solids mass = ', SMASS, &
                   '    CPU time left = ', TLEFT, TUNIT
             ENDIF
@@ -519,15 +519,15 @@
       RETURN
 
 
- 5000 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5,' Hl=',G12.5,&
+ 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5,' Hl=',G12.5,&
          T84,'CPU=',F8.0,' s')
- 5001 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',I3,' Sm=',G10.5, T84,'CPU=',F8.0,' s')
- 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G10.4))
+ 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, T84,'CPU=',F8.0,' s')
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
  5050 FORMAT(5X,'Average ',A,G12.5)
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
- 5100 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT>',I3,' Sm= ',G10.5, 'MbErr%=', G10.4)
- 5200 FORMAT(1X,'t=',F10.4,' Dt=',G10.4,' NIT=',&
-      I3,'MbErr%=', G10.4, ': ',A,' :-(')
+ 5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, 'MbErr%=', G11.4)
+ 5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
+      I3,'MbErr%=', G11.4, ': ',A,' :-(')
  6000 FORMAT(1X,A)
 
 

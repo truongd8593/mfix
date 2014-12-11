@@ -123,8 +123,6 @@
 ! within particle_input.dat)
       DOUBLE PRECISION pvel_mean, PVEL_StDev
 
-
-
 ! Output/debug controls
 !----------------------------------------------------------------->>>
 ! Logic that controls whether to print data dem simulations (granular or
@@ -179,26 +177,6 @@
 ! is started (i.e. for particle settling w/o fluid forces)
       INTEGER NFACTOR
 
-! Switch to decide whether to call drag_gs or to call des_drag_gs via
-! drag_fgs to calculate the gas-solids drag coefficient.  if false
-! then drag_gs is used, otherwise des_drag_gs via drag_fgs is used
-! At a more fundamental level, when des_interp_on is true, then the
-! drag on particle is obtained by interpolating the carrier flow
-! velocity at the particle location. Similarly the drag force on the
-! Eulerian grid is obtained by backward of interpolaiton of the above
-! calculated drag force. See the DEM doc for more details.
-      LOGICAL DES_INTERP_ON
-
-! Switch to decide if the mean fields (such as solids volume fraction
-! and mean solids velocity) are obtained by interpolation or by the more
-! crude cell artihmetic averages. For MPPIC, this will switch will always
-! be true.
-      LOGICAL DES_INTERP_MEAN_FIELDS
-
-! Flag to check if mass is conserved between discrete and continuum
-! representations when mean fields are computed by backward interpolation.
-! Critical for cut-cells.
-      LOGICAL DES_REPORT_MASS_INTERP
 ! Drag
       LOGICAL TSUJI_DRAG
 
@@ -234,39 +212,34 @@
       DOUBLE PRECISION NEIGHBOR_SEARCH_RAD_RATIO
       LOGICAL DO_NSEARCH
 
+! Flag on whether to have DES_*_OLD arrays, if either Adams Bashforth or PIC is used
+      LOGICAL DO_OLD
+
 ! Factor muliplied by sum of radii in grid based neighbor search and
 ! nsquare search method.  increases the effective radius of a particle
 ! for detecting particle contacts
       DOUBLE PRECISION FACTOR_RLM
 
-! User specified value for the max number of neighbors any particle is
-! allowed
-      INTEGER MN
-
-! Slightly larger than MN: used to specify the max number of neighbors
-! any particle is allowed plus the number of walls in the simulation
-! plus one
-      INTEGER MAXNEIGHBORS
-
 ! Stores number of neighbors based on neighbor search
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOURS  !(PARTICLES, MAXNEIGHBORS)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD  !(2, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FT_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: NORM_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DIST_COLL   !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL  !(#collisions < MAXNEIGHBORS*PARTICLES)
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD  !(#collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD  !(3, #collisions < MAXNEIGHBORS*PARTICLES)
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: NORM_COLL
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DIST_COLL
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: TOW_COLL
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: QQ_COLL
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: COLLISION_NUM,OLD_COLLISION_NUM,COLLISION_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation
-      INTEGER NEIGH_MAX
       DOUBLE PRECISION OVERLAP_MAX
 
 ! The number of i, j, k divisions in the grid used to perform the
@@ -297,8 +270,9 @@
 ! Wall normal vector
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: WALL_NORMAL  !(NWALLS,3)
 
-! Gravity vector
+! Gravity vector and magnitude
       DOUBLE PRECISION :: GRAV(3)
+      DOUBLE PRECISION :: GRAV_MAG
 
 
 ! Periodic wall BC
@@ -403,22 +377,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
-! Save the accumulated tangential displacement that occurs during
-! collision (particle-particle or particle-wall)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFT_WALL !(PARTICLES,3,MAXNEIGHBORS)
-! Save the normal direction at previous time step
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: PFN_WALL ! (PARTICLES,3,MAXNEIGHBORS)
-
-! Variables used to track/store particle contact history
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN !(PARTICLES,MAXNEIGHBORS)
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PN_WALL !(PARTICLES,MAXNEIGHBORS)
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV !(PARTICLES,MAXNEIGHBORS)
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PV_WALL !(PARTICLES,MAXNEIGHBORS)
-
-! Gas-solids drag force on partaicle
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: GD_FORCE
-                        !(PARTICLES,3)
-
 ! Dynamic information related to computational (eulerian) fluid grid
 !----------------------------------------------------------------->>>
 ! Dynamic variable. for each ijk computational fluid cell store the
@@ -426,9 +384,30 @@
       TYPE iap1
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
+
+      TYPE facet_linked_list
+         INTEGER :: facet_id
+         DOUBLE PRECISION, DIMENSION(3):: PFT
+         type(facet_linked_list), pointer :: next => null()
+      END TYPE facet_linked_list
+
+      TYPE facet_linked_list_p
+         type(facet_linked_list), POINTER :: pp => null()
+      END TYPE facet_linked_list_p
+
+      TYPE(facet_linked_list_p), DIMENSION(:), ALLOCATABLE :: particle_wall_collisions
+
+      TYPE cnaa1
+         INTEGER, DIMENSION(:), ALLOCATABLE:: p
+         INTEGER, DIMENSION(:), ALLOCATABLE:: extentdir
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmin
+         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmax
+      END TYPE cnaa1
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
       TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
+
+      TYPE(cnaa1), DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
@@ -439,22 +418,14 @@
 !-----------------------------------------------------------------<<<
 
 
-! Hybrid model related variables/data
-!----------------------------------------------------------------->>>
 ! note that thse variables are needed since the existing variables (i.e.
 ! f_gs, f_ss, etc) are also being used to store the information between
 ! the gas and continuous solids phases.
 ! drag coefficient between gas phase and discrete particle 'phases'
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_GDS
-                        !(DIMENSION_3,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: F_GDS
 ! drag coefficient between continuous solids phases and discrete
 ! particle 'phases'
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: F_SDS
-                        !(DIMENSION_3,MMAX,DES_MMAX)
-! Solids-solids drag force on particle (between continuous solids and
-! discrete particle)
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SD_FORCE
-                        !(PARTICLES,3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_SDS
 
 ! the following should probably be local to the subroutine
 ! solve_vel_star they are only needed when invoking the non-interpolated
@@ -462,40 +433,27 @@
 ! in the gas-phase momentum balances, in the routine to determine
 ! coefficients for the pressure correction equation and in the partial
 ! elimination algorithm
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VXF_GDS
-                        !(DIMENSION_3,DES_MMAX)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: VXF_SDS
-                        !(DIMENSION_3,MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VXF_GDS
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VXF_SDS
 
 ! the contribution of solids-particle drag to the mth phase continuum
 ! solids momentum A matrix (center coefficient)
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: sdrag_am
-                        !(DIMENSION_3,MMAX,DES_MMAX)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: SDRAG_AM
 ! the contribution of solids-particle drag to the to mth phase continuum
 ! solids momentum B vector
-!      DOUBLE PRECISION, DIMENSION(:,:,:,:), ALLOCATABLE :: sdrag_bm
-                        !(DIMENSION_3,3,MMAX,DES_MMAX)
-! mth phase continuum solids velocity at particle position
-!      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::vel_sp
-                        !(PARTICLES,3)
-! the solids-particle drag coefficient
-!      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: f_sp
-                        !(MMAX,PARTICLES)
-
-!-----------------------------------------------------------------<<<
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: SDRAG_BM
 
 
-! START interpolation related data
-!----------------------------------------------------------------->>>
-! the coefficient add to gas momentum A matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::DRAG_AM
-                        !(DIMENSION_3,DES_MMAX)
-! the coefficient add to gas momentum B matrix  at cell corners
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE ::DRAG_BM
-                        !(DIMENSION_3,3,DES_MMAX)
-! fluid velocity at particle position
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE ::VEL_FP
-                        !(PARTICLES,3)
+! the coefficient add to gas momentum A matrix
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DRAG_AM
+! the coefficient add to gas momentum B matrix
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
+
+
+!
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
+
+
 
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.
@@ -604,21 +562,9 @@
       !make this a short integer
       !array to specify the facet type
       Integer, dimension(:), allocatable :: STL_FACET_TYPE
+      Logical, dimension(:), allocatable :: IS_AUTOGENERATED
 
       Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
-! Start Cluster Identification
-!----------------------------------------------------------------->>>
-! keyword determining whether to activate cluster identification
-! algorithm
-      LOGICAL :: DES_CALC_CLUSTER
-
-! the maximum distance between two particles for them to be
-! considered a cluster
-      DOUBLE PRECISION :: Cluster_Length_Cutoff
-
-! indicates whether particle is currently in a cluster. this allows us
-! to skip particles that have already been identified as in a cluster
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: InACluster
 !-----------------------------------------------------------------<<<
 
 
@@ -656,5 +602,12 @@
 
 ! END Cohesion
 !-----------------------------------------------------------------<<<
+
+
+
+
+      LOGICAL :: EXPLICITLY_COUPLED
+
+
 
       END MODULE DISCRETELEMENT

@@ -107,9 +107,6 @@
 !  1=n-square; 2=quadtree; 3=octree; 4=gridbased
   DES_NEIGHBOR_SEARCH = 1 
 
-! Maximum number of neighbors allowed per particle
-  MN = 10 
-
 ! ~Maximum number of steps through DEM loop before 
 !  neighbor search is performed [25]
   NEIGHBOR_SEARCH_N = 1  

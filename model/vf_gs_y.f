@@ -39,9 +39,9 @@
 ! Dummy Arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(INOUT) :: IER
+      INTEGER, INTENT(OUT) :: IER
 ! Volume x Drag
-      DOUBLE PRECISION, INTENT(INOUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
+      DOUBLE PRECISION, INTENT(OUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -49,45 +49,34 @@
       INTEGER :: J, IJK, IJKN
 ! Index of continuum solids phases
       INTEGER :: M
-! Index of discrete solids 'phases'
-      INTEGER :: DM, MTOT
 !-----------------------------------------------
 
-      MTOT = merge(MMAX, MMAX+DES_MMAX, DES_CONTINUUM_HYBRID)
 
-      M_LP: DO M = 1, MTOT
-         IF(SOLIDS_MODEL(M) == 'DEM' .AND. DES_ONEWAY_COUPLED) THEN
-            VxF_GS(:,M) = ZERO
-            CYCLE M_LP
-         ENDIF
-
+      DO M = 1, SMAX
          DO IJK = ijkstart3, ijkend3
             IF (IP_AT_N(IJK)) THEN
                VXF_GS(IJK,M) = ZERO
             ELSE
                J = J_OF(IJK)
                IJKN = NORTH_OF(IJK)
-               VXF_GS(IJK,M) = VOL_V(IJK) * &
+               VXF_GS(IJK,M) = VOL_V(IJK) *                            &
                   AVG_Y(F_GS(IJK,M),F_GS(IJKN,M),J)
             ENDIF
-         ENDDO               ! end do loop (ijk=ijkstart3,ijkend3)
-      ENDDO M_LP
+         ENDDO
+      ENDDO
 
 
-
-      IF (DES_CONTINUUM_HYBRID) THEN
-         DO DM = 1,DES_MMAX
-            DO IJK = ijkstart3, ijkend3
-               IF(IP_AT_N(IJK)) THEN
-                  VXF_GDS(IJK,DM) = ZERO
-               ELSE
-                  J = J_OF(IJK)
-                  IJKN = NORTH_OF(IJK)
-                  VXF_GDS(IJK,DM) = VOL_V(IJK) * &
-                     AVG_Y(F_GDS(IJK,DM),F_GDS(IJKN,DM),J)
-               ENDIF
-            ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
-         ENDDO       ! end do loop (dm=1,des_mmax)
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_ONEWAY_COUPLED) THEN
+         DO IJK = IJKSTART3, IJKEND3
+            IF(IP_AT_N(IJK)) THEN
+               VXF_GDS(IJK) = ZERO
+            ELSE
+               J = J_OF(IJK)
+               IJKN = NORTH_OF(IJK)
+               VXF_GDS(IJK) = VOL_V(IJK) *                             &
+                  AVG_Y(F_GDS(IJK),F_GDS(IJKN),J)
+            ENDIF
+         ENDDO
       ENDIF
 
       RETURN
@@ -132,9 +121,9 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(INOUT) :: IER
+      INTEGER, INTENT(OUT) :: IER
 ! Volume x Drag
-      DOUBLE PRECISION, INTENT(INOUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
+      DOUBLE PRECISION, INTENT(OUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -142,8 +131,6 @@
       INTEGER :: J, IJK, IJKN
 ! Index of continuum solids phases
       INTEGER :: L, M, LM
-! Index of discrete solids 'phases'
-      INTEGER :: DM
 !-----------------------------------------------
 
 ! initialize every call
@@ -153,7 +140,6 @@
          DO L = 1, MMAX
             LM = FUNLM(L,M)
             IF (L .NE. M) THEN
-!!$omp  parallel do private(J,IJK,IJKN)
                DO IJK = ijkstart3, ijkend3
                   IF (.NOT.IP_AT_N(IJK)) THEN
                      J = J_OF(IJK)
@@ -169,20 +155,16 @@
 
       IF (DES_CONTINUUM_HYBRID) THEN
 ! initialize every call
-         VXF_SDS(:,:,:) = ZERO
          DO M = 1, MMAX
-            DO DM = 1, DES_MMAX
-!!$omp  parallel do private(J,IJK,IJKN)
-               DO IJK = ijkstart3, ijkend3
-                  IF (.NOT.IP_AT_N(IJK)) THEN
-                     J = J_OF(IJK)
-                     IJKN = NORTH_OF(IJK)
-                     VXF_SDS(IJK,M,DM) = AVG_Y(F_SDS(IJK,M,DM),F_SDS(IJKN,M,DM),J)*VOL_V(IJK)
-                  ELSE
-                     VXF_SDS(IJK,M,DM) = ZERO
-                  ENDIF
-               ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
-            ENDDO   ! end do loop (dm=1,des_mmax)
+            DO IJK = ijkstart3, ijkend3
+               IF (IP_AT_N(IJK)) THEN
+                  VXF_SDS(IJK,M) = ZERO
+               ELSE
+                  J = J_OF(IJK)
+                  IJKN = NORTH_OF(IJK)
+                  VXF_SDS(IJK,M) = AVG_Y(F_SDS(IJK,M),F_SDS(IJKN,M),J)*VOL_V(IJK)
+               ENDIF
+            ENDDO      ! end do loop (ijk=ijkstart3,ijkend3)
          ENDDO   ! end do loop (m=1,mmax)
       ENDIF   ! end if (discrete_element and des_continuum_hybrid)
 

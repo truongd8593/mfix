@@ -128,9 +128,9 @@ CONTAINS
     DOUBLE PRECISION :: m111, m112, m113, m122, m123, m133, m222
     DOUBLE PRECISION :: m223, m233, m333
 
-    DOUBLE PRECISION :: up1, up2, up3, em1, ep1, b, a1, b1, gamma, om
+    DOUBLE PRECISION :: up1, up2, up3, b, a1, b1, gamma, om
     DOUBLE PRECISION :: sig1, sig2, sig3, sig11, sig12, sig13, sig22, sig23
-    DOUBLE PRECISION :: sig33, seq, T, cor1
+    DOUBLE PRECISION :: sig33, seq, T
 
     DOUBLE PRECISION :: d11, d12, d13, d22, d23, d33
     DOUBLE PRECISION :: d111, d112, d113, d122, d123, d133, d222, d223, d233, d333

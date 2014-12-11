@@ -47,6 +47,7 @@
       USE dashboard
       Use stl
       USE qmom_kinetic_equation
+      use particle_filter
 
       use error_manager
 

@@ -48,7 +48,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_GRAN_TEMP
 
-      use discretelement, only: NEIGH_MAX
       use discretelement, only: OVERLAP_MAX
 
       use discretelement, only: DES_MMAX

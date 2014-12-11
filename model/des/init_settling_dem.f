@@ -20,6 +20,7 @@
 !      USE des_thermo
 !      USE des_stl_functions
 
+      use desmpi, only: DES_PAR_EXCHANGE
       use error_manager
 
       IMPLICIT NONE
@@ -58,6 +59,8 @@
          CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
          DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
+! exchange particle crossing boundaries and updates ghost particles
+         CALL DES_PAR_EXCHANGE
 ! find particles on grid
          CALL PARTICLES_IN_CELL
 ! perform neighbor search

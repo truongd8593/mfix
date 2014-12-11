@@ -92,7 +92,6 @@
   DES_EN_WALL_INPUT = 1.d0  ! Restitution coefficient
 
   NEIGHBOR_SEARCH_N = 10  ! Steps between neighbor search
-  MN = 20                 ! Maximum number of neighbors
 
 ! Solids phase 1:
 !---------------------------------------------------------------------//

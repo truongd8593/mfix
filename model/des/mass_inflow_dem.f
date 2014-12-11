@@ -52,7 +52,6 @@
             ENDDO
          ENDDO
 
-
 ! Check if any particles need seeded this time step.
          IF(DEM_MI_TIME(BCV_I) > S_TIME) CYCLE
 
@@ -295,17 +294,18 @@
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)
-      DES_POS_OLD(:,lNP) = lPOS(:)
+      DES_VEL_NEW(1,lNP) = BC_U_s(lBCV,BC_M)
+      DES_VEL_NEW(2,lNP) = BC_V_s(lBCV,BC_M)
+      DES_VEL_NEW(3,lNP) = BC_W_s(lBCV,BC_M)
 
 ! Set the initial velocity values
-      DES_VEL_OLD(1,lNP) = BC_U_s(lBCV,BC_M)
-      DES_VEL_OLD(2,lNP) = BC_V_s(lBCV,BC_M)
-      DES_VEL_OLD(3,lNP) = BC_W_s(lBCV,BC_M)
-
-      DES_VEL_NEW(:,lNP) = DES_VEL_OLD(:,lNP)
+      IF (DO_OLD) THEN
+         DES_POS_OLD(:,lNP) = lPOS(:)
+         DES_VEL_OLD(:,lNP) = DES_VEL_NEW(:,lNP)
+         OMEGA_OLD(:,lNP) = 0
+      ENDIF
 
 ! Set the initial angular velocity values
-      OMEGA_OLD(:,lNP) = 0
       OMEGA_NEW(:,lNP) = 0
 
 ! Set the particle radius value
@@ -397,7 +397,6 @@
 ! for parallel processing
       integer listart,liend,ljstart,ljend,lkstart,lkend
 
-      DOUBLE PRECISION, EXTERNAL :: DES_DOTPRDCT
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
 !-----------------------------------------------
 
@@ -440,9 +439,9 @@
                DO LL = 1, NPG
                   NP2 = PIC(IJK)%P(LL)
                   DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(:,NP2)
-                  DIST = SQRT(DES_DOTPRDCT(DISTVEC,DISTVEC))
+                  DIST = DOT_PRODUCT(DISTVEC,DISTVEC)
                   R_LM = ppar_rad + DES_RADIUS(NP2)
-                  IF(DIST .LE. R_LM) TOUCHING = .TRUE.
+                  IF(DIST .LE. R_LM*R_LM) TOUCHING = .TRUE.
                ENDDO
              ENDIF
            ENDDO

@@ -11,7 +11,7 @@
       implicit none
 
 ! Rank ID
-      INTEGER, OPTIONAL, INTENT(IN) :: myID
+      INTEGER, INTENT(IN) :: myID
 ! Logical showing that a file unit is open.
       LOGICAL :: isOpen
 ! The value passed via the dummy argument or the process ID.
@@ -20,8 +20,7 @@
       CHARACTER(len=64) :: myID_c
 
 ! Set the ID of the caller.
-      myID_l= merge(myID, myPE, PRESENT(myID))
-      myID_c=''; WRITE(myID_c,*) myID_l
+      myID_c=''; WRITE(myID_c,*) myID
 
 ! Write out that this routine was called.
       IF(myPE == PE_IO) WRITE(*,1000)
