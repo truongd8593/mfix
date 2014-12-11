@@ -51,7 +51,7 @@
 ! tangent to the plane of contact at current time step
       DOUBLE PRECISION :: V_REL_TANG(3)
 ! normal and tangential forces
-      DOUBLE PRECISION :: FN(3)
+      DOUBLE PRECISION :: FN(3), FT(3)
       DOUBLE PRECISION :: FNS1(3), FNS2(3)
       DOUBLE PRECISION :: FTS1(3), FTS2(3)
 ! temporary storage of tangential DISPLACEMENT
@@ -65,8 +65,7 @@
       DOUBLE PRECISION :: ETAN_DES, ETAT_DES
       DOUBLE PRECISION :: KN_DES, KT_DES
 ! local values used for calculating cohesive forces
-      DOUBLE PRECISION :: FORCE_COH, EQ_RADIUS, DistApart, &
-                          magGravity
+      DOUBLE PRECISION :: FORCE_COH, EQ_RADIUS, DistApart
 ! set to T when a sliding contact occurs
       LOGICAL :: PARTICLE_SLIDE
 
@@ -85,21 +84,18 @@
 ! Check particle LL neighbour contacts
 !---------------------------------------------------------------------//
 
-      FC_COLL(:,:) = 0
-      FT_COLL(:,:) = 0
-
 !$omp parallel default(none) private(cc,ll,i,dist,r_lm,             &
 !$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,particle_slide,       &
+!$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
 !$omp    eq_radius,distapart,force_coh,k_s0,                           &
 !$omp    dist_cl, dist_ci, tow_tmp)   &
 !$omp    shared(collisions,collision_num,qq_coll,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
 !$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
-!$omp    hamaker_constant,asperities,surface_energy,ft_coll, pea,      &
-!$omp    tow, tow_coll, fc, do_k, energy_eq, grav, magGravity, postcohesive, pmass, q_source)
+!$omp    hamaker_constant,asperities,surface_energy, pea,              &
+!$omp    tow, tow_coll, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
       DO CC = 1, COLLISION_NUM
@@ -112,6 +108,8 @@
          R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_COLL(CC) = dot_product(DIST,DIST)
+
+         FC_COLL(:,CC) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -128,8 +126,7 @@
                     (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_COLL(:,CC) = FC_COLL(:,CC) +                         &
-                  DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
+               FC_COLL(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
             ENDIF
          ENDIF
 
@@ -199,13 +196,13 @@
 ! Calculate the tangential contact force
          FTS1(:) = -KT_DES * PFT_TMP(:)
          FTS2(:) = -ETAT_DES * V_REL_TANG
-         FT_COLL(:,CC) = FTS1(:) + FTS2(:)
+         FT(:) = FTS1(:) + FTS2(:)
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with another particle/wall
          PARTICLE_SLIDE = .FALSE.
          CALL CFSLIDE(V_REL_TANG(:), PARTICLE_SLIDE, MEW,              &
-             FT_COLL(:,CC), FN(:))
+             FT(:), FN(:))
 ! calculate the distance from the particles' centers to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
@@ -213,19 +210,19 @@
               DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
 
          DIST_CI = DIST_COLL(CC) - DIST_CL
-         CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT_COLL(:,CC))
+         CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT(:))
          TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
          TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
 
 ! Calculate the total force FC of a collision
 ! total contact force ( FC_COLL may already include cohesive force)
-         FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT_COLL(:,CC)
+         FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT(:)
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
-            PFT_COLL(:,CC) = -( FT_COLL(:,CC) - FTS2(:) ) / KT_DES
+            PFT_COLL(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
          ELSE
             PFT_COLL(:,CC) = PFT_TMP(:)
          ENDIF
@@ -266,15 +263,14 @@
       ENDDO
 
 !$omp section
-      magGravity = SQRT(dot_product(GRAV,GRAV))
 ! just for post-processing mag. of cohesive forces on each particle
          IF(USE_COHESION)THEN
          DO CC = 1, COLLISION_NUM
             LL = COLLISIONS(1,CC)
             I  = COLLISIONS(2,CC)
             PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
-            if(magGravity> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
-               SQRT(PostCohesive(LL)) / (PMASS(LL)*magGravity)
+            if(GRAV_MAG> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
+                 SQRT(PostCohesive(LL)) / (PMASS(LL)*GRAV_MAG)
          ENDDO
          ENDIF ! for cohesion model
 

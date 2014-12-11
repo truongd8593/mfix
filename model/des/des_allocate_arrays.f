@@ -540,11 +540,6 @@
       real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
       call move_alloc(real_tmp,fc_coll)
 
-      lSIZE2 = size(FT_COLL,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = ft_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,ft_coll)
-
       lSIZE1 = size(norm_coll,2)
       allocate(real_tmp(3,COLLISION_MAX))
       real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
