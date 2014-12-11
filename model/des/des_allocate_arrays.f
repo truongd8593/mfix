@@ -141,7 +141,6 @@
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
       Allocate(  FC_COLL  (3,COLLISION_MAX) )
-      Allocate(  FT_COLL  (3,COLLISION_MAX) )
       Allocate(  DIST_COLL (COLLISION_MAX) )
       Allocate(  QQ_COLL (COLLISION_MAX) )
       Allocate(  NORM_COLL (3,COLLISION_MAX) )
