@@ -22,65 +22,90 @@
 
       CONTAINS
 
-        subroutine add_facet(cell_id, facet_id)
-          Use discretelement
-          USE stl
-          implicit none
-          INTEGER, INTENT(IN) :: cell_id, facet_id
 
-          INTEGER, DIMENSION(:), ALLOCATABLE :: int_tmp
-          DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ADD_FACET                                               !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ADD_FACET(CELL_ID, FACET_ID)
 
-          INTEGER :: lSIZE1, lSIZE2, ii
-          DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
+      Use discretelement
+      USE stl
 
-          IF(STL_FACET_TYPE(facet_id).ne.FACET_TYPE_NORMAL) return !Skip this facet
+      implicit none
 
-          DO ii = 1, cellneighbor_facet_num(cell_id)
-             IF(facet_id .eq. cellneighbor_facet(cell_id)%p(ii)) return
-          ENDDO
+      INTEGER, INTENT(IN) :: cell_id, facet_id
 
-          cellneighbor_facet_num(cell_id) = cellneighbor_facet_num(cell_id) + 1
+      INTEGER, DIMENSION(:), ALLOCATABLE :: int_tmp
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
 
-          IF(cellneighbor_facet_num(cell_id) > cellneighbor_facet_max(cell_id)) THEN
-             cellneighbor_facet_max(cell_id) = 2*cellneighbor_facet_max(cell_id)
+      INTEGER :: lSIZE1, lSIZE2, ii
+      DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
 
-             lSIZE2 = size(cellneighbor_facet(cell_id)%p)
-             allocate(int_tmp(cellneighbor_facet_max(cell_id)))
-             int_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%p(1:lSIZE2)
-             call move_alloc(int_tmp,cellneighbor_facet(cell_id)%p)
+      IF(STL_FACET_TYPE(facet_id) /= FACET_TYPE_NORMAL) RETURN
 
-             lSIZE2 = size(cellneighbor_facet(cell_id)%extentdir)
-             allocate(int_tmp(cellneighbor_facet_max(cell_id)))
-             int_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%extentdir(1:lSIZE2)
-             call move_alloc(int_tmp,cellneighbor_facet(cell_id)%extentdir)
+      DO II = 1, CELLNEIGHBOR_FACET_NUM(CELL_ID)
+         IF(FACET_ID .EQ. CELLNEIGHBOR_FACET(CELL_ID)%P(II)) RETURN
+      ENDDO
 
-             lSIZE2 = size(cellneighbor_facet(cell_id)%extentmin)
-             allocate(real_tmp(cellneighbor_facet_max(cell_id)))
-             real_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%extentmin(1:lSIZE2)
-             call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmin)
+      CELLNEIGHBOR_FACET_NUM(CELL_ID) = &
+         CELLNEIGHBOR_FACET_NUM(CELL_ID) + 1
 
-             lSIZE2 = size(cellneighbor_facet(cell_id)%extentmax)
-             allocate(real_tmp(cellneighbor_facet_max(cell_id)))
-             real_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%extentmax(1:lSIZE2)
-             call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmax)
+      NO_NEIGHBORING_FACET_DES(CELL_ID)  = .FALSE.
 
-          ENDIF
+      IF(cellneighbor_facet_num(cell_id) > &
+         cellneighbor_facet_max(cell_id)) THEN
 
-          cellneighbor_facet(cell_id)%p(cellneighbor_facet_num(cell_id)) = facet_id
-          smallest_extent = huge(0.0)
-          do ii=1,3
-             min_temp = minval(VERTEX(:,ii,facet_id))
-             max_temp = maxval(VERTEX(:,ii,facet_id))
-             if ( abs(max_temp - min_temp) < smallest_extent ) then
-                cellneighbor_facet(cell_id)%extentdir(cellneighbor_facet_num(cell_id)) = ii
-                cellneighbor_facet(cell_id)%extentmin(cellneighbor_facet_num(cell_id)) = min_temp
-                cellneighbor_facet(cell_id)%extentmax(cellneighbor_facet_num(cell_id)) = max_temp
-                smallest_extent = abs(max_temp - min_temp)
-             endif
-          enddo
+         cellneighbor_facet_max(cell_id) = &
+         2*cellneighbor_facet_max(cell_id)
 
-        end subroutine add_facet
+         lSIZE2 = size(cellneighbor_facet(cell_id)%p)
+         allocate(int_tmp(cellneighbor_facet_max(cell_id)))
+         int_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%p(1:lSIZE2)
+         call move_alloc(int_tmp,cellneighbor_facet(cell_id)%p)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentdir)
+         allocate(int_tmp(cellneighbor_facet_max(cell_id)))
+         int_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentdir(1:lSIZE2)
+         call move_alloc(int_tmp,cellneighbor_facet(cell_id)%extentdir)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentmin)
+         allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+         real_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentmin(1:lSIZE2)
+         call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmin)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentmax)
+         allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+         real_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentmax(1:lSIZE2)
+         call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmax)
+
+      ENDIF
+
+      CELLNEIGHBOR_FACET(CELL_ID)%&
+         P(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = FACET_ID
+      SMALLEST_EXTENT = HUGE(0.0)
+ 
+      DO II=1,3
+         MIN_TEMP = MINVAL(VERTEX(:,II,FACET_ID))
+         MAX_TEMP = MAXVAL(VERTEX(:,II,FACET_ID))
+
+         IF(ABS(MAX_TEMP - MIN_TEMP) < SMALLEST_EXTENT ) THEN
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTDIR(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = II
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTMIN(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = MIN_TEMP
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTMAX(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = MAX_TEMP
+             SMALLEST_EXTENT = ABS(MAX_TEMP - MIN_TEMP)
+         ENDIF
+      ENDDO
+
+      END SUBROUTINE ADD_FACET
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -302,8 +327,7 @@
          IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) cycle
-!         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
+         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL)))  cycle
 
         IF(DEBUG_DES.AND.LL.EQ.FOCUS_PARTICLE) THEN
             IJK = PIJK(LL,4)
