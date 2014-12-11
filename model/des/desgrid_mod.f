@@ -242,6 +242,18 @@
           kofpos = floor((fpos-dg_zstart)*dg_dzinv) + dg_kstart1
         end function kofpos
 
+        logical function dg_is_ON_myPE(lI, lJ, lK)
+        implicit none
+        integer, intent(in) :: lI, lJ, lK
+
+        dg_is_ON_myPE = (&
+           (dg_istart <= lI) .AND. (lI <= dg_istart) .AND. &
+           (dg_jstart <= lJ) .AND. (lJ <= dg_jstart) .AND. &
+           (dg_kstart <= lK) .AND. (lK <= dg_kstart))
+
+        end function
+
+
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_init
 ! Purpose          : sets indices for desgrid and defines constants

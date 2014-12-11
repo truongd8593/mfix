@@ -121,8 +121,8 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL(POSITION, PCELL, RADIUS, &
-      OVERLAP_EXISTS)
+      SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL(POSITION, RADIUS, &
+         OVERLAP_EXISTS)
 
       USE run
       USE param1
@@ -134,11 +134,11 @@
       USE stl
       USE compar
       USE des_stl_functions
+      use desgrid
       USE functions
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN), RADIUS
-      INTEGER , INTENT(IN) :: PCELL(4)
       LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
 
       INTEGER I, J, K, IJK, NF
@@ -148,51 +148,56 @@
       NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP, focus_particle
+      LOC_MAX_PIP!, focus_particle
 
-      FOCUS_PARTICLE = -1
 
-      OVERLAP_EXISTS = .false.
+      OVERLAP_EXISTS = .FALSE.
 
-      IF (NO_NEIGHBORING_FACET_DES(PCELL(4))) RETURN
+      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
+      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
+      K_CELL = 1
+      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+
+      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)      
+      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
 
       LIST_OF_CELLS(:) = -1
       NEIGH_CELLS = 0
       NEIGH_CELLS_NONNAT  = 0
-      CELL_ID = PCELL(4)
+
       COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
 
       RADSQ = RADIUS*RADIUS
 
+! Add the facets in the cell the particle currently resides in
       IF (COUNT_FAC.gt.0)   then
-         !first add the facets in the cell the particle currently resides in
          NEIGH_CELLS = NEIGH_CELLS + 1
          LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
       ENDIF
 
-      I_CELL = PCELL(1)
-      J_CELL = PCELL(2)
-      K_CELL = PCELL(3)
+      IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
+      IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
 
-      IPLUS1  =  MIN (I_CELL + 1, IEND2)
-      IMINUS1 =  MAX (I_CELL - 1, ISTART2)
+      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
+      JMINUS1 =  MAX (J_CELL - 1, DG_JSTART2)
 
-      JPLUS1  =  MIN (J_CELL + 1, JEND2)
-      JMINUS1 =  MAX (J_CELL - 1, JSTART2)
-
-      KPLUS1  =  MIN (K_CELL + 1, KEND2)
-      KMINUS1 =  MAX (K_CELL - 1, KSTART2)
+      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
+      KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
 
       DO K = KMINUS1, KPLUS1
          DO J = JMINUS1, JPLUS1
             DO I = IMINUS1, IPLUS1
-               IJK = FUNIJK(I,J,K)
+
+               IF(.NOT.dg_is_ON_myPE(I,J,K)) CYCLE
+
+               IJK = DG_FUNIJK(I,J,K)
                COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 
                IF(COUNT_FAC.EQ.0) CYCLE
                distsq = zero
+
                IF(POSITION(1) > XE(I)) DISTSQ = DISTSQ &
-               + (POSITION(1)-XE(I))*(POSITION(1)-XE(I))
+                  + (POSITION(1)-XE(I))*(POSITION(1)-XE(I))
 
                IF(POSITION(1) < XE(I) - DX(I)) DISTSQ = DISTSQ &
                + (XE(I) - DX(I) - POSITION(1))*(XE(I) - DX(I) - POSITION(1))

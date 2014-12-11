@@ -20,6 +20,10 @@
   ENERGY_EQ 		= .FALSE.		!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	!do not solve species eq
 
+  DES_INTERP_ON = .T.
+  DES_INTERP_MEAN_FIELDS = .T.
+  DES_INTERP_SCHEME = 'GARG_2012'
+
   MOMENTUM_X_EQ(1) = .FALSE. 
   MOMENTUM_Y_EQ(1) = .FALSE.
   MOMENTUM_Z_EQ(1) = .FALSE.

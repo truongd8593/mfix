@@ -1063,22 +1063,7 @@
 
          IF(X2>=ZERO.AND.X1<=XLENGTH+TOL_STL ) THEN
             I1 = iofpos(X1)
-            ! DO I = DG_ISTART2, DG_IEND2
-            !    IP = I+1
-            !    IF(XE(I)>=X1-TOL_STL) THEN
-            !       I1=I
-            !       EXIT
-            !    ENDIF
-            ! ENDDO
-
             I2 = iofpos(1/dg_dxinv+X2)
-            ! DO I = DG_IEND2, DG_ISTART2,-1
-            !    IP = I+1
-            !    IF(XE(I)-DX(I)<=X2+TOL_STL) THEN
-            !       I2=I
-            !       EXIT
-            !    ENDIF
-            ! ENDDO
          ENDIF
 
          J1 = DG_JEND2
@@ -1086,22 +1071,7 @@
 
          IF(Y2>=ZERO.AND.Y1<=YLENGTH+TOL_STL) THEN
             J1 = jofpos(Y1)
-            ! DO J = DG_JSTART2, DG_JEND2
-            !    JP = J+1
-            !    IF(YN(J)>=Y1-TOL_STL) THEN
-            !       J1=J
-            !       EXIT
-            !    ENDIF
-            ! ENDDO
-
             J2 = jofpos(1/dg_dyinv+Y2)
-            ! DO J = DG_JEND2, DG_JSTART2,-1
-            !    JP=J+1
-            !    IF(YN(J)-DY(J)<=Y2+TOL_STL) THEN
-            !       J2=J
-            !       EXIT
-            !    ENDIF
-            ! ENDDO
          ENDIF
 
          K1 = DG_KEND2
@@ -1110,40 +1080,17 @@
          IF(DO_K) THEN
             IF(Z2>=ZERO.AND.Z1<=ZLENGTH+TOL_STL) THEN
                K1 = kofpos(Z1)
-               ! DO K = DG_KSTART2, DG_KEND2
-               !    KP=K+1
-
-               !    IF(ZT(K)>=Z1-TOL_STL) THEN
-               !       K1=K
-               !       EXIT
-               !    ENDIF
-               ! ENDDO
-
                K2 = kofpos(1/dg_dzinv+Z2)
-               ! DO K = DG_KEND2, DG_KSTART2,-1
-               !    KP = K+1
-               !    IF(ZT(K)-DZ(K)<=Z2+TOL_STL) THEN
-               !       K2=K
-               !       EXIT
-               !    ENDIF
-               ! ENDDO
             ENDIF
          ENDIF
-
-         IF(N.eq.92.and..false.) then
-            write(*,*) 'vertex x ', VERTEX(1:3,1,N)
-            write(*,*) 'vertex y ', VERTEX(1:3,2,N)
-            write(*,*) 'vertex z ', VERTEX(1:3,3,N)
-            write(*,*) 'I1, I2', I1, I2, J1, J2, K1, K2
-            read(*,*)
-         endif
 
          DO K=K1,K2
             DO J=J1,J2
                DO I=I1,I2
-
-                  IJK = DG_FUNIJK(I,J,K)
-                  CALL ADD_FACET_FOR_DES(I,J,K,IJK,N)
+                  IF(dg_is_ON_myPE(I,J,K)) THEN
+                     IJK = DG_FUNIJK(I,J,K)
+                     CALL ADD_FACET_FOR_DES(I,J,K,IJK,N)
+                  ENDIF
                enddo
             enddo
          enddo
@@ -1211,6 +1158,8 @@
       use desgrid, only: dg_ystart, dg_dyinv
       use desgrid, only: dg_zstart, dg_dzinv
 
+      use desgrid
+
       Use stl
       use error_manager
 
@@ -1228,11 +1177,8 @@
       CHARACTER(LEN=100) :: FNAME
       integer :: stl_unit, fid
 
-      stl_unit = 1001
 
-!     IF (I < IMIN1 .OR. I > IMAX1) RETURN
-!     IF (J < JMIN1 .OR. J > JMAX1) RETURN
-!     IF (K < KMIN1 .OR. K > KMAX1) RETURN
+      stl_unit = 1001
 
       box_origin(1) = dg_xstart + (I-2)/dg_dxinv
       box_extents(1) = 1.0/dg_dxinv

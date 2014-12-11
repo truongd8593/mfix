@@ -259,28 +259,31 @@
       DO WHILE (ASSOCIATED(part))
          DELETE_PART = .false.
          IJK = part%cell(4)
+
+! Only look for particles that are in domain. Particles in dead cells
+! have already been flagged as outside of the domain in
+! BIN_PARTICLES_TO_CELL.
          IF(part%indomain) THEN
-            !Only look for particles that are in domain
-            !Particles in dead cells have already been flagged
-            !as outside of the domain in BIN_PARTICLES_TO_CELL
 
+! Since checking if a particle is on other side of a triangle is tricky,
+! for safety, initially remove all the particles in the cut-cell.
+! now cut-cell and actualy geometry could be off, so this might not work
+! very robustly.
             IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
-               !Since checking if a particle is on other side of a triangle is tricky,
-               !for safety, initially remove all the particles in the cut-cell.
-               !now cut-cell and actualy geometry could be off, so this might not work
-               !very robustly.
 
-               !Check if any of the particles are overlapping with the walls
-               !this will include the normal ghost cell walls and also the cut cells
-               CALL CHECK_IF_PARTICLE_OVELAPS_STL(part%position(1:dimn), &
-                    part%cell(1:4), part%rad, DELETE_PART)
+! Check if any of the particles are overlapping with the walls. This
+! will include the normal ghost cell walls and also the cut cells.
+               CALL CHECK_IF_PARTICLE_OVELAPS_STL(PART%POSITION(:), &
+                  PART%RAD, DELETE_PART)
             ELSE
-               DELETE_PART = .true.
+               DELETE_PART = .TRUE.
             ENDIF
          ENDIF
-         if(delete_part) part%indomain = .false.
-         part => part%next
+         IF(DELETE_PART) PART%INDOMAIN = .FALSE.
+         PART => PART%NEXT
        ENDDO
+
+       RETURN
        END SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -308,6 +311,8 @@
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
+      INTEGER :: DG_PCELL(4)
+
       type(particle), pointer :: part => null()
 
 ! This call will delete the particles outside the domain. It will then
@@ -324,13 +329,15 @@
          DELETE_PART = .false.
          IJK = part%cell(4)
          IF(part%indomain) THEN
-            !Only look for particles that are in domain
-            !Particles in dead cells have already been flagged
-            !as outside of the domain in BIN_PARTICLES_TO_CELL
+
+! Only look for particles that are in domain. Particles in dead cells
+! have already been flagged as outside of the domain in
+!  BIN_PARTICLES_TO_CELL.
 
             IF(FLUID_AT(IJK)) then
+
                CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), &
-                    part%cell(1:4), DELETE_PART)
+                    part%rad, DELETE_PART)
             ELSE
                DELETE_PART = .true.
             ENDIF
