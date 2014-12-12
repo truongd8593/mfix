@@ -1,47 +1,46 @@
-
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !                          check_netcdf                             !
 !
-	subroutine MFIX_check_netcdf( status )
+        subroutine MFIX_check_netcdf( status )
         implicit none
 
         integer :: status
 
-	status = 0
+        status = 0
 
-	return
-	end subroutine MFIX_check_netcdf
+        return
+        end subroutine MFIX_check_netcdf
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
         function MFIX_nf90_create(path, cmode, ncid, initialsize, chunksize)
 
-	character (len = *), intent(in   ) :: path
-	integer,             intent(in   ) :: cmode
-	integer,             intent(  out) :: ncid
-	integer, optional,   intent(in   ) :: initialsize
-	integer, optional,   intent(inout) :: chunksize
-	integer                            :: MFIX_nf90_create
+        character (len = *), intent(in   ) :: path
+        integer,             intent(in   ) :: cmode
+        integer,             intent(inout) :: ncid
+        integer, optional,   intent(in   ) :: initialsize
+        integer, optional,   intent(inout) :: chunksize
+        integer                            :: MFIX_nf90_create
 
-	integer :: fileSize, chunk
+        integer :: fileSize, chunk
 
-	MFIX_nf90_create = 0
+        MFIX_nf90_create = 0
 
-	return
-	end function MFIX_nf90_create
+        return
+        end function MFIX_nf90_create
 
 
-	function MFIX_nf90_def_dim(ncid, name, len, dimid)
+        function MFIX_nf90_def_dim(ncid, name, len, dimid)
 
-	integer,             intent( in) :: ncid
-	character (len = *), intent( in) :: name
-	integer,             intent( in) :: len
-	integer,             intent(out) :: dimid
-	integer                          :: MFIX_nf90_def_dim
+        integer,             intent( in)   :: ncid
+        character (len = *), intent( in)   :: name
+        integer,             intent( in)   :: len
+        integer,             intent(inout) :: dimid
+        integer                            :: MFIX_nf90_def_dim
 
-	MFIX_nf90_def_dim = 1
-	end function MFIX_nf90_def_dim
+        MFIX_nf90_def_dim = 1
+        end function MFIX_nf90_def_dim
 
 
  function MFIX_nf90_enddef(ncid, h_minfree, v_align, v_minfree, r_align)
@@ -56,7 +55,7 @@
    function MFIX_nf90_open(path, mode, ncid, chunksize)
     character (len = *), intent(in   ) :: path
     integer,             intent(in   ) :: mode
-    integer,             intent(  out) :: ncid
+    integer,             intent(inout) :: ncid
     integer, optional,   intent(inout) :: chunksize
     integer                            :: MFIX_nf90_open
       MFIX_nf90_open = 1
@@ -64,9 +63,9 @@
 
 
   function MFIX_nf90_inquire(ncid, nDimensions, nVariables, nAttributes, unlimitedDimId, formatNum)
-    integer,           intent( in) :: ncid
-    integer, optional, intent(out) :: nDimensions, nVariables, nAttributes, unlimitedDimId, formatNum
-    integer                        :: MFIX_nf90_inquire
+    integer,           intent( in)   :: ncid
+    integer, optional, intent(inout) :: nDimensions, nVariables, nAttributes, unlimitedDimId, formatNum
+    integer                          :: MFIX_nf90_inquire
 
     integer :: nDims, nVars, nGAtts, unlimDimId, frmt
 
@@ -75,10 +74,10 @@
 
 
  function MFIX_nf90_inq_dimid(ncid, name, dimid)
-    integer,             intent( in) :: ncid
-    character (len = *), intent( in) :: name
-    integer,             intent(out) :: dimid
-    integer                          :: MFIX_nf90_inq_dimid
+    integer,             intent( in)   :: ncid
+    character (len = *), intent( in)   :: name
+    integer,             intent(inout) :: dimid
+    integer                            :: MFIX_nf90_inq_dimid
 
     MFIX_nf90_inq_dimid = 1
   end function MFIX_nf90_inq_dimid
@@ -87,22 +86,22 @@
 
 
   function MFIX_nf90_inq_varid(ncid, name, varid)
-    integer,             intent( in) :: ncid
-    character (len = *), intent( in) :: name
-    integer,             intent(out) :: varid
-    integer                          :: MFIX_nf90_inq_varid
+    integer,             intent( in)   :: ncid
+    character (len = *), intent( in)   :: name
+    integer,             intent(inout) :: varid
+    integer                            :: MFIX_nf90_inq_varid
 
     MFIX_nf90_inq_varid = 1
   end function MFIX_nf90_inq_varid
 
-	function MFIX_nf90_close(ncid)
+        function MFIX_nf90_close(ncid)
 
-	integer,             intent( in) :: ncid
-	integer				 :: MFIX_nf90_close
+        integer,             intent( in) :: ncid
+        integer                          :: MFIX_nf90_close
 
-	MFIX_nf90_close = 1
+        MFIX_nf90_close = 1
 
-	end function MFIX_nf90_close
+        end function MFIX_nf90_close
    subroutine MFIX_ncvinq(ncid,varid,varnam,vartyp,nvdims,vdims,nvatts,rcode)
 
 
@@ -114,4 +113,3 @@
 
    return
    end subroutine MFIX_ncvinq
-

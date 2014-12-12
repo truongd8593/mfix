@@ -15,7 +15,6 @@
 
       use tmp_array, only: PARTICLE_COUNT => ARRAY1
 
-      USE param
       USE param1
       USE fldvar
       USE geometry

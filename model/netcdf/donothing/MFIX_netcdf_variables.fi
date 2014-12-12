@@ -1,10 +1,9 @@
-
  function MFIX_nf90_def_var_Scalar(ncid, name, xtype, varid)
-    integer,               intent( in) :: ncid
-    character (len = *),   intent( in) :: name
-    integer,               intent( in) :: xtype
-    integer,               intent(out) :: varid
-    integer                            :: MFIX_nf90_def_var_Scalar
+    integer,               intent( in)   :: ncid
+    character (len = *),   intent( in)   :: name
+    integer,               intent( in)   :: xtype
+    integer,               intent(inout) :: varid
+    integer                              :: MFIX_nf90_def_var_Scalar
 
     ! Dummy - shouldn't get used
     integer, dimension(1) :: dimids
@@ -17,7 +16,7 @@
     character (len = *),   intent( in) :: name
     integer,               intent( in) :: xtype
     integer,               intent( in) :: dimids
-    integer,               intent(out) :: varid
+    integer,               intent(inout) :: varid
     integer                            :: MFIX_nf90_def_var_oneDim
 
     integer, dimension(1) :: dimidsA
@@ -30,7 +29,7 @@
     character (len = *),   intent( in) :: name
     integer,               intent( in) :: xtype
     integer, dimension(:), intent( in) :: dimids
-    integer,               intent(out) :: varid
+    integer,               intent(inout) :: varid
     integer                            :: MFIX_nf90_def_var_ManyDims
 
     MFIX_nf90_def_var_ManyDims = 1
@@ -49,7 +48,7 @@
 
    function MFIX_nf90_get_var_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
-     character (len = *),             intent(out) :: values
+     character (len = *),             intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_text
 
@@ -103,7 +102,7 @@
    function MFIX_nf90_get_var_1D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_text
 
@@ -115,7 +114,7 @@
    function MFIX_nf90_get_var_2D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_text
 
@@ -127,7 +126,7 @@
    function MFIX_nf90_get_var_3D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_text
 
@@ -139,7 +138,7 @@
    function MFIX_nf90_get_var_4D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_4D_text
 
@@ -151,7 +150,7 @@
    function MFIX_nf90_get_var_5D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :, :, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_5D_text
 
@@ -164,7 +163,7 @@
    function MFIX_nf90_get_var_6D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :, :, :, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_6D_text
 
@@ -176,7 +175,7 @@
    function MFIX_nf90_get_var_7D_text(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      character (len = *), dimension(:, :, :, :, :, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_7D_text
 
@@ -223,7 +222,7 @@
 
    function MFIX_nf90_get_var_TwoByteInt(ncid, varid, values, start)
      integer,                         intent( in) :: ncid, varid
-     integer , intent(out) :: values
+     integer , intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_TwoByteInt
 
@@ -236,7 +235,7 @@
 
    function MFIX_nf90_get_var_FourByteInt(ncid, varid, values, start)
      integer,                         intent( in) :: ncid, varid
-     integer , intent(out) :: values
+     integer , intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_FourByteInt
 
@@ -249,7 +248,7 @@
 
 !   function MFIX_nf90_get_var_EightByteInt(ncid, varid, values, start)
 !     integer,                         intent( in) :: ncid, varid
-!     integer , intent(out) :: values
+!     integer , intent(inout) :: values
 !     integer, dimension(:), optional, intent( in) :: start
 !     integer                                      :: MFIX_nf90_get_var_EightByteInt
 !
@@ -260,7 +259,7 @@
 
    function MFIX_nf90_get_var_FourByteReal(ncid, varid, values, start)
      integer,                         intent( in) :: ncid, varid
-     real , intent(out) :: values
+     real , intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_FourByteReal
 
@@ -271,7 +270,7 @@
 
    function MFIX_nf90_get_var_EightByteReal(ncid, varid, values, start)
      integer,                         intent( in) :: ncid, varid
-     double precision, intent(out) :: values
+     double precision, intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start
      integer                                      :: MFIX_nf90_get_var_EightByteReal
 
@@ -282,7 +281,7 @@
    function MFIX_nf90_get_var_1D_TwoByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_TwoByteInt
 
@@ -294,7 +293,7 @@
    function MFIX_nf90_get_var_2D_TwoByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_TwoByteInt
 
@@ -305,23 +304,17 @@
    function MFIX_nf90_get_var_3D_TwoByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_TwoByteInt
 
         MFIX_nf90_get_var_3D_TwoByteInt = 1
    end function MFIX_nf90_get_var_3D_TwoByteInt
 
-
-
-
-
-
-
    function MFIX_nf90_get_var_1D_FourByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_FourByteInt
        MFIX_nf90_get_var_1D_FourByteInt = 1
@@ -331,7 +324,7 @@
    function MFIX_nf90_get_var_2D_FourByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_FourByteInt
 
@@ -342,7 +335,7 @@
    function MFIX_nf90_get_var_3D_FourByteInt(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      integer , dimension(:, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_FourByteInt
        MFIX_nf90_get_var_3D_FourByteInt = 1
@@ -353,7 +346,7 @@
    function MFIX_nf90_get_var_1D_FourByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      real , dimension(:), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_FourByteReal
        MFIX_nf90_get_var_1D_FourByteReal = 1
@@ -363,7 +356,7 @@
    function MFIX_nf90_get_var_2D_FourByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      real , dimension(:, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_FourByteReal
 
@@ -374,7 +367,7 @@
    function MFIX_nf90_get_var_3D_FourByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      real , dimension(:, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_FourByteReal
       MFIX_nf90_get_var_3D_FourByteReal = 1
@@ -385,7 +378,7 @@
    function MFIX_nf90_get_var_1D_EightByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      double precision, dimension(:), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_1D_EightByteReal
 
@@ -396,7 +389,7 @@
    function MFIX_nf90_get_var_2D_EightByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      double precision, dimension(:, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_2D_EightByteReal
 
@@ -407,7 +400,7 @@
    function MFIX_nf90_get_var_3D_EightByteReal(ncid, varid, values, start, count, stride, map)
      integer,                         intent( in) :: ncid, varid
      double precision, dimension(:, :, :), &
-                                      intent(out) :: values
+                                      intent(inout) :: values
      integer, dimension(:), optional, intent( in) :: start, count, stride, map
      integer                                      :: MFIX_nf90_get_var_3D_EightByteReal
 
@@ -418,8 +411,8 @@
 
   function MFIX_nf90_inquire_dimension(ncid, dimid, name, len)
     integer,                       intent( in) :: ncid, dimid
-    character (len = *), optional, intent(out) :: name
-    integer,             optional, intent(out) :: len
+    character (len = *), optional, intent(inout) :: name
+    integer,             optional, intent(inout) :: len
     integer                                    :: MFIX_nf90_inquire_dimension
 
 

@@ -39,7 +39,7 @@
 ! Dummy Arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(OUT) :: IER
+      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
@@ -121,7 +121,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Error index
-      INTEGER, INTENT(OUT) :: IER
+      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------

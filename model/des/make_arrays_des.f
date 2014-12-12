@@ -14,7 +14,6 @@
       USE des_stl_functions
       USE des_thermo
       USE desgrid
-      USE desmpi
       USE discretelement
       USE error_manager
       USE functions
@@ -24,7 +23,7 @@
       USE param1
       USE run
       USE stl
-      use desmpi, only: DES_PAR_EXCHANGE
+      use desmpi, only: DES_PAR_EXCHANGE, MPPIC, DESMPI_INIT
       use stl_preproc_des
 
       IMPLICIT NONE

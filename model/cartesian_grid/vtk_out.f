@@ -589,9 +589,13 @@
 !  - Connectivity offset
 !  - cell types
 !
-! Since the data is appended (i.e., written after all tags), the offset, in number of bytes must be specified.
-! The offset includes the size of the data for each field, plus the size of the integer that stores the number of bytes.
-! this is why the offset of a field equals the offset of the previous field plus c_sizeof(int) plus the number of bytes of the field.
+
+! Since the data is appended (i.e., written after all tags), the
+! offset, in number of bytes must be specified.  The offset includes
+! the size of the data for each field, plus the size of the integer
+! that stores the number of bytes.  this is why the offset of a field
+! equals the offset of the previous field plus c_sizeof(int) plus the
+! number of bytes of the field.
 
 ! Next, the actual data is written for the geometry (PASS=WRITE_DATA)
 ! The DATA is converted to single precision to save memory.
