@@ -383,10 +383,10 @@
 ! local variables
 !
 !                   extension to filename
-      CHARACTER     EXT*4
+      CHARACTER(LEN=4) :: EXT
 !
 !                   run_name + extension
-      CHARACTER     FILE_NAME*64
+      CHARACTER(LEN=64) :: FILE_NAME
 !
 !                   Loop counter
       INTEGER       LC
@@ -396,7 +396,7 @@
 !
 !                   Number of files to be opened
       INTEGER       NO_FILES
-      CHARACTER     EXT_END*35
+      CHARACTER(LEN=35) :: EXT_END
 !-----------------------------------------------
 
       ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'

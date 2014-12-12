@@ -147,7 +147,7 @@ subroutine get_usr_time(time_in_res)
 
   implicit none
 
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
 
   integer :: L
 
@@ -229,8 +229,8 @@ subroutine get_usr_variable
   INTEGER  N_VAR
   PARAMETER (N_VAR=49)
 
-  CHARACTER :: STRING*120 , SUBSTR*120
-  CHARACTER :: VAR*8      , VAR_DAT(N_VAR)*8
+  CHARACTER(LEN=120) :: STRING, SUBSTR
+  CHARACTER(LEN=8) :: VAR      , VAR_DAT(N_VAR)
 
   integer :: L3 , L , var_no
   integer :: minmax    !?????
@@ -331,7 +331,7 @@ subroutine get_usr_solid_phase
   implicit none
 
   integer   :: var_no , m , L3
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
   !
   if (mmax .eq. 1) then
      usr_m = 1
@@ -391,7 +391,7 @@ subroutine get_usr_species
 
   implicit none
   !
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
   integer   :: var_no , m , n , L3
   !
   var_no = usr_var_num
@@ -498,7 +498,7 @@ subroutine usr_enable_spx_files(init_read_res)
 
   include 'xforms.inc'
 
-  CHARACTER :: STRING*120, SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
   !
   integer :: L
   logical :: init_read_res
@@ -672,7 +672,7 @@ subroutine get_usr_i_range
 
   implicit none
 
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
 
   integer :: L3 , i1 , i2
   logical :: i_average
@@ -747,7 +747,7 @@ subroutine get_usr_j_range
 
   implicit none
 
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
 
   integer :: L3 , j1 , j2
   logical :: j_average
@@ -822,7 +822,7 @@ subroutine get_usr_k_range
 
   implicit none
 
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
 
   integer :: L3 , k1 , k2
   logical :: k_average
@@ -1283,7 +1283,7 @@ subroutine usr_get_fname
 
   integer   :: L3         , ians
   logical   :: strcmp     , file_exist
-  CHARACTER :: STRING*120 , SUBSTR*120
+  CHARACTER(LEN=120) :: STRING, SUBSTR
 
   if (.not.usr_ask_for_file) return
 
@@ -1371,7 +1371,8 @@ subroutine usr_write_input2(usr_t1_a,usr_t2_a,usr_tavg_a, &
 
   logical :: usr_tavg_a
 
-  character :: usr_var_a*8 , output_flag*1
+  character(len=8) :: usr_var_a
+  character(len=1) :: output_flag
 
   integer   :: usr_m_a
   integer   :: usr_n_a

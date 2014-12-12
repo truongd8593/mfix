@@ -530,7 +530,7 @@
 
       integer , allocatable :: cell_index(:)
 
-      character :: fname*80
+      character(len=80) :: fname
 
       ! read in the cell info for each processor (using p_info_xxxxx.txt'
       ! (xxxx = processor number)
@@ -679,7 +679,7 @@
       double precision, dimension(:) , allocatable :: d_tmp
       double precision, dimension(:) , allocatable :: array
 
-      character :: fname*80
+      character(len=80) :: fname
 
       if (kfile .gt. 0) return
 

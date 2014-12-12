@@ -1314,7 +1314,7 @@
                WRITE(1001,2000) CELL_ID, I, J, K,  COUNT_FACETS
 
  2000 FORMAT(50('*'),/2X,'CELL IJK, I, J, K =        = ', i20, 2x,     &
-          4(2x,i10),/2X,'TOTAL FACETS',18(' '),'= '3(2x, i10))
+          4(2x,i10),/2X,'TOTAL FACETS',18(' '),'= ',3(2x, i10))
 
                DO COUNT = 1, COUNT_FACETS
                   WRITE(1001, '(2x, i20)')                             &

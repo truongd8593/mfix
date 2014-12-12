@@ -118,7 +118,7 @@
 ! dummy logical variable for initializing adjust_dt
       LOGICAL :: dummy
 
-      CHARACTER  EXT_END*35
+      CHARACTER(LEN=35) ::  EXT_END
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP

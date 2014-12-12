@@ -15,7 +15,7 @@
 
          logical :: usr_done         ! true if no more inputs desired
 
-         character :: usr_var*8      ! variable name
+         character(len=8) :: usr_var      ! variable name
          integer   :: usr_var_num    ! index corresponding to usr_var
 
          integer   :: usr_m          ! solid phase index
@@ -42,7 +42,7 @@
 
          integer   :: usr_status
 
-         character :: usr_fname*120
+         character(len=120) :: usr_fname
          logical   :: usr_ask_for_file
 
 
@@ -51,7 +51,7 @@
          logical :: usr_tavg_a         ! time average flag
          logical :: usr_allow_tavg_a   ! flag to allow/not time averaging
 
-         character :: usr_var_a*8      ! variable name
+         character(len=8) :: usr_var_a      ! variable name
          integer   :: usr_var_num_a    ! index corresponding to usr_var
 
          integer   :: usr_m_a          ! solid phase index

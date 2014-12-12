@@ -476,8 +476,7 @@
 !         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
-!                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
-                  NORMAL(:) = DIST(:)/max(sqrt(DISTSQ),0.0000001)
+                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
                !facet's normal is correct normal only when the

@@ -156,11 +156,11 @@
       DOUBLE PRECISION, INTENT(in) :: RMIN
 ! Point to check for intersection.
       DOUBLE PRECISION, INTENT(in) :: LOC
-! Cell lengths (DX,DY,DZ)
-      DOUBLE PRECISION, INTENT(IN) :: D_DIR(0:(N_DIR+3))
 ! Number of cells in this direction (IMAX,JMAX,KMAX)
       INTEGER, INTENT(in) :: N_DIR
-! Cell indicies correspoinding to LOC
+! Cell lengths (DX,DY,DZ)
+      DOUBLE PRECISION, INTENT(IN) :: D_DIR(0:(N_DIR+3))
+! Cell indices corresponding to LOC
       INTEGER, INTENT(out) :: CELL
 
 ! Local Variables:

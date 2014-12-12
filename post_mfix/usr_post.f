@@ -42,7 +42,7 @@
 !
       REAL              TIME_START , TIME_REAL(N_SPX), TIME_FOUND
       REAL              TIME_LAST, TIME_NOW
-      CHARACTER         FILE_NAME*60
+      CHARACTER(LEN=60) :: FILE_NAME
       INTEGER           NX , NY , NZ, NSTEP_1
       INTEGER           REC_POINTER(N_SPX) , L
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)
@@ -172,7 +172,7 @@
 !
       REAL              TIME_START , TIME_REAL(N_SPX), TIME_FOUND
       REAL              TIME_LAST, TIME_NOW, SUM, FC_DIST, Re, VREL, FC
-      CHARACTER         FILE_NAME*60
+      CHARACTER(LEN=60) :: FILE_NAME
       INTEGER           NX , NY , NZ, NSTEP_1
       INTEGER           REC_POINTER(N_SPX) , L , NT
       LOGICAL           READ_SPX(N_SPX) , AT_EOF(N_SPX)

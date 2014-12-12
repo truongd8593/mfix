@@ -40,7 +40,8 @@
       LOGICAL :: AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
       INTEGER :: REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
       INTEGER :: NSTEP_1 , ERROR_CODE , solmax
-      CHARACTER   :: IANS*1 , line*13
+      CHARACTER(LEN=1)   :: IANS
+      CHARACTER(LEN=13)  :: line
       REAL    :: TIME_REAL(N_SPX)
       LOGICAL :: ERROR
 
@@ -55,7 +56,7 @@
       INTEGER L, L_SPX , LL , M , i , NB
       integer :: unit_add = 10
 !
-      CHARACTER     EXT_END*35
+      CHARACTER(LEN=35) :: EXT_END
 !-----------------------------------------------
 
       ext_end = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'

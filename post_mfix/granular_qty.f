@@ -46,7 +46,7 @@
       INTEGER      MM, M, IER, IJK
 !
 !                file version ID
-      CHARACTER  VERSION*512
+      CHARACTER(LEN=512) :: VERSION
       INTEGER     REC_POINTER(N_SPX), L, NEXT_REC, NUM_REC, NSTEP_1
       LOGICAL     READ_SPX(N_SPX), AT_EOF(N_SPX)
       CHARACTER   ANSWER

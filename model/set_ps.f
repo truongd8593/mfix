@@ -157,13 +157,13 @@
 
       DOUBLE PRECISION, intent(out) :: CpxMFLOW
 
+      INTEGER, intent(in) :: lM
+      INTEGER, intent(in) :: lDIM_N
+
       DOUBLE PRECISION, intent(in) :: Cp0
       DOUBLE PRECISION, intent(in) :: PS_MFLOW
       DOUBLE PRECISION, intent(in) :: PS_T          ! Temperature
       DOUBLE PRECISION, intent(in) :: PS_X(lDIM_N)  ! Species Mass Frac
-
-      INTEGER, intent(in) :: lM
-      INTEGER, intent(in) :: lDIM_N
 
       DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
 
