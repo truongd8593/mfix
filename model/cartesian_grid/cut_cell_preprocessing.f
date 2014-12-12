@@ -1051,7 +1051,7 @@
 
       IMPLICIT NONE
       INTEGER :: IJK
-      
+
 
 
       call SEND_RECEIVE_1D_LOGICAL(INTERSECT_X,2)
@@ -1132,7 +1132,7 @@
       LOGICAL :: CLIP_FLAG,CAD,F_TEST
 
 
-! When inputing geometry from CAD (STL or MSH file), the snapping procedure is 
+! When inputing geometry from CAD (STL or MSH file), the snapping procedure is
 ! dependent on the value of F at the cell corners
 ! For other gemoetry inputs (say quadrics), This is not needed, and the value
 ! of F_TEST is set to .TRUE. here
@@ -1319,7 +1319,7 @@
       RETURN
 
       END SUBROUTINE SET_SNAP_FLAG
-      
+
       !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: REMOVE_INTERSECT_FLAG                                  C
@@ -1376,7 +1376,7 @@
        IF(SNAP(IJK)) THEN
           INTERSECT_X(IJK) = .FALSE.
           INTERSECT_Y(IJK) = .FALSE.
-          INTERSECT_Z(IJK) = .FALSE.  
+          INTERSECT_Z(IJK) = .FALSE.
           IF(I<=IMAX1) INTERSECT_X(IPJK) = .FALSE.
           IF(J<=JMAX1) INTERSECT_Y(IJPK) = .FALSE.
           IF(DO_K.AND.(K<=KMAX1)) INTERSECT_Z(IJKP) = .FALSE.
@@ -1984,12 +1984,12 @@
 ! are inside or outside the fluid region.
 
 ! Only F_AT values that are defined and not zero are propagated to their direct
-! neighbors, if it is not already defined. The propagation is repeated 
+! neighbors, if it is not already defined. The propagation is repeated
 ! at most N_PROPMAX. The loop is exited when all F_AT values are defined.
 ! N_PROPMAX could be increased for very large domains.
 ! The propagation of F_AT will stop anytime a boundary is encountered since F_AT
 ! changes sign across a boundary.
-! 
+!
          DO N_PROP=1,N_PROPMAX
 
             DO IJK = IJKSTART3, IJKEND3
@@ -2023,7 +2023,7 @@
             call send_recv(F_AT,2)
 
 ! Count the number of undefined values of F_AT
-! and exit loop if all values of F_AT have been propagated            
+! and exit loop if all values of F_AT have been propagated
             N_UNDEFINED = 0
             DO IJK = IJKSTART3, IJKEND3
                IF(INTERIOR_CELL_AT(IJK).AND.F_AT(IJK)==UNDEFINED) N_UNDEFINED = N_UNDEFINED + 1

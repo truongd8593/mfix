@@ -119,7 +119,7 @@
             IJMK = JM_OF(IJK)
             IJKM = KM_OF(IJK)
 
-            MAXM = SMAX 
+            MAXM = SMAX
             DO CM = 1,SMAX
                DP_loc(CM) = D_p(IJK,CM)
                EPs_loc(CM) = EP_S(IJK,CM)

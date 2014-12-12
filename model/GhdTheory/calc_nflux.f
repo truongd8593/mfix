@@ -21,7 +21,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE CALC_NFLUX(IER)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98  
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
 !  Include param.inc file to specify parameter values
@@ -51,7 +51,7 @@
 !
 !
 !                      Total Number density
-      DOUBLE PRECISION Ni_E(DIMENSION_3), Ni_N(DIMENSION_3), Ni_T(DIMENSION_3) 
+      DOUBLE PRECISION Ni_E(DIMENSION_3), Ni_N(DIMENSION_3), Ni_T(DIMENSION_3)
 !
 !                      Error index
       INTEGER          IER

@@ -263,7 +263,7 @@
                   D_N(IJK,M) = ZERO
                ENDIF
             ENDDO
- 
+
 ! Model A
 ! -------------------------------------------------------------------
          ELSE
@@ -314,7 +314,7 @@
                      ELSE
                         DEN_MSol_LSol(M) = DEN_MSol_LSol(M) +          &
                            VXF_SS(IJK,LM)
-                     ENDIF 
+                     ENDIF
                   ENDIF  ! end if (l.ne.m)
                ENDDO  ! end do (l=1,mmax)
 
@@ -574,7 +574,7 @@
                   LM = FUNLM(L,M)
 ! Solids M - All other Solids VolxDrag summation
                   SUM_VXF_SS(M) = SUM_VXF_SS(M) + VXF_SS(IJK,LM)
-               ENDIF 
+               ENDIF
             ENDDO
          ENDDO
 

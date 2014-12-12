@@ -35,7 +35,7 @@
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
-      use particle_filter, only: FILTER_CELL 
+      use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//

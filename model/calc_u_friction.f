@@ -294,9 +294,9 @@
       ENDIF
 
 ! Calculating gw, hw, cw
- 
+
       Gw = ONE   ! we write this in the exact same form as non-frictional JJ BC
- 
+
       IF(VSLIP == ZERO .OR. ZETA == ZERO) THEN
         Hw = ZERO
       ELSE

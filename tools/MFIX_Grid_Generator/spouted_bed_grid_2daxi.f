@@ -2,7 +2,7 @@
 !******************************************************************
 !
 !  Simple MFIX Grid Generator for a Spouted Bed with Stretched Grids
-! 
+!
 !	A very simple program to generate grid spacings and sloping section boundary
 !	information for MFIX.DAT
 !
@@ -158,7 +158,7 @@
         ymin = 0.0d0
         zero = 0.0d0
         one = 1
-	
+
 	do n = 1,nseg
 
 	   write(17,990) n1+ibc_offset, (x(i-idiff),i=n1,n2)
@@ -207,7 +207,7 @@
 
 	   write(16,1000) i-1,dx(i)
 	   write(*,*) 'dx', i-1, dx(i)
-	   
+
 	enddo
 
 !	Write out dy information in MFIX format
@@ -216,7 +216,7 @@
 
 	   dy(i) = y(i)-y(i-1)
 	   write(15,1001) i-1,dy(i)
-	   
+
 	enddo
 
  990	FORMAT('#'/2X,'BC_X_w(',I3,')',5X,'=',2X, 5G12.5)

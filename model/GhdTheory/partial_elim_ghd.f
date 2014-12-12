@@ -36,7 +36,7 @@
       USE run
       USE compar
       USE drag
-      USE fldvar       
+      USE fldvar
       USE fun_avg
       USE functions
       IMPLICIT NONE
@@ -237,7 +237,7 @@
       USE run
       USE compar
       USE drag
-      USE fldvar   
+      USE fldvar
       USE fun_avg
       USE functions
       IMPLICIT NONE
@@ -440,7 +440,7 @@
       USE run
       USE compar
       USE drag
-      USE fldvar 
+      USE fldvar
       USE fun_avg
       USE functions
       IMPLICIT NONE

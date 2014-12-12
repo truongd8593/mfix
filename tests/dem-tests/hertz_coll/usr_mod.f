@@ -41,7 +41,7 @@
 
 ! The start/end indices for particles in angular velocity tests
       INTEGER, PARAMETER :: COEFF_START=17, COEFF_END=23
-! Experimentally measured post-collision 
+! Experimentally measured post-collision
       DOUBLE PRECISION, PARAMETER :: EXP_COEFF(COEFF_START:COEFF_END) =&
          (/ 0.4902, 0.3439, 0.1915, 0.3756, 0.5427, 0.6927, 0.8024 /)
 

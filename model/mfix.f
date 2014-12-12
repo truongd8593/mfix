@@ -267,7 +267,7 @@
                CALL WRITE_SPX1 (L, 0)
             END DO
             call write_netcdf(0,0,time)
-         ENDIF   
+         ENDIF
 
       CASE DEFAULT
          CALL START_LOG
@@ -383,7 +383,7 @@
             CALL WRITE_SPX1 (L, 0)
          END DO
          call write_netcdf(0,0,time)
-      ENDIF   
+      ENDIF
 
       ENDIF
 

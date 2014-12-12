@@ -424,7 +424,7 @@
             J = J_OF(IJK)
             K = K_OF(IJK)
 
-! It is important to check both FLUID_AT and IS_ON_MYPE_WOBND. 
+! It is important to check both FLUID_AT and IS_ON_MYPE_WOBND.
             IF(IS_ON_myPE_wobnd(I,J,K)) MASS_SOL2 = MASS_SOL2 +        &
                sum(DES_ROP_S(IJK,1:DES_MMAX))*VOL(IJK)
          ENDDO

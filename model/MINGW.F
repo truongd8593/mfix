@@ -79,7 +79,7 @@
 !     For SGI only
 !      CALL GETHOSTNAME(ID_NODE,64)
 !     For Linux with Portland Group compilers
-!      call hostnm(ID_NODE)      
+!      call hostnm(ID_NODE)
       id_node = 'mingw'
 !
       RETURN

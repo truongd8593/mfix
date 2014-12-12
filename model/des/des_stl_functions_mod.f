@@ -601,7 +601,7 @@
 ! For stl, the vertices are stored in CCW order looking from outside.
 ! In the stl convention, the normal points outwards. However, in MFIX,
 ! cutcell and facets normals point into the fluid. So, the normals are
-! written as pointing to the fluid but when the stl is viewed in 
+! written as pointing to the fluid but when the stl is viewed in
 ! paraview, it will surely calculate its own normals based on the order
 ! to the vertices specified here and may look opposite.
             VERTEX_TEMP(1,:,NF) = (/get_nodes(i,j,k,'w'),              &

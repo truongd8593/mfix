@@ -569,12 +569,12 @@
 !   Initialize Array mapping (I,J,K) to IJK
         INCREMENT_ARRAYS_ALLOCATED = .FALSE.
 
-! These arrays could already be allocated in post_mfix 
+! These arrays could already be allocated in post_mfix
 ! when interpolating old data to new grid
 
         if(allocated(IJK_ARRAY_OF)) deallocate(IJK_ARRAY_OF)
         if(allocated(FUNIJK_MAP_C)) deallocate(FUNIJK_MAP_C)
-        if(allocated(DEAD_CELL_AT)) deallocate(DEAD_CELL_AT) 
+        if(allocated(DEAD_CELL_AT)) deallocate(DEAD_CELL_AT)
 
         ! Must extend range such that neighbors (IM,JP etc...) stay in bound
         allocate(IJK_ARRAY_OF(istart3-1:iend3+1,jstart3-1:jend3+1,kstart3-1:kend3+1))
