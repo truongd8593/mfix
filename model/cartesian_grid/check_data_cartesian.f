@@ -4570,9 +4570,7 @@
 ! Finalize and terminate MPI
       call parallel_fin
 
-      CALL exit(0)
-
-
+      STOP
 
 ! Broadcast Domain sizes to all processors
 
@@ -4581,9 +4579,6 @@
 !      CALL BCAST(KSIZE_ALL)
 
 !      DOMAIN_SIZE_ADJUSTED = .TRUE.
-
-
-
 
 1000  FORMAT(1x,A)
 1005  FORMAT(1x,I10,I10,I10,A)

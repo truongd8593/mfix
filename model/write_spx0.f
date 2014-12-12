@@ -66,7 +66,7 @@
 !  (The 4 and -1 are overwritten in WRITE_SPX1)
       WRITE (USPX, REC=3) 4, -1
 
-      IF(UNIT_ADD == 0) CALL FLUSH(USPX)
+      IF(UNIT_ADD == 0) FLUSH(USPX)
 
       RETURN
       END SUBROUTINE WRITE_SPX0

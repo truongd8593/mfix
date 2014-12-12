@@ -289,7 +289,7 @@
          WRITE (UNIT_LOG, 1010) LINE(L)
       END DO
       WRITE (UNIT_LOG, 1020)
-      call flush(UNIT_LOG)
+      flush(UNIT_LOG)
 
       RETURN
  1000 FORMAT(1X,70('*'),/,/,1X,'From : ',A)

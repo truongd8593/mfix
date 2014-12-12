@@ -78,7 +78,7 @@
 !     For SGI only
 !      CALL GETHOSTNAME(ID_NODE,64)
 !     For Linux with Portland Group compilers
-      call hostnm(ID_NODE)
+      CALL GET_ENVIRONMENT_VARIABLE('HOSTNAME',ID_NODE)
 !
       RETURN
       END
@@ -180,34 +180,33 @@
       SUBROUTINE END_LOG
       USE funits
       IMPLICIT NONE
-      IF(DMP_LOG)CALL FLUSH (UNIT_LOG)
+      IF(DMP_LOG) FLUSH(UNIT_LOG)
       RETURN
       END
-!
+
       subroutine slumber
       return
       end
-!
+
       subroutine pc_quickwin
       return
       end
-!
-
 
       subroutine ran
       return
       end
 
-!
       subroutine flush_bin(iunit)
       implicit none
       integer :: iunit
-      call flush(iunit)
+
+      flush(iunit)
       return
       end
+
       subroutine flush_res(iunit)
       implicit none
       integer :: iunit
-      call flush(iunit)
+      flush(iunit)
       return
       end

@@ -479,7 +479,7 @@
 ! write (*,"('Compute the Courant number')")
 ! call get_stats(IER)
 
-      CALL FLUSH (6)
+      FLUSH (6)
       GOTO 100
 
       IF(solver_statistics) then
