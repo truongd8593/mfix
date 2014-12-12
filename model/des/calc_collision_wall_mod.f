@@ -188,7 +188,7 @@
          DO J = JMINUS1, JPLUS1
             DO I = IMINUS1, IPLUS1
 
-               IF(.NOT.dg_is_ON_myPE(I,J,K)) CYCLE
+               IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K)) CYCLE
 
                IJK = DG_FUNIJK(I,J,K)
                COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS

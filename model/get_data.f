@@ -27,8 +27,6 @@
       USE mfix_pic
       USE cutcell
       USE dashboard
-      USE des_stl_functions, only: des_stl_preprocessing
-      USE des_stl_functions, only: allocate_des_stl_arrays
       USE visc_g, only: L_SCALE
       USE constant, only: L_SCALE0
 

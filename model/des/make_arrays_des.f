@@ -25,7 +25,7 @@
       USE run
       USE stl
       use desmpi, only: DES_PAR_EXCHANGE
-
+      use stl_preproc_des
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -56,11 +56,9 @@
 
 
 ! Setup DES boundaries.
-      IF(DISCRETE_ELEMENT) then
-         CALL DES_STL_PREPROCESSING
-         IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
-            IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
-         ENDIF
+      CALL DES_STL_PREPROCESSING
+      IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
+         IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
       ENDIF
 
       VOL_SURR(:) = ZERO
@@ -133,12 +131,10 @@
       STL_FACET_TYPE(TOP_FACEID) = FACET_TYPE_NORMAL
       STL_FACET_TYPE(BOTTOM_FACEID) = FACET_TYPE_NORMAL
 
-      ! initialize CELLNEIGHBOR_FACET array
-      DO CELL_ID = DG_IJKSTART2, DG_IJKEND2
-
-         I_CELL = DG_IOF_GL(CELL_ID)
-         J_CELL = DG_JOF_GL(CELL_ID)
-         K_CELL = DG_KOF_GL(CELL_ID)
+! initialize CELLNEIGHBOR_FACET array
+      DO K_CELL = DG_KSTART2, DG_KEND2
+      DO J_CELL = DG_JSTART2, DG_JEND2
+      DO I_CELL = DG_ISTART2, DG_IEND2
 
          IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
          IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
@@ -149,7 +145,7 @@
          KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
          KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
 
-         IJK = DG_FUNIJK(I_CELL,J_CELL,K_CELL)
+         CELL_ID = DG_FUNIJK(I_CELL,J_CELL,K_CELL)
 
          IF(.NOT.DES_PERIODIC_WALLS_X)THEN
             IF(I_CELL == DG_IMIN1) CALL ADD_FACET(CELL_ID,WEST_FACEID)
@@ -167,17 +163,19 @@
          ENDIF
 
          DO KK = KMINUS1, KPLUS1
-            DO JJ = JMINUS1, JPLUS1
-               DO II = IMINUS1, IPLUS1
-                  IJK = DG_FUNIJK(II,JJ,KK)
+         DO JJ = JMINUS1, JPLUS1
+         DO II = IMINUS1, IPLUS1
+            IJK = DG_FUNIJK(II,JJ,KK)
 
-                  DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-                     NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-                     CALL ADD_FACET(CELL_ID,NF)
-                  ENDDO
-               ENDDO
+            DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+               NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+               CALL ADD_FACET(CELL_ID,NF)
             ENDDO
          ENDDO
+         ENDDO
+         ENDDO
+      ENDDO
+      ENDDO
       ENDDO
 
 ! Set the initial particle data.
