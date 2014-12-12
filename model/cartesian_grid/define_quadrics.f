@@ -157,8 +157,8 @@
             yt = x2-t_y(Q_ID)
             zt = x3-t_z(Q_ID)
 
-            xtr = xt*0.866  - yt*0.5
-            ytr = xt*0.5    + yt*0.8665
+            xtr = xt
+            ytr = yt
             ztr = zt
 
             R1 = Torus_R1(Q_ID)
