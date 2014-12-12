@@ -547,6 +547,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -572,8 +573,8 @@
 
       INTEGER :: CELL_TYPE
 
-      REAL(4) :: float
-      INTEGER :: int
+      REAL(c_float) :: float
+      INTEGER(c_int) :: int
 
       INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
       INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
@@ -914,6 +915,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,VAR,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -941,7 +943,7 @@
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-      REAL(4) :: float
+      REAL(c_float) :: float
 
       INTEGER :: nbytes_scalar
 
@@ -1070,6 +1072,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_BIN(VAR_NAME,VARX,VARY,VARZ,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -1097,7 +1100,7 @@
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-      REAL(4) :: float
+      REAL(c_float) :: float
 
       INTEGER :: nbytes_vector
 
