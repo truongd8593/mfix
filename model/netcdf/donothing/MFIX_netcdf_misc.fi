@@ -109,7 +109,7 @@
 
    integer       :: ncid , varid , vartyp , nvdims , nvatts , rcode
    integer       :: vdims(*)
-   character*(*)    varnam
+   character(len=*)    varnam
 
    return
    end subroutine MFIX_ncvinq
