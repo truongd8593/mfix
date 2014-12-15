@@ -58,10 +58,12 @@
       NWALLS = merge(4,6,NO_K)
 
 ! Grab the larger of PARTICLES and MAX_PIS
-      IF(MAX_PIS == UNDEFINED_I) THEN
-         NPARTICLES = PARTICLES
-      ELSE
+      IF(MAX_PIS /= UNDEFINED_I .AND. PARTICLES /= UNDEFINED_I) THEN
          NPARTICLES = max(MAX_PIS, PARTICLES)
+      ELSEIF(MAX_PIS /= UNDEFINED_I)THEN
+         NPARTICLES = MAX_PIS
+      ELSE
+         NPARTICLES = PARTICLES
       ENDIF
 
 ! For parallel processing the array size required should be either
@@ -257,6 +259,10 @@
 
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
+
+      ALLOCATE(DG_PIJK(MAX_PIP))
+      ALLOCATE(DG_PIJKPRV(MAX_PIP))
+
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION

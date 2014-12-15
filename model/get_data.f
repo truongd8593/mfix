@@ -30,6 +30,10 @@
       USE visc_g, only: L_SCALE
       USE constant, only: L_SCALE0
 
+      use stl_preproc_des, only: DES_STL_PREPROCESSING
+      use desgrid, only: DESGRID_INIT
+      use desmpi, only: DESMPI_INIT
+
       USE error_manager
 
 
@@ -131,6 +135,18 @@
       ELSE
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
+
+! Set up DEM grid and MPI
+      call desgrid_init
+      call desmpi_init
+
+! Setup DES boundaries.
+      CALL DES_STL_PREPROCESSING
+      IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
+         IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
+      ENDIF
+
+
 
 !--------------------------  ARRAY ALLOCATION -----------------------!
 

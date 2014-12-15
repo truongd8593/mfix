@@ -23,8 +23,8 @@
       USE param1
       USE run
       USE stl
-      use desmpi, only: DES_PAR_EXCHANGE, MPPIC, DESMPI_INIT
-      use stl_preproc_des
+      use desmpi, only: DES_PAR_EXCHANGE, MPPIC! DESMPI_INIT
+!     use stl_preproc_des
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -48,17 +48,6 @@
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
 
-! parallelization: desmpi_init needs to be called after des_init_bc
-! since it relies on setting/checking of des_mio
-      call desgrid_init
-      call desmpi_init
-
-
-! Setup DES boundaries.
-      CALL DES_STL_PREPROCESSING
-      IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
-         IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
-      ENDIF
 
       VOL_SURR(:) = ZERO
 

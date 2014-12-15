@@ -497,9 +497,6 @@
       do lijk = 1,dg_ijksize2
          nullify(dg_pic(lijk)%p)
       end do
-      allocate(dg_pijk(max_pip),dg_pijkprv(max_pip))
-      dg_pijk = 0
-      dg_pijkprv=0
 
 !      call des_dbggrid
       end subroutine desgrid_init

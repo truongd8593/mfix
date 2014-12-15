@@ -271,6 +271,8 @@
       use error_manager
       USE pic_bc
       USE functions
+      use desgrid 
+
       Implicit none
 
       INTEGER I, J, K, IJK, NF, LL
@@ -315,148 +317,131 @@
 
 
          ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(PIJK(LL,4))) cycle
+         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) cycle
 
          LIST_OF_CELLS(:) = -1
          NEIGH_CELLS = 0
          NEIGH_CELLS_NONNAT  = 0
 
-         CELL_ID = PIJK(LL,4)
+         CELL_ID = DG_PIJK(LL)
 
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
-         pt_old(1:dimn) = des_pos_old(:,LL)
-         pt_new(1:dimn) = des_pos_new(:,LL)
+         PT_OLD = DES_POS_OLD(:,LL)
+         PT_NEW = DES_POS_NEW(:,LL)
 
+! First add the facets in the cell the particle currently resides in
          IF (COUNT_FAC.gt.01)   then
-            !first add the facets in the cell the particle currently resides in
             NEIGH_CELLS = NEIGH_CELLS + 1
             LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
          ENDIF
 
-         I_CELL = I_OF(CELL_ID)
-         J_CELL = J_OF(CELL_ID)
-         K_CELL = K_OF(CELL_ID)
+         I_CELL = IOFPOS(PT_NEW(1))
+         J_CELL = JOFPOS(PT_NEW(2))
+         K_CELL = KOFPOS(PT_NEW(3))
 
+         IPLUS1  =  MIN (I_CELL+1, DG_IEND2)
+         IMINUS1 =  MAX (I_CELL-1, DG_ISTART2)
 
-         IPLUS1  =  MIN (I_CELL + 1, IEND2)
-         IMINUS1 =  MAX (I_CELL - 1, ISTART2)
+         JPLUS1  =  MIN (J_CELL+1, DG_JEND2)
+         JMINUS1 =  MAX (J_CELL-1, DG_JSTART2)
 
-         JPLUS1  =  MIN (J_CELL + 1, JEND2)
-         JMINUS1 =  MAX (J_CELL - 1, JSTART2)
-
-         KPLUS1  =  MIN (K_CELL + 1, KEND2)
-         KMINUS1 =  MAX (K_CELL - 1, KSTART2)
+         KPLUS1  =  MIN (K_CELL+1, DG_KEND2)
+         KMINUS1 =  MAX (K_CELL-1, DG_KSTART2)
 
          DO K = KMINUS1, KPLUS1
-            DO J = JMINUS1, JPLUS1
-               DO I = IMINUS1, IPLUS1
-                  IJK = FUNIJK(I,J,K)
-                  COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-                  IF(COUNT_FAC.EQ.0.or.ijk.eq.cell_id) CYCLE
-                  NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-                  NEIGH_CELLS = NEIGH_CELLS + 1
-                  LIST_OF_CELLS(NEIGH_CELLS) = IJK
-                  !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
-               ENDDO
-            ENDDO
+         DO J = JMINUS1, JPLUS1
+         DO I = IMINUS1, IPLUS1
+            IJK = DG_FUNIJK(I,J,K)
+            COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            IF(COUNT_FAC.EQ.0.or.ijk.eq.cell_id) CYCLE
+            NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+            NEIGH_CELLS = NEIGH_CELLS + 1
+            LIST_OF_CELLS(NEIGH_CELLS) = IJK
+         ENDDO
+         ENDDO
          ENDDO
 
          CONTACT_FACET_COUNT = 0
 
          CELLLOOP: DO CELL_COUNT = 1, NEIGH_CELLS
+
             IJK = LIST_OF_CELLS(CELL_COUNT)
 
             DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
 
-               !only check for facets flagged as normal
+!only check for facets flagged as normal
                IF(STL_FACET_TYPE(NF).ne.facet_type_normal) cycle
 
-               ! Neighboring cells will share facets with same facet ID
-               ! So it is important to make sure a facet is checked (for speed)
-               ! and accounted (for accuracy) only once
-               if (ANY(NF.eq.LIST_OF_CHECKED_FACETS(1:CONTACT_FACET_COUNT))) CYCLE
+! Neighboring cells will share facets with same facet ID so it is
+! important to make sure a facet is checked (for speed) and accounted
+! (for accuracy) only once.
+               IF (ANY(NF.EQ.LIST_OF_CHECKED_FACETS                    &
+                  (1:CONTACT_FACET_COUNT))) CYCLE
 
                CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
                LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
 
-               line_t  = -Undefined
-               !-undefined, because non zero values will imply intersection
+! Set to -UNDEFINED, because non zero values imply intersection.
                !with the plane
-               ontriangle = .false.
+               LINE_T  = -UNDEFINED
 
-               !parametrize a line as p = p_0 + t (p_1 - p_0)
-               !and intersect with the triangular plane.
-               !if 0<t<1, then this ray connect old and new positions
-               !intersects with the facet.
-               ref_line(1:dimn) = pt_old(1:dimn)
-               dir_line(1:dimn) = pt_new(1:dimn) - pt_old(1:dimn)
+               ONTRIANGLE = .FALSE.
 
-               norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-               ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
+! Parametrize a line as p = p_0 + t (p_1 - p_0) and intersect with the 
+! triangular plane. If 0<t<1, then this ray connect old and new
+! positions intersects with the facet.
+               REF_LINE(1:DIMN) = PT_OLD(1:DIMN)
+               DIR_LINE(1:DIMN) = PT_NEW(1:DIMN) - PT_OLD(1:DIMN)
 
-               VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN), &
-                    DES_VEL_NEW(:, LL))
-               !If the normal velocity of parcel is in the same
-               !direction as facet normal, then the parcel could not
-               !have crossed this facet.
+               NORM_PLANE(1:DIMN) = NORM_FACE(1:DIMN,NF)
+               REF_PLANE(1:DIMN)  = VERTEX(1, 1:DIMN,NF)
+
+               VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN),            &
+                    DES_VEL_NEW(:,LL))
+
+! If the normal velocity of parcel is in the same direction as facet
+! normal, then the parcel could not have crossed this facet.
                IF(VELDOTNORM.GT.0.d0) CYCLE
 
-               CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
-                    norm_plane, line_t)
+               CALL INTERSECTLNPLANE(REF_LINE, DIR_LINE, REF_PLANE,    &
+                    NORM_PLANE, LINE_T)
 
-               if(line_t.ge.zero.and.line_t.lt.one) then
-                  !line_t = one would imply particle sitting on the stl
-                  !face, so don't reflect it yet
+! line_t = one implies that the particle is sitting on the stl face.
+               IF(LINE_T.GE.ZERO.AND.LINE_T.LT.ONE) THEN
 
-                  point_onplane(1:dimn) = ref_line(1:dimn) + &
-                       line_t*dir_line(1:dimn)
-                  !Now check through barycentric coordinates if
-                  !this orthogonal projection lies on the facet or not
-                  !If it does, then this point is deemed to be on the
-                  !non-fluid side of the facet
-                  CALL checkPTonTriangle(point_onplane(1:dimn), &
+                  POINT_ONPLANE = REF_LINE + LINE_T*DIR_LINE
+
+! Check through barycentric coordinates to determine if the orthogonal
+! projection lies on the facet or not. If it does, then this point is
+! deemed to be on the non-fluid side of the facet.
+                  CALL CHECKPTONTRIANGLE(POINT_ONPLANE(:),             &
                        VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-                       ontriangle)
-                  IF(LL.eq.-11.and.pt_new(3).gt.zlength)then
-                     !IF(LL.eq.1) then
+                       ONTRIANGLE)
 
-                     write(*,*) 'POS OLD = ', pt_old(1:dimn)
-                     write(*,*) 'POS NEW = ', pt_new(1:dimn)
-                     write(*,*) 'plane ref= ', ref_plane(1:dimn)
-                     write(*,*) 'norm plane= ', norm_plane(1:dimn)
-                     write(*,*) 'dir_line = ', dir_line(1:dimn)
+                  IF(ONTRIANGLE) THEN
 
-                     WRITE(*,*) 'line_t = ',  line_t,ontriangle
-                     write(*,*) 'vel OLD = ', des_vel_old(:,LL)
-                     write(*,*) 'vel NEW = ', des_vel_new(:,LL)
+                     DIST_FROM_FACET = ABS(DOT_PRODUCT(PT_NEW(:) -     &
+                        POINT_ONPLANE(:), NORM_PLANE(:)))
 
-                     read(*,*)
-                  endif
+                     DES_POS_NEW(:,LL) = POINT_ONPLANE(1:DIMN) + &
+                        DIST_FROM_FACET*(NORM_PLANE(1:DIMN))
 
-                  if(ontriangle) then
-                     dist_from_facet = abs(dot_product(pt_new(1:dimn) &
-                     & - point_onplane(1:dimn), norm_plane(1:dimn)))
+! In the reflect routine, it is assumed that the normal points into the
+! system which is consitent with the definition of normal for facets.
+                     CALL PIC_REFLECT_PART(LL, NORM_PLANE(:))
 
-                     DES_POS_NEW(:, LL) = point_onplane(1:dimn) + &
-                     & dist_from_facet*(norm_plane(1:dimn))
-
-                     CALL PIC_REFLECT_PART(LL, norm_plane(1:DIMN))
-                        !In the reflect routine, it is assumed that the normal
-                        !points into the system which is consitent with the
-                        !definition of normal for facets
-
-                     Exit CELLLOOP
-                  endif
-               endif
+                     EXIT CELLLOOP
+                  ENDIF
+               ENDIF
 
             ENDDO
 
-         end DO CELLLOOP
+         END DO CELLLOOP
 
-      end DO
+      END DO
 
 
       ! Seed new parcels entering the system.
