@@ -260,8 +260,6 @@
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
 
-      ALLOCATE(DG_PIJK(MAX_PIP))
-      ALLOCATE(DG_PIJKPRV(MAX_PIP))
 
 
 ! ---------------------------------------------------------------->>>

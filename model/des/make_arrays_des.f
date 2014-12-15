@@ -23,7 +23,7 @@
       USE param1
       USE run
       USE stl
-      use desmpi, only: DES_PAR_EXCHANGE, MPPIC! DESMPI_INIT
+      use desmpi, only: DES_PAR_EXCHANGE, MPPIC, DESMPI_INIT
 !     use stl_preproc_des
 
       IMPLICIT NONE
@@ -48,6 +48,7 @@
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
 
+      CALL DESMPI_INIT
 
       VOL_SURR(:) = ZERO
 

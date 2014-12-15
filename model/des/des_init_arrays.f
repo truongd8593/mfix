@@ -122,9 +122,6 @@
          ENDIF
       ENDIF
 
-      dg_pijk = 0
-      dg_pijkprv=0
-
       RETURN
       END SUBROUTINE DES_INIT_ARRAYS
 
