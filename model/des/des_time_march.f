@@ -146,9 +146,13 @@
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
-         CALL DES_PAR_EXCHANGE
-         IF(DO_NSEARCH) CALL NEIGHBOUR
 
+         IF(DO_NSEARCH) THEN
+            CALL DES_PAR_EXCHANGE
+            CALL NEIGHBOUR
+         ELSEIF (1 < numPEs) THEN
+            CALL DES_PAR_EXCHANGE
+         ENDIF
 
          IF(.NOT.EXPLICITLY_COUPLED) THEN
 ! Bin particles to fluid grid.

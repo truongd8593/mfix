@@ -480,9 +480,6 @@
       USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
 
       collision_num = collision_num +1
 
@@ -494,9 +491,6 @@
 
       collisions(1,collision_num) = ii
       collisions(2,collision_num) = jj
-      pv_coll(collision_num) = .false.
-      pft_coll(:,collision_num) = 0.0
-      pfn_coll(:,collision_num) = 0.0
 
       RETURN
       END SUBROUTINE collision_add
