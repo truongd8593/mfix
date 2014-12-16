@@ -242,13 +242,13 @@
 !$omp section
       DO CC = 1, COLLISION_NUM
          LL = COLLISIONS(1,CC)
-         IF(PEA(LL,1)) FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
-      ENDDO
-
-!$omp section
-      DO CC = 1, COLLISION_NUM
          I  = COLLISIONS(2,CC)
-         IF(PEA(I, 1)) FC(:,I) = FC(:,I) - FC_COLL(:,CC)
+
+         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(.NOT.PEA(I, 1)) CYCLE
+
+         FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
+         FC(:,I) = FC(:,I) - FC_COLL(:,CC)
       ENDDO
 
 !$omp section
