@@ -401,13 +401,8 @@
   NLOG = 25
   FULL_LOG = .T. 
 
-! PRINT_DES_DATA = .F. ! write DEM data : *.vtp files
+  PRINT_DES_DATA = .F. ! write DEM data : *.vtp files
 
-! Flag to write DES VTP files
-  PRINT_DES_DATA = .T.
-
-! Time interval to print DEM output for pure DEM
-  DES_SPX_DT = 0.5
 #_______________________________________________________________________
 # PARALLELIZATION CONTROLS
 

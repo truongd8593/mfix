@@ -92,13 +92,7 @@
             DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + FC(:,L)*DTSOLID
             DD(:) = DES_VEL_NEW(:,L)*DTSOLID
             DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + DD(:)
-! following is equivalent to x=xold + vold*dt + 1/2acc*dt^2
-!         DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + 0.5d0*&
-!             (DES_VEL_NEW(:,L)+DES_VEL_OLD(:,L))*DTSOLID
-
-            DES_USR_VAR(1,L) = DES_VEL_NEW(1,L) ! Surya, testing out the new variable 
             OMEGA_NEW(:,L)   = OMEGA_NEW(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
-
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
@@ -117,7 +111,8 @@
 ! its radius during one solids time step. if so, call stop
          IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
             WRITE(*,1002) L, sqrt(dot_product(DD,DD)), DES_RADIUS(L)
-            IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') 'old particle pos = ', DES_POS_OLD(:,L)
+            IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') &
+               'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &
                'new particle pos = ', DES_POS_NEW(:,L)
             WRITE(*,'(5X,A,3(ES17.9))')&

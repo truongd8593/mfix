@@ -146,7 +146,7 @@
 
       CALL VTP_WRITE_DATA('Diameter', 2.0d0*DES_RADIUS)
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
-      CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR) ! Surya Dec 10, 2014
+      CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
       IF(ENERGY_EQ) &

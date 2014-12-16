@@ -108,7 +108,7 @@
 
 ! Check that the temperature is specified.
          IF(ENERGY_EQ) THEN
-            IF(DES_T_s_NEW(NP) == ZERO) THEN !Changed check condition from Undefined to Zero (Surya Oct 29, 2014)
+            IF(DES_T_s_NEW(NP) == ZERO) THEN
                WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF

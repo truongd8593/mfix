@@ -20,7 +20,7 @@
 
       use output, only: SPX_DT
       USE fldvar, only: EP_g, ROP_g, ROP_s
-      use des_thermo, only: DES_ENERGY_SOURCE !Added by Surya Oct 22, 2014    
+      use des_thermo, only: DES_ENERGY_SOURCE
       use run, only: TIME, TSTOP, DT
 
       use desmpi, only: DES_PAR_EXCHANGE
@@ -250,7 +250,7 @@
          call send_recv(des_v_s,2)
          if(do_K) call send_recv(des_w_s,2)
          call send_recv(rop_s,2)
-         if(ENERGY_EQ) call send_recv(des_energy_source,2) !Added by Surya Oct 22, 2014
+         if(ENERGY_EQ) call send_recv(des_energy_source,2)
 
          TMP_WALL = WALL_TIME() - TMP_WALL
          IF(TMP_WALL > 1.0d-10) THEN

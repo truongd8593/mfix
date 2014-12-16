@@ -156,7 +156,3 @@
   DES_SPX_DT = 0.1
 
   USR_DT(1) = 0.05  ! User specified output
-
-
-  NODESI =  2  NODESJ = 2  NODESK =  2
-

@@ -22,13 +22,12 @@
   UNITS    = 'SI'
 
   TIME  = 0.0      ! start time
-  TSTOP = 5.0      ! stop time
+  TSTOP = 1.0      ! stop time
 
   DT     = 2.0d-4  ! time step
-!  DT_FAC = 1.0     ! fixed step size
-  DT_MIN = 1.0d-30
+  DT_FAC = 1.0     ! fixed step size
 
-  ENERGY_EQ  = .T.
+  ENERGY_EQ  = .F.
   SPECIES_EQ = .F.   .F.
 
   MOMENTUM_X_EQ(0) = .F. .F.
@@ -74,8 +73,6 @@
   MU_g0 = 1.0d-6   ! constant gas viscosity
   RO_g0 = 1.2      ! constant gas density
 
-  K_g0  = 1E-4        ! (cal/(sec.cm.K))
-  C_Pg0 = 2.3878E-1  ! (cal/(g.K))
 
 
 ! Particle Section
@@ -106,9 +103,6 @@
   RO_s0 = 1.8d+3     ! density
   D_p0  = 1.0d-4     ! diameter
 
-  K_s0(1) =   1E-03     ! Conductivity  :: cal/(sec.cm.K)
-  C_ps0(1) =  0.191204  ! Specific Heat :: cal/(g.K)
-  DES_Em(1) = 0.0       ! Emmisivity
 
 
 #_______________________________________________________________________
@@ -124,9 +118,6 @@
   IC_U_g(1)   =   0.0   ! x-dir gas velocity
   IC_V_g(1)   =   0.0   ! y-dir gas velocity
 
-
-  IC_T_g(1)   =    350.0
-  IC_T_s(1,1) =    298.15 ! Temperature of cold particle (K) -> 25C
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
@@ -153,7 +144,7 @@
 # DMP SETUP
 
 ! MPI partition
-  NODESI = 4   NODESJ = 4   NODESK = 1
+  NODESI = 1   NODESJ = 1   NODESK = 1
 
   ENABLE_DMP_LOG = .F.
   CHK_BATCHQ_END = .F.

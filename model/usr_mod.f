@@ -1,38 +1,21 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: devol.inc                                              C
-!  Purpose: Common block containing data relating to devolatilization  C
-!                                                                      C
-!  Author: S. Venkatesan                              Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References: MGAS code, Wen, et al. (1982)       C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+
       MODULE usr
 
-      use param, only: DIMENSION_C
 
-      DOUBLE PRECISION DUMMY_DP
+        Use param
+        Use param1
 
-! Sherwood number
-      DOUBLE PRECISION, DIMENSION(:, :),    ALLOCATABLE :: N_sh
 
-! Proximate Analysis:
-      DOUBLE PRECISION :: PAC  ! Char
-      DOUBLE PRECISION :: PAV  ! Volatiles
-      DOUBLE PRECISION :: PAM  ! Moisture
-      DOUBLE PRECISION :: PAA  ! Ash
-
+!
+!       Declare the user-defined namelist variables (usrnlst.inc) in this module.
+!       Also Include user-defined variables in this module.  To access the
+!       variables from a subroutine add the statement "Use usr".  If allocatable
+!       arrays are defined in this module allocate them in usr0.  To turn on the
+!       user defined subroutines (usr0, usr1, and usr2) set call_usr to true in
+!       mfix.dat.
+!
+!                       a dummy variable listed in usrnlst.inc
+        DOUBLE PRECISION DUMMY_DP
 
       END MODULE usr

@@ -246,18 +246,13 @@
       use discretelement, only: DES_MMAX
 
       use physprop, only: MMAX
-      Use compar, only: NODESI, NODESJ, NODESK
 
       use des_thermo, only: DES_CONV_CORR
       use des_thermo, only: DES_CONV_CORR_ENUM
       use des_thermo, only: RANZ_1952
 
-!      use des_thermo, only: DES_COND_EQ
-!      use des_thermo, only: DES_COND_EQ_PFP
-!      use des_thermo, only: DES_COND_EQ_PP
-
-      Use des_thermo, only: SB_CONST
-      Use des_thermo, only: DES_Em
+      use des_thermo, only: SB_CONST
+      use des_thermo, only: DES_Em
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -276,39 +271,12 @@
 !---------------------------------------------------------------------//
 ! Loop counter
       INTEGER :: M
-! Number of processors used. (Heat transfer is limited to serial runs!)
-      INTEGER :: CHECK_MPI
-
 
 !......................................................................!
 
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_ENERGY")
-
-
-!      IF(.NOT.ENERGY_EQ)THEN
-! Reinitialize the heat transfer logicals to false.
-!         DES_COND_EQ     = .FALSE.
-!         DES_COND_EQ_PFP = .FALSE.
-!         DES_COND_EQ_PP  = .FALSE.
-!         CALL FINL_ERR_MSG
-!         RETURN
-!      ENDIF
-
-
-! Check the number of processors. DES reactive chemistry is currently
-! limited to serial runs.
-      CHECK_MPI = NODESI * NODESJ * NODESK
-!     IF(CHECK_MPI.NE.1) THEN
-!        WRITE(ERR_MSG, 2000)
-!        CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-!     ENDIF
-
- 2000 FORMAT('Error 2000: Currently, simulations with discrete solids',&
-        ' heat transfer',/'modules are limited to serial runs. Please',&
-        ' correct the mfix.dat file.')
-
 
 ! Gas/Solids convection:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
@@ -372,7 +340,6 @@
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
       use run, only: ANY_SPECIES_EQ
-      use compar, only: NODESI, NODESJ, NODESK
       use stiff_chem, only: STIFF_CHEMISTRY
 
       use error_manager
@@ -386,19 +353,6 @@
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_THERMO")
-
-! Check the number of processors. DES reactive chemistry is currently
-! limited to serial runs.
-!     IF(ANY_SPECIES_EQ) THEN
-!        IF((NODESI*NODESJ*NODESK) /= 1) THEN
-!           WRITE(ERR_MSG, 9001)
-!           CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-!        ENDIF
-!     ENDIF
-
- 9001 FORMAT('Error 9001: DES reactive chemistry is limited to ',      &
-         'serail  runs.',/'NODESI, NODESJ, and NODESK must equal 1. ', &
-         'Please correct the dat file.')
 
 ! Stiff chemistry solver is a TFM reaction model not for DES.
       IF(STIFF_CHEMISTRY) THEN

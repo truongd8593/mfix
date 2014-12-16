@@ -30,7 +30,7 @@
   DT =     1.0d-4
   DT_MAX = 2.0d-4
 
-  ENERGY_EQ = .T.
+  ENERGY_EQ = .F.
 
   SPECIES_EQ(0:2) =  .F.  .F.  .F.
 
@@ -68,9 +68,6 @@
   RO_g0 = 0.0
   MU_g0 = 0.2
 
-  K_g0  = 0.0        ! (cal/(sec.cm.K))
-  C_Pg0 = 2.3878E-1  ! (cal/(g.K))
-
 
 ! PARTICLE SECTION
 !---------------------------------------------------------------------//
@@ -103,10 +100,6 @@
   D_p0(1) = 20.000000    ! (cm)
   RO_s0(1)=  2.600000    ! (g/cm)
 
-  K_s0(1) =   0.0       ! Conductivity  :: cal/(sec.cm.K)
-  C_ps0(1) =  0.191204  ! Specific Heat :: cal/(g.K)
-  DES_Em(1) = 0.8       ! Emmisivity
-
 
 ! Solids phase 2
 !---------------------------------------------------------------------//
@@ -115,9 +108,6 @@
   D_p0(2) = 20.00000     ! (cm)
   RO_s0(2)=  2.600001    ! (g/cm)
 
-  K_s0(2) =   0.0       ! Conductivity  :: cal/(sec.cm.K)
-  C_ps0(2) =  0.013145  ! Specific Heat :: cal/(g.K)
-  DES_Em(2) = 0.8       ! Emmisivity
 
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
@@ -137,10 +127,7 @@
   IC_V_g(1)   =    0.0
   IC_W_g(1)   =    0.0
 
-  IC_T_g(1)   =    400.0
-  IC_T_s(1,1) =    298.15 ! Temperature of cold particle (K) -> 25C
-  IC_T_s(1,2) =    453.15 ! Temperature of hot particle (K) -> 180C
- 
+
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
 

@@ -42,10 +42,9 @@
       use desmpi_wrapper
       use sendrecvnode
       use mfix_pic
-! Added by Surya Oct 2014
       use des_thermo
-      use run, only: ENERGY_EQ,ANY_SPECIES_EQ 
-      use param, only: DIMENSION_N_s 
+      use run, only: ENERGY_EQ,ANY_SPECIES_EQ
+      use param, only: DIMENSION_N_s
       use des_rxns
 !-----------------------------------------------
 
@@ -251,7 +250,7 @@
       allocate (iexchflag(lfaces)); iexchflag=.FALSE.
 
 ! allocate variables related to scattergather
-      allocate(iscattercnts(0:numpes-1)); iscattercnts=0 
+      allocate(iscattercnts(0:numpes-1)); iscattercnts=0
       allocate(igathercnts(0:numpes-1));  igathercnts=0
       allocate(idispls(0:numpes-1)); idispls=0
 
@@ -888,20 +887,20 @@
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf + dimn
 
-! Added by Surya Oct 7, 2014
             if(ENERGY_EQ)then
-            dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
-            lbuf = lbuf +1
+               dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
+              lbuf = lbuf +1
             endif
-! Added by Surya Oct 29, 2014
+
             if(ANY_SPECIES_EQ)then
-            dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = des_x_s(lcurpar,1:dimension_n_s)
-            lbuf = lbuf+dimension_n_s
+               dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
+                  des_x_s(lcurpar,1:dimension_n_s)
+               lbuf = lbuf+dimension_n_s
             endif
-! Added by Surya Dec 10, 2014
+
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
-           
+
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
             lbuf = lbuf + ltordimn
             lpar_cnt = lpar_cnt + 1
@@ -969,7 +968,7 @@
             IF (DO_OLD) THEN
                des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
                des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
-               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)  !Added by Surya Oct 7, 2014
+               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)
                omega_old(:,llocpar)= omega_new(:,llocpar)
             ENDIF
             des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
@@ -977,19 +976,19 @@
             des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
 
-! Added by Surya Oct 7, 2014
             if(ENERGY_EQ)then
-            des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+               des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
+               lbuf = lbuf + 1
             endif
-! Added by Surya Oct 29, 2014
+
             if(ANY_SPECIES_EQ)then
-            des_x_s(llocpar,1:dimension_n_s)= drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-            lbuf = lbuf+dimension_n_s
+               des_x_s(llocpar,1:dimension_n_s) = &
+                  drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
+               lbuf = lbuf+dimension_n_s
             endif
-! Added by Surya Dec 10, 2014
+
             des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf+3            
+            lbuf = lbuf+3
 
             omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
@@ -1028,21 +1027,22 @@
             des_vel_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
 
-! Added by Surya Oct 7, 2014
             if(ENERGY_EQ)then
-            des_t_s_new(ispot) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+               des_t_s_new(ispot) = drecvbuf(lbuf,pface)
+               lbuf = lbuf + 1
             endif
-! Added by Surya Oct 29, 2014
-            if(ANY_SPECIES_EQ)then
-            des_x_s(ispot,1:dimension_n_s)= drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-            lbuf = lbuf+dimension_n_s
-            endif
-! Added by Surya Dec 10, 2014
-            des_usr_var(1:3,ispot)= drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf+3 
 
-            omega_new(1:ltordimn,ispot) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
+            if(ANY_SPECIES_EQ)then
+               des_x_s(ispot,1:dimension_n_s) = &
+                  drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
+               lbuf = lbuf+dimension_n_s
+            endif
+
+            des_usr_var(1:3,ispot)= drecvbuf(lbuf:lbuf+3-1,pface)
+            lbuf = lbuf+3
+
+            omega_new(1:ltordimn,ispot) = &
+               drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -1095,16 +1095,15 @@
                des_vel_new(:,lcurpar)=0
                des_vel_old(:,lcurpar)=0
 
-! Added by Surya Oct 7, 2014
                if(ENERGY_EQ) then
-               des_t_s_new(lcurpar)=0
-               des_t_s_old(lcurpar)=0
+                  des_t_s_new(lcurpar)=0
+                  des_t_s_old(lcurpar)=0
                endif
-! Added by Surya Oct 29, 2014
+
                if(ANY_SPECIES_EQ)then
-               des_x_s(lcurpar,1:dimension_n_s)= 0
+                  des_x_s(lcurpar,1:dimension_n_s)= 0
                endif
-! Added by Surya Dec 10, 2014
+
                des_usr_var(1:3,lcurpar)= 0
 
 
@@ -1191,19 +1190,19 @@
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf+dimn
 
-! Added by Surya Oct 7,2014
             if(ENERGY_EQ) then
-            dsendbuf(lbuf,pface) = des_t_s_old(lcurpar)
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
-            lbuf = lbuf+1
+               dsendbuf(lbuf,pface) = des_t_s_old(lcurpar)
+               lbuf = lbuf+1
+               dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
+               lbuf = lbuf+1
             endif
-! Added by Surya Oct 29, 2014
+
             if(ANY_SPECIES_EQ)then
-            dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = des_x_s(lcurpar,1:dimension_n_s)
-            lbuf = lbuf + dimension_n_s
+               dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
+                  des_x_s(lcurpar,1:dimension_n_s)
+               lbuf = lbuf + dimension_n_s
             endif
-! Added by Surya Dec 10, 2014
+
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
 
@@ -1385,19 +1384,19 @@
          des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
 
-! Added by Surya Oct 7, 2014
          if(ENERGY_EQ) then
-         des_t_s_old(llocpar) = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
+            des_t_s_old(llocpar) = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
+            des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
          endif
-! Added by Surya Oct 29, 2014
+
          if(ANY_SPECIES_EQ)then
-         des_x_s(llocpar,1:dimension_n_s)=drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-         lbuf = lbuf + dimension_n_s
+            des_x_s(llocpar,1:dimension_n_s) = &
+               drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
+            lbuf = lbuf + dimension_n_s
          endif
-! Added by Surya Dec 10, 2014
+
          des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
          lbuf = lbuf + 3
 
