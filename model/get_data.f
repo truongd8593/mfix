@@ -27,10 +27,12 @@
       USE mfix_pic
       USE cutcell
       USE dashboard
-      USE des_stl_functions, only: des_stl_preprocessing
-      USE des_stl_functions, only: allocate_des_stl_arrays
       USE visc_g, only: L_SCALE
       USE constant, only: L_SCALE0
+
+      use stl_preproc_des, only: DES_STL_PREPROCESSING
+      use desgrid, only: DESGRID_INIT
+      use desmpi, only: DESMPI_INIT
 
       USE error_manager
 
@@ -133,6 +135,15 @@
       ELSE
          CALL ALLOCATE_DUMMY_CUT_CELL_ARRAYS
       ENDIF
+
+      IF(DISCRETE_ELEMENT) THEN 
+         CALL DESGRID_INIT
+         CALL DES_STL_PREPROCESSING
+         IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
+            IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
+         ENDIF
+      ENDIF
+
 
 !--------------------------  ARRAY ALLOCATION -----------------------!
 

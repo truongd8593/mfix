@@ -70,7 +70,7 @@
       AM0(:,:) = A_M(:,0,:)
 
 ! Add DEM temp A_M so they are included in the pressure correciton eq.
-      IF(DES_CONTINUUM_COUPLED) THEN 
+      IF(DES_CONTINUUM_COUPLED) THEN
          AM0(:,0) = AM0(:,0) - VXF_GDS(:)
          IF (DES_CONTINUUM_HYBRID) &
             AM0(:,1:MMAX) = AM0(:,1:MMAX) - VXF_SDS(:,1:MMAX)

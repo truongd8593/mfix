@@ -395,7 +395,7 @@
 !  should be passed as ARRAY(DIM1) and array length as DIM2-DIM1+1.
 !---------------------------------------------------------------------------
       WRITE (UNIT_RES, REC=3) NEXT_RECA
-      CALL FLUSH (UNIT_RES)
+      FLUSH (UNIT_RES)
 
  1200 continue
 
@@ -404,7 +404,7 @@
          WRITE (UNIT_RES, REC=2) RUN_NAME, ID_MONTH, ID_DAY, ID_YEAR, ID_HOUR, &
              ID_MINUTE, ID_SECOND
          WRITE (UNIT_RES, REC=3) 4
-         CALL FLUSH (UNIT_RES)
+         FLUSH (UNIT_RES)
       end if
 
       deallocate (arr1)

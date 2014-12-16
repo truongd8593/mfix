@@ -261,7 +261,7 @@
 !    using particle interpolation (DES_INTERP_ON), when using the
 !    MPPIC solids model, or the DES cut-cell implementation.
 !  </description>
-!  <valid value=".TRUE." 
+!  <valid value=".TRUE."
 !    note="Use interpolation to calculate field quantities."/>
 !  <valid value=".FALSE."
 !    note="Use cell-based averaging to calculate field quantities."/>

@@ -11,5 +11,3 @@
 !       parameter (NF90_CLOBBER = 0)
 
         use netcdf
-
-

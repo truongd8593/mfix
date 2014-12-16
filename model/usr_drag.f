@@ -21,7 +21,7 @@
       INTEGER, INTENT(IN) :: M
 
 ! drag coefficient
-      DOUBLE PRECISION, INTENT(OUT) :: lDgA
+      DOUBLE PRECISION, INTENT(INOUT) :: lDgA
 ! gas volume fraction
       DOUBLE PRECISION, INTENT(IN) :: EPg
 ! gas laminar viscosity

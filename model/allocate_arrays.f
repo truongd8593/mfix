@@ -494,7 +494,7 @@
 
       IF(CALLED > 0) THEN
          IF(.NOT.bDoing_postmfix) THEN
-            RETURN 
+            RETURN
          ELSEIF(mod(CALLED,2) /= 0) THEN
             RETURN
          ENDIF

@@ -49,6 +49,9 @@
       use compar, only: FUNIJK_MAP_C
 ! Function for averaging to a scalar cell's east face.
       use fun_avg, only: AVG_X
+! Domain index bounds.
+      use compar, only: ISTART2, JSTART2, KSTART2
+      use compar, only: IEND2, JEND2, KEND2
 
       IMPLICIT NONE
 
@@ -97,6 +100,10 @@
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
+
+            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
             IJMK = FUNIJK_MAP_C(I, J-1, K)
 
@@ -198,6 +205,9 @@
       use compar, only: FUNIJK_MAP_C
 ! Function for averaging to a scalar cell's north face.
       use fun_avg, only: AVG_Y
+! Domain index bounds.
+      use compar, only: ISTART2, JSTART2, KSTART2
+      use compar, only: IEND2, JEND2, KEND2
 
 
       IMPLICIT NONE
@@ -244,6 +254,10 @@
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
+
+            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
             IMJK = FUNIJK_MAP_C(I-1,J,K)
 
@@ -346,6 +360,9 @@
       use compar, only: FUNIJK_MAP_C
 ! Function for averaging to a scalar cell's north face.
       use fun_avg, only: AVG_Z
+! Domain index bounds.
+      use compar, only: ISTART2, JSTART2, KSTART2
+      use compar, only: IEND2, JEND2, KEND2
 
       IMPLICIT NONE
 
@@ -391,6 +408,10 @@
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
+
+            IF (I.LT.ISTART2 .OR. I.GT.IEND2) CYCLE
+            IF (J.LT.JSTART2 .OR. J.GT.JEND2) CYCLE
+            IF (K.LT.KSTART2 .OR. K.GT.KEND2) CYCLE
 
             IMJK = FUNIJK_MAP_C(I-1,J,K)
             IJMK = FUNIJK_MAP_C(I,J-1,K)

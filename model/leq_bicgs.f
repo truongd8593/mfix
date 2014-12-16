@@ -1699,7 +1699,7 @@
          prod = 0.0d0
 
          IF(RE_INDEXING) THEN
-!         IF(.FALSE.) THEN    
+!         IF(.FALSE.) THEN
             ! Somehow, looping in this order leads to smaller time step than k,i,j nested loop below ....
             DO IJK = IJKSTART3,IJKEND3
                IF(INTERIOR_CELL_AT(IJK)) prod = prod + r1(ijk)*r2(ijk)

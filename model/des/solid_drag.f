@@ -182,7 +182,7 @@
                A_M(IJK,0,M) = A_M(IJK,0,M) + VOL_W(IJK) *              &
                   AVG_Z(SDRAG_AM(IJK,M), SDRAG_AM(IJKT,M), K)
                B_M(IJK,M) = B_M(IJK,M) + VOL_W(IJK) *                  &
-                  AVG_Z(SDRAG_BM(IJK,3,M), SDRAG_BM(IJKT,3,M), K) 
+                  AVG_Z(SDRAG_BM(IJK,3,M), SDRAG_BM(IJKT,3,M), K)
 
             ENDIF   ! end if (fluid_at(ijk))
          ENDDO   ! end do (ijk=ijkstart3,ijkend3)

@@ -453,7 +453,6 @@
            ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                              ! use 'SEQUENTIAL' if 'STREAM' is not supported
            ACTION   = 'WRITE',            &
-           CONVERT  = 'BIG_ENDIAN',       &
            IOSTAT=ISTAT)
 
 
@@ -548,6 +547,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTU_BIN(PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -573,8 +573,8 @@
 
       INTEGER :: CELL_TYPE
 
-      REAL(4) :: float
-      INTEGER :: int
+      REAL(c_float) :: float
+      INTEGER(c_int) :: int
 
       INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
       INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
@@ -589,9 +589,13 @@
 !  - Connectivity offset
 !  - cell types
 !
-! Since the data is appended (i.e., written after all tags), the offset, in number of bytes must be specified.
-! The offset includes the size of the data for each field, plus the size of the integer that stores the number of bytes.
-! this is why the offset of a field equals the offset of the previous field plus sizeof(int) plus the number of bytes of the field.
+
+! Since the data is appended (i.e., written after all tags), the
+! offset, in number of bytes must be specified.  The offset includes
+! the size of the data for each field, plus the size of the integer
+! that stores the number of bytes.  this is why the offset of a field
+! equals the offset of the previous field plus c_sizeof(int) plus the
+! number of bytes of the field.
 
 ! Next, the actual data is written for the geometry (PASS=WRITE_DATA)
 ! The DATA is converted to single precision to save memory.
@@ -601,7 +605,7 @@
          NUMBER_OF_VTK_CELLS = NUMBER_OF_CELLS - NUMBER_OF_BLOCKED_CELLS
 
 ! Number of bytes of each field
-         nbytes_xyz          = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_xyz          = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
          nbytes_connectivity = 0
          DO IJK = 1,IJKMAX3
@@ -611,19 +615,19 @@
                ENDIF
             ENDIF
          END DO
-         nbytes_connectivity = nbytes_connectivity * sizeof(int)
+         nbytes_connectivity = nbytes_connectivity * c_sizeof(int)
 
 
-         nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_offset       = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
-         nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_type         = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
 
 ! Offset of each field
          offset_xyz = 0
-         offset_connectivity = offset_xyz          + sizeof(int) + nbytes_xyz
-         offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
-         offset_type         = offset_offset       + sizeof(int) + nbytes_offset
+         offset_connectivity = offset_xyz          + c_sizeof(int) + nbytes_xyz
+         offset_offset       = offset_connectivity + c_sizeof(int) + nbytes_connectivity
+         offset_type         = offset_offset       + c_sizeof(int) + nbytes_offset
 
 
          IF(PASS==WRITE_HEADER) THEN
@@ -657,7 +661,7 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type  ! Store offset for first variable to be written
+            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type  ! Store offset for first variable to be written
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -756,7 +760,7 @@
          NUMBER_OF_VTK_CELLS = NUMBER_OF_CELLS - NUMBER_OF_BLOCKED_CELLS
 
 ! Number of bytes of each field
-         nbytes_xyz          = NUMBER_OF_POINTS * 3 * sizeof(float)
+         nbytes_xyz          = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
          nbytes_connectivity = 0
          DO IJK = 1,IJKEND3
@@ -766,18 +770,18 @@
                ENDIF
             ENDIF
          END DO
-         nbytes_connectivity = nbytes_connectivity * sizeof(int)
+         nbytes_connectivity = nbytes_connectivity * c_sizeof(int)
 
-         nbytes_offset       = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_offset       = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
-         nbytes_type         = NUMBER_OF_VTK_CELLS * sizeof(int)
+         nbytes_type         = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
 
 ! Offset of each field
          offset_xyz = 0
-         offset_connectivity = offset_xyz          + sizeof(int) + nbytes_xyz
-         offset_offset       = offset_connectivity + sizeof(int) + nbytes_connectivity
-         offset_type         = offset_offset       + sizeof(int) + nbytes_offset
+         offset_connectivity = offset_xyz          + c_sizeof(int) + nbytes_xyz
+         offset_offset       = offset_connectivity + c_sizeof(int) + nbytes_connectivity
+         offset_type         = offset_offset       + c_sizeof(int) + nbytes_offset
 
          IF(PASS==WRITE_HEADER) THEN
 
@@ -812,7 +816,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
             ! Store offset for first variable to be written
-            VTU_offset =  offset_type       + sizeof(int) + nbytes_type
+            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -915,6 +919,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,VAR,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -942,7 +947,7 @@
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-      REAL(4) :: float
+      REAL(c_float) :: float
 
       INTEGER :: nbytes_scalar
 
@@ -954,7 +959,7 @@
 
 ! For each scalar, write a tag, with corresponding offset
 
-         nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
+         nbytes_scalar = NUMBER_OF_VTK_CELLS * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
@@ -967,7 +972,7 @@
                  TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1006,7 +1011,7 @@
       ELSE ! BDIST_IO=.TRUE.
 
 
-         nbytes_scalar = NUMBER_OF_VTK_CELLS * sizeof(float)
+         nbytes_scalar = NUMBER_OF_VTK_CELLS * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each scalar, write a tag, with corresponding offset
@@ -1020,7 +1025,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1071,6 +1076,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTU_BIN(VAR_NAME,VARX,VARY,VARZ,PASS)
 
+      USE, INTRINSIC :: iso_c_binding
       USE param
       USE param1
       USE parallel
@@ -1098,7 +1104,7 @@
       DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VARX(:),GLOBAL_VARY(:),GLOBAL_VARZ(:)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
-      REAL(4) :: float
+      REAL(c_float) :: float
 
       INTEGER :: nbytes_vector
 
@@ -1108,7 +1114,7 @@
 
       IF (.NOT.BDIST_IO) THEN
 
-         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
+         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
@@ -1118,7 +1124,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1175,7 +1181,7 @@
       ELSE ! BDIST_IO=.TRUE.
 
 
-         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * sizeof(float)
+         nbytes_vector = NUMBER_OF_VTK_CELLS * 3 * c_sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 !           For each vector, write a tag, with corresponding offset
@@ -1186,7 +1192,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 
-            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -2700,8 +2706,7 @@
                                            ! use 'BINARY' if 'UNFORMATTED' is not supported
            ACCESS   = 'STREAM',   &        ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                            ! use 'SEQUENTIAL' if 'STREAM' is not supported
-           ACTION   = 'WRITE', &
-           CONVERT  = 'BIG_ENDIAN')
+           ACTION   = 'WRITE')
 
       WRITE(UNIT=VTK_UNIT)'# vtk DataFile Version 2.0'//END_REC
       WRITE(BUFFER,FMT='(A,A,E14.7)')TRIM(RUN_NAME),', Time = ',TIME

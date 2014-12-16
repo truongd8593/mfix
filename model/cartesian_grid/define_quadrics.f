@@ -157,8 +157,8 @@
             yt = x2-t_y(Q_ID)
             zt = x3-t_z(Q_ID)
 
-            xtr = xt*0.866  - yt*0.5
-            ytr = xt*0.5    + yt*0.8665
+            xtr = xt
+            ytr = yt
             ztr = zt
 
             R1 = Torus_R1(Q_ID)
@@ -171,7 +171,7 @@
 ! This shape represents a pair of parallel cylinders (y-direction)
 ! capped at both ends by half a torus
 ! to create a U-shaped coil
-! UCOIL_Y1 and UCOIL_Y2 are the min and max y-values of the coil 
+! UCOIL_Y1 and UCOIL_Y2 are the min and max y-values of the coil
 ! The coil is translated in the x and z direction (t_x, t_z)
 ! and can be rotated about the y-direction, centered about (t_x,t_z)
 ! by the angle THETA_Y
@@ -214,7 +214,7 @@
 ! BEND_THETA2 is the orientation of the second cylinder (Deg.).
 ! The orientation is measured from the y-axis.
 ! For example BEND_THETA1=0.0 and BEND_THETA2=90.0
-! represents a 90 deg bend between a vertical (first cylinder) 
+! represents a 90 deg bend between a vertical (first cylinder)
 ! and a horizontal (second) cylinder.
 ! The bend itself is represented by a section of a torus
 ! The translation (t_x,t_y,t_z) defines the center of the bend (torus)
@@ -237,14 +237,14 @@
             R1 = BEND_R1(Q_ID)
             R2 = BEND_R2(Q_ID)
 ! Convert angles from degrees to radians
-            THETA1 = BEND_THETA1(Q_ID)*(pi/180.0D0) 
-            THETA2 = BEND_THETA2(Q_ID)*(pi/180.0D0) 
+            THETA1 = BEND_THETA1(Q_ID)*(pi/180.0D0)
+            THETA2 = BEND_THETA2(Q_ID)*(pi/180.0D0)
 
 ! Convert (x,y) into angle theta, and adjust its range from zero to 2*pi
             THETA  = ATAN2(yt,xt) ! Result is from -pi to pi
             IF(THETA<ZERO) THETA = THETA + 2.0D0*PI
 
-! THETA3 correspond to the point on a unit circle between THETA1 and THETA2             
+! THETA3 correspond to the point on a unit circle between THETA1 and THETA2
             IF(THETA2>THETA1) THEN
                THETA3m = HALF*(THETA1+THETA2)
                IF(THETA3m<PI) THEN
@@ -281,7 +281,7 @@
 
             IF(THETA<THETA_MIN) THETA = THETA + 2.0*PI
 
-! Now join the pieces together:            
+! Now join the pieces together:
             IF(THETA3<=THETA.AND.THETA<=THETA1CYL1) THEN  ! cylinder 1
                c = DCOS(THETA1)
                s = DSIN(THETA1)
@@ -291,8 +291,8 @@
                zt = x3-t_z(Q_ID)
 !              Rotation
                xtr =  xt*c  + yt*s
-               ytr = -xt*s  + yt*c    
-               ztr = zt    
+               ytr = -xt*s  + yt*c
+               ztr = zt
 
                f = (xtr/R2)**2 + (ztr/R2)**2 -1.0
 
@@ -304,7 +304,7 @@
 !              Rotation
                xtr = xt
                ytr = yt
-               ztr = zt    
+               ztr = zt
 
                f = -4*(xtr**2+ytr**2)*R1**2+(xtr**2+ytr**2+ztr**2+R1**2-R2**2)**2
 
@@ -317,8 +317,8 @@
                zt = x3-t_z(Q_ID)
 !              Rotation
                xtr =  xt*c  + yt*s
-               ytr = -xt*s  + yt*c    
-               ztr = zt    
+               ytr = -xt*s  + yt*c
+               ztr = zt
 
                f = (xtr/R2)**2 + (ztr/R2)**2 -1.0
 
@@ -340,7 +340,7 @@
 !           Rotation
             xtr = xt
             ytr = yt
-            ztr = zt    
+            ztr = zt
 
 ! Radii
             R1 = C2C_R1(Q_ID)
@@ -362,7 +362,7 @@
             ENDIF
 
             f = (xtr/R)**2 + (ztr/R)**2 - 1.0
-            
+
 
 
          ELSE

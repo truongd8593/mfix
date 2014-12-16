@@ -53,7 +53,7 @@
 
 ! Local variables:
 !---------------------------------------------------------------------//
-! Loop indices: 
+! Loop indices:
       INTEGER :: IJK, M, NINDX, NP
 ! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS(3, DIMENSION_M)
@@ -64,7 +64,7 @@
 ! Sum over all phases of ratio volume fraction over particle diameter
       DOUBLE PRECISION :: EPSoDP
 ! DEM particle diameter calculated from radius.
-      DOUBLE PRECISION :: lDP 
+      DOUBLE PRECISION :: lDP
 ! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
 ! Intermediate calculations for volume fraction.
@@ -204,7 +204,7 @@
 
 ! Local variables:
 !---------------------------------------------------------------------//
-! Loop indices: 
+! Loop indices:
       INTEGER :: IJK, M, NINDX, NP
 ! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS(3, DIMENSION_M)
@@ -215,7 +215,7 @@
 ! Sum over all phases of ratio volume fraction over particle diameter
       DOUBLE PRECISION :: EPSoDP
 ! DEM particle diameter calculated from radius.
-      DOUBLE PRECISION :: lDP 
+      DOUBLE PRECISION :: lDP
 ! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
 ! Intermediate calculations for volume fraction.

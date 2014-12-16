@@ -34,7 +34,7 @@
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: BEND_R1, BEND_R2
 !     Angles for Bend
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: BEND_THETA1, BEND_THETA2
-!     Y-locations of cylinder-cone-cylinder 
+!     Y-locations of cylinder-cone-cylinder
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: C2C_Y1, C2C_Y2
 !     Radii of cylinder-cone-cylinder
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: C2C_R1, C2C_R2

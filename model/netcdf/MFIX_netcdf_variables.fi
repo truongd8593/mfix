@@ -1,4 +1,3 @@
-
  function MFIX_nf90_def_var_Scalar(ncid, name, xtype, varid)
 
     use netcdf
@@ -613,5 +612,3 @@
    logical :: MFIX_usingNETCDF
    MFIX_usingNETCDF = .true.
    end function MFIX_usingNETCDF
-
-

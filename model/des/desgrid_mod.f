@@ -242,6 +242,28 @@
           kofpos = floor((fpos-dg_zstart)*dg_dzinv) + dg_kstart1
         end function kofpos
 
+        logical function dg_is_ON_myPE_OWNS(lI, lJ, lK)
+        implicit none
+        integer, intent(in) :: lI, lJ, lK
+
+        dg_is_ON_myPE_OWNS = (&
+           (dg_istart <= lI) .AND. (lI <= dg_iend) .AND. &
+           (dg_jstart <= lJ) .AND. (lJ <= dg_jend) .AND. &
+           (dg_kstart <= lK) .AND. (lK <= dg_kend))
+
+        end function
+
+        logical function dg_is_ON_myPE_plus1layers(lI, lJ, lK)
+        implicit none
+        integer, intent(in) :: lI, lJ, lK
+
+        dg_is_ON_myPE_plus1layers = (&
+           (dg_istart2 <= lI) .AND. (lI <= dg_iend2) .AND. &
+           (dg_jstart2 <= lJ) .AND. (lJ <= dg_jend2) .AND. &
+           (dg_kstart2 <= lK) .AND. (lK <= dg_kend2))
+
+        end function
+
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_init
 ! Purpose          : sets indices for desgrid and defines constants
@@ -475,9 +497,6 @@
       do lijk = 1,dg_ijksize2
          nullify(dg_pic(lijk)%p)
       end do
-      allocate(dg_pijk(max_pip),dg_pijkprv(max_pip))
-      dg_pijk = 0
-      dg_pijkprv=0
 
 !      call des_dbggrid
       end subroutine desgrid_init
@@ -702,6 +721,7 @@
          liproc= iofproc(lproc)
          ljproc= jofproc(lproc)
          lkproc= kofproc(lproc)
+         write(44,*) "   "
          write(44,*) "i,j,k location of proc",liproc,ljproc,lkproc
          write(44,*) "i,j,k size of proc", dg_isize_all(liproc),dg_jsize_all(ljproc),dg_ksize_all(lkproc)
          write(44,*) "-------------------------------------------------"
@@ -714,15 +734,22 @@
          write(44,*) "for k1:      ",dg_kstart1_all(lproc),dg_kend1_all(lproc)
          write(44,*) "for k2:      ",dg_kstart2_all(lproc),dg_kend2_all(lproc)
       end do
+      write(44,*) "   "
       write(44,*) "-------------------------------------------------"
       write(44,*) "Local Start and end"
       write(44,*) "-------------------------------------------------"
+      write(44,*) "for i :      ",dg_istart, dg_iend
       write(44,*) "for i1:      ",dg_istart1,dg_iend1
       write(44,*) "for i2:      ",dg_istart2,dg_iend2
+      write(44,*) "   "
+      write(44,*) "for j :      ",dg_jstart, dg_jend
       write(44,*) "for j1:      ",dg_jstart1,dg_jend1
       write(44,*) "for j2:      ",dg_jstart2,dg_jend2
+      write(44,*) "   "
+      write(44,*) "for k :      ",dg_kstart, dg_kend
       write(44,*) "for k1:      ",dg_kstart1,dg_kend1
       write(44,*) "for k2:      ",dg_kstart2,dg_kend2
+      write(44,*) "   "
       write(44,*) "-------------------------------------------------"
       write(44,*) "global Start and end"
       write(44,*) "-------------------------------------------------"
@@ -732,6 +759,28 @@
       write(44,*) "for j2:      ",dg_jmin2,dg_jmax2
       write(44,*) "for k1:      ",dg_kmin1,dg_kmax1
       write(44,*) "for k2:      ",dg_kmin2,dg_kmax2
+      write(44,*) "   "
+      write(44,*) "-------------------------------------------------"
+      write(44,*) "dg_xstart:   ",dg_xstart
+      write(44,*) "dg_xend:     ",dg_xend
+      write(44,*) "dg_dxinv:    ",dg_dxinv
+      write(44,*) "   "
+      write(44,*) "dg_ystart:   ",dg_ystart
+      write(44,*) "dg_yend:     ",dg_yend
+      write(44,*) "dg_dyinv:    ",dg_dyinv
+      write(44,*) "   "
+      write(44,*) "dg_zstart:   ",dg_zstart
+      write(44,*) "dg_zend:     ",dg_zend
+      write(44,*) "dg_dzinv:    ",dg_dzinv
+      write(44,*) "   "
+      write(44,*) "dg_c1_lo/gl: ",dg_c1_lo, dg_c1_gl
+      write(44,*) "dg_c2_lo/gl: ",dg_c2_lo, dg_c2_gl
+      write(44,*) "dg_c3_lo/gl: ",dg_c3_lo, dg_c3_gl
+      write(44,*) "   "
+      write(44,*) "-------------------------------------------------"
+
+
+
       close(44)
       end subroutine des_dbggrid
 

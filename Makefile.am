@@ -313,6 +313,7 @@ common_SOURCES = \
 	model/des/set_ic_dem.f \
 	model/des/set_phase_index.f \
 	model/des/solid_drag.f \
+	model/des/stl_preproc_des_mod.f \
 	model/des/vtp_mod.f \
 	model/des/write_des_data.f \
 	model/des/write_res0_des.f \

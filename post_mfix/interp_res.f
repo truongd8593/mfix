@@ -310,7 +310,7 @@
       DO K = 1, KMAX2
          DO J = 1, JMAX2
             DO I = 1, IMAX2
-! We cannot use funijk anymore since the IJK_array_of has not been populated            
+! We cannot use funijk anymore since the IJK_array_of has not been populated
 !               IJK = FUNIJK(I, J, K)
                IJK  = I + (J - 1) * IMAX2 + (K - 1) * IJMAX2
                INTERNAL = .TRUE.

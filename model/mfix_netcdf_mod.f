@@ -1,4 +1,3 @@
-
         module MFIX_netcdf
 
                 include 'MFIX_netcdf_constants.fi'

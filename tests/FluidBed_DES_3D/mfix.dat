@@ -28,6 +28,11 @@
   GENER_PART_CONFIG = .T.
   DES_CONTINUUM_COUPLED = .T.
 
+  DES_INTERP_ON = .T.
+  DES_INTERP_MEAN_FIELDS = .T.
+
+  DES_INTERP_SCHEME = 'GARG_2012'
+
   DRAG_TYPE = 'GIDASPOW'
 
 #_______________________________________________________________________

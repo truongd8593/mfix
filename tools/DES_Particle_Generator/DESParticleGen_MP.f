@@ -1,4 +1,4 @@
-!       
+!
 !******************************************************************
 !
 !  DES input generator
@@ -12,7 +12,7 @@
 !  TO DO:
 !  1) Fix so that only np particle information is created
 !  2) In MFIX read the entire input file and if the number of particles does not correspond to
-!     the input deck, than flag an error. 
+!     the input deck, than flag an error.
 !
 !  Additions:
 !  (Sept. 4, 2007): Added multiparticle capability
@@ -23,7 +23,7 @@
 !******************************************************************
 !
 !
-	Program DES_Particle_Genrator 
+	Program DES_Particle_Genrator
 
         implicit none
 
@@ -40,7 +40,7 @@
 	real*8 xp, yp, zp, x(maxp), y(maxp), z(maxp)
 	real*8 u, v, w
         real*8 xl, yl, zl
-        real*8 radius(100), dia(100), dist, rad1(100) 
+        real*8 radius(100), dia(100), dist, rad1(100)
         real*8 density(100)
         real*8 rad, maxdia, maxradius
 
@@ -51,13 +51,13 @@
         open(unit=10, file="Pgen.in", status='old')
         open(unit=20, file="particle_input.dat", status='replace')
 
-	read (10,*) dim 
+	read (10,*) dim
 	read (10,*) random
 	read (10,*) ntypes
-        read (10,*) (np(i), i=1,ntypes) 
-        read (10,*) (radius(i), i=1,ntypes) 
-        read (10,*) (density(i), i=1,ntypes) 
-        read (10,*) xl 
+        read (10,*) (np(i), i=1,ntypes)
+        read (10,*) (radius(i), i=1,ntypes)
+        read (10,*) (density(i), i=1,ntypes)
+        read (10,*) xl
         read (10,*) yl
         read (10,*) zl
 
@@ -71,7 +71,7 @@
 
 	nx = int(xl/maxdia)
 	nz = int(zl/maxdia)
-        if(dim.eq.2) nz = 1  
+        if(dim.eq.2) nz = 1
 
         k = 1
         j = 1
@@ -80,22 +80,22 @@
         n(:) = 0
 
 !       Specifying the initial distribution of the particles
-	
+
 	if(random.eq.0) then	! Ordered particle lattice
            do nt = 1, nptotal
  101	      continue
 	      call random_number(rnd1)
 	      nrnd = int(rnd1*ntypes) + 1
 	      if(n(nrnd).lt.np(nrnd)) then
-		 n(nrnd) = n(nrnd)+1 
+		 n(nrnd) = n(nrnd)+1
 		 ntype_index(nt) = nrnd
 	      else
 		 go to 101
-	      end if 
+	      end if
 	      j = int((nt-1)/(nx*nz)) + 1
 	      k = int(((nt-(j-1)*(nx*nz)) - 1)/nx) + 1
-	      i = nt-(k-1)*nx-(j-1)*(nx*nz) 
-	      
+	      i = nt-(k-1)*nx-(j-1)*(nx*nz)
+
 	      z(nt) = 0.5*maxdia + (k-1)*maxdia
 	      y(nt) = 0.5*maxdia + (j-1)*maxdia
 	      x(nt) = 0.5*maxdia + (i-1)*maxdia
@@ -104,14 +104,14 @@
                  stop
               end if
            end do
-        else if(random.eq.1) then 
+        else if(random.eq.1) then
            write(*,*) 'Random option not debugged/correct for multiparticle'
            iseed = 98765432
            call random_seed(iseed)
 	   do k = 1, nz
               do i = 1, np1
  10		 continue
-		 call random_particle(maxradius,xp,yp,zp,xl,yl,zl,dim) 
+		 call random_particle(maxradius,xp,yp,zp,xl,yl,zl,dim)
 		 x(i) = xp
 		 y(i) = yp
 		 z(i) = zp
@@ -119,7 +119,7 @@
 		 do j = 1, i
 		    if(j.ne.i) then
 		       dist = sqrt((x(i)-x(j))**2 + (y(i)-y(j))**2 +&
-		       (z(i)-z(j))**2) 
+		       (z(i)-z(j))**2)
 		       if(dist.le.maxdia) then
 			  go to 10
 		       end if
@@ -127,13 +127,13 @@
 		 end do
               end do
            end do
-        end if       
-	
-!       setting the velocities to zero 
+        end if
+
+!       setting the velocities to zero
 	u = 0d0
 	v = 0d0
 	w = 0d0
-	
+
         if(dim.eq.2) then
            do i = 1, nptotal
 	      write(20,11) x(i), y(i), radius(ntype_index(i)), density(ntype_index(i)), u, v
@@ -149,28 +149,28 @@
 
         stop
         end
-        
-!       
-!       
+
+!
+!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!       Random particle 
+!       Random particle
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-!       
+!
         subroutine random_particle(rad, xp1, yp1, zp1, xl1, yl1, zl1, dim1)
 
         integer i, dim1, ic
         real*8 rad, xp1, yp1, zp1, xl1, yl1, zl1
-        real*8 rad1 
+        real*8 rad1
         real*8 pxy(3)
 
 	ic = 100000
 	do i = 1, ic
 	   call random_number(pxy)
-	   xp1 = dble(pxy(1))*xl1  
+	   xp1 = dble(pxy(1))*xl1
 	   yp1 = dble(pxy(2))*yl1
 	   zp1 = dble(pxy(3))*zl1
 	   rad1 = 1.05*rad
-	   if(dim1.eq.2) zp1 = rad1 
+	   if(dim1.eq.2) zp1 = rad1
 	   rad1 = 1.05*rad
 	   if(dim1.eq.2) then
 	      if((xp1.ge.rad1).and.(xp1.le.xl1-rad1).and.(yp1.ge.rad1)&
@@ -185,8 +185,8 @@
 	   print *,'not able to place particle'
 	   stop
 	end if
-	
-        return 
+
+        return
         end subroutine random_particle
 
-!       
+!

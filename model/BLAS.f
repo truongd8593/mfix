@@ -1,562 +1,2400 @@
-      subroutine caxpy(n,ca,cx,incx,cy,incy)
-!
-!     constant times a vector plus a vector.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*),cy(*),ca
-      integer i,incx,incy,ix,iy,n
-!
-      if(n.le.0)return
-      if (abs(real(ca)) + abs(aimag(ca)) .eq. 0.0 ) return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        cy(iy) = cy(iy) + ca*cx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        cy(i) = cy(i) + ca*cx(i)
-   30 continue
-      return
-      end
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Software: Netlib BLAS (Basic Linear Algebra Subprograms)            !
+!  Version: 3.5.0                                                      !
+!  Date: November 2013                                                 !
+!  License: public domain                                              !
+!                                                                      !
+!  Online html documentation available at http://www.netlib.org/blas   !
+!                                                                      !
+!  This file is concatenated from the individual files in blas.tgz.    !
+!  The source code is otherwise unmodified.                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-
-      subroutine  ccopy(n,cx,incx,cy,incy)
+!> \brief \b CAXPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CAXPY(N,CA,CX,INCX,CY,INCY)
+!
+!       .. Scalar Arguments ..
+!       COMPLEX CA
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*),CY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    CAXPY constant times a vector plus a vector.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE CAXPY(N,CA,CX,INCX,CY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
 !
-!     copies a vector, x, to a vector, y.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*),cy(*)
-      integer i,incx,incy,ix,iy,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        cy(iy) = cx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        cy(i) = cx(i)
-   30 continue
-      return
-      end
-
-
-      complex function cdotc(n,cx,incx,cy,incy)
-!
-!     forms the dot product of two vectors, conjugating the first
-!     vector.
-!     jack dongarra, linpack,  3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*),cy(*),ctemp
-      integer i,incx,incy,ix,iy,n
-!
-      ctemp = (0.0,0.0)
-      cdotc = (0.0,0.0)
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        ctemp = ctemp + conjg(cx(ix))*cy(iy)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      cdotc = ctemp
-      return
-!
-!        code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        ctemp = ctemp + conjg(cx(i))*cy(i)
-   30 continue
-      cdotc = ctemp
-      return
-      end
-
-
-      complex function cdotu(n,cx,incx,cy,incy)
-!
-!     forms the dot product of two vectors.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*),cy(*),ctemp
-      integer i,incx,incy,ix,iy,n
-!
-      ctemp = (0.0,0.0)
-      cdotu = (0.0,0.0)
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        ctemp = ctemp + cx(ix)*cy(iy)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      cdotu = ctemp
-      return
-!
-!        code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        ctemp = ctemp + cx(i)*cy(i)
-   30 continue
-      cdotu = ctemp
-      return
-      end
-
-
-      double precision function dasum(n,dx,incx)
-!
-!     takes the sum of the absolute values.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dtemp
-      integer i,incx,m,mp1,n,nincx
-!
-     dasum = 0.0d0
-      dtemp = 0.0d0
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        dtemp = dtemp + dabs(dx(i))
-   10 continue
-      dasum = dtemp
-      return
-!
-!        code for increment equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,6)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dtemp = dtemp + dabs(dx(i))
-   30 continue
-      if( n .lt. 6 ) go to 60
-   40 mp1 = m + 1
-      do 50 i = mp1,n,6
-        dtemp = dtemp + dabs(dx(i)) + dabs(dx(i + 1)) + dabs(dx(i + 2)) &
-               + dabs(dx(i + 3)) + dabs(dx(i + 4)) + dabs(dx(i + 5))
-   50 continue
-   60 dasum = dtemp
-      return
-      end
-
-
-      subroutine crotg(ca,cb,c,s)
-      complex ca,cb,s
-      real c
-      real norm,scale
-      complex alpha
-      if (cabs(ca) .ne. 0.) go to 10
-         c = 0.
-         s = (1.,0.)
-         ca = cb
-         go to 20
-   10 continue
-         scale = cabs(ca) + cabs(cb)
-         norm = scale * sqrt((cabs(ca/scale))**2 + (cabs(cb/scale))**2)
-         alpha = ca /cabs(ca)
-         c = cabs(ca) / norm
-         s = alpha * conjg(cb) / norm
-         ca = alpha * norm
-   20 continue
-      return
-      end
-
-
-      subroutine  cscal(n,ca,cx,incx)
-!
-!     scales a vector by a constant.
-!     jack dongarra, linpack,  3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex ca,cx(*)
-      integer i,incx,n,nincx
-!
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        cx(i) = ca*cx(i)
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-   20 do 30 i = 1,n
-        cx(i) = ca*cx(i)
-   30 continue
-      return
-      end
-
-
-      subroutine  csscal(n,sa,cx,incx)
-!
-!     scales a complex vector by a real constant.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*)
-      real sa
-      integer i,incx,n,nincx
-!
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        cx(i) = cmplx(sa*real(cx(i)),sa*aimag(cx(i)))
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-   20 do 30 i = 1,n
-        cx(i) = cmplx(sa*real(cx(i)),sa*aimag(cx(i)))
-   30 continue
-      return
-      end
-
-
-      subroutine  cswap (n,cx,incx,cy,incy)
-!
-!     interchanges two vectors.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*),cy(*),ctemp
-      integer i,incx,incy,ix,iy,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments not equal
-!         to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        ctemp = cx(ix)
-        cx(ix) = cy(iy)
-        cy(iy) = ctemp
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!       code for both increments equal to 1
-   20 do 30 i = 1,n
-        ctemp = cx(i)
-        cx(i) = cy(i)
-        cy(i) = ctemp
-   30 continue
-      return
-      end
-
-
-      subroutine daxpy(n,da,dx,incx,dy,incy)
-!
-!     constant times a vector plus a vector.
-!     uses unrolled loops for increments equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dy(*),da
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if (da .eq. 0.0d0) return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dy(iy) = dy(iy) + da*dx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,4)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dy(i) = dy(i) + da*dx(i)
-   30 continue
-      if( n .lt. 4 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,4
-        dy(i) = dy(i) + da*dx(i)
-        dy(i + 1) = dy(i + 1) + da*dx(i + 1)
-        dy(i + 2) = dy(i + 2) + da*dx(i + 2)
-        dy(i + 3) = dy(i + 3) + da*dx(i + 3)
-   50 continue
-      return
-      end
-
-      subroutine  dcopy(n,dx,incx,dy,incy)
-!
-!     copies a vector, x, to a vector, y.
-!     uses unrolled loops for increments equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dy(*)
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dy(iy) = dx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,7)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dy(i) = dx(i)
-   30 continue
-      if( n .lt. 7 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,7
-        dy(i) = dx(i)
-        dy(i + 1) = dx(i + 1)
-        dy(i + 2) = dx(i + 2)
-        dy(i + 3) = dx(i + 3)
-        dy(i + 4) = dx(i + 4)
-        dy(i + 5) = dx(i + 5)
-        dy(i + 6) = dx(i + 6)
-   50 continue
-      return
-      end
-
-
-      subroutine  drot (n,dx,incx,dy,incy,c,s)
-!
-!     applies a plane rotation.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dy(*),dtemp,c,s
-      integer i,incx,incy,ix,iy,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments not equal
-!         to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dtemp = c*dx(ix) + s*dy(iy)
-        dy(iy) = c*dy(iy) - s*dx(ix)
-        dx(ix) = dtemp
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!       code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        dtemp = c*dx(i) + s*dy(i)
-        dy(i) = c*dy(i) - s*dx(i)
-        dx(i) = dtemp
-   30 continue
-      return
-      end
-
-
-      double precision function ddot(n,dx,incx,dy,incy)
-!
-!     forms the dot product of two vectors.
-!     uses unrolled loops for increments equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dy(*),dtemp
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      ddot = 0.0d0
-      dtemp = 0.0d0
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dtemp = dtemp + dx(ix)*dy(iy)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      ddot = dtemp
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,5)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dtemp = dtemp + dx(i)*dy(i)
-   30 continue
-      if( n .lt. 5 ) go to 60
-   40 mp1 = m + 1
-      do 50 i = mp1,n,5
-        dtemp = dtemp + dx(i)*dy(i) + dx(i + 1)*dy(i + 1) + &
-                dx(i + 2)*dy(i + 2) + dx(i + 3)*dy(i + 3) + dx(i + 4)*dy(i + 4)
-   50 continue
-   60 ddot = dtemp
-      return
-      end
-
-
-      DOUBLE PRECISION FUNCTION DNRM2 ( N, X, INCX )
 !     .. Scalar Arguments ..
-      INTEGER                           INCX, N
+      COMPLEX CA
+      INTEGER INCX,INCY,N
+!     ..
 !     .. Array Arguments ..
-      DOUBLE PRECISION                  X( * )
+      COMPLEX CX(*),CY(*)
 !     ..
 !
-!  DNRM2 returns the euclidean norm of a vector via the function
-!  name, so that
+!  =====================================================================
 !
-!     DNRM2 := sqrt( x'*x )
+!     .. Local Scalars ..
+      INTEGER I,IX,IY
+!     ..
+!     .. External Functions ..
+      REAL SCABS1
+      EXTERNAL SCABS1
+!     ..
+      IF (N.LE.0) RETURN
+      IF (SCABS1(CA).EQ.0.0E+0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+         DO I = 1,N
+            CY(I) = CY(I) + CA*CX(I)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            CY(IY) = CY(IY) + CA*CX(IX)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+!
+      RETURN
+      END
+!> \brief \b CCOPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CCOPY(N,CX,INCX,CY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*),CY(*)
+!       ..
 !
 !
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    CCOPY copies a vector x to a vector y.
+!> \endverbatim
 !
-!  -- This version written on 25-October-1982.
-!     Modified on 14-October-1993 to inline the call to DLASSQ.
-!     Sven Hammarling, Nag Ltd.
+!  Authors:
+!  ========
 !
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE CCOPY(N,CX,INCX,CY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*),CY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,IX,IY
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+         DO I = 1,N
+            CY(I) = CX(I)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            CY(IY) = CX(IX)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b CROTG
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CROTG(CA,CB,C,S)
+!
+!       .. Scalar Arguments ..
+!       COMPLEX CA,CB,S
+!       REAL C
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!> CROTG determines a complex Givens rotation.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!  =====================================================================
+      SUBROUTINE CROTG(CA,CB,C,S)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      COMPLEX CA,CB,S
+      REAL C
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      COMPLEX ALPHA
+      REAL NORM,SCALE
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC CABS,CONJG,SQRT
+!     ..
+      IF (CABS(CA).EQ.0.) THEN
+         C = 0.
+         S = (1.,0.)
+         CA = CB
+      ELSE
+         SCALE = CABS(CA) + CABS(CB)
+         NORM = SCALE*SQRT((CABS(CA/SCALE))**2+ (CABS(CB/SCALE))**2)
+         ALPHA = CA/CABS(CA)
+         C = CABS(CA)/NORM
+         S = ALPHA*CONJG(CB)/NORM
+         CA = ALPHA*NORM
+      END IF
+      RETURN
+      END
+!> \brief \b CSCAL
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CSCAL(N,CA,CX,INCX)
+!
+!       .. Scalar Arguments ..
+!       COMPLEX CA
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    CSCAL scales a vector by a constant.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack,  3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE CSCAL(N,CA,CX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      COMPLEX CA
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,NINCX
+!     ..
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         DO I = 1,N
+            CX(I) = CA*CX(I)
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            CX(I) = CA*CX(I)
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b CSSCAL
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CSSCAL(N,SA,CX,INCX)
+!
+!       .. Scalar Arguments ..
+!       REAL SA
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    CSSCAL scales a complex vector by a real constant.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE CSSCAL(N,SA,CX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL SA
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC AIMAG,CMPLX,REAL
+!     ..
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         DO I = 1,N
+            CX(I) = CMPLX(SA*REAL(CX(I)),SA*AIMAG(CX(I)))
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            CX(I) = CMPLX(SA*REAL(CX(I)),SA*AIMAG(CX(I)))
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b CSWAP
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE CSWAP(N,CX,INCX,CY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*),CY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>   CSWAP interchanges two vectors.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE CSWAP(N,CX,INCX,CY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*),CY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      COMPLEX CTEMP
+      INTEGER I,IX,IY
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!       code for both increments equal to 1
+         DO I = 1,N
+            CTEMP = CX(I)
+            CX(I) = CY(I)
+            CY(I) = CTEMP
+         END DO
+      ELSE
+!
+!       code for unequal increments or equal increments not equal
+!         to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            CTEMP = CX(IX)
+            CX(IX) = CY(IY)
+            CY(IY) = CTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b DAXPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DAXPY(N,DA,DX,INCX,DY,INCY)
+!
+!       .. Scalar Arguments ..
+!       DOUBLE PRECISION DA
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*),DY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DAXPY constant times a vector plus a vector.
+!>    uses unrolled loops for increments equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DAXPY(N,DA,DX,INCX,DY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      DOUBLE PRECISION DA
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (DA.EQ.0.0d0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,4)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DY(I) = DY(I) + DA*DX(I)
+            END DO
+         END IF
+         IF (N.LT.4) RETURN
+         MP1 = M + 1
+         DO I = MP1,N,4
+            DY(I) = DY(I) + DA*DX(I)
+            DY(I+1) = DY(I+1) + DA*DX(I+1)
+            DY(I+2) = DY(I+2) + DA*DX(I+2)
+            DY(I+3) = DY(I+3) + DA*DX(I+3)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+          DY(IY) = DY(IY) + DA*DX(IX)
+          IX = IX + INCX
+          IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b DCOPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DCOPY(N,DX,INCX,DY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*),DY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DCOPY copies a vector, x, to a vector, y.
+!>    uses unrolled loops for increments equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DCOPY(N,DX,INCX,DY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,7)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DY(I) = DX(I)
+            END DO
+            IF (N.LT.7) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,7
+            DY(I) = DX(I)
+            DY(I+1) = DX(I+1)
+            DY(I+2) = DX(I+2)
+            DY(I+3) = DX(I+3)
+            DY(I+4) = DX(I+4)
+            DY(I+5) = DX(I+5)
+            DY(I+6) = DX(I+6)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DY(IY) = DX(IX)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b DROT
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DROT(N,DX,INCX,DY,INCY,C,S)
+!
+!       .. Scalar Arguments ..
+!       DOUBLE PRECISION C,S
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*),DY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DROT applies a plane rotation.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DROT(N,DX,INCX,DY,INCY,C,S)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      DOUBLE PRECISION C,S
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,IX,IY
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!       code for both increments equal to 1
+!
+         DO I = 1,N
+            DTEMP = C*DX(I) + S*DY(I)
+            DY(I) = C*DY(I) - S*DX(I)
+            DX(I) = DTEMP
+         END DO
+      ELSE
+!
+!       code for unequal increments or equal increments not equal
+!         to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DTEMP = C*DX(IX) + S*DY(IY)
+            DY(IY) = C*DY(IY) - S*DX(IX)
+            DX(IX) = DTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b DROTG
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DROTG(DA,DB,C,S)
+!
+!       .. Scalar Arguments ..
+!       DOUBLE PRECISION C,DA,DB,S
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DROTG construct givens plane rotation.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DROTG(DA,DB,C,S)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      DOUBLE PRECISION C,DA,DB,S
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION R,ROE,SCALE,Z
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC DABS,DSIGN,DSQRT
+!     ..
+      ROE = DB
+      IF (DABS(DA).GT.DABS(DB)) ROE = DA
+      SCALE = DABS(DA) + DABS(DB)
+      IF (SCALE.EQ.0.0d0) THEN
+         C = 1.0d0
+         S = 0.0d0
+         R = 0.0d0
+         Z = 0.0d0
+      ELSE
+         R = SCALE*DSQRT((DA/SCALE)**2+ (DB/SCALE)**2)
+         R = DSIGN(1.0d0,ROE)*R
+         C = DA/R
+         S = DB/R
+         Z = 1.0d0
+         IF (DABS(DA).GT.DABS(DB)) Z = S
+         IF (DABS(DB).GE.DABS(DA) .AND. C.NE.0.0d0) Z = 1.0d0/C
+      END IF
+      DA = R
+      DB = Z
+      RETURN
+      END
+!> \brief \b DSCAL
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DSCAL(N,DA,DX,INCX)
+!
+!       .. Scalar Arguments ..
+!       DOUBLE PRECISION DA
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DSCAL scales a vector by a constant.
+!>    uses unrolled loops for increment equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DSCAL(N,DA,DX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      DOUBLE PRECISION DA
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,M,MP1,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,5)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DX(I) = DA*DX(I)
+            END DO
+            IF (N.LT.5) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,5
+            DX(I) = DA*DX(I)
+            DX(I+1) = DA*DX(I+1)
+            DX(I+2) = DA*DX(I+2)
+            DX(I+3) = DA*DX(I+3)
+            DX(I+4) = DA*DX(I+4)
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            DX(I) = DA*DX(I)
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b DSWAP
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE DSWAP(N,DX,INCX,DY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*),DY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    interchanges two vectors.
+!>    uses unrolled loops for increments equal one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE DSWAP(N,DX,INCX,DY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!       code for both increments equal to 1
+!
+!
+!       clean-up loop
+!
+         M = MOD(N,3)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DX(I)
+               DX(I) = DY(I)
+               DY(I) = DTEMP
+            END DO
+            IF (N.LT.3) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,3
+            DTEMP = DX(I)
+            DX(I) = DY(I)
+            DY(I) = DTEMP
+            DTEMP = DX(I+1)
+            DX(I+1) = DY(I+1)
+            DY(I+1) = DTEMP
+            DTEMP = DX(I+2)
+            DX(I+2) = DY(I+2)
+            DY(I+2) = DTEMP
+         END DO
+      ELSE
+!
+!       code for unequal increments or equal increments not equal
+!         to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DTEMP = DX(IX)
+            DX(IX) = DY(IY)
+            DY(IY) = DTEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SAXPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SAXPY(N,SA,SX,INCX,SY,INCY)
+!
+!       .. Scalar Arguments ..
+!       REAL SA
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*),SY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    SAXPY constant times a vector plus a vector.
+!>    uses unrolled loops for increments equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SAXPY(N,SA,SX,INCX,SY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL SA
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*),SY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (SA.EQ.0.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,4)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               SY(I) = SY(I) + SA*SX(I)
+            END DO
+         END IF
+         IF (N.LT.4) RETURN
+         MP1 = M + 1
+         DO I = MP1,N,4
+            SY(I) = SY(I) + SA*SX(I)
+            SY(I+1) = SY(I+1) + SA*SX(I+1)
+            SY(I+2) = SY(I+2) + SA*SX(I+2)
+            SY(I+3) = SY(I+3) + SA*SX(I+3)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+          SY(IY) = SY(IY) + SA*SX(IX)
+          IX = IX + INCX
+          IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SCOPY
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SCOPY(N,SX,INCX,SY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*),SY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    SCOPY copies a vector, x, to a vector, y.
+!>    uses unrolled loops for increments equal to 1.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SCOPY(N,SX,INCX,SY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*),SY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,7)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               SY(I) = SX(I)
+            END DO
+            IF (N.LT.7) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,7
+            SY(I) = SX(I)
+            SY(I+1) = SX(I+1)
+            SY(I+2) = SX(I+2)
+            SY(I+3) = SX(I+3)
+            SY(I+4) = SX(I+4)
+            SY(I+5) = SX(I+5)
+            SY(I+6) = SX(I+6)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            SY(IY) = SX(IX)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SROT
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SROT(N,SX,INCX,SY,INCY,C,S)
+!
+!       .. Scalar Arguments ..
+!       REAL C,S
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*),SY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    applies a plane rotation.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SROT(N,SX,INCX,SY,INCY,C,S)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL C,S
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*),SY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL STEMP
+      INTEGER I,IX,IY
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!       code for both increments equal to 1
+!
+         DO I = 1,N
+            STEMP = C*SX(I) + S*SY(I)
+            SY(I) = C*SY(I) - S*SX(I)
+            SX(I) = STEMP
+         END DO
+      ELSE
+!
+!       code for unequal increments or equal increments not equal
+!         to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            STEMP = C*SX(IX) + S*SY(IY)
+            SY(IY) = C*SY(IY) - S*SX(IX)
+            SX(IX) = STEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SROTG
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SROTG(SA,SB,C,S)
+!
+!       .. Scalar Arguments ..
+!       REAL C,S,SA,SB
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    SROTG construct givens plane rotation.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SROTG(SA,SB,C,S)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL C,S,SA,SB
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL R,ROE,SCALE,Z
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,SIGN,SQRT
+!     ..
+      ROE = SB
+      IF (ABS(SA).GT.ABS(SB)) ROE = SA
+      SCALE = ABS(SA) + ABS(SB)
+      IF (SCALE.EQ.0.0) THEN
+         C = 1.0
+         S = 0.0
+         R = 0.0
+         Z = 0.0
+      ELSE
+         R = SCALE*SQRT((SA/SCALE)**2+ (SB/SCALE)**2)
+         R = SIGN(1.0,ROE)*R
+         C = SA/R
+         S = SB/R
+         Z = 1.0
+         IF (ABS(SA).GT.ABS(SB)) Z = S
+         IF (ABS(SB).GE.ABS(SA) .AND. C.NE.0.0) Z = 1.0/C
+      END IF
+      SA = R
+      SB = Z
+      RETURN
+      END
+!> \brief \b SSCAL
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SSCAL(N,SA,SX,INCX)
+!
+!       .. Scalar Arguments ..
+!       REAL SA
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    scales a vector by a constant.
+!>    uses unrolled loops for increment equal to 1.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SSCAL(N,SA,SX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL SA
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      INTEGER I,M,MP1,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,5)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               SX(I) = SA*SX(I)
+            END DO
+            IF (N.LT.5) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,5
+            SX(I) = SA*SX(I)
+            SX(I+1) = SA*SX(I+1)
+            SX(I+2) = SA*SX(I+2)
+            SX(I+3) = SA*SX(I+3)
+            SX(I+4) = SA*SX(I+4)
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            SX(I) = SA*SX(I)
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SSWAP
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       SUBROUTINE SSWAP(N,SX,INCX,SY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*),SY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    interchanges two vectors.
+!>    uses unrolled loops for increments equal to 1.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      SUBROUTINE SSWAP(N,SX,INCX,SY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*),SY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL STEMP
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!       code for both increments equal to 1
+!
+!
+!       clean-up loop
+!
+         M = MOD(N,3)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               STEMP = SX(I)
+               SX(I) = SY(I)
+               SY(I) = STEMP
+            END DO
+            IF (N.LT.3) RETURN
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,3
+            STEMP = SX(I)
+            SX(I) = SY(I)
+            SY(I) = STEMP
+            STEMP = SX(I+1)
+            SX(I+1) = SY(I+1)
+            SY(I+1) = STEMP
+            STEMP = SX(I+2)
+            SX(I+2) = SY(I+2)
+            SY(I+2) = STEMP
+         END DO
+      ELSE
+!
+!       code for unequal increments or equal increments not equal
+!         to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            STEMP = SX(IX)
+            SX(IX) = SY(IY)
+            SY(IY) = STEMP
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b CDOTC
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       COMPLEX FUNCTION CDOTC(N,CX,INCX,CY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*),CY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    forms the dot product of two vectors, conjugating the first
+!>    vector.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack,  3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      COMPLEX FUNCTION CDOTC(N,CX,INCX,CY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*),CY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      COMPLEX CTEMP
+      INTEGER I,IX,IY
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC CONJG
+!     ..
+      CTEMP = (0.0,0.0)
+      CDOTC = (0.0,0.0)
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+         DO I = 1,N
+            CTEMP = CTEMP + CONJG(CX(I))*CY(I)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            CTEMP = CTEMP + CONJG(CX(IX))*CY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      CDOTC = CTEMP
+      RETURN
+      END
+!> \brief \b CDOTU
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       COMPLEX FUNCTION CDOTU(N,CX,INCX,CY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*),CY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    CDOTU forms the dot product of two vectors.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup complex_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      COMPLEX FUNCTION CDOTU(N,CX,INCX,CY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*),CY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      COMPLEX CTEMP
+      INTEGER I,IX,IY
+!     ..
+      CTEMP = (0.0,0.0)
+      CDOTU = (0.0,0.0)
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+         DO I = 1,N
+            CTEMP = CTEMP + CX(I)*CY(I)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            CTEMP = CTEMP + CX(IX)*CY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      CDOTU = CTEMP
+      RETURN
+      END
+!> \brief \b DASUM
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       DOUBLE PRECISION FUNCTION DASUM(N,DX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DASUM takes the sum of the absolute values.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      DOUBLE PRECISION FUNCTION DASUM(N,DX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,M,MP1,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC DABS,MOD
+!     ..
+      DASUM = 0.0d0
+      DTEMP = 0.0d0
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!        code for increment equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,6)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DTEMP + DABS(DX(I))
+            END DO
+            IF (N.LT.6) THEN
+               DASUM = DTEMP
+               RETURN
+            END IF
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,6
+            DTEMP = DTEMP + DABS(DX(I)) + DABS(DX(I+1)) + &
+                   DABS(DX(I+2)) + DABS(DX(I+3)) + &
+                   DABS(DX(I+4)) + DABS(DX(I+5))
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            DTEMP = DTEMP + DABS(DX(I))
+         END DO
+      END IF
+      DASUM = DTEMP
+      RETURN
+      END
+!> \brief \b DDOT
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       DOUBLE PRECISION FUNCTION DDOT(N,DX,INCX,DY,INCY)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*),DY(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    DDOT forms the dot product of two vectors.
+!>    uses unrolled loops for increments equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      DOUBLE PRECISION FUNCTION DDOT(N,DX,INCX,DY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*),DY(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION DTEMP
+      INTEGER I,IX,IY,M,MP1
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC MOD
+!     ..
+      DDOT = 0.0d0
+      DTEMP = 0.0d0
+      IF (N.LE.0) RETURN
+      IF (INCX.EQ.1 .AND. INCY.EQ.1) THEN
+!
+!        code for both increments equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,5)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               DTEMP = DTEMP + DX(I)*DY(I)
+            END DO
+            IF (N.LT.5) THEN
+               DDOT=DTEMP
+            RETURN
+            END IF
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,5
+          DTEMP = DTEMP + DX(I)*DY(I) + DX(I+1)*DY(I+1) + &
+                 DX(I+2)*DY(I+2) + DX(I+3)*DY(I+3) + DX(I+4)*DY(I+4)
+         END DO
+      ELSE
+!
+!        code for unequal increments or equal increments
+!          not equal to 1
+!
+         IX = 1
+         IY = 1
+         IF (INCX.LT.0) IX = (-N+1)*INCX + 1
+         IF (INCY.LT.0) IY = (-N+1)*INCY + 1
+         DO I = 1,N
+            DTEMP = DTEMP + DX(IX)*DY(IY)
+            IX = IX + INCX
+            IY = IY + INCY
+         END DO
+      END IF
+      DDOT = DTEMP
+      RETURN
+      END
+!> \brief \b DNRM2
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       DOUBLE PRECISION FUNCTION DNRM2(N,X,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION X(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!> DNRM2 returns the euclidean norm of a vector via the function
+!> name, so that
+!>
+!>    DNRM2 := sqrt( x'*x )
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup double_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>  -- This version written on 25-October-1982.
+!>     Modified on 14-October-1993 to inline the call to DLASSQ.
+!>     Sven Hammarling, Nag Ltd.
+!> \endverbatim
+!>
+!  =====================================================================
+      DOUBLE PRECISION FUNCTION DNRM2(N,X,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION X(*)
+!     ..
+!
+!  =====================================================================
 !
 !     .. Parameters ..
-      DOUBLE PRECISION      ONE         , ZERO
-      PARAMETER           ( ONE = 1.0D+0, ZERO = 0.0D+0 )
-!     .. Local Scalars ..
-      INTEGER               IX
-      DOUBLE PRECISION      ABSXI, NORM, SCALE, SSQ
-!     .. Intrinsic Functions ..
-      INTRINSIC             ABS, SQRT
+      DOUBLE PRECISION ONE,ZERO
+      PARAMETER (ONE=1.0D+0,ZERO=0.0D+0)
 !     ..
-!     .. Executable Statements ..
-      IF( N.LT.1 .OR. INCX.LT.1 )THEN
-         NORM  = ZERO
-      ELSE IF( N.EQ.1 )THEN
-         NORM  = ABS( X( 1 ) )
+!     .. Local Scalars ..
+      DOUBLE PRECISION ABSXI,NORM,SCALE,SSQ
+      INTEGER IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,SQRT
+!     ..
+      IF (N.LT.1 .OR. INCX.LT.1) THEN
+          NORM = ZERO
+      ELSE IF (N.EQ.1) THEN
+          NORM = ABS(X(1))
       ELSE
-         SCALE = ZERO
-         SSQ   = ONE
+          SCALE = ZERO
+          SSQ = ONE
 !        The following loop is equivalent to this call to the LAPACK
 !        auxiliary routine:
 !        CALL DLASSQ( N, X, INCX, SCALE, SSQ )
 !
-         DO 10, IX = 1, 1 + ( N - 1 )*INCX, INCX
-            IF( X( IX ).NE.ZERO )THEN
-               ABSXI = ABS( X( IX ) )
-               IF( SCALE.LT.ABSXI )THEN
-                  SSQ   = ONE   + SSQ*( SCALE/ABSXI )**2
-                  SCALE = ABSXI
-               ELSE
-                  SSQ   = SSQ   +     ( ABSXI/SCALE )**2
-               END IF
-            END IF
-   10    CONTINUE
-         NORM  = SCALE * SQRT( SSQ )
+          DO 10 IX = 1,1 + (N-1)*INCX,INCX
+              IF (X(IX).NE.ZERO) THEN
+                  ABSXI = ABS(X(IX))
+                  IF (SCALE.LT.ABSXI) THEN
+                      SSQ = ONE + SSQ* (SCALE/ABSXI)**2
+                      SCALE = ABSXI
+                  ELSE
+                      SSQ = SSQ + (ABSXI/SCALE)**2
+                  END IF
+              END IF
+   10     CONTINUE
+          NORM = SCALE*SQRT(SSQ)
       END IF
 !
       DNRM2 = NORM
@@ -565,1319 +2403,645 @@
 !     End of DNRM2.
 !
       END
-
-
-
-      subroutine drotg(da,db,c,s)
+!> \brief \b ICAMAX
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       INTEGER FUNCTION ICAMAX(N,CX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    ICAMAX finds the index of element having max. absolute value.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup aux_blas
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      INTEGER FUNCTION ICAMAX(N,CX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
 !
-!     construct givens plane rotation.
-!     jack dongarra, linpack, 3/11/78.
-!
-      double precision da,db,c,s,roe,scale,r,z
-!
-      roe = db
-      if( dabs(da) .gt. dabs(db) ) roe = da
-      scale = dabs(da) + dabs(db)
-      if( scale .ne. 0.0d0 ) go to 10
-         c = 1.0d0
-         s = 0.0d0
-         r = 0.0d0
-         z = 0.0d0
-         go to 20
-   10 r = scale*dsqrt((da/scale)**2 + (db/scale)**2)
-      r = dsign(1.0d0,roe)*r
-      c = da/r
-      s = db/r
-      z = 1.0d0
-      if( dabs(da) .gt. dabs(db) ) z = s
-      if( dabs(db) .ge. dabs(da) .and. c .ne. 0.0d0 ) z = 1.0d0/c
-   20 da = r
-      db = z
-      return
-      end
-
-
-      SUBROUTINE DROTM (N,DX,INCX,DY,INCY,DPARAM)
-!
-!     APPLY THE MODIFIED GIVENS TRANSFORMATION, H, TO THE 2 BY N MATRIX
-!
-!     (DX**T) , WHERE **T INDICATES TRANSPOSE. THE ELEMENTS OF DX ARE IN
-!     (DY**T)
-!
-!     DX(LX+I*INCX), I = 0 TO N-1, WHERE LX = 1 IF INCX .GE. 0, ELSE
-!     LX = (-INCX)*N, AND SIMILARLY FOR SY USING LY AND INCY.
-!     WITH DPARAM(1)=DFLAG, H HAS ONE OF THE FOLLOWING FORMS..
-!
-!     DFLAG=-1.D0     DFLAG=0.D0        DFLAG=1.D0     DFLAG=-2.D0
-!
-!       (DH11  DH12)    (1.D0  DH12)    (DH11  1.D0)    (1.D0  0.D0)
-!     H=(          )    (          )    (          )    (          )
-!       (DH21  DH22),   (DH21  1.D0),   (-1.D0 DH22),   (0.D0  1.D0).
-!     SEE DROTMG FOR A DESCRIPTION OF DATA STORAGE IN DPARAM.
-!
-      DOUBLE PRECISION DFLAG,DH12,DH22,DX,TWO,Z,DH11,DH21,&
-       DPARAM,DY,W,ZERO
-      DIMENSION DX(1),DY(1),DPARAM(5)
-      DATA ZERO,TWO/0.D0,2.D0/
-!
-      DFLAG=DPARAM(1)
-      IF(N .LE. 0 .OR.(DFLAG+TWO.EQ.ZERO)) GO TO 140
-          IF(.NOT.(INCX.EQ.INCY.AND. INCX .GT.0)) GO TO 70
-!
-               NSTEPS=N*INCX
-               IF(DFLAG) 50,10,30
-   10          CONTINUE
-               DH12=DPARAM(4)
-               DH21=DPARAM(3)
-                    DO 20 I=1,NSTEPS,INCX
-                    W=DX(I)
-                    Z=DY(I)
-                    DX(I)=W+Z*DH12
-                    DY(I)=W*DH21+Z
-   20               CONTINUE
-               GO TO 140
-   30          CONTINUE
-               DH11=DPARAM(2)
-               DH22=DPARAM(5)
-                    DO 40 I=1,NSTEPS,INCX
-                    W=DX(I)
-                    Z=DY(I)
-                    DX(I)=W*DH11+Z
-                    DY(I)=-W+DH22*Z
-   40               CONTINUE
-               GO TO 140
-   50          CONTINUE
-               DH11=DPARAM(2)
-               DH12=DPARAM(4)
-               DH21=DPARAM(3)
-               DH22=DPARAM(5)
-                    DO 60 I=1,NSTEPS,INCX
-                    W=DX(I)
-                    Z=DY(I)
-                    DX(I)=W*DH11+Z*DH12
-                    DY(I)=W*DH21+Z*DH22
-   60               CONTINUE
-               GO TO 140
-   70     CONTINUE
-          KX=1
-          KY=1
-          IF(INCX .LT. 0) KX=1+(1-N)*INCX
-          IF(INCY .LT. 0) KY=1+(1-N)*INCY
-!
-          IF(DFLAG)120,80,100
-   80     CONTINUE
-          DH12=DPARAM(4)
-          DH21=DPARAM(3)
-               DO 90 I=1,N
-               W=DX(KX)
-               Z=DY(KY)
-               DX(KX)=W+Z*DH12
-               DY(KY)=W*DH21+Z
-               KX=KX+INCX
-               KY=KY+INCY
-   90          CONTINUE
-          GO TO 140
-  100     CONTINUE
-          DH11=DPARAM(2)
-          DH22=DPARAM(5)
-               DO 110 I=1,N
-               W=DX(KX)
-               Z=DY(KY)
-               DX(KX)=W*DH11+Z
-               DY(KY)=-W+DH22*Z
-               KX=KX+INCX
-               KY=KY+INCY
-  110          CONTINUE
-          GO TO 140
-  120     CONTINUE
-          DH11=DPARAM(2)
-          DH12=DPARAM(4)
-          DH21=DPARAM(3)
-          DH22=DPARAM(5)
-               DO 130 I=1,N
-               W=DX(KX)
-               Z=DY(KY)
-               DX(KX)=W*DH11+Z*DH12
-               DY(KY)=W*DH21+Z*DH22
-               KX=KX+INCX
-               KY=KY+INCY
-  130          CONTINUE
-  140     CONTINUE
-          RETURN
-          END
-
-
-      SUBROUTINE DROTMG (DD1,DD2,DX1,DY1,DPARAM)
-!
-!     CONSTRUCT THE MODIFIED GIVENS TRANSFORMATION MATRIX H WHICH ZEROS
-!     THE SECOND COMPONENT OF THE 2-VECTOR  (DSQRT(DD1)*DX1,DSQRT(DD2)*
-!     DY2)**T.
-!     WITH DPARAM(1)=DFLAG, H HAS ONE OF THE FOLLOWING FORMS..
-!
-!     DFLAG=-1.D0     DFLAG=0.D0        DFLAG=1.D0     DFLAG=-2.D0
-!
-!       (DH11  DH12)    (1.D0  DH12)    (DH11  1.D0)    (1.D0  0.D0)
-!     H=(          )    (          )    (          )    (          )
-!       (DH21  DH22),   (DH21  1.D0),   (-1.D0 DH22),   (0.D0  1.D0).
-!     LOCATIONS 2-4 OF DPARAM CONTAIN DH11, DH21, DH12, AND DH22
-!     RESPECTIVELY. (VALUES OF 1.D0, -1.D0, OR 0.D0 IMPLIED BY THE
-!     VALUE OF DPARAM(1) ARE NOT STORED IN DPARAM.)
-!
-!     THE VALUES OF GAMSQ AND RGAMSQ SET IN THE DATA STATEMENT MAY BE
-!     INEXACT.  THIS IS OK AS THEY ARE ONLY USED FOR TESTING THE SIZE
-!     OF DD1 AND DD2.  ALL ACTUAL SCALING OF DATA IS DONE USING GAM.
-!
-      DOUBLE PRECISION GAM,ONE,RGAMSQ,DD2,DH11,DH21,DPARAM,DP2,&
-       DQ2,DU,DY1,ZERO,GAMSQ,DD1,DFLAG,DH12,DH22,DP1,DQ1,&
-       DTEMP,DX1,TWO
-      DIMENSION DPARAM(5)
-!
-      DATA ZERO,ONE,TWO /0.D0,1.D0,2.D0/
-      DATA GAM,GAMSQ,RGAMSQ/4096.D0,16777216.D0,5.9604645D-8/
-      IF(.NOT. DD1 .LT. ZERO) GO TO 10
-!       GO ZERO-H-D-AND-DX1..
-          GO TO 60
-   10 CONTINUE
-!     CASE-DD1-NONNEGATIVE
-      DP2=DD2*DY1
-      IF(.NOT. DP2 .EQ. ZERO) GO TO 20
-          DFLAG=-TWO
-          GO TO 260
-!     REGULAR-CASE..
-   20 CONTINUE
-      DP1=DD1*DX1
-      DQ2=DP2*DY1
-      DQ1=DP1*DX1
-!
-      IF(.NOT. DABS(DQ1) .GT. DABS(DQ2)) GO TO 40
-          DH21=-DY1/DX1
-          DH12=DP2/DP1
-!
-          DU=ONE-DH12*DH21
-!
-          IF(.NOT. DU .LE. ZERO) GO TO 30
-!         GO ZERO-H-D-AND-DX1..
-               GO TO 60
-   30     CONTINUE
-               DFLAG=ZERO
-               DD1=DD1/DU
-               DD2=DD2/DU
-               DX1=DX1*DU
-!         GO SCALE-CHECK..
-               GO TO 100
-   40 CONTINUE
-          IF(.NOT. DQ2 .LT. ZERO) GO TO 50
-!         GO ZERO-H-D-AND-DX1..
-               GO TO 60
-   50     CONTINUE
-               DFLAG=ONE
-               DH11=DP1/DP2
-               DH22=DX1/DY1
-               DU=ONE+DH11*DH22
-               DTEMP=DD2/DU
-               DD2=DD1/DU
-               DD1=DTEMP
-               DX1=DY1*DU
-!         GO SCALE-CHECK
-               GO TO 100
-!     PROCEDURE..ZERO-H-D-AND-DX1..
-   60 CONTINUE
-          DFLAG=-ONE
-          DH11=ZERO
-          DH12=ZERO
-          DH21=ZERO
-          DH22=ZERO
-!
-          DD1=ZERO
-          DD2=ZERO
-          DX1=ZERO
-!         RETURN..
-          GO TO 220
-!     PROCEDURE..FIX-H..
-   70 CONTINUE
-      IF(.NOT. DFLAG .GE. ZERO) GO TO 90
-!
-          IF(.NOT. DFLAG .EQ. ZERO) GO TO 80
-          DH11=ONE
-          DH22=ONE
-          DFLAG=-ONE
-          GO TO 90
-   80     CONTINUE
-          DH21=-ONE
-          DH12=ONE
-          DFLAG=-ONE
-   90 CONTINUE
-      GO TO IGO,(120,150,180,210)
-!     PROCEDURE..SCALE-CHECK
-  100 CONTINUE
-  110     CONTINUE
-          IF(.NOT. DD1 .LE. RGAMSQ) GO TO 130
-               IF(DD1 .EQ. ZERO) GO TO 160
-               ASSIGN 120 TO IGO
-!              FIX-H..
-               GO TO 70
-  120          CONTINUE
-               DD1=DD1*GAM**2
-               DX1=DX1/GAM
-               DH11=DH11/GAM
-               DH12=DH12/GAM
-          GO TO 110
-  130 CONTINUE
-  140     CONTINUE
-          IF(.NOT. DD1 .GE. GAMSQ) GO TO 160
-               ASSIGN 150 TO IGO
-!              FIX-H..
-               GO TO 70
-  150          CONTINUE
-               DD1=DD1/GAM**2
-               DX1=DX1*GAM
-               DH11=DH11*GAM
-               DH12=DH12*GAM
-          GO TO 140
-  160 CONTINUE
-  170     CONTINUE
-          IF(.NOT. DABS(DD2) .LE. RGAMSQ) GO TO 190
-               IF(DD2 .EQ. ZERO) GO TO 220
-               ASSIGN 180 TO IGO
-!              FIX-H..
-               GO TO 70
-  180          CONTINUE
-               DD2=DD2*GAM**2
-               DH21=DH21/GAM
-               DH22=DH22/GAM
-          GO TO 170
-  190 CONTINUE
-  200     CONTINUE
-          IF(.NOT. DABS(DD2) .GE. GAMSQ) GO TO 220
-               ASSIGN 210 TO IGO
-!              FIX-H..
-               GO TO 70
-  210          CONTINUE
-               DD2=DD2/GAM**2
-               DH21=DH21*GAM
-               DH22=DH22*GAM
-          GO TO 200
-  220 CONTINUE
-          IF(DFLAG)250,230,240
-  230     CONTINUE
-               DPARAM(3)=DH21
-               DPARAM(4)=DH12
-               GO TO 260
-  240     CONTINUE
-               DPARAM(2)=DH11
-               DPARAM(5)=DH22
-               GO TO 260
-  250     CONTINUE
-               DPARAM(2)=DH11
-               DPARAM(3)=DH21
-               DPARAM(4)=DH12
-               DPARAM(5)=DH22
-  260 CONTINUE
-          DPARAM(1)=DFLAG
-          RETURN
-      END
-
-
-! *DECK DSDOT
-      DOUBLE PRECISION FUNCTION DSDOT (N, SX, INCX, SY, INCY)
-!***BEGIN PROLOGUE  DSDOT
-!***PURPOSE  Compute the inner product of two vectors with extended
-!            precision accumulation and result.
-!***LIBRARY   SLATEC (BLAS)
-!***CATEGORY  D1A4
-!***TYPE      DOUBLE PRECISION (DSDOT-D, DCDOT-C)
-!***KEYWORDS  BLAS, COMPLEX VECTORS, DOT PRODUCT, INNER PRODUCT,
-!             LINEAR ALGEBRA, VECTOR
-!***AUTHOR  Lawson, C. L., (JPL)
-!           Hanson, R. J., (SNLA)
-!           Kincaid, D. R., (U. of Texas)
-!           Krogh, F. T., (JPL)
-!***DESCRIPTION
-!
-!                B L A S  Subprogram
-!    Description of Parameters
-!
-!     --Input--
-!        N  number of elements in input vector(s)
-!       SX  single precision vector with N elements
-!     INCX  storage spacing between elements of SX
-!       SY  single precision vector with N elements
-!     INCY  storage spacing between elements of SY
-!
-!     --Output--
-!    DSDOT  double precision dot product (zero if N.LE.0)
-!
-!     Returns D.P. dot product accumulated in D.P., for S.P. SX and SY
-!     DSDOT = sum for I = 0 to N-1 of  SX(LX+I*INCX) * SY(LY+I*INCY),
-!     where LX = 1 if INCX .GE. 0, else LX = 1+(1-N)*INCX, and LY is
-!     defined in a similar way using INCY.
-!
-!***REFERENCES  C. L. Lawson, R. J. Hanson, D. R. Kincaid and F. T.
-!                 Krogh, Basic linear algebra subprograms for Fortran
-!                 usage, Algorithm No. 539, Transactions on Mathematical
-!                 Software 5, 3 (September 1979), pp. 308-323.
-!***ROUTINES CALLED  (NONE)
-!***REVISION HISTORY  (YYMMDD)
-!   791001  DATE WRITTEN
-!   890831  Modified array declarations.  (WRB)
-!   890831  REVISION DATE from Version 3.2
-!   891214  Prologue converted to Version 4.0 format.  (BAB)
-!   920310  Corrected definition of LX in DESCRIPTION.  (WRB)
-!   920501  Reformatted the REFERENCES section.  (WRB)
-!***END PROLOGUE  DSDOT
-      REAL SX(*),SY(*)
-!***FIRST EXECUTABLE STATEMENT  DSDOT
-      DSDOT = 0.0D0
-      IF (N .LE. 0) RETURN
-      IF (INCX.EQ.INCY .AND. INCX.GT.0) GO TO 20
-!
-!     Code for unequal or nonpositive increments.
-!
-      KX = 1
-      KY = 1
-      IF (INCX .LT. 0) KX = 1+(1-N)*INCX
-      IF (INCY .LT. 0) KY = 1+(1-N)*INCY
-      DO 10 I = 1,N
-        DSDOT = DSDOT + DBLE(SX(KX))*DBLE(SY(KY))
-        KX = KX + INCX
-        KY = KY + INCY
-   10 CONTINUE
-      RETURN
-!
-!     Code for equal, positive, non-unit increments.
-!
-   20 NS = N*INCX
-      DO 30 I = 1,NS,INCX
-        DSDOT = DSDOT + DBLE(SX(I))*DBLE(SY(I))
-   30 CONTINUE
-      RETURN
-      END
-
-
-
-
-      subroutine  dscal(n,da,dx,incx)
-!
-!     scales a vector by a constant.
-!     uses unrolled loops for increment equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision da,dx(*)
-      integer i,incx,m,mp1,n,nincx
-!
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        dx(i) = da*dx(i)
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,5)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dx(i) = da*dx(i)
-   30 continue
-      if( n .lt. 5 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,5
-        dx(i) = da*dx(i)
-        dx(i + 1) = da*dx(i + 1)
-        dx(i + 2) = da*dx(i + 2)
-        dx(i + 3) = da*dx(i + 3)
-        dx(i + 4) = da*dx(i + 4)
-   50 continue
-      return
-      end
-
-
-      subroutine  dswap (n,dx,incx,dy,incy)
-!
-!     interchanges two vectors.
-!     uses unrolled loops for increments equal one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dy(*),dtemp
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments not equal
-!         to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        dtemp = dx(ix)
-        dx(ix) = dy(iy)
-        dy(iy) = dtemp
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!       code for both increments equal to 1
-!
-!
-!       clean-up loop
-!
-   20 m = mod(n,3)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        dtemp = dx(i)
-        dx(i) = dy(i)
-        dy(i) = dtemp
-   30 continue
-      if( n .lt. 3 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,3
-        dtemp = dx(i)
-        dx(i) = dy(i)
-        dy(i) = dtemp
-        dtemp = dx(i + 1)
-        dx(i + 1) = dy(i + 1)
-        dy(i + 1) = dtemp
-        dtemp = dx(i + 2)
-        dx(i + 2) = dy(i + 2)
-        dy(i + 2) = dtemp
-   50 continue
-      return
-      end
-
-
-      integer function icamax(n,cx,incx)
-!
-!     finds the index of element having max. absolute value.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*)
-      real smax
-      integer i,incx,ix,n
-      complex zdum
-      real cabs1
-      cabs1(zdum) = abs(real(zdum)) + abs(aimag(zdum))
-!
-      icamax = 0
-      if( n.lt.1 .or. incx.le.0 ) return
-      icamax = 1
-      if(n.eq.1)return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      ix = 1
-      smax = cabs1(cx(1))
-      ix = ix + incx
-      do 10 i = 2,n
-         if(cabs1(cx(ix)).le.smax) go to 5
-         icamax = i
-         smax = cabs1(cx(ix))
-    5    ix = ix + incx
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-   20 smax = cabs1(cx(1))
-      do 30 i = 2,n
-         if(cabs1(cx(i)).le.smax) go to 30
-         icamax = i
-         smax = cabs1(cx(i))
-   30 continue
-      return
-      end
-
-
-      integer function idamax(n,dx,incx)
-!
-!     finds the index of element having max. absolute value.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      double precision dx(*),dmax
-      integer i,incx,ix,n
-!
-      idamax = 0
-      if( n.lt.1 .or. incx.le.0 ) return
-      idamax = 1
-      if(n.eq.1)return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      ix = 1
-      dmax = dabs(dx(1))
-      ix = ix + incx
-      do 10 i = 2,n
-         if(dabs(dx(ix)).le.dmax) go to 5
-         idamax = i
-         dmax = dabs(dx(ix))
-    5    ix = ix + incx
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-   20 dmax = dabs(dx(1))
-      do 30 i = 2,n
-         if(dabs(dx(i)).le.dmax) go to 30
-         idamax = i
-         dmax = dabs(dx(i))
-   30 continue
-      return
-      end
-
-
-      integer function isamax(n,sx,incx)
-!
-!     finds the index of element having max. absolute value.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),smax
-      integer i,incx,ix,n
-!
-      isamax = 0
-      if( n.lt.1 .or. incx.le.0 ) return
-      isamax = 1
-      if(n.eq.1)return
-      if(incx.eq.1)go to 20
-
-!        code for increment not equal to 1
-!
-      ix = 1
-      smax = abs(sx(1))
-      ix = ix + incx
-      do 10 i = 2,n
-         if(abs(sx(ix)).le.smax) go to 5
-         isamax = i
-         smax = abs(sx(ix))
-    5    ix = ix + incx
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-   20 smax = abs(sx(1))
-      do 30 i = 2,n
-         if(abs(sx(i)).le.smax) go to 30
-         isamax = i
-         smax = abs(sx(i))
-   30 continue
-      return
-      end
-
-
-      real function sasum(n,sx,incx)
-!
-!     takes the sum of the absolute values.
-!     uses unrolled loops for increment equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),stemp
-      integer i,incx,m,mp1,n,nincx
-!
-      sasum = 0.0e0
-      stemp = 0.0e0
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        stemp = stemp + abs(sx(i))
-   10 continue
-      sasum = stemp
-      return
-!
-!        code for increment equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,6)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        stemp = stemp + abs(sx(i))
-   30 continue
-      if( n .lt. 6 ) go to 60
-   40 mp1 = m + 1
-      do 50 i = mp1,n,6
-        stemp = stemp + abs(sx(i)) + abs(sx(i + 1)) + abs(sx(i + 2)) &
-                + abs(sx(i + 3)) + abs(sx(i + 4)) + abs(sx(i + 5))
-   50 continue
-   60 sasum = stemp
-      return
-      end
-
-
-
-      real function scasum(n,cx,incx)
-!
-!     takes the sum of the absolute values of a complex vector and
-!     returns a single precision result.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      complex cx(*)
-      real stemp
-      integer i,incx,n,nincx
-!
-      scasum = 0.0e0
-      stemp = 0.0e0
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        stemp = stemp + abs(real(cx(i))) + abs(aimag(cx(i)))
-   10 continue
-      scasum = stemp
-      return
-!
-!        code for increment equal to 1
-!
-   20 do 30 i = 1,n
-        stemp = stemp + abs(real(cx(i))) + abs(aimag(cx(i)))
-   30 continue
-      scasum = stemp
-      return
-      end
-
-
-      subroutine saxpy(n,sa,sx,incx,sy,incy)
-!
-!     constant times a vector plus a vector.
-!     uses unrolled loop for increments equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),sy(*),sa
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if (sa .eq. 0.0) return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        sy(iy) = sy(iy) + sa*sx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,4)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        sy(i) = sy(i) + sa*sx(i)
-   30 continue
-      if( n .lt. 4 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,4
-        sy(i) = sy(i) + sa*sx(i)
-        sy(i + 1) = sy(i + 1) + sa*sx(i + 1)
-        sy(i + 2) = sy(i + 2) + sa*sx(i + 2)
-        sy(i + 3) = sy(i + 3) + sa*sx(i + 3)
-   50 continue
-      return
-      end
-
-
-      subroutine scopy(n,sx,incx,sy,incy)
-!
-!     copies a vector, x, to a vector, y.
-!     uses unrolled loops for increments equal to 1.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),sy(*)
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!        code for unequal increments or equal increments
-!          not equal to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        sy(iy) = sx(ix)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!        code for both increments equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,7)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        sy(i) = sx(i)
-   30 continue
-      if( n .lt. 7 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,7
-        sy(i) = sx(i)
-        sy(i + 1) = sx(i + 1)
-        sy(i + 2) = sx(i + 2)
-        sy(i + 3) = sx(i + 3)
-        sy(i + 4) = sx(i + 4)
-        sy(i + 5) = sx(i + 5)
-        sy(i + 6) = sx(i + 6)
-   50 continue
-      return
-      end
-
-
-      subroutine srot (n,sx,incx,sy,incy,c,s)
-!
-!     applies a plane rotation.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),sy(*),stemp,c,s
-      integer i,incx,incy,ix,iy,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments not equal
-!         to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        stemp = c*sx(ix) + s*sy(iy)
-        sy(iy) = c*sy(iy) - s*sx(ix)
-        sx(ix) = stemp
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!       code for both increments equal to 1
-!
-   20 do 30 i = 1,n
-        stemp = c*sx(i) + s*sy(i)
-        sy(i) = c*sy(i) - s*sx(i)
-        sx(i) = stemp
-   30 continue
-      return
-      end
-
-
-      subroutine srotg(sa,sb,c,s)
-!
-!     construct givens plane rotation.
-!     jack dongarra, linpack, 3/11/78.
-!
-      real sa,sb,c,s,roe,scale,r,z
-!
-      roe = sb
-      if( abs(sa) .gt. abs(sb) ) roe = sa
-      scale = abs(sa) + abs(sb)
-      if( scale .ne. 0.0 ) go to 10
-         c = 1.0
-         s = 0.0
-         r = 0.0
-         z = 0.0
-         go to 20
-   10 r = scale*sqrt((sa/scale)**2 + (sb/scale)**2)
-      r = sign(1.0,roe)*r
-      c = sa/r
-      s = sb/r
-      z = 1.0
-      if( abs(sa) .gt. abs(sb) ) z = s
-      if( abs(sb) .ge. abs(sa) .and. c .ne. 0.0 ) z = 1.0/c
-   20 sa = r
-      sb = z
-      return
-      end
-
-
-      SUBROUTINE SROTM (N,SX,INCX,SY,INCY,SPARAM)
-!
-!     APPLY THE MODIFIED GIVENS TRANSFORMATION, H, TO THE 2 BY N MATRIX
-!
-!     (SX**T) , WHERE **T INDICATES TRANSPOSE. THE ELEMENTS OF SX ARE IN
-!     (DX**T)
-!
-!     SX(LX+I*INCX), I = 0 TO N-1, WHERE LX = 1 IF INCX .GE. 0, ELSE
-!     LX = (-INCX)*N, AND SIMILARLY FOR SY USING USING LY AND INCY.
-!     WITH SPARAM(1)=SFLAG, H HAS ONE OF THE FOLLOWING FORMS..
-!
-!     SFLAG=-1.E0     SFLAG=0.E0        SFLAG=1.E0     SFLAG=-2.E0
-!
-!       (SH11  SH12)    (1.E0  SH12)    (SH11  1.E0)    (1.E0  0.E0)
-!     H=(          )    (          )    (          )    (          )
-!       (SH21  SH22),   (SH21  1.E0),   (-1.E0 SH22),   (0.E0  1.E0).
-!     SEE  SROTMG FOR A DESCRIPTION OF DATA STORAGE IN SPARAM.
-!
-      DIMENSION SX(1),SY(1),SPARAM(5)
-      DATA ZERO,TWO/0.E0,2.E0/
-!
-      SFLAG=SPARAM(1)
-      IF(N .LE. 0 .OR.(SFLAG+TWO.EQ.ZERO)) GO TO 140
-          IF(.NOT.(INCX.EQ.INCY.AND. INCX .GT.0)) GO TO 70
-!
-               NSTEPS=N*INCX
-               IF(SFLAG) 50,10,30
-   10          CONTINUE
-               SH12=SPARAM(4)
-               SH21=SPARAM(3)
-                    DO 20 I=1,NSTEPS,INCX
-                    W=SX(I)
-                    Z=SY(I)
-                    SX(I)=W+Z*SH12
-                    SY(I)=W*SH21+Z
-   20               CONTINUE
-               GO TO 140
-   30          CONTINUE
-               SH11=SPARAM(2)
-               SH22=SPARAM(5)
-                    DO 40 I=1,NSTEPS,INCX
-                    W=SX(I)
-                    Z=SY(I)
-                    SX(I)=W*SH11+Z
-                    SY(I)=-W+SH22*Z
-   40               CONTINUE
-               GO TO 140
-   50          CONTINUE
-               SH11=SPARAM(2)
-               SH12=SPARAM(4)
-               SH21=SPARAM(3)
-               SH22=SPARAM(5)
-                    DO 60 I=1,NSTEPS,INCX
-                    W=SX(I)
-                    Z=SY(I)
-                    SX(I)=W*SH11+Z*SH12
-                    SY(I)=W*SH21+Z*SH22
-   60               CONTINUE
-               GO TO 140
-   70     CONTINUE
-          KX=1
-          KY=1
-          IF(INCX .LT. 0) KX=1+(1-N)*INCX
-          IF(INCY .LT. 0) KY=1+(1-N)*INCY
-!
-          IF(SFLAG)120,80,100
-   80     CONTINUE
-          SH12=SPARAM(4)
-          SH21=SPARAM(3)
-               DO 90 I=1,N
-               W=SX(KX)
-               Z=SY(KY)
-               SX(KX)=W+Z*SH12
-               SY(KY)=W*SH21+Z
-               KX=KX+INCX
-               KY=KY+INCY
-   90          CONTINUE
-          GO TO 140
-  100     CONTINUE
-          SH11=SPARAM(2)
-          SH22=SPARAM(5)
-               DO 110 I=1,N
-               W=SX(KX)
-               Z=SY(KY)
-               SX(KX)=W*SH11+Z
-               SY(KY)=-W+SH22*Z
-               KX=KX+INCX
-               KY=KY+INCY
-  110          CONTINUE
-          GO TO 140
-  120     CONTINUE
-          SH11=SPARAM(2)
-          SH12=SPARAM(4)
-          SH21=SPARAM(3)
-          SH22=SPARAM(5)
-               DO 130 I=1,N
-               W=SX(KX)
-               Z=SY(KY)
-               SX(KX)=W*SH11+Z*SH12
-               SY(KY)=W*SH21+Z*SH22
-               KX=KX+INCX
-               KY=KY+INCY
-  130          CONTINUE
-  140     CONTINUE
-          RETURN
-          END
-
-
-      SUBROUTINE SROTMG (SD1,SD2,SX1,SY1,SPARAM)
-!
-!     CONSTRUCT THE MODIFIED GIVENS TRANSFORMATION MATRIX H WHICH ZEROS
-!     THE SECOND COMPONENT OF THE 2-VECTOR  (SQRT(SD1)*SX1,SQRT(SD2)*
-!     SY2)**T.
-!     WITH SPARAM(1)=SFLAG, H HAS ONE OF THE FOLLOWING FORMS..
-!
-!     SFLAG=-1.E0     SFLAG=0.E0        SFLAG=1.E0     SFLAG=-2.E0
-!
-!       (SH11  SH12)    (1.E0  SH12)    (SH11  1.E0)    (1.E0  0.E0)
-!     H=(          )    (          )    (          )    (          )
-!       (SH21  SH22),   (SH21  1.E0),   (-1.E0 SH22),   (0.E0  1.E0).
-!     LOCATIONS 2-4 OF SPARAM CONTAIN SH11,SH21,SH12, AND SH22
-!     RESPECTIVELY. (VALUES OF 1.E0, -1.E0, OR 0.E0 IMPLIED BY THE
-!     VALUE OF SPARAM(1) ARE NOT STORED IN SPARAM.)
-!
-!     THE VALUES OF GAMSQ AND RGAMSQ SET IN THE DATA STATEMENT MAY BE
-!     INEXACT.  THIS IS OK AS THEY ARE ONLY USED FOR TESTING THE SIZE
-!     OF SD1 AND SD2.  ALL ACTUAL SCALING OF DATA IS DONE USING GAM.
-!
-      DIMENSION SPARAM(5)
-!
-      DATA ZERO,ONE,TWO /0.E0,1.E0,2.E0/
-      DATA GAM,GAMSQ,RGAMSQ/4096.E0,1.67772E7,5.96046E-8/
-      IF(.NOT. SD1 .LT. ZERO) GO TO 10
-!       GO ZERO-H-D-AND-SX1..
-          GO TO 60
-   10 CONTINUE
-!     CASE-SD1-NONNEGATIVE
-      SP2=SD2*SY1
-      IF(.NOT. SP2 .EQ. ZERO) GO TO 20
-          SFLAG=-TWO
-          GO TO 260
-!     REGULAR-CASE..
-   20 CONTINUE
-      SP1=SD1*SX1
-      SQ2=SP2*SY1
-      SQ1=SP1*SX1
-!
-      IF(.NOT. ABS(SQ1) .GT. ABS(SQ2)) GO TO 40
-          SH21=-SY1/SX1
-          SH12=SP2/SP1
-!
-          SU=ONE-SH12*SH21
-!
-          IF(.NOT. SU .LE. ZERO) GO TO 30
-!         GO ZERO-H-D-AND-SX1..
-               GO TO 60
-   30     CONTINUE
-               SFLAG=ZERO
-               SD1=SD1/SU
-               SD2=SD2/SU
-               SX1=SX1*SU
-!         GO SCALE-CHECK..
-               GO TO 100
-   40 CONTINUE
-          IF(.NOT. SQ2 .LT. ZERO) GO TO 50
-!         GO ZERO-H-D-AND-SX1..
-               GO TO 60
-   50     CONTINUE
-               SFLAG=ONE
-               SH11=SP1/SP2
-               SH22=SX1/SY1
-               SU=ONE+SH11*SH22
-               STEMP=SD2/SU
-               SD2=SD1/SU
-               SD1=STEMP
-               SX1=SY1*SU
-!         GO SCALE-CHECK
-               GO TO 100
-!     PROCEDURE..ZERO-H-D-AND-SX1..
-   60 CONTINUE
-          SFLAG=-ONE
-          SH11=ZERO
-          SH12=ZERO
-          SH21=ZERO
-          SH22=ZERO
-!
-          SD1=ZERO
-          SD2=ZERO
-          SX1=ZERO
-!         RETURN..
-          GO TO 220
-!     PROCEDURE..FIX-H..
-   70 CONTINUE
-      IF(.NOT. SFLAG .GE. ZERO) GO TO 90
-!
-          IF(.NOT. SFLAG .EQ. ZERO) GO TO 80
-          SH11=ONE
-          SH22=ONE
-          SFLAG=-ONE
-          GO TO 90
-   80     CONTINUE
-          SH21=-ONE
-          SH12=ONE
-          SFLAG=-ONE
-   90 CONTINUE
-      GO TO IGO,(120,150,180,210)
-!     PROCEDURE..SCALE-CHECK
-  100 CONTINUE
-  110     CONTINUE
-          IF(.NOT. SD1 .LE. RGAMSQ) GO TO 130
-               IF(SD1 .EQ. ZERO) GO TO 160
-               ASSIGN 120 TO IGO
-!              FIX-H..
-               GO TO 70
-  120          CONTINUE
-               SD1=SD1*GAM**2
-               SX1=SX1/GAM
-               SH11=SH11/GAM
-               SH12=SH12/GAM
-          GO TO 110
-  130 CONTINUE
-  140     CONTINUE
-          IF(.NOT. SD1 .GE. GAMSQ) GO TO 160
-               ASSIGN 150 TO IGO
-!              FIX-H..
-               GO TO 70
-  150          CONTINUE
-               SD1=SD1/GAM**2
-               SX1=SX1*GAM
-               SH11=SH11*GAM
-               SH12=SH12*GAM
-          GO TO 140
-  160 CONTINUE
-  170     CONTINUE
-          IF(.NOT. ABS(SD2) .LE. RGAMSQ) GO TO 190
-               IF(SD2 .EQ. ZERO) GO TO 220
-               ASSIGN 180 TO IGO
-!              FIX-H..
-               GO TO 70
-  180          CONTINUE
-               SD2=SD2*GAM**2
-               SH21=SH21/GAM
-               SH22=SH22/GAM
-          GO TO 170
-  190 CONTINUE
-  200     CONTINUE
-          IF(.NOT. ABS(SD2) .GE. GAMSQ) GO TO 220
-               ASSIGN 210 TO IGO
-!              FIX-H..
-               GO TO 70
-  210          CONTINUE
-               SD2=SD2/GAM**2
-               SH21=SH21*GAM
-               SH22=SH22*GAM
-          GO TO 200
-  220 CONTINUE
-          IF(SFLAG)250,230,240
-  230     CONTINUE
-               SPARAM(3)=SH21
-               SPARAM(4)=SH12
-               GO TO 260
-  240     CONTINUE
-               SPARAM(2)=SH11
-               SPARAM(5)=SH22
-               GO TO 260
-  250     CONTINUE
-               SPARAM(2)=SH11
-               SPARAM(3)=SH21
-               SPARAM(4)=SH12
-               SPARAM(5)=SH22
-  260 CONTINUE
-          SPARAM(1)=SFLAG
-          RETURN
-      END
-
-
-      subroutine sscal(n,sa,sx,incx)
-!
-!     scales a vector by a constant.
-!     uses unrolled loops for increment equal to 1.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 3/93 to return if incx .le. 0.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sa,sx(*)
-      integer i,incx,m,mp1,n,nincx
-!
-      if( n.le.0 .or. incx.le.0 )return
-      if(incx.eq.1)go to 20
-!
-!        code for increment not equal to 1
-!
-      nincx = n*incx
-      do 10 i = 1,nincx,incx
-        sx(i) = sa*sx(i)
-   10 continue
-      return
-!
-!        code for increment equal to 1
-!
-!
-!        clean-up loop
-!
-   20 m = mod(n,5)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        sx(i) = sa*sx(i)
-   30 continue
-      if( n .lt. 5 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,5
-        sx(i) = sa*sx(i)
-        sx(i + 1) = sa*sx(i + 1)
-        sx(i + 2) = sa*sx(i + 2)
-        sx(i + 3) = sa*sx(i + 3)
-        sx(i + 4) = sa*sx(i + 4)
-   50 continue
-      return
-      end
-
-
-      subroutine sswap (n,sx,incx,sy,incy)
-!
-!     interchanges two vectors.
-!     uses unrolled loops for increments equal to 1.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
-!
-      real sx(*),sy(*),stemp
-      integer i,incx,incy,ix,iy,m,mp1,n
-!
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
-!
-!       code for unequal increments or equal increments not equal
-!         to 1
-!
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        stemp = sx(ix)
-        sx(ix) = sy(iy)
-        sy(iy) = stemp
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      return
-!
-!       code for both increments equal to 1
-!
-!
-!       clean-up loop
-!
-   20 m = mod(n,3)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        stemp = sx(i)
-        sx(i) = sy(i)
-        sy(i) = stemp
-   30 continue
-      if( n .lt. 3 ) return
-   40 mp1 = m + 1
-      do 50 i = mp1,n,3
-        stemp = sx(i)
-        sx(i) = sy(i)
-        sy(i) = stemp
-        stemp = sx(i + 1)
-        sx(i + 1) = sy(i + 1)
-        sy(i + 1) = stemp
-        stemp = sx(i + 2)
-        sx(i + 2) = sy(i + 2)
-        sy(i + 2) = stemp
-   50 continue
-      return
-      end
-
-
-
-       REAL             FUNCTION SCNRM2( N, X, INCX )
 !     .. Scalar Arguments ..
-      INTEGER                           INCX, N
+      INTEGER INCX,N
+!     ..
 !     .. Array Arguments ..
-      COMPLEX                           X( * )
+      COMPLEX CX(*)
 !     ..
 !
-!  SCNRM2 returns the euclidean norm of a vector via the function
-!  name, so that
+!  =====================================================================
 !
-!     SCNRM2 := sqrt( conjg( x' )*x )
+!     .. Local Scalars ..
+      REAL SMAX
+      INTEGER I,IX
+!     ..
+!     .. External Functions ..
+      REAL SCABS1
+      EXTERNAL SCABS1
+!     ..
+      ICAMAX = 0
+      IF (N.LT.1 .OR. INCX.LE.0) RETURN
+      ICAMAX = 1
+      IF (N.EQ.1) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         SMAX = SCABS1(CX(1))
+         DO I = 2,N
+            IF (SCABS1(CX(I)).GT.SMAX) THEN
+               ICAMAX = I
+               SMAX = SCABS1(CX(I))
+            END IF
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         IX = 1
+         SMAX = SCABS1(CX(1))
+         IX = IX + INCX
+         DO I = 2,N
+            IF (SCABS1(CX(IX)).GT.SMAX) THEN
+               ICAMAX = I
+               SMAX = SCABS1(CX(IX))
+            END IF
+            IX = IX + INCX
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b IDAMAX
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       INTEGER FUNCTION IDAMAX(N,DX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       DOUBLE PRECISION DX(*)
+!       ..
 !
 !
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    IDAMAX finds the index of element having max. absolute value.
+!> \endverbatim
 !
-!  -- This version written on 25-October-1982.
-!     Modified on 14-October-1993 to inline the call to CLASSQ.
-!     Sven Hammarling, Nag Ltd.
+!  Authors:
+!  ========
 !
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup aux_blas
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      INTEGER FUNCTION IDAMAX(N,DX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      DOUBLE PRECISION DX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      DOUBLE PRECISION DMAX
+      INTEGER I,IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC DABS
+!     ..
+      IDAMAX = 0
+      IF (N.LT.1 .OR. INCX.LE.0) RETURN
+      IDAMAX = 1
+      IF (N.EQ.1) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         DMAX = DABS(DX(1))
+         DO I = 2,N
+            IF (DABS(DX(I)).GT.DMAX) THEN
+               IDAMAX = I
+               DMAX = DABS(DX(I))
+            END IF
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         IX = 1
+         DMAX = DABS(DX(1))
+         IX = IX + INCX
+         DO I = 2,N
+            IF (DABS(DX(IX)).GT.DMAX) THEN
+               IDAMAX = I
+               DMAX = DABS(DX(IX))
+            END IF
+            IX = IX + INCX
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b ISAMAX
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       INTEGER FUNCTION ISAMAX(N,SX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    ISAMAX finds the index of element having max. absolute value.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup aux_blas
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      INTEGER FUNCTION ISAMAX(N,SX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL SMAX
+      INTEGER I,IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS
+!     ..
+      ISAMAX = 0
+      IF (N.LT.1 .OR. INCX.LE.0) RETURN
+      ISAMAX = 1
+      IF (N.EQ.1) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         SMAX = ABS(SX(1))
+         DO I = 2,N
+            IF (ABS(SX(I)).GT.SMAX) THEN
+               ISAMAX = I
+               SMAX = ABS(SX(I))
+            END IF
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         IX = 1
+         SMAX = ABS(SX(1))
+         IX = IX + INCX
+         DO I = 2,N
+            IF (ABS(SX(IX)).GT.SMAX) THEN
+               ISAMAX = I
+               SMAX = ABS(SX(IX))
+            END IF
+            IX = IX + INCX
+         END DO
+      END IF
+      RETURN
+      END
+!> \brief \b SASUM
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       REAL FUNCTION SASUM(N,SX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    SASUM takes the sum of the absolute values.
+!>    uses unrolled loops for increment equal to one.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      REAL FUNCTION SASUM(N,SX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL STEMP
+      INTEGER I,M,MP1,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,MOD
+!     ..
+      SASUM = 0.0e0
+      STEMP = 0.0e0
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!        code for increment equal to 1
+!
+!
+!        clean-up loop
+!
+         M = MOD(N,6)
+         IF (M.NE.0) THEN
+            DO I = 1,M
+               STEMP = STEMP + ABS(SX(I))
+            END DO
+            IF (N.LT.6) THEN
+               SASUM = STEMP
+               RETURN
+            END IF
+         END IF
+         MP1 = M + 1
+         DO I = MP1,N,6
+            STEMP = STEMP + ABS(SX(I)) + ABS(SX(I+1)) + &
+                   ABS(SX(I+2)) + ABS(SX(I+3)) + &
+                   ABS(SX(I+4)) + ABS(SX(I+5))
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            STEMP = STEMP + ABS(SX(I))
+         END DO
+      END IF
+      SASUM = STEMP
+      RETURN
+      END
+!> \brief \b SCASUM
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       REAL FUNCTION SCASUM(N,CX,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX CX(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!>    SCASUM takes the sum of the absolute values of a complex vector and
+!>    returns a single precision result.
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>     jack dongarra, linpack, 3/11/78.
+!>     modified 3/93 to return if incx .le. 0.
+!>     modified 12/3/93, array(1) declarations changed to array(*)
+!> \endverbatim
+!>
+!  =====================================================================
+      REAL FUNCTION SCASUM(N,CX,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX CX(*)
+!     ..
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
+      REAL STEMP
+      INTEGER I,NINCX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,AIMAG,REAL
+!     ..
+      SCASUM = 0.0e0
+      STEMP = 0.0e0
+      IF (N.LE.0 .OR. INCX.LE.0) RETURN
+      IF (INCX.EQ.1) THEN
+!
+!        code for increment equal to 1
+!
+         DO I = 1,N
+            STEMP = STEMP + ABS(REAL(CX(I))) + ABS(AIMAG(CX(I)))
+         END DO
+      ELSE
+!
+!        code for increment not equal to 1
+!
+         NINCX = N*INCX
+         DO I = 1,NINCX,INCX
+            STEMP = STEMP + ABS(REAL(CX(I))) + ABS(AIMAG(CX(I)))
+         END DO
+      END IF
+      SCASUM = STEMP
+      RETURN
+      END
+!> \brief \b SCNRM2
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       REAL FUNCTION SCNRM2(N,X,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       COMPLEX X(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!> SCNRM2 returns the euclidean norm of a vector via the function
+!> name, so that
+!>
+!>    SCNRM2 := sqrt( x**H*x )
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>  -- This version written on 25-October-1982.
+!>     Modified on 14-October-1993 to inline the call to CLASSQ.
+!>     Sven Hammarling, Nag Ltd.
+!> \endverbatim
+!>
+!  =====================================================================
+      REAL FUNCTION SCNRM2(N,X,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      INTEGER INCX,N
+!     ..
+!     .. Array Arguments ..
+      COMPLEX X(*)
+!     ..
+!
+!  =====================================================================
 !
 !     .. Parameters ..
-      REAL                  ONE         , ZERO
-      PARAMETER           ( ONE = 1.0E+0, ZERO = 0.0E+0 )
-!     .. Local Scalars ..
-      INTEGER               IX
-      REAL                  NORM, SCALE, SSQ, TEMP
-!     .. Intrinsic Functions ..
-      INTRINSIC             ABS, AIMAG, REAL, SQRT
+      REAL ONE,ZERO
+      PARAMETER (ONE=1.0E+0,ZERO=0.0E+0)
 !     ..
-!     .. Executable Statements ..
-      IF( N.LT.1 .OR. INCX.LT.1 )THEN
-         NORM  = ZERO
+!     .. Local Scalars ..
+      REAL NORM,SCALE,SSQ,TEMP
+      INTEGER IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,AIMAG,REAL,SQRT
+!     ..
+      IF (N.LT.1 .OR. INCX.LT.1) THEN
+          NORM = ZERO
       ELSE
-         SCALE = ZERO
-         SSQ   = ONE
+          SCALE = ZERO
+          SSQ = ONE
 !        The following loop is equivalent to this call to the LAPACK
 !        auxiliary routine:
 !        CALL CLASSQ( N, X, INCX, SCALE, SSQ )
 !
-         DO 10, IX = 1, 1 + ( N - 1 )*INCX, INCX
-            IF( REAL( X( IX ) ).NE.ZERO )THEN
-               TEMP = ABS( REAL( X( IX ) ) )
-               IF( SCALE.LT.TEMP )THEN
-                  SSQ   = ONE   + SSQ*( SCALE/TEMP )**2
-                  SCALE = TEMP
-               ELSE
-                  SSQ   = SSQ   +     ( TEMP/SCALE )**2
-               END IF
-            END IF
-            IF( AIMAG( X( IX ) ).NE.ZERO )THEN
-               TEMP = ABS( AIMAG( X( IX ) ) )
-               IF( SCALE.LT.TEMP )THEN
-                  SSQ   = ONE   + SSQ*( SCALE/TEMP )**2
-                  SCALE = TEMP
-               ELSE
-                  SSQ   = SSQ   +     ( TEMP/SCALE )**2
-               END IF
-            END IF
-   10    CONTINUE
-         NORM  = SCALE * SQRT( SSQ )
+          DO 10 IX = 1,1 + (N-1)*INCX,INCX
+              IF (REAL(X(IX)).NE.ZERO) THEN
+                  TEMP = ABS(REAL(X(IX)))
+                  IF (SCALE.LT.TEMP) THEN
+                      SSQ = ONE + SSQ* (SCALE/TEMP)**2
+                      SCALE = TEMP
+                  ELSE
+                      SSQ = SSQ + (TEMP/SCALE)**2
+                  END IF
+              END IF
+              IF (AIMAG(X(IX)).NE.ZERO) THEN
+                  TEMP = ABS(AIMAG(X(IX)))
+                  IF (SCALE.LT.TEMP) THEN
+                      SSQ = ONE + SSQ* (SCALE/TEMP)**2
+                      SCALE = TEMP
+                  ELSE
+                      SSQ = SSQ + (TEMP/SCALE)**2
+                  END IF
+              END IF
+   10     CONTINUE
+          NORM = SCALE*SQRT(SSQ)
       END IF
 !
       SCNRM2 = NORM
@@ -1886,192 +3050,365 @@
 !     End of SCNRM2.
 !
       END
-
-
-
-      real function sdot(n,sx,incx,sy,incy)
+!> \brief \b SDSDOT
 !
-!     forms the dot product of two vectors.
-!     uses unrolled loops for increments equal to one.
-!     jack dongarra, linpack, 3/11/78.
-!     modified 12/3/93, array(1) declarations changed to array(*)
+!  =========== DOCUMENTATION ===========
 !
-      real sx(*),sy(*),stemp
-      integer i,incx,incy,ix,iy,m,mp1,n
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
 !
-      stemp = 0.0e0
-      sdot = 0.0e0
-      if(n.le.0)return
-      if(incx.eq.1.and.incy.eq.1)go to 20
+!  Definition:
+!  ===========
 !
-!        code for unequal increments or equal increments
-!          not equal to 1
+!       REAL FUNCTION SDSDOT(N,SB,SX,INCX,SY,INCY)
 !
-      ix = 1
-      iy = 1
-      if(incx.lt.0)ix = (-n+1)*incx + 1
-      if(incy.lt.0)iy = (-n+1)*incy + 1
-      do 10 i = 1,n
-        stemp = stemp + sx(ix)*sy(iy)
-        ix = ix + incx
-        iy = iy + incy
-   10 continue
-      sdot = stemp
-      return
+!       .. Scalar Arguments ..
+!       REAL SB
+!       INTEGER INCX,INCY,N
+!       ..
+!       .. Array Arguments ..
+!       REAL SX(*),SY(*)
+!       ..
 !
-!        code for both increments equal to 1
+!    PURPOSE
+!    =======
 !
+!    Compute the inner product of two vectors with extended
+!    precision accumulation.
 !
-!        clean-up loop
+!    Returns S.P. result with dot product accumulated in D.P.
+!    SDSDOT = SB + sum for I = 0 to N-1 of SX(LX+I*INCX)*SY(LY+I*INCY),
+!    where LX = 1 if INCX .GE. 0, else LX = 1+(1-N)*INCX, and LY is
+!    defined in a similar way using INCY.
 !
-   20 m = mod(n,5)
-      if( m .eq. 0 ) go to 40
-      do 30 i = 1,m
-        stemp = stemp + sx(i)*sy(i)
-   30 continue
-      if( n .lt. 5 ) go to 60
-   40 mp1 = m + 1
-      do 50 i = mp1,n,5
-        stemp = stemp + sx(i)*sy(i) + sx(i + 1)*sy(i + 1) + &
-                sx(i + 2)*sy(i + 2) + sx(i + 3)*sy(i + 3) + sx(i + 4)*sy(i + 4)
-   50 continue
-   60 sdot = stemp
-      return
-      end
-
-
-!DECK SDSDOT
-      REAL FUNCTION SDSDOT (N, SB, SX, INCX, SY, INCY)
-!***BEGIN PROLOGUE  SDSDOT
-!***PURPOSE  Compute the inner product of two vectors with extended
-!            precision accumulation.
-!***LIBRARY   SLATEC (BLAS)
-!***CATEGORY  D1A4
-!***TYPE      SINGLE PRECISION (SDSDOT-S, CDCDOT-C)
-!***KEYWORDS  BLAS, DOT PRODUCT, INNER PRODUCT, LINEAR ALGEBRA, VECTOR
-!***AUTHOR  Lawson, C. L., (JPL)
-!           Hanson, R. J., (SNLA)
-!           Kincaid, D. R., (U. of Texas)
-!           Krogh, F. T., (JPL)
-!***DESCRIPTION
+!    AUTHOR
+!    ======
+!    Lawson, C. L., (JPL), Hanson, R. J., (SNLA),
+!    Kincaid, D. R., (U. of Texas), Krogh, F. T., (JPL)
 !
-!                B L A S  Subprogram
-!    Description of Parameters
+!    ARGUMENTS
+!    =========
 !
-!     --Input--
-!        N  number of elements in input vector(s)
-!       SB  single precision scalar to be added to inner product
-!       SX  single precision vector with N elements
-!     INCX  storage spacing between elements of SX
-!       SY  single precision vector with N elements
-!     INCY  storage spacing between elements of SY
+!    N      (input) INTEGER
+!           number of elements in input vector(s)
 !
-!     --Output--
-!   SDSDOT  single precision dot product (SB if N .LE. 0)
+!    SB     (input) REAL
+!           single precision scalar to be added to inner product
 !
-!     Returns S.P. result with dot product accumulated in D.P.
-!     SDSDOT = SB + sum for I = 0 to N-1 of SX(LX+I*INCX)*SY(LY+I*INCY),
-!     where LX = 1 if INCX .GE. 0, else LX = 1+(1-N)*INCX, and LY is
-!     defined in a similar way using INCY.
+!    SX     (input) REAL array, dimension (N)
+!           single precision vector with N elements
 !
-!***REFERENCES  C. L. Lawson, R. J. Hanson, D. R. Kincaid and F. T.
-!                 Krogh, Basic linear algebra subprograms for Fortran
-!                 usage, Algorithm No. 539, Transactions on Mathematical
-!                 Software 5, 3 (September 1979), pp. 308-323.
-!***ROUTINES CALLED  (NONE)
-!***REVISION HISTORY  (YYMMDD)
-!   791001  DATE WRITTEN
-!   890531  Changed all specific intrinsics to generic.  (WRB)
-!   890831  Modified array declarations.  (WRB)
-!   890831  REVISION DATE from Version 3.2
-!   891214  Prologue converted to Version 4.0 format.  (BAB)
-!   920310  Corrected definition of LX in DESCRIPTION.  (WRB)
-!   920501  Reformatted the REFERENCES section.  (WRB)
-!***END PROLOGUE  SDSDOT
-      REAL SX(*), SY(*), SB
+!    INCX   (input) INTEGER
+!           storage spacing between elements of SX
+!
+!    SY     (input) REAL array, dimension (N)
+!           single precision vector with N elements
+!
+!    INCY   (input) INTEGER
+!           storage spacing between elements of SY
+!
+!    SDSDOT (output) REAL
+!           single precision dot product (SB if N .LE. 0)
+!
+!    Further Details
+!    ===============
+!
+!    REFERENCES
+!
+!    C. L. Lawson, R. J. Hanson, D. R. Kincaid and F. T.
+!    Krogh, Basic linear algebra subprograms for Fortran
+!    usage, Algorithm No. 539, Transactions on Mathematical
+!    Software 5, 3 (September 1979), pp. 308-323.
+!
+!    REVISION HISTORY  (YYMMDD)
+!
+!    791001  DATE WRITTEN
+!    890531  Changed all specific intrinsics to generic.  (WRB)
+!    890831  Modified array declarations.  (WRB)
+!    890831  REVISION DATE from Version 3.2
+!    891214  Prologue converted to Version 4.0 format.  (BAB)
+!    920310  Corrected definition of LX in DESCRIPTION.  (WRB)
+!    920501  Reformatted the REFERENCES section.  (WRB)
+!    070118  Reformat to LAPACK coding style
+!
+!    =====================================================================
+!
+!       .. Local Scalars ..
+!       DOUBLE PRECISION DSDOT
+!       INTEGER I,KX,KY,NS
+!       ..
+!       .. Intrinsic Functions ..
+!       INTRINSIC DBLE
+!       ..
+!       DSDOT = SB
+!       IF (N.LE.0) THEN
+!          SDSDOT = DSDOT
+!          RETURN
+!       END IF
+!       IF (INCX.EQ.INCY .AND. INCX.GT.0) THEN
+!
+!       Code for equal and positive increments.
+!
+!          NS = N*INCX
+!          DO I = 1,NS,INCX
+!             DSDOT = DSDOT + DBLE(SX(I))*DBLE(SY(I))
+!          END DO
+!       ELSE
+!
+!       Code for unequal or nonpositive increments.
+!
+!          KX = 1
+!          KY = 1
+!          IF (INCX.LT.0) KX = 1 + (1-N)*INCX
+!          IF (INCY.LT.0) KY = 1 + (1-N)*INCY
+!          DO I = 1,N
+!             DSDOT = DSDOT + DBLE(SX(KX))*DBLE(SY(KY))
+!             KX = KX + INCX
+!             KY = KY + INCY
+!          END DO
+!       END IF
+!       SDSDOT = DSDOT
+!       RETURN
+!       END
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!  =====================================================================
+      REAL FUNCTION SDSDOT(N,SB,SX,INCX,SY,INCY)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      REAL SB
+      INTEGER INCX,INCY,N
+!     ..
+!     .. Array Arguments ..
+      REAL SX(*),SY(*)
+!     ..
+!
+!  PURPOSE
+!  =======
+!
+!  Compute the inner product of two vectors with extended
+!  precision accumulation.
+!
+!  Returns S.P. result with dot product accumulated in D.P.
+!  SDSDOT = SB + sum for I = 0 to N-1 of SX(LX+I*INCX)*SY(LY+I*INCY),
+!  where LX = 1 if INCX .GE. 0, else LX = 1+(1-N)*INCX, and LY is
+!  defined in a similar way using INCY.
+!
+!  AUTHOR
+!  ======
+!  Lawson, C. L., (JPL), Hanson, R. J., (SNLA),
+!  Kincaid, D. R., (U. of Texas), Krogh, F. T., (JPL)
+!
+!  ARGUMENTS
+!  =========
+!
+!  N      (input) INTEGER
+!         number of elements in input vector(s)
+!
+!  SB     (input) REAL
+!         single precision scalar to be added to inner product
+!
+!  SX     (input) REAL array, dimension (N)
+!         single precision vector with N elements
+!
+!  INCX   (input) INTEGER
+!         storage spacing between elements of SX
+!
+!  SY     (input) REAL array, dimension (N)
+!         single precision vector with N elements
+!
+!  INCY   (input) INTEGER
+!         storage spacing between elements of SY
+!
+!  SDSDOT (output) REAL
+!         single precision dot product (SB if N .LE. 0)
+!
+!  Further Details
+!  ===============
+!
+!  REFERENCES
+!
+!  C. L. Lawson, R. J. Hanson, D. R. Kincaid and F. T.
+!  Krogh, Basic linear algebra subprograms for Fortran
+!  usage, Algorithm No. 539, Transactions on Mathematical
+!  Software 5, 3 (September 1979), pp. 308-323.
+!
+!  REVISION HISTORY  (YYMMDD)
+!
+!  791001  DATE WRITTEN
+!  890531  Changed all specific intrinsics to generic.  (WRB)
+!  890831  Modified array declarations.  (WRB)
+!  890831  REVISION DATE from Version 3.2
+!  891214  Prologue converted to Version 4.0 format.  (BAB)
+!  920310  Corrected definition of LX in DESCRIPTION.  (WRB)
+!  920501  Reformatted the REFERENCES section.  (WRB)
+!  070118  Reformat to LAPACK coding style
+!
+!  =====================================================================
+!
+!     .. Local Scalars ..
       DOUBLE PRECISION DSDOT
-!***FIRST EXECUTABLE STATEMENT  SDSDOT
+      INTEGER I,KX,KY,NS
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC DBLE
+!     ..
       DSDOT = SB
-      IF (N .LE. 0) GO TO 30
-      IF (INCX.EQ.INCY .AND. INCX.GT.0) GO TO 40
-!
-!     Code for unequal or nonpositive increments.
-!
-      KX = 1
-      KY = 1
-      IF (INCX .LT. 0) KX = 1+(1-N)*INCX
-      IF (INCY .LT. 0) KY = 1+(1-N)*INCY
-      DO 10 I = 1,N
-        DSDOT = DSDOT + DBLE(SX(KX))*DBLE(SY(KY))
-        KX = KX + INCX
-        KY = KY + INCY
-   10 CONTINUE
-   30 SDSDOT = DSDOT
-      RETURN
+      IF (N.LE.0) THEN
+         SDSDOT = DSDOT
+         RETURN
+      END IF
+      IF (INCX.EQ.INCY .AND. INCX.GT.0) THEN
 !
 !     Code for equal and positive increments.
 !
-   40 NS = N*INCX
-      DO 50 I = 1,NS,INCX
-        DSDOT = DSDOT + DBLE(SX(I))*DBLE(SY(I))
-   50 CONTINUE
+         NS = N*INCX
+         DO I = 1,NS,INCX
+            DSDOT = DSDOT + DBLE(SX(I))*DBLE(SY(I))
+         END DO
+      ELSE
+!
+!     Code for unequal or nonpositive increments.
+!
+         KX = 1
+         KY = 1
+         IF (INCX.LT.0) KX = 1 + (1-N)*INCX
+         IF (INCY.LT.0) KY = 1 + (1-N)*INCY
+         DO I = 1,N
+            DSDOT = DSDOT + DBLE(SX(KX))*DBLE(SY(KY))
+            KX = KX + INCX
+            KY = KY + INCY
+         END DO
+      END IF
       SDSDOT = DSDOT
       RETURN
       END
-
-
-      REAL             FUNCTION SNRM2 ( N, X, INCX )
+!> \brief \b SNRM2
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       REAL FUNCTION SNRM2(N,X,INCX)
+!
+!       .. Scalar Arguments ..
+!       INTEGER INCX,N
+!       ..
+!       .. Array Arguments ..
+!       REAL X(*)
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!> SNRM2 returns the euclidean norm of a vector via the function
+!> name, so that
+!>
+!>    SNRM2 := sqrt( x'*x ).
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!> \par Further Details:
+!  =====================
+!>
+!> \verbatim
+!>
+!>  -- This version written on 25-October-1982.
+!>     Modified on 14-October-1993 to inline the call to SLASSQ.
+!>     Sven Hammarling, Nag Ltd.
+!> \endverbatim
+!>
+!  =====================================================================
+      REAL FUNCTION SNRM2(N,X,INCX)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
 !     .. Scalar Arguments ..
-      INTEGER                           INCX, N
+      INTEGER INCX,N
+!     ..
 !     .. Array Arguments ..
-      REAL                              X( * )
+      REAL X(*)
 !     ..
 !
-!  SNRM2 returns the euclidean norm of a vector via the function
-!  name, so that
-!
-!     SNRM2 := sqrt( x'*x )
-
-!
-!
-!  -- This version written on 25-October-1982.
-!     Modified on 14-October-1993 to inline the call to SLASSQ.
-!     Sven Hammarling, Nag Ltd.
-!
+!  =====================================================================
 !
 !     .. Parameters ..
-      REAL                  ONE         , ZERO
-      PARAMETER           ( ONE = 1.0E+0, ZERO = 0.0E+0 )
-!     .. Local Scalars ..
-      INTEGER               IX
-      REAL                  ABSXI, NORM, SCALE, SSQ
-!     .. Intrinsic Functions ..
-      INTRINSIC             ABS, SQRT
+      REAL ONE,ZERO
+      PARAMETER (ONE=1.0E+0,ZERO=0.0E+0)
 !     ..
-!     .. Executable Statements ..
-      IF( N.LT.1 .OR. INCX.LT.1 )THEN
-         NORM  = ZERO
-      ELSE IF( N.EQ.1 )THEN
-         NORM  = ABS( X( 1 ) )
+!     .. Local Scalars ..
+      REAL ABSXI,NORM,SCALE,SSQ
+      INTEGER IX
+!     ..
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,SQRT
+!     ..
+      IF (N.LT.1 .OR. INCX.LT.1) THEN
+          NORM = ZERO
+      ELSE IF (N.EQ.1) THEN
+          NORM = ABS(X(1))
       ELSE
-         SCALE = ZERO
-         SSQ   = ONE
+          SCALE = ZERO
+          SSQ = ONE
 !        The following loop is equivalent to this call to the LAPACK
 !        auxiliary routine:
 !        CALL SLASSQ( N, X, INCX, SCALE, SSQ )
 !
-         DO 10, IX = 1, 1 + ( N - 1 )*INCX, INCX
-            IF( X( IX ).NE.ZERO )THEN
-               ABSXI = ABS( X( IX ) )
-               IF( SCALE.LT.ABSXI )THEN
-                  SSQ   = ONE   + SSQ*( SCALE/ABSXI )**2
-                  SCALE = ABSXI
-               ELSE
-                  SSQ   = SSQ   +     ( ABSXI/SCALE )**2
-               END IF
-            END IF
-   10    CONTINUE
-         NORM  = SCALE * SQRT( SSQ )
+          DO 10 IX = 1,1 + (N-1)*INCX,INCX
+              IF (X(IX).NE.ZERO) THEN
+                  ABSXI = ABS(X(IX))
+                  IF (SCALE.LT.ABSXI) THEN
+                      SSQ = ONE + SSQ* (SCALE/ABSXI)**2
+                      SCALE = ABSXI
+                  ELSE
+                      SSQ = SSQ + (ABSXI/SCALE)**2
+                  END IF
+              END IF
+   10     CONTINUE
+          NORM = SCALE*SQRT(SSQ)
       END IF
 !
       SNRM2 = NORM
@@ -2079,4 +3416,61 @@
 !
 !     End of SNRM2.
 !
+      END
+!> \brief \b SCABS1
+!
+!  =========== DOCUMENTATION ===========
+!
+! Online html documentation available at
+!            http://www.netlib.org/lapack/explore-html/
+!
+!  Definition:
+!  ===========
+!
+!       REAL FUNCTION SCABS1(Z)
+!
+!       .. Scalar Arguments ..
+!       COMPLEX Z
+!       ..
+!
+!
+!> \par Purpose:
+!  =============
+!>
+!> \verbatim
+!>
+!> SCABS1 computes absolute value of a complex number
+!> \endverbatim
+!
+!  Authors:
+!  ========
+!
+!> \author Univ. of Tennessee
+!> \author Univ. of California Berkeley
+!> \author Univ. of Colorado Denver
+!> \author NAG Ltd.
+!
+!> \date November 2011
+!
+!> \ingroup single_blas_level1
+!
+!  =====================================================================
+      REAL FUNCTION SCABS1(Z)
+!
+!  -- Reference BLAS level1 routine (version 3.4.0) --
+!  -- Reference BLAS is a software package provided by Univ. of Tennessee,    --
+!  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+!     November 2011
+!
+!     .. Scalar Arguments ..
+      COMPLEX Z
+!     ..
+!
+!  =====================================================================
+!
+!     .. Intrinsic Functions ..
+      INTRINSIC ABS,AIMAG,REAL
+!     ..
+      SCABS1 = ABS(REAL(Z)) + ABS(AIMAG(Z))
+      RETURN
       END

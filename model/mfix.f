@@ -267,7 +267,7 @@
                CALL WRITE_SPX1 (L, 0)
             END DO
             call write_netcdf(0,0,time)
-         ENDIF   
+         ENDIF
 
       CASE DEFAULT
          CALL START_LOG
@@ -383,7 +383,7 @@
             CALL WRITE_SPX1 (L, 0)
          END DO
          call write_netcdf(0,0,time)
-      ENDIF   
+      ENDIF
 
       ENDIF
 
@@ -450,7 +450,8 @@
 ! Finalize and terminate MPI
       call parallel_fin
 
-      CALL exit(0)
+      STOP
+
  1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/)
  1010 FORMAT(/1X,70('*')//' From: MFIX',/&
          ' Message: Read in data from .RES file for TIME = ',G12.5,/&

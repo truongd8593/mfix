@@ -68,7 +68,7 @@
  2130 FORMAT('Error 2130: The specified FILTER_WIDTH is too large to ',&
          'interpolate',/'to the fuild grid as it spans further than ', &
          'adjacent neighbors. Either',/'discrease the filter width, ', &
-         'or enable diffusive filtering.'2/3x,'Minimum Cell ',         &
+         'or enable diffusive filtering.',2/3x,'Minimum Cell ',        &
          'dimension: ',g12.4,/3x,'Filter Width: ',g12.4)
 
 

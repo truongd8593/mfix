@@ -98,7 +98,7 @@
       CALL FINL_READ_RES_DES
 
 
-      WRITE(ERR_MSG,"('DES restart file read at Time = ',g11.5)") TIME
+      WRITE(ERR_MSG,"('DES restart file read at Time = ',g12.5)") TIME
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN

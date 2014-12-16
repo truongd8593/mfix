@@ -35,7 +35,7 @@
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
-      use particle_filter, only: FILTER_CELL 
+      use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -58,10 +58,12 @@
       NWALLS = merge(4,6,NO_K)
 
 ! Grab the larger of PARTICLES and MAX_PIS
-      IF(MAX_PIS == UNDEFINED_I) THEN
-         NPARTICLES = PARTICLES
-      ELSE
+      IF(MAX_PIS /= UNDEFINED_I .AND. PARTICLES /= UNDEFINED_I) THEN
          NPARTICLES = max(MAX_PIS, PARTICLES)
+      ELSEIF(MAX_PIS /= UNDEFINED_I)THEN
+         NPARTICLES = MAX_PIS
+      ELSE
+         NPARTICLES = PARTICLES
       ENDIF
 
 ! For parallel processing the array size required should be either
@@ -261,6 +263,8 @@
 
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
+
+
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
@@ -480,9 +484,6 @@
       USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
 
       collision_num = collision_num +1
 
@@ -494,9 +495,6 @@
 
       collisions(1,collision_num) = ii
       collisions(2,collision_num) = jj
-      pv_coll(collision_num) = .false.
-      pft_coll(:,collision_num) = 0.0
-      pfn_coll(:,collision_num) = 0.0
 
       RETURN
       END SUBROUTINE collision_add

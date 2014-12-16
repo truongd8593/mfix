@@ -37,7 +37,7 @@
 
 !
 !                file version ID
-      CHARACTER  VERSION*512
+      CHARACTER(LEN=512) :: VERSION
 !
       DO 100 LC = 1,N_SPX
         IF (READ_SPX(LC) .AND. SPX_OPEN(LC)) THEN

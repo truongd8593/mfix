@@ -23,10 +23,9 @@
       USE run
       USE drag
       USE compar
-      USE discretelement
       USE qmom_kinetic_equation
 
-      use discretelement, only: EXPLICITLY_COUPLED
+      use discretelement, only: EXPLICITLY_COUPLED, DES_CONTINUUM_COUPLED, DES_CONTINUUM_HYBRID
       IMPLICIT NONE
 
 !-----------------------------------------------

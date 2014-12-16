@@ -18,14 +18,22 @@
 
       use discretelement, only: EXPLICITLY_COUPLED
 
-      use discretelement, only: DRAG_FC, FC
+      use discretelement, only: DRAG_FC, FC, MAX_PIP
 
       IMPLICIT NONE
+
+      INTEGER :: II
 
 ! Apply the drag force calculated by the gas phase.
       IF(EXPLICITLY_COUPLED) THEN
 
-         IF(DES_CONTINUUM_COUPLED) FC = FC + DRAG_FC
+         IF(DES_CONTINUUM_COUPLED) THEN
+!$omp parallel do default(none) private(II) shared(FC,DRAG_FC,MAX_PIP)
+            DO II = 1, MAX_PIP
+               FC(:,II) = FC(:,II) + DRAG_FC(:,II)
+            ENDDO
+!$omp end parallel do
+         ENDIF
 
 
       ELSE

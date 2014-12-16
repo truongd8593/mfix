@@ -15,7 +15,6 @@
 
       use tmp_array, only: PARTICLE_COUNT => ARRAY1
 
-      USE param
       USE param1
       USE fldvar
       USE geometry
@@ -336,10 +335,10 @@
       INTEGER, INTENT(OUT) :: IDX
 ! Particle x,y,z position
       DOUBLE PRECISION, INTENT(IN) :: lPOS
-! East, North, or Top cell face location
-      DOUBLE PRECISION, INTENT(IN) :: ENT_POS(0:lDIMN)
 ! Dimension of ENT_POS array
       INTEGER, INTENT(IN) :: lDIMN
+! East, North, or Top cell face location
+      DOUBLE PRECISION, INTENT(IN) :: ENT_POS(0:lDIMN)
 ! Search bounds (by rank)
       INTEGER, INTENT(IN) :: lSTART, lEND
 

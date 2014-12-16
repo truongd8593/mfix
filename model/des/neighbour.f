@@ -74,6 +74,10 @@ INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
             pv_coll(cc) = pv_coll_old(ddd)
             pfn_coll(:,cc) = pfn_coll_old(:,ddd)
             pft_coll(:,cc) = pft_coll_old(:,ddd)
+         else
+            pv_coll(cc) = .false.
+            pfn_coll(:,cc) = 0.0
+            pft_coll(:,cc) = 0.0
          endif
 
       enddo

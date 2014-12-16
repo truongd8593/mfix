@@ -993,7 +993,7 @@
 !         IF (L3.EQ.0) THEN
 !            IF (APPEND_MODE) THEN
 !               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN', &
-!                             ACCESS='APPEND')
+!                             POSITION='APPEND')
 !            ELSE
 !               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
 !            END IF
@@ -1785,7 +1785,7 @@
        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,access='append')
+             open (unit=40,file=file_name,position='append')
           end if
           GOTO 10
        END IF
@@ -1798,7 +1798,7 @@
        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,access='append')
+             open (unit=40,file=file_name,position='append')
           end if
           GOTO 10
        END IF

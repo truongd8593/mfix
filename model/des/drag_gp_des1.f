@@ -92,7 +92,7 @@
 ! Laminar viscosity.
       Mu = MU_G(IJK)
 ! Slip velocity and its magnitude
-      VSLP = FLUID_VEL - PARTICLE_VEL 
+      VSLP = FLUID_VEL - PARTICLE_VEL
       VREL = SQRT(dot_product(VSLP, VSLP))
 ! assign variables for short dummy arguments
       DPM = 2.0d0*DES_RADIUS(NP)

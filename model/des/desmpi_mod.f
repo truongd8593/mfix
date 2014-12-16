@@ -231,32 +231,33 @@
          lmaxlen2 = 1
       end if
       lmaxarea = lmaxlen1*lmaxlen2 + 10 !10 is added for buffer and is required for send and recv indices
+
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*lpacketsize
 
-      allocate (isendindices(lmaxarea,lfaces),irecvindices(lmaxarea,lfaces))
-      isendindices =0
-      irecvindices=0
+      allocate (dsendbuf(imaxbuf,lfaces)); dsendbuf=0.0
+      allocate (drecvbuf(imaxbuf,lfaces)); drecvbuf=0.0
 
-      allocate (dsendbuf(imaxbuf,lfaces),drecvbuf(imaxbuf,lfaces), &
-                isendreq(lfaces),irecvreq(lfaces),isendcnt(lfaces))
-      dsendbuf=0.0
-      drecvbuf=0.0
-      isendreq =0
-      irecvreq=0
-      isendcnt=0
+      allocate (isendindices(lmaxarea,lfaces)); isendindices=0
+      allocate (irecvindices(lmaxarea,lfaces)); irecvindices=0
 
-      allocate (dcycl_offset(lfaces,dimn),ineighproc(lfaces),iexchflag(lfaces))
-      ineighproc=0
-      iexchflag=.false.
-      dcycl_offset=0.0
+      allocate (isendreq(lfaces)); isendreq=0
+      allocate (irecvreq(lfaces)); irecvreq=0
+      allocate (isendcnt(lfaces)); isendcnt=0
+
+      allocate (dcycl_offset(lfaces,dimn)); dcycl_offset=0.0
+      allocate (ineighproc(lfaces)); ineighproc=0
+      allocate (iexchflag(lfaces)); iexchflag=.FALSE.
 
 ! allocate variables related to scattergather
-      allocate(iscattercnts(0:numpes-1),idispls(0:numpes-1),igathercnts(0:numpes-1))
-      iscattercnts=0
-      idispls=0
-      igathercnts=0
+      allocate(iscattercnts(0:numpes-1)); iscattercnts=0 
+      allocate(igathercnts(0:numpes-1));  igathercnts=0
+      allocate(idispls(0:numpes-1)); idispls=0
+
+! allocate variable for des grid binning
+      allocate(dg_pijk(max_pip)); dg_pijk=0
+      allocate(dg_pijkprv(max_pip)); dg_pijkprv=0
 
 ! allocate variables related to ghost particles
       allocate(ighost_updated(max_pip))

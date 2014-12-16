@@ -88,9 +88,11 @@
 ! There is some issue associated to gstencil, vstencil which are
 ! allocatable variables
 
-!$omp parallel do default(none)                                       &
-!$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new,des_vel_new, &
-!$omp      mppic, mppic_pdrag_implicit,p_force,u_g,v_g,w_g,model_b,pvol,fc,f_gp)                                       &
+!$omp parallel do default(none)                                         &
+!$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,  &
+!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new, &
+!$omp        des_vel_new, mppic, mppic_pdrag_implicit,p_force,          &
+!$omp        u_g,v_g,w_g,model_b,pvol,fc,f_gp)                          &
 !$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
 !$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,              &
 !$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp, &

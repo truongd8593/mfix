@@ -178,7 +178,7 @@
          END DO
 
 !======================================================================
-!  Clean-up intersection flags by snapping intersection points to close 
+!  Clean-up intersection flags by snapping intersection points to close
 !  corner (within tolerance TOL_SNAP)
 !======================================================================
          CALL CLEAN_INTERSECT_SCALAR

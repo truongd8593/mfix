@@ -154,7 +154,7 @@
  1100 FORMAT(//1X,70('*')/1x,'From: READ_NAMELIST',/1x,'Error 1100: ', &
          'Line ',A,' in mfix.dat has is too long. Input lines should', &
          /1x,'not pass column ',A,'.',2/3x,A,2/1x,'Please correct ',   &
-         'the mfix.dat file.',/1X,70('*')2/)
+         'the mfix.dat file.',/1X,70('*'),2/)
 
 ! Make upper case all except species names
          if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &

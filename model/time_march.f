@@ -118,7 +118,7 @@
 ! dummy logical variable for initializing adjust_dt
       LOGICAL :: dummy
 
-      CHARACTER  EXT_END*35
+      CHARACTER(LEN=35) ::  EXT_END
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
@@ -479,7 +479,7 @@
 ! write (*,"('Compute the Courant number')")
 ! call get_stats(IER)
 
-      CALL FLUSH (6)
+      FLUSH (6)
       GOTO 100
 
       IF(solver_statistics) then
