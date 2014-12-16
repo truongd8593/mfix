@@ -1,9 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
 !  Subroutine: DES_CROSSPRDCT
-!  Purpose: Calculate the cross product of two vectors that both have
-!           either 2 or 3 elements and return the result in the first
-!           argument
+!  Purpose: Calculate the cross product of two vectors and return the
+!           result in the first argument
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -26,52 +25,12 @@
       DOUBLE PRECISION, INTENT(INOUT) :: AA(3)
 !-----------------------------------------------
 
-      IF(DO_K) THEN
-         AA(1) = XX(2)*YY(3) - XX(3)*YY(2)
-         AA(2) = XX(3)*YY(1) - XX(1)*YY(3)
-         AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
-      ELSE
-         AA(1) = - XX(1)*YY(2)
-         AA(2) = XX(1)*YY(1)
-         AA(3) = ZERO
-      ENDIF
-
-      RETURN
-      END SUBROUTINE DES_CROSSPRDCT
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: DES_CROSSPRDCT_3D
-!  Purpose: Calculate the cross product of two vectors that have 3
-!           elements and return the result in the first argument
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-      SUBROUTINE DES_CROSSPRDCT_3D (AA, XX,YY)
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE discretelement
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! sent vectors
-      DOUBLE PRECISION, INTENT(IN), DIMENSION(3) :: XX, YY
-! returned result: cross product of vectors
-      DOUBLE PRECISION, INTENT(OUT), DIMENSION(3) :: AA
-!-----------------------------------------------
-
       AA(1) = XX(2)*YY(3) - XX(3)*YY(2)
       AA(2) = XX(3)*YY(1) - XX(1)*YY(3)
       AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
 
       RETURN
-      END SUBROUTINE DES_CROSSPRDCT_3D
-
+      END SUBROUTINE DES_CROSSPRDCT
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
