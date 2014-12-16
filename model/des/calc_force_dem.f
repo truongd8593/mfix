@@ -210,9 +210,16 @@
               DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
 
          DIST_CI = DIST_COLL(CC) - DIST_CL
-         CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT(:))
-         TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
-         TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
+
+         IF(DO_K) THEN
+            CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT(:))
+            TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
+            TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
+         ELSE
+            TOW_tmp(1) = NORM_COLL(1,CC)*FT(2) - NORM_COLL(2,CC)*FT(1)
+            TOW_COLL(1,1,CC) = DIST_CL*TOW_tmp(1)
+            TOW_COLL(1,2,CC) = DIST_CI*TOW_tmp(1)
+         ENDIF
 
 ! Calculate the total force FC of a collision
 ! total contact force ( FC_COLL may already include cohesive force)
