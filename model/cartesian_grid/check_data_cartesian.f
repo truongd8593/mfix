@@ -480,6 +480,33 @@
                   CALL MFIX_EXIT(MYPE)
                ENDIF
 
+            CASE ('Y_UCOIL2_EXT')      ! UCOIL - Hard coded in define_quadrics.f
+               IF((UCOIL_R1(Q) <= ZERO).OR.(UCOIL_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' HAS INVALID RADIUS R1:',UCOIL_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+               IF((UCOIL_R2(Q) <= ZERO).OR.(UCOIL_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' HAS INVALID RADIUS R2:',UCOIL_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(UCOIL_Y2(Q)<UCOIL_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' COIL_Y2 < COIL_Y1: Y2,Y1=',UCOIL_Y2(Q),UCOIL_Y1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
             CASE ('XY_BEND_INT')       ! Bend  - Hard coded in define_quadrics.f
                IF((BEND_R1(Q) <= ZERO).OR.(BEND_R1(Q)==UNDEFINED)) THEN
                   IF(MyPE == PE_IO) THEN
