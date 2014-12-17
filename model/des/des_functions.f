@@ -27,7 +27,7 @@
 
       AA(1) = XX(2)*YY(3) - XX(3)*YY(2)
       AA(2) = XX(3)*YY(1) - XX(1)*YY(3)
-      IF (DO_K) AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
+      AA(3) = XX(1)*YY(2) - XX(2)*YY(1)
 
       RETURN
       END SUBROUTINE DES_CROSSPRDCT
