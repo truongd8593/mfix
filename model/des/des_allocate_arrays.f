@@ -542,11 +542,6 @@
       real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
       call move_alloc(real_tmp,norm_coll)
 
-      lSIZE1 = size(dist_coll,1)
-      allocate(real_scalar_tmp(COLLISION_MAX))
-      real_scalar_tmp(1:lSIZE1) = dist_coll(1:lSIZE1)
-      call move_alloc(real_scalar_tmp,dist_coll)
-
       lSIZE1 = size(qq_coll,1)
       allocate(real_scalar_tmp(COLLISION_MAX))
       real_scalar_tmp(1:lSIZE1) = qq_coll(1:lSIZE1)

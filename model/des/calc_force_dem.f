@@ -47,7 +47,7 @@
       DOUBLE PRECISION :: V_REL_TRANS_NORM
 ! distance vector between two particle centers or between a particle
 ! center and wall at current and previous time steps
-      DOUBLE PRECISION :: DIST(3)
+      DOUBLE PRECISION :: DIST(3), DIST_MAG
 ! tangent to the plane of contact at current time step
       DOUBLE PRECISION :: V_REL_TANG(3)
 ! normal and tangential forces
@@ -88,11 +88,11 @@
 !$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
-!$omp    eq_radius,distapart,force_coh,k_s0,                           &
+!$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,                  &
 !$omp    dist_cl, dist_ci, tow_tmp)   &
 !$omp    shared(collisions,collision_num,qq_coll,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
-!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,dist_coll,         &
+!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,                   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
 !$omp    hamaker_constant,asperities,surface_energy, pea,              &
 !$omp    tow, tow_coll, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
@@ -107,17 +107,17 @@
 
          R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
-         DIST_COLL(CC) = dot_product(DIST,DIST)
+         DIST_MAG = dot_product(DIST,DIST)
 
          FC_COLL(:,CC) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
-            IF(DIST_COLL(CC) < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
+            IF(DIST_MAG < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
                EQ_RADIUS = 2d0 * DES_RADIUS(LL)*DES_RADIUS(I) /        &
                     (DES_RADIUS(LL)+DES_RADIUS(I))
-               IF(DIST_COLL(CC) > (VDW_INNER_CUTOFF+R_LM)**2) THEN
-                  DistApart = (SQRT(DIST_COLL(CC))-R_LM)
+               IF(DIST_MAG > (VDW_INNER_CUTOFF+R_LM)**2) THEN
+                  DistApart = (SQRT(DIST_MAG)-R_LM)
                   FORCE_COH = HAMAKER_CONSTANT * EQ_RADIUS /           &
                      (12d0*DistApart**2) * (Asperities/(Asperities+    &
                      EQ_RADIUS) + ONE/(ONE+Asperities/DistApart)**2 )
@@ -126,7 +126,7 @@
                     (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_COLL(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_COLL(CC))
+               FC_COLL(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
             ENDIF
          ENDIF
 
@@ -134,34 +134,34 @@
             ! Calculate conduction and radiation for thermodynamic neighbors
             QQ_COLL(CC) = ZERO
             IF(K_s0(PIJK(LL,5)) > ZERO) THEN
-               QQ_COLL(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_COLL(CC)), PIJK(LL,5), PIJK(LL,4))
+               QQ_COLL(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
             ENDIF
          ENDIF
 
-         IF(DIST_COLL(CC) > (R_LM + SMALL_NUMBER)**2) THEN
+         IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
             PV_COLL(CC) = .false.
             PFT_COLL(:,CC) = 0.0
             PFN_COLL(:,CC) = 0.0
             CYCLE
          ENDIF
 
-         IF(DIST_COLL(CC) == 0) THEN
+         IF(DIST_MAG == 0) THEN
             WRITE(*,8550) LL, I
             STOP "division by zero"
  8550 FORMAT('distance between particles is zero:',2(2x,I10))
          ENDIF
-         DIST_COLL(cc) = SQRT(DIST_COLL(CC))
-         NORM_COLL(:,CC)= DIST(:)/DIST_COLL(cc)
+         DIST_MAG = SQRT(DIST_MAG)
+         NORM_COLL(:,CC)= DIST(:)/DIST_MAG
 
 ! Overlap calculation changed from history based to current position
-         OVERLAP_N = R_LM-DIST_COLL(CC)
+         OVERLAP_N = R_LM-DIST_MAG
 
          IF (report_excess_overlap) call print_excess_overlap
 
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
          CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TANG,            &
-            NORM_COLL(:,CC), DIST_COLL(CC))
+            NORM_COLL(:,CC), DIST_MAG)
 
          phaseLL = PIJK(LL,5)
          phaseI = PIJK(I,5)
@@ -206,10 +206,10 @@
 ! calculate the distance from the particles' centers to the contact point,
 ! which is taken as the radical line
 ! dist_ci+dist_cl=dist_li; dist_ci^2+a^2=ri^2;  dist_cl^2+a^2=rl^2
-         DIST_CL = DIST_COLL(CC)/2.d0 + (DES_RADIUS(LL)**2 - &
-              DES_RADIUS(I)**2)/(2.d0*DIST_COLL(CC))
+         DIST_CL = DIST_MAG/2.d0 + (DES_RADIUS(LL)**2 - &
+              DES_RADIUS(I)**2)/(2.d0*DIST_MAG)
 
-         DIST_CI = DIST_COLL(CC) - DIST_CL
+         DIST_CI = DIST_MAG - DIST_CL
 
          IF(DO_K) THEN
             CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT(:))
