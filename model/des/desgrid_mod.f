@@ -691,7 +691,7 @@
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
-                  call collision_add(lcurpar, lneigh)
+                  call add_pair(lcurpar, lneigh)
                endif
             end do
          end do

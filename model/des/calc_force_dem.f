@@ -90,17 +90,19 @@
 !$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,dist_norm,        &
 !$omp    dist_cl, dist_ci, tow_tmp)   &
-!$omp    shared(collisions,collision_num,qq_coll,des_pos_new,des_radius,       &
-!$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
-!$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,                   &
+!$omp    shared(pairs,pair_num,qq_pair,des_pos_new,des_radius,       &
+!$omp    des_coll_model_enum,kn,kt,pv_pair,pft_pair,pfn_pair,pijk,     &
+!$omp    des_etan,des_etat,mew,fc_pair,use_cohesion,                   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy, pea,              &
-!$omp    tow, tow_coll, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
+!$omp    hamaker_constant,asperities,surface_energy, pea, pair_collides, &
+!$omp    tow, tow_pair, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
-      DO CC = 1, COLLISION_NUM
-         LL = COLLISIONS(1,CC)
-         I  = COLLISIONS(2,CC)
+      DO CC = 1, PAIR_NUM
+         LL = PAIRS(1,CC)
+         I  = PAIRS(2,CC)
+
+         PAIR_COLLIDES(CC) = .FALSE.
 
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
@@ -109,7 +111,7 @@
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_MAG = dot_product(DIST,DIST)
 
-         FC_COLL(:,CC) = ZERO
+         FC_PAIR(:,CC) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -126,22 +128,23 @@
                     (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_COLL(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+               FC_PAIR(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+               PAIR_COLLIDES(CC) = .TRUE.
             ENDIF
          ENDIF
 
          IF (ENERGY_EQ) THEN
             ! Calculate conduction and radiation for thermodynamic neighbors
-            QQ_COLL(CC) = ZERO
+            QQ_PAIR(CC) = ZERO
             IF(K_s0(PIJK(LL,5)) > ZERO) THEN
-               QQ_COLL(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
+               QQ_PAIR(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
             ENDIF
          ENDIF
 
          IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
-            PV_COLL(CC) = .false.
-            PFT_COLL(:,CC) = 0.0
-            PFN_COLL(:,CC) = 0.0
+            PV_PAIR(CC) = .false.
+            PFT_PAIR(:,CC) = 0.0
+            PFN_PAIR(:,CC) = 0.0
             CYCLE
          ENDIF
 
@@ -189,9 +192,9 @@
          FN(:) = FNS1(:) + FNS2(:)
 
          call calc_tangential_displacement(pft_tmp(:),DIST_NORM(:), &
-            pfn_coll(:,cc),pft_coll(:,cc),overlap_n,                   &
-            v_rel_trans_norm,v_rel_tang(:),PV_COLL(CC))
-         PV_COLL(CC) = .true.
+            pfn_pair(:,cc),pft_pair(:,cc),overlap_n,                   &
+            v_rel_trans_norm,v_rel_tang(:),PV_PAIR(CC))
+         PV_PAIR(CC) = .true.
 
 ! Calculate the tangential contact force
          FTS1(:) = -KT_DES * PFT_TMP(:)
@@ -213,25 +216,26 @@
 
          IF(DO_K) THEN
             CALL DES_CROSSPRDCT(TOW_tmp(:), DIST_NORM(:), FT(:))
-            TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
-            TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
+            TOW_PAIR(:,1,CC) = DIST_CL*TOW_tmp(:)
+            TOW_PAIR(:,2,CC) = DIST_CI*TOW_tmp(:)
          ELSE
             TOW_tmp(1) = DIST_NORM(1)*FT(2) - DIST_NORM(2)*FT(1)
-            TOW_COLL(1,1,CC) = DIST_CL*TOW_tmp(1)
-            TOW_COLL(1,2,CC) = DIST_CI*TOW_tmp(1)
+            TOW_PAIR(1,1,CC) = DIST_CL*TOW_tmp(1)
+            TOW_PAIR(1,2,CC) = DIST_CI*TOW_tmp(1)
          ENDIF
 
-! Calculate the total force FC of a collision
-! total contact force ( FC_COLL may already include cohesive force)
-         FC_COLL(:,CC) = FC_COLL(:,CC) + FN(:) + FT(:)
+! Calculate the total force FC of a collision pair
+! total contact force ( FC_PAIR may already include cohesive force)
+         FC_PAIR(:,CC) = FC_PAIR(:,CC) + FN(:) + FT(:)
+         PAIR_COLLIDES(CC) = .TRUE.
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
-            PFT_COLL(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
+            PFT_PAIR(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
          ELSE
-            PFT_COLL(:,CC) = PFT_TMP(:)
+            PFT_PAIR(:,CC) = PFT_TMP(:)
          ENDIF
 
       ENDDO
@@ -240,42 +244,40 @@
 !$omp sections
 
 !$omp section
-      DO CC = 1, COLLISION_NUM
-         LL = COLLISIONS(1,CC)
-         I  = COLLISIONS(2,CC)
-
-         IF(.NOT.PEA(LL,1)) CYCLE
-         IF(.NOT.PEA(I, 1)) CYCLE
-
-         FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
-         FC(:,I) = FC(:,I) - FC_COLL(:,CC)
+      DO CC = 1, PAIR_NUM
+         IF (PAIR_COLLIDES(CC)) THEN
+            LL = PAIRS(1,CC)
+            FC(:,LL) = FC(:,LL) + FC_PAIR(:,CC)
+            I  = PAIRS(2,CC)
+            FC(:,I) = FC(:,I) - FC_PAIR(:,CC)
+         ENDIF
       ENDDO
 
 !$omp section
-      DO CC = 1, COLLISION_NUM
-         LL = COLLISIONS(1,CC)
-         I  = COLLISIONS(2,CC)
+      DO CC = 1, PAIR_NUM
+         LL = PAIRS(1,CC)
+         I  = PAIRS(2,CC)
 
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
 ! total torque
       IF(DO_K) THEN
 ! for particle i flip the signs of both norm and ft, so we get the same
-         TOW(:,LL) = TOW(:,LL) + TOW_COLL(:,1,CC)
-         TOW(:,I)  = TOW(:,I)  + TOW_COLL(:,2,CC)
+         TOW(:,LL) = TOW(:,LL) + TOW_PAIR(:,1,CC)
+         TOW(:,I)  = TOW(:,I)  + TOW_PAIR(:,2,CC)
       ELSE
-         TOW(1,LL) = TOW(1,LL) + TOW_COLL(1,1,CC)
-         TOW(1,I)  = TOW(1,I)  + TOW_COLL(1,2,CC)
+         TOW(1,LL) = TOW(1,LL) + TOW_PAIR(1,1,CC)
+         TOW(1,I)  = TOW(1,I)  + TOW_PAIR(1,2,CC)
       ENDIF
       ENDDO
 
 !$omp section
 ! just for post-processing mag. of cohesive forces on each particle
          IF(USE_COHESION)THEN
-         DO CC = 1, COLLISION_NUM
-            LL = COLLISIONS(1,CC)
-            I  = COLLISIONS(2,CC)
-            PostCohesive(LL) = dot_product(FC_COLL(:,CC),FC_COLL(:,CC))
+         DO CC = 1, PAIR_NUM
+            LL = PAIRS(1,CC)
+            I  = PAIRS(2,CC)
+            PostCohesive(LL) = dot_product(FC_PAIR(:,CC),FC_PAIR(:,CC))
             if(GRAV_MAG> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
                  SQRT(PostCohesive(LL)) / (PMASS(LL)*GRAV_MAG)
          ENDDO
@@ -284,11 +286,11 @@
 !$omp section
 
       IF(ENERGY_EQ) THEN
-         DO CC = 1, COLLISION_NUM
-            LL = COLLISIONS(1,CC)
-            I  = COLLISIONS(2,CC)
-            Q_Source(LL) = Q_Source(LL) + QQ_COLL(CC)
-            Q_Source(I) = Q_Source(I) - QQ_COLL(CC)
+         DO CC = 1, PAIR_NUM
+            LL = PAIRS(1,CC)
+            I  = PAIRS(2,CC)
+            Q_Source(LL) = Q_Source(LL) + QQ_PAIR(CC)
+            Q_Source(I) = Q_Source(I) - QQ_PAIR(CC)
          ENDDO
       ENDIF
 !$omp end sections

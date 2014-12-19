@@ -120,7 +120,7 @@
 ! ------------------------------
 
             IF (DIST < R_LM**2) THEN
-               call collision_add(L, LL)
+               call add_pair(L, LL)
             ENDIF
             PNPC = PNPC - 1
          ENDDO   ! end loop over LL

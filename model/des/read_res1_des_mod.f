@@ -116,12 +116,12 @@
          ENDIF
 
          PIP = pIN_COUNT
-         COLLISION_NUM = cIN_COUNT
+         PAIR_NUM = cIN_COUNT
 
-         DO WHILE(COLLISION_NUM > COLLISION_MAX)
-            COLLISION_MAX = 2*COLLISION_MAX
+         DO WHILE(PAIR_NUM > PAIR_MAX)
+            PAIR_MAX = 2*PAIR_MAX
          ENDDO
-         CALL COLLISION_GROW
+         CALL PAIR_GROW
 
       ELSE
 
@@ -502,7 +502,7 @@
 ! All process read positions for distributed IO restarts.
       IF(bDIST_IO) THEN
          DO LC1 = 1, 2
-            CALL READ_RES_DES(lNEXT_REC, COLLISIONS(LC1,:))
+            CALL READ_RES_DES(lNEXT_REC, PAIRS(LC1,:))
          ENDDO
          RETURN
       ENDIF
@@ -525,15 +525,15 @@
       CALL SCATTER_PAR_COL(COL_CNT)
 
 ! Set up the read/scatter arrary information.
-      cPROCCNT = COLLISION_NUM
+      cPROCCNT = PAIR_NUM
       cROOTCNT = cIN_COUNT
 
 ! Set the recv count for this process.
-      cRECV = COLLISION_NUM
+      cRECV = PAIR_NUM
 
 ! Construct an array for the Root process that states the number of
 ! (real) particles on each process.
-      lScatterCnts(:) = 0; lScatterCnts(mype) = COLLISION_NUM
+      lScatterCnts(:) = 0; lScatterCnts(mype) = PAIR_NUM
       CALL GLOBAL_SUM(lScatterCnts,cSCATTER)
 
 ! Calculate the displacements for each process in the global array.
@@ -637,8 +637,8 @@
       deallocate(iPROCBUF)
       deallocate(iROOTBUF)
 
- 1000 FORMAT('Error 1000: Unable to locate collision owner:',/         &
-         3x,'Collision Number:',A,/3x,'Particles: ',A,' and ',A)
+ 1000 FORMAT('Error 1000: Unable to locate pair owner:',/         &
+         3x,'Pair Number:',A,/3x,'Particles: ',A,' and ',A)
 
 ! Send out the error flag and exit if needed.
       CALL BCAST(IER, PE_IO)
@@ -649,12 +649,12 @@
 
 ! Each process stores the number of particles-on-its-process. The error
 ! flag is set if that number exceeds the maximum.
-      COLLISION_NUM = lCOL_CNT(myPE)
+      PAIR_NUM = lCOL_CNT(myPE)
 
-      DO WHILE(COLLISION_NUM > COLLISION_MAX)
-         COLLISION_MAX = 2*COLLISION_MAX
+      DO WHILE(PAIR_NUM > PAIR_MAX)
+         PAIR_MAX = 2*PAIR_MAX
       ENDDO
-      CALL COLLISION_GROW
+      CALL PAIR_GROW
 
  1100 FORMAT('Error 1100: Maximum number of particles exceeded.',2/    &
          5x,'Process',5x,'Maximum',7x,'Count')
@@ -683,7 +683,7 @@
       INTEGER :: lScatterCNTS(0:NUMPEs-1)
 
 ! Set up the recv count and allocate the local process buffer.
-      iSCR_RECVCNT = COLLISION_NUM*2
+      iSCR_RECVCNT = PAIR_NUM*2
       allocate (iProcBuf(iscr_recvcnt))
 
 ! Allocate the buffer for the root.
@@ -738,9 +738,9 @@
       CALL DESMPI_SCATTERV(pTYPE=1)
 
 ! Unpack the particle data.
-      DO LC1 = 1, COLLISION_NUM
+      DO LC1 = 1, PAIR_NUM
          lBuf = (LC1-1)*2+1
-         COLLISIONS(1:2,LC1) = iProcBuf(lBuf:lBuf+2-1)
+         PAIRS(1:2,LC1) = iProcBuf(lBuf:lBuf+2-1)
          lBuf = lBuf + 2
       ENDDO
 
@@ -1194,7 +1194,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, COLLISION_NUM
+         DO LC1=1, PAIR_NUM
             OUTPUT_I(LC1) = iProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1259,7 +1259,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=2)
-         DO LC1=1, COLLISION_NUM
+         DO LC1=1, PAIR_NUM
             OUTPUT_D(LC1) = dProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1332,7 +1332,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, COLLISION_NUM
+         DO LC1=1, PAIR_NUM
             IF(iProcBuf(LC1) == 1) THEN
                OUTPUT_L(LC1) = .TRUE.
             ELSE
