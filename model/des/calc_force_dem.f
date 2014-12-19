@@ -102,6 +102,8 @@
          LL = PAIRS(1,CC)
          I  = PAIRS(2,CC)
 
+         PAIR_COLLIDES(CC) = .FALSE.
+
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
 
@@ -127,6 +129,7 @@
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
                FC_PAIR(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+               PAIR_COLLIDES(CC) = .TRUE.
             ENDIF
          ENDIF
 
@@ -224,6 +227,7 @@
 ! Calculate the total force FC of a collision pair
 ! total contact force ( FC_PAIR may already include cohesive force)
          FC_PAIR(:,CC) = FC_PAIR(:,CC) + FN(:) + FT(:)
+         PAIR_COLLIDES(CC) = .TRUE.
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
@@ -241,14 +245,12 @@
 
 !$omp section
       DO CC = 1, PAIR_NUM
-         LL = PAIRS(1,CC)
-         I  = PAIRS(2,CC)
-
-         IF(.NOT.PEA(LL,1)) CYCLE
-         IF(.NOT.PEA(I, 1)) CYCLE
-
-         FC(:,LL) = FC(:,LL) + FC_PAIR(:,CC)
-         FC(:,I) = FC(:,I) - FC_PAIR(:,CC)
+         IF (PAIR_COLLIDES(CC)) THEN
+            LL = PAIRS(1,CC)
+            FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
+            I  = PAIRS(2,CC)
+            FC(:,I) = FC(:,I) - FC_COLL(:,CC)
+         ENDIF
       ENDDO
 
 !$omp section
