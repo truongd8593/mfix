@@ -213,14 +213,16 @@
 ! JFD modification: cartesian grid implementation
 ! Initialize VTK_TIME
       IF(WRITE_VTK_FILES) THEN
-         VTK_TIME = UNDEFINED
-         IF (VTK_DT /= UNDEFINED) THEN
-            IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
-               VTK_TIME = TIME
-            ELSE
-               VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
+         DO L = 1, DIMENSION_VTK
+            VTK_TIME(L) = UNDEFINED
+            IF (VTK_DT(L) /= UNDEFINED) THEN
+               IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
+                  VTK_TIME(L) = TIME
+               ELSE
+                  VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
+               ENDIF
             ENDIF
-         ENDIF
+         ENDDO
       ENDIF
 
 ! Parse residual strings
@@ -274,7 +276,11 @@
 ! uncoupled discrete element simulations do not need to be within
 ! the two fluid model time-loop
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
-         IF(WRITE_VTK_FILES) CALL WRITE_VTU_FILE
+         IF(WRITE_VTK_FILES) THEN
+            DO L = 1, DIMENSION_VTK
+               CALL WRITE_VTU_FILE(L)
+            ENDDO
+         ENDIF
          CALL DES_TIME_MARCH
          CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
@@ -706,12 +712,14 @@
 ! JFD modification: cartesian grid implementation
 ! Write vtk file, if needed
       IF(WRITE_VTK_FILES) THEN
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) CALL WRITE_VTU_FILE
-         ELSEIF (VTK_TIME/=UNDEFINED .AND. TIME+0.1d0*DT>=VTK_TIME) THEN
-            VTK_TIME = (INT((TIME + 0.1d0*DT)/VTK_DT)+1)*VTK_DT
-            CALL WRITE_VTU_FILE
-         ENDIF
+         DO L = 1, DIMENSION_VTK
+            IF (DT == UNDEFINED) THEN
+               IF (FINISH) CALL WRITE_VTU_FILE(L)
+            ELSEIF (VTK_TIME(L)/=UNDEFINED .AND.  TIME+0.1d0*DT>=VTK_TIME(L)) THEN
+               VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
+               CALL WRITE_VTU_FILE(L)
+            ENDIF
+         ENDDO
       ENDIF
 
  1000 FORMAT(' t=',F10.4,'  Wrote RES;')
