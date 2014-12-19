@@ -47,7 +47,7 @@
       DOUBLE PRECISION :: V_REL_TRANS_NORM
 ! distance vector between two particle centers or between a particle
 ! center and wall at current and previous time steps
-      DOUBLE PRECISION :: DIST(3), DIST_MAG
+      DOUBLE PRECISION :: DIST(3), DIST_NORM(3), DIST_MAG
 ! tangent to the plane of contact at current time step
       DOUBLE PRECISION :: V_REL_TANG(3)
 ! normal and tangential forces
@@ -93,7 +93,7 @@
 !$omp    shared(collisions,collision_num,qq_coll,des_pos_new,des_radius,       &
 !$omp    des_coll_model_enum,kn,kt,pv_coll,pft_coll,pfn_coll,pijk,     &
 !$omp    des_etan,des_etat,mew,fc_coll,use_cohesion,                   &
-!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,norm_coll,    &
+!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,dist_norm,    &
 !$omp    hamaker_constant,asperities,surface_energy, pea,              &
 !$omp    tow, tow_coll, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
@@ -151,7 +151,7 @@
  8550 FORMAT('distance between particles is zero:',2(2x,I10))
          ENDIF
          DIST_MAG = SQRT(DIST_MAG)
-         NORM_COLL(:,CC)= DIST(:)/DIST_MAG
+         DIST_NORM(:)= DIST(:)/DIST_MAG
 
 ! Overlap calculation changed from history based to current position
          OVERLAP_N = R_LM-DIST_MAG
@@ -161,7 +161,7 @@
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
          CALL CFRELVEL(LL, I, V_REL_TRANS_NORM, V_REL_TANG,            &
-            NORM_COLL(:,CC), DIST_MAG)
+            DIST_NORM(:), DIST_MAG)
 
          phaseLL = PIJK(LL,5)
          phaseI = PIJK(I,5)
@@ -184,11 +184,11 @@
          ENDIF
 
 ! Calculate the normal contact force
-         FNS1(:) = -KN_DES * OVERLAP_N * NORM_COLL(:,CC)
-         FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*NORM_COLL(:,CC)
+         FNS1(:) = -KN_DES * OVERLAP_N * DIST_NORM(:)
+         FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*DIST_NORM(:)
          FN(:) = FNS1(:) + FNS2(:)
 
-         call calc_tangential_displacement(pft_tmp(:),NORM_COLL(:,CC), &
+         call calc_tangential_displacement(pft_tmp(:),DIST_NORM(:), &
             pfn_coll(:,cc),pft_coll(:,cc),overlap_n,                   &
             v_rel_trans_norm,v_rel_tang(:),PV_COLL(CC))
          PV_COLL(CC) = .true.
@@ -212,11 +212,11 @@
          DIST_CI = DIST_MAG - DIST_CL
 
          IF(DO_K) THEN
-            CALL DES_CROSSPRDCT(TOW_tmp(:), NORM_COLL(:,CC), FT(:))
+            CALL DES_CROSSPRDCT(TOW_tmp(:), DIST_NORM(:), FT(:))
             TOW_COLL(:,1,CC) = DIST_CL*TOW_tmp(:)
             TOW_COLL(:,2,CC) = DIST_CI*TOW_tmp(:)
          ELSE
-            TOW_tmp(1) = NORM_COLL(1,CC)*FT(2) - NORM_COLL(2,CC)*FT(1)
+            TOW_tmp(1) = DIST_NORM(1)*FT(2) - DIST_NORM(2)*FT(1)
             TOW_COLL(1,1,CC) = DIST_CL*TOW_tmp(1)
             TOW_COLL(1,2,CC) = DIST_CI*TOW_tmp(1)
          ENDIF

@@ -143,9 +143,7 @@
       Allocate(  COLLISIONS (2,COLLISION_MAX) )
       Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
       Allocate(  FC_COLL  (3,COLLISION_MAX) )
-      Allocate(  DIST_COLL (COLLISION_MAX) )
       Allocate(  QQ_COLL (COLLISION_MAX) )
-      Allocate(  NORM_COLL (3,COLLISION_MAX) )
       Allocate(  PV_COLL (COLLISION_MAX) )
       Allocate(  PV_COLL_OLD (COLLISION_MAX) )
       Allocate(  PFT_COLL (3,COLLISION_MAX) )
@@ -536,11 +534,6 @@
       allocate(real_tmp(3,COLLISION_MAX))
       real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
       call move_alloc(real_tmp,fc_coll)
-
-      lSIZE1 = size(norm_coll,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
-      call move_alloc(real_tmp,norm_coll)
 
       lSIZE1 = size(qq_coll,1)
       allocate(real_scalar_tmp(COLLISION_MAX))
