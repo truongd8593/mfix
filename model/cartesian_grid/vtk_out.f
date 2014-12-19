@@ -442,8 +442,6 @@
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
             IF(TIME_DEPENDENT_FILENAME) THEN
-               print*,'line445:',TRIM(VTK_FILEBASE(VTK_REGION)),'#',FRAME(VTK_REGION)
-
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(RUN_NAME)
@@ -2565,8 +2563,22 @@
 
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CLEAN_GEOMETRY                                         C
+!  Purpose: Clean-up the list of point and only keep points            C
+!           that are used in the connectivity list.                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 19-Dec-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-  SUBROUTINE CLEAN_GEOMETRY 
+      SUBROUTINE CLEAN_GEOMETRY 
 
       USE param
       USE param1
@@ -2701,7 +2713,23 @@
 
 
 
-  SUBROUTINE SETUP_VTK_REGION
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SETUP_VTK_REGION                                       C
+!                                                                      C
+!  Purpose: Filter the cells based on the VTK region bounds and        C
+!           set the flag BELONGS_TO_VTK_SUBDOMAIN(IJK) to .TRUE.       C
+!           to keep the cell.                                          C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 19-Dec-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SETUP_VTK_REGION
 
       USE param
       USE param1
@@ -2724,11 +2752,14 @@
       IMPLICIT NONE
 
       INTEGER :: IJK,L,I,J,K,I_E,I_W,J_N,J_S,K_T,K_B
-
+      INTEGER :: NXS,NYS,NZS,NS,I_SLICE,J_SLICE,K_SLICE
       INTEGER ::POINT_ID,IJKC
       INTEGER , DIMENSION(IJKMAX3) ::  POINT_NEW_ID,NEW_POINT_NEW_ID
       LOGICAL , DIMENSION(IJKMAX3) ::  KEEP_POINT
       LOGICAL , ALLOCATABLE        ::  KEEP_NEW_POINT(:)
+      DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
+      DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE
+      LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR 
 
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
@@ -2737,42 +2768,39 @@
 
          ALLOCATE (BELONGS_TO_VTK_SUBDOMAIN(ijkmax3))
 
+         XE = VTK_X_E(VTK_REGION)
+         XW = VTK_X_W(VTK_REGION)
+         YS = VTK_Y_S(VTK_REGION)
+         YN = VTK_Y_N(VTK_REGION)
+         ZB = VTK_Z_B(VTK_REGION)
+         ZT = VTK_Z_T(VTK_REGION)
 
-!     I_W = 8
-!     I_E = 32   
-!     J_S = 10
-!     J_N = 60
-!     K_T = 1
-!     K_B = 1
+         NXS = VTK_NXS(VTK_REGION)
+         NYS = VTK_NYS(VTK_REGION)
+         NZS = VTK_NZS(VTK_REGION)
 
-!      VTK_REGION = 1
-
-      CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
-      I_W = I_W !+ 1                                                                                                            
-      CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
-
-
-      CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
-      J_S = J_S !+ 1
-      CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
-
-      IF (NO_K) THEN
-         K_B = 1
-         K_T = 1
-      ELSE
-         CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
-         K_B = K_B !+ 1
-         CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
-      ENDIF
+         CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
+         I_W = I_W !+ 1                                                                                                            
+         CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
 
 
-      print*,'setting up vtk region:',I_W,I_E,J_S,J_N,K_B,K_T
+         CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
+         J_S = J_S !+ 1
+         CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
 
-! Step 1: Go through connectivity list and only keep points that are used.
-!         For background cell corners, assign KEEP_POINT = .TRUE.
-!         For cut cells, the new intersection points were called NEW_POINTS,
-!         so assign KEEP_NEW_POINT = .TRUE.
-!         A NEW_POINT had an IJK index larger than IJKMAX3
+         IF (NO_K) THEN
+            K_B = 1
+            K_T = 1
+         ELSE
+            CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
+            K_B = K_B !+ 1
+            CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
+         ENDIF
+
+!      print*,'setting up vtk region:',I_W,I_E,J_S,J_N,K_B,K_T
+
+! Filter the cells based on the VTK region bounds and set the 
+! flag BELONGS_TO_VTK_SUBDOMAIN(IJK) to .TRUE. to keep the cell.
 
          BELONGS_TO_VTK_SUBDOMAIN = .FALSE.
          NUMBER_OF_VTK_CELLS      = 0
@@ -2783,9 +2811,49 @@
                   I = GLOBAL_I_OF(IJK)
                   J = GLOBAL_J_OF(IJK)
                   K = GLOBAL_K_OF(IJK)
-                  IF((I_W<=I.AND.I<=I_E).AND.   &
-                     (J_S<=J.AND.J<=J_N).AND.   &
-                     (K_B<=K.AND.K<=K_T)) THEN
+
+! X-direction
+                  KEEP_XDIR=.FALSE.
+                  IF(NXS==0) THEN
+                     IF(I_W<=I.AND.I<=I_E) KEEP_XDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NXS
+                        XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
+                        CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_SLICE)
+                        I_SLICE = MAX(MIN(I_SLICE,IMAX1),IMIN1)
+                        IF(I==I_SLICE) KEEP_XDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Y-direction
+                  KEEP_YDIR=.FALSE.
+                  IF(NYS==0) THEN
+                     IF(J_S<=J.AND.J<=J_N) KEEP_YDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NYS
+                        YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
+                        CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_SLICE)
+                        J_SLICE = MAX(MIN(J_SLICE,JMAX1),JMIN1)
+!                        IF(I==20.AND.J==45.AND.K==20) print*,'YSLICE',NS,YSLICE,J_SLICE 
+                        IF(J==J_SLICE) KEEP_YDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Z-direction
+                  KEEP_ZDIR=.FALSE.
+                  IF(NZS==0) THEN
+                     IF(K_B<=K.AND.K<=K_T) KEEP_ZDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NZS
+                        ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
+                        CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_SLICE)
+                        K_SLICE = MAX(MIN(K_SLICE,KMAX1),KMIN1)
+                        IF(K==K_SLICE) KEEP_ZDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Now combine     
+                  IF(KEEP_XDIR.AND.KEEP_YDIR.AND.KEEP_ZDIR) THEN
                      BELONGS_TO_VTK_SUBDOMAIN(IJK) = .TRUE.
                      NUMBER_OF_VTK_CELLS = NUMBER_OF_VTK_CELLS + 1  
                   ENDIF

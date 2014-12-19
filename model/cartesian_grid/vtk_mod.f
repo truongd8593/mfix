@@ -111,6 +111,15 @@
 ! VTK region Top face, Z-coordinate
       DOUBLE PRECISION :: VTK_Z_t (DIMENSION_VTK)
 
+! VTK number of slices in x-direction
+      INTEGER :: VTK_NXS(DIMENSION_VTK) 
+
+! VTK number of slices in y-direction
+      INTEGER :: VTK_NYS(DIMENSION_VTK) 
+
+! VTK number of slices in z-direction
+      INTEGER :: VTK_NZS(DIMENSION_VTK) 
+
 ! VTK filename base 
       CHARACTER(LEN=64) :: VTK_FILEBASE(DIMENSION_VTK)
 
