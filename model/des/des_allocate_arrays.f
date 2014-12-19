@@ -142,7 +142,7 @@
       PAIR_MAX = 1024
       Allocate(  PAIRS (2,PAIR_MAX) )
       Allocate(  PAIRS_OLD (2,PAIR_MAX) )
-      Allocate(  PAIR_COLLIDES (COLLISION_MAX) )
+      Allocate(  PAIR_COLLIDES (PAIR_MAX) )
       Allocate(  FC_PAIR  (3,PAIR_MAX) )
       Allocate(  QQ_PAIR (PAIR_MAX) )
       Allocate(  PV_PAIR (PAIR_MAX) )
@@ -537,7 +537,7 @@
       call move_alloc(real_tmp,fc_pair)
 
       lSIZE1 = size(pair_collides,1)
-      allocate(bool_tmp(COLLISION_MAX))
+      allocate(bool_tmp(PAIR_MAX))
       bool_tmp(1:lSIZE1) = pair_collides(1:lSIZE1)
       call move_alloc(bool_tmp,pair_collides)
 

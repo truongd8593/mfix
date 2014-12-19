@@ -94,7 +94,7 @@
 !$omp    des_coll_model_enum,kn,kt,pv_pair,pft_pair,pfn_pair,pijk,     &
 !$omp    des_etan,des_etat,mew,fc_pair,use_cohesion,                   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy, pea,              &
+!$omp    hamaker_constant,asperities,surface_energy, pea, pair_collides, &
 !$omp    tow, tow_pair, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
@@ -247,9 +247,9 @@
       DO CC = 1, PAIR_NUM
          IF (PAIR_COLLIDES(CC)) THEN
             LL = PAIRS(1,CC)
-            FC(:,LL) = FC(:,LL) + FC_COLL(:,CC)
+            FC(:,LL) = FC(:,LL) + FC_PAIR(:,CC)
             I  = PAIRS(2,CC)
-            FC(:,I) = FC(:,I) - FC_COLL(:,CC)
+            FC(:,I) = FC(:,I) - FC_PAIR(:,CC)
          ENDIF
       ENDDO
 
