@@ -1994,6 +1994,13 @@
 
             DO IJK = IJKSTART3, IJKEND3
 
+! Aaron
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
+               IF(.NOT.IS_ON_myPE_plus1layer(I,J,K))cycle
+! End aaron
+
                IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
 
                      IMJK = IM_OF(IJK)
