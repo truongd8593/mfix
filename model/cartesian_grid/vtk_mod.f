@@ -1,7 +1,5 @@
       MODULE vtk
 
-
-      Use param
       Use param1
 ! Maximum number of solids phases.
       use param, only: DIM_M
