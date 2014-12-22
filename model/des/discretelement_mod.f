@@ -630,6 +630,9 @@
       IF(DO_K) THEN
          DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
          DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
+      ELSE
+         DES_CROSSPRDCT(1) = ZERO
+         DES_CROSSPRDCT(2) = ZERO
       ENDIF
 
       DES_CROSSPRDCT(3) = XX(1)*YY(2) - XX(2)*YY(1)

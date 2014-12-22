@@ -588,13 +588,8 @@
                FC(:,LL) = FC(:,LL) + FNORM(:) + FTAN(:)
 
 ! Add the torque: The particle radius is used as the moment arm
-               IF(DO_K) THEN
-                  CROSSP = DES_CROSSPRDCT(NORMAL, FTAN)
-                  TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
-               ELSE
-                  CROSSP(1) = NORMAL(1)*FTAN(2) - NORMAL(2)*FTAN(1)
-                  TOW(1,LL) = TOW(1,LL) + DISTMOD*CROSSP(1)
-               ENDIF
+               CROSSP = DES_CROSSPRDCT(NORMAL, FTAN)
+               TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
 
 ! Save the tangential displacement history with the correction of Coulomb's law
                IF (PARTICLE_SLIDE) THEN
@@ -755,7 +750,6 @@
       USE discretelement
       USE param1
 
-      use geometry, only: DO_K
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: LL
@@ -780,13 +774,7 @@
 ! rotational contribution  : v_rot
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI         !- DES_RADIUS(L)
-      IF(DO_K) THEN
-         OMEGA_SUM(:) = OMEGA_NEW(:,LL)*DIST_CL
-      ELSE
-         OMEGA_SUM(1) = OMEGA_NEW(1,LL)*DIST_CL
-         OMEGA_SUM(2) = ZERO
-         OMEGA_SUM(3) = ZERO
-      ENDIF
+      OMEGA_SUM(:) = OMEGA_NEW(:,LL)*DIST_CL
 
       V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
 

@@ -17,7 +17,6 @@
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
-      USE geometry, ONLY: DO_K
       USE physprop, ONLY: K_s0
       USE run
 
@@ -95,7 +94,7 @@
 !$omp    des_etan,des_etat,mew,fc_pair,use_cohesion,                   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy, pea, pair_collides, &
-!$omp    tow, tow_pair, fc, do_k, energy_eq, grav_mag, postcohesive, pmass, q_source)
+!$omp    tow, tow_pair, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
       DO CC = 1, PAIR_NUM
@@ -214,15 +213,9 @@
 
          DIST_CI = DIST_MAG - DIST_CL
 
-         IF(DO_K) THEN
-            TOW_tmp(:) = DES_CROSSPRDCT(DIST_NORM(:), FT(:))
-            TOW_PAIR(:,1,CC) = DIST_CL*TOW_tmp(:)
-            TOW_PAIR(:,2,CC) = DIST_CI*TOW_tmp(:)
-         ELSE
-            TOW_tmp(1) = DIST_NORM(1)*FT(2) - DIST_NORM(2)*FT(1)
-            TOW_PAIR(1,1,CC) = DIST_CL*TOW_tmp(1)
-            TOW_PAIR(1,2,CC) = DIST_CI*TOW_tmp(1)
-         ENDIF
+         TOW_tmp(:) = DES_CROSSPRDCT(DIST_NORM(:), FT(:))
+         TOW_PAIR(:,1,CC) = DIST_CL*TOW_tmp(:)
+         TOW_PAIR(:,2,CC) = DIST_CI*TOW_tmp(:)
 
 ! Calculate the total force FC of a collision pair
 ! total contact force ( FC_PAIR may already include cohesive force)
@@ -261,14 +254,9 @@
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
 ! total torque
-      IF(DO_K) THEN
 ! for particle i flip the signs of both norm and ft, so we get the same
          TOW(:,LL) = TOW(:,LL) + TOW_PAIR(:,1,CC)
          TOW(:,I)  = TOW(:,I)  + TOW_PAIR(:,2,CC)
-      ELSE
-         TOW(1,LL) = TOW(1,LL) + TOW_PAIR(1,1,CC)
-         TOW(1,I)  = TOW(1,I)  + TOW_PAIR(1,2,CC)
-      ENDIF
       ENDDO
 
 !$omp section
@@ -390,28 +378,19 @@
 ! New procedure: van der Hoef et al. (2006)
 
 ! calculate the unit vector for axis of rotation
-         if(DO_K)then
-            tmp_ax = des_crossprdct(norm_old,norm)
-            tmp_mag=dot_product(tmp_ax,tmp_ax)
-            if(tmp_mag .gt. zero)then
-               tmp_ax(:)=tmp_ax(:)/sqrt(tmp_mag)
+         tmp_ax = des_crossprdct(norm_old,norm)
+         tmp_mag=dot_product(tmp_ax,tmp_ax)
+         if(tmp_mag .gt. zero)then
+            tmp_ax(:)=tmp_ax(:)/sqrt(tmp_mag)
 ! get the old tangential direction unit vector
-               tang_old = des_crossprdct(tmp_ax,norm_old)
+            tang_old = des_crossprdct(tmp_ax,norm_old)
 ! get the new tangential direction unit vector due to rotation
-               tang_new = des_crossprdct(tmp_ax,norm)
-               sigmat(:)=dot_product(sigmat_old,tmp_ax)*tmp_ax(:) &
-                    + dot_product(sigmat_old,tang_old)*tang_new(:)
-               sigmat(:)=sigmat(:)+overlap_t(:)
-            else
-               sigmat(:)=sigmat_old(:)+overlap_t(:)
-            endif
-         else
-            tang_old(1) =-norm_old(2)
-            tang_old(2) = norm_old(1)
-            tang_new(1) =-norm(2)
-            tang_new(2) = norm(1)
-            sigmat(:)=dot_product(sigmat_old,tang_old)*tang_new(:)
+            tang_new = des_crossprdct(tmp_ax,norm)
+            sigmat(:)=dot_product(sigmat_old,tmp_ax)*tmp_ax(:) &
+                 + dot_product(sigmat_old,tang_old)*tang_new(:)
             sigmat(:)=sigmat(:)+overlap_t(:)
+         else
+            sigmat(:)=sigmat_old(:)+overlap_t(:)
          endif
 
 ! Save the old normal direction

@@ -20,7 +20,6 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      use geometry, only: DO_K
       USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
       USE param1, only: ZERO
       IMPLICIT NONE
@@ -59,15 +58,8 @@
             (2.d0*DIST_LI)
          DIST_CI = DIST_LI - DIST_CL
 
-         IF(DO_K) THEN
-            OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL + &
-               OMEGA_NEW(:,II)*DIST_CI
-         ELSE
-            OMEGA_SUM(1) = OMEGA_NEW(1,L)*DIST_CL + &
-               OMEGA_NEW(1,II)*DIST_CI
-            OMEGA_SUM(2) = ZERO
-            OMEGA_SUM(3) = ZERO
-         ENDIF
+         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL + &
+              OMEGA_NEW(:,II)*DIST_CI
 
 ! calculate the rotational relative velocity
       V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
@@ -84,7 +76,6 @@
 
       RETURN
       END SUBROUTINE CFRELVEL
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
@@ -105,7 +96,6 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
-      use geometry, only: DO_K
       USE param1, only: ZERO
       IMPLICIT NONE
 !-----------------------------------------------
@@ -140,13 +130,7 @@
 
 ! calculate the distance from the particle center to the wall
          DIST_CL = DIST_LI - DES_RADIUS(L)
-         IF(DO_K) THEN
-            OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL
-         ELSE
-            OMEGA_SUM(1) = OMEGA_NEW(1,L)*DIST_CL
-            OMEGA_SUM(2) = ZERO
-            OMEGA_SUM(3) = ZERO
-         ENDIF
+         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL
 
 ! calculate the rotational relative velocity
       V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
