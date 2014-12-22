@@ -45,7 +45,7 @@
 
 ! total torque
       IF(DO_K) THEN
-         CALL DES_CROSSPRDCT(CROSSP, NORM, FT)
+         CROSSP = DES_CROSSPRDCT(NORM, FT)
          TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
       ELSE
          CROSSP(1) = NORM(1)*FT(2) - NORM(2)*FT(1)

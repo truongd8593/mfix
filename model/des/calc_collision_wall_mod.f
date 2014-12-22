@@ -589,7 +589,7 @@
 
 ! Add the torque: The particle radius is used as the moment arm
                IF(DO_K) THEN
-                  CALL DES_CROSSPRDCT(CROSSP, NORMAL, FTAN)
+                  CROSSP = DES_CROSSPRDCT(NORMAL, FTAN)
                   TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
                ELSE
                   CROSSP(1) = NORMAL(1)*FTAN(2) - NORMAL(2)*FTAN(1)
@@ -788,7 +788,7 @@
          OMEGA_SUM(3) = ZERO
       ENDIF
 
-      CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
+      V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
 
 ! total relative velocity
       VRELTRANS(:) =  DES_VEL_NEW(:,LL) + V_ROT(:)

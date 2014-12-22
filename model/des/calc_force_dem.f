@@ -215,7 +215,7 @@
          DIST_CI = DIST_MAG - DIST_CL
 
          IF(DO_K) THEN
-            CALL DES_CROSSPRDCT(TOW_tmp(:), DIST_NORM(:), FT(:))
+            TOW_tmp(:) = DES_CROSSPRDCT(DIST_NORM(:), FT(:))
             TOW_PAIR(:,1,CC) = DIST_CL*TOW_tmp(:)
             TOW_PAIR(:,2,CC) = DIST_CI*TOW_tmp(:)
          ELSE
@@ -391,14 +391,14 @@
 
 ! calculate the unit vector for axis of rotation
          if(DO_K)then
-            call des_crossprdct(tmp_ax,norm_old,norm)
+            tmp_ax = des_crossprdct(norm_old,norm)
             tmp_mag=dot_product(tmp_ax,tmp_ax)
             if(tmp_mag .gt. zero)then
                tmp_ax(:)=tmp_ax(:)/sqrt(tmp_mag)
 ! get the old tangential direction unit vector
-               call des_crossprdct(tang_old,tmp_ax,norm_old)
+               tang_old = des_crossprdct(tmp_ax,norm_old)
 ! get the new tangential direction unit vector due to rotation
-               call des_crossprdct(tang_new,tmp_ax,norm)
+               tang_new = des_crossprdct(tmp_ax,norm)
                sigmat(:)=dot_product(sigmat_old,tmp_ax)*tmp_ax(:) &
                     + dot_product(sigmat_old,tang_old)*tang_new(:)
                sigmat(:)=sigmat(:)+overlap_t(:)

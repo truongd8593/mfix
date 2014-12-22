@@ -21,7 +21,7 @@
 ! Modules
 !-----------------------------------------------
       use geometry, only: DO_K
-      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW
+      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
       USE param1, only: ZERO
       IMPLICIT NONE
 !-----------------------------------------------
@@ -70,7 +70,7 @@
          ENDIF
 
 ! calculate the rotational relative velocity
-      CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
+      V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
 
 ! total relative velocity
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
@@ -104,7 +104,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW
+      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
       use geometry, only: DO_K
       USE param1, only: ZERO
       IMPLICIT NONE
@@ -149,7 +149,7 @@
          ENDIF
 
 ! calculate the rotational relative velocity
-      CALL DES_CROSSPRDCT(V_ROT, OMEGA_SUM, NORM)
+      V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
 
 ! total relative velocity
       VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
