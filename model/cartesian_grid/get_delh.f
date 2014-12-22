@@ -612,6 +612,8 @@
       USE cutcell
       USE functions
 
+      USE mpi_utility
+
       IMPLICIT NONE
 !      CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: X0,Y0,Z0,XREF,YREF,ZREF
@@ -624,75 +626,130 @@
       INTEGER :: N_CUT_CELLS
       INTEGER :: LIST_OF_CUT_CELLS(DIMENSION_3)
 
-!======================================================================
-!  Get a list of cut cells
-!======================================================================
+      INTEGER :: iproc,IERR,IJK_OFFSET
+      INTEGER :: GLOBAL_N_CUT_CELLS 
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: LOCAL_REFP_S,GLOBAL_REFP_S
 
+      IF(MyPE==PE_IO) WRITE(*,*)'COMPUTING WALL DISTANCE...'
+
+! Count the number of cut cells
       N_CUT_CELLS = 0
-
       DO IJK = IJKSTART3, IJKEND3
-
          IF(CUT_CELL_AT(IJK)) THEN
-
-         N_CUT_CELLS = N_CUT_CELLS + 1
-
-         LIST_OF_CUT_CELLS(N_CUT_CELLS) = IJK
-
-
+            N_CUT_CELLS = N_CUT_CELLS + 1
+            LIST_OF_CUT_CELLS(N_CUT_CELLS) = IJK
          ENDIF
-
       ENDDO
 
+! Store cut cell reference points (centroid of cut cell face)      
+      ALLOCATE (LOCAL_REFP_S(N_CUT_CELLS,3))
+      N_CUT_CELLS = 0
+      DO IJK = IJKSTART3, IJKEND3
+         IF(CUT_CELL_AT(IJK)) THEN
+            N_CUT_CELLS = N_CUT_CELLS + 1
+            LOCAL_REFP_S(N_CUT_CELLS,1) = REFP_S(IJK,1)
+            LOCAL_REFP_S(N_CUT_CELLS,2) = REFP_S(IJK,2)
+            LOCAL_REFP_S(N_CUT_CELLS,3) = REFP_S(IJK,3)
+         ENDIF
+      ENDDO
+
+!======================================================================
+! Now, gather the local reference points to head node
+! to get a global list, and broadcast it to each processor.
+!======================================================================
+
+!======================================================================
+! First get the offset and build the rcount and disp arrays.
+! rcount is the number of elements to be gathered.
+! disp is the displacement of the variable size gather,
+! i.e. the cumulative sum at a given procesor.
+!======================================================================
+
+      CALL allgather_1i (N_CUT_CELLS,rcount,IERR)
+
+      IF (myPE == 0) THEN
+         IJK_OFFSET = 0
+      ELSE
+         IJK_OFFSET = 0
+         DO iproc=0,myPE-1
+            IJK_OFFSET = IJK_OFFSET + rcount(iproc)
+         ENDDO
+      ENDIF
+
+      CALL allgather_1i (IJK_OFFSET,disp,IERR)
+
+!======================================================================
+! Get the global number of cut cells and allocate the 
+! global reference point array. Each processor gets its own
+! copy of all cut cell reference points !!
+!======================================================================
+      CALL GLOBAL_ALL_SUM(N_CUT_CELLS, GLOBAL_N_CUT_CELLS,  PE_IO, ierr )
+      ALLOCATE (GLOBAL_REFP_S(GLOBAL_N_CUT_CELLS,3))
+
+!======================================================================
+! For a serial run, the global and local arrays are the same.
+! for a parallel run, first gather on head node, then broadcast to all.
+!======================================================================
+
+      IF(numPEs==1) THEN  ! Serial run
+         GLOBAL_REFP_S =  LOCAL_REFP_S
+      ELSE !Parallel run
+         call gatherv_1d( LOCAL_REFP_S(:,1), N_CUT_CELLS, GLOBAL_REFP_S(:,1), rcount, disp, PE_IO, ierr )
+         call gatherv_1d( LOCAL_REFP_S(:,2), N_CUT_CELLS, GLOBAL_REFP_S(:,2), rcount, disp, PE_IO, ierr )
+         call gatherv_1d( LOCAL_REFP_S(:,3), N_CUT_CELLS, GLOBAL_REFP_S(:,3), rcount, disp, PE_IO, ierr )
+
+         call bcast(GLOBAL_REFP_S(:,1))
+         call bcast(GLOBAL_REFP_S(:,2))
+         call bcast(GLOBAL_REFP_S(:,3))
+      ENDIF
 
 !======================================================================
 !  Brute force: Loop through all scalar cells
 !  compute the distance to each cut cell and take the minimum
 !======================================================================
 
-
       DO IJK = IJKSTART3, IJKEND3
 
+         CALL WRITE_PROGRESS_BAR(IJK,IJKEND3 - IJKSTART3 + 1,'C')
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
-
             DWALL(IJK) = UNDEFINED
 
+            IF(.NOT.BLOCKED_CELL_AT(IJK)) THEN
 !======================================================================
 !  Get coordinates of cell center
 !======================================================================
 
-            CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+               CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
 
-            X0 = X_NODE(0)
-            Y0 = Y_NODE(0)
-            Z0 = Z_NODE(0)
+               X0 = X_NODE(0)
+               Y0 = Y_NODE(0)
+               Z0 = Z_NODE(0)
 
-            DO N = 1,N_CUT_CELLS
+               DO N = 1,GLOBAL_N_CUT_CELLS
 
-               IJK_CUT = LIST_OF_CUT_CELLS(N)
+                  Xref = GLOBAL_REFP_S(N,1)
+                  Yref = GLOBAL_REFP_S(N,2)
+                  Zref = GLOBAL_REFP_S(N,3)
 
-               Xref = REFP_S(IJK_CUT,1)
-               Yref = REFP_S(IJK_CUT,2)
-               Zref = REFP_S(IJK_CUT,3)
+                  D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
 
-               D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+                  DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
 
-               DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
+               ENDDO
 
-            ENDDO
+            ENDIF
 
          ENDIF
 
-      END DO
+      ENDDO
 
+!======================================================================
+!  Deallocate arrays before leaving
+!======================================================================
+      DEALLOCATE (LOCAL_REFP_S)
+      DEALLOCATE (GLOBAL_REFP_S)
       RETURN
 
       END SUBROUTINE GET_DISTANCE_TO_WALL
-
-
-
-
-
-
-
-
