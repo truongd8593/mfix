@@ -109,6 +109,7 @@
 
       if (myPE.ne.PE_IO) return
 
+      MMAX_TOT = MMAX + DES_MMAX
 !
 !  Write Headers for .OUT file
 !
@@ -180,7 +181,7 @@
       ELSE
          WRITE (UNIT_OUT, 1146)
       ENDIF
-      DO M = 1, MMAX
+      DO M = 1, MMAX_TOT
          IF (SPECIES_EQ(M)) THEN
             WRITE (UNIT_OUT, 1147) M
          ELSE
@@ -292,7 +293,6 @@
 !
 !  Particle Section
 !
-      MMAX_TOT = MMAX + DES_MMAX
 
       WRITE (UNIT_OUT, 1400)
       WRITE (UNIT_OUT, 1401) MMAX_TOT
@@ -432,12 +432,12 @@
                IC_T_RG(L)
 !
             WRITE (UNIT_OUT, 1550) IC_U_G(L), IC_V_G(L), IC_W_G(L)
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                WRITE (UNIT_OUT, 1560) M, IC_ROP_S(L,M)
                WRITE (UNIT_OUT, 1561) M, IC_T_S(L,M)
 
             END DO
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                IF (SPECIES_EQ(M)) THEN
                   WRITE (UNIT_OUT, 1563) M
 
@@ -446,7 +446,7 @@
                   END DO
                ENDIF
             END DO
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                IF (IC_GAMA_RS(L,M) /= ZERO) WRITE (UNIT_OUT, 1565) M, &
                   IC_GAMA_RS(L,M), IC_T_RS(L,M)
 !
@@ -460,7 +460,7 @@
       IF (U_G0 /= UNDEFINED) WRITE (UNIT_OUT, 1601) 'U_g (U_g0) = ', U_G0
       IF (V_G0 /= UNDEFINED) WRITE (UNIT_OUT, 1601) 'V_g (V_g0) = ', V_G0
       IF (W_G0 /= UNDEFINED) WRITE (UNIT_OUT, 1601) 'W_g (W_g0) = ', W_G0
-      DO M = 1, MMAX
+      DO M = 1, MMAX_TOT
          IF (U_S0(M) /= UNDEFINED) WRITE (UNIT_OUT, 1602) 'U_s (U_s0[', M, &
             ']) = ', U_S0(M)
          IF (V_S0(M) /= UNDEFINED) WRITE (UNIT_OUT, 1602) 'V_s (V_s0[', M, &
@@ -529,21 +529,24 @@
                   WRITE (UNIT_OUT, 1656) BC_DT_0(L)
                ENDIF
             ENDIF
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                IF (BC_ROP_S(L,M) /= UNDEFINED) THEN
+                  WRITE (UNIT_OUT, "(' ')")
                   WRITE (UNIT_OUT, 1660) M, BC_ROP_S(L,M)
                   WRITE (UNIT_OUT, 1661) M, BC_T_S(L,M)
                ENDIF
             END DO
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                IF (SPECIES_EQ(M) .AND. BC_X_S(L,M,1)/=UNDEFINED) THEN
+                  WRITE (UNIT_OUT, "(' ')")
                   WRITE (UNIT_OUT, 1663) M
                   DO N = 1, NMAX(M)
                      WRITE (UNIT_OUT, 1664) N, BC_X_S(L,M,N)
                   END DO
                ENDIF
             END DO
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
+               WRITE (UNIT_OUT, "(' ')")
                IF (BC_MASSFLOW_S(L,M) /= UNDEFINED) WRITE (UNIT_OUT, 1668) M, &
                   BC_MASSFLOW_S(L,M)
                IF (BC_VOLFLOW_S(L,M) /= UNDEFINED) WRITE (UNIT_OUT, 1669) M, &
@@ -555,7 +558,7 @@
             IF (BC_TYPE(L) == 'PAR_SLIP_WALL') THEN
                WRITE (UNIT_OUT, 1675) BC_HW_G(L), BC_UW_G(L), BC_VW_G(L), &
                   BC_WW_G(L)
-               DO M = 1, MMAX
+               DO M = 1, MMAX_TOT
                   WRITE (UNIT_OUT, 1676) M, BC_HW_S(L,M), BC_UW_S(L,M), BC_VW_S&
                      (L,M), BC_WW_S(L,M)
                END DO
@@ -587,7 +590,7 @@
                IS_K_B(L), IS_K_T(L)
             IF (IS_PC(L,1) /= UNDEFINED) WRITE (UNIT_OUT, 1740) IS_PC(L,1)
             IF (IS_PC(L,2) /= UNDEFINED) WRITE (UNIT_OUT, 1741) IS_PC(L,2)
-            DO M = 1, MMAX
+            DO M = 1, MMAX_TOT
                WRITE (UNIT_OUT, 1742) M, IS_VEL_S(L,M)
             END DO
          ENDIF

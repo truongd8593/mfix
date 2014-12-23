@@ -87,6 +87,8 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
+! The global ID of a particle.
+      use discretelement, only: iGlobal_ID
 ! Flags for classifying particles
       use discretelement, only: PEA
 ! Max number of particles in process
@@ -127,20 +129,20 @@
          K = PIJK(L,3)
 
          IF (I.GT.IEND1 .OR. I.LT.ISTART1) THEN
-            WRITE(ERR_MSG, 1101) trim(iVal(L)),'I',trim(iVal(I)),      &
-               'X',DES_POS_NEW(1,L),'X',DES_VEL_NEW(1,L)
+            WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_ID(L))),'I',        &
+               trim(iVal(I)),'X',DES_POS_NEW(1,L),'X',DES_VEL_NEW(1,L)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
 
          IF(J.GT.JEND1 .OR. J.LT.JSTART1) THEN
-            WRITE(ERR_MSG, 1101) trim(iVal(L)),'J',trim(iVal(J)),      &
-               'Y',DES_POS_NEW(2,L),'Y',DES_VEL_NEW(2,L)
+            WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_id(L))),'J',        &
+               trim(iVal(J)),'Y',DES_POS_NEW(2,L),'Y',DES_VEL_NEW(2,L)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
 
          IF (DO_K .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
-            WRITE(ERR_MSG, 1101) trim(iVal(L)),'K',trim(iVal(K)),      &
-               'Z',DES_POS_NEW(3,L),'Z',DES_VEL_NEW(3,L)
+            WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_ID(L))),'K',        &
+               trim(iVal(K)),'Z',DES_POS_NEW(3,L),'Z',DES_VEL_NEW(3,L)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
       ENDDO
