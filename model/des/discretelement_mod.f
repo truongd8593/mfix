@@ -218,8 +218,13 @@
 ! for detecting particle contacts
       DOUBLE PRECISION FACTOR_RLM
 
+      TYPE pair_type
+         INTEGER, DIMENSION(:,:), POINTER:: p
+      END TYPE pair_type
+
 ! Stores number of neighbors based on neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS
+!$    type(pair_type), DIMENSION(:), ALLOCATABLE :: PAIRS_SMP
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_OLD
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_PAIR
       LOGICAL, DIMENSION(:), ALLOCATABLE :: PAIR_COLLIDES
@@ -234,6 +239,7 @@
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: PAIR_NUM,OLD_PAIR_NUM,PAIR_MAX
+!$    INTEGER, DIMENSION(:), ALLOCATABLE :: PAIR_NUM_SMP,PAIR_MAX_SMP
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation

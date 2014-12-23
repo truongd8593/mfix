@@ -618,13 +618,22 @@
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
-      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
+      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,nn
+!$    integer omp_get_thread_num, omp_get_num_threads, num_threads
 !-----------------------------------------------
 
 ! loop through neighbours and build the contact particles list for particles
 ! present in the system
       lkoffset = dimn-2
 
+!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,   &
+!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
+!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared) &
+!$omp    shared(max_pip,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp           num_threads, des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv)
+
+!$  num_threads = omp_get_num_threads()
+!$omp do
       do lcurpar =1,max_pip
          if (.not. pea(lcurpar,1)) cycle
          if (pea(lcurpar,2)) cycle
@@ -691,13 +700,25 @@
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
+!$  if (.true.) then
+!$                call add_pair_smp(lcurpar, lneigh, 1+omp_get_thread_num())
+!$  else
                   call add_pair(lcurpar, lneigh)
+!$  endif
                endif
             end do
          end do
          end do
          end do
       end do
+!$omp end do
+!$omp end parallel
+
+!$    do NN = 1, num_threads
+!$       do MM = 1, PAIR_NUM_SMP (NN)
+!$          call add_pair(PAIRS_SMP(NN)%p(1,MM), PAIRS_SMP(NN)%p(2,MM))
+!$       enddo
+!$    enddo
 
       end subroutine desgrid_neigh_build
 
