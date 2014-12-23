@@ -36,19 +36,17 @@
       Use fldvar
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
-!
-      REAL     TIME_FOR_RES, TIME_FOUND
+
       LOGICAL  AT_EOF(N_SPX), READ_SPX(N_SPX),SELECT
-      INTEGER  REC_POINTER(N_SPX), REC_POINTER_t(N_SPX)
-      INTEGER  NSTEP_1 , ERROR_CODE
-      CHARACTER(LEN=1)  IANS
-      CHARACTER(LEN=13) LINE
+      INTEGER  REC_POINTER(N_SPX)
+      INTEGER  NSTEP_1
+!      CHARACTER(LEN=1)  IANS
       REAL     TIME_REAL(N_SPX) , tstart
       LOGICAL  ERROR
 !!      double precision :: uavg(20000) , vavg(20000) , wavg(20000)
 !!      double precision :: uavg2(20000) , vavg2(20000) , wavg2(20000)
 !
-      INTEGER L, L_SPX , LL
+      INTEGER L, L_SPX
 !!      integer :: tcount
       integer :: unit_add = 10
 !

@@ -59,8 +59,6 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-! String size
-      INTEGER :: sSize
 ! Loop index
       INTEGER :: L
 ! Search positions
