@@ -422,7 +422,7 @@
       !  calc_H0oR = ICp + Ah(6)
       !endif
 
-      calc_H0oR = ZERO
+      calc_H0oR = 0.0
 
       return
       END FUNCTION calc_H0oR
