@@ -111,6 +111,7 @@
          DIST_MAG = dot_product(DIST,DIST)
 
          FC_PAIR(:,CC) = ZERO
+         TOW_PAIR(:,:,CC) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
