@@ -249,15 +249,13 @@
 
 !$omp section
       DO CC = 1, PAIR_NUM
-         LL = PAIRS(1,CC)
-         I  = PAIRS(2,CC)
-
-         IF(.NOT.PEA(LL,1)) CYCLE
-         IF(.NOT.PEA(I, 1)) CYCLE
-! total torque
-! for particle i flip the signs of both norm and ft, so we get the same
-         TOW(:,LL) = TOW(:,LL) + TOW_PAIR(:,1,CC)
-         TOW(:,I)  = TOW(:,I)  + TOW_PAIR(:,2,CC)
+         IF (PAIR_COLLIDES(CC)) THEN
+! for each particle the signs of norm and ft both flip, so add the same torque
+            LL = PAIRS(1,CC)
+            TOW(:,LL) = TOW(:,LL) + TOW_PAIR(:,1,CC)
+            I  = PAIRS(2,CC)
+            TOW(:,I)  = TOW(:,I)  + TOW_PAIR(:,2,CC)
+         ENDIF
       ENDDO
 
 !$omp section
