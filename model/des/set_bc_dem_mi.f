@@ -207,12 +207,12 @@
 
 ! Over-write the current BC value.
             SELECT CASE(BC_PLANE(BCV))
-            CASE('N'); BC_V_s(BCV,M) =  VEL_TMP(M)
-            CASE('S'); BC_V_s(BCV,M) = -VEL_TMP(M)
-            CASE('E'); BC_U_s(BCV,M) =  VEL_TMP(M)
-            CASE('W'); BC_U_s(BCV,M) = -VEL_TMP(M)
-            CASE('T'); BC_W_s(BCV,M) =  VEL_TMP(M)
-            CASE('B'); BC_W_s(BCV,M) = -VEL_TMP(M)
+            CASE('N'); BC_V_s(BCV,M) =  abs(MAX_VEL)
+            CASE('S'); BC_V_s(BCV,M) = -abs(MAX_VEL)
+            CASE('E'); BC_U_s(BCV,M) =  abs(MAX_VEL)
+            CASE('W'); BC_U_s(BCV,M) = -abs(MAX_VEL)
+            CASE('T'); BC_W_s(BCV,M) =  abs(MAX_VEL)
+            CASE('B'); BC_W_s(BCV,M) = -abs(MAX_VEL)
             END SELECT
 
          ENDDO
@@ -290,8 +290,9 @@
             DEM_MI_TIME(BCV_I) = TIME + dble(PI_FACTOR(BCV_I)) * DTSOLID
 
 
-         WRITE(*,1000) BCV, NPpDT, PI_FACTOR(BCV_I),&
+         WRITE(ERR_MSG,1000) BCV, NPpDT, PI_FACTOR(BCV_I),&
             PI_COUNT(BCV_I), DEM_MI_TIME(BCV_I)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
  1000 FORMAT(2/,2X,'For mass inlet BC: ', I3,/,&
          4X,'No. particles injected per solids time step = ', ES15.8,/,&
