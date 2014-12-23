@@ -491,5 +491,6 @@
 
       LOGICAL :: MINIMIZE_SEND_RECV
 
+      LOGICAL :: DWALL_BRUTE_FORCE
 
       END MODULE cutcell

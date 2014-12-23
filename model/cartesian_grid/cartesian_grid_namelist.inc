@@ -18,7 +18,7 @@
       theta_x, theta_y, theta_z, &
       Radius, Half_angle,n_x,n_y,n_z, &
       Torus_R1,Torus_R2, &
-      UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2, &            
+      UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2, &
       BEND_R1, BEND_R2, BEND_THETA1, BEND_THETA2, &
       C2C_R1, C2C_R2, C2C_Y1,C2C_Y2, &
       t_x, t_y, t_z, &
@@ -50,9 +50,5 @@
       FIRST_DX,LAST_DX,FIRST_DY,LAST_DY,FIRST_DZ,LAST_DZ, &
       MAX_FACETS_PER_CELL_DES, &
       RE_INDEXING, ADJUST_PROC_DOMAIN_SIZE, REPORT_BEST_DOMAIN_SIZE,&
-      NODESI_REPORT,NODESJ_REPORT,NODESK_REPORT,MINIMIZE_SEND_RECV
-
-
-  
-
-
+      NODESI_REPORT,NODESJ_REPORT,NODESK_REPORT,MINIMIZE_SEND_RECV, &
+      DWALL_BRUTE_FORCE

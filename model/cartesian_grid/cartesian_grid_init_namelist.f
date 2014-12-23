@@ -1009,5 +1009,10 @@
       MINIMIZE_SEND_RECV = .TRUE.
 !</keyword>
 
+!<keyword category="cartesian grid" required="false">
+!  <description>Brute force calculation of wall distance.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      DWALL_BRUTE_FORCE = .FALSE.
+!</keyword>
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST
