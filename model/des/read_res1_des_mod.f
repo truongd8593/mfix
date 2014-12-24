@@ -615,7 +615,7 @@
                IF(iPAR_COL(1,LC1) == iROOTBUF(LC2)) THEN
                   DO lPROC = 0, numPEs-1
                      IF(iDISPLS(lPROC) < LC2 .AND. &
-                        LC2 < sum(iGatherCnts(:lPROC))) THEN
+                        LC2 <= sum(iGatherCnts(:lPROC))) THEN
                         cRestartMap(LC1) = lPROC
                         lCOL_CNT(lPROC) = lCOL_CNT(lPROC) + 1
                         CYCLE LC1_LP
