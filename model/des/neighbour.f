@@ -41,15 +41,6 @@ INTEGER :: OMP_GET_NUM_THREADS
       old_pair_num = pair_num
       pair_num = 0
 
-!$omp  parallel
-!$omp single
-!$    III = omp_get_num_threads()
-!$    do II = 1, III
-!$      PAIR_NUM_SMP (II) = 0
-!$    enddo
-!$omp end single
-!$omp  end parallel
-
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
       ELSEIF (DES_NEIGHBOR_SEARCH.EQ.4) THEN

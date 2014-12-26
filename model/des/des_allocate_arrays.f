@@ -134,20 +134,6 @@
       PAIR_NUM = 0
       PAIR_MAX = 1024
 
-!$omp  parallel
-!$omp single
-!$    num_threads = omp_get_num_threads()
-!$    Allocate(  PAIR_NUM_SMP (num_threads) )
-!$    Allocate(  PAIR_MAX_SMP (num_threads) )
-!$    Allocate(  PAIRS_SMP (num_threads) )
-!$    do IJK = 1, num_threads
-!$      PAIR_NUM_SMP (IJK) = 0
-!$      PAIR_MAX_SMP (IJK) = PAIR_MAX
-!$      Allocate(  PAIRS_SMP(IJK)%p(2,PAIR_MAX_SMP(IJK)) )
-!$    enddo
-!$omp end single
-!$omp  end parallel
-
       Allocate(  PAIRS (2,PAIR_MAX) )
       Allocate(  PAIRS_OLD (2,PAIR_MAX) )
       Allocate(  PAIR_COLLIDES (PAIR_MAX) )
@@ -501,46 +487,6 @@
 
       RETURN
       END SUBROUTINE add_pair
-
-!``````````````````````````````````````````````````````````````````````!
-! Subroutine: ADD_PAIR_SMP                                             !
-!                                                                      !
-! Purpose: Adds a neighbor pair to the pairs array.                    !
-!                                                                      !
-!``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE add_pair_smp(ii,jj,thread_num)
-      USE discretelement
-      USE geometry
-      IMPLICIT NONE
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-      INTEGER, INTENT(IN) :: ii,jj,thread_num
-      INTEGER :: lSIZE2
-
-!$      pair_num_smp(thread_num) = pair_num_smp(thread_num) + 1
-
-! Reallocate to double the size of the arrays if needed.
-!$      IF(PAIR_NUM_SMP(thread_num) > PAIR_MAX_SMP(thread_num)) THEN
-!$         PAIR_MAX_SMP(thread_num) = PAIR_MAX_SMP(thread_num)*2
-
-!$         lSIZE2 = size(pairs_smp(thread_num)%p,2)
-!$         allocate(int_tmp(2,lSIZE2))
-!$         int_tmp(:,1:lSIZE2) = pairs_smp(thread_num)%p(:,1:lSIZE2)
-
-!$         deallocate(pairs_smp(thread_num)%p)
-!$         allocate(pairs_smp(thread_num)%p(2,PAIR_MAX_SMP(thread_num)))
-
-!$         pairs_smp(thread_num)%p(:,1:lSIZE2) = int_tmp(:,1:lSIZE2)
-
-!$         deallocate(int_tmp)
-
-!$      ENDIF
-
-!$      pairs_smp(thread_num)%p(1,pair_num_smp(thread_num)) = ii
-!$      pairs_smp(thread_num)%p(2,pair_num_smp(thread_num)) = jj
-
-      RETURN
-      END SUBROUTINE add_pair_smp
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: PAIR_GROW                                                !

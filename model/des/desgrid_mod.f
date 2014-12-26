@@ -618,7 +618,10 @@
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
-      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,nn
+      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,lSIZE2
+!$      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
+!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP
+!$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
 !$    integer omp_get_thread_num, omp_get_num_threads, num_threads
 !-----------------------------------------------
 
@@ -628,11 +631,14 @@
 
 !$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,   &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
-!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared) &
+!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, lSIZE2, int_tmp) &
 !$omp    shared(max_pip,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
 !$omp           num_threads, des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv)
 
-!$  num_threads = omp_get_num_threads()
+!$      PAIR_NUM_SMP = 0
+!$      PAIR_MAX_SMP = 1024
+!$      Allocate(  PAIRS_SMP(2,PAIR_MAX_SMP) )
+
 !$omp do
       do lcurpar =1,max_pip
          if (.not. pea(lcurpar,1)) cycle
@@ -701,7 +707,23 @@
                lneighcnt = lneighcnt + 1
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
 !$  if (.true.) then
-!$                call add_pair_smp(lcurpar, lneigh, 1+omp_get_thread_num())
+
+!$      pair_num_smp = pair_num_smp + 1
+! Reallocate to double the size of the arrays if needed.
+!$      IF(PAIR_NUM_SMP > PAIR_MAX_SMP) THEN
+!$         PAIR_MAX_SMP = 2*PAIR_MAX_SMP
+!$         lSIZE2 = size(pairs_smp,2)
+!$         allocate(int_tmp(2,lSIZE2))
+!$         int_tmp(:,1:lSIZE2) = pairs_smp(:,1:lSIZE2)
+!$         deallocate(pairs_smp)
+!$         allocate(pairs_smp(2,PAIR_MAX_SMP))
+!$         pairs_smp(:,1:lSIZE2) = int_tmp(:,1:lSIZE2)
+!$         deallocate(int_tmp)
+!$      ENDIF
+
+!$      pairs_smp(1,pair_num_smp) = lcurpar
+!$      pairs_smp(2,pair_num_smp) = lneigh
+
 !$  else
                   call add_pair(lcurpar, lneigh)
 !$  endif
@@ -712,13 +734,14 @@
          end do
       end do
 !$omp end do
-!$omp end parallel
 
-!$    do NN = 1, num_threads
-!$       do MM = 1, PAIR_NUM_SMP (NN)
-!$          call add_pair(PAIRS_SMP(NN)%p(1,MM), PAIRS_SMP(NN)%p(2,MM))
-!$       enddo
-!$    enddo
+!$omp critical
+!$     do MM = 1, PAIR_NUM_SMP
+!$        call add_pair(PAIRS_SMP(1,MM), PAIRS_SMP(2,MM))
+!$     enddo
+!$omp end critical
+
+!$omp end parallel
 
       end subroutine desgrid_neigh_build
 
