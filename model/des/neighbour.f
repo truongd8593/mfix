@@ -51,8 +51,7 @@ INTEGER :: OMP_GET_NUM_THREADS
       iii = pairs_old(1,dd)
       jjj = pairs_old(2,dd)
 
-!$omp parallel default(none) private(cc,ii,jj,iii,jjj,dd,ddd) &
-!$             shared(pairs,pairs_old,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair,pv_pair_old,pair_num,old_pair_num)
+!$omp parallel default(none) private (cc,ii,jj,iii,jjj,ddd) shared(pair_num,pairs,pairs_old,pv_pair,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair_old,old_pair_num) firstprivate(dd)
 !$omp do
       do cc = 1, pair_num
          ii = pairs(1,cc)
