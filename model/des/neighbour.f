@@ -51,6 +51,9 @@ INTEGER :: OMP_GET_NUM_THREADS
       iii = pairs_old(1,dd)
       jjj = pairs_old(2,dd)
 
+!$omp parallel default(none) private(cc,ii,jj,iii,jjj,dd,ddd) &
+!$             shared(pairs,pairs_old,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair,pv_pair_old,pair_num,old_pair_num)
+!$omp do
       do cc = 1, pair_num
          ii = pairs(1,cc)
          jj = pairs(2,cc)
@@ -82,6 +85,8 @@ INTEGER :: OMP_GET_NUM_THREADS
          endif
 
       enddo
+!$omp end do
+!$omp end parallel
 
 ! resetting do_nsearch to false here since neighbor search will have
 ! just been invoked
