@@ -33,10 +33,14 @@ INTEGER :: OMP_GET_NUM_THREADS
 ! Reset PPOS and NEIGHBOURS back to initialized values
       PPOS(:,:) = DES_POS_NEW(:,:)
 
-      pairs_old = pairs
-      pv_pair_old = pv_pair
-      pfn_pair_old = pfn_pair
-      pft_pair_old = pft_pair
+!$omp parallel do default(none) private(cc) shared(pair_num,pairs_old,pairs,pv_pair_old,pv_pair,pfn_pair_old,pfn_pair,pft_pair_old,pft_pair)
+      do cc= 1, pair_num
+         pairs_old(:,cc) = pairs(:,cc)
+         pv_pair_old(cc) = pv_pair(cc)
+         pfn_pair_old(:,cc) = pfn_pair(:,cc)
+         pft_pair_old(:,cc) = pft_pair(:,cc)
+      end do
+!$omp end parallel do
 
       old_pair_num = pair_num
       pair_num = 0
@@ -51,8 +55,7 @@ INTEGER :: OMP_GET_NUM_THREADS
       iii = pairs_old(1,dd)
       jjj = pairs_old(2,dd)
 
-!$omp parallel default(none) private (cc,ii,jj,iii,jjj,ddd) shared(pair_num,pairs,pairs_old,pv_pair,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair_old,old_pair_num) firstprivate(dd)
-!$omp do
+!$omp parallel do default(none) private(cc,ii,jj,iii,jjj,ddd) shared(pair_num,pairs,pairs_old,pv_pair,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair_old,old_pair_num) firstprivate(dd)
       do cc = 1, pair_num
          ii = pairs(1,cc)
          jj = pairs(2,cc)
@@ -84,8 +87,7 @@ INTEGER :: OMP_GET_NUM_THREADS
          endif
 
       enddo
-!$omp end do
-!$omp end parallel
+!$omp end parallel do
 
 ! resetting do_nsearch to false here since neighbor search will have
 ! just been invoked
