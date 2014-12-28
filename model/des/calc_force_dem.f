@@ -235,28 +235,44 @@
       ENDDO
 !$omp end do
 
-!$omp sections
-
-!$omp section
+!$omp do
       DO CC = 1, PAIR_NUM
          IF (PAIR_COLLIDES(CC)) THEN
             LL = PAIRS(1,CC)
-            FC(:,LL) = FC(:,LL) + FC_PAIR(:,CC)
-            I  = PAIRS(2,CC)
-            FC(:,I) = FC(:,I) - FC_PAIR(:,CC)
-         ENDIF
-      ENDDO
+            !$omp atomic
+            FC(1,LL) = FC(1,LL) + FC_PAIR(1,CC)
+            !$omp atomic
+            FC(2,LL) = FC(2,LL) + FC_PAIR(2,CC)
+            !$omp atomic
+            FC(3,LL) = FC(3,LL) + FC_PAIR(3,CC)
 
-!$omp section
-      DO CC = 1, PAIR_NUM
-         IF (PAIR_COLLIDES(CC)) THEN
+            I  = PAIRS(2,CC)
+            !$omp atomic
+            FC(1,I) = FC(1,I) - FC_PAIR(1,CC)
+            !$omp atomic
+            FC(2,I) = FC(2,I) - FC_PAIR(2,CC)
+            !$omp atomic
+            FC(3,I) = FC(3,I) - FC_PAIR(3,CC)
+
 ! for each particle the signs of norm and ft both flip, so add the same torque
-            LL = PAIRS(1,CC)
-            TOW(:,LL) = TOW(:,LL) + TOW_PAIR(:,1,CC)
-            I  = PAIRS(2,CC)
-            TOW(:,I)  = TOW(:,I)  + TOW_PAIR(:,2,CC)
+            !$omp atomic
+            TOW(1,LL) = TOW(1,LL) + TOW_PAIR(1,1,CC)
+            !$omp atomic
+            TOW(2,LL) = TOW(2,LL) + TOW_PAIR(2,1,CC)
+            !$omp atomic
+            TOW(3,LL) = TOW(3,LL) + TOW_PAIR(3,1,CC)
+
+            !$omp atomic
+            TOW(1,I)  = TOW(1,I)  + TOW_PAIR(1,2,CC)
+            !$omp atomic
+            TOW(2,I)  = TOW(2,I)  + TOW_PAIR(2,2,CC)
+            !$omp atomic
+            TOW(3,I)  = TOW(3,I)  + TOW_PAIR(3,2,CC)
          ENDIF
       ENDDO
+!$omp end do
+
+!$omp sections
 
 !$omp section
 ! just for post-processing mag. of cohesive forces on each particle
