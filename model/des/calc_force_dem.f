@@ -111,7 +111,6 @@
          DIST_MAG = dot_product(DIST,DIST)
 
          FC_PAIR(:,CC) = ZERO
-         TOW_PAIR(:,:,CC) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -129,6 +128,7 @@
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
                FC_PAIR(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+               TOW_PAIR(:,:,CC) = ZERO
                PAIR_COLLIDES(CC) = .TRUE.
             ENDIF
          ENDIF
