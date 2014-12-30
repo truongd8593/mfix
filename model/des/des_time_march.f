@@ -23,7 +23,7 @@
       use des_thermo, only: DES_ENERGY_SOURCE
       use run, only: TIME, TSTOP, DT
 
-      use desmpi, only: DES_PAR_EXCHANGE
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
 
       use discretelement
       use error_manager

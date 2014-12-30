@@ -6,6 +6,9 @@
 
       use cdist, only: bDist_IO
 
+      use mpi_comm_des, only: DESMPI_GATHERV
+      use mpi_comm_des, only: DESMPI_SCATTERV
+
       use error_manager
 
       IMPLICIT NONE
@@ -158,6 +161,8 @@
 ! Purpose: Close the DES RES file.                                     !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE FINL_READ_RES_DES
+
+      use mpi_init_des, only: des_restart_neigh
 
       IF(bDIST_IO .OR. myPE == PE_IO) close(RDES_UNIT)
 

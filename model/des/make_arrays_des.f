@@ -23,7 +23,12 @@
       USE param1
       USE run
       USE stl
-      use desmpi, only: DES_PAR_EXCHANGE, MPPIC, DESMPI_INIT
+      use mfix_pic, only:  MPPIC
+
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use mpi_init_des, only: DESMPI_INIT
+
+
 !     use stl_preproc_des
 
       IMPLICIT NONE

@@ -14,6 +14,8 @@
       use compar
       use desmpi
       use cdist
+
+      use mpi_init_des, only: des_scatter_particle
       use mpi_utility
       use geometry, only: NO_K
 

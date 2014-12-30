@@ -14,7 +14,7 @@
       USE discretelement, only: DES_POS_NEW, DES_RADIUS, RO_SOL
       USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
       USE discretelement, only: MAX_PIP
-      use desmpi, only: des_par_exchange
+      use mpi_funs_des, only: des_par_exchange
 
       USE run, only: RUN_TYPE
       USE run, only: ANY_SPECIES_EQ

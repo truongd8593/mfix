@@ -6,6 +6,9 @@
 
       use cdist, only: bDist_IO
 
+      use mpi_comm_des, only: DES_GATHER
+      use mpi_comm_des, only: DESMPI_GATHERV
+
       IMPLICIT NONE
 
       PRIVATE

@@ -219,6 +219,7 @@
       USE compar
       USE cdist
       USE desmpi
+      USE mpi_comm_des
       USE mpi_utility
       USE functions
       IMPLICIT NONE

@@ -235,6 +235,8 @@
       USE cutcell
       USE mfix_pic
       USE functions
+      use mpi_node_des, only: des_addnodevalues
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables

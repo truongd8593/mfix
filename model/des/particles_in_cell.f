@@ -25,13 +25,15 @@
       USE sendrecv
       USE discretelement
       use desgrid
-      use desmpi
+      use mpi_funs_des
       USE cutcell
       USE mfix_pic
       USE des_rxns
       USE run
       USE error_manager
       USE functions
+
+
 
 ! Number of particles in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
@@ -226,7 +228,7 @@
       USE discretelement, only: DES_POS_NEW
       USE discretelement, only: MAX_PIP
       USE discretelement, only: XE, YN, ZT
-      use desmpi, only: des_par_exchange
+      use mpi_funs_des, only: des_par_exchange
 
       USE run, only: RUN_TYPE
       USE run, only: ANY_SPECIES_EQ

@@ -32,7 +32,6 @@
 
       use stl_preproc_des, only: DES_STL_PREPROCESSING
       use desgrid, only: DESGRID_INIT
-      use desmpi, only: DESMPI_INIT
 
       USE error_manager
 

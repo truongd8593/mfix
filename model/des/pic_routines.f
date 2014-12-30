@@ -26,7 +26,7 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
-      use desmpi, only: DES_PAR_EXCHANGE
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
 
       USE fun_avg
       USE functions

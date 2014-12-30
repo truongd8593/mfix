@@ -24,6 +24,9 @@
       USE cutcell
       USE mfix_pic
       USE mpi_utility
+
+
+      use mpi_node_des, only: des_addnodevalues_mean_fields
       use particle_filter, only: DES_REPORT_MASS_INTERP
 
       IMPLICIT NONE

@@ -1,9 +1,10 @@
       MODULE vtp
 
       use mpi_utility
-      use desmpi
       use cdist
 
+      use desmpi
+      use mpi_comm_des
       use error_manager
 
 

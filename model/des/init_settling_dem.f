@@ -20,7 +20,7 @@
 !      USE des_thermo
 !      USE des_stl_functions
 
-      use desmpi, only: DES_PAR_EXCHANGE
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
       use error_manager
 
       IMPLICIT NONE
