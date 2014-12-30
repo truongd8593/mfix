@@ -13,42 +13,8 @@
 !                    neighbour list.
 
 ! Contains following subroutines:
-!    des_par_exchange
-!    desmpi_sendrecv_wait, desmpi_gatherv, desmpi_scatterv
-!    desmpi_check_sendrecvbuf,
-!    desmpi_pack_ghostpar, desmpi_unpack_ghostpar, desmpi_cleanup,
-!    desmpi_pack_parcross, desmpi_unpack_parcross,
-!    des_addnodevalues, des_addnodevalues2,
-!    des_gather_d,l,i
-
-!    des_restart_neigh, redim_par, des_dbgmpi
-! Contains following functions:
-!    locate_par, exten_locate_par
 !------------------------------------------------------------------------
       module desmpi
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use parallel_mpi
-      use mpi_utility
-      use discretelement
-      use desgrid
-      use compar
-      use physprop
-      use sendrecv
-      use des_bc
-      use desmpi_wrapper
-      use sendrecvnode
-      use mfix_pic
-      use des_thermo
-      use run, only: ENERGY_EQ,ANY_SPECIES_EQ
-      use param, only: DIMENSION_N_s
-      use des_rxns
-
-
-
-!-----------------------------------------------
 
 ! flags and constants for interfaces
       integer,dimension(:),allocatable   :: ineighproc
@@ -94,6 +60,9 @@
 !
 !------------------------------------------------------------------------
       subroutine redim_par(pmaxpip)
+
+      use desmpi_wrapper, only: des_mpi_stop
+
 !-----------------------------------------------
 ! dummy variables
 !-----------------------------------------------
@@ -128,6 +97,22 @@
 !                    7 - neighinfo
 !------------------------------------------------------------------------
       subroutine des_dbgmpi(ptype)
+
+      use discretelement, only: DES_POS_NEW
+      use discretelement, only: PEA
+      use discretelement, only: iGLOBAL_ID
+
+      use discretelement, only: S_TIME
+      use discretelement, only: DIMN
+      use discretelement, only: DO_NSEARCH
+      use discretelement, only: iGHOST_CNT
+      use discretelement, only: MAX_PIP, PIP
+
+      use geometry, only: NO_K
+      use compar, only: myPE
+
+      use desgrid, only: dg_funijk, iofpos, jofpos
+
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------

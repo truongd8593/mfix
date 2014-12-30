@@ -29,6 +29,11 @@
       use mpi_node_des, only: des_addnodevalues_mean_fields
       use particle_filter, only: DES_REPORT_MASS_INTERP
 
+
+      use functions, only: FLUID_AT
+      use functions, only: FUNIJK
+      use functions, only: IS_ON_myPE_wobnd
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables

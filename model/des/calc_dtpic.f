@@ -20,6 +20,9 @@
       USE des_thermo
       USE des_stl_functions
 
+      use mfix_pic, only: CFL_PIC, DTPIC_CFL, DTPIC_TAUP
+      use mfix_pic, only: DTPIC_MAX
+
       use error_manager
 
       IMPLICIT NONE

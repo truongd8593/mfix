@@ -93,7 +93,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE INIT_WRITE_RES_DES(BASE, lVERSION, lNEXT_REC)
 
-
+      use compar, only: numPEs
       use mpi_utility, only: GLOBAL_SUM
 
       use desmpi, only: iProcBuf, dProcBuf
@@ -104,7 +104,7 @@
       use desmpi, only: iDisPls
 
       use discretelement, only: PIP, iGHOST_CNT
-
+      use discretelement, only: PAIR_NUM
       use machine, only: OPEN_N1
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
@@ -374,7 +374,9 @@
       SUBROUTINE WRITE_RES_PARRAY_1I(lNEXT_REC, INPUT_I, pLOC2GLB)
 
       use desmpi, only: iProcBuf
+      use discretelement, only: MAX_PIP, PIP
       use discretelement, only: PEA
+      use discretelement, only: iGLOBAL_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)
@@ -435,6 +437,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE WRITE_RES_PARRAY_1D(lNEXT_REC, INPUT_D)
 
+      use discretelement, only: MAX_PIP, PIP
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
 
@@ -484,6 +487,7 @@
       SUBROUTINE WRITE_RES_PARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
+      use discretelement, only: MAX_PIP, PIP
       use discretelement, only: PEA
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -529,6 +533,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
+      use discretelement, only: iGlobal_ID 
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)

@@ -80,7 +80,15 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE INIT_READ_RES_DES(BASE, lVERSION, lNEXT_REC)
 
+      use discretelement, only: MAX_PIP, PIP
+      use discretelement, only: iGHOST_CNT
+      use discretelement, only: PAIR_NUM, PAIR_MAX
+
+      use compar, only: numPEs
       use machine, only: OPEN_N1
+      use geometry, only: NO_K
+
+      implicit none
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
       DOUBLE PRECISION, INTENT(OUT) :: lVERSION
@@ -89,7 +97,6 @@
       CHARACTER(len=32) :: lFNAME
 
       INTEGER :: lDIMN
-
 
       lDIMN = merge(2,3,NO_K)
 
@@ -197,6 +204,12 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_POS(lNEXT_REC)
 
+      use discretelement, only: PIP
+      use discretelement, only: DES_POS_NEW
+      use geometry, only: NO_K
+      use compar, only: numPEs
+
+      use mpi_utility, only: GLOBAL_SUM
       USE in_binary_512
 
       implicit none
@@ -274,6 +287,20 @@
 ! they live on and count the number of particles on each process.      !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE MAP_pARRAY_TO_PROC(lPAR_CNT)
+
+      use discretelement, only: PIP, MAX_PIP
+      use discretelement, only: XE, YN, ZT
+      use geometry, only: IMIN1, IMAX1
+      use geometry, only: JMIN1, JMAX1
+      use geometry, only: KMIN1, KMAX1
+      use geometry, only: NO_K, DO_K
+      use compar, only: numPEs
+      use compar, only: ISTART1_ALL, IEND1_ALL
+      use compar, only: JSTART1_ALL, JEND1_ALL
+      use compar, only: KSTART1_ALL, KEND1_ALL
+
+      use mpi_utility, only: BCAST
+      use mpi_utility, only: GLOBAL_ALL_SUM
 
       implicit none
 
@@ -417,6 +444,13 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE SCATTER_PAR_POS(lPAR_CNT)
 
+      use compar, only: numPEs
+
+      use discretelement, only: DES_POS_NEW
+      use discretelement, only: PEA
+      use discretelement, only: PIP
+      use geometry, only: NO_K
+
       implicit none
 
 ! Number of particles on each process.
@@ -489,7 +523,11 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_COL(lNEXT_REC)
 
-      USE in_binary_512i
+      use discretelement, only: PAIRS, PAIR_NUM
+      use compar, only: numPEs
+
+      use mpi_utility, only: GLOBAL_SUM
+      use in_binary_512i
 
       implicit none
 
@@ -560,6 +598,14 @@
 ! they live on and count the number of particles on each process.      !
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE MAP_cARRAY_TO_PROC(lCOL_CNT)
+
+      use compar, only: numPEs, myPE
+      use discretelement, only: iGLOBAL_ID 
+      use discretelement, only: PIP 
+      use discretelement, only: PAIR_MAX, PAIR_NUM
+
+      use mpi_utility, only: BCAST
+      use mpi_utility, only: GLOBAL_SUM
 
       implicit none
 
@@ -678,6 +724,9 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE SCATTER_PAR_COL(lCOL_CNT)
 
+      use compar, only: numPEs
+      use discretelement, only: PAIRS, PAIR_NUM 
+
       implicit none
 
 ! Number of particles on each process.
@@ -764,6 +813,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_0I(lNEXT_REC, INPUT_I)
 
+      use mpi_utility, only: BCAST
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -790,6 +841,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1I(lNEXT_REC, INPUT_I)
 
+      use mpi_utility, only: BCAST
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -821,6 +873,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_0D(lNEXT_REC, INPUT_D)
 
+      use mpi_utility, only: BCAST
+
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(OUT) :: INPUT_D
 
@@ -843,6 +897,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1D(lNEXT_REC, INPUT_D)
 
+      use mpi_utility, only: BCAST
       USE in_binary_512
 
       IMPLICIT NONE
@@ -874,6 +929,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_0L(lNEXT_REC, OUTPUT_L)
 
+      use mpi_utility, only: BCAST
+
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(OUT) :: OUTPUT_L
 
@@ -902,6 +959,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_DES_1L(lNEXT_REC, INPUT_L)
 
+      use mpi_utility, only: BCAST
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -945,8 +1003,12 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_pARRAY_1I(lNEXT_REC, OUTPUT_I)
 
+      use discretelement, only: PIP
+
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+
+      use compar, only: numPEs
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -1013,8 +1075,10 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_pARRAY_1D(lNEXT_REC, OUTPUT_D)
 
+      use discretelement, only: PIP
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
+      use compar, only: numPEs
       USE in_binary_512
 
       IMPLICIT NONE
@@ -1077,8 +1141,10 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_pARRAY_1L(lNEXT_REC, OUTPUT_L)
 
+      use discretelement, only: PIP
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      use compar, only: numPEs
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -1156,6 +1222,8 @@
 
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
+      use compar, only: numPEs
+      use discretelement, only: PAIR_NUM
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -1218,6 +1286,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_cARRAY_1D(lNEXT_REC, OUTPUT_D)
 
+      use compar, only: numPEs
+      use discretelement, only: PAIR_NUM
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
       USE in_binary_512
@@ -1283,6 +1353,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_RES_cARRAY_1L(lNEXT_REC, OUTPUT_L)
 
+      use compar, only: numPEs
+      use discretelement, only: PAIR_NUM
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
       USE in_binary_512i

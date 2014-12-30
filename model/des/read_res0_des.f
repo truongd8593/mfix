@@ -18,6 +18,8 @@
       use cdist
       use mpi_utility
 
+      use mfix_pic, only: MPPIC, DES_STAT_WT
+
       use read_res1_des
       use error_manager
 
