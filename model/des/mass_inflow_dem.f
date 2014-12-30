@@ -10,7 +10,6 @@
       SUBROUTINE MASS_INFLOW_DEM
 
       use discretelement
-
       use bc
       use des_bc
 
@@ -98,8 +97,8 @@
       ENDDO
 
 
-     IF(CHECK_FOR_ERRORS) THEN
-     ENDIF
+      IF(CHECK_FOR_ERRORS) THEN
+      ENDIF
 
  1000 FORMAT(/1X,70('*')//,' From: DES_MASS_INLET -',/&
          ' Message: Maximum number of particles in the system MAX_PIS',&
@@ -131,6 +130,7 @@
       USE compar
       USE bc
       USE des_bc
+      USE desgrid
       USE discretelement
       USE funits
       USE geometry
@@ -164,6 +164,7 @@
       INTEGER :: OCCUPANTS
 
       INTEGER :: RAND_I
+      INTEGER :: lI, lJ, lK
 
       DOUBLE PRECISION :: WINDOW
 
@@ -177,11 +178,6 @@
 !         call bcast(lpar_pos)
 !         call bcast(m)
 !      ENDIF
-
-      lOWNS = (myPE == DEM_MI(lBCV_I)%OWNER(VACANCY))
-
-! Only the rank that owns the new particle needs to continue.
-      IF(.NOT.lOWNS) RETURN
 
 ! Obtain a random numbers from (0,1]
       CALL RANDOM_NUMBER(RAND1)
@@ -232,6 +228,21 @@
 
 ! Easier and cleaner to clear out the third component at the end.
       IF(NO_K) lPOS(3) = ZERO
+
+! This is a crude fix for des inlets when running in dmp mode. The
+! current 'OWNER' information is not 100% correct because a inlet
+! cell can overlap DMP partitions.
+      lI = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(LPOS(1))))
+      lJ = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(LPOS(2))))
+      IF(NO_K) THEN
+         lK = 1
+      ELSE
+         lK = MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(LPOS(3))))
+      END IF
+
+      lOWNS = ((DG_ISTART <= lI) .AND. (lI <= DG_IEND) .AND.           &
+         (DG_JSTART <= lJ) .AND. (lJ <= DG_JEND) .AND.                 &
+         (DG_KSTART <= lK) .AND. (lK <= DG_KEND))
 
       RETURN
       END SUBROUTINE SEED_NEW_PARTICLE

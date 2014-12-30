@@ -397,7 +397,6 @@
 
 ! Evaluate the drag force acting on the particle.
          DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
-! Include gas pressure and gas-solids drag
 
 ! Calculate the force on the fluid.
          lFORCE = F_GP(NP)

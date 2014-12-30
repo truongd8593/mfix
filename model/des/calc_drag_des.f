@@ -140,8 +140,6 @@
       CALL CALC_INTERP_WEIGHTS
 ! Calculate mean fields (EPg).
       CALL COMP_MEAN_FIELDS
-! Calculate the pressure graident.
-      CALL CALC_PG_GRAD
 
 ! Calculate gas-solids drag force on particle
       IF(DES_CONTINUUM_COUPLED) THEN

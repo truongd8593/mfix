@@ -768,6 +768,43 @@
       VTU_DIR = '.'
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>West location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_X_W = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>East location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_X_E = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>South location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_Y_S = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>North location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_Y_N = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Bottom location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_Z_B = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>West location of VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+         VTK_Z_T = UNDEFINED
+!</keyword>
+
+
 !<keyword category="cartesian grid" required="false">
 !  <description>Option for pressure gradient computation in cut cells.</description>
 !  <valid value="1" note="use maximum of (east/west), (north/south), and (top/bottom) pairs of velocity cells."/>
@@ -972,5 +1009,10 @@
       MINIMIZE_SEND_RECV = .TRUE.
 !</keyword>
 
+!<keyword category="cartesian grid" required="false">
+!  <description>Brute force calculation of wall distance.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      DWALL_BRUTE_FORCE = .FALSE.
+!</keyword>
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST

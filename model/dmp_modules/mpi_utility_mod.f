@@ -164,6 +164,30 @@
         return
         end subroutine allgather_1i
 
+        subroutine allgather_1d( lbuf, gbuf, idebug )
+        double precision, intent(in) :: lbuf
+        double precision, intent(out), dimension(:) :: gbuf
+        integer, optional, intent(in) ::  idebug
+        integer :: sendtype,recvtype,sendcnt,recvcnt,ierr,lidebug,mpierr
+
+        if (.not. present(idebug)) then
+           lidebug = 0
+        else
+           lidebug = idebug
+        endif
+
+        recvtype = MPI_DOUBLE_PRECISION
+        sendtype = MPI_DOUBLE_PRECISION
+
+        sendcnt = 1
+        recvcnt = sendcnt
+
+        CALL MPI_ALLGATHER(lbuf,sendcnt,sendtype,  &
+                           gbuf,recvcnt,recvtype,MPI_COMM_WORLD, IERR)
+
+        return
+        end subroutine allgather_1d
+
         subroutine gatherv_1i( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
         integer, intent(in), dimension(:) :: lbuf
         integer, intent(in), dimension(:) :: rcount

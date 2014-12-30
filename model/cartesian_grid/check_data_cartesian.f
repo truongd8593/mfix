@@ -42,6 +42,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER :: G,I,J,IJK,Q,BCV
+      INTEGER :: L,N_VTK_REGIONS
       Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
@@ -480,6 +481,33 @@
                   CALL MFIX_EXIT(MYPE)
                ENDIF
 
+            CASE ('Y_UCOIL2_EXT')      ! UCOIL - Hard coded in define_quadrics.f
+               IF((UCOIL_R1(Q) <= ZERO).OR.(UCOIL_R1(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' HAS INVALID RADIUS R1:',UCOIL_R1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+               IF((UCOIL_R2(Q) <= ZERO).OR.(UCOIL_R2(Q)==UNDEFINED)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' HAS INVALID RADIUS R2:',UCOIL_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(UCOIL_Y2(Q)<UCOIL_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: Y_UCOIL2_EXT:', Q, &
+                        ' COIL_Y2 < COIL_Y1: Y2,Y1=',UCOIL_Y2(Q),UCOIL_Y1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
             CASE ('XY_BEND_INT')       ! Bend  - Hard coded in define_quadrics.f
                IF((BEND_R1(Q) <= ZERO).OR.(BEND_R1(Q)==UNDEFINED)) THEN
                   IF(MyPE == PE_IO) THEN
@@ -763,16 +791,16 @@
       ENDIF
 
 
-      IF(VTK_DT<ZERO) THEN
+      IF(VTK_DT(1)<ZERO) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT(1)
             WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 0.1).'
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
          CALL MFIX_EXIT(MYPE)
       ENDIF
 
-      IF(FRAME<-1) THEN
+      IF(FRAME(1)<-1) THEN
          IF(MyPE == PE_IO) THEN
             WRITE(*,*)'INPUT ERROR: INALID VALUE OF FRAME =', FRAME
             WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
@@ -873,6 +901,37 @@
          ENDIF
       ENDIF
 
+
+! Check VTK regions
+      N_VTK_REGIONS = 0
+
+      DO L = 1, DIMENSION_VTK
+         VTK_DEFINED(L) = .FALSE.
+         IF (VTK_X_W(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_X_E(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_S(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_N(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_B(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_T(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+
+         IF(.NOT.VTK_DEFINED(L)) CYCLE
+
+         N_VTK_REGIONS =  N_VTK_REGIONS + 1
+
+      ENDDO   ! end loop over (l = 1,dimension_vtk)
+
+! There must be at least one VTK region defined
+! If this is not the case, define the entire domain as default region
+      IF(WRITE_VTK_FILES.AND.N_VTK_REGIONS==0) THEN
+         VTK_DEFINED(1) = .TRUE.
+         VTK_X_W(1) = ZERO
+         VTK_X_E(1) = XLENGTH
+         VTK_Y_S(1) = ZERO
+         VTK_Y_N(1) = YLENGTH
+         VTK_Z_B(1) = ZERO
+         VTK_Z_T(1) = ZLENGTH
+         VTK_FILEBASE(1) = RUN_NAME
+      ENDIF
 
       RETURN
       END SUBROUTINE CHECK_DATA_CARTESIAN

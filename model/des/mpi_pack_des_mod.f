@@ -127,7 +127,7 @@
       integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
                  lpicloc,lparcnt,lcurpar
-      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_collisions_to_send,lcollisionsize
+      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_pairs_to_send,lpairsize
 
       logical, allocatable, dimension(:) :: going_to_send
 
@@ -234,19 +234,19 @@
 
       lbuf = lparcnt*lpacketsize + ibufoffset
 
-      num_collisions_to_send = 0
-      do cc = 1, collision_num
-         LL = COLLISIONS(1,CC)
+      num_pairs_to_send = 0
+      do cc = 1, pair_num
+         LL = PAIRS(1,CC)
          if (going_to_send(LL)) then
-            num_collisions_to_send = num_collisions_to_send + 1
+            num_pairs_to_send = num_pairs_to_send + 1
          endif
       enddo
 
-      dsendbuf(lbuf,pface) = num_collisions_to_send
+      dsendbuf(lbuf,pface) = num_pairs_to_send
       lbuf = lbuf+1
 
-      do cc = 1, collision_num
-         lcurpar = COLLISIONS(1,CC)
+      do cc = 1, pair_num
+         lcurpar = PAIRS(1,CC)
          if (.not. going_to_send(lcurpar)) cycle
 
          dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
@@ -256,7 +256,7 @@
          dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
          lbuf = lbuf+1
 
-         lneigh = COLLISIONS(2,CC)
+         lneigh = PAIRS(2,CC)
 
          dsendbuf(lbuf,pface) = iglobal_id(lneigh)
          lbuf = lbuf+1
@@ -265,22 +265,22 @@
          dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface))
          lbuf = lbuf+1
 
-         dsendbuf(lbuf,pface) = merge(1,0,pv_coll(CC))
+         dsendbuf(lbuf,pface) = merge(1,0,pv_PAIR(CC))
          lbuf = lbuf+1
          do ii=1,DIMN
-            dsendbuf(lbuf,pface) = PFN_COLL(II,CC)
+            dsendbuf(lbuf,pface) = PFN_PAIR(II,CC)
             lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = PFT_COLL(II,CC)
+            dsendbuf(lbuf,pface) = PFT_PAIR(II,CC)
             lbuf = lbuf+1
          enddo
       enddo
 
       deallocate(going_to_send)
 
-      lcollisionsize = 6 + 2*DIMN
+      lpairsize = 6 + 2*DIMN
 
       dsendbuf(1,pface) = lparcnt
-      isendcnt(pface) = lparcnt*lpacketsize+num_collisions_to_send*lcollisionsize+ibufoffset + 3
+      isendcnt(pface) = lparcnt*lpacketsize+num_pairs_to_send*lpairsize+ibufoffset + 3
 
 ! following unused variables are not sent across the processor
 ! well_depth

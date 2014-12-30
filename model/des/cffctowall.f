@@ -13,7 +13,6 @@
 ! Modules
 !-----------------------------------------------
       USE param1
-      use geometry, only: DO_K
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
@@ -44,13 +43,8 @@
       DIST_CL = DIST_LI - DES_RADIUS(L)
 
 ! total torque
-      IF(DO_K) THEN
-         CALL DES_CROSSPRDCT(CROSSP, NORM, FT)
-         TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
-      ELSE
-         CROSSP(1) = NORM(1)*FT(2) - NORM(2)*FT(1)
-         TOW(1,L) =  TOW(1,L) + DIST_CL*CROSSP(1)
-      ENDIF
+      CROSSP = DES_CROSSPRDCT(NORM, FT)
+      TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
 
       RETURN
       END SUBROUTINE CFFCTOWALL

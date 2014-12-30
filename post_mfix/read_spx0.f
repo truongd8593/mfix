@@ -33,7 +33,7 @@
 !
       logical read_spx(*)
 !                loop counter
-      INTEGER    LC,l1
+      INTEGER    LC
 
 !
 !                file version ID

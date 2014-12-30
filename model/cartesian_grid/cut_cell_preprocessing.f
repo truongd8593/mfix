@@ -87,6 +87,8 @@
 
       CALL SEND_RECEIVE_CUT_CELL_VARIABLES
 
+      CALL GET_DISTANCE_TO_WALL
+
       CALL PRINT_GRID_STATISTICS
 
       CALL CG_GET_BC_AREA
@@ -96,8 +98,6 @@
       CALL CG_FLOW_TO_VEL
 
       CALL CONVERT_CG_MI_TO_PS
-
-      CALL GET_DISTANCE_TO_WALL
 
 
       CALL CPU_TIME (CPU_PP_END)
@@ -1993,6 +1993,13 @@
          DO N_PROP=1,N_PROPMAX
 
             DO IJK = IJKSTART3, IJKEND3
+
+! Aaron
+               I = I_OF(IJK)
+               J = J_OF(IJK)
+               K = K_OF(IJK)
+               IF(.NOT.IS_ON_myPE_plus1layer(I,J,K))cycle
+! End aaron
 
                IF(F_AT(IJK)/=UNDEFINED.AND.F_AT(IJK)/=ZERO) THEN
 

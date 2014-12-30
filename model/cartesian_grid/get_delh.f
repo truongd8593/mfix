@@ -612,6 +612,8 @@
       USE cutcell
       USE functions
 
+      USE mpi_utility
+
       IMPLICIT NONE
 !      CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: X0,Y0,Z0,XREF,YREF,ZREF
@@ -619,80 +621,249 @@
       DOUBLE PRECISION :: Del_H,Diagonal
       DOUBLE PRECISION :: Nx,Ny,Nz
 
-      DOUBLE PRECISION :: D_TO_CUT
+      DOUBLE PRECISION :: D_TO_CUT, D_TO_PE_REF
 
       INTEGER :: N_CUT_CELLS
       INTEGER :: LIST_OF_CUT_CELLS(DIMENSION_3)
 
-!======================================================================
-!  Get a list of cut cells
-!======================================================================
+      INTEGER :: iproc,IERR,IJK_OFFSET,nb,n1,n2
+      INTEGER :: GLOBAL_N_CUT_CELLS
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+      LOGICAL, DIMENSION(0:numPEs-1) :: ALREADY_VISITED
+      DOUBLE PRECISION, DIMENSION(0:numPEs-1,3) :: PE_REFP,ALL_PE_REFP
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: LOCAL_REFP_S,GLOBAL_REFP_S
+
+      IF(MyPE==PE_IO) WRITE(*,*)'COMPUTING WALL DISTANCE...'
+
+! Count the number of cut cells
+      N_CUT_CELLS = 0
+      DO IJK = IJKSTART3, IJKEND3
+         IF(INTERIOR_CELL_AT(IJK).AND.CUT_CELL_AT(IJK)) THEN
+            N_CUT_CELLS = N_CUT_CELLS + 1
+            LIST_OF_CUT_CELLS(N_CUT_CELLS) = IJK
+         ENDIF
+      ENDDO
+
+! Store cut cell reference points (centroid of cut cell face)
+! and save a reference point for the entire processor
+      ALLOCATE (LOCAL_REFP_S(N_CUT_CELLS,3))
 
       N_CUT_CELLS = 0
+      PE_REFP(MyPE,1) = ZERO
+      PE_REFP(MyPE,2) = ZERO
+      PE_REFP(MyPE,3) = ZERO
+
+      DO IJK = IJKSTART3, IJKEND3
+         IF(INTERIOR_CELL_AT(IJK).AND.CUT_CELL_AT(IJK)) THEN
+            N_CUT_CELLS = N_CUT_CELLS + 1
+            LOCAL_REFP_S(N_CUT_CELLS,1) = REFP_S(IJK,1)
+            LOCAL_REFP_S(N_CUT_CELLS,2) = REFP_S(IJK,2)
+            LOCAL_REFP_S(N_CUT_CELLS,3) = REFP_S(IJK,3)
+
+            PE_REFP(MyPE,1) = PE_REFP(MyPE,1) + REFP_S(IJK,1)
+            PE_REFP(MyPE,2) = PE_REFP(MyPE,2) + REFP_S(IJK,2)
+            PE_REFP(MyPE,3) = PE_REFP(MyPE,3) + REFP_S(IJK,3)
+         ENDIF
+      ENDDO
+
+      IF(N_CUT_CELLS>0) THEN
+         PE_REFP(MyPE,1) = PE_REFP(MyPE,1) / N_CUT_CELLS
+         PE_REFP(MyPE,2) = PE_REFP(MyPE,2) / N_CUT_CELLS
+         PE_REFP(MyPE,3) = PE_REFP(MyPE,3) / N_CUT_CELLS
+      ELSE
+         PE_REFP(MyPE,1) = UNDEFINED
+         PE_REFP(MyPE,2) = UNDEFINED
+         PE_REFP(MyPE,3) = UNDEFINED
+      ENDIF
+
+!======================================================================
+! Now, gather the local reference points to head node
+! to get a global list, and broadcast it to each processor.
+!======================================================================
+
+!======================================================================
+! First get the offset and build the rcount and disp arrays.
+! rcount is the number of elements to be gathered.
+! disp is the displacement of the variable size gather,
+! i.e. the cumulative sum at a given procesor.
+!======================================================================
+
+      CALL allgather_1i (N_CUT_CELLS,rcount,IERR)
+
+      IF (myPE == 0) THEN
+         IJK_OFFSET = 0
+      ELSE
+         IJK_OFFSET = 0
+         DO iproc=0,myPE-1
+            IJK_OFFSET = IJK_OFFSET + rcount(iproc)
+         ENDDO
+      ENDIF
+
+      CALL allgather_1i (IJK_OFFSET,disp,IERR)
+
+      CALL allgather_1d (PE_REFP(MyPE,1),ALL_PE_REFP(:,1),IERR)
+      CALL allgather_1d (PE_REFP(MyPE,2),ALL_PE_REFP(:,2),IERR)
+      CALL allgather_1d (PE_REFP(MyPE,3),ALL_PE_REFP(:,3),IERR)
+
+!======================================================================
+! Get the global number of cut cells and allocate the
+! global reference point array. Each processor gets its own
+! copy of all cut cell reference points !!
+!======================================================================
+      CALL GLOBAL_ALL_SUM(N_CUT_CELLS, GLOBAL_N_CUT_CELLS,  PE_IO, ierr )
+      ALLOCATE (GLOBAL_REFP_S(GLOBAL_N_CUT_CELLS,3))
+
+!======================================================================
+! For a serial run, the global and local arrays are the same.
+! for a parallel run, first gather on head node, then broadcast to all.
+!======================================================================
+
+      IF(numPEs==1) THEN  ! Serial run
+         GLOBAL_REFP_S =  LOCAL_REFP_S
+      ELSE !Parallel run
+         call gatherv_1d( LOCAL_REFP_S(:,1), N_CUT_CELLS, GLOBAL_REFP_S(:,1), rcount, disp, PE_IO, ierr )
+         call gatherv_1d( LOCAL_REFP_S(:,2), N_CUT_CELLS, GLOBAL_REFP_S(:,2), rcount, disp, PE_IO, ierr )
+         call gatherv_1d( LOCAL_REFP_S(:,3), N_CUT_CELLS, GLOBAL_REFP_S(:,3), rcount, disp, PE_IO, ierr )
+
+         call bcast(GLOBAL_REFP_S(:,1))
+         call bcast(GLOBAL_REFP_S(:,2))
+         call bcast(GLOBAL_REFP_S(:,3))
+      ENDIF
+
+
+      ALREADY_VISITED(:) = .FALSE.
+!======================================================================
+!  Loop through all scalar cells, grouped by processor.
+!  Compute the distance to each cut cell and take the minimum
+!  This is doe in three passes, in order of likelyhood to find a wall:
+!  1) Within local processor.
+!  2) Within neighboring processors (from send2 schedule)
+!  3) Within all other processors
+!
+!  The idea is that it is very likely that cut cells located
+!  on current or neighbor processors will contribute to the
+!  wall distance calculation, whereas cut cells located
+!  on the other processors will not contribute
+!  During the third pass, the entire processor is skipped
+!  if a reference point (average of all cut faces reference
+!  points) is farther than the current wall distance.
+!  This should speed up the brute calculation of going
+!  explicitely through all cut cells.
+!  However, it is not guaranteed that dwall will be
+!  independent of the grid partitionning. This is considered
+!  very unlikely at the moment
+!  Change DWALL_BRUTE_FORCE to .TRUE. to force brute-force
+!  calculation.
+!======================================================================
 
       DO IJK = IJKSTART3, IJKEND3
 
-         IF(CUT_CELL_AT(IJK)) THEN
+         CALL WRITE_PROGRESS_BAR(IJK,IJKEND3 - IJKSTART3 + 1,'C')
 
-         N_CUT_CELLS = N_CUT_CELLS + 1
+         IF(INTERIOR_CELL_AT(IJK)) THEN
+            DWALL(IJK) = UNDEFINED
 
-         LIST_OF_CUT_CELLS(N_CUT_CELLS) = IJK
+            IF(.NOT.BLOCKED_CELL_AT(IJK)) THEN
 
+! Get coordinates of cell center
+               CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+
+               X0 = X_NODE(0)
+               Y0 = Y_NODE(0)
+               Z0 = Z_NODE(0)
+
+!======================================================================
+! First pass: Loop through local cut cells
+!======================================================================
+
+               ALREADY_VISITED(MyPE) = .TRUE.
+
+               DO N = 1,N_CUT_CELLS
+
+                  Xref = LOCAL_REFP_S(N,1)
+                  Yref = LOCAL_REFP_S(N,2)
+                  Zref = LOCAL_REFP_S(N,3)
+
+                  D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+
+                  DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
+
+               ENDDO
+
+
+!======================================================================
+! Second pass: Loop through neighbor processors (use send2 schedule)
+!======================================================================
+
+               DO nb=1,nsend2
+                  iproc = sendproc2(nb)
+                  ALREADY_VISITED(iproc) = .TRUE.
+                  n1 = disp(iproc)+1
+                  n2 = n1 + rcount(iproc) - 1
+
+                  DO N = n1,n2
+
+                     Xref = GLOBAL_REFP_S(N,1)
+                     Yref = GLOBAL_REFP_S(N,2)
+                     Zref = GLOBAL_REFP_S(N,3)
+
+                     D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+
+                     DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
+
+                  ENDDO
+
+               ENDDO
+
+!======================================================================
+! Third pass: Loop through all other processors
+! skip already visited processors (myPE and its neigbhors)
+! First test if the average reference point is farther than dwall
+! if this is true, then skip the entire processor cut cells.
+!======================================================================
+
+
+               DO iproc=0,numPEs-1
+                  IF(ALREADY_VISITED(iproc)) CYCLE
+
+                  Xref = ALL_PE_REFP(iproc,1)
+                  Yref = ALL_PE_REFP(iproc,2)
+                  Zref = ALL_PE_REFP(iproc,3)
+
+                  D_TO_PE_REF = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+
+                  IF((DWALL(IJK) < D_TO_PE_REF).AND. &
+                     (.NOT.DWALL_BRUTE_FORCE  )) THEN
+                     CYCLE
+                  ELSE
+                     n1 = disp(iproc)+1
+                     n2 = n1 + rcount(iproc) - 1
+
+                     DO N = n1,n2
+
+                        Xref = GLOBAL_REFP_S(N,1)
+                        Yref = GLOBAL_REFP_S(N,2)
+                        Zref = GLOBAL_REFP_S(N,3)
+
+                        D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
+
+                        DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
+
+                     ENDDO
+                  ENDIF
+               ENDDO
+
+            ENDIF
 
          ENDIF
 
       ENDDO
 
-
 !======================================================================
-!  Brute force: Loop through all scalar cells
-!  compute the distance to each cut cell and take the minimum
+!  Deallocate arrays before leaving
 !======================================================================
-
-
-      DO IJK = IJKSTART3, IJKEND3
-
-
-         IF(INTERIOR_CELL_AT(IJK)) THEN
-
-            DWALL(IJK) = UNDEFINED
-
-!======================================================================
-!  Get coordinates of cell center
-!======================================================================
-
-            CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
-
-            X0 = X_NODE(0)
-            Y0 = Y_NODE(0)
-            Z0 = Z_NODE(0)
-
-            DO N = 1,N_CUT_CELLS
-
-               IJK_CUT = LIST_OF_CUT_CELLS(N)
-
-               Xref = REFP_S(IJK_CUT,1)
-               Yref = REFP_S(IJK_CUT,2)
-               Zref = REFP_S(IJK_CUT,3)
-
-               D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
-
-               DWALL(IJK) = MIN(DWALL(IJK),D_TO_CUT)
-
-            ENDDO
-
-         ENDIF
-
-      END DO
-
+      DEALLOCATE (LOCAL_REFP_S)
+      DEALLOCATE (GLOBAL_REFP_S)
       RETURN
 
       END SUBROUTINE GET_DISTANCE_TO_WALL
-
-
-
-
-
-
-
-

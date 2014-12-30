@@ -214,7 +214,7 @@
       logical :: lfound
       integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
-      integer :: cc,ii,kk,num_collisions_sent
+      integer :: cc,ii,kk,num_pairs_sent
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
@@ -317,10 +317,10 @@
 
       lbuf = lparcnt*lpacketsize + ibufoffset
 
-      num_collisions_sent = drecvbuf(lbuf,pface)
+      num_pairs_sent = drecvbuf(lbuf,pface)
       lbuf=lbuf+1
 
-      do cc = 1, num_collisions_sent
+      do cc = 1, num_pairs_sent
 
          lparid = drecvbuf(lbuf,pface)
          lbuf=lbuf+1
@@ -348,15 +348,15 @@
             endif
          endif
 
-         call collision_add(llocpar,lneigh)
+         call add_pair(llocpar,lneigh)
 
-         pv_coll(collision_num) = merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
+         pv_pair(pair_num) = merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
          lbuf=lbuf+1
 
          do ii=1,DIMN
-            pfn_coll(ii,collision_num) = drecvbuf(lbuf,pface)
+            pfn_pair(ii,pair_num) = drecvbuf(lbuf,pface)
             lbuf=lbuf+1
-            pft_coll(ii,collision_num) = drecvbuf(lbuf,pface)
+            pft_pair(ii,pair_num) = drecvbuf(lbuf,pface)
             lbuf=lbuf+1
          enddo
       enddo

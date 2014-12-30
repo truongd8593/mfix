@@ -149,6 +149,14 @@
         return
         end subroutine allgather_1i
 
+        subroutine allgather_1d( lbuf, gbuf, idebug )
+        double precision, intent(in) :: lbuf
+        double precision, intent(out), dimension(:) :: gbuf
+        integer, optional, intent(in) ::  idebug
+!       do nothing
+        gbuf = 0
+        return
+        end subroutine allgather_1d
 
         subroutine gatherv_1i( lbuf, sendcnt, gbuf, rcount, disp, mroot, idebug )
         integer, intent(in), dimension(:) :: lbuf

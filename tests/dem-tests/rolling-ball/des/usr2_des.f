@@ -123,7 +123,7 @@
 
 ! Calculate the absolute relative error.
        xVel_rErr = (ABS(xVel - DES_VEL_NEW(1,1))/ABS(xVel))*100
-       aVel_rErr = (ABS(aVel - OMEGA_NEW(1,1))/ABS(aVel))*100
+       aVel_rErr = (ABS(aVel - OMEGA_NEW(3,1))/ABS(aVel))*100
 
 ! Write the results to a file.
       WRITE(uPos,"(3x,F15.8,5X,F15.8,2(3x,F15.8))") lTime, &
@@ -132,7 +132,7 @@
 
 
       WRITE(uVel,"(3x,F15.8,5X,F15.8,2(3x,F15.8))")lTime, &
-          aVel, OMEGA_NEW(1,1), aVel_rErr
+          aVel, OMEGA_NEW(3,1), aVel_rErr
       CLOSE(uVel)
 
       END SUBROUTINE WRITE_DES_Out

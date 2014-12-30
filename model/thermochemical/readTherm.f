@@ -416,11 +416,13 @@
       DOUBLE PRECISION ICp
 
       !ICp = calc_ICpoR(T, Th, Tl, Tc, Ah, Al)
-      If (T < Tc) then
-        calc_H0oR = ICp + Al(6)
-      else
-        calc_H0oR = ICp + Ah(6)
-      endif
+      !If (T < Tc) then
+      !  calc_H0oR = ICp + Al(6)
+      !else
+      !  calc_H0oR = ICp + Ah(6)
+      !endif
+
+      calc_H0oR = 0.0
 
       return
       END FUNCTION calc_H0oR

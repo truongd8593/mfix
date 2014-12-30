@@ -68,10 +68,10 @@
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
 
-      CALL READ_RES_cARRAY(lNEXT_REC, PV_COLL(:))
+      CALL READ_RES_cARRAY(lNEXT_REC, PV_PAIR(:))
       DO LC1=1, lDIMN
-         CALL READ_RES_cARRAY(lNEXT_REC, PFN_COLL(LC1,:))
-         CALL READ_RES_cARRAY(lNEXT_REC, PFT_COLL(LC1,:))
+         CALL READ_RES_cARRAY(lNEXT_REC, PFN_PAIR(LC1,:))
+         CALL READ_RES_cARRAY(lNEXT_REC, PFT_PAIR(LC1,:))
       ENDDO
 
       CALL READ_RES_DES(lNEXT_REC, DEM_BCMI)

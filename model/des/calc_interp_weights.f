@@ -94,11 +94,8 @@
          DO JC=-1,+1
          DO IC=-1,+1
             IDX=IDX+1
-            IF(IS_ON_MYPE_OWNS(I+IC,J+JC,K+KC)) THEN
-               WEIGHT = WEIGHT_I(IC)*WEIGHT_J(JC)*WEIGHT_K(KC)
-            ELSE
-               WEIGHT= ZERO
-            ENDIF
+
+            WEIGHT = WEIGHT_I(IC)*WEIGHT_J(JC)*WEIGHT_K(KC)
 
             IJKt = FUNIJK(I+IC,J+JC,K+KC)
             IF(FLUID_AT(IJKt)) THEN

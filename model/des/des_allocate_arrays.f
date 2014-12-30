@@ -49,8 +49,7 @@
       INTEGER :: II, IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
-! dimensions of a cross product vector
-      INTEGER :: CROSS_DIMN
+      INTEGER :: NUM_THREADS, OMP_GET_NUM_THREADS
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
@@ -103,24 +102,18 @@
       Allocate(  PMASS (NPARTICLES) )
       Allocate(  OMOI (NPARTICLES) )
 
-      IF (DO_K) THEN
-         CROSS_DIMN = DIMN
-      ELSE
-         CROSS_DIMN = 1
-      ENDIF
-
 ! Old and new particle positions, velocities (translational and
 ! rotational)
       Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
       Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
-      Allocate(  OMEGA_NEW (CROSS_DIMN,NPARTICLES) )
+      Allocate(  OMEGA_NEW (DIMN,NPARTICLES) )
 
       IF (DO_OLD) THEN
          Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
          Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
-         Allocate(  DES_ACC_OLD (CROSS_DIMN,NPARTICLES) )
-         Allocate(  OMEGA_OLD (CROSS_DIMN,NPARTICLES) )
-         Allocate(  ROT_ACC_OLD (CROSS_DIMN,NPARTICLES))
+         Allocate(  DES_ACC_OLD (DIMN,NPARTICLES) )
+         Allocate(  OMEGA_OLD (DIMN,NPARTICLES) )
+         Allocate(  ROT_ACC_OLD (DIMN,NPARTICLES))
       ENDIF
 
 ! Allocating user defined array
@@ -133,29 +126,29 @@
       Allocate(  FC (DIMN,NPARTICLES) )
 
 ! Torque
-      Allocate(  TOW (CROSS_DIMN,NPARTICLES) )
+      Allocate(  TOW (DIMN,NPARTICLES) )
 
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
-      OLD_COLLISION_NUM = 0
-      COLLISION_NUM = 0
-      COLLISION_MAX = 1024
-      Allocate(  COLLISIONS (2,COLLISION_MAX) )
-      Allocate(  COLLISIONS_OLD (2,COLLISION_MAX) )
-      Allocate(  FC_COLL  (3,COLLISION_MAX) )
-      Allocate(  DIST_COLL (COLLISION_MAX) )
-      Allocate(  QQ_COLL (COLLISION_MAX) )
-      Allocate(  NORM_COLL (3,COLLISION_MAX) )
-      Allocate(  PV_COLL (COLLISION_MAX) )
-      Allocate(  PV_COLL_OLD (COLLISION_MAX) )
-      Allocate(  PFT_COLL (3,COLLISION_MAX) )
-      Allocate(  PFT_COLL_OLD (3,COLLISION_MAX) )
-      Allocate(  PFN_COLL (3,COLLISION_MAX) )
-      Allocate(  PFN_COLL_OLD (3,COLLISION_MAX) )
-      Allocate(  TOW_COLL (3,2,COLLISION_MAX) )
+      OLD_PAIR_NUM = 0
+      PAIR_NUM = 0
+      PAIR_MAX = 1024
+
+      Allocate(  PAIRS (2,PAIR_MAX) )
+      Allocate(  PAIRS_OLD (2,PAIR_MAX) )
+      Allocate(  PAIR_COLLIDES (PAIR_MAX) )
+      Allocate(  FC_PAIR  (3,PAIR_MAX) )
+      Allocate(  QQ_PAIR (PAIR_MAX) )
+      Allocate(  PV_PAIR (PAIR_MAX) )
+      Allocate(  PV_PAIR_OLD (PAIR_MAX) )
+      Allocate(  PFT_PAIR (3,PAIR_MAX) )
+      Allocate(  PFT_PAIR_OLD (3,PAIR_MAX) )
+      Allocate(  PFN_PAIR (3,PAIR_MAX) )
+      Allocate(  PFN_PAIR_OLD (3,PAIR_MAX) )
+      Allocate(  TOW_PAIR (3,2,PAIR_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -473,40 +466,39 @@
 
 
 !``````````````````````````````````````````````````````````````````````!
-! Subroutine: COLLISION_ADD                                            !
+! Subroutine: ADD_PAIR                                                 !
 !                                                                      !
-! Purpose: Adds a neighbor pair to the collisions array.               !
+! Purpose: Adds a neighbor pair to the pairs array.                    !
 !                                                                      !
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE collision_add(ii,jj)
+      SUBROUTINE add_pair(ii,jj)
       USE discretelement
       USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
 
-      collision_num = collision_num +1
+      pair_num = pair_num +1
 
 ! Reallocate to double the size of the arrays if needed.
-      IF(COLLISION_NUM > COLLISION_MAX) THEN
-         COLLISION_MAX = COLLISION_MAX*2
-         CALL COLLISION_GROW
+      IF(PAIR_NUM > PAIR_MAX) THEN
+         PAIR_MAX = PAIR_MAX*2
+         CALL PAIR_GROW
       ENDIF
 
-      collisions(1,collision_num) = ii
-      collisions(2,collision_num) = jj
+      pairs(1,pair_num) = ii
+      pairs(2,pair_num) = jj
 
       RETURN
-      END SUBROUTINE collision_add
-
+      END SUBROUTINE add_pair
 
 !``````````````````````````````````````````````````````````````````````!
-! Subroutine: COLLISION_GROW                                           !
+! Subroutine: PAIR_GROW                                                !
 !                                                                      !
-! Purpose: Grow collision arrays to collision_max. Note that collision !
+! Purpose: Grow pair arrays to pair_max. Note that pair                !
 ! max should be increased before calling this routine. Also, no        !
 ! assumption to the previous array size is made as needed for restarts.!
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE COLLISION_GROW
+      SUBROUTINE PAIR_GROW
 
       USE discretelement
 
@@ -520,70 +512,65 @@
 
       INTEGER :: lSIZE1, lSIZE2, lSIZE3
 
-      lSIZE2 = size(collisions,2)
-      allocate(int_tmp(2,COLLISION_MAX))
-      int_tmp(:,1:lSIZE2) = collisions(:,1:lSIZE2)
-      call move_alloc(int_tmp,collisions)
+      lSIZE2 = size(pairs,2)
+      allocate(int_tmp(2,PAIR_MAX))
+      int_tmp(:,1:lSIZE2) = pairs(:,1:lSIZE2)
+      call move_alloc(int_tmp,pairs)
 
-      lSIZE2 = size(collisions_old,2)
-      allocate(int_tmp(2,COLLISION_MAX))
-      int_tmp(:,1:lSIZE2) = collisions_old(:,1:lSIZE2)
-      call move_alloc(int_tmp,collisions_old)
+      lSIZE2 = size(pairs_old,2)
+      allocate(int_tmp(2,PAIR_MAX))
+      int_tmp(:,1:lSIZE2) = pairs_old(:,1:lSIZE2)
+      call move_alloc(int_tmp,pairs_old)
 
-      lSIZE3 = size(TOW_COLL,3)
-      allocate(real_tmp3(3,2,COLLISION_MAX))
-      real_tmp3(:,:,1:lSIZE3) = tow_coll(:,:,1:lSIZE3)
-      call move_alloc(real_tmp3,tow_coll)
+      lSIZE3 = size(tow_pair,3)
+      allocate(real_tmp3(3,2,PAIR_MAX))
+      real_tmp3(:,:,1:lSIZE3) = tow_pair(:,:,1:lSIZE3)
+      call move_alloc(real_tmp3,tow_pair)
 
-      lSIZE2 = size(FC_COLL,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = fc_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,fc_coll)
+      lSIZE2 = size(fc_pair,2)
+      allocate(real_tmp(3,PAIR_MAX))
+      real_tmp(:,1:lSIZE2) = fc_pair(:,1:lSIZE2)
+      call move_alloc(real_tmp,fc_pair)
 
-      lSIZE1 = size(norm_coll,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE1) = norm_coll(:,1:lSIZE1)
-      call move_alloc(real_tmp,norm_coll)
+      lSIZE1 = size(pair_collides,1)
+      allocate(bool_tmp(PAIR_MAX))
+      bool_tmp(1:lSIZE1) = pair_collides(1:lSIZE1)
+      call move_alloc(bool_tmp,pair_collides)
 
-      lSIZE1 = size(dist_coll,1)
-      allocate(real_scalar_tmp(COLLISION_MAX))
-      real_scalar_tmp(1:lSIZE1) = dist_coll(1:lSIZE1)
-      call move_alloc(real_scalar_tmp,dist_coll)
+      lSIZE1 = size(qq_pair,1)
+      allocate(real_scalar_tmp(PAIR_MAX))
+      real_scalar_tmp(1:lSIZE1) = qq_pair(1:lSIZE1)
+      call move_alloc(real_scalar_tmp,qq_pair)
 
-      lSIZE1 = size(qq_coll,1)
-      allocate(real_scalar_tmp(COLLISION_MAX))
-      real_scalar_tmp(1:lSIZE1) = qq_coll(1:lSIZE1)
-      call move_alloc(real_scalar_tmp,qq_coll)
+      lSIZE1 = size(pv_pair,1)
+      allocate(bool_tmp(PAIR_MAX))
+      bool_tmp(1:lSIZE1) = pv_pair(1:lSIZE1)
+      call move_alloc(bool_tmp,pv_pair)
 
-      lSIZE1 = size(pv_coll,1)
-      allocate(bool_tmp(COLLISION_MAX))
-      bool_tmp(1:lSIZE1) = pv_coll(1:lSIZE1)
-      call move_alloc(bool_tmp,pv_coll)
+      lSIZE1 = size(pv_pair_old,1)
+      allocate(bool_tmp(PAIR_MAX))
+      bool_tmp(1:lSIZE1) = pv_pair_old(1:lSIZE1)
+      call move_alloc(bool_tmp,pv_pair_old)
 
-      lSIZE1 = size(pv_coll_old,1)
-      allocate(bool_tmp(COLLISION_MAX))
-      bool_tmp(1:lSIZE1) = pv_coll_old(1:lSIZE1)
-      call move_alloc(bool_tmp,pv_coll_old)
+      lSIZE2 = size(pft_pair_old,2)
+      allocate(real_tmp(3,PAIR_MAX))
+      real_tmp(:,1:lSIZE2) = pft_pair_old(:,1:lSIZE2)
+      call move_alloc(real_tmp,pft_pair_old)
 
-      lSIZE2 = size(pft_coll_old,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = pft_coll_old(:,1:lSIZE2)
-      call move_alloc(real_tmp,pft_coll_old)
+      lSIZE2 = size(pft_pair,2)
+      allocate(real_tmp(3,PAIR_MAX))
+      real_tmp(:,1:lSIZE2) = pft_pair(:,1:lSIZE2)
+      call move_alloc(real_tmp,pft_pair)
 
-      lSIZE2 = size(pft_coll,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = pft_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,pft_coll)
+      lSIZE2 = size(pfn_pair_old,2)
+      allocate(real_tmp(3,PAIR_MAX))
+      real_tmp(:,1:lSIZE2) = pfn_pair_old(:,1:lSIZE2)
+      call move_alloc(real_tmp,pfn_pair_old)
 
-      lSIZE2 = size(pfn_coll_old,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = pfn_coll_old(:,1:lSIZE2)
-      call move_alloc(real_tmp,pfn_coll_old)
-
-      lSIZE2 = size(pfn_coll,2)
-      allocate(real_tmp(3,COLLISION_MAX))
-      real_tmp(:,1:lSIZE2) = pfn_coll(:,1:lSIZE2)
-      call move_alloc(real_tmp,pfn_coll)
+      lSIZE2 = size(pfn_pair,2)
+      allocate(real_tmp(3,PAIR_MAX))
+      real_tmp(:,1:lSIZE2) = pfn_pair(:,1:lSIZE2)
+      call move_alloc(real_tmp,pfn_pair)
 
       RETURN
-      END SUBROUTINE COLLISION_GROW
+      END SUBROUTINE PAIR_GROW

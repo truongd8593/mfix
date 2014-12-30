@@ -71,7 +71,7 @@
       endif
       if (nsym.lt.2) then ! too few symbols - return all zeros
        ll = 1
-       do l=begidx,endidx
+       do l=ibeg,iend
         SS(ll) = 0
         ll = ll + 1
        enddo ! l

@@ -27,18 +27,23 @@
 !-----------------------------------------------
 
 INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
+INTEGER :: OMP_GET_NUM_THREADS
 
 !-----------------------------------------------
 ! Reset PPOS and NEIGHBOURS back to initialized values
       PPOS(:,:) = DES_POS_NEW(:,:)
 
-      collisions_old = collisions
-      pv_coll_old = pv_coll
-      pfn_coll_old = pfn_coll
-      pft_coll_old = pft_coll
+!$omp parallel do default(none) private(cc) shared(pair_num,pairs_old,pairs,pv_pair_old,pv_pair,pfn_pair_old,pfn_pair,pft_pair_old,pft_pair)
+      do cc= 1, pair_num
+         pairs_old(:,cc) = pairs(:,cc)
+         pv_pair_old(cc) = pv_pair(cc)
+         pfn_pair_old(:,cc) = pfn_pair(:,cc)
+         pft_pair_old(:,cc) = pft_pair(:,cc)
+      end do
+!$omp end parallel do
 
-      old_collision_num = collision_num
-      collision_num = 0
+      old_pair_num = pair_num
+      pair_num = 0
 
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
@@ -47,40 +52,42 @@ INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
       ENDIF
 
       dd = 1
-      iii = collisions_old(1,dd)
-      jjj = collisions_old(2,dd)
+      iii = pairs_old(1,dd)
+      jjj = pairs_old(2,dd)
 
-      do cc = 1, collision_num
-         ii = collisions(1,cc)
-         jj = collisions(2,cc)
+!$omp parallel do default(none) private(cc,ii,jj,iii,jjj,ddd) shared(pair_num,pairs,pairs_old,pv_pair,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair_old,old_pair_num) firstprivate(dd)
+      do cc = 1, pair_num
+         ii = pairs(1,cc)
+         jj = pairs(2,cc)
 
-         iii = collisions_old(1,dd)
-         jjj = collisions_old(2,dd)
+         iii = pairs_old(1,dd)
+         jjj = pairs_old(2,dd)
 
-         do while (dd .le. old_collision_num .and. (iii < ii))
+         do while (dd .le. old_pair_num .and. (iii < ii))
             dd = dd + 1
-            iii = collisions_old(1,dd)
-            jjj = collisions_old(2,dd)
+            iii = pairs_old(1,dd)
+            jjj = pairs_old(2,dd)
          enddo
 
          ddd = dd
-         do while (ddd .le. old_collision_num .and. iii.eq.ii .and. jjj.ne.jj )
+         do while (ddd .le. old_pair_num .and. iii.eq.ii .and. jjj.ne.jj )
             ddd = ddd + 1
-            iii = collisions_old(1,ddd)
-            jjj = collisions_old(2,ddd)
+            iii = pairs_old(1,ddd)
+            jjj = pairs_old(2,ddd)
          enddo
 
          if (ii.eq.iii .and. jj.eq.jjj) then
-            pv_coll(cc) = pv_coll_old(ddd)
-            pfn_coll(:,cc) = pfn_coll_old(:,ddd)
-            pft_coll(:,cc) = pft_coll_old(:,ddd)
+            pv_pair(cc) = pv_pair_old(ddd)
+            pfn_pair(:,cc) = pfn_pair_old(:,ddd)
+            pft_pair(:,cc) = pft_pair_old(:,ddd)
          else
-            pv_coll(cc) = .false.
-            pfn_coll(:,cc) = 0.0
-            pft_coll(:,cc) = 0.0
+            pv_pair(cc) = .false.
+            pfn_pair(:,cc) = 0.0
+            pft_pair(:,cc) = 0.0
          endif
 
       enddo
+!$omp end parallel do
 
 ! resetting do_nsearch to false here since neighbor search will have
 ! just been invoked

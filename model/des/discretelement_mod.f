@@ -221,22 +221,21 @@
       DOUBLE PRECISION FACTOR_RLM
 
 ! Stores number of neighbors based on neighbor search
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: COLLISIONS_OLD
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_COLL
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: NORM_COLL
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DIST_COLL
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: TOW_COLL
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: QQ_COLL
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_COLL_OLD
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_COLL_OLD
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_COLL_OLD
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_PAIR
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PAIR_COLLIDES
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: TOW_PAIR
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: QQ_PAIR
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_PAIR
+      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_PAIR_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_PAIR
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_PAIR_OLD
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_PAIR
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_PAIR_OLD
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
-      INTEGER :: COLLISION_NUM,OLD_COLLISION_NUM,COLLISION_MAX
+      INTEGER :: PAIR_NUM,OLD_PAIR_NUM,PAIR_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation
@@ -599,15 +598,50 @@
       DOUBLE PRECISION SURFACE_ENERGY
       DOUBLE PRECISION WALL_SURFACE_ENERGY
 
-
 ! END Cohesion
 !-----------------------------------------------------------------<<<
 
-
-
-
       LOGICAL :: EXPLICITLY_COUPLED
 
+    CONTAINS
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+!
+!  Subroutine: DES_CROSSPRDCT
+!  Purpose: Calculate the cross product of two vectors that both have
+!           either 2 or 3 elements and return the result in the first
+!           argument
+!
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      END MODULE DISCRETELEMENT
+      FUNCTION DES_CROSSPRDCT (XX,YY)
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+        USE param
+        USE param1
+        use geometry, only: DO_K
+        IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! sent vectors
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: XX, YY
+! returned result: cross product of vectors
+      DOUBLE PRECISION, DIMENSION(3) :: DES_CROSSPRDCT
+!-----------------------------------------------
+
+      IF(DO_K) THEN
+         DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
+         DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
+      ELSE
+         DES_CROSSPRDCT(1) = ZERO
+         DES_CROSSPRDCT(2) = ZERO
+      ENDIF
+
+      DES_CROSSPRDCT(3) = XX(1)*YY(2) - XX(2)*YY(1)
+
+    END FUNCTION DES_CROSSPRDCT
+
+  END MODULE DISCRETELEMENT

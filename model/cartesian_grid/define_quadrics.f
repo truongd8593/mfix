@@ -205,6 +205,62 @@
 
             f = 4*(xtr**2+ytr**2)*R1**2-(xtr**2+ytr**2+ztr**2+R1**2-R2**2)**2
 
+         ELSEIF(TRIM(quadric_form(Q_ID))=='Y_UCOIL2_EXT') THEN
+! This shape represents a pair of parallel cylinders (y-direction)
+! capped at both ends by a cylinder at 90 degree angle
+! to create a U-shaped coil
+! UCOIL_R1 is half the spacing between vertical cylinders
+! UCOIL_R2 is the cylinders radius
+! UCOIL_Y1 and UCOIL_Y2 are the min and max y-values of the coil
+! The coil is translated in the x and z direction (t_x, t_z)
+! and can be rotated about the y-direction, centered about (t_x,t_z)
+! by the angle THETA_Y
+
+            c = DCOS(THETA_Y(Q_ID))
+            s = DSIN(THETA_Y(Q_ID))
+
+!           Translation
+            xt = x1-t_x(Q_ID)
+            yt = x2
+            zt = x3-t_z(Q_ID)
+
+!           Rotation
+            xtr =  xt*c + zt*s
+            ytr =  yt
+            ztr = -xt*s + zt*c
+
+            R1 = UCOIL_R1(Q_ID)
+            R2 = UCOIL_R2(Q_ID)
+
+
+
+
+! Limits of the cylinders.
+! There is half a torus above ytest1 and half a torus below ytest2
+            ytest1 = UCOIL_Y1(Q_ID) + R1 + R2
+            ytest2 = UCOIL_Y2(Q_ID) - (R1 + R2)
+
+            IF(ytest1<=ytr.AND.ytr<=ytest2) THEN
+               f = 4*(xtr**2)*R1**2-(xtr**2+ztr**2+R1**2-R2**2)**2 ! a pair of cylinders
+            ELSEIF(ytr<=ytest1) THEN
+! Convert (x,y) into angle theta, and adjust its range from zero to 2*pi
+               THETA  = ATAN2(ytr-ytest1,xtr) ! Result is from -pi to pi
+               IF(-0.75*PI<=THETA.AND.THETA<=-0.25*PI) THEN
+                  f = - ( ((ytr-(UCOIL_Y1(Q_ID) + R2))/R2)**2 + (ztr/R2)**2 -1.0 ) ! horizontal cylinder
+               ELSE
+                  f = 4*(xtr**2)*R1**2-(xtr**2+ztr**2+R1**2-R2**2)**2 ! a pair of cylinders
+               ENDIF
+            ELSEIF(ytr>=ytest2) THEN
+! Convert (x,y) into angle theta, and adjust its range from zero to 2*pi
+               THETA  = ATAN2(ytr-ytest2,xtr) ! Result is from -pi to pi
+               IF(0.25*PI<=THETA.AND.THETA<0.75*PI) THEN
+                  f = - ( ((ytr-(UCOIL_Y2(Q_ID) - R2))/R2)**2 + (ztr/R2)**2 -1.0 ) ! horizontal cylinder
+               ELSE
+                  f = 4*(xtr**2)*R1**2-(xtr**2+ztr**2+R1**2-R2**2)**2 ! a pair of cylinders
+               ENDIF
+            ENDIF
+
+
 
          ELSEIF(TRIM(quadric_form(Q_ID))=='XY_BEND_INT') THEN
 ! This shape represent a bend between two cylinders in the XY plane
@@ -362,6 +418,7 @@
             ENDIF
 
             f = (xtr/R)**2 + (ztr/R)**2 - 1.0
+
 
 
 

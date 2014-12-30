@@ -136,7 +136,7 @@
 
          lGHOST_CNT = iGHOST_CNT
 
-         cROOTCNT = COLLISION_NUM
+         cROOTCNT = PAIR_NUM
          cPROCCNT = cROOTCNT
       ELSE
 
@@ -168,7 +168,7 @@
 
 ! Setup data for neighbor/collision arrays
          cROOTCNT = 10
-         cPROCCNT = COLLISION_NUM
+         cPROCCNT = PAIR_NUM
 
 ! Rank 0 gets the total number of gloabl particles.
          CALL GLOBAL_SUM(cPROCCNT, cROOTCNT)
