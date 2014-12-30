@@ -66,9 +66,6 @@
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1)) CYCLE
-! skipping ghost particles
-         IF(PEA(L,4)) CYCLE
-
 
          I = PIJK(L,1)
          IF(I <= ISTART2 .OR. I >= IEND2) THEN
@@ -138,14 +135,15 @@
 
 ! Calculate the fluid cell index.
          IJK = FUNIJK(I,J,K)
-! Increment the number of particles in cell IJK
-         PINC(IJK) = PINC(IJK) + 1
+
 ! Assign PIJK(L,1:4)
          PIJK(L,1) = I
          PIJK(L,2) = J
          PIJK(L,3) = K
          PIJK(L,4) = IJK
 
+! Increment the number of particles in cell IJK
+         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
 
       ENDDO
 !!$omp end parallel
@@ -176,7 +174,7 @@
 !!$omp end parallel do
 
 
-      particle_count(:) = 1
+      PARTICLE_COUNT(:) = 1
       PC = 1
       DO L = 1, MAX_PIP
 ! exiting loop if reached max number of particles in processor
@@ -184,22 +182,14 @@
 ! skipping indices with no particles (non-existent particles)
          IF(.NOT.PEA(L,1)) CYCLE
 ! incrementing particle account when particle exists
-         pc = pc+1
+         PC = PC+1
 ! skipping ghost particles
          IF(PEA(L,4)) CYCLE
          IJK = PIJK(L,4)
-         pos = particle_count(IJK)
-         pic(IJK)%p(pos) = L
-         particle_count(IJK) = particle_count(IJK) + 1
+         POS = PARTICLE_COUNT(IJK)
+         PIC(IJK)%P(POS) = L
+         PARTICLE_COUNT(IJK) = PARTICLE_COUNT(IJK) + 1
       ENDDO
-
-! Calculate interpolation weights
-!      CALL CALC_INTERP_WEIGHTS
-
-! Calculate mean fields using either interpolation or cell averaging.
-!      CALL COMP_MEAN_FIELDS
-
-!      IF(MPPIC) CALL REPORT_PIC_STATS(RECOVERED, DELETED)
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL
@@ -270,14 +260,9 @@
 ! composite ijk index. If first_pass, also assigning PIJK(L,5) the
 ! solids phase index of particle.
 ! ---------------------------------------------------------------->>>
-!!$omp parallel default(shared)                                       &
-!!$omp private(L,M,lPOS,I,J,K,IJK)
-!!$omp do reduction(+:PINC) schedule (guided,50)
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
          IF(.NOT.PEA(L,1)) CYCLE
-! skipping ghost particles
-         IF(PEA(L,4)) CYCLE
 
 ! Use a brute force technique to determine the particle locations in
 ! the Eulerian fluid grid.
@@ -303,9 +288,10 @@
          IJK = FUNIJK(I,J,K)
          PIJK(L,4) = IJK
 
-         PINC(IJK) = PINC(IJK) + 1
+! Enumerate the number of 'real' particles in the ghost cell.
+         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
-!!$omp end parallel
+
 ! Calling exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
 ! unclear why this needs to be called again.

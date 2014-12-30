@@ -93,6 +93,7 @@
 
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
 
+      IF(CALL_USR) CALL USR0_DES
 
       IF(DES_CONTINUUM_COUPLED) THEN
          DES_SPX_DT = SPX_DT(1)
@@ -102,9 +103,6 @@
             IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
          ENDIF
       ENDIF
-
-
-      IF(CALL_USR) CALL USR0_DES
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>

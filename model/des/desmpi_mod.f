@@ -154,7 +154,6 @@
 
 !      call des_dbgmpi(5)
 
-
       IF(.NOT.MPPIC) THEN
 ! call ghost particle exchange in E-W, N-S, T-B order
          dsendbuf(1,:) = 0; drecvbuf(1,:) =0
@@ -956,6 +955,9 @@
             lbuf = lbuf + dimn
             omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
+
+            PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
+
             ighost_updated(llocpar) = .true.
             lnewcnt = lnewcnt-1
          else
@@ -994,6 +996,8 @@
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
+
+            PVOL(ispot) = (4.0D0/3.0D0)*PI*DES_RADIUS(ispot)**3
 
             IF (DO_OLD) THEN
                des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
