@@ -97,3 +97,93 @@
       RETURN
 
       END SUBROUTINE CHECK_GEOMETRY
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: CHECK_GEOMETRY_DES                                      !
+!  Author: Pradeep Gopalakrishnan                     Date:    Nov-11  !
+!                                                                      !
+!  Purpose: Checks the des grid input parameters.                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_GEOMETRY_DES
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Domain partition for DEM background mesh.
+      use discretelement, only: DESGRIDSEARCH_IMAX
+      use discretelement, only: DESGRIDSEARCH_JMAX
+      use discretelement, only: DESGRIDSEARCH_KMAX
+! Domain size specifed by the user.
+      use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
+! Maximum particle size.
+      use discretelement, only: MAX_RADIUS
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: UNDEFINED_I
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+
+      implicit none
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Maximum particle diameter.
+      DOUBLE PRECISION :: MAX_DIAM
+! Calculated cell dimension based on particle size
+      DOUBLE PRECISION :: WIDTH
+!......................................................................!
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("CHECK_GEOMETRY_DES")
+
+! Calculate the max particle diamter and cell width.
+      MAX_DIAM = 2.0d0*MAX_RADIUS
+      WIDTH = 3.0d0*(max_diam)
+
+! Calculate and/or verify the grid in the X-axial direction.
+      IF(DESGRIDSEARCH_IMAX == UNDEFINED_I) THEN
+         DESGRIDSEARCH_IMAX = max(int(XLENGTH/WIDTH), 1)
+      ELSEIF((XLENGTH/dble(DESGRIDSEARCH_IMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'X', MAX_DIAM,                           &
+            XLENGTH/dble(DESGRIDSEARCH_IMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+! Calculate and/or verify the grid in the Y-axial direction.
+      IF(DESGRIDSEARCH_JMAX == UNDEFINED_I) THEN
+         DESGRIDSEARCH_JMAX = max(int(YLENGTH/WIDTH), 1)
+      ELSEIF((YLENGTH/dble(DESGRIDSEARCH_JMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'Y', MAX_DIAM,                           &
+            YLENGTH/dble(DESGRIDSEARCH_JMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+! Calculate and/or verify the grid in the Z-axial direction.
+      IF(NO_K) THEN
+         DESGRIDSEARCH_KMAX = 1
+      ELSEIF(DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
+         DESGRIDSEARCH_KMAX = max(int(ZLENGTH/WIDTH), 1)
+      ELSEIF((ZLENGTH/dble(DESGRIDSEARCH_KMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'Z', MAX_DIAM,                           &
+            ZLENGTH/dble(DESGRIDSEARCH_KMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      CALL FINL_ERR_MSG
+
+ 1100 FORMAT('Error 1100: The des search grid is too fine in the ',A1, &
+         '-direction. The',/'maximum particle diameter is larger than',&
+         ' the cell width:',/2x,'MAX DIAM:   ',g12.5,/2x,'CELL ',      &
+         'WIDTH: ',g12.5,/'Decrease the values for DESGRIDSEARCH in ', &
+         'the mfix.dat file.')
+
+      RETURN
+      END SUBROUTINE CHECK_GEOMETRY_DES

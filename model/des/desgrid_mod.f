@@ -476,54 +476,8 @@
       DOUBLE PRECISION :: WIDTH
 !......................................................................!
 
-
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("DESGRID_INIT")
-
-! Calculate the max particle diamter and cell width.
-      MAX_DIAM = 2.0d0*MAX_RADIUS
-      WIDTH = 3.0d0*(max_diam)
-
-! Calculate and/or verify the grid in the X-axial direction.
-      IF(DESGRIDSEARCH_IMAX == UNDEFINED_I) &
-         DESGRIDSEARCH_IMAX = max(int(XLENGTH/WIDTH), 1)
-
-      IF((XLENGTH/dble(DESGRIDSEARCH_IMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'X', MAX_DIAM,                           &
-            XLENGTH/dble(DESGRIDSEARCH_IMAX)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-! Calculate and/or verify the grid in the Y-axial direction.
-      IF(DESGRIDSEARCH_JMAX == UNDEFINED_I) &
-         DESGRIDSEARCH_JMAX = max(int(YLENGTH/WIDTH), 1)
-
-      IF((YLENGTH/dble(DESGRIDSEARCH_JMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'Y', MAX_DIAM,                           &
-            YLENGTH/dble(DESGRIDSEARCH_JMAX)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-! Calculate and/or verify the grid in the Z-axial direction.
-      IF(NO_K) THEN
-         DESGRIDSEARCH_KMAX = 1
-      ELSEIF(DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
-         DESGRIDSEARCH_KMAX = max(int(ZLENGTH/WIDTH), 1)
-      ENDIF
-
-      IF((ZLENGTH/dble(DESGRIDSEARCH_KMAX)) < MAX_DIAM) THEN
-         WRITE(ERR_MSG, 1100) 'Z', MAX_DIAM,                           &
-            ZLENGTH/dble(DESGRIDSEARCH_KMAX)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
-
- 1100 FORMAT('Error 1100: The des search grid is too fine in the ',A1, &
-         '-direction. The',/'maximum particle diameter is larger than',&
-         ' the cell width:',/2x,'MAX DIAM:   ',g12.5,/2x,'CELL ',      &
-         'WIDTH: ',g12.5,/'Decrease the values for DESGRIDSEARCH in ', &
-         'the mfix.dat file.')
 
 ! set indices for all processors
      allocate (dg_istart1_all(0:numpes-1), dg_iend1_all(0:numpes-1))

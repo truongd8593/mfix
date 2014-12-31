@@ -21,10 +21,7 @@
       use run, only: PIC_SOLIDS, PIC_COUNT
 ! Flag: Solve species eq.
       USE run, only: SPECIES_EQ, ANY_SPECIES_EQ
-! User specified solids phase diameters.
-      USE physprop, only: D_p0
-! Max/Min discrete particle radi
-      USE discretelement, only: MAX_RADIUS, MIN_RADIUS
+
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
 ! Flag: Use MPPIC E-L model
@@ -53,8 +50,6 @@
 !---------------------------------------------------------------------//
 ! Maximum number of solids phases.
       use param, only: DIM_M
-! Value of undefined double precision values
-      use param1, only: UNDEFINED
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -122,6 +117,7 @@
          TFM_COUNT = TFM_COUNT + 1
       ENDIF
 
+
 ! Clear out the unused phases.
       SOLIDS_MODEL((MMAX+DES_MMAX)+1:DIM_M) = '---'
 
@@ -173,20 +169,11 @@
 
       IF(DES_CONTINUUM_HYBRID) CALL HYBRID_HACK
 
-! Initialize the max/min radius values for DES simulations.
-      MAX_RADIUS = -UNDEFINED
-      MIN_RADIUS =  UNDEFINED
-
 ! Overwrite user settings if no Lagrangian solids
       IF(.NOT.DISCRETE_ELEMENT) THEN
          DES_CONTINUUM_COUPLED = .FALSE.   ! This keyword might get removed.
          PRINT_DES_DATA = .FALSE.
          DES_ONEWAY_COUPLED = .FALSE.
-      ELSE
-! Determine the maximum particle size in the system (MAX_RADIUS). These
-! is needed for setting up the DES grid based on particle size.
-         MAX_RADIUS = 0.5d0*MAXVAL(D_P0((MMAX+1):(MMAX+DES_MMAX)))
-         MIN_RADIUS = 0.5d0*MINVAL(D_P0((MMAX+1):(MMAX+DES_MMAX)))
       ENDIF
 
       CALL FINL_ERR_MSG
