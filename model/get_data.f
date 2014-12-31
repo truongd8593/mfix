@@ -76,12 +76,12 @@
 ! Adjust partition for better load balance (done when RE_INDEXING is .TRUE.)
       CALL ADJUST_IJK_SIZE
 
-! Partition the domain and set indices
-      CALL GRIDMAP_INIT
-
-
 ! Check the minimum solids phase requirements.
       CALL CHECK_SOLIDS_MODEL_PREREQS
+
+! Partition the domain and set indices
+      CALL GRIDMAP_INIT
+      IF(DISCRETE_ELEMENT) CALL DESGRID_INIT
 
       CALL CHECK_RUN_CONTROL
       CALL CHECK_NUMERICS
@@ -93,7 +93,6 @@
 
 ! Basic geometry checks.
       CALL CHECK_GEOMETRY(SHIFT)
-      IF(DISCRETE_ELEMENT) CALL CHECK_GEOMETRY_DES
 
 ! Set grid spacing variables.
       CALL SET_GEOMETRY
@@ -105,7 +104,6 @@
       CALL CHECK_POINT_SOURCES
 
       CALL CHECK_CHEMICAL_RXNS
-!     CALL CHECK_CHEMICAL_RXNS_DES
       CALL CHECK_ODEPACK_STIFF_CHEM
 
 
@@ -137,7 +135,6 @@
       ENDIF
 
       IF(DISCRETE_ELEMENT) THEN 
-         CALL DESGRID_INIT
          CALL DES_STL_PREPROCESSING
          IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
             IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG

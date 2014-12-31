@@ -38,8 +38,6 @@
       USE discretelement, only: DES_NEIGHBOR_SEARCH
 ! User specified data out format (VTP, TecPlot)
       USE discretelement, only: DES_OUTPUT_TYPE
-! Max/Min particle radi
-      USE discretelement, only: MAX_RADIUS, MIN_RADIUS
 ! Runtime Flag: Periodic boundaries
       USE discretelement, only: DES_PERIODIC_WALLS
       USE discretelement, only: DES_PERIODIC_WALLS_X
@@ -86,12 +84,9 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE")
 
-
+! Initialize the DES diameter and density variables
       DES_D_p0 = UNDEFINED
       DES_RO_s = UNDEFINED
-
-      MAX_RADIUS = -UNDEFINED
-      MIN_RADIUS =  UNDEFINED
 
       M = 0
       DO lM=1, MMAX+DES_MMAX
@@ -99,15 +94,10 @@
 ! The accounts for an offset between the DEM and TFM phase indices
          IF(SOLIDS_MODEL(lM) == 'TFM') CYCLE
          M = M+1
-
 ! Copy of the input keyword values into discrete solids arrays. We may be
 ! able to remove the DES_ specific variables moving forward.
          DES_D_p0(M) = D_p0(lM)
          DES_RO_s(M) = merge(BASE_ROs(lM), RO_s0(lM), SOLVE_ROs(lM))
-! Determine the maximum particle size in the system (MAX_RADIUS), which
-! in turn is used for various tasks
-         MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
-         MIN_RADIUS = MIN(MIN_RADIUS, 0.5d0*DES_D_P0(M))
       ENDDO
 
 

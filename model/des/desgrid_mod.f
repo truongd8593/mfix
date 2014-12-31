@@ -1,29 +1,16 @@
-!------------------------------------------------------------------------
-! Module           : desgrid
-! Purpose          : Defines the desgrid and sets the indices; also sets the
-!                    communication between the desgrid for ghost cell exchange
-! Author           : Pradeep G
-! Comments         : The variables are named similar to the fluid grid
-!                    more descriptions about naming could be found in
-!                    compar_mod under dmp_modules folder
-!
-! Contains following subroutines:
-!    desgrid_init, desgrid_check, desgrid_pic,
-!    desgrid_neigh_build, des_dbggrid
-!------------------------------------------------------------------------
-      module desgrid
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use param1
-      use funits
-      use geometry
-      use compar
-      use discretelement
-      use constant
-      use desmpi_wrapper
-!-----------------------------------------------
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module: desgrid                                                     !
+!  Author: Pradeep G                                                   !
+!                                                                      !
+!  Purpose: Defines the desgrid and sets the indices; also sets the    !
+!  communication between the desgrid for ghost cell exchange.          !
+!                                                                      !
+!  Comments: The variables are named similar to the fluid grid. More   !
+!  descriptions about naming can be found in compar_mod under          !
+!  dmp_modules folder.                                                 !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      MODULE DESGRID
 
 ! variables related to global block structure
 !---------------------------------------------------------------------//
@@ -91,186 +78,386 @@
       integer dg_c1_gl, dg_c2_gl, dg_c3_gl  ! global
       integer dg_c1_lo, dg_c2_lo, dg_c3_lo  ! local
 
-      integer, dimension(:), allocatable :: dg_c1_all,dg_c2_all,dg_c3_all
-
+      integer, dimension(:), allocatable :: dg_c1_all
+      integer, dimension(:), allocatable :: dg_c2_all
+      integer, dimension(:), allocatable :: dg_c3_all
 
       contains
 
-! following functions are to get proc number from I,J,K position
-        integer function procijk(fi,fj,fk)
-          implicit none
-          integer fi,fj,fk
-          procijk =fi+fj*nodesi+fk*nodesi*nodesj
-        end function procijk
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: PROCIJJK                                                  !
+!                                                                      !
+!  Purpose: Calculate the process that owns the cell with the given    !
+!  I, J, K indicies.                                                   !
+!......................................................................!
+      integer function procijk(fi,fj,fk)
+      use compar, only: nodesi, nodesj, nodesk
+      implicit none
+      integer fi,fj,fk
+      procijk =fi+fj*nodesi+fk*nodesi*nodesj
+      end function procijk
 
-        integer function iofproc(fijk)
-          implicit none
-          integer fijk
-          iofproc = mod(mod(fijk,nodesi*nodesj),nodesi)
-        end function iofproc
 
-        integer function jofproc(fijk)
-          implicit none
-          integer fijk
-          jofproc = mod(fijk - iofproc(fijk),nodesi*nodesj)/nodesi
-        end function jofproc
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: IofPROC                                                   !
+!                                                                      !
+!  Purpose: Return the I index of the current rank given an IJK value. !
+!......................................................................!
+      integer function iofproc(fijk)
+      use compar, only: nodesi, nodesj
+      implicit none
+      integer fijk
+      iofproc = mod(mod(fijk,nodesi*nodesj),nodesi)
+      end function iofproc
 
-        integer function kofproc(fijk)
-          implicit none
-          integer fijk
-          kofproc = (fijk-iofproc(fijk)-jofproc(fijk)*nodesi)/(nodesi*nodesj)
-        end function kofproc
 
-! functions for desgrid indices
-        integer function dg_funijk(fi,fj,fk)
-          implicit none
-          integer fi,fj,fk
-          dg_funijk = fj+fi*dg_c1_lo+fk*dg_c2_lo+dg_c3_lo
-        end function dg_funijk
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: JofPROC                                                   !
+!                                                                      !
+!  Purpose: Return the J index of the current rank given an IJK value. !
+!......................................................................!
+      integer function jofproc(fijk)
+      use compar, only: nodesi, nodesj
+      implicit none
+      integer fijk
+      jofproc = mod(fijk - iofproc(fijk),nodesi*nodesj)/nodesi
+      end function jofproc
 
-        integer function dg_funijk_gl(fi,fj,fk)
-          implicit none
-          integer fi,fj,fk
-          dg_funijk_gl = fj+fi*dg_c1_gl+fk*dg_c2_gl+dg_c3_gl
-        end function dg_funijk_gl
 
-        integer function dg_funijk_proc(fi,fj,fk,fproc)
-          implicit none
-          integer fi,fj,fk,fproc
-          dg_funijk_proc = fj+fi*dg_c1_all(fproc)+fk*dg_c2_all(fproc)+dg_c3_all(fproc)
-        end function dg_funijk_proc
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: KofPROC                                                   !
+!                                                                      !
+!  Purpose: Return the K index of the current rank given an IJK value. !
+!......................................................................!
+      integer function kofproc(fijk)
+      use compar, only: nodesi, nodesj
+      implicit none
+      integer fijk
+      kofproc = (fijk - iofproc(fijk) - jofproc(fijk)*nodesi) / &
+         (nodesi*nodesj)
+      end function kofproc
 
-! to find surrounding cells
-        integer function dg_funim(fijk)
-          implicit none
-          integer fijk
-          dg_funim = fijk - dg_c1_lo
-        end function dg_funim
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNIJK                                                 !
+!                                                                      !
+!  Purpose: Calculate the desgrid IJK given I, J, K components. The    !
+!  result is local to the rank calculating the IJK.                    !
+!......................................................................!
+      integer function dg_funijk(fi,fj,fk)
+      implicit none
+      integer fi,fj,fk
+      dg_funijk = fj+fi*dg_c1_lo+fk*dg_c2_lo+dg_c3_lo
+      end function dg_funijk
 
-        integer function dg_funip(fijk)
-          implicit none
-          integer fijk
-          dg_funip = fijk + dg_c1_lo
-        end function dg_funip
 
-        integer function dg_funjm(fijk)
-          implicit none
-          integer fijk
-          dg_funjm = fijk - 1
-        end function dg_funjm
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNIJK_GL                                              !
+!                                                                      !
+!  Purpose: Calculate the global desgrid IJK given I, J, K components. !
+!  result should be consistent across all ranks.                       !
+!......................................................................!
+      integer function dg_funijk_gl(fi,fj,fk)
+      implicit none
+      integer fi,fj,fk
+      dg_funijk_gl = fj+fi*dg_c1_gl+fk*dg_c2_gl+dg_c3_gl
+      end function dg_funijk_gl
 
-        integer function dg_funjp(fijk)
-          implicit none
-          integer fijk
-          dg_funjp = fijk + 1
-        end function dg_funjp
 
-        integer function dg_funkm(fijk)
-          implicit none
-          integer fijk
-          dg_funkm = fijk - dg_c2_lo
-        end function dg_funkm
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNIJK_PROC                                            !
+!                                                                      !
+!  Purpose: Calculate the local desgrid IJK given I, J, K components   !
+!  for the specified processor.                                        !
+!......................................................................!
+      integer function dg_funijk_proc(fi,fj,fk,fproc)
+      implicit none
+      integer fi,fj,fk,fproc
+      dg_funijk_proc = fj + fi*dg_c1_all(fproc) + &
+         fk*dg_c2_all(fproc) + dg_c3_all(fproc)
+      end function dg_funijk_proc
 
-        integer function dg_funkp(fijk)
-          implicit none
-          integer fijk
-          dg_funkp = fijk + dg_c2_lo
-        end function dg_funkp
 
-! following are used to find the i,j,k values from global ijk and local ijk
-        integer function dg_jof_gl(fijk)
-          implicit none
-          integer fijk
-          dg_jof_gl = mod(mod(fijk-1,dg_c2_gl),dg_c1_gl)+dg_jmin2
-        end function dg_jof_gl
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNIM                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the west.       !
+!  This is equivalent to calculating: dg_funijk(I-1,J,K)               !
+!......................................................................!
+      integer function dg_funim(fijk)
+      implicit none
+      integer fijk
+      dg_funim = fijk - dg_c1_lo
+      end function dg_funim
 
-        integer function dg_iof_gl(fijk)
-          implicit none
-          integer fijk
-          dg_iof_gl = (mod(fijk-dg_jof_gl(fijk)+dg_jmin2-1,dg_c2_gl))/dg_c1_gl + dg_imin2
-        end function dg_iof_gl
 
-        integer function dg_kof_gl(fijk)
-          implicit none
-          integer fijk
-          dg_kof_gl = (fijk-dg_c3_gl-dg_iof_gl(fijk)*dg_c1_gl-dg_jof_gl(fijk))/dg_c2_gl
-        end function dg_kof_gl
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNIP                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the east.       !
+!  This is equivalent to calculating: dg_funijk(I+1,J,K)               !
+!......................................................................!
+      integer function dg_funip(fijk)
+      implicit none
+      integer fijk
+      dg_funip = fijk + dg_c1_lo
+      end function dg_funip
 
-        integer function dg_jof_lo(fijk)
-          implicit none
-          integer fijk
-          dg_jof_lo = mod(mod(fijk-1,dg_c2_lo),dg_c1_lo)+dg_jstart2
-        end function dg_jof_lo
 
-        integer function dg_iof_lo(fijk)
-          implicit none
-          integer fijk
-          dg_iof_lo = (mod(fijk-dg_jof_lo(fijk)+dg_jstart2-1,dg_c2_lo))/dg_c1_lo + dg_istart2
-        end function dg_iof_lo
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNJM                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the south.      !
+!  This is equivalent to calculating: dg_funijk(I,J-1,K)               !
+!......................................................................!
+      integer function dg_funjm(fijk)
+      implicit none
+      integer fijk
+      dg_funjm = fijk - 1
+      end function dg_funjm
 
-        integer function dg_kof_lo(fijk)
-          implicit none
-          integer fijk
-          dg_kof_lo = (fijk-dg_c3_lo-dg_iof_lo(fijk)*dg_c1_lo-dg_jof_lo(fijk))/dg_c2_lo
-        end function dg_kof_lo
 
-! converting ijk from current proc to another
-        integer function dg_ijkconv(fijk,fface,fto_proc)
-          implicit none
-          integer fijk,fto_proc,fface
-          dg_ijkconv = dg_funijk_proc(dg_iof_lo(fijk)+dg_cycoffset(fface,1), &
-               dg_jof_lo(fijk)+dg_cycoffset(fface,2), &
-               dg_kof_lo(fijk)+dg_cycoffset(fface,3), fto_proc)
-        end function dg_ijkconv
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNJP                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the north.      !
+!  This is equivalent to calculating: dg_funijk(I,J+1,K)               !
+!......................................................................!
+      integer function dg_funjp(fijk)
+      implicit none
+      integer fijk
+      dg_funjp = fijk + 1
+      end function dg_funjp
 
-! location i,j,k from position
-        integer function iofpos(fpos)
-          implicit none
-          double precision fpos
-          iofpos = floor((fpos-dg_xstart)*dg_dxinv) + dg_istart1
-        end function iofpos
 
-        integer function jofpos(fpos)
-          implicit none
-          double precision fpos
-          jofpos = floor((fpos-dg_ystart)*dg_dyinv) + dg_jstart1
-        end function jofpos
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNKM                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the bottom.     !
+!  This is equivalent to calculating: dg_funijk(I,J,K-1)               !
+!......................................................................!
+      integer function dg_funkm(fijk)
+      implicit none
+      integer fijk
+      dg_funkm = fijk - dg_c2_lo
+      end function dg_funkm
 
-        integer function kofpos(fpos)
-          implicit none
-          double precision fpos
-          kofpos = floor((fpos-dg_zstart)*dg_dzinv) + dg_kstart1
-        end function kofpos
 
-        logical function dg_is_ON_myPE_OWNS(lI, lJ, lK)
-        implicit none
-        integer, intent(in) :: lI, lJ, lK
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_FUNJM                                                  !
+!                                                                      !
+!  Purpose: Return the local IJK value for the cell to the top.        !
+!  This is equivalent to calculating: dg_funijk(I,J,K+1)               !
+!......................................................................!
+      integer function dg_funkp(fijk)
+      implicit none
+      integer fijk
+      dg_funkp = fijk + dg_c2_lo
+      end function dg_funkp
 
-        dg_is_ON_myPE_OWNS = (&
-           (dg_istart <= lI) .AND. (lI <= dg_iend) .AND. &
-           (dg_jstart <= lJ) .AND. (lJ <= dg_jend) .AND. &
-           (dg_kstart <= lK) .AND. (lK <= dg_kend))
 
-        end function
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_JOF_GL                                                 !
+!                                                                      !
+!  Purpose: Calculate the J index from a global IJK value.             !
+!......................................................................!
+      integer function dg_jof_gl(fijk)
+      implicit none
+      integer fijk
+      dg_jof_gl = mod(mod(fijk-1,dg_c2_gl),dg_c1_gl)+dg_jmin2
+      end function dg_jof_gl
 
-        logical function dg_is_ON_myPE_plus1layers(lI, lJ, lK)
-        implicit none
-        integer, intent(in) :: lI, lJ, lK
 
-        dg_is_ON_myPE_plus1layers = (&
-           (dg_istart2 <= lI) .AND. (lI <= dg_iend2) .AND. &
-           (dg_jstart2 <= lJ) .AND. (lJ <= dg_jend2) .AND. &
-           (dg_kstart2 <= lK) .AND. (lK <= dg_kend2))
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_IOF_GL                                                 !
+!                                                                      !
+!  Purpose: Calculate the I index from a global IJK value.             !
+!......................................................................!
+      integer function dg_iof_gl(fijk)
+      implicit none
+      integer fijk
+      dg_iof_gl = (mod(fijk-dg_jof_gl(fijk)+dg_jmin2-1,dg_c2_gl)) /    &
+         dg_c1_gl + dg_imin2
+      end function dg_iof_gl
 
-        end function
 
-!------------------------------------------------------------------------
-! Subroutine       : desgrid_init
-! Purpose          : sets indices for desgrid and defines constants
-!                    required for dg_funijk,dg_funijk_gl
-!                    communication between the desgrid for ghost cell exchange
-!------------------------------------------------------------------------
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_KOF_GL                                                 !
+!                                                                      !
+!  Purpose: Calculate the K index from a global IJK value.             !
+!......................................................................!
+      integer function dg_kof_gl(fijk)
+      implicit none
+      integer fijk
+      dg_kof_gl = (fijk-dg_c3_gl-dg_iof_gl(fijk)*                      &
+         dg_c1_gl-dg_jof_gl(fijk))/dg_c2_gl
+      end function dg_kof_gl
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_JOF_LO                                                 !
+!                                                                      !
+!  Purpose: Calculate the J index from a local IJK value.              !
+!......................................................................!
+      integer function dg_jof_lo(fijk)
+      implicit none
+      integer fijk
+      dg_jof_lo = mod(mod(fijk-1,dg_c2_lo),dg_c1_lo)+dg_jstart2
+      end function dg_jof_lo
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_IOF_LO                                                 !
+!                                                                      !
+!  Purpose: Calculate the I index from a local IJK value.              !
+!......................................................................!
+      integer function dg_iof_lo(fijk)
+      implicit none
+      integer fijk
+      dg_iof_lo = (mod(fijk-dg_jof_lo(fijk)+dg_jstart2-1,dg_c2_lo)) /  &
+         dg_c1_lo + dg_istart2
+      end function dg_iof_lo
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_KOF_LO                                                 !
+!                                                                      !
+!  Purpose: Calculate the K index from a local IJK value.              !
+!......................................................................!
+      integer function dg_kof_lo(fijk)
+      implicit none
+      integer fijk
+      dg_kof_lo = (fijk-dg_c3_lo-dg_iof_lo(fijk)*                      &
+         dg_c1_lo-dg_jof_lo(fijk))/dg_c2_lo
+      end function dg_kof_lo
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: DG_IJKCONV                                                !
+!                                                                      !
+!  Purpose: Convert the IJK from once process to another.              !
+!                                                                      !
+!......................................................................!
+      integer function dg_ijkconv(fijk,fface,fto_proc)
+      implicit none
+      integer fijk,fto_proc,fface
+      dg_ijkconv = dg_funijk_proc(dg_iof_lo(fijk)+                    &
+        dg_cycoffset(fface,1), dg_jof_lo(fijk)+dg_cycoffset(fface,2), &
+        dg_kof_lo(fijk)+dg_cycoffset(fface,3), fto_proc)
+      end function dg_ijkconv
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: IofPOS                                                    !
+!                                                                      !
+!  Purpose: Calculate the cell I index containing the given position.  !
+!......................................................................!
+      integer function iofpos(fpos)
+      implicit none
+      double precision fpos
+      iofpos = floor((fpos-dg_xstart)*dg_dxinv) + dg_istart1
+      end function iofpos
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: JofPOS                                                    !
+!                                                                      !
+!  Purpose: Calculate the cell J index containing the given position.  !
+!......................................................................!
+      integer function jofpos(fpos)
+      implicit none
+      double precision fpos
+      jofpos = floor((fpos-dg_ystart)*dg_dyinv) + dg_jstart1
+      end function jofpos
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: KofPOS                                                    !
+!                                                                      !
+!  Purpose: Calculate the cell K index containing the given position.  !
+!......................................................................!
+      integer function kofpos(fpos)
+      implicit none
+      double precision fpos
+      kofpos = floor((fpos-dg_zstart)*dg_dzinv) + dg_kstart1
+      end function kofpos
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: dg_is_ON_myPE_OWNS                                        !
+!                                                                      !
+!  Purpose: Determine if the current rank owns this cell based on the  !
+!  I, J, K values.                                                     !
+!......................................................................!
+      logical function dg_is_ON_myPE_OWNS(lI, lJ, lK)
+      implicit none
+      integer, intent(in) :: lI, lJ, lK
+
+      dg_is_ON_myPE_OWNS = (&
+         (dg_istart <= lI) .AND. (lI <= dg_iend) .AND. &
+         (dg_jstart <= lJ) .AND. (lJ <= dg_jend) .AND. &
+         (dg_kstart <= lK) .AND. (lK <= dg_kend))
+
+      end function
+
+
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+!  Function: dg_is_ON_myPE_plus1layers                                 !
+!                                                                      !
+!  Purpose: Determine if the current rank contains the current cell    !
+!  as its own or in its single layer of desgrid ghost cells.           !
+!......................................................................!
+      logical function dg_is_ON_myPE_plus1layers(lI, lJ, lK)
+      implicit none
+      integer, intent(in) :: lI, lJ, lK
+
+      dg_is_ON_myPE_plus1layers = (&
+         (dg_istart2 <= lI) .AND. (lI <= dg_iend2) .AND. &
+         (dg_jstart2 <= lJ) .AND. (lJ <= dg_jend2) .AND. &
+         (dg_kstart2 <= lK) .AND. (lK <= dg_kend2))
+
+      end function
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DESGRID_INIT                                            !
+!  Author: Pradeep G                                                   !
+!                                                                      !
+!  Purpose: Sets indices for the DESGRID and defines constants         !
+!  required for the DESGRID functions. This is needed for              !
+!  communication between the DESGRID for ghost cell exchanges.         !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine desgrid_init()
+
+      use param1
+      use funits
+      use geometry
+      use compar
+      use discretelement
+      use constant
+      use desmpi_wrapper
+
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! Domain partition for DEM background mesh.
+      use discretelement, only: DESGRIDSEARCH_IMAX
+      use discretelement, only: DESGRIDSEARCH_JMAX
+      use discretelement, only: DESGRIDSEARCH_KMAX
+! Domain size specifed by the user.
+      use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
+! Maximum particle size.
+      use discretelement, only: MAX_RADIUS
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: UNDEFINED_I
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
+
       implicit none
 !-----------------------------------------------
 ! Local varibles
@@ -279,7 +466,64 @@
       double precision :: ltempdx,ltempdy,ltempdz
       integer :: lijkproc,liproc,ljproc,lkproc,lis,lie,ljs,lje,lks,lke
       integer :: lijk
-!-----------------------------------------------
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Maximum particle diameter.
+      DOUBLE PRECISION :: MAX_DIAM
+! Calculated cell dimension based on particle size
+      DOUBLE PRECISION :: WIDTH
+!......................................................................!
+
+
+
+! Initialize the error manager.
+      CALL INIT_ERR_MSG("DESGRID_INIT")
+
+! Calculate the max particle diamter and cell width.
+      MAX_DIAM = 2.0d0*MAX_RADIUS
+      WIDTH = 3.0d0*(max_diam)
+
+! Calculate and/or verify the grid in the X-axial direction.
+      IF(DESGRIDSEARCH_IMAX == UNDEFINED_I) &
+         DESGRIDSEARCH_IMAX = max(int(XLENGTH/WIDTH), 1)
+
+      IF((XLENGTH/dble(DESGRIDSEARCH_IMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'X', MAX_DIAM,                           &
+            XLENGTH/dble(DESGRIDSEARCH_IMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+! Calculate and/or verify the grid in the Y-axial direction.
+      IF(DESGRIDSEARCH_JMAX == UNDEFINED_I) &
+         DESGRIDSEARCH_JMAX = max(int(YLENGTH/WIDTH), 1)
+
+      IF((YLENGTH/dble(DESGRIDSEARCH_JMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'Y', MAX_DIAM,                           &
+            YLENGTH/dble(DESGRIDSEARCH_JMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+! Calculate and/or verify the grid in the Z-axial direction.
+      IF(NO_K) THEN
+         DESGRIDSEARCH_KMAX = 1
+      ELSEIF(DESGRIDSEARCH_KMAX == UNDEFINED_I) THEN
+         DESGRIDSEARCH_KMAX = max(int(ZLENGTH/WIDTH), 1)
+      ENDIF
+
+      IF((ZLENGTH/dble(DESGRIDSEARCH_KMAX)) < MAX_DIAM) THEN
+         WRITE(ERR_MSG, 1100) 'Z', MAX_DIAM,                           &
+            ZLENGTH/dble(DESGRIDSEARCH_KMAX)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+
+ 1100 FORMAT('Error 1100: The des search grid is too fine in the ',A1, &
+         '-direction. The',/'maximum particle diameter is larger than',&
+         ' the cell width:',/2x,'MAX DIAM:   ',g12.5,/2x,'CELL ',      &
+         'WIDTH: ',g12.5,/'Decrease the values for DESGRIDSEARCH in ', &
+         'the mfix.dat file.')
 
 ! set indices for all processors
      allocate (dg_istart1_all(0:numpes-1), dg_iend1_all(0:numpes-1))
@@ -499,6 +743,7 @@
       end do
 
 !      call des_dbggrid
+      CALL FINL_ERR_MSG
       end subroutine desgrid_init
 
 
@@ -515,6 +760,16 @@
 !                    updated by this routine
 !------------------------------------------------------------------------
       subroutine desgrid_pic(plocate)
+
+      use param1
+      use funits
+      use geometry
+      use compar
+      use discretelement
+      use constant
+      use desmpi_wrapper
+
+
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -608,6 +863,14 @@
 ! Modules
 !-----------------------------------------------
       Use des_thermo
+      use param1
+      use funits
+      use geometry
+      use compar
+      use discretelement
+      use constant
+      use desmpi_wrapper
+
       implicit none
 !-----------------------------------------------
 ! Local variables
@@ -758,6 +1021,15 @@
 ! Purpose          : For printing the indices used for desgrid
 !------------------------------------------------------------------------
       subroutine des_dbggrid()
+
+      use param1
+      use funits
+      use geometry
+      use compar
+      use discretelement
+      use constant
+      use desmpi_wrapper
+
       implicit none
 !-----------------------------------------------
 ! Local variables

@@ -24,6 +24,9 @@
       USE run
       USE stl
       use desmpi, only: DES_PAR_EXCHANGE, MPPIC, DESMPI_INIT
+
+      use constant, only: PI
+
 !     use stl_preproc_des
 
       IMPLICIT NONE
