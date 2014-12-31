@@ -60,7 +60,8 @@
 ! 1.4 Geometry and discretization section
 ! ---------------------------------------------------------------->>>
              COORDINATES, IMAX, DX, XMIN, XLENGTH, JMAX, DY, YLENGTH,&
-             KMAX, DZ, ZLENGTH, NO_I, NO_J, NO_K,&
+             KMAX, DZ, ZLENGTH, NO_I, NO_J, NO_K, &
+             CYLINDRICAL_2D, I_CYL_NUM, I_CYL_TRANSITION,&             
              CYCLIC_X, CYCLIC_Y, CYCLIC_Z, CYCLIC_X_PD, CYCLIC_Y_PD,&
              CYCLIC_Z_PD, &
 ! ----------------------------------------------------------------<<<

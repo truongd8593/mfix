@@ -169,10 +169,16 @@
 !                      Radial location at cell center (x_i).
 !                      X = 1 in Cartesian coordinates.
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X
+      
+!                      For cylindrical_2d simulation      
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  cyl_X       
 !
 !                      Radial location at East face (x_i+1/2).
 !                      X_E = 1 in Cartesian coordinates.
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  X_E
+
+!                      For cylindrical_2d simulation      
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  cyl_X_E      
 !
 !                      Reciprocal of radial location at cell center (1/x_i).
 !                      oX = 1 in Cartesian coordinates.
@@ -220,6 +226,17 @@
 !
 !                      Variable to flag cylindrical coordinates
       LOGICAL          CYLINDRICAL
+      
+!                      Variables for cylindrical_2d simulation
+!		       Turn on the cylindrical_2d simulation 		
+      logical          CYLINDRICAL_2D
+!		       Variables for cylindrical_2d simulation      
+!		       Half width of the plate in term of cell count 	      
+      integer          I_CYL_NUM
+!		       Variables for cylindrical_2d simulation      
+!		       Cell number used to smooth the transition from plate to wedge 	      
+      integer          I_CYL_TRANSITION      
+      
 !
 !                      Factor for x direction averaging of U velocity: FX_i
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FX
