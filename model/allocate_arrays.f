@@ -426,7 +426,7 @@
       use geometry, only: DX, XLENGTH, oDX, oDX_E
       use geometry, only: DY, YLENGTH, oDZ, oDZ_T
       use geometry, only: DZ, ZLENGTH, oDY, oDY_N
-      use geometry, only: X, X_E, oX, oX_E, XMIN
+      use geometry, only: X, X_E, oX, oX_E, XMIN, cyl_X, cyl_X_E
       use geometry, only: Z, Z_T
 ! Domain indices.
       use geometry, only: IJKMAX3
@@ -506,7 +506,9 @@
 ! Allocate geometry components related to the mesh. Check the
 ! allocation error status and abort if any failure is detected.
       ALLOCATE( X     (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( cyl_X     (0:DIMENSION_I), STAT=IER)       
       ALLOCATE( X_E   (0:DIMENSION_I), STAT=IER)
+      ALLOCATE( cyl_X_E   (0:DIMENSION_I), STAT=IER)       
       ALLOCATE( oX    (0:DIMENSION_I), STAT=IER)
       ALLOCATE( oX_E  (0:DIMENSION_I), STAT=IER)
       ALLOCATE( oDX   (0:DIMENSION_I), STAT=IER)

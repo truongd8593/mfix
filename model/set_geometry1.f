@@ -46,6 +46,7 @@
 !
 !                      Indices
       INTEGER          I, J, K, IP, JP, KP, IJK
+      INTEGER          i_cyl_min, i_cyl_max, smooth_i      
 !
 !-----------------------------------------------
 !
@@ -53,6 +54,17 @@
 !
 !!!!$omp  parallel do private( I, J, K, IP, JP, KP, IJK)  &
 !!!!$omp  schedule(dynamic,chunk_size)
+!  For cylindrical_2D simulations
+      IF(CYLINDRICAL_2D)THEN
+         if(mod(imax,2).eq.1)then     ! odd
+            i_cyl_min = (imax+1)/2 + 1 - i_cyl_num
+            i_cyl_max = (imax+1)/2 + 1 + i_cyl_num
+         else
+            i_cyl_min = (imax)/2 + 2 - i_cyl_num
+            i_cyl_max = (imax)/2 + 1 + i_cyl_num     
+         endif       
+      ENDIF	
+	
       DO IJK = ijkstart3, ijkend3
 
 !
@@ -87,6 +99,35 @@
          AXZ_V(IJK) = AXZ(IJK)
          AXZ_W(IJK) = DX(I)*(X(I)*HALF*(DZ(K)+DZ(KP)))
 
+         
+      if(cylindrical_2d)then
+         VOL(IJK) = DX(I)*DY(J)*(cyl_X(I)) 
+         VOL_U(IJK) = HALF*(DX(I)+DX(IP))*DY(J)*(HALF*(cyl_X(I)+cyl_X(IP))) 
+         VOL_V(IJK) = DX(I)*HALF*(DY(J)+DY(JP))*(cyl_X(I)) 
+         VOL_W(IJK) = DX(I)*DY(J)*(cyl_X(I)) 
+!
+         AYZ(IJK) = DY(J)*(cyl_X_E(I)) 
+         AYZ_U(IJK) = DY(J)*(cyl_X(IP)) 
+         AYZ_V(IJK) = HALF*(DY(J)+DY(JP))*(cyl_X_E(I)) 
+         AYZ_W(IJK) = DY(J)*(cyl_X_E(I)) 
+!
+         AXY(IJK) = DX(I)*DY(J) 
+         AXY_U(IJK) = HALF*(DX(I)+DX(IP))*DY(J) 
+         AXY_V(IJK) = DX(I)*HALF*(DY(J)+DY(JP)) 
+         AXY_W(IJK) = AXY(IJK) 
+!
+         AXZ(IJK) = DX(I)*(cyl_X(I)) 
+         AXZ_U(IJK) = HALF*(DX(I)+DX(IP))*(HALF*(cyl_X(I)+cyl_X(IP))) 
+         AXZ_V(IJK) = AXZ(IJK) 
+         AXZ_W(IJK) = DX(I)*(cyl_X(I))   
+                
+         if(i.ge.i_cyl_min -i_cyl_transition .and. i.le.i_cyl_max +i_cyl_transition)then
+            vol_u(ijk) = half*dx(i)*dy(j)*half*(half*(cyl_x_e(i-1) + cyl_x_e(i))+cyl_x_e(i)) + &
+               half*dx(i+1)*dy(j)*half*(half*(cyl_x_e(i) + cyl_x_e(i+1))+cyl_x_e(i)) 
+            axz_u(IJK) = half*dx(i)*half*(half*(cyl_x_e(i-1) + cyl_x_e(i))+cyl_x_e(i)) + &
+               half*dx(i+1)*half*(half*(cyl_x_e(i) + cyl_x_e(i+1))+cyl_x_e(i)) 
+         endif        
+      endif         
 
       END DO
       RETURN

@@ -18,7 +18,7 @@
       use geometry, only: Z, Z_T
 ! Domain indices.
       use geometry, only: IJKMAX3
-      use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3
+      use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3, IMAX
       use geometry, only: DO_J, JMIN1, JMAX1, JMAX2, JMAX3, JMIN3
       use geometry, only: DO_K, KMIN1, KMAX1, KMAX2, KMAX3, KMIN3
 ! Averaging factors.
@@ -41,6 +41,9 @@
       use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
 ! Flag for cylindrical coordinates.
       use geometry, only: CYLINDRICAL
+! For cylindrical_2d simulations       
+      use geometry, only: CYLINDRICAL_2D, I_CYL_NUM, I_CYL_TRANSITION
+      use geometry, only: cyl_X, cyl_X_E      
 ! Axis decomposition
       USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
       USE param, only: DIMENSION_3, DIMENSION_4
@@ -84,6 +87,9 @@
       INTEGER :: IER
 ! External function for comparing two values.
       LOGICAL , EXTERNAL :: COMPARE
+! Local variables for cylindrical_2d simulation      
+      integer i_cyl_min, i_cyl_max
+      double precision l_ver, l_ab, rrr, ddy        
 !......................................................................!
 
 
@@ -184,7 +190,113 @@
          X_E(IMIN3:IMAX3) = ONE
          OX(IMIN3:IMAX3) = ONE
          OX_E(IMIN3:IMAX3) = ONE
-         ODX(IMIN3:IMAX3) = ONE/DX(IMIN3:IMAX3)
+         ODX(IMIN3:IMAX3) = ONE/DX(IMIN3:IMAX3)         
+
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++<<
+!     Implementation of the 2.5D model by Li et al. CES 123 (2015) 236-246.
+!     A computational domain of two wedges connected by a thin plate is used.	
+!     The model is invoked by setting CYLINDRICAL_2D to .TRUE.
+!     The half width of the plate is determined by I_CYL_NUM	
+!     Please refer to the paper for details of the model
+!+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++<<	
+         IF(CYLINDRICAL_2D)THEN
+
+            IF (XMIN == ZERO) THEN 
+               IF (DO_I) THEN 
+                  cyl_X(1) = -HALF*DX(1) -half*xlength
+                  cyl_X_E(1) = 0.D0 -half*xlength
+               ELSE 
+                  cyl_X(1) = HALF*DX(1) -half*xlength 
+                  cyl_X_E(1) = DX(1) -half*xlength
+               ENDIF
+            ELSE   
+               IF (DO_I) THEN 
+                  cyl_X_E(1) = XMIN -half*xlength 
+                  cyl_X(1) = XMIN - HALF*DX(1) -half*xlength 
+               ELSE 
+                  cyl_X_E(1) = XMIN + DX(1) -half*xlength
+                  cyl_X(1) = XMIN + HALF*DX(1) -half*xlength
+               ENDIF 
+            ENDIF 
+
+            IF (DO_I) THEN 
+               DO I = IMIN1, IMAX2 
+                  cyl_X(I) = cyl_X(I-1) + (DX(I-1)+DX(I))/2.
+                  cyl_X_E(I) = cyl_X_E(I-1) + DX(I)
+               END DO           
+               
+               DO I = IMIN3, IMAX3 
+                  cyl_X(I) = cyl_X(I) *2.d0*sin(dz(1)/2.d0)
+                  cyl_X_E(I) = cyl_X_E(I) *2.d0*sin(dz(1)/2.d0)
+                  cyl_x(i) = abs(cyl_x(i))
+                  cyl_x_e(i) = abs(cyl_x_e(i))         
+               END DO                        
+               
+               if(mod(imax,2).eq.1)then     ! odd
+                  i_cyl_min = (imax+1)/2 + 1 - i_cyl_num
+                  i_cyl_max = (imax+1)/2 + 1 + i_cyl_num
+                     
+                  do i=i_cyl_min, i_cyl_max
+                     cyl_x(i)=dx(i)*(i_cyl_num + half) *2.d0*sin(dz(1)/2.d0)
+                  enddo
+                  do i=i_cyl_min ,i_cyl_max -1
+                     cyl_x_e(i)=dx(i)*(i_cyl_num + half) *2.d0*sin(dz(1)/2.d0)
+                  enddo             
+               else                    ! even
+                  i_cyl_min = (imax)/2 + 2 - i_cyl_num
+                  i_cyl_max = (imax)/2 + 1 + i_cyl_num
+                    
+                  do i=i_cyl_min, i_cyl_max
+                     cyl_x(i)=dx(i)* i_cyl_num *2.d0*sin(dz(1)/2.d0)
+                  enddo
+                  do i=i_cyl_min, i_cyl_max -1
+                     cyl_x_e(i)=dx(i)* i_cyl_num *2.d0*sin(dz(1)/2.d0)
+                  enddo                
+               endif
+
+!  To smooth the transition from cylindrical to 2D domain                          
+!  Only one or two cells transition are implemented.
+               
+               if(i_cyl_transition .eq. 1)then
+                  l_ver=dx(i_cyl_min)*tan(dz(1)/2.0)
+                  l_ab = sqrt(l_ver*l_ver + (dx(i_cyl_min-1)+dx(i_cyl_min))**2)
+                  rrr = half*l_ab/sin(dz(1)/4.0)
+                  ddy = rrr - sqrt(rrr**2 - dx(i_cyl_min)**2)           
+                
+                  cyl_x_e(i_cyl_min - 1) = cyl_x_e(i_cyl_min) + 2*ddy
+                  cyl_x_e(i_cyl_max ) = cyl_x_e(i_cyl_max - 1) + 2*ddy       
+               elseif(i_cyl_transition .eq. 2) then
+                  l_ver=2.d0*dx(i_cyl_min)*tan(dz(1)/2.0)
+                  l_ab = sqrt(l_ver*l_ver + (4.d0*dx(i_cyl_min))**2)
+                  rrr = half*l_ab/sin(dz(1)/4.0)
+                  ddy = rrr - sqrt(rrr**2 - dx(i_cyl_min)**2)    
+                   
+                  cyl_x_e(i_cyl_min ) = cyl_x_e(i_cyl_min + 1) + 2*ddy       
+                  cyl_x_e(i_cyl_max - 1) = cyl_x_e(i_cyl_max - 2) + 2*ddy
+             
+                  ddy = rrr - sqrt(rrr**2 - (2.d0*dx(i_cyl_min))**2)
+                  cyl_x_e(i_cyl_min - 1 ) = cyl_x_e(i_cyl_min + 1) + 2*ddy
+                  cyl_x_e(i_cyl_max ) = cyl_x_e(i_cyl_max - 2) + 2*ddy
+
+                  ddy = rrr - sqrt(rrr**2 - (3.d0*dx(i_cyl_min))**2)          
+                  cyl_x_e(i_cyl_min - 2 ) = cyl_x_e(i_cyl_min + 1) + 2*ddy          
+                  cyl_x_e(i_cyl_max + 1) = cyl_x_e(i_cyl_max - 2) + 2*ddy                      
+               else ! no smooth
+               	       
+               endif
+                
+               do i=i_cyl_min - i_cyl_transition, i_cyl_max + i_cyl_transition
+                  cyl_x(i) = half * (cyl_x_e(i-1) + cyl_x_e(i))
+               enddo    
+
+!  To make sure all locations are positive
+               do i= imin3,imax3
+                  cyl_x(i)=abs(cyl_x(i))
+                  cyl_x_e(i)=abs(cyl_x_e(i))
+               enddo      
+            ENDIF  !IF (DO_I)
+         ENDIF  !IF(CYLINDRICAL_2D)THEN 
+         
       ENDIF
 
 
