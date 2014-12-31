@@ -70,7 +70,7 @@
       use run
       use sendrecv
       use usr
-
+      use mpi_comm_des, only: des_gather
 
       IMPLICIT NONE
 
