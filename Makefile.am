@@ -290,6 +290,12 @@ common_SOURCES = \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \
 	model/des/mfix_pic_mod.f \
+	model/des/mpi_comm_des_mod.f \
+	model/des/mpi_funs_des_mod.f \
+	model/des/mpi_init_des_mod.f \
+	model/des/mpi_node_des_mod.f \
+	model/des/mpi_pack_des_mod.f \
+	model/des/mpi_unpack_des_mod.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
 	model/des/particle_filter_mod.f \
