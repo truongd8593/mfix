@@ -24,12 +24,9 @@
       USE run
       USE stl
       use mfix_pic, only:  MPPIC
-
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_init_des, only: DESMPI_INIT
-
-
-!     use stl_preproc_des
+      use constant, only: PI
 
       IMPLICIT NONE
 !-----------------------------------------------

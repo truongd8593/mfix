@@ -47,7 +47,7 @@
 !
 !------------------------------------------------------------------------
       subroutine desmpi_unpack_ghostpar(pface)
-
+      use constant, only: PI
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
@@ -119,6 +119,8 @@
             des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
             lbuf = lbuf+3
 
+            PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
+
             omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
             lbuf = lbuf + ltordimn
             ighost_updated(llocpar) = .true.
@@ -175,6 +177,8 @@
             lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
+
+            PVOL(ispot) = (4.0D0/3.0D0)*PI*DES_RADIUS(ispot)**3
 
             IF (DO_OLD) THEN
                des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
