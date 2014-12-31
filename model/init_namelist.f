@@ -1020,7 +1020,15 @@
       Flux_g = UNDEFINED
 !</keyword>
 
-
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>
+!    Applies the 2.5D model for cylindrical column by combining 2D assumption
+!    and axi-symmetric assumption.!    
+!  </description>
+      CYLINDRICAL_2D = .FALSE.
+      I_CYL_NUM = 1
+      I_CYL_TRANSITION = 2
+!</keyword>
 
 !#####################################################################!
 !                               Gas Phase                             !
