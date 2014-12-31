@@ -296,8 +296,6 @@
          des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
          lbuf = lbuf + 3
 
-         omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
          omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
          lbuf = lbuf + ltordimn
          IF (DO_OLD) THEN

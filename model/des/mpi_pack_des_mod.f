@@ -197,8 +197,6 @@
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
             dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
             lbuf = lbuf+ltordimn
             IF (DO_OLD) THEN
