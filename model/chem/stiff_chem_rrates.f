@@ -74,7 +74,7 @@
 ! (2) Fluid cell index
       INTEGER, intent(in) :: lNEQ(NEQ_DIMN)
 ! Independent variable (not used)
-      INTEGER, intent(in) :: lTime
+      DOUBLE PRECISION, intent(in) :: lTime
 ! Array of dependent variable initial values.
       DOUBLE PRECISION, dimension(ODE_DIMN_all), intent(in)  :: Y
 ! Rate of change of dependent variables.
