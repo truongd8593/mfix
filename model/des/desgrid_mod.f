@@ -435,7 +435,6 @@
       use constant
       use desmpi_wrapper
 
-
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Domain partition for DEM background mesh.
