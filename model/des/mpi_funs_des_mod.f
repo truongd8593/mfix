@@ -224,7 +224,7 @@
                   des_vel_old(:,lcurpar)=0
                ENDIF
                des_vel_new(:,lcurpar)=0
-               des_vel_old(:,lcurpar)=0
+               omega_new(:,lcurpar)=0
 
                if(ENERGY_EQ) then
                   des_t_s_new(lcurpar)=0
@@ -237,8 +237,6 @@
 
                des_usr_var(1:3,lcurpar)= 0
 
-
-               omega_new(:,lcurpar)=0
             end do
          end do
       end do
