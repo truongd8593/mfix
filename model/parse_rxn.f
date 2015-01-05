@@ -33,7 +33,7 @@
       IMPLICIT NONE
 
 ! Input line from mfix.dat.
-      CHARACTER(len=*), INTENT(INOUT) :: LINE
+      CHARACTER(len=*), INTENT(IN) :: LINE
 ! Array of reaction names.
       INTEGER, INTENT(INOUT) :: lNoOfRxns
 ! Array of reaction names.

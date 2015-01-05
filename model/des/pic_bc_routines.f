@@ -12,24 +12,24 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, PCELL, &
+      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, &
       OVERLAP_EXISTS)
 
-      USE run
-      USE param1
-      USE discretelement, only: dimn
-      USE geometry
       USE constant
       USE cutcell
-      USE indices
-      USE stl
       USE des_stl_functions
-      USE mpi_utility
+      USE desgrid
+      USE discretelement, only: dimn
       USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE param1
+      USE run
+      USE stl
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
-      INTEGER , INTENT(IN) :: PCELL(4)
       LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
 
       INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
@@ -57,14 +57,19 @@
 
       OVERLAP_EXISTS = .false.
 
-      IF (NO_NEIGHBORING_FACET_DES(PCELL(4))) RETURN
+      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
+      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
+      K_CELL = 1
+      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+
+      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
+      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
 
       LIST_OF_CELLS(:) = -1
       NEIGH_CELLS = 0
       NEIGH_CELLS_NONNAT  = 0
-      CELL_ID = PCELL(4)
-      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
 
+      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
 
       IF (COUNT_FAC.gt.0)   then
          !first add the facets in the cell the particle currently resides in
@@ -72,23 +77,19 @@
          LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
       ENDIF
 
-      I_CELL = PCELL(1)
-      J_CELL = PCELL(2)
-      K_CELL = PCELL(3)
+      IPLUS1  =  MIN( I_CELL + 1, DG_IEND2)
+      IMINUS1 =  MAX( I_CELL - 1, DG_ISTART2)
 
-      IPLUS1  =  MIN( I_CELL + 1, IEND2)
-      IMINUS1 =  MAX( I_CELL - 1, ISTART2)
+      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
+      JMINUS1 =  MAX( J_CELL - 1, DG_JSTART2)
 
-      JPLUS1  =  MIN (J_CELL + 1, JEND2)
-      JMINUS1 =  MAX( J_CELL - 1, JSTART2)
-
-      KPLUS1  =  MIN (K_CELL + 1, KEND2)
-      KMINUS1 =  MAX( K_CELL - 1, KSTART2)
+      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
+      KMINUS1 =  MAX( K_CELL - 1, DG_KSTART2)
 
       DO K = KMINUS1, KPLUS1
          DO J = JMINUS1, JPLUS1
             DO I = IMINUS1, IPLUS1
-               IJK = FUNIJK(I,J,K)
+               IJK = DG_FUNIJK(I,J,K)
                COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
                IF(COUNT_FAC.EQ.0) CYCLE
                NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
@@ -803,7 +804,7 @@
                      IF(PIC_BCMI_INCL_CUTCELL(BCV_I)) &
                           CALL CHECK_IF_PARCEL_OVELAPS_STL &
                           (des_pos_new(1:dimn, NEW_SPOT), &
-                          PIJK(NEW_SPOT, 1:4), DELETE_PART)
+                          DELETE_PART)
 
                      IF(.NOT.DELETE_PART) THEN
 

@@ -114,7 +114,7 @@
       USE stl, only: LIST_FACET_AT_DES
       USE stl, only: NO_NEIGHBORING_FACET_DES
       USE param
-      USE stl
+      USE stl, only: DIM_STL, MAX_FACETS_PER_CELL_DES
 
       IMPLICIT NONE
 

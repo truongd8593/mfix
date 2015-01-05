@@ -337,7 +337,7 @@
             IF(FLUID_AT(IJK)) then
 
                CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), &
-                    part%rad, DELETE_PART)
+                    DELETE_PART)
             ELSE
                DELETE_PART = .true.
             ENDIF

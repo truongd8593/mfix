@@ -90,8 +90,8 @@
 !-----------------------------------------------
 ! Final value of CPU time.
       DOUBLE PRECISION :: CPU1
-! CPU time used for the computations.
-      DOUBLE PRECISION :: CPUTIME_USED
+! time used for computations.
+      DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
 ! CPU time unit.
       CHARACTER(LEN=4) :: TUNIT
 ! Save TIME in input file for RESTART_2
@@ -433,7 +433,8 @@
 
 ! Compute the CPU time and write it out in the .OUT file.
       CPUTIME_USED = CPU1 - CPU0 - CPU_IO
-      CALL WRITE_OUT3 (CPUTIME_USED,WALL_TIME() - WALL0, CPU_IO)
+      WALLTIME_USED = WALL_TIME() - WALL0
+      CALL WRITE_OUT3 (CPUTIME_USED, WALLTIME_USED, CPU_IO)
 
 ! JFD: cartesian grid implementation
       IF(WRITE_DASHBOARD) THEN

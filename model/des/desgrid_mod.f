@@ -428,11 +428,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine desgrid_init()
 
-      use param1
       use funits
-      use geometry
       use compar
-      use discretelement
+      use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z, DIMN
+      use discretelement, only: XE, YN, ZT
       use constant
       use desmpi_wrapper
 
@@ -447,7 +446,6 @@
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
 ! Maximum particle size.
       use discretelement, only: MAX_RADIUS
-
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

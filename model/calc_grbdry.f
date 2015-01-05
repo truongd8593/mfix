@@ -745,7 +745,7 @@
            S_DDOT_S, S_dd)
 
         CALL CALC_Gw_Hw_Cw(g0(M), EPs_avg(M), EPg_avg, ep_star_avg, &
-           g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, ROs_avg, &
+           g0EPs_avg, TH_avg(M), Mu_g_avg, RO_g_avg, ROs_avg(M), &
            DP_avg(M), K_12_avg, Tau_12_avg, Tau_1_avg, VREL, VSLIP,&
            DEL_DOT_U, S_DDOT_S, S_dd, VELS, WVELS, M, gw, hw, cw)
       ELSE
