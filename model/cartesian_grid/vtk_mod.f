@@ -76,13 +76,13 @@
 ! Current VTK region
       INTEGER :: VTK_REGION
 
-! Time interval at which vtk files are saved    
+! Time interval at which vtk files are saved
       DOUBLE PRECISION :: VTK_DT(DIMENSION_VTK)
 
-! Current vtk time      
+! Current vtk time
       DOUBLE PRECISION :: VTK_TIME(DIMENSION_VTK)
 
-! FRAME index of vtk file      
+! FRAME index of vtk file
       INTEGER :: FRAME(DIMENSION_VTK)
 
 ! PVD file initialization flag
@@ -110,15 +110,15 @@
       DOUBLE PRECISION :: VTK_Z_t (DIMENSION_VTK)
 
 ! VTK number of slices in x-direction
-      INTEGER :: VTK_NXS(DIMENSION_VTK) 
+      INTEGER :: VTK_NXS(DIMENSION_VTK)
 
 ! VTK number of slices in y-direction
-      INTEGER :: VTK_NYS(DIMENSION_VTK) 
+      INTEGER :: VTK_NYS(DIMENSION_VTK)
 
 ! VTK number of slices in z-direction
-      INTEGER :: VTK_NZS(DIMENSION_VTK) 
+      INTEGER :: VTK_NZS(DIMENSION_VTK)
 
-! VTK filename base 
+! VTK filename base
       CHARACTER(LEN=64) :: VTK_FILEBASE(DIMENSION_VTK)
 
 ! Gas phase volume fraction
@@ -129,21 +129,6 @@
 
 ! Solids pressure
       LOGICAL :: VTK_P_star(DIMENSION_VTK)
-
-! Macroscopic density of solids phases
-      LOGICAL :: VTK_ROP_s(DIMENSION_VTK, DIM_M)
-
-! Solids phase volume fraction
-      LOGICAL :: VTK_EP_s (DIMENSION_VTK, DIM_M)
-
-! Gas phase temperature
-      LOGICAL :: VTK_T_g(DIMENSION_VTK)
-
-! Solids phase temperature
-      LOGICAL :: VTK_T_s(DIMENSION_VTK, DIM_M)
-
-! Granular temperature
-      LOGICAL :: VTK_Theta_m(DIMENSION_VTK, DIM_M)
 
 ! X-component of gas velocity
       LOGICAL :: VTK_U_g(DIMENSION_VTK)
@@ -163,18 +148,72 @@
 ! Z-component of solids phase velocity
       LOGICAL :: VTK_W_s(DIMENSION_VTK, DIM_M)
 
+! Gas velocity vector
+      LOGICAL :: VTK_VEL_g(DIMENSION_VTK)
+
+! Solids velocity vector
+      LOGICAL :: VTK_VEL_s(DIMENSION_VTK, DIM_M)
+
+! Macroscopic density of solids phases
+      LOGICAL :: VTK_ROP_s(DIMENSION_VTK, DIM_M)
+
+! Solids phase volume fraction
+      LOGICAL :: VTK_EP_s (DIMENSION_VTK, DIM_M)
+
+! Gas temperature
+      LOGICAL :: VTK_T_g(DIMENSION_VTK)
+
+! Solids temperature
+      LOGICAL :: VTK_T_s(DIMENSION_VTK, DIM_M)
+
 ! Gas species mass fractions
       LOGICAL :: VTK_X_g(DIMENSION_VTK, DIM_N_g)
 
 ! Solids species mass fractions
       LOGICAL :: VTK_X_s(DIMENSION_VTK, DIM_M, DIM_N_s)
 
+! Granular temperature
+      LOGICAL :: VTK_Theta_m(DIMENSION_VTK, DIM_M)
+
 ! Scalar value
       LOGICAL :: VTK_Scalar(DIMENSION_VTK, DIM_scalar)
+
+! Reaction rates
+      LOGICAL, DIMENSION(:,:), ALLOCATABLE:: VTK_RRate
 
 ! K & Epsilon values
       LOGICAL :: VTK_K_Turb_G(DIMENSION_VTK)
       LOGICAL :: VTK_E_Turb_G(DIMENSION_VTK)
 
+! Vorticity magnitude
+      LOGICAL :: VTK_VORTICITY(DIMENSION_VTK)
 
+! Lambda_2 (vortex core indicator)
+      LOGICAL :: VTK_LAMBDA_2(DIMENSION_VTK)
+
+! Grid partition
+      LOGICAL :: VTK_PARTITION(DIMENSION_VTK)
+
+! Boundary condition ID
+      LOGICAL :: VTK_BC_ID(DIMENSION_VTK)
+
+! Wall distance
+      LOGICAL :: VTK_DWALL(DIMENSION_VTK)
+
+! Facet count (DES)
+      LOGICAL :: VTK_FACET_COUNT_DES(DIMENSION_VTK)
+
+! Neighboring facets (DES)
+      LOGICAL :: VTK_NB_FACET_DES(DIMENSION_VTK)
+
+! Cell IJK index
+      LOGICAL :: VTK_IJK(DIMENSION_VTK)
+
+! Cut face normal vector
+      LOGICAL :: VTK_NORMAL(DIMENSION_VTK)
+
+! Debug variable
+      LOGICAL :: VTK_DEBUG(DIMENSION_VTK,15)
+
+      INTEGER, DIMENSION(DIMENSION_VTK,DIM_VTK_VAR) :: VTK_VARLIST
       END MODULE vtk
