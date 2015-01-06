@@ -58,7 +58,7 @@
 ! local variables
 !-----------------------------------------------
       integer :: lcurpar,lparid,lprvijk,lijk,lparijk,lparcnt,ltot_ind
-      integer :: ltordimn,lpacketsize,lbuf,lindx,llocpar,lnewcnt,lpicloc
+      integer :: lpacketsize,lbuf,lindx,llocpar,lnewcnt,lpicloc
       logical,dimension(:),allocatable :: lfound
       integer,dimension(:),allocatable :: lnewspot,lnewpic
 !-----------------------------------------------
@@ -67,9 +67,8 @@
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-      ltordimn = merge(1,3,NO_K)
 
-      lpacketsize = 2*dimn + ltordimn+ 5
+      lpacketsize = 2*dimn + 3+ 5
       lparcnt = drecvbuf(1,pface)
       lnewcnt = lparcnt
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2))
@@ -79,52 +78,76 @@
 
       do lcurpar = 1,lparcnt
          lbuf = (lcurpar-1)*lpacketsize+ibufoffset
-         lparid  = drecvbuf(lbuf,pface); lbuf = lbuf + 1
-         lparijk = drecvbuf(lbuf,pface); lbuf = lbuf + 1
-         lprvijk = drecvbuf(lbuf,pface); lbuf = lbuf + 1
-! locate the particles first based on previous ijk and then based on current ijk
+
+! 1) Global ID
+         lparid  = drecvbuf(lbuf,pface)
+         lbuf = lbuf + 1
+! 2) DES Grid IJK
+         lparijk = drecvbuf(lbuf,pface)
+         lbuf = lbuf + 1
+! 3) DES Grid IJK - Previous
+         lprvijk = drecvbuf(lbuf,pface)
+         lbuf = lbuf + 1
+
+! Determine if this particle already exists on this process as a
+! ghost particle. If so, (lfound), then the current infomration is
+! updated on the current process. Otherwise (.NOT.lfound) a new
+! ghost particle is created on this process.
          lfound(lcurpar) = locate_par(lparid,lprvijk,llocpar)
          if (lparijk .ne. lprvijk .and. .not.lfound(lcurpar)) then
             lfound(lcurpar) = locate_par(lparid,lparijk,llocpar)
          endif
+
          if(lfound(lcurpar)) then
+! Store the local variables
             dg_pijk(llocpar) = lparijk
             dg_pijkprv(llocpar) = lprvijk
+
+! 4) Radious
             des_radius(llocpar) = drecvbuf(lbuf,pface)
             lbuf = lbuf + 1
+! 5) Phase index
             pijk(llocpar,5) = drecvbuf(lbuf,pface)
             lbuf = lbuf + 1
-            IF (DO_OLD) THEN
-               des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
-               des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
-               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)
-               omega_old(:,llocpar)= omega_new(:,llocpar)
-            ENDIF
+! 6) Position
             des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
+! 7) Translational Velocity
             des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-
+! 8) Rotational Velocity
+            omega_new(1:3,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+! 9) Temperature
             if(ENERGY_EQ)then
                des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
                lbuf = lbuf + 1
             endif
-
+! 10) Species Composition
             if(ANY_SPECIES_EQ)then
                des_x_s(llocpar,1:dimension_n_s) = &
                   drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
                lbuf = lbuf+dimension_n_s
             endif
 
+! 11) User Variables
             des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
             lbuf = lbuf+3
 
+! Calculate the volume of the ghost particle.
             PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
-
-            omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-            lbuf = lbuf + ltordimn
+! Flag that the ghost particle was updated.
             ighost_updated(llocpar) = .true.
             lnewcnt = lnewcnt-1
+
+! Copy the current value to the previous value if needed.
+            IF (DO_OLD) THEN
+               des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
+               des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
+               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)
+               omega_old(:,llocpar)= omega_new(:,llocpar)
+            ENDIF
+
          else
             lnewpic(lparijk) = lnewpic(lparijk) + 1
          endif
@@ -138,12 +161,21 @@
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
             lbuf = (lcurpar-1)*lpacketsize+ibufoffset
-            lparid  = drecvbuf(lbuf,pface); lbuf = lbuf + 1
-            lparijk = drecvbuf(lbuf,pface); lbuf = lbuf + 1
-            lprvijk = drecvbuf(lbuf,pface); lbuf = lbuf + 1
+
+!  1) Global particle ID
+            lparid  = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
+!  2) DES grid IJK
+            lparijk = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
+!  3) DES grid IJK - Previous
+            lprvijk = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
+! Locate the first open space in the particle array.
             do while(pea(ispot,1))
                ispot = ispot + 1
             enddo
+! Set the flags for the ghost particle and store the local variables.
             pea(ispot,1) = .true.
             pea(ispot,2) = .false.
             pea(ispot,3) = .false.
@@ -151,30 +183,36 @@
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk
             dg_pijkprv(ispot) = lprvijk
-            des_radius(ispot) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
-            pijk(ispot,5) = drecvbuf(lbuf,pface) ; lbuf = lbuf + 1
+!  4) Particle radius
+            des_radius(ispot) = drecvbuf(lbuf,pface)
+            lbuf = lbuf + 1
+!  5) Particle phase index
+            pijk(ispot,5) = drecvbuf(lbuf,pface) 
+            lbuf = lbuf + 1
+!  6) Particle position
             des_pos_new(1:dimn,ispot)= drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
+!  7) Particle velocity
             des_vel_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-
+!  8) Particle rotational velocity
+            omega_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
+            lbuf = lbuf + dimn
+!  9) Particle temperature.
             if(ENERGY_EQ)then
                des_t_s_new(ispot) = drecvbuf(lbuf,pface)
                lbuf = lbuf + 1
             endif
-
+! 10) Particle species composition
             if(ANY_SPECIES_EQ)then
                des_x_s(ispot,1:dimension_n_s) = &
                   drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
                lbuf = lbuf+dimension_n_s
             endif
-
+! 11) User varaible
             des_usr_var(1:3,ispot)= drecvbuf(lbuf:lbuf+3-1,pface)
             lbuf = lbuf+3
 
-            omega_new(1:ltordimn,ispot) = &
-               drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-            lbuf = lbuf + ltordimn
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
 
@@ -183,8 +221,8 @@
             IF (DO_OLD) THEN
                des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
                des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
-               if(ENERGY_EQ)des_t_s_old(ispot) = des_t_s_new(ispot)
-               omega_old(1:ltordimn,ispot) = omega_new(1:ltordimn,ispot)
+               omega_old(1:3,ispot) = omega_new(1:3,ispot)
+               if(ENERGY_EQ) des_t_s_old(ispot) = des_t_s_new(ispot)
             ENDIF
          enddo
       endif
@@ -216,14 +254,13 @@
       integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,&
                  lneighid,lneighijk,lneighprvijk
       logical :: lfound
-      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,lcount
+      integer :: lpacketsize,lbuf,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
       integer :: cc,ii,kk,num_pairs_sent
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
-      ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + 15
+      lpacketsize = 9*dimn + 3*4 + 15
       lparcnt = drecvbuf(1,pface)
 
 ! if mppic make sure enough space available
@@ -296,24 +333,24 @@
          des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
          lbuf = lbuf + 3
 
-         omega_new(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
+         omega_new(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
+         lbuf = lbuf + 3
          IF (DO_OLD) THEN
             des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
             des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            omega_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-            lbuf = lbuf + ltordimn
+            omega_old(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
+            lbuf = lbuf + 3
             des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-            rot_acc_old(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-            lbuf = lbuf + ltordimn
+            rot_acc_old(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
+            lbuf = lbuf + 3
          ENDIF
          fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
          lbuf = lbuf + dimn
-         tow(1:ltordimn,llocpar) = drecvbuf(lbuf:lbuf+ltordimn-1,pface)
-         lbuf = lbuf + ltordimn
+         tow(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
+         lbuf = lbuf + 3
 
       end do
 

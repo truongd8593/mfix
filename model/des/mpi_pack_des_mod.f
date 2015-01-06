@@ -56,10 +56,9 @@
 ! local variables
 !-----------------------------------------------
       integer :: lijk,lindx,ltot_ind,lpicloc,lpar_cnt,lcurpar
-      integer :: ltordimn,lpacketsize,lbuf
+      integer :: lpacketsize,lbuf
 !-----------------------------------------------
-      ltordimn = merge(1,3,NO_K)
-      lpacketsize = 2*dimn + ltordimn+ 5
+      lpacketsize = 2*dimn + 3+ 5
       lpar_cnt = 0
       ltot_ind = isendindices(1,pface)
       do lindx = 2,ltot_ind+1
@@ -68,34 +67,48 @@
             lbuf = lpar_cnt*lpacketsize+ibufoffset
             lcurpar = dg_pic(lijk)%p(lpicloc)
             if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar) ) cycle
-            dsendbuf(lbuf,pface) = iglobal_id(lcurpar);lbuf = lbuf +1
+
+! 1) Global ID
+            dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
+            lbuf = lbuf +1
+! 2) DES grid IJK
             dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
             lbuf = lbuf +1
+! 3) DES grid IJK - previous
             dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
             lbuf = lbuf +1
-            dsendbuf(lbuf,pface) = des_radius(lcurpar); lbuf = lbuf + 1
-            dsendbuf(lbuf,pface) = pijk(lcurpar,5); lbuf = lbuf + 1
+! 4) Radius
+            dsendbuf(lbuf,pface) = des_radius(lcurpar)
+            lbuf = lbuf + 1
+! 5) Phase index
+            dsendbuf(lbuf,pface) = pijk(lcurpar,5)
+            lbuf = lbuf + 1
+! 6) Position
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
             lbuf = lbuf + dimn
+! 7) Translational Velocity
             dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
             lbuf = lbuf + dimn
+! 8) Rotational Velocity
+            dsendbuf(lbuf:lbuf+dimn-1,pface) = omega_new(1:dimn,lcurpar)
+            lbuf = lbuf + dimn
 
+! 9) Temperature
             if(ENERGY_EQ)then
                dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
               lbuf = lbuf +1
             endif
-
+! 10) Species Composition
             if(ANY_SPECIES_EQ)then
                dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
                   des_x_s(lcurpar,1:dimension_n_s)
                lbuf = lbuf+dimension_n_s
             endif
 
+! 11) User Variable
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
-            lbuf = lbuf + ltordimn
             lpar_cnt = lpar_cnt + 1
          end do
       end do
@@ -127,15 +140,14 @@
       integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
       integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
                  lpicloc,lparcnt,lcurpar
-      integer :: lpacketsize,lbuf,ltordimn,ltmpbuf,num_pairs_to_send,lpairsize
+      integer :: lpacketsize,lbuf,ltmpbuf,num_pairs_to_send,lpairsize
 
       logical, allocatable, dimension(:) :: going_to_send
 
 !-----------------------------------------------
 
 ! pack the particle crossing the boundary
-      ltordimn = merge(1,3,NO_K)
-      lpacketsize = 9*dimn + ltordimn*4 + 15
+      lpacketsize = 9*dimn + 3*4 + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
 
@@ -150,6 +162,11 @@
             if (pea(lcurpar,4)) cycle ! if ghost particle then cycle
 
             going_to_send(lcurpar) = .true.
+
+       IF(iGLOBAL_ID(lcurpar) == 1641 .OR. iGLOBAL_ID(lcurpar) == 777) THEN
+
+          write(*,*) 'I am packing particle: ',iGLOBAL_ID(lcurpar),'on',myPE
+       ENDIF
 
             lbuf = lparcnt*lpacketsize + ibufoffset
             dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
@@ -197,24 +214,24 @@
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
 
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_new(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
+            dsendbuf(lbuf:lbuf+3-1,pface) = omega_new(1:3,lcurpar)
+            lbuf = lbuf+3
             IF (DO_OLD) THEN
                dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
                lbuf = lbuf+dimn
                dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
                lbuf = lbuf+dimn
-               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = omega_old(1:ltordimn,lcurpar)
-               lbuf = lbuf+ltordimn
+               dsendbuf(lbuf:lbuf+3-1,pface) = omega_old(1:3,lcurpar)
+               lbuf = lbuf+3
                dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
                lbuf = lbuf+dimn
-               dsendbuf(lbuf:lbuf+ltordimn-1,pface) = rot_acc_old(1:ltordimn,lcurpar)
-               lbuf = lbuf+ltordimn
+               dsendbuf(lbuf:lbuf+3-1,pface) = rot_acc_old(1:3,lcurpar)
+               lbuf = lbuf+3
             ENDIF
             dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
             lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+ltordimn-1,pface) = tow(1:ltordimn,lcurpar)
-            lbuf = lbuf+ltordimn
+            dsendbuf(lbuf:lbuf+3-1,pface) = tow(1:3,lcurpar)
+            lbuf = lbuf+3
 
 ! In case of mppic remove the particles else
 ! Convert the particle as ghost and set the forces zero
