@@ -163,11 +163,6 @@
 
             going_to_send(lcurpar) = .true.
 
-       IF(iGLOBAL_ID(lcurpar) == 1641 .OR. iGLOBAL_ID(lcurpar) == 777) THEN
-
-          write(*,*) 'I am packing particle: ',iGLOBAL_ID(lcurpar),'on',myPE
-       ENDIF
-
             lbuf = lparcnt*lpacketsize + ibufoffset
             dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
             lbuf = lbuf+1
