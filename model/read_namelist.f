@@ -158,6 +158,21 @@
          /1x,'not pass column ',A,'.',2/3x,A,2/1x,'Please correct ',   &
          'the mfix.dat file.',/1X,70('*'),2/)
 
+! Make upper case all except species names
+         if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
+            index(LINE_STRING,'species_name') == 0 .AND. &
+            index(LINE_STRING,'Species_Name') == 0 .AND. &
+            index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
+            index(LINE_STRING,'Species_g') == 0 .AND.    &
+            index(LINE_STRING,'species_g') == 0 .AND.    &
+            index(LINE_STRING,'SPECIES_s') == 0 .AND.    &
+            index(LINE_STRING,'Species_s') == 0 .AND.    &
+            index(LINE_STRING,'species_s') == 0)         &
+            CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
+
+! All subsequent lines are thermochemical data
+         IF(LINE_STRING(1:11) == 'THERMO DATA') EXIT READ_LP
+
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
             ! At this point, the keyword was not identified therefore it is
@@ -192,21 +207,6 @@ CONTAINS
     LOGICAL, INTENT(OUT) ::ERROR
 
     ERROR = .FALSE.
-
-! Make upper case all except species names
-         if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
-            index(LINE_STRING,'species_name') == 0 .AND. &
-            index(LINE_STRING,'Species_Name') == 0 .AND. &
-            index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
-            index(LINE_STRING,'Species_g') == 0 .AND.    &
-            index(LINE_STRING,'species_g') == 0 .AND.    &
-            index(LINE_STRING,'SPECIES_s') == 0 .AND.    &
-            index(LINE_STRING,'Species_s') == 0 .AND.    &
-            index(LINE_STRING,'species_s') == 0)         &
-            CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
-
-! All subsequent lines are thermochemical data
-         IF(LINE_STRING(1:11) == 'THERMO DATA') RETURN
 
          CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
          CALL REMOVE_PAR_BLANKS(LINE_STRING)
