@@ -1,0 +1,23 @@
+MMS Test Suite
+Author: anirudd@vt.edu
+==
+
+Notes:
+
+1) mms_test.sh is the main script. This script goes into individual case
+folders, and runs various mesh levels. Finally it runs the collect_results.sh
+script to collect l2 de norms, linfinity de norms, l2 observed order, and
+linfinity observed order into a single file. The final product of this test
+suite is the 'mms_test_results.dat' file.
+
+2) Inside individual case folder, observed order files (ooa_l2.dat, and
+ooa_linf.dat) can be used to generate order of accuracy plots. Similarly,
+de_l2.dat and de_linf.dat can be used to generate discretization error norms
+plots. This data is in tecplot readable format.
+
+3) Most cases are set to run for 3 or 4 mesh levels depending on computational
+expense and whether the solution is in asymptotic range. Number of mesh levels
+to be run can be changed by uncommenting respective lines from the 
+"run_cases.sh" script within each case folder.
+
+4) Details of the cases are given in the case_details files.

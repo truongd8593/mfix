@@ -1,0 +1,121 @@
+ ! Horizontal Channel Simulation                
+ ! Run-control section                                                 
+ 
+   RUN_NAME              = 'HCS'           
+   DESCRIPTION           = 'Gas flow in a horizontal channel - Superbee'
+   RUN_TYPE              = 'new'             
+   UNITS                 = 'SI'
+   TIME                  = 0.0                !start time
+!   TSTOP                 = 10.0
+!   DT                    = 1.0E-3             !No time step specified --> Steady state solution
+   ENERGY_EQ             = .FALSE.            !do not solve energy eq
+   SPECIES_EQ(0)            = .FALSE.  	      !do not solve species eq
+   MAX_NIT 		 = 50000 
+
+   MMAX                  = 0
+
+   GRAVITY               = 0.0
+
+!   MOMENTUM_X_EQ(1) = .FALSE.
+!   MOMENTUM_Y_EQ(1) = .FALSE.
+
+   CALL_USR = .TRUE.
+
+   NORM_g = 0.0d0
+   TOL_RESID = 1.0E-10
+
+! Geometry Section                                    
+ 
+   COORDINATES           = 'cartesian' 
+   XLENGTH               =  0.200            ! length
+   IMAX                  =  32                 ! cells in i direction
+   YLENGTH               =  0.0100             ! height
+   JMAX                  =  32                ! cells in j direction
+   NO_K                  = .TRUE.              ! 2D, no k direction
+ 
+ ! Gas-phase Section                                                   
+   MU_g0                 = 0.001               ! constant gas viscosity
+!   MW_avg                = 28.97
+   RO_g0		             = 1.0
+  ! Changes in gas properties and flow characteristics (dp/dx etc.) must be
+  ! accompanied with these changes inside usr3.f for correct calculations of
+  ! discretization errors.
+
+
+ ! Solids-phase Section   
+   MMAX = 0                                             
+ 
+! Initial Conditions Section 
+
+   IC_X_w(1)             =   0.0000    
+   IC_X_e(1)             =   0.200    
+   IC_Y_s(1)             =   0.0000    
+   IC_Y_n(1)             =   0.0100    
+
+   IC_EP_g(1)            =   1.0   
+   IC_U_g(1)             =   10.0   
+   IC_V_g(1)             =   0.0     
+   IC_P_g(1)             =   101325.0
+   IC_T_g(1)             =   300.0
+   IC_X_g(1,1)		       =   1.0	   
+
+! Boundary conditions 
+ ! Inlet
+
+!   BC_X_w(1)             =   0.0000   
+!   BC_X_e(1)             =   0.0000 
+!   BC_Y_s(1)             =   0.0000 
+!   BC_Y_n(1)             =   0.0100 
+!   BC_TYPE(1)            =   'MI'  
+!   BC_Ep_g(1)            =   1.0   
+!   BC_U_g(1)             =   10.000	
+!   BC_V_g(1)             =   0.0000
+!   BC_P_g(1)             =   101325.
+!   BC_T_g(1)             =   300.0 
+ 
+! Outlet
+!  BC_X_w(2)             =   0.2000    
+!  BC_X_e(2)             =   0.2000    
+!  BC_Y_s(2)             =   0.0000    
+!  BC_Y_n(2)             =   0.0100    
+!  BC_TYPE(2)            =  'PO'
+!  BC_P_g(2)             =   101325.
+!  BC_T_g(2)             =   300.0  
+
+! Periodic BC
+  CYCLIC_X_PD = .TRUE.
+  DELP_X = 240.0
+ 
+! No slip wall at top and bottom
+	! bottom wall
+  BC_X_w(3) = 0.0 	
+  BC_X_e(3) = 0.2
+  BC_Y_s(3) = 0.0	
+  BC_Y_n(3) = 0.0
+  BC_TYPE(3) = 'NSW'
+
+	! top wall
+  BC_X_w(4) = 0.0 	
+  BC_X_e(4) = 0.2
+  BC_Y_s(4) = 0.01	
+  BC_Y_n(4) = 0.01
+  BC_TYPE(4) = 'NSW'
+
+ !  Output Control                                              
+ 
+   OUT_DT                = 1.                 
+   RES_DT                = 1.                 
+   NLOG                  = 1                  
+   FULL_LOG              = .TRUE.              
+   SPX_DT                = 9*1.
+
+   RESID_STRING = 'P0' 'U0' 'V0' 
+
+
+ LEQ_PC = 9*'NONE'
+
+ !  Sweep Direction
+ 
+! LEQ_SWEEP = 9*'ISIS' 
+
+ DISCRETIZE = 9*2

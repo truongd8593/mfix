@@ -1,0 +1,719 @@
+ ! General MMS BC Specification on a 3D Domain                
+ ! Run-control section                                                 
+ 
+   RUN_NAME              = 'MMS2D'           
+   DESCRIPTION           = 'MMS for 2D'
+   RUN_TYPE              = 'new'             
+!   RUN_TYPE              = 'restart_1'             
+   UNITS                 = 'SI'
+   TIME                  = 0.0                !start time
+   TSTOP                 = 1.0
+!   DT                    = 1.0E-3             !No time step specified --> Steady state solution
+   ENERGY_EQ             = .FALSE.            !do not solve energy eq
+   SPECIES_EQ(0)         = .FALSE.  	      !do not solve species eq
+   MAX_NIT 		 = 200000
+!   MAX_NIT 		 = 0
+
+   MMAX                  = 0
+
+   GRAVITY               = 0.0
+
+   SET_CORNER_CELLS      = .FALSE.
+
+   CALL_USR = .TRUE.
+
+   NORM_g = 0.0d0
+   TOL_RESID = 1.0E-10
+
+!   DETECT_STALL = .FALSE.
+
+ ! Geometry Section                                    
+ 
+   COORDINATES           = 'cartesian' 
+   XLENGTH               =  1.000            ! length
+   IMAX                  =  8          ! cells in i direction
+   YLENGTH               =  1.000             ! height
+   JMAX                  =  8           ! cells in j direction
+!   ZLENGTH               =  1.000             ! width
+!   KMAX                  =  16           ! cells in k direction    
+   NO_K                   = .TRUE.
+
+!   CPX	=	0.25	0.75	1.00
+!   NCX = 2  4 2
+!   !NCX	=	4 8 4  
+!   !NCX	=	8 16  8  
+!   ERX(2)	=		4.0	
+!   LAST_DX(1)	=	-1.00		
+!   FIRST_DX(3)	=			-1.00
+!
+!   CPY	=	0.25	0.75	1.00
+!   NCY = 2  4 2
+!   !NCY	=	4 8 4
+!   !NCY = 8  16  8
+!   ERY(2)	=		4.0	
+!   LAST_DY(1)	=	-1.00		
+!   FIRST_DY(3)	=			-1.00
+!
+!   CPZ	=	0.25	0.75	1.00
+!   NCZ = 2  4 2
+!   !NCZ	= 4 8 4
+!   !NCZ	= 8 16  8
+!   ERZ(2)	=		4.0	
+!   LAST_DZ(1)	=	-1.00		
+!   FIRST_DZ(3)	=			-1.00
+
+ ! Gas-phase Section                                                   
+   MU_g0                 = 1.0             
+   RO_g0		 = 1.0
+
+ ! Solids-phase Section   
+   MMAX = 0                                             
+
+! Initial Conditions Section 
+
+   IC_X_w(1)             =   0.0000    
+   IC_X_e(1)             =   1.0000    
+   IC_Y_s(1)             =   0.0000    
+   IC_Y_n(1)             =   1.0000   
+!   IC_Z_b(1)             =   0.0000    
+!   IC_Z_t(1)             =   1.0000   
+ 
+   IC_EP_g(1)            =   1.0   
+   IC_U_g(1)             =   5.0 
+   IC_V_g(1)             =   5.0
+!   IC_W_g(1)             =   1.0
+   IC_X_g(1,1)           =   1.0
+
+! Boundary conditions 
+ ! West
+   BC_X_w(1)             =   0.0000   
+   BC_X_e(1)             =   0.0000 
+   BC_Y_s(1)             =   0.0000 
+   BC_Y_n(1)             =   1.0000 
+!   BC_Z_b(1)             =   0.0000 
+!   BC_Z_t(1)             =   1.0000 
+   
+   BC_TYPE(1)            =   'MI'  
+
+   BC_Ep_g(1)            =   1.0   
+   BC_U_g(1)             =   5.0
+   BC_V_g(1)             =   5.0
+!   BC_W_g(1)             =   5.0
+   BC_P_g(1)             =   0.0
+
+ ! South
+   BC_X_w(2)             =   0.0000   
+   BC_X_e(2)             =   1.0000 
+   BC_Y_s(2)             =   0.0000 
+   BC_Y_n(2)             =   0.0000 
+!   BC_Z_b(2)             =   0.0000 
+!   BC_Z_t(2)             =   1.0000 
+   
+   BC_TYPE(2)            =   'MI'  
+
+   BC_Ep_g(2)            =   1.0   
+   BC_U_g(2)             =   5.0
+   BC_V_g(2)             =   5.0
+!   BC_W_g(2)             =   5.0
+   BC_P_g(2)             =   0.0
+
+ ! Bottom
+!   BC_X_w(3)             =   0.0000   
+!   BC_X_e(3)             =   1.0000 
+!   BC_Y_s(3)             =   0.0000 
+!   BC_Y_n(3)             =   1.0000 
+!   BC_Z_b(3)             =   0.0000 
+!   BC_Z_t(3)             =   0.0000 
+!   
+!   BC_TYPE(3)            =   'MI'  
+!
+!   BC_Ep_g(3)            =   1.0   
+!   BC_U_g(3)             =   5.0
+!   BC_V_g(3)             =   5.0
+!   BC_W_g(3)             =   5.0
+!   BC_P_g(3)             =   0.0
+
+ ! East
+   BC_X_w(4)             =   1.0000   
+   BC_X_e(4)             =   1.0000 
+   BC_Y_s(4)             =   0.0000 
+   BC_Y_n(4)             =   1.0000 
+!   BC_Z_b(4)             =   0.0000 
+!   BC_Z_t(4)             =   1.0000 
+   
+   BC_TYPE(4)            =   'MI'  
+
+   BC_Ep_g(4)            =   1.0   
+   BC_U_g(4)             =   -5.0
+   BC_V_g(4)             =   5.0
+!   BC_W_g(4)             =   5.0
+   BC_P_g(4)             =   0.0
+
+ ! North
+   BC_X_w(5)             =   0.0000   
+   BC_X_e(5)             =   1.0000 
+   BC_Y_s(5)             =   1.0000 
+   BC_Y_n(5)             =   1.0000 
+!   BC_Z_b(5)             =   0.0000 
+!   BC_Z_t(5)             =   1.0000 
+   
+   BC_TYPE(5)            =   'MI'  
+
+   BC_Ep_g(5)            =   1.0   
+   BC_U_g(5)             =   5.0
+   BC_V_g(5)             =   -5.0
+!   BC_W_g(5)             =   5.0
+   BC_P_g(5)             =   0.0
+
+ ! Top
+!   BC_X_w(6)             =   0.0000   
+!   BC_X_e(6)             =   1.0000 
+!   BC_Y_s(6)             =   0.0000 
+!   BC_Y_n(6)             =   1.0000 
+!   BC_Z_b(6)             =   1.0000 
+!   BC_Z_t(6)             =   1.0000 
+!   
+!   BC_TYPE(6)            =   'MI'  
+!
+!   BC_Ep_g(6)            =   1.0   
+!   BC_U_g(6)             =   5.0
+!   BC_V_g(6)             =   5.0
+!   BC_W_g(6)             =   -5.0
+!   BC_P_g(6)             =   0.0
+
+ !  Output Control                                              
+ 
+   OUT_DT                = 1.0                 
+   RES_DT                = 1.0                 
+   NLOG                  = 25                  
+   FULL_LOG              = .TRUE.              
+ 
+   RESID_STRING = 'P0' 'U0' 'V0' 'W0'
+
+   SPX_DT = 9*1.0
+
+! LEQ_METHOD = 9*1
+
+! LEQ_PC(1) = 9*'NONE'
+
+!  Sweep Direction
+ 
+! LEQ_SWEEP = 9*'ISIS' 
+
+DISCRETIZE = 9*2
+
+!  The decomposition in I, J, and K directions for a Distributed Memory Parallel machine
+  
+!  NODESI = 2   NODESJ = 2   NODESK = 1
+  NODESI = 1   NODESJ = 1   NODESK = 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
