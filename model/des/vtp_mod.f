@@ -473,11 +473,11 @@
                      IF(IDX_f == 0 .AND. IDX_b == 0) CYCLE
 ! Truncate the file name from the read data
                      WRITE (INPUT,"(A)") INPUT(IDX_f+6:IDX_b-1)
-! If the file name matches the current VTP record, return to the calling
-! routine to over-write this record.
+! If the file name matches the current VTP record, break the loop to
+! over-write this record.
                      IF(TRIM(FNAME_VTP) == TRIM(INPUT)) THEN
                         BACKSPACE(PVD_UNIT)
-                        RETURN
+                        EXIT
                      ENDIF
                   ENDDO
                ENDIF ! No errors

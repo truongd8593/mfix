@@ -480,7 +480,7 @@
 
 
 !------------------------------------------------------------------------
-! Subroutine       : des_restart_neigh
+! Subroutine       : DES_RESTART_GHOST
 ! Purpose          : restart file contains neighbour information in terms
 !                    global id. This routine converts the global id into
 !                    local particle number
@@ -491,7 +491,7 @@
 ! Parameters       : none
 !------------------------------------------------------------------------
 
-      subroutine des_restart_neigh
+      subroutine DES_RESTART_GHOST
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
@@ -541,11 +541,11 @@
       enddo
       call des_mpi_barrier
 
- 800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+ 800  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
          'WARNING: Unable to locate neighbor during restart (0)',/)
- 801  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+ 801  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
          'WARNING: Unable to locate neighbor during restart (1)',/)
 
-      end subroutine des_restart_neigh
+      end subroutine DES_RESTART_GHOST
 
       end module mpi_init_des
