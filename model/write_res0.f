@@ -389,7 +389,7 @@
 
 
 !  Add new write statements above this line.  Remember to update NEXT_RECA.
-!  Remember to change the version number near begining of this subroutine.
+!  Remember to change the version number near beginning of this subroutine.
 !  Also modify READ_RES0.  The routines such as OUT_BIN_512 etc. writes
 !  arrays dimensioned ARRAY(DIM).  So arrays dimensioned ARRAY(DIM1:DIM2)
 !  should be passed as ARRAY(DIM1) and array length as DIM2-DIM1+1.

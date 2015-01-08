@@ -45,7 +45,7 @@
 
       WRITE(ERR_MSG, 1100) trim(iVal(NFACTOR))
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
- 1100 FORMAT('Begining DEM settling period: ',A,' steps.')
+ 1100 FORMAT('Beginning DEM settling period: ',A,' steps.')
 
 
 ! Disable the coupling flag.

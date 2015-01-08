@@ -58,7 +58,7 @@
 ! index
       INTEGER :: L, M, maxL, maxM, N, maxN
 ! to indicate undefined residual in species eq at the
-! begining of iterations
+! beginning of iterations
       LOGICAL :: NO_RESID
 ! to check upper bound (speed of sound) limit for gas and
 ! solids velocity components

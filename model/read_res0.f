@@ -1097,7 +1097,7 @@
       ENDIF
 
 ! Add new read statements above this line.  Remember to update NEXT_RECA.
-! Remember to update the version number check near begining of this subroutine.
+! Remember to update the version number check near beginning of this subroutine.
 !------------------------------------------------------------------------------
 
       READ (UNIT_RES, REC=3) NEXT_RECA
