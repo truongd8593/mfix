@@ -98,7 +98,7 @@
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
-         IF(PEA(NP,4)) CYCLE
+         IF(any(PEA(NP,2:4))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -378,6 +378,7 @@
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
+         IF(any(PEA(NP,2:3))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO

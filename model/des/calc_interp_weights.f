@@ -59,6 +59,7 @@
       DO L = 1, MAX_PIP
 
          IF(.NOT.PEA(L,1)) CYCLE
+         IF(any(PEA(L,2:3))) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)
