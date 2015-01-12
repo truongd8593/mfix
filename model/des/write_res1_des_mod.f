@@ -175,7 +175,7 @@
 ! Count the number of real pairs.
          cPROCCNT = 0
          DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(LC1,1),1) .AND. PEA(PAIRS(LC1,2),1))          &
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1))          &
                cPROCCNT = cPROCCNT +1
          ENDDO
 
@@ -566,14 +566,14 @@
       LC2 = 1
       IF(lLOC2GLB) THEN
          DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(LC1,1),1) .AND. PEA(PAIRS(LC1,2),1)) THEN
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
                LC2 = LC2 + 1
             ENDIF
          ENDDO
       ELSE
          DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(LC1,1),1) .AND. PEA(PAIRS(LC1,2),1)) THEN
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
                iProcBuf(LC2) = INPUT_I(LC1)
                LC2 = LC2 + 1
             ENDIF
@@ -622,7 +622,7 @@
 
       LC2 = 1
       DO LC1 = 1, PAIR_NUM
-         IF(PEA(PAIRS(LC1,1),1) .AND. PEA(PAIRS(LC1,2),1)) THEN
+         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -671,7 +671,7 @@
 ! Pack the local buffer, skipping data for deleted particles.
       LC2 = 1
       DO LC1 = 1, PAIR_NUM
-         IF(PEA(PAIRS(LC1,1),1) .AND. PEA(PAIRS(LC1,2),1)) THEN
+         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF
