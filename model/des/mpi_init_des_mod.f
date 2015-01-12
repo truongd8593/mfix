@@ -226,15 +226,15 @@
       lkstart2=dg_kstart2; lkend2=dg_kend2
 
 ! Extend the domain indices to account for mass inlets and outlets.
-      if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
-      if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
-      if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
-      if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
+!      if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
+!      if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
+!      if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
+!      if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
 
-      IF(DO_K) THEN
-         if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
-         if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
-      ENDIF
+!      IF(DO_K) THEN
+!         if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
+!         if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
+!      ENDIF
 
 ! set the ghost cell indices for e-w, n-s and t-b
 ! for east and west faces
