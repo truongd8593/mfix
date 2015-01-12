@@ -789,28 +789,35 @@
       use discretelement, only: PAIRS, PAIR_NUM
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
+      use discretelement, only: PEA
 
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_MAX
-      use error_manager
 
+      use funits, only: DMP_LOG
+
+      use error_manager
 
       implicit none
 
 ! Loop counters.
-      INTEGER :: LC1, LC2, IER
-
+      INTEGER :: LC1, LC2, LC3, IER
+      INTEGER :: UNMATCHED
       INTEGER, ALLOCATABLE :: iLOCAL_ID(:)
 
 ! Max global id.
       INTEGER :: MAX_ID, lSTAT
-
+! Debug flags.
+      LOGICAL :: dFlag
+      LOGICAL, parameter :: setDBG = .FALSE.
 
       CALL INIT_ERR_MSG("GLOBAL_TO_LOC_COL")
 
-
 ! Initialize the error flag.
       IER = 0
+
+! Set the local debug flag.
+      dFlag = (DMP_LOG .AND. setDBG)
 
       MAX_ID = maxval(IGLOBAL_ID(1:PIP))
       CALL GLOBAL_ALL_MAX(MAX_ID)
@@ -834,25 +841,43 @@
       ENDDO
 
 ! Store the particle data.
+      LC3 = 1
       LC2 = 0
+      UNMATCHED = 0
       LP1: DO LC1 = 1, cIN_COUNT
          IF(cRestartMap(LC1) == myPE) THEN
             LC2 = LC2 + 1
             PAIRS(1,LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
             PAIRS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
-
+! Verify that the local indices are valid. If they do not match it is
+! likely because one of the pair was removed via an outlet at the time
+! the RES file was written but the ghost data wasn't updated.
             IF(PAIRS(1,LC2) == 0 .OR. PAIRS(2,LC2) == 0) THEN
-               WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), PAIRS(1,LC2), &
-                  iPAR_COL(2,LC1), PAIRS(2,LC2)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               UNMATCHED = UNMATCHED + 1
+               IF(dFLAG) THEN
+                  WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), PAIRS(1,LC2),   &
+                     iPAR_COL(2,LC1), PAIRS(2,LC2)
+                  CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+               ENDIF
+               DO WHILE(PEA(LC3,1))
+                  LC3 = LC3 + 1
+               ENDDO
+               PAIRS(2,LC2) = LC3
             ENDIF
          ENDIF
       ENDDO LP1
 
-
  1100 FORMAT('Error 1100: Particle pair local indices are invalid.',/  &
          5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
 
+      CALL GLOBAL_ALL_SUM(UNMATCHED)
+      IF(UNMATCHED /= 0) THEN
+         WRITE(ERR_MSG,1101) trim(iVal(UNMATCHED))
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 1101 FORMAT(' Warning: 1101: ',A,' particle pair datasets were ',&
+         'not matched',/' during restart.')
 
       IF(allocated(iLOCAL_ID)) deallocate(iLOCAL_ID)
 

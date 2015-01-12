@@ -54,6 +54,7 @@
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
+         IF(any(PEA(NP,2:3))) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)

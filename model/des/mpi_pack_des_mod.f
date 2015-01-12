@@ -144,6 +144,10 @@
 
       logical, allocatable, dimension(:) :: going_to_send
 
+! Location in the buffer where the number of pair data is specified.
+      integer :: num_pairs_send_buf_loc
+
+
 !-----------------------------------------------
 
 ! pack the particle crossing the boundary
@@ -242,62 +246,62 @@
          end do
       end do
 
+
+! Calculate the location in buffer where the number of pair data is
+! stored and skip specifying the entry. After all the pair data is
+! packed, then this value is set.
       lbuf = lparcnt*lpacketsize + ibufoffset
+      num_pairs_send_buf_loc = lbuf
+      lbuf = lbuf+1
 
       num_pairs_to_send = 0
       do cc = 1, pair_num
-         LL = PAIRS(1,CC)
-         if (going_to_send(LL)) then
-            num_pairs_to_send = num_pairs_to_send + 1
-         endif
-      enddo
-
-      dsendbuf(lbuf,pface) = num_pairs_to_send
-      lbuf = lbuf+1
-
-      do cc = 1, pair_num
          lcurpar = PAIRS(1,CC)
+! Only packup pairing data for particles being transfered.
          if (.not. going_to_send(lcurpar)) cycle
-
+! Do not send pairing data if the pair no longer exists.
+         lneigh = PAIRS(2,CC)
+         if(.not.PEA(lneigh,1)) cycle
+! Global ID of particle bing packed.
          dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
          lbuf = lbuf+1
-!         dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
-!         lbuf = lbuf+1
+! DES grid IJK of cell receiving the particle.
          dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
          lbuf = lbuf+1
-
-         lneigh = PAIRS(2,CC)
-
+! Global ID of particle pair. This particle may or may not live on the
+! the current or destination processor.
          dsendbuf(lbuf,pface) = iglobal_id(lneigh)
          lbuf = lbuf+1
-!         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface))
-!         lbuf = lbuf+1
+! DES grid IJK of cell containing the particle-pair.
          dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface))
          lbuf = lbuf+1
-
+! Convernt the logical flag to an integer.
          dsendbuf(lbuf,pface) = merge(1,0,pv_PAIR(CC))
          lbuf = lbuf+1
+! Pack the normal and tangential collision histories.
          do ii=1,DIMN
             dsendbuf(lbuf,pface) = PFN_PAIR(II,CC)
             lbuf = lbuf+1
             dsendbuf(lbuf,pface) = PFT_PAIR(II,CC)
             lbuf = lbuf+1
          enddo
+! Increment the number of pairs being sent.
+         num_pairs_to_send = num_pairs_to_send + 1
       enddo
 
-      deallocate(going_to_send)
+! Store the number of pair datasets being sent. This information is
+! stored before the pairing data so the receiving process knows the
+! amount of data to 'unpack.'
+      dsendbuf(num_pairs_send_buf_loc,pface) = num_pairs_to_send
 
       lpairsize = 6 + 2*DIMN
 
       dsendbuf(1,pface) = lparcnt
       isendcnt(pface) = lparcnt*lpacketsize+num_pairs_to_send*lpairsize+ibufoffset + 3
 
-! following unused variables are not sent across the processor
-! well_depth
-! is_linked
-! links
-! part_grid
+      deallocate(going_to_send)
 
+      return
       end subroutine desmpi_pack_parcross
 
       end module mpi_pack_des

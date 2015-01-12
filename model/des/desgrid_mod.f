@@ -490,17 +490,17 @@
      allocate (dg_ksize_all(0:nodesk-1))
 
 
-     dg_istart1_all=0; dg_iend1_all=0
-     dg_istart2_all=0; dg_iend2_all=0
-     dg_isize_all=0
+      dg_istart1_all=0; dg_iend1_all=0
+      dg_istart2_all=0; dg_iend2_all=0
+      dg_isize_all=0
 
-     dg_jstart1_all=0; dg_jend1_all=0
-     dg_jstart2_all=0; dg_jend2_all=0
-     dg_jsize_all=0
+      dg_jstart1_all=0; dg_jend1_all=0
+      dg_jstart2_all=0; dg_jend2_all=0
+      dg_jsize_all=0
 
-     dg_kstart1_all=0; dg_kend1_all=0
-     dg_kstart2_all=0; dg_kend2_all=0
-     dg_ksize_all=0
+      dg_kstart1_all=0; dg_kend1_all=0
+      dg_kstart2_all=0; dg_kend2_all=0
+      dg_ksize_all=0
 
 
 ! set grid size based on user input desgridsearch_<ijk>max
@@ -743,6 +743,8 @@
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
             if(.not.pea(lcurpar,1)) cycle
+
+
             lparcount = lparcount + 1
             li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
             lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(2,lcurpar))))
