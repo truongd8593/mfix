@@ -1,7 +1,7 @@
 !**********************************************************************!
 !                                                                      !
 !**********************************************************************!
-      module data_unpack
+      module des_data_unpack
 
       use desmpi
 
@@ -44,5 +44,5 @@
       return
       end subroutine unpack_db1
 
-      end module data_unpack
+      end module des_data_unpack
 
