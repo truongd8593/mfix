@@ -1,4 +1,8 @@
-#!/bin/bash -ex
+#!/bin/bash -lex
+
+module load gnu
+
+../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
 
 rm -f DEM_RESTART* POST_posvel.dat
 time -p ./mfix.exe TSTOP=1.0 RUN_TYPE=\'NEW\'
