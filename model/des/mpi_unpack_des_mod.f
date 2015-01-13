@@ -33,6 +33,7 @@
       use param, only: DIMENSION_N_s
       use des_rxns
       use desmpi
+      use data_unpack
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
@@ -80,14 +81,11 @@
          lbuf = (lcurpar-1)*lpacketsize+ibufoffset
 
 ! 1) Global ID
-         lparid  = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
+         call unpack_dbuf(lbuf,lparid,pface)
 ! 2) DES Grid IJK
-         lparijk = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
+         call unpack_dbuf(lbuf,lparijk,pface)
 ! 3) DES Grid IJK - Previous
-         lprvijk = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
+         call unpack_dbuf(lbuf,lprvijk,pface)
 
 ! Determine if this particle already exists on this process as a
 ! ghost particle. If so, (lfound), then the current infomration is
@@ -104,35 +102,26 @@
             dg_pijkprv(llocpar) = lprvijk
 
 ! 4) Radious
-            des_radius(llocpar) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,des_radius(llocpar),pface)
 ! 5) Phase index
-            pijk(llocpar,5) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,pijk(llocpar,5),pface)
 ! 6) Position
-            des_pos_new(1:dimn,llocpar)= drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,des_pos_new(1:dimn,llocpar),pface)
 ! 7) Translational Velocity
-            des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,des_vel_new(1:dimn,llocpar),pface)
 ! 8) Rotational Velocity
-            omega_new(1:3,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
 ! 9) Temperature
             if(ENERGY_EQ)then
-               des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
-               lbuf = lbuf + 1
+               call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
             endif
 ! 10) Species Composition
             if(ANY_SPECIES_EQ)then
-               des_x_s(llocpar,1:dimension_n_s) = &
-                  drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-               lbuf = lbuf+dimension_n_s
+               call unpack_dbuf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
             endif
 
 ! 11) User Variables
-            des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf+3
+            call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
 
 ! Calculate the volume of the ghost particle.
             PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
@@ -163,14 +152,11 @@
             lbuf = (lcurpar-1)*lpacketsize+ibufoffset
 
 !  1) Global particle ID
-            lparid  = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,lparid,pface)
 !  2) DES grid IJK
-            lparijk = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,lparijk,pface)
 !  3) DES grid IJK - Previous
-            lprvijk = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,lprvijk,pface)
 ! Locate the first open space in the particle array.
             do while(pea(ispot,1))
                ispot = ispot + 1
@@ -184,34 +170,25 @@
             dg_pijk(ispot) = lparijk
             dg_pijkprv(ispot) = lprvijk
 !  4) Particle radius
-            des_radius(ispot) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,des_radius(ispot),pface)
 !  5) Particle phase index
-            pijk(ispot,5) = drecvbuf(lbuf,pface) 
-            lbuf = lbuf + 1
+            call unpack_dbuf(lbuf,pijk(ispot,5),pface) 
 !  6) Particle position
-            des_pos_new(1:dimn,ispot)= drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,des_pos_new(1:dimn,ispot),pface)
 !  7) Particle velocity
-            des_vel_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,des_vel_new(1:dimn,ispot),pface)
 !  8) Particle rotational velocity
-            omega_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
+            call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
 !  9) Particle temperature.
             if(ENERGY_EQ)then
-               des_t_s_new(ispot) = drecvbuf(lbuf,pface)
-               lbuf = lbuf + 1
+               call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
             endif
 ! 10) Particle species composition
             if(ANY_SPECIES_EQ)then
-               des_x_s(ispot,1:dimension_n_s) = &
-                  drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-               lbuf = lbuf+dimension_n_s
+               call unpack_dbuf(lbuf,des_x_s(ispot,1:dimension_n_s),pface)
             endif
 ! 11) User varaible
-            des_usr_var(1:3,ispot)= drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf+3
+            call unpack_dbuf(lbuf,des_usr_var(1:3,ispot),pface)
 
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -269,12 +246,9 @@
       do lcurpar =1,lparcnt
          lfound = .false.
          lbuf = (lcurpar-1)*lpacketsize + ibufoffset
-         lparid  = drecvbuf(lbuf,pface)
-         lbuf = lbuf+1
-         lparijk = drecvbuf(lbuf,pface)
-         lbuf = lbuf+1
-         lprvijk = drecvbuf(lbuf,pface)
-         lbuf = lbuf+1
+         call unpack_dbf(lbuf,lparid,pface)
+         call unpack_dbf(lbuf,lparijk,pface)
+         call unpack_dbf(lbuf,lprvijk,pface)
 
 ! if mppic add the particles to free spots else locate the particles
          if (mppic) then
@@ -296,76 +270,52 @@
          pea(llocpar,4) = .false.
          dg_pijk(llocpar) = lparijk
          dg_pijkprv(llocpar) = lprvijk
-         des_radius(llocpar)  = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         pijk(llocpar,1:5)    = drecvbuf(lbuf:lbuf+4,pface)
-         lbuf = lbuf+5
+         call unpack_dbf(lbuf,des_radius(llocpar),pface)
+         call unpack_dbf(lbuf,pijk(llocpar,1:5),pface)
 !         pea(llocpar,2:3)     = drecvbuf(lbuf:lbuf+1,pface) ; lbuf=lbuf+2
          pea(llocpar,2:3) = .false.
          if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,2) = .true. ; lbuf = lbuf + 1
          if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,3) = .true. ; lbuf = lbuf + 1
-         ro_sol(llocpar)      = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         pvol(llocpar)        = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         pmass(llocpar)       = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         omoi(llocpar)        = drecvbuf(lbuf,pface)
-         lbuf = lbuf + 1
-         des_pos_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         des_vel_new(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
+         call unpack_dbuf(lbuf,ro_sol(llocpar),pface)
+         call unpack_dbuf(lbuf,pvol(llocpar),pface)
+         call unpack_dbuf(lbuf,pmass(llocpar),pface)
+         call unpack_dbf(lbuf,omoi(llocpar),pface)
+         call unpack_dbf(lbuf,des_pos_new(1:dimn,llocpar),pface)
+         call unpack_dbf(lbuf,des_vel_new(1:dimn,llocpar),pface)
 
          if(ENERGY_EQ) then
-            des_t_s_old(llocpar) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
-            des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
-            lbuf = lbuf + 1
+            call unpack_dbf(lbuf,des_t_s_old(llocpar),pface)
+            call unpack_dbf(lbuf,des_t_s_new(llocpar),pface)
          endif
 
          if(ANY_SPECIES_EQ)then
-            des_x_s(llocpar,1:dimension_n_s) = &
-               drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
-            lbuf = lbuf + dimension_n_s
+            call unpack_dbf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
          endif
 
-         des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-         lbuf = lbuf + 3
+         call unpack_dbf(lbuf,des_usr_var(1:3,llocpar),pface)
 
-         omega_new(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-         lbuf = lbuf + 3
+         call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
          IF (DO_OLD) THEN
-            des_pos_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
-            des_vel_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
-            omega_old(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf + 3
-            des_acc_old(1:dimn,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-            lbuf = lbuf + dimn
-            rot_acc_old(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-            lbuf = lbuf + 3
+            call unpack_dbuf(lbuf,des_pos_old(1:dimn,llocpar),pface)
+            call unpack_dbuf(lbuf,des_vel_old(1:dimn,llocpar),pface)
+            call unpack_dbuf(lbuf,omega_old(1:3,llocpar),pface)
+            call unpack_dbuf(lbuf,des_acc_old(1:dimn,llocpar),pface)
+            call unpack_dbuf(lbuf,rot_acc_old(1:3,llocpar),pface)
          ENDIF
-         fc(:,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
-         lbuf = lbuf + dimn
-         tow(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
-         lbuf = lbuf + 3
+         call unpack_dbuf(lbuf,fc(:,llocpar),pface)
+         call unpack_dbuf(lbuf,tow(1:3,llocpar),pface)
 
       end do
 
       lbuf = lparcnt*lpacketsize + ibufoffset
 
-      num_pairs_sent = drecvbuf(lbuf,pface)
-      lbuf=lbuf+1
+      call unpack_dbuf(lbuf,num_pairs_sent,pface)
 
       do cc = 1, num_pairs_sent
 
-         lparid = drecvbuf(lbuf,pface)
-         lbuf=lbuf+1
+         call unpack_dbuf(lbuf,lparid,pface)
 
-         lparijk = drecvbuf(lbuf,pface)
-         lbuf=lbuf+1
+         call unpack_dbuf(lbuf,lparijk,pface)
 
          if (.not. locate_par(lparid,lparijk,llocpar)) then
             print *,"at buffer location",lbuf," pface = ",pface
@@ -373,11 +323,9 @@
             call des_mpi_stop
          endif
 
-         lneighid = drecvbuf(lbuf,pface)
-         lbuf=lbuf+1
+         call unpack_dbuf(lbuf,lneighid,pface)
 
-         lneighijk = drecvbuf(lbuf,pface)
-         lbuf=lbuf+1
+         call unpack_dbuf(lbuf,lneighijk,pface)
 
          if (.not. locate_par(lneighid,lneighijk,lneigh)) then
             if (.not. exten_locate_par(lneighid,lparijk,lneigh)) then
@@ -389,14 +337,12 @@
 
          call add_pair(llocpar,lneigh)
 
-         pv_pair(pair_num) = merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
-         lbuf=lbuf+1
+         call unpack_dbuf(lbuf,lbufpv_pair(pair_num),pface)
+         lbufpv_pair(pair_num) = merge(.true.,.false.,0.5 < lbufpv_pair(pair_num))
 
          do ii=1,DIMN
-            pfn_pair(ii,pair_num) = drecvbuf(lbuf,pface)
-            lbuf=lbuf+1
-            pft_pair(ii,pair_num) = drecvbuf(lbuf,pface)
-            lbuf=lbuf+1
+            call unpack_dbuf(lbuf,pfn_pair(ii,pair_num),pface)
+            call unpack_dbuf(lbuf,pft_pair(ii,pair_num),pface)
          enddo
       enddo
 

@@ -33,6 +33,7 @@
       use param, only: DIMENSION_N_s
       use des_rxns
       use desmpi
+      use data_pack
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
@@ -69,45 +70,33 @@
             if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar) ) cycle
 
 ! 1) Global ID
-            dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
-            lbuf = lbuf +1
+            call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
 ! 2) DES grid IJK
-            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
-            lbuf = lbuf +1
+            call pack_dbuf(lbuf,dg_ijkconv(lijk,pface,ineighproc(pface)),pface)
 ! 3) DES grid IJK - previous
-            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
-            lbuf = lbuf +1
+            call pack_dbuf(dg_ijkconv(lbuf,dg_pijkprv(lcurpar),pface,ineighproc(pface)),pface)
 ! 4) Radius
-            dsendbuf(lbuf,pface) = des_radius(lcurpar)
-            lbuf = lbuf + 1
+            call pack_dbuf(lbuf,des_radius(lcurpar),pface)
 ! 5) Phase index
-            dsendbuf(lbuf,pface) = pijk(lcurpar,5)
-            lbuf = lbuf + 1
+            call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 6) Position
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-            lbuf = lbuf + dimn
+            call pack_dbuf((lbuf,des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)),pface)
 ! 7) Translational Velocity
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
-            lbuf = lbuf + dimn
+            call pack_dbuf(lbuf,des_vel_new(1:dimn,lcurpar),pface)
 ! 8) Rotational Velocity
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = omega_new(1:dimn,lcurpar)
-            lbuf = lbuf + dimn
+            call pack_dbuf(lbuf,omega_new(1:dimn,lcurpar),pface)
 
 ! 9) Temperature
             if(ENERGY_EQ)then
-               dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
-              lbuf = lbuf +1
+               call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
             endif
 ! 10) Species Composition
             if(ANY_SPECIES_EQ)then
-               dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
-                  des_x_s(lcurpar,1:dimension_n_s)
-               lbuf = lbuf+dimension_n_s
+               call pack_dbuf(lbuf,des_x_s(lcurpar,1:dimension_n_s),pface)
             endif
 
 ! 11) User Variable
-            dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
-            lbuf = lbuf+3
+            call pack_dbuf(lbuf,des_usr_var(1:3,lcurpar),pface)
 
             lpar_cnt = lpar_cnt + 1
          end do
@@ -169,69 +158,50 @@
        ENDIF
 
             lbuf = lparcnt*lpacketsize + ibufoffset
-            dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = des_radius(lcurpar)  ;lbuf = lbuf+1
+            call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
+            call pack_dbuf(lbuf,dg_ijkconv(lijk,pface,ineighproc(pface)),pface)
+            call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface)),pface)
+            call pack_dbuf(lbuf,des_radius(lcurpar),pface)
             li = pijk(lcurpar,1) + icycoffset(pface,1)
             lj = pijk(lcurpar,2) + icycoffset(pface,2)
             lk = pijk(lcurpar,3) + icycoffset(pface,3)
-            dsendbuf(lbuf,pface) = li ; lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = lj ; lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = lk ; lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = funijk_proc(li,lj,lk,ineighproc(pface))
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = pijk(lcurpar,5) ;lbuf = lbuf+1
+            call pack_dbuf(lbuf,li,pface)
+            call pack_dbuf(lbuf,lj,pface)
+            call pack_dbuf(lbuf,lk,pface)
+            call pack_dbuf(lbuf,funijk_proc(li,lj,lk,ineighproc(pface)),pface)
+            call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 !            dsendbuf(lbuf:lbuf+1,pface) = pea(lcurpar,2:3);lbuf=lbuf+2
             dsendbuf(lbuf:lbuf+1,pface) = 0
             if (pea(lcurpar,2)) dsendbuf(lbuf,pface) = 1 ; lbuf = lbuf+1
             if (pea(lcurpar,3)) dsendbuf(lbuf,pface) = 1 ; lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = ro_sol(lcurpar)      ;lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = pvol(lcurpar)        ;lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = pmass(lcurpar)       ;lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = omoi(lcurpar)        ;lbuf = lbuf+1
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_new(1:dimn,lcurpar)
-            lbuf = lbuf+dimn
+            call pack_dbuf(lbuf,ro_sol(lcurpar),pface)
+            call pack_dbuf(lbuf,pvol(lcurpar),pface)
+            call pack_dbuf(lbuf,pmass(lcurpar),pface)
+            call pack_dbuf(lbuf,omoi(lcurpar),pface)
+            call pack_dbuf(lbuf,des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn),pface)
+            call pack_dbuf(lbuf,des_vel_new(1:dimn,lcurpar),pface)
 
             if(ENERGY_EQ) then
-               dsendbuf(lbuf,pface) = des_t_s_old(lcurpar)
-               lbuf = lbuf+1
-               dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
-               lbuf = lbuf+1
+               call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
+               call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
             endif
 
             if(ANY_SPECIES_EQ)then
-               dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
-                  des_x_s(lcurpar,1:dimension_n_s)
-               lbuf = lbuf + dimension_n_s
+               call pack_dbuf(lbuf,des_x_s(lcurpar,1:dimension_n_s),pface)
             endif
 
-            dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
-            lbuf = lbuf+3
+            call pack_dbuf(lbuf, des_usr_var(1:3,lcurpar),pface)
 
-            dsendbuf(lbuf:lbuf+3-1,pface) = omega_new(1:3,lcurpar)
-            lbuf = lbuf+3
+            call pack_dbuf(lbuf,omega_new(1:3,lcurpar),pface)
             IF (DO_OLD) THEN
-               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)
-               lbuf = lbuf+dimn
-               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_vel_old(1:dimn,lcurpar)
-               lbuf = lbuf+dimn
-               dsendbuf(lbuf:lbuf+3-1,pface) = omega_old(1:3,lcurpar)
-               lbuf = lbuf+3
-               dsendbuf(lbuf:lbuf+dimn-1,pface) = des_acc_old(1:dimn,lcurpar)
-               lbuf = lbuf+dimn
-               dsendbuf(lbuf:lbuf+3-1,pface) = rot_acc_old(1:3,lcurpar)
-               lbuf = lbuf+3
+               call pack_dbuf(lbuf,des_pos_old(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn),pface)
+               call pack_dbuf(lbuf,des_vel_old(1:dimn,lcurpar),pface)
+               call pack_dbuf(lbuf,omega_old(1:3,lcurpar),pface)
+               call pack_dbuf(lbuf,des_acc_old(1:dimn,lcurpar),pface)
+               call pack_dbuf(lbuf,rot_acc_old(1:3,lcurpar),pface)
             ENDIF
-            dsendbuf(lbuf:lbuf+dimn-1,pface) = fc(:,lcurpar)
-            lbuf = lbuf+dimn
-            dsendbuf(lbuf:lbuf+3-1,pface) = tow(1:3,lcurpar)
-            lbuf = lbuf+3
+            call pack_dbuf(lbuf,fc(:,lcurpar),pface)
+            call pack_dbuf(lbuf,tow(1:3,lcurpar),pface)
 
 ! In case of mppic remove the particles else
 ! Convert the particle as ghost and set the forces zero
@@ -257,36 +227,28 @@
          endif
       enddo
 
-      dsendbuf(lbuf,pface) = num_pairs_to_send
-      lbuf = lbuf+1
+      call pack_dbuf(lbuf,num_pairs_to_send,pface)
 
       do cc = 1, pair_num
          lcurpar = PAIRS(1,CC)
          if (.not. going_to_send(lcurpar)) cycle
 
-         dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
-         lbuf = lbuf+1
+         call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
 !         dsendbuf(lbuf,pface) = dg_ijkconv(lijk,pface,ineighproc(pface))
 !         lbuf = lbuf+1
-         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface))
-         lbuf = lbuf+1
+         call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface)),pface)
 
          lneigh = PAIRS(2,CC)
 
-         dsendbuf(lbuf,pface) = iglobal_id(lneigh)
-         lbuf = lbuf+1
+         call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
 !         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijk(lneigh),pface,ineighproc(pface))
 !         lbuf = lbuf+1
-         dsendbuf(lbuf,pface) = dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface))
-         lbuf = lbuf+1
+         call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,ineighproc(pface)),pface)
 
-         dsendbuf(lbuf,pface) = merge(1,0,pv_PAIR(CC))
-         lbuf = lbuf+1
+         call pack_dbuf(lbuf,merge(1,0,pv_PAIR(CC)),pface)
          do ii=1,DIMN
-            dsendbuf(lbuf,pface) = PFN_PAIR(II,CC)
-            lbuf = lbuf+1
-            dsendbuf(lbuf,pface) = PFT_PAIR(II,CC)
-            lbuf = lbuf+1
+            call pack_dbuf(lbuf,PFN_PAIR(II,CC),pface)
+            call pack_dbuf(lbuf,PFT_PAIR(II,CC),pface)
          enddo
       enddo
 
