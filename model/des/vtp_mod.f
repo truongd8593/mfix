@@ -419,7 +419,7 @@
          IF(FIRST_PASS) THEN
 
 ! Open the "NEW" file and write the necessary header information.
-            IF(RUN_TYPE == 'NEW')THEN
+            IF(RUN_TYPE /= 'RESTART_1')THEN
 
 ! The file exists but first_pass is also true so most likely an existing
 ! file from an earlier/other run is present in the directory. Exit to

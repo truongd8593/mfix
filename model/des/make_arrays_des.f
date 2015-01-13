@@ -204,7 +204,7 @@
          ENDIF
 
 ! Read the restart file.
-      ELSEIF(RUN_TYPE == 'RESTART_1') THEN
+      ELSEIF(RUN_TYPE == 'RESTART_1' .OR. RUN_TYPE == 'RESTART_2') THEN
 
          CALL READ_RES0_DES
          imax_global_id = maxval(iglobal_id(1:pip))
