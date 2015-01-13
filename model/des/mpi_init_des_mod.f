@@ -124,7 +124,7 @@
 ! set the communication flags
       call desmpi_setcomm
 
-      call des_dbgmpi(1)
+!      call des_dbgmpi(1)
 
       end subroutine desmpi_init
 
