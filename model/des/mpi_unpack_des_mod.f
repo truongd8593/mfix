@@ -33,12 +33,50 @@
       use param, only: DIMENSION_N_s
       use des_rxns
       use desmpi
-      use data_unpack
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
 
+      
+      interface unpack_dbuf
+         module procedure unpack_db0, unpack_db1
+      end interface unpack_dbuf
+
+
       contains
+
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for single variables                                                                      !
+!----------------------------------------------------------------------!
+      subroutine unpack_db0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(inout) :: idata
+
+      idata = drecvbuf(lbuf,pface)
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_db0
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for arrays                                                                      !
+!----------------------------------------------------------------------!
+      subroutine unpack_db1(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(inout) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine unpack_db1
 
 
 !------------------------------------------------------------------------

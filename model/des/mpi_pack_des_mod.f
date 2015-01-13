@@ -33,12 +33,48 @@
       use param, only: DIMENSION_N_s
       use des_rxns
       use desmpi
-      use data_pack
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
 
+      interface pack_dbuf
+         module procedure pack_db0, pack_db1
+      end interface pack_dbuf
+
       contains
+
+
+!----------------------------------------------------------------------!
+!Pack subroutine for single variables                                                                      !
+!----------------------------------------------------------------------!
+      subroutine pack_db0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(in) :: idata
+
+      dsendbuf(lbuf,pface) = idata
+      lbuf = lbuf + 1
+
+      return
+      end subroutine pack_db0
+
+!----------------------------------------------------------------------!
+!Pack subroutine for arrays                                                                      !
+!----------------------------------------------------------------------!
+      subroutine pack_db1(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(in) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      dsendbuf(lbuf:lbuf+lsize-1,pface) = idata
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine pack_db1
 
 
 !------------------------------------------------------------------------
@@ -80,7 +116,7 @@
 ! 5) Phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 6) Position
-            call pack_dbuf((lbuf,des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn)),pface)
+            call pack_dbuf(lbuf,des_pos_new(1:dimn,lcurpar)+dcycl_offset(pface,1:dimn),pface)
 ! 7) Translational Velocity
             call pack_dbuf(lbuf,des_vel_new(1:dimn,lcurpar),pface)
 ! 8) Rotational Velocity
