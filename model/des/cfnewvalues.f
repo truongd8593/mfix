@@ -66,7 +66,7 @@
 !$omp shared(MAX_PIP,pea,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,          &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
-!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD)             &
+!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID) &
 !$omp private(l,dd,neighbor_search_dist)                                  &
 !$omp reduction(.or.:do_nsearch) schedule (auto)
 
