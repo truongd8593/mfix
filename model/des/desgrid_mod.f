@@ -873,43 +873,43 @@
          ljc = dg_jof_lo(lijk2)
          lkc = dg_kof_lo(lijk2)
 
-                 il_off = 1
-                 iu_off = 1
-                 jl_off = 1
-                 ju_off = 1
-                 kl_off = 1
-                 ku_off = 1
+         il_off = 1
+         iu_off = 1
+         jl_off = 1
+         ju_off = 1
+         kl_off = 1
+         ku_off = 1
 
-                 lcurpar_pos(:) = des_pos_new(:,lcurpar)
+         lcurpar_pos(:) = des_pos_new(:,lcurpar)
 !   The desgrid size should not be less than 2*dia*rlm_factor
-                 lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
-                            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
-                 if(lcur_off .ge. 0.5) then
-                        il_off = 0
-                 else
-                        iu_off = 0
-                 endif
+         lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
+            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
+         if(lcur_off .ge. 0.5) then
+            il_off = 0
+         else
+            iu_off = 0
+         endif
 
-                 lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
-                            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
-                 if(lcur_off .ge. 0.5) then
-                        jl_off = 0
-                 else
-                        ju_off = 0
-                 endif
+         lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
+            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
+         if(lcur_off .ge. 0.5) then
+            jl_off = 0
+         else
+            ju_off = 0
+         endif
 
-                 if(NO_K)then
-                        kl_off = 0
-                        ku_off = 0
-                 else
-                         lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
-                                        floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
-                         if(lcur_off .ge. 0.5) then
-                                kl_off = 0
-                         else
-                                ku_off = 0
-                         endif
-                 endif
+         if(NO_K)then
+            kl_off = 0
+            ku_off = 0
+         else
+           lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
+              floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
+           if(lcur_off .ge. 0.5) then
+              kl_off = 0
+           else
+              ku_off = 0
+           endif
+        endif
 
          do lk = lkc-kl_off,lkc+ku_off
          do lj = ljc-jl_off,ljc+ju_off
@@ -918,11 +918,13 @@
             ltotpic =dg_pic(lijk)%isize
             do lpicloc = 1,ltotpic
                lneigh = dg_pic(lijk)%p(lpicloc)
-! Only skip real particles otherwise the ghost particle calculations
-! are missed.
+
+! Only skip real particles otherwise collisions with ghost, entering,
+! and exiting particles are missed.
                if (lneigh <= lcurpar) then
-                  if(.not.pea(lneigh,4)) cycle
+                  if(.not.any(pea(lneigh,2:4))) cycle
                endif
+
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)
