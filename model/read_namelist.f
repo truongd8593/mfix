@@ -163,8 +163,8 @@
 
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
-            ! At this point, the keyword was not identified therefore it is
-            ! either deprecated or unknown.
+! At this point, the keyword was not identified therefore it is
+! either deprecated or unknown.
             CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
          ENDIF
 
@@ -174,8 +174,7 @@
          CALL GET_COMMAND_ARGUMENT(ii,LINE_STRING)
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
-            PRINT *,"unknown command line argument keyword"
-            CALL MFIX_EXIT(myPE)
+            CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
          ENDIF
       ENDDO
 
