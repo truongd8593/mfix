@@ -110,7 +110,7 @@
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
          IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
-            WRITE(*,1002) L, sqrt(dot_product(DD,DD)), DES_RADIUS(L)
+            WRITE(*,1002) iGlobal_ID(L), sqrt(dot_product(DD,DD)), DES_RADIUS(L)
             IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') &
                'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &

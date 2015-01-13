@@ -257,6 +257,9 @@
       integer :: lpacketsize,lbuf,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
       integer :: cc,ii,kk,num_pairs_sent
+
+      integer :: pair_match
+      logical :: do_add_pair
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
@@ -265,6 +268,8 @@
 
 ! if mppic make sure enough space available
       if(mppic .and. (max_pip-pip).lt.lparcnt) call redim_par(pip+lparcnt)
+
+
 
       do lcurpar =1,lparcnt
          lfound = .false.
@@ -387,17 +392,37 @@
             endif
          endif
 
-         call add_pair(llocpar,lneigh)
 
-         pv_pair(pair_num) = merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
+! If the neighbor particle is a 'real' particle on this processor, then
+! the pair data may already exist. Check before addeding it.
+         do_add_pair = .TRUE.
+         if(pea(lneigh,1) .and. .not.pea(lneigh,4)) then
+            do ii=1,pair_num
+               if(PAIRS(1,II) == lneigh) then
+                  if(PAIRS(2,II) == llocpar) then
+                     do_add_pair = .FALSE.
+                     pair_match = II
+                     exit
+                  endif
+               endif
+            enddo
+         endif
+
+         if(do_add_pair) then
+            call add_pair(llocpar,lneigh)
+            pair_match = pair_num
+         endif
+
+         pv_pair(pair_match) = (0.5 < drecvbuf(lbuf,pface))
          lbuf=lbuf+1
 
          do ii=1,DIMN
-            pfn_pair(ii,pair_num) = drecvbuf(lbuf,pface)
+            pfn_pair(ii,pair_match) = drecvbuf(lbuf,pface)
             lbuf=lbuf+1
-            pft_pair(ii,pair_num) = drecvbuf(lbuf,pface)
+            pft_pair(ii,pair_match) = drecvbuf(lbuf,pface)
             lbuf=lbuf+1
          enddo
+
       enddo
 
  700 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
