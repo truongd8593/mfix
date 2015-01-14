@@ -863,12 +863,6 @@
       VTK_Scalar =.FALSE.
 !</keyword>
 
-! This allocation is merely for initial definition (for the user guide)
-! and is not the final allocation
-! VTK_RRate will be re-allocated if nRR is not zero in mfix.dat
-! Currently, nRR is not defined (mfix.dat has not been read)
-         ALLOCATE(VTK_RRate(DIMENSION_VTK,1))
-
 !<keyword category="Output Control" required="false">
 !  <description>Write reaction rates in VTK file.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

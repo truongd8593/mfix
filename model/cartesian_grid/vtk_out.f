@@ -62,7 +62,7 @@
       INTEGER :: WRITE_DATA   = 2
 
       ! There is nothing to write if we are not in adefined vtk region
-      IF(.NOT.CARTESIAN_GRID) RETURN
+!      IF(.NOT.CARTESIAN_GRID) RETURN
       VTK_REGION = LCV
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
 
@@ -1661,6 +1661,7 @@
       END SUBROUTINE WRITE_CUT_SURFACE_VTK
 
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GATHER_DATA                                            C
@@ -1845,6 +1846,254 @@
 
 
       END SUBROUTINE GATHER_DATA
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SETUP_VTK_NO_CUTCELL                                   C
+!  Purpose: Setup VTK data for the regular grid (no cut cells)         C
+!           This i scalled when CARTESIAN_GRID is .FALSE.              C
+!           and WRITE>VTK_FILES is .TRUE.              .               C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 14-Jan-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE SETUP_VTK_NO_CUTCELL
+
+      USE param
+      USE param1
+      USE parallel
+      USE constant
+      USE run
+      USE toleranc
+      USE geometry
+      USE indices
+      USE compar
+      USE mpi_utility
+      USE sendrecv
+      USE quadric
+      USE cutcell
+      USE fldvar
+      USE vtk
+      USE functions
+
+      IMPLICIT NONE
+
+      INTEGER :: IJK,I,J,K,L,NODE
+      INTEGER :: IJK_OFFSET
+
+      LOGICAL :: INTERIOR_CELL
+      INTEGER :: iproc,IERR
+      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: SHIFTED_CONNECTIVITY
+
+
+! Only a few arrays need to be allocated here simce we do not need
+! all Cartesian-grid arrays
+      IF(.NOT.ALLOCATED(XG_E)) Allocate( XG_E(0:DIMENSION_I) )
+      IF(.NOT.ALLOCATED(YG_N)) Allocate( YG_N(0:DIMENSION_J) )
+      IF(.NOT.ALLOCATED(ZG_T)) Allocate( ZG_T(0:DIMENSION_K) )
+
+      IF(.NOT.ALLOCATED(INTERIOR_CELL_AT)) THEN
+         Allocate(  INTERIOR_CELL_AT  (DIMENSION_3) )
+         INTERIOR_CELL_AT = .FALSE.
+      ENDIF
+
+      IF(.NOT.ALLOCATED(BLOCKED_CELL_AT)) THEN
+         Allocate(  BLOCKED_CELL_AT  (DIMENSION_3) )
+         BLOCKED_CELL_AT = .FALSE.
+      ENDIF
+
+      IF(.NOT.ALLOCATED(STANDARD_CELL_AT)) THEN
+         Allocate(  STANDARD_CELL_AT  (DIMENSION_3) )
+         STANDARD_CELL_AT = .TRUE.
+      ENDIF
+
+      IF(.NOT.ALLOCATED(CUT_CELL_AT)) THEN
+         Allocate(  CUT_CELL_AT  (DIMENSION_3) )
+         CUT_CELL_AT = .FALSE.
+      ENDIF
+
+      IF(.NOT.ALLOCATED(NUMBER_OF_NODES))  Allocate(  NUMBER_OF_NODES  (DIMENSION_3) )
+      NUMBER_OF_NODES= 0
+
+      IF(.NOT.ALLOCATED(CONNECTIVITY))     Allocate(  CONNECTIVITY  (DIMENSION_3,15) )
+
+
+! This is a shoter version of Get_cut_cell_Flags
+      DO IJK = IJKSTART3, IJKEND3
+
+!======================================================================
+!  Get coordinates of eight nodes
+!======================================================================
+
+         CALL GET_CELL_NODE_COORDINATES(IJK,'SCALAR')
+
+         I = I_OF(IJK)
+         J = J_OF(IJK)
+         K = K_OF(IJK)
+
+         IF(NO_K) THEN   ! 2D case
+
+            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  &
+                                     .AND.(J >= JSTART1 ).AND.(J <= JEND1 ) )
+
+         ELSE            ! 3D case
+
+            INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  &
+                                     .AND.(J >= JSTART1 ).AND.(J <= JEND1 )  &
+                                     .AND.(K >= KSTART1 ).AND.(K <= KEND1 ) )
+
+         ENDIF
+
+
+         IF(INTERIOR_CELL_AT(IJK)) THEN
+
+! Set up the connectivity: 4 nodes in 2D, 8 nodes in 3D 
+            IF(NO_K) THEN
+               NUMBER_OF_NODES(IJK) = 4
+               CONNECTIVITY(IJK,1) = IJK_OF_NODE(5)
+               CONNECTIVITY(IJK,2) = IJK_OF_NODE(6)
+               CONNECTIVITY(IJK,3) = IJK_OF_NODE(8)
+               CONNECTIVITY(IJK,4) = IJK_OF_NODE(7)
+            ELSE
+               NUMBER_OF_NODES(IJK) = 8
+               DO NODE = 1,8
+                  CONNECTIVITY(IJK,NODE) = IJK_OF_NODE(NODE)
+               END DO
+            ENDIF
+
+! If obstacles are defined, they will be flagged as blocked cells
+! and will not be visible in the VTK files
+            IF(WALL_AT(IJK)) THEN
+               BLOCKED_CELL_AT(IJK)  = .TRUE.
+               CUT_CELL_AT(IJK)      = .FALSE.
+               STANDARD_CELL_AT(IJK) = .FALSE.
+            ENDIF
+
+         ENDIF
+
+      ENDDO
+
+
+!======================================================================
+!  parallel processing
+!======================================================================
+      call SEND_RECEIVE_1D_LOGICAL(STANDARD_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(BLOCKED_CELL_AT,2)
+      call SEND_RECEIVE_1D_LOGICAL(CUT_CELL_AT,2)
+
+      Allocate(  SHIFTED_CONNECTIVITY  (DIMENSION_3,15) )
+
+      SHIFTED_CONNECTIVITY = CONNECTIVITY
+
+! Replace local node index by global node index before gathering the array
+      DO IJK = IJKSTART3,IJKEND3
+         DO L=1,NUMBER_OF_NODES(IJK)
+            IF(CONNECTIVITY(IJK,L) <= IJKEND3) THEN
+               I = I_OF(CONNECTIVITY(IJK,L))
+               J = J_OF(CONNECTIVITY(IJK,L))
+               K = K_OF(CONNECTIVITY(IJK,L))
+               SHIFTED_CONNECTIVITY(IJK,L) = funijk_gl(I,J,K)
+            ENDIF
+         ENDDO
+      ENDDO
+
+! Allocate, initialize and gather arrays
+      IF(.NOT.GLOBAL_VAR_ALLOCATED) THEN
+
+         IF (myPE == PE_IO) THEN
+            allocate (GLOBAL_I_OF(ijkmax3))
+            allocate (GLOBAL_J_OF(ijkmax3))
+            allocate (GLOBAL_K_OF(ijkmax3))
+            allocate (GLOBAL_CONNECTIVITY(ijkmax3,15))
+            allocate (GLOBAL_NUMBER_OF_NODES(ijkmax3))
+            allocate (GLOBAL_INTERIOR_CELL_AT(ijkmax3))
+            allocate (GLOBAL_BLOCKED_CELL_AT(ijkmax3))
+            allocate (GLOBAL_STANDARD_CELL_AT(ijkmax3))
+            allocate (GLOBAL_CUT_CELL_AT(ijkmax3))
+
+         ELSE
+            allocate (GLOBAL_I_OF(1))
+            allocate (GLOBAL_J_OF(1))
+            allocate (GLOBAL_K_OF(1))
+            allocate (GLOBAL_CONNECTIVITY(1,15))
+            allocate (GLOBAL_NUMBER_OF_NODES(1))
+            allocate (GLOBAL_INTERIOR_CELL_AT(1))
+            allocate (GLOBAL_BLOCKED_CELL_AT(1))
+            allocate (GLOBAL_STANDARD_CELL_AT(1))
+            allocate (GLOBAL_CUT_CELL_AT(1))
+         ENDIF
+
+         GLOBAL_VAR_ALLOCATED = .TRUE.
+
+      ENDIF
+
+
+      GLOBAL_INTERIOR_CELL_AT = .FALSE.
+      GLOBAL_BLOCKED_CELL_AT  = .FALSE.
+      GLOBAL_CUT_CELL_AT      = .FALSE.
+      GLOBAL_STANDARD_CELL_AT = .TRUE.
+
+      call gather (I_OF,GLOBAL_I_OF,root)
+      call gather (J_OF,GLOBAL_J_OF,root)
+      call gather (K_OF,GLOBAL_K_OF,root)
+      call gather (SHIFTED_CONNECTIVITY,GLOBAL_CONNECTIVITY,root)
+      call gather (NUMBER_OF_NODES,GLOBAL_NUMBER_OF_NODES,root)
+      call gather (INTERIOR_CELL_AT,GLOBAL_INTERIOR_CELL_AT,root)
+      call gather (BLOCKED_CELL_AT,GLOBAL_BLOCKED_CELL_AT,root)
+      call gather (STANDARD_CELL_AT,GLOBAL_STANDARD_CELL_AT,root)
+      call gather (CUT_CELL_AT,GLOBAL_CUT_CELL_AT,root)
+
+      deAllocate(  SHIFTED_CONNECTIVITY   )
+
+
+
+! Count the number of cells
+      GLOBAL_NUMBER_OF_NEW_POINTS = 0
+
+      IF (myPE == PE_IO) THEN
+
+         POLY_COUNTER = 0
+
+         NUMBER_OF_CELLS = 0
+
+         NUMBER_OF_CUT_CELLS = 0
+
+         NUMBER_OF_BLOCKED_CELLS = 0
+
+         NUMBER_OF_STANDARD_CELLS = 0
+
+         DO IJK = 1, IJKMAX3
+
+            IF (GLOBAL_INTERIOR_CELL_AT(IJK)) THEN
+
+               NUMBER_OF_CELLS = NUMBER_OF_CELLS + 1
+
+               IF (GLOBAL_BLOCKED_CELL_AT(IJK))  NUMBER_OF_BLOCKED_CELLS  = NUMBER_OF_BLOCKED_CELLS + 1
+               IF (GLOBAL_STANDARD_CELL_AT(IJK)) NUMBER_OF_STANDARD_CELLS = NUMBER_OF_STANDARD_CELLS + 1
+               IF (GLOBAL_CUT_CELL_AT(IJK))      NUMBER_OF_CUT_CELLS = NUMBER_OF_CUT_CELLS + 1
+
+               IF (.NOT.GLOBAL_BLOCKED_CELL_AT(IJK))   POLY_COUNTER = POLY_COUNTER + GLOBAL_NUMBER_OF_NODES(IJK) + 1
+
+            ENDIF
+
+         END DO
+
+! There are no new points since there a no cut cells
+         NUMBER_OF_POINTS = IJKMAX3
+
+      ENDIF
+
+      RETURN
+
+
+      END SUBROUTINE SETUP_VTK_NO_CUTCELL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2576,7 +2825,6 @@
 
       ALLOCATE (GLOBAL_CLEANED_CONNECTIVITY(ijkmax3,15))
       ALLOCATE (KEEP_NEW_POINT(GLOBAL_NUMBER_OF_NEW_POINTS))
-
 
 
 ! Step 1: Go through connectivity list and only keep points that are used.
