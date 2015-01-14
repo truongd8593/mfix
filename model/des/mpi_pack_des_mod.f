@@ -66,6 +66,9 @@
          do lpicloc =1,dg_pic(lijk)%isize
             lbuf = lpar_cnt*lpacketsize+ibufoffset
             lcurpar = dg_pic(lijk)%p(lpicloc)
+
+! Do not send particle data for a ghost particle whose owner has not yet
+! updated the particle's data on this processor.
             if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar) ) cycle
 
 ! 1) Global ID
