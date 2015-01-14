@@ -2,7 +2,7 @@
 # Horizontal channel (rectangular plane Poiseuille flow)               #
 # Order verification using exact solution                              #
 #                                                                      #
-# Author: Aniruddha Choudhary                               Date: 2014 #
+# Author: Aniruddha Choudhary                           Date: Jan 2015 #
 #                                                                      #
 #                                                                      #
 ########################################################################
@@ -50,7 +50,7 @@
   jmax    = 8
 
   no_k = .T.
-  
+    
 #_______________________________________________________________________
 # GAS-PHASE SECTION
 

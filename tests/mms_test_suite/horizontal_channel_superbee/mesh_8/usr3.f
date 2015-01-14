@@ -88,9 +88,11 @@
       ! as:
       ! real(dp) = a, b, etc.
 
-      integer  :: i, j, k, ijk
-      integer  :: imjk, ijmk, imjmk, imjpk, ipjmk, ipjk, ijkp
-      
+      integer   :: i, j, k, ijk
+      integer   :: imjk, ijmk, imjmk, imjpk, ipjmk, ipjk, ijkp
+
+      logical   :: write_solution_tecplot = .F.      
+
 !**** ask jmusser: should these multi-dim. arrays be made allocatable?
 
 ! x, y coordinate variables
@@ -99,16 +101,16 @@
       double precision  :: xctmp, yctmp ! local/temporary cell-center locations
       
 ! solution variables for cell-centered data visualization	
-      double precision, dimension(2:imax+1,2:jmax+1)  :: p_g_tmp_c, u_g_tmp_c, &
-                                                         v_g_tmp_c
-      double precision, dimension(2:imax+1,2:jmax+1)  :: p_g_ex_c, u_g_ex_c, &
-                                                         v_g_ex_c
+      double precision, dimension(2:imax+1,2:jmax+1)  :: p_g_tmp_c, &
+                                              u_g_tmp_c, v_g_tmp_c
+      double precision, dimension(2:imax+1,2:jmax+1)  :: p_g_ex_c, &
+                                              u_g_ex_c, v_g_ex_c
 
 ! solution variables for node-located data visualization	
-      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_tmp_n, u_g_tmp_n, &
-                                                         v_g_tmp_n
-      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_ex_n, u_g_ex_n, &
-                                                         v_g_ex_n
+      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_tmp_n, &
+                                              u_g_tmp_n, v_g_tmp_n
+      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_ex_n, 
+                                              u_g_ex_n, v_g_ex_n
 
 ! variables for discretization error (DE) norms calculations
       double precision  :: p_gtmp, u_gtmp, v_gtmp
@@ -125,20 +127,18 @@
       double precision, parameter :: p0_usr     = 101325.0  ! ref. pressure
      
 ! create x_tmp, y_tmp array at node locations 
-
-      do i = 2, imax+2
       do j = 2, jmax+2
-          x_tmp(i,j) = l_usr*real(i-2,dp)/real(imax)
-          y_tmp(i,j) = h_usr*real(j-2,dp)/real(jmax)
+      do i = 2, imax+2
+          x_tmp(i,j) = l_usr*real(i-2,dp)/real(imax,dp)
+          y_tmp(i,j) = h_usr*real(j-2,dp)/real(jmax,dp)
       end do
       end do
        
 ! calculate solution variables at cell-centers
-
       k = kmin1  ! because 2D domain
       
-      do i = 2, imax+1
       do j = 2, jmax+1
+      do i = 2, imax+1
          ijk  = funijk(i,j,k)
          imjk = im_of(ijk)
          ijmk = jm_of(ijk)
@@ -150,61 +150,65 @@
          xctmp = half*(x_tmp(i+1,j)+x_tmp(i,j))
          yctmp = half*(y_tmp(i,j+1)+y_tmp(i,j)) 
 
-         p_g_ex_c(i,j) = p0_usr + dpdx_usr*( (x_tmp(imax+2,j) + x_tmp(imax+1,j))*half - xctmp )   
-         u_g_ex_c(i,j) = one/(two*mu_usr)*dpdx_usr*yctmp*(h_usr-yctmp)   
+         p_g_ex_c(i,j) = p0_usr + &
+          dpdx_usr*( (x_tmp(imax+2,j) + x_tmp(imax+1,j))*half - xctmp )
+         u_g_ex_c(i,j) = one/(two*mu_usr)*dpdx_usr*yctmp*(h_usr-yctmp) 
          v_g_ex_c(i,j) = zero
       end do
       end do
 
-! output solution variables in Tecplot cell-centered (or BLOCK) format      
-!*** ask jmusser: better way to find open unit numbers?
-      open(unit=777, file="solution_cellc.dat", status='unknown')
-      write(777,*) 'variables = "x""y""Pg""Ug""Vg""Pgex""Ugex""Vgex"'
-      write(777,*) 'zone T="',0,'" '
-      write(777,*) 'i=',imax+1,' j=',jmax+1
-      write(777,*) 'DATAPACKING=BLOCK'
-      write(777,*) "VARLOCATION=([3,4,5,6,7,8]=CELLCENTERED)"
-      
-      do j = 2, jmax+2
-         write(777,*) x_tmp(:,j)
-      end do
-      
-      do j = 2, jmax+2
-         write(777,*) y_tmp(:,j)
-      end do
-      
-      do j = 2, jmax+1
-         write(777,*) p_g_tmp_c(:,j)
-      end do
-      
-      do j = 2, jmax+1
-         write(777,*) u_g_tmp_c(:,j)
-      end do
-      
-      do j = 2, jmax+1
-         write(777,*) b_g_tmp_c(:,j)
-      end do
-      
-      do j = 2, jmax+1
-         write(777,*) p_g_ex_c(:,j)
-      end do
-      
-      do j = 2, jmax+1
-         write(777,*) u_g_ex_c(:,j)
-      end do
-      
-      do J = 2, jmax+1
-         write(777,*) v_g_ex_c(:,j)
-      end do
-      
-      close(777)
-      
-! calculate solution variables at nodes 
+! output solution variables in Tecplot cell-centered (or BLOCK) format
+      if(write_solution_tecplot) then
 
+!*** ask jmusser: better way to find open unit numbers?
+        open(unit=777, file="solution_cellc.dat", status='unknown')
+        write(777,*) 'variables = "x""y""Pg""Ug""Vg""Pgex""Ugex""Vgex"'
+        write(777,*) 'zone T="',0,'" '
+        write(777,*) 'i=',imax+1,' j=',jmax+1
+        write(777,*) 'DATAPACKING=BLOCK'
+        write(777,*) "VARLOCATION=([3,4,5,6,7,8]=CELLCENTERED)"
+        
+        do j = 2, jmax+2
+           write(777,*) x_tmp(:,j)
+        end do
+        
+        do j = 2, jmax+2
+           write(777,*) y_tmp(:,j)
+        end do
+        
+        do j = 2, jmax+1
+           write(777,*) p_g_tmp_c(:,j)
+        end do
+        
+        do j = 2, jmax+1
+           write(777,*) u_g_tmp_c(:,j)
+        end do
+        
+        do j = 2, jmax+1
+           write(777,*) b_g_tmp_c(:,j)
+        end do
+        
+        do j = 2, jmax+1
+           write(777,*) p_g_ex_c(:,j)
+        end do
+        
+        do j = 2, jmax+1
+           write(777,*) u_g_ex_c(:,j)
+        end do
+        
+        do J = 2, jmax+1
+           write(777,*) v_g_ex_c(:,j)
+        end do
+        
+        close(777)
+        
+      end if ! end of 'if(write_solution_tecplot)'
+
+! calculate solution variables at nodes 
       ! get pressure values at nodes
       ! internal cells
-      do i = 3, imax+1
       do j = 3, jmax+1
+      do i = 3, imax+1
          ijk = funijk(i,j,k)
          imjk = im_of(ijk)
          ijmk = jm_of(ijk)
@@ -272,8 +276,8 @@
         (two*p_g_tmp_n(imax+2,jmax+1) - p_g_tmp_n(imax+2,jmax)) )
       
       ! get U_g and V_g values at nodes
-      do i = 2, imax+2
       do j = 2, jmax+2
+      do i = 2, imax+2
          ijk = funijk(i,j,k)
          imjk = im_of(ijk)
          ijmk = jm_of(ijk)
@@ -293,20 +297,27 @@
       end do
 
 ! output solution variables in Tecplot node-located data format
-      open(unit = 778, file="solution_node.dat", status='unknown')
-      write(778,*) 'variables = "x""y""Pg""Ug""Vg""Pgex""Ugex""Vgex"'
-      write(778,*) 'zone T="',0,'" '
-      write(778,*) 'I=',imax+1,' J=',jmax+1
-      write(778,*) 'DATAPACKING=POINT'
-      
-      do J = 2, jmax+2
-      do I = 2, imax+2
-         write(778,*) x_tmp(i,j), y_tmp(i,j), p_g_tmp_n(i,j), u_g_tmp_n(i,j), &
-            v_g_tmp_n(i,j), p_g_ex_n(i,j), u_g_ex_n(i,j), v_g_ex_n(i,j) 
-      end do
-      end do
-      
-      ! calculate and output DE norms
+      if(write_solution_tecplot) then
+
+        open(unit = 778, file="solution_node.dat", status='unknown')
+        write(778,*) 'variables = "x""y""Pg""Ug""Vg""Pgex""Ugex""Vgex"'
+        write(778,*) 'zone T="',0,'" '
+        write(778,*) 'I=',imax+1,' J=',jmax+1
+        write(778,*) 'DATAPACKING=POINT'
+        
+        do j = 2, jmax+2
+        do i = 2, imax+2
+           write(778,*) x_tmp(i,j), y_tmp(i,j), &
+              p_g_tmp_n(i,j), u_g_tmp_n(i,j), v_g_tmp_n(i,j), &
+              p_g_ex_n(i,j), u_g_ex_n(i,j), v_g_ex_n(i,j) 
+        end do
+        end do
+
+        close(778)
+
+      end if
+
+! calculate discretization error norms
       k = kmin1
       
       ! For pressure !
@@ -320,8 +331,8 @@
          linfde(1) = max(linfde(1), abs(p_g_tmp_c(i,j) - p_g_ex_c(i,j)))
       end do
       end do
-      l1de(1) = l1de(1)/real(imax*jmax)
-      l2de(1) = sqrt(l2de(1)/real(imax*jmax))
+      l1de(1) = l1de(1)/real(imax*jmax,dp)
+      l2de(1) = sqrt(l2de(1)/real(imax*jmax,dp))
       
       ! For U_g !
       l1de(2) = zero
@@ -334,9 +345,9 @@
       
          ijk = funijk(i,j,k)
          imjk = im_of(ijk)
-         l1de(2) = l1de(2) + abs(U_G(imjk) - u_g_tmp)
-         l2de(2) = l2de(2) + abs(U_G(imjk) - u_g_tmp)**2   
-         linfde(2) = max(linfde(2), abs(U_G(imjk) - U_g_tmp))
+         l1de(2) = l1de(2) + abs(U_G(imjk) - u_gtmp)
+         l2de(2) = l2de(2) + abs(U_G(imjk) - u_gtmp)**2   
+         linfde(2) = max(linfde(2), abs(U_G(imjk) - u_gtmp))
       end do
       end do
       l1de(2) = l1de(2)/real((imax+1)*jmax,dp)
@@ -352,18 +363,20 @@
       
          ijk = funijk(i,j,k)
          ijmk = jm_of(ijk)
-         l1de(3) = l1de(3) + abs(V_G(ijmk) - v_g_tmp)
-         l2de(3) = l2de(3) + abs(V_G(ijmk) - v_g_tmp)**2   
-         linfde(3) = max(linfde(3), abs(V_G(ijmk) - v_g_tmp))
+         l1de(3) = l1de(3) + abs(V_G(ijmk) - v_gtmp)
+         l2de(3) = l2de(3) + abs(V_G(ijmk) - v_gtmp)**2   
+         linfde(3) = max(linfde(3), abs(V_G(ijmk) - v_gtmp))
       end do
       end do
       l1de(3) = l1de(3)/real(imax*(jmax+1),2)
       l2de(3) = sqrt(l2de(3)/real(imax*(jmax+1)),2)
-      
-      open(UNIT = 779, FILE="de_norms.dat", Status='unknown')
+
+! output discretization error norms in tecplot format      
+      open(unit = 779, file="de_norms.dat", status='unknown')
       write(779,*) "DE Norms for Horizontal Channel Flow:"
       write(779,*) "imax= ",imax, " jmax=", jmax
-      write(779,*) "1st line: L1 Norms, 2nd line: L2 Norms, 3rd line: Linf Norms"
+      write(779,*) "1st line: L1 Norms, 2nd line: L2 Norms, &
+                   &3rd line: Linf Norms"
       write(779,*) "Columns: P_g : U_g : V_g"
       write(779,*) l1de(1), l1de(2), l1de(3)
       write(779,*) l2de(1), l2de(2), l2de(3)
