@@ -38,14 +38,13 @@
       use mpi_comm_des, only: desmpi_sendrecv_wait
 
       interface pack_dbuf
-         module procedure pack_db0, pack_db1
+        module procedure pack_db0,pack_db1,pack_i0,pack_i1
       end interface pack_dbuf
 
       contains
 
-
 !----------------------------------------------------------------------!
-!Pack subroutine for single variables                                                                      !
+!Pack subroutine for single real variables                             !
 !----------------------------------------------------------------------!
       subroutine pack_db0(lbuf,idata,pface)
       integer, intent(inout) :: lbuf
@@ -59,7 +58,7 @@
       end subroutine pack_db0
 
 !----------------------------------------------------------------------!
-!Pack subroutine for arrays                                                                      !
+!Pack subroutine for real arrays                                       !
 !----------------------------------------------------------------------!
       subroutine pack_db1(lbuf,idata,pface)
       integer, intent(inout) :: lbuf
@@ -75,6 +74,41 @@
 
       return
       end subroutine pack_db1
+
+
+!----------------------------------------------------------------------!
+!Pack subroutine for single integer variables                          !
+!----------------------------------------------------------------------!
+      subroutine pack_i0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(in) :: idata
+
+      dsendbuf(lbuf,pface) = idata
+      lbuf = lbuf + 1
+
+      return
+      end subroutine pack_i0
+
+!----------------------------------------------------------------------!
+!Pack subroutine for integer arrays                                    !
+!----------------------------------------------------------------------!
+      subroutine pack_i1(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(in) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      dsendbuf(lbuf:lbuf+lsize-1,pface) = idata
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine pack_i1
+
+
 
 
 !------------------------------------------------------------------------
@@ -110,7 +144,7 @@
 ! 2) DES grid IJK
             call pack_dbuf(lbuf,dg_ijkconv(lijk,pface,ineighproc(pface)),pface)
 ! 3) DES grid IJK - previous
-            call pack_dbuf(dg_ijkconv(lbuf,dg_pijkprv(lcurpar),pface,ineighproc(pface)),pface)
+            call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,ineighproc(pface)),pface)
 ! 4) Radius
             call pack_dbuf(lbuf,des_radius(lcurpar),pface)
 ! 5) Phase index

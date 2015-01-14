@@ -39,7 +39,7 @@
 
       
       interface unpack_dbuf
-         module procedure unpack_db0, unpack_db1
+         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1,unpack_l0
       end interface unpack_dbuf
 
 
@@ -47,7 +47,7 @@
 
 
 !----------------------------------------------------------------------!
-!Unpack subroutine for single variables                                                                      !
+!Unpack subroutine for single real variables                           !
 !----------------------------------------------------------------------!
       subroutine unpack_db0(lbuf,idata,pface)
       integer, intent(inout) :: lbuf
@@ -61,7 +61,7 @@
       end subroutine unpack_db0
 
 !----------------------------------------------------------------------!
-!Unpack subroutine for arrays                                                                      !
+!Unpack subroutine for real arrays                                     !
 !----------------------------------------------------------------------!
       subroutine unpack_db1(lbuf,idata,pface)
       integer, intent(inout) :: lbuf
@@ -77,6 +77,57 @@
 
       return
       end subroutine unpack_db1
+
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for single integer variables                        !
+!----------------------------------------------------------------------!
+      subroutine unpack_i0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(inout) :: idata
+
+      idata = drecvbuf(lbuf,pface)
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_i0
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for integer arrays                                  !
+!----------------------------------------------------------------------!
+      subroutine unpack_i1(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(inout) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine unpack_i1
+
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for single logical variables                        !
+!----------------------------------------------------------------------!
+      subroutine unpack_l0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      logical, intent(inout) :: idata
+
+      idata = drecvbuf(lbuf,pface)
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_l0
+
+
+
 
 
 !------------------------------------------------------------------------
@@ -375,8 +426,7 @@
 
          call add_pair(llocpar,lneigh)
 
-         call unpack_dbuf(lbuf,lbufpv_pair(pair_num),pface)
-         lbufpv_pair(pair_num) = merge(.true.,.false.,0.5 < lbufpv_pair(pair_num))
+         call unpack_dbuf(lbuf,merge(.true.,.false.,0.5 < pv_pair(pair_num)),pface)
 
          do ii=1,DIMN
             call unpack_dbuf(lbuf,pfn_pair(ii,pair_num),pface)
