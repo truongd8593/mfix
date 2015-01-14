@@ -11,7 +11,7 @@
 # RUN CONTROL SECTION
 
   Run_name      = 'HCS'
-  Descrption    = 'Rectangular channel flow (Horizontal) - Superbee'
+  Description    = 'Rectangular channel flow (Horizontal) - Superbee'
   Units         = 'SI'
   Run_type      = 'new'
 
@@ -44,7 +44,7 @@
   Coordinates   = 'cartesian'
 
   xlength = 0.20  
-  ylegnth = 0.01
+  ylength = 0.01
 
   imax    = 8
   jmax    = 8

@@ -66,21 +66,16 @@
 !                                                                      C 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       subroutine write_tecplot_data
-      !USE param
-      !USE param1
-      !USE parallel
-      !USE constant
-      !USE run
-      !USE toleranc
       use geometry
       use indices
-      !USE compar
-      !USE sendrecv
       use fldvar
       use functions
       implicit none
 
       integer, parameter  :: dp = kind(1.d0)
+
+      double precision    :: three = 3.0_dp, two = 2.0_dp
+
 !**** ask jmusser:      
       ! or
       ! integer, parameter  :: dp = selected_real_kind(15,307)
@@ -89,9 +84,9 @@
       ! real(dp) = a, b, etc.
 
       integer   :: i, j, k, ijk
-      integer   :: imjk, ijmk, imjmk, imjpk, ipjmk, ipjk, ijkp
+      integer   :: imjk, ijmk, imjmk, imjpk, ipjmk, ipjk, ijpk
 
-      logical   :: write_solution_tecplot = .F.      
+      logical   :: write_solution_tecplot = .FALSE.      
 
 !**** ask jmusser: should these multi-dim. arrays be made allocatable?
 
@@ -109,7 +104,7 @@
 ! solution variables for node-located data visualization	
       double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_tmp_n, &
                                               u_g_tmp_n, v_g_tmp_n
-      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_ex_n, 
+      double precision, dimension(2:imax+2,2:jmax+2)  :: p_g_ex_n, & 
                                               u_g_ex_n, v_g_ex_n
 
 ! variables for discretization error (DE) norms calculations
@@ -144,7 +139,7 @@
          ijmk = jm_of(ijk)
       
          p_g_tmp_c(i,j) = p_g(ijk)
-         u_g_tmp_c(i,j) = half*(u_g(ijk)+u_h(imjk))
+         u_g_tmp_c(i,j) = half*(u_g(ijk)+u_g(imjk))
          v_g_tmp_c(i,j) = half*(v_g(ijk)+v_g(ijmk))
       
          xctmp = half*(x_tmp(i+1,j)+x_tmp(i,j))
@@ -152,7 +147,7 @@
 
          p_g_ex_c(i,j) = p0_usr + &
           dpdx_usr*( (x_tmp(imax+2,j) + x_tmp(imax+1,j))*half - xctmp )
-         u_g_ex_c(i,j) = one/(two*mu_usr)*dpdx_usr*yctmp*(h_usr-yctmp) 
+         u_g_ex_c(i,j) = (half*mu_usr)*dpdx_usr*yctmp*(h_usr-yctmp) 
          v_g_ex_c(i,j) = zero
       end do
       end do
@@ -185,7 +180,7 @@
         end do
         
         do j = 2, jmax+1
-           write(777,*) b_g_tmp_c(:,j)
+           write(777,*) v_g_tmp_c(:,j)
         end do
         
         do j = 2, jmax+1
@@ -351,7 +346,7 @@
       end do
       end do
       l1de(2) = l1de(2)/real((imax+1)*jmax,dp)
-      l2de(2) = sqrt(l2de(2)/real((imax+1)*jmax),dp)
+      l2de(2) = sqrt(l2de(2)/real((imax+1)*jmax,dp))
       
       ! For V_g !
       l1de(3) = zero
@@ -368,8 +363,8 @@
          linfde(3) = max(linfde(3), abs(V_G(ijmk) - v_gtmp))
       end do
       end do
-      l1de(3) = l1de(3)/real(imax*(jmax+1),2)
-      l2de(3) = sqrt(l2de(3)/real(imax*(jmax+1)),2)
+      l1de(3) = l1de(3)/real(imax*(jmax+1),dp)
+      l2de(3) = sqrt(l2de(3)/real(imax*(jmax+1),dp))
 
 ! output discretization error norms in tecplot format      
       open(unit = 779, file="de_norms.dat", status='unknown')
