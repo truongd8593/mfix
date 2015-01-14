@@ -1,6 +1,6 @@
 rm de_norms.dat
 
-cd mesh_9
+cd mesh_8
 mkmfix -r > tmp.dat 2>&1
 ./mfix.exe > result.dat
 cat de_norms.dat >> ../de_norms.dat
@@ -8,7 +8,7 @@ cat de_norms.dat >> ../de_norms.dat
 rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
 cd ..
 
-cd mesh_17
+cd mesh_16
 mkmfix -r > tmp.dat 2>&1
 ./mfix.exe > result.dat
 cat de_norms.dat >> ../de_norms.dat
@@ -16,7 +16,7 @@ cat de_norms.dat >> ../de_norms.dat
 rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
 cd ..
 
-cd mesh_33
+cd mesh_32
 mkmfix -r > tmp.dat 2>&1
 ./mfix.exe > result.dat
 cat de_norms.dat >> ../de_norms.dat
@@ -24,7 +24,7 @@ cat de_norms.dat >> ../de_norms.dat
 rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
 cd ..
 
-#cd mesh_65
+#cd mesh_64
 #mkmfix -r > tmp.dat 2>&1
 #./mfix.exe > result.dat
 #cat de_norms.dat >> ../de_norms.dat
@@ -32,7 +32,7 @@ cd ..
 #rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
 #cd ..
 #
-#cd mesh_129
+#cd mesh_128
 #mkmfix -r > tmp.dat 2>&1
 #./mfix.exe > result.dat
 #cat de_norms.dat >> ../de_norms.dat
