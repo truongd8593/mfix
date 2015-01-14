@@ -1001,6 +1001,14 @@
 
 
                CASE (10)
+! Now that nRR is possibly non-zero, allocate VTK_RRate
+                  IF(ALLOCATED(VTK_RRate)) DEALLOCATE(VTK_RRate)
+                  IF(nRR>0) THEN
+                     ALLOCATE(VTK_RRate(DIMENSION_VTK,nRR))
+                  ELSE
+                     ALLOCATE(VTK_RRate(DIMENSION_VTK,1))
+                  ENDIF
+                  VTK_RRate = .FALSE.
                   DO R = 1,nRR
                      VTK_RRate(L,R) = .TRUE.
                   END DO

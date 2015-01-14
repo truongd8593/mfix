@@ -158,10 +158,13 @@
          /1x,'not pass column ',A,'.',2/3x,A,2/1x,'Please correct ',   &
          'the mfix.dat file.',/1X,70('*'),2/)
 
+! All subsequent lines are thermochemical data
+         IF(LINE_STRING(1:11) == 'THERMO DATA') EXIT READ_LP
+
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
-            ! At this point, the keyword was not identified therefore it is
-            ! either deprecated or unknown.
+! At this point, the keyword was not identified therefore it is
+! either deprecated or unknown.
             CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
          ENDIF
 
@@ -171,8 +174,7 @@
          CALL GET_COMMAND_ARGUMENT(ii,LINE_STRING)
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
-            PRINT *,"unknown command line argument keyword"
-            CALL MFIX_EXIT(myPE)
+            CALL DEPRECATED_OR_UNKNOWN(LINE_NO, LINE_STRING(1:LINE_LEN))
          ENDIF
       ENDDO
 
@@ -194,70 +196,67 @@ CONTAINS
     ERROR = .FALSE.
 
 ! Make upper case all except species names
-         if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
-            index(LINE_STRING,'species_name') == 0 .AND. &
-            index(LINE_STRING,'Species_Name') == 0 .AND. &
-            index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
-            index(LINE_STRING,'Species_g') == 0 .AND.    &
-            index(LINE_STRING,'species_g') == 0 .AND.    &
-            index(LINE_STRING,'SPECIES_s') == 0 .AND.    &
-            index(LINE_STRING,'Species_s') == 0 .AND.    &
-            index(LINE_STRING,'species_s') == 0)         &
-            CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
+    if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
+         index(LINE_STRING,'species_name') == 0 .AND. &
+         index(LINE_STRING,'Species_Name') == 0 .AND. &
+         index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
+         index(LINE_STRING,'Species_g') == 0 .AND.    &
+         index(LINE_STRING,'species_g') == 0 .AND.    &
+         index(LINE_STRING,'SPECIES_s') == 0 .AND.    &
+         index(LINE_STRING,'Species_s') == 0 .AND.    &
+         index(LINE_STRING,'species_s') == 0)         &
+         CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
 
-! All subsequent lines are thermochemical data
-         IF(LINE_STRING(1:11) == 'THERMO DATA') RETURN
-
-         CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
-         CALL REMOVE_PAR_BLANKS(LINE_STRING)
+    CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
+    CALL REMOVE_PAR_BLANKS(LINE_STRING)
 
 ! Complete arithmetic operations and expand line
-         CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG)
+    CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG)
 
 ! Write the current line to a scratch file
 ! and read the scratch file in NAMELIST format
-         IF(.NOT.READ_FLAG) RETURN
+    IF(.NOT.READ_FLAG) RETURN
 
 ! Standard model input parameters.
-         STRING=''; STRING = '&INPUT_DATA '//&
-            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-         READ(STRING, NML=INPUT_DATA, IOSTAT=IOS)
-         IF(IOS == 0)  RETURN
+    STRING=''; STRING = '&INPUT_DATA '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+    READ(STRING, NML=INPUT_DATA, IOSTAT=IOS)
+    IF(IOS == 0)  RETURN
 
 ! Stop processing keyword inputs if runing POST_MFIX
-         IF(POST == 1) RETURN
+    IF(POST == 1) RETURN
 
 ! Discrete Element model input parameters.
-         STRING=''; STRING = '&DES_INPUT_DATA '//&
-            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-         READ(STRING, NML=DES_INPUT_DATA, IOSTAT=IOS)
-         IF(IOS == 0)  RETURN
+    STRING=''; STRING = '&DES_INPUT_DATA '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+    READ(STRING, NML=DES_INPUT_DATA, IOSTAT=IOS)
+    IF(IOS == 0)  RETURN
 
 ! User defined input parameters.
-         STRING=''; STRING = '&USR_INPUT_DATA '//&
-            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-         READ(STRING, NML=USR_INPUT_DATA, IOSTAT=IOS)
-         IF(IOS == 0)  RETURN
+    STRING=''; STRING = '&USR_INPUT_DATA '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+    READ(STRING, NML=USR_INPUT_DATA, IOSTAT=IOS)
+    IF(IOS == 0)  RETURN
 
 ! Cartesian grid cut-cell input parameters.
-         STRING=''; STRING = '&CARTESIAN_GRID_INPUT_DATA '//&
-            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-         READ(STRING, NML=CARTESIAN_GRID_INPUT_DATA, IOSTAT=IOS)
-         IF(IOS == 0)  RETURN
+    STRING=''; STRING = '&CARTESIAN_GRID_INPUT_DATA '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+    READ(STRING, NML=CARTESIAN_GRID_INPUT_DATA, IOSTAT=IOS)
+    IF(IOS == 0)  RETURN
 
 ! QMOMK input parameters.
-         STRING=''; STRING = '&QMOMK_INPUT_DATA '//&
-            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-         READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
-         IF(IOS == 0)  RETURN
+    STRING=''; STRING = '&QMOMK_INPUT_DATA '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+    READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
+    IF(IOS == 0)  RETURN
 
-         ERROR = .TRUE.
+    ERROR = .TRUE.
 
-         RETURN
+    RETURN
 
-       END SUBROUTINE SET_KEYWORD
+  END SUBROUTINE SET_KEYWORD
 
-      END SUBROUTINE READ_NAMELIST
+END SUBROUTINE READ_NAMELIST
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

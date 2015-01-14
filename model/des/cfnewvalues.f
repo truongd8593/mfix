@@ -66,7 +66,7 @@
 !$omp shared(MAX_PIP,pea,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,          &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
-!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD)             &
+!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID) &
 !$omp private(l,dd,neighbor_search_dist)                                  &
 !$omp reduction(.or.:do_nsearch) schedule (auto)
 
@@ -110,7 +110,7 @@
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop
          IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
-            WRITE(*,1002) L, sqrt(dot_product(DD,DD)), DES_RADIUS(L)
+            WRITE(*,1002) iGlobal_ID(L), sqrt(dot_product(DD,DD)), DES_RADIUS(L)
             IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') &
                'old particle pos = ', DES_POS_OLD(:,L)
             WRITE(*,'(5X,A,3(ES17.9))') &

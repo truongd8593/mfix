@@ -88,6 +88,9 @@
       use machine, only: OPEN_N1
       use geometry, only: NO_K
 
+      use mpi_utility, only: BCAST
+      use mpi_utility, only: GLOBAL_ALL_SUM
+
       implicit none
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
@@ -96,9 +99,9 @@
 
       CHARACTER(len=32) :: lFNAME
 
-      INTEGER :: lDIMN
+! Integer Error Flag
+      INTEGER :: IER
 
-      lDIMN = merge(2,3,NO_K)
 
       allocate(pSCATTER(0:numPEs-1))
       allocate(pDISPLS(0:numPEs-1))
@@ -149,11 +152,33 @@
 
          ELSE
             pIN_COUNT = 10
-            cIN_COUNT = 10
          ENDIF
 
-         allocate( pRestartMap(pIN_COUNT))
-         allocate( cRestartMap(cIN_COUNT))
+         IER = 0
+
+! Allocate the particle restart map. This is used in determining were
+! particle data is sent. Only process zero needs this array.
+         allocate( pRestartMap(pIN_COUNT), STAT=IER)
+         IF(IER/=0) THEN
+            WRITE(ERR_MSG, 1200) 'pRestartMap', trim(iVAL(pIN_COUNT))
+            CALL FLUSH_ERR_MSG
+         ENDIF
+
+! Allocate the collision restart map array. All ranks allocatet this
+! array so that mapping the collision data can be done in parallel.
+         CALL BCAST(cIN_COUNT, PE_IO)
+         allocate( cRestartMap(cIN_COUNT), STAT=IER)
+         IF(IER/=0) THEN
+            WRITE(ERR_MSG, 1200) 'cRestartMap', trim(iVAL(cIN_COUNT))
+            CALL FLUSH_ERR_MSG
+         ENDIF
+
+ 1200 FORMAT('Error 1200: Unable to allocate sufficient memory to ',&
+         'read in DES',/'restart file. size(',A,') = ',A)
+
+         CALL GLOBAL_ALL_SUM(IER)
+         IF(IER/=0) CALL MFIX_EXIT(myPE)
+
       ENDIF
 
       lNEXT_REC = 5
@@ -169,7 +194,6 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE FINL_READ_RES_DES
 
-      use mpi_init_des, only: des_restart_neigh
 
       IF(bDIST_IO .OR. myPE == PE_IO) close(RDES_UNIT)
 
@@ -189,7 +213,6 @@
 
 
 
-      IF(bDIST_IO) CALL DES_RESTART_NEIGH
 
       RETURN
       END SUBROUTINE FINL_READ_RES_DES
@@ -526,6 +549,8 @@
       use discretelement, only: PAIRS, PAIR_NUM
       use compar, only: numPEs
 
+      use mpi_init_des, only: DES_RESTART_GHOST
+      use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_SUM
       use in_binary_512i
 
@@ -547,8 +572,9 @@
          DO LC1 = 1, 2
             CALL READ_RES_DES(lNEXT_REC, PAIRS(LC1,:))
          ENDDO
-         RETURN
       ENDIF
+
+      CALL DES_RESTART_GHOST
 
       allocate(iPAR_COL(2, cIN_COUNT))
 
@@ -560,12 +586,16 @@
          ENDDO
       ENDIF
 
-! Use the particle postions and the domain coverage of each process
-! to determine which processor each particle belongs.
+! Broadcast collision data to all the other processes.
+      CALL BCAST(iPAR_COL, PE_IO)
+
+! Determine which process owns the pair datasets. This is done either
+! through matching global ids or a search. The actual method depends
+! on the ability to allocate a large enough array.
       CALL MAP_cARRAY_TO_PROC(COL_CNT)
 
 ! Send the particle position data to the individual ranks.
-      CALL SCATTER_PAR_COL(COL_CNT)
+      CALL GLOBAL_TO_LOC_COL
 
 ! Set up the read/scatter arrary information.
       cPROCCNT = PAIR_NUM
@@ -600,12 +630,13 @@
       SUBROUTINE MAP_cARRAY_TO_PROC(lCOL_CNT)
 
       use compar, only: numPEs, myPE
-      use discretelement, only: iGLOBAL_ID 
-      use discretelement, only: PIP 
+      use discretelement, only: iGLOBAL_ID
+      use discretelement, only: PIP, PEA
       use discretelement, only: PAIR_MAX, PAIR_NUM
 
-      use mpi_utility, only: BCAST
-      use mpi_utility, only: GLOBAL_SUM
+!      use mpi_utility, only: BCAST
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use mpi_utility, only: GLOBAL_ALL_MAX
 
       implicit none
 
@@ -614,12 +645,11 @@
 ! Loop counters.
       INTEGER :: LC1, LC2, lPROC, lBUF
 ! Error flag.
-      INTEGER :: IER(0:numPEs-1)
-! Local scatter count.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
-      INTEGER :: lGatherCNTS(0:NUMPEs-1)
+      INTEGER :: IER
+! Max global id.
+      INTEGER :: MAX_ID, lSTAT
 
-      INTEGER :: lROOTCNT, lPROCCNT
+      INTEGER, ALLOCATABLE :: lGLOBAL_OWNER(:)
 
 !-----------------------------------------------
 
@@ -628,75 +658,109 @@
 ! Initialize the error flag.
       IER = 0
 
-! Setup data for particle array data collection:
-      lROOTCNT = 10
-      lPROCCNT = PIP
+      MAX_ID = maxval(IGLOBAL_ID(1:PIP))
+      CALL GLOBAL_ALL_MAX(MAX_ID)
 
-! Rank 0 gets the total number of gloabl particles.
-      CALL GLOBAL_SUM(lPROCCNT, lROOTCNT)
+      allocate(lGLOBAL_OWNER(MAX_ID), STAT=lSTAT)
+      CALL GLOBAL_ALL_SUM(IER)
 
-! Construct an array for the Root process that states the number of
-! (real) particles on each process.
-      iGath_SendCnt = lPROCCNT
+! All ranks successfully allocated the array. This permits a crude
+! but much faster collision owner detection.
+      IF(lSTAT == 0) THEN
 
-      lGatherCnts = 0
-      lGatherCnts(myPE) = lPROCCNT
+         WRITE(ERR_MSG,"('Matching DES pair data by global owner.')")
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE.,FOOTER=.FALSE.)
 
-      CALL GLOBAL_SUM(lGatherCnts, iGatherCnts)
-
-! Calculate the displacements for each process in the global array.
-      iDISPLS(0) = 0
-      DO lPROC = 1,NUMPES-1
-         iDISPLS(lPROC) = iDISPLS(lPROC-1) + iGatherCnts(lPROC-1)
-      ENDDO
-
-      allocate(iPROCBUF(lPROCCNT))
-      allocate(iROOTBUF(lROOTCNT))
-
-      iProcBuf(1:PIP) = iGLOBAL_ID(1:PIP)
-      CALL DESMPI_GATHERV(pTYPE=1)
+         lGLOBAL_OWNER = 0
+         DO LC1=1, PIP
+            IF(.NOT.PEA(LC1,4)) &
+               lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
+         ENDDO
 
 ! Loop over the neighbor pair list and match the read global ID to
 ! one of the global IDs.
-      lCOL_CNT = 0
-      IF(myPE == PE_IO) THEN
-         cRestartMap = -1
+         lCOL_CNT = 0
+         cRestartMap = 0
+         DO LC1=1, cIN_COUNT
+            IF(lGLOBAL_OWNER(iPAR_COL(1,LC1)) == myPE + 1) THEN
+               cRestartMap(LC1) = myPE + 1
+               lCOL_CNT(myPE) = lCOL_CNT(myPE) + 1
+            ENDIF
+         ENDDO
+
+! One or more ranks could not allocate the memory needed to do the
+! quick and dirty match so do a search instead.
+      ELSE
+
+         WRITE(ERR_MSG,"('Matching DES pair data by search.')")
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE.,FOOTER=.FALSE.)
+
+! Loop over the neighbor pair list and match the read global ID to
+! one of the global IDs.
+         lCOL_CNT = 0
+         cRestartMap = 0
          LC1_LP: DO LC1=1, cIN_COUNT
-            DO LC2=1, lROOTCNT
-               IF(iPAR_COL(1,LC1) == iROOTBUF(LC2)) THEN
-                  DO lPROC = 0, numPEs-1
-                     IF(iDISPLS(lPROC) < LC2 .AND. &
-                        LC2 <= sum(iGatherCnts(:lPROC))) THEN
-                        cRestartMap(LC1) = lPROC
-                        lCOL_CNT(lPROC) = lCOL_CNT(lPROC) + 1
-                        CYCLE LC1_LP
-                     ENDIF
-                  ENDDO
+            DO LC2=1, PIP!-iGHOST_CNT
+               IF(iPAR_COL(1,LC1) == iGLOBAL_ID(LC2)) THEN
+                  cRestartMap(LC1) = myPE + 1
+                  lCOL_CNT(myPE) = lCOL_CNT(myPE) + 1
+                  CYCLE LC1_LP
                ENDIF
             ENDDO
          ENDDO LC1_LP
-         DO LC1 = 1, cIN_COUNT
-            IF (cRestartMap(LC1) == -1) THEN
-               IER(myPE) = -1
-               WRITE(ERR_MSG,1000) trim(iVal(LC1)), trim(iVal(         &
-                  iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC2)))
-               CALL FLUSH_ERR_MSG
-            ENDIF
-         ENDDO
+
       ENDIF
 
-      deallocate(iPROCBUF)
-      deallocate(iROOTBUF)
+! Clean up the large array as it is no longer needed.
+      IF(allocated(lGLOBAL_OWNER)) deallocate(lGLOBAL_OWNER)
 
- 1000 FORMAT('Error 1000: Unable to locate pair owner:',/         &
+! Calculate the number of matched collisions over all processes. Throw
+! and error if it doesn't match the number of read collisions.
+      CALL GLOBAL_ALL_SUM(lCOL_CNT)
+      IF(sum(lCOL_CNT) /= cIN_COUNT) THEN
+         WRITE(ERR_MSG,1000) cIN_COUNT, sum(lCOL_CNT)
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+1000 FORMAT('Error 1000: Unable to establish the own of all read ',    &
+         'collision data.',/3x,'Number of Collisions: ',I10,/3x,       &
+         'Matched Collisions:   ',I10)
+
+
+! Sync the collision restart map arcross all ranks.
+      CALL GLOBAL_ALL_SUM(cRestartMap)
+
+! Error checking and cleanup.
+      DO LC1 = 1, cIN_COUNT
+! Verify that each collision is owned by a rank.
+         IF (cRestartMap(LC1) == 0) THEN
+            IER = -1
+            WRITE(ERR_MSG,1100) trim(iVal(LC1)), trim(iVal(            &
+               iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1100 FORMAT('Error 1100: Unable to locate process pair owner:',/      &
          3x,'Pair Number:',A,/3x,'Particles: ',A,' and ',A)
 
-! Send out the error flag and exit if needed.
-      CALL BCAST(IER, PE_IO)
-      IF(IER(PE_IO) /= 0) CALL MFIX_EXIT(myPE)
+         ELSEIF(cRestartMap(LC1) > numPEs) THEN
 
-! PE_IO sends out the number of particles for each process.
-      CALL BCAST(lCOL_CNT(0:NUMPES-1), PE_IO)
+            IER = -1
+            WRITE(ERR_MSG,1101) trim(iVal(LC1)), trim(iVal(            &
+              iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
+             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1101 FORMAT('Error 1101: More than one process pair owner:',/         &
+         3x,'Pair Number:',A,/3x,'Particles: ',A,' and ',A)
+
+! Shift the rank ID to the correct value.
+         ELSE
+            cRestartMap(LC1) = cRestartMap(LC1) - 1
+         ENDIF
+      ENDDO
+
+! Send out the error flag and exit if needed.
+      CALL GLOBAL_ALL_SUM(IER, PE_IO)
+      IF(IER /= 0) CALL MFIX_EXIT(myPE)
 
 ! Each process stores the number of particles-on-its-process. The error
 ! flag is set if that number exceeds the maximum.
@@ -707,9 +771,6 @@
       ENDDO
       CALL PAIR_GROW
 
- 1100 FORMAT('Error 1100: Maximum number of particles exceeded.',2/    &
-         5x,'Process',5x,'Maximum',7x,'Count')
-
       CALL FINL_ERR_MSG
 
       RETURN
@@ -717,92 +778,113 @@
 
 
 !``````````````````````````````````````````````````````````````````````!
-! Subroutine: SCATTER_PAR_COL                                          !
+! Subroutine: GLOBAL_TO_LOC_COL                                        !
 !                                                                      !
 ! Purpose: Generates the mapping used by the scatter routines to send  !
 ! read data to the correct rank.                                       !
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE SCATTER_PAR_COL(lCOL_CNT)
+      SUBROUTINE GLOBAL_TO_LOC_COL
 
       use compar, only: numPEs
-      use discretelement, only: PAIRS, PAIR_NUM 
+      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: iGLOBAL_ID
+      use discretelement, only: PIP
+      use discretelement, only: PEA
+
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use mpi_utility, only: GLOBAL_ALL_MAX
+
+      use funits, only: DMP_LOG
+
+      use error_manager
 
       implicit none
 
-! Number of particles on each process.
-      INTEGER, INTENT(INOUT) :: lCOL_CNT(0:numPEs-1)
 ! Loop counters.
-      INTEGER :: LC1, lPROC, lBuf, IER
-! Scatter counts.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
+      INTEGER :: LC1, LC2, LC3, IER
+      INTEGER :: UNMATCHED
+      INTEGER, ALLOCATABLE :: iLOCAL_ID(:)
 
-! Set up the recv count and allocate the local process buffer.
-      iSCR_RECVCNT = PAIR_NUM*2
-      allocate (iProcBuf(iscr_recvcnt))
+! Max global id.
+      INTEGER :: MAX_ID, lSTAT
+! Debug flags.
+      LOGICAL :: dFlag
+      LOGICAL, parameter :: setDBG = .FALSE.
 
-! Allocate the buffer for the root.
-      IF (myPE == PE_IO) THEN
-         allocate (iRootBuf(cIN_COUNT*2))
-      ELSE
-         allocate (iRootBuf(10))
+      CALL INIT_ERR_MSG("GLOBAL_TO_LOC_COL")
+
+! Initialize the error flag.
+      IER = 0
+
+! Set the local debug flag.
+      dFlag = (DMP_LOG .AND. setDBG)
+
+      MAX_ID = maxval(IGLOBAL_ID(1:PIP))
+      CALL GLOBAL_ALL_MAX(MAX_ID)
+
+      allocate(iLOCAL_ID(MAX_ID), STAT=lSTAT)
+      CALL GLOBAL_ALL_SUM(lSTAT)
+
+! All ranks successfully allocated the array. This permits a crude
+! but much faster collision owner detection.
+      IF(lSTAT /= 0) THEN
+         WRITE(ERR_MSG,1000)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! The IO processor builds drootbuffer and iDISLS
-      IF(myPE == PE_IO) THEN
-! is to be scattered to each.
-         iDISPLS(0) = 0
-         iScatterCnts(0) = lCOL_CNT(0)*2
-         DO lProc = 1, NUMPES-1
-            iDispls(lproc) = iDispls(lproc-1) + iScatterCnts(lproc-1)
-            iScatterCnts(lproc) = lCOL_CNT(lProc)*2
-         ENDDO
-! Copy the position data into the root buffer, mapped to the owner
-! process.
-         lCOL_CNT(:) = 0
-         DO LC1 = 1,cIN_COUNT
-            lPROC = cRestartMap(LC1)
-            lbuf = iDispls(lProc) + lCOL_CNT(lProc)*2+1
-            iRootBuf(lBuf:lBuf+2-1) = iPAR_COL(1:2,LC1)
-            lBuf = lBuf + 2
-            lCOL_CNT(lProc) = lCOL_CNT(lProc) + 1
-         ENDDO
-      ENDIF
+ 1000 FORMAT('Error 1000: Unable to allocate sufficient memory to ',&
+         'generate the',/'map from global to local particle IDs.')
 
-! The IO processor builds drootbuffer and iDISLS
-      IF(myPE == PE_IO) THEN
-! Determine the offsets for each process and the amount of data that
-! is to be scattered to each.
-         iDISPLS(0) = 0
-         iScatterCnts(0) = lCOL_CNT(0)*2
-         DO lProc = 1, NUMPES-1
-            iDispls(lproc) = iDispls(lproc-1) + iScatterCnts(lproc-1)
-            iScatterCnts(lproc) = lCOL_CNT(lProc)*2
-         ENDDO
-! Copy the position data into the root buffer, mapped to the owner
-! process.
-         lCOL_CNT(:) = 0
-         DO LC1 = 1,cIN_COUNT
-            lPROC = cRestartMap(LC1)
-            lbuf = iDispls(lProc) + lCOL_CNT(lProc)*2+1
-            iRootBuf(lBuf:lBuf+2-1) = iPAR_COL(1:2,LC1)
-            lBuf = lBuf + 2
-            lCOL_CNT(lProc) = lCOL_CNT(lProc) + 1
-         ENDDO
-      ENDIF
-      CALL DESMPI_SCATTERV(pTYPE=1)
-
-! Unpack the particle data.
-      DO LC1 = 1, PAIR_NUM
-         lBuf = (LC1-1)*2+1
-         PAIRS(1:2,LC1) = iProcBuf(lBuf:lBuf+2-1)
-         lBuf = lBuf + 2
+      iLOCAL_ID = 0
+      DO LC1=1, PIP
+         iLOCAL_ID(iGLOBAL_ID(LC1)) = LC1
       ENDDO
 
-      IF(allocated(iRootBuf)) deallocate(iRootBuf)
-      IF(allocated(iProcBuf)) deallocate(iProcBuf)
+! Store the particle data.
+      LC3 = 1
+      LC2 = 0
+      UNMATCHED = 0
+      LP1: DO LC1 = 1, cIN_COUNT
+         IF(cRestartMap(LC1) == myPE) THEN
+            LC2 = LC2 + 1
+            PAIRS(1,LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
+            PAIRS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
+! Verify that the local indices are valid. If they do not match it is
+! likely because one of the pair was removed via an outlet at the time
+! the RES file was written but the ghost data wasn't updated.
+            IF(PAIRS(1,LC2) == 0 .OR. PAIRS(2,LC2) == 0) THEN
+               UNMATCHED = UNMATCHED + 1
+               IF(dFLAG) THEN
+                  WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), PAIRS(1,LC2),   &
+                     iPAR_COL(2,LC1), PAIRS(2,LC2)
+                  CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+               ENDIF
+               DO WHILE(PEA(LC3,1))
+                  LC3 = LC3 + 1
+               ENDDO
+               PAIRS(2,LC2) = LC3
+            ENDIF
+         ENDIF
+      ENDDO LP1
+
+ 1100 FORMAT('Error 1100: Particle pair local indices are invalid.',/  &
+         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
+
+      CALL GLOBAL_ALL_SUM(UNMATCHED)
+      IF(UNMATCHED /= 0) THEN
+         WRITE(ERR_MSG,1101) trim(iVal(UNMATCHED))
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 1101 FORMAT(' Warning: 1101: ',A,' particle pair datasets were ',&
+         'not matched',/' during restart.')
+
+      IF(allocated(iLOCAL_ID)) deallocate(iLOCAL_ID)
+
+      CALL FINL_ERR_MSG
 
       RETURN
-      END SUBROUTINE SCATTER_PAR_COL
+      END SUBROUTINE GLOBAL_TO_LOC_COL
 
 
 

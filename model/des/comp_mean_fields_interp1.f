@@ -52,8 +52,13 @@
       LP_BND = merge(27,9,DO_K)
 
 ! Calculate the gas phae forces acting on each particle.
+!$omp parallel default(none)                                             &
+!$omp private(np,vol_wt,mppic,m,lc,ijk,volxweight) &
+!$omp shared(max_pip,pea,pvol,des_stat_wt,pijk,lp_bnd,filter_weight,solvolinc,des_u_s,des_v_s,des_w_s,do_k,filter_cell,des_vel_new)
+!$omp do reduction(+:SOLVOLINC,DES_U_S,DES_V_S,DES_W_S)
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
+         IF(any(PEA(NP,2:3))) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)
@@ -75,6 +80,8 @@
                DES_VEL_NEW(3,NP)*VOLxWEIGHT
          ENDDO
       ENDDO
+!$omp end do
+!$omp end parallel
 
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.

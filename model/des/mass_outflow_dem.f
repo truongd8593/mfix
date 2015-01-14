@@ -7,13 +7,17 @@
 !  particles entereing the system.                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE MASS_OUTFLOW_DEM
+      SUBROUTINE MASS_OUTFLOW_DEM(FORCE_NSEARCH)
 
       use discretelement
       use des_bc
       use bc
 
+      use mpi_utility, only: GLOBAL_ALL_OR
+
       implicit none
+
+      LOGICAL, INTENT(INOUT) :: FORCE_NSEARCH
 
       INTEGER :: IJK
       INTEGER :: LC, LP, NP
@@ -65,14 +69,16 @@
 
 ! Ladies and gentlemen, the particle has left the building.
                ELSE
-
                   CALL DELETE_PARTICLE(NP)
+                  FORCE_NSEARCH = .TRUE.
                ENDIF
 
             ENDDO
          ENDDO
       ENDDO
 
+! Sync the search flag across all processes.
+      CALL GLOBAL_ALL_OR(FORCE_NSEARCH)
 
       RETURN
       END SUBROUTINE MASS_OUTFLOW_DEM
