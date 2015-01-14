@@ -39,7 +39,7 @@
 
       
       interface unpack_dbuf
-         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1,unpack_l0
+         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1
       end interface unpack_dbuf
 
 
@@ -110,24 +110,6 @@
 
       return
       end subroutine unpack_i1
-
-
-!----------------------------------------------------------------------!
-!Unpack subroutine for single logical variables                        !
-!----------------------------------------------------------------------!
-      subroutine unpack_l0(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      logical, intent(inout) :: idata
-
-      idata = drecvbuf(lbuf,pface)
-      lbuf = lbuf + 1
-
-      return
-      end subroutine unpack_l0
-
-
-
 
 
 !------------------------------------------------------------------------
@@ -335,9 +317,9 @@
       do lcurpar =1,lparcnt
          lfound = .false.
          lbuf = (lcurpar-1)*lpacketsize + ibufoffset
-         call unpack_dbf(lbuf,lparid,pface)
-         call unpack_dbf(lbuf,lparijk,pface)
-         call unpack_dbf(lbuf,lprvijk,pface)
+         call unpack_dbuf(lbuf,lparid,pface)
+         call unpack_dbuf(lbuf,lparijk,pface)
+         call unpack_dbuf(lbuf,lprvijk,pface)
 
 ! if mppic add the particles to free spots else locate the particles
          if (mppic) then
@@ -359,8 +341,8 @@
          pea(llocpar,4) = .false.
          dg_pijk(llocpar) = lparijk
          dg_pijkprv(llocpar) = lprvijk
-         call unpack_dbf(lbuf,des_radius(llocpar),pface)
-         call unpack_dbf(lbuf,pijk(llocpar,1:5),pface)
+         call unpack_dbuf(lbuf,des_radius(llocpar),pface)
+         call unpack_dbuf(lbuf,pijk(llocpar,1:5),pface)
 !         pea(llocpar,2:3)     = drecvbuf(lbuf:lbuf+1,pface) ; lbuf=lbuf+2
          pea(llocpar,2:3) = .false.
          if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,2) = .true. ; lbuf = lbuf + 1
@@ -368,20 +350,20 @@
          call unpack_dbuf(lbuf,ro_sol(llocpar),pface)
          call unpack_dbuf(lbuf,pvol(llocpar),pface)
          call unpack_dbuf(lbuf,pmass(llocpar),pface)
-         call unpack_dbf(lbuf,omoi(llocpar),pface)
-         call unpack_dbf(lbuf,des_pos_new(1:dimn,llocpar),pface)
-         call unpack_dbf(lbuf,des_vel_new(1:dimn,llocpar),pface)
+         call unpack_dbuf(lbuf,omoi(llocpar),pface)
+         call unpack_dbuf(lbuf,des_pos_new(1:dimn,llocpar),pface)
+         call unpack_dbuf(lbuf,des_vel_new(1:dimn,llocpar),pface)
 
          if(ENERGY_EQ) then
-            call unpack_dbf(lbuf,des_t_s_old(llocpar),pface)
-            call unpack_dbf(lbuf,des_t_s_new(llocpar),pface)
+            call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)
+            call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
          endif
 
          if(ANY_SPECIES_EQ)then
-            call unpack_dbf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
+            call unpack_dbuf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
          endif
 
-         call unpack_dbf(lbuf,des_usr_var(1:3,llocpar),pface)
+         call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
 
          call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
          IF (DO_OLD) THEN
@@ -426,7 +408,8 @@
 
          call add_pair(llocpar,lneigh)
 
-         call unpack_dbuf(lbuf,merge(.true.,.false.,0.5 < pv_pair(pair_num)),pface)
+         pv_pair(pair_num)=merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
+         lbuf = lbuf+1 
 
          do ii=1,DIMN
             call unpack_dbuf(lbuf,pfn_pair(ii,pair_num),pface)
