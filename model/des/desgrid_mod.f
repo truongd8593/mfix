@@ -74,6 +74,8 @@
       type(iap2), dimension(:), allocatable:: dg_pic
       integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
 
+      integer :: dg_pic_max_init = 25
+
 ! constants required for functions computing local and global ijkvalues
       integer dg_c1_gl, dg_c2_gl, dg_c3_gl  ! global
       integer dg_c1_lo, dg_c2_lo, dg_c3_lo  ! local
@@ -690,15 +692,12 @@
       allocate(dg_pic(dg_ijksize2))
       dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2
-         nullify(dg_pic(lijk)%p)
+         allocate(dg_pic(lijk)%p(dg_pic_max_init))
       end do
 
 !      call des_dbggrid
       CALL FINL_ERR_MSG
       end subroutine desgrid_init
-
-
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_pic
@@ -777,11 +776,11 @@
 !!$omp private(lijk,lcurpic) schedule (guided,50)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
-         if(dg_pic(lijk)%isize.ne.lcurpic) then
-            if(dg_pic(lijk)%isize.gt.0) deallocate(dg_pic(lijk)%p)
-            if(lcurpic.gt.0) allocate(dg_pic(lijk)%p(lcurpic))
-            dg_pic(lijk)%isize = lcurpic
+         if(lcurpic > size(dg_pic(lijk)%p)) then
+            deallocate(dg_pic(lijk)%p)
+            allocate(dg_pic(lijk)%p(2*lcurpic))
          end if
+         dg_pic(lijk)%isize = lcurpic
       end do
 !!$omp end parallel do
 
