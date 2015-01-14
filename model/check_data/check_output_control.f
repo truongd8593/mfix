@@ -17,6 +17,14 @@
       use run, only: K_EPSILON
 ! Number of arrays to store in SPA
       use rxns, only: nRR
+! VTK
+      use vtk
+      USE run, only: RUN_NAME
+      USE physprop, only: MMAX,NMAX
+      USE scalars, only :NSCALAR
+      USE mpi_utility, only: myPE, PE_IO,XLENGTH,YLENGTH,ZLENGTH
+      USE DISCRETELEMENT, only:DISCRETE_ELEMENT
+      USE cutcell, only: USE_STL
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -36,6 +44,7 @@
 ! Loop counter
       INTEGER :: LC
 
+      INTEGER :: L,M,N,LV,N_VTK_REGIONS,R
 
 !......................................................................!
 
@@ -89,6 +98,239 @@
          WRITE(ERR_MSG,1003) 'NLOG', NLOG
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
+
+! Check VTK regions
+
+      IF(FRAME(1)<-1) THEN
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: INALID VALUE OF FRAME =', FRAME
+            WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
+         CALL MFIX_EXIT(MYPE)
+      ENDIF
+
+      IF(VTK_DT(1)<ZERO) THEN
+         IF(MyPE == PE_IO) THEN
+            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT(1)
+            WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 0.1).'
+            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+         ENDIF
+         CALL MFIX_EXIT(MYPE)
+      ENDIF
+
+      N_VTK_REGIONS = 0
+
+      DO L = 1, DIMENSION_VTK
+         VTK_DEFINED(L) = .FALSE.
+         IF (VTK_X_W(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_X_E(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_S(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_N(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_B(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_T(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+
+         IF(.NOT.VTK_DEFINED(L)) CYCLE
+
+         N_VTK_REGIONS =  N_VTK_REGIONS + 1
+
+      ENDDO   ! end loop over (l = 1,dimension_vtk)
+
+! There must be at least one VTK region defined
+! If this is not the case, define the entire domain as default region
+      IF(WRITE_VTK_FILES.AND.N_VTK_REGIONS==0) THEN
+         VTK_DEFINED(1) = .TRUE.
+         VTK_X_W(1) = ZERO
+         VTK_X_E(1) = XLENGTH
+         VTK_Y_S(1) = ZERO
+         VTK_Y_N(1) = YLENGTH
+         VTK_Z_B(1) = ZERO
+         VTK_Z_T(1) = ZLENGTH
+         VTK_FILEBASE(1) = RUN_NAME
+      ENDIF
+
+! If VTK_VAR is defined, fill-up the variable list
+! for the vtk subdomains
+     DO L = 1, DIM_VTK_VAR
+        IF(VTK_VAR(L)/=UNDEFINED_I) VTK_VARLIST(:,L) = VTK_VAR(L)
+     ENDDO
+
+
+      DO L = 1, DIMENSION_VTK
+
+         IF(.NOT.VTK_DEFINED(L)) CYCLE
+
+         DO LV = 1, DIM_VTK_VAR
+
+            SELECT CASE (VTK_VARLIST(L,LV))
+
+               CASE (1)
+                  VTK_EP_g(L) = .TRUE.
+
+               CASE (2)
+                  VTK_P_g(L)    = .TRUE.
+                  VTK_P_star(L) = .TRUE.
+
+               CASE (3)
+                  VTK_VEL_G(L) = .TRUE.
+
+               CASE (4)
+                  DO M = 1,MMAX
+                     VTK_VEL_S(L,M) = .TRUE.
+                  END DO
+
+               CASE (5)
+                  DO M = 1,MMAX
+                  VTK_ROP_s(L,M) = .TRUE.
+                  END DO
+
+
+               CASE (6)
+                  VTK_T_g(L) = .TRUE.
+                  DO M = 1,MMAX
+                     VTK_T_s(L,M) = .TRUE.
+                  END DO
+
+               CASE (7)
+                  DO N = 1,NMAX(0)
+                     VTK_X_g(L,N) = .TRUE.
+                  END DO
+
+                  DO M = 1, MMAX
+                     DO N = 1,NMAX(M)
+                        VTK_X_s(L,M,N) = .TRUE.
+                     END DO
+                  END DO
+
+
+               CASE (8)
+                  DO M = 1,MMAX
+                     VTK_Theta_m(L,M) = .TRUE.
+                  END DO
+
+
+               CASE (9)
+                  DO N = 1,NSCALAR
+                     VTK_Scalar(L,N) =.TRUE.
+                  END DO
+
+
+               CASE (10)
+                  DO R = 1,nRR
+                     VTK_RRate(L,R) = .TRUE.
+                  END DO
+
+               CASE (11)
+                  IF(K_EPSILON) THEN
+                     VTK_K_Turb_G(L) = .TRUE.
+                     VTK_E_Turb_G(L) = .TRUE.
+                  ENDIF
+
+               CASE (12)
+                  VTK_VORTICITY(L) = .TRUE.
+                  VTK_LAMBDA_2(L)  = .TRUE.
+
+               CASE (100)
+                  VTK_PARTITION(L) = .TRUE.
+
+               CASE (101)
+                  VTK_BC_ID(L) = .TRUE.
+
+               CASE (102)
+                  VTK_DWALL(L) = .TRUE.
+
+               CASE (103)
+                  IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
+                     VTK_FACET_COUNT_DES(L) = .TRUE.
+                  ENDIF
+
+               CASE (104)
+                  IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
+                     VTK_NB_FACET_DES(L) = .TRUE.
+                  ENDIF
+
+
+               CASE(999)
+                  VTK_IJK(L) = .TRUE.
+
+               CASE(1000)
+                  VTK_NORMAL(L) = .TRUE.
+
+               CASE (1001)
+                  VTK_DEBUG(L,1) = .TRUE.
+
+               CASE (1002)
+                  VTK_DEBUG(L,2) = .TRUE.
+
+               CASE (1003)
+                  VTK_DEBUG(L,3) = .TRUE.
+
+               CASE (1004)
+                  VTK_DEBUG(L,4) = .TRUE.
+
+               CASE (1005)
+                  VTK_DEBUG(L,5) = .TRUE.
+
+               CASE (1006)
+                  VTK_DEBUG(L,6) = .TRUE.
+
+               CASE (1007)
+                  VTK_DEBUG(L,7) = .TRUE.
+
+               CASE (1008)
+                  VTK_DEBUG(L,8) = .TRUE.
+
+               CASE (1009)
+                  VTK_DEBUG(L,9) = .TRUE.
+
+               CASE (1010)
+                  VTK_DEBUG(L,10) = .TRUE.
+
+               CASE (1011)
+                  VTK_DEBUG(L,11) = .TRUE.
+
+               CASE (1012)
+                  VTK_DEBUG(L,12) = .TRUE.
+
+               CASE (1013)
+                  VTK_DEBUG(L,13) = .TRUE.
+
+               CASE (1014)
+                  VTK_DEBUG(L,14) = .TRUE.
+
+               CASE (1015)
+                  VTK_DEBUG(L,15) = .TRUE.
+
+
+               CASE (0) ! do nothing
+
+               CASE (UNDEFINED_I) ! do nothing
+
+               CASE DEFAULT
+
+                  WRITE(*,*) ' Unknown VTK variable flag ',L,':',VTK_VAR(L)
+                  WRITE(*,*) ' Available flags are : '
+                  WRITE(*,*) ' 1 : Void fraction (EP_g)'
+                  WRITE(*,*) ' 2 : Gas pressure, solids pressure (P_g, P_star)'
+                  WRITE(*,*) ' 3 : Gas velocity (U_g, V_g, W_g)'
+                  WRITE(*,*) ' 4 : Solids velocity (U_s, V_s, W_s)'
+                  WRITE(*,*) ' 5 : Solids density (ROP_s)'
+                  WRITE(*,*) ' 6 : Gas and solids temperature (T_g, T_s1, T_s2)'
+                  WRITE(*,*) ' 7 : Gas and solids mass fractions (X_g, X-s)'
+                  WRITE(*,*) ' 8 : Granular temperature (G)'
+                  write(*,*) ' 9 : User defined scalars'
+                  write(*,*) '10 : Reaction Rates'
+                  write(*,*) '11 : Turbulence quantities (k and ε)'
+                  write(*,*) '12 : Gas Vorticity magnitude and Lambda_2 (VORTICITY, LAMBDA_2)'
+                  write(*,*) '100: Processor assigned to scalar cell (Partition)'
+                  write(*,*) '101: Boundary condition flag for scalar cell (BC_ID)'
+                  write(*,*) 'MFiX will exit now.'
+                  CALL MFIX_EXIT(myPE)
+
+               END SELECT
+
+            ENDDO
+      ENDDO   ! end loop over (l = 1,dimension_vtk)
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
