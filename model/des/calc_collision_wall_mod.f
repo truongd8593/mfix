@@ -318,6 +318,9 @@
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
+!$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,fns1,fns2,list_of_cells,cell_id,radsq,particle_max,particle_min,axis,nf,use_cohesion,van_der_waals,closest_pt,vdw_outer_cutoff,vdw_inner_cutoff,dist,r_lm,distapart,force_coh,hamaker_constant,asperities,surface_energy,distsq,line_t,max_distsq,max_nf,normal,distmod,overlap_n,v_rel_trans_norm,tangent,phaseLL,des_coll_model_enum,sqrt_overlap,kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,previous_p,overlap_t,force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p)             &
+!$omp    shared(max_pip,focus_particle,debug_des,pea,no_neighboring_facet_des,pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt,kn_w,kt_w,particle_wall_collisions,mew_w,tow,des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face)
+!$omp do
       DO LL = 1, MAX_PIP
 
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
@@ -389,12 +392,12 @@
             ENDIF
 
             if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
-               call remove_collision()
+               call remove_collision(LL,current_p,previous_p)
                cycle
             endif
 
             if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) then
-               call remove_collision()
+               call remove_collision(LL,current_p,previous_p)
                cycle
             endif
 
@@ -451,7 +454,7 @@
             !However, if the orthogonal projection shows no overlap, then
             !that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
-               call remove_collision()
+               call remove_collision(LL,current_p,previous_p)
                CYCLE
             ENDIF
 
@@ -461,7 +464,7 @@
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
-               call remove_collision()
+               call remove_collision(LL,current_p,previous_p)
                CYCLE
             ENDIF
 
@@ -604,20 +607,24 @@
 
 !         ENDIF
       ENDDO
+!$omp end do
+!$omp end parallel
 
       RETURN
 
        contains
 
-         subroutine remove_collision
+         subroutine remove_collision(LLL,current_p,previous_p)
            implicit none
+           Integer, intent(in) :: LLL
+           type(facet_linked_list), POINTER, intent(inout) :: current_p, previous_p
 
-               if (associated(particle_wall_collisions(LL)%pp)) then
+               if (associated(particle_wall_collisions(LLL)%pp)) then
 
-                  current_p => particle_wall_collisions(LL)%pp
+                  current_p => particle_wall_collisions(LLL)%pp
 
                   if (current_p%facet_id .eq. nf) then
-                     particle_wall_collisions(LL)%pp => current_p%next
+                     particle_wall_collisions(LLL)%pp => current_p%next
                      deallocate(current_p)
                   else
 
