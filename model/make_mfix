@@ -23,7 +23,7 @@ MFIX_TOOLS=
 MFIX_POST=
 
 # Set some of the folder paths.
-RUN_DIR=$(pwd)
+RUN_DIR=$(pwd | sed 's/ /\\ /g')
 MFIX_SRC=$(echo $0 | sed 's/\/make_mfix//')
 MFIX_CONFIG=${MFIX_SRC}/../config
 

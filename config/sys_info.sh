@@ -3,19 +3,19 @@ cd ${RUN_DIR}
 
 # MFIX_SRC is relative to RUN_DIR.  Make it absolute.
 cd ${MFIX_SRC}
-MFIX_SRC=$(pwd)
+MFIX_SRC=$(pwd | sed 's/ /\\ /g')
 
 # Up to this point, MFIX_CONFIG is relative to MFIX_SRC
 cd ${MFIX_SRC}/../config
-MFIX_CONFIG=$(pwd)
+MFIX_CONFIG=$(pwd | sed 's/ /\\ /g')
 
 # Set the path to the tools directory
 cd ${MFIX_SRC}/../tools
-MFIX_TOOLS=$(pwd)
+MFIX_TOOLS=$(pwd | sed 's/ /\\ /g')
 
 # Set the path to the tools directory
 cd ${MFIX_SRC}/../post_mfix
-MFIX_POST=$(pwd)
+MFIX_POST=$(pwd | sed 's/ /\\ /g')
 
 # Grab some system information.
 opsys=$(uname -s)
