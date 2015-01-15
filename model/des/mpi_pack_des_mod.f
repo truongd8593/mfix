@@ -95,20 +95,22 @@
 ! 8) Rotational Velocity
             dsendbuf(lbuf:lbuf+dimn-1,pface) = omega_new(1:dimn,lcurpar)
             lbuf = lbuf + dimn
-
-! 9) Temperature
+! 9) Exiting particle flag
+            dsendbuf(lbuf,pface) = merge(1,0,pea(lcurpar,3))
+            lbuf = lbuf + 1
+! 10) Temperature
             if(ENERGY_EQ)then
                dsendbuf(lbuf,pface) = des_t_s_new(lcurpar)
               lbuf = lbuf +1
             endif
-! 10) Species Composition
+! 11) Species Composition
             if(ANY_SPECIES_EQ)then
                dsendbuf(lbuf:lbuf+dimension_n_s-1,pface) = &
                   des_x_s(lcurpar,1:dimension_n_s)
                lbuf = lbuf+dimension_n_s
             endif
 
-! 11) User Variable
+! 12) User Variable
             dsendbuf(lbuf:lbuf+3-1,pface) = des_usr_var(1:3,lcurpar)
             lbuf = lbuf+3
 
@@ -262,9 +264,11 @@
          lcurpar = PAIRS(1,CC)
 ! Only packup pairing data for particles being transfered.
          if (.not. going_to_send(lcurpar)) cycle
-! Do not send pairing data if the pair no longer exists.
+! Do not send pairing data if the pair no longer exists or if the
+! particle is exiting as it may be locatable during unpacking.
          lneigh = PAIRS(2,CC)
          if(.not.PEA(lneigh,1)) cycle
+         if(PEA(lneigh,3)) cycle
 ! Global ID of particle bing packed.
          dsendbuf(lbuf,pface) = iglobal_id(lcurpar)
          lbuf = lbuf+1
