@@ -432,7 +432,10 @@
 
       use funits
       use compar
-      use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z, DIMN
+      use discretelement, only: DES_PERIODIC_WALLS_X
+      use discretelement, only: DES_PERIODIC_WALLS_Y
+      use discretelement, only: DES_PERIODIC_WALLS_Z
+      use discretelement, only: DIMN
       use discretelement, only: XE, YN, ZT
       use constant
       use desmpi_wrapper
@@ -658,16 +661,34 @@
       dg_ijkend2 = dg_funijk(dg_iend2,dg_jend2,dg_kend2)
 
 ! Confirmation checks
-      if (dg_ijkstart2.ne.1) then
-         if (dmp_log) write(unit_log,'(A)')&
-            "Error in dg_funijk: dg_ijkstart2 is not correct"
-         call des_mpi_stop
-      end if
-      if (dg_ijkend2.ne.dg_ijksize2) then
-         if (dmp_log) write(unit_log,'(A)') &
-            "Error in dg_funijk: dg_ijkend2 is not correct"
-         call des_mpi_stop
-      end if
+      IF (DG_IJKSTART2.NE.1) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKStart2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      IF(DG_IJKEND2 /= DG_IJKSIZE2) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKEnd2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Invalid DG_IJKStart2. FATAL')
+
+      IF(DG_IMIN1 > DG_IMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_IMIN1 > DG_IMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_JMIN1 > DG_JMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_JMIN1 > DG_JMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_KMIN1 > DG_KMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_KMIN1 > DG_KMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1105 FORMAT('Error 1105: Invalid DES grid indices: ',A,/'This is ',   &
+         'likely the result of automated grid calculations based',/    &
+         'on the maximum particle size. Specify the number of ',       &
+         'partitions',/'for the DES grid in the mfix.dat file ',       &
+         '(e.g., DESGRIDSEARCH_IMAX)')
 
 
 ! set the domain length and dx,dy and dz values used in particle_in_cell
