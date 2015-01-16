@@ -1,20 +1,20 @@
 # Ensure that we are in the run directory.
-cd ${RUN_DIR}
+eval cd ${RUN_DIR}
 
 # MFIX_SRC is relative to RUN_DIR.  Make it absolute.
-cd ${MFIX_SRC}
+eval cd ${MFIX_SRC}
 MFIX_SRC=$(pwd | sed 's/ /\\ /g')
 
 # Up to this point, MFIX_CONFIG is relative to MFIX_SRC
-cd ${MFIX_SRC}/../config
+eval cd ${MFIX_SRC}/../config
 MFIX_CONFIG=$(pwd | sed 's/ /\\ /g')
 
 # Set the path to the tools directory
-cd ${MFIX_SRC}/../tools
+eval cd ${MFIX_SRC}/../tools
 MFIX_TOOLS=$(pwd | sed 's/ /\\ /g')
 
 # Set the path to the tools directory
-cd ${MFIX_SRC}/../post_mfix
+eval cd ${MFIX_SRC}/../post_mfix
 MFIX_POST=$(pwd | sed 's/ /\\ /g')
 
 # Grab some system information.
@@ -24,7 +24,7 @@ if test $proctyp = "unknown"; then
   proctyp=$(uname -m)
 fi
 
-cd ${RUN_DIR}
+eval cd ${RUN_DIR}
 # Only execute if the run directory contains usr_rates.f
 if test -f "usr_rates.f" || test -f "des/usr_rates_des.f"; then
 #  if test -f "usr_rates.f"; then echo -n "usr_rates.f"; fi

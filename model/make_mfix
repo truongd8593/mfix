@@ -148,7 +148,7 @@ make ${MAKE_ARGS} -f ${MAKEFILE} ${EXEC_FILE}
 result=$?
 
 if test $result = 0; then
-  /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
+  eval /bin/cp -f ${EXEC_FILE} ${RUN_DIR}
   if test ${USE_DMP} -eq 1; then
     echo
     echo "**********************************************"
