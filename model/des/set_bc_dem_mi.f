@@ -288,7 +288,7 @@
 ! Calculate des mass inlet time; time between injection.  If the run
 ! type is RESTART_1, DES_MI_TIME will be picked up from the restart file
 ! with an updated value.
-         IF(RUN_TYPE == 'NEW') &
+         IF(RUN_TYPE /= 'RESTART_1') &
             DEM_MI_TIME(BCV_I) = TIME + dble(PI_FACTOR(BCV_I)) * DTSOLID
 
 
