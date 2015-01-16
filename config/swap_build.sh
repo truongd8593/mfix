@@ -102,7 +102,7 @@ update_src()
 }    # eof function update_dir
 
 
-cd ${RUN_DIR}
+eval cd ${RUN_DIR}
 echo "Checking for user modified files."
 
 

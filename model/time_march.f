@@ -131,8 +131,8 @@
       DOUBLE PRECISION :: TIME_START
       DOUBLE PRECISION :: WALL_START ! wall time at the beginning
       DOUBLE PRECISION :: WALL_NOW   ! wall time at the end of each timestep
-      DOUBLE PRECISION :: WALL_LEFT
-      CHARACTER(LEN=4) TUNIT
+      DOUBLE PRECISION :: WALL_LEFT, WALL_TOTAL
+      CHARACTER(LEN=4) TUNIT, TOT_UNIT
 
 !-----------------------------------------------
 ! External functions
@@ -418,9 +418,11 @@
 
       WALL_NOW = WALL_TIME()
       WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME-TIME_START,1.0d-6)
+      WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
-      IF(DMP_LOG) WRITE (*, '(/" Wall time remaining = ",F9.3,1X,A)') &
-         WALL_LEFT, TUNIT
+      CALL GET_TUNIT(WALL_TOTAL,TOT_UNIT)
+      IF(DMP_LOG) WRITE (*, '(/" Estimated Wall time (remaining / total ) = ",F9.3,1X,A,1X,"/",F9.3,1X,A)') &
+         WALL_LEFT, TUNIT, WALL_TOTAL, TOT_UNIT
 
       IF(DT.LT.DT_MIN) THEN
          IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN

@@ -216,26 +216,32 @@
          end if
       end if
 
-! For mass inlet and outlet, the cells where the particle injected are
-! considered as part of the domain; This avoids flagging newly injected particles
-! and outgoing particles as ghost particles PEA(:,4)
-      listart1=dg_istart1;liend1=dg_iend1;listart2=dg_istart2;liend2=dg_iend2
-      ljstart1=dg_jstart1;ljend1=dg_jend1;ljstart2=dg_jstart2;ljend2=dg_jend2
-      lkstart1=dg_kstart1;lkend1=dg_kend1;lkstart2=dg_kstart2;lkend2=dg_kend2
-!      if (dem_mio) then
-!         if (dem_mi_x .or. dem_mo_x) then
-!            if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
-!            if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
-!         end if
-!         if (dem_mi_y .or. dem_mo_y) then
-!            if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
-!            if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
-!         end if
-!         if (dem_mi_z .or. dem_mo_z) then
-!            if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
-!            if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
-!         end if
-!      end if
+      listart1=dg_istart1; liend1=dg_iend1
+      listart2=dg_istart2; liend2=dg_iend2
+
+      ljstart1=dg_jstart1; ljend1=dg_jend1
+      ljstart2=dg_jstart2; ljend2=dg_jend2
+
+      lkstart1=dg_kstart1; lkend1=dg_kend1
+      lkstart2=dg_kstart2; lkend2=dg_kend2
+
+! Extend the domain indices to account for mass inlets and outlets. Do
+! not extend the domain for periodic walls becuase 1) they should not
+! include inflows or outflows and 2) they are already expanded.
+      IF(.NOT.DES_PERIODIC_WALLS_X) THEN
+         if(listart1.eq.dg_imin1) listart1 = dg_imin1-1
+         if(liend1.eq.dg_imax1) liend1 = dg_imax1+1
+      ENDIF
+
+      IF(.NOT.DES_PERIODIC_WALLS_Y) THEN
+         if(ljstart1.eq.dg_jmin1) ljstart1 = dg_jmin1-1
+         if(ljend1.eq.dg_jmax1) ljend1 = dg_jmax1+1
+      ENDIF
+
+      IF(DO_K .AND. .NOT.DES_PERIODIC_WALLS_Z) THEN
+         if(lkstart1.eq.dg_kmin1) lkstart1 = dg_kmin1-1
+         if(lkend1.eq.dg_kmax1) lkend1 = dg_kmax1+1
+      ENDIF
 
 ! set the ghost cell indices for e-w, n-s and t-b
 ! for east and west faces
@@ -480,7 +486,7 @@
 
 
 !------------------------------------------------------------------------
-! Subroutine       : des_restart_neigh
+! Subroutine       : DES_RESTART_GHOST
 ! Purpose          : restart file contains neighbour information in terms
 !                    global id. This routine converts the global id into
 !                    local particle number
@@ -491,7 +497,7 @@
 ! Parameters       : none
 !------------------------------------------------------------------------
 
-      subroutine des_restart_neigh
+      subroutine DES_RESTART_GHOST
 
       use mpi_comm_des, only: desmpi_sendrecv_init
       use mpi_comm_des, only: desmpi_sendrecv_wait
@@ -541,11 +547,11 @@
       enddo
       call des_mpi_barrier
 
- 800  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+ 800  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
          'WARNING: Unable to locate neighbor during restart (0)',/)
- 801  FORMAT(/2X,'From: DES_RESTART_NEIGH: ',/2X,&
+ 801  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
          'WARNING: Unable to locate neighbor during restart (1)',/)
 
-      end subroutine des_restart_neigh
+      end subroutine DES_RESTART_GHOST
 
       end module mpi_init_des

@@ -7,25 +7,32 @@
 !  particles entereing the system.                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE MASS_OUTFLOW_DEM
+      SUBROUTINE MASS_OUTFLOW_DEM(FORCE_NSEARCH)
 
       use discretelement
       use des_bc
       use bc
 
+      use mpi_utility, only: GLOBAL_ALL_OR
+
       implicit none
 
+      LOGICAL, INTENT(INOUT) :: FORCE_NSEARCH
+
       INTEGER :: IJK
-      INTEGER :: LC, LP, NP
+      INTEGER :: LC, LP, NP, M
       INTEGER :: BCV, BCV_I
 
       DOUBLE PRECISION :: DIST
 
+      LOGICAL :: FREEZE_VEL
       DOUBLE PRECISION :: FREEZE(3)
 
       DO BCV_I = 1, DEM_BCMO
 
          BCV = DEM_BCMO_MAP(BCV_I)
+
+         FREEZE_VEL = (BC_TYPE(BCV) /= 'MASS_OUTFLOW')
 
          SELECT CASE (BC_PLANE(BCV))
          CASE('E','W'); FREEZE = (/1.0d0, 0.0d0, 0.0d0/)
@@ -54,25 +61,41 @@
                IF(DIST > DES_RADIUS(NP)) THEN
                   PEA(NP,3) = .FALSE.
 
-! Check if the particle is crossing over the outlet plane. The velocity
-! is 'frozen' normal to the outlet and the particle exiting flags are
-! set. This implementation is strict as complex BCs (via STLs) can let
-! particles pop through the wall along the outlet.
+! Check if the particle is crossing over the outlet plane.
+
                ELSEIF(DIST > ZERO) THEN
-                  DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
                   PEA(NP,2) = .TRUE.
                   PEA(NP,3) = .TRUE.
 
+
+! The velocity is 'frozen' normal to the outflow plane. This approach
+! is strict because complex BCs (via STLs) can let particles pop through
+! the wall along the outlet.
+                  IF(FREEZE_VEL) THEN
+                     DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
+
+! The user specified velocity is applied to the exiting particle. This
+! only applies to mass outflows where the speed at which particles 
+! exit needs to be controled.
+                  ELSE
+                     M = PIJK(NP,5)
+                     DES_VEL_NEW(1,NP) = BC_U_s(BCV,M)
+                     DES_VEL_NEW(2,NP) = BC_V_s(BCV,M)
+                     DES_VEL_NEW(3,NP) = BC_W_s(BCV,M)
+                  ENDIF
+
 ! Ladies and gentlemen, the particle has left the building.
                ELSE
-
                   CALL DELETE_PARTICLE(NP)
+                  FORCE_NSEARCH = .TRUE.
                ENDIF
 
             ENDDO
          ENDDO
       ENDDO
 
+! Sync the search flag across all processes.
+      CALL GLOBAL_ALL_OR(FORCE_NSEARCH)
 
       RETURN
       END SUBROUTINE MASS_OUTFLOW_DEM

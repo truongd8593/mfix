@@ -30,16 +30,14 @@
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
 ! This is done due to this routine's strong dependence on the
 ! RANDOM_NUMBER() subroutine.
-      IF(RUN_TYPE == 'NEW') THEN
-
+      IF(RUN_TYPE == 'RESTART_1') THEN
+         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
+      ELSE
          SELECT CASE (BC_PLANE(BCV))
          CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
          CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
          CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
          END SELECT
-
-      ELSE
-         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ENDIF
 
       CALL FINL_ERR_MSG
@@ -209,14 +207,43 @@
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
+
+         FULL_MAP(W,H) = 0
+
+         IF(.NOT.IS_ON_myPE_owns(MESH_W(W),J,MESH_H(H))) CYCLE
+
+         IF(DO_K) THEN
+
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+
+            SHIFT = MESH_Q(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+
+         ELSE
+
+            K = MESH_H(1)
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+         ENDIF
+
          I = MESH_W(W)
          K = MESH_H(H)
-         FULL_MAP(W,H) = 0
-         IF(.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
-         IF(DEAD_CELL_AT(I,J,K)) CYCLE
-         IJK = FUNIJK(I,J,K)
-         IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(.NOT.COMPARE(AXZ(IJK),DX(I)*DZ(K))) CYCLE
+         IF(EXCLUDE_DEM_MI_CELL(I,J,K, DX(I)*DZ(K))) CYCLE
+
          OCCUPANTS = OCCUPANTS + 1
          FULL_MAP(W,H) = myPE+1
       ENDDO
@@ -270,7 +297,7 @@
             DO LC = 1, LL
               IF(TMP_INT .EQ. RAND_MAP(LC) )EXIT
               IF(LC .EQ. LL)THEN
-                 if(dFlag) WRITE(*,"(4x,'LC:',I3,' : ',I3)") LC, TMP_INT
+                 if(dFlag) WRITE(*,"(4x,'LC:',I9,' : ',I9)") LC, TMP_INT
                  RAND_MAP(LC) = TMP_INT
                  LL = LL + 1
               ENDIF
@@ -342,6 +369,31 @@
          'MESH_',A1,'(0) = ',f8.4,/)
 
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)
+
+      contains
+
+!----------------------------------------------------------------------!
+!  Function to exclude cells from DEM mass inlet.                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION EXCLUDE_DEM_MI_CELL(lI, lJ, lK, lAREA)
+! Indicies of cell to check
+      INTEGER, INTENT(IN) :: lI, lJ, lK
+! Calculated face area based on grid dimensions
+      DOUBLE PRECISION, INTENT(IN) :: lAREA
+! Local value for IJK
+      INTEGER :: IJK
+
+      EXCLUDE_DEM_MI_CELL = .TRUE.
+
+      IF(.NOT.IS_ON_myPE_plus2layers(lI,lJ,lK)) RETURN
+      IF(DEAD_CELL_AT(lI,lJ,lK)) RETURN
+      IJK = FUNIJK(lI,lJ,lK)
+      IF(.NOT.FLUID_AT(IJK)) RETURN
+      IF(.NOT.COMPARE(AXZ(IJK),lAREA)) RETURN
+
+      EXCLUDE_DEM_MI_CELL = .FALSE.
+      RETURN
+      END FUNCTION EXCLUDE_DEM_MI_CELL
 
       END SUBROUTINE LAYOUT_DEM_MI_NS
 

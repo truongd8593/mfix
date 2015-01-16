@@ -98,7 +98,7 @@
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
-         IF(PEA(NP,4)) CYCLE
+         IF(any(PEA(NP,2:4))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -376,8 +376,14 @@
       CALL CALC_CELL_CENTER_GAS_VEL
 
 ! Calculate the gas phae forces acting on each particle.
+
+!$omp parallel default(none) private(np,lepg,velfp,lc,ijk,weight,lforce,ldrag_bm)    &
+!$omp          shared(max_pip,pea,lp_bnd,drag_fc,f_gp,des_vel_new,ugc,vgc,wgc,mppic, &
+!$omp          drag_bm,vol,f_gds,ep_g,filter_weight,des_stat_wt,filter_cell)
+!$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
+         IF(any(PEA(NP,2:3))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -413,6 +419,8 @@
          ENDDO
 
       ENDDO
+!$omp end do
+!$omp end parallel
 
 ! Unlock the temp arrays.
       CALL UNLOCK_TMP_ARRAY

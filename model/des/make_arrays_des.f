@@ -204,7 +204,7 @@
          ENDIF
 
 ! Read the restart file.
-      ELSEIF(RUN_TYPE == 'RESTART_1') THEN
+      ELSEIF(RUN_TYPE == 'RESTART_1' .OR. RUN_TYPE == 'RESTART_2') THEN
 
          CALL READ_RES0_DES
          imax_global_id = maxval(iglobal_id(1:pip))
@@ -225,6 +225,8 @@
  1100 FORMAT('Error 1100: Unsupported RUN_TYPE for DES.')
 
       ENDIF
+
+      IF(RUN_TYPE == 'RESTART_2') VTP_FINDEX=0
 
 ! setting the global id for walls. this is required to handle
 ! particle-wall contact

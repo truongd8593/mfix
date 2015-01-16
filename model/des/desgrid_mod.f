@@ -74,6 +74,8 @@
       type(iap2), dimension(:), allocatable:: dg_pic
       integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
 
+      integer :: dg_pic_max_init = 25
+
 ! constants required for functions computing local and global ijkvalues
       integer dg_c1_gl, dg_c2_gl, dg_c3_gl  ! global
       integer dg_c1_lo, dg_c2_lo, dg_c3_lo  ! local
@@ -430,7 +432,10 @@
 
       use funits
       use compar
-      use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z, DIMN
+      use discretelement, only: DES_PERIODIC_WALLS_X
+      use discretelement, only: DES_PERIODIC_WALLS_Y
+      use discretelement, only: DES_PERIODIC_WALLS_Z
+      use discretelement, only: DIMN
       use discretelement, only: XE, YN, ZT
       use constant
       use desmpi_wrapper
@@ -490,17 +495,17 @@
      allocate (dg_ksize_all(0:nodesk-1))
 
 
-     dg_istart1_all=0; dg_iend1_all=0
-     dg_istart2_all=0; dg_iend2_all=0
-     dg_isize_all=0
+      dg_istart1_all=0; dg_iend1_all=0
+      dg_istart2_all=0; dg_iend2_all=0
+      dg_isize_all=0
 
-     dg_jstart1_all=0; dg_jend1_all=0
-     dg_jstart2_all=0; dg_jend2_all=0
-     dg_jsize_all=0
+      dg_jstart1_all=0; dg_jend1_all=0
+      dg_jstart2_all=0; dg_jend2_all=0
+      dg_jsize_all=0
 
-     dg_kstart1_all=0; dg_kend1_all=0
-     dg_kstart2_all=0; dg_kend2_all=0
-     dg_ksize_all=0
+      dg_kstart1_all=0; dg_kend1_all=0
+      dg_kstart2_all=0; dg_kend2_all=0
+      dg_ksize_all=0
 
 
 ! set grid size based on user input desgridsearch_<ijk>max
@@ -656,16 +661,34 @@
       dg_ijkend2 = dg_funijk(dg_iend2,dg_jend2,dg_kend2)
 
 ! Confirmation checks
-      if (dg_ijkstart2.ne.1) then
-         if (dmp_log) write(unit_log,'(A)')&
-            "Error in dg_funijk: dg_ijkstart2 is not correct"
-         call des_mpi_stop
-      end if
-      if (dg_ijkend2.ne.dg_ijksize2) then
-         if (dmp_log) write(unit_log,'(A)') &
-            "Error in dg_funijk: dg_ijkend2 is not correct"
-         call des_mpi_stop
-      end if
+      IF (DG_IJKSTART2.NE.1) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKStart2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      IF(DG_IJKEND2 /= DG_IJKSIZE2) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKEnd2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Invalid DG_IJKStart2. FATAL')
+
+      IF(DG_IMIN1 > DG_IMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_IMIN1 > DG_IMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_JMIN1 > DG_JMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_JMIN1 > DG_JMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_KMIN1 > DG_KMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_KMIN1 > DG_KMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1105 FORMAT('Error 1105: Invalid DES grid indices: ',A,/'This is ',   &
+         'likely the result of automated grid calculations based',/    &
+         'on the maximum particle size. Specify the number of ',       &
+         'partitions',/'for the DES grid in the mfix.dat file ',       &
+         '(e.g., DESGRIDSEARCH_IMAX)')
 
 
 ! set the domain length and dx,dy and dz values used in particle_in_cell
@@ -690,15 +713,12 @@
       allocate(dg_pic(dg_ijksize2))
       dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2
-         nullify(dg_pic(lijk)%p)
+         allocate(dg_pic(lijk)%p(dg_pic_max_init))
       end do
 
 !      call des_dbggrid
       CALL FINL_ERR_MSG
       end subroutine desgrid_init
-
-
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_pic
@@ -743,6 +763,8 @@
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
             if(.not.pea(lcurpar,1)) cycle
+
+
             lparcount = lparcount + 1
             li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
             lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(2,lcurpar))))
@@ -775,11 +797,11 @@
 !!$omp private(lijk,lcurpic) schedule (guided,50)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
-         if(dg_pic(lijk)%isize.ne.lcurpic) then
-            if(dg_pic(lijk)%isize.gt.0) deallocate(dg_pic(lijk)%p)
-            if(lcurpic.gt.0) allocate(dg_pic(lijk)%p(lcurpic))
-            dg_pic(lijk)%isize = lcurpic
+         if(lcurpic > size(dg_pic(lijk)%p)) then
+            deallocate(dg_pic(lijk)%p)
+            allocate(dg_pic(lijk)%p(2*lcurpic))
          end if
+         dg_pic(lijk)%isize = lcurpic
       end do
 !!$omp end parallel do
 
@@ -871,43 +893,43 @@
          ljc = dg_jof_lo(lijk2)
          lkc = dg_kof_lo(lijk2)
 
-                 il_off = 1
-                 iu_off = 1
-                 jl_off = 1
-                 ju_off = 1
-                 kl_off = 1
-                 ku_off = 1
+         il_off = 1
+         iu_off = 1
+         jl_off = 1
+         ju_off = 1
+         kl_off = 1
+         ku_off = 1
 
-                 lcurpar_pos(:) = des_pos_new(:,lcurpar)
+         lcurpar_pos(:) = des_pos_new(:,lcurpar)
 !   The desgrid size should not be less than 2*dia*rlm_factor
-                 lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
-                            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
-                 if(lcur_off .ge. 0.5) then
-                        il_off = 0
-                 else
-                        iu_off = 0
-                 endif
+         lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
+            floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
+         if(lcur_off .ge. 0.5) then
+            il_off = 0
+         else
+            iu_off = 0
+         endif
 
-                 lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
-                            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
-                 if(lcur_off .ge. 0.5) then
-                        jl_off = 0
-                 else
-                        ju_off = 0
-                 endif
+         lcur_off = (lcurpar_pos(2)-dg_ystart)*dg_dyinv - &
+            floor((lcurpar_pos(2)-dg_ystart)*dg_dyinv)
+         if(lcur_off .ge. 0.5) then
+            jl_off = 0
+         else
+            ju_off = 0
+         endif
 
-                 if(NO_K)then
-                        kl_off = 0
-                        ku_off = 0
-                 else
-                         lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
-                                        floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
-                         if(lcur_off .ge. 0.5) then
-                                kl_off = 0
-                         else
-                                ku_off = 0
-                         endif
-                 endif
+         if(NO_K)then
+            kl_off = 0
+            ku_off = 0
+         else
+           lcur_off = (lcurpar_pos(3)-dg_zstart)*dg_dzinv - &
+              floor((lcurpar_pos(3)-dg_zstart)*dg_dzinv)
+           if(lcur_off .ge. 0.5) then
+              kl_off = 0
+           else
+              ku_off = 0
+           endif
+        endif
 
          do lk = lkc-kl_off,lkc+ku_off
          do lj = ljc-jl_off,ljc+ju_off
@@ -916,11 +938,13 @@
             ltotpic =dg_pic(lijk)%isize
             do lpicloc = 1,ltotpic
                lneigh = dg_pic(lijk)%p(lpicloc)
-! Only skip real particles otherwise the ghost particle calculations
-! are missed.
+
+! Only skip real particles otherwise collisions with ghost, entering,
+! and exiting particles are missed.
                if (lneigh <= lcurpar) then
-                  if(.not.pea(lneigh,4)) cycle
+                  if(.not.any(pea(lneigh,2:4))) cycle
                endif
+
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)

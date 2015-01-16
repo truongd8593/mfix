@@ -67,6 +67,9 @@
          ENDDO
       ENDIF
 
+! RES2 does not need the collision of BC information.
+      IF(RUN_TYPE == 'RESTART_2') RETURN
+
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
 
@@ -76,7 +79,17 @@
          CALL READ_RES_cARRAY(lNEXT_REC, PFT_PAIR(LC1,:))
       ENDDO
 
+! Save the number of BCMI's read from input file, then read the
+! value from the restart file.
       CALL READ_RES_DES(lNEXT_REC, DEM_BCMI)
+
+! Allocation of MIs is done here to ignore changes to the mfix.dat
+! file during RES1.
+      IF(DEM_BCMI > 0) CALL ALLOCATE_DEM_MI
+
+! Only save the number of mass inflows for RESTART_1. This allows
+! for mass inflows to be added/removed with RESTART_2.
+! Todo: Prune entering/exiting flagged particles for RESTART_2.
       DO LC1=1, DEM_BCMI
          CALL READ_RES_DES(lNEXT_REC, DEM_MI_TIME(LC1))
          CALL READ_RES_DES(lNEXT_REC, DEM_MI(LC1)%VACANCY)

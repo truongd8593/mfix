@@ -80,10 +80,12 @@
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MI")
 
-
       dFlag = (DMP_LOG .AND. setDBG)
       if(dFlag) write(*,"(2/,2x,'DEM inlet count: ',I4)") DEM_BCMI
 
+! Allocate the MI data structures for NEW and RES2 cases. Allocation for
+! RES1 cases is done prior to reading the RES file.
+      IF(RUN_TYPE /= 'RESTART_1') CALL ALLOCATE_DEM_MI
 
 ! Loop over BCs that flagged for DEM mass inflow.
       DO BCV_I = 1, DEM_BCMI
@@ -290,14 +292,15 @@
             DEM_MI_TIME(BCV_I) = TIME + dble(PI_FACTOR(BCV_I)) * DTSOLID
 
 
-         WRITE(ERR_MSG,1000) BCV, NPpDT, PI_FACTOR(BCV_I),&
-            PI_COUNT(BCV_I), DEM_MI_TIME(BCV_I)
+         WRITE(ERR_MSG,1000) BCV, NPpDT, int(NPpDT/DTSOLID), &
+            PI_FACTOR(BCV_I), PI_COUNT(BCV_I), DEM_MI_TIME(BCV_I)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
  1000 FORMAT(2/,2X,'For mass inlet BC: ', I3,/,&
          4X,'No. particles injected per solids time step = ', ES15.8,/,&
+         4X,'No. particles injected per second = ', I10,/,&
          4X,'PI_FACTOR = ', I10,' PI_COUNT = ', I5,/,&
-         4X,'start DES_MI_TIME = ', ES15.8)
+         4X,'start DES_MI_TIME = ', ES15.8,/'  ')
 
       ENDDO
 

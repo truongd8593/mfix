@@ -41,6 +41,7 @@
 
 ! time step loop counter index
       INTEGER :: NN
+
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
 
@@ -147,9 +148,13 @@
 
 ! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
+
+! Add/Remove particles to the system via flow BCs.
+         IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
+         IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM(DO_NSEARCH)
+
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
-
          IF(DO_NSEARCH) THEN
             CALL DES_PAR_EXCHANGE
             CALL NEIGHBOUR
@@ -203,9 +208,6 @@
             ENDIF
          ENDIF  ! end if (.not.des_continuum_coupled)
 
-! Seed new particles entering the system.
-         IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
-         IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM
 
          IF(CALL_USR) CALL USR2_DES
 

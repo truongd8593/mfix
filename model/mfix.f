@@ -84,6 +84,8 @@
       USE qmom_kinetic_equation
       USE functions
 
+      USE vtk, only : WRITE_VTK_FILES
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -390,6 +392,9 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR RE-INDEXING CELLS
 !=======================================================================
+
+! Setup VTK data for regular (no cut cells) grid
+      IF(.NOT.CARTESIAN_GRID.AND.WRITE_VTK_FILES) CALL SETUP_VTK_NO_CUTCELL
 
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS

@@ -103,8 +103,10 @@
 
       use desmpi, only: iDisPls
 
+      use discretelement, only: PEA
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: PAIR_NUM
+      use discretelement, only: PAIRS, PAIR_NUM
+
       use machine, only: OPEN_N1
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
@@ -115,8 +117,10 @@
       INTEGER :: lParCnt, lPROC
 ! Total number of real particles.
       INTEGER :: lGHOST_CNT
-
+! Local gather counts for send/recv
       INTEGER :: lGatherCnts(0:NUMPEs-1)
+! Loop counter
+      INTEGER :: LC1
 
 
       CALL OPEN_RES_DES(BASE)
@@ -166,9 +170,14 @@
          ENDDO
 
 
-! Setup data for neighbor/collision arrays
+! Setup data for pair arrays
          cROOTCNT = 10
-         cPROCCNT = PAIR_NUM
+! Count the number of real pairs.
+         cPROCCNT = 0
+         DO LC1 = 1, PAIR_NUM
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1))          &
+               cPROCCNT = cPROCCNT +1
+         ENDDO
 
 ! Rank 0 gets the total number of gloabl particles.
          CALL GLOBAL_SUM(cPROCCNT, cROOTCNT)
@@ -533,6 +542,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
+      use discretelement, only: PAIRS, PAIR_NUM
       use discretelement, only: iGlobal_ID 
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -541,7 +551,7 @@
 
       LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1
+      INTEGER :: LC1, LC2
 
       lLOC2GLB = .FALSE.
       IF(present(pLOC2GLB)) lLOC2GLB = pLOC2GLB
@@ -553,12 +563,21 @@
       iGath_SendCnt = cSEND
       iGatherCnts   = cGATHER
 
+      LC2 = 1
       IF(lLOC2GLB) THEN
-         DO LC1 = 1, cPROCCNT
-            iProcBuf(LC1) = iGLOBAL_ID(INPUT_I(LC1))
+         DO LC1 = 1, PAIR_NUM
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+               iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
+               LC2 = LC2 + 1
+            ENDIF
          ENDDO
       ELSE
-         iProcBuf(1:cPROCCNT) = INPUT_I(1:cPROCCNT)
+         DO LC1 = 1, PAIR_NUM
+            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+               iProcBuf(LC2) = INPUT_I(LC1)
+               LC2 = LC2 + 1
+            ENDIF
+         ENDDO
       ENDIF
 
       IF(bDIST_IO) THEN
@@ -585,12 +604,14 @@
 
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
+      use discretelement, only: PEA
+      use discretelement, only: PAIRS, PAIR_NUM
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
 
 ! Loop counters
-      INTEGER :: LC1
+      INTEGER :: LC1, LC2
 
       allocate(dPROCBUF(cPROCCNT))
       allocate(dROOTBUF(cROOTCNT))
@@ -599,7 +620,13 @@
       iGath_SendCnt = cSEND
       iGatherCnts   = cGATHER
 
-      dProcBuf(1:cPROCCNT) = INPUT_D(1:cPROCCNT)
+      LC2 = 1
+      DO LC1 = 1, PAIR_NUM
+         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+            dProcBuf(LC2) = INPUT_D(LC1)
+            LC2 = LC2 + 1
+         ENDIF
+      ENDDO
 
       IF(bDIST_IO) THEN
          CALL OUT_BIN_512(RDES_UNIT, dProcBuf, cPROCCNT, lNEXT_REC)
@@ -626,12 +653,13 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
+      use discretelement, only: PAIRS, PAIR_NUM
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
 
 ! Loop counters
-      INTEGER :: LC1
+      INTEGER :: LC1, LC2
 
       allocate(iPROCBUF(cPROCCNT))
       allocate(iROOTBUF(cROOTCNT))
@@ -640,8 +668,13 @@
       iGath_SendCnt = cSEND
       iGatherCnts   = cGATHER
 
-      DO LC1 = 1, cPROCCNT
-         iProcBuf(LC1) = merge(1,0,INPUT_L(LC1))
+! Pack the local buffer, skipping data for deleted particles.
+      LC2 = 1
+      DO LC1 = 1, PAIR_NUM
+         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+            iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
+            LC2 = LC2 + 1
+         ENDIF
       ENDDO
 
       IF(bDIST_IO) THEN

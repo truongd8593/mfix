@@ -55,10 +55,15 @@
       DOUBLE PRECISION :: WEIGHT_J(-1:1)
       DOUBLE PRECISION :: WEIGHT_K(-1:1)
 
-
+!$omp parallel default(none) private(L, WEIGHT_I, WEIGHT_J, WEIGHT_K,  &
+!$omp    KM, KP, IDX, IJK, I, J, K, WEIGHT, IJKT)                      &
+!$omp shared(MAX_PIP, PEA, PIJK, DES_POS_NEW, XE, YN, ZT, DO_K,        &
+!$omp    FILTER_CELL, FILTER_WEIGHT)
+!$omp do
       DO L = 1, MAX_PIP
 
          IF(.NOT.PEA(L,1)) CYCLE
+         IF(any(PEA(L,2:3))) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -110,6 +115,8 @@
          ENDDO
 
       ENDDO
+!$omp end do
+!$omp end parallel
 
       CONTAINS
 

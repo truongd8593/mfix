@@ -198,16 +198,19 @@
             call unpack_dbuf(lbuf,des_vel_new(1:dimn,llocpar),pface)
 ! 8) Rotational Velocity
             call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
-! 9) Temperature
+! 9) Exiting particle flag
+!           pea(llocpar,3) = (drecvbuf(lbuf,pface) > 0.5)
+            call unpack_dbuf(lbuf,pea(llocpar,3),pface) ! (Need to check the logic)
+! 10) Temperature
             if(ENERGY_EQ)then
                call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
             endif
-! 10) Species Composition
+! 11) Species Composition
             if(ANY_SPECIES_EQ)then
                call unpack_dbuf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
             endif
 
-! 11) User Variables
+! 12) User Variables
             call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
 
 ! Calculate the volume of the ghost particle.
@@ -266,11 +269,14 @@
             call unpack_dbuf(lbuf,des_vel_new(1:dimn,ispot),pface)
 !  8) Particle rotational velocity
             call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
-!  9) Particle temperature.
+!  9) Exiting particle flag
+!           pea(ispot,3) = (drecvbuf(lbuf,pface) > 0.5)
+            call unpack_dbuf(lbuf,pea(ispot,3),pface) ! (Need to check the logic)
+! 10) Particle temperature.
             if(ENERGY_EQ)then
                call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
             endif
-! 10) Particle species composition
+! 11) Particle species composition
             if(ANY_SPECIES_EQ)then
                call unpack_dbuf(lbuf,des_x_s(ispot,1:dimension_n_s),pface)
             endif
@@ -321,6 +327,9 @@
       integer :: lpacketsize,lbuf,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
       integer :: cc,ii,kk,num_pairs_sent
+
+      integer :: pair_match
+      logical :: do_add_pair
 !-----------------------------------------------
 
 ! loop through particles and locate them and make changes
@@ -329,6 +338,8 @@
 
 ! if mppic make sure enough space available
       if(mppic .and. (max_pip-pip).lt.lparcnt) call redim_par(pip+lparcnt)
+
+
 
       do lcurpar =1,lparcnt
          lfound = .false.
@@ -416,14 +427,36 @@
 
          if (.not. locate_par(lneighid,lneighijk,lneigh)) then
             if (.not. exten_locate_par(lneighid,lparijk,lneigh)) then
+
+               print *,"  "
+               print *,"  "
+               print *," fail on  ", myPE
                print *,"at buffer location",lbuf," pface = ",pface
                print *,"COULD NOT FIND NEIGHBOR ",lneighid," IN IJK ",lneighijk
                call des_mpi_stop
             endif
          endif
 
-         call add_pair(llocpar,lneigh)
-         
+! If the neighbor particle is a 'real' particle on this processor, then
+! the pair data may already exist. Check before addeding it.
+         do_add_pair = .TRUE.
+         if(pea(lneigh,1) .and. .not.pea(lneigh,4)) then
+            do ii=1,pair_num
+               if(PAIRS(1,II) == lneigh) then
+                  if(PAIRS(2,II) == llocpar) then
+                     do_add_pair = .FALSE.
+                     pair_match = II
+                     exit
+                  endif
+               endif
+            enddo
+         endif
+
+         if(do_add_pair) then
+            call add_pair(llocpar,lneigh)
+            pair_match = pair_num
+         endif
+
          call unpack_dbuf(lbuf,pv_pair(pair_num),pface)
 
          do ii=1,DIMN

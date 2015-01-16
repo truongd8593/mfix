@@ -70,6 +70,7 @@
 ! Calculate the gas phae forces acting on each particle.
          DO NP=1,MAX_PIP
             IF(.NOT.PEA(NP,1)) CYCLE
+            IF(any(PEA(NP,2:3))) CYCLE
 
             IF(DES_INTERP_ON) THEN
                lPF = ZERO

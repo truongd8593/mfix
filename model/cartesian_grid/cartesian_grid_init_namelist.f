@@ -863,11 +863,6 @@
       VTK_Scalar =.FALSE.
 !</keyword>
 
-      IF(nRR>0) THEN
-         ALLOCATE(VTK_RRate(DIMENSION_VTK,nRR))
-      ELSE
-         ALLOCATE(VTK_RRate(DIMENSION_VTK,1))
-      ENDIF
 !<keyword category="Output Control" required="false">
 !  <description>Write reaction rates in VTK file.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

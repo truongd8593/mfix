@@ -72,6 +72,8 @@
       LOGICAL, allocatable :: BELONGS_TO_VTK_SUBDOMAIN(:)
 
       INTEGER, PARAMETER :: DIMENSION_VTK = 100
+! Max size for VTK_nRR
+      INTEGER, PARAMETER :: VTK_nRRmax = 100
 
 ! Current VTK region
       INTEGER :: VTK_REGION
@@ -179,7 +181,7 @@
       LOGICAL :: VTK_Scalar(DIMENSION_VTK, DIM_scalar)
 
 ! Reaction rates
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE:: VTK_RRate
+      LOGICAL :: VTK_RRate(DIMENSION_VTK,VTK_nRRmax)
 
 ! K & Epsilon values
       LOGICAL :: VTK_K_Turb_G(DIMENSION_VTK)
