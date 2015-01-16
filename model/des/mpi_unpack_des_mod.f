@@ -39,7 +39,7 @@
 
       
       interface unpack_dbuf
-         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1
+         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1,unpack_l0
       end interface unpack_dbuf
 
 
@@ -110,6 +110,22 @@
 
       return
       end subroutine unpack_i1
+
+!----------------------------------------------------------------------!
+!Unpack subroutine for logical variables                        !
+!----------------------------------------------------------------------!
+      subroutine unpack_l0(lbuf,idata,pface)
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      logical, intent(inout) :: idata
+
+      idata = merge(.true.,.false.,0.5<drecvbuf(lbuf,pface))
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_l0
+
+
 
 
 !------------------------------------------------------------------------
@@ -407,9 +423,8 @@
          endif
 
          call add_pair(llocpar,lneigh)
-
-         pv_pair(pair_num)=merge(.true.,.false.,0.5 < drecvbuf(lbuf,pface))
-         lbuf = lbuf+1 
+         
+         call unpack_dbuf(lbuf,pv_pair(pair_num),pface)
 
          do ii=1,DIMN
             call unpack_dbuf(lbuf,pfn_pair(ii,pair_num),pface)
