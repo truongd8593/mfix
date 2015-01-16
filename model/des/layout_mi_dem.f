@@ -30,16 +30,14 @@
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
 ! This is done due to this routine's strong dependence on the
 ! RANDOM_NUMBER() subroutine.
-      IF(RUN_TYPE == 'NEW') THEN
-
+      IF(RUN_TYPE == 'RESTART_1') THEN
+         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
+      ELSE
          SELECT CASE (BC_PLANE(BCV))
          CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
          CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
          CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
          END SELECT
-
-      ELSE
-         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ENDIF
 
       CALL FINL_ERR_MSG

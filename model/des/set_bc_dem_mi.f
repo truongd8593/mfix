@@ -80,10 +80,12 @@
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MI")
 
-
       dFlag = (DMP_LOG .AND. setDBG)
       if(dFlag) write(*,"(2/,2x,'DEM inlet count: ',I4)") DEM_BCMI
 
+! Allocate the MI data structures for NEW and RES2 cases. Allocation for
+! RES1 cases is done prior to reading the RES file.
+      IF(RUN_TYPE /= 'RESTART_1') CALL ALLOCATE_DEM_MI
 
 ! Loop over BCs that flagged for DEM mass inflow.
       DO BCV_I = 1, DEM_BCMI

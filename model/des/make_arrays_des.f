@@ -226,6 +226,8 @@
 
       ENDIF
 
+      IF(RUN_TYPE == 'RESTART_2') VTP_FINDEX=0
+
 ! setting the global id for walls. this is required to handle
 ! particle-wall contact
       DO lface = 1, merge(4,6,DO_K)
