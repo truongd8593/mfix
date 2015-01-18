@@ -319,9 +319,9 @@
       FOCUS_PARTICLE = -1
 
 !$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,fns1,fns2,list_of_cells,  &
-!$omp          cell_id,radsq,particle_max,particle_min,axis,nf,use_cohesion,van_der_waals,&
+!$omp          cell_id,radsq,particle_max,particle_min,axis,nf,&
 !$omp          closest_pt,vdw_outer_cutoff,vdw_inner_cutoff,dist,r_lm,distapart,force_coh,&
-!$omp          hamaker_constant,asperities,surface_energy,distsq,line_t,max_distsq,max_nf,&
+!$omp          distsq,line_t,max_distsq,max_nf,&
 !$omp          normal,distmod,overlap_n,v_rel_trans_norm,tangent,phaseLL,sqrt_overlap,    &
 !$omp          kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,previous_p,overlap_t,        &
 !$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p)              &
@@ -329,7 +329,7 @@
 !$omp           dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,des_radius,    &
 !$omp           cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt, &
 !$omp           kn_w,kt_w,des_coll_model_enum,particle_wall_collisions,mew_w,tow,   &
-!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face)
+!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,use_cohesion,van_der_waals,hamaker_constant,asperities,surface_energy)
 !$omp do
       DO LL = 1, MAX_PIP
 
@@ -402,12 +402,12 @@
             ENDIF
 
             if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
-               call remove_collision(LL,current_p,previous_p)
+               call remove_collision(LL,nf,particle_wall_collisions)
                cycle
             endif
 
             if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) then
-               call remove_collision(LL,current_p,previous_p)
+               call remove_collision(LL,nf,particle_wall_collisions)
                cycle
             endif
 
@@ -464,7 +464,7 @@
             !However, if the orthogonal projection shows no overlap, then
             !that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
-               call remove_collision(LL,current_p,previous_p)
+               call remove_collision(LL,nf,particle_wall_collisions)
                CYCLE
             ENDIF
 
@@ -474,7 +474,7 @@
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
-               call remove_collision(LL,current_p,previous_p)
+               call remove_collision(LL,nf,particle_wall_collisions)
                CYCLE
             ENDIF
 
@@ -557,7 +557,7 @@
                   endif
                endif
 
-               IF(abs(sum(FORCE_HISTORY)) .gt. small_number) THEN
+               IF(sum(abs(current_p%PFT(:))) .gt. small_number) THEN
                   OVERLAP_T(:) = TANGENT(:) * DTSOLID
                ELSE
                   IF(V_REL_TRANS_NORM .GT. ZERO) THEN
@@ -624,32 +624,33 @@
 
        contains
 
-         subroutine remove_collision(LLL,current_p,previous_p)
+         subroutine remove_collision(LLL,facet_id,particle_wall_collisions)
            implicit none
-           Integer, intent(in) :: LLL
-           type(facet_linked_list), POINTER, intent(inout) :: current_p, previous_p
+           Integer, intent(in) :: LLL,facet_id
+           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
+           type(facet_linked_list), POINTER :: curr_p, prev_p
 
                if (associated(particle_wall_collisions(LLL)%pp)) then
 
-                  current_p => particle_wall_collisions(LLL)%pp
+                  curr_p => particle_wall_collisions(LLL)%pp
 
-                  if (current_p%facet_id .eq. nf) then
-                     particle_wall_collisions(LLL)%pp => current_p%next
-                     deallocate(current_p)
+                  if (curr_p%facet_id .eq. facet_id) then
+                     particle_wall_collisions(LLL)%pp => curr_p%next
+                     deallocate(curr_p)
                   else
 
-                     previous_p => current_p
-                     current_p => current_p%next
+                     prev_p => curr_p
+                     curr_p => curr_p%next
 
-                     do while (associated(current_p))
-                        if (current_p%facet_id .eq. nf) exit
-                        previous_p => current_p
-                        current_p => current_p%next
+                     do while (associated(curr_p))
+                        if (curr_p%facet_id .eq. facet_id) exit
+                        prev_p => curr_p
+                        curr_p => curr_p%next
                      enddo
 
-                     if (associated(current_p)) then
-                        previous_p%next => current_p%next
-                        deallocate(current_p)
+                     if (associated(curr_p)) then
+                        prev_p%next => curr_p%next
+                        deallocate(curr_p)
                      endif
 
                   endif
