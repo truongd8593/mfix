@@ -239,7 +239,7 @@
 
       RETURN
 
- 1000 FORMAT(/1X,70('*')//' From: CHECK_DATA_07',/' Message: ',A,'(',I2,&
-         ') not specified',/1X,70('*')/)
+ 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
+         'correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_BC_MASS_OUTFLOW

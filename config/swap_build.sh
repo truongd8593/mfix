@@ -17,7 +17,7 @@ update_src()
 # Note: The run directory (./) is considered the base model directory.
     if [ -d "${run}" ]; then
 # Move into the run (sub)directory.
-      cd ${run}
+      cd "${run}"
 # Make a list of all the files with the (ext) file extension. This list
 # is empty if there are no files.
       list=
@@ -61,25 +61,25 @@ update_src()
 
 # Verify that the user has a corresponding file.
     file=`echo ${backup} | sed 's/\.0/\./'`
-    if test -r ${run}/${file}; then
+    if test -r "${run}/${file}"; then
 
 # Check if the file in the run directory differs from the file in the
 # source (sub)direcotry.
 
 # Check if the files have changed.
-      cmp -s ${run}/${file} ${file}
+      cmp -s "${run}/${file}" "${file}"
 
 # The file in the run (sub)directory is different than the one in the
 # source directory. Copy the modified file into the source tree.
       if test $? = 1; then
         echo "  > Updating: ${subdir}/${file}"
-        chmod u+w ${file}
-        /bin/cp -f ${run}/${file} ${file}
+        chmod u+w "${file}"
+        /bin/cp -f "${run}/${file}" "${file}"
 # The files are the same so only copy in the file if FORCED_COMPILE.
       elif test ${FORCE_COMPILE} = 1; then
         echo "  > Forced updated: ${subdir}/${file}"
-        chmod u+w $file
-        /bin/cp -f ${run}/${file} ${file}
+        chmod u+w "${file}"
+        /bin/cp -f "${run}/${file}" "${file}"
       fi
 
 # User does not have a corresponding file. This assumption is that the
@@ -87,14 +87,14 @@ update_src()
     else
 
 # Compare the backup file and current source file.
-      cmp -s ${backup} ${file}
+      cmp -s "${backup}" "${file}"
 # If the files are different, restore the source file with the backup.
       if test $? = 1; then
-        /bin/mv -f ${backup} ${file}
-        touch ${file}
+        /bin/mv -f "${backup}" "${file}"
+        touch "${file}"
       else
 # Remove the backup copy.
-        /bin/rm -f ${backup}
+        /bin/rm -f "${backup}"
       fi
       echo "  > Restored: ${subdir}/${file}"
     fi
@@ -102,7 +102,7 @@ update_src()
 }    # eof function update_dir
 
 
-cd ${RUN_DIR}
+cd "${RUN_DIR}"
 echo "Checking for user modified files."
 
 
@@ -110,4 +110,4 @@ for folder in $(echo ${FOLDER_LIST}); do
   update_src ${folder}
 done
 
-cd ${MFIX_SRC}
+cd "${MFIX_SRC}"

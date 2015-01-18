@@ -30,16 +30,14 @@
 ! provided by this subroutine is will be obtained from the *_DES.RES file.
 ! This is done due to this routine's strong dependence on the
 ! RANDOM_NUMBER() subroutine.
-      IF(RUN_TYPE == 'NEW') THEN
-
+      IF(RUN_TYPE == 'RESTART_1') THEN
+         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
+      ELSE
          SELECT CASE (BC_PLANE(BCV))
          CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
          CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
          CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
          END SELECT
-
-      ELSE
-         CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ENDIF
 
       CALL FINL_ERR_MSG
@@ -138,7 +136,7 @@
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_NS')
 
       dFlag = (DMP_LOG .AND. setDBG)
-      if(dFlag) write(*,"(2/,'Building DEM_MI: ',I3)") BCV_I
+      if(dFlag) write(*,"(2/,'Building NS DEM_MI: ',I3)") BCV_I
 
 ! Store the index that maps back to the user input.
 
@@ -224,7 +222,7 @@
             CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
 
-            SHIFT = MESH_Q(W)+WINDOW
+            SHIFT = MESH_Q(H)+WINDOW
             CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
             IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
 
@@ -490,7 +488,7 @@
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_EW')
 
       dFlag = (DMP_LOG .AND. setDBG)
-      if(dFlag) write(*,"(2/,'Building DEM_MI: ',I3)") BCV_I
+      if(dFlag) write(*,"(2/,'Building EW DEM_MI: ',I3)") BCV_I
 
       OCCUPANTS = 0
 
@@ -786,7 +784,7 @@
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_TB')
 
       dFlag = (DMP_LOG .AND. setDBG)
-      if(dFlag) write(*,"(2/,'Building DEM_MI: ',I3)") BCV_I
+      if(dFlag) write(*,"(2/,'Building TB DEM_MI: ',I3)") BCV_I
 
 ! Store the index that maps back to the user input.
 

@@ -76,7 +76,7 @@
             ENDDO M_LP
 
 ! Count the number of pressure outflows.
-         CASE ('P_OUTFLOW')
+         CASE ('P_OUTFLOW','MASS_OUTFLOW')
             IF(BC_PO_APPLY_TO_DES(BCV)) then
                DEM_BCMO = DEM_BCMO + 1
                DEM_BCMO_MAP(DEM_BCMO) = BCV
@@ -99,7 +99,7 @@
             WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)), 'GC_PO'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-         CASE ('MASS_OUTFLOW', 'OUTFLOW', 'P_INFLOW')
+         CASE ('OUTFLOW', 'P_INFLOW')
             WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)),             &
                trim(BC_TYPE(BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

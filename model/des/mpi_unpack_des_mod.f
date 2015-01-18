@@ -118,19 +118,21 @@
 ! 8) Rotational Velocity
             omega_new(1:3,llocpar) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-! 9) Temperature
+! 9) Exiting particle flag
+            pea(llocpar,3) = (drecvbuf(lbuf,pface) > 0.5)
+! 10) Temperature
             if(ENERGY_EQ)then
                des_t_s_new(llocpar) = drecvbuf(lbuf,pface)
                lbuf = lbuf + 1
             endif
-! 10) Species Composition
+! 11) Species Composition
             if(ANY_SPECIES_EQ)then
                des_x_s(llocpar,1:dimension_n_s) = &
                   drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
                lbuf = lbuf+dimension_n_s
             endif
 
-! 11) User Variables
+! 12) User Variables
             des_usr_var(1:3,llocpar) = drecvbuf(lbuf:lbuf+3-1,pface)
             lbuf = lbuf+3
 
@@ -198,18 +200,21 @@
 !  8) Particle rotational velocity
             omega_new(1:dimn,ispot) = drecvbuf(lbuf:lbuf+dimn-1,pface)
             lbuf = lbuf + dimn
-!  9) Particle temperature.
+!  9) Exiting particle flag
+             pea(ispot,3) = (drecvbuf(lbuf,pface) > 0.5)
+
+! 10) Particle temperature.
             if(ENERGY_EQ)then
                des_t_s_new(ispot) = drecvbuf(lbuf,pface)
                lbuf = lbuf + 1
             endif
-! 10) Particle species composition
+! 11) Particle species composition
             if(ANY_SPECIES_EQ)then
                des_x_s(ispot,1:dimension_n_s) = &
                   drecvbuf(lbuf:lbuf+dimension_n_s-1,pface)
                lbuf = lbuf+dimension_n_s
             endif
-! 11) User varaible
+! 12) User varaible
             des_usr_var(1:3,ispot)= drecvbuf(lbuf:lbuf+3-1,pface)
             lbuf = lbuf+3
 
@@ -386,6 +391,10 @@
 
          if (.not. locate_par(lneighid,lneighijk,lneigh)) then
             if (.not. exten_locate_par(lneighid,lparijk,lneigh)) then
+
+               print *,"  "
+               print *,"  "
+               print *," fail on  ", myPE
                print *,"at buffer location",lbuf," pface = ",pface
                print *,"COULD NOT FIND NEIGHBOR ",lneighid," IN IJK ",lneighijk
                call des_mpi_stop
