@@ -319,9 +319,8 @@
       FOCUS_PARTICLE = -1
 
 !$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,fns1,fns2,list_of_cells,  &
-!$omp          cell_id,radsq,particle_max,particle_min,axis,nf,&
-!$omp          closest_pt,vdw_outer_cutoff,vdw_inner_cutoff,dist,r_lm,distapart,force_coh,&
-!$omp          distsq,line_t,max_distsq,max_nf,&
+!$omp          cell_id,radsq,particle_max,particle_min,axis,nf,closest_pt,dist,r_lm,      &
+!$omp          distapart,force_coh,distsq,line_t,max_distsq,max_nf,&
 !$omp          normal,distmod,overlap_n,v_rel_trans_norm,tangent,phaseLL,sqrt_overlap,    &
 !$omp          kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,previous_p,overlap_t,        &
 !$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p)              &
@@ -329,7 +328,8 @@
 !$omp           dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,des_radius,    &
 !$omp           cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt, &
 !$omp           kn_w,kt_w,des_coll_model_enum,particle_wall_collisions,mew_w,tow,   &
-!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,use_cohesion,van_der_waals,hamaker_constant,asperities,surface_energy)
+!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,       &
+!$omp           use_cohesion,van_der_waals,hamaker_constant,vdw_outer_cutoff,vdw_inner_cutoff,asperities,surface_energy)
 !$omp do
       DO LL = 1, MAX_PIP
 
