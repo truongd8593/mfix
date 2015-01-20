@@ -55,7 +55,7 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for Intel Fortran Linux compiler
 #common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
-common="-c -fconvert='big-endian'"
+common="-c -fconvert='big-endian' -cpp"
 
 # Optimization flags for level 4
 #optim="-V -fast -Mipa=fast,inline -Msmartalloc -Mfprelaxed -Mstack_arrays"

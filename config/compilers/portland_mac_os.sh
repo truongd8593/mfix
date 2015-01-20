@@ -64,7 +64,7 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 # Base flags for Intel Fortran Linux compiler
 #common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
 #AIKE from make_mfix.macos
-common="-c -I. -Mnosave -Mdalign -byteswapio -Mkeepasm"
+common="-c -I. -Mnosave -Mdalign -byteswapio -Mkeepasm -cpp"
 
 # Optimization flags for level 4
 #optim="-V -fast -Mipa=fast,inline -Msmartalloc -Mfprelaxed -Mstack_arrays"

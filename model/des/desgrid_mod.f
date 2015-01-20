@@ -750,7 +750,7 @@
 ! Local variables
 !-----------------------------------------------
       integer, dimension(dg_ijksize2) :: lpic,lindx
-      integer li,lj,lk,lijk,lcurpar,lparcount,lcurpic
+      integer li,lj,lk,lijk,lijk_count,lcurpar,lparcount,lcurpic
       logical, save :: first_pass = .true.
       integer :: lallocstat,lallocerr
 !-----------------------------------------------
@@ -809,6 +809,9 @@
 ! assign the particle info in pic array
       lindx(:) = 1
       lparcount = 1
+
+#if defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) )
+
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
          if(.not.pea(lcurpar,1)) cycle
@@ -818,12 +821,35 @@
          lindx(lijk) = lindx(lijk) +  1
       enddo
 
+#else
+
+!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,pea,dg_pijk,dg_pic,lindx)
+!$omp do
+      do lcurpar = 1, max_pip
+         if(lparcount.gt.pip) cycle
+         if(.not.pea(lcurpar,1)) cycle
+         lijk = dg_pijk(lcurpar)
+
+         !$omp atomic capture
+         lijk_count = lindx(lijk)
+         lindx(lijk) = lindx(lijk) +  1
+         !$omp end atomic
+
+         dg_pic(lijk)%p(lijk_count) = lcurpar
+
+         !$omp atomic
+         lparcount = lparcount + 1
+      enddo
+!$omp end do
+!$omp end parallel
+
+#endif
+
 !      open (unit=100,file='desgrid.txt',status='unknown')
 !      write(100,*)lpic
 !      close(100)
 
       end subroutine desgrid_pic
-
 
 !------------------------------------------------------------------------
 ! subroutine       : desgrid_neigh_build ()

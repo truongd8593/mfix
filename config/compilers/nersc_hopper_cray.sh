@@ -48,7 +48,7 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-rm"; fi
 
 # Common compile flags.
-common="-c -h byteswapio "
+common="-c -h byteswapio -cpp"
 
 case $OPT in
   0|1|2|3)echo "Setting compiler flags."
