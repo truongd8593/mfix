@@ -21,8 +21,9 @@
 
       INTEGER :: IJK
       INTEGER :: LC, LP, NP, M
-      INTEGER :: BCV, BCV_I
+      INTEGER :: BCV, BCV_I, IDX
 
+      DOUBLE PRECISION :: SGN
       DOUBLE PRECISION :: DIST
 
       LOGICAL :: FREEZE_VEL
@@ -35,9 +36,12 @@
          FREEZE_VEL = (BC_TYPE(BCV) /= 'MASS_OUTFLOW')
 
          SELECT CASE (BC_PLANE(BCV))
-         CASE('E','W'); FREEZE = (/1.0d0, 0.0d0, 0.0d0/)
-         CASE('N','S'); FREEZE = (/0.0d0, 1.0d0, 0.0d0/)
-         CASE('T','B'); FREEZE = (/0.0d0, 0.0d0, 1.0d0/)
+         CASE('N'); FREEZE = (/0.0d0, 1.0d0, 0.0d0/); IDX=2; SGN=-1.0d0
+         CASE('S'); FREEZE = (/0.0d0, 1.0d0, 0.0d0/); IDX=2; SGN= 1.0d0
+         CASE('E'); FREEZE = (/1.0d0, 0.0d0, 0.0d0/); IDX=1; SGN=-1.0d0
+         CASE('W'); FREEZE = (/1.0d0, 0.0d0, 0.0d0/); IDX=1; SGN= 1.0d0
+         CASE('T'); FREEZE = (/0.0d0, 0.0d0, 1.0d0/); IDX=3; SGN=-1.0d0
+         CASE('B'); FREEZE = (/0.0d0, 0.0d0, 1.0d0/); IDX=3; SGN= 1.0d0
          END SELECT
 
          DO LC=DEM_BCMO_IJKSTART(BCV_I), DEM_BCMO_IJKEND(BCV_I)
@@ -62,17 +66,21 @@
                   PEA(NP,3) = .FALSE.
 
 ! Check if the particle is crossing over the outlet plane.
-
                ELSEIF(DIST > ZERO) THEN
-                  PEA(NP,2) = .TRUE.
-                  PEA(NP,3) = .TRUE.
-
 
 ! The velocity is 'frozen' normal to the outflow plane. This approach
 ! is strict because complex BCs (via STLs) can let particles pop through
 ! the wall along the outlet.
                   IF(FREEZE_VEL) THEN
-                     DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
+! Only 'freeze' a particle's velocy if it has it moving out of the
+! domain. Otherwise, particles flagged as exiting but moving away from
+! the BC appear to moon-walk through the domain until it crashes.
+                     IF(DES_VEL_NEW(IDX,NP)*SGN > 0.0d0) THEN
+                        DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
+! Set the flags for an exiting particle.
+                        PEA(NP,2) = .TRUE.
+                        PEA(NP,3) = .TRUE.
+                     ENDIF
 
 ! The user specified velocity is applied to the exiting particle. This
 ! only applies to mass outflows where the speed at which particles 
@@ -82,6 +90,9 @@
                      DES_VEL_NEW(1,NP) = BC_U_s(BCV,M)
                      DES_VEL_NEW(2,NP) = BC_V_s(BCV,M)
                      DES_VEL_NEW(3,NP) = BC_W_s(BCV,M)
+! Set the flags for an exiting particle.
+                     PEA(NP,2) = .TRUE.
+                     PEA(NP,3) = .TRUE.
                   ENDIF
 
 ! Ladies and gentlemen, the particle has left the building.

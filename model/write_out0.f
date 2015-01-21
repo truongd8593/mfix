@@ -1,43 +1,12 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: WRITE_OUT0                                             C
-!  Purpose: echo user input                                            C
-!                                                                      C
-!  Author: P. Nicoletti, M. Syamlal                   Date: 04-DEC-91  C
-!  Reviewer: W. Rogers, M. Syamlal, S. Venkatesan     Date: 31-JAN-92  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: add node, version                                          C
-!  Author: P.Nicoletti                                Date: 07-FEB-92  C
-!  Reviewer: S. Venkatesan                            Date: 11-DEC-92  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: ID_MONTH, ID_DAY, ID_YEAR, RUN_NAME, UNITS    C
-!                        DESCRIPTION, RUN_TYPE, DX, IMAX1, IMAX, DY    C
-!                        JMAX1, YLENGTH, XLENGTH, JMAX, DZ, KMAX1      C
-!                        KMAX, ZLENGTH, MMAX, D_p0, RO_s, EP_star, MU_g0C
-!                        MW_AVG, IC_DEFINED, IC_X_w, IC_X_e, IC_Y_s    C
-!                        IC_Z_b, IC_Z_t, IC_I_w, IC_I_e, IC_J_s        C
-!                        IC_J_n, IC_K_b, IC_K_t, IC_EP_g, IC_P_g       C
-!                        IC_U_g, IC_V_g, IC_W_g, IC_ROP_s, IC_T_s      C
-!                        IC_U_s, IC_V_s, IC_W_s, BC_DEFINED            C
-!                        BC_TYPE, BC_X_w, BC_X_e, BC_Y_s, BC_Y_n       C
-!                        BC_Z_b, BC_Z_t, BC_I_w, BC_I_e, BC_J_s        C
-!                        BC_J_n, BC_Z_b, BC_Z_t, BC_EP_g, BC_P_g       C
-!                        BC_T_g, BC_U_g, BC_V_g, BC_W_g, BC_ROP_s      C
-!                        BC_T_s, BC_U_s, BC_V_s, BC_W_s                C
-!                        ICBC_FLAG, IMIN1, JMIN1, KMIN1, ID_NODE       C
-!                        ID_VERSION, RO_g0                             C
-!  Variables modified: M                                               C
-!                                                                      C
-!  Local variables: L, LOC                                             C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: WRITE_OUT0                                              !
+!  Author: P. Nicoletti, M. Syamlal                   Date: 04-DEC-91  !
+!                                                                      !
+!  Purpose: Echo user input.                                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_OUT0
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -85,7 +54,8 @@
 
 
       DOUBLE PRECISION, DIMENSION(6) :: LOC
-!                      Coefficient of restitution (old symbol)
+
+! Coefficient of restitution (old symbol)
       DOUBLE PRECISION :: E
       CHARACTER(LEN=3), DIMENSION(3) :: LEGEND
       CHARACTER(LEN=12), DIMENSION(0:9) :: DISCR_NAME
@@ -98,9 +68,6 @@
 !-----------------------------------------------
 
 !
-!
-!
-!                      Coefficient of restitution (old symbol)
       DATA DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', 'Ultra-Quick', &
          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod', 'Central'/
       DATA DISCR_NAME1/'FOUP', 'FOUP', 'Fourth Order', 'Smart', 'Ultra-Quick', &
@@ -456,6 +423,8 @@
             IF(IC_L_SCALE(L)/=UNDEFINED)WRITE(UNIT_OUT,1575)IC_L_SCALE(L)
          ENDIF
       END DO
+
+! Boundary Condition Data
       WRITE (UNIT_OUT, 1600)
       IF (U_G0 /= UNDEFINED) WRITE (UNIT_OUT, 1601) 'U_g (U_g0) = ', U_G0
       IF (V_G0 /= UNDEFINED) WRITE (UNIT_OUT, 1601) 'V_g (V_g0) = ', V_G0
@@ -570,11 +539,11 @@
          IF (IS_DEFINED(L)) THEN
             WRITE (UNIT_OUT, 1710) L
             WRITE (UNIT_OUT, 1711) IS_TYPE(L)
-            IF (IS_TYPE(L)=='IMPERMEABLE' .OR. IS_TYPE(L)(3:13)=='IMPERMEABLE'&
-               ) THEN
+            IF(IS_TYPE(L)=='IMPERMEABLE' .OR. &
+               IS_TYPE(L)(3:13)=='IMPERMEABLE') THEN
                WRITE (UNIT_OUT, 1712)
-            ELSE IF (IS_TYPE(L)=='SEMIPERMEABLE' .OR. IS_TYPE(L)(3:15)==&
-                  'SEMIPERMEABLE') THEN
+            ELSE IF (IS_TYPE(L)=='SEMIPERMEABLE' .OR. &
+               IS_TYPE(L)(3:15)=='SEMIPERMEABLE') THEN
                WRITE (UNIT_OUT, 1713)
             ENDIF
             LOC(1) = LOCATION(IS_I_W(L),XMIN,DX) - HALF*DX(IS_I_W(L))
@@ -595,7 +564,39 @@
             END DO
          ENDIF
       END DO
-      WRITE (UNIT_OUT, 1800) OUT_DT, RES_DT, SPX_DT
+
+!
+!  Print out file descriptions and write intervals.
+!
+      WRITE (UNIT_OUT, 1800)
+      WRITE (UNIT_OUT, 1801) &
+         '.OUT','This file (ASCII)',OUT_DT
+      WRITE (UNIT_OUT, 1801) &
+         '.LOG','Log file containing messages (ASCII)',UNDEFINED
+      WRITE (UNIT_OUT, 1801) &
+         '.RES','Restart file (Binary)', RES_DT
+      WRITE (UNIT_OUT, 1801) &
+         '.SP1','EP_g (Binary, single precision)',SPX_DT(1)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP2','P_g, P_star (Binary, single precision)',SPX_DT(2)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP3','U_g, V_g, W_g (Binary, single precision)',SPX_DT(3)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP4','U_s, V_s, W_s (Binary, single precision)',SPX_DT(4)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP5','ROP_s (Binary, single precision)',SPX_DT(5)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP6','T_g, T_s (Binary, single precision)',SPX_DT(6)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP7','X_g, X_s (Binary, single precision)',SPX_DT(7)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP8','Theta_m (Binary, single precision)',SPX_DT(8)
+      WRITE (UNIT_OUT, 1801) &
+         '.SP9','User Scalar (Binary, single precision)',SPX_DT(9)
+      WRITE (UNIT_OUT, 1801) &
+         '.SPA','ReactionRates (Binary, single precision)',SPX_DT(10)
+      WRITE (UNIT_OUT, 1801) &
+         '.SPB','K and Epsilon (Binary, single precision)',SPX_DT(11)
 !
 !  Print out tolerance values from TOLERANCE.INC
 !
@@ -804,6 +805,7 @@
  1656 FORMAT(9X,'Interval for averaging outflow rates= (BC_DT_0) = ',G12.5)
  1660 FORMAT(9X,'Solids phase-',I1,' Density x Volume fr. (BC_ROP_s) = ',G12.5)
  1661 FORMAT(9X,'Solids phase-',I1,' temperature (BC_T_s) = ',G12.5)
+
  1663 FORMAT(9X,'Solids-',I1,' species',5X,'Mass fraction (BC_X_s)')
  1664 FORMAT(9X,3X,I3,20X,G12.5)
  1668 FORMAT(9X,'Solids phase-',I1,' mass flow rate (BC_MASSFLOW_s) =',G12.5)
@@ -844,20 +846,9 @@
  1741 FORMAT(9X,'Inertial resistance factor (IS_PC2) = ',G12.5)
  1742 FORMAT(9X,'Solids phase-',I2,' Velocity (IS_VEL_s) = ',G12.5)
 !
- 1800 FORMAT(//,3X,'9. OUTPUT DATA FILES:',/7X,'Extension',T18,'Description',&
-         T59,'Interval for writing',/7X,'.OUT',T18,'This file (ASCII)',T61,&
-         G12.5,/7X,'.LOG',T18,'Log file containing messages (ASCII)',&
-         /7X,'.RES',&
-         T18,'Restart file (Binary)',T61,G12.5,/7X,'.SP1',T18,&
-         'EP_g (Binary, single precision)',T61,G12.5,/7X,'.SP2',T18,&
-         'P_g, P_star (Binary, single precision)',T61,G12.5,/7X,'.SP3',T18,&
-         'U_g, V_g, W_g (Binary, single precision)',T61,G12.5,/7X,'.SP4',T18,&
-         'U_s, V_s, W_s (Binary, single precision)',T61,G12.5,/7X,'.SP5',T18,&
-         'ROP_s (Binary, single precision)',T61,G12.5,/7X,'.SP6',T18,&
-         'T_g, T_s (Binary, single precision)',T61,G12.5,/7X,'.SP7',T18,&
-         'X_g, X_s (Binary, single precision)',T61,G12.5,/7X,'.SP8',T18,&
-         'Theta_m (Binary, single precision)',T61,G12.5,/7X,'.SP9',T18,&
-         'User Scalar (Binary, single precision)',T61,G12.5)
+ 1800 FORMAT(//,3X,'9. OUTPUT DATA FILES:',/7X,'Extension',T18,&
+         'Description',T59,'Interval for writing')
+ 1801 FORMAT(7X,A4,T18,A,T61,G12.5)
 !
  1900 FORMAT(//,3X,'10. TOLERANCES',/7X,&
          'The following values are specified in the file TOLERANCE.INC.')
@@ -933,7 +924,7 @@
       call gather (array2,array3,PE_IO)
 
       if(myPE.eq.PE_IO) then
-        WRITE (UNIT_OUT, 2000) CHAR(12)
+        WRITE (UNIT_OUT, 2000)
         CALL OUT_ARRAY_C (array3, 'BC/IC condition flags')
         WRITE (UNIT_OUT, *)
       ENDIF
