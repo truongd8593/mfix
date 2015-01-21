@@ -290,7 +290,6 @@
       end do
 
 
-      call pack_dbuf(lbuf,num_pairs_to_send,pface)
 ! Calculate the location in buffer where the number of pair data is
 ! stored and skip specifying the entry. After all the pair data is
 ! packed, then this value is set.
@@ -333,7 +332,8 @@
 ! Store the number of pair datasets being sent. This information is
 ! stored before the pairing data so the receiving process knows the
 ! amount of data to 'unpack.'
-      dsendbuf(num_pairs_send_buf_loc,pface) = num_pairs_to_send
+      lbuf = num_pairs_send_buf_loc
+      call pack_dbuf(lbuf,num_pairs_to_send,pface)
 
       lpairsize = 6 + 2*DIMN
 
