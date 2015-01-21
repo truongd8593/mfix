@@ -126,6 +126,8 @@
 ! Torque
       Allocate(  TOW (DIMN,NPARTICLES) )
 
+      Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, NPARTICLES) )
+      Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, NPARTICLES) )
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
 ! Temporary variables to store wall position, velocity and normal vector

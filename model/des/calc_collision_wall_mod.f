@@ -285,7 +285,7 @@
       DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
       DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DIST(DIMN), DISTMOD
-      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T
+      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T, PFT
 
       LOGICAL :: checked_facet_already,DES_LOC_DEBUG, PARTICLE_SLIDE, &
       test_overlap_and_exit
@@ -323,12 +323,12 @@
 !$omp          distapart,force_coh,distsq,line_t,max_distsq,max_nf,&
 !$omp          normal,distmod,overlap_n,v_rel_trans_norm,tangent,phaseLL,sqrt_overlap,    &
 !$omp          kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,previous_p,overlap_t,        &
-!$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p)              &
+!$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p,pft)          &
 !$omp    shared(max_pip,focus_particle,debug_des,pea,no_neighboring_facet_des,pijk, &
 !$omp           dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,des_radius,    &
 !$omp           cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt, &
 !$omp           kn_w,kt_w,des_coll_model_enum,particle_wall_collisions,mew_w,tow,   &
-!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,       &
+!$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,wall_collision_facet_id,wall_collision_PFT,       &
 !$omp           use_cohesion,van_der_waals,hamaker_constant,vdw_outer_cutoff,vdw_inner_cutoff,asperities,surface_energy)
 !$omp do
       DO LL = 1, MAX_PIP
@@ -402,12 +402,12 @@
             ENDIF
 
             if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
-               call remove_collision(LL,nf,particle_wall_collisions)
+               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
             if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) then
-               call remove_collision(LL,nf,particle_wall_collisions)
+               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
@@ -464,7 +464,7 @@
             !However, if the orthogonal projection shows no overlap, then
             !that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
-               call remove_collision(LL,nf,particle_wall_collisions)
+               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
@@ -474,7 +474,7 @@
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
-               call remove_collision(LL,nf,particle_wall_collisions)
+               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
@@ -529,35 +529,14 @@
                FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
                FNORM(:) = FNS1(:) + FNS2(:)
 
-
 ! Calculate the tangential displacement. Note that only the maximum
 ! wall collision is considered. Therefore, enduring contact can exist
 ! from facet-to-facet as long as the particle remains in contact with
 ! one or more facets.
 
-               if (.not. associated(particle_wall_collisions(LL)%pp)) then
-                  allocate(particle_wall_collisions(LL)%pp)
-                  current_p => particle_wall_collisions(LL)%pp
-                  current_p%PFT(:) = ZERO
-                  current_p%facet_id = nf
-               else
-                  current_p => particle_wall_collisions(LL)%pp
-                  do while (associated(current_p))
-                     if (current_p%facet_id .eq. nf) exit
-                     previous_p => current_p
-                     current_p => current_p%next
-                  enddo
+               pft = get_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
 
-                  if (.not. associated(current_p)) then
-                     allocate(current_p)
-                     previous_p%next => current_p
-                     current_p%PFT(:) = ZERO
-                     current_p%facet_id = nf
-                     exit
-                  endif
-               endif
-
-               IF(sum(abs(current_p%PFT(:))) .gt. small_number) THEN
+               IF(sum(abs(PFT(:))) .gt. small_number) THEN
                   OVERLAP_T(:) = TANGENT(:) * DTSOLID
                ELSE
                   IF(V_REL_TRANS_NORM .GT. ZERO) THEN
@@ -572,10 +551,10 @@
                ENDIF
 
 ! Update the tangential history.
-               current_p%PFT(:) = current_p%PFT(:) + OVERLAP_T(:)
+               PFT(:) = PFT(:) + OVERLAP_T(:)
 
-               FORCE_HISTORY(:) = current_p%PFT(:) - &
-                  DOT_PRODUCT(current_p%PFT(:),NORMAL)*NORMAL(:)
+               FORCE_HISTORY(:) = PFT(:) - &
+                  DOT_PRODUCT(PFT(:),NORMAL)*NORMAL(:)
 
 ! Calculate the tangential collision force.
                FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
@@ -608,10 +587,12 @@
                IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
-                  current_p%PFT(:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
+                  PFT(:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
                ELSE
-                  current_p%PFT(:) = FORCE_HISTORY(:)
+                  PFT(:) = FORCE_HISTORY(:)
                ENDIF
+
+               call update_collision(pft,LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
 
          ENDDO
 
@@ -624,37 +605,117 @@
 
        contains
 
-         subroutine remove_collision(LLL,facet_id,particle_wall_collisions)
+         function get_collision(LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+           implicit none
+           double precision, dimension(DIMN) :: get_collision
+           Integer, intent(in) :: LLL,facet_id
+           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
+           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
+           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
+           type(facet_linked_list), POINTER :: curr_p, prev_p
+           integer :: cc
+
+           do cc = 1, COLLISION_ARRAY_MAX
+              if (nf == wall_collision_facet_id(cc,LLL)) then
+                 get_collision(:) = wall_collision_PFT(:,cc,LLL)
+              endif
+           enddo
+
+           if (.not. associated(particle_wall_collisions(LLL)%pp)) then
+              allocate(particle_wall_collisions(LLL)%pp)
+              curr_p => particle_wall_collisions(LLL)%pp
+              curr_p%PFT(:) = ZERO
+              curr_p%facet_id = nf
+           else
+              curr_p => particle_wall_collisions(LLL)%pp
+              do while (associated(curr_p))
+                 if (curr_p%facet_id .eq. nf) exit
+                 prev_p => curr_p
+                 curr_p => curr_p%next
+              enddo
+
+              if (.not. associated(curr_p)) then
+                 allocate(curr_p)
+                 prev_p%next => curr_p
+                 curr_p%PFT(:) = ZERO
+                 curr_p%facet_id = nf
+              endif
+           endif
+
+           get_collision(:) = curr_p%PFT(:)
+           return
+
+         end function get_collision
+
+         subroutine update_collision(pft,LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+           implicit none
+           double precision, dimension(DIMN) :: pft
+           Integer, intent(in) :: LLL,facet_id
+           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
+           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
+           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
+           type(facet_linked_list), POINTER :: curr_p, prev_p
+           integer :: cc
+
+           do cc = 1, COLLISION_ARRAY_MAX
+              if (facet_id == wall_collision_facet_id(cc,LLL)) then
+                 wall_collision_PFT(:,cc,LLL) = PFT(:)
+              endif
+           enddo
+
+           if (.not. associated(particle_wall_collisions(LLL)%pp)) then
+              allocate(particle_wall_collisions(LLL)%pp)
+              curr_p => particle_wall_collisions(LLL)%pp
+              curr_p%PFT(:) = PFT(:)
+              curr_p%facet_id = facet_id
+           else
+              curr_p => particle_wall_collisions(LLL)%pp
+              do while (associated(curr_p))
+                 if (curr_p%facet_id .eq. facet_id) exit
+                 prev_p => curr_p
+                 curr_p => curr_p%next
+              enddo
+
+              if (.not. associated(curr_p)) then
+                 allocate(curr_p)
+                 prev_p%next => curr_p
+                 curr_p%PFT(:) = PFT(:)
+                 curr_p%facet_id = facet_id
+              endif
+           endif
+
+         end subroutine update_collision
+
+         subroutine remove_collision(LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
            implicit none
            Integer, intent(in) :: LLL,facet_id
            type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
+           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
+           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
            type(facet_linked_list), POINTER :: curr_p, prev_p
 
-               if (associated(particle_wall_collisions(LLL)%pp)) then
+           if (associated(particle_wall_collisions(LLL)%pp)) then
+              curr_p => particle_wall_collisions(LLL)%pp
+              if (curr_p%facet_id .eq. facet_id) then
+                 particle_wall_collisions(LLL)%pp => curr_p%next
+                 deallocate(curr_p)
+              else
+                 prev_p => curr_p
+                 curr_p => curr_p%next
 
-                  curr_p => particle_wall_collisions(LLL)%pp
+                 do while (associated(curr_p))
+                    if (curr_p%facet_id .eq. facet_id) exit
+                    prev_p => curr_p
+                    curr_p => curr_p%next
+                 enddo
 
-                  if (curr_p%facet_id .eq. facet_id) then
-                     particle_wall_collisions(LLL)%pp => curr_p%next
-                     deallocate(curr_p)
-                  else
+                 if (associated(curr_p)) then
+                    prev_p%next => curr_p%next
+                    deallocate(curr_p)
+                 endif
 
-                     prev_p => curr_p
-                     curr_p => curr_p%next
-
-                     do while (associated(curr_p))
-                        if (curr_p%facet_id .eq. facet_id) exit
-                        prev_p => curr_p
-                        curr_p => curr_p%next
-                     enddo
-
-                     if (associated(curr_p)) then
-                        prev_p%next => curr_p%next
-                        deallocate(curr_p)
-                     endif
-
-                  endif
-               endif
+              endif
+           endif
 
          end subroutine remove_collision
 
