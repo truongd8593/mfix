@@ -65,7 +65,7 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 # Base flags for Intel Fortran Linux compiler
 #common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
 #AIKE from make_mfix.macos
-common="-c -I. -I$DPO -fconvert='big-endian'"
+common="-c -I. -I$DPO -fconvert='big-endian' -cpp"
 
 #compile_d="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -I$mpi_include -I$DPO -g "
 #compile_d2="-c -I. -fconvert='big-endian' -ffree-form -ffree-line-length-0 -I$mpi_include -I$DPO -g "

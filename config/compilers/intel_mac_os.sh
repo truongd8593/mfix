@@ -68,7 +68,7 @@ if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 # Base flags for Intel Fortran Linux compiler
 #common="-c -I. -convert big_endian -assume byterecl -diag-disable remark"
 #AIKE from make_mfix.macos
-common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl -diag-disable remark"
+common="-c -I. -w -w95 -i_dynamic -convert big_endian -assume byterecl -diag-disable remark -cpp"
 #common_d="-convert big_endian -assume byterecl -O0 -fpe0 -CB -traceback"
 
 case $OPT in

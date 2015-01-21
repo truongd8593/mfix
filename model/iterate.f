@@ -157,8 +157,7 @@
             CALL GET_SMASS (SMASS)
             IF(myPE.eq.PE_IO) THEN
                WRITE (*, '(/A,G12.5, A,F9.3,1X,A)') &
-                  ' Starting solids mass = ', SMASS, &
-                  '    CPU time left = ', TLEFT, TUNIT
+                  ' Starting solids mass = ', SMASS
             ENDIF
          ELSE
             IF(myPE.eq.PE_IO) THEN
@@ -166,12 +165,10 @@
                    (CN_ON.AND.RUN_TYPE /= 'NEW' .AND.&
                     NSTEP >= (NSTEPRST+1))) THEN
                   WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)')&
-                     ' Time = ', TIME, '  Dt = ', 2.D0*DT,&
-                     '    CPU time left = ', TLEFT, TUNIT
+                     ' Time = ', TIME, '  Dt = ', 2.D0*DT
                ELSE
                   WRITE (*, '(/A,G12.5, A,G12.5, A,F9.3,1X,A)') &
-                     ' Time = ', TIME, '  Dt = ', DT, &
-                     '    CPU time left = ', TLEFT, TUNIT
+                     ' Time = ', TIME, '  Dt = ', DT
                ENDIF
             ENDIF
          ENDIF   ! if/else(dt==undefined)
@@ -411,8 +408,7 @@
             IF (.NOT.FULL_LOG) THEN
                TLEFT = (TSTOP - TIME)*CPUOS
                CALL GET_TUNIT (TLEFT, TUNIT)
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)') &
-                  '    CPU time left = ', TLEFT, TUNIT
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)')
             ENDIF
 
             IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN

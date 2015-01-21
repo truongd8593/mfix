@@ -58,7 +58,7 @@ dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
 # Common compile flags.
-common="-c -I. -convert big_endian -assume byterecl"
+common="-c -I. -convert big_endian -assume byterecl -cpp"
 
 case $OPT in
   0|1|2|3)echo "Setting compiler flags."

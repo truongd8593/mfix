@@ -4,7 +4,7 @@
 .f.o:
 	$(FC) $(AM_FCFLAGS) $(FCFLAGS) -c $< -o $@
 
-AM_FCFLAGS = -I$(top_srcdir)/model
+AM_FCFLAGS = -I$(top_srcdir)/model -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
