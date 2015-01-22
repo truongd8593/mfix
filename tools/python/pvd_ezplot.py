@@ -7,7 +7,7 @@
 #          and a series of XY plots (displayed on screen
 #          and saved in a .png file), one file per variable.
 #
-#          Developed and tested with python 2.7,9
+#          Developed and tested with python 2.7.9
 #
 # usage: pvd_ezplot.py [-h] [--tmin TMIN] [--tmax TMAX] [--maxcells MAXCELLS]
 #                      [--no-mean] [--no-fig] [--no-png] [--no-dat]
@@ -437,23 +437,6 @@ matplotlib.rc('font', **font)
 
 linewidth = args.linewidth
 
-# def Generate_Figures(header,data,extra1,extra2):
-#     for n in range(0,n_arrays):
-#         array_name = arrayname[n]
-#         pylab.figure()
-#         nplots = len(data[n])
-#         for p in range(1,nplots):
-#             pylab.plot( data[n][0], data[n][p],lw=linewidth, label=header[n][p])
-#         pylab.title(extra1+arrayname[n])
-#         pylab.xlabel("Time [sec]")
-#         pylab.xlim(time_range[0],time_range[1])
-#         if show_legend:
-#             pylab.legend(loc = legend_loc,framealpha=args.frame_alpha)
-#             # pylab.legend(loc='best', fancybox=True, framealpha=0.5)
-#             # pylab.legend(loc='best', fancybox=False, framealpha=0.5)
-#         if save_fig:
-#             pngfile = os.path.join(PWD,PVD_base+"_"+array_name+extra2+".png")
-#             pylab.savefig(pngfile)
 
 # Plot data
 if process_cells and show_fig:
