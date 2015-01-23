@@ -2963,7 +2963,8 @@
       IMPLICIT NONE
 
       INTEGER :: IJK,L,I,J,K,I_E,I_W,J_N,J_S,K_T,K_B
-      INTEGER :: NXS,NYS,NZS,NS,I_SLICE,J_SLICE,K_SLICE
+      INTEGER :: NXS,NYS,NZS,NS,I_TMP,J_TMP,K_TMP
+      INTEGER :: I_SLICE(DIM_I),J_SLICE(DIM_J),K_SLICE(DIM_K)
       INTEGER ::POINT_ID,IJKC
       INTEGER , DIMENSION(IJKMAX3) ::  POINT_NEW_ID,NEW_POINT_NEW_ID
       LOGICAL , DIMENSION(IJKMAX3) ::  KEEP_POINT
@@ -2979,6 +2980,7 @@
 
          ALLOCATE (BELONGS_TO_VTK_SUBDOMAIN(ijkmax3))
 
+! Get VTK region bounds         
          XE = VTK_X_E(VTK_REGION)
          XW = VTK_X_W(VTK_REGION)
          YS = VTK_Y_S(VTK_REGION)
@@ -3008,6 +3010,24 @@
             CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
          ENDIF
 
+! get slice(s) location
+         DO NS = 1,NXS
+            XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
+            CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_TMP)
+            I_SLICE(NS) = MAX(MIN(I_TMP,IMAX1),IMIN1)
+         ENDDO
+
+         DO NS = 1,NYS
+            YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
+            CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_TMP)
+            J_SLICE(NS) = MAX(MIN(J_TMP,JMAX1),JMIN1)
+         ENDDO
+
+         DO NS = 1,NZS
+            ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
+            CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_TMP)
+            K_SLICE(NS) = MAX(MIN(K_TMP,KMAX1),KMIN1)
+         ENDDO
 
 ! Filter the cells based on the VTK region bounds and set the
 ! flag BELONGS_TO_VTK_SUBDOMAIN(IJK) to .TRUE. to keep the cell.
@@ -3028,10 +3048,7 @@
                      IF(I_W<=I.AND.I<=I_E) KEEP_XDIR=.TRUE.
                   ELSE
                      DO NS = 1,NXS
-                        XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
-                        CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_SLICE)
-                        I_SLICE = MAX(MIN(I_SLICE,IMAX1),IMIN1)
-                        IF(I==I_SLICE) KEEP_XDIR=.TRUE.
+                        IF(I==I_SLICE(NS)) KEEP_XDIR=.TRUE.
                      ENDDO
                   ENDIF
 
@@ -3041,10 +3058,7 @@
                      IF(J_S<=J.AND.J<=J_N) KEEP_YDIR=.TRUE.
                   ELSE
                      DO NS = 1,NYS
-                        YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
-                        CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_SLICE)
-                        J_SLICE = MAX(MIN(J_SLICE,JMAX1),JMIN1)
-                        IF(J==J_SLICE) KEEP_YDIR=.TRUE.
+                        IF(J==J_SLICE(NS)) KEEP_YDIR=.TRUE.
                      ENDDO
                   ENDIF
 
@@ -3054,10 +3068,7 @@
                      IF(K_B<=K.AND.K<=K_T) KEEP_ZDIR=.TRUE.
                   ELSE
                      DO NS = 1,NZS
-                        ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
-                        CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_SLICE)
-                        K_SLICE = MAX(MIN(K_SLICE,KMAX1),KMIN1)
-                        IF(K==K_SLICE) KEEP_ZDIR=.TRUE.
+                        IF(K==K_SLICE(NS)) KEEP_ZDIR=.TRUE.
                      ENDDO
                   ENDIF
 
