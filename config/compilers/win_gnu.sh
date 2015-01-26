@@ -61,7 +61,7 @@ dbg=
 if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran
-common="-c -I. ${incs} -fconvert='big-endian'"
+common="-c -I. ${incs} -fconvert='big-endian' -cpp"
 
 case $OPT in
   0)echo " Setting flags for debugging."

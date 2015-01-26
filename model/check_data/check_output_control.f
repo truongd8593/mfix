@@ -192,14 +192,14 @@
                   END DO
 
                CASE (7)
-                  DO N = 1,NMAX(0)
-                     VTK_X_g(L,N) = .TRUE.
-                  END DO
+                  !DO N = 1,NMAX(0)
+                     VTK_X_g(L,:) = .TRUE.
+                  !END DO
 
                   DO M = 1, MMAX
-                     DO N = 1,NMAX(M)
-                        VTK_X_s(L,M,N) = .TRUE.
-                     END DO
+                     !DO N = 1,NMAX(M)
+                        VTK_X_s(L,M,:) = .TRUE.
+                     !END DO
                   END DO
 
 

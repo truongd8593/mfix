@@ -56,7 +56,7 @@ dbg=
 if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran:
-common="-c -I. ${incs} -fconvert='big-endian'"
+common="-c -I. ${incs} -fconvert='big-endian' -cpp"
 # GCC Fortran syntax flags.
 sflag="-ffree-form -ffree-line-length-0"
 # GCC hardware-specific flags.

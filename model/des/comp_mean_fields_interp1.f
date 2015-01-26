@@ -52,11 +52,13 @@
       LP_BND = merge(27,9,DO_K)
 
 ! Calculate the gas phae forces acting on each particle.
-!$omp parallel default(none)                                             &
-!$omp private(np,vol_wt,mppic,m,lc,ijk,volxweight) &
-!$omp shared(max_pip,pea,pvol,des_stat_wt,pijk,lp_bnd,filter_weight,solvolinc,des_u_s,des_v_s,des_w_s,do_k,filter_cell,des_vel_new)
-!$omp do reduction(+:SOLVOLINC,DES_U_S,DES_V_S,DES_W_S)
-      DO NP=1,MAX_PIP
+!$omp parallel default(none)                                           &
+!$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT)                      &
+!$omp shared(MAX_PIP, PEA, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC,     &
+!$omp    FILTER_WEIGHT, SOLVOLINC,DES_U_S, DES_V_S, DES_W_S, DO_K,     &
+!$omp    FILTER_CELL,DES_VEL_NEW)
+!$omp do reduction(+:SOLVOLINC, DES_U_S, DES_V_S, DES_W_S)
+      do NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
          IF(any(PEA(NP,2:3))) CYCLE
 
@@ -79,16 +81,16 @@
             IF(DO_K) DES_W_S(IJK,M) = DES_W_S(IJK,M) +                 &
                DES_VEL_NEW(3,NP)*VOLxWEIGHT
          ENDDO
-      ENDDO
+      endDO
 !$omp end do
 !$omp end parallel
 
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.
-!----------------------------------------------------------------//
-!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
+!---------------------------------------------------------------------//
+!$omp parallel do if(ijkend3 .ge. 2000) default(shared)                &
 !$omp private(IJK,M,OoSOLVOL)
-      DO IJK = IJKSTART3, IJKEND3
+      do IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
 ! calculating the cell average solids velocity for each solids phase
@@ -106,11 +108,11 @@
 
          ENDDO   ! end loop over M=1,DES_MMAX
 
-      ENDDO     ! end loop over IJK=ijkstart3,ijkend3
+      endDO     ! end loop over IJK=ijkstart3,ijkend3
 !$omp end parallel do
 
 
 ! Halo exchange of solids volume fraction data.
-      CALL SEND_RECV(DES_ROP_S,2)
+      calL SEND_RECV(DES_ROP_S,2)
 
-      END SUBROUTINE COMP_MEAN_FIELDS_INTERP1
+      end SUBROUTINE COMP_MEAN_FIELDS_INTERP1

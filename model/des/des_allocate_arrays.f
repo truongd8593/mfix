@@ -89,8 +89,6 @@
 
       ALLOCATE (iglobal_id(nparticles))
 
-! J.Musser: Allocate necessary arrays for DEM mass inlet/outlet BCs
-      IF(DEM_BCMI /= 0 .OR. DEM_BCMO /=0) CALL ALLOCATE_DEM_MIO
 ! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
       IF(PIC_BCMI /= 0 .OR. PIC_BCMO /=0) CALL ALLOCATE_PIC_MIO
 
@@ -128,6 +126,8 @@
 ! Torque
       Allocate(  TOW (DIMN,NPARTICLES) )
 
+      Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, NPARTICLES) )
+      Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, NPARTICLES) )
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 
 ! Temporary variables to store wall position, velocity and normal vector
@@ -342,7 +342,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE ALLOCATE_DEM_MIO
+      SUBROUTINE ALLOCATE_DEM_MI
 
 !-----------------------------------------------
 ! Modules
@@ -353,58 +353,44 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I     ! Loop counter for no. of DES_BCMI
+      INTEGER :: LC ! Loop counter for no. of DES_BCMI
 !-----------------------------------------------
 
-! Allocate/Initialize for inlets
-      IF(DEM_BCMI /= 0)THEN
-
 ! Particle injection factor
-         Allocate( PI_FACTOR (DEM_BCMI) )
+      Allocate( PI_FACTOR (DEM_BCMI) )
 ! Particle injection count (injection number)
-         Allocate( PI_COUNT (DEM_BCMI) )
+      Allocate( PI_COUNT (DEM_BCMI) )
 ! Particle injection time scale
-         Allocate( DEM_MI_TIME (DEM_BCMI) )
+      Allocate( DEM_MI_TIME (DEM_BCMI) )
 ! Array used for polydisperse inlets: stores the particle number
 ! distribution of an inlet scaled with numfrac_limit
-         Allocate( DEM_BC_POLY_LAYOUT( DEM_BCMI, NUMFRAC_LIMIT ) )
-
-         Allocate( DEM_MI(DEM_BCMI) )
+      Allocate( DEM_BC_POLY_LAYOUT( DEM_BCMI, NUMFRAC_LIMIT ) )
+! Data structure for storing BC data.
+      Allocate( DEM_MI(DEM_BCMI) )
 
 
 ! Initializiation
 ! Integer arrays
-         PI_FACTOR(:) = -1
-         PI_COUNT(:) = -1
-         DEM_BC_POLY_LAYOUT(:,:) = -1
+      PI_FACTOR(:) = -1
+      PI_COUNT(:) = -1
+      DEM_BC_POLY_LAYOUT(:,:) = -1
 ! Double precision arrays
-         DEM_MI_TIME(:) = UNDEFINED
+      DEM_MI_TIME(:) = UNDEFINED
 
-         allocate( DEM_BCMI_IJKSTART(DEM_BCMI) )
-         allocate( DEM_BCMI_IJKEND(DEM_BCMI) )
+      allocate( DEM_BCMI_IJKSTART(DEM_BCMI) )
+      allocate( DEM_BCMI_IJKEND(DEM_BCMI) )
 
-         DEM_BCMI_IJKSTART = -1
-         DEM_BCMI_IJKEND   = -1
+      DEM_BCMI_IJKSTART = -1
+      DEM_BCMI_IJKEND   = -1
 
-      ENDIF  ! end if DEM_BCMI /= 0
 
 ! Boundary classification
 !         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
 ! Character precision arrays
 !         PARTICLE_PLCMNT(:) = UNDEFINED_C
 
-
-      IF(DEM_BCMO > 0)THEN
-         allocate( DEM_BCMO_IJKSTART(DEM_BCMO) )
-         allocate( DEM_BCMO_IJKEND(DEM_BCMO) )
-
-         DEM_BCMO_IJKSTART = -1
-         DEM_BCMO_IJKEND   = -1
-      ENDIF
-
-
       RETURN
-      END SUBROUTINE ALLOCATE_DEM_MIO
+      END SUBROUTINE ALLOCATE_DEM_MI
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

@@ -55,8 +55,10 @@
       DOUBLE PRECISION :: WEIGHT_J(-1:1)
       DOUBLE PRECISION :: WEIGHT_K(-1:1)
 
-!$omp parallel default(none) private(L,weight_i,weight_j,weight_k,km,kp,idx,ijk,i,j,k,weight,ijkt) &
-!$omp          shared(max_pip,pea,pijk,des_pos_new,xe,yn,zt,do_k,filter_cell,filter_weight)
+!$omp parallel default(none) private(L, WEIGHT_I, WEIGHT_J, WEIGHT_K,  &
+!$omp    KM, KP, IDX, IJK, I, J, K, WEIGHT, IJKT)                      &
+!$omp shared(MAX_PIP, PEA, PIJK, DES_POS_NEW, XE, YN, ZT, DO_K,        &
+!$omp    FILTER_CELL, FILTER_WEIGHT)
 !$omp do
       DO L = 1, MAX_PIP
 

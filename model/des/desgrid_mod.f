@@ -74,6 +74,8 @@
       type(iap2), dimension(:), allocatable:: dg_pic
       integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
 
+      integer :: dg_pic_max_init = 25
+
 ! constants required for functions computing local and global ijkvalues
       integer dg_c1_gl, dg_c2_gl, dg_c3_gl  ! global
       integer dg_c1_lo, dg_c2_lo, dg_c3_lo  ! local
@@ -430,7 +432,10 @@
 
       use funits
       use compar
-      use discretelement, only: DES_PERIODIC_WALLS_X, DES_PERIODIC_WALLS_Y, DES_PERIODIC_WALLS_Z, DIMN
+      use discretelement, only: DES_PERIODIC_WALLS_X
+      use discretelement, only: DES_PERIODIC_WALLS_Y
+      use discretelement, only: DES_PERIODIC_WALLS_Z
+      use discretelement, only: DIMN
       use discretelement, only: XE, YN, ZT
       use constant
       use desmpi_wrapper
@@ -656,16 +661,34 @@
       dg_ijkend2 = dg_funijk(dg_iend2,dg_jend2,dg_kend2)
 
 ! Confirmation checks
-      if (dg_ijkstart2.ne.1) then
-         if (dmp_log) write(unit_log,'(A)')&
-            "Error in dg_funijk: dg_ijkstart2 is not correct"
-         call des_mpi_stop
-      end if
-      if (dg_ijkend2.ne.dg_ijksize2) then
-         if (dmp_log) write(unit_log,'(A)') &
-            "Error in dg_funijk: dg_ijkend2 is not correct"
-         call des_mpi_stop
-      end if
+      IF (DG_IJKSTART2.NE.1) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKStart2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+      IF(DG_IJKEND2 /= DG_IJKSIZE2) THEN
+         WRITE(ERR_MSG,1100)'DG_IJKEnd2'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1100 FORMAT('Error 1100: Invalid DG_IJKStart2. FATAL')
+
+      IF(DG_IMIN1 > DG_IMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_IMIN1 > DG_IMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_JMIN1 > DG_JMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_JMIN1 > DG_JMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ELSEIF(DG_KMIN1 > DG_KMAX1) THEN
+         WRITE(ERR_MSG,1105) 'DG_KMIN1 > DG_KMAX1'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 1105 FORMAT('Error 1105: Invalid DES grid indices: ',A,/'This is ',   &
+         'likely the result of automated grid calculations based',/    &
+         'on the maximum particle size. Specify the number of ',       &
+         'partitions',/'for the DES grid in the mfix.dat file ',       &
+         '(e.g., DESGRIDSEARCH_IMAX)')
 
 
 ! set the domain length and dx,dy and dz values used in particle_in_cell
@@ -690,15 +713,12 @@
       allocate(dg_pic(dg_ijksize2))
       dg_pic(:)%isize = 0
       do lijk = 1,dg_ijksize2
-         nullify(dg_pic(lijk)%p)
+         allocate(dg_pic(lijk)%p(dg_pic_max_init))
       end do
 
 !      call des_dbggrid
       CALL FINL_ERR_MSG
       end subroutine desgrid_init
-
-
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : desgrid_pic
@@ -730,7 +750,7 @@
 ! Local variables
 !-----------------------------------------------
       integer, dimension(dg_ijksize2) :: lpic,lindx
-      integer li,lj,lk,lijk,lcurpar,lparcount,lcurpic
+      integer li,lj,lk,lijk,lijk_count,lcurpar,lparcount,lcurpic
       logical, save :: first_pass = .true.
       integer :: lallocstat,lallocerr
 !-----------------------------------------------
@@ -777,11 +797,11 @@
 !!$omp private(lijk,lcurpic) schedule (guided,50)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
-         if(dg_pic(lijk)%isize.ne.lcurpic) then
-            if(dg_pic(lijk)%isize.gt.0) deallocate(dg_pic(lijk)%p)
-            if(lcurpic.gt.0) allocate(dg_pic(lijk)%p(lcurpic))
-            dg_pic(lijk)%isize = lcurpic
+         if(lcurpic > size(dg_pic(lijk)%p)) then
+            deallocate(dg_pic(lijk)%p)
+            allocate(dg_pic(lijk)%p(2*lcurpic))
          end if
+         dg_pic(lijk)%isize = lcurpic
       end do
 !!$omp end parallel do
 
@@ -789,6 +809,9 @@
 ! assign the particle info in pic array
       lindx(:) = 1
       lparcount = 1
+
+#if defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) )
+
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
          if(.not.pea(lcurpar,1)) cycle
@@ -798,12 +821,35 @@
          lindx(lijk) = lindx(lijk) +  1
       enddo
 
+#else
+
+!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,pea,dg_pijk,dg_pic,lindx)
+!$omp do
+      do lcurpar = 1, max_pip
+         if(lparcount.gt.pip) cycle
+         if(.not.pea(lcurpar,1)) cycle
+         lijk = dg_pijk(lcurpar)
+
+         !$omp atomic capture
+         lijk_count = lindx(lijk)
+         lindx(lijk) = lindx(lijk) +  1
+         !$omp end atomic
+
+         dg_pic(lijk)%p(lijk_count) = lcurpar
+
+         !$omp atomic
+         lparcount = lparcount + 1
+      enddo
+!$omp end do
+!$omp end parallel
+
+#endif
+
 !      open (unit=100,file='desgrid.txt',status='unknown')
 !      write(100,*)lpic
 !      close(100)
 
       end subroutine desgrid_pic
-
 
 !------------------------------------------------------------------------
 ! subroutine       : desgrid_neigh_build ()

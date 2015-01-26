@@ -60,7 +60,7 @@ inline_files="compare.f eosg.f discretize.f "
 
 
 # Base flags for GNU Fortran
-common="-c -I. ${incs} -Mnosave -byteswapio"
+common="-c -I. ${incs} -Mnosave -byteswapio -cpp"
 
 case $OPT in
   0)echo "Setting flags for debugging."

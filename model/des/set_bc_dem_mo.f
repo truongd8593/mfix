@@ -43,6 +43,14 @@
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MO")
 
+
+! Initialize the data structures:
+      allocate( DEM_BCMO_IJKSTART(DEM_BCMO) )
+      allocate( DEM_BCMO_IJKEND(DEM_BCMO) )
+
+      DEM_BCMO_IJKSTART = -1
+      DEM_BCMO_IJKEND   = -1
+
       dFlag = (DMP_LOG .AND. setDBG)
       if(dFlag) write(*,"(2/,2x,'DEM outlet count: ',I4)") DEM_BCMO
 

@@ -1097,6 +1097,7 @@
 !  <description>
 !    Name of gas phase species as it appears in the materials database.
 !  </description>
+!  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       SPECIES_g = UNDEFINED_C
 !</keyword>
 
@@ -1105,6 +1106,7 @@
 !    User defined name for gas phase species. Aliases are used in
 !    specifying chemical equations and must be unique.
 !  </description>
+!  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       SPECIES_ALIAS_g = UNDEFINED_C
 !</keyword>
 
@@ -1425,6 +1427,7 @@
 !  <description>
 !    Coefficient of restitution for particle-particle collisions.
 !  </description>
+!  <range min="0.0" max="1.0" />
       C_E = UNDEFINED
 !</keyword>
 
@@ -1439,6 +1442,7 @@
 
 !<keyword category="Two Fluid Model" required="false">
 !  <description>Coefficient of restitution for particle-wall collisions.</description>
+!  <range min="0.0" max="1.0" />
       E_W = 1.D0
 !</keyword>
 
@@ -1446,6 +1450,7 @@
 !  <description>
 !    Specularity coefficient associated with particle-wall collisions.
 !  </description>
+!  <range min="0.0" max="1.0" />
       PHIP = 0.6D0
 !</keyword>
 
@@ -1542,6 +1547,7 @@
 !    P_STAR. Specifically, if EP_G < EP_STAR, then plastic pressure is
 !    employed in the momentum equations.
 !  </description>
+!  <range min="0.0" max="1.0" />
       EP_STAR = UNDEFINED
 !</keyword>
 
@@ -2797,6 +2803,7 @@
 !  <valid value="SP9" note="User defined scalars. (SCALAR)"/>
 !  <valid value="SPA" note="Reaction Rates (ReactionRates)"/>
 !  <valid value="SPB" note="Turbulence quantities (K_TURB_G, E_TURB_G)"/>
+!  <arg index="1" id="SP Value" min="1" max="N_SPX"/>
       SPX_DT(:N_SPX) = UNDEFINED
 !</keyword>
 

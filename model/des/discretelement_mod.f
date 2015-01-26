@@ -384,6 +384,14 @@
          INTEGER, DIMENSION(:), POINTER:: p
       END TYPE iap1
 
+!     If a particle is colliding with more than COLLISION_ARRAY_MAX facets simultaneously,
+!     then the linked list is used
+      INTEGER, PARAMETER :: COLLISION_ARRAY_MAX = 4
+
+!     -1 value indicates no collision
+      INTEGER, DIMENSION(:,:), ALLOCATABLE :: wall_collision_facet_id       ! (COLLISION_ARRAY_MAX,PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: wall_collision_PFT ! (DIMN,COLLISION_ARRAY_MAX,PARTICLES)
+
       TYPE facet_linked_list
          INTEGER :: facet_id
          DOUBLE PRECISION, DIMENSION(3):: PFT
@@ -394,7 +402,7 @@
          type(facet_linked_list), POINTER :: pp => null()
       END TYPE facet_linked_list_p
 
-      TYPE(facet_linked_list_p), DIMENSION(:), ALLOCATABLE :: particle_wall_collisions
+      TYPE(facet_linked_list_p), DIMENSION(:), ALLOCATABLE :: particle_wall_collisions ! (PARTICLES)
 
       TYPE cnaa1
          INTEGER, DIMENSION(:), ALLOCATABLE:: p
