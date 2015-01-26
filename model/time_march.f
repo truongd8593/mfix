@@ -421,7 +421,7 @@
       WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
       CALL GET_TUNIT(WALL_TOTAL,TOT_UNIT)
-      IF(DMP_LOG) WRITE (*, '(/" Estimated Wall time (remaining / total ) = ",F9.3,1X,A,1X,"/",F9.3,1X,A)') &
+      IF(DMP_LOG) WRITE (*, '(/" Estimated Wall time (remaining / total ) = ",G9.3,1X,A,1X,"/",G9.3,1X,A)') &
          WALL_LEFT, TUNIT, WALL_TOTAL, TOT_UNIT
 
       IF(DT.LT.DT_MIN) THEN
@@ -729,7 +729,7 @@
  1002 FORMAT(' SPx:')
  1010 FORMAT(I2,',')
  1011 FORMAT(A2,',')
- 1015 FORMAT(14X,'Disk=',F7.2,' Mb')
+ 1015 FORMAT(14X,'Disk=',G10.4,' Mb')
 
       END SUBROUTINE OUTPUT_MANAGEMENT
 
