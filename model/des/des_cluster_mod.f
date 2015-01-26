@@ -897,7 +897,6 @@
       LOGICAL, dimension(:), allocatable :: gpPEA_all
 
       INTEGER, dimension(:,:), allocatable :: mergeMap
-      INTEGER max_mergeMap
       LOGICAL merging
 
       Type(cType), pointer :: this
@@ -1564,11 +1563,9 @@
 !   2: Detailed Files are written by each process
       INTEGER, intent(in) :: dbg_level
 
-      integer lc1, lc2
+      integer lc1
       type(cType), pointer :: cThis
       type(pType), pointer :: pThis
-
-      INTEGER ierr
 
       if(dbg_level >= 2)  write(202,"(3x,'check B')")
       call des_mpi_barrier()
@@ -1700,7 +1697,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      integer lc1, lc2, lc3, lc4
+      integer lc1, lc2, lc3
 ! Error flag.
       integer ierr
 
@@ -1876,7 +1873,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      INTEGER lc1, lc2, lc3, lc4
+      INTEGER lc1, lc2, lc3
 ! Error flag.
       integer ierr
 
@@ -2059,7 +2056,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      INTEGER lc1, lc2, lc3, lc4
+      INTEGER lc1, lc2, lc3
 ! Error flag.
       integer ierr
 
@@ -2158,7 +2155,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      integer lc1, lc2, lc3, lc4
+      integer lc1, lc2, lc3
 ! IJK index of fluid cell containing particle
       integer ijk
 ! Error flag.
@@ -2257,7 +2254,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      integer lc1, lc2, lc3, lc4
+      integer lc1, lc2, lc3
 ! IJK index of fluid cell containing particle
       integer ijk
 ! Error flag.
@@ -2410,7 +2407,7 @@
       type(particle_type), pointer :: particle
 
 ! Generic loop counters
-      integer lc1, lc2, lc3, lc4
+      integer lc1, lc2, lc3
 ! Error flag.
       integer ierr
 

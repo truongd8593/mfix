@@ -1173,7 +1173,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, I, J, K
-      INTEGER :: IJKN, IJPK
       INTEGER :: PSV, M
       INTEGER :: lJN, lJS
 ! terms of bm expression

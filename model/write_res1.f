@@ -290,7 +290,7 @@
 
         implicit none
 
-        integer :: L , unit_add , I , n
+        integer :: I , n
 
         integer   :: ncid , xyz_dimid
         integer   :: varid_time , t_dimid
@@ -315,11 +315,8 @@
 
         character(LEN=80) :: fname, var_name
 
-        double precision :: the_time
-
         double precision, allocatable :: arr1(:)
         double precision, allocatable :: arr2(:)
-
 
 ! bWrite_netcdf(1)  : EP_g
 ! bWrite_netcdf(2)  : P_g

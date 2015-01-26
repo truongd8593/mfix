@@ -61,8 +61,6 @@
       INTEGER :: M
 ! particle number index, used for looping
       INTEGER :: NP, NINDX
-! index to track accounted for particles
-      INTEGER :: PC
 ! Statistical weight of the particle. Equal to one for DEM
       DOUBLE PRECISION :: WTP
 ! one over the solids volume fraction
@@ -77,11 +75,8 @@
       DOUBLE PRECISION, DIMENSION(3) :: DES_VEL_DENSITY
       DOUBLE PRECISION :: DES_ROP_DENSITY
 
-! for error messages
-      INTEGER :: IER
-
       INTEGER :: COUNT_NODES_OUTSIDE, COUNT_NODES_INSIDE, &
-                 COUNT_NODES_INSIDE_MAX, COUNT_TEMP
+                 COUNT_NODES_INSIDE_MAX
       double precision :: RESID_ROPS(DES_MMAX), &
                           RESID_VEL(3, DES_MMAX)
       double precision :: NORM_FACTOR, VOL_RATIO

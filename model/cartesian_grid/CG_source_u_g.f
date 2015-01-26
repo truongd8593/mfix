@@ -473,17 +473,11 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
-      INTEGER   IJKDB1,IJKDB2
-
-      LOGICAL :: PRINT_FLAG
-
       IF(CG_SAFE_MODE(3)==1) RETURN
 
-!
       M = 0
 
       DO IJK = ijkstart3, ijkend3

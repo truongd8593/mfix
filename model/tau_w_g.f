@@ -84,14 +84,8 @@
 !                      Average volume fraction
       DOUBLE PRECISION EPGA
 !
-!                      Average density
-      DOUBLE PRECISION ROPGA
-!
-!                      Average viscosity
-      DOUBLE PRECISION MUGA
-!
 !                      Average gradients
-      DOUBLE PRECISION dWoXdz, duodz
+      DOUBLE PRECISION duodz
 !
 !                      Source terms (Surface)
       DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz
@@ -99,17 +93,14 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION Vxz
 !
-!                      error message
-      CHARACTER(LEN=80) :: LINE
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      INTEGER :: IP,JP,KM
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       LOGICAL :: U_NODE_AT_ET,U_NODE_AT_EB,U_NODE_AT_WT,U_NODE_AT_WB
       LOGICAL :: V_NODE_AT_NT,V_NODE_AT_NB,V_NODE_AT_ST,V_NODE_AT_SB
 
-      DOUBLE PRECISION :: U_SUM,V_SUM,X_SUM,Y_SUM,Z_SUM,Uc,Vc
+      DOUBLE PRECISION :: Uc,Vc
       DOUBLE PRECISION :: Xuc,Yuc,Zuc,Xvc,Yvc,Zvc,Nxu,Nyu,Nzu,Nxv,Nyv,Nzv
       DOUBLE PRECISION :: dudz_at_E,dudz_at_W
       DOUBLE PRECISION :: dvdz_at_N,dvdz_at_S

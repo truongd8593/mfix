@@ -38,12 +38,10 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! local variable used for debugging
-      LOGICAL FOCUS
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
-      INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
+      INTEGER :: IPJK, IJPK, IJKP,&
                  IPJPK, IPJKP, IJPKP, IPJPKP
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
@@ -272,13 +270,6 @@
       DOUBLE PRECISION :: AVG_FACTOR
 ! Statistical weight of the particle. Equal to one for DEM
       DOUBLE PRECISION :: WTP
-! for error messages
-      INTEGER :: IER
-! Flag only used when the hybrid model is invoked and notifies the
-! routine that the solid phase index M refers to the indice of a
-! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.
-      LOGICAL :: DISCRETE_FLAG
 !Handan Liu added temporary variables on April 20 2012
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
       DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft

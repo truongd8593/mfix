@@ -124,9 +124,8 @@
 !-----------------------------------------------
       character (30) filename
       integer lcurpar,lpacketsize,lface,lparcnt,lbuf,lindx,ltordimn
-      integer lcurijk
-      integer lneighcnt,lneigh,lneighindx,lcontactcnt,lcontact,lcontactindx
-      integer lstart,lsize
+      integer lneighcnt,lneighindx
+      integer lsize
       double precision xpos,ypos
       integer li,lj,lparcount
 !-----------------------------------------------

@@ -55,8 +55,7 @@
 !                      0 -> initialization call; 1 -> integration call
       INTEGER          init
 !
-!                      Indices
-      INTEGER          I, J, K, IJK, IER
+      INTEGER          IER
 !
 !                      Solids phase
       INTEGER          M
@@ -540,7 +539,7 @@
 !                      flux across the plane (composed of many cell faces)
 !                      flux_in: flux from the scalar cell into the rest of the domain
 !                      flux_out: flux into the scalar cell from the rest of the domain
-      DOUBLE PRECISION ::  flux_in, flux_out, flux_in_global, flux_out_global
+      DOUBLE PRECISION ::  flux_in, flux_out
 
       INTEGER ::           IER
 !
@@ -881,7 +880,7 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !                      Indices
-      INTEGER          I, J, K, IJK
+      INTEGER          IJK
 
 !                      density distributiom
       DOUBLE PRECISION ::  RO(DIMENSION_3)
