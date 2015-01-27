@@ -122,10 +122,8 @@
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
-      LOGICAL :: AlreadyThere
       LOGICAL :: eofBATCHQ
 ! not used remove after verification
-      INTEGER :: CHKBATCHQ_FLAG
       LOGICAL :: bWrite_netCDF_files
 
       DOUBLE PRECISION :: TIME_START
@@ -155,8 +153,6 @@
       DNCHECK = 1
       CPU_IO  = ZERO
       NIT_TOTAL = 0
-! AEOLUS: stop before batch queue terminates
-      AlreadyThere = .FALSE.
       eofBATCHQ = .FALSE.
 
 
@@ -417,12 +413,16 @@
       ENDDO
 
       WALL_NOW = WALL_TIME()
-      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/max(TIME-TIME_START,1.0d-6)
-      WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/max(TIME-TIME_START,1.0d-6)
+      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/                  &
+         max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_LEFT,TUNIT)
+      WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/           &
+         max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_TOTAL,TOT_UNIT)
-      IF(DMP_LOG) WRITE (*, '(/" Estimated Wall time (remaining / total ) = ",F9.3,1X,A,1X,"/",F9.3,1X,A)') &
-         WALL_LEFT, TUNIT, WALL_TOTAL, TOT_UNIT
+      IF(DMP_LOG) WRITE (*,2000) 'Remaining', WALL_LEFT, trim(TUNIT),  &
+         'Total',WALL_TOTAL, trim(TOT_UNIT)
+
+ 2000 FORMAT('Estimated Wall Time: ',2(3x,A,F9.3,1X,A))
 
       IF(DT.LT.DT_MIN) THEN
          IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
@@ -523,48 +523,62 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_BATCH_QUEUE_END
 
-      CHKBATCHQ_FLAG = 0
-      IF (myPE.eq.PE_IO) THEN
-         CALL CPU_TIME(CPU_STOP)
-! need to use CPU00, a timestamp from first line of mfix.f to take
-! account the time spent in I/O
-         CPU_STOP = CPU_STOP - CPU00
-         write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
+      use error_manager
 
-         IF ((CPU_STOP+TERM_BUFFER) .ge. BATCH_WALLCLOCK) THEN
-            write(*,'(/,A,A)') '=============== REQUESTED CPU ',&
-               'TIME LIMIT REACHED ==========='
-            write(*,*) 'Elapsed CPU time                        = ',&
-               CPU_STOP,' sec'
-            write(*,*) 'Buffer CPU time before triggering abort = ',&
-               TERM_BUFFER,' sec'
-            write(*,*) 'Elapsed+Buffer CPU time = ',&
-               (CPU_STOP+TERM_BUFFER), &
-               ' sec >= Allocated Wallclock ',&
-               BATCH_WALLCLOCK, ' sec'
-            write(*,'(A,A,/)') '=============== REQUESTED CPU ',&
-               'TIME LIMIT REACHED ==========='
-            eofBATCHQ = .TRUE.
-            CHKBATCHQ_FLAG = 1
-         ENDIF
+! Logical flags for hault cases.
+      LOGICAL :: USER_HAULT, WALL_HAULT
+! Elapsed wall time, and fancy formatted buffer/batch queue times.
+      DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
+! Time units for formatted output.
+      CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
 
-         INQUIRE(file="MFIX.STOP",exist=AlreadyThere)
-         IF (AlreadyThere) THEN
-            write(*,'(/,A,A)') '=============== MFIX STOP SIGNAL ',&
-               'DETECTED ==========='
-            write(*,'(A,A)') '  MFIX.STOP file detected in ',&
-               'working directory, terminating MFIX run'
-            write(*,'(A,A)') '  Please DO NOT FORGET to erase ',&
-               'MFIX.STOP file before next run'
-            write(*,*) ' Elapsed CPU time = ',CPU_STOP,' sec'
-            write(*,'(A,A,/)') '=============== MFIX STOP ',&
-               'SIGNAL DETECTED ==========='
-            eofBATCHQ = .TRUE.
-            CHKBATCHQ_FLAG = 1
-            AlreadyThere = .FALSE.
-         ENDIF
-      ENDIF     ! myPE = PE_IO
-! Try to move this bcast call to another location where there is barrier or bcast
+! Calculate the current elapsed wall time.
+      WALL_STOP = WALL_TIME()
+      WALL_STOP = WALL_STOP - WALL_START
+
+! Set flags for wall time exceeded or user specified hault.
+      WALL_HAULT = ((WALL_STOP+TERM_BUFFER) >= BATCH_WALLCLOCK)
+      INQUIRE(file="MFIX.STOP", exist=USER_HAULT)
+
+! Fancy format the elapsed wall time and get its unit.
+      CALL GET_TUNIT(WALL_STOP,WT_UNIT)
+
+! Write out the amount of elapsed wall time.
+      WRITE(ERR_MSG,1000) WALL_STOP, WT_UNIT
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT('Elapsed Wall time: ',F9.2,1X,A)
+
+! Report that the max user wall time was reached and exit.
+      IF(WALL_HAULT) THEN
+         FANCY_BUFF = TERM_BUFFER
+         CALL GET_TUNIT(FANCY_BUFF, BF_UNIT)
+         FANCY_BATCH = BATCH_WALLCLOCK
+         CALL GET_TUNIT(FANCY_BATCH, BC_UNIT)
+         WRITE(ERR_MSG, 1100) WALL_STOP, WT_UNIT, FANCY_BUFF, BF_UNIT, &
+            FANCY_BATCH, BC_UNIT
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ENDIF
+
+ 1100 FORMAT(2/,15('='),' REQUESTED CPU TIME LIMIT REACHED ',('='),/   &
+         'Batch Wall Time:',3X,F9.2,1X,A,/'Elapsed Wall Time: ',F9.2,  &
+         1X,A,/'Term Buffer:',7X,F9.2,A,/15('='),' REQUESTED CPU ',    &
+         'TIME LIMIT REACHED ',('='))
+
+! Report that the hault signal was detected.
+      IF(USER_HAULT) THEN
+         WRITE(ERR_MSG, 1200)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ENDIF
+
+ 1200 FORMAT(2/,19('='),' MFIX STOP SIGNAL DETECTED ',19('='),/'MFIX.',&
+         'STOP file detected in run directory. Terminating MFIX.',/    &
+         'Please DO NOT FORGET to erase the MFIX.STOP file before ',   &
+         'restarting',/19('='),'MFIX STOP SIGNAL DETECTED ',19('='))
+
+! This routine was restructured so all MPI ranks to the same action. As
+! a result, broadcasting the BATCHQ flag may not be needed.
+      eofBATCHQ = (WALL_HAULT .OR. USER_HAULT)
       call bcast (eofBATCHQ,PE_IO)
 
       END SUBROUTINE CHECK_BATCH_QUEUE_END
