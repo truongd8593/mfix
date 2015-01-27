@@ -11,7 +11,7 @@
 # RUN CONTROL SECTION
 
   Run_name      = 'HCS'
-  Description    = 'Rectangular channel flow (Horizontal) - Superbee'
+  Description   = 'Rectangular channel flow (Horizontal) - Superbee'
   Units         = 'SI'
   Run_type      = 'new'
 
@@ -34,7 +34,7 @@
 
   Tol_resid     = 1.0E-10
 
-  Leq_pc = 9*'NONE'
+  Leq_pc        = 9*'NONE'
 
   Discretize    = 9*2
 
@@ -50,7 +50,7 @@
   jmax    = 8
 
   no_k = .T.
-    
+
 #_______________________________________________________________________
 # GAS-PHASE SECTION
 
@@ -118,3 +118,8 @@
   Spx_dt      = 9*1.
 
   Resid_string  = 'P0', 'U0', 'V0'
+
+#_______________________________________________________________________
+# DMP SETUP
+
+  NODESI =  1  NODESJ =  1  NODESK =  1
