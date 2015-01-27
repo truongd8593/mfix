@@ -441,12 +441,9 @@
 !                      Error index
       INTEGER          IER
 !
-!                      Boundary condition
-      INTEGER          L
-!
 !                      Indices
-      INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
-                       IM, KM, IJKS, IJMK, IJPK ,IMJK
+      INTEGER          I,  J, K, JM, IJK,&
+                       IM, KM, IJKS, IMJK
 !
 !                      Solids phase
       INTEGER          M
@@ -463,13 +460,9 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
-      INTEGER   IJKDB1,IJKDB2
-
-      LOGICAL :: PRINT_FLAG
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN

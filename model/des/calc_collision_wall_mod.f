@@ -613,23 +613,36 @@
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
            type(facet_linked_list), POINTER :: curr_p, prev_p
-           integer :: cc
+           integer :: cc, free_index
+
+           free_index = -1
 
            do cc = 1, COLLISION_ARRAY_MAX
-              if (nf == wall_collision_facet_id(cc,LLL)) then
+              if (facet_id == wall_collision_facet_id(cc,LLL)) then
                  get_collision(:) = wall_collision_PFT(:,cc,LLL)
+                 return
+              else if (-1 == wall_collision_facet_id(cc,LLL)) then
+                 free_index = cc
               endif
            enddo
+           if(-1 == free_index) then
+              stop 456
+           else
+              wall_collision_facet_id(free_index,LLL) = facet_id
+              wall_collision_PFT(:,free_index,LLL) = ZERO
+              get_collision(:) = wall_collision_PFT(:,free_index,LLL)
+              return
+           endif
 
            if (.not. associated(particle_wall_collisions(LLL)%pp)) then
               allocate(particle_wall_collisions(LLL)%pp)
               curr_p => particle_wall_collisions(LLL)%pp
               curr_p%PFT(:) = ZERO
-              curr_p%facet_id = nf
+              curr_p%facet_id = facet_id
            else
               curr_p => particle_wall_collisions(LLL)%pp
               do while (associated(curr_p))
-                 if (curr_p%facet_id .eq. nf) exit
+                 if (curr_p%facet_id .eq. facet_id) exit
                  prev_p => curr_p
                  curr_p => curr_p%next
               enddo
@@ -638,7 +651,7 @@
                  allocate(curr_p)
                  prev_p%next => curr_p
                  curr_p%PFT(:) = ZERO
-                 curr_p%facet_id = nf
+                 curr_p%facet_id = facet_id
               endif
            endif
 
@@ -649,19 +662,22 @@
 
          subroutine update_collision(pft,LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
            implicit none
-           double precision, dimension(DIMN) :: pft
+           double precision, dimension(DIMN), intent(in) :: pft
            Integer, intent(in) :: LLL,facet_id
            type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
            type(facet_linked_list), POINTER :: curr_p, prev_p
-           integer :: cc
+           integer :: cc, free_index
 
            do cc = 1, COLLISION_ARRAY_MAX
               if (facet_id == wall_collision_facet_id(cc,LLL)) then
                  wall_collision_PFT(:,cc,LLL) = PFT(:)
+                 return
               endif
            enddo
+
+           stop 123
 
            if (.not. associated(particle_wall_collisions(LLL)%pp)) then
               allocate(particle_wall_collisions(LLL)%pp)
@@ -679,9 +695,9 @@
               if (.not. associated(curr_p)) then
                  allocate(curr_p)
                  prev_p%next => curr_p
-                 curr_p%PFT(:) = PFT(:)
                  curr_p%facet_id = facet_id
               endif
+              curr_p%PFT(:) = PFT(:)
            endif
 
          end subroutine update_collision
@@ -693,6 +709,16 @@
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
            type(facet_linked_list), POINTER :: curr_p, prev_p
+           integer :: cc
+
+           do cc = 1, COLLISION_ARRAY_MAX
+              if (facet_id == wall_collision_facet_id(cc,LLL)) then
+                 wall_collision_facet_id(cc,LLL) = -1
+                 return
+              endif
+           enddo
+
+           return
 
            if (associated(particle_wall_collisions(LLL)%pp)) then
               curr_p => particle_wall_collisions(LLL)%pp

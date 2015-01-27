@@ -40,16 +40,10 @@
       INTEGER :: IJKM, IJKP, IJKB, IJKT  ! K+, K-, top/bottom
 ! DO-loop index, ranges from 1 to ICLASS
       INTEGER :: IC
-! Index for the solids phase.
-      INTEGER :: M
-! Local DO-loop index
-      INTEGER :: L
 ! Index denoting cell class
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster.
       INTEGER :: DENOTE_CLASS(MAX_CLASS)
-! Error Flag
-      INTEGER :: IER
 ! Flag for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 !......................................................................!

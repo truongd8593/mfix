@@ -95,8 +95,6 @@
 !---------------------------------------------------------------------//
 ! Alias, phase, species, stoich coeff :: Reactants    Products
       CHARACTER(LEN=32), DIMENSION(50)     :: rAlias    ,  pAlias
-      INTEGER, DIMENSION(50)          :: rPhase    ,  pPhase
-      INTEGER, DIMENSION(50)          :: rSpecies  ,  pSpecies
       DOUBLE PRECISION, DIMENSION(50) :: rCoeff    ,  pCoeff
 
 ! Number of products and reactants

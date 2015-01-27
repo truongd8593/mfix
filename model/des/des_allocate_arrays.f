@@ -127,6 +127,7 @@
       Allocate(  TOW (DIMN,NPARTICLES) )
 
       Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, NPARTICLES) )
+      wall_collision_facet_id(:,:) = -1
       Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, NPARTICLES) )
       Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
 

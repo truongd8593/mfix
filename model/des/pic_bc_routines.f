@@ -581,22 +581,6 @@
 
       INTEGER, INTENT(IN) :: NP
 
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER I,J,K,IJK       ! Unused indices at this time
-      INTEGER PC              ! Loop counter
-      INTEGER NPT             ! Temp Particle Index
-! Tmp holder of particle position
-      DOUBLE PRECISION XPOS, YPOS, ZPOS
-
-! Loop indices used for clearing forces associated with exiting particles
-      INTEGER NLIMNP, NLIM, NEIGHNP, NLIM_NEIGHNP
-
-! Logical for local debug warnings
-      LOGICAL DES_LOC_DEBUG
-!-----------------------------------------------
-
       PEA(NP,:) = .FALSE.
 
       DES_POS_OLD(:,NP) = ZERO
@@ -976,8 +960,6 @@
       DOUBLE PRECISION :: VEL_NORM_SEP(DIMN), VEL_TANG_SEP(DIMN)
 
       DOUBLE PRECISION :: COEFF_REST_EN, COEFF_REST_ET
-
-      DOUBLE PRECISION :: VELMOD, NORMMOD, VELDOTNORM
 !-----------------------------------------------
 
 

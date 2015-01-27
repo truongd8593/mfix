@@ -447,8 +447,7 @@
       INTEGER          L
 !
 !                      Indices
-      INTEGER          I,  J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
-                       IM, JM, IJKB, IJKM, IJKP
+      INTEGER          I, J, K, IJK, IJKB
 !
 !                      Solids phase
       INTEGER          M
@@ -468,7 +467,6 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 

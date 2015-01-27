@@ -593,8 +593,6 @@
       INTEGER :: M
 ! boundary index
       INTEGER :: L
-! indices
-      INTEGER :: IJK
 ! locally define dt, so that this routine works when dt is not defined
       DOUBLE PRECISION :: dt_local
 ! error index
@@ -783,13 +781,10 @@
       DOUBLE PRECISION :: VEL
 ! Indices
       INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
       INTEGER :: NCELLS
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
       DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -989,13 +984,10 @@
       DOUBLE PRECISION :: VEL
 ! Indices
       INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
       INTEGER :: NCELLS
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
       DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -1198,13 +1190,10 @@
       DOUBLE PRECISION :: VEL
 ! Indices
       INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
       INTEGER :: NCELLS
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
       DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)

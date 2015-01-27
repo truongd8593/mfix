@@ -227,13 +227,6 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! logical that identifies that the data file has been created
-! and is already opened (initial checks/writes)
-      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
-
-! logical used for testing is the data file already exists
-      LOGICAL :: F_EXISTS
-
 ! file units for
 ! Pradeep remove parameter from following variables
       INTEGER:: DES_DATA,DES_EX,DES_EPS
@@ -250,19 +243,11 @@
 ! output file for axial solids volume fraction and granular temp
       CHARACTER(LEN=50)     :: FNAME_EPS
 
-! tmp character value
-      CHARACTER(LEN=150)    :: TMP_CHAR
-
 ! dummy indices
-      INTEGER L, I, J, K, M, IJK
+      INTEGER L, K
 
 ! index to track accounted for particles
       INTEGER PC
-
-! tmp variables for calculations of axial solids volume fraction, and
-! granular temperature
-      DOUBLE PRECISION :: AVG_EPS(JMAX2, DES_MMAX),&
-                          AVG_THETA(JMAX2, DES_MMAX)
 
 ! Variables related to gathering info at PE_IO
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
@@ -441,7 +426,7 @@
       INTEGER, SAVE :: tcount = 1
       DOUBLE PRECISION :: height_avg, height_rms
       DOUBLE PRECISION, PARAMETER :: tmin = 5.d0
-      DOUBLE PRECISION, DIMENSION(5000), SAVE :: bed_height_time, dt_time
+      DOUBLE PRECISION, DIMENSION(5000), SAVE :: bed_height_time
 
 !-----------------------------------------------
 ! Functions
@@ -550,7 +535,7 @@
 ! indices
       INTEGER I, J, K, IJK
 !
-      INTEGER M, LL, NP
+      INTEGER M, NP
 ! logical that identifies that the data file has been created
 ! and is already opened (initial checks/writes)
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.

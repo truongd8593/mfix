@@ -62,9 +62,6 @@
       CHARACTER(LEN=128) :: INPUT
 ! Index of reaction.
       INTEGER IDX
-! Integer for phase loops
-      INTEGER M
-
 
 ! Copy line to input for processing.
       INPUT = TRIM(ADJUSTL(LINE))
@@ -458,13 +455,10 @@
 ! Name of reaction pulled from input.
       DOUBLE PRECISION, INTENT(OUT) :: lDH
 
-
-      INTEGER POS, lP, rP, lQ
+      INTEGER lQ
       INTEGER lLMAX
 ! read/write output status
       INTEGER IOS
-! Phase Index
-      INTEGER pIDX
 
       lLMAX = LEN_TRIM(INPUT)
 

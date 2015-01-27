@@ -386,7 +386,7 @@
 
 !     If a particle is colliding with more than COLLISION_ARRAY_MAX facets simultaneously,
 !     then the linked list is used
-      INTEGER, PARAMETER :: COLLISION_ARRAY_MAX = 4
+      INTEGER, PARAMETER :: COLLISION_ARRAY_MAX = 8
 
 !     -1 value indicates no collision
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: wall_collision_facet_id       ! (COLLISION_ARRAY_MAX,PARTICLES)

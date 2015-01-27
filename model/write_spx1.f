@@ -824,11 +824,11 @@
 
         implicit none
 
-        integer :: L , unit_add , I , n , ii , jj , kk , ijk
+        integer :: L , unit_add , I , n , ii
 
         integer   :: ncid , x_dimid , y_dimid , z_dimid
-        integer   :: varid_time , t_dimid , xyz_dimid
-        integer   :: dimids(4) , varid_epg , varid_pg,dims_time(1)
+        integer   :: t_dimid
+        integer   :: dimids(4) , varid_epg , varid_pg
 
         integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
         integer   :: varid_tg , varid_x , varid_y , varid_z , varid_t

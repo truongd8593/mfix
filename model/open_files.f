@@ -32,7 +32,7 @@
 ! Loop counter
       INTEGER :: LC
 ! index to first blank character in run_name
-      INTEGER :: NB, NBL
+      INTEGER :: NB
       CHARACTER(len=35) :: EXT_END
       CHARACTER(len=10) :: CSTATUS
 ! Character error code.

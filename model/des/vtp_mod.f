@@ -249,9 +249,6 @@
 
       INTEGER :: NumberOfPoints
 
-! logical used for testing is the data file already exists
-      LOGICAL :: F_EXISTS
-
 ! Variables related to gather
       integer lgathercnts(0:numpes-1), lproc
 
@@ -380,8 +377,6 @@
       INTEGER IDX_f, IDX_b
 ! logical used for testing is the data file already exists
       LOGICAL :: EXISTS_PVD
-! status of the vtp file to be written
-      CHARACTER(LEN=8) :: STATUS_PVD
 ! Generic input limited to 256 characters
       CHARACTER(LEN=256) INPUT
 

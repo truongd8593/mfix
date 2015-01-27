@@ -42,9 +42,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: G,I,J,IJK,Q,BCV
-      INTEGER :: L,M,N,LV,N_VTK_REGIONS,R
-      Character(LEN=80) :: Line(1)
+      INTEGER :: I,J,Q,BCV
       DOUBLE PRECISION :: norm, tan_half_angle
       CHARACTER(LEN=9) :: GR
 !-----------------------------------------------
@@ -926,10 +924,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I,J,IJK,IJKW,IJKS,IJKB,M,N
+      INTEGER :: IJK,IJKW,IJKS,IJKB,M,N
       INTEGER :: IJKWW,IJKSS,IJKBB
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
-      Character(LEN=80) :: Line(1)
 !-----------------------------------------------
       DOUBLE PRECISION SUM, SUM_EP
 !-----------------------------------------------
@@ -1429,9 +1426,8 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
       INTEGER :: Q,QM1,QP1
-      Character(LEN=80) :: Line(1)
       DOUBLE PRECISION :: x1,x2,y1,y2,z1,z2,R1,R2
-      DOUBLE PRECISION :: norm, tan_half_angle
+      DOUBLE PRECISION :: tan_half_angle
       LOGICAL :: aligned
 !-----------------------------------------------
 !
@@ -1841,16 +1837,13 @@
 !-----------------------------------------------
 !
 !     loop/variable indices
-      INTEGER :: IJK, M, BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: M, BCV
 !     Volumetric flow rate computed from mass flow rate
       DOUBLE PRECISION :: VOLFLOW
 !     Solids phase volume fraction
       DOUBLE PRECISION :: EPS
 !     Average molecular weight
       DOUBLE PRECISION :: MW
-!
-      INTEGER :: iproc,IERR
 !
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -2061,19 +2054,11 @@
 !
 !     loop/variable indices
       INTEGER :: IJK, M, N, BCV
-      CHARACTER(LEN=9) :: BCT
-!     Volumetric flow rate computed from mass flow rate
-      DOUBLE PRECISION :: VOLFLOW
-!     Solids phase volume fraction
-      DOUBLE PRECISION :: EPS
-!     Average molecular weight
-      DOUBLE PRECISION :: MW
 !
-      INTEGER :: iproc,jproc,IERR
-      INTEGER :: I, J, K, NPS,PSV
+      INTEGER :: iproc
+      INTEGER :: NPS,PSV
 
-      LOGICAL, DIMENSION (0:NumPes) :: go
-!
+
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
@@ -2274,17 +2259,9 @@
 !-----------------------------------------------
 !
 !     loop/variable indices
-      INTEGER :: IJK, M, BCV
-      CHARACTER(LEN=9) :: BCT
-!     Volumetric flow rate computed from mass flow rate
-      DOUBLE PRECISION :: VOLFLOW
-!     Solids phase volume fraction
-      DOUBLE PRECISION :: EPS
-!     Average molecular weight
-      DOUBLE PRECISION :: MW
+      INTEGER :: IJK, BCV
 !
-      INTEGER :: iproc,IERR
-      INTEGER :: I, J, K, NPS,PSV
+      INTEGER :: NPS,PSV
 !
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
@@ -2506,14 +2483,9 @@
       INTEGER :: I,I1,I2,J,J1,J2,K,K1,K2
       DOUBLE PRECISION :: L,CELL_RATIO
 
-      LOGICAL :: SOLUTION_FOUND
-
       LOGICAL,DIMENSION(MAX_CP) :: INDEPENDENT_SEGMENT
 
-      DOUBLE PRECISION :: AA
-
       DOUBLE PRECISION, EXTERNAL :: F
-
 
 !-----------------------------------------------
 !
@@ -3110,7 +3082,7 @@
       USE mpi_utility
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: ALPHAC,D,D_Target,DU,L,TOL
+      DOUBLE PRECISION:: ALPHAC,D,D_Target,DU,L
       INTEGER:: N
       CHARACTER (LEN=5) :: POS
 
@@ -3169,10 +3141,10 @@
       USE quadric
 
       IMPLICIT NONE
-      LOGICAL :: CLIP_FLAG,CLIP_FLAG1,CLIP_FLAG2,CLIP_FLAG3,INTERSECT_FLAG,SOLUTION_FOUND
+      LOGICAL :: SOLUTION_FOUND
 
       DOUBLE PRECISION :: f1,f2,f3
-      DOUBLE PRECISION :: ALPHA1,ALPHA2,ALPHA3,D_Target,L,TOL,DU
+      DOUBLE PRECISION :: ALPHA1,ALPHA2,ALPHA3,D_Target,L,DU
       DOUBLE PRECISION, PARAMETER :: ALPHAMAX = 10.0D0  ! maximum  value of cell ratio
       INTEGER :: N,niter
       DOUBLE PRECISION, EXTERNAL :: F
@@ -3347,25 +3319,18 @@
       INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
       INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
 
-      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+      INTEGER :: IPROC,PSUM
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,IDEAL_SUM,NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_WITH_GHOST
 
-        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
         INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
-
-      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
+      INTEGER :: JSIZE, JREMAIN
       INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
-      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
       INTEGER :: AVG_NCPP_OLD,AVG_NCPP
-      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
+      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,P
 
-      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
-
-
-      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR,IPROC_OF_MAX,IPROC_OF_MIN
+      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
 
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
 
@@ -3942,49 +3907,6 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
-      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
-      LOGICAL :: SHIFT,CLIP_FLAG
-      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
-
-      INTEGER, DIMENSION(0:DIM_I) :: NUC_I,GLOBAL_NUC_I
-      INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
-      INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
-
-      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
-
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
-
-        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
-
-
-
-      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
-      INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
-      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
-      INTEGER :: AVG_NCPP_OLD,AVG_NCPP
-      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
-
-      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
-
-
-      INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
-
-      INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
-
-      INTEGER :: IPROC_OF_MAX,IPROC_OF_MIN,N
-      INTEGER :: IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD
-
-
-      LOGICAL :: PRESENT
-
-!-----------------------------------------------
 !
 
       IS_SERIAL=(numPEs==1)
@@ -4088,12 +4010,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
-      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
-      LOGICAL :: SHIFT,CLIP_FLAG
-      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
+      INTEGER :: I,J,K,TOTAL_NUC,IDEAL_NCPP
 
       INTEGER, DIMENSION(0:DIM_I) :: NUC_I
       INTEGER, DIMENSION(0:DIM_J) :: NUC_J
@@ -4117,33 +4034,22 @@
       INTEGER, ALLOCATABLE, DIMENSION(:) :: GLOBAL_NUC_K   ! Number of Useful Cells at Global K
 
 
-      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+      INTEGER :: IPROC,PSUM
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST
 
         INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
         INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
         INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
 
-
-
       INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
-      INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
-      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
-      INTEGER :: AVG_NCPP_OLD,AVG_NCPP
-      DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
-
-      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
-
+      DOUBLE PRECISION :: LIP_OLD
 
       INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
 
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
 
-      INTEGER :: IPROC_OF_MAX,IPROC_OF_MIN,N
       INTEGER :: IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD
-
-      LOGICAL :: PRESENT
 
 !-----------------------------------------------
 !
@@ -4786,18 +4692,17 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NODESL,L,LMIN1,LMAX1,TOTAL_NUC,IPROC_OF_MAX,IPROC_OF_MIN
+      INTEGER :: NODESL,LMIN1,LMAX1,IPROC_OF_MAX,IPROC_OF_MIN
 
-      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NCPP,MAXVAL_NCPP
       INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
 
-      INTEGER :: IPROC,N,NA,NOIMPROVEMENT
+      INTEGER :: N,NOIMPROVEMENT
 
       INTEGER,PARAMETER :: PROC_SIZE_MIN = 5  ! Minimum number of cells in one direction for a processor
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
 
 
       DOUBLE PRECISION :: LIP,BEST_LIP
@@ -4949,44 +4854,28 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LC,I,J,K,Q_ID,TOTAL_NUC,IDEAL_NCPP
-      DOUBLE PRECISION :: X_COPY,Y_COPY,Z_COPY,F_COPY
-      LOGICAL :: SHIFT,CLIP_FLAG
-      DOUBLE PRECISION, DIMENSION(0:DIM_I) :: DXT ,XCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_J) :: DYT ,YCC
-      DOUBLE PRECISION, DIMENSION(0:DIM_K) :: DZT, ZCC
+      INTEGER :: I,J,K,TOTAL_NUC,IDEAL_NCPP
 
       INTEGER, DIMENSION(0:DIM_I) :: NUC_I,GLOBAL_NUC_I
       INTEGER, DIMENSION(0:DIM_J) :: NUC_J,GLOBAL_NUC_J
       INTEGER, DIMENSION(0:DIM_K) :: NUC_K,GLOBAL_NUC_K
 
-      INTEGER :: IPROC,PSUM,LSUM,I1,I2,J1,J2,K1,K2,CURRENT_DIFF,PREVIOUS_DIFF
+      INTEGER :: IPROC,PSUM
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST,IDEAL_SUM
+      INTEGER, DIMENSION(0:numPEs-1) :: NCPP_OLD,NCPP,NCPP_OLD_WITH_GHOST,NCPP_WITH_GHOST
 
-        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
+      INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
 
-
-
-      INTEGER :: JSIZE, IREMAIN,ISIZE, JREMAIN,KSIZE, KREMAIN
+      INTEGER :: JSIZE, JREMAIN
       INTEGER :: MAXVAL_NCPP_OLD,MINVAL_NCPP_OLD,MAXVAL_NCPP,MINVAL_NCPP
-      INTEGER :: MAXLOC_NCPP_OLD,MINLOC_NCPP_OLD,MAXLOC_NCPP,MINLOC_NCPP
       INTEGER :: AVG_NCPP_OLD,AVG_NCPP
       DOUBLE PRECISION :: LIP_OLD,LIP,MAXSPEEDUP_OLD,MAXSPEEDUP,P
-
-      CHARACTER(LEN=10) :: MAX_SPEEDUP_OLD,MAX_SPEEDUP
-
 
       INTEGER :: I_OFFSET,J_OFFSET,K_OFFSET,IERR
 
       INTEGER, DIMENSION(0:numPEs-1) :: disp,rcount
 
-      INTEGER :: IPROC_OF_MAX,IPROC_OF_MIN,N
       INTEGER :: IPROC_OF_MAX_OLD,IPROC_OF_MIN_OLD
-
-      LOGICAL :: PRESENT
 
 !-----------------------------------------------
 !
@@ -5568,16 +5457,15 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: NODESL,L,LMIN1,LMAX1,TOTAL_NUC,IPROC_OF_MAX,IPROC_OF_MIN
+      INTEGER :: NODESL,LMIN1,LMAX1,IPROC_OF_MAX,IPROC_OF_MIN
 
-      INTEGER :: LCOUNT1,LCOUNT2,MINVAL_NCPP,MAXVAL_NCPP
       INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
 
-      INTEGER :: IPROC,N,NA,NOIMPROVEMENT
+      INTEGER :: N,NOIMPROVEMENT
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,L1,L2,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
+        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
 
 
       DOUBLE PRECISION :: LIP,BEST_LIP
