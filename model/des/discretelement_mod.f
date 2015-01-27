@@ -609,9 +609,9 @@
 ! END Cohesion
 !-----------------------------------------------------------------<<<
 
-      LOGICAL :: EXPLICITLY_COUPLED
+      LOGICAL :: DES_EXPLICITLY_COUPLED
 
-    CONTAINS
+      CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !

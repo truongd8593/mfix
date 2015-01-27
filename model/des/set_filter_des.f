@@ -25,9 +25,10 @@
       use particle_filter, only: DES_INTERP_SCHEME
 
       use particle_filter, only: DIF_TSTOP
-      use particle_filter, only: FILTER_WIDTH
+      use particle_filter, only: DES_INTERP_WIDTH
       use particle_filter, only: FILTER_WIDTH_INTERP
       use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
+      use particle_filter, only: DES_DIFFUSE_WIDTH
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
       use particle_filter, only: DES_INTERP_ON
 
@@ -48,50 +49,49 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_FILTER_DES")
 
+
+      DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
+      IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
+
 ! Verify that the interpolation scheme doesn't exceed the grid.
-      IF(FILTER_WIDTH /= UNDEFINED) THEN
+      IF(DES_INTERP_WIDTH /= UNDEFINED) THEN
 
-         DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
-         IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
-
-         IF(0.5d0*FILTER_WIDTH < DXYZ_MIN) THEN
-             FILTER_WIDTH_INTERP = 0.500d0*FILTER_WIDTH
-         ELSEIF(0.5d0*FILTER_WIDTH == DXYZ_MIN) THEN
-             FILTER_WIDTH_INTERP = 0.999d0*DXYZ_MIN
-         ELSEIF(DES_DIFFUSE_MEAN_FIELDS) THEN
+         IF(0.5d0*DES_INTERP_WIDTH < DXYZ_MIN) THEN
+             FILTER_WIDTH_INTERP = 0.500d0*DES_INTERP_WIDTH
+         ELSEIF(0.5d0*DES_INTERP_WIDTH == DXYZ_MIN) THEN
              FILTER_WIDTH_INTERP = 0.999d0*DXYZ_MIN
          ELSE
-            WRITE(ERR_MSG,2130) DXYZ_MIN, FILTER_WIDTH
+            WRITE(ERR_MSG,2130) DXYZ_MIN, DES_INTERP_WIDTH
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
- 2130 FORMAT('Error 2130: The specified FILTER_WIDTH is too large to ',&
-         'interpolate',/'to the fuild grid as it spans further than ', &
-         'adjacent neighbors. Either',/'discrease the filter width, ', &
-         'or enable diffusive filtering.',2/3x,'Minimum Cell ',        &
+ 2130 FORMAT('Error 2130: The specified DES_INTERP_WIDTH is too ',     &
+         'large to interpolate',/'to the fuild grid as it spans ',     &
+         'further than adjacent neighbors.',/'Discrease the ',         &
+         'interpolation width so that its half width is less than',/   &
+         'or equal to the minimum cell dimension:',2/3X,               &
+         'DES_INTERP_WIDTH/2.0 <= min(DX,DY,DZ)',2/3x,'Minimum Cell ', &
          'dimension: ',g12.4,/3x,'Filter Width: ',g12.4)
 
+      ENDIF
 
-         IF(DES_DIFFUSE_MEAN_FIELDS) THEN
+! Check the diffusion fileter specs.
+      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
 
-            DES_INTERP_MEAN_FIELDS= .TRUE.
+         DIF_TSTOP = MAX((0.5*DES_DIFFUSE_WIDTH)**2-DXYZ_MIN**2,0.0d0)/&
+            16.0d0*log(2.0)
 
-            DIF_TSTOP = MAX((0.5*FILTER_WIDTH)**2-DXYZ_MIN**2,0.0d0) / &
-               16.0d0*log(2.0)
-
-            IF(DIF_TSTOP == 0.0) THEN
-               WRITE(ERR_MSG,2131)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-
+         IF(DIF_TSTOP == 0.0) THEN
+            WRITE(ERR_MSG,2131)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
- 2131 FORMAT('Error 2131: The FILTER_WIDTH is too small for ',       &
-         'diffusive filtering ',/'on the current mesh and will ',    &
-         'have no effect. Either increase the',/'FILTER_WIDTH or ',  &
-         'set DES_DIFFUSE_MEAN_FIELDS=.FALSE.')
-
       ENDIF
+
+ 2131 FORMAT('Error 2131: The DES_DIFFUSE_WIDTH is too small for ',    &
+         'diffusive filtering ',/'on the current mesh and will ',      &
+         'have no effect. Either increase',/'DES_DIFFUSE_WIDTH or ',   &
+         'set DES_DIFFUSE_MEAN_FIELDS=.FALSE.')
 
 ! Calculate reused quanties
       SELECT CASE(DES_INTERP_SCHEME_ENUM)

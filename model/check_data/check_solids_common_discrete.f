@@ -54,7 +54,7 @@
       USE run, only: SOLVE_ROs
 ! Calculated baseline variable solids density.
       USE physprop, only: BASE_ROs
- 
+
 
 ! Number of ranks.
       use run, only: SOLIDS_MODEL
@@ -508,9 +508,11 @@
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
 ! User specified filter width
-      use particle_filter, only: FILTER_WIDTH
+      use particle_filter, only: DES_INTERP_WIDTH
 ! Flag: Diffuse DES field variables.
       use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
+! Diffusion filter width
+      use particle_filter, only: DES_DIFFUSE_WIDTH
 ! Flag: Interpolate continuum fields
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
 ! Flag: Interplate variables for drag calculation.
@@ -557,10 +559,10 @@
       CASE ('GARG_2012')
          DES_INTERP_SCHEME_ENUM = DES_INTERP_GARG
 
-      CASE ('DPVM')
+      CASE ('SQUARE_DPVM')
          DES_INTERP_SCHEME_ENUM = DES_INTERP_DPVM
 
-      CASE ('DPVM_GAUSS')
+      CASE ('GAUSS_DPVM')
          DES_INTERP_SCHEME_ENUM = DES_INTERP_GAUSS
 
       CASE DEFAULT
@@ -583,18 +585,23 @@
 
       CASE(DES_INTERP_NONE)
 
-         IF(.NOT.DES_DIFFUSE_MEAN_FIELDS .AND.                         &
-            FILTER_WIDTH /= UNDEFINED) THEN
+         IF(DES_INTERP_WIDTH /= UNDEFINED) THEN
             WRITE(ERR_MSG,2100) trim(adjustl(DES_INTERP_SCHEME))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
  2100 FORMAT('Error 2100: The selected interpolation scheme (',A,') ', &
-         'only',/'supports an adjustable filter size when the mean ',  &
-         'fields are diffused.',/'Please correct the input file.')
+         'does',/'not support an adjustable interpolation width.',/    &
+         'Please correct the input file.')
+
 
       CASE(DES_INTERP_GARG)
          DES_INTERP_MEAN_FIELDS= .TRUE.
+
+         IF(DES_INTERP_WIDTH /= UNDEFINED) THEN
+            WRITE(ERR_MSG,2100) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
 
          IF(DES_DIFFUSE_MEAN_FIELDS) THEN
             WRITE(ERR_MSG,2110) trim(adjustl(DES_INTERP_SCHEME))
@@ -605,28 +612,30 @@
          'does not',/'support diffusive filtering of mean field ',     &
           'quantites. Please correct',/'the input file.')
 
-         IF(FILTER_WIDTH /= UNDEFINED) THEN
-            WRITE(ERR_MSG,2111) trim(adjustl(DES_INTERP_SCHEME))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
- 2111 FORMAT('Error 2111: The selected interpolation scheme (',A,') ', &
-         'does not',/'support an adjustable filter size. Please ',     &
-         'correct',/'the input file.')
-
-
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
 
-         IF(FILTER_WIDTH == UNDEFINED) THEN
+         IF(DES_INTERP_WIDTH == UNDEFINED) THEN
             WRITE(ERR_MSG,2120) trim(adjustl(DES_INTERP_SCHEME))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
 
  2120 FORMAT('Error 2120: The selected interpolation scheme (',A,') ', &
-         'requires',/'a FILTER_WIDTH. Please correct the input file.')
+         'requires',/'a DES_INTERP_WIDTH. Please correct the ',        &
+         'input file.')
 
       END SELECT
 
+
+      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
+         IF(DES_DIFFUSE_WIDTH == UNDEFINED) THEN
+            WRITE(ERR_MSG,2130)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
+
+ 2130 FORMAT('Error 2130: The diffusion lenght scale (DES_DIFFUSE_',   &
+         'WIDTH) must be',/'specified with DES_DIFFUSE_MEAN_FIELDS. ', &
+         'Please correct the input file.')
 
       CALL FINL_ERR_MSG
 

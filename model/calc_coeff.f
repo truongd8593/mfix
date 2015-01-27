@@ -25,7 +25,7 @@
 ! Under relaxation factor solid conductivity coefficient for IA theory
       use ur_facs, only: UR_kth_sml
 ! Flag for explcit coupling between the fluid and particles.
-      use discretelement, only: EXPLICITLY_COUPLED
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 
       implicit none
 
@@ -58,7 +58,7 @@
 ! rates.
       CALL CALC_COEFF(IER, 2)
 
-      IF(EXPLICITLY_COUPLED) CALL CALC_DRAG_DES_EXPLICIT
+      IF(DES_EXPLICITLY_COUPLED) CALL CALC_DRAG_DES_EXPLICIT
 
 ! Calculate reaction rates and interphase mass transfer.
       CALL CALC_RRATE(IER)
