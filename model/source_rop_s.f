@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_ROP_S(A_M, B_M, M, IER)
+      SUBROUTINE SOURCE_ROP_S(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -45,8 +45,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -130,7 +128,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_ROP_S(B_M, M, IER)
+      SUBROUTINE POINT_SOURCE_ROP_S(B_M, M)
 
       use compar
       use constant
@@ -149,9 +147,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Solids phase index.
       INTEGER, INTENT(IN) :: M
-
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 !-----------------------------------------------
 ! Local Variables

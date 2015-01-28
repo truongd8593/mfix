@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SOURCE_V_G(A_M, B_M, IER)
+      SUBROUTINE CG_SOURCE_V_G(A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -68,54 +68,21 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Indices
       INTEGER          I, J, K, IJK, IJKN
 !
 !                      Phase index
-      INTEGER          M, L
-!
-!                      Internal surface
-      INTEGER          ISV
-!
-!                      Pressure at north cell
-      DOUBLE PRECISION PgN
+      INTEGER          M
 !
 !                      Average volume fraction
       DOUBLE PRECISION EPGA
-!
-!                      Average density
-      DOUBLE PRECISION ROPGA, ROGA
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Average viscosity
-      DOUBLE PRECISION MUGA
-!
-!                      Source terms (Surface)
-      DOUBLE PRECISION Sdp
-!
-!                      Source terms (Volumetric)
-      DOUBLE PRECISION V0, Vpm, Vmt, Vbf
-!
-!                      Source terms (Volumetric) for GHD theory
-      DOUBLE PRECISION Ghd_drag, avgRop
-!
-! loezos
-      DOUBLE PRECISION VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
-      DOUBLE PRECISION SRT
-! loezos
 
-!                      error message
-      CHARACTER(LEN=80) :: LINE
-!
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -390,7 +357,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SOURCE_V_G_BC(A_M, B_M, IER)
+      SUBROUTINE CG_SOURCE_V_G_BC(A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -436,10 +403,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I,  J, K, JM, IJK,&

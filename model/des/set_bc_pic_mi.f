@@ -35,41 +35,15 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER BCV_I      ! BC loop counter
-      INTEGER M, MM           ! Mass phase loop counter
-      INTEGER HOLD, I         ! Dummy values
-      INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
+      INTEGER M           ! Mass phase loop counter
       INTEGER PHASE_CNT        ! Number of solid phases at bc
       INTEGER PHASE_LIST(DES_MMAX) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
-      DOUBLE PRECISION NPMpSEC(DES_MMAX) ! For solid phase m
-      DOUBLE PRECISION NPpSEC
-      DOUBLE PRECISION NPpDT        ! Total for BC
-      DOUBLE PRECISION SCALED_VAL
       DOUBLE PRECISION MAX_DIA ! Max diameter of incoming particles at bc
-
-      DOUBLE PRECISION :: EPs_ERR
-      DOUBLE PRECISION :: VOL_FLOW
-
 
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
-
-      LOGICAL :: FATAL
-
-! Temp inlet velocity for solids phase M
-      DOUBLE PRECISION VEL_TMP(DIM_M)
-      DOUBLE PRECISION EPs_TMP(DIM_M)
-
-! Minimum/maximum solids velocity at inlet.  Also used in the iterative
-! steps as the starting and ending velocities
-      DOUBLE PRECISION  MIN_VEL, MAX_VEL
-
-      DOUBLE PRECISION  MINIPV, MAXIPV
-
-      INTEGER :: OCCUPANTS
-! jump_here
 
 !-----------------------------------------------
 !   External functions

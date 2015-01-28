@@ -22,7 +22,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER I, J, K
-      INTEGER L, LL, NEIGH_L, NEIGH_LL
+      INTEGER L, LL
       DOUBLE PRECISION DISTVEC(3), DIST, R_LM
 ! Temporary variables to adjust particle position in event of periodic
 ! boundaries

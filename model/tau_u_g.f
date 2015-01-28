@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_TAU_U_G(TAU_U_G, IER)
+      SUBROUTINE CALC_TAU_U_G(TAU_U_G)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -66,10 +66,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      TAU_U_g
       DOUBLE PRECISION TAU_U_g(DIMENSION_3)
 !
@@ -78,17 +74,8 @@
                        IJKNE, IJKS, IJKSE, IPJMK, IJMK, IJKT, IJKTE,&
                        IJKB, IJKBE, IJKM, IPJKM
 !
-!                      Phase index
-      INTEGER          M
-!
 !                      Average volume fraction
       DOUBLE PRECISION EPGA
-!
-!                      Average density
-      DOUBLE PRECISION ROPGA
-!
-!                      Average viscosity
-      DOUBLE PRECISION MUGA
 !
 !                      Average viscosity
       DOUBLE PRECISION EPMU_gte, EPMU_gbe, EPMUGA
@@ -102,24 +89,17 @@
 !                      Source terms (Volumetric)
       DOUBLE PRECISION Vtzb
 !
-!                      error message
-      CHARACTER(LEN=80) :: LINE
-!
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-      INTEGER :: IM,JP,KP
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       LOGICAL :: V_NODE_AT_NE,V_NODE_AT_NW,V_NODE_AT_SE,V_NODE_AT_SW
       LOGICAL :: W_NODE_AT_TE,W_NODE_AT_TW,W_NODE_AT_BE,W_NODE_AT_BW
-      DOUBLE PRECISION :: V_SUM,W_SUM,X_SUM,Y_SUM,Z_SUM,Vc,Wc
-      DOUBLE PRECISION :: Xvc,Yvc,Zvc,Xwc,Ywc,Zwc,Nxv,Nyv,Nzv,Nxw,Nyw,Nzw
       DOUBLE PRECISION :: dvdx_at_N,dvdx_at_S
       DOUBLE PRECISION :: dwdx_at_T,dwdx_at_B
-      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
+      DOUBLE PRECISION :: Xi,Yi,Zi,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: MU_GT_CUT,SSY_CUT,SSZ_CUT
       DOUBLE PRECISION :: UW_g,VW_g,WW_g
-      INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !=======================================================================

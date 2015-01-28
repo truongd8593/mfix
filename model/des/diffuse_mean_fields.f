@@ -35,7 +35,7 @@
       INTEGER :: IER
 
 ! Linear equation solver method and iterations
-      INTEGER :: LEQM, LEQI, IJK
+      INTEGER :: LEQM, LEQI
 
       DOUBLE PRECISION :: DIF_TIME
       DOUBLE PRECISION :: DIF_DT

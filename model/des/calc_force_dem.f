@@ -28,15 +28,11 @@
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
       INTEGER :: I, LL, CC
-! loop counter and indices for neighbor information
-      INTEGER :: NI, NLIM, N_NOCON
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal direction
       DOUBLE PRECISION :: OVERLAP_N
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
-! heat conducted
-      DOUBLE PRECISION :: QQ
 ! distance vector between two particle centers or between a particle
 ! center and wall when the two surfaces are just at contact (i.e. no
 ! overlap)
@@ -69,8 +65,6 @@
       LOGICAL :: PARTICLE_SLIDE
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
-!$      double precision omp_start, omp_end
-!$      double precision omp_get_wtime
 
 !-----------------------------------------------
 

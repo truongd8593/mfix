@@ -66,7 +66,7 @@
 ! previous time step term
       DOUBLE PRECISION :: apo
 ! Indices
-      INTEGER :: IJK, IMJK, IJMK, IJKM
+      INTEGER :: IJK
 ! linear equation solver method and iterations
       INTEGER :: LEQM, LEQI
 ! tmp array to pass to set_chi
@@ -79,8 +79,6 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-
-      DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
 ! array1 (locally s_p)
 ! source lhs: coefficient of dependent variable
@@ -153,7 +151,7 @@
                BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
-            CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M)
 
 ! Add point sources.
             IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_G(1,LN), &
@@ -233,7 +231,7 @@
                   BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER)
 
-               CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
+               CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M)
 
 ! Add point sources.
                IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_S(1,M,LN), &

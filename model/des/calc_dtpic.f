@@ -29,7 +29,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: L, PC
 
 
 ! MPPIC related quantities

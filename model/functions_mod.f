@@ -271,6 +271,8 @@ CONTAINS
   END FUNCTION FUNIJK_IO
 
   LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
+    IMPLICIT NONE
+    INTEGER, INTENT(IN) :: LI, LJ, LK
     IS_ON_myPE_plus2layers = LI.ge.istart3.and.LI.le.iend3.and. &
          LJ.ge.jstart3.and.LJ.le.jend3.and. &
          LK.ge.kstart3.and.LK.le.kend3

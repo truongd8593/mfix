@@ -50,7 +50,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      integer ijk,lijkproc,liproc,ljproc,lkproc
+      integer lijkproc,liproc,ljproc,lkproc
       integer li,lj,lk
       integer li2,lj2,lk2
       integer liproc_start,liproc_end,ljproc_start,ljproc_end,lkproc_start,lkproc_end
@@ -214,7 +214,7 @@
 ! local variables
 !-----------------------------------------------
       character(len=80), parameter :: name = 'des_exchangenode'
-      integer :: lindx,lcount,lcount2,lneigh,ltag,lerr,lsource,ldest
+      integer :: lindx,lcount,lcount2,lneigh,ltag,lerr
       integer :: lstart,lend,ltotal
 !-----------------------------------------------
 

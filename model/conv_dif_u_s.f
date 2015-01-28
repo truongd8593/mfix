@@ -64,14 +64,14 @@
 ! IF DEFERRED CORRECTION IS USED TO SOLVE U_S
              IF(DEF_COR)THEN
                 CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
-                IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (A_M(1,-3,M), M, B_M, IER)
+                IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (A_M(1,-3,M), M, B_M)
              ELSE
 
 ! NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR U_S
                 IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP
                    CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
                 ELSE
-                   CALL STORE_A_U_S1 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_U_S1 (A_M(1,-3,M), M)
                 ENDIF
              ENDIF
 
@@ -362,7 +362,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE STORE_A_U_SDC(A_U_S, M, B_M, IER)
+      SUBROUTINE STORE_A_U_SDC(A_U_S, M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -400,8 +400,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -415,8 +413,6 @@
       INTEGER :: IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
 ! indicator for shear
       INTEGER :: incr
-! Diffusion parameter
-      DOUBLE PRECISION :: D_f
 ! Deferred correction contribution from high order method
       DOUBLE PRECISION :: MOM_HO
 ! low order approximation
@@ -775,7 +771,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE STORE_A_U_S1(A_U_S, M, IER)
+      SUBROUTINE STORE_A_U_S1(A_U_S, M)
 
 !-----------------------------------------------
 ! Modules
@@ -809,8 +805,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

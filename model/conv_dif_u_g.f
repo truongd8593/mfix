@@ -66,7 +66,7 @@
 !
       IF(DEF_COR)THEN
         CALL STORE_A_U_G0(A_M(1,-3,0), IER)
-        IF (DISCRETIZE(3) > 1) CALL STORE_A_U_GDC (A_M(1,-3,0),B_M(1,0), IER)
+        IF (DISCRETIZE(3) > 1) CALL STORE_A_U_GDC (A_M(1,-3,0),B_M(1,0))
       ELSE
 !
 !       NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR U_G
@@ -74,7 +74,7 @@
         IF (DISCRETIZE(3) == 0) THEN               ! 0 & 1 => FOUP
           CALL STORE_A_U_G0 (A_M(1,-3,0), IER)
         ELSE
-          CALL STORE_A_U_G1 (A_M(1,-3,0), IER)
+          CALL STORE_A_U_G1 (A_M(1,-3,0))
         ENDIF
 !
       ENDIF
@@ -417,7 +417,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE STORE_A_U_GDC(A_U_G, B_M, IER)
+      SUBROUTINE STORE_A_U_GDC(A_U_G, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -464,13 +464,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 
-!
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Indices
-!
 !                      Indices
       INTEGER          I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,&
                        IJKNE, IJKP, IJKT, IJKTE
@@ -484,10 +477,7 @@
         INTEGER incr
 ! loezos
 
-!                      Diffusion parameter
-      DOUBLE PRECISION D_f
 
-!                      Septadiagonal matrix A_U_g
       DOUBLE PRECISION A_U_g(DIMENSION_3, -3:3)
 !
 !                      Vector b_m
@@ -908,7 +898,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE STORE_A_U_G1(A_U_G, IER)
+      SUBROUTINE STORE_A_U_G1(A_U_G)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -953,11 +943,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 
-!
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Indices
 !
 !                      Indices

@@ -100,10 +100,6 @@
 !---------------------------------------------------------------------//
 ! Loop/Variable indices
       INTEGER :: ISV, I
-! Calculated indices of the wall boundary
-      INTEGER I_w , I_e , J_s , J_n , K_b , K_t
-! Surface indictors
-      LOGICAL X_CONSTANT, Y_CONSTANT, Z_CONSTANT
 ! Total number of valid IS types
       INTEGER, PARAMETER :: DIM_ISTYPE = 4
 ! Valid internal surface types

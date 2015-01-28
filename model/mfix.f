@@ -102,8 +102,6 @@
       DOUBLE PRECISION :: DT_tmp
 ! loop counter
       INTEGER :: L
-! variable needed for including function.inc
-       INTEGER :: IJK
 ! Error index
       INTEGER :: IER
 ! DISTIO variable for specifying the mfix version
@@ -112,10 +110,9 @@
       CHARACTER(LEN=512) :: omp_num_threads
       INTEGER :: length
       INTEGER :: status
-      CHARACTER(LEN=512) :: arg
 
 !$      INTEGER num_threads, threads_specified, omp_id
-!$      INTEGER mp_numthreads, omp_get_num_threads
+!$      INTEGER omp_get_num_threads
 !$      INTEGER omp_get_thread_num
 
       DOUBLE PRECISION :: WALL_TIME
@@ -411,7 +408,7 @@
       if (DBGPRN_LAYOUT .or. bdist_io) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
          call debug_write_layout(1,ier)
-         call write_parallel_info(1,ier)
+         call write_parallel_info(1)
       endif
 
 ! Initializations for CPU time calculations in iterate
@@ -819,7 +816,7 @@
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE write_parallel_info(debuglvl, IER)
+      SUBROUTINE write_parallel_info(debuglvl)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -843,8 +840,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error indicator
-      INTEGER :: IER
 ! debug level
       INTEGER :: debuglvl
 !-----------------------------------------------
@@ -855,12 +850,6 @@
 ! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
 !
-      integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
-      integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
-      integer :: indxG, indxG_gl, indxH, indxH_gl
-!
-      logical :: amgdbg = .TRUE.
-
       character(LEN=80) :: fname
 !-----------------------------------------------
 

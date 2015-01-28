@@ -306,7 +306,7 @@
 
       INTEGER ::  CURRENT_COUNT, COUNT
 
-      double precision ::   box_origin(3), box_extents(3), tri_norm(3)
+      double precision ::   box_origin(3), box_extents(3)
       Logical :: sa_exist
       integer :: sep_axis
 
@@ -429,7 +429,7 @@
 
       IMPLICIT NONE
 
-      INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS, IJK
+      INTEGER :: CELL_ID, I, J, K, COUNT, COUNT_FACETS
 
       CHARACTER(LEN=100) :: FN
 

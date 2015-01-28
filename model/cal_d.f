@@ -35,10 +35,9 @@
 !     to give the capability to perform calculations over additional ghost layers in
 !     to avoid if checks and communication
       DOUBLE PRECISION xdist(IMIN3:IMAX3,JSTART3:JEND3)
-      DOUBLE PRECISION xdist3(IMIN3:IMAX3,JSTART3:JEND3,KSTART3:KEND3),&
-                       cnter3(IMIN3:IMAX3,JSTART3:JEND3,KSTART3:KEND3)
+      DOUBLE PRECISION xdist3(IMIN3:IMAX3,JSTART3:JEND3,KSTART3:KEND3)
 
-      INTEGER I1,J1,I,J
+      INTEGER IJK,I1,J1,K1,I,J,K
 
       IF (NO_K) THEN
 

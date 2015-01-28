@@ -109,8 +109,6 @@
 ! terms for shear (loezos)
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
-! error message
-      CHARACTER(LEN=80) :: LINE(2)
 !-----------------------------------------------
 
 
@@ -530,7 +528,7 @@
 ! Boundary condition
       INTEGER ::  L
 ! Indices
-      INTEGER ::  I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
+      INTEGER ::  I,  J, K, I1, I2, J1, J2, K1, K2, IJK,&
                   IM, KM, IJKS, IJMK, IJPK
 !-----------------------------------------------
 
@@ -1144,7 +1142,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_V_S(A_M, B_M, IER)
+      SUBROUTINE POINT_SOURCE_V_S(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -1166,8 +1164,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

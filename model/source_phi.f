@@ -22,7 +22,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_PHI(S_P, S_C, EP, PHI, M, A_M, B_M, IER)
+      SUBROUTINE SOURCE_PHI(S_P, S_C, EP, PHI, M, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -63,16 +63,11 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IMJK, IJMK, IJKM
-! error message
-      CHARACTER(LEN=80) :: LINE(2)
-
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -155,7 +150,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_PHI(PHI, PS_PHI, PS_FLOW,  &
-         M, A_M, B_M, IER)
+         M, A_M, B_M)
 
       use compar
 
@@ -193,19 +188,16 @@
 ! Vector b_m
       DOUBLE PRECISION, intent(INOUT) :: B_M(DIMENSION_3, 0:DIMENSION_M)
 
-! Error index
-      INTEGER, intent(INOUT) :: IER
-
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
 
 ! Indices
       INTEGER :: IJK, I, J, K
-      INTEGER :: PSV, N
+      INTEGER :: PSV
 
 ! terms of bm expression
-      DOUBLE PRECISION pSource, lMass
+      DOUBLE PRECISION pSource
 
 !-----------------------------------------------
 

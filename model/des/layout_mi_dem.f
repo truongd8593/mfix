@@ -97,7 +97,7 @@
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
-      INTEGER IJK, I, J, K
+      INTEGER I, J, K
 ! Local MESH indices
       INTEGER H, W
 ! Temp variable for double precision
@@ -771,7 +771,7 @@
 ! Number of occupied mesh cells
       INTEGER :: OCCUPANTS
 
-      DOUBLE PRECISION :: SHIFT, WINDOW, OFFSET
+      DOUBLE PRECISION :: SHIFT, WINDOW
 
       LOGICAL, EXTERNAL :: COMPARE
 
@@ -1027,7 +1027,7 @@
 
 ! Generic loop counter
       INTEGER :: LC1, OCCUPANTS
-      INTEGER :: IJK, I, J, K
+      INTEGER :: I, J, K
 
       OCCUPANTS = DEM_MI(BCV_I)%OCCUPANTS
       allocate(DEM_MI(BCV_I)%OWNER(OCCUPANTS))

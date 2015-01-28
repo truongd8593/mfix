@@ -34,10 +34,10 @@
 
 
       IMPLICIT NONE
-      INTEGER :: IJK, ICELL, IPE
+      INTEGER :: IPE
       type(particle), pointer :: part => null()
 
-      INTEGER :: LPIP_ALL(0:NUMPES-1),LORIG_ALL(0:Numpes-1)
+      INTEGER :: LORIG_ALL(0:Numpes-1)
       INTEGER :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
 
       Logical :: write_vtp_files, indomain
@@ -311,7 +311,6 @@
       IMPLICIT NONE
       INTEGER :: IJK
       LOGICAL :: DELETE_PART
-      INTEGER :: DG_PCELL(4)
 
       type(particle), pointer :: part => null()
 
@@ -371,8 +370,6 @@
       USE functions
 
       IMPLICIT NONE
-      INTEGER :: I, J, K, IJK, M
-      LOGICAL :: DELETE_PART
       type(particle), pointer :: part => null()
 
 ! Initialize the error manager.
@@ -496,12 +493,11 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: M, ICV, I,J, K, NP, idim, IC_COUNT, IJK
+      INTEGER :: M, ICV, I,J, K, idim, IJK
       INTEGER :: lproc_parcount, pcount_byic_byphase(dimension_ic, DES_MMAX)
       INTEGER :: seed_x, seed_y, seed_z
-      INTEGER :: TOTAL_PARTS_IC, last_counter, TMP_PART_COUNT_INTHIS_IC
-      integer, dimension(:), allocatable :: map_to_proc
-      double precision lmax_dia,lfac,xp,yp,zp, parts_temp
+      INTEGER :: TOTAL_PARTS_IC, TMP_PART_COUNT_INTHIS_IC
+      double precision lmax_dia,lfac,xp,yp,zp
       double precision :: XSTART_IC, YSTART_IC, ZSTART_IC, adj_dia, ep_sm
       double precision :: XEND_IC, YEND_IC, ZEND_IC
       double precision :: xinit, yinit, zinit, ymax , doml(3)
@@ -893,8 +889,6 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION :: EP_SM
-! Temp variable for storing number of particles.
-      DOUBLE PRECISION :: PARTS_TEMP
 ! Temp logical variables for checking constant npc and statwt specification
       LOGICAL :: CONST_NPC, CONST_STATWT
 
@@ -914,7 +908,7 @@
 
       double precision, dimension(:,:), allocatable :: pvel_temp
 
-      type(particle), pointer :: part_list_byic, part => null()
+      type(particle), pointer :: part_list_byic
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
       !ALLOCATE(CNP_ARRAY(DIM3_TEMP, DES_MMAX))
@@ -1274,14 +1268,12 @@
       CHARACTER (LEN=*), intent(in) :: part_fname
       logical , intent(in) :: writeindomain
       !facet id and particle id
-      Integer ::  vtp_unit , i,j,k,l, nparts, pvd_unit, ipe
+      Integer ::  vtp_unit , k, nparts, pvd_unit, ipe
       CHARACTER(LEN=100) :: vtp_fname, pvd_fname
 
       type(particle), pointer :: part => null()
-      real,dimension(:,:), allocatable :: ltemp_array
       ! dummy values to maintain format for dimn=2
       REAL POS_Z, VEL_W
-
 
 ! formatted solids time
       CHARACTER(LEN=12) :: S_TIME_CHAR = ''

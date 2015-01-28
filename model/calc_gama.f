@@ -6,7 +6,7 @@
 !  Purpose: Calculate gas-solids heat transfer coefficients            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_GAMA(HEAT_TR, IER)
+      SUBROUTINE CALC_GAMA(HEAT_TR)
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -30,8 +30,6 @@
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
 !                      Flag for exchange functions
       LOGICAL          HEAT_TR(0:DIMENSION_M, 0:DIMENSION_M)
 

@@ -149,7 +149,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax, IER)
+      SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax)
 
       use compar
       use constant
@@ -164,8 +164,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression

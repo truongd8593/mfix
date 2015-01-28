@@ -189,16 +189,12 @@
 
       IMPLICIT NONE
 
-! error flag
-      LOGICAL :: ERROR
 ! loop/variable indices
       INTEGER, intent(in) :: BCV
       INTEGER, intent(in) :: M_TOT
       LOGICAL, intent(in) :: SKIP(DIM_M)
 
 ! Loop variable
-      INTEGER :: M
-
 
       CALL INIT_ERR_MSG("CHECK_BC_MASS_OUTFLOW")
 

@@ -118,7 +118,7 @@
       INTEGER :: L
 ! Viscosity values
       DOUBLE PRECISION :: MU_sL_pE, MU_sL_pW, MU_sL_pN, MU_sL_pS, MU_sL_pT,&
-                          MU_sL_pB, MU_sL_p
+                          MU_sL_pB
 ! Bulk viscosity values
       DOUBLE PRECISION :: XI_sL_pN, XI_sL_pS, LAMBDA_sL_pN, LAMBDA_sL_pS
 ! Variables for drag calculations

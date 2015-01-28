@@ -719,7 +719,7 @@
 !                      flux across the plane (composed of many cell faces)
 !                      flux_in: flux from the scalar cell into the rest of the domain
 !                      flux_out: flux into the scalar cell from the rest of the domain
-      DOUBLE PRECISION ::  flux_in, flux_out, flux_in_global, flux_out_global
+      DOUBLE PRECISION ::  flux_in, flux_out
 
 !                       Flux and Xn at the boundary plane
       DOUBLE PRECISION ::  Flux, PHI_HO
@@ -908,7 +908,7 @@
 
 
 
-      DOUBLE PRECISION FUNCTION check_conservation (Phi, A_m, B_m, IJK, IER)
+      DOUBLE PRECISION FUNCTION check_conservation (Phi, A_m, B_m, IJK)
       USE param
       USE param1
       USE geometry
@@ -926,9 +926,6 @@
 
       DOUBLE PRECISION Phi(DIMENSION_3)
 
-!                      Error index
-      INTEGER          IER
-!
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP
 
