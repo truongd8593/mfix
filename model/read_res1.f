@@ -353,10 +353,10 @@
 
         implicit none
 
-        integer :: L , unit_add , I , n
+        integer :: I , n
 
-        integer   :: ncid , xyz_dimid
-        integer   :: varid_time , t_dimid
+        integer   :: ncid
+        integer   :: varid_time
         integer   :: dimids(2) , varid_epg , varid_pg,dims_time(1)
         integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
         integer   :: varid_tg
@@ -378,12 +378,7 @@
 
         character(LEN=80) :: fname, var_name
 
-        double precision :: the_time
-
-
         integer nDim , nVars , nAttr , unID , formatNUM
-
-        integer ndims , include_parents !, nf90_inq_dimids
 
         integer xyz_id , xyz_dim
 

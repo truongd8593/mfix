@@ -885,9 +885,6 @@
       INTEGER fromPhase, fromPhaseCount
       INTEGER catPhase
 
-      INTEGER sprPhase
-
-
       INTEGER M, MM, LL
       INTEGER lM, lN
 

@@ -291,8 +291,6 @@
 ! I/J/K index of fluid cell containing the new particle.
       INTEGER, INTENT(IN) :: lIJKP(3)
 
-      INTEGER :: IJK
-
 ! Global phase index
       INTEGER :: BC_M
 

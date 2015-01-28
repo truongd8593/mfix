@@ -107,7 +107,6 @@
 !----------------------------------------------------------------------!
 ! Error flag -> Integration failed in one or more fluid cells.
       LOGICAL :: lErr_l   ! local
-      LOGICAL :: gErr_l   ! global
 
 ! Fluid Cell Index
       INTEGER :: IJK

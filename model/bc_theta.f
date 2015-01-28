@@ -827,9 +827,9 @@
       DOUBLE PRECISION :: D_PL, M_PL, NU_PL, MPSUM, DPSUMo2
       DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R1p_lm, R8p_lm, R9p_lm, &
                           Bp_lm, R5p_lm, R6p_lm, R7p_lm
-      DOUBLE PRECISION :: K_s_sum, K_s_MM, K_s_LM, K_sM_LM
-      DOUBLE PRECISION :: Kvel_s_sum, Kvel_s_LM, Kth_sL_LM, Kth_s_sum
-      DOUBLE PRECISION :: Knu_s_sum, Knu_s_LM, K_common_term
+      DOUBLE PRECISION :: K_s_sum, K_s_MM, K_sM_LM
+      DOUBLE PRECISION :: Kvel_s_sum, Kth_s_sum
+      DOUBLE PRECISION :: Knu_s_sum, K_common_term
 ! Variables for Garzo & Dufty model
       DOUBLE PRECISION :: c_star, zeta0_star, press_star, eta0, &
                           kappa0, nu_kappa_star, kappa_k_star, &
@@ -842,8 +842,6 @@
                           Kappa_Col, Tau_12_st
 ! Solids pressure and pressure divided by granular temperature
       DOUBLE PRECISION :: Ps, PsoTheta
-! Error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 ! Function subroutines
 !-----------------------------------------------

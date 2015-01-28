@@ -163,10 +163,10 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3) :: &
-                                  Xinit, R, P, Zvec, Q
+                                  R, P, Zvec, Q
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: &
                                   alpha, beta, rho
-      DOUBLE PRECISION :: RxZ, PxQ, aijmax, oam
+      DOUBLE PRECISION :: RxZ, PxQ, oam
       DOUBLE PRECISION :: Rnorm, Rnorm0, TOLMIN
       LOGICAL :: isconverged
       INTEGER :: i, j, k, ijk

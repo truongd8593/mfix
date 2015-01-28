@@ -442,9 +442,6 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-! Flag that the user was already warned why a call to the thermo-
-! chemical database is being made.
-      LOGICAL WARNED_USR
 
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
@@ -455,8 +452,6 @@
 ! molecular weight for a species are not given in the data file.
 ! If true, a call to the thermochemical database is made.
       LOGICAL SEQ_MWs
-
-      LOGICAL thermoHeader
 
 ! Loop counters.
       INTEGER :: M, N

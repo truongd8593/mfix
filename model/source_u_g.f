@@ -86,8 +86,6 @@
       DOUBLE PRECISION :: EPMUGA
 ! Average W_g
       DOUBLE PRECISION :: Wge
-! Average dW/Xdz
-      DOUBLE PRECISION :: dWoXdz
 ! Source terms (Surface)
       DOUBLE PRECISION :: Sdp
 ! Source terms (Volumetric)
@@ -100,8 +98,6 @@
       DOUBLE PRECISION :: ROP_MA, U_se, Usw, Vsw, Vse, Usn,&
                           Uss, Wsb, Wst, Wse, Usb, Ust
       DOUBLE PRECISION :: F_vir
-! error message
-      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
 ! Set reference phase to gas

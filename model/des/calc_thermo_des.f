@@ -32,7 +32,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Index of neighbor particle of particle I such that I < J
-      INTEGER I, J, K, IJK
+      INTEGER IJK
 ! Loop index for particles.
       INTEGER NP, lNP
 ! Phase index for particle NP

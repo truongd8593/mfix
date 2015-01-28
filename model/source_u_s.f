@@ -1183,7 +1183,6 @@
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, I, J, K
-      INTEGER :: IJKE, IPJK
       INTEGER :: PSV, M
 
       INTEGER :: lIE, lIW

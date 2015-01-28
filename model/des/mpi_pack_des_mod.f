@@ -199,10 +199,10 @@
 ! local variables
 !-----------------------------------------------
       integer :: li, lj, lk
-      integer :: ltot_ind,lindx,ijk,cc,ii,ll,kk
-      integer :: lneighindx,lcontactindx,lneigh,lcontact,lijk,&
+      integer :: ltot_ind,lindx,cc,ii
+      integer :: lneigh,lijk,&
                  lpicloc,lparcnt,lcurpar
-      integer :: lpacketsize,lbuf,ltmpbuf,num_pairs_to_send,lpairsize
+      integer :: lpacketsize,lbuf,num_pairs_to_send,lpairsize
 
       logical, allocatable, dimension(:) :: going_to_send
 

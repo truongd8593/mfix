@@ -132,7 +132,7 @@
 
       LOGICAL :: ERROR = .FALSE.
 
-      INTEGER :: I, J ,K, IJK, IER
+      INTEGER :: I, J ,K, IER
 
       IF(RUN_TYPE(1:3) /= 'NEW') RETURN
 
@@ -305,12 +305,8 @@
 !-----------------------------------------------
 ! loop/variable indices
       INTEGER :: I , J , K , IJK
-! calculated indices of the wall boundary
-      INTEGER :: I_w , I_e , J_s , J_n , K_b , K_t
 ! loop index
       INTEGER :: BCV
-! Last twodigits of BC
-      INTEGER :: BC2
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------

@@ -135,8 +135,7 @@
       LOGICAL, INTENT(in) :: SKIP(DIM_M)
 
 ! loop/variable indices
-      INTEGER :: M, N
-
+      INTEGER :: M
 
       CALL INIT_ERR_MSG("CHECK_BC_VEL_INFLOW")
 
@@ -331,8 +330,6 @@
 
       IMPLICIT NONE
 
-! error flag
-      LOGICAL :: ERROR
 ! loop/variable indices
       INTEGER, intent(in) :: BCV
       INTEGER, intent(in) :: M_TOT
@@ -341,9 +338,7 @@
 ! Loop variable
       INTEGER :: M
 
-
       CALL INIT_ERR_MSG("CHECK_BC_VEL_OUTFLOW")
-
 
 ! Check that gas phase velocities are defined.
       IF(BC_U_G(BCV) == UNDEFINED) THEN

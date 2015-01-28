@@ -119,7 +119,7 @@
 ! local variables
 !-----------------------------------------------
       character(len=80), parameter :: name = 'desmpi_sendrecv_wait'
-      integer :: ldebug,ltag,lerr,lsource,ldest
+      integer :: ldebug,lerr
 !-----------------------------------------------
 
 ! set the debug flag

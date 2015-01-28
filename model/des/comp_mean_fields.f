@@ -86,7 +86,7 @@
 ! Local variables
 !-----------------------------------------------
 ! Loop counters: partciles, filter cells, phases
-      INTEGER NP, LC, M
+      INTEGER NP, M
 ! Fluid cell index
       INTEGER IJK
 ! Total Mth solids phase volume in IJK
@@ -95,8 +95,6 @@
       DOUBLE PRECISION :: OoSOLVOL
 ! PVOL times statistical weight
       DOUBLE PRECISION :: VOL_WT
-! Loop bound for filter
-      INTEGER :: LP_BND
 
       SOLVOLINC(:,:) = ZERO
 
