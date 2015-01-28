@@ -73,53 +73,80 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_de_norms
-      USE geometry, only  : ijkmax3, imax, jmax
-      USE fldvar, only    : p_g, u_g, v_g  
-      USE funits, only    : newunit
+      Use functions, only : funijk_gl
+      Use geometry, only  : imax, jmax
+      Use fldvar, only    : p_g, u_g, v_g  
+      Use usr, only       : p_g_ex, u_g_ex, v_g_ex
+      Use usr, only       : lnorms_p_g, lnorms_u_g, lnorms_v_g     
+      Use funits, only    : newunit
+      Use mpi_utility     
       IMPLICIT NONE
 
-! exact solutions      
-        double precision, dimension(ijkmax3)  :: p_g_ex
-        double precision, dimension(ijkmax3)  :: u_g_ex
-        double precision, dimension(ijkmax3)  :: v_g_ex
-
-! temporary array        
-        double precision, dimension(ijkmax3)  :: diff
-
-! norms of discretization errors        
-        double precision, dimension(1:3)      :: lnorms_p_g
-        double precision, dimension(1:3)      :: lnorms_u_g
-        double precision, dimension(1:3)      :: lnorms_v_g
+! temporary array for discretization error: de = p_g - p_g_ex ; etc.        
+        double precision, allocatable         :: de_p_g(:)
+        double precision, allocatable         :: de_u_g(:)
+        double precision, allocatable         :: de_v_g(:)
 
 ! file unit        
         integer   :: f1
 
+! looping variables        
+        integer   :: ijk, i, j, k
+        integer   :: counter
 
+        
+        call calculate_exact_solution_channel
 
-        call calculate_exact_solution_channel(p_g_ex, u_g_ex, v_g_ex)
+        allocate(de_p_g((imax)*(jmax)))
+        allocate(de_u_g((imax-1)*(jmax)))
+        allocate(de_v_g((imax)*(jmax-1)))
 
-        diff = p_g - p_g_ex
-        call calculate_lnorms(diff, lnorms_p_g) 
+        k = kmin1
 
-        diff = u_g - u_g_ex
-        call calculate_lnorms(diff, lnorms_u_g) 
+        counter = 0
+        do j = 2, jmax
+        do i = 2, imax
+          counter = counter + 1          
+          ijk = funijk_gl(i,j,k)
+          de_p_g(counter) = p_g(ijk) - p_g_ex(ijk)
+        end do
+        end do
+        call calculate_lnorms(counter, de_p_g, lnorms_p_g) 
 
-        diff = v_g - v_g_ex
-        call calculate_lnorms(diff, lnorms_v_g) 
+        counter = 0
+        do j = 2, jmax
+        do i = 2, imax-1
+          counter = counter + 1          
+          ijk = funijk_gl(i,j,k)
+          de_u_g(counter) = u_g(ijk) - u_g_ex(ijk)
+        end do
+        end do
+        call calculate_lnorms(counter, de_u_g, lnorms_u_g) 
+
+        counter = 0
+        do j = 2, jmax-1
+        do i = 2, imax
+          counter = counter + 1          
+          ijk = funijk_gl(i,j,k)
+          de_v_g(counter) = v_g(ijk) - v_g_ex(ijk)
+        end do
+        end do
+        call calculate_lnorms(counter, de_v_g, lnorms_v_g) 
 
 ! Output DE norms data to a file
-        open(unit=newunit(f1), file="de_norms.dat", status='unknown')
-        write(f1,*) "DE Norms for Horizontal Channel Flow:"
-        write(f1,*) "imax= ",imax, " jmax=", jmax
-        write(f1,*) "1st line: L1 Norms, 2nd line: L2 Norms, &
-                     &3rd line: Linf Norms"
-        write(f1,*) "Columns: P_g : U_g : V_g"
-        write(f1,*) lnorms_p_g(1), lnorms_u_g(1), lnorms_v_g(1)
-        write(f1,*) lnorms_p_g(2), lnorms_u_g(2), lnorms_v_g(2)
-        write(f1,*) lnorms_p_g(3), lnorms_u_g(3), lnorms_v_g(3)
-        close(f1)
+        if(myPE == PE_IO) then
+          open(unit=newunit(f1), file="de_norms.dat", status='unknown')
+          write(f1,*) "# DE Norms for Horizontal Channel Flow:"
+          write(f1,*) "# imax= ",imax, " jmax=", jmax
+          write(f1,*) "# 1st line: L1 Norms, 2nd line: L2 Norms, &
+                       &3rd line: Linf Norms"
+          write(f1,*) "# Columns: P_g : U_g : V_g"
+          write(f1,*) lnorms_p_g(1), lnorms_u_g(1), lnorms_v_g(1)
+          write(f1,*) lnorms_p_g(2), lnorms_u_g(2), lnorms_v_g(2)
+          write(f1,*) lnorms_p_g(3), lnorms_u_g(3), lnorms_v_g(3)
+          close(f1)
+        end if
         
-
       RETURN
 
       END SUBROUTINE calculate_de_norms
@@ -129,7 +156,7 @@
 !                                                                      !
 !  Module name: calculate_lnorms	                               !
 !  Purpose: Calculates L1, L2 and Lifinity norms for any input         !
-!  variable of size IJKMAX3                                            ! 
+!  variable of defined size                                            ! 
 !                                                                      !
 !  Author: Aniruddha Choudhary                        Date: Jan 2015   !
 !  email: anirudd@vt.edu					       !
@@ -141,39 +168,32 @@
 !                                                                      ! 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE calculate_lnorms(var, lnorms)
-      USE geometry, only  : ijkmax3
-      USE compar, only    : ijkstart3, ijkend3
-      USE functions, only : fluid_at
-      USE param1, only    : zero
+      SUBROUTINE calculate_lnorms(var_size, var, lnorms)
+      Use param1, only    : zero
       IMPLICIT NONE
 
+! size of the variable
+        integer, intent(in)                               :: var_size
+
 ! variable for which norms are to be calculated      
-        double precision, dimension(ijkmax3), intent(in)  :: var 
+        double precision, dimension(var_size), intent(in)  :: var 
 
 ! the three norms: L1, L2 and Linfinity        
         double precision, dimension(3), intent(out)       :: lnorms
 
 ! looping indices        
         integer         :: ijk
-        integer         :: counter
 
 
 ! calculate L1, L2 and Linfinity norms        
         lnorms(1:3) = zero
-        counter = 0
-        write(*,*)
-        do ijk = ijkstart3, ijkend3
-          if(fluid_at(ijk)) then
-            write(*,*) "ijk= ", ijk
+        do ijk = 1, var_size
             lnorms(1) = lnorms(1) + abs(var(ijk))
             lnorms(2) = lnorms(2) + abs(var(ijk))**2
             lnorms(3) = max(lnorms(3), abs(var(ijk)))
-            counter = counter + 1
-          end if
         end do
-        lnorms(1) = lnorms(1)/real(counter)
-        lnorms(2) = sqrt(lnorms(2)/real(counter))
+        lnorms(1) = lnorms(1)/real(var_size)
+        lnorms(2) = sqrt(lnorms(2)/real(var_size))
 
 
       RETURN
@@ -196,24 +216,15 @@
 !                                                                      ! 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE calculate_exact_solution_channel(p_g_ex, u_g_ex, &
-      & v_g_ex)
-      USE geometry, only  : ijkmax3, dx, dy, dz, imax
-      USE compar, only    : ijkstart3, ijkend3      
-      USE functions, only : i_of, j_of, k_of
-      USE param1, only    : zero, half
+      SUBROUTINE calculate_exact_solution_channel
+      Use geometry, only  : ijkmax3, dx, dy, dz, imax
+      Use compar, only    : ijkstart3, ijkend3      
+      Use functions, only : i_of, j_of, k_of
+      Use param1, only    : zero, half
+      Use usr, only       : p_g_ex, u_g_ex, v_g_ex
+      Use usr, only       : xtr, ytr, ztr
+      Use sendrecv, only  : send_recv
       IMPLICIT NONE
-
-! exact solution variables      
-        double precision, dimension(ijkmax3), intent(out) :: p_g_ex
-        double precision, dimension(ijkmax3), intent(out) :: u_g_ex
-        double precision, dimension(ijkmax3), intent(out) :: v_g_ex
-
-! x, y, z coordinates of the top-right corner of a cell.
-! used to find the node locations in the mesh      
-        double precision, dimension(ijkmax3)  :: xtr
-        double precision, dimension(ijkmax3)  :: ytr
-        double precision, dimension(ijkmax3)  :: ztr
 
 ! looping indices      
         integer :: ijk, i, j, k
@@ -231,8 +242,9 @@
         double precision, parameter :: l_usr      = 0.2d0     ! length
         double precision, parameter :: p0_usr     = 101325.d0 ! ref. pressure
 
-
-! generate grid locations for exact solution calculations      
+        
+! generate grid locations for exact solution calculations 
+        !** would this work correctly in DMP?
         do ijk = ijkstart3, ijkend3
           i = i_of(ijk)
           j = j_of(ijk)
@@ -256,8 +268,12 @@
 
           xtr(ijk) = xt
           ytr(ijk) = yt
-          ztr(ijk) = zt                    
+          ztr(ijk) = zt 
         end do
+
+        call send_recv(xtr)
+        call send_recv(ytr)
+        call send_recv(ztr)
 
 ! set exact solution
         do ijk = ijkstart3, ijkend3
@@ -267,7 +283,8 @@
 ! scalar variable
           xt = xtr(ijk) - dx(i)*half
           p_g_ex(ijk) = p0_usr + &
-              dpdx_usr*((l_usr - half*dx(imax+1)) - xt)
+              dpdx_usr*((l_usr - half*dx(imax+1)) - xt) 
+          !** dx(imax+1)??
 
 ! vector variable (x)
           yt = ytr(ijk) - dy(j)*half         
@@ -276,6 +293,10 @@
 ! vector variable (y)          
           v_g_ex(ijk) = zero
         end do
+
+        call send_recv(p_g_ex)
+        call send_recv(u_g_ex)
+        call send_recv(v_g_ex)
 
 
       RETURN
