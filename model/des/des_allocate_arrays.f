@@ -46,10 +46,9 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: II, IJK
+      INTEGER :: IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
-      INTEGER :: NUM_THREADS, OMP_GET_NUM_THREADS
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
@@ -352,10 +351,6 @@
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: LC ! Loop counter for no. of DES_BCMI
-!-----------------------------------------------
 
 ! Particle injection factor
       Allocate( PI_FACTOR (DEM_BCMI) )
@@ -414,10 +409,6 @@
       USE pic_bc
       USE discretelement
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: I     ! Loop counter for no. of DES_BCMI
 !-----------------------------------------------
 
 ! Allocate/Initialize for inlets

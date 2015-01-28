@@ -41,9 +41,9 @@
 !-----------------------------------------------
 
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
-         CALL CONV_SOURCE_EPP0 (A_M, B_M, B_MMAX, IER)
+         CALL CONV_SOURCE_EPP0 (A_M, B_M, B_MMAX)
       ELSE
-         CALL CONV_SOURCE_EPP1 (A_M, B_M, B_MMAX, IER)
+         CALL CONV_SOURCE_EPP1 (A_M, B_M, B_MMAX)
       ENDIF
 
       RETURN
@@ -62,7 +62,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, B_MMAX, IER)
+      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, B_MMAX)
 
 !-----------------------------------------------
 ! Modules
@@ -88,8 +88,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
@@ -322,7 +320,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, B_MMAX, IER)
+      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, B_MMAX)
 
 !-----------------------------------------------
 ! Modules
@@ -357,8 +355,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -578,7 +574,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_EPP(B_M, B_MMAX, IER)
+      SUBROUTINE POINT_SOURCE_EPP(B_M, B_MMAX)
 
 !-----------------------------------------------
 ! Modules
@@ -601,9 +597,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
-
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 !-----------------------------------------------
 ! Local Variables

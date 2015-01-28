@@ -16,7 +16,7 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE BOUND_X(ARRAY, IJKMAX2, IER)
+      SUBROUTINE BOUND_X(ARRAY, IJKMAX2)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -34,9 +34,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Maximum dimension
       INTEGER          IJKMAX2

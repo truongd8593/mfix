@@ -41,7 +41,7 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
 
-      INTEGER :: lSIZE1, lSIZE2, ii
+      INTEGER :: lSIZE2, ii
       DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
 
       IF(STL_FACET_TYPE(facet_id) /= FACET_TYPE_NORMAL) RETURN
@@ -277,7 +277,7 @@
       Implicit none
 
       INTEGER :: LL
-      INTEGER I, J,K, II, IW, IDIM, IJK, NF, wall_count
+      INTEGER IJK, NF
       DOUBLE PRECISION OVERLAP_N, SQRT_OVERLAP
 
       DOUBLE PRECISION V_REL_TRANS_NORM, DISTSQ, RADSQ, CLOSEST_PT(DIMN)
@@ -287,10 +287,8 @@
       DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DIST(DIMN), DISTMOD
       DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T, PFT
 
-      LOGICAL :: checked_facet_already,DES_LOC_DEBUG, PARTICLE_SLIDE, &
-      test_overlap_and_exit
-      INTEGER :: COUNT_FAC, COUNT, COUNT2, &
-      contact_facet_count, &
+      LOGICAL :: DES_LOC_DEBUG, PARTICLE_SLIDE
+      INTEGER :: COUNT_FAC, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL
 
@@ -302,9 +300,7 @@
       double precision :: line_t
       !flag to tell if the orthogonal projection of sphere center to
       !extended plane detects an overlap
-      LOGICAL :: ortho_proj_cut
       INTEGER, Parameter :: MAX_FACET_CONTS = 200
-      INTEGER :: list_of_checked_facets(max_facet_conts)
 
       DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP
 
@@ -871,7 +867,7 @@
       DOUBLE PRECISION, DIMENSION(DIMN) :: V_ROT, OMEGA_SUM, VRELTRANS
 
 ! distance from the contact point to the particle centers
-      DOUBLE PRECISION DIST_CL, DIST_CI
+      DOUBLE PRECISION DIST_CL
 
 ! translational relative velocity
       VRELTRANS(:) = DES_VEL_NEW(:,LL)

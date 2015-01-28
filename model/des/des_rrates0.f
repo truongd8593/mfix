@@ -68,7 +68,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
       INTEGER :: H    ! Reaction loop counter
-      INTEGER :: L, M ! Global Phase index loop counters
+      INTEGER :: M    ! Global Phase index loop counter
       INTEGER :: N    ! Global species index
       INTEGER :: lN   ! Local reaction speices index/loop counter
       INTEGER :: LM   !

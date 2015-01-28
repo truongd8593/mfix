@@ -36,7 +36,7 @@
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! Loop indicies:
-      INTEGER :: L, I, J, K, IJK
+      INTEGER :: L, I, J, K
 ! Integer error flag.
       INTEGER :: IER
 
@@ -106,7 +106,7 @@
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! Loop indicies:.
-      INTEGER :: L, I, J, K, IJK
+      INTEGER :: L, I, J, K
 ! Integer error flag
       INTEGER :: IER
 

@@ -44,10 +44,6 @@
 
       implicit none
 
-! Local Variables:
-!---------------------------------------------------------------------//
-      INTEGER :: M
-      INTEGER :: I, J, K, IJK
 !-----------------------------------------------
 
 ! Initialize the error manager.

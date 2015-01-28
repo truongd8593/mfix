@@ -69,19 +69,11 @@
 
       implicit none
 
-      DOUBLE PRECISION :: EP_SM
-! Temp variable for storing number of particles.
-      DOUBLE PRECISION :: PARTS_TEMP
 ! Temp logical variables for checking constant npc and statwt specification
       LOGICAL :: CONST_NPC, CONST_STATWT
 
-! Number of real and comp. particles in a cell.
-      DOUBLE PRECISION REAL_PARTS(DIM_M), COMP_PARTS(DIM_M)
 ! Volume of the cell
-      DOUBLE PRECISION :: VOLIJK
-      INTEGER :: I, J, K, IJK, ICV, M, COUNT_IC
-!temporary variable for Dimension_3
-      INTEGER :: DIM3_TEMP
+      INTEGER :: ICV, M
 
       IF (.NOT.GENER_PART_CONFIG) RETURN
 

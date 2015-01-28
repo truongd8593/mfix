@@ -27,8 +27,6 @@
 
       CHARACTER(LEN=64) :: eMsg
 
-      DOUBLE PRECISION lSum
-
       INTEGER :: PS_SIZE
 
       DOUBLE PRECISION, allocatable :: lData_dp(:)
@@ -284,7 +282,6 @@
 
       INTEGER :: IJK, I, J, K, M, N
 
-      INTEGER :: IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
       INTEGER :: lc1
 
       INTEGER, allocatable :: lFlags_i(:,:)

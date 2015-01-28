@@ -17,7 +17,7 @@
 !     Local variables: sourcelhs, sourcerhs                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_GHD_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK, IER)
+      SUBROUTINE SOURCE_GHD_GRANULAR_ENERGY(SOURCELHS, SOURCERHS, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -50,9 +50,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          IJK, I, J, K, IM, JM, KM, IMJK, IJMK, IJKM,&

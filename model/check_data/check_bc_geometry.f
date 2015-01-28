@@ -415,15 +415,10 @@
 
       INTEGER, INTENT(in) :: BCV
 
-! loop/variable indices
-      INTEGER :: I, J, K, IJK
-! last two digits of BC
-      INTEGER :: BC2
 ! calculated indices of the wall boundary
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
 ! indices for error checking
       INTEGER :: IER
-
 
 ! surface indictors
 ! a value of T indicates that the defined boundary region does not

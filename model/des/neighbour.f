@@ -27,7 +27,6 @@
 !-----------------------------------------------
 
 INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
-INTEGER :: OMP_GET_NUM_THREADS
 
 !-----------------------------------------------
 ! Reset PPOS and NEIGHBOURS back to initialized values

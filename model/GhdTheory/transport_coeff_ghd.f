@@ -15,7 +15,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE TRANSPORT_COEFF_GHD (M, IER)
+      SUBROUTINE TRANSPORT_COEFF_GHD (M)
 
 !-----------------------------------------------
 ! Modules
@@ -41,8 +41,6 @@
       INTEGER :: IJK, I, J, K
 ! Solids phase
       INTEGER :: M, L
-! Error index
-      INTEGER :: IER
 ! particles properties and GHD transport coefficients
       DOUBLE PRECISION :: SIGMAI(smax), Mi(smax), phii(smax)
       DOUBLE PRECISION :: Ti(smax), tmpDT(smax)

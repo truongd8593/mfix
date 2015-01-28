@@ -9,7 +9,7 @@
 !     coefficients are positive. S_p must be positive.                 !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DIF_PHI_SOURCE_DES(PHI, M, A_M, B_M, lDT, IER)
+      SUBROUTINE DIF_PHI_SOURCE_DES(PHI, M, A_M, B_M, lDT)
 
 !-----------------------------------------------
 ! Modules
@@ -46,8 +46,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Diffusion time-step
       DOUBLE PRECISION, INTENT(IN) :: lDT
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

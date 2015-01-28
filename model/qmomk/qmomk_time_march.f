@@ -47,10 +47,10 @@ SUBROUTINE QMOMK_TIME_MARCH
   IMPLICIT NONE
 
   INTEGER :: I,J,K,M,M2,IN
-  INTEGER :: IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IPJPK, IPJKP, IJPKP, IPJPKP
-  DOUBLE PRECISION :: Vmax, g0radial_max, g0radial_temp, min_space_delta
-  DOUBLE PRECISION :: vrel, Rep, CD, beta_drag, min_tau_drag, f_gs_tmp
-  DOUBLE PRECISION :: UGC, VGC, WGC, mom0, mass_p, QMOMK_TCOL, drag_exp, QMOMK_OMEGA
+  INTEGER :: IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
+  DOUBLE PRECISION :: Vmax, min_space_delta
+  DOUBLE PRECISION :: vrel, Rep, CD, beta_drag, min_tau_drag
+  DOUBLE PRECISION :: UGC, VGC, WGC, mom0, QMOMK_TCOL, drag_exp, QMOMK_OMEGA
   DOUBLE PRECISION QMOMK_TIME, QMOMK_DT_TMP, TMP_DTS
   INTEGER :: TIME_FACTOR, TIME_I
   LOGICAL, SAVE ::  FIRST_PASS = .TRUE.
@@ -61,9 +61,6 @@ SUBROUTINE QMOMK_TIME_MARCH
   DOUBLE PRECISION, DIMENSION(QMOMK_NN) :: Wlminus, Wlplus, Wrminus, Wrplus
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_x_left, F_x_right, F_y_left
   DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_y_right, F_z_left, F_z_right
-  DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_x_coll_left, F_x_coll_right
-  DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_y_coll_left, F_y_coll_right
-  DOUBLE PRECISION, DIMENSION(QMOMK_NMOM) :: F_z_coll_left, F_z_coll_right
 
   IF (FIRST_PASS) THEN
      FIRST_PASS = .FALSE.

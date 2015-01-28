@@ -37,8 +37,6 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L
-      INTEGER :: IJK, M  ! needed for calling bfx_s, etc
 
       CALL INIT_ERR_MSG("CFASSIGN")
 
@@ -152,21 +150,11 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, M
-      INTEGER :: COUNT_E
-      DOUBLE PRECISION :: MASS_I, MASS_J, &
-                          MASS_EFF, RED_MASS_EFF
-      DOUBLE PRECISION :: TCOLL, TCOLL_TMP
-! local variables for calculation of hertzian contact parameters
-      DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF
 
       CALL INIT_ERR_MSG("CFASSIGN_DEM")
 
 !      WRITE(ERR_MSG,'(A)') 'Setting collision model parameters for DEM'
 !      CALL FLUSH_ERR_MSG (Footer = .false.)
-
-
-
 
 ! Finalize the error manager.
       CALL FINL_ERR_MSG
@@ -234,9 +222,6 @@
       double precision :: avg_factor
 ! not used?
       double precision :: vol_node_uncorr
-! used for reporting information
-      integer :: FLUID_IND, CUTCELL_IND, WALL_IND
-      character(LEN=100) :: filename
 !-----------------------------------------------
 
       avg_factor = merge(0.25d0, 0.125d0, NO_K)

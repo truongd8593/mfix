@@ -282,14 +282,6 @@
 
       IMPLICIT NONE
 
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! Loop index.
-      INTEGER :: M, L, LC
-! Collision length scale.
-      DOUBLE PRECISION :: TCOLL
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_COLLISION")
 
@@ -411,8 +403,6 @@
       INTEGER :: M, L, LC
 ! Flag to warn user.
       LOGICAL :: FLAG_WARN
-! Message for formated output.
-      CHARACTER(len=64) :: MSG
 ! Collision length scale.
       DOUBLE PRECISION :: TCOLL, TCOLL_TMP
 ! Collision length scale.
@@ -668,8 +658,6 @@
 !---------------------------------------------------------------------//
 ! Loop index.
       INTEGER :: M, L, LC
-! Flag to warn user.
-      LOGICAL :: FLAG_WARN
 ! Message for formated output.
       CHARACTER(len=64) :: MSG
 ! Collision length scale.

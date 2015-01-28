@@ -412,8 +412,6 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE END_PARSE_RXN()
 
-      INTEGER M, IDX
-
       READING_RXN = .FALSE.
       READING_RATE = .FALSE.
       DES_RXN = .FALSE.

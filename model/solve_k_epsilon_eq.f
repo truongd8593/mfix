@@ -76,21 +76,16 @@
 !
 !
 !                      phase index
-      INTEGER          m , I,IM, I1, J, K, LC
-!
-!                      species index
-      INTEGER          n
+      INTEGER          m, I, J, K, LC
 !
       DOUBLE PRECISION apo
-!
 
-!
 !                      temporary variables in residual computation
       DOUBLE PRECISION res1, mres1, num_res, den_res
       INTEGER          ires1
 !
 !                      Indices
-      INTEGER          IJK, IPJK, IMJK,IJMK,IJPK
+      INTEGER          IJK
 !
 !                      linear equation solver method and iterations
       INTEGER          LEQM, LEQI
@@ -181,7 +176,7 @@
                          BC_C_K_Turb_G, M, A_M, B_M, IER)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EP_G, K_Turb_G, M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, K_Turb_G, M, A_M, B_M)
 !
             CALL CALC_RESID_S (K_Turb_G, A_M, B_M, M, num_res, den_res, res1, &
                                mres1, ires1, ZERO, IER)
@@ -263,7 +258,7 @@
                          BC_C_E_Turb_G, M, A_M, B_M, IER)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EP_G, E_Turb_G, M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, E_Turb_G, M, A_M, B_M)
 !
 ! When implementing the wall functions, The Epsilon (dissipation) value at the fluid cell
 ! near the walls needs to be set.

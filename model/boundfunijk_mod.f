@@ -21,12 +21,7 @@
       INTEGER          pLI, pLJ, pLK
 
 !                      Dummy indices for MINS AND MAXS
-      INTEGER          LIMIN, LJMIN, LKMIN, LIMAX, LJMAX, LKMAX
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER IJK
-
+      INTEGER          LIMIN, LJMIN
 !-----------------------------------------------
 
       BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, pLI) ),&

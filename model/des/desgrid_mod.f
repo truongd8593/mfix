@@ -464,18 +464,9 @@
 !-----------------------------------------------
 ! Local varibles
 !-----------------------------------------------
-      double precision :: ldomlen
       double precision :: ltempdx,ltempdy,ltempdz
-      integer :: lijkproc,liproc,ljproc,lkproc,lis,lie,ljs,lje,lks,lke
+      integer :: lijkproc,liproc,ljproc,lkproc
       integer :: lijk
-
-
-! Local Variables:
-!---------------------------------------------------------------------//
-! Maximum particle diameter.
-      DOUBLE PRECISION :: MAX_DIAM
-! Calculated cell dimension based on particle size
-      DOUBLE PRECISION :: WIDTH
 !......................................................................!
 
 ! Initialize the error manager.
@@ -752,7 +743,6 @@
       integer, dimension(dg_ijksize2) :: lpic,lindx
       integer li,lj,lk,lijk,lijk_count,lcurpar,lparcount,lcurpic
       logical, save :: first_pass = .true.
-      integer :: lallocstat,lallocerr
 !-----------------------------------------------
 
 ! locate the particles including ghost cells
@@ -874,7 +864,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      integer lcurpar,lmaxneigh,lkoffset
+      integer lcurpar,lkoffset
       integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
       double precision lsearch_rad,ldistsquared
       double precision :: ldistvec(3)
@@ -884,7 +874,7 @@
 !$      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
 !$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
-!$    integer omp_get_thread_num, omp_get_num_threads, num_threads
+!$    integer num_threads
 !-----------------------------------------------
 
 ! loop through neighbours and build the contact particles list for particles
