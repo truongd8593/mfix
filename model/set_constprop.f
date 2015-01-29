@@ -37,7 +37,7 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: IJK, M, N, I, J
+      INTEGER :: IJK, M, I, J
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
 !-----------------------------------------------
 

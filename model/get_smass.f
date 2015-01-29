@@ -51,12 +51,6 @@
 !                      Total Weight of solids in the reactor
       DOUBLE PRECISION SMASS
 !
-!                      Weight of mth solids phase
-      DOUBLE PRECISION SUM
-!
-!                      Indices
-      INTEGER          I, J, K, IJK
-!
 !                      Solids phase
       INTEGER          M
 !

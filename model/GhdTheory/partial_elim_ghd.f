@@ -72,8 +72,6 @@
 !                      a0, b0 etc.
       DOUBLE PRECISION a(0:DIMENSION_M), BB(0:DIMENSION_M), F(0:DIMENSION_M,0:DIMENSION_M),&
                        Saxf(0:DIMENSION_M)
-!                      error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -413,7 +411,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE PARTIAL_ELIM_GHD_W(VAR_G, VAR_S, VXF, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_GHD_W(VAR_G, VAR_S, VXF, A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -440,10 +438,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,LM,K, IJKT

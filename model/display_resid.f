@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE DISPLAY_RESID(NIT, IER)
+      SUBROUTINE DISPLAY_RESID(NIT)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -46,9 +46,6 @@
 !
 !                      iteration number
       INTEGER          NIT
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      residual number
       INTEGER          L

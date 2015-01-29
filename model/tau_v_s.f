@@ -14,7 +14,7 @@
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_TAU_V_S(TAU_V_S, IER)
+      SUBROUTINE CALC_TAU_V_S(TAU_V_S)
 
 !-----------------------------------------------
 ! Modules
@@ -66,8 +66,6 @@
 !-----------------------------------------------
 ! TAU_V_s
       DOUBLE PRECISION, INTENT(OUT) :: TAU_V_s(DIMENSION_3, DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -85,22 +83,16 @@
       DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
 ! Shearing variables
       DOUBLE PRECISION :: Source_diff,Diffco_e,Diffco_w
-! error message
-      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       LOGICAL :: U_NODE_AT_NE,U_NODE_AT_NW,U_NODE_AT_SE,U_NODE_AT_SW
       LOGICAL :: W_NODE_AT_TN,W_NODE_AT_TS,W_NODE_AT_BN,W_NODE_AT_BS
-      DOUBLE PRECISION :: U_SUM,W_SUM,X_SUM,Y_SUM,Z_SUM,Uc,Wc
-      DOUBLE PRECISION :: Xuc,Yuc,Zuc,Xwc,Ywc,Zwc,Nxu,Nyu,Nzu,Nxw,Nyw,Nzw
       DOUBLE PRECISION :: dudy_at_E,dudy_at_W
       DOUBLE PRECISION :: dwdy_at_T,dwdy_at_B
-      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
-      DOUBLE PRECISION :: x_circle,y_circle,angle
+      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: MU_S_CUT,SSX_CUT,SSZ_CUT
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
-      INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------

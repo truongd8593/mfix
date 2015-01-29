@@ -12,7 +12,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ADJUST_A_W_S(A_M, B_M, IER)
+      SUBROUTINE ADJUST_A_W_S(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -34,8 +34,6 @@
 !-----------------------------------------------
 ! Dummy Arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m

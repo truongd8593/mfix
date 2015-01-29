@@ -8,7 +8,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      SUBROUTINE VF_GS_X(VXF_GS, IER)
+      SUBROUTINE VF_GS_X(VXF_GS)
 
 !-----------------------------------------------
 ! Modules
@@ -26,8 +26,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------
@@ -88,7 +86,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE VF_SS_X(VXF_SS, IER)
+      SUBROUTINE VF_SS_X(VXF_SS)
 
 !-----------------------------------------------
 ! Modules
@@ -108,8 +106,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------
@@ -119,8 +115,6 @@
       INTEGER :: I, IJK, IJKE
 ! Index of continuum solids phases
       INTEGER :: L, M, LM
-! Index of discrete solids 'phases'
-      INTEGER :: DM
 !-----------------------------------------------
 
 ! initialize every call

@@ -34,7 +34,6 @@
       integer, intent(in) :: ncount
       integer, optional, intent(in) :: myid
       integer :: dbgout = 75
-      integer :: i
 
       open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
@@ -64,7 +63,6 @@
       integer, intent(in) :: ncount
       integer, optional, intent(in) :: myid
       integer :: dbgout = 75
-      integer :: i
 
       open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
@@ -100,7 +98,6 @@
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
-      integer ijk
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -130,7 +127,6 @@
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
-      integer ijk
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
@@ -159,7 +155,6 @@
       integer :: ldbg = 35
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
-      integer ijk
 
        OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname

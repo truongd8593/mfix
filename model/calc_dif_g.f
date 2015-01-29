@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_DIF_G(IER)
+      SUBROUTINE CALC_DIF_G()
 !...Switches: -xf
 !-----------------------------------------------
 !   M o d u l e s
@@ -45,13 +45,11 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
 
 !                      Indices
-      INTEGER          IJK, N, N1, N2
+      INTEGER          IJK, N
 
-      DOUBLE PRECISION Dab(3,3), SUMJ, Tg0, Pg0
+      DOUBLE PRECISION Dab(3,3), Tg0, Pg0
 
 !-----------------------------------------------
 

@@ -85,10 +85,10 @@
 
 ! solving gas continuity
          CALL ADJUST_LEQ (RESID(RESID_RO,0), LEQ_IT(2), LEQ_METHOD(2),&
-            LEQI, LEQM, IER)
+            LEQI, LEQM)
          CALL SOLVE_LIN_EQ ('ROP_g', 2, ROP_G, A_M, B_M, 0, LEQI, &
             LEQM, LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER)
-         CALL ADJUST_ROP (ROP_G, IER)
+         CALL ADJUST_ROP (ROP_G)
 !        call out_array(ROP_g, 'rop_g')
 
       ELSE
@@ -116,10 +116,10 @@
 !     &      DO_K, ier)
 !
          CALL ADJUST_LEQ (RESID(RESID_RO,M), LEQ_IT(2), LEQ_METHOD(2),&
-            LEQI, LEQM, IER)
+            LEQI, LEQM)
          CALL SOLVE_LIN_EQ ('ROP_s', 2, ROP_S(1,M), A_M, B_M, M, LEQI,&
             LEQM,LEQ_SWEEP(2), LEQ_TOL(2), LEQ_PC(2), IER)
-         CALL ADJUST_ROP (ROP_S(1,M), IER)
+         CALL ADJUST_ROP (ROP_S(1,M))
 !          call out_array(rop_s(1,m), 'rop_s')
       ENDIF
 

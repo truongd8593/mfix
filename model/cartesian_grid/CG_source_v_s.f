@@ -12,7 +12,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_V_S(A_M, B_M, M, IER)
+      SUBROUTINE CG_SOURCE_V_S(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -50,8 +50,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -305,7 +303,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_V_S_BC(A_M, B_M, M, IER)
+      SUBROUTINE CG_SOURCE_V_S_BC(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -336,18 +334,12 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Boundary condition
-      INTEGER :: L
 ! Indices
-      INTEGER :: I, J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
-                 IM, KM, IJKS, IJMK, IJPK
+      INTEGER :: IJK, IJKS
 ! for cartesian grid:
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------

@@ -57,10 +57,7 @@
       CHARACTER(LEN=*) :: CMETHOD
 !
 !-------------------------------------------------
-      DOUBLE PRECISION DNRM2
       EXTERNAL LEQ_MATVECt, LEQ_MSOLVEt, LEQ_MSOLVE0t, LEQ_MSOLVE1t
-
-
 !--------------------------------------------------
 
       if(PC.eq.'LINE') then
@@ -155,7 +152,7 @@
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
                       RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged
-      INTEGER :: i, ii, j, k, ijk, itemp, iter
+      INTEGER :: i, j, k, iter
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
       INTEGER :: ijk2
       DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
@@ -904,7 +901,6 @@
 !                      Variable
       DOUBLE PRECISION Var(ijkstart3:ijkend3)
 !                      Variable
-      DOUBLE PRECISION, allocatable, Dimension(:) :: Var_g
 !
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s
@@ -913,18 +909,13 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-
 !
-      INTEGER          I,  J, K, IJK, ITER, IJK2
-      INTEGER          II,  JJ, KK
-      DOUBLE PRECISION oAm
+      INTEGER          I,  J, K, IJK2
 
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
       logical, parameter :: use_send_recv = .true.
       logical, parameter :: need_distribute_Avar = .true.
       logical, parameter :: use_funijk = .false.
-
-      integer :: i1,i2, j1,j2, k1,k2, isize,jsize
 
       if (do_k) then
 
@@ -1052,7 +1043,7 @@
 !-----------------------------------------------
 
 !
-      INTEGER ::   IJK, I , J, K , ITER, NITER, IJK2
+      INTEGER ::   I, J, K, ITER, NITER, IJK2
       INTEGER ::   I1 , K1 , I2, K2, IK, ISIZE, KSIZE
       INTEGER ::   ICASE
 
@@ -1510,7 +1501,7 @@
 
       CHARACTER(LEN=4) :: CMETHOD
 
-      integer :: i,j,k, ijk, ijk2
+      integer :: i,j,k, ijk2
 
       if (use_doloop) then
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade

@@ -236,7 +236,7 @@
 
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID .AND. .NOT.(CG_SAFE_MODE(1)==1)) &
-         CALL DIF_PHI_BC_DES_CG(PHI, 0, A_M, B_M, IER)
+         CALL DIF_PHI_BC_DES_CG(PHI, 0, A_M, B_M)
 
       RETURN
       END SUBROUTINE DIF_PHI_BC_DES
@@ -251,7 +251,7 @@
 !  Author: Jeff Dietiker                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DIF_PHI_BC_DES_CG(PHI, M, A_M, B_M, IER)
+      SUBROUTINE DIF_PHI_BC_DES_CG(PHI, M, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -283,8 +283,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

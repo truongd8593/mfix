@@ -40,8 +40,6 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-! Fluid cell index
-      INTEGER :: IJK
 ! Solids phase index
       INTEGER :: Mx
 ! Average solids volume fraction
@@ -503,7 +501,6 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Fluid cell index
-      INTEGER :: IJK
 
       IF(DIR == 'X')THEN
         AVG_XYZ = AVG_X(V1, V2, L)

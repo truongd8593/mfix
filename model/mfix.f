@@ -313,9 +313,9 @@
 
 ! Find corner cells and set their face areas to zero
       IF(.NOT.CARTESIAN_GRID)  THEN
-         CALL GET_CORNER_CELLS (IER)
+         CALL GET_CORNER_CELLS()
       ELSE
-         IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS (IER)
+         IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS ()
       ENDIF
 
 ! Set constant physical properties
@@ -407,8 +407,8 @@
 ! AEOLUS: debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then
 !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
-         call debug_write_layout(1,ier)
-         call write_parallel_info(1)
+         call debug_write_layout()
+         call write_parallel_info()
       endif
 
 ! Initializations for CPU time calculations in iterate
@@ -503,7 +503,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: debug_write(debuglvl, ier )                            C
+!  Module name: debug_write()                                          C
 !  Purpose: Write out full geometry index setup information for the
 !  case
 !                                                                      C
@@ -520,7 +520,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE debug_write_layout(debuglvl, IER)
+      SUBROUTINE debug_write_layout()
 
 !-----------------------------------------------
 ! Modules
@@ -542,13 +542,6 @@
       USE time_cpu
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error indicator
-      INTEGER :: IER
-! debug level
-      INTEGER :: debuglvl
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -816,7 +809,7 @@
 
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE write_parallel_info(debuglvl)
+      SUBROUTINE write_parallel_info()
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -839,9 +832,6 @@
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
-! debug level
-      INTEGER :: debuglvl
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

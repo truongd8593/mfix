@@ -14,7 +14,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_TAU_W_S(TAU_W_S, IER)
+      SUBROUTINE CALC_TAU_W_S(TAU_W_S)
 
 !-----------------------------------------------
 ! Modules
@@ -66,42 +66,34 @@
 !-----------------------------------------------
 ! TAU_W_s
       DOUBLE PRECISION, INTENT(OUT) :: TAU_W_s(DIMENSION_3, DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, J, I, IM, IJKP, IMJK, IJKN, IJKNT, IJKS,&
                  IJKST, IJMKP, IJMK, IJKE, IJKTE, IJKW, IJKTW,&
-                 IMJKP, K, IJKT, JM, KP, IJKM, IPJK
+                 IMJKP, K, IJKT, JM, KP, IJKM
 ! Phase index
       INTEGER :: M, L
 ! Average volume fraction
       DOUBLE PRECISION :: EPSA, EPStmp
 ! Average velocity gradients
-      DOUBLE PRECISION :: dWoXdz, duodz
+      DOUBLE PRECISION :: duodz
 ! Source terms (Surface)
       DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
 ! Source terms (Volumetric)
       DOUBLE PRECISION :: Vxz
-! error message
-      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
-      INTEGER :: IP,JP,KM
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       LOGICAL :: U_NODE_AT_ET,U_NODE_AT_EB,U_NODE_AT_WT,U_NODE_AT_WB
       LOGICAL :: V_NODE_AT_NT,V_NODE_AT_NB,V_NODE_AT_ST,V_NODE_AT_SB
 
-      DOUBLE PRECISION :: U_SUM,V_SUM,X_SUM,Y_SUM,Z_SUM,Uc,Vc
-      DOUBLE PRECISION :: Xuc,Yuc,Zuc,Xvc,Yvc,Zvc,Nxu,Nyu,Nzu,Nxv,Nyv,Nzv
       DOUBLE PRECISION :: dudz_at_E,dudz_at_W
       DOUBLE PRECISION :: dvdz_at_N,dvdz_at_S
       DOUBLE PRECISION :: MU_S_CUT,SSX_CUT,SSY_CUT
-      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
+      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Sx,Sy,Sz
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
-      INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------

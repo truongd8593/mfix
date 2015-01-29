@@ -48,13 +48,13 @@
       !box face normals
       double precision, dimension(3) :: u0, u1, u2
 
-      double precision, dimension(3) :: v0, v1, v2 , vert0_orig
+      double precision, dimension(3) :: v0, v1, v2
       double precision, dimension(3) :: f0, f1, f2
 
       !13 possible Separating axes
       double precision, dimension(9, 3) :: sep_axis
       !triangle plane n and d
-      double precision :: n(3), d, tol_tri_aabb_proj
+      double precision :: tol_tri_aabb_proj
 
       double precision :: axis_magsq, s
       integer :: count

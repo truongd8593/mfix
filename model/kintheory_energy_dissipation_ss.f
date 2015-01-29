@@ -9,7 +9,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_IA_ENERGY_DISSIPATION_SS(M, IER)
+      SUBROUTINE CALC_IA_ENERGY_DISSIPATION_SS(M)
 
 !-----------------------------------------------
 ! Modules
@@ -30,8 +30,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) ::  IER
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
@@ -241,8 +239,6 @@
 ! Function subroutines
 !-----------------------------------------------
       DOUBLE PRECISION G_0
-      DOUBLE PRECISION S_star
-      DOUBLE PRECISION G_gtsh
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -318,7 +314,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_GTSH_ENERGY_DISSIPATION_SS(M, IER)
+      SUBROUTINE CALC_GTSH_ENERGY_DISSIPATION_SS(M)
 
 !-----------------------------------------------
 ! Modules
@@ -340,8 +336,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 !-----------------------------------------------

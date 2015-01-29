@@ -220,7 +220,7 @@
 ! solids phase no.
       INTEGER :: M
 ! ijk indices
-      INTEGER :: I, J, K, IJK
+      INTEGER :: J, IJK
 ! average height of fluid cell
       DOUBLE PRECISION :: hcell
 ! height of particle (y-position)

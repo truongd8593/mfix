@@ -51,8 +51,8 @@
 
 
       IF (VISC(0)) CALL CALC_MU_G (IER)    ! Fluid viscosity
-      IF (COND(0)) CALL CALC_K_G (IER)     ! Fluid conductivity
-      IF (DIFF(0)) CALL CALC_DIF_G (IER)   ! Fluid diffusivity
+      IF (COND(0)) CALL CALC_K_G()     ! Fluid conductivity
+      IF (DIFF(0)) CALL CALC_DIF_G()   ! Fluid diffusivity
 
       DO M = 1, MMAX
 
@@ -62,18 +62,18 @@
          IF (GRAN_DISS(M)) THEN
          SELECT CASE (KT_TYPE_ENUM)
             CASE (IA_2005)
-               CALL CALC_IA_ENERGY_DISSIPATION_SS(M, IER)
+               CALL CALC_IA_ENERGY_DISSIPATION_SS(M)
             CASE(GD_1999)
                CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
             CASE(GTSH_2012)
-               CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M, IER)
+               CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M)
             END SELECT
          ENDIF
 ! these were moved after gran_diss since some quantities above are
 ! needed in the subsequent gtsh calculations
-         IF (COND(M)) CALL CALC_K_S (M, IER)   ! Solids conductivity
+         IF (COND(M)) CALL CALC_K_S (M)   ! Solids conductivity
          IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
-         IF (DIFF(M)) CALL CALC_DIF_S (M, IER) ! Solids diffusivity
+         IF (DIFF(M)) CALL CALC_DIF_S (M) ! Solids diffusivity
       ENDDO
 
       RETURN

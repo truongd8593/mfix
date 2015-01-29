@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_S(VAR, A_M, B_M, M, UR, IER)
+      SUBROUTINE UNDER_RELAX_S(VAR, A_M, B_M, M, UR)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -39,8 +39,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
 !
 !                      phase index
       INTEGER          M
@@ -102,7 +100,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_U(VAR, A_M, B_M, M, UR, IER)
+      SUBROUTINE UNDER_RELAX_U(VAR, A_M, B_M, M, UR)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -124,8 +122,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
 !
 !                      phase index
       INTEGER          M
@@ -187,7 +183,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_V(VAR, A_M, B_M, M, UR, IER)
+      SUBROUTINE UNDER_RELAX_V(VAR, A_M, B_M, M, UR)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -209,9 +205,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
-!
+
 !                      phase index
       INTEGER          M
 !
@@ -272,7 +266,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE UNDER_RELAX_W(VAR, A_M, B_M, M, UR, IER)
+      SUBROUTINE UNDER_RELAX_W(VAR, A_M, B_M, M, UR)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -294,9 +288,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
-!
+
 !                      phase index
       INTEGER          M
 !

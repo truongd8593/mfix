@@ -12,7 +12,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_W_S(A_M, B_M, M, IER)
+      SUBROUTINE CG_SOURCE_W_S(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -51,21 +51,19 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: I, J, K, IJK, IJKT, IMJK, IJMK, IJKM, IJKP, IMJKP
-      INTEGER :: IJKE, IJKW, IJKTE, IJKTW, IM, IPJK
+      INTEGER :: IJKE, IJKW, IJKTE, IM, IPJK
 ! Solids phase index
       INTEGER :: L
 ! Average volume fraction
       DOUBLE PRECISION :: EPSA, EPStmp
 ! virtual (added) mass
       DOUBLE PRECISION :: F_vir, ROP_MA
-      DOUBLE PRECISION :: Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, &
+      DOUBLE PRECISION :: Uge, Ugw, Wge, Wgw, Wgn, &
                           Wgs, Wgt, Wgb, Ugc, Vgc, Vgn, Vgs
 !
       DOUBLE PRECISION :: F_2
@@ -311,7 +309,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_W_S_BC(A_M, B_M, M, IER)
+      SUBROUTINE CG_SOURCE_W_S_BC(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -342,18 +340,12 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Boundary condition
-      INTEGER :: L
 ! Indices
-      INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
-                 IM, JM, IJKB, IJKM, IJKP
+      INTEGER :: IJK, IJKB
 ! for cartesian grid:
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------

@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_EXTERNAL_FORCES(IER)
+      SUBROUTINE CALC_EXTERNAL_FORCES()
 !
 !-----------------------------------------------
 !     Modules
@@ -51,9 +51,6 @@
 !
 !                      Solids phase
       INTEGER          M ,IM
-!
-!     Error index
-      INTEGER          IER
 !
 !     number densities to compute del(Nj)
       DOUBLE PRECISION NjC, NjE, NjN, NjT

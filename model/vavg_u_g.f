@@ -51,7 +51,7 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER          IJK, I_DUM
+      INTEGER          IJK
 !
 !                      Integral of U_g*EP_g for entire volume
       DOUBLE PRECISION SUM_U_g

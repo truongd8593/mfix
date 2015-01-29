@@ -64,8 +64,6 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-! IJK indices for fluid cell
-      INTEGER :: IJK
 ! Other indices
       INTEGER :: IJK2E, IPJK2, IPJKM2, IPJKP2, IPJMK2, IPJPK2
       INTEGER :: IJK2N, IJPK2, IJPKM2, IJPKP2, IMJPK2
@@ -1275,9 +1273,7 @@
 ! IJK indices
       INTEGER          IJK1, IJK2
 ! Other indices
-      INTEGER          IJK2E, IPJK2, IPJKM2, IPJKP2, IPJMK2, IPJPK2
-      INTEGER          IJK2N, IJPK2, IJPKM2, IJPKP2, IMJPK2
-      INTEGER          IJK2T, IJKP2, IJMKP2, IMJKP2
+      INTEGER          IJK2E, IPJK2, IPJMK2
 !
       DOUBLE PRECISION :: smallTheta
 ! Average scalars
@@ -1292,14 +1288,12 @@
 ! Average Simonin and Ahmadi variables (sof)
       DOUBLE PRECISION K_12_avg, Tau_12_avg, Tau_1_avg
 ! Average velocities
-      DOUBLE PRECISION WGC1, WGC2, WGCM, VGC1, VGC2, UGC1, UGC2
+      DOUBLE PRECISION WGC1, WGC2
 ! Solids phase index
       INTEGER          MM
-! Wall momentum or granular energy coefficient
-      DOUBLE PRECISION Hw
 ! values of U_sm, V_sm, W_sm at appropriate place on boundary wall
       DOUBLE PRECISION USCM, VSCM,WSCM
-      DOUBLE PRECISION USCM1,USCM2,VSCM1,VSCM2,WSCM1,WSCM2
+      DOUBLE PRECISION WSCM1,WSCM2
 ! values of U_g, V_g, W_g at appropriate place on boundary wall
       DOUBLE PRECISION UGC, VGC, WGC
 ! Magnitude of gas-solids relative velocity
@@ -1310,14 +1304,8 @@
       DOUBLE PRECISION g0(DIMENSION_M)
 ! Sum of eps*G_0
       DOUBLE PRECISION g0EPs_avg
-! Error message
-      CHARACTER(LEN=80) :: LINE
 ! Radial distribution function
       DOUBLE PRECISION g_0AVG
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION F_HW
 !-----------------------------------------------
 
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence

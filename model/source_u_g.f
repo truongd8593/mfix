@@ -344,7 +344,7 @@
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)
 ! modifications for bc
-      CALL SOURCE_U_G_BC (A_M, B_M, IER)
+      CALL SOURCE_U_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
 
