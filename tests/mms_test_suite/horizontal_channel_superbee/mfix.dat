@@ -28,7 +28,7 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  Max_nit       = 50000
+  Max_nit       = 200000  ! large enough for all mesh levels
 
   Norm_g        = 0.0
 
@@ -46,8 +46,8 @@
   xlength = 0.20  
   ylength = 0.01
 
-  imax    = 8
-  jmax    = 8
+  imax    = 8  ! set via command line
+  jmax    = 8  ! set via command line
 
   no_k = .T.
 
@@ -122,4 +122,4 @@
 #_______________________________________________________________________
 # DMP SETUP
 
-  NODESI =  2  NODESJ =  1  NODESK =  1
+!  NODESI =  2  NODESJ =  1  NODESK =  1  ! set via command line

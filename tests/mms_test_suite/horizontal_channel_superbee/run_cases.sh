@@ -1,45 +1,16 @@
-rm de_norms.dat
+## set home directory
+export MFIX_HOME=~/projects/mfix_development
+export CASE_DIR=$MFIX_HOME/tests/mms_test_suite/horizontal_channel_superbee
 
-cd mesh_8
-mkmfix -r > tmp.dat 2>&1
-./mfix.exe > result.dat
-cat de_norms.dat >> ../de_norms.dat
-# cleanup
-rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
-cd ..
+## compile MFIX in ./src/
+cd $CASE_DIR/src
+$MFIX_HOME/model/make_mfix --dmp --opt=O0 --compiler=gcc --exe=mfix.exe -j
 
-cd mesh_16
-mkmfix -r > tmp.dat 2>&1
-./mfix.exe > result.dat
-cat de_norms.dat >> ../de_norms.dat
-# cleanup
-rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
-cd ..
+## Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
+cd $CASE_DIR
+$CASE_DIR/src/mfix.exe imax=8 jmax=8 > out.log
 
-cd mesh_32
-mkmfix -r > tmp.dat 2>&1
-./mfix.exe > result.dat
-cat de_norms.dat >> ../de_norms.dat
-# cleanup
-rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
-cd ..
 
-#cd mesh_64
-#mkmfix -r > tmp.dat 2>&1
-#./mfix.exe > result.dat
-#cat de_norms.dat >> ../de_norms.dat
-## cleanup
-#rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
-#cd ..
-#
-#cd mesh_128
-#mkmfix -r > tmp.dat 2>&1
-#./mfix.exe > result.dat
-#cat de_norms.dat >> ../de_norms.dat
-## cleanup
-#rm -rf HCS.* scr* solution* mfix.exe de_norms.dat result.dat tmp.dat
-#cd ..
-
-gfortran -o ooa_test ooa_test.f95
-./ooa_test
-rm ooa_test
+## gfortran -o ooa_test ooa_test.f95
+## ./ooa_test
+## rm ooa_test
