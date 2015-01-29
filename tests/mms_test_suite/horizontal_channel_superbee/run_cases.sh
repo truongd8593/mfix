@@ -10,7 +10,8 @@ $MFIX_HOME/model/make_mfix --dmp --opt=O0 --compiler=gcc --exe=mfix.exe -j
 cd $CASE_DIR
 $CASE_DIR/src/mfix.exe imax=8 jmax=8 > out.log
 
-
-## gfortran -o ooa_test ooa_test.f95
-## ./ooa_test
-## rm ooa_test
+## Evaluate observed orders
+cp $CASE_DIR/../ooa_test.f95 $CASE_DIR
+gfortran -o ooa_test ooa_test.f95
+./ooa_test
+rm $CASE_DIR/{ooa_test,ooa_test.f95}
