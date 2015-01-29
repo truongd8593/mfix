@@ -34,4 +34,9 @@
         double precision, allocatable         :: ytr(:)
         double precision, allocatable         :: ztr(:)     
 
+! temporary array for discretization error: de = p_g - p_g_ex ; etc.        
+        double precision, allocatable         :: de_p_g(:)
+        double precision, allocatable         :: de_u_g(:)
+        double precision, allocatable         :: de_v_g(:)
+
       END MODULE usr

@@ -31,6 +31,7 @@
       Use usr, only     : p_g_ex, u_g_ex, v_g_ex
       Use usr, only     : lnorms_p_g, lnorms_u_g, lnorms_v_g
       Use usr, only     : xtr, ytr, ztr
+      Use usr, only     : de_p_g, de_u_g, de_v_g
       Use param, only   : dimension_3
       IMPLICIT NONE
 !-----------------------------------------------
@@ -59,6 +60,10 @@
         allocate(xtr(dimension_3))
         allocate(ytr(dimension_3))
         allocate(ztr(dimension_3))
+
+        allocate(de_p_g(dimension_3))
+        allocate(de_u_g(dimension_3))
+        allocate(de_v_g(dimension_3))
 
 
       RETURN
