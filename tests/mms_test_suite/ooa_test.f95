@@ -4,7 +4,7 @@ implicit none
   integer, parameter  :: dp = selected_real_kind(p=13,r=200)
   integer, parameter  :: ncases=5 ! max no. of cases
   integer, parameter  :: neq=3
-  integer             :: ndata    ! no. of cases for which data is available
+  integer             :: ndata=0  ! no. of cases for which data is available
 
   integer :: i, j
 
@@ -19,7 +19,7 @@ implicit none
   real(dp)  :: fsmall=1.0e-20_dp
 
   ! read de_norms data
-  open(11,file='de_norms.dat',status='unknown')
+  open(11,file='de_norms_collected.dat',status='unknown')
   do i=1,ncases+1
     do j=1,4
       read(11,*,iostat=io_status) ! read first 4 text lines
@@ -36,6 +36,11 @@ implicit none
     read(11,*) (linfde(i,j),j=1,neq)
   enddo
   close(11)
+
+  ! check ndata for validity
+  if((ndata.le.1).or.(ndata.gt.5)) then
+    write(*,*) "Inside ooa_test.f95. Check input data file."
+  endif
 
   open(21,file='de_l2.dat',status='unknown')
   write(21,*) 'variables="h""pg""ug""vg"'
