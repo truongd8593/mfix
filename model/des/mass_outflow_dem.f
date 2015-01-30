@@ -50,6 +50,7 @@
 
                NP = PIC(IJK)%p(LP)
 
+               IF(.NOT.PEA(NP,1)) CYCLE
                IF(PEA(NP,4)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
@@ -159,7 +160,9 @@
       LOGICAL DES_LOC_DEBUG
 !-----------------------------------------------
 
+      iGLOBAL_ID(NP) = -1
       PEA(NP,:) = .FALSE.
+
       DES_POS_NEW(:,NP) = ZERO
       DES_VEL_NEW(:,NP) = ZERO
       OMEGA_NEW(:,NP) = ZERO

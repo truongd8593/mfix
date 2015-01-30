@@ -21,16 +21,24 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Number of discrete solids phases
       use discretelement, only: DES_MMAX
+! Global ID of particles
+      use discretelement, only: iGLOBAL_ID
+! Particle positions
+      use discretelement, only: DES_POS_NEW
 ! Number of continuum solids phases
       use physprop, only: SMAX
 ! Discrete particle material and bulk densities
       use discretelement, only: DES_RO_S, DES_ROP_s
 ! Number of particles in indexed fluid cell
       use discretelement, only: PINC
+! List of particles in each cell.
+      use discretelement, only: PIC
 ! Gas phae volume fraction, density, and build density
       use fldvar, only: EP_G, RO_G, ROP_G
 ! Bulk density of continuum solids phases
       use fldvar, only: EP_S
+! Volume of scalar grid cell.
+      use geometry, only: VOL
 ! Flag: Status of indexed cell
       use cutcell, only: CUT_CELL_AT
 ! Flag: Indexed cell contains fluid
@@ -57,7 +65,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop indices
-      INTEGER :: IJK, M
+      INTEGER :: IJK, M, LC
 ! Total solids volume fraction
       DOUBLE PRECISION SUM_EPS
 ! Integer Error Flag
@@ -118,22 +126,35 @@
 
          DO IJK=IJKSTART3, IJKEND3
             IF(.NOT.FLUID_AT(IJK)) CYCLE
-            IF(EP_G(IJK) <= ZERO .OR. EP_G(IJK) > ONE) THEN
+            IF(EP_G(IJK) > ZERO .AND. EP_G(IJK) <= ONE) CYCLE
 
             WRITE(ERR_MSG,1101) trim(iVal(IJK)), trim(iVal(I_OF(IJK))),&
                trim(iVal(J_OF(IJK))), trim(iVal(K_OF(IJK))),EP_G(IJK), &
-               CUT_CELL_AT(IJK), trim(iVal(PINC(IJK)))
+               CUT_CELL_AT(IJK), trim(iVal(PINC(IJK))), VOL(IJK)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
+            WRITE(ERR_MSG,1102)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            DO LC=1,PINC(IJK)
+               M=PIC(IJK)%P(LC)
+               WRITE(ERR_MSG,1103) iGlobal_ID(M), trim(iVal(           &
+                  DES_POS_NEW(1,M))), trim(iVal(DES_POS_NEW(2,M))),    &
+                  trim(iVal(DES_POS_NEW(3,M)))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ENDIF
+            ENDDO
          ENDDO
 
  1101 FORMAT(/3x,'Fluid Cell IJK: ',A,6x,'I/J/K: (',A,',',A,',',A,')',/&
-         6x,'EP_G = ',g11.4,6x,'CUT_CELL_AT = ',L1,/6x,'PINC: ',A)
+         T6,'EP_G = ',g11.4,T30,'CUT_CELL_AT = ',L1,/T6,'PINC: ',A,T30,&
+         'VOL = ',g11.4)
 
-      WRITE(ERR_MSG, 1102)
+ 1102 FORMAT(/T6,'Global ID',T30,'Position')
+
+ 1103 FORMAT(T6,I9,3x,'(',A,', ',A,', ',A,')')
+
+      WRITE(ERR_MSG, 1104)
       CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
- 1102 FORMAT('This is a fatal error. A particle output file (vtp) ',   &
+ 1104 FORMAT('This is a fatal error. A particle output file (vtp) ',   &
          'will be written',/'to aid debugging.')
 
       CALL WRITE_DES_DATA
