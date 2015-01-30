@@ -770,7 +770,6 @@
                      RO_Sol(NEW_SPOT) =  DES_RO_S(M)
 
                      DES_STAT_WT(NEW_SPOT) = STAT_WT
-                     MARK_PART(NEW_SPOT) = myPE
 
                      PIJK(NEW_SPOT, 1) = IFLUID
                      PIJK(NEW_SPOT, 2) = JFLUID

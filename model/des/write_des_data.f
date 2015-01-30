@@ -304,13 +304,13 @@
             pc = pc+1
             if(pea(l,4)) cycle
             if(DO_K) then
-               write (des_data, '(8(2x,es12.5),I5)')&
+               write (des_data, '(8(2x,es12.5))')&
                   (des_pos_new(k,l),k=1,wDIMN),(des_vel_new(k,l),k=1,wDIMN), &
-                   des_radius(l),ro_sol(l),mark_part(l)
+                   des_radius(l),ro_sol(l)
             else
-               write (des_data, '(7(2x,es12.5),I5)')&
+               write (des_data, '(7(2x,es12.5))')&
                   (des_pos_new(k,l),k=1,wDIMN), (des_vel_new(k,l),k=1,wDIMN), &
-                  omega_new(1,l), des_radius(l), ro_sol(l),mark_part(l)
+                  omega_new(1,l), des_radius(l), ro_sol(l)
             endif
         end do
 
@@ -348,8 +348,6 @@
          ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          call des_gather(ro_sol)
          ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
-         call des_gather(mark_part)
-         ltemp_array(:,lcount) = irootbuf(:); lcount=lcount+1
 
 ! write the data into file
          if (mype.eq.pe_io) then
@@ -380,8 +378,6 @@
 
       END SUBROUTINE WRITE_DES_TECPLOT
 !-----------------------------------------------
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
