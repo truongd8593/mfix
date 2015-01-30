@@ -98,8 +98,6 @@
 ! loezos: shear terms
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
-! error message
-      CHARACTER(LEN=80) :: LINE
 !-----------------------------------------------
 
 ! Set reference phase to gas
@@ -340,7 +338,7 @@
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)
 ! modifications for bc
-      CALL SOURCE_V_G_BC(A_M, B_M, IER)
+      CALL SOURCE_V_G_BC(A_M, B_M)
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M, IER)
 
@@ -364,7 +362,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_V_G_BC(A_M, B_M, IER)
+      SUBROUTINE SOURCE_V_G_BC(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -398,15 +396,13 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
 ! Boundary condition
       INTEGER :: L
 ! Indices
-      INTEGER :: I, J, K, JM, I1, I2, J1, J2, K1, K2, IJK, &
+      INTEGER :: I, J, K, I1, I2, J1, J2, K1, K2, IJK, &
                  IM, KM, IJKS, IJMK, IJPK
 ! Phase index
       INTEGER :: M
@@ -918,7 +914,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_V_G(A_M, B_M, IER)
+      SUBROUTINE POINT_SOURCE_V_G(A_M, B_M)
 
       use compar
       use constant
@@ -937,8 +933,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

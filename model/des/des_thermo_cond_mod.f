@@ -74,8 +74,6 @@ CONTAINS
       DOUBLE PRECISION LENS_RAD
 ! Temperature difference between two particles
       DOUBLE PRECISION DeltaTp
-! Distance between the centers of particle I and particle J (component)
-      DOUBLE PRECISION DISTVEC(3)
 ! Effective thermal conductivity
       DOUBLE PRECISION lK_eff
 ! Radius of contact area

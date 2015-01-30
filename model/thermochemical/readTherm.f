@@ -412,8 +412,6 @@
 
 ! Local Variables.
 !-----------------------------------------------------------------------
-! Integral of specific heat polynomial (from 0 to T)
-      DOUBLE PRECISION ICp
 
       !ICp = calc_ICpoR(T, Th, Tl, Tc, Ah, Al)
       !If (T < Tc) then

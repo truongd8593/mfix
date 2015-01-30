@@ -44,7 +44,7 @@
 
       implicit none
 
-      INTEGER :: ICV, ICV2, M, IDIM,  I,J,K
+      INTEGER :: ICV, ICV2, M, IDIM
       INTEGER :: COUNT_IC, COUNT_IC_WITH_SOLS
       INTEGER :: FIRST_DEF_IC
 

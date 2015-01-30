@@ -27,8 +27,8 @@
 
       IMPLICIT NONE
 
-      DOUBLE PRECISION Tinit, InitVal
-      INTEGER :: I, J, K, M, L, IJK
+      DOUBLE PRECISION InitVal
+      INTEGER :: I, M, IJK
 
       DO IJK = IJKSTART3, IJKEND3
 

@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE GET_PHILOSS(PHI,DIFF,BC_PHI_W,BC_HW_PHI,BC_C_PHI,LOSS,IER)
+      SUBROUTINE GET_PHILOSS(PHI,DIFF,BC_PHI_W,BC_HW_PHI,BC_C_PHI,LOSS)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -66,11 +66,8 @@
 !                      scalar loss thorugh wall
       DOUBLE PRECISION LOSS
 !
-!                      error index
-      INTEGER          IER
-!
 !                      Indices
-      INTEGER          L, M, I, J, K, IJK, IJKE, IJKW, IJKN, IJKS
+      INTEGER          L, I, J, K, IJK, IJKE, IJKW, IJKN, IJKS
       INTEGER          IJKT, IJKB
 !
 !                      Indices

@@ -14,7 +14,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_C(VAR, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER)
+         RESID, MAX_RESID, IJK_RESID)
 
 !-----------------------------------------------
 ! Modules
@@ -49,20 +49,15 @@
       DOUBLE PRECISION, INTENT(OUT) :: MAX_RESID
 ! IJK of Maximum value of Residual
       INTEGER, INTENT(OUT) :: IJK_RESID
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IJKW, IJKS, IJKB, IJKE, IJKN, IJKT
-      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
       INTEGER :: NCELLS
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
       DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -196,7 +191,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_S(VAR, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, TOL, IER)
+         RESID, MAX_RESID, IJK_RESID, TOL)
 
 !-----------------------------------------------
 ! Modules
@@ -238,20 +233,15 @@
       INTEGER, INTENT(OUT) :: IJK_RESID
 ! Ignore residual calculation for scalar values below this
       DOUBLE PRECISION, INTENT(IN) :: TOL
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: I, J, K
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
 ! Number of fluid cells
       INTEGER :: NCELLS
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
       DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
@@ -395,7 +385,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_PP(B_M, NORM, NUM, DEN, RESID, MAX_RESID, &
-         IJK_RESID, IER)
+         IJK_RESID)
 
 !-----------------------------------------------
 ! Modules
@@ -426,22 +416,16 @@
       DOUBLE PRECISION, INTENT(OUT) :: MAX_RESID
 ! IJK of Maximum value of Residual
       INTEGER, INTENT(OUT) :: IJK_RESID
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Indices
       INTEGER :: IJK
-      INTEGER :: I, J, K
 ! Number of fluid cells
       INTEGER :: NCELLS
 ! Numerators and denominators
       DOUBLE PRECISION :: NUM1, DEN1
-! Error message
-      CHARACTER(LEN=80)     LINE
 ! New local variables for DMP version
-      DOUBLE PRECISION, DIMENSION(ijksize3_all(myPE)) :: RESID_IJK
       DOUBLE PRECISION :: MAX_RESID_GL(0:numPEs-1), MAX_RESID_L(0:numPEs-1)
       INTEGER :: IJK_RESID_GL(0:numPEs-1), IJK_RESID_L(0:numPEs-1)
       INTEGER :: nproc
@@ -728,7 +712,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_U(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER)
+         RESID, MAX_RESID, IJK_RESID)
 
 !-----------------------------------------------
 ! Modules
@@ -772,8 +756,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: MAX_RESID
 ! IJK of Maximum value of Residual
       INTEGER, INTENT(OUT) :: IJK_RESID
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
@@ -931,7 +913,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_V(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER)
+         RESID, MAX_RESID, IJK_RESID)
 
 !-----------------------------------------------
 ! Modules
@@ -975,8 +957,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: MAX_RESID
 ! IJK of Maximum value of Residual
       INTEGER, INTENT(OUT) :: IJK_RESID
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
@@ -1137,7 +1117,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CALC_RESID_W(U_M, V_M, W_M, A_M, B_M, M, NUM, DEN, &
-         RESID, MAX_RESID, IJK_RESID, IER)
+         RESID, MAX_RESID, IJK_RESID)
 
 !-----------------------------------------------
 ! Modules
@@ -1181,8 +1161,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: MAX_RESID
 ! IJK of Maximum value of Residual
       INTEGER, INTENT(OUT) :: IJK_RESID
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------

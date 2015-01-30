@@ -66,7 +66,7 @@
 ! previous time step term
       DOUBLE PRECISION :: apo
 ! Indices
-      INTEGER :: IJK, IMJK, IJMK, IJKM
+      INTEGER :: IJK
 ! linear equation solver method and iterations
       INTEGER :: LEQM, LEQI
 ! tmp array to pass to set_chi
@@ -79,8 +79,6 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-
-      DOUBLE PRECISION EP_SS_L_TOT
 ! temporary use of global arrays:
 ! array1 (locally s_p)
 ! source lhs: coefficient of dependent variable
@@ -116,7 +114,7 @@
 ! ---------------------------------------------------------------->>>
       IF (SPECIES_EQ(0)) THEN
          IF(chi_scheme) call set_chi(DISCRETIZE(7), X_g, NMAX(0), &
-                                     U_g, V_g, W_g, IER)
+                                     U_g, V_g, W_g)
 
 ! looping over species
          DO LN = 1, NMAX(0)
@@ -153,7 +151,7 @@
                BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
-            CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M)
 
 ! Add point sources.
             IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_G(1,LN), &
@@ -180,7 +178,7 @@
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER)
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
-         IF(chi_scheme) call unset_chi(IER)
+         IF(chi_scheme) call unset_chi()
       ENDIF
 ! end fluid phase species equations
 ! ----------------------------------------------------------------<<<
@@ -196,7 +194,7 @@
                   ENDDO
                 ENDDO
               call set_chi(DISCRETIZE(7), X_S_temp, NMAX(M), &
-                           U_S(1,M), V_S(1,M), W_S(1,M), IER)
+                           U_S(1,M), V_S(1,M), W_S(1,M))
             ENDIF ! for chi_scheme
 
             DO LN = 1, NMAX(M)
@@ -233,7 +231,7 @@
                   BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
                   BC_C_X_S(1,M,LN), M, A_M, B_M, IER)
 
-               CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M, IER)
+               CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M)
 
 ! Add point sources.
                IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_S(1,M,LN), &
@@ -270,7 +268,7 @@
 
             END DO
 
-            if(chi_scheme) call unset_chi(IER)
+            if(chi_scheme) call unset_chi()
          ENDIF ! check for any species in phase m
       END DO ! for m = 1, mmax
 ! end solids phases species equations

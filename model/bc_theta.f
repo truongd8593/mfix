@@ -27,7 +27,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE BC_THETA(M, A_m, B_m, IER)
+      SUBROUTINE BC_THETA(M, A_m, B_m)
 
 !-----------------------------------------------
 ! Modules
@@ -61,8 +61,6 @@
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -331,7 +329,7 @@
 ! Local Variables
 !-----------------------------------------------
 ! IJK indices for cells
-      INTEGER ::  IJK, IJK3
+      INTEGER ::  IJK3
 ! Solids phase index
       INTEGER :: MM
 ! Average scalars

@@ -130,7 +130,7 @@
 ! Calculate U_m_star and residuals
 ! ---------------------------------------------------------------->>>
       DO M = 0, MMAX
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
          IF (M >= 1) VXF_GS(:,M) = ZERO
       ENDDO
 
@@ -152,41 +152,41 @@
 ! subroutine calc_d (pressure correction equation coefficients).  the
 ! former is also used in the subroutine partial_elim_u while the latter
 ! is effectively re-evaluated within said subroutine
-      CALL VF_GS_X (VXF_GS, IER)
+      CALL VF_GS_X (VXF_GS)
       IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
-         IF (MMAX > 0) CALL VF_SS_X (VXF_SS, IER)
+         IF (MMAX > 0) CALL VF_SS_X (VXF_SS)
       ENDIF
 
 ! calculate coefficients for the pressure correction equation
       IF(TRIM(KT_TYPE) == 'GHD') THEN
-         CALL CALC_D_GHD_E (A_M, VXF_GS, D_E, IER)
+         CALL CALC_D_GHD_E (A_M, VXF_GS, D_E)
       ELSE
          CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)
       ENDIF
 
       IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids volume correction equation
-         IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E, IER)
+         IF (MMAX > 0) CALL CALC_E_E (A_M, MCP, E_E)
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
          IF(TRIM(KT_TYPE) == 'GHD') THEN
-            IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_U (U_G,U_S,VXF_GS,A_M,B_M,IER)
+            IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_U (U_G,U_S,VXF_GS,A_M,B_M)
          ELSE
-            IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G,U_S,VXF_GS,A_M,B_M,IER)
+            IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G,U_S,VXF_GS,A_M,B_M)
          ENDIF
       ENDIF
 
 ! handle special case where center coefficient is zero
-      CALL ADJUST_A_U_G (A_M, B_M, IER)
-      IF(DO_SOLIDS) CALL ADJUST_A_U_S (A_M, B_M, IER)
+      CALL ADJUST_A_U_G (A_M, B_M)
+      IF(DO_SOLIDS) CALL ADJUST_A_U_S (A_M, B_M)
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for treating DEM drag terms
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL GAS_DRAG_U(A_M, B_M, IER)
          IF (DES_CONTINUUM_HYBRID) &
-            CALL SOLID_DRAG_U(A_M, B_M, IER)
+            CALL SOLID_DRAG_U(A_M, B_M)
       ENDIF
 
       IF(QMOMK .AND. QMOMK_COUPLED) THEN
@@ -198,7 +198,7 @@
             NUM_RESID(RESID_U,0), DEN_RESID(RESID_U,0), &
             RESID(RESID_U,0), MAX_RESID(RESID_U,0), &
             IJK_RESID(RESID_U,0), IER)
-         CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3), IER)
+         CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !         write(*,*) &
@@ -216,7 +216,7 @@
                      DEN_RESID(RESID_U,M), RESID(RESID_U,M), &
                      MAX_RESID(RESID_U,M), IJK_RESID(RESID_U,M), IER)
                   CALL UNDER_RELAX_U (U_S(1,M), A_M, B_M, M, &
-                     UR_FAC(3), IER)
+                     UR_FAC(3))
 !                  call check_ab_m(a_m, b_m, m, .false., ier)
 !                  write(*,*) &
 !                     resid(resid_u, m), max_resid(resid_u, m), &
@@ -231,7 +231,7 @@
 !         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), 1,&
 !            DO_K,ier)
          CALL ADJUST_LEQ (RESID(RESID_U,0), LEQ_IT(3), LEQ_METHOD(3), &
-            LEQI, LEQM, IER)
+            LEQI, LEQM)
          CALL SOLVE_LIN_EQ ('U_g', 3, U_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
             LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER)
 !         call out_array(u_g, 'u_g')
@@ -245,7 +245,7 @@
 !                  call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                     a_m(1, -3, M), 1, DO_K,ier)
                   CALL ADJUST_LEQ (RESID(RESID_U,M), LEQ_IT(3),&
-                     LEQ_METHOD(3), LEQI, LEQM, IER)
+                     LEQ_METHOD(3), LEQI, LEQM)
                   CALL SOLVE_LIN_EQ ('U_s', 3, U_Stmp(1,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(3), LEQ_TOL(3),&
                      LEQ_PC(3), IER)
@@ -260,7 +260,7 @@
 ! Calculate V_m_star and residuals
 ! ---------------------------------------------------------------->>>
       DO M = 0, MMAX
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
          IF (M >= 1) VXF_GS(:,M) = ZERO
       ENDDO
 
@@ -279,12 +279,12 @@
 
       CALL VF_GS_Y (VXF_GS, IER)
       IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
-         IF (MMAX > 0) CALL VF_SS_Y (VXF_SS, IER)
+         IF (MMAX > 0) CALL VF_SS_Y (VXF_SS)
       ENDIF
 
 ! calculate coefficients for the pressure correction equation
       IF(TRIM(KT_TYPE) == 'GHD') THEN
-         CALL CALC_D_GHD_N (A_M, VXF_GS, D_N, IER)
+         CALL CALC_D_GHD_N (A_M, VXF_GS, D_N)
       ELSE
          CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)
       ENDIF
@@ -296,24 +296,24 @@
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
          IF(TRIM(KT_TYPE) == 'GHD') THEN
-           IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_V (V_G,V_S,VXF_GS,A_M,B_M,IER)
+           IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_V (V_G,V_S,VXF_GS,A_M,B_M)
          ELSE
-           IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G,V_S,VXF_GS,A_M,B_M,IER)
+           IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G,V_S,VXF_GS,A_M,B_M)
          ENDIF
       ENDIF
 
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      CALL ADJUST_A_V_G (A_M, B_M, IER)
+      CALL ADJUST_A_V_G (A_M, B_M)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
-         CALL ADJUST_A_V_S (A_M, B_M, IER)
+         CALL ADJUST_A_V_S (A_M, B_M)
       ENDIF
 
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL GAS_DRAG_V(A_M, B_M, IER)
          IF (DES_CONTINUUM_HYBRID) &
-            CALL SOLID_DRAG_V(A_M, B_M, IER)
+            CALL SOLID_DRAG_V(A_M, B_M)
       ENDIF
 
       IF(QMOMK .AND. QMOMK_COUPLED) THEN
@@ -326,7 +326,7 @@
             NUM_RESID(RESID_V,0), DEN_RESID(RESID_V,0), &
             RESID(RESID_V,0), MAX_RESID(RESID_V,0), &
             IJK_RESID(RESID_V,0), IER)
-         CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4), IER)
+         CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 !         write(*,*) &
@@ -343,7 +343,7 @@
                      B_M, M, NUM_RESID(RESID_V,M), &
                      DEN_RESID(RESID_V,M),RESID(RESID_V,M), &
                      MAX_RESID(RESID_V,M), IJK_RESID(RESID_V,M), IER)
-                  CALL UNDER_RELAX_V (V_S(1,M),A_M,B_M,M,UR_FAC(4),IER)
+                  CALL UNDER_RELAX_V (V_S(1,M),A_M,B_M,M,UR_FAC(4))
 !                  call check_ab_m(a_m, b_m, m, .false., ier)
 !                  write(*,*) &
 !                     resid(resid_v, m), max_resid(resid_v, m),
@@ -358,7 +358,7 @@
 !         call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), &
 !            1, DO_K, ier)
          CALL ADJUST_LEQ (RESID(RESID_V,0), LEQ_IT(4), LEQ_METHOD(4), &
-            LEQI, LEQM, IER)
+            LEQI, LEQM)
          CALL SOLVE_LIN_EQ ('V_g', 4, V_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
             LEQ_SWEEP(4), LEQ_TOL(4),  LEQ_PC(4), IER)
 !         call out_array(v_g, 'v_g')
@@ -372,7 +372,7 @@
 !                  call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                     a_m(1, -3, M), 1, DO_K, ier)
                   CALL ADJUST_LEQ (RESID(RESID_V,M), LEQ_IT(4), &
-                     LEQ_METHOD(4), LEQI, LEQM, IER)
+                     LEQ_METHOD(4), LEQI, LEQM)
                   CALL SOLVE_LIN_EQ ('V_s', 4, V_Stmp(1,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(4), LEQ_TOL(4), &
                      LEQ_PC(4), IER)
@@ -389,7 +389,7 @@
 ! ---------------------------------------------------------------->>>
       IF (DO_K)THEN
          DO M = 0, MMAX
-            CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+            CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
             IF (M >= 1) VXF_GS(:,M) = ZERO
          ENDDO
 
@@ -405,14 +405,14 @@
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 
-         CALL VF_GS_Z (VXF_GS, IER)
+         CALL VF_GS_Z (VXF_GS)
          IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
-            IF (MMAX > 0) CALL VF_SS_Z (VXF_SS, IER)
+            IF (MMAX > 0) CALL VF_SS_Z (VXF_SS)
          ENDIF
 
 ! calculate coefficients for the pressure correction equation
          IF(TRIM(KT_TYPE) == 'GHD') THEN
-            CALL CALC_D_GHD_T (A_M, VXF_GS, D_T, IER)
+            CALL CALC_D_GHD_T (A_M, VXF_GS, D_T)
          ELSE
             CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)
          ENDIF
@@ -424,22 +424,22 @@
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
             IF(TRIM(KT_TYPE) == 'GHD') THEN
-               IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+               IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_W (W_G, W_S, VXF_GS, A_M, B_M)
             ELSE
-               IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M, IER)
+               IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M)
             ENDIF
          ENDIF
 
-         CALL ADJUST_A_W_G (A_M, B_M, IER)
+         CALL ADJUST_A_W_G (A_M, B_M)
          IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
             DES_CONTINUUM_HYBRID) THEN
-            CALL ADJUST_A_W_S (A_M, B_M, IER)
+            CALL ADJUST_A_W_S (A_M, B_M)
          ENDIF
 
          IF(DES_CONTINUUM_COUPLED) THEN
             CALL GAS_DRAG_W(A_M, B_M, IER)
             IF (DISCRETE_ELEMENT .AND. DES_CONTINUUM_HYBRID) &
-               CALL SOLID_DRAG_W(A_M, B_M, IER)
+               CALL SOLID_DRAG_W(A_M, B_M)
          ENDIF
 
          IF(QMOMK .AND. QMOMK_COUPLED) THEN
@@ -451,7 +451,7 @@
                NUM_RESID(RESID_W,0), DEN_RESID(RESID_W,0), &
                RESID(RESID_W,0), MAX_RESID(RESID_W,0), &
                IJK_RESID(RESID_W,0), IER)
-            CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5), IER)
+            CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5))
 !            call check_ab_m(a_m, b_m, 0, .false., ier)
 !            write(*,*) &
 !               resid(resid_w, 0), max_resid(resid_w, 0), &
@@ -468,7 +468,7 @@
                         DEN_RESID(RESID_W,M), RESID(RESID_W,M), &
                         MAX_RESID(RESID_W,M), IJK_RESID(RESID_W,M), IER)
                      CALL UNDER_RELAX_W (W_S(1,M), A_M, B_M, M, &
-                        UR_FAC(5), IER)
+                        UR_FAC(5))
 !                     call check_ab_m(a_m, b_m, m, .false., ier)
 !                     write(*,*) &
 !                        resid(resid_w, m), max_resid(resid_w, m), &
@@ -483,7 +483,7 @@
 !            call test_lin_eq(ijkmax2, ijmax2, imax2, a_m(1, -3, 0), &
 !               1, DO_K, ier)
             CALL ADJUST_LEQ (RESID(RESID_W,0), LEQ_IT(5), &
-               LEQ_METHOD(5), LEQI, LEQM, IER)
+               LEQ_METHOD(5), LEQI, LEQM)
             CALL SOLVE_LIN_EQ ('W_g', 5, W_Gtmp, A_M, B_M, 0, LEQI,&
                LEQM, LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER)
 !            call out_array(w_g, 'w_g')
@@ -497,7 +497,7 @@
 !                     call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                        a_m(1, -3, M), 1, DO_K, ier)
                      CALL ADJUST_LEQ (RESID(RESID_W,M), LEQ_IT(5), &
-                        LEQ_METHOD(5), LEQI, LEQM, IER)
+                        LEQ_METHOD(5), LEQI, LEQM)
                      CALL SOLVE_LIN_EQ ('W_s', 5, W_Stmp(1,M), &
                         A_M, B_M, M, LEQI, LEQM, LEQ_SWEEP(5), &
                         LEQ_TOL(5), LEQ_PC(5), IER)
@@ -529,9 +529,9 @@
 
 ! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
       IF(TRIM(KT_TYPE) == 'GHD') THEN
-         CALL calc_external_forces(IER)
-         CALL GHDMassFlux(IER) ! to compute solid species mass flux
-         CALL UpdateSpeciesVelocities(IER) ! located at end of ghdMassFlux.f file
+         CALL calc_external_forces()
+         CALL GHDMassFlux() ! to compute solid species mass flux
+         CALL UpdateSpeciesVelocities() ! located at end of ghdMassFlux.f file
       ENDIF
 
       call unlock_ambm

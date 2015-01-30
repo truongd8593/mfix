@@ -61,38 +61,19 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Starting I index
-      INTEGER          I1
-!
-!                      Ending I index
-      INTEGER          I2
-!
-!                      Starting J index
-      INTEGER          J1
-!
-!                      Ending J index
-      INTEGER          J2
-!
-!                      Starting K index
-      INTEGER          K1
-!
-!                      Ending K index
-      INTEGER          K2
-!
 !                      indices
       INTEGER          I, J, K, M, N
-!
 !
 !                      Local index for boundary cell
       INTEGER          IJK
 !
 !                      Boundary condition number
-      INTEGER          BCV , BCV_U
+      INTEGER          BCV
 !
 !                      Locall index for a fluid cell near the boundary cell
       INTEGER          LFLUID
 
-      INTEGER          IJKW,IJKWW,IJKS,IJKSS,IJKB,IJKBB
+      INTEGER          IJKW,IJKWW,IJKS,IJKSS,IJKB
 
       CHARACTER(LEN=16) :: BCT1,BCT2,BCT3,BCT4
 

@@ -344,7 +344,7 @@
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)
 ! modifications for bc
-      CALL SOURCE_U_G_BC (A_M, B_M, IER)
+      CALL SOURCE_U_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
 
@@ -370,7 +370,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_U_G_BC(A_M, B_M, IER)
+      SUBROUTINE SOURCE_U_G_BC(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -404,8 +404,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -1001,7 +999,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_U_G(A_M, B_M, IER)
+      SUBROUTINE POINT_SOURCE_U_G(A_M, B_M)
 
       use compar
       use constant
@@ -1020,8 +1018,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

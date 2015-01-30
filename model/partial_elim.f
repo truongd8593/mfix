@@ -31,7 +31,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_S(VAR_G, VAR_S, VXF, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_S(VAR_G, VAR_S, VXF, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -61,8 +61,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -75,8 +73,6 @@
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M),&
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
-! error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -187,7 +183,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_IA(VAR_S, VXTCSS, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_IA(VAR_S, VXTCSS, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -215,8 +211,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -229,8 +223,6 @@
       DOUBLE PRECISION :: a(DIMENSION_M), BB(DIMENSION_M),&
                           F(DIMENSION_M,DIMENSION_M),&
                           Saxf(DIMENSION_M)
-! error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IJKW, IJKS, IJKB, IJKE, IJKN, IJKT,  &
@@ -332,7 +324,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_U(VAR_G, VAR_S, VXF, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_U(VAR_G, VAR_S, VXF, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -364,8 +356,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -378,8 +368,6 @@
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M), &
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
-! error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -522,7 +510,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_V(VAR_G, VAR_S, VXF, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_V(VAR_G, VAR_S, VXF, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -554,8 +542,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -568,8 +554,6 @@
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M),&
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
-! error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP,  &
@@ -705,7 +689,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PARTIAL_ELIM_W(VAR_G, VAR_S, VXF, A_M, B_M, IER)
+      SUBROUTINE PARTIAL_ELIM_W(VAR_G, VAR_S, VXF, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -737,8 +721,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -751,8 +733,6 @@
       DOUBLE PRECISION :: a(0:DIMENSION_M), BB(0:DIMENSION_M), &
                           F(0:DIMENSION_M,0:DIMENSION_M),&
                           Saxf(0:DIMENSION_M)
-!                      error message
-      CHARACTER(LEN=80)     LINE
 !-----------------------------------------------
 
 !!$omp  parallel do private( IMJK, IJMK, IJKM, IPJK, IJPK, IJKP, &

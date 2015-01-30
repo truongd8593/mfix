@@ -72,7 +72,7 @@
                 IF (DISCRETIZE(5) == 0) THEN         ! 0 & 1 => FOUP
                    CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER)
                 ELSE
-                   CALL STORE_A_W_S1 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_W_S1 (A_M(1,-3,M), M)
                 ENDIF
              ENDIF
 
@@ -762,7 +762,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE STORE_A_W_S1(A_W_S, M, IER)
+      SUBROUTINE STORE_A_W_S1(A_W_S, M)
 
 !-----------------------------------------------
 ! Modules
@@ -796,8 +796,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_W_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_W_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -401,8 +401,6 @@
       INTEGER, INTENT(in) :: M_TOT
       LOGICAL, INTENT(in) :: SKIP(DIM_M)
 
-
-      INTEGER :: I, J ,K, IJK
       INTEGER :: M, N
 ! Solids phase density in BC region.
       DOUBLE PRECISION :: BC_ROs(MMAX)

@@ -53,7 +53,7 @@
       INTEGER          IER
 !
 !     Indices
-      INTEGER          IJK, NC
+      INTEGER          IJK
 !
 !     Phase index
       INTEGER          M, UV, VV, WV
@@ -62,7 +62,7 @@
 !     Grid indices
       INTEGER          I,J,K,IN
 !
-      DOUBLE PRECISION USFCM, VSFCM, WSFCM, VCELL
+      DOUBLE PRECISION USFCM, VSFCM, WSFCM
       DOUBLE PRECISION A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
       DOUBLE PRECISION B_M(DIMENSION_3, 0:DIMENSION_M)
       DOUBLE PRECISION VXF_GS(DIMENSION_3, DIMENSION_M)

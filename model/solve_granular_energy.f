@@ -178,7 +178,7 @@
             CALL BC_THETA (M, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
-            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
 
 ! Adjusting the values of theta_m to zero when Ep_g < EP_star
 ! (Shaeffer, 1987). This is done here instead of calc_mu_s to
@@ -288,7 +288,7 @@
             CALL BC_THETA (M, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
-            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
           ENDDO   ! end do loop (m = 1, smax)
 
 ! use partial elimination on collisional dissipation term: SUM(Nip)
@@ -409,7 +409,7 @@
           CALL BC_THETA (M, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix form
-          CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M, IER)
+          CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
 
           CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
             NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&

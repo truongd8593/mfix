@@ -206,9 +206,8 @@
 
       integer :: TFM_MAX
       integer :: DEM_MIN
-      integer :: M, LC
+      integer :: M
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("HYBRID_HACK")

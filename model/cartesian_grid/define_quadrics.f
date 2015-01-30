@@ -28,10 +28,7 @@
       USE vtk
 
       IMPLICIT NONE
-      DOUBLE PRECISION:: x1,x2,x3
       DOUBLE PRECISION, DIMENSION(3,3) :: Rx,Ry,Rz,C_QUADRIC,R_QUADRIC
-      DOUBLE PRECISION :: Two_H
-      LOGICAL :: CLIP_FLAG,INTERSECT_FLAG
 
 !======================================================================
 ! Quadric Normal form : lambda_x * x^2 + lambda_y * y^2 + lambda_z * z^2 + d = 0
@@ -105,15 +102,14 @@
       DOUBLE PRECISION :: THETA1CYL1,THETA2TOR,THETA3CYL2,THETA_MIN
       DOUBLE PRECISION :: Y1,Y2,R
       DOUBLE PRECISION :: c,s,ytest1,ytest2
-      DOUBLE PRECISION :: f,fq,fxe,fxw,fyn,fys,fzt,fzb,fclip
+      DOUBLE PRECISION :: f
       DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
       DOUBLE PRECISION, DIMENSION(3,1) :: TXMT
       DOUBLE PRECISION, DIMENSION(1,1) :: TEMP_1x1
-      INTEGER :: Q,Q_ID,BCID
+      INTEGER :: Q_ID
       LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
       LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
-      CHARACTER (LEN = 7) :: METHOD
 
 !======================================================================
 

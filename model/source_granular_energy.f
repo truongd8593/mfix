@@ -40,7 +40,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE SOURCE_GRANULAR_ENERGY(SOURCELHS, &
-                    SOURCERHS, IJK, M, IER)
+                    SOURCERHS, IJK, M)
 
 !-----------------------------------------------
 ! Modules
@@ -79,8 +79,6 @@
       INTEGER, INTENT(IN) :: M
 ! Indices
       INTEGER, INTENT(IN) :: IJK
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -259,7 +257,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE SOURCE_GRANULAR_ENERGY_IA(SOURCELHS, &
-                    SOURCERHS, IJK, M, IER)
+                    SOURCERHS, IJK, M)
 
 !-----------------------------------------------
 ! Modules
@@ -296,8 +294,6 @@
       INTEGER, INTENT(IN) :: M
 ! Indices
       INTEGER, INTENT(IN) :: IJK
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -593,7 +589,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
       SUBROUTINE SOURCE_GRANULAR_ENERGY_GD(SOURCELHS, &
-                    SOURCERHS, IJK, M, IER)
+                    SOURCERHS, IJK, M)
 
 !-----------------------------------------------
 !  Modules
@@ -630,8 +626,6 @@
       INTEGER, INTENT(IN) :: M
 ! Indices
       INTEGER, INTENT(IN) :: IJK
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -28,15 +28,11 @@
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
       INTEGER :: I, LL, CC
-! loop counter and indices for neighbor information
-      INTEGER :: NI, NLIM, N_NOCON
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal direction
       DOUBLE PRECISION :: OVERLAP_N
 ! square root of the overlap
       DOUBLE PRECISION :: SQRT_OVERLAP
-! heat conducted
-      DOUBLE PRECISION :: QQ
 ! distance vector between two particle centers or between a particle
 ! center and wall when the two surfaces are just at contact (i.e. no
 ! overlap)
@@ -55,8 +51,14 @@
       DOUBLE PRECISION :: FTS1(3), FTS2(3)
 ! temporary storage of tangential DISPLACEMENT
       DOUBLE PRECISION :: PFT_TMP(3)
+! temporary storage of force
+      DOUBLE PRECISION :: FC_TMP(3)
+! temporary storage of force for torque
+      DOUBLE PRECISION :: TOW_FORCE(3)
 ! temporary storage of torque
-      DOUBLE PRECISION :: TOW_TMP(3)
+      DOUBLE PRECISION :: TOW_TMP(3,2)
+! temporary storage of conduction/radiation
+      DOUBLE PRECISION :: QQ_TMP
 
 ! store solids phase index of particle (i.e. pijk(np,5))
       INTEGER :: PHASEI, PHASELL
@@ -69,8 +71,6 @@
       LOGICAL :: PARTICLE_SLIDE
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
-!$      double precision omp_start, omp_end
-!$      double precision omp_get_wtime
 
 !-----------------------------------------------
 
@@ -88,20 +88,18 @@
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,dist_norm,        &
-!$omp    dist_cl, dist_ci, tow_tmp)   &
-!$omp    shared(pairs,pair_num,qq_pair,des_pos_new,des_radius,       &
+!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
+!$omp    shared(pairs,pair_num,des_pos_new,des_radius,                 &
 !$omp    des_coll_model_enum,kn,kt,pv_pair,pft_pair,pfn_pair,pijk,     &
-!$omp    des_etan,des_etat,mew,fc_pair,use_cohesion,                   &
+!$omp    des_etan,des_etat,mew,use_cohesion,                           &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy, pea, pair_collides, &
-!$omp    tow, tow_pair, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
+!$omp    hamaker_constant,asperities,surface_energy, pea,              &
+!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
       DO CC = 1, PAIR_NUM
          LL = PAIRS(1,CC)
          I  = PAIRS(2,CC)
-
-         PAIR_COLLIDES(CC) = .FALSE.
 
          IF(.NOT.PEA(LL,1)) CYCLE
          IF(.NOT.PEA(I, 1)) CYCLE
@@ -110,7 +108,7 @@
          DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
          DIST_MAG = dot_product(DIST,DIST)
 
-         FC_PAIR(:,CC) = ZERO
+         FC_TMP(:) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -127,17 +125,25 @@
                     (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                     (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                ENDIF
-               FC_PAIR(:,CC) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
-               TOW_PAIR(:,:,CC) = ZERO
-               PAIR_COLLIDES(CC) = .TRUE.
+               FC_TMP(:) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+               TOW_TMP(:,:) = ZERO
+
+! just for post-processing mag. of cohesive forces on each particle
+               PostCohesive(LL) = dot_product(FC_TMP(:),FC_TMP(:))
+               if(GRAV_MAG> ZERO .AND. PEA(LL,1)) PostCohesive(LL) = SQRT(PostCohesive(LL)) / (PMASS(LL)*GRAV_MAG)
             ENDIF
          ENDIF
 
          IF (ENERGY_EQ) THEN
             ! Calculate conduction and radiation for thermodynamic neighbors
-            QQ_PAIR(CC) = ZERO
             IF(K_s0(PIJK(LL,5)) > ZERO) THEN
-               QQ_PAIR(CC) = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
+               QQ_TMP = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
+
+               !$omp atomic
+               Q_Source(LL) = Q_Source(LL) + QQ_TMP
+
+               !$omp atomic
+               Q_Source(I) = Q_Source(I) - QQ_TMP
             ENDIF
          ENDIF
 
@@ -214,14 +220,44 @@
 
          DIST_CI = DIST_MAG - DIST_CL
 
-         TOW_tmp(:) = DES_CROSSPRDCT(DIST_NORM(:), FT(:))
-         TOW_PAIR(:,1,CC) = DIST_CL*TOW_tmp(:)
-         TOW_PAIR(:,2,CC) = DIST_CI*TOW_tmp(:)
+         TOW_force(:) = DES_CROSSPRDCT(DIST_NORM(:), FT(:))
+         TOW_TMP(:,1) = DIST_CL*TOW_force(:)
+         TOW_TMP(:,2) = DIST_CI*TOW_force(:)
 
 ! Calculate the total force FC of a collision pair
-! total contact force ( FC_PAIR may already include cohesive force)
-         FC_PAIR(:,CC) = FC_PAIR(:,CC) + FN(:) + FT(:)
-         PAIR_COLLIDES(CC) = .TRUE.
+! total contact force ( FC_TMP may already include cohesive force)
+         FC_TMP(:) = FC_TMP(:) + FN(:) + FT(:)
+            !$omp atomic
+            FC(1,LL) = FC(1,LL) + FC_TMP(1)
+            !$omp atomic
+            FC(2,LL) = FC(2,LL) + FC_TMP(2)
+            !$omp atomic
+            FC(3,LL) = FC(3,LL) + FC_TMP(3)
+
+            I  = PAIRS(2,CC)
+            !$omp atomic
+            FC(1,I) = FC(1,I) - FC_TMP(1)
+            !$omp atomic
+            FC(2,I) = FC(2,I) - FC_TMP(2)
+            !$omp atomic
+            FC(3,I) = FC(3,I) - FC_TMP(3)
+
+
+! for each particle the signs of norm and ft both flip, so add the same torque
+            !$omp atomic
+            TOW(1,LL) = TOW(1,LL) + TOW_TMP(1,1)
+            !$omp atomic
+            TOW(2,LL) = TOW(2,LL) + TOW_TMP(2,1)
+            !$omp atomic
+            TOW(3,LL) = TOW(3,LL) + TOW_TMP(3,1)
+
+            !$omp atomic
+            TOW(1,I)  = TOW(1,I)  + TOW_TMP(1,2)
+            !$omp atomic
+            TOW(2,I)  = TOW(2,I)  + TOW_TMP(2,2)
+            !$omp atomic
+            TOW(3,I)  = TOW(3,I)  + TOW_TMP(3,2)
+
 
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
@@ -235,70 +271,7 @@
       ENDDO
 !$omp end do
 
-!$omp do
-      DO CC = 1, PAIR_NUM
-         IF (PAIR_COLLIDES(CC)) THEN
-            LL = PAIRS(1,CC)
-            !$omp atomic
-            FC(1,LL) = FC(1,LL) + FC_PAIR(1,CC)
-            !$omp atomic
-            FC(2,LL) = FC(2,LL) + FC_PAIR(2,CC)
-            !$omp atomic
-            FC(3,LL) = FC(3,LL) + FC_PAIR(3,CC)
-
-            I  = PAIRS(2,CC)
-            !$omp atomic
-            FC(1,I) = FC(1,I) - FC_PAIR(1,CC)
-            !$omp atomic
-            FC(2,I) = FC(2,I) - FC_PAIR(2,CC)
-            !$omp atomic
-            FC(3,I) = FC(3,I) - FC_PAIR(3,CC)
-
-! for each particle the signs of norm and ft both flip, so add the same torque
-            !$omp atomic
-            TOW(1,LL) = TOW(1,LL) + TOW_PAIR(1,1,CC)
-            !$omp atomic
-            TOW(2,LL) = TOW(2,LL) + TOW_PAIR(2,1,CC)
-            !$omp atomic
-            TOW(3,LL) = TOW(3,LL) + TOW_PAIR(3,1,CC)
-
-            !$omp atomic
-            TOW(1,I)  = TOW(1,I)  + TOW_PAIR(1,2,CC)
-            !$omp atomic
-            TOW(2,I)  = TOW(2,I)  + TOW_PAIR(2,2,CC)
-            !$omp atomic
-            TOW(3,I)  = TOW(3,I)  + TOW_PAIR(3,2,CC)
-         ENDIF
-      ENDDO
-!$omp end do
-
-!$omp sections
-
-!$omp section
-! just for post-processing mag. of cohesive forces on each particle
-         IF(USE_COHESION)THEN
-         DO CC = 1, PAIR_NUM
-            LL = PAIRS(1,CC)
-            I  = PAIRS(2,CC)
-            PostCohesive(LL) = dot_product(FC_PAIR(:,CC),FC_PAIR(:,CC))
-            if(GRAV_MAG> ZERO .AND. PEA(LL,1)) PostCohesive(LL) =    &
-                 SQRT(PostCohesive(LL)) / (PMASS(LL)*GRAV_MAG)
-         ENDDO
-         ENDIF ! for cohesion model
-
-!$omp section
-
-      IF(ENERGY_EQ) THEN
-         DO CC = 1, PAIR_NUM
-            LL = PAIRS(1,CC)
-            I  = PAIRS(2,CC)
-            Q_Source(LL) = Q_Source(LL) + QQ_PAIR(CC)
-            Q_Source(I) = Q_Source(I) - QQ_PAIR(CC)
-         ENDDO
-      ENDIF
-!$omp end sections
 !$omp end parallel
-
 
       RETURN
 

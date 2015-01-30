@@ -47,7 +47,7 @@
       INTEGER          IER
 !
 !                      Local index
-      INTEGER          L, IJK1
+      INTEGER          L
 !
 !                      Phase index
       INTEGER          M

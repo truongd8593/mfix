@@ -46,7 +46,7 @@
 !
 !                      Indices
       INTEGER          I, J, K, IP, JP, KP, IJK
-      INTEGER          i_cyl_min, i_cyl_max, smooth_i
+      INTEGER          i_cyl_min, i_cyl_max
 !
 !-----------------------------------------------
 !

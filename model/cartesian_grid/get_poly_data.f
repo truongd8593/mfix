@@ -147,25 +147,18 @@
 
       IMPLICIT NONE
       DOUBLE PRECISION x1,x2,x3
-      DOUBLE PRECISION f_pol,f_test
+      DOUBLE PRECISION f_pol
       DOUBLE PRECISION, DIMENSION(DIM_POLYGON) :: F_POLY
-      INTEGER :: Q,Q_ID
-      LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
-      LOGICAL :: test1,test2,test3,test4
-
-
-      DOUBLE PRECISION :: Xe,Xw,Yn,Ys
-      DOUBLE PRECISION :: xt,yt,zt
+      INTEGER :: Q
+      LOGICAL :: CLIP_X,CLIP_Y,CLIP_FLAG
+      LOGICAL :: test1,test2
 
       INTEGER :: POLY,N_EDGE,COUNTER,EDGE
       DOUBLE PRECISION :: X_VERTEX_MIN,X_VERTEX_MAX,Y_VERTEX_MIN,Y_VERTEX_MAX
       DOUBLE PRECISION :: XV1,XV2,YV1,YV2
-      DOUBLE PRECISION :: x_west,x_east,y_north,y_south,slope,x_star,FS,D1,D2
+      DOUBLE PRECISION :: x_west,x_east,y_north,y_south,slope,x_star,D1,D2
       DOUBLE PRECISION :: max_slope = 200.0D0
       DOUBLE PRECISION :: TOL_xstar
-      CHARACTER (LEN=1) :: POINT_IS
-      LOGICAL :: FLUID_INSIDE_POLY
-      INTEGER :: N,V
       INTEGER :: BCID
 
 !======================================================================

@@ -37,9 +37,9 @@
 !-----------------------------------------------
 
       IF (DISCRETIZE(1) == 0) THEN               ! 0 & 1 => first order upwinding
-         CALL CONV_ROP_G0 (A_M, IER)
+         CALL CONV_ROP_G0 (A_M)
       ELSE
-         CALL CONV_ROP_G1 (A_M, IER)
+         CALL CONV_ROP_G1 (A_M)
       ENDIF
 
 
@@ -66,7 +66,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_ROP_G0(A_M, IER)
+      SUBROUTINE CONV_ROP_G0(A_M)
 
 !-----------------------------------------------
 ! Modules
@@ -89,8 +89,6 @@
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -177,7 +175,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_ROP_G1(A_M, IER)
+      SUBROUTINE CONV_ROP_G1(A_M)
 
 !-----------------------------------------------
 ! Modules
@@ -202,8 +200,6 @@
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

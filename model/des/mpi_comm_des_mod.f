@@ -64,7 +64,7 @@
 ! local variables
 !-----------------------------------------------
       character(len=80), parameter :: name = 'desmpi_sendrecv_init'
-      integer :: ldebug,ltag,lerr,lsource,ldest,lrecvface
+      integer :: ldebug,ltag,lerr,lrecvface
 !-----------------------------------------------
 
 ! set the debug flag

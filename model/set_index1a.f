@@ -65,8 +65,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      LOGICAL :: COMPARE, TRUE_CORNER
-      LOGICAL :: TRUE_CORNER_1, TRUE_CORNER_2
+      LOGICAL :: TRUE_CORNER
 !-----------------------------------------------
 
       IMJK = UNDEFINED_I

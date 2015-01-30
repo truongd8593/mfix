@@ -161,29 +161,29 @@
          IF(.NOT.GRANULAR_ENERGY) THEN
             IF(SUBGRID_TYPE_ENUM .ne. UNDEFINED_SUBGRID_TYPE) THEN
                IF (SUBGRID_TYPE_ENUM .EQ. IGCI) THEN
-                  CALL SUBGRID_STRESS_IGCI(M, IER)
+                  CALL SUBGRID_STRESS_IGCI(M)
                ELSEIF (SUBGRID_TYPE_ENUM .EQ. MILIOLI) THEN
-                  CALL SUBGRID_STRESS_MILIOLI(M, IER)
+                  CALL SUBGRID_STRESS_MILIOLI(M)
                ENDIF
             ELSE
-              call gt_algebraic(M,IER)   ! algebraic granular energy equation
+              call gt_algebraic(M)   ! algebraic granular energy equation
             ENDIF
          ELSE   ! granular energy transport equation
             SELECT CASE(KT_TYPE_ENUM)
                CASE (IA_2005)   ! polydisperse theory
-                  CALL gt_pde_ia(M,IER)
+                  CALL gt_pde_ia(M)
                CASE (GD_1999)   ! strictly monodisperse theory
-                  CALL gt_pde_gd(M,IER)
+                  CALL gt_pde_gd(M)
                CASE (GTSH_2012)   ! strictly monodisperse theory
-                  CALL gt_pde_gtsh(M,IER)
+                  CALL gt_pde_gtsh(M)
                CASE (GHD_2007)   ! polydisperse GHD theory for mixture temperature
-                  CALL TRANSPORT_COEFF_GHD(M,IER)
+                  CALL TRANSPORT_COEFF_GHD(M)
                CASE(LUN_1984)   ! monodisperse/ad-hoc polydisperse theory
-                  CALL gt_pde_lun(M,IER)
+                  CALL gt_pde_lun(M)
                CASE(SIMONIN_1996)   ! monodisperse/ad-hoc polydisperse theory
-                  CALL gt_pde_simonin(M,IER)
+                  CALL gt_pde_simonin(M)
                CASE (AHMADI_1995)   ! monodisperse/ad-hoc polydisperse theory
-                  CALL gt_pde_ahmadi(M,IER)
+                  CALL gt_pde_ahmadi(M)
                CASE DEFAULT
 ! should never hit this
                   WRITE (*, '(A)') 'CALC_MU_S'
@@ -198,9 +198,9 @@
 ! only one of these can be used at this time
 !--------------------------------------------------------------------
 ! Schaeffer's frictional formulation
-      IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M,IER)
+      IF (SCHAEFFER .AND. CLOSE_PACKED(M)) call friction_schaeffer(M)
 ! Princeton's frictional implementation
-      IF (FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M,IER)
+      IF (FRICTION .AND. CLOSE_PACKED(M)) call friction_princeton(M)
 
 
 ! blend frictional(plastic) & viscous stresses
@@ -258,7 +258,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine friction_schaeffer(M, IER)
+      Subroutine friction_schaeffer(M)
 
 !-----------------------------------------------
 ! Modules
@@ -280,8 +280,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -364,7 +362,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      Subroutine Gt_algebraic (M, IER)
+      Subroutine Gt_algebraic (M)
 
 !-----------------------------------------------
 ! Modules
@@ -387,15 +385,11 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! cell index
       INTEGER :: IJK
-! solids phase index
-      INTEGER :: MM
 ! Coefficients of quadratic equation
       DOUBLE PRECISION :: aq, bq, cq
 ! Constant in equation for mth solids phase pressure
@@ -408,8 +402,6 @@
       DOUBLE PRECISION :: K_4m
 ! Constant in Boyle-Massoudi stress term
       DOUBLE PRECISION :: K_5m
-! Factor in frictional-flow stress terms
-      DOUBLE PRECISION :: qxP_s
 ! Value of EP_s * SQRT( THETA )for Mth solids phase continuum
       DOUBLE PRECISION :: EP_sxSQRTHETA
 ! Value of EP_s * EP_s * THETA for Mth solids phase continuum
@@ -509,7 +501,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine gt_pde_lun (M, IER)
+      Subroutine gt_pde_lun (M)
 
 !-----------------------------------------------
 ! Modules
@@ -553,8 +545,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -693,7 +683,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine gt_pde_ahmadi (M, IER)
+      Subroutine gt_pde_ahmadi (M)
 
 !-----------------------------------------------
 ! Modules
@@ -718,8 +708,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -837,7 +825,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine gt_pde_simonin (M, IER)
+      Subroutine gt_pde_simonin (M)
 
 !-----------------------------------------------
 ! Modules
@@ -862,8 +850,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1018,7 +1004,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      Subroutine gt_pde_gd (M, IER)
+      Subroutine gt_pde_gd (M)
 
 !-----------------------------------------------
 ! Modules
@@ -1043,15 +1029,11 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! cell Indices
       INTEGER :: IJK, I, J, K
-! solids phase index
-      INTEGER :: L
 ! Use to compute MU_s(IJK,M) & Kth_S(IJK,M)
       DOUBLE PRECISION :: Mu_star, Kth_star
 !
@@ -1224,7 +1206,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      Subroutine gt_pde_gtsh (M, IER)
+      Subroutine gt_pde_gtsh (M)
 
 !-----------------------------------------------
 ! Modules
@@ -1249,8 +1231,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1465,7 +1445,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine gt_pde_ia (M, IER)
+      Subroutine gt_pde_ia (M)
 
 !-----------------------------------------------
 ! Modules
@@ -1492,8 +1472,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1502,7 +1480,7 @@
 ! solids phase index
       INTEGER :: L
 ! use to compute MU_s(IJK,M) & Kth_S(IJK,M)
-      DOUBLE PRECISION :: Mu_star, Mu_s_dil, Kth_star, K_s_dil, XI_star
+      DOUBLE PRECISION :: Mu_star, Mu_s_dil, Kth_star, K_s_dil
 ! variables for Iddir equipartition model
       DOUBLE PRECISION :: P_s_sum, P_s_MM, P_s_LM
       DOUBLE PRECISION :: MU_common_term, K_common_term
@@ -1858,7 +1836,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine Friction_princeton(M, IER)
+      Subroutine Friction_princeton(M)
 
 !-----------------------------------------------
 ! Modules
@@ -1881,8 +1859,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -1891,7 +1867,7 @@
 ! solids phase index
       INTEGER :: MM
 ! used to compute frictional terms
-      DOUBLE PRECISION :: Chi, Pc, Mu_zeta,Phin,PfoPc, N_Pff
+      DOUBLE PRECISION :: Chi, Pc, Mu_zeta,PfoPc, N_Pff
       DOUBLE PRECISION :: ZETA
 ! sum of all solids volume fractions
       DOUBLE PRECISION :: SUM_EPS_CP
@@ -2047,7 +2023,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Subroutine subgrid_stress_igci(M, IER)
+      Subroutine subgrid_stress_igci(M)
 
 !-----------------------------------------------
 ! Modules
@@ -2070,8 +2046,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -2229,8 +2203,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-
-      Subroutine subgrid_stress_MILIOLI(M, IER)
+      Subroutine subgrid_stress_MILIOLI(M)
 
 !-----------------------------------------------
 ! Modules
@@ -2253,8 +2226,6 @@
 !-----------------------------------------------
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -2680,11 +2651,10 @@
       DOUBLE PRECISION :: W_s_C, Wsl_C
 ! Cell center value of solids and gas velocities
       DOUBLE PRECISION :: USCM, VSCM, WSCM, &
-                          USCM1, VSCM1, WSCM1, &
                           UGC, VGC, WGC,&
                           SqrtVs, SqrtVgMinusVs
 ! Local DO-LOOP counters and phase index
-      INTEGER :: I1, I2, MM
+      INTEGER :: I1, I2
 ! d(EP_sm)/dX
       DOUBLE PRECISION :: DEP_soDX
 ! d(EP_sm)/dY
@@ -2889,7 +2859,7 @@
             D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
                 U_s_C * oX(I)
 
-            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s, IER)
+            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s)
 
 ! Calculate the trace of D_s
             trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)

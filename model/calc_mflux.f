@@ -48,11 +48,11 @@
 !
       IF(.NOT.Added_Mass) THEN
          CALL CALC_MFLUX0 (U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, &
-                           Flux_gE, Flux_gN, Flux_gT, IER)
+                           Flux_gE, Flux_gN, Flux_gT)
          DO M = 1, MMAX
            CALL CALC_MFLUX0 (U_s(1, M), V_s(1, M), W_s(1, M), &
                              ROP_sE(1, M), ROP_sN(1, M), ROP_sT(1, M), &
-                             Flux_sE(1, M), Flux_sN(1, M), Flux_sT(1, M), IER)
+                             Flux_sE(1, M), Flux_sN(1, M), Flux_sT(1, M))
          ENDDO
       ELSE
 
@@ -61,7 +61,7 @@
                            Flux_gE, Flux_gN, Flux_gT, M_AM, IER)
 
          CALL CALC_MFLUX0 (U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, &
-                           Flux_gSE, Flux_gSN, Flux_gST, IER)
+                           Flux_gSE, Flux_gSN, Flux_gST)
          DO M = 1, MMAX ! New fluxes are defined only for M = M_am where virtual mass force is added.
            IF(M==M_AM) THEN
               CALL CALC_MFLUX1 (U_s(1, M), V_s(1, M), W_s(1, M), &
@@ -70,11 +70,11 @@
                              Flux_sE(1, M), Flux_sN(1, M), Flux_sT(1, M), M_AM, IER)
               CALL CALC_MFLUX0 (U_s(1, M), V_s(1, M), W_s(1, M), &
                              ROP_sE(1, M), ROP_sN(1, M), ROP_sT(1, M), &
-                             Flux_sSE, Flux_sSN, Flux_sST, IER)
+                             Flux_sSE, Flux_sSN, Flux_sST)
            ELSE
               CALL CALC_MFLUX0 (U_s(1, M), V_s(1, M), W_s(1, M), &
                              ROP_sE(1, M), ROP_sN(1, M), ROP_sT(1, M), &
-                             Flux_sE(1, M), Flux_sN(1, M), Flux_sT(1, M), IER)
+                             Flux_sE(1, M), Flux_sN(1, M), Flux_sT(1, M))
            ENDIF
          ENDDO
       ENDIF
@@ -103,7 +103,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_MFLUX0(U, V, W, ROP_E, ROP_N, ROP_T, Flux_E, Flux_N, Flux_T, IER)
+      SUBROUTINE CALC_MFLUX0(U, V, W, ROP_E, ROP_N, ROP_T, Flux_E, Flux_N, Flux_T)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -133,9 +133,6 @@
 !
 !                      Convective mass fluxes
       DOUBLE PRECISION Flux_E(DIMENSION_3), Flux_N(DIMENSION_3), Flux_T(DIMENSION_3)
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          IJK, IMJK, IJMK, IJKM

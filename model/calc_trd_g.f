@@ -19,7 +19,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_TRD_G(TRD_G, IER)
+      SUBROUTINE CALC_TRD_G(TRD_G)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -54,8 +54,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
 !                      Indices
       INTEGER          I, J, K, IJK, IMJK, IJMK, IJKM, IM
 !
@@ -66,7 +64,6 @@
 !=======================================================================
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       DOUBLE PRECISION :: dudx,dvdy,dwdz
-      DOUBLE PRECISION :: Xw,Xe,Yn,Ys,Xc,Yc
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: UW_g,VW_g,WW_g
 
@@ -303,7 +300,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_CALC_VEL_G_GRAD(IJK,DELV, IER)
+      SUBROUTINE CG_CALC_VEL_G_GRAD(IJK,DELV)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -332,16 +329,13 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
 !                      Indices
-      INTEGER          I, J, K, IJK, IMJK, IJMK, IJKM, IM
+      INTEGER          I, J, K, IJK, IMJK, IJMK, IJKM
 !
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       DOUBLE PRECISION :: dudx,dudy,dudz
       DOUBLE PRECISION :: dvdx,dvdy,dvdz
       DOUBLE PRECISION :: dwdx,dwdy,dwdz
-      DOUBLE PRECISION :: Xw,Xe,Yn,Ys,Xc,Yc
       DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: UW_g,VW_g,WW_g
       DOUBLE PRECISION, DIMENSION (3,3) :: DELV

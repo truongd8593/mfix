@@ -21,7 +21,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX, IER)
+      SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 
 !-----------------------------------------------
 ! Modules
@@ -50,8 +50,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
@@ -64,8 +62,7 @@
 ! solids phase index
       INTEGER :: M
 ! Indices
-      INTEGER :: IJK, I, J, K, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+      INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
 ! under relaxation factor for pressure
       DOUBLE PRECISION fac
 ! terms of bm expression

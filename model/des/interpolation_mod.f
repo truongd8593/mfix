@@ -282,7 +282,6 @@ MODULE interpolation
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER I, J, K, II, JJ, KK
       INTEGER I_SHIFT, J_SHIFT, K_SHIFT, IE, JN, KTP
 
 ! Determine the shift index necessary to account for the quadrant of
@@ -407,7 +406,7 @@ MODULE interpolation
 ! the continuum phase.
       DOUBLE PRECISION, POINTER :: WEIGHTS_CC (:,:,:)
 ! indices
-      INTEGER I, J, K, II, JJ, KK, IJK
+      INTEGER I, J, K, II, JJ, KK
 ! Loop counter
       INTEGER LC
 ! geometery and field stencils for cell-center interpolations
@@ -847,7 +846,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     REAL(prcn), DIMENSION(:,:), ALLOCATABLE:: zetacsi
-    INTEGER:: i, j, k
+    INTEGER:: i, j
     INTEGER:: iorig
     REAL(prcn), DIMENSION(2):: zeta
 !-----------------------------------------------
@@ -1037,7 +1036,7 @@ MODULE interpolation
     REAL(prcn), DIMENSION(:,:,:), POINTER, OPTIONAL:: weight_pointer
 
     INTEGER :: vec_size
-    INTEGER:: i, j, k, nv
+    INTEGER:: i, j, nv
     REAL(prcn), DIMENSION(:,:,:), POINTER:: weights_scalar
 !-----------------------------------------------
 
@@ -1603,7 +1602,7 @@ MODULE interpolation
     INTEGER, INTENT(in) :: order
     CHARACTER(len=5), INTENT(in) :: isch
 
-    INTEGER:: i, j, k, kk
+    INTEGER:: i, j, k
     REAL(prcn) :: dx1,dy1
     INTEGER :: iorig
     REAL(prcn):: zeta(3), zetasph, bandwidth, sigma, tmp
@@ -2085,7 +2084,6 @@ MODULE interpolation
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-    REAL(prcn) :: tmp
 !-----------------------------------------------
 
 !!$    IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
@@ -2122,7 +2120,6 @@ MODULE interpolation
     REAL(prcn):: zeta
     REAL(prcn), DIMENSION(:):: dx
     INTEGER:: i
-    REAL(prcn) :: tmp
 !-----------------------------------------------
 
     IF (zeta.GE.-two.AND.zeta.LE.-one) THEN
@@ -2333,7 +2330,7 @@ MODULE interpolation
     REAL(prcn):: pos
     REAL(prcn), DIMENSION(:):: x
     INTEGER:: i
-    REAL(prcn):: r1, r2,num,den
+    REAL(prcn):: num,den
 !-----------------------------------------------
 
     SELECT CASE (i)

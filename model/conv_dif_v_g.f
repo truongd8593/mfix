@@ -76,7 +76,7 @@
         IF (DISCRETIZE(4) == 0) THEN               ! 0 & 1 => FOUP
           CALL STORE_A_V_G0 (A_M(1,-3,0), IER)
         ELSE
-          CALL STORE_A_V_G1 (A_M(1,-3,0), IER)
+          CALL STORE_A_V_G1 (A_M(1,-3,0))
         ENDIF
       ENDIF
 
@@ -484,9 +484,6 @@
         INTEGER incr
 ! loezos
 
-!                      Diffusion parameter
-      DOUBLE PRECISION D_f
-!
 !                      Septadiagonal matrix A_V_g
       DOUBLE PRECISION A_V_g(DIMENSION_3, -3:3)
 !
@@ -897,7 +894,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE STORE_A_V_G1(A_V_G, IER)
+      SUBROUTINE STORE_A_V_G1(A_V_G)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -940,11 +937,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, JP, IJKE,&

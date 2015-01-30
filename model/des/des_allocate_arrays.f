@@ -46,10 +46,9 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: II, IJK
+      INTEGER :: IJK
 ! the number of particles in the system
       INTEGER :: NPARTICLES
-      INTEGER :: NUM_THREADS, OMP_GET_NUM_THREADS
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
@@ -140,16 +139,12 @@
 
       Allocate(  PAIRS (2,PAIR_MAX) )
       Allocate(  PAIRS_OLD (2,PAIR_MAX) )
-      Allocate(  PAIR_COLLIDES (PAIR_MAX) )
-      Allocate(  FC_PAIR  (3,PAIR_MAX) )
-      Allocate(  QQ_PAIR (PAIR_MAX) )
       Allocate(  PV_PAIR (PAIR_MAX) )
       Allocate(  PV_PAIR_OLD (PAIR_MAX) )
       Allocate(  PFT_PAIR (3,PAIR_MAX) )
       Allocate(  PFT_PAIR_OLD (3,PAIR_MAX) )
       Allocate(  PFN_PAIR (3,PAIR_MAX) )
       Allocate(  PFN_PAIR_OLD (3,PAIR_MAX) )
-      Allocate(  TOW_PAIR (3,2,PAIR_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -251,13 +246,8 @@
       ALLOCATE(GLOBAL_GRAN_ENERGY(DIMN) )
       ALLOCATE(GLOBAL_GRAN_TEMP(DIMN) )
 
-! Somewhat free variable used to aid in manipulation
-      ALLOCATE(MARK_PART(NPARTICLES))
-
 ! variable for bed height of solids phase M
       ALLOCATE(BED_HEIGHT(DES_MMAX))
-
-
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
@@ -352,10 +342,6 @@
       USE discretelement
       IMPLICIT NONE
 !-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: LC ! Loop counter for no. of DES_BCMI
-!-----------------------------------------------
 
 ! Particle injection factor
       Allocate( PI_FACTOR (DEM_BCMI) )
@@ -414,10 +400,6 @@
       USE pic_bc
       USE discretelement
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      INTEGER :: I     ! Loop counter for no. of DES_BCMI
 !-----------------------------------------------
 
 ! Allocate/Initialize for inlets
@@ -494,8 +476,6 @@
       LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: real_tmp3
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_scalar_tmp
 
       INTEGER :: lSIZE1, lSIZE2, lSIZE3
 
@@ -508,26 +488,6 @@
       allocate(int_tmp(2,PAIR_MAX))
       int_tmp(:,1:lSIZE2) = pairs_old(:,1:lSIZE2)
       call move_alloc(int_tmp,pairs_old)
-
-      lSIZE3 = size(tow_pair,3)
-      allocate(real_tmp3(3,2,PAIR_MAX))
-      real_tmp3(:,:,1:lSIZE3) = tow_pair(:,:,1:lSIZE3)
-      call move_alloc(real_tmp3,tow_pair)
-
-      lSIZE2 = size(fc_pair,2)
-      allocate(real_tmp(3,PAIR_MAX))
-      real_tmp(:,1:lSIZE2) = fc_pair(:,1:lSIZE2)
-      call move_alloc(real_tmp,fc_pair)
-
-      lSIZE1 = size(pair_collides,1)
-      allocate(bool_tmp(PAIR_MAX))
-      bool_tmp(1:lSIZE1) = pair_collides(1:lSIZE1)
-      call move_alloc(bool_tmp,pair_collides)
-
-      lSIZE1 = size(qq_pair,1)
-      allocate(real_scalar_tmp(PAIR_MAX))
-      real_scalar_tmp(1:lSIZE1) = qq_pair(1:lSIZE1)
-      call move_alloc(real_scalar_tmp,qq_pair)
 
       lSIZE1 = size(pv_pair,1)
       allocate(bool_tmp(PAIR_MAX))

@@ -77,7 +77,6 @@
 !//PAR_I/O declare global scratch arrays
       double precision, allocatable :: array1(:)
       double precision, allocatable :: array2(:)
-      INTEGER allocstatus, i
 !-----------------------------------------------
 !
       if (myPE .eq. PE_IO .or. .not.bStart_with_one_res) then
@@ -357,7 +356,7 @@
 
         integer   :: ncid
         integer   :: varid_time
-        integer   :: dimids(2) , varid_epg , varid_pg,dims_time(1)
+        integer   :: varid_epg , varid_pg
         integer   :: varid_pstar  , varid_ug , varid_vg , varid_wg
         integer   :: varid_tg
         integer   :: varid_rog , varid_gamaRG , varid_TRG

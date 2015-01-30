@@ -39,9 +39,9 @@
 !-----------------------------------------------
 
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
-         CALL CONV_ROP_S0 (A_M, M, IER)
+         CALL CONV_ROP_S0 (A_M, M)
       ELSE
-         CALL CONV_ROP_S1 (A_M, M, IER)
+         CALL CONV_ROP_S1 (A_M, M)
       ENDIF
 
       RETURN
@@ -67,7 +67,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_ROP_S0(A_M, M, IER)
+      SUBROUTINE CONV_ROP_S0(A_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -93,8 +93,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -194,7 +192,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_ROP_S1(A_M, M, IER)
+      SUBROUTINE CONV_ROP_S1(A_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -222,8 +220,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

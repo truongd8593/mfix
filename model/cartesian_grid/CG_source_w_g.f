@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SOURCE_W_G(A_M, B_M, IER)
+      SUBROUTINE CG_SOURCE_W_G(A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -73,49 +73,19 @@
 !
 !                      Indices
       INTEGER          I, J, K, IJK, IJKT, IMJK, IJKP, IMJKP,&
-                       IJKE, IJKW, IJKTE, IJKTW, IM, IPJK
+                       IJKE, IJKW, IJKTE, IM, IPJK
 !
 !                      Phase index
-      INTEGER          M, L
-!
-!                      Internal surface
-      INTEGER          ISV
-!
-!                      Pressure at top cell
-      DOUBLE PRECISION PgT
+      INTEGER          M
 !
 !                      Average volume fraction
       DOUBLE PRECISION EPGA
-!
-!                      Average density
-      DOUBLE PRECISION ROPGA, ROGA
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Average viscosity
-      DOUBLE PRECISION MUGA
-!
-!                      Average coefficients
-      DOUBLE PRECISION Cte, Ctw, EPMUoX
-!
-!                      Average U_g
-      DOUBLE PRECISION Ugt
-!
-!                      Source terms (Surface)
-      DOUBLE PRECISION Sdp, Sxzb
-!
-!                      Source terms (Volumetric)
-      DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcoa, Vcob, Vxza, Vxzb
-!
-!                      Source terms (Volumetric) for GHD theory
-      DOUBLE PRECISION Ghd_drag, avgRop
-!
-!                      error message
-      CHARACTER(LEN=80) :: LINE
 !
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -129,7 +99,7 @@
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !                       virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Ust, Vsb, Vst, Wse, Wsw, Wsn, Wss, Wst, Wsb, Usc,Vsc,Vsn,Vss
+      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Wse, Wsw, Wsn, Wss, Wst, Wsb, Usc,Vsc,Vsn,Vss
 ! Wall function
       DOUBLE PRECISION :: W_F_Slip
 !=======================================================================
@@ -390,7 +360,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SOURCE_W_G_BC(A_M, B_M, IER)
+      SUBROUTINE CG_SOURCE_W_G_BC(A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -439,15 +409,8 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Boundary condition
-      INTEGER          L
-!
 !                      Indices
-      INTEGER          I, J, K, IJK, IJKB
+      INTEGER          IJK, IJKB
 !
 !                      Solids phase
       INTEGER          M
@@ -458,11 +421,6 @@
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 !
-!                      Turb. Shear at walls
-      DOUBLE PRECISION W_F_Slip
-!
-!                      C_mu and Kappa are constants in turb. viscosity and Von Karmen const.
-      DOUBLE PRECISION C_mu, Kappa
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION

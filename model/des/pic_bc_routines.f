@@ -34,12 +34,10 @@
 
       INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
 
-      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
       NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
       double precision :: velocity(dimn)
       !reference point and direction of the line
@@ -278,9 +276,9 @@
 
       INTEGER I, J, K, IJK, NF, LL
 
-      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN)
+      DOUBLE PRECISION :: RADSQ
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, LIST_OF_CELLS(27), IPROC, COUNT2, &
+      NEIGH_CELLS_NONNAT, LIST_OF_CELLS(27), &
       CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
@@ -772,7 +770,6 @@
                      RO_Sol(NEW_SPOT) =  DES_RO_S(M)
 
                      DES_STAT_WT(NEW_SPOT) = STAT_WT
-                     MARK_PART(NEW_SPOT) = myPE
 
                      PIJK(NEW_SPOT, 1) = IFLUID
                      PIJK(NEW_SPOT, 2) = JFLUID
@@ -948,7 +945,7 @@
 ! Local variables
 !-----------------------------------------------
       !magnitude of pre-collisional normal and tangential velocity components
-      DOUBLE PRECISION :: VEL_NORMMAG_APP, VEL_TANGMAG_APP, TANGENT(DIMN)
+      DOUBLE PRECISION :: VEL_NORMMAG_APP
 
       !pre collisional normal and tangential velocity components in vector format
       !APP ==> approach
@@ -1015,7 +1012,7 @@
 ! Local variables
 !-----------------------------------------------
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS
-      INTEGER :: I, J, K, IJK
+      INTEGER :: I, J, K
 !-----------------------------------------------
 
       I = PIJK(LL,1)

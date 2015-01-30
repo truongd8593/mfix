@@ -243,10 +243,6 @@
          PVOL(L) = (4.0D0/3.0D0)*PI*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L)
          OMOI(L) = 2.5D0/(PMASS(L)*DES_RADIUS(L)**2) !ONE OVER MOI
-! the following is used aid visualization of mixing but can be employed
-! for other purposes if desired
-         MARK_PART(L) = 1
-         IF(DES_POS_NEW(2,L).LE.YLENGTH/2.d0) MARK_PART(L) = 0
       ENDDO
 
       CALL SET_PHASE_INDEX

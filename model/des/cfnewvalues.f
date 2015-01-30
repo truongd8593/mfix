@@ -199,16 +199,15 @@
 
       DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX)
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
-      INTEGER :: PIP_DEL_COUNT, count_bc
+      INTEGER :: PIP_DEL_COUNT
 
       DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
+      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
 
 
-      double precision  sig_u, mean_u,ymid
+      double precision  sig_u, mean_u
       double precision, allocatable, dimension(:,:) ::  rand_vel
 !-----------------------------------------------
 
@@ -483,12 +482,12 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER L, M, IDIM
-      INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+      INTEGER I, J, K, IJK, IJK_OLD
 
       DOUBLE PRECISION DD(3), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
+                       DP_BAR, MEANVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
+      DOUBLE PRECISION MEAN_FREE_PATH
 ! index to track accounted for particles
       INTEGER PC
 
@@ -496,21 +495,19 @@
       LOGICAL DES_LOC_DEBUG
 
 ! maximum distance particles can move in MPPIC
-      DOUBLE PRECISION MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
+      DOUBLE PRECISION UPRIMEMOD
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX), POS_Z
-      DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(3), VELP_INT(3)
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, POS_Z
+      DOUBLE PRECISION :: VELP_INT(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
-      INTEGER :: PIP_DEL_COUNT, count_bc
+      INTEGER :: PIP_DEL_COUNT
 
-      DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
+      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
 
-      double precision  sig_u, mean_u,ymid, part_taup,  DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
+      double precision  sig_u, mean_u, DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
       double precision, allocatable, dimension(:,:) ::  rand_vel
 
       double precision :: norm1, norm2, norm3

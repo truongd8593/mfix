@@ -104,8 +104,6 @@
       DOUBLE PRECISION :: ROP_MA, Uge, Ugw, Vgw, Vge, Ugn,&
                           Ugs, Wgb, Wgt, Wge, Ugb, Ugt
       DOUBLE PRECISION :: F_vir
-! error message
-      CHARACTER(LEN=80) :: LINE(2)
 !-----------------------------------------------
 
       DO M = 1, MMAX
@@ -464,7 +462,7 @@
 ! modifications for cartesian grid implementation
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M, IER)
 ! modifications for bc
-            CALL SOURCE_U_S_BC (A_M, B_M, M, IER)
+            CALL SOURCE_U_S_BC (A_M, B_M, M)
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S_BC (A_M, B_M, M, IER)
 
           ENDIF   ! end if (momentum_x_eq)
@@ -493,7 +491,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_U_S_BC(A_M, B_M, M, IER)
+      SUBROUTINE SOURCE_U_S_BC(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -529,8 +527,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -1154,7 +1150,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_U_S(A_M, B_M, IER)
+      SUBROUTINE POINT_SOURCE_U_S(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -1176,8 +1172,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -454,8 +454,7 @@
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID .AND. .NOT.(CG_SAFE_MODE(1)==1)) &
          CALL BC_PHI_CG(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
-                        BC_C_PHI, M, A_M, B_M, IER)
-
+                        BC_C_PHI, M, A_M, B_M)
 
       RETURN
       END SUBROUTINE BC_PHI
@@ -471,7 +470,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE BC_PHI_CG(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
-                        BC_C_PHI, M, A_M, B_M, IER)
+                        BC_C_PHI, M, A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -512,8 +511,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE DIF_U_IS(DIF, A_M, B_M, M, IER)
+      SUBROUTINE DIF_U_IS(DIF, A_M, B_M, M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -52,11 +52,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 
-!
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Internal surface
       INTEGER          L
 !

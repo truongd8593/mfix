@@ -60,7 +60,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
       DOUBLE PRECISION DEM_to_TFM
-      INTEGER IJK, M, N, LM
+      INTEGER IJK
 
 
 ! Initialize global storage arrays to zero

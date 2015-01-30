@@ -32,7 +32,6 @@
       implicit none
 ! local variables
       character(len=80), parameter :: name = 'des_mpi_barrier'
-      integer lerr
       return
       end subroutine
 

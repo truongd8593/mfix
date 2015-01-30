@@ -55,16 +55,13 @@
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
 !-----------------------------------------------
-        DIMENSION USX1(IMAX, JMAX), USX2(IMAX), USTIME(IMAX)
-        DIMENSION USX3(IMAX), USX4(IMAX), D_g(3,3)
+        DIMENSION D_g(3,3)
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
 !                       Error index
       INTEGER          IER
-
-      INTEGER          L
 !
 !-----------------------------------------------
 !-----------------------------------------------
@@ -80,7 +77,7 @@
       INTEGER          I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
                       IM, JM, KM
       INTEGER          IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP, &
-                      IJMKM, IJPKM, II, I1, J1, K1
+                      IJMKM, IJPKM, I1, J1, K1
 !
 !                      Solids phase
       INTEGER          M
@@ -130,9 +127,6 @@
 !                      Calculated for Cylindrical coordinates only.
       DOUBLE PRECISION W_g_C
 !
-!                      Second invariant of the deviator of D_g
-      DOUBLE PRECISION I2_devD_g
-!
 !                      Cell center value of U_g
       DOUBLE PRECISION UGC
 !
@@ -141,9 +135,6 @@
 !
 !                      Cell center value of W_g
       DOUBLE PRECISION WGC
-!
-!                      Local DO-LOOP counters
-      INTEGER          I2
 !
 !                      trace_g and eddy viscosity
       DOUBLE PRECISION Trace_G, Mu_gas_t
@@ -157,13 +148,9 @@
       DOUBLE PRECISION Pos_Tauij_gDUi_gODxj, Neg_Tauij_gDUi_gODxj
       DOUBLE PRECISION Ceps_1, Ceps_2, C_Eps_3, Check_Log
       DOUBLE PRECISION Pos_PI_kq_2, Neg_PI_kq_2
-      DOUBLE PRECISION Pos_PI_q_2, Neg_PI_q_2
 ! Modif. for Sof Local Var.
-      DOUBLE PRECISION USX1, USX3, USX4
-      DOUBLE PRECISION USX2, USTIME, XKSTEP, RES_TIME
 !
       INTEGER :: P,Q
-      DOUBLE PRECISION ::V_G_NW,V_G_SW
 !-----------------------------------------------
 
       IF( .NOT. K_Epsilon) RETURN
@@ -298,7 +285,7 @@
 
             ELSE  ! CUT_CELL
 
-               CALL CG_CALC_VEL_G_GRAD(IJK,UG, IER)
+               CALL CG_CALC_VEL_G_GRAD(IJK,UG)
 
                DO P = 1,3
                   DO Q = 1,3

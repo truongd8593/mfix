@@ -45,7 +45,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: ISEED, IJKERR
+      INTEGER :: IJKERR
       INTEGER IJK, IpJK, ImJK, IJpK, IJmK, IJKp, IJKm
       DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3) :: Am
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: Bm, X_ACT, X_SOL

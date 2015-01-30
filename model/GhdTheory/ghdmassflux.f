@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE GHDMASSFLUX (IER)
+      SUBROUTINE GHDMASSFLUX ()
 
 !-----------------------------------------------
 ! Modules
@@ -39,11 +39,6 @@
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error index
-      INTEGER :: IER
-!-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Index
@@ -51,7 +46,7 @@
 ! Index
       INTEGER :: IJKE, IJKN, IJKT
 ! Solids phase
-      INTEGER :: M, L, MM
+      INTEGER :: M, L
 ! number densities to compute del(Nj)
       DOUBLE PRECISION NjC, NjE, NjN, NjT
 
@@ -75,17 +70,13 @@
                           massMobilityTermZvelupdate
       DOUBLE PRECISION :: thermalDiffTermX, thermalDiffTermY, &
                           thermalDiffTermZ
-      DOUBLE PRECISION :: ropsx, ropsy, ropsz, ropsmmx, ropsmmy, &
-                          ropsmmz, ropsme, ropsmn, ropsmt
+      DOUBLE PRECISION :: ropsme, ropsmn, ropsmt
 
-      DOUBLE PRECISION :: tmpdragx, tmpdragy, tmpdragz, addtermx, &
-                          addtermy, addtermz, dragFc, dragFe, dragFn, &
-                          dragFt
-      DOUBLE PRECISION :: totropsx,totropsy,totropsz
+      DOUBLE PRECISION :: addtermx, &
+                          addtermy, addtermz
       DOUBLE PRECISION :: massMobilityTermNoDragX, &
                           massMobilityTermNoDragY, &
                           massMobilityTermNoDragZ
-      DOUBLE PRECISION :: gradTx, gradTy, gradTz
       DOUBLE PRECISION :: DiTE_H, DiTE_A, DiTN_H, DiTN_A, DiTT_H, DiTT_A
       DOUBLE PRECISION :: DijE_H, DijE_A, DijN_H, DijN_A, DijT_H, DijT_A
       DOUBLE PRECISION :: DijFE_H, DijFE_A, DijFN_H, DijFN_A, DijFT_H, DijFT_A
@@ -415,7 +406,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE UpdateSpeciesVelocities (IER)
+      SUBROUTINE UpdateSpeciesVelocities ()
 
 !-----------------------------------------------
 ! Modules
@@ -444,29 +435,14 @@
       INTEGER :: IJK, I, J, K
 ! Index
       INTEGER :: IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, &
-                 IJKM, ISV
+                 IJKM
 ! Solids phase
-      INTEGER :: M, L, MM, S
-! Error index
-      INTEGER :: IER
-      LOGICAL :: DIL_UP_X, DIL_UP_Y
+      INTEGER :: S
 ! species density at cell faces
-      DOUBLE PRECISION :: ropsE, ropsN, ropsT, ropsmmE, ropsmmN, &
-                          ropsmmT
-      DOUBLE PRECISION :: EPSA1, EPSA2, fluxpred
-      DOUBLE PRECISION :: EPSw, EPSe, EPSn, EPSs, EPSt, EPSb
-      DOUBLE PRECISION :: niE, niN, niT
-      DOUBLE PRECISION :: Njc, njn, NjE, NjT
-      DOUBLE PRECISION :: tmpdragc, tmpdragn, tmpdrage, tmpdragt
-      DOUBLE PRECISION :: tmpdragx, tmpdragy, tmpdragz
-      DOUBLE PRECISION :: tmpVel, counter
-      DOUBLE PRECISION :: Mi, Ni, Mj, Nj
-      DOUBLE PRECISION :: DIJFE, DIJFN, DIJFT
-      DOUBLE PRECISION :: prefactorx, prefactory, prefactorz
       integer :: kk, maxFluxS
       double precision :: epgN, rogN, mugN, Vg
       double precision :: Ur(smax), vrelSq(smax), vel, velup(smax)
-      double precision :: U_sum, V_sum, tmpvelmix, maxFlux
+      double precision :: maxFlux
       double precision :: rosN(smax), dp(smax)
       double precision :: DijN(smax,smax), JoiM(smax), &
                           DijN_H(smax,smax), DijN_A(smax,smax)

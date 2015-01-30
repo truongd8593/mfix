@@ -77,7 +77,7 @@
       call lock_tmp_array1
 
 ! initializing
-      CALL ZERO_ARRAY (PP_G, IER)
+      CALL ZERO_ARRAY (PP_G)
       DO M = 0, MMAX
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
       ENDDO
@@ -93,7 +93,7 @@
 ! Forming the sparse matrix equation.
       CALL CONV_PP_G (A_M, B_M, IER)
       CALL SOURCE_PP_G (A_M, B_M, B_MMAX, IER)
-      IF(POINT_SOURCE) CALL POINT_SOURCE_PP_G (B_M, B_MMAX, IER)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_PP_G (B_M, B_MMAX)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -149,7 +149,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax, IER)
+      SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax)
 
       use compar
       use constant
@@ -164,8 +164,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression

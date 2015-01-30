@@ -6,7 +6,7 @@
 !  introducing the drag as a source term. Face centered.               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOLID_DRAG_U(A_M, B_M, IER)
+      SUBROUTINE SOLID_DRAG_U(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -30,8 +30,6 @@
       DOUBLE PRECISION :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -74,7 +72,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOLID_DRAG_V(A_M, B_M, IER)
+      SUBROUTINE SOLID_DRAG_V(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -98,8 +96,6 @@
       DOUBLE PRECISION :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -138,7 +134,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOLID_DRAG_W(A_M, B_M, IER)
+      SUBROUTINE SOLID_DRAG_W(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -162,8 +158,6 @@
       DOUBLE PRECISION :: A_M(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION :: B_M(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

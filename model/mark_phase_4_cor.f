@@ -20,7 +20,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE MARK_PHASE_4_COR(PHASE_4_P_G, PHASE_4_P_S, DO_CONT,&
-            MCP, DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
+            MCP, DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
 !-----------------------------------------------
 ! Modules
@@ -62,8 +62,6 @@
       LOGICAL :: SWITCH_4_P_g
 ! flag wether different phases were used for solids pressure correction
       LOGICAL :: SWITCH_4_P_s
-! error index
-      INTEGER :: IER
 
 ! Here are some notes on the outcomes of the code following the changes
 ! by Sof on 11/22/10:

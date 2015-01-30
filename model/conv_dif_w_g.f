@@ -64,13 +64,13 @@
 !       IF DEFERRED CORRECTION IS USED TO SOLVE W_G
       IF (DEF_COR) THEN
         CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
-        IF (DISCRETIZE(5) > 1)CALL STORE_A_W_GDC (A_M(1,-3,0), B_M(1,0), IER)
+        IF (DISCRETIZE(5) > 1)CALL STORE_A_W_GDC (A_M(1,-3,0), B_M(1,0))
       ELSE
 !
         IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP
           CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
         ELSE
-          CALL STORE_A_W_G1 (A_M(1,-3,0), IER)
+          CALL STORE_A_W_G1 (A_M(1,-3,0))
         ENDIF
       ENDIF
 !
@@ -402,7 +402,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE STORE_A_W_GDC(A_W_G, B_M, IER)
+      SUBROUTINE STORE_A_W_GDC(A_W_G, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -448,11 +448,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Indices
       INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
                        IJKTE, IJKP, IJKT, IJKTN, IJK
@@ -466,17 +461,11 @@
         INTEGER incr
 ! loezos
 
-!                      Diffusion parameter
-      DOUBLE PRECISION D_f
-!
 !                      Septadiagonal matrix A_W_g
       DOUBLE PRECISION A_W_g(DIMENSION_3, -3:3)
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3)
-!
-!       FACE VELOCITY
-        DOUBLE PRECISION V_F
 !
 !       DEFERRED CORRCTION CONTRIBUTION FORM HIGH ORDER METHOD
         DOUBLE PRECISION MOM_HO
@@ -879,7 +868,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE STORE_A_W_G1(A_W_G, IER)
+      SUBROUTINE STORE_A_W_G1(A_W_G)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -923,11 +912,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&

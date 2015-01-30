@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_E(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_E(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -48,9 +48,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I, J, K, IJK, IJKE
@@ -147,7 +144,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_N(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_N(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -178,10 +175,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I, J, K, IJK, IJKN
@@ -279,7 +272,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_T(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_T(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -310,10 +303,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I, J, K, IJK, IJKT
@@ -410,7 +399,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_W(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_W(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -441,10 +430,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          IM, J, K, IJK, IJKW, IMJK
@@ -542,7 +527,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_S(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_S(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -574,9 +559,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I, JM, K, IJK, IJKS, IJMK
@@ -673,7 +655,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE B_M_P_STAR_B(B_M, IJK, IER)
+      SUBROUTINE B_M_P_STAR_B(B_M, IJK)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -704,10 +686,6 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I, J, KM, IJK, IJKB, IJKM

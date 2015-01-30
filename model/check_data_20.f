@@ -58,8 +58,6 @@
       INTEGER :: M
 ! Species index
       INTEGER :: N
-! Local index
-      INTEGER :: L
 ! Logical variable to set, if there is an error
       LOGICAL :: ABORT
 ! Whether L_scale is nonzero

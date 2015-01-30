@@ -76,17 +76,8 @@
 !                      Phase index
       INTEGER          M
 !
-!                      Internal surface
-      INTEGER          ISV
-!
-!                      Pressure at east cell
-      DOUBLE PRECISION PgE
-!
 !                      Average volume fraction
       DOUBLE PRECISION EPGA
-!
-!                      Average density
-      DOUBLE PRECISION ROPGA, ROGA
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
@@ -94,30 +85,6 @@
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 !
-!                      Average viscosity
-      DOUBLE PRECISION MUGA
-!
-!                      Average viscosity
-      DOUBLE PRECISION EPMU_gte, EPMU_gbe, EPMUGA
-!
-!                      Average W_g
-      DOUBLE PRECISION Wge
-!
-!                      Average dW/Xdz
-      DOUBLE PRECISION dWoXdz
-!
-!                      Source terms (Surface)
-      DOUBLE PRECISION Sdp
-!
-!                      Source terms (Volumetric)
-      DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcf, Vtza
-!
-!                      error message
-      CHARACTER(LEN=80) :: LINE
-!
-!     FOR CALL_DI and CALL_ISAT = .true.
-      DOUBLE PRECISION SUM_R_G_temp(DIMENSION_3)
-
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -125,19 +92,14 @@
       INTEGER :: IMJK,IJMK,IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJKP
       INTEGER :: IJKT,IJKTE,IJKB,IJKBE
       DOUBLE PRECISION :: Ue,Uw,Un,Us,Ut,Ub
-      DOUBLE PRECISION :: P_CUT,z_plane,DH,Nx,Ny,Nz,B_NOC
-      DOUBLE PRECISION :: x_circle,y_circle, Angle
+      DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
       DOUBLE PRECISION :: UW_g
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
-      INTEGER   IJKDB1,IJKDB2
-
-      LOGICAL :: PRINT_FLAG
-
 !                       virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Vsn, Vss, Vsc, Usn, Uss, Wsb, Wst, Wse, Wsc, Usb, Ust
+      DOUBLE PRECISION F_vir, ROP_MA, U_se, Usw, Vsn, Vss, Vsc, Usn, Uss, Wsb, Wst, Wsc, Usb, Ust
 ! Wall function
       DOUBLE PRECISION :: W_F_Slip
 !=======================================================================
@@ -398,7 +360,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CG_SOURCE_U_G_BC(A_M, B_M, IER)
+      SUBROUTINE CG_SOURCE_U_G_BC(A_M, B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -447,16 +409,9 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Boundary condition
-      INTEGER          L
-!
 !                      Indices
-      INTEGER          I,  J, K, IM, I1, I2, J1, J2, K1, K2, IJK,&
-                       JM, KM, IJKW, IMJK, IP, IPJK ,IJMK,IJKM
+      INTEGER          I,  J, K, IM, IJK,&
+                       JM, KM, IJKW, IMJK, IJMK,IJKM
 !
 !                      Solids phase
       INTEGER          M

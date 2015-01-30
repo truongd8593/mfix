@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ADJUST_ROP(ROP, IER)
+      SUBROUTINE ADJUST_ROP(ROP)
 
 !-----------------------------------------------
 ! Modules
@@ -31,8 +31,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! density
       DOUBLE PRECISION, INTENT(INOUT) :: ROP(DIMENSION_3)
 !-----------------------------------------------

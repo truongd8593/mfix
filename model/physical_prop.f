@@ -156,8 +156,6 @@
 
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
-      INTEGER :: M     ! Solids phase
-      INTEGER :: N     ! Species index
 
 ! Equation of State - GAS
       DOUBLE PRECISION, EXTERNAL :: EOSG
@@ -314,11 +312,8 @@
 ! Error flag returned from calc_CpoR
       INTEGER :: lCP_Err
       INTEGER :: gCP_Err
-! Average molecular weight
-      DOUBLE PRECISION :: MW
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
-      INTEGER :: M     ! Solids phase
       INTEGER :: N     ! Species index
 
 ! Function to evaluate Cp polynomial.

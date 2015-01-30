@@ -42,7 +42,7 @@
 ! Local variables
 !-----------------------------------------------
 ! Solids phase indices
-      INTEGER :: M, L, DM
+      INTEGER :: M, L
 !-----------------------------------------------
 
 ! Alberto Passalacqua:  QMOMB

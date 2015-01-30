@@ -45,7 +45,7 @@
 !-----------------------------------------------
 !
 !                      IJK indices for wall cell and fluid cell
-      INTEGER          IJK, IJK1, IJK2
+      INTEGER          IJK1, IJK2
 !
 !                      Other indices
       INTEGER          IPJK2, IPJMK2, IPJPK2, IPJKM2, IPJKP2
