@@ -44,7 +44,9 @@
 
 
         CALL calculate_de_norms
-      
+
+        CALL deallocate_usr_variables
+
 
       RETURN 
 
@@ -77,7 +79,7 @@
       Use geometry, only  : imax, imin1, imax1
       Use geometry, only  : jmax, jmin1, jmax1
       Use funits, only    : newunit
-      Use mpi_utility
+      Use compar, only    : myPE, PE_IO
       IMPLICIT NONE
 
 ! number of data points for norm calculation
@@ -153,7 +155,6 @@
         var_size = imax*(jmax-1)
         call calculate_lnorms(var_size, de_v_g, lnorms_v_g)
 
-
 ! Output DE norms data to a file
         if(myPE == PE_IO) then
           open(unit=newunit(f1), file="de_norms.dat", status='unknown')
@@ -167,7 +168,8 @@
           write(f1,*) lnorms_p_g(3), lnorms_u_g(3), lnorms_v_g(3)
           close(f1)
         end if
-        
+
+
       RETURN
 
       END SUBROUTINE calculate_de_norms
@@ -226,8 +228,8 @@
         call global_max(lnorms(3), lnorms_all(3))
 
 ! put final result in lnorms         
-        lnorms(1) = lnorms_all(1)/real(var_size)
-        lnorms(2) = sqrt(lnorms_all(2)/real(var_size))
+        lnorms(1) = lnorms_all(1)/dble(var_size)
+        lnorms(2) = sqrt(lnorms_all(2)/dble(var_size))
         lnorms(3) = lnorms_all(3)
 
 
@@ -327,3 +329,47 @@
       RETURN
 
       END SUBROUTINE calculate_exact_solution_channel
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: deallocate_usr_variables                               !
+!  Purpose: Deallocate allocatable variables defined in usr_mod.f      !
+!                                                                      !
+!  Author: Aniruddha Choudhary                        Date: Jan 2015   !
+!  email: anirudd@vt.edu					       !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!  Revision Number #                                  Date:            !
+!  Author: #                                                           !
+!  Purpose: #                                                          !
+!                                                                      ! 
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE deallocate_usr_variables
+      Use usr, only     : p_g_ex, u_g_ex, v_g_ex
+      Use usr, only     : lnorms_p_g, lnorms_u_g, lnorms_v_g
+      Use usr, only     : xtr, ytr, ztr
+      Use usr, only     : de_p_g, de_u_g, de_v_g
+      IMPLICIT NONE
+
+        ! allocate variables defined in usr_mod.f
+        deallocate(p_g_ex)
+        deallocate(u_g_ex)
+        deallocate(v_g_ex)
+
+        deallocate(lnorms_p_g)
+        deallocate(lnorms_u_g)
+        deallocate(lnorms_v_g)
+
+        deallocate(xtr)
+        deallocate(ytr)
+        deallocate(ztr)
+
+        deallocate(de_p_g)
+        deallocate(de_u_g)
+        deallocate(de_v_g)
+      
+      RETURN
+
+      END SUBROUTINE deallocate_usr_variables
