@@ -49,13 +49,10 @@
       DOUBLE PRECISION GAMMA_CP
 ! Temperature of the gas
       DOUBLE PRECISION Tg
-! Weight of specificed IJK value
-      DOUBLE PRECISION WEIGHT
 ! Surface area of particle
       DOUBLE PRECISION Sa
 ! Convection source
       DOUBLE PRECISION Qcv
-
 
 ! Obtain the temperature of the gas. --> Not interpolated.
       Tg = T_g(IJK)
@@ -215,7 +212,7 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE  DES_Hgm(S_C, S_P)
+      SUBROUTINE  DES_Hgm(S_C)
 
       USE compar
       Use constant
@@ -235,8 +232,6 @@
 
 ! Passed Variables
 !---------------------------------------------------------------------//
-! Source term on LHS.  Must be positive.
-      DOUBLE PRECISION, INTENT(INOUT) :: S_P(DIMENSION_3)
 ! Source term on RHS
       DOUBLE PRECISION, INTENT(INOUT) :: S_C(DIMENSION_3)
 
@@ -244,9 +239,6 @@
 !---------------------------------------------------------------------//
 ! IJK value of cell containing particle NP
       INTEGER :: IJK
-! Conversion factor from DEM to TFM
-      DOUBLE PRECISION :: DEM_to_TFM
-
 !---------------------------------------------------------------------//
 
 ! Loop over fluid cells.
@@ -262,8 +254,6 @@
 
       RETURN
       END SUBROUTINE  DES_Hgm
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !  Subroutine: DES_Hgm                                                 !

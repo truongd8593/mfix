@@ -14,7 +14,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_TAU_U_S(TAU_U_S, IER)
+      SUBROUTINE CALC_TAU_U_S(TAU_U_S)
 
 !-----------------------------------------------
 ! Modules
@@ -69,8 +69,6 @@
 !-----------------------------------------------
 ! TAU_U_s
       DOUBLE PRECISION, INTENT(OUT) :: TAU_U_s(DIMENSION_3, DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -90,22 +88,16 @@
       DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
 ! Source terms (Volumetric)
       DOUBLE PRECISION :: Vtzb
-! error message
-      CHARACTER(LEN=80) :: LINE
 
 ! for cartesian grid implementation:
-      INTEGER :: IM,JP,KP
       DOUBLE PRECISION :: DEL_H,Nx,Ny,Nz
       LOGICAL :: V_NODE_AT_NE,V_NODE_AT_NW,V_NODE_AT_SE,V_NODE_AT_SW
       LOGICAL :: W_NODE_AT_TE,W_NODE_AT_TW,W_NODE_AT_BE,W_NODE_AT_BW
-      DOUBLE PRECISION :: V_SUM,W_SUM,X_SUM,Y_SUM,Z_SUM,Vc,Wc
-      DOUBLE PRECISION :: Xvc,Yvc,Zvc,Xwc,Ywc,Zwc,Nxv,Nyv,Nzv,Nxw,Nyw,Nzw
       DOUBLE PRECISION :: dvdx_at_N,dvdx_at_S
       DOUBLE PRECISION :: dwdx_at_T,dwdx_at_B
-      DOUBLE PRECISION :: Xi,Yi,Zi,Ui,Vi,Wi,Sx,Sy,Sz
+      DOUBLE PRECISION :: Xi,Yi,Zi,Vi,Wi,Sx,Sy,Sz
       DOUBLE PRECISION :: MU_S_CUT,SSY_CUT,SSZ_CUT
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
-      INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 
@@ -123,7 +115,6 @@
             ENDIF
           ENDDO
         ENDIF
-
 
 !!$omp  parallel do private( IJK, I, IJKE, EPSA, EPStmp, IP, J, JM, K, KM,  &
 !!$omp&  IPJK,IMJK,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJMK,IJKT,IJKTE,  &

@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_E(A_M, MCP, E_E, IER)
+      SUBROUTINE CALC_E_E(A_M, MCP, E_E)
 
 !-----------------------------------------------
 ! Modules
@@ -50,8 +50,6 @@
 ! Note that the E_e coefficients are only used when mcp is assigned
 ! (when any solids phase has close_packed=T).
       DOUBLE PRECISION, INTENT(INOUT) :: e_e(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -99,7 +97,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_N(A_M, MCP, E_N, IER)
+      SUBROUTINE CALC_E_N(A_M, MCP, E_N)
 
 !-----------------------------------------------
 ! Modules
@@ -132,8 +130,6 @@
 ! Note that the E_n coefficients are only used when mcp is assigned
 ! (when the solids phase has close_packed=T)
       DOUBLE PRECISION, INTENT(INOUT) :: e_n(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -180,7 +176,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_E_T(A_M, MCP, E_T, IER)
+      SUBROUTINE CALC_E_T(A_M, MCP, E_T)
 
 !-----------------------------------------------
 ! Modules
@@ -213,8 +209,6 @@
 ! Note that the E_t coefficients are only used when mcp is assigned
 ! (when the solids phase has close_packed=T)
       DOUBLE PRECISION, INTENT(INOUT) :: e_t(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

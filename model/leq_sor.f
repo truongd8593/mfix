@@ -64,7 +64,7 @@
 ! Variable
       DOUBLE PRECISION :: Var_tmp(DIMENSION_3)
 ! Indices
-      INTEGER :: I, J, K, IJK
+      INTEGER :: IJK
       INTEGER :: ITER
 
       DOUBLE PRECISION oAm

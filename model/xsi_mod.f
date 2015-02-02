@@ -49,9 +49,6 @@ CONTAINS
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-    INTEGER          IER
-!
 !                      discretization method
     INTEGER          DISCR
 !
@@ -71,7 +68,7 @@ CONTAINS
 !                      Error message
     CHARACTER(LEN=80)     LINE(1)
 !
-    DOUBLE PRECISION DEN, DEN1, PHI_C
+    DOUBLE PRECISION PHI_C
 !
 !                      down wind factor
     DOUBLE PRECISION dwf
@@ -879,11 +876,8 @@ CONTAINS
 !                      discretization method
     INTEGER          DISCR
 !
-
 !                      Indices
-    INTEGER          IJK, IJKC, IJKD, IJKU, I, J, K,incr
-
-!
+    INTEGER          IJK, I, J, K
 !
     DOUBLE PRECISION  PHI_C
 
@@ -1055,7 +1049,7 @@ CONTAINS
 !-----------------------------------------------
   DOUBLE PRECISION FUNCTION XSI_func(XXXv,XXXdwf)
     IMPLICIT NONE
-    DOUBLE PRECISION XXXv,XXXdwf,xsi
+    DOUBLE PRECISION XXXv,XXXdwf
     XSI_func = (sign(1d0,(-XXXv))+1d0)/(2d0) + &
          sign(1d0,XXXv)*XXXdwf
   END FUNCTION XSI_func

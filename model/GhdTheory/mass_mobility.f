@@ -27,9 +27,6 @@
       integer NP
       parameter (NP=15)     !max no. of linear equations to solve
 
-      double precision pi
-      parameter (pi=3.14159265458979323846d0)
-
       do i=1,s
          do j=1,s
             if (i.eq.j) then

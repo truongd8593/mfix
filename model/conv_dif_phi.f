@@ -88,14 +88,14 @@
 !       IF DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
         IF(DEF_COR)THEN
-          CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+          CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M)
           if (DISC > 1) CALL CONV_DIF_PHI_DC(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
         ELSE
 !
 !       NO DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
 !
           IF (DISC == 0) THEN
-            CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+            CALL CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M)
           ELSE
             CALL CONV_DIF_PHI1(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
           ENDIF
@@ -129,7 +129,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M,IER)
+      SUBROUTINE CONV_DIF_PHI0(PHI,DIF,DISC,UF,VF,WF,Flux_E,Flux_N,Flux_T,M,A_M,B_M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -188,9 +188,6 @@
 !
 !                      Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Error index
-      INTEGER          IER
 !
 !                      Indices
       INTEGER          I,  J, K, IJK, IPJK, IJPK, IJKE, IJKN,&
@@ -487,10 +484,6 @@
       INTEGER  incr
 ! loezos
 
-!
-!                      Difusion parameter
-      DOUBLE PRECISION D_f
-!
 !       FACE VELOCITY
         DOUBLE PRECISION V_F
 !

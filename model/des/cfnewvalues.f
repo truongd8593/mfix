@@ -199,16 +199,15 @@
 
       DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX)
       DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
-      DOUBLE PRECISION :: XI_EAST, XI_WEST, XI_NORTH, XI_SOUTH, XI_TOP, XI_BOTTOM, epg_min2, velf_part(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
-      INTEGER :: PIP_DEL_COUNT, count_bc
+      INTEGER :: PIP_DEL_COUNT
 
       DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
+      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
 
 
-      double precision  sig_u, mean_u,ymid
+      double precision  sig_u, mean_u
       double precision, allocatable, dimension(:,:) ::  rand_vel
 !-----------------------------------------------
 
@@ -506,9 +505,9 @@
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT
 
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5), epg_min_loc(1)
+      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
 
-      double precision  sig_u, mean_u,ymid, part_taup,  DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
+      double precision  sig_u, mean_u, DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
       double precision, allocatable, dimension(:,:) ::  rand_vel
 
       double precision :: norm1, norm2, norm3

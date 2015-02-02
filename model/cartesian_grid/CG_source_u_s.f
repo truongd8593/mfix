@@ -15,7 +15,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CG_SOURCE_U_S(A_M, B_M, M, IER)
+      SUBROUTINE CG_SOURCE_U_S(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -53,8 +53,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -66,13 +64,13 @@
       DOUBLE PRECISION EPSA, EPStmp
 ! virtual (added) mass
       DOUBLE PRECISION :: F_vir, ROP_MA
-      DOUBLE PRECISION :: Uge, Ugw, Vgw, Vge, Vgn, Vgs, Vgc,&
-                          Ugn, Ugs, Wgb, Wgt, Wge, Wgc, Ugb, Ugt
+      DOUBLE PRECISION :: Uge, Ugw, Vgn, Vgs, Vgc,&
+                          Ugn, Ugs, Wgb, Wgt, Wgc, Ugb, Ugt
 ! for cartesian grid:
       INTEGER :: J,K,IM,JM,IP,JP,KM,KP
       INTEGER :: IJPK,IJKC,IJKN,IJKNE,IJKS,IJKSE,IPJMK,IJKP,IJKT,IJKTE,IJKB,IJKBE
       DOUBLE PRECISION :: Ue,Uw,Un,Us,Ut,Ub
-      DOUBLE PRECISION :: P_CUT,z_plane,DH,Nx,Ny,Nz,B_NOC
+      DOUBLE PRECISION :: B_NOC
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
       DOUBLE PRECISION :: UW_s
       DOUBLE PRECISION :: F_2
@@ -354,13 +352,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Boundary condition
-      INTEGER :: L
 ! Indices
-      INTEGER :: I,  J, K, IM, I1, I2, J1, J2, K1, K2, IJK,&
-                       JM, KM, IJKW, IMJK, IPJK, IP
+      INTEGER :: IJK, IJKW
 ! for cartesian grid:
-      DOUBLE PRECISION :: Del_H,Nx,Ny,Nz,Um,Vm,Wm,VdotN
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !-----------------------------------------------

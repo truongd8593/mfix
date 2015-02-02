@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_VTC_SS(VXTC_SS, IER)
+      SUBROUTINE CALC_VTC_SS(VXTC_SS)
 !
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -36,11 +36,9 @@
 !-----------------------------------------------
 !     Local variables
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
-!
+
 !                      Indices
-      INTEGER          I, IJK, IJKE
+      INTEGER          IJK
 !
 !                      Index of both solids phases
       INTEGER          L, M, LM

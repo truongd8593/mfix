@@ -23,7 +23,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_P_STAR(EP_G, P_STAR, IER)
+      SUBROUTINE CALC_P_STAR(EP_G, P_STAR)
 
 !-----------------------------------------------
 ! Modules
@@ -52,8 +52,6 @@
       DOUBLE PRECISION, INTENT(IN) :: EP_g(DIMENSION_3)
 ! Solids pressure
       DOUBLE PRECISION, INTENT(INOUT) :: P_star(DIMENSION_3)
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -82,7 +80,7 @@
 ! if Yu_Standish or Fedors_Landel correlations are used, then
 ! ep_star_array is modified. this is the only time ep_star_array is
 ! modified (see set_constprop).  (sof Nov-16-2005)
-               EP_star_array(ijk) = calc_ep_star(ijk, ier)
+               EP_star_array(ijk) = calc_ep_star(ijk)
 
 ! now the values of ep_g_blend_start and ep_g_blend_end need to be
 ! reassigned based on the new values of ep_star_array
@@ -133,7 +131,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      DOUBLE PRECISION FUNCTION CALC_ep_star(IJK, IER)
+      DOUBLE PRECISION FUNCTION CALC_ep_star(IJK)
 
 !-----------------------------------------------
 ! Modules
@@ -156,8 +154,6 @@
 !-----------------------------------------------
 ! IJK index
       INTEGER, INTENT(IN) :: IJK
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

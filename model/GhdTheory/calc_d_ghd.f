@@ -35,7 +35,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_D_ghd_E(A_M, VXF_GS, D_E, IER)
+      SUBROUTINE CALC_D_ghd_E(A_M, VXF_GS, D_E)
 !
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -64,10 +64,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !
@@ -79,7 +75,7 @@
 !                      Average volume fraction at momentum cell centers
       DOUBLE PRECISION EPGA                                        !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, I, IJK, IJKE            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           M, L, I, IJK, IJKE                         !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
@@ -288,7 +284,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_D_ghd_N(A_M, VXF_GS, D_N, IER)
+      SUBROUTINE CALC_D_ghd_N(A_M, VXF_GS, D_N)
 !
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -317,9 +313,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
-!
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !
@@ -331,7 +324,7 @@
 !                      Average volume fraction at momentum cell centers
       DOUBLE PRECISION EPGA                                        !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, J, IJK, IJKN            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           M, L, J, IJK, IJKN                         !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag
@@ -540,7 +533,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_D_ghd_T(A_M, VXF_GS, D_T, IER)
+      SUBROUTINE CALC_D_ghd_T(A_M, VXF_GS, D_T)
 !
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -569,9 +562,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
-!
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !
@@ -583,7 +573,7 @@
 !                      Average volume fraction at momentum cell centers
       DOUBLE PRECISION EPGA                                        !S. Dartevelle, LANL, Feb.2004
 !          Usual Indices
-      INTEGER           LM, M, L, LpL, Lp, K, IJK, IJKT            !S. Dartevelle, LANL, Feb.2004
+      INTEGER           M, L, K, IJK, IJKT                         !S. Dartevelle, LANL, Feb.2004
 !          Average solid volume fraction at momentum cell centers
       DOUBLE PRECISION  EPSA(DIMENSION_M)                          !S. Dartevelle, LANL, Feb.2004
 !          ratio of drag and A0 or A_solid and other sum of Solid-Solid drag

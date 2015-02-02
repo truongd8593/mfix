@@ -20,7 +20,7 @@
 !  Local variables: NCOL, NTAB, LL1, LL2, LL3, IFORM1, IFORM2, IJK, IJ2
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE OUT_ARRAY_KC(ARRAY, K_PLANE)
+      SUBROUTINE OUT_ARRAY_KC(ARRAY)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -48,13 +48,7 @@
 !                      2D array to print out
       CHARACTER(LEN=4) :: ARRAY(*)
 !
-!                      K plane
-!//EFD use K_plane instead of K
-      INTEGER,intent(in) ::          K_PLANE
-
-!
 ! local variables
-!
 !
 !                      A line of characters to print
       CHARACTER(LEN=132) :: LINE

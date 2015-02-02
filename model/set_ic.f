@@ -41,7 +41,7 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: I, J, K, IJK, M, N
+      INTEGER :: I, J, K, IJK, M
 ! Local index for initial condition
       INTEGER :: L
 ! Temporary variable for storing IC_EP_g
@@ -58,8 +58,6 @@
       DOUBLE PRECISION :: VGX
 ! Temporary variable for storing IC_W_g
       DOUBLE PRECISION :: WGX
-! number densities for use in GHD theory only
-      DOUBLE PRECISION :: ni(DIMENSION_M)
 ! Temporary variable for storing IC_ROP_s
       DOUBLE PRECISION :: ROPSX (DIMENSION_M)
 ! Temporary variable for storing IC_T_s

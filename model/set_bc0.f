@@ -61,7 +61,7 @@
 ! Local index for boundary condition
       INTEGER ::  L
 ! indices
-      INTEGER :: I, J, K, IJK, M, N
+      INTEGER :: I, J, K, IJK, M
 ! Local index for setting U velocity b.c.
       INTEGER :: IJK1
 ! Local index for setting V velocity b.c.

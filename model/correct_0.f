@@ -32,7 +32,7 @@
 !-----------------------------------------------
 
       CALL CORRECT_0G (PP_G, UR_FAC(1), D_E, D_N, D_T, P_G, &
-         U_G, V_G, W_G, IER)
+         U_G, V_G, W_G)
 !      CALL CORRECT_0S (PP_G, D_E, D_N, D_T, U_S, V_S, W_S, IER)
 
       RETURN
@@ -58,7 +58,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CORRECT_0G(PP_G,UR_FAC,D_E,D_N,D_T,P_G,U_G,V_G,W_G,IER)
+      SUBROUTINE CORRECT_0G(PP_G,UR_FAC,D_E,D_N,D_T,P_G,U_G,V_G,W_G)
 
 !-----------------------------------------------
 ! Modules
@@ -92,8 +92,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: U_g(DIMENSION_3), &
                        V_g(DIMENSION_3),&
                        W_g(DIMENSION_3)
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -157,7 +155,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CORRECT_0S(PP_G, D_E, D_N, D_T, U_S, V_S, W_S, IER)
+      SUBROUTINE CORRECT_0S(PP_G, D_E, D_N, D_T, U_S, V_S, W_S)
 
 !-----------------------------------------------
 ! Modules
@@ -187,8 +185,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: U_s(DIMENSION_3, DIMENSION_M),&
                        V_s(DIMENSION_3, DIMENSION_M),&
                        W_s(DIMENSION_3, DIMENSION_M)
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE ADJUST_LEQ(RESID, LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER)
+      SUBROUTINE ADJUST_LEQ(RESID, LEQ_ITL, LEQ_METHODL, LEQI, LEQM)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
@@ -31,7 +31,7 @@
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-      INTEGER LEQ_ITL, LEQ_METHODL, LEQI, LEQM, IER
+      INTEGER LEQ_ITL, LEQ_METHODL, LEQI, LEQM
       DOUBLE PRECISION RESID
 !-----------------------------------------------
 !   L o c a l   P a r a m e t e r s

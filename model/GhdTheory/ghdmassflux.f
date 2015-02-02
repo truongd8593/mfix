@@ -17,7 +17,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE GHDMASSFLUX (IER)
+      SUBROUTINE GHDMASSFLUX ()
 
 !-----------------------------------------------
 ! Modules
@@ -38,11 +38,6 @@
       USE fun_avg
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error index
-      INTEGER :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -75,11 +70,10 @@
                           massMobilityTermZvelupdate
       DOUBLE PRECISION :: thermalDiffTermX, thermalDiffTermY, &
                           thermalDiffTermZ
-      DOUBLE PRECISION :: ropsmmz, ropsme, ropsmn, ropsmt
+      DOUBLE PRECISION :: ropsme, ropsmn, ropsmt
 
       DOUBLE PRECISION :: addtermx, &
                           addtermy, addtermz
-      DOUBLE PRECISION :: totropsx,totropsy,totropsz
       DOUBLE PRECISION :: massMobilityTermNoDragX, &
                           massMobilityTermNoDragY, &
                           massMobilityTermNoDragZ
@@ -412,7 +406,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE UpdateSpeciesVelocities (IER)
+      SUBROUTINE UpdateSpeciesVelocities ()
 
 !-----------------------------------------------
 ! Modules
@@ -441,16 +435,10 @@
       INTEGER :: IJK, I, J, K
 ! Index
       INTEGER :: IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, &
-                 IJKM, ISV
+                 IJKM
 ! Solids phase
-      INTEGER :: M, L, S
-! Error index
-      INTEGER :: IER
+      INTEGER :: S
 ! species density at cell faces
-      DOUBLE PRECISION :: EPSA1, EPSA2, fluxpred
-      DOUBLE PRECISION :: tmpdragc, tmpdragn, tmpdrage
-      DOUBLE PRECISION :: tmpdragx, tmpdragy, tmpdragz
-      DOUBLE PRECISION :: Mi, Ni, Mj, Nj
       integer :: kk, maxFluxS
       double precision :: epgN, rogN, mugN, Vg
       double precision :: Ur(smax), vrelSq(smax), vel, velup(smax)

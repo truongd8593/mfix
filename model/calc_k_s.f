@@ -21,7 +21,7 @@
 !                                                                           C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_K_S(M, IER)
+      SUBROUTINE CALC_K_S(M)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !-----------------------------------------------
@@ -65,9 +65,6 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-!                      Error index
-      INTEGER          IER
-
 !                      Indices
       INTEGER          IJK
 

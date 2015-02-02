@@ -70,8 +70,6 @@
       DOUBLE PRECISION :: dAREA
 ! Average pressure drop per unit length
       DOUBLE PRECISION :: DPoDX, DPoDY, DPoDZ
-! New Bound Checking variables
-      LOGICAL :: IS_ON_MYPE_K, IS_ON_MYPE_I
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------

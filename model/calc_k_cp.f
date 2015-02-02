@@ -22,7 +22,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_K_cp(Kcp, IER)
+      SUBROUTINE CALC_K_cp(Kcp)
 
 !-----------------------------------------------
 ! Modules
@@ -48,15 +48,11 @@
 !-----------------------------------------------
 ! dPodEP_s
       DOUBLE PRECISION :: Kcp(DIMENSION_3)
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! indices
       INTEGER :: IJK, M
-! radial distribution function
-      DOUBLE PRECISION :: g0
 ! Other variables
       DOUBLE PRECISION :: Pc, DPcoDEPs, Mu, Mu_b, Mu_zeta, ZETA
       DOUBLE PRECISION :: F2, DF2oDEPs, Pf, Pfmax, N_Pff
@@ -66,7 +62,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION :: G_0
-      DOUBLE PRECISION :: DG_0DNU
       DOUBLE PRECISION :: DZETAoDEPs
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !-----------------------------------------------

@@ -38,10 +38,7 @@ MODULE ChiScheme
    LOGICAL :: Chi_flag = .false.
 
    CONTAINS
-      SUBROUTINE Set_Chi(DISCR, PHI, Nmax, U, V, W, IER)
-!
-!                      Error index
-      INTEGER          IER
+      SUBROUTINE Set_Chi(DISCR, PHI, Nmax, U, V, W)
 !
 !                      discretization method
       INTEGER          DISCR
@@ -90,7 +87,7 @@ MODULE ChiScheme
 !  Start Chi calculations
       DO N = 1, Nmax
 
-        CALL CALC_CHI(DISCR, PHI(1,N), U, V, W, Chi_e_temp, Chi_n_temp, Chi_t_temp,0)
+        CALL CALC_CHI(DISCR, PHI(1,N), U, V, W, Chi_e_temp, Chi_n_temp, Chi_t_temp)
 
 !!!$omp    parallel do private(IJK)
         DO IJK = ijkstart3, ijkend3
@@ -116,8 +113,7 @@ MODULE ChiScheme
       END SUBROUTINE Set_Chi
 
 
-      SUBROUTINE Unset_Chi(IER)
-        INTEGER          IER
+      SUBROUTINE Unset_Chi()
         Chi_flag = .false.
       RETURN
       END SUBROUTINE Unset_Chi
@@ -140,7 +136,7 @@ MODULE ChiScheme
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE CALC_CHI(DISCR, PHI, U, V, W, CHI_E, CHI_N, CHI_T,incr)
+      SUBROUTINE CALC_CHI(DISCR, PHI, U, V, W, CHI_E, CHI_N, CHI_T)
 !
 !-----------------------------------------------
 !   M o d u l e s
@@ -161,10 +157,7 @@ MODULE ChiScheme
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
-!                      Error index
-      INTEGER          IER
-!
+
 !                      discretization method
       INTEGER          DISCR
 !
@@ -179,19 +172,15 @@ MODULE ChiScheme
                        CHI_t(DIMENSION_3)
 !
 !                      Indices
-      INTEGER          IJK, IJKC, IJKD, IJKU, I, J, K
+      INTEGER          IJK, IJKC, IJKD, IJKU
 
 !
 !                      Error message
       CHARACTER(LEN=80)     LINE(1)
 !
 !
-      DOUBLE PRECISION DEN, DEN1, PHI_C
+      DOUBLE PRECISION PHI_C
 !
-!                      cell widths for QUICKEST
-      DOUBLE PRECISION oDXc, oDXuc, oDYc, oDYuc, oDZc, oDZuc
-
-      INTEGER incr
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------

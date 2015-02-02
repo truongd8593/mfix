@@ -114,7 +114,7 @@
 ! ---------------------------------------------------------------->>>
       IF (SPECIES_EQ(0)) THEN
          IF(chi_scheme) call set_chi(DISCRETIZE(7), X_g, NMAX(0), &
-                                     U_g, V_g, W_g, IER)
+                                     U_g, V_g, W_g)
 
 ! looping over species
          DO LN = 1, NMAX(0)
@@ -178,7 +178,7 @@
             CALL BOUND_X (X_G(1,LN), IJKMAX2, IER)
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
-         IF(chi_scheme) call unset_chi(IER)
+         IF(chi_scheme) call unset_chi()
       ENDIF
 ! end fluid phase species equations
 ! ----------------------------------------------------------------<<<
@@ -194,7 +194,7 @@
                   ENDDO
                 ENDDO
               call set_chi(DISCRETIZE(7), X_S_temp, NMAX(M), &
-                           U_S(1,M), V_S(1,M), W_S(1,M), IER)
+                           U_S(1,M), V_S(1,M), W_S(1,M))
             ENDIF ! for chi_scheme
 
             DO LN = 1, NMAX(M)
@@ -268,7 +268,7 @@
 
             END DO
 
-            if(chi_scheme) call unset_chi(IER)
+            if(chi_scheme) call unset_chi()
          ENDIF ! check for any species in phase m
       END DO ! for m = 1, mmax
 ! end solids phases species equations

@@ -100,7 +100,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE VF_SS_Y(VXF_SS, IER)
+      SUBROUTINE VF_SS_Y(VXF_SS)
 
 !-----------------------------------------------
 ! Modules
@@ -120,8 +120,6 @@
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_SS(DIMENSION_3, DIMENSION_LM)
 !-----------------------------------------------

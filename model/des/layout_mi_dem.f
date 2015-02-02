@@ -475,7 +475,7 @@
 ! Number of occupied mesh cells
       INTEGER :: OCCUPANTS
 
-      DOUBLE PRECISION :: SHIFT, WINDOW, OFFSET
+      DOUBLE PRECISION :: SHIFT, WINDOW
 
       LOGICAL, EXTERNAL :: COMPARE
 

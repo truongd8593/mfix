@@ -6,7 +6,7 @@
 ! Purpose: Provided a detailed error message when the sum of volume    !
 !                                                                      !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE CHECK_BC_OUTFLOW(M_TOT, SKIP, BCV)
+      SUBROUTINE CHECK_BC_OUTFLOW(M_TOT, BCV)
 
       USE param, only: DIM_M
       USE param1, only: UNDEFINED
@@ -24,13 +24,11 @@
 ! loop/variable indices
       INTEGER, INTENT(in) :: BCV
       INTEGER, INTENT(in) :: M_TOT
-      LOGICAL, INTENT(in) :: SKIP(DIM_M)
 
       INTEGER :: M
       DOUBLE PRECISION :: SUM_EP
 
       CALL INIT_ERR_MSG("CHECK_BC_OUTFLOW")
-
 
 ! if bc_ep_g is defined at a PO, MO or O boundary, then the sum of ep_g
 ! and ep_s at the boundary may not equal one given the following code
@@ -108,7 +106,7 @@
 ! Purpose: Provided a detailed error message when the sum of volume    !
 !                                                                      !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE CHECK_BC_P_OUTFLOW(M_TOT, SKIP, BCV)
+      SUBROUTINE CHECK_BC_P_OUTFLOW(M_TOT, BCV)
 
       USE param, only: DIM_M
       USE param1, only: UNDEFINED
@@ -123,8 +121,6 @@
 ! loop/variable indices
       INTEGER, INTENT(in) :: BCV
       INTEGER, INTENT(in) :: M_TOT
-      LOGICAL, INTENT(in) :: SKIP(DIM_M)
-
 
       CALL INIT_ERR_MSG("CHECK_BC_P_OUTFLOW")
 
@@ -168,7 +164,7 @@
 !     fluid cell                                                       !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_BC_MASS_OUTFLOW(M_TOT, SKIP, BCV)
+      SUBROUTINE CHECK_BC_MASS_OUTFLOW(M_TOT, BCV)
 
       USE bc
       USE compar
@@ -192,12 +188,10 @@
 ! loop/variable indices
       INTEGER, intent(in) :: BCV
       INTEGER, intent(in) :: M_TOT
-      LOGICAL, intent(in) :: SKIP(DIM_M)
 
 ! Loop variable
 
       CALL INIT_ERR_MSG("CHECK_BC_MASS_OUTFLOW")
-
 
       IF(BC_DT_0(BCV) == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('BC_DT_0',BCV))

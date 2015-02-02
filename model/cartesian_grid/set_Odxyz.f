@@ -32,7 +32,7 @@
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
-      INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
+      INTEGER :: IP,JP,KP
       INTEGER :: IJK1,IJK2
 
       IF(MyPE == PE_IO) THEN
@@ -298,7 +298,7 @@
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
-      INTEGER :: IP,JP,KP,IPJK,IJPK,IJKP
+      INTEGER :: IP,JP,KP
       INTEGER :: IJK1,IJK2
 
       IF(MyPE == PE_IO) THEN

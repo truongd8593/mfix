@@ -70,16 +70,7 @@
       INTEGER          L
 !
 !                      indices
-      INTEGER          I, J, K, IJK, M, N ,IJKW,IJKS,IJKB
-!
-!                      Local index for setting U velocity b.c.
-      INTEGER          IJK1
-!
-!                      Local index for setting V velocity b.c.
-      INTEGER          IJK2
-!
-!                      Local index for setting W velocity b.c.
-      INTEGER          IJK3
+      INTEGER          IJK, M, N ,IJKW,IJKS,IJKB
 !
 !                      Dummy variable for gas pressure
       DOUBLE PRECISION PJ
@@ -90,10 +81,6 @@
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
 !-----------------------------------------------
 !----------------------------------------------
-!// Temporary variable to gather fluid_at.
-      INTEGER, DIMENSION(:), ALLOCATABLE :: FLAG_G
-!// Logical function to identify a fluid cell in global coordiantes
-      LOGICAL          FLUID_AT_G
 
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1
       LOGICAL :: GLOBAL_CORNER
