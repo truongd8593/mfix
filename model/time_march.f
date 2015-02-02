@@ -419,15 +419,10 @@
       WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/           &
          max(TIME-TIME_START,1.0d-6)
       CALL GET_TUNIT(WALL_TOTAL,TOT_UNIT)
-<<<<<<< HEAD
-      IF(DMP_LOG) WRITE (*, '(/" Estimated Wall time (remaining / total ) = ",G9.3,1X,A,1X,"/",G9.3,1X,A)') &
-         WALL_LEFT, TUNIT, WALL_TOTAL, TOT_UNIT
-=======
       IF(DMP_LOG) WRITE (*,2000) 'Remaining', WALL_LEFT, trim(TUNIT),  &
          'Total',WALL_TOTAL, trim(TOT_UNIT)
 
  2000 FORMAT('Estimated Wall Time: ',2(3x,A,F9.3,1X,A))
->>>>>>> master
 
       IF(DT.LT.DT_MIN) THEN
          IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
@@ -748,7 +743,7 @@
  1002 FORMAT(' SPx:')
  1010 FORMAT(I2,',')
  1011 FORMAT(A2,',')
- 1015 FORMAT(14X,'Disk=',G10.4,' Mb')
+ 1015 FORMAT(14X,'Disk=',F7.2,' Mb')
 
       END SUBROUTINE OUTPUT_MANAGEMENT
 
