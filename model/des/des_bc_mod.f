@@ -119,5 +119,33 @@
       DOUBLE PRECISION DES_BC_Vw_s(DIMENSION_BC, DIM_M)
       DOUBLE PRECISION DES_BC_Ww_s(DIMENSION_BC, DIM_M)
 
+      CONTAINS
+!----------------------------------------------------------------------!
+!  Function to exclude cells from DEM mass inlet.                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION EXCLUDE_DEM_MI_CELL(lI, lJ, lK)
+
+      use functions, only: FUNIJK
+      use functions, only: FLUID_AT
+      use functions, only: IS_ON_myPE_plus2layers
+
+      use compar, only: DEAD_CELL_AT
+
+! Indicies of cell to check
+      INTEGER, INTENT(IN) :: lI, lJ, lK
+! Local value for IJK
+      INTEGER :: IJK
+
+      EXCLUDE_DEM_MI_CELL = .TRUE.
+
+      IF(.NOT.IS_ON_myPE_plus2layers(lI,lJ,lK)) RETURN
+      IF(DEAD_CELL_AT(lI,lJ,lK)) RETURN
+      IJK = FUNIJK(lI,lJ,lK)
+      IF(.NOT.FLUID_AT(IJK)) RETURN
+
+      EXCLUDE_DEM_MI_CELL = .FALSE.
+      RETURN
+      END FUNCTION EXCLUDE_DEM_MI_CELL
+
       END MODULE DES_BC
 

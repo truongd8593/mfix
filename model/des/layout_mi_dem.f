@@ -78,6 +78,7 @@
 
 ! Module procedures
 !---------------------------------------------------------------------//
+      use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
       use functions
@@ -203,51 +204,61 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
 
+
+
+
+
+!      IF(USE_STL)THEN
+
+
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
-      DO H=1,HMAX
-      DO W=1,WMAX
+!      ELSE
+         DO H=1,HMAX
+         DO W=1,WMAX
 
-         FULL_MAP(W,H) = 0
+            FULL_MAP(W,H) = 0
 
-         IF(.NOT.IS_ON_myPE_owns(MESH_W(W),J,MESH_H(H))) CYCLE
+            IF(.NOT.IS_ON_myPE_owns(MESH_W(W),J,MESH_H(H))) CYCLE
 
-         IF(DO_K) THEN
+            IF(DO_K) THEN
 
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+               CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+               SHIFT = MESH_P(W)+WINDOW
+               CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            SHIFT = MESH_Q(H)+WINDOW
-            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+               SHIFT = MESH_Q(H)+WINDOW
+               CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-         ELSE
+            ELSE
 
-            K = MESH_H(1)
-            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
+               K = MESH_H(1)
+               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
 
-            SHIFT = MESH_P(W)+WINDOW
-            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
-            IF(EXCLUDE_DEM_MI_CELL(I, J, K, DX(I)*DZ(K))) CYCLE
-         ENDIF
+               SHIFT = MESH_P(W)+WINDOW
+               CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+            ENDIF
 
-         I = MESH_W(W)
-         K = MESH_H(H)
-         IF(EXCLUDE_DEM_MI_CELL(I,J,K, DX(I)*DZ(K))) CYCLE
+            I = MESH_W(W)
+            K = MESH_H(H)
+            IF(EXCLUDE_DEM_MI_CELL(I,J,K)) CYCLE
 
-         OCCUPANTS = OCCUPANTS + 1
-         FULL_MAP(W,H) = myPE+1
-      ENDDO
-      ENDDO
+            OCCUPANTS = OCCUPANTS + 1
+            FULL_MAP(W,H) = myPE+1
+         ENDDO
+         ENDDO
+
+!      ENDIF
 
 ! Sync the full map across all ranks.
       CALL GLOBAL_ALL_SUM(OCCUPANTS)
@@ -370,31 +381,6 @@
 
  8006 FORMAT(4x,'LC = ',I4,3x,A1,' =',I3,3x,A1,' =',f8.4)
 
-      contains
-
-!----------------------------------------------------------------------!
-!  Function to exclude cells from DEM mass inlet.                      !
-!----------------------------------------------------------------------!
-      LOGICAL FUNCTION EXCLUDE_DEM_MI_CELL(lI, lJ, lK, lAREA)
-! Indicies of cell to check
-      INTEGER, INTENT(IN) :: lI, lJ, lK
-! Calculated face area based on grid dimensions
-      DOUBLE PRECISION, INTENT(IN) :: lAREA
-! Local value for IJK
-      INTEGER :: IJK
-
-      EXCLUDE_DEM_MI_CELL = .TRUE.
-
-      IF(.NOT.IS_ON_myPE_plus2layers(lI,lJ,lK)) RETURN
-      IF(DEAD_CELL_AT(lI,lJ,lK)) RETURN
-      IJK = FUNIJK(lI,lJ,lK)
-      IF(.NOT.FLUID_AT(IJK)) RETURN
-      IF(.NOT.COMPARE(AXZ(IJK),lAREA)) RETURN
-
-      EXCLUDE_DEM_MI_CELL = .FALSE.
-      RETURN
-      END FUNCTION EXCLUDE_DEM_MI_CELL
-
       END SUBROUTINE LAYOUT_DEM_MI_NS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -422,6 +408,10 @@
 
       use des_bc, only: DEM_MI
 
+      use stl, only: N_FACETS_DES
+      use stl, only: VERTEX, NORM_FACE
+      use cutcell, only: USE_STL
+      use discretelement
       use compar
       use geometry
       use indices
@@ -430,7 +420,10 @@
 
 ! Module procedures
 !---------------------------------------------------------------------//
+      use des_bc, only: EXCLUDE_DEM_MI_CELL
+      use des_stl_functions, only: TestTriangleAABB
       use mpi_utility, only: GLOBAL_ALL_SUM
+
       use error_manager
       use functions
 
@@ -477,9 +470,15 @@
 
       DOUBLE PRECISION :: SHIFT, WINDOW
 
+      DOUBLE PRECISION :: EXTENTS(3), ORIGIN(3)
+      DOUBLE PRECISION :: MIN_X, MAX_X
+      INTEGER :: SEP_AXIS
+      LOGICAL :: SA_EXIST
+
       LOGICAL, EXTERNAL :: COMPARE
 
-      LOGICAL, parameter :: setDBG = .FALSE.
+      LOGICAL, parameter :: showMAP = .FALSE.
+      LOGICAL, parameter :: setDBG = .TRUE.
       LOGICAL :: dFlag
 
 !-----------------------------------------------
@@ -553,22 +552,108 @@
 ! Get the Jth index of the fluid cell
       CALL CALC_CELL_INTERSECT(XMIN, BC_X_w(BCV), DX, IMAX, I)
 
+
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
-! fluid cell and has not been cut, store the ID of the cell owner.
+! fluid cell, store the rank of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
+
          J = MESH_W(W)
          K = MESH_H(H)
          FULL_MAP(W,H) = 0
+
          IF(.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
-         IF(DEAD_CELL_AT(I,J,K)) CYCLE
-         IJK = FUNIJK(I,J,K)
-         IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(.NOT.COMPARE(AYZ(IJK),DY(J)*DZ(K))) CYCLE
-         OCCUPANTS = OCCUPANTS + 1
+
+         IF(DO_K) THEN
+
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_Q(H)+WINDOW
+            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+         ELSE
+
+            K = MESH_H(1)
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_P(W), DY, JMAX, J)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+         ENDIF
+
          FULL_MAP(W,H) = myPE+1
       ENDDO
       ENDDO
+
+! For complex boundaries defined by STLs, exclude any mass inflow cells
+! that intersect the boundary and all cells opposite the normal. The MI
+! cell sizes are increased by 10% to provide a small buffer.
+      IF(USE_STL) THEN
+
+         MIN_X = BC_X_w(BCV) - 2.0d0*MAX_DIA
+         MAX_X = BC_X_w(BCV) + 2.0d0*MAX_DIA
+
+         EXTENTS(1) = 4.0d0*MAX_DIA * 1.10d0
+         EXTENTS(2) = WINDOW * 1.10d0
+         EXTENTS(3) = WINDOW * 1.10d0
+
+         DO H=1,HMAX
+         DO W=1,WMAX
+
+            ORIGIN(1) = MIN_X - 4.0d0*MAX_DIA*0.05d0
+            ORIGIN(2) = MESH_P(W) - WINDOW * 0.05d0
+            ORIGIN(3) = MESH_Q(H) - WINDOW * 0.05d0
+
+            FACET_LP: DO LC=1, N_FACETS_DES
+
+               IF(MIN_X > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
+               IF(MAX_X < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
+
+               IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
+               IF(BC_Y_n(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
+
+               IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
+               IF(BC_Z_t(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP
+
+               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
+                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
+
+               IF(.NOT.SA_EXIST) THEN
+
+                  IF(NORM_FACE(2,LC) >= 0) THEN
+                     FULL_MAP(1:W,H) = 0
+                  ELSE
+                     FULL_MAP(W:WMAX,H) = 0
+                  ENDIF
+                  IF(NORM_FACE(3,LC) >= 0) THEN
+                     FULL_MAP(W,1:H) = 0
+                  ELSE
+                     FULL_MAP(W,H:HMAX) = 0
+                  ENDIF
+               ENDIF
+            ENDDO FACET_LP
+         ENDDO
+         ENDDO
+      ENDIF
+
+! Add up the total number of available positions in the seeding map.
+      DO H=1,HMAX
+      DO W=1,WMAX
+         IF(FULL_MAP(W,H) /= 0) OCCUPANTS = OCCUPANTS + 1
+      ENDDO
+      ENDDO
+
 
 ! Sync the full map across all ranks.
       CALL GLOBAL_ALL_SUM(OCCUPANTS)
@@ -588,7 +673,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag) THEN
+      IF(dFlag .OR. showMAP) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
@@ -618,7 +703,7 @@
             DO LC = 1, LL
               IF(TMP_INT .EQ. RAND_MAP(LC) )EXIT
               IF(LC .EQ. LL)THEN
-                 if(dFlag) WRITE(*,"(4x,'LC:',I3,' : ',I3)") LC, TMP_INT
+                 if(dFlag) WRITE(*,"(4x,'LC:',I6,' : ',I6)") LC, TMP_INT
                  RAND_MAP(LC) = TMP_INT
                  LL = LL + 1
               ENDIF
@@ -726,6 +811,7 @@
 
 ! Module procedures
 !---------------------------------------------------------------------//
+      use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
       use functions

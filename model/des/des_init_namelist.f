@@ -279,8 +279,11 @@
 
 
       DES_INTERP_SCHEME = 'NONE'
-      FILTER_WIDTH = UNDEFINED
-      EXPLICITLY_COUPLED = .FALSE.
+      DES_INTERP_WIDTH = UNDEFINED
+
+      DES_DIFFUSE_WIDTH = UNDEFINED
+
+      DES_EXPLICITLY_COUPLED = .FALSE.
 
 !<keyword category="Discrete Element Simulation" required="false" dem="true">
 !  <description>

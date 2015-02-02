@@ -90,6 +90,7 @@
             WEIGHT_K( 0) = ONE
          ENDIF
 
+! Set the default fluid cell index and loop counter.
          IJK = PIJK(L,4)
          IDX=0
 

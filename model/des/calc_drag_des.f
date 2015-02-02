@@ -16,7 +16,7 @@
       use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
 
-      use discretelement, only: EXPLICITLY_COUPLED
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 
       use discretelement, only: DRAG_FC, FC, MAX_PIP
 
@@ -25,7 +25,7 @@
       INTEGER :: II
 
 ! Apply the drag force calculated by the gas phase.
-      IF(EXPLICITLY_COUPLED) THEN
+      IF(DES_EXPLICITLY_COUPLED) THEN
 
          IF(DES_CONTINUUM_COUPLED) THEN
 !$omp parallel do default(none) private(II) shared(FC,DRAG_FC,MAX_PIP)
@@ -121,7 +121,7 @@
 
       use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
 
-      use discretelement, only: EXPLICITLY_COUPLED
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 
 ! Contribution to gas momentum equation due to drag
       use discretelement, only: DRAG_BM

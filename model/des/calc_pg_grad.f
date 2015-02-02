@@ -18,7 +18,7 @@
 ! Model B momentum equation
       use run, only: MODEL_B
 
-      use discretelement, only: MAX_PIP, PIJK, EXPLICITLY_COUPLED
+      use discretelement, only: MAX_PIP, PIJK, DES_EXPLICITLY_COUPLED
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
       use particle_filter, only: DES_INTERP_ON
@@ -61,7 +61,7 @@
       ENDIF
 
 
-      IF(EXPLICITLY_COUPLED .AND. .NOT.MODEL_B) THEN
+      IF(DES_EXPLICITLY_COUPLED .AND. .NOT.MODEL_B) THEN
 
 ! Loop bounds for interpolation.
          LP_BND = merge(27,9,DO_K)

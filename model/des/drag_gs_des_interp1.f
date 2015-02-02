@@ -375,15 +375,23 @@
 ! Calculate the cell center gas velocities.
       CALL CALC_CELL_CENTER_GAS_VEL
 
-! Calculate the gas phae forces acting on each particle.
-
-!$omp parallel default(none) private(np,lepg,velfp,lc,ijk,weight,lforce,ldrag_bm)    &
-!$omp          shared(max_pip,pea,lp_bnd,drag_fc,f_gp,des_vel_new,ugc,vgc,wgc,mppic, &
-!$omp          drag_bm,vol,f_gds,ep_g,filter_weight,des_stat_wt,filter_cell)
+! Calculate the gas phase forces acting on each particle.
+!---------------------------------------------------------------------//
+!$omp parallel default(none)                                           &
+!$omp private(np, lepg, velfp, lc, ijk, weight, lforce, ldrag_bm)      &
+!$omp shared(max_pip, pea, lp_bnd, drag_fc, f_gp, des_vel_new, ugc,    &
+!$omp   vgc, wgc, mppic, drag_bm, vol, f_gds, ep_g, filter_weight,     &
+!$omp   des_stat_wt, filter_cell)
 !$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
-         IF(any(PEA(NP,2:3))) CYCLE
+
+! The drag force is not calculated on entering or exiting particles
+! as their velocities are fixed and may exist in 'non fluid' cells.
+        IF(any(PEA(NP,2:3))) THEN
+            DRAG_FC(:,NP) = ZERO
+            CYCLE
+         ENDIF
 
          lEPG = ZERO
          VELFP = ZERO

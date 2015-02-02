@@ -273,6 +273,7 @@
       use run, only: ANY_SPECIES_EQ
       use constant, only: PI
 
+      use desgrid
       use indices
       use functions
 
@@ -290,6 +291,8 @@
       DOUBLE PRECISION, INTENT(IN) :: lPOS(3)
 ! I/J/K index of fluid cell containing the new particle.
       INTEGER, INTENT(IN) :: lIJKP(3)
+! I/J/K index of DES grid cell
+      INTEGER :: lI, lJ, lK
 
 ! Global phase index
       INTEGER :: BC_M
@@ -329,6 +332,17 @@
 
 ! Set the particle mass phase
       PIJK(lNP,5) = lM
+
+! Calculate the DES grid cell indices.
+      lI = min(DG_IEND2,max(DG_ISTART2,IOFPOS(DES_POS_NEW(1,lNP))))
+      lJ = min(DG_JEND2,max(DG_JSTART2,JOFPOS(DES_POS_NEW(2,lNP))))
+      IF(NO_K) THEN
+         lK = 1
+      ELSE
+         lK = min(DG_KEND2,max(DG_KSTART2,KOFPOS(DES_POS_NEW(3,lNP))))
+      ENDIF
+! Store the triple
+      DG_PIJK(lNP) = DG_FUNIJK(lI,lJ,lK)
 
 ! Calculate the new particle's Volume, Mass, OMOI
       PVOL(lNP) = (4.0d0/3.0d0) * PI * DES_RADIUS(lNP)**3

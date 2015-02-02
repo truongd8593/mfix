@@ -104,7 +104,7 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          DES_SPX_DT = SPX_DT(1)
          CALL CALC_PG_GRAD
-         IF(.NOT.EXPLICITLY_COUPLED) THEN
+         IF(.NOT.DES_EXPLICITLY_COUPLED) THEN
             IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
             IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
          ENDIF
@@ -162,7 +162,7 @@
             CALL DES_PAR_EXCHANGE
          ENDIF
 
-         IF(.NOT.EXPLICITLY_COUPLED) THEN
+         IF(.NOT.DES_EXPLICITLY_COUPLED) THEN
 ! Bin particles to fluid grid.
             CALL PARTICLES_IN_CELL
 ! Calculate interpolation weights
