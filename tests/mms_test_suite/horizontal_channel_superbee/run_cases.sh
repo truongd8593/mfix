@@ -1,15 +1,12 @@
-# set home directory
-export MFIX_HOME=~/projects/mfix_development
-
 # set case directory
-export CASE_DIR=$MFIX_HOME/tests/mms_test_suite/horizontal_channel_superbee
+export CASE_DIR=`pwd`
 
 # load modules
 module load gnu/4.9.2 openmpi/1.5.5_gnu4.6
 
 # compile MFIX in ./src/
 cd $CASE_DIR/src
-$MFIX_HOME/model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+../../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 echo "******** MFIX compiled successfully."
 
 cd $CASE_DIR
@@ -57,9 +54,9 @@ echo "******** Calculating observed orders..."
 gfortran -o ooa_test ooa_test.f95
 ./ooa_test
 rm $CASE_DIR/{ooa_test,ooa_test.f95,de_norms_collected.dat}
-mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/POST_de_l2.dat
-mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/POST_de_linf.dat
-mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/POST_ooa_l2.dat
-mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/POST_ooa_linf.dat
+mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/de_l2.dat
+mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/de_linf.dat
+mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
+mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
 
 echo "******** Done."
