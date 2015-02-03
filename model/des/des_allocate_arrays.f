@@ -469,55 +469,68 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE PAIR_GROW
 
-      USE discretelement
+        USE discretelement
 
-      IMPLICIT NONE
+        IMPLICIT NONE
 
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: bool_tmp
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+        call integer_grow(pairs,pair_max)
+        call integer_grow(pairs_old,pair_max)
 
-      INTEGER :: lSIZE1, lSIZE2, lSIZE3
+        call logical_grow(pv_pair,pair_max)
+        call logical_grow(pv_pair_old,pair_max)
 
-      lSIZE2 = size(pairs,2)
-      allocate(int_tmp(2,PAIR_MAX))
-      int_tmp(:,1:lSIZE2) = pairs(:,1:lSIZE2)
-      call move_alloc(int_tmp,pairs)
+        call real_grow(pft_pair,pair_max)
+        call real_grow(pft_pair_old,pair_max)
+        call real_grow(pfn_pair,pair_max)
+        call real_grow(pfn_pair_old,pair_max)
 
-      lSIZE2 = size(pairs_old,2)
-      allocate(int_tmp(2,PAIR_MAX))
-      int_tmp(:,1:lSIZE2) = pairs_old(:,1:lSIZE2)
-      call move_alloc(int_tmp,pairs_old)
+        RETURN
 
-      lSIZE1 = size(pv_pair,1)
-      allocate(bool_tmp(PAIR_MAX))
-      bool_tmp(1:lSIZE1) = pv_pair(1:lSIZE1)
-      call move_alloc(bool_tmp,pv_pair)
+      contains
 
-      lSIZE1 = size(pv_pair_old,1)
-      allocate(bool_tmp(PAIR_MAX))
-      bool_tmp(1:lSIZE1) = pv_pair_old(1:lSIZE1)
-      call move_alloc(bool_tmp,pv_pair_old)
+        SUBROUTINE INTEGER_GROW(integer_array,new_size)
+          IMPLICIT NONE
 
-      lSIZE2 = size(pft_pair_old,2)
-      allocate(real_tmp(3,PAIR_MAX))
-      real_tmp(:,1:lSIZE2) = pft_pair_old(:,1:lSIZE2)
-      call move_alloc(real_tmp,pft_pair_old)
+          INTEGER, INTENT(IN) :: new_size
+          INTEGER, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: integer_array
+          INTEGER, DIMENSION(:,:), ALLOCATABLE :: integer_tmp
+          INTEGER lSIZE2
 
-      lSIZE2 = size(pft_pair,2)
-      allocate(real_tmp(3,PAIR_MAX))
-      real_tmp(:,1:lSIZE2) = pft_pair(:,1:lSIZE2)
-      call move_alloc(real_tmp,pft_pair)
+          lSIZE2 = size(integer_array,2)
+          allocate(integer_tmp(2,new_size))
+          integer_tmp(:,1:lSIZE2) = integer_array(:,1:lSIZE2)
+          call move_alloc(integer_tmp,integer_array)
 
-      lSIZE2 = size(pfn_pair_old,2)
-      allocate(real_tmp(3,PAIR_MAX))
-      real_tmp(:,1:lSIZE2) = pfn_pair_old(:,1:lSIZE2)
-      call move_alloc(real_tmp,pfn_pair_old)
+        END SUBROUTINE INTEGER_GROW
 
-      lSIZE2 = size(pfn_pair,2)
-      allocate(real_tmp(3,PAIR_MAX))
-      real_tmp(:,1:lSIZE2) = pfn_pair(:,1:lSIZE2)
-      call move_alloc(real_tmp,pfn_pair)
+        SUBROUTINE LOGICAL_GROW(logical_array,new_size)
+          IMPLICIT NONE
 
-      RETURN
+          INTEGER, INTENT(IN) :: new_size
+          LOGICAL, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: logical_array
+          LOGICAL, DIMENSION(:), ALLOCATABLE :: logical_tmp
+          INTEGER lSIZE2
+
+          lSIZE2 = size(logical_array,1)
+          allocate(logical_tmp(new_size))
+          logical_tmp(1:lSIZE2) = logical_array(1:lSIZE2)
+          call move_alloc(logical_tmp,logical_array)
+
+        END SUBROUTINE LOGICAL_GROW
+
+        SUBROUTINE REAL_GROW(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE2
+
+          lSIZE2 = size(real_array,2)
+          allocate(real_tmp(3,new_size))
+          real_tmp(:,1:lSIZE2) = real_array(:,1:lSIZE2)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE REAL_GROW
+
       END SUBROUTINE PAIR_GROW
