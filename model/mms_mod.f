@@ -11,7 +11,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE mms
 
-! By default the MMS functions are unavailable
+! By default the MMS functions are unavailable.
       LOGICAL, parameter :: USE_MMS = .FALSE.
 
 !! Method of Manufactured Solutions (MMS) and Tecplot variables :
@@ -89,7 +89,7 @@
 !                                                                      !
 !  Module name: ALLOCATE_MMS_VARS                                      !
 !  Purpose: Allocate memory for allocatable variables defined inside   !
-!  this module.                                                        ! 
+!  MMS module.                                                         !
 !                                                                      !
 !  Author: Aniruddha Choudhary                        Date: Feb 2015   !
 !                                                                      !
@@ -98,7 +98,7 @@
 
       IMPLICIT NONE
 
-! Note both fluid and solid phase variables can be of size DIMENSION_3 
+! Note: both fluid and solid phase variables can be of size DIMENSION_3 
 ! since MMS tests do not work for more than one solid phase.
 
         allocate(MMS_Ep_g(DIMENSION_3))
@@ -114,7 +114,7 @@
         allocate(MMS_W_s(DIMENSION_3))
         allocate(MMS_T_s(DIMENSION_3))
         allocate(MMS_Th_s(DIMENSION_3))
-      
+        
         allocate(MMS_ROP_g_Src(DIMENSION_3))
         allocate(MMS_U_g_Src(DIMENSION_3))
         allocate(MMS_V_g_Src(DIMENSION_3))
@@ -144,7 +144,7 @@
 !                                                                      !
 !  Module name: DEALLOCATE_MMS_VARS                                    !
 !  Purpose: Deallocate memory for allocatable variables defined inside !
-!  this module.                                                        ! 
+!  MMS module.                                                         !
 !                                                                      !
 !  Author: Aniruddha Choudhary                        Date: Feb 2015   !
 !                                                                      !
@@ -167,7 +167,7 @@
         deallocate(MMS_W_s)
         deallocate(MMS_T_s)
         deallocate(MMS_Th_s)
-      
+
         deallocate(MMS_ROP_g_Src)
         deallocate(MMS_U_g_Src)
         deallocate(MMS_V_g_Src)
@@ -191,7 +191,7 @@
 
       RETURN
       END SUBROUTINE DEALLOCATE_MMS_VARS
-      
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -204,6 +204,7 @@
       SUBROUTINE CALCULATE_MMS
 
       IMPLICIT NONE
+
 
       RETURN
       END SUBROUTINE CALCULATE_MMS
@@ -221,6 +222,7 @@
       SUBROUTINE CALCULATE_MMS_SOURCE
 
       IMPLICIT NONE
+
 
       RETURN
       End SUBROUTINE CALCULATE_MMS_SOURCE
