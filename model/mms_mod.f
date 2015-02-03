@@ -42,7 +42,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_T_s
 
 ! Granular temperature
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_Th_s
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_Theta_m
 
 ! Gas continuity MMS source term
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_ROP_g_Src
@@ -67,7 +67,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_T_s_Src
 
 ! Granular energy MMS source term
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_Th_s_Src
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MMS_Theta_m_Src
 
 ! Temporary variable for pressure shifting while plotting and
 ! discretization error norm calculation
@@ -95,6 +95,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE ALLOCATE_MMS_VARS
+      use param, only   : DIMENSION_3
 
       IMPLICIT NONE
 
@@ -113,7 +114,7 @@
         allocate(MMS_V_s(DIMENSION_3))
         allocate(MMS_W_s(DIMENSION_3))
         allocate(MMS_T_s(DIMENSION_3))
-        allocate(MMS_Th_s(DIMENSION_3))
+        allocate(MMS_Theta_m(DIMENSION_3))
         
         allocate(MMS_ROP_g_Src(DIMENSION_3))
         allocate(MMS_U_g_Src(DIMENSION_3))
@@ -126,8 +127,7 @@
         allocate(MMS_V_s_Src(DIMENSION_3))
         allocate(MMS_W_s_Src(DIMENSION_3))
         allocate(MMS_T_s_Src(DIMENSION_3))
-
-        allocate(MMS_Th_s_Src(DIMENSION_3))
+        allocate(MMS_Theta_m_Src(DIMENSION_3))
 
         allocate(P_g_Sh(DIMENSION_3))
 
@@ -166,7 +166,7 @@
         deallocate(MMS_V_s)
         deallocate(MMS_W_s)
         deallocate(MMS_T_s)
-        deallocate(MMS_Th_s)
+        deallocate(MMS_Theta_m)
 
         deallocate(MMS_ROP_g_Src)
         deallocate(MMS_U_g_Src)
@@ -179,8 +179,7 @@
         deallocate(MMS_V_s_Src)
         deallocate(MMS_W_s_Src)
         deallocate(MMS_T_s_Src)
-
-        deallocate(MMS_Th_s_Src)
+        deallocate(MMS_Theta_m_Src)
 
         deallocate(P_g_Sh)
 
