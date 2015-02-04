@@ -228,12 +228,6 @@
 
       IF(RUN_TYPE == 'RESTART_2') VTP_FINDEX=0
 
-! setting the global id for walls. this is required to handle
-! particle-wall contact
-      DO lface = 1, merge(4,6,DO_K)
-         iglobal_id(max_pip+lface) = -lface
-      ENDDO
-
 ! setting additional particle properties now that the particles
 ! have been identified
       DO L = 1, MAX_PIP

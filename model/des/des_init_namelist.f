@@ -192,17 +192,6 @@
       PARTICLES = UNDEFINED_I
 !</keyword>
 
-
-!<keyword category="Discrete Element Simulation" required="false">
-!  <description>
-!    Maximum number of particles that may exist within a simulation.
-!    This quantity is used for calculating the size of arrays for
-!    allocation. Required input if PARTICLES is UNDEFINED.
-!  </description>
-      MAX_PIS = UNDEFINED_I
-!</keyword>
-
-
 !<keyword category="Discrete Element Simulation" required="false">
 !  <description>
 !    Automatically generate the initial particle position and velocity

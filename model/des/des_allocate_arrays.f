@@ -55,24 +55,13 @@
 
       NWALLS = merge(4,6,NO_K)
 
-! Grab the larger of PARTICLES and MAX_PIS
-      IF(MAX_PIS /= UNDEFINED_I .AND. PARTICLES /= UNDEFINED_I) THEN
-         NPARTICLES = max(MAX_PIS, PARTICLES)
-      ELSEIF(MAX_PIS /= UNDEFINED_I)THEN
-         NPARTICLES = MAX_PIS
-      ELSE
-         NPARTICLES = PARTICLES
-      ENDIF
-
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
 ! with some factor.
-      NPARTICLES = (NPARTICLES/numPEs)*PARTICLES_FACTOR+NWALLS
-      IF(NPARTICLES < 1000) NPARTICLES = 1000
+      NPARTICLES = (PARTICLES/numPEs)*PARTICLES_FACTOR+NWALLS
+      NPARTICLES = MAX(NPARTICLES,4)
 
-! max_pip adjusted to accomodate temporary variables used for walls
-! and DES_MPI stuff
-      MAX_PIP = NPARTICLES - 2*NWALLS - 3
+      MAX_PIP = NPARTICLES
 
       WRITE(ERR_MSG,1000) trim(iVal(NPARTICLES)), trim(iVal(MAX_PIP))
       CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
@@ -211,11 +200,6 @@
 
 ! MP-PIC related
       IF(MPPIC) THEN
-         IF(.NOT.ALLOCATED(F_GP)) THEN
-            ALLOCATE(F_GP(NPARTICLES ))
-            F_GP(1:NPARTICLES)  = ZERO
-         ENDIF
-
          Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
          ALLOCATE(DES_STAT_WT(NPARTICLES))
          ALLOCATE(DES_VEL_MAX(DIMN))
@@ -303,9 +287,9 @@
 
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) THEN
-! Rate of chnage of particle mass
+! Rate of change of particle mass
             Allocate( dMdt_OLD( NPARTICLES ) )
-! Rate of chnage of particle mass percent species
+! Rate of change of particle mass percent species
             Allocate( dXdt_OLD( NPARTICLES, DIMENSION_N_s) )
          ENDIF
 
@@ -534,3 +518,232 @@
         END SUBROUTINE REAL_GROW
 
       END SUBROUTINE PAIR_GROW
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: PARTICLE_GROW                                            !
+!                                                                      !
+! Purpose: Grow pair arrays to pair_max. Note that pair                !
+! max should be increased before calling this routine. Also, no        !
+! assumption to the previous array size is made as needed for restarts.!
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE PARTICLE_GROW
+
+        USE des_thermo
+        USE particle_filter
+        USE des_rxns
+        USE desgrid
+        USE discretelement
+        USE mfix_pic
+        USE run
+
+        IMPLICIT NONE
+
+        call real_grow(des_radius,MAX_PIP)
+        call real_grow(RO_Sol,MAX_PIP)
+        call real_grow(PVOL,MAX_PIP)
+        call real_grow(PMASS,MAX_PIP)
+        call real_grow(OMOI,MAX_PIP)
+        call real_grow2(DES_POS_NEW,MAX_PIP)
+        call real_grow2(DES_VEL_NEW,MAX_PIP)
+        call real_grow2(OMEGA_NEW,MAX_PIP)
+        call real_grow2(PPOS,MAX_PIP)
+        call logical_grow2_reverse(PEA,MAX_PIP)
+        call integer_grow(iglobal_id,MAX_PIP)
+        call integer_grow2_reverse(pijk,MAX_PIP)
+        call integer_grow(dg_pijk,MAX_PIP)
+        call integer_grow(dg_pijkprv,MAX_PIP)
+        call real_grow2(FC,MAX_PIP)
+        call real_grow2(TOW,MAX_PIP)
+        call real_grow2(DES_USR_VAR,MAX_PIP)
+        call real_grow(F_GP,MAX_PIP)
+        call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
+        call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
+        call real_grow2(DRAG_FC,MAX_PIP)
+
+        SELECT CASE(DES_INTERP_SCHEME_ENUM)
+        CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+           call integer_grow2(FILTER_CELL,MAX_PIP)
+           call real_grow2(FILTER_WEIGHT,MAX_PIP)
+        END SELECT
+
+        IF(MPPIC) THEN
+           call real_grow(DES_STAT_WT,MAX_PIP)
+           call real_grow2(PS_GRAD,MAX_PIP)
+           call real_grow2(AVGSOLVEL_P,MAX_PIP)
+           call real_grow(EPG_P,MAX_PIP)
+        ENDIF
+
+      IF(USE_COHESION) THEN
+         call real_grow(PostCohesive,MAX_PIP)
+      ENDIF
+
+      IF(ENERGY_EQ)THEN
+         call real_grow(DES_T_s_OLD,MAX_PIP)
+         call real_grow(DES_T_s_NEW,MAX_PIP)
+         call real_grow(DES_C_PS,MAX_PIP)
+         call real_grow2_reverse(DES_X_s,MAX_PIP)
+         call real_grow(Q_Source,MAX_PIP)
+
+         IF (INTG_ADAMS_BASHFORTH) &
+              call real_grow(Q_Source0,MAX_PIP)
+      ENDIF
+
+      IF(ANY_SPECIES_EQ)THEN
+         call real_grow2_reverse( DES_R_sp, MAX_PIP )
+         call real_grow2_reverse( DES_R_sc, MAX_PIP )
+
+         IF (INTG_ADAMS_BASHFORTH) THEN
+            call real_grow( dMdt_OLD, MAX_PIP )
+            call real_grow2_reverse( dXdt_OLD, MAX_PIP )
+         ENDIF
+
+         call real_grow( Qint, MAX_PIP )
+      ENDIF
+
+      RETURN
+
+    contains
+
+        SUBROUTINE INTEGER_GROW(integer_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: integer_array
+          INTEGER, DIMENSION(:), ALLOCATABLE :: integer_tmp
+          INTEGER lSIZE
+
+          lSIZE = size(integer_array,1)
+          allocate(integer_tmp(new_size))
+          integer_tmp(1:lSIZE) = integer_array(1:lSIZE)
+          call move_alloc(integer_tmp,integer_array)
+
+        END SUBROUTINE INTEGER_GROW
+
+        SUBROUTINE INTEGER_GROW2_reverse(integer_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          INTEGER, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: integer_array
+          INTEGER, DIMENSION(:,:), ALLOCATABLE :: integer_tmp
+          INTEGER lSIZE, lSIZE2
+
+          lSIZE = size(integer_array,1)
+          lSIZE2 = size(integer_array,2)
+          allocate(integer_tmp(new_size,lSIZE2))
+          integer_tmp(1:lSIZE,:) = integer_array(1:lSIZE,:)
+          call move_alloc(integer_tmp,integer_array)
+
+        END SUBROUTINE INTEGER_GROW2_reverse
+
+        SUBROUTINE INTEGER_GROW2(integer_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          INTEGER, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: integer_array
+          INTEGER, DIMENSION(:,:), ALLOCATABLE :: integer_tmp
+          INTEGER lSIZE, lSIZE2
+
+          lSIZE = size(integer_array,1)
+          lSIZE2 = size(integer_array,2)
+          allocate(integer_tmp(lSIZE,new_size))
+          integer_tmp(:,1:lSIZE2) = integer_array(:,1:lSIZE2)
+          call move_alloc(integer_tmp,integer_array)
+
+        END SUBROUTINE INTEGER_GROW2
+
+        SUBROUTINE LOGICAL_GROW(logical_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          LOGICAL, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: logical_array
+          LOGICAL, DIMENSION(:), ALLOCATABLE :: logical_tmp
+          INTEGER lSIZE2
+
+          lSIZE2 = size(logical_array,1)
+          allocate(logical_tmp(new_size))
+          logical_tmp(1:lSIZE2) = logical_array(1:lSIZE2)
+          call move_alloc(logical_tmp,logical_array)
+
+        END SUBROUTINE LOGICAL_GROW
+
+        SUBROUTINE REAL_GROW(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE
+
+          lSIZE = size(real_array,1)
+          allocate(real_tmp(new_size))
+          real_tmp(1:lSIZE) = real_array(1:lSIZE)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE REAL_GROW
+
+        SUBROUTINE REAL_GROW2(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE, lSIZE2
+
+          lSIZE = size(real_array,1)
+          lSIZE2 = size(real_array,2)
+          allocate(real_tmp(lSIZE,new_size))
+          real_tmp(:,1:lSIZE2) = real_array(:,1:lSIZE2)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE REAL_GROW2
+
+        SUBROUTINE REAL_GROW2_reverse(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE, lSIZE2
+
+          lSIZE = size(real_array,1)
+          lSIZE2 = size(real_array,2)
+          allocate(real_tmp(new_size,lSIZE2))
+          real_tmp(1:lSIZE,:) = real_array(1:lSIZE,:)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE REAL_GROW2_REVERSE
+
+        SUBROUTINE REAL_GROW3(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE, lSIZE2, lSIZE3
+
+          lSIZE = size(real_array,1)
+          lSIZE2 = size(real_array,2)
+          lSIZE3 = size(real_array,3)
+          allocate(real_tmp(lSIZE,lSIZE2,new_size))
+          real_tmp(:,:,1:lSIZE3) = real_array(:,:,1:lSIZE3)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE REAL_GROW3
+
+        SUBROUTINE LOGICAL_GROW2_REVERSE(real_array,new_size)
+          IMPLICIT NONE
+
+          INTEGER, INTENT(IN) :: new_size
+          LOGICAL, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
+          LOGICAL, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+          INTEGER lSIZE, lSIZE2
+
+          lSIZE = size(real_array,1)
+          lSIZE2 = size(real_array,2)
+          allocate(real_tmp(new_size,lSIZE2))
+          real_tmp(1:lSIZE,:) = real_array(1:lSIZE,:)
+          call move_alloc(real_tmp,real_array)
+
+        END SUBROUTINE LOGICAL_GROW2_REVERSE
+
+      END SUBROUTINE PARTICLE_GROW

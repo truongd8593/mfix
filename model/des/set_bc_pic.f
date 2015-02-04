@@ -36,23 +36,8 @@
 
 ! The variable PARTICLES should already be set by this point if using
 ! gener_part_config option
-      IF(PARTICLES == UNDEFINED_I .AND. MAX_PIS /= UNDEFINED_I)THEN
+      IF(PARTICLES == UNDEFINED_I) THEN
          PARTICLES = 0
-
-      ELSEIF(PARTICLES == UNDEFINED_I .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(ERR_MSG, 1200)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
- 1200 FORMAT('Error 1200: Either PARTICLES or MAX_PIS must specified.',&
-         'Please correct the mfix.dat file.')
-
-      ELSEIF(PARTICLES == 0 .AND. MAX_PIS == UNDEFINED_I) THEN
-         WRITE(ERR_MSG, 1201)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
- 1201 FORMAT('Error 1201: MAX_PIS must be specified in the mfix.dat ', &
-         'file if',/' there are no initial particles (PARTICLES = 0).')
-
       ENDIF
 
 ! If the system is started without any particles and an inlet is not
@@ -66,19 +51,6 @@
 
  1202 FORMAT('WARNING 1202: The system is initiated with no particles',&
          ' and no',/'solids inlet was detected.')
-
-
-! Check MAX_PIS requirements
-      IF(PIC_BCMI == 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         MAX_PIS = PARTICLES
-      ELSEIF(PIC_BCMI /= 0 .AND. MAX_PIS == UNDEFINED_I)THEN
-         WRITE(ERR_MSG, 1203)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
- 1203 FORMAT('Error 1203: The maximum number of particles (MAX_PIS) ', &
-         'must be',/'spedified if a PIC inlet is specifed. Please ',   &
-         'correct the mfix.dat ',/'file.')
 
       IF(PIC_BCMI > 0) CALL SET_BC_PIC_MI
       IF(PIC_BCMO > 0) CALL SET_BC_PIC_MO

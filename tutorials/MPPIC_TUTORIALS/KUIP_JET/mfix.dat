@@ -174,7 +174,6 @@
 ! DES INPUT
 
   DISCRETE_ELEMENT = .TRUE. 
-  MAX_PIS = 5000
  
   MPPIC = .t.	
 !  PIC_REPORT_MIN_EPG = .t.

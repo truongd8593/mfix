@@ -17,7 +17,6 @@
 
       INTEGER :: IP, LS, M, NP, IJK, LC
       INTEGER :: BCV, BCV_I
-      INTEGER :: IERR
       LOGICAL :: CHECK_FOR_ERRORS, OWNS
 
 ! I/J/K index of fluid cell containing the new particle.
@@ -27,7 +26,6 @@
 
       CHECK_FOR_ERRORS = .FALSE.
 
-      IERR = 0
       DO BCV_I = 1, DEM_BCMI
          BCV = DEM_BCMI_MAP(BCV_I)
 
@@ -71,8 +69,13 @@
 ! Increment the number of particle on the processor by one. If the max
 ! number of particles is exceeded, set the error flag and cycle.
             PIP = PIP + 1
-            IF(PIP  >= MAX_PIP) IERR = 1
-            IF(IERR /= 0) CYCLE PLoop
+            IF(PIP  >= MAX_PIP) THEN
+               MAX_PIP = MAX_PIP*2
+               CALL PARTICLE_GROW
+               pea(PIP+1:MAX_PIP,1) = .false.
+               wall_collision_facet_id(:,PIP+1:MAX_PIP) = -1
+               wall_collision_pft(:,:,PIP+1:MAX_PIP) = ZERO
+            ENDIF
 
 ! Find the first free space in the particle existance array.
             NP_LP: DO NP = LS, MAX_PIP
@@ -83,10 +86,10 @@
             ENDDO NP_LP
 
 ! Set the particle's global ID.
-            iGLOBAL_ID(NP) = iMAX_GLOBAL_ID
+            iGLOBAL_ID(LS) = iMAX_GLOBAL_ID
 
 ! Set the properties of the new particle.
-            CALL SET_NEW_PARTICLE_PROPS(BCV, M, NP, POS, IJKP)
+            CALL SET_NEW_PARTICLE_PROPS(BCV, M, LS, POS, IJKP)
 
          ENDDO PLoop
 
@@ -96,20 +99,11 @@
          CHECK_FOR_ERRORS = .TRUE.
       ENDDO
 
-
       IF(CHECK_FOR_ERRORS) THEN
       ENDIF
 
- 1000 FORMAT(/1X,70('*')//,' From: DES_MASS_INLET -',/&
-         ' Message: Maximum number of particles in the system MAX_PIS',&
-         /10X,' has been exceeded. Increase the value in mfix.dat',/&
-         1X,70('*')/)
-
-
       RETURN
       END SUBROUTINE MASS_INFLOW_DEM
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

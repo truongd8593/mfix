@@ -83,7 +83,6 @@
   MMAX = 5
 
   PARTICLES =    0  ! Initially there are no particles
-  MAX_PIS   = 5000  ! Max number of particles permitted
 
 ! Particle-particle:
   KN     = 1.6d7    ! Normal collision spring constant
