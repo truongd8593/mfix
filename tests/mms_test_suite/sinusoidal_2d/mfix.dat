@@ -1,6 +1,6 @@
 ########################################################################
 # 2D, single-phase, sinusoidal MMS case                                #
-# Order verification using exact solution                              #
+# Order verification using manufactured solution                       #
 #                                                                      #
 # Author: Aniruddha Choudhary                           Date: Feb 2015 #
 #                                                                      #
