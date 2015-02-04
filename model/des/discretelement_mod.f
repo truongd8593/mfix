@@ -67,11 +67,10 @@
 ! from the list.
 
 ! PEA(n,4) : for ghost particles
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (MAX_PIS,4)
+      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (PARTICLES,4)
 
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
-! max_pis - maximum allocated particles in system  (input parameter)
 ! max_pip - maximum allocated particles in processor
 
 ! Number of particles in the system (current)
@@ -79,7 +78,7 @@
 ! Global sum of particles (excluding ghost) in the system 
       INTEGER TOT_PAR
 ! Maximum particles permitted in the system at once
-      INTEGER MAX_PIS, MAX_PIP
+      INTEGER MAX_PIP
 
 ! End particle tracking quantities
 !-----------------------------------------------------------------<<<

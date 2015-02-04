@@ -32,7 +32,7 @@
         DES_BC_Uw_s, DES_BC_Vw_s, DES_BC_Ww_s,&
 
 ! DES flow boundary condition information: J.Musser
-        MAX_PIS, FORCE_ORD_BC, &
+        FORCE_ORD_BC, &
 
 ! DES output control information
         DEBUG_DES, FOCUS_PARTICLE,&

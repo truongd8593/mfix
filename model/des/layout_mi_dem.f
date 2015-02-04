@@ -21,6 +21,9 @@
       INTEGER, INTENT(IN) :: BCV
       INTEGER, INTENT(IN) :: BCV_I      ! BC loop counter
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
+! Local debug flags.
+      LOGICAL, parameter :: setDBG = .FALSE.
+      LOGICAL, parameter :: showMAP = .FALSE.
 
       CALL INIT_ERR_MSG("LAYOUT_MI_DEM")
 
@@ -34,9 +37,12 @@
          CALL SET_DEM_MI_OWNER(BCV, BCV_I)
       ELSE
          SELECT CASE (BC_PLANE(BCV))
-         CASE('N','S'); CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
-         CASE('E','W'); CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
-         CASE('T','B'); CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
+         CASE('N','S')
+            CALL LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
+         CASE('E','W')
+            CALL LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
+         CASE('T','B')
+            CALL LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
          END SELECT
       ENDIF
 
@@ -62,39 +68,54 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA)
+      SUBROUTINE LAYOUT_DEM_MI_NS(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
 
+! Global variables:
+!---------------------------------------------------------------------//
       use bc, only: BC_PLANE, BC_Y_s, BC_AREA
       use bc, only: BC_X_w, BC_X_e
       use bc, only: BC_Z_b, BC_Z_t
 
       use des_bc, only: DEM_MI
 
-      use compar
-      use geometry
-      use indices
+      use stl, only: N_FACETS_DES
+      use stl, only: VERTEX, NORM_FACE
+      use cutcell, only: USE_STL
+
+      use compar, only: myPE
+      use geometry, only: IMAX, JMAX, KMAX
+      use geometry, only: DX, DY, DZ
+      use geometry, only: XMIN, DO_K
 
       use funits, only: DMP_LOG
+
+! Global parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, HALF, ONE
 
 ! Module procedures
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use des_stl_functions, only: TestTriangleAABB
+      use functions, only: IS_ON_myPE_OWNS
+
       use error_manager
-      use functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! passed arguments giving index information of the boundary
       INTEGER, INTENT(IN) :: BCV
       INTEGER, INTENT(IN) :: BCV_I
 ! Max diameter of incoming particles at bc
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
-!-----------------------------------------------
+! Debug flas.
+      LOGICAL, INTENT(IN) :: setDBG, showMAP
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
@@ -105,33 +126,33 @@
       DOUBLE PRECISION :: TMP_DP
 ! Temporary variable for integers
       INTEGER :: TMP_INT
-
+! Window indicies.
       INTEGER, allocatable :: MESH_H(:)
       INTEGER, allocatable :: MESH_W(:)
-
+! Window positions.
       DOUBLE PRECISION, allocatable :: MESH_P(:)
       DOUBLE PRECISION, allocatable :: MESH_Q(:)
-
+! Map of array index to MI cell
       INTEGER, allocatable :: RAND_MAP(:)
+! Map of MI cells to owner processes
       INTEGER, allocatable :: FULL_MAP(:,:)
-
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
-
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
-
 ! Number of occupied mesh cells
       INTEGER :: OCCUPANTS
-
-      DOUBLE PRECISION :: SHIFT, WINDOW, OFFSET
-
-      LOGICAL, EXTERNAL :: COMPARE
-
-      LOGICAL, parameter :: setDBG = .FALSE.
+! Offset and window size.
+      DOUBLE PRECISION :: SHIFT, WINDOW
+! The origin and dimenion of MI cells. (STL intersection tests)
+      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
+! Separating axis test dummy variable
+      INTEGER :: SEP_AXIS
+! Indicates that a separating axis exists
+      LOGICAL :: SA_EXIST
+! Debug flag.
       LOGICAL :: dFlag
-
-!-----------------------------------------------
+!......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_NS')
@@ -205,60 +226,103 @@
       CALL CALC_CELL_INTERSECT(ZERO, BC_Y_s(BCV), DY, JMAX, J)
 
 
-
-
-
-!      IF(USE_STL)THEN
-
-
 ! If the computationsl cell adjacent to the DEM_MI mesh cell is a
 ! fluid cell and has not been cut, store the ID of the cell owner.
-!      ELSE
+      DO H=1,HMAX
+      DO W=1,WMAX
+
+         I = MESH_W(W)
+         K = MESH_H(H)
+         FULL_MAP(W,H) = 0
+
+         IF(.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
+
+         IF(DO_K) THEN
+
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_Q(H)+WINDOW
+            CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+         ELSE
+
+            K = MESH_H(1)
+            CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+            SHIFT = MESH_P(W)+WINDOW
+            CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+            IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+         ENDIF
+
+         FULL_MAP(W,H) = myPE+1
+      ENDDO
+      ENDDO
+
+
+! For complex boundaries defined by STLs, exclude any mass inflow cells
+! that intersect the boundary and all cells opposite the normal. The MI
+! cell sizes are increased by 10% to provide a small buffer.
+      IF(USE_STL) THEN
+
+         EXTENTS(2) = 6.0d0*MAX_DIA
+         EXTENTS(1) = WINDOW * 1.10d0
+         EXTENTS(3) = WINDOW * 1.10d0
+
          DO H=1,HMAX
          DO W=1,WMAX
 
-            FULL_MAP(W,H) = 0
+            ORIGIN(2) = BC_Y_s(BCV) - 3.0d0*MAX_DIA
+            ORIGIN(1) = MESH_P(W) - WINDOW * 0.05d0
+            ORIGIN(3) = MESH_Q(H) - WINDOW * 0.05d0
 
-            IF(.NOT.IS_ON_myPE_owns(MESH_W(W),J,MESH_H(H))) CYCLE
+            FACET_LP: DO LC=1, N_FACETS_DES
 
-            IF(DO_K) THEN
+               IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
+               IF(BC_Y_s(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
 
-               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-               CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DZ, KMAX, K)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+               IF(BC_X_w(BCV) > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
+               IF(BC_X_e(BCV) < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
 
-               SHIFT = MESH_P(W)+WINDOW
-               CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+               IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
+               IF(BC_Z_t(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP
 
-               SHIFT = MESH_Q(H)+WINDOW
-               CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DZ, KMAX, K)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
+                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
 
-               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
-
-            ELSE
-
-               K = MESH_H(1)
-               CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
-
-               SHIFT = MESH_P(W)+WINDOW
-               CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
-               IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
-            ENDIF
-
-            I = MESH_W(W)
-            K = MESH_H(H)
-            IF(EXCLUDE_DEM_MI_CELL(I,J,K)) CYCLE
-
-            OCCUPANTS = OCCUPANTS + 1
-            FULL_MAP(W,H) = myPE+1
+               IF(.NOT.SA_EXIST) THEN
+                  IF(NORM_FACE(1,LC) >= 0) THEN
+                     FULL_MAP(1:W,H) = 0
+                  ELSE
+                     FULL_MAP(W:WMAX,H) = 0
+                  ENDIF
+                  IF(NORM_FACE(3,LC) >= 0) THEN
+                     FULL_MAP(W,1:H) = 0
+                  ELSE
+                     FULL_MAP(W,H:HMAX) = 0
+                  ENDIF
+               ENDIF
+            ENDDO FACET_LP
          ENDDO
          ENDDO
+      ENDIF
 
-!      ENDIF
+! Add up the total number of available positions in the seeding map.
+      DO H=1,HMAX
+      DO W=1,WMAX
+         IF(FULL_MAP(W,H) /= 0) OCCUPANTS = OCCUPANTS + 1
+      ENDDO
+      ENDDO
 
 ! Sync the full map across all ranks.
       CALL GLOBAL_ALL_SUM(OCCUPANTS)
@@ -278,7 +342,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag) THEN
+      IF(dFlag .OR. showMAP) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
@@ -400,7 +464,7 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA)
+      SUBROUTINE LAYOUT_DEM_MI_EW(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
 
       use bc, only: BC_PLANE, BC_X_w, BC_AREA
       use bc, only: BC_Y_s, BC_Y_n
@@ -411,34 +475,41 @@
       use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
-      use discretelement
-      use compar
-      use geometry
-      use indices
+
+      use compar, only: myPE
+      use geometry, only: IMAX, JMAX, KMAX
+      use geometry, only: DX, DY, DZ
+      use geometry, only: XMIN, DO_K
 
       use funits, only: DMP_LOG
+
+! Global parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, HALF, ONE
 
 ! Module procedures
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use des_stl_functions, only: TestTriangleAABB
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use functions, only: IS_ON_myPE_OWNS
 
       use error_manager
-      use functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! passed arguments giving index information of the boundary
       INTEGER, INTENT(IN) :: BCV
       INTEGER, INTENT(IN) :: BCV_I
 ! Max diameter of incoming particles at bc
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
-!-----------------------------------------------
+! Debug flas.
+      LOGICAL, INTENT(IN) :: setDBG, showMAP
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
@@ -449,39 +520,34 @@
       DOUBLE PRECISION :: TMP_DP
 ! Temporary variable for integers
       INTEGER :: TMP_INT
-
+! Window indicies.
       INTEGER, allocatable :: MESH_H(:)
       INTEGER, allocatable :: MESH_W(:)
-
+! Window positions.
       DOUBLE PRECISION, allocatable :: MESH_P(:)
       DOUBLE PRECISION, allocatable :: MESH_Q(:)
-
+! Map of array index to MI cell
       INTEGER, allocatable :: RAND_MAP(:)
+! Map of MI cells to owner processes
       INTEGER, allocatable :: FULL_MAP(:,:)
-
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
-
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
-
 ! Number of occupied mesh cells
       INTEGER :: OCCUPANTS
-
+! Offset and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
-
-      DOUBLE PRECISION :: EXTENTS(3), ORIGIN(3)
-      DOUBLE PRECISION :: MIN_X, MAX_X
+! The origin and dimenion of MI cells. (STL intersection tests)
+      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
+! Separating axis test dummy variable
       INTEGER :: SEP_AXIS
+! Indicates that a separating axis exists
       LOGICAL :: SA_EXIST
-
-      LOGICAL, EXTERNAL :: COMPARE
-
-      LOGICAL, parameter :: showMAP = .FALSE.
-      LOGICAL, parameter :: setDBG = .TRUE.
+! Local debug flag.
       LOGICAL :: dFlag
+!......................................................................!
 
-!-----------------------------------------------
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_EW')
@@ -596,29 +662,27 @@
       ENDDO
       ENDDO
 
+
 ! For complex boundaries defined by STLs, exclude any mass inflow cells
 ! that intersect the boundary and all cells opposite the normal. The MI
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         MIN_X = BC_X_w(BCV) - 2.0d0*MAX_DIA
-         MAX_X = BC_X_w(BCV) + 2.0d0*MAX_DIA
-
-         EXTENTS(1) = 4.0d0*MAX_DIA * 1.10d0
+         EXTENTS(1) = 6.0d0*MAX_DIA
          EXTENTS(2) = WINDOW * 1.10d0
          EXTENTS(3) = WINDOW * 1.10d0
 
          DO H=1,HMAX
          DO W=1,WMAX
 
-            ORIGIN(1) = MIN_X - 4.0d0*MAX_DIA*0.05d0
+            ORIGIN(1) = BC_X_w(BCV) - 3.0d0*MAX_DIA
             ORIGIN(2) = MESH_P(W) - WINDOW * 0.05d0
             ORIGIN(3) = MESH_Q(H) - WINDOW * 0.05d0
 
             FACET_LP: DO LC=1, N_FACETS_DES
 
-               IF(MIN_X > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
-               IF(MAX_X < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
+               IF(BC_X_w(BCV) > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
+               IF(BC_X_w(BCV) < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
 
                IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
                IF(BC_Y_n(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
@@ -630,7 +694,6 @@
                   ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
 
                IF(.NOT.SA_EXIST) THEN
-
                   IF(NORM_FACE(2,LC) >= 0) THEN
                      FULL_MAP(1:W,H) = 0
                   ELSE
@@ -653,7 +716,6 @@
          IF(FULL_MAP(W,H) /= 0) OCCUPANTS = OCCUPANTS + 1
       ENDDO
       ENDDO
-
 
 ! Sync the full map across all ranks.
       CALL GLOBAL_ALL_SUM(OCCUPANTS)
@@ -795,39 +857,53 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA)
+      SUBROUTINE LAYOUT_DEM_MI_TB(BCV, BCV_I, MAX_DIA, setDBG, showMAP)
 
+! Global variables:
+!---------------------------------------------------------------------//
       use bc, only: BC_PLANE, BC_Z_b, BC_AREA
       use bc, only: BC_X_w, BC_X_e
       use bc, only: BC_Y_s, BC_Y_n
 
       use des_bc, only: DEM_MI
 
-      use compar
-      use geometry
-      use indices
+      use stl, only: N_FACETS_DES
+      use stl, only: VERTEX, NORM_FACE
+      use cutcell, only: USE_STL
+      use compar, only: myPE
+      use geometry, only: IMAX, JMAX, KMAX
+      use geometry, only: DX, DY, DZ
+      use geometry, only: XMIN, DO_K
 
       use funits, only: DMP_LOG
+
+! Global parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, HALF, ONE
 
 ! Module procedures
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use des_stl_functions, only: TestTriangleAABB
+      use functions, only: IS_ON_myPE_OWNS
+
       use error_manager
-      use functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! passed arguments giving index information of the boundary
       INTEGER, INTENT(IN) :: BCV
       INTEGER, INTENT(IN) :: BCV_I
 ! Max diameter of incoming particles at bc
       DOUBLE PRECISION, INTENT(IN) :: MAX_DIA
-!-----------------------------------------------
+! Debug flas.
+      LOGICAL, INTENT(IN) :: setDBG, showMAP
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
@@ -838,33 +914,34 @@
       DOUBLE PRECISION :: TMP_DP
 ! Temporary variable for integers
       INTEGER :: TMP_INT
-
+! Window indicies.
       INTEGER, allocatable :: MESH_H(:)
       INTEGER, allocatable :: MESH_W(:)
-
+! Window positions.
       DOUBLE PRECISION, allocatable :: MESH_P(:)
       DOUBLE PRECISION, allocatable :: MESH_Q(:)
-
+! Map of array index to MI cell
       INTEGER, allocatable :: RAND_MAP(:)
+! Map of MI cells to owner processes
       INTEGER, allocatable :: FULL_MAP(:,:)
-
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
-
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
-
 ! Number of occupied mesh cells
       INTEGER :: OCCUPANTS
-
+! Offset and and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
-
-      LOGICAL, EXTERNAL :: COMPARE
-
-      LOGICAL, parameter :: setDBG = .FALSE.
+! The origin and dimenion of MI cells. (STL intersection tests)
+      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
+! Separating axis test dummy variable
+      INTEGER :: SEP_AXIS
+! Indicates that a separating axis exists
+      LOGICAL :: SA_EXIST
+! Local Debug flag.
       LOGICAL :: dFlag
 
-!-----------------------------------------------
+!......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG('LAYOUT_DEM_MI_TB')
@@ -936,16 +1013,83 @@
 ! fluid cell and has not been cut, store the ID of the cell owner.
       DO H=1,HMAX
       DO W=1,WMAX
+
          I = MESH_W(W)
          J = MESH_H(H)
          FULL_MAP(W,H) = 0
+
          IF(.NOT.IS_ON_myPE_owns(I,J,K)) CYCLE
-         IF(DEAD_CELL_AT(I,J,K)) CYCLE
-         IJK = FUNIJK(I,J,K)
-         IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(.NOT.COMPARE(AXY(IJK),DX(I)*DY(J))) CYCLE
-         OCCUPANTS = OCCUPANTS + 1
+
+         CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+         CALL CALC_CELL_INTERSECT(ZERO, MESH_Q(H), DY, JMAX, J)
+         IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+         SHIFT = MESH_P(W)+WINDOW
+         CALL CALC_CELL_INTERSECT(XMIN, SHIFT, DX, IMAX, I)
+         IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+         SHIFT = MESH_Q(H)+WINDOW
+         CALL CALC_CELL_INTERSECT(ZERO, SHIFT, DY, JMAX, J)
+         IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
+         CALL CALC_CELL_INTERSECT(XMIN, MESH_P(W), DX, IMAX, I)
+         IF(EXCLUDE_DEM_MI_CELL(I, J, K)) CYCLE
+
          FULL_MAP(W,H) = myPE+1
+      ENDDO
+      ENDDO
+
+! For complex boundaries defined by STLs, exclude any mass inflow cells
+! that intersect the boundary and all cells opposite the normal. The MI
+! cell sizes are increased by 10% to provide a small buffer.
+      IF(USE_STL) THEN
+
+         EXTENTS(3) = 6.0d0*MAX_DIA
+         EXTENTS(1) = WINDOW * 1.10d0
+         EXTENTS(2) = WINDOW * 1.10d0
+
+         DO H=1,HMAX
+         DO W=1,WMAX
+
+            ORIGIN(3) = BC_Z_b(BCV) - 3.0d0*MAX_DIA
+            ORIGIN(1) = MESH_P(W) - WINDOW * 0.05d0
+            ORIGIN(2) = MESH_Q(H) - WINDOW * 0.05d0
+
+            FACET_LP: DO LC=1, N_FACETS_DES
+
+               IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
+               IF(BC_Z_b(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP
+
+               IF(BC_X_w(BCV) > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
+               IF(BC_X_e(BCV) < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
+
+               IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
+               IF(BC_Y_n(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
+
+               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
+                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
+
+               IF(.NOT.SA_EXIST) THEN
+                  IF(NORM_FACE(1,LC) >= 0) THEN
+                     FULL_MAP(1:W,H) = 0
+                  ELSE
+                     FULL_MAP(W:WMAX,H) = 0
+                  ENDIF
+                  IF(NORM_FACE(2,LC) >= 0) THEN
+                     FULL_MAP(W,1:H) = 0
+                  ELSE
+                     FULL_MAP(W,H:HMAX) = 0
+                  ENDIF
+               ENDIF
+            ENDDO FACET_LP
+         ENDDO
+         ENDDO
+      ENDIF
+
+! Add up the total number of available positions in the seeding map.
+      DO H=1,HMAX
+      DO W=1,WMAX
+         IF(FULL_MAP(W,H) /= 0) OCCUPANTS = OCCUPANTS + 1
       ENDDO
       ENDDO
 
@@ -967,7 +1111,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag) THEN
+      IF(dFlag .OR. showMAP) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
