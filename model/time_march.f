@@ -180,6 +180,11 @@
       DISK(8) = MMAX*DISK_ONE
       DISK(9) = NScalar*DISK_ONE
       DISK(10) = nRR*DISK_ONE
+      IF(K_Epsilon) THEN
+         DISK(11) = 2.*DISK_ONE
+      ELSE
+         DISK(11) = ZERO
+      ENDIF
 
 
       IF (RUN_TYPE == 'NEW') THEN

@@ -8,7 +8,7 @@
 !  The collection could get expensive so the call frequency of this    !
 !  routine should probably be reduced.                                 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_CELL_MOVEMENT(RECOVERED, DELETED)
+      SUBROUTINE CHECK_CELL_MOVEMENT
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -26,13 +26,6 @@
 
       IMPLICIT NONE
 
-! Passed Variables:
-!----------------------------------------------------------------------!
-! Number of particles recovered from outside domain.
-      INTEGER, INTENT(OUT) :: RECOVERED
-! Number of particles deleted from outside domain.
-      INTEGER, INTENT(OUT) :: DELETED
-
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! Loop indicies:
@@ -43,8 +36,6 @@
 
 ! Initialize local variables.
       IER = 0
-      RECOVERED = 0
-      DELETED = 0
 
 ! Set an error flag if any errors are found. Preform a global collection
 ! to sync error flags. If needed, reort errors.
@@ -70,7 +61,7 @@
       IF(IER == 0) RETURN
 
       IF(DEM_SOLIDS) CALL CHECK_CELL_MOVEMENT_DEM
-      IF(PIC_SOLIDS) CALL CHECK_CELL_MOVEMENT_PIC(RECOVERED, DELETED)
+      IF(PIC_SOLIDS) CALL CHECK_CELL_MOVEMENT_PIC
 
       RETURN
       END SUBROUTINE CHECK_CELL_MOVEMENT
@@ -186,7 +177,7 @@
 !     inside the domain using the ghost cell bc's                      !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CHECK_CELL_MOVEMENT_PIC(gRECOVERED, gDELETED)
+      SUBROUTINE CHECK_CELL_MOVEMENT_PIC
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -213,11 +204,6 @@
 
       IMPLICIT NONE
 
-! Passed Variables:
-!----------------------------------------------------------------------!
-      INTEGER, INTENT(OUT) :: gDELETED
-      INTEGER, INTENT(OUT) :: gRECOVERED
-
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! particle no.
@@ -227,9 +213,9 @@
 ! Position
       DOUBLE PRECISION :: lPOS
 ! Number of deleted particles found on the local process
-      INTEGER :: lDELETED
+      INTEGER :: lDELETED, gDELETED
 ! Number of recovered particles found on the local process
-      INTEGER :: lRECOVERED
+      INTEGER :: lRECOVERED, gRECOVERED
 ! Local parameter to print verbose messages about particles.
       LOGICAL, PARAMETER :: lDEBUG = .FALSE.
 
@@ -238,6 +224,7 @@
 
       CALL INIT_ERR_MSG("CHECK_CELL_MOVEMENT_PIC")
       IF(lDEBUG) CALL OPEN_PE_LOG(IER)
+
 
 ! Initialize the counters for deleted/recovered parcels.
       lDELETED = 0
@@ -349,15 +336,6 @@
          ENDIF
       ENDDO
 
-! Update the number of particles
-      PIP = PIP - lDELETED
-
-! Send the numbers to the IO process.
-      CALL GLOBAL_SUM(lRECOVERED, gRECOVERED, PE_IO)
-      CALL GLOBAL_SUM(lDELETED, gDELETED, PE_IO)
-
-      CALL FINL_ERR_MSG
-
  1100 FORMAT('Warninge 1100: Particle ',A,' was recovered from a ',    &
          'ghost cell.',2/2x,'Moved into cell with ',A1,' index: ',A,   &
          /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
@@ -368,6 +346,25 @@
          /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
          /2X,A1,'-Velocity:',g11.4,/2x,'Fluid Cell: ',A,/2x,           &
          'Cut cell? ',L1,/2x,'Fluid at? ',L1)
+
+! Update the number of particles
+      PIP = PIP - lDELETED
+
+! Send the numbers to the IO process.
+      CALL GLOBAL_SUM(lRECOVERED, gRECOVERED, PE_IO)
+      CALL GLOBAL_SUM(lDELETED, gDELETED, PE_IO)
+
+      IF(gRECOVERED + gDELETED > 0) THEN
+         WRITE(ERR_MSG,1115) trim(iVal(gDELETED + gRECOVERED)),        &
+            trim(iVal(gDELETED)), trim(iVal(gRECOVERED))
+         CALL FLUSH_ERR_MSG
+      ENDIF
+
+ 1115 FORMAT('Warning 1115: ',A,' particles detected outside the ',    &
+         'domain.',/2x,A,' particles were deleted.',/2x,A,' particles',&
+         ' were recovered.')
+
+      CALL FINL_ERR_MSG
 
       RETURN
       END SUBROUTINE CHECK_CELL_MOVEMENT_PIC
@@ -380,7 +377,7 @@
 !  Purpose: Output stats about PIC simulation.                         !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REPORT_PIC_STATS(RECOVERED, DELETED)
+      SUBROUTINE REPORT_PIC_STATS
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -397,13 +394,6 @@
 
       IMPLICIT NONE
 
-! Passed Variables:
-!----------------------------------------------------------------------!
-! Number of deleted particles found on the local process
-      INTEGER :: DELETED
-! Number of recovered particles found on the local process
-      INTEGER :: RECOVERED
-
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! Loop counters
@@ -415,17 +405,6 @@
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("REPORT_PIC_STATS")
-
-
-      IF(RECOVERED + DELETED > 0) THEN
-         WRITE(ERR_MSG,1100) trim(iVal(DELETED + RECOVERED)),          &
-            trim(iVal(DELETED)), trim(iVal(RECOVERED))
-         CALL FLUSH_ERR_MSG
-      ENDIF
-
- 1100 FORMAT('Warning 1100: ',A,' particles detected outside the ',    &
-         'domain.',/2x,A,' particles were deleted.',/2x,A,' particles',&
-         ' were recovered.')
 
 
       IF(PIC_REPORT_MIN_EPG) THEN

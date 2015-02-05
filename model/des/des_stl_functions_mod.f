@@ -321,45 +321,59 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      subroutine checkPTonTriangle(pointp, pointa, pointb, pointc, on_trian)
-      Use param1, only : one
-      USE discretelement, only: dimn
-      USE stl, only: tol_stl
+      SUBROUTINE CHECKPTONTRIANGLE(POINTP, POINTS, ON_TRIAN)
+
+! Global parameters:
+!---------------------------------------------------------------------//
+! DEM array spatial array dimension.
+      use discretelement, only: DIMN
+! Tolerance surround STL
+      use stl, only: tol_stl
+! Common values in working percision
+      use param1, only : ONE
+
+
       IMPLICIT NONE
-      !point a, pointb, and pointc are the three nodes of the triangle
-      !point p is the test point
-      double precision, intent(in), dimension(3) :: pointa, pointb, pointc
-      double precision, intent(in), dimension(dimn) :: pointp
-      logical, intent(out)::  on_trian
-      !Local variables
-      !triangle edges
-      double precision, dimension(dimn) :: v0, v1, v2
-      double precision :: d00, d01, d11, d20, d21, denom
-      !barcycentric coordinates
-      double precision :: v, w
 
-      logical :: v_positive, w_positive, VplusW_positive
-      v0 = pointb - pointa
-      v1 = pointc - pointa
-      v2 = pointp - pointa;
-      d00 = DOT_PRODUCT(v0, v0)
-      d01 = DOT_PRODUCT(v0, v1);
-      d11 = DOT_PRODUCT(v1, v1);
-      d20 = DOT_PRODUCT(v2, v0);
-      d21 = DOT_PRODUCT(v2, v1);
-      denom = d00 * d11 - d01 * d01;
-      v = (d11 * d20 - d01 * d21) / denom;
-      w = (d00 * d21 - d01 * d20) / denom;
-      !u = 1.0f - v - w;
 
-      V_POSITIVE = (v>=-TOL_STL)
-      W_POSITIVE = (w>=-TOL_STL)
-      VplusW_positive = ((v+w)<=ONE+TOL_STL)
+! Dummy arguments
+!---------------------------------------------------------------------//
+! the three nodes of the triangle
+      DOUBLE PRECISION, INTENT(IN) :: POINTS(3,3)
+! the test point
+      DOUBLE PRECISION, INTENT(IN) :: POINTP(DIMN)
+! Flag that the point lies on the triangle
+      LOGICAL, INTENT(OUT)::  ON_TRIAN
 
-      ON_TRIAN = (V_POSITIVE.AND.W_POSITIVE.AND.VplusW_positive)
+! Local variables
+!---------------------------------------------------------------------//
+! triangle edges
+      DOUBLE PRECISION, DIMENSION(DIMN) :: V0, V1, V2
+      DOUBLE PRECISION :: D00, D01, D11, D20, D21, DENOM
+! barcycentric coordinates
+      DOUBLE PRECISION :: V, W
+
+
+      V0 = POINTS(2,:) - POINTS(1,:)
+      V1 = POINTS(3,:) - POINTS(1,:)
+      V2 = POINTP - POINTS(1,:)
+
+      D00 = dot_product(V0, V0)
+      D01 = dot_product(V0, V1)
+      D11 = dot_product(V1, V1)
+      D20 = dot_product(V2, V0)
+      D21 = dot_product(V2, V1)
+
+      DENOM = D00*D11 - D01*D01
+
+      V = (D11*D20 - D01*D21)/DENOM
+      W = (D00*D21 - D01*D20)/DENOM
+
+      ON_TRIAN = ((V>=-TOL_STL) .AND. (W>=-TOL_STL) .AND.              &
+         ((V+W)<=ONE+TOL_STL))
 
       RETURN
-      end subroutine checkPTonTriangle
+      END SUBROUTINE CHECKPTONTRIANGLE
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
