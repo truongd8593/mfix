@@ -92,7 +92,7 @@
 
             CASE ('P_INFLOW')
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
-               CALL CHECK_BC_P_INFLOW(MMAX_TOT, BCV)
+               CALL CHECK_BC_P_INFLOW(MMAX_TOT, SKIP, BCV)
 
             CASE ('OUTFLOW')
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
