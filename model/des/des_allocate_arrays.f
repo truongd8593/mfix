@@ -533,7 +533,7 @@
         USE desgrid, only: dg_pijk, dg_pijkprv
         USE discretelement
         USE mfix_pic
-        USE mpi_init_des, only: ighost_updated
+        USE desmpi, only: ighost_updated
         USE particle_filter
         USE run
 
@@ -604,7 +604,7 @@
 
       RETURN
 
-    contains
+      contains
 
         SUBROUTINE INTEGER_GROW(integer_array,new_size)
           IMPLICIT NONE
