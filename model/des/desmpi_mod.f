@@ -62,23 +62,24 @@
       subroutine redim_par(pmaxpip)
 
       use desmpi_wrapper, only: des_mpi_stop
+      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
+      use param1
+
+      implicit none
 
 !-----------------------------------------------
 ! dummy variables
 !-----------------------------------------------
-      integer :: pmaxpip
+      integer, intent(in) :: pmaxpip
 !-----------------------------------------------
 
-      WRITE(*,900) pmaxpip, max_pip
-      call des_mpi_stop
-
- 900  FORMAT(/2X,'From: REDIM_PAR: ',/2X,&
-         'ERROR: Number of particles ',I10,/2X,&
-         'exceeds allowable particles (MAX_PIP)', I10,/2X,&
-         'Suggestion: increase PARTICLES_FACTOR in mfix.dat',/2X,&
-         'Comment: error may be the result of too many ',&
-         'particles moving',/2X,'across processors and/or ',&
-         'result of periodic treatment')
+      DO WHILE (MAX_PIP < pmaxpip)
+         MAX_PIP = MAX_PIP*2
+         CALL PARTICLE_GROW
+         pea(PIP+1:MAX_PIP,1) = .false.
+         wall_collision_facet_id(:,PIP+1:MAX_PIP) = -1
+         wall_collision_pft(:,:,PIP+1:MAX_PIP) = ZERO
+      ENDDO
 
       end  subroutine redim_par
 

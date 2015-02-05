@@ -528,12 +528,13 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE PARTICLE_GROW
 
-        USE des_thermo
-        USE particle_filter
         USE des_rxns
-        USE desgrid
+        USE des_thermo
+        USE desgrid, only: dg_pijk, dg_pijkprv
         USE discretelement
         USE mfix_pic
+        USE mpi_init_des, only: ighost_updated
+        USE particle_filter
         USE run
 
         IMPLICIT NONE
@@ -552,6 +553,7 @@
         call integer_grow2_reverse(pijk,MAX_PIP)
         call integer_grow(dg_pijk,MAX_PIP)
         call integer_grow(dg_pijkprv,MAX_PIP)
+        call logical_grow(ighost_updated,MAX_PIP)
         call real_grow2(FC,MAX_PIP)
         call real_grow2(TOW,MAX_PIP)
         call real_grow2(DES_USR_VAR,MAX_PIP)
