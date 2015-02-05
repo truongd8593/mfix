@@ -300,6 +300,7 @@
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)
+      PPOS(:,lNP) = lPOS(:)
       DES_VEL_NEW(1,lNP) = BC_U_s(lBCV,BC_M)
       DES_VEL_NEW(2,lNP) = BC_V_s(lBCV,BC_M)
       DES_VEL_NEW(3,lNP) = BC_W_s(lBCV,BC_M)

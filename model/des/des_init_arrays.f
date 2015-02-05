@@ -62,8 +62,6 @@
       FC(:,:) = ZERO
       TOW(:,:) = ZERO
 
-      PPOS(:,:) = ZERO
-
       PINC(:) = ZERO
       PIJK(:,:) = ZERO
 
