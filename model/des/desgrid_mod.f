@@ -971,11 +971,10 @@
 !$      IF(PAIR_NUM_SMP > PAIR_MAX_SMP) THEN
 !$         PAIR_MAX_SMP = 2*PAIR_MAX_SMP
 !$         lSIZE2 = size(pairs_smp,2)
-!$         allocate(int_tmp(2,lSIZE2))
+
+!$         allocate(int_tmp(2,PAIR_MAX_SMP))
 !$         int_tmp(:,1:lSIZE2) = pairs_smp(:,1:lSIZE2)
-!$         deallocate(pairs_smp)
-!$         allocate(pairs_smp(2,PAIR_MAX_SMP))
-!$         pairs_smp(:,1:lSIZE2) = int_tmp(:,1:lSIZE2)
+!$         call move_alloc(int_tmp,pairs_smp)
 !$         deallocate(int_tmp)
 !$      ENDIF
 
@@ -1000,6 +999,8 @@
 !$        call add_pair(PAIRS_SMP(1,MM), PAIRS_SMP(2,MM))
 !$     enddo
 !$omp end critical
+
+!$    deallocate( PAIRS_SMP )
 
 !$omp end parallel
 
