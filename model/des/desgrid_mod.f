@@ -794,7 +794,8 @@
       lindx(:) = 1
       lparcount = 1
 
-#if defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) )
+#if ( defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) ) ) \
+      ||  ( defined(__INTEL_COMPILER) && (__INTEL_COMPILER < 1400) )
 
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
