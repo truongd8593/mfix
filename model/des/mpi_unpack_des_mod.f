@@ -110,7 +110,6 @@
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-      iGhostPacketSize = 2*dimn + 3+ 5
       lparcnt = drecvbuf(1,pface)
       lnewcnt = lparcnt
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2))
