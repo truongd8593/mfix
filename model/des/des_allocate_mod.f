@@ -537,7 +537,7 @@ CONTAINS
         USE des_rxns
         USE des_thermo
         USE mfix_pic
-        USE discretelement, only: dg_pijk, dg_pijkprv, ighost_updated
+        USE discretelement
         USE particle_filter
         USE run
 
