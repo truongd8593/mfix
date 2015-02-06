@@ -975,7 +975,6 @@
 !$         allocate(int_tmp(2,PAIR_MAX_SMP))
 !$         int_tmp(:,1:lSIZE2) = pairs_smp(:,1:lSIZE2)
 !$         call move_alloc(int_tmp,pairs_smp)
-!$         deallocate(int_tmp)
 !$      ENDIF
 
 !$      pairs_smp(1,pair_num_smp) = lcurpar
