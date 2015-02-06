@@ -484,7 +484,6 @@ CONTAINS
           allocate(integer_tmp(2,new_size))
           integer_tmp(:,1:lSIZE2) = integer_array(:,1:lSIZE2)
           call move_alloc(integer_tmp,integer_array)
-          deallocate(integer_tmp)
 
         END SUBROUTINE INTEGER_GROW
 
@@ -500,7 +499,6 @@ CONTAINS
           allocate(logical_tmp(new_size))
           logical_tmp(1:lSIZE2) = logical_array(1:lSIZE2)
           call move_alloc(logical_tmp,logical_array)
-          deallocate(logical_tmp)
 
         END SUBROUTINE LOGICAL_GROW
 
@@ -516,7 +514,6 @@ CONTAINS
           allocate(real_tmp(3,new_size))
           real_tmp(:,1:lSIZE2) = real_array(:,1:lSIZE2)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE REAL_GROW
 
@@ -632,7 +629,6 @@ CONTAINS
           allocate(integer_tmp(new_size))
           integer_tmp(1:lSIZE) = integer_array(1:lSIZE)
           call move_alloc(integer_tmp,integer_array)
-          deallocate(integer_tmp)
 
         END SUBROUTINE INTEGER_GROW
 
@@ -649,7 +645,6 @@ CONTAINS
           allocate(integer_tmp(new_size,lSIZE2))
           integer_tmp(1:lSIZE,:) = integer_array(1:lSIZE,:)
           call move_alloc(integer_tmp,integer_array)
-          deallocate(integer_tmp)
 
         END SUBROUTINE INTEGER_GROW2_reverse
 
@@ -666,7 +661,6 @@ CONTAINS
           allocate(integer_tmp(lSIZE,new_size))
           integer_tmp(:,1:lSIZE2) = integer_array(:,1:lSIZE2)
           call move_alloc(integer_tmp,integer_array)
-          deallocate(integer_tmp)
 
         END SUBROUTINE INTEGER_GROW2
 
@@ -682,7 +676,6 @@ CONTAINS
           allocate(logical_tmp(new_size))
           logical_tmp(1:lSIZE2) = logical_array(1:lSIZE2)
           call move_alloc(logical_tmp,logical_array)
-          deallocate(logical_tmp)
 
         END SUBROUTINE LOGICAL_GROW
 
@@ -698,7 +691,6 @@ CONTAINS
           allocate(real_tmp(new_size))
           real_tmp(1:lSIZE) = real_array(1:lSIZE)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE REAL_GROW
 
@@ -715,7 +707,6 @@ CONTAINS
           allocate(real_tmp(lSIZE,new_size))
           real_tmp(:,1:lSIZE2) = real_array(:,1:lSIZE2)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE REAL_GROW2
 
@@ -732,7 +723,6 @@ CONTAINS
           allocate(real_tmp(new_size,lSIZE2))
           real_tmp(1:lSIZE,:) = real_array(1:lSIZE,:)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE REAL_GROW2_REVERSE
 
@@ -750,7 +740,6 @@ CONTAINS
           allocate(real_tmp(lSIZE,lSIZE2,new_size))
           real_tmp(:,:,1:lSIZE3) = real_array(:,:,1:lSIZE3)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE REAL_GROW3
 
@@ -767,7 +756,6 @@ CONTAINS
           allocate(real_tmp(new_size,lSIZE2))
           real_tmp(1:lSIZE,:) = real_array(1:lSIZE,:)
           call move_alloc(real_tmp,real_array)
-          deallocate(real_tmp)
 
         END SUBROUTINE LOGICAL_GROW2_REVERSE
 
