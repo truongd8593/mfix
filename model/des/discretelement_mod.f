@@ -75,7 +75,7 @@
 
 ! Number of particles in the system (current)
       INTEGER PIP
-! Global sum of particles (excluding ghost) in the system 
+! Global sum of particles (excluding ghost) in the system
       INTEGER TOT_PAR
 ! Maximum particles permitted in the system at once
       INTEGER MAX_PIP
@@ -364,7 +364,9 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PPOS         !(PARTICLES,3)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_ACC_OLD  !(PARTICLES,3)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: ROT_ACC_OLD  !(PARTICLES,3)
+
 ! Defining user defined allocatable array
+      INTEGER :: DES_USR_VAR_SIZE
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_USR_VAR  !(PARTICLES,3)
 
 ! Total force and torque on each particle
@@ -451,11 +453,8 @@
 ! the coefficient add to gas momentum B matrix
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
 
-
-!
+! Explictly calculated fluid-particle drag force.
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
-
-
 
 ! An intermediate array used in calculation of mean solids velocity
 ! by backward interpolation, i.e., when INTERP_DES_MEAN_FIELDS is true.

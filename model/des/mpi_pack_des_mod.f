@@ -16,6 +16,7 @@
         module procedure pack_db1
         module procedure pack_i0
         module procedure pack_i1
+        module procedure pack_l0
       end interface pack_dbuf
 
       CONTAINS
@@ -30,6 +31,8 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
+! Size of ghost particle packets
+      use desmpi, only: iGhostPacketSize
 ! Flag indicating that the ghost particle was updated
       use discretelement, only: iGHOST_UPDATED
 ! The MPI send buffer
@@ -75,7 +78,7 @@
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
 ! User-defined variables for each particle.
-      use discretelement, only: DES_USR_VAR
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 ! Function to convert DES grid IJK to new proc value.
       use desgrid, only: dg_ijkconv
 ! Size of the send buffer
@@ -86,6 +89,7 @@
       use discretelement, only: DG_PIC
 ! Cell number of ghost particles
       use desmpi, only: iSENDINDICES
+
 
 ! Global Constants:
 !---------------------------------------------------------------------//
@@ -104,21 +108,20 @@
 ! Local variables
 !---------------------------------------------------------------------//
       integer :: lijk,lindx,ltot_ind,lpicloc,lpar_cnt,lcurpar
-      integer :: lpacketsize,lbuf
+      integer :: lbuf
 !......................................................................!
 
-      lpacketsize = 2*dimn + 3+ 5
       lpar_cnt = 0
       ltot_ind = isendindices(1,pface)
       do lindx = 2,ltot_ind+1
          lijk = isendindices(lindx,pface)
          do lpicloc =1,dg_pic(lijk)%isize
-            lbuf = lpar_cnt*lpacketsize+ibufoffset
+            lbuf = lpar_cnt*iGhostPacketSize + ibufoffset
             lcurpar = dg_pic(lijk)%p(lpicloc)
 
 ! Do not send particle data for a ghost particle whose owner has not yet
 ! updated the particle's data on this processor.
-            if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar) ) cycle
+            if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar)) cycle
 
 ! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
@@ -142,21 +145,17 @@
 ! 9) Exiting particle flag
             call pack_dbuf(lbuf,merge(1,0,pea(lcurpar,3)),pface)
 ! 10) Temperature
-            if(ENERGY_EQ)then
+            IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
-            endif
-! 11) Species Composition
-            if(ANY_SPECIES_EQ)then
-               call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
-            endif
-! 12) User Variable
-            call pack_dbuf(lbuf,des_usr_var(1:3,lcurpar),pface)
+! 11) User Variable
+            IF(DES_USR_VAR_SIZE > 0) &
+               call pack_dbuf(lbuf,des_usr_var(:,lcurpar),pface)
 
             lpar_cnt = lpar_cnt + 1
          end do
       end do
       dsendbuf(1,pface)=lpar_cnt
-      isendcnt(pface) = lpar_cnt*lpacketsize+ibufoffset
+      isendcnt(pface) = lpar_cnt*iGhostPacketSize + ibufoffset
 
       end subroutine desmpi_pack_ghostpar
 
@@ -226,7 +225,7 @@
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
 ! User-defined variables for each particle.
-      use discretelement, only: DES_USR_VAR
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 ! Particle pair (neighborhood) arrays:
       use discretelement, only: PAIR_NUM, PAIRS
 ! Pair collision history information
@@ -235,14 +234,19 @@
       use discretelement, only: DIMN
 ! The ID of the current process
       use compar, only: myPE
-
-
+! Flag indicating the the fluid-particle drag is explictly coupled.
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+! Explicit particle drag force
+      use discretelement, only: DRAG_FC
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
       use discretelement, only: DG_PIC
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
+
+      use desmpi, only: iParticlePacketSize
+      use desmpi, only: iPairPacketSize
 
       use functions
 
@@ -259,7 +263,7 @@
       integer :: ltot_ind,lindx,cc,ii
       integer :: lneigh,lijk,&
                  lpicloc,lparcnt,lcurpar
-      integer :: lpacketsize,lbuf,num_pairs_to_send,lpairsize
+      integer :: lbuf,num_pairs_to_send
 
       logical, allocatable, dimension(:) :: going_to_send
 
@@ -268,7 +272,6 @@
 !......................................................................!
 
 ! pack the particle crossing the boundary
-      lpacketsize = 9*dimn + 3*4 + 15
       ltot_ind = irecvindices(1,pface)
       lparcnt = 0
 
@@ -283,62 +286,89 @@
             if (pea(lcurpar,4)) cycle ! if ghost particle then cycle
 
             going_to_send(lcurpar) = .true.
+            lbuf = lparcnt*iParticlePacketSize + ibufoffset
 
-            lbuf = lparcnt*lpacketsize + ibufoffset
+! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
+! 2) DES Grid IJK
             call pack_dbuf(lbuf,dg_ijkconv(lijk,pface,                 &
                ineighproc(pface)),pface)
+! 3) DES grid IJK - previous
             call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,  &
                ineighproc(pface)),pface)
-
+! 4) Radius
             call pack_dbuf(lbuf,des_radius(lcurpar),pface)
+! 5) Fluid cell I index with cycle offset
             li = pijk(lcurpar,1) + icycoffset(pface,1)
-            lj = pijk(lcurpar,2) + icycoffset(pface,2)
-            lk = pijk(lcurpar,3) + icycoffset(pface,3)
             call pack_dbuf(lbuf,li,pface)
+! 6) Fluid cell J index with cycle offset
+            lj = pijk(lcurpar,2) + icycoffset(pface,2)
             call pack_dbuf(lbuf,lj,pface)
+! 7) Fluid cell K index with cycle offset
+            lk = pijk(lcurpar,3) + icycoffset(pface,3)
             call pack_dbuf(lbuf,lk,pface)
+! 8) Fluid cell IJK on destination process
             call pack_dbuf(lbuf,funijk_proc(li,lj,lk,                  &
                ineighproc(pface)),pface)
+! 9) Particle solids phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
-!            dsendbuf(lbuf:lbuf+1,pface) = pea(lcurpar,2:3);lbuf=lbuf+2
-            dsendbuf(lbuf:lbuf+1,pface) = 0
-            if (pea(lcurpar,2)) dsendbuf(lbuf,pface) = 1 ; lbuf = lbuf+1
-            if (pea(lcurpar,3)) dsendbuf(lbuf,pface) = 1 ; lbuf = lbuf+1
+! 10) Entering particle flag.
+            call pack_dbuf(lbuf, pea(lcurpar,2), pface)
+! 11) Exiting particle flag.
+            call pack_dbuf(lbuf, pea(lcurpar,3), pface)
+! 12) Density
             call pack_dbuf(lbuf,ro_sol(lcurpar),pface)
+! 13) Volume
             call pack_dbuf(lbuf,pvol(lcurpar),pface)
+! 14) Mass
             call pack_dbuf(lbuf,pmass(lcurpar),pface)
+! 15) 1/Moment of Inertia
             call pack_dbuf(lbuf,omoi(lcurpar),pface)
-            call pack_dbuf(lbuf,des_pos_new(:,lcurpar) +          &
+! 16) Position with cyclic shift
+            call pack_dbuf(lbuf,des_pos_new(:,lcurpar) +               &
                dcycl_offset(pface,:),pface)
+! 17) Translational velocity
             call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
-
-            if(ENERGY_EQ) then
-               call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
+! 18) Rotational velocity
+            call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
+! 19) Accumulated translational forces
+            call pack_dbuf(lbuf,fc(:,lcurpar),pface)
+! 20) Accumulated torque forces
+            call pack_dbuf(lbuf,tow(:,lcurpar),pface)
+! 21) Temperature
+            IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
-            endif
-
-            if(ANY_SPECIES_EQ)then
+! 22) Species composition
+            IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
-            endif
-
-            call pack_dbuf(lbuf, des_usr_var(1:3,lcurpar),pface)
-
-            call pack_dbuf(lbuf,omega_new(1:3,lcurpar),pface)
+! 23) Explict drag force
+            IF(DES_EXPLICITLY_COUPLED) &
+               call pack_dbuf(lbuf, drag_fc(:,lcurpar),pface)
+! 24) User defined variable
+            IF(DES_USR_VAR_SIZE > 0) &
+               call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
+! -- Higher order integration variables
             IF (DO_OLD) THEN
+! 25) Position (previous)
                call pack_dbuf(lbuf,des_pos_old(:,lcurpar) +            &
                   dcycl_offset(pface,:),pface)
+! 26) Translational velocity (previous)
                call pack_dbuf(lbuf,des_vel_old(:,lcurpar),pface)
+! 27) Rotational velocity (previous)
                call pack_dbuf(lbuf,omega_old(:,lcurpar),pface)
+! 28) Translational acceleration (previous)
                call pack_dbuf(lbuf,des_acc_old(:,lcurpar),pface)
+! 29) Rotational acceleration (previous)
                call pack_dbuf(lbuf,rot_acc_old(:,lcurpar),pface)
+! 30) Temperature (previous)
+               IF(ENERGY_EQ) &
+                  call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
             ENDIF
-            call pack_dbuf(lbuf,fc(:,lcurpar),pface)
-            call pack_dbuf(lbuf,tow(:,lcurpar),pface)
 
 ! PIC particles are removed and the number of particles on the processor
 ! is decremented.
             IF (MPPIC) THEN
+! 31) Statistical weight
                call pack_dbuf(lbuf,des_stat_wt(lcurpar),pface)
                pea(lcurpar,1:4) = .false.
                pip = pip - 1
@@ -352,16 +382,14 @@
 
 ! Clear out the force array.
             fc(:,lcurpar) = 0.
-
             lparcnt = lparcnt + 1
          end do
       end do
 
-
 ! Calculate the location in buffer where the number of pair data is
 ! stored and skip specifying the entry. After all the pair data is
 ! packed, then this value is set.
-      lbuf = lparcnt*lpacketsize + ibufoffset
+      lbuf = lparcnt*iParticlePacketSize + ibufoffset
       num_pairs_send_buf_loc = lbuf
       lbuf = lbuf+1
 
@@ -376,25 +404,22 @@
          lneigh = PAIRS(2,CC)
          if(.not.PEA(lneigh,1)) cycle
          if(PEA(lneigh,3)) cycle
-! Global ID of particle bing packed.
+! 33) Global ID of particle bing packed.
          call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
-! DES grid IJK of cell receiving the particle.
+! 34) DES grid IJK of cell receiving the particle.
          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
             ineighproc(pface)),pface)
-! Global ID of particle pair. This particle may or may not live on the
-! the current or destination processor.
+! 35) Global ID of neighbor particle.
          call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
-! DES grid IJK of cell containing the particle-pair.
+! 36) DES grid IJK of cell containing the neighbor particle.
          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
             ineighproc(pface)),pface)
-! Convernt the logical flag to an integer.
-         call pack_dbuf(lbuf,merge(1,0,pv_PAIR(CC)),pface)
-! Pack the normal and tangential collision histories.
-
-         do ii=1,DIMN
-            call pack_dbuf(lbuf,PFN_PAIR(II,CC),pface)
-            call pack_dbuf(lbuf,PFT_PAIR(II,CC),pface)
-         enddo
+! 37) Flag indicating induring contact for the pair.
+         call pack_dbuf(lbuf,pv_PAIR(CC),pface)
+! 38) Normal collision history.
+         call pack_dbuf(lbuf,PFN_PAIR(:,CC),pface)
+! 39) Tangential collision history.
+         call pack_dbuf(lbuf,PFT_PAIR(:,CC),pface)
 ! Increment the number of pairs being sent.
          num_pairs_to_send = num_pairs_to_send + 1
       enddo
@@ -403,17 +428,17 @@
 ! stored before the pairing data so the receiving process knows the
 ! amount of data to 'unpack.'
       lbuf = num_pairs_send_buf_loc
+! 32) Number of pair datasets.
       call pack_dbuf(lbuf,num_pairs_to_send,pface)
 
-      lpairsize = 6 + 2*DIMN
 
       dsendbuf(1,pface) = lparcnt
-      isendcnt(pface) = lparcnt*lpacketsize +                          &
-         num_pairs_to_send*lpairsize+ibufoffset + 3
+      isendcnt(pface) = lparcnt*iParticlePacketSize +                  &
+         num_pairs_to_send*iPairPacketSize + ibufoffset + 3
 
       deallocate(going_to_send)
 
-
+      RETURN
       END SUBROUTINE DESMPI_PACK_PARCROSS
 
 !----------------------------------------------------------------------!
@@ -484,5 +509,22 @@
 
       return
       end subroutine pack_i1
+
+!----------------------------------------------------------------------!
+! Pack subroutine for logical scalars                                  !
+!----------------------------------------------------------------------!
+      subroutine pack_l0(lbuf,ldata,pface)
+      use desmpi, only: dSENDBUF
+
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      logical, intent(in) :: ldata
+
+      dsendbuf(lbuf,pface) = merge(1.0, 0.0, ldata)
+      lbuf = lbuf + 1
+
+      return
+      end subroutine pack_l0
+
 
       end module mpi_pack_des
