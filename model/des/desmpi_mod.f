@@ -39,13 +39,9 @@
 ! following variables are used to identify the cell number for ghost cells
       integer,dimension(:,:),allocatable :: isendindices,irecvindices
 
-! variable to clean the ghost cells
-      logical,dimension(:),allocatable :: ighost_updated
-
 ! variables used to read initial particle properties
       double precision, dimension(:,:),allocatable:: dpar_pos,dpar_vel
       double precision, dimension(:),allocatable::dpar_den,dpar_rad
-
 
       integer,dimension(:),allocatable  :: itempglobal_id
 

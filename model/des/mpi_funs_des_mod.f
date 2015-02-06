@@ -45,7 +45,7 @@
       use mfix_pic, only: MPPIC
       use desmpi, only: iEXCHFLAG
       use desmpi, only: dSENDBUF, dRECVBUF
-      use desmpi, only: iGHOST_UPDATED
+      use discretelement, only: iGHOST_UPDATED
       use desmpi, only: iSPOT
 
       use geometry, only: NO_K
@@ -233,7 +233,7 @@
 
       use des_rxns, only: DES_X_s
 
-      use desmpi, only: iGHOST_UPDATED
+      use discretelement, only: iGHOST_UPDATED
       use desmpi, only: iRECVINDICES
       use desmpi, only: iEXCHFLAG
 

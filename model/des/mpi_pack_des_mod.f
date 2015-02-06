@@ -31,7 +31,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Flag indicating that the ghost particle was updated
-      use desmpi, only: iGHOST_UPDATED
+      use discretelement, only: iGHOST_UPDATED
 ! The MPI send buffer
       use desmpi, only: dSENDBUF
 ! Buffer offset
@@ -174,7 +174,7 @@
 ! Index of last particle added to this process.
       use desmpi, only: iSPOT
 ! Flag indicating that the ghost particle was updated
-      use desmpi, only: iGHOST_UPDATED
+      use discretelement, only: iGHOST_UPDATED
 ! The MPI send buffer
       use desmpi, only: dSENDBUF
 ! Buffer offset

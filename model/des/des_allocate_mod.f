@@ -35,7 +35,6 @@ CONTAINS
       Use des_bc
       Use pic_bc
       use funits
-      use desmpi
       USE mfix_pic
       Use des_thermo
       Use des_rxns
@@ -529,7 +528,6 @@ CONTAINS
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE PARTICLE_GROW(new_max_pip)
 
-!      use desmpi_wrapper, only: des_mpi_stop
 !      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
 !      use param1
 
@@ -537,8 +535,7 @@ CONTAINS
         USE des_thermo
         USE discretelement
         USE mfix_pic
-        USE discretelement, only: dg_pijk, dg_pijkprv
-        USE desmpi, only: ighost_updated
+        USE discretelement, only: dg_pijk, dg_pijkprv, ighost_updated
         USE particle_filter
         USE run
 
