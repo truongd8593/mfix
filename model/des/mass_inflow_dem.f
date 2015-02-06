@@ -9,9 +9,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MASS_INFLOW_DEM
 
-      use discretelement
       use bc
+      use des_allocate
       use des_bc
+      use discretelement
 
       implicit none
 
@@ -28,7 +29,6 @@
 
       DO BCV_I = 1, DEM_BCMI
          BCV = DEM_BCMI_MAP(BCV_I)
-
 
          DO LC=DEM_BCMI_IJKSTART(BCV_I), DEM_BCMI_IJKEND(BCV_I)
            IJK = DEM_BCMI_IJK(LC)
@@ -69,13 +69,7 @@
 ! Increment the number of particle on the processor by one. If the max
 ! number of particles is exceeded, set the error flag and cycle.
             PIP = PIP + 1
-            IF(PIP  >= MAX_PIP) THEN
-               MAX_PIP = MAX_PIP*2
-               CALL PARTICLE_GROW
-               pea(PIP+1:MAX_PIP,1) = .false.
-               wall_collision_facet_id(:,PIP+1:MAX_PIP) = -1
-               wall_collision_pft(:,:,PIP+1:MAX_PIP) = ZERO
-            ENDIF
+            CALL PARTICLE_GROW(PIP)
 
 ! Find the first free space in the particle existance array.
             NP_LP: DO NP = LS, MAX_PIP

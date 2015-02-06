@@ -47,7 +47,7 @@
 ! Dimenions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use desgrid, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
 ! The global ID for each particle
       use discretelement, only: iGLOBAL_ID
 ! Particle positions: current/previous
@@ -83,7 +83,7 @@
 ! Offset for particles with cycle BCs (otherwise zero)
       use desmpi, only: dcycl_offset
 ! Map of particles to DES grid
-      use desgrid, only: DG_PIC
+      use discretelement, only: DG_PIC
 ! Cell number of ghost particles
       use desmpi, only: iSENDINDICES
 
@@ -188,7 +188,7 @@
 ! Dimenions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use desgrid, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
 ! The neighbor processor's rank
       use desmpi, only: iNEIGHPROC
 ! The statistical weight of each particle.
@@ -240,7 +240,7 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use desgrid, only: DG_PIC
+      use discretelement, only: DG_PIC
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 

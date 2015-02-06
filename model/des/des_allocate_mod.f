@@ -1,7 +1,22 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
+!  Module name: DES_ALLOCATE                                           C
+!                                                                      C
+!  Purpose: subroutines to allocate all DEM arrays                     C
+!                                                                      C
+!  Author: Rahul Garg                               Date: 1-Dec-2013   C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+MODULE DES_ALLOCATE
+
+  PUBLIC:: DES_ALLOCATE_ARRAYS, ADD_PAIR, PARTICLE_GROW, PAIR_GROW, ALLOCATE_DEM_MI
+
+CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
 !  Subroutine: DES_ALLOCATE_ARRAYS                                     C
-!  Purpose: Original allocte arrays subroutines for DES                C
+!  Purpose: Original allocate arrays subroutines for DES               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DES_ALLOCATE_ARRAYS
@@ -20,7 +35,6 @@
       Use des_bc
       Use pic_bc
       use funits
-      use desgrid
       use desmpi
       USE mfix_pic
       Use des_thermo
@@ -47,77 +61,69 @@
 !-----------------------------------------------
 ! indices
       INTEGER :: IJK
-! the number of particles in the system
-      INTEGER :: NPARTICLES
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
 
-      NWALLS = merge(4,6,NO_K)
-
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
 ! with some factor.
-      NPARTICLES = (PARTICLES/numPEs)*PARTICLES_FACTOR+NWALLS
-      NPARTICLES = MAX(NPARTICLES,4)
+      MAX_PIP = (PARTICLES/numPEs)*PARTICLES_FACTOR
+      MAX_PIP = MAX(MAX_PIP,4)
 
-      MAX_PIP = NPARTICLES
-
-      WRITE(ERR_MSG,1000) trim(iVal(NPARTICLES)), trim(iVal(MAX_PIP))
+      WRITE(ERR_MSG,1000) trim(iVal(MAX_PIP))
       CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
 
- 1000 FORMAT('DES Particle array size: ',A,/&
-        'DES maximum particles per process: ',A)
+ 1000 FORMAT('DES Particle array size: ',A)
 
 ! DES Allocatable arrays
 !-----------------------------------------------
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
-      ALLOCATE( PEA (NPARTICLES, 4) )
-
-      ALLOCATE (iglobal_id(nparticles))
+      ALLOCATE( PEA (MAX_PIP, 4) )
+      ALLOCATE (iglobal_id(max_pip))
 
 ! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
       IF(PIC_BCMI /= 0 .OR. PIC_BCMO /=0) CALL ALLOCATE_PIC_MIO
 
 ! Particle attributes
 ! Radius, density, mass, moment of inertia
-      Allocate(  DES_RADIUS (NPARTICLES) )
-      Allocate(  RO_Sol (NPARTICLES) )
-      Allocate(  PVOL (NPARTICLES) )
-      Allocate(  PMASS (NPARTICLES) )
-      Allocate(  OMOI (NPARTICLES) )
+      Allocate(  DES_RADIUS (MAX_PIP) )
+      Allocate(  RO_Sol (MAX_PIP) )
+      Allocate(  PVOL (MAX_PIP) )
+      Allocate(  PMASS (MAX_PIP) )
+      Allocate(  OMOI (MAX_PIP) )
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_NEW (DIMN,NPARTICLES) )
-      Allocate(  DES_VEL_NEW (DIMN,NPARTICLES) )
-      Allocate(  OMEGA_NEW (DIMN,NPARTICLES) )
+      Allocate(  DES_POS_NEW (DIMN,MAX_PIP) )
+      Allocate(  DES_VEL_NEW (DIMN,MAX_PIP) )
+      Allocate(  OMEGA_NEW (DIMN,MAX_PIP) )
 
       IF (DO_OLD) THEN
-         Allocate(  DES_POS_OLD (DIMN,NPARTICLES) )
-         Allocate(  DES_VEL_OLD (DIMN,NPARTICLES) )
-         Allocate(  DES_ACC_OLD (DIMN,NPARTICLES) )
-         Allocate(  OMEGA_OLD (DIMN,NPARTICLES) )
-         Allocate(  ROT_ACC_OLD (DIMN,NPARTICLES))
+         Allocate(  DES_POS_OLD (DIMN,MAX_PIP) )
+         Allocate(  DES_VEL_OLD (DIMN,MAX_PIP) )
+         Allocate(  DES_ACC_OLD (DIMN,MAX_PIP) )
+         Allocate(  OMEGA_OLD (DIMN,MAX_PIP) )
+         Allocate(  ROT_ACC_OLD (DIMN,MAX_PIP))
       ENDIF
 
 ! Allocating user defined array
-      Allocate(  DES_USR_VAR(3,NPARTICLES) )
+      Allocate(  DES_USR_VAR(3,MAX_PIP) )
 
 ! Particle positions at the last call neighbor search algorithm call
-      Allocate(  PPOS (DIMN,NPARTICLES) )
+      Allocate(  PPOS (DIMN,MAX_PIP) )
 
 ! Total, normal and tangetial forces
-      Allocate(  FC (DIMN,NPARTICLES) )
+      Allocate(  FC (DIMN,MAX_PIP) )
 
 ! Torque
-      Allocate(  TOW (DIMN,NPARTICLES) )
+      Allocate(  TOW (DIMN,MAX_PIP) )
 
-      Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, NPARTICLES) )
+      Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, MAX_PIP) )
       wall_collision_facet_id(:,:) = -1
-      Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, NPARTICLES) )
-      Allocate(  PARTICLE_WALL_COLLISIONS (NPARTICLES) )
+      Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, MAX_PIP) )
+      Allocate(  PARTICLE_WALL_COLLISIONS (MAX_PIP) )
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
@@ -147,15 +153,15 @@
 
 ! For each particle track its i,j,k location on computational fluid grid
 ! defined by imax, jmax and kmax in mfix.dat and phase no.
-      Allocate(  PIJK (NPARTICLES,5) )
+      Allocate(  PIJK (MAX_PIP,5) )
 
       ALLOCATE(DRAG_AM(DIMENSION_3))
       ALLOCATE(DRAG_BM(DIMENSION_3, DIMN))
-      ALLOCATE(F_gp(NPARTICLES ))
-      F_gp(1:NPARTICLES)  = ZERO
+      ALLOCATE(F_gp(MAX_PIP ))
+      F_gp(1:MAX_PIP)  = ZERO
 
 ! Explict drag force acting on a particle.
-      Allocate(DRAG_FC (DIMN,NPARTICLES) )
+      Allocate(DRAG_FC (DIMN,MAX_PIP) )
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
@@ -174,11 +180,11 @@
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
          IF(DO_K) THEN
-            ALLOCATE(FILTER_CELL(27, NPARTICLES))
-            ALLOCATE(FILTER_WEIGHT(27, NPARTICLES))
+            ALLOCATE(FILTER_CELL(27, MAX_PIP))
+            ALLOCATE(FILTER_WEIGHT(27, MAX_PIP))
          ELSE
-            ALLOCATE(FILTER_CELL(9, NPARTICLES))
-            ALLOCATE(FILTER_WEIGHT(9, NPARTICLES))
+            ALLOCATE(FILTER_CELL(9, MAX_PIP))
+            ALLOCATE(FILTER_WEIGHT(9, MAX_PIP))
          ENDIF
       CASE(DES_INTERP_GARG)
          ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
@@ -201,18 +207,18 @@
 ! MP-PIC related
       IF(MPPIC) THEN
          Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
-         ALLOCATE(DES_STAT_WT(NPARTICLES))
+         ALLOCATE(DES_STAT_WT(MAX_PIP))
          ALLOCATE(DES_VEL_MAX(DIMN))
-         ALLOCATE(PS_GRAD(NPARTICLES, DIMN))
-         ALLOCATE(AVGSOLVEL_P(DIMN, NPARTICLES))
-         ALLOCATE(EPG_P(NPARTICLES))
+         ALLOCATE(PS_GRAD(MAX_PIP, DIMN))
+         ALLOCATE(AVGSOLVEL_P(DIMN, MAX_PIP))
+         ALLOCATE(EPG_P(MAX_PIP))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
          Allocate(PIC_V_S(DIMENSION_3, DES_MMAX))
          Allocate(PIC_W_S(DIMENSION_3, DES_MMAX))
 
          Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
-!         ALLOCATE(MPPIC_VPTAU(NPARTICLES, DIMN))
+!         ALLOCATE(MPPIC_VPTAU(MAX_PIP, DIMN))
          PIC_U_s = zero
          PIC_V_s = zero
          PIC_W_s = zero
@@ -238,7 +244,7 @@
       IF(USE_COHESION) THEN
 ! Matrix location of particle  (should be allocated in case user wishes
 ! to invoke routines in /cohesion subdirectory
-         Allocate(  PostCohesive (NPARTICLES) )
+         Allocate(  PostCohesive (MAX_PIP) )
       ENDIF
 ! END COHESION
 ! ----------------------------------------------------------------<<<
@@ -247,15 +253,15 @@
 ! BEGIN Thermodynamic Allocation
       IF(ENERGY_EQ)THEN
 ! Particle temperature
-         Allocate( DES_T_s_OLD( NPARTICLES ) )
-         Allocate( DES_T_s_NEW( NPARTICLES ) )
+         Allocate( DES_T_s_OLD( MAX_PIP ) )
+         Allocate( DES_T_s_NEW( MAX_PIP ) )
 ! Specific heat
-         Allocate( DES_C_PS( NPARTICLES ) )
+         Allocate( DES_C_PS( MAX_PIP ) )
 ! Species mass fractions comprising a particle. This array may not be
 ! needed for all thermo problems.
-         Allocate( DES_X_s( NPARTICLES, DIMENSION_N_S))
+         Allocate( DES_X_s( MAX_PIP, DIMENSION_N_S))
 ! Total rate of heat transfer to individual particles.
-         Allocate( Q_Source( NPARTICLES ) )
+         Allocate( Q_Source( MAX_PIP ) )
 ! Average solids temperature in fluid cell
          Allocate(avgDES_T_s(DIMENSION_3) )
 
@@ -263,7 +269,7 @@
 
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) &
-            Allocate( Q_Source0( NPARTICLES ) )
+            Allocate( Q_Source0( MAX_PIP ) )
       ENDIF
 ! End Thermodynamic Allocation
 ! ----------------------------------------------------------------<<<
@@ -273,9 +279,9 @@
 ! BEGIN Species Allocation
       IF(ANY_SPECIES_EQ)THEN
 ! Rate of solids phase production for each species
-         Allocate( DES_R_sp( NPARTICLES, DIMENSION_N_s) )
+         Allocate( DES_R_sp( MAX_PIP, DIMENSION_N_s) )
 ! Rate of solids phase consumption for each species
-         Allocate( DES_R_sc( NPARTICLES, DIMENSION_N_s) )
+         Allocate( DES_R_sc( MAX_PIP, DIMENSION_N_s) )
 
 
          Allocate( DES_R_gp( DIMENSION_3, DIMENSION_N_g ) )
@@ -288,13 +294,13 @@
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) THEN
 ! Rate of change of particle mass
-            Allocate( dMdt_OLD( NPARTICLES ) )
+            Allocate( dMdt_OLD( MAX_PIP ) )
 ! Rate of change of particle mass percent species
-            Allocate( dXdt_OLD( NPARTICLES, DIMENSION_N_s) )
+            Allocate( dXdt_OLD( MAX_PIP, DIMENSION_N_s) )
          ENDIF
 
 ! Energy generation from reaction (cal/sec)
-         Allocate( Qint( NPARTICLES ) )
+         Allocate( Qint( MAX_PIP ) )
       ENDIF
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<
@@ -303,7 +309,6 @@
 
       RETURN
       END SUBROUTINE DES_ALLOCATE_ARRAYS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -339,7 +344,6 @@
 ! Data structure for storing BC data.
       Allocate( DEM_MI(DEM_BCMI) )
 
-
 ! Initializiation
 ! Integer arrays
       PI_FACTOR(:) = -1
@@ -354,7 +358,6 @@
       DEM_BCMI_IJKSTART = -1
       DEM_BCMI_IJKEND   = -1
 
-
 ! Boundary classification
 !         Allocate( PARTICLE_PLCMNT (DES_BCMI) )
 ! Character precision arrays
@@ -362,7 +365,6 @@
 
       RETURN
       END SUBROUTINE ALLOCATE_DEM_MI
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -388,7 +390,6 @@
 
 ! Allocate/Initialize for inlets
       IF(PIC_BCMI /= 0)THEN
-
 
          allocate( PIC_BCMI_IJKSTART(PIC_BCMI) )
          allocate( PIC_BCMI_IJKEND  (PIC_BCMI) )
@@ -526,81 +527,95 @@
 ! max should be increased before calling this routine. Also, no        !
 ! assumption to the previous array size is made as needed for restarts.!
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE PARTICLE_GROW
+      SUBROUTINE PARTICLE_GROW(new_max_pip)
+
+!      use desmpi_wrapper, only: des_mpi_stop
+!      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
+!      use param1
 
         USE des_rxns
         USE des_thermo
-        USE desgrid, only: dg_pijk, dg_pijkprv
         USE discretelement
         USE mfix_pic
+        USE discretelement, only: dg_pijk, dg_pijkprv
         USE desmpi, only: ighost_updated
         USE particle_filter
         USE run
 
         IMPLICIT NONE
 
-        call real_grow(des_radius,MAX_PIP)
-        call real_grow(RO_Sol,MAX_PIP)
-        call real_grow(PVOL,MAX_PIP)
-        call real_grow(PMASS,MAX_PIP)
-        call real_grow(OMOI,MAX_PIP)
-        call real_grow2(DES_POS_NEW,MAX_PIP)
-        call real_grow2(DES_VEL_NEW,MAX_PIP)
-        call real_grow2(OMEGA_NEW,MAX_PIP)
-        call real_grow2(PPOS,MAX_PIP)
-        call logical_grow2_reverse(PEA,MAX_PIP)
-        call integer_grow(iglobal_id,MAX_PIP)
-        call integer_grow2_reverse(pijk,MAX_PIP)
-        call integer_grow(dg_pijk,MAX_PIP)
-        call integer_grow(dg_pijkprv,MAX_PIP)
-        call logical_grow(ighost_updated,MAX_PIP)
-        call real_grow2(FC,MAX_PIP)
-        call real_grow2(TOW,MAX_PIP)
-        call real_grow2(DES_USR_VAR,MAX_PIP)
-        call real_grow(F_GP,MAX_PIP)
-        call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
-        call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
-        call real_grow2(DRAG_FC,MAX_PIP)
+        integer, intent(in) :: new_max_pip
 
-        SELECT CASE(DES_INTERP_SCHEME_ENUM)
-        CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
-           call integer_grow2(FILTER_CELL,MAX_PIP)
-           call real_grow2(FILTER_WEIGHT,MAX_PIP)
-        END SELECT
+        DO WHILE (MAX_PIP < new_max_pip)
+           MAX_PIP = MAX_PIP*2
 
-        IF(MPPIC) THEN
-           call real_grow(DES_STAT_WT,MAX_PIP)
-           call real_grow2(PS_GRAD,MAX_PIP)
-           call real_grow2(AVGSOLVEL_P,MAX_PIP)
-           call real_grow(EPG_P,MAX_PIP)
-        ENDIF
+           call real_grow(des_radius,MAX_PIP)
+           call real_grow(RO_Sol,MAX_PIP)
+           call real_grow(PVOL,MAX_PIP)
+           call real_grow(PMASS,MAX_PIP)
+           call real_grow(OMOI,MAX_PIP)
+           call real_grow2(DES_POS_NEW,MAX_PIP)
+           call real_grow2(DES_VEL_NEW,MAX_PIP)
+           call real_grow2(OMEGA_NEW,MAX_PIP)
+           call real_grow2(PPOS,MAX_PIP)
+           call logical_grow2_reverse(PEA,MAX_PIP)
+           pea(MAX_PIP/2+1:MAX_PIP,1) = .false.
+           call integer_grow(iglobal_id,MAX_PIP)
+           call integer_grow2_reverse(pijk,MAX_PIP)
+           call integer_grow(dg_pijk,MAX_PIP)
+           call integer_grow(dg_pijkprv,MAX_PIP)
+           call logical_grow(ighost_updated,MAX_PIP)
+           call real_grow2(FC,MAX_PIP)
+           call real_grow2(TOW,MAX_PIP)
+           call real_grow2(DES_USR_VAR,MAX_PIP)
+           call real_grow(F_GP,MAX_PIP)
+           call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
+           wall_collision_facet_id(:,MAX_PIP/2+1:MAX_PIP) = -1
+           call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
+           wall_collision_pft(:,:,MAX_PIP/2+1:MAX_PIP) = ZERO
+           call real_grow2(DRAG_FC,MAX_PIP)
 
-      IF(USE_COHESION) THEN
-         call real_grow(PostCohesive,MAX_PIP)
-      ENDIF
+           SELECT CASE(DES_INTERP_SCHEME_ENUM)
+           CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+              call integer_grow2(FILTER_CELL,MAX_PIP)
+              call real_grow2(FILTER_WEIGHT,MAX_PIP)
+           END SELECT
 
-      IF(ENERGY_EQ)THEN
-         call real_grow(DES_T_s_OLD,MAX_PIP)
-         call real_grow(DES_T_s_NEW,MAX_PIP)
-         call real_grow(DES_C_PS,MAX_PIP)
-         call real_grow2_reverse(DES_X_s,MAX_PIP)
-         call real_grow(Q_Source,MAX_PIP)
+           IF(MPPIC) THEN
+              call real_grow(DES_STAT_WT,MAX_PIP)
+              call real_grow2(PS_GRAD,MAX_PIP)
+              call real_grow2(AVGSOLVEL_P,MAX_PIP)
+              call real_grow(EPG_P,MAX_PIP)
+           ENDIF
 
-         IF (INTG_ADAMS_BASHFORTH) &
-              call real_grow(Q_Source0,MAX_PIP)
-      ENDIF
+           IF(USE_COHESION) THEN
+              call real_grow(PostCohesive,MAX_PIP)
+           ENDIF
 
-      IF(ANY_SPECIES_EQ)THEN
-         call real_grow2_reverse( DES_R_sp, MAX_PIP )
-         call real_grow2_reverse( DES_R_sc, MAX_PIP )
+           IF(ENERGY_EQ)THEN
+              call real_grow(DES_T_s_OLD,MAX_PIP)
+              call real_grow(DES_T_s_NEW,MAX_PIP)
+              call real_grow(DES_C_PS,MAX_PIP)
+              call real_grow2_reverse(DES_X_s,MAX_PIP)
+              call real_grow(Q_Source,MAX_PIP)
 
-         IF (INTG_ADAMS_BASHFORTH) THEN
-            call real_grow( dMdt_OLD, MAX_PIP )
-            call real_grow2_reverse( dXdt_OLD, MAX_PIP )
-         ENDIF
+              IF (INTG_ADAMS_BASHFORTH) &
+                   call real_grow(Q_Source0,MAX_PIP)
+           ENDIF
 
-         call real_grow( Qint, MAX_PIP )
-      ENDIF
+           IF(ANY_SPECIES_EQ)THEN
+              call real_grow2_reverse( DES_R_sp, MAX_PIP )
+              call real_grow2_reverse( DES_R_sc, MAX_PIP )
+
+              IF (INTG_ADAMS_BASHFORTH) THEN
+                 call real_grow( dMdt_OLD, MAX_PIP )
+                 call real_grow2_reverse( dXdt_OLD, MAX_PIP )
+              ENDIF
+
+              call real_grow( Qint, MAX_PIP )
+           ENDIF
+
+        ENDDO
 
       RETURN
 
@@ -749,3 +764,5 @@
         END SUBROUTINE LOGICAL_GROW2_REVERSE
 
       END SUBROUTINE PARTICLE_GROW
+
+    END MODULE DES_ALLOCATE

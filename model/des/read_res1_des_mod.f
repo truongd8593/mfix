@@ -1,15 +1,13 @@
       MODULE READ_RES1_DES
 
-      use desmpi
-      use compar, only: myPE
-      use compar, only: PE_IO
-
       use cdist, only: bDist_IO
-
+      use compar, only: PE_IO
+      use compar, only: myPE
+      use des_allocate
+      use desmpi
+      use error_manager
       use mpi_comm_des, only: DESMPI_GATHERV
       use mpi_comm_des, only: DESMPI_SCATTERV
-
-      use error_manager
 
       IMPLICIT NONE
 
@@ -24,7 +22,6 @@
       PUBLIC :: READ_RES_DES
       PUBLIC :: READ_RES_pARRAY
       PUBLIC :: READ_RES_cARRAY
-
 
       INTERFACE READ_RES_DES
          MODULE PROCEDURE READ_RES_DES_0I
@@ -431,7 +428,7 @@
 ! Each process stores the number of particles-on-its-process. The error
 ! flag is set if that number exceeds the maximum.
       PIP = lPAR_CNT(myPE)
-      IF(PIP > MAX_PIP) IER(myPE) = MAX_PIP+1
+      CALL PARTICLE_GROW(PIP)
 
 ! Global collection of error flags to abort it the max was exceeded.
       CALL GLOBAL_ALL_SUM(IER)

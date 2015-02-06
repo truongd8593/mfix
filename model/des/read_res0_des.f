@@ -6,22 +6,21 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE READ_RES0_DES
 
-      use param1
+      use cdist
       use compar
-      use discretelement
-      use run
+      use des_allocate
       use des_bc
       use des_rxns
       use des_thermo
       use desmpi
-      use machine
-      use cdist
-      use mpi_utility
-
-      use mfix_pic, only: MPPIC, DES_STAT_WT
-
-      use read_res1_des
+      use discretelement
       use error_manager
+      use machine
+      use mfix_pic, only: MPPIC, DES_STAT_WT
+      use mpi_utility
+      use param1
+      use read_res1_des
+      use run
 
       implicit none
 

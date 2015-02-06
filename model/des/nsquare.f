@@ -14,6 +14,7 @@
       USE discretelement
       USE des_bc
       Use des_thermo
+      use des_allocate
       Use geometry, only: DO_K, xlength, ylength, zlength
 
       IMPLICIT NONE

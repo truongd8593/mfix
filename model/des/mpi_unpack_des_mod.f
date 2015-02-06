@@ -51,7 +51,7 @@
 ! Dimenions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use desgrid, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
 ! The global ID for each particle
       use discretelement, only: iGLOBAL_ID
 ! Particle positions: current/previous
@@ -81,15 +81,15 @@
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR
 
+      use des_allocate
+
 ! Global Constants:
 !---------------------------------------------------------------------//
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
 
-
       IMPLICIT NONE
-
 
 ! Dummy arguments:
 !---------------------------------------------------------------------//
@@ -185,7 +185,7 @@
 
 ! iAdd new particles and clean up ghost particles if DO_NSEARCH is set.
       if (do_nsearch) then
-         if((max_pip-pip).lt.lnewcnt) call PARTICLE_GROW
+         call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
          do lcurpar = 1,lparcnt
@@ -281,7 +281,7 @@
 ! Dimenions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use desgrid, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
 ! The neighbor processor's rank
       use desmpi, only: iNEIGHPROC
 ! The statistical weight of each particle.
@@ -331,6 +331,7 @@
 
 ! Module Procedures:
 !---------------------------------------------------------------------//
+      use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
 
       implicit none
@@ -359,8 +360,7 @@
       lparcnt = drecvbuf(1,pface)
 
 ! if mppic make sure enough space available
-      if(mppic .and. (max_pip-pip).lt.lparcnt) &
-         call PARTICLE_GROW
+      call PARTICLE_GROW(pip+lparcnt)
 
       do lcurpar =1,lparcnt
          lfound = .false.
@@ -523,7 +523,7 @@
 
       use discretelement, only: iGLOBAL_ID
       use desgrid, only: DG_IJKStart2, DG_IJKEnd2
-      use desgrid, only: dg_pic
+      use discretelement, only: dg_pic
 
       implicit none
 
@@ -571,8 +571,7 @@
 !------------------------------------------------------------------------
       LOGICAL FUNCTION EXTEN_LOCATE_PAR(pGlobalID, pIJK, pLocalNO)
 
-      use discretelement, only: iGLOBAL_ID
-      use desgrid, only: dg_pic
+      use discretelement, only: iGLOBAL_ID, dg_pic
       use desgrid, only: DG_IJKStart2, DG_IJKEnd2
       use desgrid, only: dg_Iof_LO, DG_Jof_LO, DG_Kof_LO
       use geometry, only: NO_K

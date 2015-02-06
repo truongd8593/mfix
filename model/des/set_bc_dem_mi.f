@@ -11,11 +11,13 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
       USE compar
       USE constant
-      USE bc
+      USE des_allocate
       USE des_bc
       USE discretelement
+      USE error_manager
       USE funits
       USE geometry
       USE indices
@@ -24,12 +26,9 @@
       USE physprop
       USE run
 
-      use error_manager
-
       IMPLICIT NONE
 
       INTEGER :: BCV
-
 
 !-----------------------------------------------
 ! Local variables
@@ -51,10 +50,8 @@
       DOUBLE PRECISION :: EPs_ERR
       DOUBLE PRECISION :: VOL_FLOW
 
-
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
 
       LOGICAL :: FATAL
 
@@ -76,7 +73,6 @@
 !-----------------------------------------------
       LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
-
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MI")
 

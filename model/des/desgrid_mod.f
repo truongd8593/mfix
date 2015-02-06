@@ -66,14 +66,6 @@
 ! Variables related to cyclic boundary  used in desgrid_functions
       integer,dimension(:,:),allocatable :: dg_cycoffset, icycoffset
 
-! particle in cell related variable
-      type iap2
-         integer :: isize
-         integer, dimension(:), pointer:: p
-      end type iap2
-      type(iap2), dimension(:), allocatable:: dg_pic
-      integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
-
       integer :: dg_pic_max_init = 25
 
 ! constants required for functions computing local and global ijkvalues
@@ -450,6 +442,8 @@
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
 ! Maximum particle size.
       use discretelement, only: MAX_RADIUS
+
+      use discretelement, only: dg_pic
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -852,13 +846,14 @@
 ! Modules
 !-----------------------------------------------
       Use des_thermo
-      use param1
+      use compar
+      use constant
+      use des_allocate, only: add_pair
+      use desmpi_wrapper
+      use discretelement
       use funits
       use geometry
-      use compar
-      use discretelement
-      use constant
-      use desmpi_wrapper
+      use param1
 
       implicit none
 !-----------------------------------------------
@@ -968,6 +963,7 @@
                lneighcnt = lneighcnt + 1
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
 !$  if (.true.) then
+!!!!! SMP version
 
 !$      pair_num_smp = pair_num_smp + 1
 ! Reallocate to double the size of the arrays if needed.
@@ -986,6 +982,7 @@
 !$      pairs_smp(2,pair_num_smp) = lneigh
 
 !$  else
+!!!!! Serial version
                   call add_pair(lcurpar, lneigh)
 !$  endif
                endif

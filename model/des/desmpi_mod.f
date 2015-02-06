@@ -52,38 +52,6 @@
       contains
 
 !------------------------------------------------------------------------
-! Subroutine       : redim_par
-! Author           : Pradeep G
-! Purpose          : subroutine to redimension the particle when the
-!                    array size is not sufficient
-! Parameter        : pmaxpip - particle size required
-!
-!------------------------------------------------------------------------
-      subroutine redim_par(pmaxpip)
-
-      use desmpi_wrapper, only: des_mpi_stop
-      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
-      use param1
-
-      implicit none
-
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      integer, intent(in) :: pmaxpip
-!-----------------------------------------------
-
-      DO WHILE (MAX_PIP < pmaxpip)
-         MAX_PIP = MAX_PIP*2
-         CALL PARTICLE_GROW
-         pea(PIP+1:MAX_PIP,1) = .false.
-         wall_collision_facet_id(:,PIP+1:MAX_PIP) = -1
-         wall_collision_pft(:,:,PIP+1:MAX_PIP) = ZERO
-      ENDDO
-
-      end  subroutine redim_par
-
-!------------------------------------------------------------------------
 ! subroutine       : des_dbgmpi
 ! Purpose          : For printing the flags and values set for interface
 !                    communication

@@ -25,7 +25,7 @@
 ! Facet informatin binned to the DES grid
       use discretelement, only: cellneighbor_facet
 ! Map from particle to DES grid cell.
-      use desgrid, only: DG_PIJK
+      use discretelement, only: DG_PIJK
 ! Flag indicating that the index cell contains no STLs
       use stl, only: NO_NEIGHBORING_FACET_DES
 ! STL Vertices

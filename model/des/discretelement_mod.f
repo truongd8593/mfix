@@ -598,6 +598,15 @@
 
       LOGICAL :: DES_EXPLICITLY_COUPLED
 
+! particle in cell related variable
+      type iap2
+         integer :: isize
+         integer, dimension(:), pointer:: p
+      end type iap2
+
+      type(iap2), dimension(:), allocatable:: dg_pic
+      integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

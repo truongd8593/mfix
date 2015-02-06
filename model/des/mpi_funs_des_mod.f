@@ -160,13 +160,12 @@
 !----------------------------------------------------------------------!
       SUBROUTINE DESMPI_CHECK_SENDRECVBUF
 
-      use discretelement, only: DIMN
+      use discretelement, only: DIMN, dg_pic
       use desmpi, only: iMAXBUF
       use desmpi, only: iBUFOFFSET
       use desmpi, only: dSENDBUF, dRECVBUF
       use desmpi, only: iSENDINDICES
 
-      use desgrid, only: dg_pic
       use mpi_utility, only: global_all_max
 
       implicit none
@@ -227,18 +226,16 @@
       use discretelement, only: PIP
       use discretelement, only: iGHOST_CNT
       use discretelement, only: DES_USR_VAR
+      use discretelement, only: dg_pic
 
       use run, only: ENERGY_EQ,ANY_SPECIES_EQ
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
 
       use des_rxns, only: DES_X_s
 
-
       use desmpi, only: iGHOST_UPDATED
       use desmpi, only: iRECVINDICES
-
       use desmpi, only: iEXCHFLAG
-      use desgrid, only: dg_pic
 
       use param, only: DIMENSION_N_s
 
