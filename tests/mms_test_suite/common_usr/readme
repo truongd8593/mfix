@@ -1,0 +1,3 @@
+Contains common user files for all MMS cases. 
+Note that horizontal_channel_superbee is NOT an MMS case because it uses method
+of exact solutions.

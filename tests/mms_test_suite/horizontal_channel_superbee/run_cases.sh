@@ -2,12 +2,12 @@
 export CASE_DIR=`pwd`
 
 # load modules
-module load gnu/4.9.2 openmpi/1.5.5_gnu4.6
+module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
 
 # compile MFIX in ./src/
+echo "******** Compiling MFIX..."
 cd $CASE_DIR/src
 ../../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
-echo "******** MFIX compiled successfully."
 
 cd $CASE_DIR
 

@@ -79,12 +79,13 @@
       Use compar, only    : ijkstart3, ijkend3, myPE    
       Use functions, only : i_of, j_of, k_of
       Use functions, only : IS_ON_myPE_owns
-      Use usr, only       : de_p_g, de_u_g, de_v_g      
-      Use usr, only       : p_g_ex, u_g_ex, v_g_ex
-      Use usr, only       : lnorms_p_g, lnorms_u_g, lnorms_v_g  
-      Use fldvar, only    : p_g, u_g, v_g 
+      Use usr             ! all variables
+      Use mms             ! all variables
+      Use fldvar, only    : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
+                            t_g, t_s, ep_g, rop_s, theta_m
       Use geometry, only  : imax, imin1, imax1
       Use geometry, only  : jmax, jmin1, jmax1
+      Use geometry, only  : kmax, kmin1, kmax1     
       Use funits, only    : newunit
       Use compar, only    : myPE, PE_IO
       IMPLICIT NONE
@@ -117,21 +118,28 @@
 ! select only internal points, else remains zero
           if((i.lt.imin1).or.(i.gt.imax1)) cycle
           if((j.lt.jmin1).or.(j.gt.jmax1)) cycle
+          if((k.lt.kmin1).or.(k.gt.kmax1)) cycle
 
           de_ep_g(ijk)    = ep_g(ijk)     - mms_ep_g(ijk)
           de_p_g(ijk)     = p_g(ijk)      - mms_p_g(ijk)
           de_t_g(ijk)     = t_g(ijk)      - mms_t_g(ijk)
-          de_rop_s(ijk)   = rop_s(ijk)    - mms_rop_s(ijk)
-          de_t_s(ijk)     = t_s(ijk)      - mms_t_s(ijk)
-          de_theta_m(ijk) = theta_m(ijk)  - mms_theta_m(ijk)
+          de_rop_s(ijk)   = rop_s(ijk,1)  - mms_rop_s(ijk)
+          de_t_s(ijk)     = t_s(ijk,1)    - mms_t_s(ijk)
+          de_theta_m(ijk) = theta_m(ijk,1)- mms_theta_m(ijk)
 
         end do
 
-        var_size = imax*jmax
+        var_size = imax*jmax*kmax
+        call calculate_lnorms(var_size, de_ep_g, lnorms_ep_g)
         call calculate_lnorms(var_size, de_p_g, lnorms_p_g)
+        call calculate_lnorms(var_size, de_t_g, lnorms_t_g)
+        call calculate_lnorms(var_size, de_rop_s, lnorms_rop_s)
+        call calculate_lnorms(var_size, de_t_s, lnorms_t_s)
+        call calculate_lnorms(var_size, de_theta_m, lnorms_theta_m)
 
 ! vector variables (x)
         de_u_g = zero
+        de_u_s = zero
 
         do ijk = ijkstart3, ijkend3
           i = i_of(ijk)
@@ -143,16 +151,19 @@
 ! to select only internal points, else remains zero
           if((i.lt.imin1).or.(i.ge.imax1)) cycle  ! note: >=
           if((j.lt.jmin1).or.(j.gt.jmax1)) cycle
+          if((k.lt.kmin1).or.(k.gt.kmax1)) cycle
 
-          de_u_g(ijk) = u_g(ijk) - u_g_ex(ijk)
+          de_u_g(ijk) = u_g(ijk) - mms_u_g(ijk)
+          de_u_s(ijk) = u_s(ijk,1) - mms_u_s(ijk)
         end do
 
-        var_size = (imax-1)*jmax
+        var_size = (imax-1)*jmax*kmax
         call calculate_lnorms(var_size, de_u_g, lnorms_u_g)
-
+        call calculate_lnorms(var_size, de_u_s, lnorms_u_s)
 
 ! vector variables (y)
         de_v_g = zero
+        de_v_s = zero
 
         do ijk = ijkstart3, ijkend3
           i = i_of(ijk)
@@ -164,24 +175,67 @@
 ! to select only internal points, else remains zero
           if((i.lt.imin1).or.(i.gt.imax1)) cycle
           if((j.lt.jmin1).or.(j.ge.jmax1)) cycle  ! note: >=
+          if((k.lt.kmin1).or.(k.gt.kmax1)) cycle
 
-          de_v_g(ijk) = v_g(ijk) - v_g_ex(ijk)
+          de_v_g(ijk) = v_g(ijk) - mms_v_g(ijk)
+          de_v_s(ijk) = v_s(ijk,1) - mms_v_s(ijk)
         end do
 
-        var_size = imax*(jmax-1)
+        var_size = imax*(jmax-1)*kmax
         call calculate_lnorms(var_size, de_v_g, lnorms_v_g)
+        call calculate_lnorms(var_size, de_v_s, lnorms_v_s)
+
+! vector variables (z)
+        de_w_g = zero
+        de_w_s = zero
+
+        do ijk = ijkstart3, ijkend3
+          i = i_of(ijk)
+          j = j_of(ijk)
+          k = k_of(ijk)
+
+          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle        
+
+! to select only internal points, else remains zero
+          if((i.lt.imin1).or.(i.gt.imax1)) cycle
+          if((j.lt.jmin1).or.(j.gt.jmax1)) cycle
+          if((k.lt.kmin1).or.(k.ge.kmax1)) cycle  ! note: >=
+
+          de_w_g(ijk) = w_g(ijk) - mms_w_g(ijk)
+          de_w_s(ijk) = w_s(ijk,1) - mms_w_s(ijk)
+        end do
+
+        var_size = imax*jmax*(kmax-1)
+        call calculate_lnorms(var_size, de_w_g, lnorms_w_g)
+        call calculate_lnorms(var_size, de_w_s, lnorms_w_s)
 
 ! Output DE norms data to a file
         if(myPE == PE_IO) then
           open(unit=newunit(f1), file="de_norms.dat", status='unknown')
-          write(f1,*) "# DE Norms for Horizontal Channel Flow:"
-          write(f1,*) "# imax= ",imax, " jmax=", jmax
+          write(f1,*) "# DE Norms for MMS test cases:"
+          write(f1,*) "# imax= ",imax, " jmax=", jmax, " kmax=", kmax
           write(f1,*) "# 1st line: L1 Norms, 2nd line: L2 Norms, &
                        &3rd line: Linf Norms"
-          write(f1,*) "# Columns: P_g : U_g : V_g"
-          write(f1,*) lnorms_p_g(1), lnorms_u_g(1), lnorms_v_g(1)
-          write(f1,*) lnorms_p_g(2), lnorms_u_g(2), lnorms_v_g(2)
-          write(f1,*) lnorms_p_g(3), lnorms_u_g(3), lnorms_v_g(3)
+          write(f1,*) "variables='p_g''u_g''v_g''w_g''u_s''v_s''w_s'&
+                      &'t_g''t_s''ep_g''rop_s''theta_m'"
+          write(f1,*) lnorms_p_g(1), &
+            lnorms_u_g(1), lnorms_v_g(1), lnorms_w_g(1), &
+            lnorms_u_s(1), lnorms_v_s(1), lnorms_w_s(1), &
+            lnorms_t_g(1), lnorms_t_s(1), &
+            lnorms_ep_g(1), lnorms_rop_s(1), &
+            lnorms_theta_m(1)
+          write(f1,*) lnorms_p_g(2), &
+            lnorms_u_g(2), lnorms_v_g(2), lnorms_w_g(2), &
+            lnorms_u_s(2), lnorms_v_s(2), lnorms_w_s(2), &
+            lnorms_t_g(2), lnorms_t_s(2), &
+            lnorms_ep_g(2), lnorms_rop_s(2), &
+            lnorms_theta_m(2)
+          write(f1,*) lnorms_p_g(3), &
+            lnorms_u_g(3), lnorms_v_g(3), lnorms_w_g(3), &
+            lnorms_u_s(3), lnorms_v_s(3), lnorms_w_s(3), &
+            lnorms_t_g(3), lnorms_t_s(3), &
+            lnorms_ep_g(3), lnorms_rop_s(3), &
+            lnorms_theta_m(3)
           close(f1)
         end if
 
@@ -229,6 +283,11 @@
 ! looping indices        
         integer         :: ijk
 
+
+        if(var_size.eq.0) then
+          lnorms(:) = zero
+          return
+        end if        
 
 ! calculate L1, L2 and Linfinity norms        
         lnorms(1:3) = zero

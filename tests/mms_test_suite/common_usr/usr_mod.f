@@ -46,7 +46,7 @@
         double precision, allocatable         :: lnorms_v_s(:) 
         double precision, allocatable         :: lnorms_w_s(:) 
         double precision, allocatable         :: lnorms_t_s(:) 
-        double precision, allocatable         :: lnorms_theta_m(:) 
+        double precision, allocatable         :: lnorms_theta_m(:)
 
 
       END MODULE usr
