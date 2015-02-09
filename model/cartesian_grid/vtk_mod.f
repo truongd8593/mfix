@@ -36,6 +36,8 @@
 
       INTEGER :: POLY_COUNTER,NUMBER_OF_POINTS
 
+      integer, allocatable :: CLEANED_CONNECTIVITY(:,:)
+      REAL, allocatable :: COORDS_OF_POINTS(:,:)
 
       integer, allocatable :: GLOBAL_I_OF(:)
       integer, allocatable :: GLOBAL_J_OF(:)
