@@ -152,6 +152,7 @@
          Cp0, lDIM_N, lMW)
 
       use constant, only: GAS_CONST_cal
+      use read_thermochemical, only: calc_CpoR
 
       DOUBLE PRECISION, intent(out) :: CpxMFLOW
 
@@ -166,9 +167,6 @@
       DOUBLE PRECISION, intent(in) :: lMW(lDIM_N)
 
       INTEGER :: IER
-
-      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-
 
 ! If there is no mass flow for this phase, then there is no need to
 ! calculate a CPxMFLUX. Set it to zero and return.
@@ -193,9 +191,7 @@
       if(UNITS == 'SI') CpxMFLOW = 4.183925d3*CpxMFLOW
       CpxMFLOW = CpxMFLOW*PS_MFLOW
 
-
       END SUBROUTINE CALC_PS_CpxMFLOW
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

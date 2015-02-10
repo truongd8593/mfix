@@ -17,6 +17,10 @@
       Use physprop
       Use run
 
+! Calculate the specific heat from polynomical data obtained from the
+! thermodynamic databases.
+      use read_thermochemical, only: DES_calc_CpoR
+
 ! Universal gas constant in cal/mol.K
       use constant, only: RGAS => GAS_CONST_cal
 
@@ -38,12 +42,6 @@
       INTEGER IER
 
       DOUBLE PRECISION :: lCPoR
-
-! External fuctions
-!-----------------------------------------------------------------------
-! Calculate the specific heat from polynomical data obtained from the
-! thermodynamic databases.
-      DOUBLE PRECISION , EXTERNAL :: DES_calc_CpoR
 
 ! Get the solids phase of the particle
       M = PIJK(NP,5) + SMAX
