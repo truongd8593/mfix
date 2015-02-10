@@ -303,6 +303,8 @@
       use run, only: UNITS
       use functions
 
+      use read_thermochemical, only: calc_CpoR
+
       implicit none
 
 ! Local Variables:
@@ -315,9 +317,6 @@
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
       INTEGER :: N     ! Species index
-
-! Function to evaluate Cp polynomial.
-      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
 
 !-----------------------------------------------------------------------
 
@@ -371,6 +370,7 @@
       use fldvar, only: T_s
       use fldvar, only: X_s
       use functions
+      use read_thermochemical, only: calc_CpoR
 
       implicit none
 
@@ -383,9 +383,6 @@
 
 ! Local error flag indicating that the Cp is out of range.
       INTEGER :: lCP_Err
-
-! Function to evaluate Cp polynomial.
-      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_data_05 but this call remains to prevent an accident.
@@ -413,9 +410,6 @@
       IF(UNITS == 'SI') C_PS = 4.183925d3 * C_PS  !in J/kg K
 
       END SUBROUTINE PHYSICAL_PROP_CPs
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

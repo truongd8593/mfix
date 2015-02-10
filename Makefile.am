@@ -519,7 +519,7 @@ common_SOURCES = \
 	model/tau_w_s.f \
 	model/test_lin_eq.f \
 	model/thermochemical/get_values.f \
-	model/thermochemical/readTherm.f \
+	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
 	model/tmp_array1_mod.f \
 	model/tmp_array_mod.f \
