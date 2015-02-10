@@ -270,7 +270,7 @@
          'ochemical database will be',/'used in an attempt to gather ',&
          'missing molecular weight data.')
 
-      IF(MWg_ROg) THEN
+      IF(SEQ_MWg) THEN
          WRITE(ERR_MSG, 2002)
          CALL FLUSH_ERR_MSG
       ENDIF
