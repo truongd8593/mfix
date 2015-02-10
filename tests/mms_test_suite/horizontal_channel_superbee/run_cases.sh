@@ -49,7 +49,6 @@ cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{HCS.*,de_norms.dat,out.log}
 
 ## Evaluate observed orders
-cp $CASE_DIR/../ooa_test.f95 $CASE_DIR
 echo "******** Calculating observed orders..."
 gfortran -o ooa_test ooa_test.f95
 ./ooa_test
@@ -58,5 +57,7 @@ mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/de_l2.dat
 mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/de_linf.dat
 mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
 mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
+
+rm $CASE_DIR/src/mfix.exe
 
 echo "******** Done."

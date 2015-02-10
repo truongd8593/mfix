@@ -113,6 +113,19 @@
         allocate(de_t_s(dimension_3))
         allocate(de_theta_m(dimension_3))
 
+        allocate(lnorms_ep_g(3))
+        allocate(lnorms_p_g(3))
+        allocate(lnorms_u_g(3))
+        allocate(lnorms_v_g(3))
+        allocate(lnorms_w_g(3))
+        allocate(lnorms_t_g(3))
+        allocate(lnorms_rop_s(3))
+        allocate(lnorms_u_s(3))
+        allocate(lnorms_v_s(3))
+        allocate(lnorms_w_s(3))
+        allocate(lnorms_t_s(3))
+        allocate(lnorms_theta_m(3))
+
 ! scalar variables
         de_ep_g = zero
         de_p_g = zero
@@ -229,7 +242,7 @@
           write(f1,*) "# imax= ",imax, " jmax=", jmax, " kmax=", kmax
           write(f1,*) "# 1st line: L1 Norms, 2nd line: L2 Norms, &
                        &3rd line: Linf Norms"
-          write(f1,*) "variables='p_g''u_g''v_g''w_g''u_s''v_s''w_s'&
+          write(f1,*) "# variables='p_g''u_g''v_g''w_g''u_s''v_s''w_s'&
                       &'t_g''t_s''ep_g''rop_s''theta_m'"
           write(f1,*) lnorms_p_g(1), &
             lnorms_u_g(1), lnorms_v_g(1), lnorms_w_g(1), &
@@ -266,6 +279,18 @@
         deallocate(de_t_s)
         deallocate(de_theta_m)
 
+        deallocate(lnorms_ep_g)
+        deallocate(lnorms_p_g)
+        deallocate(lnorms_u_g)
+        deallocate(lnorms_v_g)
+        deallocate(lnorms_w_g)
+        deallocate(lnorms_t_g)
+        deallocate(lnorms_rop_s)
+        deallocate(lnorms_u_s)
+        deallocate(lnorms_v_s)
+        deallocate(lnorms_w_s)
+        deallocate(lnorms_t_s)
+        deallocate(lnorms_theta_m)
 
       RETURN
 
