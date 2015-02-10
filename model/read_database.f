@@ -28,6 +28,7 @@
       USE funits
       USE discretelement
       USE des_rxns
+      USE read_thermochemical, only: read_therm, calc_ICpoR
 
       use error_manager
 
@@ -62,9 +63,6 @@
 ! Full path to Burcat and Ruscic database
       CHARACTER(len=147) FILENAME
 
-! External function. Integrates the temperature-dependent specific
-! heat from zero to Tref.
-      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
 ! Tcom +/- SMALL_NUMBER: This is done so that the specific heat poly-
 ! nomail can be evaluate at Tcom with the high and low coefficients.
       DOUBLE PRECISION :: xTc
@@ -308,6 +306,7 @@
       use param1
       USE physprop
       USE compar
+      USE read_thermochemical, only: calc_CpoR, calc_ICpoR, calc_ICpoR0
 
 ! Universal gas constant in cal/mol.K
       use constant, only: RGAS => GAS_CONST_cal
@@ -325,10 +324,6 @@
 
       DOUBLE PRECISION :: T
       DOUBLE PRECISION :: lCP, lICP
-
-      DOUBLE PRECISION, EXTERNAL :: calc_CpoR
-      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
-
 
       write(*,"(2/,3x,'Specific Heat report for ',A)")trim(lName)
 

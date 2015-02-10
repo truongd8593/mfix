@@ -1,3 +1,28 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: read_thermochemical_mod.f                              C
+!  Purpose: Read thermochemical data                                   C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References: None                                C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: None                                            C
+!                                                                      C
+!  Local variables: None                                               C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+MODULE read_thermochemical
+
+  IMPLICIT NONE
+
+CONTAINS
+
 !      Program Test; CALL Read_Therm_tester; END Program Test
 
       SUBROUTINE READ_Therm_tester
@@ -5,7 +30,6 @@
       DOUBLE PRECISION Ahigh(7), Alow(7)
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
       DOUBLE PRECISION Cp1, h1, h2, Hf298oR
-      DOUBLE PRECISION, EXTERNAL :: calc_CpoR, calc_H0oR
       CHARACTER(LEN=132) :: PATH
       CHARACTER(LEN=18) :: SPECIES
       integer funit, IER
@@ -171,10 +195,6 @@
 ! Error Flag.
       INTEGER, intent(inout) :: IER
 
-! External Functions:
-!-----------------------------------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: calc_CpoR0
-
 ! Local Variables:
 !-----------------------------------------------------------------------
 ! Bounded temperature.
@@ -230,10 +250,6 @@
       INTEGER, intent(in) :: N
 ! Error Flag.
       INTEGER, intent(inout) :: IER
-
-! External Functions:
-!-----------------------------------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: calc_CpoR0
 
 ! Local Variables:
 !-----------------------------------------------------------------------
@@ -314,10 +330,6 @@
       INTEGER, intent(in) :: N
 ! Error Flag.
       INTEGER, intent(inout) :: IER
-
-! External Functions:
-!-----------------------------------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: calc_ICpoR0
 
 ! Local Variables.
 !-----------------------------------------------------------------------
@@ -406,10 +418,6 @@
 ! Evaluation temperaure (K)
       DOUBLE PRECISION, intent(in) :: T
 
-! External Functions:
-!-----------------------------------------------------------------------
-      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
-
 ! Local Variables.
 !-----------------------------------------------------------------------
 
@@ -486,3 +494,5 @@
 
       RETURN
       END SUBROUTINE trimTab
+
+    END MODULE read_thermochemical

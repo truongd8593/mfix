@@ -29,6 +29,7 @@
       USE fldvar
 
       USE constant, only: RGAS => GAS_CONST_cal
+      USE read_thermochemical, only: calc_ICpoR
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -46,7 +47,6 @@
 
       INTEGER :: IER
 
-      DOUBLE PRECISION, EXTERNAL ::calc_ICpoR
 !-----------------------------------------------
 !
       IER = 0
