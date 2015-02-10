@@ -222,7 +222,10 @@
       double precision      :: xt, yt, zt
 
 
-      if(myPE == PE_IO) write(*,"(3x, 'Calculating MMS'")
+      if(myPE == PE_IO) write(*,"(3x, 'Calculating MMS')")
+
+! allocate mms variables here
+      call allocate_mms_vars
 
 ! set reference point for shifting pressure
       ijk_sh = funijk_gl( imax1/2+1, jmax1/2+1, kmin1)  ! for 2D
@@ -388,7 +391,8 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       DOUBLE PRECISION FUNCTION MMS_Function(xt, yt, zt, idx)
-      use constants, only   : pi
+      use constant, only    : pi
+      use param1, only      : zero
       IMPLICIT NONE
 
 ! temporary coordinates
@@ -463,8 +467,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       DOUBLE PRECISION FUNCTION MMS_Source(xt, yt, zt, idx)
-      use constants, only   : pi
+      use constant, only    : pi
       use physprop, only    : MU_g0
+      use param1, only      : zero
       IMPLICIT NONE
 
 ! temporary coordinates

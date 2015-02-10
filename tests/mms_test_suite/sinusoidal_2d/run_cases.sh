@@ -2,7 +2,8 @@
 export CASE_DIR=`pwd`
 
 # load modules
-module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
+#module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
+module load intel/2013.5.192 intelmpi/4.1.1.036
 
 # copy common files to ./src/
 cp ../common_usr/usr_mod.f ./src/usr_mod.f
@@ -11,7 +12,8 @@ cp ../common_usr/usr3.f ./src/usr3.f
 # compile MFIX in ./src/
 echo "******** Compiling MFIX..."
 cd $CASE_DIR/src
-../../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+#../../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
 
 cd $CASE_DIR
 

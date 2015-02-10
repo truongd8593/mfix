@@ -27,7 +27,7 @@
       SUBROUTINE USR3
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
-      Use mms, only         : allocate_mms_vars, deallocate_mms_vars
+      Use mms, only         : deallocate_mms_vars
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -36,7 +36,7 @@
 !
 !  Define local variables here
 !
-      logical               : tecplot_output = .FALSE.
+      logical               :: tecplot_output = .FALSE.
 !
 !  Include files defining statement functions here
 !
@@ -45,8 +45,6 @@
 !
 
       
-      Call allocate_mms_vars
-
       Call calculate_de_norms
 
       !if(tecplot_output) Call write_tecplot_data 
@@ -75,6 +73,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_de_norms
+      Use param, only     : dimension_3
       Use param1, only    : zero      
       Use compar, only    : ijkstart3, ijkend3, myPE    
       Use functions, only : i_of, j_of, k_of
@@ -99,6 +98,20 @@
 ! file unit        
         integer   :: f1
 
+
+! allocate de_ variables and lnorms_ variables
+        allocate(de_ep_g(dimension_3))
+        allocate(de_p_g(dimension_3))
+        allocate(de_u_g(dimension_3))
+        allocate(de_v_g(dimension_3))
+        allocate(de_w_g(dimension_3))
+        allocate(de_t_g(dimension_3))
+        allocate(de_rop_s(dimension_3))
+        allocate(de_u_s(dimension_3))
+        allocate(de_v_s(dimension_3))
+        allocate(de_w_s(dimension_3))
+        allocate(de_t_s(dimension_3))
+        allocate(de_theta_m(dimension_3))
 
 ! scalar variables
         de_ep_g = zero
@@ -238,6 +251,20 @@
             lnorms_theta_m(3)
           close(f1)
         end if
+
+! de allocate de_ variables and lnorms_ variables
+        deallocate(de_ep_g)
+        deallocate(de_p_g)
+        deallocate(de_u_g)
+        deallocate(de_v_g)
+        deallocate(de_w_g)
+        deallocate(de_t_g)
+        deallocate(de_rop_s)
+        deallocate(de_u_s)
+        deallocate(de_v_s)
+        deallocate(de_w_s)
+        deallocate(de_t_s)
+        deallocate(de_theta_m)
 
 
       RETURN
