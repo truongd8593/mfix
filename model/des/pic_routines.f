@@ -1,17 +1,11 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: PIC_TIME_MARCH                                          !
 !  Author: R. Garg                                                     !
 !                                                                      !
+!  Purpose: Main PIC driver routine.                                   !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-
-! contains the following subroutines:
-!   mppic_compute_ps_grad,
-!   mppic_bc_u_s, mppic_bc_v_s, mppic_bc_w_s
-!   mppic_apply_ps_grad,
-!   mppic_avg_eps
-!   mppic_time_march
-
-
       SUBROUTINE PIC_TIME_MARCH
+
       USE param
       USE param1
       USE run
@@ -26,56 +20,67 @@
       USE pic_bc
       USE error_manager
       USE fldvar, only: P_g
+
+      use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_funs_des, only: DES_PAR_EXCHANGE
 
       USE fun_avg
       USE functions
-      IMPLICIT NONE
-!------------------------------------------------
-! Local variables
-!------------------------------------------------
-      INTEGER NN, FACTOR, NP, IJK, I, J, K, BCV_I, LL, PC, TIME_LOOP_COUNT
 
-!     Local variables to keep track of time when dem restart and des
-!     write data need to be written when des_continuum_coupled is F
+      IMPLICIT NONE
+
+! Local variables
+!---------------------------------------------------------------------//
+      INTEGER IJK, I, J, K
+      INTEGER NN, FACTOR, NP, BCV_I, LL, PC, TIME_LOOP_COUNT
+
+! Local variables to keep track of time when dem restart and des
+! write data need to be written when des_continuum_coupled is F
       DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
 
-!     Temporary variables when des_continuum_coupled is T to track
-!     changes in solid time step
+! Temporary variables when des_continuum_coupled is T to track
+! changes in solid time step
       DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
       CHARACTER(LEN=5) :: FILENAME
 
 
-!     Logical to see whether this is the first entry to this routine
+! Logical to see whether this is the first entry to this routine
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
-!     temp
+! temp
       DOUBLE PRECISION xpos,ypos, zpos, NORM_CF(3), DIST
 
 
       DOUBLE PRECISION :: DES_KE_VEC(DIMN)
 
-      !time till which the PIC loop will be run
+! time till which the PIC loop will be run
       double precision :: TEND_PIC_LOOP
-      !number of PIC time steps
+! number of PIC time steps
       Integer :: PIC_ITERS
 ! Identifies that the indicated particle is of interest for debugging
       LOGICAL FOCUS
+! Global number of parcels.
+      INTEGER :: gPIP
+
+
+
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
       S_TIME = TIME
       TIME_LOOP_COUNT = 0
-      !compute the gas-phase pressure gradient at the beginning of the
-      !des loop as the gas-phase pressure field will not change during
-      !des calls
-      IF(DES_CONTINUUM_COUPLED)   CALL CALC_PG_GRAD
+
+! compute the gas-phase pressure gradient at the beginning of the
+! des loop as the gas-phase pressure field will not change during
+! des calls
+      IF(DES_CONTINUUM_COUPLED) CALL CALC_PG_GRAD
 
       TEND_PIC_LOOP = MERGE(TIME+DT, TSTOP, DES_CONTINUUM_COUPLED)
       PIC_ITERS = 0
+
+! If the current time in the discrete loop exceeds the current time in
+! the continuum simulation, exit the lagrangian loop
       DO WHILE(S_TIME.LT.TEND_PIC_LOOP)
-         ! If the current time in the discrete loop exceeds the current time in
-         ! the continuum simulation, exit the lagrangian loop
 
          !DTPIC_MAX = MIN( 1e-04, DTPIC_MAX)
          DTSOLID = MERGE(MIN(DTPIC_MAX, DT), DTPIC_MAX, DES_CONTINUUM_COUPLED)
@@ -83,42 +88,36 @@
          IF(MOD(PIC_ITERS, 10).eq.0) then
             IF(DES_CONTINUUM_COUPLED) then
                WRITE(ERR_MSG, 2000) DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
-
-2000           FORMAT(/5x, &
-                    & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
-                    & 'DTPIC_CFL        = ', g17.8, /5x,  &
-                    & 'DTPIC TAUP       = ', g17.8, /5x, &
-                    & 'DT FLOW          = ', g17.8)
             ELSE
-
                WRITE(ERR_MSG, 2001) S_TIME, DTSOLID, DTPIC_CFL, DTPIC_TAUP, DT
-
-2001           FORMAT(/5x, &
-                    & 'TIME             = ', g17.8, /5x,  &
-                    & 'DTSOLID CURRENT  = ', g17.8, /5x,  &
-                    & 'DTPIC_CFL        = ', g17.8, /5x,  &
-                    & 'DTPIC TAUP       = ', g17.8, /5x, &
-                    & 'DT FLOW          = ', g17.8)
             ENDIF
-            CALL flush_err_msg(header = .false., footer = .false.)
+            CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
          ENDIF
+ 
+ 2000 FORMAT(/5x,'DTSOLID CURRENT  = ',g17.8,/5x,'DTPIC_CFL',8x,'= ',  &
+         g17.8, /5x,'DTPIC TAUP',7x,'= ',g17.8,/5x,'DT FLOW',10x,'= ', &
+         g17.8)
+
+ 2001 FORMAT(/5x,'TIME',13X,'= ',g17.8,/5x,'DTSOLID CURRENT  = ',g17.8,&
+         /5x,'DTPIC_CFL',8X,'= ', g17.8,/5x,'DTPIC TAUP',7x,'= ',g17.8,&
+         /5x,'DT FLOW',10X,'= ', g17.8)
+
 
          PIC_ITERS  = PIC_ITERS + 1
 
-         IF(S_TIME + DTSOLID.GT.TEND_PIC_LOOP) then
-            ! If next time step in the discrete loop will exceed the current time
-            ! in the continuum simulation, modify the discrete time step so final
-            ! time will match
+
+! If next time step in the discrete loop will exceed the current time
+! in the continuum simulation, modify the discrete time step so final
+! time will match
+         IF(S_TIME + DTSOLID > TEND_PIC_LOOP) THEN
             WRITE(ERR_MSG, 2010)  DTSOLID, TIME + DT - S_TIME
-            CALL flush_err_msg(header = .false., footer = .false.)
-
-2010        FORMAT(/5X, &
-                 & 'REDUCING DTSOLID TO ENSURE STIME + DTSOLID LE TIME + DT', /5x, &
-                 & 'DTSOLID ORIG         = ', g17.8, /5x, &
-                 & 'DTSOLID ACTUAL       = ', g17.8)
-
+            CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
             DTSOLID = TEND_PIC_LOOP - S_TIME
          ENDIF
+
+ 2010 FORMAT(/5X,'REDUCING DTSOLID TO ENSURE STIME + DTSOLID LE ',     &
+      'TIME + DT', /5x,'DTSOLID ORIG         = ', g17.8, /5x,          &
+      'DTSOLID ACTUAL       = ', g17.8)
 
 ! exchange particle crossing boundaries
          CALL DES_PAR_EXCHANGE
@@ -129,7 +128,7 @@
 
 ! This was moved from particles in cell and the passed variables should be
 ! added to particles in cell or made global.
-         !CALL REPORT_PIC_STATS(RECOVERED, DELETED)
+         CALL REPORT_PIC_STATS
 
          CALL MPPIC_COMPUTE_PS_GRAD
          IF(DES_CONTINUUM_COUPLED)   CALL CALC_DRAG_DES
@@ -137,20 +136,20 @@
 
          CALL CFNEWVALUES
 
-         ! Impose the wall-particle boundary condition for pic case
-         ! The same routine also applies the mass inflow/outflow BCs as well
+! Impose the wall-particle boundary condition for pic case
+! The same routine also applies the mass inflow/outflow BCs as well
          CALL PIC_APPLY_WALLBC_STL
 
 
-         ! Update time to reflect changes
+! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
 
 
          DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
 
-         ! When coupled, all write calls are made in time_march (the continuum
-         ! portion) according to user settings for spx_time and res_time.
-         ! The following section targets data writes for DEM only cases:
+! When coupled, all write calls are made in time_march (the continuum
+! portion) according to user settings for spx_time and res_time.
+! The following section targets data writes for DEM only cases:
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN
 ! Keep track of TIME for DEM simulations
             TIME = S_TIME
@@ -189,15 +188,11 @@
 
       ENDDO
 
-      IF(DMP_LOG) THEN
-         WRITE(UNIT_LOG,'(/5x, A, 2(2x, i10))') &
-              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
-      ENDIF
+      CALL GLOBAL_ALL_SUM(PIP, gPIP)
+      WRITE(ERR_MSG, 3000) trim(iVal(PIC_ITERS)), trim(iVal(gPIP))
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-      IF(mype.eq.pe_IO) THEN
-         WRITE(*,'(/5x, A, 2(2x, i10))') &
-              'NUMBER OF TIMES MPPIC LOOP WAS CALLED AND PARTICLE COUNT = ', PIC_ITERS, PIP
-      ENDIF
+ 3000 FORMAT(/'PIC NITs: ',A,3x,'Total PIP: ', A)
 
 !      IJK_BOT = funijk(imin1, 2,kmin1)
 !      IJK_TOP = funijk(imin1, jmax1, kmin1)
@@ -225,8 +220,12 @@
       CALL FINL_ERR_MSG
     end SUBROUTINE PIC_TIME_MARCH
 
-
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: MPPIC_COMP_EULERIAN_VELS_NON_CG                         !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_COMP_EULERIAN_VELS_NON_CG
       USE param
       USE param1
@@ -301,6 +300,14 @@
 
       END SUBROUTINE MPPIC_COMP_EULERIAN_VELS_NON_CG
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: MPPIC_COMP+EULERIAN_VELS_CG                             !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Puryyse:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_COMP_EULERIAN_VELS_CG
       USE param
       USE param1
@@ -391,6 +398,12 @@
 
       END SUBROUTINE MPPIC_COMP_EULERIAN_VELS_CG
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: MPPIC_APPLY_PS_GRAD_PART                                !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_APPLY_PS_GRAD_PART(L)
 
       USE param
@@ -611,6 +624,12 @@
       END SUBROUTINE MPPIC_APPLY_PS_GRAD_PART
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: MPPIC_COMPUTE_PS_GRAD                                   !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_COMPUTE_PS_GRAD
       USE param
       USE param1
@@ -997,7 +1016,6 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE MPPIC_BC_U_S
 
 !-----------------------------------------------
@@ -1076,7 +1094,6 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE MPPIC_BC_V_S
 
 
@@ -1155,7 +1172,6 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE MPPIC_BC_W_S
 
 !-----------------------------------------------
@@ -1222,7 +1238,12 @@
 
       END SUBROUTINE MPPIC_BC_W_S
 
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: WRITE_NODEDATA                                          !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_NODEDATA(bufin, funit)
       USE param
       USE param1
@@ -1260,6 +1281,12 @@
       CLOSE(funit, status = 'keep')
       end SUBROUTINE WRITE_NODEDATA
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: WRITE_MPPIC_VEL_S                                       !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose:                                                            !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_MPPIC_VEL_S
       USE param
       USE param1

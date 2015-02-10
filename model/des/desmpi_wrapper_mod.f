@@ -5,21 +5,29 @@
 ! Author           : Pradeep.G
 !------------------------------------------------------------------------
       module desmpi_wrapper
+
       use parallel_mpi
       use mpi_utility
       use compar
+
       interface des_mpi_irecv
-      module procedure des_mpi_irecv_db
+         module procedure des_mpi_irecv_db
       end interface
+
       interface des_mpi_isend
-      module procedure des_mpi_isend_db
+         module procedure des_mpi_isend_db
       end interface
+
       interface des_mpi_scatterv
-      module procedure des_mpi_scatterv_i,des_mpi_scatterv_db
+         module procedure des_mpi_scatterv_i
+         module procedure des_mpi_scatterv_db
       end interface
+
       interface des_mpi_gatherv
-      module procedure des_mpi_gatherv_i,des_mpi_gatherv_db
+         module procedure des_mpi_gatherv_i
+         module procedure des_mpi_gatherv_db
       end interface
+
       contains
 
 !------------------------------------------------------------------------

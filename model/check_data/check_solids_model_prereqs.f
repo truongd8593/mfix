@@ -40,6 +40,8 @@
       use discretelement, only: PRINT_DES_DATA
 ! Kinetic theory model for TFM solids.
       use run, only: KT_TYPE
+! Flag: Method of manufactured solutions (MMS)
+      use mms, only: USE_MMS
 
 ! Number of scalar equations to solve
       USE scalars, only: NSCALAR, phase4scalar
@@ -80,6 +82,7 @@
       ELSE
          IF (MMAX > DIM_M) ERR_MMAX = .TRUE.
       ENDIF
+      IF((USE_MMS).AND.(MMAX > 1)) ERR_MMAX = .TRUE.
 
 ! Check MMAX
       IF (ERR_MMAX) THEN

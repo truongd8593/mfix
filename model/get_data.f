@@ -12,29 +12,27 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE funits
       USE compar
-      USE gridmap
-      USE discretelement
-      USE des_thermo
-      USE des_rxns
-      USE leqsol
-      USE parallel
-      USE qmom_kinetic_equation
-      USE mfix_pic
+      USE constant, only: L_SCALE0
       USE cutcell
       USE dashboard
-      USE visc_g, only: L_SCALE
-      USE constant, only: L_SCALE0
-
-      use stl_preproc_des, only: DES_STL_PREPROCESSING
-      use desgrid, only: DESGRID_INIT
-
+      USE des_allocate
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
       USE error_manager
-
+      USE funits
+      USE gridmap
+      USE leqsol
+      USE mfix_pic
+      USE parallel
+      USE param
+      USE param1
+      USE qmom_kinetic_equation
+      USE run
+      USE visc_g, only: L_SCALE
+      use desgrid, only: DESGRID_INIT
+      use stl_preproc_des, only: DES_STL_PREPROCESSING
 
       IMPLICIT NONE
 !-----------------------------------------------

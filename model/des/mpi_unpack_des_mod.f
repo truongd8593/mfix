@@ -1,162 +1,115 @@
-!------------------------------------------------------------------------
-! Module           : desmpi
-! Purpose          : Contains wrapper class for mpi communications- send,recv
-!
-! Author           : Pradeep.G
-!
-! Purpose          : Module contains subroutines and variables related to
-!                    des mpi communication.
-!
-! Comments         : do_nsearch flag should be set to true before calling
-!                    des_par_exchange; when do_nsearch is true ghost particles of the
-!                    system will be updated, which will be later used to generate
-!                    neighbour list.
-!------------------------------------------------------------------------
-      module mpi_unpack_des
+!----------------------------------------------------------------------!
+!  Module: MPI_UNPACK_DES                                              !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+!  Purpose: Contains routines for unpacking real and ghost particles   !
+!     from the MPI recv buffers.                                       !
+!----------------------------------------------------------------------!
+      MODULE MPI_UNPACK_DES
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use parallel_mpi
-      use mpi_utility
-      use discretelement
-      use desgrid
-      use compar
-      use physprop
-      use sendrecv
-      use des_bc
-      use desmpi_wrapper
-      use sendrecvnode
-      use mfix_pic
-      use des_thermo
-      use run, only: ENERGY_EQ,ANY_SPECIES_EQ
-      use param, only: DIMENSION_N_s
-      use des_rxns
-      use desmpi
 
-      use mpi_comm_des, only: desmpi_sendrecv_init
-      use mpi_comm_des, only: desmpi_sendrecv_wait
+      PRIVATE
+      PUBLIC :: DESMPI_UNPACK_PARCROSS, DESMPI_UNPACK_GHOSTPAR
 
-      
       interface unpack_dbuf
-         module procedure unpack_db0, unpack_db1,unpack_i0,unpack_i1,unpack_l0
+         module procedure unpack_db0 ! real scalars
+         module procedure unpack_db1 ! real arrays
+         module procedure unpack_i0  ! integer scalars
+         module procedure unpack_i1  ! integer arrays
+         module procedure unpack_l0  ! logical scalars
       end interface unpack_dbuf
 
 
-      contains
+      CONTAINS
 
 
 !----------------------------------------------------------------------!
-!Unpack subroutine for single real variables                           !
+!  Subroutine: DESMPI_UNPACK_GHOSTPAR                                  !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+! Purpose: Unpacks ghost particle from the recv buffer.                !
 !----------------------------------------------------------------------!
-      subroutine unpack_db0(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      double precision, intent(inout) :: idata
-
-      idata = drecvbuf(lbuf,pface)
-      lbuf = lbuf + 1
-
-      return
-      end subroutine unpack_db0
-
-!----------------------------------------------------------------------!
-!Unpack subroutine for real arrays                                     !
-!----------------------------------------------------------------------!
-      subroutine unpack_db1(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      double precision, intent(inout) :: idata(:)
-
-      integer :: lsize
-
-      lsize = size(idata)
-
-      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
-      lbuf = lbuf + lsize
-
-      return
-      end subroutine unpack_db1
+      SUBROUTINE DESMPI_UNPACK_GHOSTPAR(pface)
 
 
-!----------------------------------------------------------------------!
-!Unpack subroutine for single integer variables                        !
-!----------------------------------------------------------------------!
-      subroutine unpack_i0(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      integer, intent(inout) :: idata
+! Global Variables:
+!---------------------------------------------------------------------//
+! Size of Particle data packet
+      use desmpi, only: iGhostPacketSize
+! Index of last particle added to this process.
+      use desmpi, only: iSPOT
+! Flag indicating that the ghost particle was updated
+      use discretelement, only: iGHOST_UPDATED
+! The MPI receive buffer
+      use desmpi, only: dRECVBUF
+! Buffer offset
+      use desmpi, only: iBUFOFFSET
+! Runtime flag for solving the energy equations
+      use run, only: ENERGY_EQ
+! Runtime flag for solving species equations
+      use run, only: ANY_SPECIES_EQ
+! Runtime flag for MPPIC solids
+      use mfix_pic, only: MPPIC
+! Dimenions of DES grid
+      use desgrid, only: DG_IJKSIZE2
+! DES grid cell containing each particle: current/previous
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
+! The global ID for each particle
+      use discretelement, only: iGLOBAL_ID
+! Particle positions: current/previous
+      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+! Particle tangential velocities: current/previous
+      use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
+! Particle rotational velocities: current/previous
+      use discretelement, only: OMEGA_NEW, OMEGA_OLD
+! Particle species composition
+      use des_rxns, only: DES_X_s
+! Particle tempertures. current/previous
+      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+! Particle radius, volume
+      use discretelement, only: DES_RADIUS, PVOL
+! Flags indicate the state of the particle
+      use discretelement, only: PEA
+! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
+      use discretelement, only: PIJK
+! Flag to send/recv old (previous) values
+      use discretelement, only: DO_OLD
+! Flag to conduct a new neighbor search.
+      use discretelement, only: DO_NSEARCH
+! Number of particles on the process (max particle array size)
+      use discretelement, only: PIP, MAX_PIP
+! Number of ghost particles on the current process
+      use discretelement, only: iGHOST_CNT
+! User-defined variables for each particle.
+      use discretelement, only: DES_USR_VAR
 
-      idata = drecvbuf(lbuf,pface)
-      lbuf = lbuf + 1
+      use des_allocate
 
-      return
-      end subroutine unpack_i0
-
-!----------------------------------------------------------------------!
-!Unpack subroutine for integer arrays                                  !
-!----------------------------------------------------------------------!
-      subroutine unpack_i1(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      integer, intent(inout) :: idata(:)
-
-      integer :: lsize
-
-      lsize = size(idata)
-
-      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
-      lbuf = lbuf + lsize
-
-      return
-      end subroutine unpack_i1
-
-!----------------------------------------------------------------------!
-!Unpack subroutine for logical variables                        !
-!----------------------------------------------------------------------!
-      subroutine unpack_l0(lbuf,idata,pface)
-      integer, intent(inout) :: lbuf
-      integer, intent(in) :: pface
-      logical, intent(inout) :: idata
-
-      idata = merge(.true.,.false.,0.5<drecvbuf(lbuf,pface))
-      lbuf = lbuf + 1
-
-      return
-      end subroutine unpack_l0
-
-
-
-
-!------------------------------------------------------------------------
-! Subroutine       : desmpi_unpack_ghostpar
-! Purpose          : unpacks the ghost particle from the recv buffer
-! Parameter        : pface - value from 1 to 6 represents faces
-!
-!------------------------------------------------------------------------
-      subroutine desmpi_unpack_ghostpar(pface)
+! Global Constants:
+!---------------------------------------------------------------------//
       use constant, only: PI
-!-----------------------------------------------
-      implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      integer, intent(in) :: pface
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
+! Dimension of particle spatial arrays.
+      use discretelement, only: DIMN
+
+      IMPLICIT NONE
+
+! Dummy arguments:
+!---------------------------------------------------------------------//
+! Processor boundary being packed (Top/Bottom/North/South/East/West)
+      INTEGER, INTENT(IN) :: PFACE
+
+! Local variables
+!---------------------------------------------------------------------//
       integer :: lcurpar,lparid,lprvijk,lijk,lparijk,lparcnt,ltot_ind
-      integer :: lpacketsize,lbuf,lindx,llocpar,lnewcnt,lpicloc
+      integer :: lbuf,lindx,llocpar,lnewcnt,lpicloc
       logical,dimension(:),allocatable :: lfound
       integer,dimension(:),allocatable :: lnewspot,lnewpic
-!-----------------------------------------------
+!......................................................................!
 
 ! unpack the particles:
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-
-      lpacketsize = 2*dimn + 3+ 5
       lparcnt = drecvbuf(1,pface)
       lnewcnt = lparcnt
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2))
@@ -165,7 +118,7 @@
       lnewpic = 0
 
       do lcurpar = 1,lparcnt
-         lbuf = (lcurpar-1)*lpacketsize+ibufoffset
+         lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
 
 ! 1) Global ID
          call unpack_dbuf(lbuf,lparid,pface)
@@ -199,15 +152,14 @@
 ! 8) Rotational Velocity
             call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
 ! 9) Exiting particle flag
-!           pea(llocpar,3) = (drecvbuf(lbuf,pface) > 0.5)
-            call unpack_dbuf(lbuf,pea(llocpar,3),pface) ! (Need to check the logic)
+            call unpack_dbuf(lbuf,pea(llocpar,3),pface)
 ! 10) Temperature
             if(ENERGY_EQ)then
                call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
             endif
 ! 11) Species Composition
             if(ANY_SPECIES_EQ)then
-               call unpack_dbuf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
+               call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
             endif
 
 ! 12) User Variables
@@ -232,14 +184,14 @@
          endif
       enddo
 
-! if do_nsearch is on then add new particles and clean up ghost particles
+! iAdd new particles and clean up ghost particles if DO_NSEARCH is set.
       if (do_nsearch) then
-         if((max_pip-pip).lt.lnewcnt) call redim_par(pip+lnewcnt)
+         call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
-            lbuf = (lcurpar-1)*lpacketsize+ibufoffset
+            lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
 
 !  1) Global particle ID
             call unpack_dbuf(lbuf,lparid,pface)
@@ -262,7 +214,7 @@
 !  4) Particle radius
             call unpack_dbuf(lbuf,des_radius(ispot),pface)
 !  5) Particle phase index
-            call unpack_dbuf(lbuf,pijk(ispot,5),pface) 
+            call unpack_dbuf(lbuf,pijk(ispot,5),pface)
 !  6) Particle position
             call unpack_dbuf(lbuf,des_pos_new(1:dimn,ispot),pface)
 !  7) Particle velocity
@@ -278,7 +230,7 @@
             endif
 ! 11) Particle species composition
             if(ANY_SPECIES_EQ)then
-               call unpack_dbuf(lbuf,des_x_s(ispot,1:dimension_n_s),pface)
+               call unpack_dbuf(lbuf,des_x_s(ispot,:),pface)
             endif
 ! 11) User varaible
             call unpack_dbuf(lbuf,des_usr_var(1:3,ispot),pface)
@@ -303,131 +255,246 @@
       end subroutine desmpi_unpack_ghostpar
 
 
-!------------------------------------------------------------------------
-! Subroutine       : desmpi_unpack_parcross
-! Purpose          : pack the particle crossing the boundary
-! Parameter        : pface - value from 1 to 6 represents faces
-!
-!------------------------------------------------------------------------
-      subroutine desmpi_unpack_parcross(pface)
+!----------------------------------------------------------------------!
+!  Subroutine: DESMPI_UNPACK_PARCROSS                                  !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+! Purpose: Unpacks real particle from the recv buffer.                 !
+!----------------------------------------------------------------------!
+      SUBROUTINE DESMPI_UNPACK_PARCROSS(pface)
 
-!-----------------------------------------------
+! Global Variables:
+!---------------------------------------------------------------------//
+! Size of ghost particle data packet
+      use desmpi, only: iParticlePacketSize
+! Index of last particle added to this process.
+      use desmpi, only: iSPOT
+! Flag indicating that the ghost particle was updated
+      use discretelement, only: iGHOST_UPDATED
+! The MPI receive buffer
+      use desmpi, only: dRECVBUF
+! Buffer offset
+      use desmpi, only: iBUFOFFSET
+! Runtime flag for solving the energy equations
+      use run, only: ENERGY_EQ
+! Runtime flag for solving species equations
+      use run, only: ANY_SPECIES_EQ
+! Runtime flag for MPPIC solids
+      use mfix_pic, only: MPPIC
+! Dimenions of DES grid
+      use desgrid, only: DG_IJKSIZE2
+! DES grid cell containing each particle: current/previous
+      use discretelement, only: DG_PIJK, DG_PIJKPRV
+! The neighbor processor's rank
+      use desmpi, only: iNEIGHPROC
+! The statistical weight of each particle.
+      use mfix_pic, only: DES_STAT_WT
+! The global ID for each particle
+      use discretelement, only: iGLOBAL_ID
+! Particle positions: current/previous
+      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+! Particle tangential velocities: current/previous
+      use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
+! Particle rotational velocities: current/previous
+      use discretelement, only: OMEGA_NEW, OMEGA_OLD
+! Particle radius, volume, density, mass
+      use discretelement, only: DES_RADIUS, PVOL, RO_SOL, PMASS
+! Previous value for particle acceleration (tangential/rotational)
+      use discretelement, only: DES_ACC_OLD, ROT_ACC_OLD
+! Particle species composition
+      use des_rxns, only: DES_X_s
+! Particle tempertures. current/previous
+      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+! Force arrays acting on the particle
+      use discretelement, only: FC, TOW
+! One of the moment of inertia
+      use discretelement, only: OMOI
+! Flags indicate the state of the particle
+      use discretelement, only: PEA
+! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
+      use discretelement, only: PIJK
+! Flag to send/recv old (previous) values
+      use discretelement, only: DO_OLD
+! Flag to conduct a new neighbor search.
+      use discretelement, only: DO_NSEARCH
+! Number of particles on the process (max particle array size)
+      use discretelement, only: PIP, MAX_PIP
+! Number of ghost particles on the current process
+      use discretelement, only: iGHOST_CNT
+! Flag indicating the the fluid-particle drag is explictly coupled.
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+! Explict fluid-particle drag force
+      use discretelement, only: DRAG_FC
+! User-defined variables for each particle.
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
+! Particle pair (neighborhood) arrays:
+      use discretelement, only: PAIR_NUM, PAIRS
+! Pair collision history information
+      use discretelement, only: PV_PAIR, PFN_PAIR, PFT_PAIR
+! Dimension of particle spatial arrays.
+      use discretelement, only: DIMN
+! The ID of the current process
+      use compar, only: myPE
+
+! Module Procedures:
+!---------------------------------------------------------------------//
+      use des_allocate
+      use desmpi_wrapper, only: DES_MPI_STOP
+
       implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      integer, intent(in) :: pface
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
+
+! Dummy arguments:
+!---------------------------------------------------------------------//
+! Processor boundary being packed (Top/Bottom/North/South/East/West)
+      INTEGER, INTENT(IN) :: PFACE
+
+! Local variables
+!---------------------------------------------------------------------//
       integer :: lijk,lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
       integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,&
                  lneighid,lneighijk,lneighprvijk
       logical :: lfound
-      integer :: lpacketsize,lbuf,ltmpbuf,lcount
+      integer :: lbuf,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
       integer :: cc,ii,kk,num_pairs_sent
 
       integer :: pair_match
       logical :: do_add_pair
-!-----------------------------------------------
+!......................................................................!
 
 ! loop through particles and locate them and make changes
-      lpacketsize = 9*dimn + 3*4 + 15
       lparcnt = drecvbuf(1,pface)
 
 ! if mppic make sure enough space available
-      if(mppic .and. (max_pip-pip).lt.lparcnt) call redim_par(pip+lparcnt)
-
-
+      call PARTICLE_GROW(pip+lparcnt)
 
       do lcurpar =1,lparcnt
          lfound = .false.
-         lbuf = (lcurpar-1)*lpacketsize + ibufoffset
+         lbuf = (lcurpar-1)*iParticlePacketSize + ibufoffset
+! 1) Global ID
          call unpack_dbuf(lbuf,lparid,pface)
+! 2) DES Grid IJK
          call unpack_dbuf(lbuf,lparijk,pface)
+! 3) DES grid IJK - previous
          call unpack_dbuf(lbuf,lprvijk,pface)
 
-! if mppic add the particles to free spots else locate the particles
-         if (mppic) then
-            do while(pea(ispot,1))
-               ispot = ispot + 1
-            enddo
-            llocpar = ispot
-         else
-            lfound  = locate_par(lparid,lprvijk,llocpar)
-            if (.not. lfound) then
-               WRITE(*,700) ineighproc(pface), mype
-               call des_mpi_stop
-            endif
-            ighost_cnt = ighost_cnt - 1
-         endif
+! PIC particles are always 'new' to the receiving process. Find the
+! first available array position and store the global ID. Increment
+! the PIP counter to include the new particle.
+         IF(MPPIC) THEN
+            DO WHILE(PEA(ISPOT,1))
+               ISPOT = ISPOT + 1
+            ENDDO
+            lLOCPAR = iSPOT
+            iGLOBAL_ID(lLOCPAR) = lPARID
+            PIP = PIP + 1
+
+! A DEM particle should already exist on the current processor as a
+! ghost particle. Match the sent particle to the local ghost particle
+! by matching the global IDs. Decrement the iGHOST_CNT counter to
+! account for the switch from ghost to real particle.
+         ELSE
+            lFOUND  = LOCATE_PAR(lPARID,lPRVIJK,lLOCPAR)
+            IF (.NOT. lFOUND) THEN
+               WRITE(*,1000) iNEIGHPROC(PFACE), MYPE, lPARID
+               CALL DES_MPI_STOP
+            ENDIF
+            iGHOST_CNT = iGHOST_CNT - 1
+         ENDIF
+
+ 1000 FORMAT(2/1X,72('*'),/1x,'From: DESMPI_UNPACK_PARCROSS: ',/       &
+         ' Error 1000: Unable to match particles corssing processor ', &
+         'boundaries.',/3x,'Source Proc: ',I9,' ---> Destination ',    &
+         'Proc: ', I9,/3x,'Global Particle ID: ',I12,/1x,72('*'))
 
 ! convert the local particle from ghost to existing and update its position
-         pea(llocpar,1) = .true.
-         pea(llocpar,4) = .false.
+         pea(llocpar,1) = .TRUE.
+         pea(llocpar,4) = .FALSE.
          dg_pijk(llocpar) = lparijk
          dg_pijkprv(llocpar) = lprvijk
+! 4) Radius
          call unpack_dbuf(lbuf,des_radius(llocpar),pface)
-         call unpack_dbuf(lbuf,pijk(llocpar,1:5),pface)
-!         pea(llocpar,2:3)     = drecvbuf(lbuf:lbuf+1,pface) ; lbuf=lbuf+2
-         pea(llocpar,2:3) = .false.
-         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,2) = .true. ; lbuf = lbuf + 1
-         if (drecvbuf(lbuf,pface).eq.1) pea(llocpar,3) = .true. ; lbuf = lbuf + 1
+! 5-9) Fluid cell I,J,K,IJK, and solids phase index
+         call unpack_dbuf(lbuf,pijk(llocpar,:),pface)
+! 10) Entering particle flag.
+         call unpack_dbuf(lbuf,pea(llocpar,2),pface)
+! 11) Exiting particle flag.
+         call unpack_dbuf(lbuf,pea(llocpar,3),pface)
+! 12) Density
          call unpack_dbuf(lbuf,ro_sol(llocpar),pface)
+! 13) Volume
          call unpack_dbuf(lbuf,pvol(llocpar),pface)
+! 14) Mass
          call unpack_dbuf(lbuf,pmass(llocpar),pface)
+! 15) 1/Moment of Inertia
          call unpack_dbuf(lbuf,omoi(llocpar),pface)
-         call unpack_dbuf(lbuf,des_pos_new(1:dimn,llocpar),pface)
-         call unpack_dbuf(lbuf,des_vel_new(1:dimn,llocpar),pface)
-
-         if(ENERGY_EQ) then
-            call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)
-            call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
-         endif
-
-         if(ANY_SPECIES_EQ)then
-            call unpack_dbuf(lbuf,des_x_s(llocpar,1:dimension_n_s),pface)
-         endif
-
-         call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
-
-         call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
-         IF (DO_OLD) THEN
-            call unpack_dbuf(lbuf,des_pos_old(1:dimn,llocpar),pface)
-            call unpack_dbuf(lbuf,des_vel_old(1:dimn,llocpar),pface)
-            call unpack_dbuf(lbuf,omega_old(1:3,llocpar),pface)
-            call unpack_dbuf(lbuf,des_acc_old(1:dimn,llocpar),pface)
-            call unpack_dbuf(lbuf,rot_acc_old(1:3,llocpar),pface)
-         ENDIF
+! 16) Position with cyclic shift
+         call unpack_dbuf(lbuf,des_pos_new(:,llocpar),pface)
+! 17) Translational velocity
+         call unpack_dbuf(lbuf,des_vel_new(:,llocpar),pface)
+! 18) Rotational velocity
+         call unpack_dbuf(lbuf,omega_new(:,llocpar),pface)
+! 19) Accumulated translational forces
          call unpack_dbuf(lbuf,fc(:,llocpar),pface)
-         call unpack_dbuf(lbuf,tow(1:3,llocpar),pface)
+! 20) Accumulated torque forces
+         call unpack_dbuf(lbuf,tow(:,llocpar),pface)
+! 21) Temperature
+         IF(ENERGY_EQ) &
+            call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
+! 22) Species composition
+         IF(ANY_SPECIES_EQ) &
+            call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
+! 23) Explict drag force
+         IF(DES_EXPLICITLY_COUPLED) &
+            call unpack_dbuf(lbuf,drag_fc(:,llocpar),pface)
+! 24) User defined variable
+         IF(DES_USR_VAR_SIZE > 0) &
+            call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)
+! -- Higher order integration variables
+         IF (DO_OLD) THEN
+! 25) Position (previous)
+            call unpack_dbuf(lbuf,des_pos_old(:,llocpar),pface)
+! 26) Translational velocity (previous)
+            call unpack_dbuf(lbuf,des_vel_old(:,llocpar),pface)
+! 27) Rotational velocity (previous)
+            call unpack_dbuf(lbuf,omega_old(:,llocpar),pface)
+! 28) Translational acceleration (previous)
+            call unpack_dbuf(lbuf,des_acc_old(:,llocpar),pface)
+! 29) Rotational acceleration (previous)
+            call unpack_dbuf(lbuf,rot_acc_old(:,llocpar),pface)
+! 30) Temperature (previous)
+            IF(ENERGY_EQ) &
+               call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)
+         ENDIF
+! 31) Statistical weight
+         IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)
 
       end do
 
-      lbuf = lparcnt*lpacketsize + ibufoffset
-
+! 32) Number of pair datasets
+      lbuf = lparcnt*iParticlePacketSize + ibufoffset
       call unpack_dbuf(lbuf,num_pairs_sent,pface)
 
       do cc = 1, num_pairs_sent
-
+! 33) Global ID of packed particle.
          call unpack_dbuf(lbuf,lparid,pface)
-
+! 34) DES grid IJK of cell receiving the particle.
          call unpack_dbuf(lbuf,lparijk,pface)
 
+! Locate the particle on the current process.
          if (.not. locate_par(lparid,lparijk,llocpar)) then
             print *,"at buffer location",lbuf," pface = ",pface
             print *,"COULD NOT FIND PARTICLE ",lparid," IN IJK ",lparijk
             call des_mpi_stop
          endif
-
+! 35) Global ID of neighbor particle.
          call unpack_dbuf(lbuf,lneighid,pface)
-
+! 36) DES grid IJK of cell containing the neighbor particle.
          call unpack_dbuf(lbuf,lneighijk,pface)
 
+! Locate the neighbor particle on the current process.
          if (.not. locate_par(lneighid,lneighijk,lneigh)) then
             if (.not. exten_locate_par(lneighid,lparijk,lneigh)) then
-
                print *,"  "
                print *,"  "
                print *," fail on  ", myPE
@@ -451,115 +518,215 @@
                endif
             enddo
          endif
-
+! Create a new neighbor pair if it was not matched to an exiting pair.
          if(do_add_pair) then
             call add_pair(llocpar,lneigh)
             pair_match = pair_num
          endif
-
+! 37) Flag indicating induring contact for the pair.
          call unpack_dbuf(lbuf,pv_pair(pair_num),pface)
-
-         do ii=1,DIMN
-            call unpack_dbuf(lbuf,pfn_pair(ii,pair_num),pface)
-            call unpack_dbuf(lbuf,pft_pair(ii,pair_num),pface)
-         enddo
+! 38) Normal collision history.
+         call unpack_dbuf(lbuf,pfn_pair(:,pair_num),pface)
+! 39) Tangential collision history.
+         call unpack_dbuf(lbuf,pft_pair(:,pair_num),pface)
       enddo
-
- 700 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
-         'ERROR: Unable to locate particles moving from ',I4.4,&
-         ' to ', I4.4)
- 701 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
-         'WARNING: Unable to locate neighbor for particles ',&
-         'crossing boundary')
- 702 FORMAT(/2X,'From: DESMPI_UNPACK_PARCROSS: ',/2X,&
-         'WARNING: Unable to locate neighbor for particles ',&
-         'crossing boundary.'/2X,'Contact particle ID =',I10)
 
       END SUBROUTINE desmpi_unpack_parcross
 
+!----------------------------------------------------------------------!
+! Function: LOCATE_PAR                                                 !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: Return the local index of the particle matching the passed  !
+!    global ID. The function returns TRUE if the particle is matched,  !
+!    otherwise it returns FALSE.                                       !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION LOCATE_PAR(pGLOBALID, pIJK, pLOCALNO)
 
-!------------------------------------------------------------------------
-! Function         : locate_par
-! Purpose          : locates particle in ijk and returns true if found
-! Parameter        : pglobalid - global id of the particle (input)
-!                    pijk - ijk of the cell (input)
-!                    plocalno - local particle number (output)
-!------------------------------------------------------------------------
-      function locate_par(pglobalid,pijk,plocalno)
-!-----------------------------------------------
+      use discretelement, only: iGLOBAL_ID
+      use desgrid, only: DG_IJKStart2, DG_IJKEnd2
+      use discretelement, only: dg_pic
+
       implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      logical :: locate_par
-      integer :: pglobalid,pijk,plocalno
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-      integer :: lpicloc,lcurpar
-!-----------------------------------------------
 
+! Dummy arguments:
+!---------------------------------------------------------------------//
+! Global ID of the particle
+      INTEGER, INTENT(IN) :: pGlobalID
+! IJK of DES grid cell containing the particle
+      INTEGER, INTENT(IN) :: pIJK
+! Local ID for the particle.
+      INTEGER, INTENT(OUT) :: pLocalNO
+
+! Local variables
+!---------------------------------------------------------------------//
+      INTEGER :: lpicloc, lcurpar
+
+! Initialize the result.
       locate_par = .false.
-      if (pijk .lt. dg_ijkstart2 .or. pijk .gt. dg_ijkend2) then
-         return
-      endif
 
-      do lpicloc = 1,dg_pic(pijk)%isize
+! Verify that the passied IJK value is within a valid range.
+      if(pIJK < dg_ijkstart2 .or. pIJK > dg_ijkend2)  RETURN
+
+! Loop the the particles in DES grid cell pIJK. Return to the calling
+! routine if the passed global ID matches the global ID of one of
+! the local particles.
+      DO lpicloc = 1,dg_pic(pijk)%isize
          lcurpar = dg_pic(pijk)%p(lpicloc)
-         if (iglobal_id(lcurpar) .eq. pglobalid) then
+         IF(iGLOBAL_ID(lcurpar) == pGlobalID) THEN
             plocalno = lcurpar
             locate_par = .true.
-            return
-         endif
-      enddo
+            RETURN
+         ENDIF
+      ENDDO
 
-      return
+      RETURN
       end function locate_par
 
+!----------------------------------------------------------------------!
+! Function: EXTEN_LOCATE_PAR                                           !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: Return the local index of the particle matching the passed  !
+!    global ID. The function returns TRUE if the particle is matched,  !
+!    otherwise it returns FALSE.                                       !
 !------------------------------------------------------------------------
-! Function         : exten_locate_par
-! Purpose          : locates particles extensively by searching all neighbouring
-!                    cells similar to grid based search
-! Parameter        : pglobalid - global id of the particle (input)
-!                    pijk - ijk of the center cell (input)
-!                    plocalno - localparticle number (output)
-!------------------------------------------------------------------------
-      function exten_locate_par(pglobalid,pijk,plocalno)
-!-----------------------------------------------
+      LOGICAL FUNCTION EXTEN_LOCATE_PAR(pGlobalID, pIJK, pLocalNO)
+
+      use discretelement, only: iGLOBAL_ID, dg_pic
+      use desgrid, only: DG_IJKStart2, DG_IJKEnd2
+      use desgrid, only: dg_Iof_LO, DG_Jof_LO, DG_Kof_LO
+      use geometry, only: NO_K
+
+      use desgrid, only: dg_funijk
+
       implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      logical :: exten_locate_par
-      integer :: pglobalid,pijk,plocalno
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-      integer :: lpicloc,lcurpar
-      integer :: lijk,li,lj,lk,lic,ljc,lkc,lkoffset
-!-----------------------------------------------
+
+! Dummy variables:
+!---------------------------------------------------------------------//
+! The global ID of the particle to be matched locally
+      INTEGER, INTENT(IN) :: pGlobalId
+! The DES grid cell index expected to contain the particle.
+      INTEGER, INTENT(IN) :: pIJK
+! The local ID of the matching particle.
+      INTEGER, INTENT(OUT) :: pLocalNo
+
+! Local variables:
+!---------------------------------------------------------------------//
+! Loop counters.
+      INTEGER :: lijk, li, lj, lk, lic, ljc, lkc, lkoffset
+      INTEGER :: lpicloc,lcurpar
+
       exten_locate_par = .false.
+
       lic = dg_iof_lo(pijk)
       ljc = dg_jof_lo(pijk)
       lkc = dg_kof_lo(pijk)
       lkoffset = merge(0, 1, NO_K)
-      do  lk = lkc-lkoffset,lkc+lkoffset
-      do  lj = ljc-1,ljc+1
-      do  li = lic-1,lic+1
+      DO  lk = lkc-lkoffset,lkc+lkoffset
+      DO  lj = ljc-1,ljc+1
+      DO  li = lic-1,lic+1
          lijk = dg_funijk(li,lj,lk)
-         if (lijk .lt. dg_ijkstart2 .or. lijk .gt. dg_ijkend2) cycle
-         do lpicloc = 1, dg_pic(lijk)%isize
+         IF (lijk .lt. dg_ijkstart2 .or. lijk .gt. dg_ijkend2) CYCLE
+         DO lpicloc = 1, dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
-            if (iglobal_id(lcurpar) .eq. pglobalid) then
+            IF (iglobal_id(lcurpar) .eq. pglobalid) THEN
                plocalno = lcurpar
                exten_locate_par = .true.
-               return
-            end if
-         end do
-      end do
-      end do
-      end do
+               RETURN
+            END IF
+         END DO
+      END DO
+      END DO
+      END DO
+
+      RETURN
+      END FUNCTION EXTEN_LOCATE_PAR
+
+
+!----------------------------------------------------------------------!
+! Unpack subroutine for single real variables                          !
+!----------------------------------------------------------------------!
+      subroutine unpack_db0(lbuf,idata,pface)
+      use desmpi, only: dRECVBUF
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(inout) :: idata
+
+      idata = drecvbuf(lbuf,pface)
+      lbuf = lbuf + 1
+
       return
-      end function exten_locate_par
+      end subroutine unpack_db0
+
+!----------------------------------------------------------------------!
+! Unpack subroutine for real arrays                                    !
+!----------------------------------------------------------------------!
+      subroutine unpack_db1(lbuf,idata,pface)
+      use desmpi, only: dRECVBUF
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      double precision, intent(inout) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine unpack_db1
+
+
+!----------------------------------------------------------------------!
+! Unpack subroutine for single integer variables                       !
+!----------------------------------------------------------------------!
+      subroutine unpack_i0(lbuf,idata,pface)
+      use desmpi, only: dRECVBUF
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(inout) :: idata
+
+      idata = drecvbuf(lbuf,pface)
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_i0
+
+!----------------------------------------------------------------------!
+! Unpack subroutine for integer arrays                                 !
+!----------------------------------------------------------------------!
+      subroutine unpack_i1(lbuf,idata,pface)
+      use desmpi, only: dRECVBUF
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      integer, intent(inout) :: idata(:)
+
+      integer :: lsize
+
+      lsize = size(idata)
+
+      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      lbuf = lbuf + lsize
+
+      return
+      end subroutine unpack_i1
+
+!----------------------------------------------------------------------!
+! Unpack subroutine for logical variables                              !
+!----------------------------------------------------------------------!
+      subroutine unpack_l0(lbuf,idata,pface)
+      use desmpi, only: dRECVBUF
+      integer, intent(inout) :: lbuf
+      integer, intent(in) :: pface
+      logical, intent(inout) :: idata
+
+      idata = merge(.true.,.false.,0.5<drecvbuf(lbuf,pface))
+      lbuf = lbuf + 1
+
+      return
+      end subroutine unpack_l0
+
 
       end module mpi_unpack_des

@@ -66,14 +66,6 @@
 ! Variables related to cyclic boundary  used in desgrid_functions
       integer,dimension(:,:),allocatable :: dg_cycoffset, icycoffset
 
-! particle in cell related variable
-      type iap2
-         integer :: isize
-         integer, dimension(:), pointer:: p
-      end type iap2
-      type(iap2), dimension(:), allocatable:: dg_pic
-      integer, dimension(:), allocatable :: dg_pijk,dg_pijkprv
-
       integer :: dg_pic_max_init = 25
 
 ! constants required for functions computing local and global ijkvalues
@@ -451,6 +443,8 @@
 ! Maximum particle size.
       use discretelement, only: MAX_RADIUS
 
+      use discretelement, only: dg_pic
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED_I
@@ -800,7 +794,8 @@
       lindx(:) = 1
       lparcount = 1
 
-#if defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) )
+#if ( defined(__GFORTRAN__) &&  ( __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 7 ) ) ) \
+      ||  ( defined(__INTEL_COMPILER) && (__INTEL_COMPILER < 1400) )
 
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
@@ -852,13 +847,14 @@
 ! Modules
 !-----------------------------------------------
       Use des_thermo
-      use param1
+      use compar
+      use constant
+      use des_allocate, only: add_pair
+      use desmpi_wrapper
+      use discretelement
       use funits
       use geometry
-      use compar
-      use discretelement
-      use constant
-      use desmpi_wrapper
+      use param1
 
       implicit none
 !-----------------------------------------------
@@ -968,24 +964,24 @@
                lneighcnt = lneighcnt + 1
                if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
 !$  if (.true.) then
+!!!!! SMP version
 
 !$      pair_num_smp = pair_num_smp + 1
 ! Reallocate to double the size of the arrays if needed.
 !$      IF(PAIR_NUM_SMP > PAIR_MAX_SMP) THEN
 !$         PAIR_MAX_SMP = 2*PAIR_MAX_SMP
 !$         lSIZE2 = size(pairs_smp,2)
-!$         allocate(int_tmp(2,lSIZE2))
+
+!$         allocate(int_tmp(2,PAIR_MAX_SMP))
 !$         int_tmp(:,1:lSIZE2) = pairs_smp(:,1:lSIZE2)
-!$         deallocate(pairs_smp)
-!$         allocate(pairs_smp(2,PAIR_MAX_SMP))
-!$         pairs_smp(:,1:lSIZE2) = int_tmp(:,1:lSIZE2)
-!$         deallocate(int_tmp)
+!$         call move_alloc(int_tmp,pairs_smp)
 !$      ENDIF
 
 !$      pairs_smp(1,pair_num_smp) = lcurpar
 !$      pairs_smp(2,pair_num_smp) = lneigh
 
 !$  else
+!!!!! Serial version
                   call add_pair(lcurpar, lneigh)
 !$  endif
                endif
@@ -1002,6 +998,8 @@
 !$        call add_pair(PAIRS_SMP(1,MM), PAIRS_SMP(2,MM))
 !$     enddo
 !$omp end critical
+
+!$    deallocate( PAIRS_SMP )
 
 !$omp end parallel
 

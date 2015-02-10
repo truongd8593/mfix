@@ -1,86 +1,62 @@
-!------------------------------------------------------------------------
-! Module           : desmpi
-! Purpose          : Contains wrapper class for mpi communications- send,recv
-!
-! Author           : Pradeep.G
-!
-! Purpose          : Module contains subroutines and variables related to
-!                    des mpi communication.
-!
-! Comments         : do_nsearch flag should be set to true before calling
-!                    des_par_exchange; when do_nsearch is true ghost particles of the
-!                    system will be updated, which will be later used to generate
-!                    neighbour list.
-
-! Contains following subroutines:
-!------------------------------------------------------------------------
+!----------------------------------------------------------------------!
+!  Module: DESMPI                                                      !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+!  Purpose: Contains routines for packing real and ghost particles     !
+!     into the MPI send buffers.                                       !
+!----------------------------------------------------------------------!
       module desmpi
 
-! flags and constants for interfaces
-      integer,dimension(:),allocatable   :: ineighproc
-      logical,dimension(:),allocatable   :: iexchflag
+! Ghost particle packet size.
+      INTEGER :: iGhostPacketSize
+      INTEGER :: iParticlePacketSize
+      INTEGER :: iPairPacketSize
+
+! Flags and constants for interfaces
+      integer, dimension(:), allocatable :: ineighproc
+      logical, dimension(:), allocatable :: iexchflag
 
 ! offset for periodic boundaries
-      double precision,dimension(:,:),allocatable   :: dcycl_offset
+      double precision, dimension(:,:), allocatable :: dcycl_offset
 
 ! following variables used for sendrecv ghost particles and particle exchange
-      double precision, dimension(:,:), allocatable :: dsendbuf,drecvbuf
+      double precision, dimension(:,:), allocatable :: dsendbuf
+      double precision, dimension(:,:), allocatable :: drecvbuf
+
       integer,dimension(:),allocatable:: isendcnt
-      integer,dimension(:),allocatable:: isendreq,irecvreq
+      integer,dimension(:),allocatable:: isendreq
+      integer,dimension(:),allocatable:: irecvreq
+
       integer,parameter :: ibufoffset = 2
-      integer :: imaxbuf, ispot
+
+! The maximum size of the receive buffer.
+      integer :: imaxbuf
+      integer :: ispot
 
 ! following variables are used for gather and scatter
-      double precision, dimension(:), allocatable :: drootbuf,dprocbuf
-      integer, dimension(:), allocatable :: irootbuf,iprocbuf
-      integer,dimension(:), allocatable:: iscattercnts,idispls,igathercnts
-      integer :: iscr_recvcnt,igath_sendcnt
+      double precision, dimension(:), allocatable :: drootbuf
+      double precision, dimension(:), allocatable :: dprocbuf
+      integer, dimension(:), allocatable :: irootbuf
+      integer, dimension(:), allocatable :: iprocbuf
+
+      integer,dimension(:), allocatable:: idispls
+      integer,dimension(:), allocatable:: iscattercnts
+      integer,dimension(:), allocatable:: igathercnts
+
+      integer :: iscr_recvcnt
+      integer :: igath_sendcnt
 
 ! following variables are used to identify the cell number for ghost cells
-      integer,dimension(:,:),allocatable :: isendindices,irecvindices
-
-! variable to clean the ghost cells
-      logical,dimension(:),allocatable :: ighost_updated
+      integer,dimension(:,:),allocatable :: isendindices
+      integer,dimension(:,:),allocatable :: irecvindices
 
 ! variables used to read initial particle properties
-      double precision, dimension(:,:),allocatable:: dpar_pos,dpar_vel
-      double precision, dimension(:),allocatable::dpar_den,dpar_rad
-
-
-      integer,dimension(:),allocatable  :: itempglobal_id
+      double precision, dimension(:,:), allocatable:: dpar_pos
+      double precision, dimension(:,:), allocatable:: dpar_vel
+      double precision, dimension(:), allocatable:: dpar_den
+      double precision, dimension(:), allocatable:: dpar_rad
 
       contains
-
-!------------------------------------------------------------------------
-! Subroutine       : redim_par
-! Author           : Pradeep G
-! Purpose          : subroutine to redimension the particle when the
-!                    array size is not sufficient
-! Parameter        : pmaxpip - particle size required
-!
-!------------------------------------------------------------------------
-      subroutine redim_par(pmaxpip)
-
-      use desmpi_wrapper, only: des_mpi_stop
-
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      integer :: pmaxpip
-!-----------------------------------------------
-
-      WRITE(*,900) pmaxpip, max_pip
-      call des_mpi_stop
-
- 900  FORMAT(/2X,'From: REDIM_PAR: ',/2X,&
-         'ERROR: Number of particles ',I10,/2X,&
-         'exceeds allowable particles (MAX_PIP)', I10,/2X,&
-         'Suggestion: increase PARTICLES_FACTOR in mfix.dat',/2X,&
-         'Comment: error may be the result of too many ',&
-         'particles moving',/2X,'across processors and/or ',&
-         'result of periodic treatment')
-
-      end  subroutine redim_par
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbgmpi

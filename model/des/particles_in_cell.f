@@ -13,36 +13,38 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PARTICLES_IN_CELL
 
+! Particle positions
+      use discretelement, only: DES_POS_NEW
+! Flags that classify particles
+      use discretelement, only: PEA
+! The number of particles on the current process.
+      use discretelement, only: PIP, MAX_PIP
+! The I/J/K, IJK, and phase index of each particle
+      use discretelement, only: PIJK
+! The number and list of particles in each fluid cell IJK.
+      use discretelement, only: PINC, PIC
+! The East/North/Top face location of a given I/J/K index.
+      use discretelement, only: XE, YN, ZT
+! Flag for 2D simulations.
+      use geometry, only: NO_K
+! The accumulated number of particles in each IJK.
       use tmp_array, only: PARTICLE_COUNT => ARRAY1
-
-      USE param1
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE compar
-      USE parallel
-      USE sendrecv
-      USE discretelement
-      use desgrid
-      use mpi_funs_des
-      USE cutcell
-      USE mfix_pic
-      USE des_rxns
-      USE run
-      USE error_manager
-      USE functions
-
-
-
-! Number of particles in the I/J/K direction
+! The start and end indices of IJK loops
+      use compar, only: IJKStart3, IJKEnd3
+! The Upper and Loper indices covered by the current process.
+      use compar, only: ISTART2, IEND2
+      use compar, only: JSTART2, JEND2
+      use compar, only: KSTART2, KEND2
+! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-
+! Function to conpute IJK from I/J/K
+      use functions, only: FUNIJK
 
       IMPLICIT NONE
-!-----------------------------------------------
+
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! particle no.
       INTEGER L
 ! accounted for particles
@@ -53,9 +55,8 @@
       INTEGER I, J, K, IJK
 ! variables that count/store the number of particles in i, j, k cell
       INTEGER:: npic, pos
+!......................................................................!
 
-      INTEGER :: RECOVERED
-      INTEGER :: DELETED
 
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
@@ -150,7 +151,7 @@
       ENDDO
 !!$omp end parallel
 
-      CALL CHECK_CELL_MOVEMENT(RECOVERED, DELETED)
+      CALL CHECK_CELL_MOVEMENT
 
 ! Assigning the variable PIC(IJK)%p(:). For each computational fluid
 ! cell compare the number of current particles in the cell to what was

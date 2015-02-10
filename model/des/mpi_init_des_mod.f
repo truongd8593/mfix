@@ -1,17 +1,10 @@
-!------------------------------------------------------------------------
-! Module           : desmpi
-! Purpose          : Contains wrapper class for mpi communications- send,recv
-!
-! Author           : Pradeep.G
-!
-! Purpose          : Module contains subroutines and variables related to
-!                    des mpi communication.
-!
-! Comments         : do_nsearch flag should be set to true before calling
-!                    des_par_exchange; when do_nsearch is true ghost particles of the
-!                    system will be updated, which will be later used to generate
-!                    neighbour list.
-!------------------------------------------------------------------------
+!----------------------------------------------------------------------!
+!  Module: MPI_INIT_DES                                                !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+!  Purpose: Contains routines for setting up DES MPI communications.   !
+!                                                                      !
+!----------------------------------------------------------------------!
       module mpi_init_des
 
 !-----------------------------------------------
@@ -35,34 +28,69 @@
 
       use desmpi
 
-      use mpi_comm_des, only: desmpi_scatterv
-!-----------------------------------------------
 
       contains
 
-!------------------------------------------------------------------------
-! Subroutine       : desmpi_init
-! Purpose          : allocates and initializes the variables related to send and recv
-!                    sets the flag related to periodic and processor interfaces
-!------------------------------------------------------------------------
+
+!----------------------------------------------------------------------!
+!  Module: DESMPI_INIT                                                 !
+!  Author: Pradeep Gopalakrishnan                                      !
+!                                                                      !
+!  Purpose: Allocates and initializes variables used by MPI send/recv  !
+!  calls. Sets flags related to periodic boundaries and processor      !
+!  interfaces.                                                         !
+!                                                                      !
+!----------------------------------------------------------------------!
       subroutine desmpi_init
 
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_GARG
+
+      use desmpi, only: iGhostPacketSize
+      use desmpi, only: iParticlePacketSize
+      use desmpi, only: iPairPacketSize
+
+      use discretelement, only: DES_USR_VAR_SIZE
+
+      use error_manager
 
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lpacketsize,ltordimn,lfaces,lfactor=4
+      integer :: lfaces,lfactor=4
       integer :: lmaxlen1,lmaxlen2,lmaxarea,lmaxghostpar
+
+      DOUBLE PRECISION, PARAMETER :: ONEMBo8 = 131072.0
+
 !-----------------------------------------------
 
-! determine initial size of send and recv buffer based on max_pip,
-! total cells max number of boundary cells, and the packet size
-      ltordimn = merge(1,3,NO_K)
-      lpacketsize = 2*dimn + ltordimn+ 5
+! Calculate the size of ghost particle packets:
+      iGhostPacketSize = 15 + DES_USR_VAR_SIZE
+      IF(ENERGY_EQ) &
+         iGhostPacketSize = iGhostPacketSize + 1
+
+! Calculate the size of particle packets.
+      iParticlePacketSize = 30 + DES_USR_VAR_SIZE
+      IF(ENERGY_EQ) &
+         iParticlePacketSize = iParticlePacketSize + 1
+      IF(ANY_SPECIES_EQ) &
+         iParticlePacketSize = iParticlePacketSize + DIMENSION_N_s
+      IF(DES_EXPLICITLY_COUPLED) &
+         iParticlePacketSize = iParticlePacketSize + 3
+      IF(DO_OLD) &
+         iParticlePacketSize = iParticlePacketSize + 15
+      IF(DO_OLD .AND. ENERGY_EQ) &
+         iParticlePacketSize = iParticlePacketSize + 1
+      IF(MPPIC) &
+         iParticlePacketSize = iParticlePacketSize + 1
+
+! Calculate the size of neighbor data
+      iPairPacketSize = 11
+
+! Calculate the initial size of send and recv buffer based on max_pip,
+! total cells max number of boundary cells, and ghost par packet size.
       lfaces = dimn*2
       lmaxlen1 = dg_iend2-dg_istart2+1
       lmaxlen2 = dg_jend2-dg_jstart2+1
@@ -73,11 +101,22 @@
          lmaxlen1 = max(lmaxlen1,lmaxlen2)
          lmaxlen2 = 1
       end if
-      lmaxarea = lmaxlen1*lmaxlen2 + 10 !10 is added for buffer and is required for send and recv indices
+
+! Note: 10 is added for buffer and is required for send and recv indices
+      lmaxarea = lmaxlen1*lmaxlen2 + 10
 
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
-      imaxbuf = lmaxghostpar*lmaxarea*lpacketsize
+      imaxbuf = lmaxghostpar*lmaxarea*iGhostPacketSize
+
+      WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, ONEMBo8/iGhostPacketSize,  &
+         ONEMBo8/iParticlePacketSize, ONEMBo8/iPairPacketSize
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT(/'DES MPI send/recv buffer: ',F7.1,' MB',/' o  ',F6.0,1X, &
+         'Ghost Particles/MB',/' o  ',F6.0,1X,'Particles/MB',/' o  ',  &
+         F6.0,1X,'Neighbor Pairs/MB')
+
 
       allocate (dsendbuf(imaxbuf,lfaces)); dsendbuf=0.0
       allocate (drecvbuf(imaxbuf,lfaces)); drecvbuf=0.0
@@ -362,6 +401,10 @@
 !                    Each proc receives its particles along with particle count
 !------------------------------------------------------------------------
       subroutine des_scatter_particle
+
+      use mpi_comm_des, only: desmpi_scatterv
+
+
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------

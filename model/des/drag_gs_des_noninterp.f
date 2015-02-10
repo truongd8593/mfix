@@ -232,10 +232,12 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC
+! Gas phase volume fraction
+      use fldvar, only: EP_G
+! Max number of particles on current process
+      use discretelement, only: MAX_PIP
 ! Flags indicating the state of particle
-      use discretelement, only: PEA
+      use discretelement, only: PEA, PIJK
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle drag force
@@ -246,8 +248,6 @@
       use discretelement, only: DRAG_BM
 ! Scalar cell center total drag force
       use discretelement, only: F_GDS
-! Gas pressure force by fluid cell
-      use discretelement, only: P_FORCE
 ! Flag for MPPIC runs
       use mfix_pic, only: MPPIC
 ! Statical weight of each MPPIC parcel
@@ -258,6 +258,16 @@
       use functions, only: FLUID_AT
 ! Volume of scalar cell.
       use geometry, only: VOL
+! Cell-center gas velocities.
+      use tmp_array, only: UGC => ARRAY1
+      use tmp_array, only: VGC => ARRAY2
+      use tmp_array, only: WGC => ARRAY3
+! Lock/Unlock the temp arrays to prevent double usage.
+      use tmp_array, only: LOCK_TMP_ARRAY
+      use tmp_array, only: UNLOCK_TMP_ARRAY
+! MPI wrapper for halo exchange.
+      use sendrecv, only: SEND_RECV
+
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -274,54 +284,62 @@
       INTEGER :: NP, NINDX
 ! Scalar cell center fluid velocity
       DOUBLE PRECISION :: VelFp(3)
-! One divided by fluid cell volume
-      DOUBLE PRECISION :: OoVOL
 ! Drag force (intermediate calculation)
       DOUBLE PRECISION :: lFORCE
 
 !......................................................................!
 
+! Initialize fluid cell values.
+      F_GDS = ZERO
+      DRAG_BM = ZERO
+
+! Lock the temp arrays.
+      CALL LOCK_TMP_ARRAY
+
+! Calculate the cell center gas velocities.
+      CALL CALC_CELL_CENTER_GAS_VEL
 
 ! Calculate the drag for each fluid cell if it contains particles.
 !---------------------------------------------------------------------//
-      DO IJK = IJKSTART3,IJKEND3
+      DO NP=1,MAX_PIP
+         IF(.NOT.PEA(NP,1)) CYCLE
 
-! Initialize fluid cell values.
-         F_GDS(IJK) = ZERO
-         DRAG_BM(IJK,:) = ZERO
+! The drag force is not calculated on entering or exiting particles
+! as their velocities are fixed and may exist in 'non fluid' cells.
+         IF(any(PEA(NP,2:3))) THEN
+            DRAG_FC(:,NP) = ZERO
+            CYCLE
+         ENDIF
 
-! Skip non-fluid cells and cells without particles.
-         IF(.NOT.FLUID_AT(IJK)) CYCLE
-         IF(PINC(IJK) == 0)  CYCLE
+! Fluid index containing the particle
+         IJK = PIJK(NP,4)
 
-! Calculate the average fluid velocity at scalar cell center.
-         CALL CALC_NONINTERP_VELFP_GAS(IJK, VELFP)
+! Gas phase velocity
+         VELFP(1) = UGC(IJK)
+         VELFP(2) = VGC(IJK)
+         VELFP(3) = WGC(IJK)
 
-         OoVOL = ONE/VOL(IJK)
-
-! loop through particles in the cell
-         DO NINDX = 1,PINC(IJK)
-            NP = PIC(IJK)%P(NINDX)
-! skipping indices that do not represent particles and ghost particles
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(PEA(NP,4)) CYCLE
-
-! Calculate the particle centered drag coefficient (F_GP) using the
-! particle velocity and the cell averaged gas velocity.
-            CALL DES_DRAG_GP(NP, VelFp, DES_VEL_NEW(:,NP))
+         CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, EP_g(IJK))
 
 ! Evaluate the drag force acting on the particle.
-            DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
+         DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
 
-            lFORCE = OoVOL*F_GP(NP)
-            IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
+         lFORCE = F_GP(NP)/VOL(IJK)
+         IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
 
-            F_GDS(IJK) = F_GDS(IJK) + lFORCE
-            DRAG_BM(IJK,:) = DRAG_BM(IJK,:) +                          &
-               lFORCE*(DES_VEL_NEW(:,NP)-VELFP)
-         ENDDO
+         F_GDS(IJK) = F_GDS(IJK) + lFORCE
+
+         DRAG_BM(IJK,:) = DRAG_BM(IJK,:) +                          &
+            lFORCE*(DES_VEL_NEW(:,NP)-VELFP)
 
       ENDDO
+
+! Unlock the temp arrays.
+      CALL UNLOCK_TMP_ARRAY
+
+! Update the drag force and sources in ghost layers.
+      CALL SEND_RECV(F_GDS, 2)
+      CALL SEND_RECV(DRAG_BM, 2)
 
 
       RETURN

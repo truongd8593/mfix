@@ -367,9 +367,10 @@
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT,BUFF1,BUFF2,L
 
-! Only open the file form head node when not using distributed I/O
-      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
+
+! Only open the file from head node when not using distributed I/O
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
       IF(TIME_DEPENDENT_FILENAME) THEN
          INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
@@ -393,19 +394,21 @@
          ENDDO
       ENDIF
 
-      IF (BDIST_IO) THEN
+      IF (BDIST_IO.AND.NUMBER_OF_VTK_CELLS>0) THEN
+
+
 ! For distributed I/O, define the file name for each processor
          IF(TIME_DEPENDENT_FILENAME) THEN
-            WRITE(VTU_FILENAME,20) TRIM(RUN_NAME),FRAME,MYPE
+            WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
          ELSE
-            WRITE(VTU_FILENAME,25) TRIM(RUN_NAME),MYPE
+            WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
          ENDIF
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
             IF(TIME_DEPENDENT_FILENAME) THEN
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
-               WRITE(VTU_FILENAME,35) TRIM(RUN_NAME)
+               WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
             ENDIF
          END IF
       END IF
@@ -426,55 +429,58 @@
 ! Open File
 !      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
 
+      
+      IF(NUMBER_OF_VTK_CELLS>0) THEN
 
-      OPEN(UNIT     = VTU_UNIT,           &
-           FILE     = TRIM(VTU_FILENAME), &
-           FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'BINARY' if 'UNFORMATTED' is not supported
-           ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
-                                             ! use 'SEQUENTIAL' if 'STREAM' is not supported
-           ACTION   = 'WRITE',            &
-           IOSTAT=ISTAT)
+         OPEN(UNIT     = VTU_UNIT,           &
+              FILE     = TRIM(VTU_FILENAME), &
+              FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                                ! use 'BINARY' if 'UNFORMATTED' is not supported
+              ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                                ! use 'SEQUENTIAL' if 'STREAM' is not supported
+              ACTION   = 'WRITE',            &
+              IOSTAT=ISTAT)
 
 
-      IF (ISTAT /= 0) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
-         IF(FULL_LOG.AND.myPE == PE_IO) WRITE(*, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
-         CALL MFIX_EXIT(myPE)
+         IF (ISTAT /= 0) THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+            IF(FULL_LOG.AND.myPE == PE_IO) WRITE(*, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+    1001 FORMAT(/1X,70('*')//, ' From: OPEN_VTU_FILE',/,' Message: ',          &
+            'Error opening vtu file. Terminating run.',/10X,          &
+            'File name:  ',A,/10X,                                         &
+            'DES_UNIT :  ',i4, /10X,                                       &
+            'PLEASE VERIFY THAT VTU_DIR EXISTS: ', A, &
+            /1X,70('*')/)
+
+
+   ! Write file Header
+         BUFFER='<?xml version="1.0"?>'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+
+         WRITE(BUFFER,110)'<!-- Time =',TIME,' sec. -->'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+         BUFFER='<VTKFile type="UnstructuredGrid" version="0.1" byte_order="BigEndian">'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+         BUFFER='  <UnstructuredGrid>'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
       ENDIF
-
-
- 1001 FORMAT(/1X,70('*')//, ' From: OPEN_VTU_FILE',/,' Message: ',          &
-         'Error opening vtu file. Terminating run.',/10X,          &
-         'File name:  ',A,/10X,                                         &
-         'DES_UNIT :  ',i4, /10X,                                       &
-         'PLEASE VERIFY THAT VTU_DIR EXISTS: ', A, &
-         /1X,70('*')/)
-
-
-! Write file Header
-      BUFFER='<?xml version="1.0"?>'
-      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
-
-
-      WRITE(BUFFER,110)'<!-- Time =',TIME,' sec. -->'
-      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
-
-      BUFFER='<VTKFile type="UnstructuredGrid" version="0.1" byte_order="BigEndian">'
-      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
-
-      BUFFER='  <UnstructuredGrid>'
-      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
-
 ! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
 ! this is a simple ASCII file
 
       IF (myPE == PE_IO.AND.BDIST_IO) THEN
 
          IF(TIME_DEPENDENT_FILENAME) THEN
-            WRITE(PVTU_FILENAME,40) TRIM(RUN_NAME),FRAME
+            WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
-            WRITE(PVTU_FILENAME,45) TRIM(RUN_NAME)
+            WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
          ENDIF
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
@@ -563,6 +569,7 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
+
 
 ! First a series of tags is written for the geometry (PASS=WRITE_HEADER)
 !  - Coordinates
@@ -715,32 +722,20 @@
 ! For distributed I/O, it works the same as above, except, the data is local to each processor
 ! First compute local number of cells and points
 
-         NUMBER_OF_CELLS = 0
-         NUMBER_OF_BLOCKED_CELLS  = 0
-
-         DO IJK = 1, IJKEND3
-            IF (INTERIOR_CELL_AT(IJK)) THEN
-               NUMBER_OF_CELLS = NUMBER_OF_CELLS + 1
-               IF (BLOCKED_CELL_AT(IJK))  NUMBER_OF_BLOCKED_CELLS  = NUMBER_OF_BLOCKED_CELLS + 1
-            ENDIF
-         END DO
-
-
-         NUMBER_OF_POINTS = IJKEND3 + NUMBER_OF_NEW_POINTS
-         NUMBER_OF_VTK_CELLS = NUMBER_OF_CELLS - NUMBER_OF_BLOCKED_CELLS
+! The number of points and number of VTK cells is now computed in
+! SETUP_VTK_REGION
 
 ! Number of bytes of each field
          nbytes_xyz          = NUMBER_OF_POINTS * 3 * c_sizeof(float)
 
          nbytes_connectivity = 0
          DO IJK = 1,IJKEND3
-            IF (INTERIOR_CELL_AT(IJK))      THEN
-               IF (.NOT.BLOCKED_CELL_AT(IJK)) THEN
+            IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
                   nbytes_connectivity = nbytes_connectivity + NUMBER_OF_NODES(IJK)
-               ENDIF
             ENDIF
          END DO
          nbytes_connectivity = nbytes_connectivity * c_sizeof(int)
+
 
          nbytes_offset       = NUMBER_OF_VTK_CELLS * c_sizeof(int)
 
@@ -752,6 +747,7 @@
          offset_connectivity = offset_xyz          + c_sizeof(int) + nbytes_xyz
          offset_offset       = offset_connectivity + c_sizeof(int) + nbytes_connectivity
          offset_type         = offset_offset       + c_sizeof(int) + nbytes_offset
+
 
          IF(PASS==WRITE_HEADER) THEN
 
@@ -767,7 +763,6 @@
 
             WRITE(BUFFER,110)'      </Points>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
-
 
             WRITE(BUFFER,110)'      <Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -785,8 +780,7 @@
             WRITE(BUFFER,110)'      </Cells>'
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-            ! Store offset for first variable to be written
-            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type
+            VTU_offset =  offset_type       + c_sizeof(int) + nbytes_type  ! Store offset for first variable to be written
 
             WRITE(BUFFER,110)'      <CellData>'                          ! Preparing CellData
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
@@ -817,16 +811,14 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)
 
 ! X,Y,Z coordinates
-            WRITE(VTU_UNIT) nbytes_xyz,(REAL(XG_E(I_OF(IJK))),REAL(YG_N(J_OF(IJK))),REAL(ZG_T(K_OF(IJK))), IJK = 1,IJKEND3), &
-                                       (REAL(X_NEW_POINT(IJK)),REAL(Y_NEW_POINT(IJK)),REAL(Z_NEW_POINT(IJK)),IJK = 1,&
-                                        NUMBER_OF_NEW_POINTS)
+            WRITE(VTU_UNIT) nbytes_xyz, (COORDS_OF_POINTS(L,1:3), L = 1,NUMBER_OF_POINTS)
 
 ! Conectivity
             WRITE(VTU_UNIT) nbytes_connectivity
 
             DO IJK = 1,IJKEND3
-               IF (INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT) (CONNECTIVITY(IJK,L)-1,L=1,NUMBER_OF_NODES(IJK))
+               IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+                  WRITE(VTU_UNIT) (CLEANED_CONNECTIVITY(IJK,L)-1,L=1,NUMBER_OF_NODES(IJK))
                ENDIF
             END DO
 
@@ -835,11 +827,9 @@
 
             OFFSET = 0
             DO IJK = 1,IJKEND3
-               IF (INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.BLOCKED_CELL_AT(IJK)) THEN
-                     OFFSET = OFFSET + NUMBER_OF_NODES(IJK)
-                     WRITE(VTU_UNIT) OFFSET
-                  ENDIF
+               IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+                  OFFSET = OFFSET + NUMBER_OF_NODES(IJK)
+                  WRITE(VTU_UNIT) OFFSET
                ENDIF
             END DO
 
@@ -853,9 +843,7 @@
             ENDIF
 
             DO IJK = 1,IJKEND3
-               IF (INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.BLOCKED_CELL_AT(IJK)) WRITE(VTU_UNIT) CELL_TYPE
-               ENDIF
+               IF (BELONGS_TO_VTK_SUBDOMAIN(IJK))  WRITE(VTU_UNIT) CELL_TYPE
             END DO
 
 
@@ -1002,9 +990,7 @@
             WRITE(VTU_UNIT) nbytes_scalar
 
             DO IJK = 1,IJKEND3
-               IF (INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT) REAL(VAR(IJK))
-               ENDIF
+               IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) WRITE(VTU_UNIT) REAL(VAR(IJK))
             ENDDO
 
          ENDIF
@@ -1167,8 +1153,8 @@
             WRITE(VTU_UNIT) nbytes_vector
 
             DO IJK = 1,IJKEND3
-               IF (INTERIOR_CELL_AT(IJK))      THEN
-                  IF (.NOT.BLOCKED_CELL_AT(IJK))   WRITE(VTU_UNIT) REAL(VARX(IJK)),REAL(VARY(IJK)),REAL(VARZ(IJK))
+               IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+                  WRITE(VTU_UNIT) REAL(VARX(IJK)),REAL(VARY(IJK)),REAL(VARZ(IJK))
                ENDIF
             ENDDO
 
@@ -1212,35 +1198,47 @@
       Use run
       USE vtk
       use cdist
+      USE mpi_utility
 
       IMPLICIT NONE
 
       INTEGER:: N
       CHARACTER (LEN=32)  :: VTU_NAME
+      INTEGER, DIMENSION(0:numPEs-1) :: ALL_VTK_CELL_COUNT
+      INTEGER :: IERR
 
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
+      IF(NUMBER_OF_VTK_CELLS>0) THEN
+
 ! Write last tags and close the vtu file
-       WRITE(BUFFER,110)'  </AppendedData>'
-       WRITE(VTU_UNIT)END_REC//TRIM(BUFFER)//END_REC
+          WRITE(BUFFER,110)'  </AppendedData>'
+          WRITE(VTU_UNIT)END_REC//TRIM(BUFFER)//END_REC
 
-       WRITE(BUFFER,110)'</VTKFile>'
-       WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+          WRITE(BUFFER,110)'</VTKFile>'
+          WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-      CLOSE(VTU_UNIT)
+         CLOSE(VTU_UNIT)
+
+      ENDIF
 
 ! Update pvtu file and close
+
+      IF(BDIST_IO)  CALL allgather_1i (NUMBER_OF_VTK_CELLS,ALL_VTK_CELL_COUNT,IERR)
+
       IF (myPE == PE_IO.AND.BDIST_IO) THEN
          WRITE(PVTU_UNIT,100) '      </PCellData>'
 
          DO N = 0,NumPEs-1
-            IF(TIME_DEPENDENT_FILENAME) THEN
-               WRITE(VTU_NAME,20) TRIM(RUN_NAME),FRAME,N
-            ELSE
-               WRITE(VTU_NAME,25) TRIM(RUN_NAME),N
-            ENDIF
+            IF(ALL_VTK_CELL_COUNT(N)>0) THEN
+               IF(TIME_DEPENDENT_FILENAME) THEN
+                  WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
+               ELSE
+                  WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N
+               ENDIF
 
-            WRITE(PVTU_UNIT,110) '      <Piece Source="',TRIM(VTU_NAME),'"/>'
+               WRITE(PVTU_UNIT,110) '      <Piece Source="',TRIM(VTU_NAME),'"/>'
+            ENDIF
          ENDDO
 
 
@@ -1399,9 +1397,9 @@
          FILENAME=VTU_FILENAME
       ELSE
          IF(TIME_DEPENDENT_FILENAME) THEN
-            WRITE(FILENAME,40) TRIM(RUN_NAME),FRAME
+            WRITE(FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
-            WRITE(FILENAME,45) TRIM(RUN_NAME)
+            WRITE(FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
          ENDIF
          IF(TRIM(VTU_DIR)/='.') FILENAME='./'//TRIM(VTU_DIR)//'/'//FILENAME
       ENDIF
@@ -2808,19 +2806,26 @@
       INTEGER :: IJK,L
 
       INTEGER ::POINT_ID,IJKC
-      INTEGER , DIMENSION(IJKMAX3) ::  POINT_NEW_ID,NEW_POINT_NEW_ID
-      LOGICAL , DIMENSION(IJKMAX3) ::  KEEP_POINT
+      INTEGER , ALLOCATABLE        ::  POINT_NEW_ID(:)
+      INTEGER , ALLOCATABLE        ::  NEW_POINT_NEW_ID(:)
+      LOGICAL , ALLOCATABLE        ::  KEEP_POINT(:)
       LOGICAL , ALLOCATABLE        ::  KEEP_NEW_POINT(:)
 
 
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
 
-      IF(ALLOCATED(GLOBAL_CLEANED_CONNECTIVITY)) DEALLOCATE(GLOBAL_CLEANED_CONNECTIVITY)
-      IF(ALLOCATED(KEEP_NEW_POINT)) DEALLOCATE (KEEP_NEW_POINT)
+         IF(ALLOCATED(GLOBAL_CLEANED_CONNECTIVITY)) DEALLOCATE(GLOBAL_CLEANED_CONNECTIVITY)
+         IF(ALLOCATED(KEEP_NEW_POINT))              DEALLOCATE (KEEP_NEW_POINT)
+         IF(ALLOCATED(POINT_NEW_ID))                DEALLOCATE (POINT_NEW_ID)
+         IF(ALLOCATED(NEW_POINT_NEW_ID))            DEALLOCATE (NEW_POINT_NEW_ID)
+         IF(ALLOCATED(KEEP_POINT))                  DEALLOCATE (KEEP_POINT)
 
-      ALLOCATE (GLOBAL_CLEANED_CONNECTIVITY(ijkmax3,15))
-      ALLOCATE (KEEP_NEW_POINT(GLOBAL_NUMBER_OF_NEW_POINTS))
+         ALLOCATE (GLOBAL_CLEANED_CONNECTIVITY(ijkmax3,15))
+         ALLOCATE (KEEP_NEW_POINT(GLOBAL_NUMBER_OF_NEW_POINTS))
 
+         ALLOCATE (POINT_NEW_ID(IJKMAX3))
+         ALLOCATE (NEW_POINT_NEW_ID(IJKMAX3))
+         ALLOCATE (KEEP_POINT(IJKMAX3))
 
 ! Step 1: Go through connectivity list and only keep points that are used.
 !         For background cell corners, assign KEEP_POINT = .TRUE.
@@ -2828,83 +2833,177 @@
 !         so assign KEEP_NEW_POINT = .TRUE.
 !         A NEW_POINT had an IJK index larger than IJKMAX3
 
-      KEEP_POINT = .FALSE.
-      KEEP_NEW_POINT = .FALSE.
+         KEEP_POINT = .FALSE.
+         KEEP_NEW_POINT = .FALSE.
 
-      DO IJK = 1,IJKMAX3
-         IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
-            DO L=1,GLOBAL_NUMBER_OF_NODES(IJK)
-               IJKC = GLOBAL_CONNECTIVITY(IJK,L)
-               IF(IJKC<=IJKMAX3) KEEP_POINT(IJKC) = .TRUE.
-               IF(IJKC>IJKMAX3) KEEP_NEW_POINT(IJKC-IJKMAX3) = .TRUE.
-            ENDDO
-         ENDIF
-      END DO
+         DO IJK = 1,IJKMAX3
+            IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+               DO L=1,GLOBAL_NUMBER_OF_NODES(IJK)
+                  IJKC = GLOBAL_CONNECTIVITY(IJK,L)
+                  IF(IJKC<=IJKMAX3) KEEP_POINT(IJKC) = .TRUE.
+                  IF(IJKC>IJKMAX3) KEEP_NEW_POINT(IJKC-IJKMAX3) = .TRUE.
+               ENDDO
+            ENDIF
+         END DO
 
 
 ! Step 2: Clean-up list of used points and store cleaned connectivity
-      POINT_NEW_ID = -1
-      NEW_POINT_NEW_ID = -1
-      POINT_ID = 1
+         POINT_NEW_ID = -1
+         NEW_POINT_NEW_ID = -1
+         POINT_ID = 1
 ! This is for the background grid cell corners
-      DO IJK = 1,IJKMAX3
-         IF(KEEP_POINT(IJK)) THEN
-            POINT_NEW_ID(IJK) = POINT_ID
-            POINT_ID = POINT_ID + 1
-         ENDIF
-      END DO
+         DO IJK = 1,IJKMAX3
+            IF(KEEP_POINT(IJK)) THEN
+               POINT_NEW_ID(IJK) = POINT_ID
+               POINT_ID = POINT_ID + 1
+            ENDIF
+         END DO
 ! This is for the cut cell new corners
-      DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
-         IF(KEEP_NEW_POINT(IJK)) THEN
-            NEW_POINT_NEW_ID(IJK) = POINT_ID
-            POINT_ID = POINT_ID + 1
-         ENDIF
-      END DO
+         DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
+            IF(KEEP_NEW_POINT(IJK)) THEN
+               NEW_POINT_NEW_ID(IJK) = POINT_ID
+               POINT_ID = POINT_ID + 1
+            ENDIF
+         END DO
 
 ! Update the true (clean) number of points
-      NUMBER_OF_POINTS = POINT_ID - 1
+         NUMBER_OF_POINTS = POINT_ID - 1
 
 ! Now, store a list of coordinates for all used points
-      IF(ALLOCATED(GLOBAL_COORDS_OF_POINTS)) DEALLOCATE(GLOBAL_COORDS_OF_POINTS)
+         IF(ALLOCATED(GLOBAL_COORDS_OF_POINTS)) DEALLOCATE(GLOBAL_COORDS_OF_POINTS)
 
-      ALLOCATE(GLOBAL_COORDS_OF_POINTS(NUMBER_OF_POINTS,3))
+         ALLOCATE(GLOBAL_COORDS_OF_POINTS(NUMBER_OF_POINTS,3))
 
-      POINT_ID = 1
+         POINT_ID = 1
 ! This is for the background grid cell corners
-      DO IJK = 1,IJKMAX3
-         IF(KEEP_POINT(IJK)) THEN
-            GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
-                 (/REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK)))/)
-            POINT_ID = POINT_ID + 1
-         ENDIF
-      END DO
+         DO IJK = 1,IJKMAX3
+            IF(KEEP_POINT(IJK)) THEN
+               GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
+                    (/REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK)))/)
+               POINT_ID = POINT_ID + 1
+            ENDIF
+         END DO
 ! This is for the cut cell new corners
-      DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
-         IF(KEEP_NEW_POINT(IJK)) THEN
-            NEW_POINT_NEW_ID(IJK) = POINT_ID
-            GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
-                 (/REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK))/)
-            POINT_ID = POINT_ID + 1
-         ENDIF
-      END DO
+         DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
+            IF(KEEP_NEW_POINT(IJK)) THEN
+               NEW_POINT_NEW_ID(IJK) = POINT_ID
+               GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
+                    (/REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK))/)
+               POINT_ID = POINT_ID + 1
+            ENDIF
+         END DO
 
 
 ! Step 3: Shift connectivity with new point indices
-      DO IJK = 1,IJKMAX3
-         IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
-            DO L=1,GLOBAL_NUMBER_OF_NODES(IJK)
-               IF(GLOBAL_CONNECTIVITY(IJK,L)<=IJKMAX3) THEN
-                  GLOBAL_CLEANED_CONNECTIVITY(IJK,L) = POINT_NEW_ID(GLOBAL_CONNECTIVITY(IJK,L))
-               ELSE
-                  GLOBAL_CLEANED_CONNECTIVITY(IJK,L) = NEW_POINT_NEW_ID(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
-               ENDIF
-            ENDDO
-         ENDIF
-      END DO
+         DO IJK = 1,IJKMAX3
+            IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+               DO L=1,GLOBAL_NUMBER_OF_NODES(IJK)
+                  IF(GLOBAL_CONNECTIVITY(IJK,L)<=IJKMAX3) THEN
+                     GLOBAL_CLEANED_CONNECTIVITY(IJK,L) = POINT_NEW_ID(GLOBAL_CONNECTIVITY(IJK,L))
+                  ELSE
+                     GLOBAL_CLEANED_CONNECTIVITY(IJK,L) = NEW_POINT_NEW_ID(GLOBAL_CONNECTIVITY(IJK,L)-IJKMAX3)
+                  ENDIF
+               ENDDO
+            ENDIF
+         END DO
 
 
 
        ELSEIF(BDIST_IO) THEN
+
+
+          IF(ALLOCATED(CLEANED_CONNECTIVITY))  DEALLOCATE (CLEANED_CONNECTIVITY)
+          IF(ALLOCATED(KEEP_NEW_POINT))        DEALLOCATE (KEEP_NEW_POINT)
+          IF(ALLOCATED(POINT_NEW_ID))          DEALLOCATE (POINT_NEW_ID)
+          IF(ALLOCATED(NEW_POINT_NEW_ID))      DEALLOCATE (NEW_POINT_NEW_ID)
+          IF(ALLOCATED(KEEP_POINT))            DEALLOCATE (KEEP_POINT)
+
+          ALLOCATE (CLEANED_CONNECTIVITY(IJKEND3,15))
+          ALLOCATE (KEEP_NEW_POINT(NUMBER_OF_NEW_POINTS))
+
+          ALLOCATE (POINT_NEW_ID(IJKEND3))
+          ALLOCATE (NEW_POINT_NEW_ID(IJKEND3))
+          ALLOCATE (KEEP_POINT(IJKEND3))
+
+! Step 1: Go through connectivity list and only keep points that are used.
+!         For background cell corners, assign KEEP_POINT = .TRUE.
+!         For cut cells, the new intersection points were called NEW_POINTS,
+!         so assign KEEP_NEW_POINT = .TRUE.
+!         A NEW_POINT had an IJK index larger than IJKMAX3
+
+          KEEP_POINT = .FALSE.
+          KEEP_NEW_POINT = .FALSE.
+
+          DO IJK = 1,IJKEND3
+             IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+                DO L=1,NUMBER_OF_NODES(IJK)
+                   IJKC = CONNECTIVITY(IJK,L)
+                   IF(IJKC<=IJKEND3) KEEP_POINT(IJKC) = .TRUE.
+                   IF(IJKC>IJKEND3) KEEP_NEW_POINT(IJKC-IJKEND3) = .TRUE.
+                ENDDO
+             ENDIF
+          END DO
+
+
+! Step 2: Clean-up list of used points and store cleaned connectivity
+          POINT_NEW_ID = -1
+          NEW_POINT_NEW_ID = -1
+          POINT_ID = 1
+! This is for the background grid cell corners
+          DO IJK = 1,IJKEND3
+             IF(KEEP_POINT(IJK)) THEN
+                POINT_NEW_ID(IJK) = POINT_ID
+                POINT_ID = POINT_ID + 1
+             ENDIF
+          END DO
+! This is for the cut cell new corners
+          DO IJK = 1,NUMBER_OF_NEW_POINTS
+             IF(KEEP_NEW_POINT(IJK)) THEN
+                NEW_POINT_NEW_ID(IJK) = POINT_ID
+                POINT_ID = POINT_ID + 1
+             ENDIF
+          END DO
+
+! Update the true (clean) number of points
+          NUMBER_OF_POINTS = POINT_ID - 1
+
+! Now, store a list of coordinates for all used points
+          IF(ALLOCATED(COORDS_OF_POINTS)) DEALLOCATE(COORDS_OF_POINTS)
+
+          ALLOCATE(COORDS_OF_POINTS(NUMBER_OF_POINTS,3))
+
+          POINT_ID = 1
+! This is for the background grid cell corners
+          DO IJK = 1,IJKEND3
+             IF(KEEP_POINT(IJK)) THEN
+                COORDS_OF_POINTS(POINT_ID,1:3) = &
+                     (/REAL(XG_E(I_OF(IJK))),REAL(YG_N(J_OF(IJK))),REAL(ZG_T(K_OF(IJK)))/)
+                POINT_ID = POINT_ID + 1
+             ENDIF
+          END DO
+! This is for the cut cell new corners
+          DO IJK = 1,NUMBER_OF_NEW_POINTS
+             IF(KEEP_NEW_POINT(IJK)) THEN
+                NEW_POINT_NEW_ID(IJK) = POINT_ID
+                COORDS_OF_POINTS(POINT_ID,1:3) = &
+                     (/REAL(X_NEW_POINT(IJK)),REAL(Y_NEW_POINT(IJK)),REAL(Z_NEW_POINT(IJK))/)
+                POINT_ID = POINT_ID + 1
+             ENDIF
+          END DO
+
+
+! Step 3: Shift connectivity with new point indices
+          DO IJK = 1,IJKEND3
+             IF (BELONGS_TO_VTK_SUBDOMAIN(IJK)) THEN
+                DO L=1,NUMBER_OF_NODES(IJK)
+                   IF(CONNECTIVITY(IJK,L)<=IJKEND3) THEN
+                      CLEANED_CONNECTIVITY(IJK,L) = POINT_NEW_ID(CONNECTIVITY(IJK,L))
+                   ELSE
+                      CLEANED_CONNECTIVITY(IJK,L) = NEW_POINT_NEW_ID(CONNECTIVITY(IJK,L)-IJKEND3)
+                   ENDIF
+                ENDDO
+             ENDIF
+          END DO
 
        ENDIF
 
@@ -2965,60 +3064,60 @@
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
 
 
+! Get VTK region bounds         
+      XE = VTK_X_E(VTK_REGION)
+      XW = VTK_X_W(VTK_REGION)
+      YS = VTK_Y_S(VTK_REGION)
+      YN = VTK_Y_N(VTK_REGION)
+      ZB = VTK_Z_B(VTK_REGION)
+      ZT = VTK_Z_T(VTK_REGION)
+
+      NXS = VTK_NXS(VTK_REGION)
+      NYS = VTK_NYS(VTK_REGION)
+      NZS = VTK_NZS(VTK_REGION)
+
+      CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
+      I_W = I_W !+ 1
+      CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
+
+
+      CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
+      J_S = J_S !+ 1
+      CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
+
+      IF (NO_K) THEN
+         K_B = 1
+         K_T = 1
+      ELSE
+         CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
+         K_B = K_B !+ 1
+         CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
+      ENDIF
+
+! get slice(s) location
+      DO NS = 1,NXS
+         XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
+         CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_TMP)
+         I_SLICE(NS) = MAX(MIN(I_TMP,IMAX1),IMIN1)
+      ENDDO
+
+      DO NS = 1,NYS
+         YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
+         CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_TMP)
+         J_SLICE(NS) = MAX(MIN(J_TMP,JMAX1),JMIN1)
+      ENDDO
+
+      DO NS = 1,NZS
+         ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
+         CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_TMP)
+         K_SLICE(NS) = MAX(MIN(K_TMP,KMAX1),KMIN1)
+      ENDDO
+
       IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
 
          IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
 
          ALLOCATE (BELONGS_TO_VTK_SUBDOMAIN(ijkmax3))
-
-! Get VTK region bounds         
-         XE = VTK_X_E(VTK_REGION)
-         XW = VTK_X_W(VTK_REGION)
-         YS = VTK_Y_S(VTK_REGION)
-         YN = VTK_Y_N(VTK_REGION)
-         ZB = VTK_Z_B(VTK_REGION)
-         ZT = VTK_Z_T(VTK_REGION)
-
-         NXS = VTK_NXS(VTK_REGION)
-         NYS = VTK_NYS(VTK_REGION)
-         NZS = VTK_NZS(VTK_REGION)
-
-         CALL CALC_CELL (XMIN, VTK_X_W(VTK_REGION), DX, IMAX, I_W)
-         I_W = I_W !+ 1
-         CALL CALC_CELL (XMIN, VTK_X_E(VTK_REGION), DX, IMAX, I_E)
-
-
-         CALL CALC_CELL (ZERO, VTK_Y_S(VTK_REGION), DY, JMAX, J_S)
-         J_S = J_S !+ 1
-         CALL CALC_CELL (ZERO, VTK_Y_N(VTK_REGION), DY, JMAX, J_N)
-
-         IF (NO_K) THEN
-            K_B = 1
-            K_T = 1
-         ELSE
-            CALL CALC_CELL (ZERO, VTK_Z_B(VTK_REGION), DZ, KMAX, K_B)
-            K_B = K_B !+ 1
-            CALL CALC_CELL (ZERO, VTK_Z_T(VTK_REGION), DZ, KMAX, K_T)
-         ENDIF
-
-! get slice(s) location
-         DO NS = 1,NXS
-            XSLICE = XW + (XE-XW)/(NXS-1)*(NS-1)
-            CALL CALC_CELL (XMIN, XSLICE, DX, IMAX, I_TMP)
-            I_SLICE(NS) = MAX(MIN(I_TMP,IMAX1),IMIN1)
-         ENDDO
-
-         DO NS = 1,NYS
-            YSLICE = YS + (YN-YS)/(NYS-1)*(NS-1)
-            CALL CALC_CELL (ZERO, YSLICE, DY, JMAX, J_TMP)
-            J_SLICE(NS) = MAX(MIN(J_TMP,JMAX1),JMIN1)
-         ENDDO
-
-         DO NS = 1,NZS
-            ZSLICE = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
-            CALL CALC_CELL (ZERO, ZSLICE, DZ, KMAX, K_TMP)
-            K_SLICE(NS) = MAX(MIN(K_TMP,KMAX1),KMIN1)
-         ENDDO
 
 ! Filter the cells based on the VTK region bounds and set the
 ! flag BELONGS_TO_VTK_SUBDOMAIN(IJK) to .TRUE. to keep the cell.
@@ -3072,9 +3171,66 @@
             ENDIF
          END DO
 
+      ELSE  ! BDIST_IO
+
+
+         IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
+
+         ALLOCATE (BELONGS_TO_VTK_SUBDOMAIN(ijkend3))
+
+! Filter the cells based on the VTK region bounds and set the
+! flag BELONGS_TO_VTK_SUBDOMAIN(IJK) to .TRUE. to keep the cell.
+
+         BELONGS_TO_VTK_SUBDOMAIN = .FALSE.
+         NUMBER_OF_VTK_CELLS      = 0
+
+         DO IJK = 1,IJKEND3
+            IF (INTERIOR_CELL_AT(IJK))      THEN
+               IF (.NOT.BLOCKED_CELL_AT(IJK)) THEN
+                  I = I_OF(IJK)
+                  J = J_OF(IJK)
+                  K = K_OF(IJK)
+
+! X-direction
+                  KEEP_XDIR=.FALSE.
+                  IF(NXS==0) THEN
+                     IF(I_W<=I.AND.I<=I_E) KEEP_XDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NXS
+                        IF(I==I_SLICE(NS)) KEEP_XDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Y-direction
+                  KEEP_YDIR=.FALSE.
+                  IF(NYS==0) THEN
+                     IF(J_S<=J.AND.J<=J_N) KEEP_YDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NYS
+                        IF(J==J_SLICE(NS)) KEEP_YDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Z-direction
+                  KEEP_ZDIR=.FALSE.
+                  IF(NZS==0) THEN
+                     IF(K_B<=K.AND.K<=K_T) KEEP_ZDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NZS
+                        IF(K==K_SLICE(NS)) KEEP_ZDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Now combine
+                  IF(KEEP_XDIR.AND.KEEP_YDIR.AND.KEEP_ZDIR) THEN
+                     BELONGS_TO_VTK_SUBDOMAIN(IJK) = .TRUE.
+                     NUMBER_OF_VTK_CELLS = NUMBER_OF_VTK_CELLS + 1
+                  ENDIF
+               ENDIF
+            ENDIF
+         END DO
 
       ENDIF
-
 
 
 100   FORMAT(A,I12,A,I12,A)

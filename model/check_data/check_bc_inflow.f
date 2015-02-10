@@ -221,7 +221,7 @@
          'correct the mfix.dat file.')
 
             ELSEIF(.NOT.COMPARE(SUM,ZERO)) THEN
-               WRITE(ERR_MSG, 1212) BCV
+               WRITE(ERR_MSG, 1212) BCV, M
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1212 FORMAT('Error 1212: BC_X_s(',I3,',',I2,':) do NOT sum to ONE ',  &
@@ -265,7 +265,7 @@
 
             IF(.NOT.COMPARE(BC_EP_S(BCV,M)*BC_ROs(M),                  &
                BC_ROP_S(BCV,M))) THEN
-               WRITE(ERR_MSG,1214)
+               WRITE(ERR_MSG,1214) BCV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
@@ -288,7 +288,6 @@
 
 ! Verify that the volume fractions sum to one.
       IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(*,1215) BCV, trim(iVal(SUM_EP))
          WRITE(ERR_MSG,1215) BCV, trim(iVal(SUM_EP))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -546,7 +545,7 @@
          'correct the mfix.dat file.')
 
             ELSEIF(.NOT.COMPARE(SUM,ZERO)) THEN
-                WRITE(ERR_MSG, 1212) BCV
+                WRITE(ERR_MSG, 1212) BCV, M
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
  1212 FORMAT('Error 1212: BC_X_s(',I3,',',I2,':) do NOT sum to ONE ',  &
@@ -591,7 +590,7 @@
 
             IF(.NOT.COMPARE(BC_EP_S(BCV,M)*BC_ROs(M),                  &
                BC_ROP_S(BCV,M))) THEN
-               WRITE(ERR_MSG,1214)
+               WRITE(ERR_MSG,1214) BCV
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
@@ -614,14 +613,13 @@
 
 ! Verify that the volume fractions sum to one.
       IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
-         WRITE(ERR_MSG,1215)
+         WRITE(ERR_MSG,1215) BCV, trim(iVal(SUM_EP))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 1215 FORMAT('Error 1215: Illegal boundary condition region: ',I3,/    &
-         'Sum of volume fractions does NOT equal ONE. Please correct',/&
-         'the mfix.dat file.')
-
+ 1215 FORMAT('Error 1215: Illegal boundary condition region: ',I3,'. ',&
+         'Sum of volume',/'fractions does NOT equal ONE. (SUM = ',A,   &
+         ')',/'Please correct the mfix.dat file.')
 
       DO M = 1, M_TOT
 ! Check solids phase temperature dependency.
@@ -686,9 +684,9 @@
          ENDIF
       ENDDO
 
- 1300 FORMAT('Warning 1300: ',A,' was undefined for BC',I3,'. This ',  &
-         'variable',/'was set to zero to be used as the inital value ',&
-         'in the BC region.')
+ 1300 FORMAT('Warning 1300: ',A,' was undefined. This variable was ', &
+         'set ',/ 'to zero to be used as the inital value in the BC ',&
+         'region.')
 
       CALL FINL_ERR_MSG
 

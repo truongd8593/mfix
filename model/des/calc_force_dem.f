@@ -129,8 +129,14 @@
                TOW_TMP(:,:) = ZERO
 
 ! just for post-processing mag. of cohesive forces on each particle
-               PostCohesive(LL) = dot_product(FC_TMP(:),FC_TMP(:))
-               if(GRAV_MAG> ZERO .AND. PEA(LL,1)) PostCohesive(LL) = SQRT(PostCohesive(LL)) / (PMASS(LL)*GRAV_MAG)
+
+               PostCohesive(LL) = PostCohesive(LL)
+               if(GRAV_MAG > ZERO .AND. PEA(LL,1)) THEN
+                  FORCE_COH = SQRT(dot_product(FC_TMP(:),FC_TMP(:))) / (PMASS(LL)*GRAV_MAG)
+
+                  !$omp atomic
+                  PostCohesive(LL) = PostCohesive(LL) + FORCE_COH
+               ENDIF
             ENDIF
          ENDIF
 

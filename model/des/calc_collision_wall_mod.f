@@ -361,7 +361,9 @@
 ! Check particle LL for wall contacts
 
          LIST_OF_CELLS(:) = -1
+
          CELL_ID = DG_PIJK(LL)
+
          COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
@@ -377,7 +379,9 @@
 ! Compute particle-particle VDW cohesive short-range forces
             IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
 
-               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
+               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL),          &
+                  VERTEX(:,:,NF), CLOSEST_PT(:))
+
                DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
                DISTSQ = DOT_PRODUCT(DIST, DIST)
                R_LM = 2*DES_RADIUS(LL)
@@ -385,107 +389,102 @@
                IF(DISTSQ < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
                   IF(DISTSQ > (VDW_INNER_CUTOFF+R_LM)**2) THEN
                      DistApart = (SQRT(DISTSQ)-R_LM)
-                     FORCE_COH = HAMAKER_CONSTANT * DES_RADIUS(LL) /           &
-                          (12d0*DistApart**2) * (Asperities/(Asperities+    &
-                          DES_RADIUS(LL)) + ONE/(ONE+Asperities/DistApart)**2 )
+                     FORCE_COH = HAMAKER_CONSTANT * DES_RADIUS(LL) /   &
+                        (12d0*DistApart**2)*(Asperities/(Asperities +  &
+                        DES_RADIUS(LL)) + ONE/(ONE+Asperities/         &
+                        DistApart)**2)
                   ELSE
-                     FORCE_COH = 2d0 * PI * SURFACE_ENERGY * DES_RADIUS(LL) *  &
-                          (Asperities/(Asperities+DES_RADIUS(LL)) + ONE/          &
-                          (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                     FORCE_COH = 2d0*PI*SURFACE_ENERGY*DES_RADIUS(LL)* &
+                        (Asperities/(Asperities+DES_RADIUS(LL)) + ONE/ &
+                        (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                   ENDIF
                   FC(:,LL) = FC(:,LL) + DIST(:)*FORCE_COH/SQRT(DISTSQ)
                ENDIF
             ENDIF
 
-            if (cellneighbor_facet(cell_id)%extentmin(cell_count) > particle_max(axis)) then
-               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+            if (cellneighbor_facet(cell_id)%extentmin(cell_count) >    &
+               particle_max(axis)) then
+               call remove_collision(LL, nf, particle_wall_collisions, &
+                  wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
-            if (cellneighbor_facet(cell_id)%extentmax(cell_count) < particle_min(axis)) then
-               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+            if (cellneighbor_facet(cell_id)%extentmax(cell_count) <    &
+               particle_min(axis)) then
+               call remove_collision(LL, nf, particle_wall_collisions, &
+                  wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
-               !Recall the facets on the MI plane are re-classified
-               !as MI only when the user specifies BC_MI_AS_WALL_FOR_DES
-               !as false. The default is to account for MI BC plane
-               !as a wall and the facets making this plane are by
-               !default classified as normal.
+! Checking all the facets is time consuming due to the expensive
+! separating axis test. Remove this facet from contention based on
+!a simple orthogonal projection test.
 
-               !Checking all the facets is time consuming due to the
-               !expensive separating axis test. Remove this facet from
-               !contention based on a simple orthogonal projection test.
+! Parametrize a line as p = p_0 + t normal and intersect with the
+! triangular plane. If t>0, then point is on the non-fluid side of
+! the plane. If the plane normal is assumed to point toward the fluid.
 
-               !parametrize a line as p = p_0 + t normal
-               !and intersect with the triangular plane.
-               !if t>0, then point is on the
-               !non-fluid side of the plane, if the plane normal
-               !is assumed to point toward the fluid side
+! -undefined, because non zero values will imply the sphere center
+! is on the non-fluid side of the plane. Since the testing
+! is with extended plane, this could very well happen even
+! when the particle is well inside the domain (assuming the plane
+! normal points toward the fluid). See the pic below. So check
+! only when line_t is negative
 
-               !-undefined, because non zero values will imply the sphere center
-               !is on the non-fluid side of the plane. Since the testing
-               !is with extended plane, this could very well happen even
-               !when the particle is well inside the domain (assuming the plane
-               !normal points toward the fluid). See the pic below. So check
-               !only when line_t is negative
-
-!                            \   Solid  /
-!                             \  Side  /
-!                              \      /
-!                               \    /
-!            Wall 1, fluid side  \  /  Wall 2, fluid side
-!                                 \/
-!                                   o particle
-!                  line_t will be positive for wall 1 (incorrectly indicating center
-!                  is outside the domain)
-!                  line_t will be negative for wall 2
+!                 \   Solid  /
+!                  \  Side  /
+!                   \      /
+!                    \    /
+! Wall 1, fluid side  \  /  Wall 2, fluid side
+!                      \/
+!                        o particle
 !
-!                Therefore, only stick with this test when line_t is negative and let the
-!                separating axis test take care of the other cases.
+! line_t will be positive for wall 1 (incorrectly indicating center
+! is outside the domain) and line_t will be negative for wall 2.
+!
+! Therefore, only stick with this test when line_t is negative and let
+! the separating axis test take care of the other cases.
 
-            !Since this is for checking static config, line's direction
-            !is the same as plane's normal. For moving particles,
-            !the line's normal will be along the point joining new
-            !and old positions.
+! Since this is for checking static config, line's direction is the
+! same as plane's normal. For moving particles, the line's normal will
+! be along the point joining new and old positions.
 
-            line_t = DOT_PRODUCT(VERTEX(1, 1:dimn,NF) - des_pos_new(1:dimn, LL), NORM_FACE(1:dimn,NF))
-            !k - rad >= tol_orth, where k = -line_t, then orthogonal
-            !projection is false. Substituting for k
-            !=> line_t + rad <= -tol_orth
-            !choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius
+            line_t = DOT_PRODUCT(VERTEX(1,:,NF) - des_pos_new(:,LL),&
+               NORM_FACE(:,NF))
 
-            !Orthogonal projection will detect false positives even
-            !when the particle does not overlap the triangle.
-            !However, if the orthogonal projection shows no overlap, then
-            !that is a big fat negative and overlaps are not possible.
+! k - rad >= tol_orth, where k = -line_t, then orthogonal
+! projection is false. Substituting for k
+! => line_t + rad <= -tol_orth
+! choosing tol_orth = 0.01% of des_radius = 0.0001*des_radius
+
+! Orthogonal projection will detect false positives even
+! when the particle does not overlap the triangle.
+! However, if the orthogonal projection shows no overlap, then
+! that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
-               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL,nf,particle_wall_collisions,   &
+                  wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
-            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL), VERTEX(:,:,NF), CLOSEST_PT(:))
+            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL),             &
+               VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
-               call remove_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL,nf,particle_wall_collisions,&
+                  wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
-!               IF(DISTSQ < MAX_DISTSQ)THEN
-                  MAX_DISTSQ = DISTSQ
-                  MAX_NF = NF
-!               ENDIF
+            MAX_DISTSQ = DISTSQ
+            MAX_NF = NF
 
-!            ENDDO
-!         ENDDO
-
-!         IF(MAX_DISTSQ /= UNDEFINED) THEN
 ! Assign the collision normal based on the facet with the
 ! largest overlap.
-                  NORMAL(:) = DIST(:)/sqrt(DISTSQ)
+            NORMAL(:) = DIST(:)/sqrt(DISTSQ)
 
                   !NORMAL(:) = -NORM_FACE(:,MAX_NF)
                !facet's normal is correct normal only when the

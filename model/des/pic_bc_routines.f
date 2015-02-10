@@ -1,455 +1,155 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: CHECK_IF_PARCEL_OVELAPS_STL                             C
-!                                                                      C
-!  Purpose: This subroutine is special written to check if a particle  C
-!          overlaps any of the STL faces. The routine exits on         C
-!          detecting an overlap. It is called after initial            C
-!          generation of lattice configuration to remove out of domain C
-!          particles                                                   C
-!                                                                      C
-!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, &
-      OVERLAP_EXISTS)
-
-      USE constant
-      USE cutcell
-      USE des_stl_functions
-      USE desgrid
-      USE discretelement, only: dimn
-      USE functions
-      USE geometry
-      USE indices
-      USE mpi_utility
-      USE param1
-      USE run
-      USE stl
-      Implicit none
-
-      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
-      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
-
-      INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
-
-      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
-
-      double precision :: velocity(dimn)
-      !reference point and direction of the line
-      double precision, dimension(dimn) :: ref_line,  dir_line
-      !reference point and normal of the plane
-      double precision, dimension(dimn) :: ref_plane, norm_plane
-      !line is parameterized as p = p_ref + t * dir_line, t is line_param
-      double precision :: line_t
-      !logical for determining if a point is on the triangle or not
-      logical :: ontriangle
-      !The line and plane intersection point
-      double precision, dimension(dimn) :: point_onplane
-
-      FOCUS_PARTICLE = -1
-
-      OVERLAP_EXISTS = .false.
-
-      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
-      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
-      K_CELL = 1
-      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
-
-      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
-      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
-
-      LIST_OF_CELLS(:) = -1
-      NEIGH_CELLS = 0
-      NEIGH_CELLS_NONNAT  = 0
-
-      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
-
-      IF (COUNT_FAC.gt.0)   then
-         !first add the facets in the cell the particle currently resides in
-         NEIGH_CELLS = NEIGH_CELLS + 1
-         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
-      ENDIF
-
-      IPLUS1  =  MIN( I_CELL + 1, DG_IEND2)
-      IMINUS1 =  MAX( I_CELL - 1, DG_ISTART2)
-
-      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
-      JMINUS1 =  MAX( J_CELL - 1, DG_JSTART2)
-
-      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
-      KMINUS1 =  MAX( K_CELL - 1, DG_KSTART2)
-
-      DO K = KMINUS1, KPLUS1
-         DO J = JMINUS1, JPLUS1
-            DO I = IMINUS1, IPLUS1
-               IJK = DG_FUNIJK(I,J,K)
-               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-               IF(COUNT_FAC.EQ.0) CYCLE
-               NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-               NEIGH_CELLS = NEIGH_CELLS + 1
-               LIST_OF_CELLS(NEIGH_CELLS) = IJK
-               !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
-            ENDDO
-         ENDDO
-      ENDDO
-
-      CONTACT_FACET_COUNT = 0
-
-      DO CELL_COUNT = 1, NEIGH_CELLS
-         IJK = LIST_OF_CELLS(CELL_COUNT)
-
-         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-            line_t  = -Undefined
-            !-undefined, because non zero values will imply intersection
-            !with the plane
-            ontriangle = .false.
-
-            !parametrize a line as p = p_0 + t normal
-            !and intersect with the triangular plane.
-            !if t>0, then point is on the
-            !non-fluid side of the plane, if the plane normal
-            !is assumed to point toward the fluid side
-            ref_line(1:dimn) = position(1:dimn)
-            dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
-            !Since this is for checking static config, line's direction
-            !is the same as plane's normal. For moving particles,
-            !the line's normal will be along the point joining new
-            !and old positions.
-
-            norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
-            CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
-            norm_plane, line_t)
-            if(line_t.gt.zero) then
-               !this implies by orthogonal projection
-               !that the point is on non-fluid side of the
-               !facet
-               point_onplane(1:dimn) = ref_line(1:dimn) + &
-               line_t*dir_line(1:dimn)
-               !Now check through barycentric coordinates if
-               !this orthogonal projection lies on the facet or not
-               !If it does, then this point is deemed to be on the
-               !non-fluid side of the facet
-               CALL checkPTonTriangle(point_onplane(1:dimn), &
-               VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-               ontriangle)
-
-               if(ontriangle) then
-                  OVERLAP_EXISTS = .true.
-                  !velocity = zero
-                  !write(*,*) 'over lap detected', line_t
-                  !call write_this_facet_and_parcel(NF, position, velocity)
-                  RETURN
-               endif
-            endif
-
-         ENDDO
-
-      end DO
-
-      RETURN
-
-      END SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL
-
-
-      SUBROUTINE write_this_facet_and_parcel(FID, position, velocity)
-      USE run
-      USE param1
-      USE discretelement
-      USE geometry
-      USE compar
-      USE constant
-      USE cutcell
-      USE funits
-      USE indices
-      USE physprop
-      USE parallel
-      USE stl
-      USE des_stl_functions
-      Implicit none
-      !facet id and particle id
-      double precision, intent(in), dimension(dimn) :: position, velocity
-      Integer, intent(in) :: fid
-      Integer :: stl_unit, vtp_unit , k
-      CHARACTER(LEN=100) :: stl_fname, vtp_fname
-      real :: temp_array(3)
-
-      stl_unit = 1001
-      vtp_unit = 1002
-
-      WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
-      WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
-
-      open(vtp_unit, file = vtp_fname, form='formatted')
-      open(stl_unit, file = stl_fname, form='formatted')
-
-      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
-      write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
-      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
-           ' version="0.1" byte_order="LittleEndian">'
-      write(vtp_unit,"(3x,a)") '<PolyData>'
-      write(vtp_unit,"(6x,a,i10.10,a,a)")&
-           '<Piece NumberOfPoints="',1,'" NumberOfVerts="0" ',&
-           'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
-      write(vtp_unit,"(9x,a)")&
-           '<PointData Scalars="Diameter" Vectors="Velocity">'
-      write(vtp_unit,"(12x,a)")&
-           '<DataArray type="Float32" Name="Diameter" format="ascii">'
-      write (vtp_unit,"(15x,es13.6)") (1.d0)
-      write(vtp_unit,"(12x,a)") '</DataArray>'
-
-      temp_array = zero
-      temp_array(1:DIMN) = velocity(1:dimn)
-      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
-           'Name="Velocity" NumberOfComponents="3" format="ascii">'
-      write (vtp_unit,"(15x,3(es13.6,3x))")&
-           ((temp_array(k)),k=1,3)
-      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
-      ! skip cell data
-      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
-
-      temp_array = zero
-      temp_array(1:dimn) = position(1:dimn)
-      write(vtp_unit,"(9x,a)") '<Points>'
-      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
-           'Name="Position" NumberOfComponents="3" format="ascii">'
-      write (vtp_unit,"(15x,3(es13.6,3x))")&
-           ((temp_array(k)),k=1,3)
-      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
-      ! Write tags for data not included (vtp format style)
-      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
-           '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
-      write(vtp_unit,"(6x,a,/3x,a,/a)")&
-           '</Piece>','</PolyData>','</VTKFile>'
-
-      !Now write the facet info
-
-      write(stl_unit,*)'solid vcg'
-
-      write(stl_unit,*) '   facet normal ', NORM_FACE(1:3,FID)
-      write(stl_unit,*) '      outer loop'
-      write(stl_unit,*) '         vertex ', VERTEX(1,1:3,FID)
-      write(stl_unit,*) '         vertex ', VERTEX(2,1:3,FID)
-      write(stl_unit,*) '         vertex ', VERTEX(3,1:3,FID)
-      write(stl_unit,*) '      endloop'
-      write(stl_unit,*) '   endfacet'
-
-      write(stl_unit,*)'endsolid vcg'
-
-      close(vtp_unit, status = 'keep')
-      close(stl_unit, status = 'keep')
-      write(*,*) 'wrote a facet and a parcel. now waiting'
-      read(*,*)
-    end SUBROUTINE write_this_facet_and_parcel
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: PIC_APPLY_WALLBC_STL                                  C
-!  Purpose:                                                            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: PIC_APPLY_WALLBC_STL                                    !
+!  Author: R. Garg                                                     !
+!                                                                      !
+!  Purpose: Detect collisions between PIC particles and STLs.          !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PIC_APPLY_WALLBC_STL
 
-      USE run
-      USE param1
-      USE discretelement
-      USE geometry
-      USE constant
-      USE cutcell
-      USE indices
-      USE stl
-      USE des_stl_functions
-      USE mpi_utility
+! Global Variables:
+!---------------------------------------------------------------------//
+! Particle postions: Current/Previous
+      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+! Paricle velocities
+      use discretelement, only: DES_VEL_NEW
+! Particle radi
+      use discretelement, only: DES_RADIUS
+! Flag indicating state of particle
+      use discretelement, only: PEA
+! Max number of particles on this process
+      use discretelement, only: MAX_PIP
+! The number of neighbor facets for each DES grid cell
+      use discretelement, only: cellneighbor_facet_num
+! Facet informatin binned to the DES grid
+      use discretelement, only: cellneighbor_facet
+! Map from particle to DES grid cell.
+      use discretelement, only: DG_PIJK
+! Flag indicating that the index cell contains no STLs
+      use stl, only: NO_NEIGHBORING_FACET_DES
+! STL Vertices
+      use stl, only: VERTEX
+! STL Facet normals
+      use stl, only: NORM_FACE
+! The number of mass inflow/outflow BCs
+      use pic_bc, only: PIC_BCMI, PIC_BCMO
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, ONE, UNDEFINED
+! DES array dimensionality (3)
+      use discretelement, only: DIMN
+
+! Module Procedures:
+!---------------------------------------------------------------------//
+      use des_stl_functions, only: intersectLnPlane
+      use des_stl_functions, only: checkPTonTriangle
+
       use error_manager
-      USE pic_bc
-      USE functions
-      use desgrid 
 
-      Implicit none
+      IMPLICIT NONE
 
-      INTEGER I, J, K, IJK, NF, LL
+! Local Variables:
+!---------------------------------------------------------------------//
+! Loop counters.
+      INTEGER NF, LL
+! Loop counter for SLTs in curring DES grid cell
+      INTEGER :: CELL_COUNT
+! reference point and direction of the line
+      DOUBLE PRECISION, DIMENSION(DIMN) :: REF_LINE,  DIR_LINE
+! reference point and normal of the plane
+      DOUBLE PRECISION, DIMENSION(DIMN) :: REF_PLANE, NORM_PLANE
+! line is parameterized as p = p_ref + t * dir_line, t is line_param
+      DOUBLE PRECISION :: LINE_T
+! logical for determining if a point is on the triangle or not
+      LOGICAL :: ONTRIANGLE
+! The line and plane intersection point
+      DOUBLE PRECISION, DIMENSION(DIMN) :: POINT_ONPLANE
+! Old and new position of the parcel
 
-      DOUBLE PRECISION :: RADSQ
-      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, LIST_OF_CELLS(27), &
-      CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
-
-      !reference point and direction of the line
-      double precision, dimension(dimn) :: ref_line,  dir_line
-      !reference point and normal of the plane
-      double precision, dimension(dimn) :: ref_plane, norm_plane
-      !line is parameterized as p = p_ref + t * dir_line, t is line_param
-      double precision :: line_t
-      !logical for determining if a point is on the triangle or not
-      logical :: ontriangle
-      !The line and plane intersection point
-      double precision, dimension(dimn) :: point_onplane
-      !Old and new position of the parcel
-      double precision, dimension(dimn) :: pt_old, pt_new
-
-      !distance parcel travelled out of domain along the facet normal
-      double precision :: dist_from_facet
-      INTEGER, Parameter :: MAX_FACET_CONTS = 500
-      INTEGER :: list_of_checked_facets(max_facet_conts)
-!      INTEGER :: FOCUS_CELLID
-
-      double precision :: veldotnorm
+! distance parcel travelled out of domain along the facet normal
+      DOUBLE PRECISION :: dist_from_facet
+      DOUBLE PRECISION :: veldotnorm
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
-!      FOCUS_CELLID = funijk(14,24,2)
-
       DO LL = 1, MAX_PIP
 
-         ! skipping non-existent particles or ghost particles
-         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+! Skip non-existent particles
+         IF(.NOT.PEA(LL,1)) CYCLE
 
-         IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
+! If no neighboring facet in the surrounding 27 cells, then exit
+         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) CYCLE
 
+! Loop through the STLs associated with the DES grid cell.
+         CELLLOOP: DO CELL_COUNT=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(LL))
 
-         ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) cycle
-
-         LIST_OF_CELLS(:) = -1
-         NEIGH_CELLS = 0
-         NEIGH_CELLS_NONNAT  = 0
-
-         CELL_ID = DG_PIJK(LL)
-
-         COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
-         RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
-
-         PT_OLD = DES_POS_OLD(:,LL)
-         PT_NEW = DES_POS_NEW(:,LL)
-
-! First add the facets in the cell the particle currently resides in
-         IF (COUNT_FAC.gt.01)   then
-            NEIGH_CELLS = NEIGH_CELLS + 1
-            LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
-         ENDIF
-
-         I_CELL = IOFPOS(PT_NEW(1))
-         J_CELL = JOFPOS(PT_NEW(2))
-         K_CELL = KOFPOS(PT_NEW(3))
-
-         IPLUS1  =  MIN (I_CELL+1, DG_IEND2)
-         IMINUS1 =  MAX (I_CELL-1, DG_ISTART2)
-
-         JPLUS1  =  MIN (J_CELL+1, DG_JEND2)
-         JMINUS1 =  MAX (J_CELL-1, DG_JSTART2)
-
-         KPLUS1  =  MIN (K_CELL+1, DG_KEND2)
-         KMINUS1 =  MAX (K_CELL-1, DG_KSTART2)
-
-         DO K = KMINUS1, KPLUS1
-         DO J = JMINUS1, JPLUS1
-         DO I = IMINUS1, IPLUS1
-            IJK = DG_FUNIJK(I,J,K)
-            COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-            IF(COUNT_FAC.EQ.0.or.ijk.eq.cell_id) CYCLE
-            NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-            NEIGH_CELLS = NEIGH_CELLS + 1
-            LIST_OF_CELLS(NEIGH_CELLS) = IJK
-         ENDDO
-         ENDDO
-         ENDDO
-
-         CONTACT_FACET_COUNT = 0
-
-         CELLLOOP: DO CELL_COUNT = 1, NEIGH_CELLS
-
-            IJK = LIST_OF_CELLS(CELL_COUNT)
-
-            DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-               NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-
-!only check for facets flagged as normal
-               IF(STL_FACET_TYPE(NF).ne.facet_type_normal) cycle
-
-! Neighboring cells will share facets with same facet ID so it is
-! important to make sure a facet is checked (for speed) and accounted
-! (for accuracy) only once.
-               IF (ANY(NF.EQ.LIST_OF_CHECKED_FACETS                    &
-                  (1:CONTACT_FACET_COUNT))) CYCLE
-
-               CONTACT_FACET_COUNT = CONTACT_FACET_COUNT + 1
-               LIST_OF_CHECKED_FACETS(CONTACT_FACET_COUNT) = NF
+! Get the index of the neighbor facet
+            NF = CELLNEIGHBOR_FACET(DG_PIJK(LL))%P(CELL_COUNT)
 
 ! Set to -UNDEFINED, because non zero values imply intersection.
-               !with the plane
-               LINE_T  = -UNDEFINED
+! with the plane.
+            LINE_T  = -UNDEFINED
 
-               ONTRIANGLE = .FALSE.
+            ONTRIANGLE = .FALSE.
 
-! Parametrize a line as p = p_0 + t (p_1 - p_0) and intersect with the 
+! Parametrize a line as p = p_0 + t (p_1 - p_0) and intersect with the
 ! triangular plane. If 0<t<1, then this ray connect old and new
 ! positions intersects with the facet.
-               REF_LINE(1:DIMN) = PT_OLD(1:DIMN)
-               DIR_LINE(1:DIMN) = PT_NEW(1:DIMN) - PT_OLD(1:DIMN)
+            REF_LINE(1:DIMN) = DES_POS_OLD(:,LL)
+            DIR_LINE(1:DIMN) = DES_POS_NEW(:,LL) - DES_POS_OLD(:,LL)
 
-               NORM_PLANE(1:DIMN) = NORM_FACE(1:DIMN,NF)
-               REF_PLANE(1:DIMN)  = VERTEX(1, 1:DIMN,NF)
+            NORM_PLANE = NORM_FACE(:,NF)
+            REF_PLANE  = VERTEX(1,:,NF)
 
-               VELDOTNORM = DOT_PRODUCT(NORM_PLANE(1:DIMN),            &
-                    DES_VEL_NEW(:,LL))
+            VELDOTNORM = DOT_PRODUCT(NORM_PLANE, DES_VEL_NEW(:,LL))
 
 ! If the normal velocity of parcel is in the same direction as facet
 ! normal, then the parcel could not have crossed this facet.
-               IF(VELDOTNORM.GT.0.d0) CYCLE
+            IF(VELDOTNORM.GT.0.d0) CYCLE
 
-               CALL INTERSECTLNPLANE(REF_LINE, DIR_LINE, REF_PLANE,    &
-                    NORM_PLANE, LINE_T)
+            CALL INTERSECTLNPLANE(REF_LINE, DIR_LINE, REF_PLANE,       &
+                 NORM_PLANE, LINE_T)
 
 ! line_t = one implies that the particle is sitting on the stl face.
-               IF(LINE_T.GE.ZERO.AND.LINE_T.LT.ONE) THEN
+            IF(LINE_T.GE.ZERO.AND.LINE_T.LT.ONE) THEN
 
-                  POINT_ONPLANE = REF_LINE + LINE_T*DIR_LINE
+               POINT_ONPLANE = REF_LINE + LINE_T*DIR_LINE
 
 ! Check through barycentric coordinates to determine if the orthogonal
 ! projection lies on the facet or not. If it does, then this point is
 ! deemed to be on the non-fluid side of the facet.
-                  CALL CHECKPTONTRIANGLE(POINT_ONPLANE(:),             &
-                       VERTEX(1,:,NF), VERTEX(2,:,NF), VERTEX(3,:,NF), &
-                       ONTRIANGLE)
+               CALL CHECKPTONTRIANGLE(POINT_ONPLANE(:), VERTEX(:,:,NF),&
+                  ONTRIANGLE)
 
-                  IF(ONTRIANGLE) THEN
+               IF(ONTRIANGLE) THEN
 
-                     DIST_FROM_FACET = ABS(DOT_PRODUCT(PT_NEW(:) -     &
-                        POINT_ONPLANE(:), NORM_PLANE(:)))
+                  DIST_FROM_FACET = ABS(DOT_PRODUCT(DES_POS_NEW(:,LL) -&
+                     POINT_ONPLANE(:), NORM_PLANE(:)))
 
-                     DES_POS_NEW(:,LL) = POINT_ONPLANE(1:DIMN) + &
-                        DIST_FROM_FACET*(NORM_PLANE(1:DIMN))
+                  DES_POS_NEW(:,LL) = POINT_ONPLANE +                  &
+                     DIST_FROM_FACET*NORM_PLANE
 
 ! In the reflect routine, it is assumed that the normal points into the
 ! system which is consitent with the definition of normal for facets.
-                     CALL PIC_REFLECT_PART(LL, NORM_PLANE(:))
+                  CALL PIC_REFLECT_PART(LL, NORM_PLANE(:))
 
-                     EXIT CELLLOOP
-                  ENDIF
+                  EXIT CELLLOOP
                ENDIF
-
-            ENDDO
+            ENDIF
 
          END DO CELLLOOP
 
       END DO
 
-
-      ! Seed new parcels entering the system.
+! Seed new parcels entering the system.
       IF(PIC_BCMI > 0) CALL PIC_MI_BC
       IF(PIC_BCMO > 0) CALL PIC_MO_BC
 
       CALL FINL_ERR_MSG
-      RETURN
 
+      RETURN
       END SUBROUTINE PIC_APPLY_WALLBC_STL
 
 
@@ -532,7 +232,8 @@
          call global_all_sum(del_count_all(0:numpes-1))
 
          IF(SUM(del_COUNT_ALL(:)).GT.0) THEN
-            WRITE(err_msg,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARCELS DELETED GLOBALLY = ', SUM(DEL_COUNT_ALL(:))
+            WRITE(err_msg,'(/,2x,A,2x,i10)')&
+            'TOTAL NUMBER OF PARCELS DELETED GLOBALLY = ', SUM(DEL_COUNT_ALL(:))
 
             call flush_err_msg(header = .false., footer = .false.)
 
@@ -839,12 +540,16 @@
       IF(PIC_REPORT_SEEDING_STATS) then
 
          IF(SUM(ADD_COUNT_ALL(:)).GT.0) THEN
-            WRITE(err_msg,'(/,2x,A,2x,i10)') 'TOTAL NUMBER OF PARCELS ADDED GLOBALLY = ', SUM(ADD_COUNT_ALL(:))
+            WRITE(err_msg,'(/,2x,A,2x,i10)') &
+               'TOTAL NUMBER OF PARCELS ADDED GLOBALLY = ',&
+                SUM(ADD_COUNT_ALL(:))
 
             call flush_err_msg(header = .false., footer = .false.)
 
             DO IPROC = 0, NUMPES-1
-               IF(DMP_LOG) WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') 'PARCELS ADDED ON PROC:', IPROC,' EQUAL TO', ADD_COUNT_ALL(IPROC)
+               IF(DMP_LOG) WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
+                  'PARCELS ADDED ON PROC:', IPROC,&
+                  ' EQUAL TO', ADD_COUNT_ALL(IPROC)
             ENDDO
          ENDIF
 
@@ -1071,3 +776,250 @@
       PIJK(LL,4) = FUNIJK(PIJK(LL,1), PIJK(LL,2),PIJK(LL,3))
 
       END SUBROUTINE PIC_FIND_NEW_CELL
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: CHECK_IF_PARCEL_OVELAPS_STL                             C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!  Purpose: This subroutine is special written to check if a particle  C
+!          overlaps any of the STL faces. The routine exits on         C
+!          detecting an overlap. It is called after initial            C
+!          generation of lattice configuration to remove out of domain C
+!          particles                                                   C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, &
+      OVERLAP_EXISTS)
+
+      USE constant
+      USE cutcell
+      USE des_stl_functions
+      USE desgrid
+      USE discretelement, only: dimn
+      USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE param1
+      USE run
+      USE stl
+      Implicit none
+
+      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
+      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
+
+      INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
+
+      INTEGER :: COUNT_FAC, COUNT, NEIGH_CELLS, &
+      NEIGH_CELLS_NONNAT, &
+      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
+
+      double precision :: velocity(dimn)
+      !reference point and direction of the line
+      double precision, dimension(dimn) :: ref_line,  dir_line
+      !reference point and normal of the plane
+      double precision, dimension(dimn) :: ref_plane, norm_plane
+      !line is parameterized as p = p_ref + t * dir_line, t is line_param
+      double precision :: line_t
+      !logical for determining if a point is on the triangle or not
+      logical :: ontriangle
+      !The line and plane intersection point
+      double precision, dimension(dimn) :: point_onplane
+
+      FOCUS_PARTICLE = -1
+
+      OVERLAP_EXISTS = .false.
+
+      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
+      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
+      K_CELL = 1
+      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+
+      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
+      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
+
+      LIST_OF_CELLS(:) = -1
+      NEIGH_CELLS = 0
+      NEIGH_CELLS_NONNAT  = 0
+
+      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+
+      IF (COUNT_FAC.gt.0)   then
+         !first add the facets in the cell the particle currently resides in
+         NEIGH_CELLS = NEIGH_CELLS + 1
+         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
+      ENDIF
+
+      IPLUS1  =  MIN( I_CELL + 1, DG_IEND2)
+      IMINUS1 =  MAX( I_CELL - 1, DG_ISTART2)
+
+      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
+      JMINUS1 =  MAX( J_CELL - 1, DG_JSTART2)
+
+      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
+      KMINUS1 =  MAX( K_CELL - 1, DG_KSTART2)
+
+      DO K = KMINUS1, KPLUS1
+         DO J = JMINUS1, JPLUS1
+            DO I = IMINUS1, IPLUS1
+               IJK = DG_FUNIJK(I,J,K)
+               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+               IF(COUNT_FAC.EQ.0) CYCLE
+               NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+               NEIGH_CELLS = NEIGH_CELLS + 1
+               LIST_OF_CELLS(NEIGH_CELLS) = IJK
+               !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
+            ENDDO
+         ENDDO
+      ENDDO
+
+
+      DO CELL_COUNT = 1, NEIGH_CELLS
+         IJK = LIST_OF_CELLS(CELL_COUNT)
+
+         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+            line_t  = -Undefined
+            !-undefined, because non zero values will imply intersection
+            !with the plane
+            ontriangle = .false.
+
+            !parametrize a line as p = p_0 + t normal
+            !and intersect with the triangular plane.
+            !if t>0, then point is on the
+            !non-fluid side of the plane, if the plane normal
+            !is assumed to point toward the fluid side
+            ref_line(1:dimn) = position(1:dimn)
+            dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
+            !Since this is for checking static config, line's direction
+            !is the same as plane's normal. For moving particles,
+            !the line's normal will be along the point joining new
+            !and old positions.
+
+            norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
+            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
+            CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
+            norm_plane, line_t)
+            if(line_t.gt.zero) then
+               !this implies by orthogonal projection
+               !that the point is on non-fluid side of the
+               !facet
+               point_onplane(1:dimn) = ref_line(1:dimn) + &
+               line_t*dir_line(1:dimn)
+!Now check through barycentric coordinates if
+!this orthogonal projection lies on the facet or not
+!If it does, then this point is deemed to be on the
+!non-fluid side of the facet
+               CALL checkPTonTriangle(point_onplane(1:dimn), &
+               VERTEX(:,:,NF), ontriangle)
+
+               if(ontriangle) then
+                  OVERLAP_EXISTS = .true.
+                  !velocity = zero
+                  !write(*,*) 'over lap detected', line_t
+                  !call write_this_facet_and_parcel(NF, position, velocity)
+                  RETURN
+               endif
+            endif
+
+         ENDDO
+
+      end DO
+
+      RETURN
+
+      END SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL
+
+
+      SUBROUTINE write_this_facet_and_parcel(FID, position, velocity)
+      USE run
+      USE param1
+      USE discretelement
+      USE geometry
+      USE compar
+      USE constant
+      USE cutcell
+      USE funits
+      USE indices
+      USE physprop
+      USE parallel
+      USE stl
+      USE des_stl_functions
+      Implicit none
+      !facet id and particle id
+      double precision, intent(in), dimension(dimn) :: position, velocity
+      Integer, intent(in) :: fid
+      Integer :: stl_unit, vtp_unit , k
+      CHARACTER(LEN=100) :: stl_fname, vtp_fname
+      real :: temp_array(3)
+
+      stl_unit = 1001
+      vtp_unit = 1002
+
+      WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
+      WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
+
+      open(vtp_unit, file = vtp_fname, form='formatted')
+      open(stl_unit, file = stl_fname, form='formatted')
+
+      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+      write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
+      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+           ' version="0.1" byte_order="LittleEndian">'
+      write(vtp_unit,"(3x,a)") '<PolyData>'
+      write(vtp_unit,"(6x,a,i10.10,a,a)")&
+           '<Piece NumberOfPoints="',1,'" NumberOfVerts="0" ',&
+           'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      write(vtp_unit,"(9x,a)")&
+           '<PointData Scalars="Diameter" Vectors="Velocity">'
+      write(vtp_unit,"(12x,a)")&
+           '<DataArray type="Float32" Name="Diameter" format="ascii">'
+      write (vtp_unit,"(15x,es13.6)") (1.d0)
+      write(vtp_unit,"(12x,a)") '</DataArray>'
+
+      temp_array = zero
+      temp_array(1:DIMN) = velocity(1:dimn)
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Velocity" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+      ! skip cell data
+      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+
+      temp_array = zero
+      temp_array(1:dimn) = position(1:dimn)
+      write(vtp_unit,"(9x,a)") '<Points>'
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Position" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+      ! Write tags for data not included (vtp format style)
+      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+           '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+      write(vtp_unit,"(6x,a,/3x,a,/a)")&
+           '</Piece>','</PolyData>','</VTKFile>'
+
+      !Now write the facet info
+
+      write(stl_unit,*)'solid vcg'
+
+      write(stl_unit,*) '   facet normal ', NORM_FACE(1:3,FID)
+      write(stl_unit,*) '      outer loop'
+      write(stl_unit,*) '         vertex ', VERTEX(1,1:3,FID)
+      write(stl_unit,*) '         vertex ', VERTEX(2,1:3,FID)
+      write(stl_unit,*) '         vertex ', VERTEX(3,1:3,FID)
+      write(stl_unit,*) '      endloop'
+      write(stl_unit,*) '   endfacet'
+
+      write(stl_unit,*)'endsolid vcg'
+
+      close(vtp_unit, status = 'keep')
+      close(stl_unit, status = 'keep')
+      write(*,*) 'wrote a facet and a parcel. now waiting'
+      read(*,*)
+    end SUBROUTINE write_this_facet_and_parcel
+

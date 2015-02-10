@@ -1,89 +1,85 @@
-!------------------------------------------------------------------------
-! Module           : desmpi
-! Purpose          : Contains wrapper class for mpi communications- send,recv
-!
-! Author           : Pradeep.G
-!
-! Purpose          : Module contains subroutines and variables related to
-!                    des mpi communication.
-!
-! Comments         : do_nsearch flag should be set to true before calling
-!                    des_par_exchange; when do_nsearch is true ghost particles of the
-!                    system will be updated, which will be later used to generate
-!                    neighbour list.
-
-!------------------------------------------------------------------------
+!----------------------------------------------------------------------!
+! Module: MPI_FUNS_DES                                                 !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: This module contains the subroutines and functions for MPI  !
+! communications in DES simulations.                                   !
+!----------------------------------------------------------------------!
       module mpi_funs_des
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use parallel_mpi
-      use mpi_utility
-      use discretelement
-      use desgrid
-      use compar
-      use physprop
-      use sendrecv
-      use des_bc
-      use desmpi_wrapper
-      use sendrecvnode
-      use mfix_pic
-      use des_thermo
-      use run, only: ENERGY_EQ,ANY_SPECIES_EQ
-      use param, only: DIMENSION_N_s
-      use des_rxns
-      use desmpi
-
-      use mpi_comm_des, only: desmpi_sendrecv_init
-      use mpi_comm_des, only: desmpi_sendrecv_wait
 
       contains
 
-!------------------------------------------------------------------------
-! Subroutine       : des_par_exchange
-! Comments         : main subroutine controls entire exchange of particles
-!                    between the processors
-! Steps
-!  --> bin the particles
-!  --> check if the send and recv buffer size is enough
-!  --> particle crossing boundary - will take place in following order
-!      a. top-bottom interface
-!      b. north-south interface
-!      c. east-west interface
-!      active particles(pea(par,1))in the ghost cell will be packed
-!      and exchange to respective processor.
-!      This order will also take care of particles crossing corners.
-!      (for example particle crossing directly into northwest block)
-!  --> bin the particles (if required)
-!  --> ghost cell particles - exchange will take place in following order
-!      a. east-west interface
-!      b. north-south interface
-!      c. top-bottom interface
-!------------------------------------------------------------------------
+!----------------------------------------------------------------------!
+! Subroutine: DES_PAR_EXCHANGE                                         !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: This subroutine controls entire exchange of particles       !
+!    between processors.                                               !
+!                                                                      !
+! Steps:                                                               !
+! 1) Bin the particles to the DES grid.                                !
+! 2) Check if the send and recv buffer size is large enough            !
+! 3) Pack and send active particles located in ghost cells to the      !
+!    processors that own the ghost cells. The exchange occurs in       !
+!    the following order to take care of particles crossing at corners !
+!    (e.g., crossing directly into the northwest block):               !
+!    a.) top-bottom interface                                          !
+!    b.) north-south interface                                         !
+!    c.) east-west interface                                           !
+! 4) Bin the particles (if required)                                   !
+! 5) Pack and send particles adjacent to neighboring processes. The    !
+!    exchange occurs in the following order:                           !
+!    a.) east-west interface                                           !
+!    b.) north-south interface                                         !
+!    c.) top-bottom interface                                          !
+!                                                                      !
+! Comments: The DO_NSEARCH flag should be set before calling           !
+!   DES_PAR_EXCHANGE; When DO_NSEARCH is true, ghost particles are     !
+!   updated and later used  to generate the PAIR lists.                !
+!----------------------------------------------------------------------!
       subroutine des_par_exchange()
 
+      use discretelement, only: DO_NSEARCH
+
+
+      use mfix_pic, only: MPPIC
+      use desmpi, only: iEXCHFLAG
+      use desmpi, only: dSENDBUF, dRECVBUF
+      use discretelement, only: iGHOST_UPDATED
+      use desmpi, only: iSPOT
+
+      use geometry, only: NO_K
+
+! Module procedures
+!---------------------------------------------------------------------//
       use mpi_pack_des, only: desmpi_pack_parcross
       use mpi_unpack_des, only: desmpi_unpack_parcross
 
       use mpi_pack_des, only: desmpi_pack_ghostpar
       use mpi_unpack_des, only: desmpi_unpack_ghostpar
-!-----------------------------------------------
+
+      use mpi_comm_des, only: desmpi_sendrecv_init
+      use mpi_comm_des, only: desmpi_sendrecv_wait
+
+      use desgrid, only: desgrid_pic
+      use desmpi_wrapper, only: des_mpi_barrier
+
       implicit none
 
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-      integer linter,lface
+! Local variables:
+!---------------------------------------------------------------------//
+! Loop counters.
+      integer :: linter, lface
+! Number of calls since the buffer was last checked.
       integer, save :: lcheckbuf = 0
-!-----------------------------------------------
 
-! bin the particles and check the bufsize
+!......................................................................!
+
+! Bin the particles to the DES grid.
       call desgrid_pic(plocate=.true.)
 
-! mpi_all_reduce is expensive so avoiding the check for buffer size
-! further high factors are used for buffer and hence check at low
-! frequency is enough
+! Check that the send/recv buffer is sufficient every 100 calls to
+! avoid the related global communications.
       if (mod(lcheckbuf,100) .eq. 0) then
          call desmpi_check_sendrecvbuf
          lcheckbuf = 0
@@ -133,7 +129,8 @@
                call desmpi_sendrecv_wait(lface)
                call desmpi_unpack_ghostpar(lface)
             end do
-! update pic required as particles in ghost cell can move between ghost cells
+
+! Rebin particles to the DES grid as ghost particles may be moved.
             do lface = linter*2-1,linter*2
                if(dsendbuf(1,lface).gt.0.or.drecvbuf(1,lface).gt.0) then
                   call desgrid_pic(plocate=.false.)
@@ -151,28 +148,47 @@
 !      call des_dbgmpi(6)
 !      call des_dbgmpi(7)
 
-      end subroutine des_par_exchange
+      END SUBROUTINE DES_PAR_EXCHANGE
 
 
-!------------------------------------------------------------------------
-! Subroutine       : desmpi_check_sendrecvbuf
-! Purpose          : checks if the sendrecvbuf size is enough if not redefine
-!                    the arrays and sets recvcnts
-!
-!------------------------------------------------------------------------
-      subroutine desmpi_check_sendrecvbuf
-!-----------------------------------------------
+!----------------------------------------------------------------------!
+! Subroutine: DESMPI_CHECK_SENDRECVBUF                                 !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: Checks if the sendrecvbuf size is large enough. If the      !
+!    buffers are not sufficent, they are resized.                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE DESMPI_CHECK_SENDRECVBUF
+
+      use discretelement, only: DIMN, dg_pic
+      use desmpi, only: iMAXBUF
+      use desmpi, only: iBUFOFFSET
+      use desmpi, only: dSENDBUF, dRECVBUF
+      use desmpi, only: iSENDINDICES
+
+      use mpi_utility, only: global_all_max
+
       implicit none
-!-----------------------------------------------
-!local variables
-!-----------------------------------------------
-      integer:: lijk,ltot_ind,lparcnt,lmaxcnt,lface,ltordimn,lpacketsize,lindx
-      real :: lfactor = 1.5
-!-----------------------------------------------
+
+! Local variables:
+!---------------------------------------------------------------------//
+! Loop counters
+      INTEGER :: lface, lindx, lijk
+! Approximate size of a DEM ghost particle's data.
+      INTEGER :: lpacketsize
+! Particle count in send/recv region on current face
+      INTEGER :: lparcnt
+! Max particle count in send/recv region over all proc faces.
+      INTEGER :: lmaxcnt
+! Total number of DES grid cells on lface in send/recv
+      INTEGER :: ltot_ind
+! Growth factor when resizing send/recv buffers.
+      REAL :: lfactor = 1.5
+
+!......................................................................!
 
       lmaxcnt = 0
-      ltordimn = merge(1,3,NO_K)
-      lpacketsize = 2*dimn + ltordimn+ 5
+      lpacketsize = 2*dimn + 3 + 5
       do lface = 1,2*dimn
          ltot_ind = isendindices(1,lface)
          lparcnt = 0
@@ -190,21 +206,44 @@
          allocate(dsendbuf(imaxbuf,2*dimn),drecvbuf(imaxbuf,2*dimn))
       endif
 
-      end subroutine desmpi_check_sendrecvbuf
+      END SUBROUTINE DESMPI_CHECK_SENDRECVBUF
 
-!------------------------------------------------------------------------
-! Subroutine       : desmpi_cleanup
-! Purpose          : Cleans the ghost particles
-! Parameter        :
-!------------------------------------------------------------------------
-      subroutine desmpi_cleanup
-!-----------------------------------------------
+!----------------------------------------------------------------------!
+! Subroutine: DESMPI_CLEANUP                                           !
+! Author: Pradeep Gopalakrishnan                                       !
+!                                                                      !
+! Purpose: Cleans the ghost particle array positions.                  !
+!----------------------------------------------------------------------!
+      SUBROUTINE DESMPI_CLEANUP
+
+      use discretelement, only: DIMN
+      use discretelement, only: PEA
+      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+      use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
+      use discretelement, only: OMEGA_NEW, OMEGA_OLD
+      use discretelement, only: FC
+      use discretelement, only: DO_OLD
+      use discretelement, only: PIP
+      use discretelement, only: iGHOST_CNT
+      use discretelement, only: DES_USR_VAR
+      use discretelement, only: dg_pic
+
+      use run, only: ENERGY_EQ,ANY_SPECIES_EQ
+      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+
+      use des_rxns, only: DES_X_s
+
+      use discretelement, only: iGHOST_UPDATED
+      use desmpi, only: iRECVINDICES
+      use desmpi, only: iEXCHFLAG
+
+      use param, only: DIMENSION_N_s
+
       implicit none
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
+
+! Local variables:
+!---------------------------------------------------------------------//
       integer ltot_ind,lface,lindx,lijk,lcurpar,lpicloc
-!-----------------------------------------------
 
       do lface = 1,dimn*2
          if(.not.iexchflag(lface))cycle
@@ -240,94 +279,7 @@
             end do
          end do
       end do
-      end subroutine desmpi_cleanup
+      END SUBROUTINE DESMPI_CLEANUP
 
 
-
-!------------------------------------------------------------------------
-! Function         : locate_par
-! Purpose          : locates particle in ijk and returns true if found
-! Parameter        : pglobalid - global id of the particle (input)
-!                    pijk - ijk of the cell (input)
-!                    plocalno - local particle number (output)
-!------------------------------------------------------------------------
-      function locate_par(pglobalid,pijk,plocalno)
-!-----------------------------------------------
-      implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      logical :: locate_par
-      integer :: pglobalid,pijk,plocalno
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-      integer :: lpicloc,lcurpar
-!-----------------------------------------------
-
-      locate_par = .false.
-      if (pijk .lt. dg_ijkstart2 .or. pijk .gt. dg_ijkend2) then
-         return
-      endif
-
-      do lpicloc = 1,dg_pic(pijk)%isize
-         lcurpar = dg_pic(pijk)%p(lpicloc)
-         if (iglobal_id(lcurpar) .eq. pglobalid) then
-            plocalno = lcurpar
-            locate_par = .true.
-            return
-         endif
-      enddo
-
-      return
-      end function locate_par
-
-!------------------------------------------------------------------------
-! Function         : exten_locate_par
-! Purpose          : locates particles extensively by searching all neighbouring
-!                    cells similar to grid based search
-! Parameter        : pglobalid - global id of the particle (input)
-!                    pijk - ijk of the center cell (input)
-!                    plocalno - localparticle number (output)
-!------------------------------------------------------------------------
-      function exten_locate_par(pglobalid,pijk,plocalno)
-!-----------------------------------------------
-      implicit none
-!-----------------------------------------------
-! dummy variables
-!-----------------------------------------------
-      logical :: exten_locate_par
-      integer :: pglobalid,pijk,plocalno
-!-----------------------------------------------
-! local variables
-!-----------------------------------------------
-      integer :: lpicloc,lcurpar
-      integer :: lijk,li,lj,lk,lic,ljc,lkc,lkoffset
-!-----------------------------------------------
-      exten_locate_par = .false.
-      lic = dg_iof_lo(pijk)
-      ljc = dg_jof_lo(pijk)
-      lkc = dg_kof_lo(pijk)
-      lkoffset = merge(0, 1, NO_K)
-      do  lk = lkc-lkoffset,lkc+lkoffset
-      do  lj = ljc-1,ljc+1
-      do  li = lic-1,lic+1
-         lijk = dg_funijk(li,lj,lk)
-         if (lijk .lt. dg_ijkstart2 .or. lijk .gt. dg_ijkend2) cycle
-         do lpicloc = 1, dg_pic(lijk)%isize
-            lcurpar = dg_pic(lijk)%p(lpicloc)
-            if (iglobal_id(lcurpar) .eq. pglobalid) then
-               plocalno = lcurpar
-               exten_locate_par = .true.
-               return
-            end if
-         end do
-      end do
-      end do
-      end do
-      return
-      end function exten_locate_par
-
-
-
-      end module mpi_funs_des
+      END MODULE MPI_FUNS_DES
