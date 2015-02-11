@@ -75,9 +75,14 @@
       SUBROUTINE calculate_de_norms
       Use param, only     : dimension_3
       Use param1, only    : zero      
-      Use compar, only    : ijkstart3, ijkend3, myPE    
-      Use functions, only : i_of, j_of, k_of
+      Use compar, only    : ijkstart3, ijkend3, istart1_all, iend1_all,&
+                            jstart1_all, jend1_all, &
+                            kstart1_all, kend1_all, &
+                            ijkstart3_all, ijkend3_all, &
+                            istart, iend, jstart, jend, kstart, kend
+      Use functions, only : funijk, funijk_gl                          
       Use functions, only : IS_ON_myPE_owns
+      Use indices, only   : i_of, j_of, k_of
       Use usr             ! all variables
       Use mms             ! all variables
       Use fldvar, only    : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
@@ -86,17 +91,24 @@
       Use geometry, only  : jmax, jmin1, jmax1
       Use geometry, only  : kmax, kmin1, kmax1     
       Use funits, only    : newunit
-      Use compar, only    : myPE, PE_IO
+      Use compar, only    : myPE, PE_IO, numPEs
+      Use mpi_utility, only : bcast
       IMPLICIT NONE
 
 ! number of data points for norm calculation
         integer   :: var_size
 
 ! looping variables        
-        integer   :: ijk, i, j, k
+        integer   :: ijk, i, j, k, proc
 
 ! file unit        
         integer   :: f1
+
+! pressure shift value        
+        double precision  :: delta_p_g        
+
+! owner of ijk_sh
+        integer   :: ijk_sh_owner
 
 
 ! allocate de_ variables and lnorms_ variables
@@ -126,6 +138,62 @@
         allocate(lnorms_t_s(3))
         allocate(lnorms_theta_m(3))
 
+!! evaluate pressure shift value
+!        do proc = 0, numPEs-1
+!            
+!          i = i_of(ijk_sh)
+!          j = j_of(ijk_sh)
+!          k = k_of(ijk_sh)
+!
+!          write(*,*) proc, i, istart1_all(proc), iend1_all(proc)
+!          write(*,*) proc, j, jstart1_all(proc), jend1_all(proc)
+!          write(*,*) proc, k, kstart1_all(proc), kend1_all(proc)
+!
+!! *** ask jmusser
+!! is there a function that check whether an ijk is owned by a
+!! processor 'proc'?
+!! istart_all for all 'proc' holds the same value? is this a problem?
+!          if (.not.((i.ge.istart1_all(proc)).and.(i.le.iend1_all(proc))))&
+!            cycle
+!          if (.not.((j.ge.jstart1_all(proc)).and.(j.le.jend1_all(proc))))&
+!            cycle
+!          if (.not.((k.ge.kstart1_all(proc)).and.(k.le.kend1_all(proc))))&
+!            cycle
+!
+!! 'proc' has ijk_sh
+!          ijk_sh_owner = proc
+!
+!! if 'proc' is also the current process then set delta_p_g else set some
+!! random value
+!          if(IS_ON_myPE_owns(i,j,k)) then
+!            delta_p_g = P_G(ijk_sh) - MMS_P_G(ijk_sh)      
+!! only ijk_sh_owner broadcasts the value of delta_p_g
+!            call bcast(delta_p_g)
+!          else
+!            delta_p_g = zero
+!          end if            
+!
+!        end do
+
+        do ijk = ijkstart3, ijkend3
+
+          i = i_of(ijk_sh)
+          j = j_of(ijk_sh)
+          k = k_of(ijk_sh)
+          
+          if(IS_ON_myPE_owns(i,j,k)) then
+            write(*,*) "myPE= ", myPE, ijk_sh, i, j, k
+            delta_p_g = P_G(ijk_sh) - MMS_P_G(ijk_sh)      
+! only ijk_sh_owner broadcasts the value of delta_p_g
+            call bcast(delta_p_g)
+            exit
+          end if
+
+        end do
+
+
+        write(*,*) "myPE, dpg", myPE, delta_p_g
+
 ! scalar variables
         de_ep_g = zero
         de_p_g = zero
@@ -147,7 +215,7 @@
           if((k.lt.kmin1).or.(k.gt.kmax1)) cycle
 
           de_ep_g(ijk)    = ep_g(ijk)     - mms_ep_g(ijk)
-          de_p_g(ijk)     = p_g(ijk)      - mms_p_g(ijk)
+          de_p_g(ijk)     = p_g(ijk)      - mms_p_g(ijk) - delta_p_g
           de_t_g(ijk)     = t_g(ijk)      - mms_t_g(ijk)
           de_rop_s(ijk)   = rop_s(ijk,1)  - mms_rop_s(ijk)
           de_t_s(ijk)     = t_s(ijk,1)    - mms_t_s(ijk)
@@ -363,6 +431,5 @@
       RETURN
 
       END SUBROUTINE calculate_lnorms
-
 
 

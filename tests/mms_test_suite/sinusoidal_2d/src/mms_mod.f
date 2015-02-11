@@ -81,6 +81,8 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  ytr
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  ztr
 
+
+
       contains
 
 
@@ -209,9 +211,11 @@
       use compar, only      : ijkstart3, ijkend3
       use functions, only   : funijk_gl
       use functions, only   : i_of, j_of, k_of
+      use functions, only   : IS_ON_myPE_owns
       use geometry, only    : imax1, jmax1, kmin1
       use geometry, only    : dx, dy, dz
       use param1, only      : zero, half
+      use fldvar, only      : p_g
       IMPLICIT NONE
 
 ! indices

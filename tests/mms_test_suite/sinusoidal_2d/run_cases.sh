@@ -38,7 +38,7 @@ rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
-mpirun -np 8 $CASE_DIR/src/mfix.exe imax=32 jmax=32 nodesi=4 nodesj=2 nodesk=1 > out.log
+mpirun -np 2 $CASE_DIR/src/mfix.exe imax=32 jmax=32 nodesi=2 nodesj=1 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
