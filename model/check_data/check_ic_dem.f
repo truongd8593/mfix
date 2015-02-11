@@ -29,13 +29,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
+
       implicit none
-
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      LOGICAL, EXTERNAL :: COMPARE
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_DEM")

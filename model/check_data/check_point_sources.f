@@ -225,9 +225,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
 
       implicit none
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -239,10 +239,7 @@
       INTEGER :: N
 ! Sum of solids mass fractions.
       DOUBLE PRECISION :: SUM
-! External function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
-
 
 ! Initialze the error manager.
       CALL INIT_ERR_MSG("CHECK_PS_GAS_PHASE")
@@ -405,9 +402,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
 
       implicit none
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -421,10 +418,7 @@
       INTEGER :: M, N
 ! Sum of solids mass fractions.
       DOUBLE PRECISION :: SUM
-! External function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_PS_SOLIDS_PHASES")

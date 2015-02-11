@@ -114,6 +114,8 @@
 ! Index of inert species.
       use physprop, only: INERT_SPECIES
 
+      use toleranc
+
       implicit none
 
 ! Index of solids phase.
@@ -130,9 +132,6 @@
       INTEGER, parameter :: lUnit = 8454
       LOGICAL :: lExists
       CHARACTER(LEN=64) :: lFName
-
-! Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: compare
 
 ! Initialize error flags.
       IER = 0

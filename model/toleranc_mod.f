@@ -13,16 +13,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-
       MODULE toleranc
 
+!      PUBLIC :: COMPARE
 
       Use param
       Use param1
 
-
-!
-!
 !                      Minimum value of solids volume fraction tracked
       DOUBLE PRECISION, PARAMETER          ::  ZERO_EP_s = 1.0D-8
 !
@@ -90,8 +87,98 @@
 !
 !                      Detect negative Rho_g in physical_prop to reduce DT in iterate
       LOGICAL  ::      Neg_RHO_G = .FALSE.
+
+      CONTAINS
+
+      LOGICAL FUNCTION COMPARE (V1, V2)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!                      Values to be compared
+      DOUBLE PRECISION V1, V2
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!-----------------------------------------------
 !
 !
+      IF (ABS(V1) <= SMALL_NUMBER) THEN
+         IF (ABS(V2) <= SMALL_NUMBER) THEN
+            COMPARE = .TRUE.
+         ELSE
+            COMPARE = .FALSE.
+         ENDIF
+      ELSE
+         IF (ABS(V2/V1 - ONE) <= TOL_COM) THEN
+            COMPARE = .TRUE.
+         ELSE
+            COMPARE = .FALSE.
+         ENDIF
+      ENDIF
+      RETURN
+      END FUNCTION COMPARE
+
+      LOGICAL FUNCTION IS_SMALL (V, TOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE geometry
+      USE indices
+      USE compar
+      USE functions
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Tolerance value for small
+      DOUBLE PRECISION TOL
+!
+!                      Field vriable array
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: V
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: IJK
+!-----------------------------------------------
+
+      IS_SMALL = .FALSE.
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+            IF (ABS(V(IJK)) > TOL) RETURN
+         ENDIF
+      END DO
+      IS_SMALL = .TRUE.
+!
+      RETURN
+      END FUNCTION IS_SMALL
+
+!// Comments on the modifications for DMP version implementation
+!// 001 Include header file and common declarations for parallelization
+!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
 
 
       END MODULE toleranc

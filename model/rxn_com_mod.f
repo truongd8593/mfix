@@ -162,6 +162,7 @@
          lNRxn,  lRNames, lNRxn_DES, lRNames_DES)
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 
@@ -183,7 +184,6 @@
       INTEGER, INTENT(IN) :: lNRxn_DES
 ! Reaction Names for discrete solids (aliases)
       CHARACTER(len=32), INTENT(IN) ::  lRNames_DES(DIMENSION_RXN)
-
 
 ! Input/Output status.
       INTEGER :: IOS
@@ -398,6 +398,8 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE WRITE_RXN_SUMMARY(RxN, lSAg, lSAs, ABORT, fUNIT)
 
+      USE toleranc
+
       IMPLICIT NONE
 
 ! Data structure for storing reaction data.
@@ -421,9 +423,6 @@
       INTEGER lS, lE
 
       INTEGER UNIT_FLAG
-
-! External Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
       IF(present(fUnit)) THEN
          UNIT_FLAG = fUNIT
@@ -599,6 +598,7 @@
       SUBROUTINE checkThermoReqs(RxN, S_g, S_s, rDB, MWg, MWs, Cpg0, Cps0)
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 
@@ -732,15 +732,6 @@
 
       END SUBROUTINE checkThermoReqs
 
-
-
-
-
-
-
-
-
-
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !  Subroutine: checkMassBalance                                        !
 !                                                                      !
@@ -754,6 +745,8 @@
 !                                                                      !
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE checkMassBalance(CALLER, RxN, lnMT, IER)
+
+      USE toleranc
 
       IMPLICIT NONE
 
@@ -774,7 +767,6 @@
       DOUBLE PRECISION, PARAMETER :: massBalanceTol = 1.0d-3
 
 ! External Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
 ! Initialize variables
       IER = 0
@@ -862,6 +854,8 @@
       SUBROUTINE calcInterphaseTxfr(CALLER, RxN, lnMT, lEEq, lSEq, &
          lSAg, lMMx, lSAs)
 
+         USE toleranc
+
       IMPLICIT NONE
 
       CHARACTER(len=*), INTENT(IN) :: CALLER
@@ -889,9 +883,6 @@
       INTEGER lM, lN
 
       DOUBLE PRECISION, PARAMETER :: massBalanceTol = 1.0d-3
-
-! External Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
 ! Initialize interphase exchange terms.
       IF(Allocated(RxN%rPhase)) RxN%rPhase(:) = ZERO

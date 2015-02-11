@@ -63,7 +63,6 @@
 ../model/check_data/check_solids_model_prereqs.f
 ../model/check_data/check_solids_mppic.f
 ../model/check_data/check_solids_phases.f
-../model/compare.f
 ../model/constant_mod.f
 ../model/cont_mod.f
 ../model/deprecated.f
@@ -160,7 +159,7 @@
 ../model/tau_g_mod.f
 ../model/tau_s_mod.f
 ../model/thermochemical/get_values.f
-../model/thermochemical/readTherm.f
+../model/thermochemical/read_thermochemical_mod.f
 ../model/time_cpu_mod.f
 ../model/tmp_array1_mod.f
 ../model/tmp_array_mod.f

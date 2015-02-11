@@ -38,8 +38,6 @@
 
       INCLUDE 'usrnlst.inc'
 
-      LOGICAL, EXTERNAL :: COMPARE
-
 ! Allocate the variable for Sherwood number
       Allocate( N_Sh (DIMENSION_3, DIMENSION_M) )
 

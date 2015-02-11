@@ -24,12 +24,12 @@
       USE physprop
       USE run
 
-      use error_manager
+      USE error_manager
+      USE toleranc
 
       IMPLICIT NONE
 
       INTEGER :: BCV
-
 
 !-----------------------------------------------
 ! Local variables
@@ -46,18 +46,11 @@
       LOGICAL :: dFlag
 
 !-----------------------------------------------
-!   External functions
-!-----------------------------------------------
-      LOGICAL, EXTERNAL :: COMPARE
-!-----------------------------------------------
-
 
       CALL INIT_ERR_MSG("SET_BC_PIC_MI")
 
-
       dFlag = (DMP_LOG .AND. setDBG)
       if(dFlag) write(*,"(2/,2x,'PIC inlet count: ',I4)") PIC_BCMI
-
 
       PIC_BCMI_INCL_CUTCELL(:) = .false.
 

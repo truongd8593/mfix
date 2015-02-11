@@ -25,6 +25,7 @@
       USE param1
       USE physprop
       USE run
+      USE toleranc
 
       IMPLICIT NONE
 
@@ -68,10 +69,6 @@
       INTEGER :: OCCUPANTS
 ! jump_here
 
-!-----------------------------------------------
-!   External functions
-!-----------------------------------------------
-      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MI")

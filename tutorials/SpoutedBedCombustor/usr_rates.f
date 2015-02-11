@@ -88,8 +88,6 @@
 
       DOUBLE PRECISION R_O2, DIFF
 
-      LOGICAL , EXTERNAL :: COMPARE
-
       R_O2 = GAS_CONST*9.86923E-7/32.0  !cm^3.atm/g.K
 
 ! Bound the gas and solids phase temperatures.

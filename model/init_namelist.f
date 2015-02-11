@@ -231,15 +231,12 @@
 !    The K-Epsilon turbulence model (for single-phase flow).
 !    o Numerical parameters (like under-relaxation) are the same as the
 !      ones for SCALAR (index = 9).
-!    o The maximum value of gas turbulent viscosity, MU_GMAX, must be
-!      defined. There is no default and the code will not run if MU_GMAX
-!      is not set. A value MU_GMAX =1.E+03 is recommended.
-!      (see calc_mu_g.f)
 !    o All walls must be defined (NSW, FSW or PSW) in order to use
 !      standard wall functions. If a user does not specify a wall type,
 !      the simulation will not contain the typical turbulent profile in
 !      wall-bounded flows.
 !  </description>
+!  <dependent keyword="MU_GMAX" value="DEFINED"/>
 !  <conflict keyword="L_SCALE0" value="DEFINED"/>
 !  <valid value=".TRUE."  note="Enable the K-epsilon turbulent model
 !    (for single-phase flow) using standard wall functions."/>
@@ -252,13 +249,16 @@
 !    Value of turbulent length initialized. This may be overwritten
 !    in specific regions with the keyword IC_L_SCALE.
 !</description>
+!  <dependent keyword="MU_GMAX" value="DEFINED"/>
 !  <conflict keyword="K_EPSILON" value=".TRUE."/>
       L_SCALE0 = ZERO
 !</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>
-!    Maximum value of the turbulent viscosity of the fluid.
+!    Maximum value of the turbulent viscosity of the fluid, which
+!    must be defined if any turbulence model is used.
+!    A value MU_GMAX =1.E+03 is recommended. (see calc_mu_g.f)
 !  </description>
       MU_GMAX = UNDEFINED
 !</keyword>
@@ -1288,23 +1288,9 @@
 
 !<keyword category="Two Fluid Model" required="false">
 !  <description>
-!    This flag effects how the momentum and granular energy boundary
-!    conditions are implemented. This feature requires that PHI_W is
-!    specified.
-!  </description>
-!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
-!  <dependent keyword="PHI_W" value="DEFINED"/>
-!  <valid value=".FALSE." note="Use standard boundary conditions."/>
-!  <valid value=".TRUE."
-!    note="Use the Jenkins small frictional boundary condition."/>
-      JENKINS = .FALSE.
-!</keyword>
-
-!<keyword category="Two Fluid Model" required="false">
-!  <description>
 !    Solids stress model selection.
 !  </description>
-!  <valid value=".FALSE." note="Use the Schaeffer solids stress model."/>
+!  <valid value=".FALSE." note="Do not use the Princeton solids stress model."/>
 !  <valid value=".TRUE."  note="Use the Princeton solids stress model"/>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <dependent keyword="PHI" value="DEFINED"/>
@@ -1372,9 +1358,13 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Use Fedors and Landel correlation to compute maximum
-!    packing for a binary (only) mixture of powders.
+!    Correlation to compute maximum packing for binary (only)
+!    mixtures of powders.
 !  </description>
+!  <valid value=".TRUE."
+!    note="Use the Fedors and Landel correlation."/>
+!  <valid value=".FALSE."
+!    note="Do not use the Fedors and Landel correlation."/>
       FEDORS_LANDEL = .FALSE.
 !</keyword>
 
@@ -1413,12 +1403,13 @@
 !    acts to increase the inertia of the dispersed phase, which
 !    tends to stabilize simulations of bubbly gas-liquid flows.
 !  </description>
+!  <dependent keyword="M_AM" value="DEFINED"/>
       Added_Mass = .FALSE.
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    The disperse phase number where the added mass applies.
+!    The disperse phase number to which the added mass is applied.
 !  </description>
       M_AM = UNDEFINED_I
 !</keyword>
@@ -1433,7 +1424,8 @@
 
 !<keyword category="Two Fluid Model" required="false">
 !  <description>
-!    GHD Theory: Coefficient of restitution for particle-particle collisions.
+!    Coefficient of restitution for particle-particle collisions specific
+!    to GHD theory implementation.
 !  </description>
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <arg index="2" id="Phase" min="0" max="DIM_M"/>
@@ -1441,26 +1433,30 @@
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false">
-!  <description>Coefficient of restitution for particle-wall collisions.</description>
+!  <description>
+!    Coefficient of restitution for particle-wall collisions when using
+!    Johnson and Jackson partial slip BC (BC_JJ_PS).</description>
 !  <range min="0.0" max="1.0" />
       E_W = 1.D0
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Specularity coefficient associated with particle-wall collisions.
+!    Specularity coefficient associated with particle-wall collisions
+!    when using Johnson and Jackson partial slip BC (BC_JJ_PS). If 
+!    Jenkins small frictional BC are invoked (JENKINS) then phip is 
+!    not used.
 !  </description>
 !  <range min="0.0" max="1.0" />
       PHIP = 0.6D0
 !</keyword>
 
-
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Specify the value of specularity coefficient when the normalized
-!     slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
-!     is calculated internally in the code. Do not modify unless an
-!     accurate number is known.
+!    slip velocity goes to zero when BC_JJ_M is .TRUE.. This variable
+!    is calculated internally in the code. Do not modify unless an
+!    accurate number is known.
 !  </description>
 !  <dependents>BC_JJ_M</dependents>
       phip0 = undefined
@@ -1475,7 +1471,7 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!     Angle of internal friction (in degrees). set this value
+!     Angle of internal friction (in degrees). Set this value
 !     to zero to turn off plastic regime stress calculations.
 !  </description>
       PHI = UNDEFINED
@@ -1485,14 +1481,15 @@
 !  <description>
 !    Angle of internal friction (in degrees) at walls. Set this
 !    value to non-zero (PHI_W = 11.31 means TAN_PHI_W = MU = 0.2)
-!    when using Jenkins or BC_JJ_M boundary condition.
+!    when using Johnson and Jackson partial slip BC (BC_JJ_PS) with
+!    Friction model or Jenkins small frictional boundary condition.
 !  </description>
       PHI_W = UNDEFINED
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Minimum solids fraction above which friction sets in.  (when
+!    Minimum solids fraction above which friction sets in. (when
 !    friction = .TRUE.)</description>
 !  <dependents>friction</dependents>
       EPS_F_MIN = 0.5D0
@@ -1554,6 +1551,8 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Flag to enable/disable a phase from forming a packed bed.
+!    Effectively removes plastic pressure term from the solids phase
+!    momentum equation. 
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <valid value=".TRUE." note="The phase forms a packed bed with void
@@ -2058,15 +2057,43 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Johnson and Jackson partial slip BC.</description>
+!  <description>
+!   Johnson and Jackson partial slip BC.
+!  </description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <valid value='0'
-!    note='Do not use Johnson and Jackson partial slip bc. If
-!      granular energy transport equation is not solved./>
+!    note='Do not use Johnson and Jackson partial slip bc. Default  
+!      if granular energy transport equation is not solved./>
 !  <valid value='1'
-!    note='Use Johnson and Jackson partial slip bc. If granular
-!      energy transport equation is solved. />
+!    note='Use Johnson and Jackson partial slip bc. Default if
+!      granular energy transport equation is solved. />
+!  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
          BC_JJ_PS(LC) = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Boundary Condition" required="false">
+!  <description>Use a modified version of Johnson and Jackson
+!   partial slip BC (BC_JJ_PS BC) with a variable specularity
+!   coefficient.
+!  </description>
+!  <dependent keyword="E_w" value="DEFINED"/>
+!  <dependent keyword="PHI_w" value="DEFINED"/>
+!  <conflict keyword="JENKINS" value=".TRUE."/>
+         BC_JJ_M = .FALSE.
+!</keyword>
+
+!<keyword category="Two Fluid Model" required="false">
+!  <description>
+!    This flag effects how the momentum and granular energy boundary
+!    conditions are implemented when using BC_JJ_PS BC. 
+!  </description>
+!  <dependent keyword="PHI_w" value="DEFINED"/>
+!  <dependent keyword="E_w" value="DEFINED"/>
+!  <conflict keyword="BC_JJ_M" value=".TRUE."/>
+!  <valid value=".FALSE." note="Use standard boundary conditions."/>
+!  <valid value=".TRUE."
+!    note="Use Jenkins small frictional boundary condition."/>
+         JENKINS = .FALSE.
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
@@ -2495,15 +2522,6 @@
 
          BC_ROP_G(LC) = UNDEFINED
       ENDDO
-
-!<keyword category="Boundary Condition" required="false">
-!  <description>Use the modified Johnson and Jackson partial slip BC
-!    with variable specularity coefficient.
-!  </description>
-!  <dependent keyword="e_w" value="DEFINED"/>
-!  <dependent keyword="phi_w" value="DEFINED"/>
-         BC_JJ_M = .FALSE.
-!</keyword>
 
 
 

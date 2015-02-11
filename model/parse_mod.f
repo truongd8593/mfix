@@ -69,6 +69,7 @@
       SUBROUTINE setReaction(RxN, lNg, lSAg, lM, lNs, lSAs, lDH, lfDH)
 
       use rxn_com
+      use toleranc
 
       IMPLICIT NONE
 
@@ -113,8 +114,6 @@
       CHARACTER(LEN=32)  lName
 ! Logical indicating the reaction is skipped.
       LOGICAL Skip
-! External Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
       LOGICAL pMap(0:lM)
 

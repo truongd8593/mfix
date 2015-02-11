@@ -22,15 +22,14 @@
 !
       SUBROUTINE SEEK_TIME(READ_SPX, TIME_NEEDED, REC_POINTER, &
                            TIME_FOUND)
-!
-      Use param
-      Use param1
-      Use post3d
-      Use funits
+      USE param
+      USE param1
+      USE post3d
+      USE funits
+      USE toleranc
+
       IMPLICIT NONE
-!
-      LOGICAL COMPARE
-!
+
       INTEGER   L, REC_POINTER(*), NEXT_REC, NSTEP, UPorDOWN
       LOGICAL   READ_SPX(*), NOT_FOUND
       REAL      TIME_NEEDED, TIME_FOUND, TIME_REAL(N_SPX)

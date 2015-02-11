@@ -29,20 +29,17 @@
 ! Maximum number of IC.
       use param, only: DIMENSION_IC
 
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
 
-
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counter for ICs
       INTEGER :: ICV
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_INITIAL_CONDITIONS")
@@ -395,9 +392,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
 
       implicit none
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -409,10 +406,7 @@
       INTEGER :: N
 ! Sum of mass fraction.
       DOUBLE PRECISION :: SUM
-! External function for comparing two values.
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_GAS_PHASE")
@@ -620,6 +614,8 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
+
       IMPLICIT NONE
 
 ! Dummy Arguments:
@@ -640,10 +636,7 @@
       INTEGER :: MMAX_TOT
 ! External function to calculate solids density.
       DOUBLE PRECISION, EXTERNAL :: EOSS
-! External function for comparing two values.
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_SOLIDS_PHASES")
@@ -1024,6 +1017,5 @@
       RETURN
 
  1010 FORMAT('Error 1010: ',A,' specified in an undefined IC region')
-
 
       END SUBROUTINE CHECK_IC_OVERFLOW

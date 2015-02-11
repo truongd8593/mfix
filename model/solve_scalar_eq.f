@@ -91,10 +91,6 @@
       character(LEN=8) :: Vname
 
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: IS_SMALL
-!-----------------------------------------------
 
       call lock_ambm
       call lock_tmp_array

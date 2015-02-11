@@ -11,12 +11,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_RADIATION(I, iM, iIJK, FOCUS)
 
-      use physprop, only: SMAX
-      Use constant
-      Use des_thermo
-      Use discretelement
-      Use fldvar
-      Use param1
+      USE constant
+      USE des_thermo
+      USE discretelement
+      USE fldvar
+      USE param1
+      USE physprop, only: SMAX
+      USE toleranc
 
       IMPLICIT NONE
 
@@ -41,12 +42,6 @@
       DOUBLE PRECISION :: Tenv
 ! Particle Emmisivity
       DOUBLE PRECISION :: lEm
-! Functions
-!---------------------------------------------------------------------//
-! External Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
-
-
 
 ! Set the environment temperature.
       IF(COMPARE(EP_g(iIJK),ONE)) THEN

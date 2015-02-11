@@ -479,6 +479,7 @@
 !-----------------------------------------------
       USE param
       USE param1
+      USE toleranc
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -492,10 +493,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION :: DEN
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE
-!-----------------------------------------------
 !
       IF (COMPARE(PHI_D,PHI_U)) THEN
          PHI_C_OF = ZERO
@@ -506,7 +503,6 @@
 !
       RETURN
       END FUNCTION PHI_C_OF
-!
 !
       DOUBLE PRECISION FUNCTION FPFOI_OF (PHI_D, PHI_C, &
                        PHI_U, PHI_UU)
