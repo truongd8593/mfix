@@ -32,6 +32,7 @@
       use bc, only: BC_VOLFLOW_S
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -123,8 +124,8 @@
       use bc, only: BC_T_g
       use bc, only: BC_P_g
 
-
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 
@@ -137,11 +138,8 @@
 
       DOUBLE PRECISION, EXTERNAL :: EOSG
       DOUBLE PRECISION, EXTERNAL :: CALC_MW
-      LOGICAL, EXTERNAL :: COMPARE
-
 
       CALL INIT_ERR_MSG("GAS_MASSFLOW_TO_VOLFLOW")
-
 
 ! No need to convert if the mass flow is zero.
       IF(COMPARE(BC_MASSFLOW_G(BCV),ZERO)) THEN
@@ -220,6 +218,7 @@
       USE bc, only: BC_VOLFLOW_s
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 
@@ -233,8 +232,6 @@
       INTEGER :: INERT
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL, EXTERNAL :: COMPARE
-
 
       CALL INIT_ERR_MSG("SOLIDS_MASSFLOW_TO_VOLFLOW")
 
@@ -261,7 +258,6 @@
          VOLFLOW = BC_MASSFLOW_S(BCV,M)/EOSS(BASE_ROs(M),              &
             X_s0(M,INERT), BC_X_S(BCV,M,INERT))
       ENDIF
-
 
 ! If volumetric flow is also specified compare both
       IF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
@@ -314,6 +310,7 @@
       USE mfix_pic
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -330,14 +327,8 @@
 
 ! Velocity computed from volumetric flow rate
       DOUBLE PRECISION :: VEL
-
-
-      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
-
-
       CALL INIT_ERR_MSG("GAS_VOLFLOW_TO_VELOCITY")
-
 
       SELECT CASE (trim(BC_TYPE(BCV)))
       CASE ('MASS_INFLOW');  SGN =  ONE; OFF = ZERO
@@ -352,7 +343,6 @@
       CASE ('S'); SGN = -SGN
       CASE ('B'); SGN = -SGN
       END SELECT
-
 
 ! Calculate the velocity based on the volumetric flow rate,
 ! BC area and BC volume fraction.
@@ -376,7 +366,6 @@
             BC_W_G(BCV) = OFF * BC_W_G(BCV)
          ENDIF
 
-
       ELSEIF(BC_PLANE(BCV) == 'S' .OR. BC_PLANE(BCV)== 'N') THEN
          IF(BC_V_G(BCV) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
             IF(.NOT.COMPARE(VEL,BC_V_G(BCV))) THEN
@@ -388,7 +377,6 @@
             BC_U_G(BCV) = OFF * BC_U_G(BCV)
             BC_W_G(BCV) = OFF * BC_W_G(BCV)
          ENDIF
-
 
       ELSEIF(BC_PLANE(BCV) == 'B' .OR. BC_PLANE(BCV)== 'T') THEN
          IF(BC_W_G(BCV) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
@@ -414,8 +402,6 @@
          ' Specified value (',A,') = ',G14.7,/1X,70('*')/)
 
       END SUBROUTINE GAS_VOLFLOW_TO_VELOCITY
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -445,6 +431,7 @@
       USE mfix_pic
 
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -460,12 +447,9 @@
 
       DOUBLE PRECISION :: SGN, OFF
 
-      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
-
       CALL INIT_ERR_MSG("SOLIDS_VOLFLOW_TO_VELOCITY")
-
 
       IF(SKIP_M) THEN
          WRITE(ERR_MSG,1100) M, BCV, trim(iVar("BC_VOLFLOW_S",BCV,M))
@@ -476,7 +460,6 @@
          'volumetric flow rate',/'at BC ',I3,', ',A,'. But, both ',&
          'BC_ROP_s and BC_EP_s are zero or undefined.',/'Please ',&
          'the mfix.dat file.')
-
 
       SELECT CASE (trim(BC_TYPE(BCV)))
       CASE ('MASS_INFLOW');  SGN =  ONE; OFF = ZERO
@@ -505,7 +488,6 @@
 
  1101 FORMAT('Error 1101: BC No:',I2,' Non-zero vol. or mass flow ',&
          'specified with BC_ROP_s', I1,' = 0.')
-
 
       IF(BC_PLANE(BCV) == 'W' .OR. BC_PLANE(BCV)== 'E') THEN
          IF(BC_U_S(BCV,M) /= UNDEFINED .AND. DO_VEL_CHECK) THEN
@@ -665,19 +647,20 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE run
       USE bc
-      USE scales
-      USE indices
-      USE funits
       USE compar
       USE discretelement
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
       USE mfix_pic
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE scales
+      USE toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -704,7 +687,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: EOSG, EOSS
       DOUBLE PRECISION, EXTERNAL :: CALC_MW
-      LOGICAL, EXTERNAL :: COMPARE
 !-----------------------------------------------
 
 ! When both flow rates and velocities are specified, a consistency check is done
@@ -716,9 +698,6 @@
 ! should not be performed, because the velocity assigned suring the first call
 ! will not match the flow rate. Therfore, when called from cut_cell_preprocessing.f
 ! DO_VEL_CHECK is set to .FALSE.
-
-
-
 
 ! initialize
       VOLFLOW = UNDEFINED
@@ -809,8 +788,6 @@
                ENDIF   ! end if (bc_massflow_g(bcv) /= undefined)
 ! end gas mass flow conversion to volumetric flow
 ! ----------------------------------------------------------------<<<
-
-
 
 ! If gas volumetric flow is defined convert it to velocity
 ! ---------------------------------------------------------------->>>

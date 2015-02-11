@@ -23,13 +23,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_SAME_TIME (READ_SPX, REC_POINTER,&
                                 AT_EOF, TIME_NOW, TIME_REAL, NSTEP_1)
-!
-      Use param
-      Use param1
+
+      USE param
+      USE param1
+      USE toleranc
+
       IMPLICIT NONE
-!
-      LOGICAL COMPARE
-!
+
       INTEGER   REC_POINTER(*) , NSTEP_1
       INTEGER   L
       LOGICAL   READ_SPX(*) , READ_SPX_STORE(N_SPX), AT_EOF(*)

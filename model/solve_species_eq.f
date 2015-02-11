@@ -21,34 +21,35 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE ChiScheme
+      USE bc
+      USE compar
+      USE drag
+      USE energy
+      USE fldvar
+      USE geometry
+      USE indices
+      USE leqsol
+      USE matrix
+      USE mflux
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE drag
-      USE residual
-      USE ur_facs
       USE pgcor
+      USE physprop
       USE pscor
-      USE leqsol
-      USE bc
-      USE energy
+      USE residual
+      USE run
       USE rxns
-      Use ambm
-      USE matrix
-      USE ChiScheme
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
-      USE compar
-      USE mpi_utility
       USE sendrecv
-      USE mflux
-      use ps
+      USE toleranc
+      USE ur_facs
+      Use ambm
+      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       use functions
+      use ps
+      use toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -99,7 +100,6 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      LOGICAL , EXTERNAL :: IS_SMALL
       DOUBLE PRECISION , EXTERNAL :: Check_conservation
 !-----------------------------------------------
 

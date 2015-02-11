@@ -73,10 +73,7 @@
       DOUBLE PRECISION :: tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
-! Function to compare to values
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
-
 
 ! Initialize error flag.
       IER = 0
@@ -229,9 +226,6 @@
       DOUBLE PRECISION tmp_A, tmp_B
 ! Averaging factor
       DOUBLE PRECISION :: AVG_FACTOR
-! Function to compare to values
-      LOGICAL, EXTERNAL :: COMPARE
-
 !......................................................................!
 
 ! Initialize error flag.
@@ -384,8 +378,6 @@
 ! Averaging factor
 ! (=0.25 in 3D and =0.5 in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-! Function to compare to values
-      LOGICAL, EXTERNAL :: COMPARE
 !......................................................................!
 
 ! Initialize error flag.

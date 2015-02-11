@@ -37,6 +37,7 @@
 
       use error_manager
       use functions
+      use toleranc
 
       IMPLICIT NONE
 
@@ -46,8 +47,6 @@
       INTEGER :: M, N
       INTEGER :: NP
       INTEGER :: NINDX
-
-      LOGICAL , EXTERNAL :: COMPARE
 
       IF(RUN_TYPE /= 'NEW') RETURN
 

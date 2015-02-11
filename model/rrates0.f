@@ -35,7 +35,6 @@
       use indices
       use geometry
 
-
 ! Gas phase global variables:
 !`````````````````````````````````````````````````````````````````````//
 ! Species mass fractions.
@@ -50,7 +49,6 @@
       use rxns, only: SUM_R_g
 ! Heat of reaction source term
       use energy, only: HOR_g
-
 
 ! Gas phase global variables:
 !`````````````````````````````````````````````````````````````````````//
@@ -101,7 +99,7 @@
 ! Indicate that TFM/DEM hybrid is used.
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Small value for species mass fractions
-      use toleranc, only: ZERO_X_gs
+      use toleranc
       use functions
 
       implicit none
@@ -152,13 +150,10 @@
 ! value, then the reaction is suppressed.
       DOUBLE PRECISION :: speciesLimiter
 
-
 ! External functions:
 !`````````````````````````````````````````````````````````````````````//
 ! Calculates enthalpy (cal/gram)
       DOUBLE PRECISION, EXTERNAL :: CALC_H
-! Comparing two double precision numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
 ! Initialize global storage arrays to zero
 !---------------------------------------------------------------------//

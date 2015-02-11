@@ -42,11 +42,10 @@
       use geometry, only: NO_K
 
       use bc
-
       use error_manager
+      use toleranc
 
       IMPLICIT NONE
-
 
       INTEGER, INTENT(in) :: BCV
       INTEGER, INTENT(in) :: M_TOT
@@ -65,8 +64,6 @@
       INTEGER :: INERT
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE
-
 
       CALL INIT_ERR_MSG("CHECK_BC_MASS_INFLOW")
 
@@ -375,26 +372,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE cutcell
+      USE discretelement
+      USE error_manager
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE mfix_pic
       USE param
       USE param1
-      USE geometry
-      USE fldvar
       USE physprop
       USE run
-      USE bc
-      USE indices
-      USE funits
       USE scalars
-      USE compar
       USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE cutcell
-
-      use error_manager
+      USE toleranc
+      USE toleranc
 
       IMPLICIT NONE
-
 
       INTEGER, INTENT(in) :: BCV
       INTEGER, INTENT(in) :: M_TOT
@@ -409,9 +406,6 @@
       DOUBLE PRECISION SUM, SUM_EP
 
       DOUBLE PRECISION, EXTERNAL :: EOSS
-      LOGICAL , EXTERNAL :: COMPARE
-
-
 
       CALL INIT_ERR_MSG("CHECK_BC_P_INFLOW")
 

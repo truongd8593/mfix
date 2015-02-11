@@ -41,11 +41,9 @@
 !---------------------------------------------------------------------//
       use error_manager
 
-      implicit none
+      use toleranc
 
-! Local Variables:
-!---------------------------------------------------------------------//
-      LOGICAL, external :: COMPARE
+      implicit none
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_GEOMETRY_PREREQS")

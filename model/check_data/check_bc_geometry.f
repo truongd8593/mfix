@@ -203,21 +203,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_GEOMETRY_WALL(BCV)
 
+      USE bc
+      USE compar
+      USE error_manager
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE fldvar
       USE physprop
-      USE bc
-      USE indices
-      USE funits
-      USE compar
       USE sendrecv
-
-      use error_manager
+      USE toleranc
 
       IMPLICIT NONE
-
 
 ! loop index
       INTEGER, INTENT(in) :: BCV
@@ -226,9 +225,7 @@
 !      INTEGER :: I , J , K , IJK
 ! calculated indices of the wall boundary
       INTEGER :: I_w , I_e , J_s , J_n , K_b , K_t
-      LOGICAL , EXTERNAL :: COMPARE
       INTEGER :: IER
-
 
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY_WALL")
 

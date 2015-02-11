@@ -204,7 +204,6 @@ common_SOURCES = \
 	model/chischeme_mod.f \
 	model/cn_extrapol.f \
 	model/coeff_mod.f \
-	model/compare.f \
 	model/constant_mod.f \
 	model/cont_mod.f \
 	model/conv_dif_phi.f \

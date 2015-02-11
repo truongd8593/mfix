@@ -20,9 +20,7 @@
 
         implicit none
 
-
         contains
-
 
 !----------------------------------------------------------------------!
 ! Purpose: Routine to partition the grid. It works for 1-d, 2-d        !
@@ -171,6 +169,7 @@
         SUBROUTINE GRIDMAP_INIT
 
         use functions
+        use toleranc
 
         implicit none
 
@@ -187,11 +186,7 @@
 ! Theoritical speedup (based on load imbalance)
       CHARACTER(len=32) :: AMDAHL_SPEEDUP
 
-! External Function for compare two values.
-      LOGICAL , EXTERNAL :: COMPARE
-
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("GRIDMAP_INIT")

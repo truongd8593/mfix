@@ -50,6 +50,7 @@
 ! Small value for species mass fractions
       use toleranc, only: ZERO_X_gs
       use functions
+      use toleranc
 
       IMPLICIT NONE
 
@@ -101,8 +102,6 @@
 !---------------------------------------------------------------------//
 ! Enthalpy calculations (cal/gram)
       DOUBLE PRECISION, EXTERNAL :: CALC_H
-! Compare two numbers.
-      LOGICAL, EXTERNAL :: COMPARE
 
 ! Alias particle temperature.
       lTp = DES_T_s_NEW(NP)

@@ -68,10 +68,9 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
-
+      use toleranc
 
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -85,13 +84,10 @@
       DOUBLE PRECISION :: DZ_T
 ! Error Flag
       INTEGER :: IER
-! External function for comparing two values.
-      LOGICAL , EXTERNAL :: COMPARE
 ! Local variables for cylindrical_2d simulation
       integer i_cyl_min, i_cyl_max
       double precision l_ver, l_ab, rrr, ddy
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_GEOMETRY")

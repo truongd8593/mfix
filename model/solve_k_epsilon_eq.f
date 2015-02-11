@@ -26,36 +26,35 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      !USE matrix
+      USE bc
+      USE compar
+      USE constant
+      USE cutcell
+      USE drag
+      USE energy
+      USE fldvar
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
+      USE leqsol
+      USE mflux
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      !USE matrix
-      USE fldvar
-      USE constant
-      USE output
-      USE indices
-      USE drag
-      USE residual
-      USE ur_facs
       USE pgcor
+      USE physprop
       USE pscor
-      USE leqsol
-      USE bc
-      USE energy
+      USE residual
+      USE run
       USE rxns
+      USE toleranc
       USE turb
+      USE ur_facs
       USE usr
       Use ambm
       Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
-      USE compar
-      USE mflux
-
-      USE cutcell
-      USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -99,10 +98,6 @@
       DOUBLE PRECISION smallTheta
 !
       character(LEN=8) :: Vname
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: IS_SMALL
 !-----------------------------------------------
 
       IF( .NOT. K_Epsilon) RETURN

@@ -63,7 +63,6 @@
 ../model/check_data/check_solids_model_prereqs.f
 ../model/check_data/check_solids_mppic.f
 ../model/check_data/check_solids_phases.f
-../model/compare.f
 ../model/constant_mod.f
 ../model/cont_mod.f
 ../model/deprecated.f

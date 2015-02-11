@@ -900,26 +900,27 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE constant
+      USE cutcell
+      USE dashboard
+      USE fldvar
+      USE functions
+      USE funits
+      USE indices
+      USE leqsol
+      USE mpi_utility
       USE param
       USE param1
-      USE constant
-      USE run
       USE physprop
-      USE indices
-      USE scalars
-      USE funits
-      USE leqsol
-      USE compar
-      USE mpi_utility
-      USE bc
-
-      USE fldvar
-      USE cutcell
-      USE quadric
-      USE vtk
       USE polygon
-      USE dashboard
-      USE functions
+      USE quadric
+      USE run
+      USE scalars
+      USE toleranc
+      USE vtk
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -929,10 +930,6 @@
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
 !-----------------------------------------------
       DOUBLE PRECISION SUM, SUM_EP
-!-----------------------------------------------
-! External Functions
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !======================================================================
 ! Boundary conditions
@@ -1801,29 +1798,26 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CG_FLOW_TO_VEL
 
-
-
-      USE physprop
-      USE scales
-      USE funits
-
-      USE param
-      USE param1
-      USE parallel
-      USE constant
       USE bc
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
       USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
+      USE constant
       USE cutcell
       USE fldvar
-      USE vtk
       USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1849,9 +1843,7 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
-      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
-!
 
       DO BCV = 1, DIMENSION_BC
 
@@ -2063,7 +2055,6 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
-      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
 
@@ -2267,7 +2258,6 @@
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
       DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
-      LOGICAL , EXTERNAL :: COMPARE
 !-----------------------------------------------
 !
 
@@ -2289,7 +2279,6 @@
          if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
          NPS = PSV
       enddo PS_LP
-
 
       print *,'Last PS=',NPS
 !      read(*,*)

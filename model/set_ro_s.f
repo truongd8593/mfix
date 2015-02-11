@@ -131,9 +131,6 @@
       LOGICAL :: lExists
       CHARACTER(LEN=64) :: lFName
 
-! Function for comparing two numbers.
-      LOGICAL, EXTERNAL :: compare
-
 ! Initialize error flags.
       IER = 0
 

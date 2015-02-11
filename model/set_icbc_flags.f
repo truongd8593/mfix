@@ -307,10 +307,6 @@
       INTEGER :: I , J , K , IJK
 ! loop index
       INTEGER :: BCV
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      LOGICAL , EXTERNAL :: COMPARE
 
 ! Total number of valid BC types
       INTEGER, PARAMETER :: DIM_BCTYPE = 21
