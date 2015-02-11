@@ -29,6 +29,8 @@
 !---------------------------------------------------------------------//
       use error_manager
 
+      use toleranc
+
       implicit none
 
 ! Initialize the error manager.

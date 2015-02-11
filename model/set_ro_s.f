@@ -114,6 +114,8 @@
 ! Index of inert species.
       use physprop, only: INERT_SPECIES
 
+      use toleranc
+
       implicit none
 
 ! Index of solids phase.
