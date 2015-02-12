@@ -79,6 +79,7 @@
       USE bc
       USE coeff
       USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
+      USE vtp
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -279,7 +280,7 @@
       IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
          IF(WRITE_VTK_FILES) THEN
             DO L = 1, DIMENSION_VTK
-               CALL WRITE_VTU_FILE(L)
+               ! CALL WRITE_VTP_FILE(L)
             ENDDO
          ENDIF
          CALL DES_TIME_MARCH
@@ -735,10 +736,14 @@
       IF(WRITE_VTK_FILES) THEN
          DO L = 1, DIMENSION_VTK
             IF (DT == UNDEFINED) THEN
-               IF (FINISH) CALL WRITE_VTU_FILE(L)
+               IF (FINISH) THEN
+                  CALL WRITE_VTU_FILE(L)
+                  IF(DISCRETE_ELEMENT.AND.(DES_CONTINUUM_COUPLED))   CALL WRITE_VTP_FILE(L)
+               ENDIF
             ELSEIF (VTK_TIME(L)/=UNDEFINED .AND.  TIME+0.1d0*DT>=VTK_TIME(L)) THEN
                VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
                CALL WRITE_VTU_FILE(L)
+               IF(DISCRETE_ELEMENT.AND.(DES_CONTINUUM_COUPLED))   CALL WRITE_VTP_FILE(L)
             ENDIF
          ENDDO
       ENDIF

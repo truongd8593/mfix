@@ -9,6 +9,9 @@
       use param, only: DIM_N_s
 ! Maximum number of scalar equations
       use param, only: DIM_Scalar
+! Maximum number of DEM solids phase species
+use param, only: DIMENSION_N_S
+
 
 
       INTEGER NUMBER_OF_CELLS
@@ -16,6 +19,7 @@
       INTEGER NUMBER_OF_BLOCKED_CELLS
       INTEGER NUMBER_OF_STANDARD_CELLS
       INTEGER NUMBER_OF_VTK_CELLS
+      INTEGER NUMBER_OF_VTK_PARTS
 
       LOGICAL             :: WRITE_VTK_FILES
       LOGICAL             :: TIME_DEPENDENT_FILENAME
@@ -72,6 +76,7 @@
       INTEGER :: VTU_offset
 
       LOGICAL, allocatable :: BELONGS_TO_VTK_SUBDOMAIN(:)
+      ! LOGICAL, allocatable :: PART_BELONGS_TO_VTK_SUBDOMAIN(:)
 
       INTEGER, PARAMETER :: DIMENSION_VTK = 100
 ! Max size for VTK_nRR
@@ -85,6 +90,9 @@
 
 ! Current vtk time
       DOUBLE PRECISION :: VTK_TIME(DIMENSION_VTK)
+
+! Type of data in vtk region: 'C':cell data, 'P': particle data
+      CHARACTER(LEN=1) :: VTK_DATA(DIMENSION_VTK)
 
 ! FRAME index of vtk file
       INTEGER :: FRAME(DIMENSION_VTK)
@@ -121,6 +129,9 @@
 
 ! VTK number of slices in z-direction
       INTEGER :: VTK_NZS(DIMENSION_VTK)
+
+! VTK slice tolerance
+      DOUBLE PRECISION :: VTK_SLICE_TOL(DIMENSION_VTK)
 
 ! VTK filename base
       CHARACTER(LEN=64) :: VTK_FILEBASE(DIMENSION_VTK)
@@ -220,4 +231,27 @@
       LOGICAL :: VTK_DEBUG(DIMENSION_VTK,15)
 
       INTEGER, DIMENSION(DIMENSION_VTK,DIM_VTK_VAR) :: VTK_VARLIST
+
+! VTK Particle selection: 'C': center, 'P': entire particle, 'I': particle intersect
+      CHARACTER(LEN=1) :: VTK_SELECT_MODE(DIMENSION_VTK)
+
+! Particle radius
+      LOGICAL :: VTK_PART_DIAMETER(DIMENSION_VTK)
+
+! Particle velocity         
+      LOGICAL :: VTK_PART_VEL(DIMENSION_VTK)
+
+! Particle user-defined variable         
+      LOGICAL :: VTK_PART_USR_VAR(DIMENSION_VTK,3)
+
+! Particle temperature         
+      LOGICAL :: VTK_PART_TEMP(DIMENSION_VTK)
+
+! Particle species mass fraction         
+      LOGICAL :: VTK_PART_X_s(DIMENSION_VTK,100)
+
+! Particle cohesion
+      LOGICAL :: VTK_PART_COHESION(DIMENSION_VTK)
+
       END MODULE vtk
+

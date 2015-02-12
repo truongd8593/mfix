@@ -941,6 +941,71 @@
       VTK_DEBUG = .FALSE.
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>Type of data to write in the VTK file.
+!  Use 'C' for cell data (VTU file).
+!  Use 'P' for particule data (VTP file).</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_DATA = 'C'
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Tolerance to detect particle in a VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_SLICE_TOL = ZERO
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Particle selection mode in a VTK region.
+!  Use 'C' to select particle which center is inside the VTK region.
+!  Use 'P' to select particle that are entirely inside the VTK region.
+!  Use 'I' to select particles that are inside or intersect the edges of the VTK region.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_SELECT_MODE = 'C'
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle radius in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_DIAMETER= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle radius in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_DIAMETER= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle velocity in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_VEL= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle user-defined variable in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_USR_VAR= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle temperature in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_TEMP= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle species mass fraction in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_X_s= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle cohesion in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_COHESION= .FALSE.
+!</keyword>
+
 
 !<keyword category="Output Control" required="false">
 !  <description>Starting Index appended to VTU files</description>
@@ -957,7 +1022,7 @@
 !<keyword category="Output Control" required="false">
 !  <description>West location of VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_X_W = UNDEFINED
+         VTK_X_W = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
@@ -969,7 +1034,7 @@
 !<keyword category="Output Control" required="false">
 !  <description>South location of VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Y_S = UNDEFINED
+         VTK_Y_S = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">
@@ -981,7 +1046,7 @@
 !<keyword category="Output Control" required="false">
 !  <description>Bottom location of VTK region.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-         VTK_Z_B = UNDEFINED
+         VTK_Z_B = -UNDEFINED
 !</keyword>
 
 !<keyword category="Output Control" required="false">

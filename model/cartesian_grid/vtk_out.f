@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: WRITE_VTU_FILE                                         C
-!  Purpose: Writes the cut cell grid in VTK format (Unstructured VTU)  C
+!  Purpose: Writes the cell data grid in VTK format (Unstructured VTU) C
 !           Binary format                                              C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -31,6 +31,7 @@
       USE physprop
       USE pgcor
       USE vtk
+      USE vtp
       USE rxns
       USE output
       USE scalars
@@ -62,9 +63,9 @@
       INTEGER :: WRITE_DATA   = 2
 
       ! There is nothing to write if we are not in adefined vtk region
-!      IF(.NOT.CARTESIAN_GRID) RETURN
       VTK_REGION = LCV
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
+      IF(VTK_DATA(LCV)/='C') RETURN
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
@@ -312,6 +313,7 @@
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
+! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
          OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
          DO L = 1, DIMENSION_VTK
@@ -320,7 +322,6 @@
          CLOSE(VTU_FRAME_UNIT)
       ENDIF
 
-
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
@@ -328,6 +329,7 @@
       RETURN
 
       END SUBROUTINE WRITE_VTU_FILE
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -3239,3 +3241,4 @@
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION
+
