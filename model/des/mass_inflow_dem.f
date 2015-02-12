@@ -338,6 +338,9 @@
       PMASS(lNP) = PVOL(lNP) * RO_Sol(lNP)
       OMOI(lNP) = 5.d0 / (2.d0 * PMASS(lNP) * DES_RADIUS(lNP)**2)
 
+! Clear the drag force
+      IF(DES_EXPLICITLY_COUPLED) DRAG_FC(:,lNP) = ZERO
+
 ! If solving the energy equations, set the temperature
       IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
          DES_T_s_NEW(lNP) = BC_T_s(lBCV,BC_M)

@@ -337,10 +337,6 @@
 ! Unlock the temp arrays.
       CALL UNLOCK_TMP_ARRAY
 
-! Update the drag force and sources in ghost layers.
-      CALL SEND_RECV(F_GDS, 2)
-      CALL SEND_RECV(DRAG_BM, 2)
-
 
       RETURN
       END SUBROUTINE DRAG_GS_EXPLICIT_NONINTERP
