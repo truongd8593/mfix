@@ -31,8 +31,8 @@
       use mpi_utility
       use sendrecv
       use stl
-      UsE vtp
-      USE vtk
+      use vtp
+      use vtk
 
       IMPLICIT NONE
 !------------------------------------------------
