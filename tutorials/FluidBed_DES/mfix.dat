@@ -178,10 +178,10 @@
   VTK_SELECT_MODE(1) = 'C'          ! pick particles which centers are inside region 
   VTK_DT(1)          = 0.01
   VTK_DATA(1)        = 'P'          ! Write particle data (vtp files)
-  VTK_X_w (1)        = 5.0
-  VTK_X_e (1)        = 10.0
-  VTK_Y_s (1)        = 5.0
-  VTK_Y_n (1)        = 20.0
+  VTK_X_w(1)         = 5.0
+  VTK_X_e(1)         = 10.0
+  VTK_Y_s(1)         = 5.0
+  VTK_Y_n(1)         = 20.0
 
   VTK_PART_DIAMETER(1) = .TRUE.
   VTK_PART_VEL(1) = .TRUE.
