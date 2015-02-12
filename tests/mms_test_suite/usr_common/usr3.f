@@ -44,10 +44,10 @@
 !  Insert user-defined code here
 !
 
-      
+
       Call calculate_de_norms
 
-      !if(tecplot_output) Call write_tecplot_data 
+      !if(tecplot_output) Call write_tecplot_data
 
       Call deallocate_mms_vars
 
@@ -69,18 +69,14 @@
 !  Revision Number #                                  Date:            !
 !  Author: #                                                           !
 !  Purpose: #                                                          !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_de_norms
       Use param, only     : dimension_3
-      Use param1, only    : zero      
-      Use compar, only    : ijkstart3, ijkend3, istart1_all, iend1_all,&
-                            jstart1_all, jend1_all, &
-                            kstart1_all, kend1_all, &
-                            ijkstart3_all, ijkend3_all, &
-                            istart, iend, jstart, jend, kstart, kend
-      Use functions, only : funijk, funijk_gl                          
+      Use param1, only    : zero
+      Use compar, only    : ijkstart3, ijkend3
+      Use functions, only : funijk_gl
       Use functions, only : IS_ON_myPE_owns
       Use indices, only   : i_of, j_of, k_of
       Use usr             ! all variables
@@ -89,26 +85,26 @@
                             t_g, t_s, ep_g, rop_s, theta_m
       Use geometry, only  : imax, imin1, imax1
       Use geometry, only  : jmax, jmin1, jmax1
-      Use geometry, only  : kmax, kmin1, kmax1     
+      Use geometry, only  : kmax, kmin1, kmax1
       Use funits, only    : newunit
-      Use compar, only    : myPE, PE_IO, numPEs
-      Use mpi_utility, only : bcast
+      Use compar, only    : myPE, PE_IO
+      Use mpi_utility, only : global_all_sum
       IMPLICIT NONE
 
 ! number of data points for norm calculation
         integer   :: var_size
 
-! looping variables        
-        integer   :: ijk, i, j, k, proc
+! looping variables
+        integer   :: ijk, i, j, k
 
-! file unit        
+! file unit
         integer   :: f1
 
-! pressure shift value        
-        double precision  :: delta_p_g        
+! pressure shift value
+        double precision  :: delta_p_g
 
-! owner of ijk_sh
-        integer   :: ijk_sh_owner
+! global ijk
+        integer   :: ijk_gl
 
 
 ! allocate de_ variables and lnorms_ variables
@@ -138,61 +134,23 @@
         allocate(lnorms_t_s(3))
         allocate(lnorms_theta_m(3))
 
-!! evaluate pressure shift value
-!        do proc = 0, numPEs-1
-!            
-!          i = i_of(ijk_sh)
-!          j = j_of(ijk_sh)
-!          k = k_of(ijk_sh)
-!
-!          write(*,*) proc, i, istart1_all(proc), iend1_all(proc)
-!          write(*,*) proc, j, jstart1_all(proc), jend1_all(proc)
-!          write(*,*) proc, k, kstart1_all(proc), kend1_all(proc)
-!
-!! *** ask jmusser
-!! is there a function that check whether an ijk is owned by a
-!! processor 'proc'?
-!! istart_all for all 'proc' holds the same value? is this a problem?
-!          if (.not.((i.ge.istart1_all(proc)).and.(i.le.iend1_all(proc))))&
-!            cycle
-!          if (.not.((j.ge.jstart1_all(proc)).and.(j.le.jend1_all(proc))))&
-!            cycle
-!          if (.not.((k.ge.kstart1_all(proc)).and.(k.le.kend1_all(proc))))&
-!            cycle
-!
-!! 'proc' has ijk_sh
-!          ijk_sh_owner = proc
-!
-!! if 'proc' is also the current process then set delta_p_g else set some
-!! random value
-!          if(IS_ON_myPE_owns(i,j,k)) then
-!            delta_p_g = P_G(ijk_sh) - MMS_P_G(ijk_sh)      
-!! only ijk_sh_owner broadcasts the value of delta_p_g
-!            call bcast(delta_p_g)
-!          else
-!            delta_p_g = zero
-!          end if            
-!
-!        end do
-
+! determine pressure shift value
+        delta_p_g = zero
         do ijk = ijkstart3, ijkend3
+          i = i_of(ijk)
+          j = j_of(ijk)
+          k = k_of(ijk)
 
-          i = i_of(ijk_sh)
-          j = j_of(ijk_sh)
-          k = k_of(ijk_sh)
-          
-          if(IS_ON_myPE_owns(i,j,k)) then
-            write(*,*) "myPE= ", myPE, ijk_sh, i, j, k
-            delta_p_g = P_G(ijk_sh) - MMS_P_G(ijk_sh)      
-! only ijk_sh_owner broadcasts the value of delta_p_g
-            call bcast(delta_p_g)
-            exit
-          end if
+          if(.not.(IS_ON_myPE_owns(i,j,k))) cycle
+
+          ijk_gl = funijk_gl(i,j,k)
+          if(ijk_sh.eq.ijk_gl) then
+            delta_p_g = P_G(ijk) - MMS_P_G(ijk)
+          endif
 
         end do
 
-
-        write(*,*) "myPE, dpg", myPE, delta_p_g
+        call global_all_sum(delta_p_g)
 
 ! scalar variables
         de_ep_g = zero
@@ -207,7 +165,7 @@
           j = j_of(ijk)
           k = k_of(ijk)
 
-          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle        
+          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle
 
 ! select only internal points, else remains zero
           if((i.lt.imin1).or.(i.gt.imax1)) cycle
@@ -240,7 +198,7 @@
           j = j_of(ijk)
           k = k_of(ijk)
 
-          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle        
+          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle
 
 ! to select only internal points, else remains zero
           if((i.lt.imin1).or.(i.ge.imax1)) cycle  ! note: >=
@@ -264,7 +222,7 @@
           j = j_of(ijk)
           k = k_of(ijk)
 
-          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle        
+          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle
 
 ! to select only internal points, else remains zero
           if((i.lt.imin1).or.(i.gt.imax1)) cycle
@@ -288,7 +246,7 @@
           j = j_of(ijk)
           k = k_of(ijk)
 
-          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle        
+          if(.NOT.IS_ON_myPE_owns(i,j,k)) cycle
 
 ! to select only internal points, else remains zero
           if((i.lt.imin1).or.(i.gt.imax1)) cycle
@@ -369,7 +327,7 @@
 !                                                                      !
 !  Module name: calculate_lnorms	                               !
 !  Purpose: Calculates L1, L2 and Lifinity norms for any input         !
-!  variable of defined size                                            ! 
+!  variable of defined size                                            !
 !                                                                      !
 !  Author: Aniruddha Choudhary                        Date: Jan 2015   !
 !  email: anirudd@vt.edu					       !
@@ -378,11 +336,11 @@
 !  Revision Number #                                  Date:            !
 !  Author: #                                                           !
 !  Purpose: #                                                          !
-!                                                                      ! 
+!                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_lnorms(var_size, var, lnorms)
-      Use compar, only      : ijkstart3, ijkend3      
+      Use compar, only      : ijkstart3, ijkend3
       Use param, only       : dimension_3
       Use param1, only      : zero
       Use mpi_utility, only : global_sum, global_max
@@ -391,25 +349,25 @@
 ! total number of data points for norm calculation
         integer, intent(in)                             :: var_size
 
-! variable for which norms are to be calculated      
-        double precision, dimension(dimension_3), intent(in)   :: var 
+! variable for which norms are to be calculated
+        double precision, dimension(dimension_3), intent(in)   :: var
 
-! the three norms: L1, L2 and Linfinity        
+! the three norms: L1, L2 and Linfinity
         double precision, dimension(3), intent(out)     :: lnorms
 
 ! sum or max of lnorms (over all processors
         double precision, dimension(3)                  :: lnorms_all
 
-! looping indices        
+! looping indices
         integer         :: ijk
 
 
         if(var_size.eq.0) then
           lnorms(:) = zero
           return
-        end if        
+        end if
 
-! calculate L1, L2 and Linfinity norms        
+! calculate L1, L2 and Linfinity norms
         lnorms(1:3) = zero
         do ijk = ijkstart3, ijkend3
             lnorms(1) = lnorms(1) + abs(var(ijk))
@@ -417,12 +375,12 @@
             lnorms(3) = max(lnorms(3), abs(var(ijk)))
         end do
 
-! save global sum in lnorms_all variables        
+! save global sum in lnorms_all variables
         call global_sum(lnorms(1), lnorms_all(1))
         call global_sum(lnorms(2), lnorms_all(2))
         call global_max(lnorms(3), lnorms_all(3))
 
-! put final result in lnorms         
+! put final result in lnorms
         lnorms(1) = lnorms_all(1)/dble(var_size)
         lnorms(2) = sqrt(lnorms_all(2)/dble(var_size))
         lnorms(3) = lnorms_all(3)
