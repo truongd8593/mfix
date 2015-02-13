@@ -21,8 +21,8 @@
   Time   =   0.0
   Tstop  =   0.1
 
-  DT =     @(1.0/128.0)
-  DT_MAX = @(1.0/128.0)
+  DT =     5.0d-4
+  DT_MAX = 5.0d-4
 
   ENERGY_EQ  = .F.
   SPECIES_EQ = .F.   .F.
@@ -90,16 +90,19 @@
 
   PARTICLES_FACTOR = 4.0
 
-  KN = 1.0d+6        ! Normal inter-particle collision spring constant
+  KN = 2.4d+6        ! Normal inter-particle collision spring constant
   KT_FAC = @(2/7)    ! Tangential spring factor = KT/KN
-  MEW = 0.0          ! Inter-particle friction coeffienct
+  MEW = 0.3          ! Inter-particle friction coeffienct
 
-  KN_W = 1.0d+6      ! Normal particle-wall collision spring constant
+  KN_W = 2.4d+6      ! Normal particle-wall collision spring constant
   KT_W_FAC = @(2/7)  ! Tangential spring factor = KT_W/KN_W
-  MEW_W = 0.0        ! Particle-wall friction coefficient
+  MEW_W = 0.3        ! Particle-wall friction coefficient
 
   DES_EN_INPUT =      1.d0
   DES_EN_WALL_INPUT = 1.d0
+
+  C_E = 0.95
+  E_W = 0.95
 
   NFACTOR = 0        ! No initial settling
 
