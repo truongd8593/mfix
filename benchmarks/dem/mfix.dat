@@ -27,7 +27,7 @@
   ENERGY_EQ  = .F.
   SPECIES_EQ = .F.   .F.
 
-  CALL_USR = .F.
+  CALL_USR = .T.
 
   GENER_PART_CONFIG = .T.
   DES_CONTINUUM_COUPLED = .T.
