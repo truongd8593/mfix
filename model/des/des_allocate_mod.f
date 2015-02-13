@@ -532,13 +532,21 @@ CONTAINS
 
            IF(MPPIC) THEN
               call real_grow(DES_STAT_WT,MAX_PIP)
-              call real_grow2(PS_GRAD,MAX_PIP)
+              call real_grow2_reverse(PS_GRAD,MAX_PIP)
               call real_grow2(AVGSOLVEL_P,MAX_PIP)
               call real_grow(EPG_P,MAX_PIP)
            ENDIF
 
            IF(USE_COHESION) THEN
               call real_grow(PostCohesive,MAX_PIP)
+           ENDIF
+
+           IF (DO_OLD) THEN
+              call real_grow2(DES_POS_OLD,MAX_PIP)
+              call real_grow2(DES_VEL_OLD,MAX_PIP)
+              call real_grow2(DES_ACC_OLD,MAX_PIP)
+              call real_grow2(OMEGA_OLD,MAX_PIP)
+              call real_grow2(ROT_ACC_OLD,MAX_PIP)
            ENDIF
 
            IF(ENERGY_EQ)THEN
