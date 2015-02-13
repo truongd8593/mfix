@@ -58,6 +58,8 @@
 
       ADJUST_DT = .FALSE.                     !No need to iterate again
       IF (DT==UNDEFINED .OR. DT<ZERO) RETURN
+      
+      use_DT_prev = .FALSE.  ! when false use current dt to advance time.
 
 
 !     Initialize
@@ -88,6 +90,8 @@
             ELSE
                DT = DT*DT_FAC
             ENDIF
+! in case IER = 0 and DT is modified, use DT_prev to advance time
+           use_DT_prev = .TRUE.
             IF (FULL_LOG.and.myPE.eq.PE_IO) &
                WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS)
          ELSE

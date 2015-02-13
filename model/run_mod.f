@@ -284,6 +284,10 @@
 ! changed by adjust_dt)
       DOUBLE PRECISION :: DT_prev
 
+! in case iterations converged and DT modified, use old dt
+! to advance time in time_march.
+      LOGICAL :: use_DT_prev
+
 ! Slope limiter parameter (0 < C _FAC <= 1.0)
       DOUBLE PRECISION :: C_FAC
 
