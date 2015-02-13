@@ -518,7 +518,7 @@
 
       double precision :: rad, dens, position(dimn), velocity(dimn), wtp
 
-      type(particle), pointer :: part_list_byic, part => NULL(), part_old => NULL()
+      type(particle), pointer :: part_list_byic => NULL(), part => NULL(), part_old => NULL()
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
 

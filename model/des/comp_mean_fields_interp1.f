@@ -57,7 +57,7 @@
 !$omp shared(MAX_PIP, PEA, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC,     &
 !$omp    FILTER_WEIGHT, SOLVOLINC,DES_U_S, DES_V_S, DES_W_S, DO_K,     &
 !$omp    FILTER_CELL,DES_VEL_NEW)
-!$omp do reduction(+:SOLVOLINC, DES_U_S, DES_V_S, DES_W_S)
+!$omp do
       do NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
          IF(any(PEA(NP,2:3))) CYCLE
@@ -72,14 +72,20 @@
 ! Particle volume times the weight for this cell.
             VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
 ! Accumulate total solids volume (by phase)
+!$omp atomic
             SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
 ! Accumulate total solids momenum-ish (by phase)
+!$omp atomic
             DES_U_S(IJK,M) = DES_U_S(IJK,M) +                          &
                DES_VEL_NEW(1,NP)*VOLxWEIGHT
+!$omp atomic
             DES_V_S(IJK,M) = DES_V_S(IJK,M) +                          &
                DES_VEL_NEW(2,NP)*VOLxWEIGHT
-            IF(DO_K) DES_W_S(IJK,M) = DES_W_S(IJK,M) +                 &
+            IF(DO_K) THEN
+!$omp atomic
+               DES_W_S(IJK,M) = DES_W_S(IJK,M) +                 &
                DES_VEL_NEW(3,NP)*VOLxWEIGHT
+            ENDIF
          ENDDO
       endDO
 !$omp end do
