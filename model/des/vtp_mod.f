@@ -1365,18 +1365,15 @@
 
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
-      IF(NUMBER_OF_VTK_CELLS>0) THEN
-
 ! Write last tags and close the vtp file
-          WRITE(BUFFER,110)'  </AppendedData>'
-          WRITE(VTU_UNIT)END_REC//TRIM(BUFFER)//END_REC
+      WRITE(BUFFER,110)'  </AppendedData>'
+      WRITE(VTU_UNIT)END_REC//TRIM(BUFFER)//END_REC
 
-          WRITE(BUFFER,110)'</VTKFile>'
-          WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+      WRITE(BUFFER,110)'</VTKFile>'
+      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
-         CLOSE(VTU_UNIT)
+      CLOSE(VTU_UNIT)
 
-      ENDIF
 
 ! Update pvtu file and close
 
