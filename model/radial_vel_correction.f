@@ -64,8 +64,8 @@
       CALL GATHER (Wg_Temp, Wg_Temp_GL, root)
       CALL BCAST (Wg_Temp_GL, root)
 
-      ALLOCATE (SUMX_G(JMAX3))
-      ALLOCATE (SUMZ_G(JMAX3))
+      ALLOCATE (SUMX_G(JMIN3:JMAX3))
+      ALLOCATE (SUMZ_G(JMIN3:JMAX3))
 
       DO J1=1, JMAX3
          SUMX_G(J1)=0
@@ -89,6 +89,7 @@
       DO J1= JSTART3, JEND3
          DO K1= KSTART3, KEND3
             !abIJK in local
+            IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
             abIJK = FUNIJK (I1,J1,K1)
             Angle_Temp = (-Pi/KMAX)+((K1-1)*2*(Pi/KMAX))
             U_g(abIJK)=(SUMX_G(J1)*cos(Angle_Temp)) + &
@@ -106,8 +107,8 @@
 ! Implement for Solid
       ALLOCATE (Ws_Temp(ijkstart3:ijkend3))
       ALLOCATE (Ws_Temp_GL(ijkmax3))
-      ALLOCATE (SUMX_S(JMAX3))
-      ALLOCATE (SUMZ_S(JMAX3))
+      ALLOCATE (SUMX_S(JMIN3:JMAX3))
+      ALLOCATE (SUMZ_S(JMIN3:JMAX3))
 
       DO M=1, MMAX
 
@@ -142,6 +143,7 @@
 
          DO J1= JSTART3, JEND3
             DO K1= KSTART3, KEND3
+               IF (.NOT.IS_ON_myPE_plus2layers(I1,J1,K1)) CYCLE
                abIJK = FUNIJK (I1,J1,K1)
                Angle_Temp = (-Pi/KMAX)+((K1-1)*2*(Pi/KMAX))
                U_s(abIJK,M)=(SUMX_S(J1)*cos(Angle_Temp)) + &
