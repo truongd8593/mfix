@@ -518,6 +518,7 @@ CONTAINS
            call real_grow2(TOW,MAX_PIP)
            call real_grow2(DES_USR_VAR,MAX_PIP)
            call real_grow(F_GP,MAX_PIP)
+           F_gp(MAX_PIP/2+1:MAX_PIP)  = ZERO
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
            wall_collision_facet_id(:,MAX_PIP/2+1:MAX_PIP) = -1
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
