@@ -562,36 +562,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTP_FILE(LCV)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE visc_s
-      USE physprop
-      USE pgcor
-      USE vtk
-      USE rxns
-      USE output
-      USE scalars
-      USE stl
-
-      USE mpi_utility
-      USE parallel_mpi
-
-      USE pgcor
-      USE pscor
-      USE mfix_pic
-      USE functions
-      USE discretelement
+      USE vtk, only: DIMENSION_VTK, VTK_DEFINED, FRAME
+      USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
+      USE vtk, only: VTK_PART_DIAMETER,VTK_PART_VEL,VTK_PART_USR_VAR,VTK_PART_TEMP
+      USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
+      USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
 
       IMPLICIT NONE
       INTEGER :: I,J,K,L,M,N,R,IJK,LCV
@@ -694,23 +669,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTP_FILE_BIN
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE output
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-      use cdist
-      USE functions
+      USE run, only: TIME
+      USE output, only: FULL_LOG
+      USE vtk, only: TIME_DEPENDENT_FILENAME, VTU_FRAME_FILENAME, VTU_FRAME_UNIT
+      USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC 
+      USE vtk, only: DIMENSION_VTK, VTK_DEFINED,  FRAME,  VTK_REGION
+      USE vtk, only: NUMBER_OF_VTK_CELLS, VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
 
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
@@ -881,24 +845,7 @@
   SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN(PASS)
 
       USE, INTRINSIC :: iso_c_binding
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-      USE cdist
-      USE functions
-      USE discretelement
+      USE vtk, only: NUMBER_OF_POINTS,BUFFER, VTU_UNIT,END_REC,VTU_OFFSET,BELONGS_TO_VTK_SUBDOMAIN
 
       IMPLICIT NONE
 
@@ -1092,25 +1039,8 @@
   SUBROUTINE WRITE_SCALAR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
       USE, INTRINSIC :: iso_c_binding
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-      USE cdist
-      USE output
-      USE functions
-      USE discretelement
+      USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,END_REC,BELONGS_TO_VTK_SUBDOMAIN
+      USE output, only: FULL_LOG
 
       IMPLICIT NONE
       INTEGER :: I,IJK,LC1,PC
@@ -1217,24 +1147,8 @@
   SUBROUTINE WRITE_VECTOR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
       USE, INTRINSIC :: iso_c_binding
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-      USE cdist
-      USE output
-      USE functions
+      USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,END_REC,BELONGS_TO_VTK_SUBDOMAIN
+      USE output, only: FULL_LOG
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1350,11 +1264,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTP_FILE_BIN
 
-      USE compar
-      Use run
-      USE vtk
-      use cdist
-      USE mpi_utility
+      USE vtk, only: BUFFER,VTU_UNIT,END_REC,NUMBER_OF_VTK_CELLS,PVTU_UNIT,TIME_DEPENDENT_FILENAME
+      USE vtk, only: VTK_REGION,VTK_FILEBASE,FRAME
 
       IMPLICIT NONE
 
@@ -1430,23 +1341,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SETUP_VTK_REGION_PARTICLES
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-      USE cdist
-      USE functions
+      USE vtk, only: VTK_REGION
+      USE vtk, only: VTK_X_E, VTK_X_W, VTK_Y_S, VTK_Y_N, VTK_Z_B, VTK_Z_T
+      USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
+      USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
+      USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
       USE discretelement, only: MAX_PIP,PIP,PEA,DES_POS_NEW,IGHOST_CNT
 
       IMPLICIT NONE
