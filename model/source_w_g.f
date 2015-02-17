@@ -113,13 +113,13 @@
 ! CHPC, 26 September 2013
 !
 
-!!$omp  parallel do default(shared)                                   &
-!!$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK,     &
-!!$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE,     &
-!!$omp          EPGA, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA, Vpm,      &
-!!$omp          Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag, avgDrag, &
-!!$omp          MM, L, VXZA, VXZB, VCOA, VCOB, CTE, CTW, UGT,         &
-!!$omp          SXZB, EPMUOX)
+!$omp  parallel do default(shared)                                   &
+!$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK,     &
+!$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE,     &
+!$omp          EPGA, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA, Vpm,      &
+!$omp          Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag, avgDrag, &
+!$omp          MM, L, VXZA, VXZB, VCOA, VCOB, CTE, CTW, UGT,         &
+!$omp          SXZB, EPMUOX)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -388,7 +388,7 @@
                B_M(IJK,M) - MMS_W_G_SRC(IJK)*VOL_W(IJK)
          ENDIF   ! end branching on cell type (ip/dilute/block/else branches)
       ENDDO   ! end do loop over ijk
-!!$omp end parallel do
+!$omp end parallel do
 
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_W_G(A_M, B_M, IER)
