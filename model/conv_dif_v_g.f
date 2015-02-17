@@ -193,7 +193,7 @@
 !$omp             IMJK, IM, IJKW, IJKWN, IMJPK,                  &
 !$omp             IJMK, JM, IJKS,                                &
 !$omp             IJKM, KM, IJKB, IJKBN, IJPKM, VELW, HW, AW ) &
-!$omp     shared (i_of,j_of,k_of,jp1,cut_v_treatment_at,theta_vn_bar,flux_ge,theta_vn,flux,alpha_ve_c,mu_gt,oneody_n_v,ayz_v,ody,theta_v_st,flux_gn,theta_v_nt,oneody_n_u,axz_v,axy_v,ody_n,do_k,theta_u_tw,flux_gt,theta_u_te,alpha_vt_c,oneodz_t_v,odz_t,im1,jm1,km1,a_v_g,theta_v_ne,oneodx_e_v,alpha_vn_c,theta_v_se,odx_e,ox)
+!$omp     shared (ijkstart3,ijkend3,i_of,j_of,k_of,jp1,cut_v_treatment_at,theta_vn_bar,flux_ge,theta_vn,flux,alpha_ve_c,mu_gt,oneody_n_v,ayz_v,ody,theta_v_st,flux_gn,theta_v_nt,oneody_n_u,axz_v,axy_v,ody_n,do_k,theta_u_tw,flux_gt,theta_u_te,alpha_vt_c,oneodz_t_v,odz_t,im1,jm1,km1,a_v_g,theta_v_ne,oneodx_e_v,alpha_vn_c,theta_v_se,odx_e,ox)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_N(IJK)) THEN

@@ -190,7 +190,7 @@
 !$omp             IMJK, IM, IJKW,                                  &
 !$omp             IJMK, JM, IPJMK, IJKS, IJKSE,                    &
 !$omp             IJKM, KM, IPJKM, IJKB, IJKBE,VELW,HW,AW) &
-!$omp     shared(i_of,j_of,k_of,ip1,cut_u_treatment_at, &
+!$omp     shared(ijkstart3,ijkend3,i_of,j_of,k_of,ip1,cut_u_treatment_at, &
 !$omp            theta_ue_bar,flux_ge,theta_ue,flux,alpha_ue_c, &
 !$omp            mu_gt,oneodx_e_u,ayz_u,odx,theta_u_nw,flux_gn,theta_u_ne,alpha_un_c, &
 !$omp            oneody_n_u,axz_u,axy_u,ody_n,do_k,theta_u_tw,flux_gt,theta_u_te,     &
