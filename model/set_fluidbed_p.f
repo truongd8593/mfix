@@ -35,23 +35,24 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE bodyforce
+      USE compar
+      USE constant
+      USE discretelement
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE ic
+      USE indices
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE geometry
-      USE bc
-      USE ic
-      USE fldvar
-      USE constant
-      USE indices
-      USE funits
       USE scales
-      USE compar
-      USE mpi_utility
       USE sendrecv
-      USE discretelement
-      USE bodyforce
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -70,10 +71,6 @@
       DOUBLE PRECISION :: dAREA
 ! Average pressure drop per unit length
       DOUBLE PRECISION :: DPoDX, DPoDY, DPoDZ
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG
 !-----------------------------------------------
 
 ! If any initial pressures are unspecified skip next section

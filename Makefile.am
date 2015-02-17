@@ -342,8 +342,7 @@ common_SOURCES = \
 	model/drag_mod.f \
 	model/drag_ss.f \
 	model/energy_mod.f \
-	model/eosg.f \
-	model/eoss.f \
+	model/eos_mod.f \
 	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \

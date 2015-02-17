@@ -1802,6 +1802,7 @@
       USE compar
       USE constant
       USE cutcell
+      USE eos, ONLY: EOSG
       USE fldvar
       USE functions
       USE funits
@@ -1842,7 +1843,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 
       DO BCV = 1, DIMENSION_BC
@@ -2007,31 +2008,28 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CONVERT_CG_MI_TO_PS
 
-
-
-      USE physprop
-      USE scales
-      USE funits
-
-      USE param
-      USE param1
-      USE parallel
-      USE constant
       USE bc
-      USE run
-      USE toleranc
+      USE compar
+      USE constant
+      USE cutcell
+      USE eos, only: EOSG
+      USE fldvar
+      USE functions
+      USE funits
       USE geometry
       USE indices
-      USE compar
       USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
       USE ps
-      USE functions
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2054,7 +2052,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 !
 
@@ -2214,29 +2212,28 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CONVERT_CG_MI_TO_PS_PE
 
-      USE physprop
-      USE scales
-      USE funits
-
-      USE param
-      USE param1
-      USE parallel
-      USE constant
       USE bc
-      USE run
-      USE toleranc
+      USE compar
+      USE constant
+      USE cutcell
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
       USE geometry
       USE indices
-      USE compar
       USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
-
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
       USE ps
-      USE functions
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2257,7 +2254,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 !
 

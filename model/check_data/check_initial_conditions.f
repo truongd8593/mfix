@@ -609,6 +609,8 @@
       use param, only: DIM_M
 ! Parameter constants
       use param1, only: ZERO, ONE, UNDEFINED
+! function to calculate solids density.
+      USE eos, ONLY: EOSS
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -634,8 +636,6 @@
       LOGICAL :: SKIP(1:DIM_M)
 ! Total number of solids phases (TFM + DEM + MPPIC)
       INTEGER :: MMAX_TOT
-! External function to calculate solids density.
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 !......................................................................!
 
 ! Initialize the error manager.

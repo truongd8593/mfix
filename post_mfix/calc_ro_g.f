@@ -22,14 +22,15 @@
 !
       REAL FUNCTION CALC_RO_g(L)
 !
-      Use param
-      Use param1
-      Use fldvar
-      Use indices
-      Use physprop
-      Use geometry
-      Use compar
-      Use functions
+      USE compar
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE physprop
 
       IMPLICIT NONE
 !
@@ -40,7 +41,7 @@
 !
 !     Function subroutines
 !
-      DOUBLE PRECISION CALC_MW, EOSG
+      DOUBLE PRECISION CALC_MW
 !
         IF(RO_g0 .EQ. UNDEFINED .AND. .NOT.WALL_AT(L)) THEN
           IF(MW_AVG .EQ. UNDEFINED) THEN

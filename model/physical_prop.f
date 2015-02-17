@@ -146,6 +146,8 @@
 ! Run time flag for generating negative gas density log files
       use run, only: REPORT_NEG_DENSITY
       use functions
+! Equation of State - GAS
+      use eos, only: EOSG
 
       implicit none
 
@@ -156,9 +158,6 @@
 
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
-
-! Equation of State - GAS
-      DOUBLE PRECISION, EXTERNAL :: EOSG
 
 ! Flag to write log header
       LOGICAL wHeader
@@ -225,6 +224,8 @@
 ! Minimum solids volume fraction
       use toleranc, only: DIL_EP_s
       use functions
+! Equation of State - Solid
+      use eos, only: EOSS
 
       implicit none
 
@@ -239,9 +240,6 @@
       LOGICAL wHeader
 
       DOUBLE PRECISION :: minROPs
-
-! Equation of State - Solid
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 
       M_LP: DO M=1, MMAX
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP

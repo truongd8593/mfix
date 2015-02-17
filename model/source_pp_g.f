@@ -26,26 +26,28 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE physprop
-      USE fldvar
-      USE rxns
-      USE run
-      USE geometry
-      USE indices
-      USE pgcor
       USE bc
-      USE vshear
-      Use xsi_array
       USE compar
-      USE ur_facs
       USE constant
       USE cutcell
-      USE quadric
+      USE eos, ONLY: DROODP_G
+      USE fldvar
       USE functions
+      USE geometry
+      USE indices
+      USE matrix
+      USE parallel
+      USE param
+      USE param1
+      USE pgcor
+      USE physprop
+      USE quadric
+      USE run
+      USE rxns
+      USE ur_facs
+      USE vshear
+      Use xsi_array
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -76,12 +78,6 @@
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                       XSI_t(DIMENSION_3)
 !-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: DROODP_G
-
-!-----------------------------------------------
-
       call lock_xsi_array
 ! loezos
 ! update to true velocity

@@ -358,19 +358,20 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
       USE bc
+      USE compar
+      USE constant
+      USE discretelement
+      USE eos, ONLY: EOSG
       USE fldvar
       USE geometry
       USE indices
-      USE physprop
-      USE constant
-      USE scalars
-      USE run
-      USE compar
       USE mflux
-      USE discretelement
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE scalars
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -401,10 +402,6 @@
       DOUBLE PRECISION :: SUM_EPs
 ! sum of solids phases bulk densities
       DOUBLE PRECISION :: SUM_ROPS
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG
 !-----------------------------------------------
 
       IF (RVEL_G >=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN

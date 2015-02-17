@@ -14,35 +14,30 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_MASS_INFLOW(M_TOT, SKIP, BCV)
 
-      use run, only: ENERGY_EQ
-      use run, only: SPECIES_EQ
-      use run, only: GRANULAR_ENERGY
-      use run, only: K_Epsilon
-      use run, only: SOLVE_ROs
-      use run, only: SOLIDS_MODEL
-
-      use scalars, only: NSCALAR
-
-      use physprop, only: RO_g0
-      use physprop, only: MU_g0
-      use physprop, only: MW_AVG
-      use physprop, only: NMAX
-
-      use physprop, only: RO_s0
-      use physprop, only: X_s0
-      use physprop, only: BASE_ROs
-      use physprop, only: INERT_SPECIES
-
-      USE param, only: DIM_M
-      USE param1, only: ZERO
-      USE param1, only: UNDEFINED
-
+      use bc
+      use eos, ONLY: EOSS
+      use error_manager
       use geometry, only: NO_I
       use geometry, only: NO_J
       use geometry, only: NO_K
-
-      use bc
-      use error_manager
+      use param, only: DIM_M
+      use param1, only: UNDEFINED
+      use param1, only: ZERO
+      use physprop, only: BASE_ROs
+      use physprop, only: INERT_SPECIES
+      use physprop, only: MU_g0
+      use physprop, only: MW_AVG
+      use physprop, only: NMAX
+      use physprop, only: RO_g0
+      use physprop, only: RO_s0
+      use physprop, only: X_s0
+      use run, only: ENERGY_EQ
+      use run, only: GRANULAR_ENERGY
+      use run, only: K_Epsilon
+      use run, only: SOLIDS_MODEL
+      use run, only: SOLVE_ROs
+      use run, only: SPECIES_EQ
+      use scalars, only: NSCALAR
       use toleranc
 
       IMPLICIT NONE
@@ -62,8 +57,6 @@
 
 ! Index of inert species
       INTEGER :: INERT
-
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 
       CALL INIT_ERR_MSG("CHECK_BC_MASS_INFLOW")
 
@@ -376,6 +369,7 @@
       USE compar
       USE cutcell
       USE discretelement
+      USE eos, ONLY: EOSS
       USE error_manager
       USE fldvar
       USE funits
@@ -404,8 +398,6 @@
       INTEGER :: INERT
 
       DOUBLE PRECISION SUM, SUM_EP
-
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 
       CALL INIT_ERR_MSG("CHECK_BC_P_INFLOW")
 

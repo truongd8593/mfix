@@ -33,25 +33,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE boundfunijk
+      USE compar
+      USE constant
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mms
+      USE mpi_utility
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE mpi_utility
       USE physprop
-      USE constant
-      USE bc
-      USE fldvar
-      USE indices
       USE run
-      USE funits
-      USE scales
       USE scalars
-      USE boundfunijk
-      USE toleranc
+      USE scales
       USE sendrecv
-      USE mms
-      USE functions
+      USE toleranc
 
       IMPLICIT NONE
 
@@ -73,9 +74,8 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG, CALC_MW
+      DOUBLE PRECISION, EXTERNAL :: CALC_MW
 !----------------------------------------------
-
 
 ! Incompressible cases require that Ppg specified for one cell.
 ! The following attempts to pick an appropriate cell.

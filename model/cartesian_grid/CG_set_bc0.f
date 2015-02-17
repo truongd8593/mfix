@@ -28,32 +28,27 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE bc
+      USE boundfunijk
+      USE compar
+      USE cutcell
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mpi_utility
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE mpi_utility
       USE physprop
-      USE bc
-      USE fldvar
-      USE indices
-      USE run
-      USE funits
-      USE scales
-      USE scalars
-      USE boundfunijk
-      USE toleranc
-      USE sendrecv
-      USE functions
-
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
       USE quadric
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+      USE run
+      USE scalars
+      USE scales
+      USE sendrecv
+      USE toleranc
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,7 +73,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG, CALC_MW
+      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 !----------------------------------------------
 

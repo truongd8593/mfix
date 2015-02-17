@@ -151,6 +151,8 @@
 ! Runtime flag for variable solids density.
       use run, only: SOLVE_ROs
 
+! Variable solids density calculation.
+      USE eos, ONLY: EOSS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -189,11 +191,7 @@
       INTEGER :: countNaN
       LOGICAL :: writeMsg
 
-! Variable solids density calculation.
-      DOUBLE PRECISION, external :: EOSS
-
       IJK = lNEQ(2)
-
 
 ! Check if any NaNs were returned from ODEPACK.  This shouldn't happend
 ! but errors in the usr_rates file can cause this to occur.

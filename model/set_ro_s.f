@@ -31,6 +31,9 @@
 ! Minimum solids volume fraction
       use toleranc, only: DIL_EP_s
 
+! Function for evaluating solids density.
+      use eos, only: EOSS
+
 ! Modules needed to support function.inc
       use compar
       use geometry
@@ -51,9 +54,6 @@
       LOGICAL, parameter :: dbgMode = .FALSE.
 
       DOUBLE PRECISION :: minROPs
-
-! Function for evaluating solids density.
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 
 ! Loop over all solids
       DO M=1,MMAX

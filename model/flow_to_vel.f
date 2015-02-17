@@ -109,22 +109,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_MASSFLOW_TO_VOLFLOW(BCV)
 
+      use bc, only: BC_MASSFLOW_g
+      use bc, only: BC_P_g
+      use bc, only: BC_T_g
+      use bc, only: BC_VOLFLOW_g
+      use bc, only: BC_X_g
+      use eos, only: EOSG
+      use error_manager
       use param, only: DIMENSION_BC
       use param1, only: UNDEFINED
       use param1, only: ZERO
-
-      use physprop, only: RO_g0
-      use physprop, only: NMAX
       use physprop, only: MW_AVG, MW_g
+      use physprop, only: NMAX
+      use physprop, only: RO_g0
       use scales, only: P_REF
-
-      use bc, only: BC_MASSFLOW_g
-      use bc, only: BC_VOLFLOW_g
-      use bc, only: BC_X_g
-      use bc, only: BC_T_g
-      use bc, only: BC_P_g
-
-      use error_manager
       use toleranc
 
       IMPLICIT NONE
@@ -136,7 +134,6 @@
 ! Average molecular weight
       DOUBLE PRECISION :: MW
 
-      DOUBLE PRECISION, EXTERNAL :: EOSG
       DOUBLE PRECISION, EXTERNAL :: CALC_MW
 
       CALL INIT_ERR_MSG("GAS_MASSFLOW_TO_VOLFLOW")
@@ -208,15 +205,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SOLIDS_MASSFLOW_TO_VOLFLOW(BCV,M, SKIP_M)
 
-      USE param1, only: UNDEFINED, ZERO
-      USE physprop, only: RO_s0
-      USE physprop, only: X_s0
-      USE physprop, only: BASE_ROs
-      USE physprop, only: INERT_SPECIES
-      USE bc, only: BC_X_s
       USE bc, only: BC_MASSFLOW_s
       USE bc, only: BC_VOLFLOW_s
-
+      USE bc, only: BC_X_s
+      USE param1, only: UNDEFINED, ZERO
+      USE physprop, only: BASE_ROs
+      USE physprop, only: INERT_SPECIES
+      USE physprop, only: RO_s0
+      USE physprop, only: X_s0
+      use eos, only: EOSS
       use error_manager
       use toleranc
 
@@ -230,8 +227,6 @@
       DOUBLE PRECISION :: VOLFLOW
 ! Index of inert species
       INTEGER :: INERT
-
-      DOUBLE PRECISION, EXTERNAL :: EOSS
 
       CALL INIT_ERR_MSG("SOLIDS_MASSFLOW_TO_VOLFLOW")
 
@@ -650,6 +645,7 @@
       USE bc
       USE compar
       USE discretelement
+      USE eos, ONLY: EOSG, EOSS
       USE fldvar
       USE funits
       USE geometry
@@ -685,7 +681,6 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: EOSG, EOSS
       DOUBLE PRECISION, EXTERNAL :: CALC_MW
 !-----------------------------------------------
 
