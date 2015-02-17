@@ -987,36 +987,27 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!           East face (i+1/2, j+1/2, k)
          IF(CUT_V_TREATMENT_AT(IJK)) THEN
+!           East face (i+1/2, j+1/2, k)
             U(IJK) = (Theta_V_se(IJK) * U_g(IJK) +Theta_V_ne(IJK) * U_g(IJPK))
             CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',ALPHA_Ve_c(IJK),AW,HW,VELW)
             U(IJK) = U(IJK) * AW
-         ELSE   ! Original terms
-            U(IJK) = AVG_Y(U_G(IJK),U_G(IJPK),J)
-         ENDIF
-!
-!
 !           North face (i, j+1, k)
-         IF(CUT_V_TREATMENT_AT(IJK)) THEN
             V(IJK) = (Theta_Vn_bar(IJK) * V_g(IJK) + Theta_Vn(IJK) * V_g(IJPK))
             CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',alpha_Vn_c(IJK),AW,HW,VELW)
             V(IJK) = V(IJK) * AW
-         ELSE   ! Original terms
-            V(IJK) = AVG_Y_N(V_G(IJK),V_G(IJPK))
-         ENDIF
-!
-!
 !           Top face (i, j+1/2, k+1/2)
-         IF(CUT_V_TREATMENT_AT(IJK)) THEN
             IF (DO_K) THEN
                WW(IJK) = (Theta_V_nt(IJK) * W_g(IJK) + Theta_V_st(IJK) * W_g(IJPK))
                CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',ALPHA_Vt_c(IJK),AW,HW,VELW)
                WW(IJK) = WW(IJK) * AW
             ENDIF
          ELSE   ! Original terms
+            U(IJK) = AVG_Y(U_G(IJK),U_G(IJPK),J)
+            V(IJK) = AVG_Y_N(V_G(IJK),V_G(IJPK))
             IF (DO_K) WW(IJK) = AVG_Y(W_G(IJK),W_G(IJPK),J)
          ENDIF
+
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
