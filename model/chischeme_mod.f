@@ -141,15 +141,16 @@ MODULE ChiScheme
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE discretization
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
       USE run
-      USE geometry
-      USE indices
-      USE vshear
-      USE compar
       USE sendrecv
-      USE functions
+      USE vshear
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -180,11 +181,7 @@ MODULE ChiScheme
 !
 !
       DOUBLE PRECISION PHI_C
-!
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: PHI_C_OF, CHI4SMART, CHI4MUSCL
 
         IF (SHEAR) THEN
 ! calculate CHI_E,CHI_N,CHI_T when periodic shear BCs are used
@@ -192,7 +189,6 @@ MODULE ChiScheme
 !       call CXS(incr,DISCR,U,V,W,PHI,CHI_E,CHI_N,CHI_T)  !need implementation
          print *,'From CALC_CHI:  "Shear" option not implemented'
          Call MFIX_EXIT(0)
-
 
         ELSE
 !

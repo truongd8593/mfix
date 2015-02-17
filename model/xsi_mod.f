@@ -30,16 +30,17 @@ CONTAINS
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+    USE chischeme
+    USE compar
+    USE discretization
+    USE functions
+    USE geometry
+    USE indices
     USE param
     USE param1
     USE run
-    USE geometry
-    USE indices
-    USE vshear
-    USE chischeme
-    USE compar
     USE sendrecv
-    USE functions
+    USE vshear
 
     IMPLICIT NONE
 !-----------------------------------------------
@@ -80,13 +81,6 @@ CONTAINS
     DOUBLE PRECISION oDXc, oDXuc, oDYc, oDYuc, oDZc, oDZuc
 
     INTEGER incr
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-    DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER,       &
-         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL, CHI_SMART,     &
-         CHI_MUSCL, CENTRAL_SCHEME
-
 
         IF (SHEAR) THEN
 ! calculate XSI_E,XSI_N,XSI_T when periodic shear BCs are used
@@ -861,15 +855,16 @@ CONTAINS
 !   M o d u l e s
 !-----------------------------------------------
 
+      USE compar
+      USE discretization
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
       USE run
-      USE geometry
-      USE indices
-      USE vshear
-      USE compar
       USE sendrecv
-      USE functions
+      USE vshear
 
     IMPLICIT NONE
 
@@ -889,11 +884,6 @@ CONTAINS
 !                      cell widths for QUICKEST
     DOUBLE PRECISION oDXc, oDXuc, oDYc, oDYuc, oDZc, oDZuc
     DOUBLE PRECISION CF,DZUC
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-    DOUBLE PRECISION , EXTERNAL :: PHI_C_OF,  MINMOD, VANLEER, &
-         ULTRA_QUICK, QUICKEST, SUPERBEE, SMART, MUSCL
 !-----------------------------------------------
 
       SELECT CASE (DISCR)                        !first order upwinding

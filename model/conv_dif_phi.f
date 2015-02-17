@@ -418,23 +418,24 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE toleranc
-      USE run
-      USE geometry
       USE compar
-      USE sendrecv
-      USE sendrecv3
-      USE indices
-      Use xsi_array
-      Use tmp_array
+      USE discretization, ONLY: fpfoi_of
       USE fun_avg
-      USE xsi
       USE function3
       USE functions
+      USE geometry
+      USE indices
+      USE matrix
+      USE parallel
+      USE param
+      USE param1
+      USE run
+      USE sendrecv
+      USE sendrecv3
+      USE toleranc
+      USE xsi
+      Use tmp_array
+      Use xsi_array
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -500,15 +501,6 @@
         DOUBLE PRECISION  SOUTH_DC
         DOUBLE PRECISION  TOP_DC
         DOUBLE PRECISION  BOTTOM_DC
-!
-!
-!---------------------------------------------------------------
-!       EXTERNAL FUNCTIONS
-!---------------------------------------------------------------
-        DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
-!---------------------------------------------------------------
-!
-!
 !
 !---------------------------------------------------------------
 

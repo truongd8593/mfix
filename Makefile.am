@@ -327,7 +327,7 @@ common_SOURCES = \
 	model/dif_u_is.f \
 	model/dif_v_is.f \
 	model/dif_w_is.f \
-	model/discretize.f \
+	model/discretization_mod.f \
 	model/display_resid.f \
 	model/dmp_modules/compar_mod.f \
 	model/dmp_modules/dbg_util_mod.f \

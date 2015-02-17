@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: DISCRETIZE                                             C
+!  Module name: DISCRETIZATION                                         C
 !  Purpose: A collection of functions for higher-order discretization  C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 18-MAR-97  C
@@ -15,9 +15,11 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-!
-!
+
+MODULE discretization
+
+CONTAINS
+
       DOUBLE PRECISION FUNCTION SUPERBEE (PHI_C)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
@@ -522,11 +524,6 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-        DOUBLE PRECISION , EXTERNAL :: UNIV_LIMITER_OF
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-!-----------------------------------------------
 !
       FPFOI_OF = PHI_C + (5.0D0/16.0D0)*(PHI_D - PHI_C) + &
                          (1.0D0/4.0D0)*(PHI_C - PHI_U) - &
@@ -589,3 +586,5 @@
       ENDIF
       RETURN
       END FUNCTION UNIV_LIMITER_OF
+
+END MODULE discretization
