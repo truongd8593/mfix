@@ -19,6 +19,13 @@
         DOUBLE PRECISION DUMMY_DP
 
 
+! set to true for writing out tecplot data        
+        logical                               :: tecplot_output=.false.
+
+! set .true. if raw output (where calculated) is desired
+        logical                               :: raw_output = .false.
+        
+
 ! temporary array for discretization error: de = p_g - mms_p_g ; etc.        
         double precision, allocatable         :: de_ep_g(:)
         double precision, allocatable         :: de_p_g(:)
@@ -47,6 +54,10 @@
         double precision, allocatable         :: lnorms_w_s(:) 
         double precision, allocatable         :: lnorms_t_s(:) 
         double precision, allocatable         :: lnorms_theta_m(:)
+
+
+! pressure shift value
+        double precision                      :: delta_p_g
 
 
       END MODULE usr

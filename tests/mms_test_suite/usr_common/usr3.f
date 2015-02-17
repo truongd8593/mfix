@@ -27,7 +27,8 @@
       SUBROUTINE USR3
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
-      Use mms, only         : deallocate_mms_vars
+      use mms, only         : deallocate_mms_vars
+      use usr, only         : tecplot_output
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -36,7 +37,6 @@
 !
 !  Define local variables here
 !
-      logical               :: tecplot_output = .FALSE.
 !
 !  Include files defining statement functions here
 !
@@ -47,7 +47,7 @@
 
       Call calculate_de_norms
 
-      !if(tecplot_output) Call write_tecplot_data
+      if(tecplot_output) Call write_tecplot_data
 
       Call deallocate_mms_vars
 
@@ -73,22 +73,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_de_norms
-      Use param, only     : dimension_3
-      Use param1, only    : zero
-      Use compar, only    : ijkstart3, ijkend3
-      Use functions, only : funijk_gl
-      Use functions, only : IS_ON_myPE_owns
-      Use indices, only   : i_of, j_of, k_of
-      Use usr             ! all variables
-      Use mms             ! all variables
-      Use fldvar, only    : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
+      use param, only     : dimension_3
+      use param1, only    : zero
+      use compar, only    : ijkstart3, ijkend3
+      use functions, only : funijk_gl
+      use functions, only : IS_ON_myPE_owns
+      use indices, only   : i_of, j_of, k_of
+      use usr             ! all variables
+      use mms             ! all variables
+      use fldvar, only    : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
                             t_g, t_s, ep_g, rop_s, theta_m
-      Use geometry, only  : imax, imin1, imax1
-      Use geometry, only  : jmax, jmin1, jmax1
-      Use geometry, only  : kmax, kmin1, kmax1
-      Use funits, only    : newunit
-      Use compar, only    : myPE, PE_IO
-      Use mpi_utility, only : global_all_sum
+      use geometry, only  : imax, imin1, imax1
+      use geometry, only  : jmax, jmin1, jmax1
+      use geometry, only  : kmax, kmin1, kmax1
+      use funits, only    : newunit
+      use compar, only    : myPE, PE_IO
+      use mpi_utility, only : global_all_sum
       IMPLICIT NONE
 
 ! number of data points for norm calculation
@@ -99,9 +99,6 @@
 
 ! file unit
         integer   :: f1
-
-! pressure shift value
-        double precision  :: delta_p_g
 
 ! global ijk
         integer   :: ijk_gl
@@ -146,6 +143,7 @@
           ijk_gl = funijk_gl(i,j,k)
           if(ijk_sh.eq.ijk_gl) then
             delta_p_g = P_G(ijk) - MMS_P_G(ijk)
+            write(*,*) "delta_p_g= ", delta_p_g
           endif
 
         end do
@@ -340,10 +338,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE calculate_lnorms(var_size, var, lnorms)
-      Use compar, only      : ijkstart3, ijkend3
-      Use param, only       : dimension_3
-      Use param1, only      : zero
-      Use mpi_utility, only : global_sum, global_max
+      use compar, only      : ijkstart3, ijkend3
+      use param, only       : dimension_3
+      use param1, only      : zero
+      use mpi_utility, only : global_sum, global_max
       IMPLICIT NONE
 
 ! total number of data points for norm calculation
@@ -391,3 +389,472 @@
       END SUBROUTINE calculate_lnorms
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: write_tecplot_data                                     !
+!  Purpose: Write data for visualization in Tecplot. Only variables    !
+!  that are relevant to MMS setup have been coded, but similar code    !
+!  can be added for other variables, if needed. This module uses a     !
+!  simple strategy of gathering all data to root for output.           !
+!                                                                      !
+!  Author: Aniruddha Choudhary                        Date: Feb 2015   !
+!  email: anirudd@vt.edu					       !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!  Revision Number #                                  Date:            !
+!  Author: #                                                           !
+!  Purpose: #                                                          !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      SUBROUTINE write_tecplot_data
+      use geometry, only    : ijkmax3
+      use geometry, only    : imin2, imin1, imax, imax1, imax2
+      use geometry, only    : jmin2, jmin1, jmax, jmax1, jmax2
+      use geometry, only    : kmin2, kmin1, kmax, kmax1, kmax2
+      use geometry, only    : dx, dy, dz
+      use compar, only      : myPE, PE_IO
+      use funits, only      : newunit
+      use functions, only   : funijk_gl
+      use fldvar, only      : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
+                              t_g, t_s, ep_g, rop_s, theta_m
+      use mms               ! all variables
+      use usr, only         : tecplot_output, raw_output, delta_p_g
+      use param1, only      : half
+      use mpi_utility, only : gather
+      IMPLICIT NONE
+
+! indices
+        integer             :: i, j, k, ijk
+        integer             :: imjk, ijmk, ijkm
+
+! file units
+        integer             :: fcc, fs, fvx, fvy, fvz
+
+! arrays to gather variables
+        double precision, allocatable :: arr_Pg(:)
+        double precision, allocatable :: arr_MMSPg(:)
+!        double precision, allocatable :: arr_PgSh(:)
+        double precision, allocatable :: arr_Epg(:)
+        double precision, allocatable :: arr_MMSEpg(:)
+        double precision, allocatable :: arr_Ug(:)
+        double precision, allocatable :: arr_MMSUg(:)
+        double precision, allocatable :: arr_Vg(:)
+        double precision, allocatable :: arr_MMSVg(:)
+        double precision, allocatable :: arr_Wg(:)
+        double precision, allocatable :: arr_MMSWg(:)
+        double precision, allocatable :: arr_ROPs(:)
+        double precision, allocatable :: arr_MMSROPs(:)
+        double precision, allocatable :: arr_Us(:)
+        double precision, allocatable :: arr_MMSUs(:)
+        double precision, allocatable :: arr_Vs(:)
+        double precision, allocatable :: arr_MMSVs(:)
+        double precision, allocatable :: arr_Ws(:)
+        double precision, allocatable :: arr_MMSWs(:)
+        double precision, allocatable :: arr_Tg(:)
+        double precision, allocatable :: arr_MMSTg(:)
+        double precision, allocatable :: arr_Ts(:)
+        double precision, allocatable :: arr_MMSTs(:)
+        double precision, allocatable :: arr_Ths(:)
+        double precision, allocatable :: arr_MMSThs(:)
+        double precision, allocatable :: arr_xtr(:)
+        double precision, allocatable :: arr_ytr(:)
+        double precision, allocatable :: arr_ztr(:)
+
+! temporary variables for x,y,z coordinates
+        double precision              :: xt, yt, zt
+
+! x,y,z coordinate variables (3D arrays)
+!        double precision, dimension(1:imax+1,1:jmax+1,1:kmax+1) :: &
+!                                          x_tmp, y_tmp, z_tmp
+
+! output variables (3D arrays)
+        double precision, &
+          dimension(imin2:imax2,jmin2:jmax2,kmin2:kmax2)  :: &
+                                          Pg_tmp, MMSPg_tmp, &
+                                          Epg_tmp, MMSEPg_tmp, &
+                                          Ug_tmp, MMSUg_tmp, &
+                                          Vg_tmp, MMSVg_tmp, &
+                                          Wg_tmp, MMSWg_tmp, &
+                                          Rops_tmp, MMSRops_tmp, &
+                                          Us_tmp, MMSUs_tmp, &
+                                          Vs_tmp, MMSVs_tmp, &
+                                          Ws_tmp, MMSWs_tmp, &
+                                          Tg_tmp, MMSTg_tmp, &
+                                          Ts_tmp, MMSTs_tmp, &
+                                          Ths_tmp, MMSThs_tmp
+
+
+! allocate variables as ijkmax3 size 1D arrays
+        allocate(arr_Pg(ijkmax3))
+        allocate(arr_MMSPg(ijkmax3))
+!        allocate(arr_PgSh(ijkmax3))
+        allocate(arr_Epg(ijkmax3))
+        allocate(arr_MMSEpg(ijkmax3))
+        allocate(arr_Ug(ijkmax3))
+        allocate(arr_MMSUg(ijkmax3))
+        allocate(arr_Vg(ijkmax3))
+        allocate(arr_MMSVg(ijkmax3))
+        allocate(arr_Wg(ijkmax3))
+        allocate(arr_MMSWg(ijkmax3))
+        allocate(arr_ROPs(ijkmax3))
+        allocate(arr_MMSROPs(ijkmax3))
+        allocate(arr_Us(ijkmax3))
+        allocate(arr_MMSUs(ijkmax3))
+        allocate(arr_Vs(ijkmax3))
+        allocate(arr_MMSVs(ijkmax3))
+        allocate(arr_Ws(ijkmax3))
+        allocate(arr_MMSWs(ijkmax3))
+        allocate(arr_Tg(ijkmax3))
+        allocate(arr_MMSTg(ijkmax3))
+        allocate(arr_Ts(ijkmax3))
+        allocate(arr_MMSTs(ijkmax3))
+        allocate(arr_Ths(ijkmax3))
+        allocate(arr_MMSThs(ijkmax3))
+        allocate(arr_xtr(ijkmax3))
+        allocate(arr_ytr(ijkmax3))
+        allocate(arr_ztr(ijkmax3))
+
+! gather the MFIX global variables into ijkmax3 sized variables
+        call gather(P_G,arr_Pg,PE_IO)
+        call gather(MMS_P_G,arr_MMSPg,PE_IO)
+!        call gather(P_G_Sh,arr_PgSh,PE_IO) ! P_G_Sh not used globally
+        call gather(EP_g,arr_Epg,PE_IO)
+        call gather(MMS_EP_G,arr_MMSEpg,PE_IO)
+        call gather(U_G,arr_Ug,PE_IO)
+        call gather(MMS_U_G,arr_MMSUg,PE_IO)
+        call gather(V_G,arr_Vg,PE_IO)
+        call gather(MMS_V_G,arr_MMSVg,PE_IO)
+        call gather(W_G,arr_Wg,PE_IO)
+        call gather(MMS_W_G,arr_MMSWg,PE_IO)
+        call gather(ROP_s(:,1),arr_ROPs,PE_IO)
+        call gather(MMS_ROP_s,arr_MMSROPs,PE_IO)
+        call gather(U_s(:,1),arr_Us,PE_IO)
+        call gather(MMS_U_s,arr_MMSUs,PE_IO)
+        call gather(V_s(:,1),arr_Vs,PE_IO)
+        call gather(MMS_V_s,arr_MMSVs,PE_IO)
+        call gather(W_s(:,1),arr_Ws,PE_IO)
+        call gather(MMS_W_s,arr_MMSWs,PE_IO)
+        call gather(T_g,arr_Tg,PE_IO)
+        call gather(MMS_T_g,arr_MMSTg,PE_IO)
+        call gather(T_s(:,1),arr_Ts,PE_IO)
+        call gather(MMS_T_s,arr_MMSTs,PE_IO)
+        call gather(Theta_m(:,1),arr_Ths,PE_IO)
+        call gather(MMS_Theta_m,arr_MMSThs,PE_IO)
+        call gather(xtr,arr_xtr,PE_IO)
+        call gather(ytr,arr_ytr,PE_IO)
+        call gather(ztr,arr_ztr,PE_IO)
+
+! write out data from PE_IO processor
+        if(myPE==PE_IO) then
+
+! write cell centered data
+
+! We calculate and output cell-centered data at the cell-centers
+! locations.  Otheriwse, when cell-centered data is outputted with
+! VARLOCATION=CELLCENTERED option, tecplot does inaccurate interpolation
+! near the boundary cells.  So current version is only useful for
+! plotting all variables in a single file but it is not the traditional
+! tecplot cell-centered data file.
+
+          open(unit=newunit(fcc), file="solution_cellc.dat", &
+                                  status='unknown')
+          write(fcc,"(27a)") 'variables = "x""y""z"&
+                &"Pg""Ug""Vg""Wg""Us""Vs""Ws"&
+                &"Tg""Ts""Epg""Rops""Ths"&
+                &"MMSPg""MMSUg""MMSVg""MMSWg"&
+                &"MMSUs""MMSVs""MMSWs"&
+                &"MMSTg""MMSTs""MMSEpg""MMSRops""MMSThs"'
+          write(fcc,*) 'zone T="',0,'" '
+          write(fcc,*) 'I=',IMAX,' J=',JMAX,' K=',KMAX
+
+!**** for getting cell centered data:
+!          write(fcc,*) 'DATAPACKING=BLOCK'
+!          write(fcc,*) "VARLOCATION=([4,5,6,7,8,9,10,11,12,13,14,15,16,&
+!          &17,18,19,20,21,22,23,24,25,26,27]=CELLCENTERED)"
+
+! create 3D arrays (mesh nodes)
+!          do k = 1, kmax+1
+!          do j = 1, jmax+1
+!          do i = 1, imax+1
+!             ijk = funijk_gl(i,j,k)
+!             X_tmp(I,J,K) = arr_xtr(IJK)
+!             Y_tmp(I,J,K) = arr_ytr(IJK)
+!             Z_tmp(I,J,K) = arr_ztr(IJK)
+!          end do
+!          end do
+!          end do
+
+! create 3D arrays (solution variables)
+          do k = kmin1, kmax1
+          do j = jmin1, jmax1
+          do i = imin1, imax1
+
+            ijk = funijk_gl(i,j,k)
+            imjk = funijk_gl(i-1,j,k)
+            ijmk = funijk_gl(i,j-1,k)
+            ijkm = funijk_gl(i,j,k-1)
+
+            Pg_tmp(i,j,k) = arr_Pg(IJK) - delta_p_g
+            MMSPg_tmp(i,j,k) = arr_MMSPg(IJK)
+
+            Epg_tmp(i,j,k) = arr_Epg(IJK)
+            MMSEpg_tmp(i,j,k) = arr_MMSEpg(IJK)
+
+            Ug_tmp(i,j,k) = HALF*(arr_Ug(ijk)+arr_Ug(imjk))
+            MMSUg_tmp(i,j,k) = HALF*(arr_MMSUg(ijk)+arr_MMSUg(imjk))
+
+            Vg_tmp(i,j,k) = HALF*(arr_Vg(ijk)+arr_Vg(ijmk))
+            MMSVg_tmp(i,j,k) = HALF*(arr_MMSVg(ijk)+arr_MMSVg(ijmk))
+
+            Wg_tmp(i,j,k) = HALF*(arr_Wg(ijk)+arr_Wg(ijkm))
+            MMSWg_tmp(i,j,k) = HALF*(arr_MMSWg(ijk)+arr_MMSWg(ijkm))
+
+            Rops_tmp(i,j,k) = arr_ROPs(IJK)
+            MMSRops_tmp(i,j,k) = arr_MMSROPs(IJK)
+
+            Us_tmp(i,j,k) = HALF*(arr_Us(ijk)+arr_Us(imjk))
+            MMSUs_tmp(i,j,k) = HALF*(arr_MMSUs(ijk)+arr_MMSUs(imjk))
+
+            Vs_tmp(i,j,k) = HALF*(arr_Vs(ijk)+arr_Vs(ijmk))
+            MMSVs_tmp(i,j,k) = HALF*(arr_MMSVs(ijk)+arr_MMSVs(ijmk))
+
+            Ws_tmp(i,j,k) = HALF*(arr_Ws(ijk)+arr_Ws(ijkm))
+            MMSWs_tmp(i,j,k) = HALF*(arr_MMSWs(ijk)+arr_MMSWs(ijkm))
+
+            Tg_tmp(i,j,k) = arr_Tg(IJK)
+            MMSTg_tmp(i,j,k) = arr_MMSTg(IJK)
+
+            Ts_tmp(i,j,k) = arr_Ts(IJK)
+            MMSTs_tmp(i,j,k) = arr_MMSTs(IJK)
+
+            Ths_tmp(i,j,k) = arr_Ths(IJK)
+            MMSThs_tmp(i,j,k) = arr_MMSThs(IJK)
+
+          end do
+          end do
+          end do
+
+! write cell-centered data to output file
+          do k = kmin1, kmax1
+          do j = jmin1, jmax1
+          do i = imin1, imax1
+
+            ijk = funijk_gl(i,j,k)
+
+            xt = arr_xtr(ijk) - dx(i)*half
+            yt = arr_ytr(ijk) - dy(j)*half
+            zt = arr_ztr(ijk) - dz(k)*half
+
+            write(fcc,*) xt, yt, zt, &
+              Pg_tmp(i,j,k), &
+              Ug_tmp(i,j,k), Vg_tmp(i,j,k), Wg_tmp(i,j,k),&
+              Us_tmp(i,j,k), Vs_tmp(i,j,k), Ws_tmp(i,j,k),&
+              Tg_tmp(i,j,k), Ts_tmp(i,j,k), &
+              Epg_tmp(i,j,k), Rops_tmp(i,j,k),&
+              Ths_tmp(i,j,k), &
+              MMSPg_tmp(i,j,k), &
+              MMSUg_tmp(i,j,k), MMSVg_tmp(i,j,k), MMSWg_tmp(i,j,k),&
+              MMSUs_tmp(i,j,k), MMSVs_tmp(i,j,k), MMSWs_tmp(i,j,k),&
+              MMSTg_tmp(i,j,k), MMSTs_tmp(i,j,k), &
+              MMSEpg_tmp(i,j,k), MMSRops_tmp(i,j,k),&
+              MMSThs_tmp(i,j,k)
+
+          end do
+          end do
+          end do
+
+          close(fcc)
+
+! Output data where calculated:
+! i.e., at cell centers for scalar variables, and
+!       at face centers for vector variables
+          if(raw_output) then
+
+! output scalar variables
+            open(unit=newunit(fs), file="solution_scalar.dat", &
+                                   status='unknown')
+
+            write(fs,"(21a)") 'variables = "x""y""z"&
+              &"Pg""Tg""Ts""Epg""Rops""Ths"&
+              &"MMSPg""MMSTg""MMSTs""MMSEpg""MMSRops""MMSThs"&
+              &"PgErr""TgErr""TsErr""EpgErr""RopsErr""ThsErr"'
+            write(fs,*) 'zone T="',0,'" '
+            write(fs,*) 'I=',IMAX2,' J=',JMAX2,' K=',KMAX2
+
+            do k = kmin2, kmax2
+            do j = jmin2, jmax2
+            do i = imin2, imax2
+
+              ijk = funijk_gl(i,j,k)
+
+              xt = arr_xtr(ijk) - dx(i)*half
+              yt = arr_ytr(ijk) - dy(j)*half
+              zt = arr_ztr(ijk) - dz(k)*half
+
+              Pg_tmp(i,j,k) = arr_Pg(IJK) - delta_p_g
+              MMSPg_tmp(i,j,k) = arr_MMSPg(IJK)
+
+              Tg_tmp(i,j,k) = arr_Tg(IJK)
+              MMSTg_tmp(i,j,k) = arr_MMSTg(IJK)
+
+              Ts_tmp(i,j,k) = arr_Ts(IJK)
+              MMSTs_tmp(i,j,k) = arr_MMSTs(IJK)
+
+              Epg_tmp(i,j,k) = arr_Epg(IJK)
+              MMSEpg_tmp(i,j,k) = arr_MMSEpg(IJK)
+
+              Rops_tmp(i,j,k) = arr_ROPs(IJK)
+              MMSRops_tmp(i,j,k) = arr_MMSROPs(IJK)
+
+              Ths_tmp(i,j,k) = arr_Ths(IJK)
+              MMSThs_tmp(i,j,k) = arr_MMSThs(IJK)
+
+              write(fs,*) xt, yt, zt, &
+                Pg_tmp(i,j,k), &
+                Tg_tmp(i,j,k), Ts_tmp(i,j,k), &
+                Epg_tmp(i,j,k), Rops_tmp(i,j,k),&
+                Ths_tmp(i,j,k), &
+                MMSPg_tmp(i,j,k), &
+                MMSTg_tmp(i,j,k), MMSTs_tmp(i,j,k), &
+                MMSEpg_tmp(i,j,k), MMSRops_tmp(i,j,k),&
+                MMSThs_tmp(i,j,k), &
+                Pg_tmp(i,j,k) - MMSPg_tmp(i,j,k), &
+                Tg_tmp(i,j,k) - MMSTg_tmp(i,j,k), &
+                Ts_tmp(i,j,k) - MMSTs_tmp(i,j,k), &
+                Epg_tmp(i,j,k) - MMSEpg_tmp(i,j,k), &
+                Rops_tmp(i,j,k) - MMSRops_tmp(i,j,k), &
+                Ths_tmp(i,j,k) - MMSThs_tmp(i,j,k)
+
+            end do
+            end do
+            end do
+
+            close(fs)
+
+! output vector variables (x-direction)
+            open(unit=newunit(fvx), file="solution_vectorx.dat", &
+                                   status='unknown')
+
+            write(fvx,"(9a)") 'variables = "x""y""z""Ug""Us"&
+              &"MMSUg""MMSUs""UgErr""UsErr"'
+            write(fvx,*) 'zone T="',0,'" '
+            write(fvx,*) 'I=',IMAX2,' J=',JMAX2,' K=',KMAX2
+
+            do k = kmin2, kmax2
+            do j = jmin2, jmax2
+            do i = imin2, imax2
+
+              ijk = funijk_gl(i,j,k)
+
+              xt = arr_xtr(ijk)
+              yt = arr_ytr(ijk) - dy(j)*half
+              zt = arr_ztr(ijk) - dz(k)*half
+
+              Ug_tmp(I,J,K) = arr_Ug(IJK)
+              MMSUg_tmp(I,J,K) = arr_MMSUg(IJK)
+
+              Us_tmp(I,J,K) = arr_Us(IJK)
+              MMSUs_tmp(I,J,K) = arr_MMSUs(IJK)
+
+              write(fvx,*) xt, yt, zt, &
+                Ug_tmp(i,j,k), &
+                Us_tmp(i,j,k), &
+                MMSUg_tmp(i,j,k), &
+                MMSUs_tmp(i,j,k), &
+                Ug_tmp(i,j,k) - MMSUg_tmp(i,j,k), &
+                Us_tmp(i,j,k) - MMSUs_tmp(i,j,k)
+
+            end do
+            end do
+            end do
+
+            close(fvx)
+
+! output vector variables (y-direction)
+            open(unit=newunit(fvy), file="solution_vectory.dat", &
+                                   status='unknown')
+
+            write(fvy,"(9a)") 'variables = "x""y""z""Vg""Vs"&
+              &"MMSVg""MMSVs""VgErr""VsErr"'
+            write(fvx,*) 'zone T="',0,'" '
+            write(fvx,*) 'I=',IMAX2,' J=',JMAX2,' K=',KMAX2
+
+            do k = kmin2, kmax2
+            do j = jmin2, jmax2
+            do i = imin2, imax2
+
+              ijk = funijk_gl(i,j,k)
+
+              xt = arr_xtr(ijk) - dx(i)*half
+              yt = arr_ytr(ijk)
+              zt = arr_ztr(ijk) - dz(k)*half
+
+              Vg_tmp(I,J,K) = arr_Vg(IJK)
+              MMSVg_tmp(I,J,K) = arr_MMSVg(IJK)
+
+              Vs_tmp(I,J,K) = arr_Vs(IJK)
+              MMSVs_tmp(I,J,K) = arr_MMSVs(IJK)
+
+              write(fvx,*) xt, yt, zt, &
+                Vg_tmp(i,j,k), &
+                Vs_tmp(i,j,k), &
+                MMSVg_tmp(i,j,k), &
+                MMSVs_tmp(i,j,k), &
+                Vg_tmp(i,j,k) - MMSVg_tmp(i,j,k), &
+                Vs_tmp(i,j,k) - MMSVs_tmp(i,j,k)
+
+            end do
+            end do
+            end do
+
+            close(fvx)
+
+! output vector variables (z-direction)
+            open(unit=newunit(fvz), file="solution_vectorz.dat", &
+                                   status='unknown')
+
+            write(fvz,"(9a)") 'variables = "x""y""z""Wg""Ws"&
+              &"MMSWg""MMSWs""WgErr""WsErr"'
+            write(fvz,*) 'zone T="',0,'" '
+            write(fvz,*) 'I=',IMAX2,' J=',JMAX2,' K=',KMAX2
+
+            do k = kmin2, kmax2
+            do j = jmin2, jmax2
+            do i = imin2, imax2
+
+              ijk = funijk_gl(i,j,k)
+
+              xt = arr_xtr(ijk) - dx(i)*half
+              yt = arr_ytr(ijk) - dy(j)*half
+              zt = arr_ztr(ijk)
+
+              Wg_tmp(I,J,K) = arr_Wg(IJK)
+              MMSWg_tmp(I,J,K) = arr_MMSWg(IJK)
+
+              Ws_tmp(I,J,K) = arr_Ws(IJK)
+              MMSWs_tmp(I,J,K) = arr_MMSWs(IJK)
+
+              write(fvz,*) xt, yt, zt, &
+                Wg_tmp(i,j,k), &
+                Ws_tmp(i,j,k), &
+                MMSWg_tmp(i,j,k), &
+                MMSWs_tmp(i,j,k), &
+                Wg_tmp(i,j,k) - MMSWg_tmp(i,j,k), &
+                Ws_tmp(i,j,k) - MMSWs_tmp(i,j,k)
+
+            end do
+            end do
+            end do
+
+            close(fvz)
+
+
+          end if ! end if(raw_output)
+
+        end if ! end of if((myPE==PE_IO)
+
+
+        RETURN
+
+      END SUBROUTINE write_tecplot_data
