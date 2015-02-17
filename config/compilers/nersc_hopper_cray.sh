@@ -39,10 +39,6 @@ mkl_libs="${blas} ${dgtsv}"
 
 LIB_FLAGS="${ode} ${mkl_libs} ${mpi_libs} ${misc_libs}"
 
-# Setup inline object lists.
-inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o"
-inline_files="compare.f eosg.f discretize.f"
-
 # Debug flags for Cray Fortran
 dbg=
 if test "${USE_DEBUG}" = "1"; then dbg="-rm"; fi

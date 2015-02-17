@@ -48,12 +48,6 @@ misc_libs=
 
 LIB_FLAGS="${ode} ${blas} ${dgtsv} ${misc_libs} ${mpi_libs} "
 
-
-# Setup inline object lists.
-inline_objs="${DPO}compare.o ${DPO}eosg.o ${DPO}discretize.o "
-inline_files="compare.f eosg.f discretize.f "
-
-
 # --> Verify compiler is in $PATH <-- #
 
 # Debug flags for GNU Fortran
@@ -79,12 +73,12 @@ case $OPT in
     LINK_FLAGS="${omp} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O2 $inline ${dbg}"
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O2 ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O1 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O3 $inline ${dbg}"
+    FORT_FLAGS="${omp} ${common} -ffree-form -ffree-line-length-0 -O3 ${dbg}"
     FORT_FLAGS3="${omp} ${common} -O2 ${dbg}"
     LINK_FLAGS="${omp} ${dbg}";;
 
