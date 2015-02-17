@@ -545,4 +545,1059 @@
 
       END SUBROUTINE ADD_VTP_TO_PVD
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_VTP_FILE                                         C
+!  Purpose: Writes particles data in VTK format (Polydata VTP)         C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_VTP_FILE(LCV)
+
+      USE vtk, only: DIMENSION_VTK, VTK_DEFINED, FRAME
+      USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
+      USE vtk, only: VTK_PART_DIAMETER,VTK_PART_VEL,VTK_PART_USR_VAR,VTK_PART_TEMP
+      USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
+      USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
+
+      IMPLICIT NONE
+      INTEGER :: I,J,K,L,M,N,R,IJK,LCV
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
+
+      INTEGER :: SPECIES_COUNTER,LT
+
+      CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
+      CHARACTER (LEN=64) :: VAR_NAME
+
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
+
+      INTEGER :: PASS
+      INTEGER :: WRITE_HEADER = 1
+      INTEGER :: WRITE_DATA   = 2
+
+      VTK_REGION = LCV
+! There is nothing to write if we are not in a defined vtk region
+      IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
+
+      IF(VTK_DATA(LCV)/='P') RETURN
+
+      CALL SETUP_VTK_REGION_PARTICLES
+
+      CALL OPEN_VTP_FILE_BIN
+
+      CALL OPEN_PVD_FILE
+
+! First pass write the data header.
+! Second pass writes the data (appended binary format).
+
+      DO PASS=WRITE_HEADER,WRITE_DATA
+
+
+         CALL WRITE_GEOMETRY_IN_VTP_BIN(PASS)
+
+         IF(VTK_PART_DIAMETER(VTK_REGION)) &
+            CALL WRITE_SCALAR_IN_VTP_BIN('Diameter',2.0D0*DES_RADIUS,PASS)
+
+         IF(VTK_PART_VEL(VTK_REGION)) &
+            CALL WRITE_VECTOR_IN_VTP_BIN('Velocity',DES_VEL_NEW,PASS)
+
+         DO N=1, 3
+            IF(VTK_PART_USR_VAR(VTK_REGION,N)) &
+              CALL WRITE_SCALAR_IN_VTP_BIN('User Defined Var',DES_USR_VAR(N,:),PASS)
+         ENDDO
+
+         IF(ENERGY_EQ.AND.VTK_PART_TEMP(VTK_REGION)) &
+           CALL WRITE_SCALAR_IN_VTP_BIN('Temperature', DES_T_s_NEW,PASS)
+
+         IF(ANY_SPECIES_EQ) THEN
+            DO N=1, DIMENSION_N_S
+               IF(VTK_PART_X_s(VTK_REGION,N)) &
+                 CALL WRITE_SCALAR_IN_VTP_BIN(trim(iVar('X_s',N)), DES_X_s(:,N),PASS)
+            ENDDO
+         ENDIF
+
+      IF(USE_COHESION.AND.VTK_PART_COHESION(VTK_REGION)) &
+         CALL WRITE_SCALAR_IN_VTP_BIN('CohesiveForce', PostCohesive,PASS)
+
+      ENDDO ! PASS LOOP, EITHER HEADER OR DATA
+
+
+      CALL CLOSE_VTP_FILE_BIN
+      CALL UPDATE_AND_CLOSE_PVD_FILE
+
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
+
+! Update Frames
+      IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
+         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         DO L = 1, DIMENSION_VTK
+            IF(VTK_DEFINED(L)) WRITE(VTU_FRAME_UNIT,*) L,FRAME(L)
+         ENDDO
+         CLOSE(VTU_FRAME_UNIT)
+      ENDIF
+      
+     ! IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
+
+20    FORMAT(A,1X/)
+30    FORMAT(1X,A)
+      RETURN
+
+      END SUBROUTINE WRITE_VTP_FILE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: OPEN_VTP_FILE                                          C
+!  Purpose: Open a vtp file and writes the header                      C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE OPEN_VTP_FILE_BIN
+
+      USE run, only: TIME
+      USE output, only: FULL_LOG
+      USE vtk, only: TIME_DEPENDENT_FILENAME, VTU_FRAME_FILENAME, VTU_FRAME_UNIT
+      USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC 
+      USE vtk, only: DIMENSION_VTK, VTK_DEFINED,  FRAME,  VTK_REGION
+      USE vtk, only: NUMBER_OF_VTK_CELLS, VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
+
+      IMPLICIT NONE
+      LOGICAL :: VTU_FRAME_FILE_EXISTS
+      INTEGER :: ISTAT,BUFF1,BUFF2,L
+
+
+
+! Only open the file from head node when not using distributed I/O
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
+
+      IF(TIME_DEPENDENT_FILENAME) THEN
+         INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
+         IF(VTU_FRAME_FILE_EXISTS) THEN
+            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            DO L = 1, DIMENSION_VTK
+               IF(VTK_DEFINED(L)) THEN
+                  READ(VTU_FRAME_UNIT,*)BUFF1,BUFF2
+                  FRAME(L)=BUFF2
+               ENDIF
+            ENDDO
+            CLOSE(VTU_FRAME_UNIT)
+         ENDIF
+         IF(RESET_FRAME_AT_TIME_ZERO.AND.TIME==ZERO) THEN
+            DO L = 1, DIMENSION_VTK
+               IF(L==VTK_REGION) FRAME(L)=-1
+            ENDDO
+         ENDIF
+         DO L = 1, DIMENSION_VTK
+            IF(L==VTK_REGION) FRAME(L) = FRAME(L) + 1
+         ENDDO
+      ENDIF
+
+      IF (BDIST_IO.AND.NUMBER_OF_VTK_CELLS>0) THEN
+! For distributed I/O, define the file name for each processor
+         IF(TIME_DEPENDENT_FILENAME) THEN
+            WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
+         ELSE
+            WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
+         ENDIF
+      ELSE
+         IF(MYPE.EQ.PE_IO) THEN
+            IF(TIME_DEPENDENT_FILENAME) THEN
+               WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
+            ELSE
+               WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
+            ENDIF
+         END IF
+      END IF
+
+! Add the VTU directory path if necessary
+
+      IF(TRIM(VTU_DIR)/='.') VTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//VTU_FILENAME
+
+! Echo
+      IF (FULL_LOG) THEN
+         IF (.NOT.BDIST_IO) THEN
+            WRITE(*,10,ADVANCE='NO')' WRITING VTP FILE : ', TRIM(VTU_FILENAME),' .'
+         ELSE
+            IF(myPE==PE_IO) WRITE(*,15,ADVANCE='NO')' EACH PROCESOR IS WRITING ITS OWN VTU FILE.'
+         ENDIF
+      ENDIF
+
+! Open File
+      
+      IF(.TRUE.) THEN
+
+         VTU_UNIT = 678
+         OPEN(UNIT     = VTU_UNIT,           &
+              FILE     = TRIM(VTU_FILENAME), &
+              FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                                ! use 'BINARY' if 'UNFORMATTED' is not supported
+              ACCESS   = 'STREAM',           &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
+                                                ! use 'SEQUENTIAL' if 'STREAM' is not supported
+              ACTION   = 'WRITE',            &
+              IOSTAT=ISTAT)
+
+
+         IF (ISTAT /= 0) THEN
+            IF(DMP_LOG) WRITE(UNIT_LOG, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+            IF(FULL_LOG.AND.myPE == PE_IO) WRITE(*, 1001) VTU_FILENAME, VTU_UNIT,VTU_DIR
+            CALL MFIX_EXIT(myPE)
+         ENDIF
+
+
+1001 FORMAT(/1X,70('*')//, ' From: OPEN_VTU_FILE',/,' Message: ',          &
+            'Error opening vtu file. Terminating run.',/10X,          &
+            'File name:  ',A,/10X,                                         &
+            'DES_UNIT :  ',i4, /10X,                                       &
+            'PLEASE VERIFY THAT VTU_DIR EXISTS: ', A, &
+            /1X,70('*')/)
+
+
+! Write file Header
+         BUFFER='<?xml version="1.0"?>'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+         WRITE(BUFFER,*)'<!-- Time =',TIME,' sec. -->'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+         BUFFER='<VTKFile type="PolyData" version="0.1" byte_order="BigEndian">'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+         BUFFER='  <PolyData>'
+         WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+
+      ENDIF
+! For distributed I/O, open .pvtu file that combines all *.vtu files for a given FRAME
+! this is a simple ASCII file
+
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN
+
+         IF(TIME_DEPENDENT_FILENAME) THEN
+            WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
+         ELSE
+            WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
+         ENDIF
+
+         IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
+
+         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+
+         WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
+         WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
+         WRITE(PVTU_UNIT,120) '<VTKFile type="PUnstructuredGrid"',&
+                  ' version="0.1" byte_order="BigEndian">'
+
+         WRITE(PVTU_UNIT,100) '  <PUnstructuredGrid GhostLevel="0">'
+         WRITE(PVTU_UNIT,100) '      <PPoints>'
+         WRITE(PVTU_UNIT,100) '        <PDataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+              &format="appended" offset=" 0" />'
+         WRITE(PVTU_UNIT,100) '      </PPoints>'
+         WRITE(PVTU_UNIT,100) ''
+         WRITE(PVTU_UNIT,100) '      <PCellData Scalars="scalars">'
+
+      ENDIF
+
+100   FORMAT(A)
+110   FORMAT(A,E14.7,A)
+120   FORMAT(A,A)
+10    FORMAT(/1X,3A)
+15    FORMAT(/1X,A)
+20    FORMAT(A,"_",I4.4,"_",I5.5,".vtp")
+25    FORMAT(A,"_",I5.5,".vtp")
+30    FORMAT(A,"_",I4.4,".vtp")
+35    FORMAT(A,".vtp")
+40    FORMAT(A,"_",I4.4,".pvtp")
+45    FORMAT(A,".pvtp")
+
+      RETURN
+
+      END SUBROUTINE OPEN_VTP_FILE_BIN
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_GEOMETRY_IN_VTP_BIN                              C
+!  Purpose: Write Geometry and connectivity in a vtu file              C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN(PASS)
+
+      USE, INTRINSIC :: iso_c_binding
+      USE vtk, only: NUMBER_OF_POINTS,BUFFER, VTU_UNIT,END_REC,VTU_OFFSET,BELONGS_TO_VTK_SUBDOMAIN
+
+      IMPLICIT NONE
+
+      INTEGER :: IJK,L
+      INTEGER :: OFFSET
+
+      INTEGER :: CELL_TYPE
+
+      REAL(c_float) :: float
+      INTEGER(c_int) :: int
+
+      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
+      INTEGER ::     nbytes_vector, nbytes_scalar
+      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
+
+      INTEGER :: PASS
+      INTEGER :: WRITE_HEADER = 1
+      INTEGER :: WRITE_DATA   = 2
+
+      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local 
+      DOUBLE PRECISION, ALLOCATABLE :: gtemp_array(:,:)  ! global
+
+      INTEGER :: LB, UB
+      INTEGER :: PC, LC1, LC2
+
+! Loop through all particles and kee a list of particles belonging to a VTK region
+
+
+
+! Since the data is appended (i.e., written after all tags), the
+! offset, in number of bytes must be specified.  The offset includes
+! the size of the data for each field, plus the size of the integer
+! that stores the number of bytes.  this is why the offset of a field
+! equals the offset of the previous field plus c_sizeof(int) plus the
+! number of bytes of the field.
+
+! Next, the actual data is written for the geometry (PASS=WRITE_DATA)
+! The DATA is converted to single precision to save memory.
+
+      IF (.NOT.BDIST_IO) THEN
+! The number of points in the pvd file is the global number of particles 
+! computed from SETUP_VTK_REGION_PARTICLES
+
+         NUMBER_OF_POINTS = GLOBAL_CNT
+
+! Number of bytes of position field (vector,3 components)
+         nbytes_vector       = NUMBER_OF_POINTS * 3 * c_sizeof(float)
+
+! Offset of each field
+         offset_xyz = 0
+
+         IF(PASS==WRITE_HEADER) THEN
+            IF(myPE == PE_IO) THEN
+
+               WRITE(BUFFER,*)'    <Piece NumberOfPoints="',NUMBER_OF_POINTS, &
+                     '"  NumberOfVerts="0" NumberOfLines ="0" NumberOfStrips="0" NumberOfPolys="0" >'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      <Points>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'        <DataArray type="Float32" Name="coordinates" NumberOfComponents="3" &
+                                       &format="appended" offset="',offset_xyz,'" />'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      </Points>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'<PointData Scalars="Diameter" Vectors="Velocity"> '!preparing pointData
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+! calculate offset for next field
+               VTU_offset = offset_xyz + c_sizeof(int) + nbytes_vector
+
+            ENDIF
+
+         ELSEIF(PASS==WRITE_DATA) THEN
+
+            IF(myPE == PE_IO) THEN
+
+               WRITE(BUFFER,*)'      </PointData>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      <Verts> </Verts>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      <Lines> </Lines>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      <Strips> </Strips>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'      <Polys> </Polys>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'    </Piece>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'  </PolyData>'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+               WRITE(BUFFER,*)'  <AppendedData encoding="raw">'
+               WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+
+! Starting raw binary data with an underscore
+
+               WRITE(BUFFER,*)'_'
+               WRITE(VTU_UNIT)TRIM(BUFFER)
+
+! Number of bytes for X,Y,Z coordinates
+            WRITE(VTU_UNIT) nbytes_vector
+
+     
+         ENDIF
+
+         LB = LBOUND(DES_POS_NEW,1) ! This should always be 1
+         UB = UBOUND(DES_POS_NEW,1) ! This should always be 2
+
+         ALLOCATE (dProcBuf(LOCAL_CNT) )
+         ALLOCATE (dRootBuf(GLOBAL_CNT))
+         ALLOCATE (ltemp_array((UB-LB)+1,LOCAL_CNT))
+         ALLOCATE (gtemp_array((UB-LB)+1,GLOBAL_CNT))
+
+! Pack particle coordinates in a temporary local array
+         PC = 0
+         DO LC1 = 1, MAX_PIP
+            IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
+               PC =PC + 1
+               DO LC2=LB, UB
+                  ltemp_array(LC2,PC) = DES_POS_NEW(LC2,LC1)
+               ENDDO 
+            ENDIF
+            IF(PC==LOCAL_CNT) EXIT
+         ENDDO
+
+
+            ! print*,'after ltemp_array PC=',PC
+
+! For each coordinate (x,y, and z), gather the local list to global temporary array 
+         DO LC1 = LB, UB
+            dprocbuf(1:LOCAL_CNT)=ltemp_array(LC1,1:LOCAL_CNT)
+            CALL desmpi_gatherv(ptype=2)
+            gtemp_array(LC1,:) = drootbuf(:)
+         ENDDO
+
+! Write the list of coordinates
+         IF(myPE == PE_IO) THEN
+            DO LC1=1, GLOBAL_CNT
+               DO LC2=LB, UB
+                  WRITE(VTU_UNIT)  real(gtemp_array(LC2,LC1))
+               ENDDO
+            ENDDO
+         ENDIF
+
+         deallocate (dProcBuf, dRootBuf, ltemp_array,gtemp_array)
+
+
+         ENDIF
+
+
+      ELSEIF(BDIST_IO) THEN
+
+
+
+      ENDIF
+
+
+100   FORMAT(A,I12,A,I12,A)
+110   FORMAT(A)
+
+      RETURN
+
+      END SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_SCALAR_IN_VTP_BIN                                C
+!  Purpose: Write Scalar variable in a vtp file                        C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_SCALAR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
+
+      USE, INTRINSIC :: iso_c_binding
+      USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,END_REC,BELONGS_TO_VTK_SUBDOMAIN
+      USE output, only: FULL_LOG
+
+      IMPLICIT NONE
+      INTEGER :: I,IJK,LC1,PC
+
+      CHARACTER (*) :: VAR_NAME
+      DOUBLE PRECISION, INTENT(in) :: VAR(:)
+      DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
+
+      REAL(c_float) :: float
+
+      INTEGER ::     nbytes_vector, nbytes_scalar
+
+      INTEGER :: PASS
+      INTEGER :: WRITE_HEADER = 1
+      INTEGER :: WRITE_DATA   = 2
+
+
+      IF (.NOT.BDIST_IO) THEN
+
+! Number of bytes for each scalar field
+         nbytes_scalar = GLOBAL_CNT * c_sizeof(float)
+
+         IF(PASS==WRITE_HEADER) THEN
+
+! Remove possible white space with underscore
+            DO I = 1,LEN_TRIM(VAR_NAME)
+               IF(VAR_NAME(I:I) == ' ') VAR_NAME(I:I) = '_'
+            ENDDO
+
+! For each scalar, write a tag, with corresponding offset
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'" format="appended" offset="',VTU_offset,'" />'
+            WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+! Prepare the offset for the next field
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
+
+
+         ELSEIF(PASS==WRITE_DATA) THEN
+
+           allocate (dProcBuf(LOCAL_CNT) )
+           allocate (dRootBuf(GLOBAL_CNT))
+
+! Pack scalar list in a local buffer before gathering to root
+            PC = 0
+            DO LC1 = 1, MAX_PIP
+               IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
+                  PC =PC + 1
+                  dProcBuf(PC) = VAR(LC1)
+               ENDIF
+               IF(PC==LOCAL_CNT) EXIT
+            ENDDO
+
+! Gather local buffer to root 
+         CALL desmpi_gatherv(ptype=2)
+
+! Write the data, always preceded by its size in number of bytes
+! Write root buffer to file
+         WRITE(VTU_UNIT) nbytes_scalar
+
+         IF(myPE == PE_IO) THEN
+            DO LC1=1, GLOBAL_CNT
+               WRITE(VTU_UNIT)  real(drootBuf(LC1))
+            ENDDO
+         ENDIF
+
+         deallocate (dProcBuf, dRootBuf)
+
+
+         ENDIF
+
+
+      ELSE ! BDIST_IO=.TRUE.
+
+
+
+      ENDIF
+
+
+      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
+
+10    FORMAT(A)
+90    FORMAT(A,A,A,I12,A)
+
+      RETURN
+
+      END SUBROUTINE WRITE_SCALAR_IN_VTP_BIN
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: WRITE_VECTOR_IN_VTP                                    C
+!  Purpose: Write Vector variable in a vtp file                        C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE WRITE_VECTOR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
+
+      USE, INTRINSIC :: iso_c_binding
+      USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,END_REC,BELONGS_TO_VTK_SUBDOMAIN
+      USE output, only: FULL_LOG
+
+      IMPLICIT NONE
+      INTEGER :: IJK
+
+      CHARACTER (*) :: VAR_NAME
+      DOUBLE PRECISION, INTENT(in) :: VAR(:,:)
+
+      REAL(c_float) :: float
+
+      INTEGER :: nbytes_vector
+
+      INTEGER :: PASS
+      INTEGER :: WRITE_HEADER = 1
+      INTEGER :: WRITE_DATA   = 2
+
+      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local 
+      DOUBLE PRECISION, ALLOCATABLE :: gtemp_array(:,:)  ! global
+
+      INTEGER :: LB, UB
+      INTEGER :: PC, LC1, LC2
+
+      IF (.NOT.BDIST_IO) THEN
+
+! Number of bytes for each vector field
+         nbytes_vector = GLOBAL_CNT * 3 * c_sizeof(float)
+
+         IF(PASS==WRITE_HEADER) THEN
+! For each vector, write a tag, with corresponding offset
+
+            WRITE(BUFFER,90)'        <DataArray type="Float32" Name="', &
+                 TRIM(VAR_NAME),'"  NumberOfComponents="3" format="appended" offset="',VTU_offset,'" />'
+            WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+! Prepare the offset for the next field
+            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
+
+
+         ELSEIF(PASS==WRITE_DATA) THEN
+
+            LB = LBOUND(VAR,1) ! This should always be 1
+            UB = UBOUND(VAR,1) ! This should always be 2
+
+            ALLOCATE (dProcBuf(LOCAL_CNT) )
+            ALLOCATE (dRootBuf(GLOBAL_CNT))
+            ALLOCATE (ltemp_array((UB-LB)+1,LOCAL_CNT))
+            ALLOCATE (gtemp_array((UB-LB)+1,GLOBAL_CNT))
+
+! For each vector component, pack component list in a local array
+            PC = 0
+            DO LC1 = 1, MAX_PIP
+               IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
+                  PC =PC + 1
+                  DO LC2=LB, UB
+                     ltemp_array(LC2,PC) = VAR(LC2,LC1)
+                  ENDDO 
+               ENDIF
+               IF(PC==LOCAL_CNT) EXIT
+            ENDDO
+
+
+! For each component, gather the local list to global temporary array 
+         DO LC1 = LB, UB
+            dprocbuf(1:LOCAL_CNT)=ltemp_array(LC1,1:LOCAL_CNT)
+            CALL desmpi_gatherv(ptype=2)
+            gtemp_array(LC1,:) = drootbuf(:)
+         ENDDO
+
+! Write the data, always preceded by its size in number of bytes
+         IF(myPE == PE_IO) THEN
+            WRITE(VTU_UNIT) nbytes_vector
+            DO LC1=1, GLOBAL_CNT
+               DO LC2=LB, UB
+                  WRITE(VTU_UNIT)  real(gtemp_array(LC2,LC1))
+               ENDDO
+            ENDDO
+         ENDIF
+
+         deallocate (dProcBuf, dRootBuf, ltemp_array,gtemp_array)
+
+
+
+         ENDIF
+
+
+      ELSE ! BDIST_IO=.TRUE.
+
+
+      ENDIF
+
+
+      IF (PASS==WRITE_DATA.AND.FULL_LOG.AND.myPE == PE_IO) WRITE(*,10,ADVANCE='NO')'.'
+
+10    FORMAT(A)
+90    FORMAT(A,A,A,I12,A)
+
+      RETURN
+
+      END SUBROUTINE WRITE_VECTOR_IN_VTP_BIN
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CLOSE_VTP_FILE_BIN                                     C
+!  Purpose: Close a vtp file                                           C
+!           Binary format                                              C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CLOSE_VTP_FILE_BIN
+
+      USE vtk, only: BUFFER,VTU_UNIT,END_REC,NUMBER_OF_VTK_CELLS,PVTU_UNIT,TIME_DEPENDENT_FILENAME
+      USE vtk, only: VTK_REGION,VTK_FILEBASE,FRAME
+
+      IMPLICIT NONE
+
+      INTEGER:: N
+      CHARACTER (LEN=32)  :: VTU_NAME
+      INTEGER, DIMENSION(0:numPEs-1) :: ALL_VTK_CELL_COUNT
+      INTEGER :: IERR
+
+      IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
+
+! Write last tags and close the vtp file
+      WRITE(BUFFER,110)'  </AppendedData>'
+      WRITE(VTU_UNIT)END_REC//TRIM(BUFFER)//END_REC
+
+      WRITE(BUFFER,110)'</VTKFile>'
+      WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
+
+      CLOSE(VTU_UNIT)
+
+
+! Update pvtu file and close
+
+      IF(BDIST_IO)  CALL allgather_1i (NUMBER_OF_VTK_CELLS,ALL_VTK_CELL_COUNT,IERR)
+
+      IF (myPE == PE_IO.AND.BDIST_IO) THEN
+         WRITE(PVTU_UNIT,100) '      </PCellData>'
+
+         DO N = 0,NumPEs-1
+            IF(ALL_VTK_CELL_COUNT(N)>0) THEN
+               IF(TIME_DEPENDENT_FILENAME) THEN
+                  WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
+               ELSE
+                  WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N
+               ENDIF
+
+               WRITE(PVTU_UNIT,110) '      <Piece Source="',TRIM(VTU_NAME),'"/>'
+            ENDIF
+         ENDDO
+
+
+         WRITE(PVTU_UNIT,100) '  </PUnstructuredGrid>'
+         WRITE(PVTU_UNIT,100) '</VTKFile>'
+         CLOSE(PVTU_UNIT)
+      ENDIF
+
+
+20    FORMAT(A,"_",I4.4,"_",I5.5,".vtu")
+25    FORMAT(A,"_",I5.5,".vtu")
+
+100   FORMAT(A)
+110   FORMAT(A,A,A)
+
+      RETURN
+
+      END SUBROUTINE CLOSE_VTP_FILE_BIN
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: SETUP_VTK_REGION_PARTICLES                             C
+!                                                                      C
+!  Purpose: Filter the particles  based on the VTK region bounds and   C
+!           set the flag BELONGS_TO_VTK_SUBDOMAIN to .TRUE.            C
+!           to keep the particle.                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 11-Feb-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SETUP_VTK_REGION_PARTICLES
+
+      USE vtk, only: VTK_REGION
+      USE vtk, only: VTK_X_E, VTK_X_W, VTK_Y_S, VTK_Y_N, VTK_Z_B, VTK_Z_T
+      USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
+      USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
+      USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
+      USE discretelement, only: MAX_PIP,PIP,PEA,DES_POS_NEW,IGHOST_CNT
+
+      IMPLICIT NONE
+
+      INTEGER :: IJK,I,J,K,I_E,I_W,J_N,J_S,K_T,K_B
+      INTEGER :: PC,LC1
+      INTEGER :: NXS,NYS,NZS,NS,I_TMP,J_TMP,K_TMP
+      INTEGER :: X_SLICE(DIM_I),Y_SLICE(DIM_J),Z_SLICE(DIM_K)
+      DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
+      DOUBLE PRECISION :: XP,YP,ZP,XP1,YP1,ZP1,XP2,YP2,ZP2,R
+
+      DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE,SLICE_TOL
+      LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
+
+
+      INTEGER :: NumberOfPoints
+
+! Variables related to gather
+      integer lgathercnts(0:numpes-1), lproc
+
+! check whether an error occurs in opening a file
+      INTEGER :: IOS
+! Integer error flag.
+      INTEGER :: IER
+
+      CHARACTER(LEN=1) :: SELECT_PARTICLE_BY
+
+
+! Get VTK region bounds         
+      XE = VTK_X_E(VTK_REGION)
+      XW = VTK_X_W(VTK_REGION)
+      YS = VTK_Y_S(VTK_REGION)
+      YN = VTK_Y_N(VTK_REGION)
+      ZB = VTK_Z_B(VTK_REGION)
+      ZT = VTK_Z_T(VTK_REGION)
+
+      NXS = VTK_NXS(VTK_REGION)
+      NYS = VTK_NYS(VTK_REGION)
+      NZS = VTK_NZS(VTK_REGION)
+
+      SLICE_TOL = VTK_SLICE_TOL(VTK_REGION)
+
+      SELECT_PARTICLE_BY = VTK_SELECT_MODE(VTK_REGION)
+
+! get slice(s) location
+      DO NS = 1,NXS
+         X_SLICE(NS) = XW + (XE-XW)/(NXS-1)*(NS-1)
+      ENDDO
+
+      DO NS = 1,NYS
+         Y_SLICE(NS) = YS + (YN-YS)/(NYS-1)*(NS-1)
+      ENDDO
+
+      DO NS = 1,NZS
+         Z_SLICE(NS) = ZB + (ZT-ZB)/(NZS-1)*(NS-1)
+      ENDDO
+
+
+
+! Loop through all particles on local rank and keep a list of particles 
+! belonging to VTK region
+
+      IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
+      ALLOCATE(BELONGS_TO_VTK_SUBDOMAIN(MAX_PIP))
+
+      BELONGS_TO_VTK_SUBDOMAIN = .FALSE.
+
+            LOCAL_CNT = 0 
+            PC = 1
+            DO LC1 = 1, MAX_PIP
+               IF(PC > PIP) EXIT
+               IF(.NOT.PEA(LC1,1)) CYCLE
+               PC = PC+1
+               IF(PEA(LC1,4)) CYCLE
+
+               SELECT CASE(SELECT_PARTICLE_BY)
+               CASE('C')  ! Particle center must be inside vtk region
+
+                  XP = DES_POS_NEW(1,LC1)
+                  YP = DES_POS_NEW(2,LC1)
+                  ZP = DES_POS_NEW(3,LC1)
+
+! X-direction
+                  KEEP_XDIR=.FALSE.
+                  IF(NXS==0) THEN
+                     IF(XW<=XP.AND.XP<=XE) KEEP_XDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NXS
+                        IF((X_SLICE(NS)-SLICE_TOL)<=XP.AND.XP<=(X_SLICE(NS)+SLICE_TOL)) KEEP_XDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Y-direction
+                  KEEP_YDIR=.FALSE.
+                  IF(NYS==0) THEN
+                     IF(YS<=YP.AND.YP<=YN) KEEP_YDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NYS
+                        IF((Y_SLICE(NS)-SLICE_TOL)<=YP.AND.YP<=(Y_SLICE(NS)+SLICE_TOL)) KEEP_YDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Z-direction
+                  KEEP_ZDIR=.FALSE.
+                  IF(NZS==0) THEN
+                     IF(ZB<=ZP.AND.ZP<=ZT) KEEP_ZDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NZS
+                        IF((Z_SLICE(NS)-SLICE_TOL)<=ZP.AND.ZP<=(Z_SLICE(NS)+SLICE_TOL)) KEEP_ZDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+
+               CASE('P')  ! Entire particle must be inside vtk region
+
+                  R = DES_RADIUS(LC1)
+
+                  XP1 = DES_POS_NEW(1,LC1) - R
+                  YP1 = DES_POS_NEW(2,LC1) - R
+                  ZP1 = DES_POS_NEW(3,LC1) - R
+
+                  XP2 = DES_POS_NEW(1,LC1) + R
+                  YP2 = DES_POS_NEW(2,LC1) + R
+                  ZP2 = DES_POS_NEW(3,LC1) + R
+
+! X-direction
+                  KEEP_XDIR=.FALSE.
+                  IF(NXS==0) THEN
+                     IF(XW<=XP1.AND.XP2<=XE) KEEP_XDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NXS
+                        IF((X_SLICE(NS)-SLICE_TOL)<=XP1.AND.XP2<=(X_SLICE(NS)+SLICE_TOL)) KEEP_XDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Y-direction
+                  KEEP_YDIR=.FALSE.
+                  IF(NYS==0) THEN
+                     IF(YS<=YP1.AND.YP2<=YN) KEEP_YDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NYS
+                        IF((Y_SLICE(NS)-SLICE_TOL)<=YP1.AND.YP2<=(Y_SLICE(NS)+SLICE_TOL)) KEEP_YDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Z-direction
+                  KEEP_ZDIR=.FALSE.
+                  IF(NZS==0) THEN
+                     IF(ZB<=ZP1.AND.ZP2<=ZT) KEEP_ZDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NZS
+                        IF((Z_SLICE(NS)-SLICE_TOL)<=ZP1.AND.ZP2<=(Z_SLICE(NS)+SLICE_TOL)) KEEP_ZDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+
+               CASE('I')  ! Particle must be inside or intersect the edge of the vtk region
+
+                  R = DES_RADIUS(LC1)
+
+                  XP1 = DES_POS_NEW(1,LC1) - R
+                  YP1 = DES_POS_NEW(2,LC1) - R
+                  ZP1 = DES_POS_NEW(3,LC1) - R
+
+                  XP2 = DES_POS_NEW(1,LC1) + R
+                  YP2 = DES_POS_NEW(2,LC1) + R
+                  ZP2 = DES_POS_NEW(3,LC1) + R
+
+! X-direction
+                  KEEP_XDIR=.FALSE.
+                  IF(NXS==0) THEN
+                     IF(.NOT.(XE<=XP1.OR.XP2<=XW)) KEEP_XDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NXS
+                        IF(.NOT.((X_SLICE(NS)+SLICE_TOL)<=XP1.OR.XP2<=(X_SLICE(NS)-SLICE_TOL))) KEEP_XDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Y-direction
+                  KEEP_YDIR=.FALSE.
+                  IF(NYS==0) THEN
+                     IF(.NOT.(YN<=YP1.OR.YP2<=YS)) KEEP_YDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NYS
+                        IF(.NOT.((Y_SLICE(NS)+SLICE_TOL)<=YP1.OR.YP2<=(Y_SLICE(NS)-SLICE_TOL))) KEEP_YDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+! Z-direction
+                  KEEP_ZDIR=.FALSE.
+                  IF(NZS==0) THEN
+                     IF(.NOT.(ZT<=ZP1.OR.ZP2<=ZB)) KEEP_ZDIR=.TRUE.
+                  ELSE
+                     DO NS = 1,NZS
+                        IF(.NOT.((Z_SLICE(NS)+SLICE_TOL)<=ZP1.OR.ZP2<=(Z_SLICE(NS)-SLICE_TOL))) KEEP_ZDIR=.TRUE.
+                     ENDDO
+                  ENDIF
+
+
+               CASE DEFAULT
+                  print*,'should not be here'
+               END SELECT
+
+! Now combine
+                  IF(KEEP_XDIR.AND.KEEP_YDIR.AND.KEEP_ZDIR) THEN
+                     BELONGS_TO_VTK_SUBDOMAIN(LC1) = .TRUE.
+                     LOCAL_CNT = LOCAL_CNT + 1
+                  ENDIF
+            ENDDO
+
+            
+! Calculate the total number of particles system-wide.
+            call global_sum(LOCAL_CNT, GLOBAL_CNT)
+            
+! Set the send count from the local process.
+           igath_sendcnt = LOCAL_CNT
+           
+! Collect the number of particles on each rank.all ranks.
+          lgathercnts = 0
+          lgathercnts(myPE) = LOCAL_CNT
+          call global_sum(lgathercnts,igathercnts)
+          
+! Calculate the rank displacements.
+         idispls(0) = 0
+         DO lPROC = 1,NUMPEs-1
+            idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
+         ENDDO
+
+
+            ! print*,'MAX_PIP=',MAX_PIP
+            ! print*,'GHOST=', iGHOST_CNT
+            ! print*,'active=', PIP - iGHOST_CNT
+            ! print*,'LOCAL_CNT=', LOCAL_CNT
+            ! print*,'GLOBAL_CNT=', GLOBAL_CNT
+
+
+      IF (myPE == PE_IO.AND.(.NOT.BDIST_IO)) THEN
+
+
+      ELSE  ! BDIST_IO
+
+
+
+      ENDIF
+
+
+100   FORMAT(A,I12,A,I12,A)
+110   FORMAT(A)
+
+      RETURN
+
+      END SUBROUTINE SETUP_VTK_REGION_PARTICLES
+      
+
       END MODULE VTP

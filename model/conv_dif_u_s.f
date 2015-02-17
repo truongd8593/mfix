@@ -367,29 +367,30 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE physprop
-      USE visc_s
-      USE toleranc
-      USE fldvar
-      USE output
-      USE xsi
-      USE xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
-      USE sendrecv
-      USE sendrecv3
-      USE mflux
       USE cutcell
+      USE discretization, ONLY: fpfoi_of
+      USE fldvar
       USE fun_avg
       USE function3
       USE functions
+      USE geometry
+      USE indices
+      USE matrix
+      USE mflux
+      USE output
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      USE sendrecv3
+      USE toleranc
+      USE visc_s
+      USE xsi
+      USE xsi_array
+      Use tmp_array,  U => Array1, V => Array2, WW => Array3
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -441,10 +442,6 @@
 ! the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
 
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
 !-----------------------------------------------
 
       call lock_tmp4_array

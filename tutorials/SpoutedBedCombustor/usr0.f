@@ -28,12 +28,14 @@
       SUBROUTINE USR0
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
+      USE constant
+      USE funits
       USE param
       USE param1
       USE physprop
-      USE constant
-      USE funits
-      Use usr
+      USE toleranc
+      USE usr
+
       IMPLICIT NONE
       INCLUDE 'usrnlst.inc'
 !-----------------------------------------------
@@ -44,7 +46,6 @@
 !  Define local variables here
 !
       DOUBLE PRECISION SUM
-      LOGICAL COMPARE
 !
 !  Include files defining statement functions here
 !

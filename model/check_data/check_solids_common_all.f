@@ -726,6 +726,9 @@
 ! Maximum number of solids species.
       use param, only: DIM_N_s
 
+! Solids phase density caMulation
+      use eos, ONLY: EOSS0
+
 ! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
@@ -738,11 +741,6 @@
 !---------------------------------------------------------------------//
 ! Total number of solids phases
       INTEGER, intent(in) :: MMAX_LL
-
-! External functions:
-!---------------------------------------------------------------------//
-! Solids phase density caMulation
-      DOUBLE PRECISION, EXTERNAL :: EOSS0
 
 ! Local Variables:
 !---------------------------------------------------------------------//

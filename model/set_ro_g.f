@@ -25,28 +25,23 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE eos, only: EOSG
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE parallel
       USE param
       USE param1
-      USE parallel
       USE physprop
-      USE geometry
-      USE fldvar
-      USE constant
-      USE indices
-      USE compar
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
       INTEGER :: IJK
 !-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG
-!-----------------------------------------------
-
-
       IF (RO_G0 == UNDEFINED) THEN   ! compressible case
 
 !!$omp parallel do private(IJK)

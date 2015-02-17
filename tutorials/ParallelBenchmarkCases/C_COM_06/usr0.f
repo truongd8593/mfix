@@ -26,13 +26,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR0
 
+      USE compar
+      USE constant
+      USE funits
       USE param
       USE param1
       USE physprop
-      USE constant
-      USE funits
-      Use usr
-      use compar
+      USE toleranc
+      USE usr
 
       IMPLICIT NONE
 

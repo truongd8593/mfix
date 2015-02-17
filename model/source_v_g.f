@@ -106,13 +106,13 @@
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN
 
 
-!!$omp  parallel do default(shared)                                   &
-!!$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,    &
-!!$omp          IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA,       &
-!!$omp          ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,          &
-!!$omp          Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst,         &
-!!$omp          Vsb, F_vir, Ghd_drag, avgRop, avgDrag, HYS_drag,      &
-!!$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
+!$omp  parallel do default(shared)                                   &
+!$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,    &
+!$omp          IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA,       &
+!$omp          ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,          &
+!$omp          Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst,         &
+!$omp          Vsb, F_vir, Ghd_drag, avgRop, avgDrag, HYS_drag,      &
+!$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -333,7 +333,7 @@
 
          ENDIF
       ENDDO
-!!$omp end parallel do
+!$omp end parallel do
 
 ! modifications for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)

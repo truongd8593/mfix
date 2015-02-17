@@ -113,14 +113,14 @@
         IF (MOMENTUM_X_EQ(M)) THEN
 
 
-!!$omp  parallel do default(shared)                                   &
-!!$omp  private( I, J, K, IJK, IJKE, IMJK, IPJK, IJMK, IJPK, IPJMK,   &
-!!$omp           IJKM, IPJKM,IJKP, ISV, epsMix, epsMixE, EPStmp,      &
-!!$omp           EPSA, EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, PGE, Sdp,  &
-!!$omp           SUM_EPS_CP, Sdps, MM, ROPSA,V0, ROP_MA, L, Vgw, Vge, &
-!!$omp           Uge, Ugw, Ugs, Ugn, Wgt, Wgb, Ugt, Ugb, F_vir, VMT,  &
-!!$omp           VMTtmp, DRO1, DRO2, DROA, WSE, VCF, EPMUSA, VTZA,    &
-!!$omp           Vbf, avgRop, Ghd_drag, HYS_drag, avgDrag)
+!$omp  parallel do default(shared)                                   &
+!$omp  private( I, J, K, IJK, IJKE, IMJK, IPJK, IJMK, IJPK, IPJMK,   &
+!$omp           IJKM, IPJKM,IJKP, ISV, epsMix, epsMixE, EPStmp,      &
+!$omp           EPSA, EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, PGE, Sdp,  &
+!$omp           SUM_EPS_CP, Sdps, MM, ROPSA,V0, ROP_MA, L, Vgw, Vge, &
+!$omp           Uge, Ugw, Ugs, Ugn, Wgt, Wgb, Ugt, Ugb, F_vir, VMT,  &
+!$omp           VMTtmp, DRO1, DRO2, DROA, WSE, VCF, EPMUSA, VTZA,    &
+!$omp           Vbf, avgRop, Ghd_drag, HYS_drag, avgDrag)
 
             DO IJK = ijkstart3, ijkend3
 
@@ -457,7 +457,7 @@
 
                 ENDIF   ! end branching on cell type (sip/ip/dilute/block/else branches)
             ENDDO   ! end do loop over ijk
-!!$omp end parallel do
+!$omp end parallel do
 
 ! modifications for cartesian grid implementation
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M, IER)

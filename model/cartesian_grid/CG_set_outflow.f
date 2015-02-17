@@ -32,27 +32,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
       USE bc
+      USE compar        !//d
+      USE cutcell
+      USE eos, ONLY: EOSG
       USE fldvar
+      USE functions
       USE geometry
       USE indices
-      USE physprop
-      USE scalars
-      USE run
-      USE compar        !//d
       USE mflux
-      USE functions
-
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
+      USE param
+      USE param1
+      USE physprop
       USE quadric
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+      USE run
+      USE scalars
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -78,11 +72,6 @@
       CHARACTER(LEN=16) :: BCT1,BCT2,BCT3,BCT4
 
       LOGICAL :: TEST1,TEST2
-!
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: EOSG
 !-----------------------------------------------
 !
 !      print*,'top of cg_set_outflow'

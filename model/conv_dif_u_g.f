@@ -426,29 +426,30 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE visc_g
-      USE toleranc
-      USE physprop
-      USE fldvar
-      USE output
-      USE vshear
-      Use xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
       USE compar
-      USE sendrecv
-      USE sendrecv3
-      USE mflux
+      USE discretization, ONLY: fpfoi_of
+      USE fldvar
       USE fun_avg
-      USE xsi
       USE function3
       USE functions
+      USE geometry
+      USE indices
+      USE matrix
+      USE mflux
+      USE output
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      USE sendrecv3
+      USE toleranc
+      USE visc_g
+      USE vshear
+      USE xsi
+      Use tmp_array,  U => Array1, V => Array2, WW => Array3
+      Use xsi_array
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -507,21 +508,9 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 !
-!
-!
-!-----------------------------------------------
-!
-!---------------------------------------------------------------
-!       EXTERNAL FUNCTIONS
-!---------------------------------------------------------------
-        DOUBLE PRECISION , EXTERNAL :: FPFOI_OF
-!---------------------------------------------------------------
-!
-
       call lock_tmp4_array
       call lock_tmp_array
       call lock_xsi_array
-
 !
 !  Calculate convection factors
 !
@@ -996,36 +985,27 @@
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!           East face (i+1, j, k)
          IF(CUT_U_TREATMENT_AT(IJK)) THEN
+!           East face (i+1, j, k)
             U(IJK) = (Theta_Ue_bar(IJK) * U_g(IJK) + Theta_Ue(IJK) * U_g(IPJK))
             CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',alpha_Ue_c(IJK),AW,HW,VELW)
             U(IJK) = U(IJK) * AW
-         ELSE   ! Original terms
-            U(IJK) = AVG_X_E(U_G(IJK),U_G(IPJK),IP)
-         ENDIF
-!
-!
 !           North face (i+1/2, j+1/2, k)
-         IF(CUT_U_TREATMENT_AT(IJK)) THEN
             V(IJK) = (Theta_U_nw(IJK) * V_g(IJK) + Theta_U_ne(IJK) * V_g(IPJK))
             CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',ALPHA_Un_c(IJK),AW,HW,VELW)
             V(IJK) = V(IJK) * AW
-         ELSE   ! Original terms
-            V(IJK) = AVG_X(V_G(IJK),V_G(IPJK),I)
-         ENDIF
-!
-!
 !           Top face (i+1/2, j, k+1/2)
-         IF(CUT_U_TREATMENT_AT(IJK)) THEN
             IF (DO_K) THEN
                WW(IJK) = (Theta_U_tw(IJK) * W_g(IJK) + Theta_U_te(IJK) * W_g(IPJK))
                CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',ALPHA_Ut_c(IJK),AW,HW,VELW)
                WW(IJK) = WW(IJK) * AW
             ENDIF
          ELSE   ! Original terms
+            U(IJK) = AVG_X_E(U_G(IJK),U_G(IPJK),IP)
+            V(IJK) = AVG_X(V_G(IJK),V_G(IPJK),I)
             IF (DO_K) WW(IJK) = AVG_X(W_G(IJK),W_G(IPJK),I)
          ENDIF
+
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================

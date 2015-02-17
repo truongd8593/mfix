@@ -81,7 +81,7 @@
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
 ! User-defined variables for each particle.
-      use discretelement, only: DES_USR_VAR
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 
       use des_allocate
 
@@ -163,7 +163,8 @@
             endif
 
 ! 12) User Variables
-            call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
+            if(DES_USR_VAR_SIZE > 0) &
+               call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
 
 ! Calculate the volume of the ghost particle.
             PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
@@ -225,15 +226,14 @@
 !           pea(ispot,3) = (drecvbuf(lbuf,pface) > 0.5)
             call unpack_dbuf(lbuf,pea(ispot,3),pface) ! (Need to check the logic)
 ! 10) Particle temperature.
-            if(ENERGY_EQ)then
+            IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
-            endif
 ! 11) Particle species composition
-            if(ANY_SPECIES_EQ)then
+            IF(ANY_SPECIES_EQ) &
                call unpack_dbuf(lbuf,des_x_s(ispot,:),pface)
-            endif
-! 11) User varaible
-            call unpack_dbuf(lbuf,des_usr_var(1:3,ispot),pface)
+! 12) User varaible
+            IF(DES_USR_VAR_SIZE > 0)&
+               call unpack_dbuf(lbuf,des_usr_var(1:3,ispot),pface)
 
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -369,6 +369,7 @@
       call PARTICLE_GROW(pip+lparcnt)
 
       do lcurpar =1,lparcnt
+
          lfound = .false.
          lbuf = (lcurpar-1)*iParticlePacketSize + ibufoffset
 ! 1) Global ID

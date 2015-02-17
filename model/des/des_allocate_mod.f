@@ -518,6 +518,7 @@ CONTAINS
            call real_grow2(TOW,MAX_PIP)
            call real_grow2(DES_USR_VAR,MAX_PIP)
            call real_grow(F_GP,MAX_PIP)
+           F_gp(MAX_PIP/2+1:MAX_PIP)  = ZERO
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
            wall_collision_facet_id(:,MAX_PIP/2+1:MAX_PIP) = -1
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
@@ -532,13 +533,21 @@ CONTAINS
 
            IF(MPPIC) THEN
               call real_grow(DES_STAT_WT,MAX_PIP)
-              call real_grow2(PS_GRAD,MAX_PIP)
+              call real_grow2_reverse(PS_GRAD,MAX_PIP)
               call real_grow2(AVGSOLVEL_P,MAX_PIP)
               call real_grow(EPG_P,MAX_PIP)
            ENDIF
 
            IF(USE_COHESION) THEN
               call real_grow(PostCohesive,MAX_PIP)
+           ENDIF
+
+           IF (DO_OLD) THEN
+              call real_grow2(DES_POS_OLD,MAX_PIP)
+              call real_grow2(DES_VEL_OLD,MAX_PIP)
+              call real_grow2(DES_ACC_OLD,MAX_PIP)
+              call real_grow2(OMEGA_OLD,MAX_PIP)
+              call real_grow2(ROT_ACC_OLD,MAX_PIP)
            ENDIF
 
            IF(ENERGY_EQ)THEN

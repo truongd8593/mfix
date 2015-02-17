@@ -31,6 +31,8 @@
       use mpi_utility
       use sendrecv
       use stl
+      use vtp
+      use vtk
 
       IMPLICIT NONE
 !------------------------------------------------
@@ -45,7 +47,7 @@
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
 
-      INTEGER :: II, JJ, KK, IJK, CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
+      INTEGER :: II, JJ, KK, IJK, CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF,L
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP
 
 ! Local variables to keep track of time when dem restart and des
@@ -197,6 +199,16 @@
                   CALL WRITE_DES_DATA
                ENDIF
             ENDIF
+
+! write vtp files
+      IF(WRITE_VTK_FILES) THEN
+         DO L = 1, DIMENSION_VTK
+            IF (VTK_TIME(L)/=UNDEFINED .AND.  TIME+0.1d0*DT>=VTK_TIME(L)) THEN
+               VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
+               CALL WRITE_VTP_FILE(L)
+            ENDIF
+         ENDDO
+      ENDIF
 
 ! Write out the restart infomration here. Note that there is a call
 ! to write out the continuum variables.

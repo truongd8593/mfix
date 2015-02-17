@@ -403,7 +403,7 @@
       subroutine des_scatter_particle
 
       use mpi_comm_des, only: desmpi_scatterv
-
+      use des_allocate, only: particle_grow
 
 !-----------------------------------------------
       implicit none
@@ -469,8 +469,7 @@
 ! second pass: set and allocate scatter related variables
       pip = lproc_parcnt(mype)
       if (pip .gt. max_pip) then
-         WRITE(*,502) pip, max_pip
-         call des_mpi_stop
+         call PARTICLE_GROW(pip)
       endif
       iscr_recvcnt = pip*lpacketsize
       allocate (dprocbuf(iscr_recvcnt))
@@ -519,9 +518,6 @@
  501  FORMAT(/2X,'From: DES_SCATTER_PARTICLE: (1)',/2X,&
          'ERROR: Unable to locate the particle (no. ',I10,&
          ') inside the domain')
- 502  FORMAT(/2X,'From: DES_SCATTER_PARTICLE: ',/2X,&
-         'ERROR: Particles in the processor ',I10,&
-         'exceeds MAX_PIP', I10)
 
       RETURN
       end subroutine des_scatter_particle

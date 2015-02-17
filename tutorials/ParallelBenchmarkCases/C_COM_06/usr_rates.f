@@ -11,25 +11,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_RATES(IJK, RATES)
 
+      USE compar
+      USE constant
+      USE energy
+      USE fldvar
+      USE fun_avg
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE parallel
       USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE rxns
-      USE energy
-      USE geometry
-      USE run
-      USE indices
       USE physprop
-      USE constant
-      USE funits
-      USE compar
+      USE run
+      USE rxns
       USE sendrecv
-      USE fun_avg
-
       USE toleranc
       USE usr
-      USE functions
 
       IMPLICIT NONE
 

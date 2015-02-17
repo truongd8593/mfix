@@ -327,7 +327,7 @@ common_SOURCES = \
 	model/dif_u_is.f \
 	model/dif_v_is.f \
 	model/dif_w_is.f \
-	model/discretize.f \
+	model/discretization_mod.f \
 	model/display_resid.f \
 	model/dmp_modules/compar_mod.f \
 	model/dmp_modules/dbg_util_mod.f \
@@ -342,8 +342,7 @@ common_SOURCES = \
 	model/drag_mod.f \
 	model/drag_ss.f \
 	model/energy_mod.f \
-	model/eosg.f \
-	model/eoss.f \
+	model/eos_mod.f \
 	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \

@@ -164,13 +164,16 @@
       use run, only: solids_model
 
       USE discretelement
+      use des_allocate, only: PARTICLE_GROW
+
       IMPLICIT NONE
       type(particle), pointer :: part => null()
       integer :: count_part, phase
 
-
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
+
+      CALL PARTICLE_GROW(PIP)
 
       part => orig_part_list
       count_part = 0
@@ -515,7 +518,7 @@
 
       double precision :: rad, dens, position(dimn), velocity(dimn), wtp
 
-      type(particle), pointer :: part_list_byic, part => NULL(), part_old => NULL()
+      type(particle), pointer :: part_list_byic => NULL(), part => NULL(), part_old => NULL()
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
 

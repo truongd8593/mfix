@@ -76,10 +76,12 @@
 ../model/des/desmpi_mod.f
 ../model/des/discretelement_mod.f
 ../model/des/mfix_pic_mod.f
+../model/des/mpi_comm_des_mod.f
 ../model/des/mpi_donothing/desmpi_wrapper_mod.f
 ../model/des/particle_filter_mod.f
 ../model/des/pic_bc_mod.f
 ../model/des/sendrecvnode_mod.f
+../model/des/vtp_mod.f
 ../model/dmp_modules/compar_mod.f
 ../model/dmp_modules/dbg_util_mod.f
 ../model/dmp_modules/debug_mod.f
@@ -90,8 +92,7 @@
 ../model/dmp_modules/mpi_donothing/sendrecv_mod.f
 ../model/drag_mod.f
 ../model/energy_mod.f
-../model/eosg.f
-../model/eoss.f
+../model/eos_mod.f
 ../model/error_manager_mod.f
 ../model/error_routine.f
 ../model/exit.f

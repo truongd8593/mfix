@@ -123,12 +123,12 @@
 
       DO L = 1, DIMENSION_VTK
          VTK_DEFINED(L) = .FALSE.
-         IF (VTK_X_W(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
-         IF (VTK_X_E(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
-         IF (VTK_Y_S(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
-         IF (VTK_Y_N(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
-         IF (VTK_Z_B(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
-         IF (VTK_Z_T(L) /= UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_X_W(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_X_E(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_S(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Y_N(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_B(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
+         IF (VTK_Z_T(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
 
          IF(.NOT.VTK_DEFINED(L)) CYCLE
 

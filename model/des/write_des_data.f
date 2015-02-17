@@ -95,6 +95,7 @@
       use run, only: ENERGY_EQ
       use discretelement, only: S_TIME
       use discretelement, only: DES_POS_NEW, DES_VEL_NEW, DES_USR_VAR
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
       use des_thermo, only: DES_T_s_NEW
       use discretelement, only: DES_RADIUS
       use discretelement, only: USE_COHESION, PostCohesive
@@ -146,7 +147,9 @@
 
       CALL VTP_WRITE_DATA('Diameter', 2.0d0*DES_RADIUS)
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
-      CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
+
+      IF(DES_USR_VAR_SIZE > 0) &
+         CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
       IF(ENERGY_EQ) &
