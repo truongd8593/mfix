@@ -226,9 +226,7 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
             A_W_G(IJK,E)  = D_F - MIN(ZERO,Flux)
-!$omp atomic write
             A_W_G(IPJK,W)  = D_F + MAX(ZERO,Flux)
 !
 !           North face (i, j+1/2, k+1/2)
@@ -249,9 +247,7 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
             A_W_G(IJK,N)  = D_F - MIN(ZERO,Flux)
-!$omp atomic write
             A_W_G(IJPK,S)  = D_F + MAX(ZERO,Flux)
 !
 !           Top face (i, j, k+1)
@@ -270,9 +266,7 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
                A_W_G(IJK,T)  = D_F - MIN(ZERO,Flux)
-!$omp atomic write
                A_W_G(IJKP,B)  = D_F + MAX(ZERO,Flux)
 !
 !           West face (i-1/2, j, k+1/2)
@@ -299,7 +293,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
                A_W_G(IJK,W)  = D_F + MAX(ZERO,Flux)
             ENDIF
 !
@@ -327,7 +320,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
                A_W_G(IJK,S)  = D_F + MAX(ZERO,Flux)
             ENDIF
 !
@@ -351,7 +343,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-!$omp atomic write
                A_W_G(IJK,B)  = D_F + MAX(ZERO,Flux)
             ENDIF
          ENDIF
