@@ -184,12 +184,17 @@
 !     Fluid phase
       M = 0
 
-!!!$omp      parallel do                                                  &
-!!!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,     &
-!!!$omp&                    IJKNE, IJKP, IJKT, IJKTE, D_f,   &
-!!!$omp&                    IMJK, IM, IJKW,                               &
-!!!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,                 &
-!!!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE)
+!$omp     parallel do default(none)                                &
+!$omp     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN, &
+!$omp             IJKNE, IJKP, IJKT, IJKTE, D_f,                   &
+!$omp             IMJK, IM, IJKW,                                  &
+!$omp             IJMK, JM, IPJMK, IJKS, IJKSE,                    &
+!$omp             IJKM, KM, IPJKM, IJKB, IJKBE,VELW,HW,AW) &
+!$omp     shared(i_of,j_of,k_of,ip1,cut_u_treatment_at, &
+!$omp            theta_ue_bar,flux_ge,theta_ue,flux,alpha_ue_c, &
+!$omp            mu_gt,oneodx_e_u,ayz_u,odx,theta_u_nw,flux_gn,theta_u_ne,alpha_un_c, &
+!$omp            oneody_n_u,axz_u,axy_u,ody_n,do_k,theta_u_tw,flux_gt,theta_u_te,     &
+!$omp            alpha_ut_c,ox_e,oneodz_t_u,odz_t,im1,jm1,km1,a_u_g)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_E(IJK)) THEN
@@ -225,14 +230,10 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF (Flux >= ZERO) THEN
-               A_U_G(IJK,E) = D_F
-               A_U_G(IPJK,W) = D_F + Flux
-            ELSE
-               A_U_G(IJK,E) = D_F - Flux
-               A_U_G(IPJK,W) = D_F
-            ENDIF
-!
+!$omp atomic write
+            A_U_G(IJK,E)  = D_F - MIN(ZERO,Flux)
+!$omp atomic write
+            A_U_G(IJK,E)  = D_F + MAX(ZERO,Flux)
 !
 !           North face (i+1/2, j+1/2, k)
 !=======================================================================
@@ -252,13 +253,10 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            IF (Flux >= ZERO) THEN
-               A_U_G(IJK,N) = D_F
-               A_U_G(IJPK,S) = D_F + Flux
-            ELSE
-               A_U_G(IJK,N) = D_F - Flux
-               A_U_G(IJPK,S) = D_F
-            ENDIF
+!$omp atomic write
+            A_U_G(IJK,N)  = D_F - MIN(ZERO,Flux)
+!$omp atomic write
+            A_U_G(IJPK,S) = D_F + MAX(ZERO,Flux)
 !
 !           Top face (i+1/2, j, k+1/2)
             IF (DO_K) THEN
@@ -282,15 +280,11 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_U_G(IJK,T) = D_F
-                  A_U_G(IJKP,B) = D_F + Flux
-               ELSE
-                  A_U_G(IJK,T) = D_F - Flux
-                  A_U_G(IJKP,B) = D_F
-               ENDIF
+!$omp atomic write
+               A_U_G(IJK,T)  = D_F - MIN(ZERO,Flux)
+!$omp atomic write
+               A_U_G(IJKP,B) = D_F + MAX(ZERO,Flux)
             ENDIF
-!
 !
 !           West face (i, j, k)
             IMJK = IM_OF(IJK)
@@ -312,11 +306,8 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_U_G(IJK,W) = D_F + Flux
-               ELSE
-                  A_U_G(IJK,W) = D_F
-               ENDIF
+!$omp atomic write
+               A_U_G(IJK,W)  = D_F + MAX(ZERO,Flux)
             ENDIF
 !
 !           South face (i+1/2, j-1/2, k)
@@ -343,11 +334,8 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_U_G(IJK,S) = D_F + Flux
-               ELSE
-                  A_U_G(IJK,S) = D_F
-               ENDIF
+!$omp atomic write
+               A_U_G(IJK,S)  = D_F + MAX(ZERO,Flux)
             ENDIF
 !
 !           Bottom face (i+1/2, j, k-1/2)
@@ -377,17 +365,14 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-                  IF (Flux >= ZERO) THEN
-                     A_U_G(IJK,B) = D_F + Flux
-                  ELSE
-                     A_U_G(IJK,B) = D_F
-                  ENDIF
+!$omp atomic write
+                  A_U_G(IJK,B)  = D_F + MAX(ZERO,Flux)
                ENDIF
             ENDIF
 !
          ENDIF
       END DO
-
+!$omp end parallel do
 
       RETURN
       END SUBROUTINE STORE_A_U_G0
