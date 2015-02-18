@@ -1,68 +1,48 @@
-!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_CELL (RMIN, REACTOR_LOC,D_DIR,N_DIR,CELL_LOC)     C
-!  Purpose: calculate the cell index for a reactor location            C
+!  Subroutine name: CALC_CELL                                          C
+!  Purpose: calculate the i, j or k cell index for the corresponding   C
+!     x y or z reactor location. the index returned depends on which   C
+!     half of the i, j or k cell that the x, y, or z position          C
+!     intersects                                                       C
 !                                                                      C
 !  Author: P. Nicoletti                               Date: 02-DEC-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:  None                                         C
-!  Variables modified: None                                            C
-!                                                                      C
-!  Local variables: LC, CELL_START, CELL_END                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
       SUBROUTINE CALC_CELL(RMIN, REACTOR_LOC, D_DIR, N_DIR, CELL_LOC)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE param1, only : half
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-!
-! passed arguments
-!
-!    RMIN       - starting value of the axis -- XMIN need not be zero,
-!                   YMIN and ZMIN are assumed to be zero
-!
-!    REACTOR_LOC - location along one of the axis for which the cell
-!                  index is to be found
-!    D_DIR       - cell lengths (DX,DY,DZ)
-!    N_DIR       - number of cells in this direction (IMAX,JMAX,KMAX)
-!    CELL_LOC    - cell index corresponding to REACTOR_LOC
-!
-! local variables
-!    LC         -  loop counter
-!    CELL_START -  start coordinate for cell
-!    CELL_END   -  end   coordinate for cell
-      INTEGER N_DIR, CELL_LOC
-      DOUBLE PRECISION RMIN, REACTOR_LOC
-
-      DOUBLE PRECISION, DIMENSION(0:(N_DIR+3)) :: D_DIR
+! the starting value of the x, y or z axis for which the i, j or k cell
+! index is to be found -- XMIN need not be zero, however, YMIN and ZMIN
+! are assumed to be zero.
+      DOUBLE PRECISION, INTENT(IN) :: RMIN
+! the x, y or z location along the axis for which the cell index (i, j
+! or k) is to be found
+      DOUBLE PRECISION, INTENT(IN) :: REACTOR_LOC
+! number of cells in the corresponding direction (IMAX, JMAX, or KMAX)
+      INTEGER, INTENT(IN) :: N_DIR
+! the cell lengths along the corresponding axis (DX, DY or DZ)
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(0:(N_DIR+3)) :: D_DIR
+! the i, j, or k cell index that corresponds to the x, y or z
+! reactor_location (calculated value)
+      INTEGER, INTENT(INOUT) :: CELL_LOC
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
+! loop counter
       INTEGER :: LC
+! start and end coordinate for cell
       DOUBLE PRECISION :: CELL_START, CELL_END
 !-----------------------------------------------
-!
+
       CELL_LOC = -1
       CELL_START = RMIN
       DO LC = 2, N_DIR + 1
@@ -70,57 +50,56 @@
          IF (REACTOR_LOC <= CELL_START + HALF*D_DIR(LC)) THEN
             CELL_LOC = LC - 1
             RETURN
-         ELSE IF (REACTOR_LOC <= CELL_END + HALF*D_DIR(LC+1)) THEN
+         ELSEIF (REACTOR_LOC <= CELL_END + HALF*D_DIR(LC+1)) THEN
             CELL_LOC = LC
             RETURN
          ENDIF
          CELL_START = CELL_END
-      END DO
+      ENDDO
       RETURN
       END SUBROUTINE CALC_CELL
-!
-!
-! calculate reactor location from cell index
-!
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine name: CALC_LOC                                           C
+!  Purpose: calculate the x, y, or z position corresponding to the     C
+!     given i, j or k cell index. this call returns the x, y or z      C
+!     position corresponding to the east, north or top face of the     C
+!     cell with the given i, j or k index.                             C
+!                                                                      C
+!  Author: P. Nicoletti                               Date: 02-DEC-91  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
       SUBROUTINE CALC_LOC(RMIN, D_DIR, CELL_LOC, REACTOR_LOC)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
+
 !-----------------------------------------------
-!   M o d u l e s
+! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
       IMPLICIT NONE
 !-----------------------------------------------
-!   D u m m y   A r g u m e n t s
+! Dummy arguments
 !-----------------------------------------------
-!
-! passed arguments
-!    RMIN       - starting value of the axis -- XMIN need not be zero,
-!                   YMIN and ZMIN are assumed to be zero
-!
-!    REACTOR_LOC - location along one of the axis for which the cell
-!                  index is to be found
-!    D_DIR       - cell lengths (DX,DY,DZ)
-!    CELL_LOC    - cell index corresponding to REACTOR_LOC
-!
-! local variables
-!    LC         -  loop counter
-!
-      INTEGER CELL_LOC
-      DOUBLE PRECISION RMIN, REACTOR_LOC
-
-      DOUBLE PRECISION, DIMENSION(0:CELL_LOC) :: D_DIR
-!
+! the starting value of the x, y or z axis for which the x, y or z
+! position is to be found -- XMIN need not be zero, however, YMIN and
+! ZMIN are assumed to be zero.
+      DOUBLE PRECISION, INTENT(IN) :: RMIN
+! the cell lengths along the corresponding axis (DX, DY or DZ)
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(0:CELL_LOC) :: D_DIR
+! the i, j, or k cell index that corresponds to the x, y or z
+! reactor_location to be found
+      INTEGER, INTENT(IN) :: CELL_LOC
+! the x, y or z location along the axis that corresponds to the i, j
+! k cell index  (calculated value)
+      DOUBLE PRECISION, INTENT(INOUT) :: REACTOR_LOC
 !-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
+! Local variables
 !-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
+! loop counter
       INTEGER :: LC
 !-----------------------------------------------
-!
+
       REACTOR_LOC = RMIN
       LC = 2
       IF (CELL_LOC - 1 > 0) THEN
@@ -130,8 +109,6 @@
       RETURN
       END SUBROUTINE CALC_LOC
 
-!// Comments on the modifications for DMP version implementation
-!// 100 EFD Replaced inheritance based dimensioning of arrays, i.e. D_DIR(*)
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
