@@ -230,8 +230,14 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            A_U_G(IJK,E)  = D_F - MIN(ZERO,Flux)
-            A_U_G(IPJK,W)  = D_F + MAX(ZERO,Flux)
+            IF (Flux >= ZERO) THEN
+               A_U_G(IJK,E) = D_F
+               A_U_G(IPJK,W) = D_F + Flux
+            ELSE
+               A_U_G(IJK,E) = D_F - Flux
+               A_U_G(IPJK,W) = D_F
+            ENDIF
+!
 !
 !           North face (i+1/2, j+1/2, k)
 !=======================================================================
@@ -251,8 +257,13 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-            A_U_G(IJK,N)  = D_F - MIN(ZERO,Flux)
-            A_U_G(IJPK,S) = D_F + MAX(ZERO,Flux)
+            IF (Flux >= ZERO) THEN
+               A_U_G(IJK,N) = D_F
+               A_U_G(IJPK,S) = D_F + Flux
+            ELSE
+               A_U_G(IJK,N) = D_F - Flux
+               A_U_G(IJPK,S) = D_F
+            ENDIF
 !
 !           Top face (i+1/2, j, k+1/2)
             IF (DO_K) THEN
@@ -276,9 +287,15 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               A_U_G(IJK,T)  = D_F - MIN(ZERO,Flux)
-               A_U_G(IJKP,B) = D_F + MAX(ZERO,Flux)
+               IF (Flux >= ZERO) THEN
+                  A_U_G(IJK,T) = D_F
+                  A_U_G(IJKP,B) = D_F + Flux
+               ELSE
+                  A_U_G(IJK,T) = D_F - Flux
+                  A_U_G(IJKP,B) = D_F
+               ENDIF
             ENDIF
+!
 !
 !           West face (i, j, k)
             IMJK = IM_OF(IJK)
@@ -300,7 +317,11 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               A_U_G(IJK,W)  = D_F + MAX(ZERO,Flux)
+               IF (Flux >= ZERO) THEN
+                  A_U_G(IJK,W) = D_F + Flux
+               ELSE
+                  A_U_G(IJK,W) = D_F
+               ENDIF
             ENDIF
 !
 !           South face (i+1/2, j-1/2, k)
@@ -327,7 +348,11 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-               A_U_G(IJK,S)  = D_F + MAX(ZERO,Flux)
+               IF (Flux >= ZERO) THEN
+                  A_U_G(IJK,S) = D_F + Flux
+               ELSE
+                  A_U_G(IJK,S) = D_F
+               ENDIF
             ENDIF
 !
 !           Bottom face (i+1/2, j, k-1/2)
@@ -357,7 +382,11 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-                  A_U_G(IJK,B)  = D_F + MAX(ZERO,Flux)
+                  IF (Flux >= ZERO) THEN
+                     A_U_G(IJK,B) = D_F + Flux
+                  ELSE
+                     A_U_G(IJK,B) = D_F
+                  ENDIF
                ENDIF
             ENDIF
 !
