@@ -92,7 +92,11 @@
 
 ! Calculate convection-diffusion fluxes through each of the faces
 
-!!$omp    parallel do private(IJK, IMJK, IJMK, IJKM, M)
+!$omp parallel default(none) &
+!$omp          private(IJK, IMJK, IJMK, IJKM, M, bma,bme,bmw,bmn,bms,bmt,bmb,bmr,cartesian_grid,line)  &
+!$omp          shared(ijkstart3,ijkend3,rop_g,rop_go,rop_s,rop_so,vol,odt,u_g,v_g,w_g,u_s,v_s,w_s,b_m, &
+!$omp                 b_mmax,d_e,d_n,d_t,a_m,a_upg_e,a_vpg_n,a_wpg_t,mmax,close_packed,sum_r_s,sum_r_g,ro_g0)
+!$omp do
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
             IMJK = IM_OF(IJK)
@@ -189,6 +193,7 @@
             B_M(IJK,0) = ZERO
          ENDIF   ! end if/else branch fluid_at(ijk)
       ENDDO    ! end do loop (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
 
 ! loezos
