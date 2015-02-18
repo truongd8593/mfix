@@ -419,7 +419,9 @@
       use fldvar, only      : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
                               t_g, t_s, ep_g, rop_s, theta_m
       use mms               ! all variables
-      use usr, only         : tecplot_output, raw_output, delta_p_g
+      use usr, only         : tecplot_output, raw_output, tec_cellc, &
+                              tec_no_k
+      use usr, only         : delta_p_g
       use param1, only      : half
       use mpi_utility, only : gather
       IMPLICIT NONE
@@ -429,7 +431,7 @@
         integer             :: imjk, ijmk, ijkm
 
 ! file units
-        integer             :: fcc, fs, fvx, fvy, fvz
+        integer             :: fcc, ftcc, fs, fvx, fvy, fvz
 
 ! arrays to gather variables
         double precision, allocatable :: arr_Pg(:)
@@ -465,8 +467,9 @@
         double precision              :: xt, yt, zt
 
 ! x,y,z coordinate variables (3D arrays)
-!        double precision, dimension(1:imax+1,1:jmax+1,1:kmax+1) :: &
-!                                          x_tmp, y_tmp, z_tmp
+        double precision, &
+          dimension(imin2:imax1,jmin2:jmax1,kmin2:kmax1)  :: &
+                                          x_tmp, y_tmp, z_tmp
 
 ! output variables (3D arrays)
         double precision, &
@@ -553,7 +556,7 @@
 ! We calculate and output cell-centered data at the cell-centers
 ! locations.  Otheriwse, when cell-centered data is outputted with
 ! VARLOCATION=CELLCENTERED option, tecplot does inaccurate interpolation
-! near the boundary cells.  So current version is only useful for
+! near the boundary cells.  So current version is useful for
 ! plotting all variables in a single file but it is not the traditional
 ! tecplot cell-centered data file.
 
@@ -574,16 +577,16 @@
 !          &17,18,19,20,21,22,23,24,25,26,27]=CELLCENTERED)"
 
 ! create 3D arrays (mesh nodes)
-!          do k = 1, kmax+1
-!          do j = 1, jmax+1
-!          do i = 1, imax+1
-!             ijk = funijk_gl(i,j,k)
-!             X_tmp(I,J,K) = arr_xtr(IJK)
-!             Y_tmp(I,J,K) = arr_ytr(IJK)
-!             Z_tmp(I,J,K) = arr_ztr(IJK)
-!          end do
-!          end do
-!          end do
+          do k = kmin2, kmax1
+          do j = jmin2, jmax1
+          do i = imin2, imax1
+             ijk = funijk_gl(i,j,k)
+             x_tmp(I,J,K) = arr_xtr(IJK)
+             y_tmp(I,J,K) = arr_ytr(IJK)
+             z_tmp(I,J,K) = arr_ztr(IJK)
+          end do
+          end do
+          end do
 
 ! create 3D arrays (solution variables)
           do k = kmin1, kmax1
@@ -593,7 +596,11 @@
             ijk = funijk_gl(i,j,k)
             imjk = funijk_gl(i-1,j,k)
             ijmk = funijk_gl(i,j-1,k)
-            ijkm = funijk_gl(i,j,k-1)
+            if(tec_no_k) then
+              ijkm = funijk_gl(i,j,k)
+            else
+              ijkm = funijk_gl(i,j,k-1)
+            end if
 
             Pg_tmp(i,j,k) = arr_Pg(IJK) - delta_p_g
             MMSPg_tmp(i,j,k) = arr_MMSPg(IJK)
@@ -635,7 +642,7 @@
           end do
           end do
 
-! write cell-centered data to output file
+! write all data at cell-centers to output file
           do k = kmin1, kmax1
           do j = jmin1, jmax1
           do i = imin1, imax1
@@ -665,6 +672,140 @@
           end do
 
           close(fcc)
+
+! write true tecplot cell-centered data
+! This is the traditional tecplot cell-centered data. Be aware while
+! using contour plots which could do inaccurate interpolation near the
+! boundaries. It's better to use tecplot's "primary flood" with this
+! option.
+          if(tec_cellc) then
+            open(unit=newunit(ftcc), file="solution_tec_cellc.dat", &
+                                      status='unknown')
+            write(ftcc,"(27a)") 'variables = "x""y""z"&
+                &"Pg""Ug""Vg""Wg""Us""Vs""Ws"&
+                &"Tg""Ts""Epg""Rops""Ths"&
+                &"MMSPg""MMSUg""MMSVg""MMSWg"&
+                &"MMSUs""MMSVs""MMSWs"&
+                &"MMSTg""MMSTs""MMSEpg""MMSRops""MMSThs"'
+            write(ftcc,*) 'zone T="',0,'" '
+            write(ftcc,*) 'I=',IMAX1,' J=',JMAX1,' K=',KMAX1
+
+            write(ftcc,*) 'DATAPACKING=BLOCK'
+            write(ftcc,*) "VARLOCATION=([4,5,6,7,8,9,10,11,12,13,14,15,&
+            &16,17,18,19,20,21,22,23,24,25,26,27]=CELLCENTERED)"
+
+            ! x coordinates
+            write(ftcc,*) &
+            (((x_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+
+            ! y coordinates
+            write(ftcc,*) &
+            (((y_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+
+            ! z coordinates
+            write(ftcc,*) &
+            (((z_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+
+            ! solution variables
+            write(ftcc,*) &
+            (((Pg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Ug_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Vg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Wg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Us_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Vs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Ws_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Tg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Ts_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Epg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Rops_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((Ths_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSPg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSUg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSVg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSWg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSUs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSVs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSWs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSTg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSTs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSEpg_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSRops_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            write(ftcc,*) &
+            (((MMSThs_tmp(i,j,k), &
+              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+
+            close(ftcc)
+
+          end if
 
 ! Output data where calculated:
 ! i.e., at cell centers for scalar variables, and

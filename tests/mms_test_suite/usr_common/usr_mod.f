@@ -18,15 +18,20 @@
 !                       a dummy variable listed in usrnlst.inc
         DOUBLE PRECISION DUMMY_DP
 
+! set .true. if 2D flow in XY plane only
+        logical                               :: tec_no_k = .true.
 
-! set to true for writing out tecplot data        
-        logical                               :: tecplot_output=.false.
+! set .true. for writing out tecplot data
+        logical                               :: tecplot_output=.true.
 
 ! set .true. if raw output (where calculated) is desired
-        logical                               :: raw_output = .false.
-        
+        logical                               :: raw_output = .true.
 
-! temporary array for discretization error: de = p_g - mms_p_g ; etc.        
+! set .true. for writing out tecplot data in a traditional cell-centered
+! format:
+        logical                               :: tec_cellc = .true.
+
+! temporary array for discretization error: de = p_g - mms_p_g ; etc.
         double precision, allocatable         :: de_ep_g(:)
         double precision, allocatable         :: de_p_g(:)
         double precision, allocatable         :: de_u_g(:)
@@ -43,16 +48,16 @@
 
 ! norms of discretization errors
         double precision, allocatable         :: lnorms_ep_g(:)
-        double precision, allocatable         :: lnorms_p_g(:)          
-        double precision, allocatable         :: lnorms_u_g(:)       
-        double precision, allocatable         :: lnorms_v_g(:) 
-        double precision, allocatable         :: lnorms_w_g(:) 
-        double precision, allocatable         :: lnorms_t_g(:) 
-        double precision, allocatable         :: lnorms_rop_s(:) 
-        double precision, allocatable         :: lnorms_u_s(:) 
-        double precision, allocatable         :: lnorms_v_s(:) 
-        double precision, allocatable         :: lnorms_w_s(:) 
-        double precision, allocatable         :: lnorms_t_s(:) 
+        double precision, allocatable         :: lnorms_p_g(:)
+        double precision, allocatable         :: lnorms_u_g(:)
+        double precision, allocatable         :: lnorms_v_g(:)
+        double precision, allocatable         :: lnorms_w_g(:)
+        double precision, allocatable         :: lnorms_t_g(:)
+        double precision, allocatable         :: lnorms_rop_s(:)
+        double precision, allocatable         :: lnorms_u_s(:)
+        double precision, allocatable         :: lnorms_v_s(:)
+        double precision, allocatable         :: lnorms_w_s(:)
+        double precision, allocatable         :: lnorms_t_s(:)
         double precision, allocatable         :: lnorms_theta_m(:)
 
 
