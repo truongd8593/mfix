@@ -784,15 +784,14 @@
       MAX_RESID = -ONE
       NCELLS = 0
 
-!!$omp parallel do private( IJK )
+!$omp  parallel default(none) &
+!$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!$omp           VEL,  NUM1, DEN1,EPSA) &
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
-          RESID_IJK(IJK) = ZERO
-      ENDDO
+        RESID_IJK(IJK) = ZERO
 
-!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!!$omp&   NUM1, DEN1,VEL) &
-!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )
-      DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
 ! Skip walls where some values are undefined.
@@ -836,6 +835,7 @@
             ENDIF
          ENDIF
       ENDDO
+!$omp end parallel
 
       IF(.not.debug_resid) RETURN
 
@@ -984,15 +984,14 @@
       MAX_RESID = -ONE
       NCELLS = 0
 
-!!$omp parallel do private( IJK )
+!$omp  parallel default(none) &
+!$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!$omp           VEL,  NUM1, DEN1,EPSA) &
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
-          RESID_IJK(IJK) = ZERO
-      ENDDO
+        RESID_IJK(IJK) = ZERO
 
-!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!!$omp&  VEL,  NUM1, DEN1) &
-!!$omp&  REDUCTION(+:NUM, DEN, NCELLS)
-      DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
 ! Skip walls where some values are undefined.
@@ -1037,6 +1036,7 @@
             ENDIF
          ENDIF
       ENDDO
+!$omp end parallel
 
       if(.not.debug_resid) return
 
@@ -1188,20 +1188,18 @@
       MAX_RESID = -ONE
       NCELLS = 0
 
-!!$omp parallel do private( IJK )
+!$omp  parallel default(none) &
+!$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
+!$omp           VEL,  NUM1, DEN1,EPSA) &
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
-          RESID_IJK(IJK) = ZERO
-      ENDDO
+        RESID_IJK(IJK) = ZERO
 
-!!$omp  parallel do private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
-!!$omp&  VEL,  NUM1, DEN1) &
-!!$omp&  REDUCTION(+:NUM, DEN,NCELLS )
-      DO IJK = ijkstart3, ijkend3
         IF(.NOT.IS_ON_myPE_wobnd(I_OF(IJK),J_OF(IJK), K_OF(IJK))) CYCLE
 
 ! Skip walls where some values are undefined.
         IF(WALL_AT(IJK)) cycle
-
 
          if(m/=0) then
             EPSA = AVG_Z(EP_S(IJK,M),EP_S(TOP_OF(IJK),M),K_OF(IJK))
@@ -1241,6 +1239,7 @@
             ENDIF
          ENDIF
       ENDDO
+!$omp end parallel
 
       if(.not.debug_resid) return
 
