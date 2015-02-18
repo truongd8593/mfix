@@ -237,7 +237,7 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
             A_V_G(IJK,E)  = D_F - MIN(ZERO,Flux)
-            A_V_G(IPJK,W)  = D_F + MAX(ZERO,Flux)
+            A_V_G(IPJK,W) = D_F + MAX(ZERO,Flux)
 !
 !           North face (i, j+1, k)
 !=======================================================================
