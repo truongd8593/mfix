@@ -85,11 +85,11 @@
 ! position is to be found -- XMIN need not be zero, however, YMIN and
 ! ZMIN are assumed to be zero.
       DOUBLE PRECISION, INTENT(IN) :: RMIN
-! the cell lengths along the corresponding axis (DX, DY or DZ)
-      DOUBLE PRECISION, INTENT(IN), DIMENSION(0:CELL_LOC) :: D_DIR
 ! the i, j, or k cell index that corresponds to the x, y or z
 ! reactor_location to be found
       INTEGER, INTENT(IN) :: CELL_LOC
+! the cell lengths along the corresponding axis (DX, DY or DZ)
+      DOUBLE PRECISION, INTENT(IN), DIMENSION(0:CELL_LOC) :: D_DIR
 ! the x, y or z location along the axis that corresponds to the i, j
 ! k cell index  (calculated value)
       DOUBLE PRECISION, INTENT(INOUT) :: REACTOR_LOC
