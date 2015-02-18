@@ -8,16 +8,40 @@
 !           data.  This routine is not called from an IJK loop, hence  C
 !           all indices are undefined.                                 C
 !                                                                      C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
       SUBROUTINE USR0
-
-      use discretelement, only: DTSOLID
-
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+      Use usr
       IMPLICIT NONE
-
-! Set the solids time step to the value specified
-      DTSOLID = 4.0d-5
-
+!-----------------------------------------------
+!
+!  Include files defining common blocks here
+!
+!
+!  Define local variables here
+!
+!
+!  Include files defining statement functions here
+!
+!
+!  Insert user-defined code here
+!
       RETURN
       END SUBROUTINE USR0
