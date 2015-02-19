@@ -419,8 +419,8 @@
       use fldvar, only      : p_g, u_g, v_g, w_g, u_s, v_s, w_s, &
                               t_g, t_s, ep_g, rop_s, theta_m
       use mms               ! all variables
-      use usr, only         : tecplot_output, raw_output, tec_cellc, &
-                              tec_no_k
+      use usr, only         : tec_output_point, tec_output_block, &
+                              tec_output_raw, tec_no_k
       use usr, only         : delta_p_g
       use param1, only      : half
       use mpi_utility, only : gather
@@ -551,32 +551,9 @@
 ! write out data from PE_IO processor
         if(myPE==PE_IO) then
 
-! write cell centered data
+! create 3D arrays for cell-centered data
 
-! We calculate and output cell-centered data at the cell-centers
-! locations.  Otheriwse, when cell-centered data is outputted with
-! VARLOCATION=CELLCENTERED option, tecplot does inaccurate interpolation
-! near the boundary cells.  So current version is useful for
-! plotting all variables in a single file but it is not the traditional
-! tecplot cell-centered data file.
-
-          open(unit=newunit(fcc), file="solution_cellc.dat", &
-                                  status='unknown')
-          write(fcc,"(27a)") 'variables = "x""y""z"&
-                &"Pg""Ug""Vg""Wg""Us""Vs""Ws"&
-                &"Tg""Ts""Epg""Rops""Ths"&
-                &"MMSPg""MMSUg""MMSVg""MMSWg"&
-                &"MMSUs""MMSVs""MMSWs"&
-                &"MMSTg""MMSTs""MMSEpg""MMSRops""MMSThs"'
-          write(fcc,*) 'zone T="',0,'" '
-          write(fcc,*) 'I=',IMAX,' J=',JMAX,' K=',KMAX
-
-!**** for getting cell centered data:
-!          write(fcc,*) 'DATAPACKING=BLOCK'
-!          write(fcc,*) "VARLOCATION=([4,5,6,7,8,9,10,11,12,13,14,15,16,&
-!          &17,18,19,20,21,22,23,24,25,26,27]=CELLCENTERED)"
-
-! create 3D arrays (mesh nodes)
+! create 3D arrays for mesh nodes
           do k = kmin2, kmax1
           do j = jmin2, jmax1
           do i = imin2, imax1
@@ -588,7 +565,7 @@
           end do
           end do
 
-! create 3D arrays (solution variables)
+! create 3D arrays for solution variables at cell-centers
           do k = kmin1, kmax1
           do j = jmin1, jmax1
           do i = imin1, imax1
@@ -642,45 +619,71 @@
           end do
           end do
 
+! write the cell centered data in point format
+! Here, we calculate and output cell-centered data at the cell-centers
+! locations.  Otheriwse, when cell-centered data is outputted with
+! VARLOCATION=CELLCENTERED option, tecplot does inaccurate interpolation
+! near the boundary cells.  So this is not the traditional
+! tecplot cell-centered data file.
+          
+          if(tec_output_point) then
+
+            open(unit=newunit(fcc), file="solution_tec_point.dat", &
+                                    status='unknown')
+            write(fcc,"(27a)") 'variables = "x""y""z"&
+                  &"Pg""Ug""Vg""Wg""Us""Vs""Ws"&
+                  &"Tg""Ts""Epg""Rops""Ths"&
+                  &"MMSPg""MMSUg""MMSVg""MMSWg"&
+                  &"MMSUs""MMSVs""MMSWs"&
+                  &"MMSTg""MMSTs""MMSEpg""MMSRops""MMSThs"'
+            write(fcc,*) 'zone T="',0,'" '
+            write(fcc,*) 'I=',IMAX,' J=',JMAX,' K=',KMAX
+
+
 ! write all data at cell-centers to output file
-          do k = kmin1, kmax1
-          do j = jmin1, jmax1
-          do i = imin1, imax1
+            do k = kmin1, kmax1
+            do j = jmin1, jmax1
+            do i = imin1, imax1
 
-            ijk = funijk_gl(i,j,k)
+              ijk = funijk_gl(i,j,k)
 
-            xt = arr_xtr(ijk) - dx(i)*half
-            yt = arr_ytr(ijk) - dy(j)*half
-            zt = arr_ztr(ijk) - dz(k)*half
+              xt = arr_xtr(ijk) - dx(i)*half
+              yt = arr_ytr(ijk) - dy(j)*half
+              zt = arr_ztr(ijk) - dz(k)*half
 
-            write(fcc,*) xt, yt, zt, &
-              Pg_tmp(i,j,k), &
-              Ug_tmp(i,j,k), Vg_tmp(i,j,k), Wg_tmp(i,j,k),&
-              Us_tmp(i,j,k), Vs_tmp(i,j,k), Ws_tmp(i,j,k),&
-              Tg_tmp(i,j,k), Ts_tmp(i,j,k), &
-              Epg_tmp(i,j,k), Rops_tmp(i,j,k),&
-              Ths_tmp(i,j,k), &
-              MMSPg_tmp(i,j,k), &
-              MMSUg_tmp(i,j,k), MMSVg_tmp(i,j,k), MMSWg_tmp(i,j,k),&
-              MMSUs_tmp(i,j,k), MMSVs_tmp(i,j,k), MMSWs_tmp(i,j,k),&
-              MMSTg_tmp(i,j,k), MMSTs_tmp(i,j,k), &
-              MMSEpg_tmp(i,j,k), MMSRops_tmp(i,j,k),&
-              MMSThs_tmp(i,j,k)
+              write(fcc,*) xt, yt, zt, &
+                Pg_tmp(i,j,k), &
+                Ug_tmp(i,j,k), Vg_tmp(i,j,k), Wg_tmp(i,j,k),&
+                Us_tmp(i,j,k), Vs_tmp(i,j,k), Ws_tmp(i,j,k),&
+                Tg_tmp(i,j,k), Ts_tmp(i,j,k), &
+                Epg_tmp(i,j,k), Rops_tmp(i,j,k),&
+                Ths_tmp(i,j,k), &
+                MMSPg_tmp(i,j,k), &
+                MMSUg_tmp(i,j,k), MMSVg_tmp(i,j,k), MMSWg_tmp(i,j,k),&
+                MMSUs_tmp(i,j,k), MMSVs_tmp(i,j,k), MMSWs_tmp(i,j,k),&
+                MMSTg_tmp(i,j,k), MMSTs_tmp(i,j,k), &
+                MMSEpg_tmp(i,j,k), MMSRops_tmp(i,j,k),&
+                MMSThs_tmp(i,j,k)
 
-          end do
-          end do
-          end do
+            end do
+            end do
+            end do
 
-          close(fcc)
+            close(fcc)
 
-! write true tecplot cell-centered data
-! This is the traditional tecplot cell-centered data. Be aware while
+          end if ! end of if(tec_output_point)
+
+! write true tecplot cell-centered data (block format)
+! This is the traditional tecplot cell-centered data. Be wary while
 ! using contour plots which could do inaccurate interpolation near the
 ! boundaries. It's better to use tecplot's "primary flood" with this
 ! option.
-          if(tec_cellc) then
-            open(unit=newunit(ftcc), file="solution_tec_cellc.dat", &
+
+          if(tec_output_block) then
+
+            open(unit=newunit(ftcc), file="solution_tec_block.dat", &
                                       status='unknown')
+
             write(ftcc,"(27a)") 'variables = "x""y""z"&
                 &"Pg""Ug""Vg""Wg""Us""Vs""Ws"&
                 &"Tg""Ts""Epg""Rops""Ths"&
@@ -805,12 +808,14 @@
 
             close(ftcc)
 
-          end if
+          end if  ! end of if(tec_output_block)
 
 ! Output data where calculated:
 ! i.e., at cell centers for scalar variables, and
 !       at face centers for vector variables
-          if(raw_output) then
+! This is useful for debugging
+
+          if(tec_output_raw) then
 
 ! output scalar variables
             open(unit=newunit(fs), file="solution_scalar.dat", &
