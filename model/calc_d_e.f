@@ -202,6 +202,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,i,ijke,epga,sum_vxf_gs,epsa,lm,sum_vxf_ss,den_mgas,num_mgas,tmpdp,num_msol_lgas,den_msol_lgas,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_e,mmax,cartesian_grid,ayz,i_of,ep_g,vxf_gs,vxf_ss,momentum_x_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = ijkstart3, ijkend3
 
          IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN
@@ -343,6 +347,7 @@
          ENDIF    !end if/else branch Model_B/Model_A
 
       ENDDO  ! end do loop (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_E_GAS_AND_SOLIDS
@@ -429,6 +434,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,i,ijke,epga,sum_vxf_gs,tmpdp) &
+!$omp          shared(ijkstart3,ijkend3,d_e,mmax,cartesian_grid,ayz,i_of,ep_g,vxf_gs,am0,model_b,p_scale,qmomk,vol_u,qmomk_f_gs)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
 
          IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK)) THEN   !impermeable
@@ -469,6 +478,7 @@
          ENDIF
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_E_GAS_ONLY
@@ -567,6 +577,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,i,ijke,epsa,lm,sum_vxf_ss,tmpdp,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_e,mmax,cartesian_grid,ayz,i_of,ep_g,vxf_gs,vxf_ss,momentum_x_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
          IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK) .OR. MODEL_B) THEN
             DO M= 1, MMAX
@@ -637,6 +651,7 @@
             ENDIF
          ENDDO  ! end do (m=1,mmax)
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_E_SOLIDS_ONLY

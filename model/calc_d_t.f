@@ -196,6 +196,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,k,ijkt,epga,sum_vxf_gs,epsa,lm,sum_vxf_ss,den_mgas,num_mgas,tmpdp,num_msol_lgas,den_msol_lgas,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_t,mmax,cartesian_grid,axy,k_of,ep_g,vxf_gs,vxf_ss,momentum_z_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
 
          IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN   !impermeable
@@ -334,6 +338,7 @@
 
          ENDIF    !end if/else branch Model_B/Model_A
       ENDDO  ! end do loop (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_T_GAS_AND_SOLIDS
@@ -422,6 +427,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,k,ijkt,epga,sum_vxf_gs,tmpdp) &
+!$omp          shared(ijkstart3,ijkend3,d_t,mmax,cartesian_grid,axy,k_of,ep_g,vxf_gs,am0,model_b,p_scale,qmomk,vol_w,qmomk_f_gs)
+!$omp do
       DO IJK = ijkstart3, ijkend3
          IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK)) THEN
             D_T(IJK,0) = ZERO
@@ -458,6 +467,7 @@
             D_T(IJK,0) = ZERO
          ENDIF
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_T_GAS_ONLY
@@ -553,6 +563,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,k,ijkt,epsa,lm,sum_vxf_ss,tmpdp,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_t,mmax,cartesian_grid,axy,k_of,ep_g,vxf_gs,vxf_ss,momentum_z_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = ijkstart3, ijkend3
          IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK) .OR. MODEL_B) THEN
             DO M= 1, MMAX
@@ -622,6 +636,7 @@
             ENDIF
          ENDDO  ! end do (m=1,mmax)
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_T_SOLIDS_ONLY
