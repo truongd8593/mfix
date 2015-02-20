@@ -694,119 +694,174 @@
             write(ftcc,*) 'I=',IMAX1,' J=',JMAX1,' K=',KMAX1
 
             write(ftcc,*) 'DATAPACKING=BLOCK'
-            write(ftcc,*) "VARLOCATION=([4,5,6,7,8,9,10,11,12,13,14,15,&
-            &16,17,18,19,20,21,22,23,24,25,26,27]=CELLCENTERED)"
+            write(ftcc,*) "VARLOCATION=([4-27]=CELLCENTERED)"
 
             ! x coordinates
-            write(ftcc,*) &
-            (((x_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+            do k=kmin2,kmax1
+            do j=jmin2,jmax1
+              write(ftcc,*) (x_tmp(i,j,k),i=imin2,imax1)
+            end do
+            end do
 
             ! y coordinates
-            write(ftcc,*) &
-            (((y_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+            do k=kmin2,kmax1
+            do j=jmin2,jmax1
+              write(ftcc,*) (y_tmp(i,j,k),i=imin2,imax1)
+            end do
+            end do
 
             ! z coordinates
-            write(ftcc,*) &
-            (((z_tmp(i,j,k),i=imin2,imax1),j=jmin2,jmax1),k=kmin2,kmax1)
+            do k=kmin2,kmax1
+            do j=jmin2,jmax1
+              write(ftcc,*) (z_tmp(i,j,k),i=imin2,imax1)
+            end do
+            end do
 
             ! solution variables
-            write(ftcc,*) &
-            (((Pg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Pg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Ug_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Ug_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Vg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Vg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Wg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Wg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Us_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Us_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Vs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
 
-            write(ftcc,*) &
-            (((Ws_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Vs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Tg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Ws_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Ts_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Tg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Epg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Ts_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Rops_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Epg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((Ths_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Rops_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSPg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (Ths_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSUg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSPg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSVg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSUg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSWg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSVg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSUs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSWg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSVs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSUs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSWs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSVs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSTg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSWs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSTs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSTg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSEpg_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSTs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSRops_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSEpg_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            write(ftcc,*) &
-            (((MMSThs_tmp(i,j,k), &
-              i=imin1,imax1),j=jmin1,jmax1),k=kmin1,kmax1)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSRops_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
-            close(ftcc)
+            do k=kmin1,kmax1
+            do j=jmin1,jmax1
+              write(ftcc,*) (MMSThs_tmp(i,j,k),i=imin1,imax1)
+            end do
+            end do
 
           end if  ! end of if(tec_output_block)
 
