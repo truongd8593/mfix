@@ -191,11 +191,6 @@
                IF((NTIME >= DES_SPX_TIME) .OR. (NTIME >= TSTOP)&
                   .OR. (NN == FACTOR) ) THEN
                   DES_SPX_TIME =(INT(NTIME/DES_SPX_DT)+1)*DES_SPX_DT
-
-! Granular temperature subroutine should be called/calculated when
-! writing DES data
-                  CALL DES_GRANULAR_TEMPERATURE
-                  IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT
                   CALL WRITE_DES_DATA
                ENDIF
             ENDIF
@@ -229,18 +224,8 @@
 
       IF(CALL_USR) CALL USR3_DES
 
-
 !      CALL DIFFUSE_MEAN_FIELDS
 !      CALL CALC_EPG_DES
-
-! When coupled the granular temperature subroutine is only calculated at end
-! of the current DEM simulation
-      IF(DES_CONTINUUM_COUPLED) THEN
-         CALL DES_GRANULAR_TEMPERATURE()
-         IF (DES_CALC_BEDHEIGHT) CALL CALC_DES_BEDHEIGHT()
-! the call to identify clusters is now done in time_march, uncomment
-! line below to compute clusters each fluid time step.
-      ENDIF
 
 ! When coupled, and if needed, reset the discrete time step accordingly
       IF(DT.LT.DTSOLID_TMP) THEN

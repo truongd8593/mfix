@@ -49,8 +49,17 @@
       ENDIF
 
 ! Invoke at own risk
+
+! Granular temperature subroutine should be called/calculated when
+! writing DES data
+
+      IF (DES_CALC_BEDHEIGHT) THEN
+         CALL CALC_DES_BEDHEIGHT
+         CALL WRITE_DES_BEDHEIGHT
+      ENDIF
+
+      IF (.FALSE.) CALL DES_GRANULAR_TEMPERATURE
       IF (.FALSE.) CALL WRITE_DES_THETA
-      IF (.FALSE.) CALL WRITE_DES_BEDHEIGHT
 
 ! Notify that output was written.
       WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
