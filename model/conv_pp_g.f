@@ -70,8 +70,8 @@
 
 ! Calculate convection fluxes through each of the faces
 
-!!$omp  parallel do private( IJK, IPJK, IJPK, M, AM, IMJK, IJMK, IJKM) &
-!!$omp&  schedule(static)
+!$omp  parallel do default(none) private( IJK, IPJK, IJPK, IJKP, M, AM, IMJK, IJMK, IJKM) &
+!$omp              shared(ijkstart3, ijkend3, rop_ge, rop_gn, rop_gt, axz, axy, ayz, do_k, a_m)
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
             IPJK = IP_OF(IJK)

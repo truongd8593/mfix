@@ -92,7 +92,7 @@ CONTAINS
        SELECT CASE (DISCR)                    !first order upwinding
        CASE (:1)
 
-!!!$omp    parallel do private(IJK)
+!$omp    parallel do default(none) private(IJK) shared(ijkstart3, ijkend3, u, v, w, xsi_e, xsi_n, xsi_t, do_k)
           DO IJK = ijkstart3, ijkend3
              XSI_E(IJK) = XSI_func(U(IJK),ZERO)
              XSI_N(IJK) = XSI_func(V(IJK),ZERO)

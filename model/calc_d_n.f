@@ -197,6 +197,10 @@
 
 !......................................................................!
 
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,j,ijkn,epga,sum_vxf_gs,epsa,lm,sum_vxf_ss,den_mgas,num_mgas,tmpdp,num_msol_lgas,den_msol_lgas,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_n,mmax,cartesian_grid,axz,j_of,ep_g,vxf_gs,vxf_ss,momentum_y_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
          IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN
             D_N(IJK,0:MMAX) = ZERO
@@ -335,6 +339,7 @@
 
          ENDIF    !end if/else branch Model_B/Model_A
       ENDDO  ! end do loop (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_N_GAS_AND_SOLIDS
@@ -421,7 +426,10 @@
 
 !......................................................................!
 
-
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,j,ijkn,epga,sum_vxf_gs,tmpdp) &
+!$omp          shared(ijkstart3,ijkend3,d_n,mmax,cartesian_grid,axz,j_of,ep_g,vxf_gs,am0,model_b,p_scale,qmomk,vol_v,qmomk_f_gs)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
 
          IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK)) THEN
@@ -461,6 +469,7 @@
          ENDIF
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_N_GAS_ONLY
@@ -555,7 +564,10 @@
 
 !......................................................................!
 
-
+!$omp parallel default(none) &
+!$omp          private(ijk,area_face,j,ijkn,epsa,lm,sum_vxf_ss,tmpdp,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
+!$omp          shared(ijkstart3,ijkend3,d_n,mmax,cartesian_grid,axz,j_of,ep_g,vxf_gs,vxf_ss,momentum_y_eq,am0,model_b,p_scale)
+!$omp do
       DO IJK = IJKSTART3, IJKEND3
          IF (IP_AT_N(IJK) .OR. MFLOW_AT_N(IJK) .OR. MODEL_B) THEN
             D_N(IJK,1:MMAX) = ZERO
@@ -621,6 +633,7 @@
             ENDIF
          ENDDO  ! end do (m=1,mmax)
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
+!$omp end parallel
 
       RETURN
       END SUBROUTINE CALC_D_N_SOLIDS_ONLY

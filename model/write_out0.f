@@ -281,7 +281,7 @@
          'Close_Packed')
  1406 FORMAT(6x,I2,4x,A3,5X,G12.5,3x,G12.5,9x,L1)
 
- 1410 FORMAT(/7X,'Number of solids-',I1,' species (NMAX(',I1,')) = ',I3)
+ 1410 FORMAT(/7X,'Number of solids-',I2,' species (NMAX(',I2,')) = ',I3)
 
  1411 FORMAT(9x,'Solid',5x,'Molecular')
  1412 FORMAT(26x,'Density',4x,'Mass Fraction')
@@ -656,14 +656,14 @@
  1138 FORMAT(30X,'(Initial conditions from the input (.DAT) file)')
  1139 FORMAT(30X,'(Initial conditions from the restart (.RES) file)')
  1140 FORMAT(/7X,'* Gas momentum equation-',A,' is',A,'solved.')
- 1141 FORMAT(/7X,'* Solids-',I1,' momentum equation-',A,' is',A,'solved.')
+ 1141 FORMAT(/7X,'* Solids-',I2,' momentum equation-',A,' is',A,'solved.')
  1142 FORMAT(/7X,'* Granular energy equation(s) is solved.')
  1143 FORMAT(/7X,'* Energy equations are solved.')
  1144 FORMAT(/7X,'* Energy equations are NOT solved.')
  1145 FORMAT(/7X,'* Gas Species equations are solved.')
  1146 FORMAT(/7X,'* Gas Species equations are NOT solved.')
- 1147 FORMAT(/7X,'* Solids-',I1,' Species equations are solved.')
- 1148 FORMAT(/7X,'* Solids-',I1,' Species equations are NOT solved.')
+ 1147 FORMAT(/7X,'* Solids-',I2,' Species equations are solved.')
+ 1148 FORMAT(/7X,'* Solids-',I2,' Species equations are NOT solved.')
  1149 FORMAT(/7X,'* User-defined subroutines are',A,'called.')
 !
  1150 FORMAT(//,3X,'2. PHYSICAL AND NUMERICAL PARAMETERS',/)
@@ -745,16 +745,16 @@
  1550 FORMAT(9X,'X-component of gas velocity (IC_U_g) = ',G12.5,/9X,&
          'Y-component of gas velocity (IC_V_g) = ',G12.5,/9X,&
          'Z-component of gas velocity (IC_W_g) = ',G12.5)
- 1560 FORMAT(9X,'Solids phase-',I1,' Density x Volume fr. (IC_ROP_s) = ',G12.5)
- 1561 FORMAT(9X,'Solids phase-',I1,' temperature (IC_T_s) = ',G12.5)
- 1563 FORMAT(9X,'Solids-',I1,' species',5X,'Mass fraction (IC_X_s)')
+ 1560 FORMAT(9X,'Solids phase-',I2,' Density x Volume fr. (IC_ROP_s) = ',G12.5)
+ 1561 FORMAT(9X,'Solids phase-',I2,' temperature (IC_T_s) = ',G12.5)
+ 1563 FORMAT(9X,'Solids-',I2,' species',5X,'Mass fraction (IC_X_s)')
  1564 FORMAT(9X,3X,I3,20X,G12.5)
- 1565 FORMAT(9X,'Solids phase-',I1,' radiation coefficient (IC_GAMA_Rs)',' =',&
-         G12.5,/9X,'Solids phase-',I1,' radiation temperature (IC_T_Rs) =',&
+ 1565 FORMAT(9X,'Solids phase-',I2,' radiation coefficient (IC_GAMA_Rs)',' =',&
+         G12.5,/9X,'Solids phase-',I2,' radiation temperature (IC_T_Rs) =',&
          G12.5)
- 1570 FORMAT(9X,'X-component of solids phase-',I1,' velocity (IC_U_s) =',G12.5,&
-         /9X,'Y-component of solids phase-',I1,' velocity (IC_V_s) =',G12.5,/9X&
-         ,'Z-component of solids phase-',I1,' velocity (IC_W_s) =',G12.5)
+ 1570 FORMAT(9X,'X-component of solids phase-',I2,' velocity (IC_U_s) =',G12.5,&
+         /9X,'Y-component of solids phase-',I2,' velocity (IC_V_s) =',G12.5,/9X&
+         ,'Z-component of solids phase-',I2,' velocity (IC_W_s) =',G12.5)
  1574 FORMAT(9X,'Solids pressure (IC_P_star) = ',G12.5)
  1575 FORMAT(9X,'Turbulence length scale (IC_L_scale) = ',G12.5)
 !
@@ -802,22 +802,22 @@
          'Interval when jet vel = BC_Jet_gh (BC_DT_h) = ',G12.5,/9X,&
          'High value of jet velocity (BC_Jet_gh) = ',G12.5)
  1656 FORMAT(9X,'Interval for averaging outflow rates= (BC_DT_0) = ',G12.5)
- 1660 FORMAT(9X,'Solids phase-',I1,' Density x Volume fr. (BC_ROP_s) = ',G12.5)
- 1661 FORMAT(9X,'Solids phase-',I1,' temperature (BC_T_s) = ',G12.5)
+ 1660 FORMAT(9X,'Solids phase-',I2,' Density x Volume fr. (BC_ROP_s) = ',G12.5)
+ 1661 FORMAT(9X,'Solids phase-',I2,' temperature (BC_T_s) = ',G12.5)
 
- 1663 FORMAT(9X,'Solids-',I1,' species',5X,'Mass fraction (BC_X_s)')
+ 1663 FORMAT(9X,'Solids-',I2,' species',5X,'Mass fraction (BC_X_s)')
  1664 FORMAT(9X,3X,I3,20X,G12.5)
- 1668 FORMAT(9X,'Solids phase-',I1,' mass flow rate (BC_MASSFLOW_s) =',G12.5)
- 1669 FORMAT(9X,'Solids phase-',I1,' volumetric flow rate (BC_VOLFLOW_s) =',&
+ 1668 FORMAT(9X,'Solids phase-',I2,' mass flow rate (BC_MASSFLOW_s) =',G12.5)
+ 1669 FORMAT(9X,'Solids phase-',I2,' volumetric flow rate (BC_VOLFLOW_s) =',&
          G12.5)
- 1670 FORMAT(9X,'X-component of solids phase-',I1,' velocity (BC_U_s) =',G12.5)
- 1671 FORMAT(9X,'Y-component of solids phase-',I1,' velocity (BC_V_s) =',G12.5)
- 1672 FORMAT(9X,'Z-component of solids phase-',I1,' velocity (BC_W_s) =',G12.5)
+ 1670 FORMAT(9X,'X-component of solids phase-',I2,' velocity (BC_U_s) =',G12.5)
+ 1671 FORMAT(9X,'Y-component of solids phase-',I2,' velocity (BC_V_s) =',G12.5)
+ 1672 FORMAT(9X,'Z-component of solids phase-',I2,' velocity (BC_W_s) =',G12.5)
  1675 FORMAT(9X,'Partial slip coefficient   (BC_hw_g) = ',G12.5,/,9X,&
          'Slip velociity U at wall   (BC_Uw_g) = ',G12.5,/,9X,&
          'Slip velociity V at wall   (BC_Vw_g) = ',G12.5,/,9X,&
          'Slip velociity W at wall   (BC_Ww_g) = ',G12.5)
- 1676 FORMAT(9X,'Solids phase: ',I1,/,11X,&
+ 1676 FORMAT(9X,'Solids phase: ',I2,/,11X,&
          'Partial slip coefficient   (BC_hw_s) = ',G12.5,/,11X,&
          'Slip velociity U at wall   (BC_Uw_s) = ',G12.5,/,11X,&
          'Slip velociity V at wall   (BC_Vw_s) = ',G12.5,/,11X,&

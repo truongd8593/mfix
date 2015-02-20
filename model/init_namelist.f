@@ -3105,8 +3105,8 @@
 !<keyword category="Chemical Reactions" required="false">
 !  <description>
 !    Maximum number of internal steps ODEPACK may use to integrate
-!    over the time interval.Leaving this value unspecified permits
-!    an unlimited number of steps. Thee stiff solver reports the
+!    over the time interval. Leaving this value unspecified permits
+!    an unlimited number of steps. The stiff solver reports the
 !    number of cells that exceed the number of steps as 'incomplete'.
 !  </description>
 !  <dependent keyword="STIFF_CHEMISTRY" value=".TRUE."/>

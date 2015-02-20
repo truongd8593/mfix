@@ -367,14 +367,14 @@
 
 
       if(reportNST == reportNST_Freq) then
-! Collect the number of steps distrubutions.
+! Collect the number of steps distributions.
          countNST_all = 0;
          CALL global_sum(countNST, countNST_all)
 
          countNST_all = int(countNST_all/reportNST_Freq)
 
          if(myPE == PE_IO) then
-            write(*,"(/5x,'Average Integration Distrubution:')")
+            write(*,"(/5x,'Average Integration Distribution:')")
             write(*,"(7x,'NST < 10^1: ', I6)")countNST_all(1)
             write(*,"(7x,'NST < 10^2: ', I6)")countNST_all(2)
             write(*,"(7x,'NST < 10^3: ', I6)")countNST_all(3)

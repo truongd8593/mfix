@@ -180,12 +180,17 @@
 !     Fluid phase
       M = 0
 
-!!!$omp      parallel do                                               &
-!!!$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, D_f,    &
-!!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
-!!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,                     &
-!!!$omp&             IJKM, KM, IJKB)
+!$omp     parallel do default(none)                                 &
+!$omp     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
+!$omp             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, D_f,    &
+!$omp             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
+!$omp             IJMK, JM, IJMKP, IJKS, IJKST,                     &
+!$omp             IJKM, KM, IJKB, FLUX,VELW,HW,AW) &
+!$omp     shared (ijkstart3,ijkend3,i_of,j_of,k_of,kp1,cut_w_treatment_at,theta_vn_bar,flux_ge,theta_vn,alpha_ve_c,mu_gt, &
+!$omp            oneody_n_v,ayz_v,ody,theta_v_st,flux_gn,theta_v_nt,oneody_n_u,axz_v,axy_v,ody_n,do_k,theta_u_tw,flux_gt, &
+!$omp            theta_u_te,alpha_vt_c,oneodz_t_v,odz_t,im1,jm1,km1,a_w_g,theta_v_ne,oneodx_e_v,alpha_vn_c,theta_v_se,    &
+!$omp            odx_e,ox,theta_w_be,theta_w_te,alpha_we_c,ONEODX_E_W,AYZ_W,theta_w_bn,theta_w_tn,alpha_wn_c,oneody_n_w,  &
+!$omp            axz_w,theta_wt_bar,theta_wt,alpha_wt_c,oneodz_t_w,axy_w,odz)
       DO IJK = ijkstart3, ijkend3
 !
          IF (FLOW_AT_T(IJK)) THEN
@@ -373,6 +378,7 @@
             ENDIF
          ENDIF
       END DO
+!$omp end parallel do
 
       RETURN
       END SUBROUTINE STORE_A_W_G0
