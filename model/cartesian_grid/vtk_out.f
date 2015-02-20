@@ -370,6 +370,7 @@
       INTEGER :: ISTAT,BUFF1,BUFF2,L
 
 
+      call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 ! Only open the file from head node when not using distributed I/O
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
@@ -1391,17 +1392,24 @@
       IMPLICIT NONE
 
       CHARACTER (LEN=32)  :: FILENAME
+      CHARACTER (LEN=5)   :: EXT
 
       IF (myPE /= PE_IO) RETURN
+
+      IF(VTK_DATA(VTK_REGION)=='C') THEN
+         EXT = '.pvtu'
+      ELSEIF(VTK_DATA(VTK_REGION)=='P') THEN
+         EXT = '.pvtp'
+      ENDIF
 
 
       IF(.NOT.BDIST_IO) THEN
          FILENAME=VTU_FILENAME
       ELSE
          IF(TIME_DEPENDENT_FILENAME) THEN
-            WRITE(FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
+            WRITE(FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),EXT
          ELSE
-            WRITE(FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
+            WRITE(FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION)),EXT
          ENDIF
          IF(TRIM(VTU_DIR)/='.') FILENAME='./'//TRIM(VTU_DIR)//'/'//FILENAME
       ENDIF
@@ -1420,8 +1428,10 @@
          CLOSE(PVD_UNIT)
 
 
-40    FORMAT(A,"_",I4.4,".pvtu")
-45    FORMAT(A,".pvtu")
+! 40    FORMAT(A,"_",I4.4,".pvtu")
+! 45    FORMAT(A,".pvtu")
+40    FORMAT(A,"_",I4.4,A5)
+45    FORMAT(A,A5)
 100   FORMAT(6X,A,E14.7,5A)
 110   FORMAT(A)
 
