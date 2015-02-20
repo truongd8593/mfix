@@ -22,7 +22,7 @@
         logical                               :: tec_no_k = .true.
 
 ! set .true. for entering tecplot output routine
-        logical                               :: tecplot_output=.true.
+        logical                               :: tecplot_output=.false.
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
 ! format (BLOCK format):
