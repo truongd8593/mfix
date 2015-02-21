@@ -14,37 +14,35 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VTU_FILE(LCV)
 
-      USE param
-      USE param1
-      USE parallel
+      USE compar
       USE constant
-      USE run
-      USE toleranc
+      USE cutcell
+      USE discretelement, Only :  DISCRETE_ELEMENT
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE visc_s
-      USE physprop
+      USE mfix_pic
+      USE mpi_utility, only: mpi_barrier
+      USE output
+      USE parallel
+      USE parallel_mpi
+      USE param
+      USE param1
       USE pgcor
+      USE pgcor
+      USE physprop
+      USE pscor
+      USE quadric
+      USE run
+      USE rxns
+      USE scalars
+      USE sendrecv
+      USE stl
+      USE toleranc
+      USE visc_s
       USE vtk
       USE vtp
-      USE rxns
-      USE output
-      USE scalars
-      USE stl
-
-      USE mpi_utility
-      USE parallel_mpi
-
-      USE pgcor
-      USE pscor
-      USE discretelement, Only :  DISCRETE_ELEMENT
-      USE mfix_pic
-      USE functions
 
       IMPLICIT NONE
       INTEGER :: I,J,K,L,M,N,R,IJK,LCV
@@ -347,23 +345,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_BIN
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
       USE compar
-      USE sendrecv
-      USE output
-      USE quadric
+      USE constant
       USE cutcell
       USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility, only: mpi_barrier
+      USE output
+      USE parallel
+      USE param
+      USE param1
+      USE quadric
+      USE run
+      USE sendrecv
+      USE toleranc
       USE vtk
       use cdist
-      USE functions
 
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
