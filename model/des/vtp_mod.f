@@ -648,7 +648,7 @@
          ENDDO
          CLOSE(VTU_FRAME_UNIT)
       ENDIF
-      
+
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
@@ -676,7 +676,7 @@
       USE run, only: TIME
       USE output, only: FULL_LOG
       USE vtk, only: TIME_DEPENDENT_FILENAME, VTU_FRAME_FILENAME, VTU_FRAME_UNIT
-      USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC 
+      USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED,  FRAME,  VTK_REGION
       USE vtk, only: NUMBER_OF_VTK_CELLS, VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
 
@@ -751,7 +751,7 @@
       ENDIF
 
 ! Open File
-      
+
       IF (NEED_TO_WRITE_VTP) THEN
 
          VTU_UNIT = 678
@@ -878,7 +878,7 @@
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
 
-      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local 
+      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local
       DOUBLE PRECISION, ALLOCATABLE :: gtemp_array(:,:)  ! global
 
       INTEGER :: LB, UB
@@ -899,7 +899,7 @@
 ! The DATA is converted to single precision to save memory.
 
       IF (.NOT.BDIST_IO) THEN
-! The number of points in the pvd file is the global number of particles 
+! The number of points in the pvd file is the global number of particles
 ! computed from SETUP_VTK_REGION_PARTICLES
 
          NUMBER_OF_POINTS = GLOBAL_CNT
@@ -972,7 +972,7 @@
 ! Number of bytes for X,Y,Z coordinates
             WRITE(VTU_UNIT) nbytes_vector
 
-     
+
          ENDIF
 
          LB = LBOUND(DES_POS_NEW,1) ! This should always be 1
@@ -990,12 +990,12 @@
                PC =PC + 1
                DO LC2=LB, UB
                   ltemp_array(LC2,PC) = DES_POS_NEW(LC2,LC1)
-               ENDDO 
+               ENDDO
             ENDIF
             IF(PC==LOCAL_CNT) EXIT
          ENDDO
 
-! For each coordinate (x,y, and z), gather the local list to global temporary array 
+! For each coordinate (x,y, and z), gather the local list to global temporary array
          DO LC1 = LB, UB
             dprocbuf(1:LOCAL_CNT)=ltemp_array(LC1,1:LOCAL_CNT)
             CALL desmpi_gatherv(ptype=2)
@@ -1020,7 +1020,7 @@
       ELSEIF(BDIST_IO.AND.LOCAL_CNT>0) THEN
 
          IF(LOCAL_CNT==0) RETURN
-! The number of points in the pvd file is the local number of particles 
+! The number of points in the pvd file is the local number of particles
 ! computed from SETUP_VTK_REGION_PARTICLES
 
          NUMBER_OF_POINTS = LOCAL_CNT
@@ -1100,7 +1100,7 @@
                   PC =PC + 1
                   DO LC2=LB, UB
                      ltemp_array(LC2,PC) = DES_POS_NEW(LC2,LC1)
-                  ENDDO 
+                  ENDDO
                ENDIF
                IF(PC==LOCAL_CNT) EXIT
             ENDDO
@@ -1204,7 +1204,7 @@
                IF(PC==LOCAL_CNT) EXIT
             ENDDO
 
-! Gather local buffer to root 
+! Gather local buffer to root
          CALL desmpi_gatherv(ptype=2)
 
 ! Write the data, always preceded by its size in number of bytes
@@ -1248,7 +1248,7 @@
 
             allocate (dProcBuf(LOCAL_CNT) )
 
-! Pack scalar list in a local buffer before writing in file 
+! Pack scalar list in a local buffer before writing in file
             PC = 0
             DO LC1 = 1, MAX_PIP
                IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
@@ -1324,7 +1324,7 @@
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
 
-      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local 
+      DOUBLE PRECISION, ALLOCATABLE :: ltemp_array(:,:)  ! local
       DOUBLE PRECISION, ALLOCATABLE :: gtemp_array(:,:)  ! global
 
       INTEGER :: LB, UB
@@ -1363,13 +1363,13 @@
                   PC =PC + 1
                   DO LC2=LB, UB
                      ltemp_array(LC2,PC) = VAR(LC2,LC1)
-                  ENDDO 
+                  ENDDO
                ENDIF
                IF(PC==LOCAL_CNT) EXIT
             ENDDO
 
 
-! For each component, gather the local list to global temporary array 
+! For each component, gather the local list to global temporary array
          DO LC1 = LB, UB
             dprocbuf(1:LOCAL_CNT)=ltemp_array(LC1,1:LOCAL_CNT)
             CALL desmpi_gatherv(ptype=2)
@@ -1423,7 +1423,7 @@
                   PC =PC + 1
                   DO LC2=LB, UB
                      ltemp_array(LC2,PC) = VAR(LC2,LC1)
-                  ENDDO 
+                  ENDDO
                ENDIF
                IF(PC==LOCAL_CNT) EXIT
             ENDDO
@@ -1525,7 +1525,7 @@
             WRITE(PVTU_UNIT,100) '</VTKFile>'
             CLOSE(PVTU_UNIT)
          ENDIF
-      ENDIF 
+      ENDIF
 
 20    FORMAT(A,"_",I4.4,"_",I5.5,".vtp")
 25    FORMAT(A,"_",I5.5,".vtp")
@@ -1589,7 +1589,7 @@
       CHARACTER(LEN=1) :: SELECT_PARTICLE_BY
 
 
-! Get VTK region bounds         
+! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
       XW = VTK_X_W(VTK_REGION)
       YS = VTK_Y_S(VTK_REGION)
@@ -1620,7 +1620,7 @@
 
 
 
-! Loop through all particles on local rank and keep a list of particles 
+! Loop through all particles on local rank and keep a list of particles
 ! belonging to VTK region
 
       IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
@@ -1628,7 +1628,7 @@
 
       BELONGS_TO_VTK_SUBDOMAIN = .FALSE.
 
-      LOCAL_CNT = 0 
+      LOCAL_CNT = 0
       PC = 1
       DO LC1 = 1, MAX_PIP
          IF(PC > PIP) EXIT
@@ -1771,20 +1771,20 @@
          ENDIF
       ENDDO ! particle loop
 
-            
+
 ! Calculate the total number of particles system-wide.
       call global_sum(LOCAL_CNT, GLOBAL_CNT)
-            
+
 ! No need to set the send/reccv when using distributed IO
       IF (BDIST_IO) RETURN
 ! Set the send count from the local process.
       igath_sendcnt = LOCAL_CNT
-           
+
 ! Collect the number of particles on each rank.all ranks.
       lgathercnts = 0
       lgathercnts(myPE) = LOCAL_CNT
       call global_sum(lgathercnts,igathercnts)
-          
+
 ! Calculate the rank displacements.
       idispls(0) = 0
       DO lPROC = 1,NUMPEs-1
@@ -1806,6 +1806,6 @@
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION_PARTICLES
-      
+
 
       END MODULE VTP

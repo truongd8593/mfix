@@ -787,7 +787,7 @@
 !$omp  parallel default(none) &
 !$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp           VEL,  NUM1, DEN1,EPSA) &
-!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells)
 !$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
         RESID_IJK(IJK) = ZERO
@@ -987,7 +987,7 @@
 !$omp  parallel default(none) &
 !$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp           VEL,  NUM1, DEN1,EPSA) &
-!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells)
 !$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
         RESID_IJK(IJK) = ZERO
@@ -1191,7 +1191,7 @@
 !$omp  parallel default(none) &
 !$omp  private( IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, &
 !$omp           VEL,  NUM1, DEN1,EPSA) &
-!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells) 
+!$omp  shared (ijkstart3, ijkend3, resid_ijk, i_of, j_of, k_of,m,a_m,b_m,w_m,do_k,u_m,v_m,num,den,ncells)
 !$omp do reduction(+:num, DEN, NCELLS )
       DO IJK = ijkstart3, ijkend3
         RESID_IJK(IJK) = ZERO

@@ -34,7 +34,7 @@
 !  Module name: NEWUNIT                                                !
 !  Purpose: Finds an open i/o unit number; Usage:                      !
 !   integer myunit                                                     !
-!   open(unit=newunit(myunit),file='filename')                         ! 
+!   open(unit=newunit(myunit),file='filename')                         !
 !                                                                      !
 !  Author: A. Choudhary                               Date: 01/21/2015 !
 !                                                                      !
@@ -48,10 +48,10 @@
 ! lower and upper limits to search for available units
       INTEGER, PARAMETER  :: lun_min = 100, lun_max= 999
 
-! check to see if the unit is open      
+! check to see if the unit is open
       LOGICAL             :: is_open
 
-! looping variable      
+! looping variable
       INTEGER             :: lun
 
 
@@ -66,9 +66,9 @@
       END DO
 
       IF(present(unit)) unit=newunit
-      
+
       RETURN
-      
+
       END FUNCTION NEWUNIT
 
 

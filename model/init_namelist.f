@@ -1023,7 +1023,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Applies the 2.5D model for cylindrical column by combining 2D assumption
-!    and axi-symmetric assumption.!    
+!    and axi-symmetric assumption.!
 !  </description>
       CYLINDRICAL_2D = .FALSE.
       I_CYL_NUM = 1
@@ -1443,8 +1443,8 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Specularity coefficient associated with particle-wall collisions
-!    when using Johnson and Jackson partial slip BC (BC_JJ_PS). If 
-!    Jenkins small frictional BC are invoked (JENKINS) then phip is 
+!    when using Johnson and Jackson partial slip BC (BC_JJ_PS). If
+!    Jenkins small frictional BC are invoked (JENKINS) then phip is
 !    not used.
 !  </description>
 !  <range min="0.0" max="1.0" />
@@ -1552,7 +1552,7 @@
 !  <description>
 !    Flag to enable/disable a phase from forming a packed bed.
 !    Effectively removes plastic pressure term from the solids phase
-!    momentum equation. 
+!    momentum equation.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <valid value=".TRUE." note="The phase forms a packed bed with void
@@ -2062,7 +2062,7 @@
 !  </description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <valid value='0'
-!    note='Do not use Johnson and Jackson partial slip bc. Default  
+!    note='Do not use Johnson and Jackson partial slip bc. Default
 !      if granular energy transport equation is not solved./>
 !  <valid value='1'
 !    note='Use Johnson and Jackson partial slip bc. Default if
@@ -2085,7 +2085,7 @@
 !<keyword category="Two Fluid Model" required="false">
 !  <description>
 !    This flag effects how the momentum and granular energy boundary
-!    conditions are implemented when using BC_JJ_PS BC. 
+!    conditions are implemented when using BC_JJ_PS BC.
 !  </description>
 !  <dependent keyword="PHI_w" value="DEFINED"/>
 !  <dependent keyword="E_w" value="DEFINED"/>

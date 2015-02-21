@@ -93,7 +93,7 @@
             ENDIF
             CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
          ENDIF
- 
+
  2000 FORMAT(/5x,'DTSOLID CURRENT  = ',g17.8,/5x,'DTPIC_CFL',8x,'= ',  &
          g17.8, /5x,'DTPIC TAUP',7x,'= ',g17.8,/5x,'DT FLOW',10x,'= ', &
          g17.8)

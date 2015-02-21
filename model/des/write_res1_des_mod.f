@@ -543,7 +543,7 @@
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
       use discretelement, only: PAIRS, PAIR_NUM
-      use discretelement, only: iGlobal_ID 
+      use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)

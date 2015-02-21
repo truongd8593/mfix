@@ -99,7 +99,7 @@
 
       IMPLICIT NONE
 
-! Note: both fluid and solid phase variables can be of size DIMENSION_3 
+! Note: both fluid and solid phase variables can be of size DIMENSION_3
 ! since MMS tests do not work for more than one solid phase.
 
         allocate(MMS_Ep_g(DIMENSION_3))
@@ -115,7 +115,7 @@
         allocate(MMS_W_s(DIMENSION_3))
         allocate(MMS_T_s(DIMENSION_3))
         allocate(MMS_Theta_m(DIMENSION_3))
-        
+
         allocate(MMS_ROP_g_Src(DIMENSION_3))
         allocate(MMS_U_g_Src(DIMENSION_3))
         allocate(MMS_V_g_Src(DIMENSION_3))

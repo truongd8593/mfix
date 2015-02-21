@@ -238,16 +238,16 @@ use param, only: DIMENSION_N_S
 ! Particle radius
       LOGICAL :: VTK_PART_DIAMETER(DIMENSION_VTK)
 
-! Particle velocity         
+! Particle velocity
       LOGICAL :: VTK_PART_VEL(DIMENSION_VTK)
 
-! Particle user-defined variable         
+! Particle user-defined variable
       LOGICAL :: VTK_PART_USR_VAR(DIMENSION_VTK,3)
 
-! Particle temperature         
+! Particle temperature
       LOGICAL :: VTK_PART_TEMP(DIMENSION_VTK)
 
-! Particle species mass fraction         
+! Particle species mass fraction
       LOGICAL :: VTK_PART_X_s(DIMENSION_VTK,100)
 
 ! Particle cohesion

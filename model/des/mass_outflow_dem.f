@@ -84,7 +84,7 @@
                      ENDIF
 
 ! The user specified velocity is applied to the exiting particle. This
-! only applies to mass outflows where the speed at which particles 
+! only applies to mass outflows where the speed at which particles
 ! exit needs to be controled.
                   ELSE
                      M = PIJK(NP,5)

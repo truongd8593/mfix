@@ -504,9 +504,9 @@
 ! Allocate geometry components related to the mesh. Check the
 ! allocation error status and abort if any failure is detected.
       ALLOCATE( X     (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( cyl_X     (0:DIMENSION_I), STAT=IER)       
+      ALLOCATE( cyl_X     (0:DIMENSION_I), STAT=IER)
       ALLOCATE( X_E   (0:DIMENSION_I), STAT=IER)
-      ALLOCATE( cyl_X_E   (0:DIMENSION_I), STAT=IER)       
+      ALLOCATE( cyl_X_E   (0:DIMENSION_I), STAT=IER)
       ALLOCATE( oX    (0:DIMENSION_I), STAT=IER)
       ALLOCATE( oX_E  (0:DIMENSION_I), STAT=IER)
       ALLOCATE( oDX   (0:DIMENSION_I), STAT=IER)

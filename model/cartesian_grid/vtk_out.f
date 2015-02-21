@@ -431,7 +431,7 @@
 ! Open File
 !      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
 
-      
+
       IF(NUMBER_OF_VTK_CELLS>0) THEN
 
          OPEN(UNIT     = VTU_UNIT,           &
@@ -1958,7 +1958,7 @@
 
          IF(INTERIOR_CELL_AT(IJK)) THEN
 
-! Set up the connectivity: 4 nodes in 2D, 8 nodes in 3D 
+! Set up the connectivity: 4 nodes in 2D, 8 nodes in 3D
             IF(NO_K) THEN
                NUMBER_OF_NODES(IJK) = 4
                CONNECTIVITY(IJK,1) = IJK_OF_NODE(5)
@@ -3075,7 +3075,7 @@
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
 
 
-! Get VTK region bounds         
+! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
       XW = VTK_X_W(VTK_REGION)
       YS = VTK_Y_S(VTK_REGION)
