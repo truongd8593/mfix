@@ -416,13 +416,19 @@
          lFORCE = F_GP(NP)
          IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
 
-         lDRAG_BM = lFORCE*(DES_VEL_NEW(:,NP) - VELFP)
+         lDRAG_BM(:) = lFORCE*(DES_VEL_NEW(:,NP) - VELFP)
 
          DO LC=1,LP_BND
             IJK = FILTER_CELL(LC,NP)
             WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
 
-            DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
+!$omp atomic
+            DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
+!$omp atomic
+            DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
+!$omp atomic
+            DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
+!$omp atomic
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
          ENDDO
 

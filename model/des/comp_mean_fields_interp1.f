@@ -44,14 +44,16 @@
 
       SOLVOLINC(:,:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
+      IF(MPPIC) THEN
+         DES_U_s(:,:) = ZERO
+         DES_V_s(:,:) = ZERO
+         DES_W_s(:,:) = ZERO
+      ENDIF
 
 ! Loop bounds for interpolation.
       LP_BND = merge(27,9,DO_K)
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
 !$omp parallel default(none)                                           &
 !$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT)                      &
 !$omp shared(MAX_PIP, PEA, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC,     &
@@ -74,20 +76,19 @@
 ! Accumulate total solids volume (by phase)
 !$omp atomic
             SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
-! Accumulate total solids momenum-ish (by phase)
+            IF(MPPIC) THEN
+! Accumulate total solids momentum (by phase)
 !$omp atomic
-            DES_U_S(IJK,M) = DES_U_S(IJK,M) +                          &
-               DES_VEL_NEW(1,NP)*VOLxWEIGHT
+               DES_U_S(IJK,M) = DES_U_S(IJK,M) + DES_VEL_NEW(1,NP)*VOLxWEIGHT
 !$omp atomic
-            DES_V_S(IJK,M) = DES_V_S(IJK,M) +                          &
-               DES_VEL_NEW(2,NP)*VOLxWEIGHT
-            IF(DO_K) THEN
+               DES_V_S(IJK,M) = DES_V_S(IJK,M) + DES_VEL_NEW(2,NP)*VOLxWEIGHT
+               IF(DO_K) THEN
 !$omp atomic
-               DES_W_S(IJK,M) = DES_W_S(IJK,M) +                 &
-               DES_VEL_NEW(3,NP)*VOLxWEIGHT
+                  DES_W_S(IJK,M) = DES_W_S(IJK,M) + DES_VEL_NEW(3,NP)*VOLxWEIGHT
+               ENDIF
             ENDIF
          ENDDO
-      endDO
+      ENDDO
 !$omp end do
 !$omp end parallel
 
