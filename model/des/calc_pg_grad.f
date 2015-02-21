@@ -67,7 +67,11 @@
          LP_BND = merge(27,9,DO_K)
 
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
+
+!$omp  parallel do default(none) &
+!$omp              private(NP,lPF,lc,ijk,weight) &
+!$omp              shared(MAX_PIP,PEA,DES_INTERP_ON,LP_BND,p_force,drag_fc,filter_cell,filter_weight,pijk,pvol)
          DO NP=1,MAX_PIP
             IF(.NOT.PEA(NP,1)) CYCLE
             IF(any(PEA(NP,2:3))) CYCLE
@@ -221,7 +225,7 @@
 !           (cut-cell version)                                         !
 !                                                                      !
 !  Notes: This pressure force needs to be calculated once in a DEM     !
-!         time step (at the beggining) since the gas/fluid phase is    !
+!         time step (at the beginning) since the gas/fluid phase is    !
 !         not updated (is static) during the DEM portion of the        !
 !         simulation.                                                  !
 !                                                                      !

@@ -108,14 +108,13 @@
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
 
-!!!!$omp  parallel do private( IJK, I, IJKE, EPGA,  J,  K,   &
-!!!!$omp&  JM,IJKP,IJKNT,IJKS,IJKST,IJMKP,IJKTE,IJKTW,IMJKP,KP, &
-!!!!$omp&  DUODZ,VXZ, &
-!!!!$omp&  IM,IJKW, IPJK, &
-!!!!$omp&  IMJK,IJKN,IJMK,IJKT,  &
-!!!!$omp&  IJKM, &
-!!!!$omp&  SBV,  SSX,SSY,   SSZ) &
-!!!!$omp&  schedule(static)
+!$omp  parallel do default(none) &
+!$omp              private( IJK, I, IJKE, EPGA, J, JM, K,  &
+!$omp              IMJK,IJKN,IJKS,IJMK,IJKT,IJKTE,IJKNT,  &
+!$omp              IJKM, IJMKP, IJKTW, IMJKP, IJKP, IM, IJKW, IJKST, KP, &
+!$omp              SBV,  SSX,SSY, SSZ, &
+!$omp              BCV,NOC_UG, uw_g, vw_g, ww_g, cut_tau_ug, bct,mu_gt_cut,del_h,nx,ny,nz,xi, vi,yi,zi,sx,sy,sz,ssy_cut,noc_wg,cut_tau_wg,ui,dudz_at_e,dudz_at_w,ssx_cut,u_node_at_wb,u_node_at_wt,u_node_at_eb,u_node_at_et,vxz,duodz,dvdz_at_S,dvdz_at_N,v_node_at_sb,v_node_at_st,v_node_at_nb,v_node_at_nt) &
+!$omp  shared(ijkstart3, ijkend3, do_k, bc_type, cut_u_cell_at, bc_u_id,bc_uw_g, bc_vw_g, bc_ww_g, x_u, y_u, z_u, vol, x_v, y_v,z_v,area_u_cut,oneodx_e_u,oneodx_e_w,x_w,y_w,z_w,bc_hw_g,blocked_w_cell_at,cylindrical,ox_e,mu_g,w_g,odx_e,axy_u,ox,vol_u,odx,odz,axz_u,wall_w_at,jm1,k_of,cartesian_grid,lambda_gt,trd_g,ayz,u_g,ayz_u,i_of,ip1,j_of,km1,cg_safe_mode,mu_gt,ep_g,tau_w_g,bc_w_id,oneodz_t_u,oneodz_t_v,wall_u_at,blocked_u_cell_at,oneodz_t_w,cut_w_cell_at,area_w_cut,kp1,ayz_w,axz_w,dy,wall_v_at,dz,axy_w,vol_w,blocked_v_cell_at,im1,axy,v_g,odz_t)
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK)
          IJKT = TOP_OF(IJK)
