@@ -30,8 +30,8 @@
 
       USE compar
       USE constant
-      USE des_thermo
       USE des_rxns
+      USE des_thermo
       USE discretelement
       USE energy
       USE fldvar
@@ -41,16 +41,14 @@
       USE parallel
       USE param
       USE param1
-      Use parse
       USE physprop
       USE run
       USE rxns
       USE sendrecv
       USE usr
-! Small value for species mass fractions
-      use toleranc, only: ZERO_X_gs
+      Use parse
       use functions
-      use toleranc
+      use toleranc, only: ZERO_X_gs, COMPARE
 
       IMPLICIT NONE
 
