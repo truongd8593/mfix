@@ -175,6 +175,8 @@
 
 ! Flags indicating the state of particle
       use discretelement, only: PEA
+! IJK of fluid cell containing particles center
+      use discretelement, only: PIJK
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle velocity
@@ -254,6 +256,9 @@
             VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
          ENDDO
 
+! This avoids FP exceptions for some ghost particles.
+         IF(lEPg == ZERO) lEPG = EP_g(PIJK(NP,4))
+
          CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
 
          lFORCE = F_GP(NP)
@@ -312,6 +317,8 @@
 
 ! Flags indicating the state of particle
       use discretelement, only: PEA
+! IJK of fluid cell containing particles center
+      use discretelement, only: PIJK
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle velocity
@@ -406,6 +413,9 @@
             VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
             VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
          ENDDO
+
+! This avoids FP exceptions for some ghost particles.
+         IF(lEPG == ZERO) lEPG = EP_G(PIJK(NP,4))
 
          CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
 
