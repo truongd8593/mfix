@@ -680,7 +680,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)
 
 ! X,Y,Z coordinates
-            WRITE(VTU_UNIT) nbytes_xyz, (GLOBAL_COORDS_OF_POINTS(L,1:3), L = 1,NUMBER_OF_POINTS)
+            WRITE(VTU_UNIT) nbytes_xyz, (GLOBAL_COORDS_OF_POINTS(1:3,L), L = 1,NUMBER_OF_POINTS)
 
 ! Conectivity
             WRITE(VTU_UNIT) nbytes_connectivity
@@ -2883,13 +2883,13 @@
 ! Now, store a list of coordinates for all used points
          IF(ALLOCATED(GLOBAL_COORDS_OF_POINTS)) DEALLOCATE(GLOBAL_COORDS_OF_POINTS)
 
-         ALLOCATE(GLOBAL_COORDS_OF_POINTS(NUMBER_OF_POINTS,3))
+         ALLOCATE(GLOBAL_COORDS_OF_POINTS(3,NUMBER_OF_POINTS))
 
          POINT_ID = 1
 ! This is for the background grid cell corners
          DO IJK = 1,IJKMAX3
             IF(KEEP_POINT(IJK)) THEN
-               GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
+               GLOBAL_COORDS_OF_POINTS(1:3,POINT_ID) = &
                     (/REAL(XG_E(GLOBAL_I_OF(IJK))),REAL(YG_N(GLOBAL_J_OF(IJK))),REAL(ZG_T(GLOBAL_K_OF(IJK)))/)
                POINT_ID = POINT_ID + 1
             ENDIF
@@ -2898,7 +2898,7 @@
          DO IJK = 1,GLOBAL_NUMBER_OF_NEW_POINTS
             IF(KEEP_NEW_POINT(IJK)) THEN
                NEW_POINT_NEW_ID(IJK) = POINT_ID
-               GLOBAL_COORDS_OF_POINTS(POINT_ID,1:3) = &
+               GLOBAL_COORDS_OF_POINTS(1:3,POINT_ID) = &
                     (/REAL(GLOBAL_X_NEW_POINT(IJK)),REAL(GLOBAL_Y_NEW_POINT(IJK)),REAL(GLOBAL_Z_NEW_POINT(IJK))/)
                POINT_ID = POINT_ID + 1
             ENDIF
