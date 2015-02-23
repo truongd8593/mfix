@@ -100,16 +100,19 @@
          DO JC=-1,+1
          DO IC=-1,+1
             IDX=IDX+1
-
             WEIGHT = WEIGHT_I(IC)*WEIGHT_J(JC)*WEIGHT_K(KC)
-
-            IJKt = FUNIJK(I+IC,J+JC,K+KC)
-            IF(FLUID_AT(IJKt)) THEN
-               FILTER_CELL(IDX,L) = IJKt
-               FILTER_WEIGHT(IDX,L) = WEIGHT
+            IF(IS_ON_MYPE_OWNS(I+IC,J+JC,K+KC)) THEN
+               IJKt = FUNIJK(I+IC,J+JC,K+KC)
+               IF(FLUID_AT(IJKt)) THEN
+                  FILTER_CELL(IDX,L) = IJKt
+                  FILTER_WEIGHT(IDX,L) = WEIGHT
+               ELSE
+                  FILTER_CELL(IDX,L) = IJK
+                  FILTER_WEIGHT(IDX,L) = WEIGHT
+               ENDIF
             ELSE
                FILTER_CELL(IDX,L) = IJK
-               FILTER_WEIGHT(IDX,L) = WEIGHT
+               FILTER_WEIGHT(IDX,L) = ZERO
             ENDIF
          ENDDO
          ENDDO

@@ -68,6 +68,10 @@
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS, PVOL
+! Number of cells used in interpolation
+      use particle_filter, only: FILTER_SIZE
+! Cells and weights for interpolation
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Flags indicate the state of the particle
       use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
@@ -154,17 +158,17 @@
 ! 9) Exiting particle flag
             call unpack_dbuf(lbuf,pea(llocpar,3),pface)
 ! 10) Temperature
-            if(ENERGY_EQ)then
+            IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
-            endif
-! 11) Species Composition
-            if(ANY_SPECIES_EQ)then
-               call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
-            endif
-
-! 12) User Variables
-            if(DES_USR_VAR_SIZE > 0) &
+! 11) User Variables
+            IF(DES_USR_VAR_SIZE > 0) &
                call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
+! 12) Interpolation verights
+            IF(FILTER_SIZE > 0) THEN
+               call unpack_dbuf(lbuf,filter_cell(:,llocpar),pface)
+               call unpack_dbuf(lbuf,filter_weight(:,llocpar),pface)
+            ENDIF
+
 
 ! Calculate the volume of the ghost particle.
             PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
@@ -212,28 +216,29 @@
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk
             dg_pijkprv(ispot) = lprvijk
-!  4) Particle radius
+!  4) Radius
             call unpack_dbuf(lbuf,des_radius(ispot),pface)
-!  5) Particle phase index
+!  5) Phase index
             call unpack_dbuf(lbuf,pijk(ispot,5),pface)
-!  6) Particle position
+!  6) Position
             call unpack_dbuf(lbuf,des_pos_new(1:dimn,ispot),pface)
-!  7) Particle velocity
+!  7) Translational velocity
             call unpack_dbuf(lbuf,des_vel_new(1:dimn,ispot),pface)
-!  8) Particle rotational velocity
+!  8) Rotational velocity
             call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
 !  9) Exiting particle flag
-!           pea(ispot,3) = (drecvbuf(lbuf,pface) > 0.5)
-            call unpack_dbuf(lbuf,pea(ispot,3),pface) ! (Need to check the logic)
-! 10) Particle temperature.
+            call unpack_dbuf(lbuf,pea(ispot,3),pface)
+! 10) Temperature.
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
-! 11) Particle species composition
-            IF(ANY_SPECIES_EQ) &
-               call unpack_dbuf(lbuf,des_x_s(ispot,:),pface)
-! 12) User varaible
+! 11) User varaible
             IF(DES_USR_VAR_SIZE > 0)&
-               call unpack_dbuf(lbuf,des_usr_var(1:3,ispot),pface)
+               call unpack_dbuf(lbuf,des_usr_var(:,ispot),pface)
+! 12) Interpolation verights
+            IF(FILTER_SIZE > 0) THEN
+               call unpack_dbuf(lbuf,filter_cell(:,ispot),pface)
+               call unpack_dbuf(lbuf,filter_weight(:,ispot),pface)
+            ENDIF
 
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -305,6 +310,10 @@
       use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+! Number of cells used in interpolation
+      use particle_filter, only: FILTER_SIZE
+! Cells and weights for interpolation
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Force arrays acting on the particle
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
@@ -451,35 +460,41 @@
 ! 24) User defined variable
          IF(DES_USR_VAR_SIZE > 0) &
             call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)
+! 25) Interpolation cells and weights
+         IF(FILTER_SIZE > 0) THEN
+            call unpack_dbuf(lbuf,filter_cell(:,lcurpar),pface)
+            call unpack_dbuf(lbuf,filter_weight(:,lcurpar),pface)
+         ENDIF
+
 ! -- Higher order integration variables
          IF (DO_OLD) THEN
-! 25) Position (previous)
+! 26) Position (previous)
             call unpack_dbuf(lbuf,des_pos_old(:,llocpar),pface)
-! 26) Translational velocity (previous)
+! 27) Translational velocity (previous)
             call unpack_dbuf(lbuf,des_vel_old(:,llocpar),pface)
-! 27) Rotational velocity (previous)
+! 28) Rotational velocity (previous)
             call unpack_dbuf(lbuf,omega_old(:,llocpar),pface)
-! 28) Translational acceleration (previous)
+! 29) Translational acceleration (previous)
             call unpack_dbuf(lbuf,des_acc_old(:,llocpar),pface)
-! 29) Rotational acceleration (previous)
+! 30) Rotational acceleration (previous)
             call unpack_dbuf(lbuf,rot_acc_old(:,llocpar),pface)
-! 30) Temperature (previous)
+! 31) Temperature (previous)
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)
          ENDIF
-! 31) Statistical weight
+! 32) Statistical weight
          IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)
 
       end do
 
-! 32) Number of pair datasets
+! 33) Number of pair datasets
       lbuf = lparcnt*iParticlePacketSize + ibufoffset
       call unpack_dbuf(lbuf,num_pairs_sent,pface)
 
       do cc = 1, num_pairs_sent
-! 33) Global ID of packed particle.
+! 34) Global ID of packed particle.
          call unpack_dbuf(lbuf,lparid,pface)
-! 34) DES grid IJK of cell receiving the particle.
+! 35) DES grid IJK of cell receiving the particle.
          call unpack_dbuf(lbuf,lparijk,pface)
 
 ! Locate the particle on the current process.
@@ -488,9 +503,9 @@
             print *,"COULD NOT FIND PARTICLE ",lparid," IN IJK ",lparijk
             call des_mpi_stop
          endif
-! 35) Global ID of neighbor particle.
+! 36) Global ID of neighbor particle.
          call unpack_dbuf(lbuf,lneighid,pface)
-! 36) DES grid IJK of cell containing the neighbor particle.
+! 37) DES grid IJK of cell containing the neighbor particle.
          call unpack_dbuf(lbuf,lneighijk,pface)
 
 ! Locate the neighbor particle on the current process.
@@ -524,11 +539,11 @@
             call add_pair(llocpar,lneigh)
             pair_match = pair_num
          endif
-! 37) Flag indicating induring contact for the pair.
+! 38) Flag indicating induring contact for the pair.
          call unpack_dbuf(lbuf,pv_pair(pair_num),pface)
-! 38) Normal collision history.
+! 39) Normal collision history.
          call unpack_dbuf(lbuf,pfn_pair(:,pair_num),pface)
-! 39) Tangential collision history.
+! 40) Tangential collision history.
          call unpack_dbuf(lbuf,pft_pair(:,pair_num),pface)
       enddo
 

@@ -65,6 +65,10 @@
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS, PVOL
+! Number of cells used in interpolation
+      use particle_filter, only: FILTER_SIZE
+! Cells and weights for interpolation
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Flags indicate the state of the particle
       use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
@@ -150,6 +154,11 @@
 ! 11) User Variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf,des_usr_var(:,lcurpar),pface)
+! 12) Interpolation weights
+            IF(FILTER_SIZE > 0) THEN
+               call pack_dbuf(lbuf,filter_cell(:,lcurpar),pface)
+               call pack_dbuf(lbuf,filter_weight(:,lcurpar),pface)
+            ENDIF
 
             lpar_cnt = lpar_cnt + 1
          end do
@@ -238,6 +247,10 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Explicit particle drag force
       use discretelement, only: DRAG_FC
+! Number of cells used in interpolation
+      use particle_filter, only: FILTER_SIZE
+! Cells and weights for interpolation
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
@@ -347,20 +360,25 @@
 ! 24) User defined variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
+! 25) Interpolation cells and weights
+            IF(FILTER_SIZE > 0) THEN
+               call pack_dbuf(lbuf,filter_cell(:,lcurpar),pface)
+               call pack_dbuf(lbuf,filter_weight(:,lcurpar),pface)
+            ENDIF
 ! -- Higher order integration variables
             IF (DO_OLD) THEN
-! 25) Position (previous)
+! 26) Position (previous)
                call pack_dbuf(lbuf,des_pos_old(:,lcurpar) +            &
                   dcycl_offset(pface,:),pface)
-! 26) Translational velocity (previous)
+! 27) Translational velocity (previous)
                call pack_dbuf(lbuf,des_vel_old(:,lcurpar),pface)
-! 27) Rotational velocity (previous)
+! 28) Rotational velocity (previous)
                call pack_dbuf(lbuf,omega_old(:,lcurpar),pface)
-! 28) Translational acceleration (previous)
+! 29) Translational acceleration (previous)
                call pack_dbuf(lbuf,des_acc_old(:,lcurpar),pface)
-! 29) Rotational acceleration (previous)
+! 30) Rotational acceleration (previous)
                call pack_dbuf(lbuf,rot_acc_old(:,lcurpar),pface)
-! 30) Temperature (previous)
+! 31) Temperature (previous)
                IF(ENERGY_EQ) &
                   call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
             ENDIF
@@ -368,7 +386,7 @@
 ! PIC particles are removed and the number of particles on the processor
 ! is decremented.
             IF (MPPIC) THEN
-! 31) Statistical weight
+! 32) Statistical weight
                call pack_dbuf(lbuf,des_stat_wt(lcurpar),pface)
                pea(lcurpar,1:4) = .false.
                pip = pip - 1
@@ -404,21 +422,21 @@
          lneigh = PAIRS(2,CC)
          if(.not.PEA(lneigh,1)) cycle
          if(PEA(lneigh,3)) cycle
-! 33) Global ID of particle bing packed.
+! 34) Global ID of particle bing packed.
          call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
-! 34) DES grid IJK of cell receiving the particle.
+! 35) DES grid IJK of cell receiving the particle.
          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
             ineighproc(pface)),pface)
-! 35) Global ID of neighbor particle.
+! 36) Global ID of neighbor particle.
          call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
-! 36) DES grid IJK of cell containing the neighbor particle.
+! 37) DES grid IJK of cell containing the neighbor particle.
          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
             ineighproc(pface)),pface)
-! 37) Flag indicating induring contact for the pair.
+! 38) Flag indicating induring contact for the pair.
          call pack_dbuf(lbuf,pv_PAIR(CC),pface)
-! 38) Normal collision history.
+! 39) Normal collision history.
          call pack_dbuf(lbuf,PFN_PAIR(:,CC),pface)
-! 39) Tangential collision history.
+! 40) Tangential collision history.
          call pack_dbuf(lbuf,PFT_PAIR(:,CC),pface)
 ! Increment the number of pairs being sent.
          num_pairs_to_send = num_pairs_to_send + 1
@@ -428,7 +446,7 @@
 ! stored before the pairing data so the receiving process knows the
 ! amount of data to 'unpack.'
       lbuf = num_pairs_send_buf_loc
-! 32) Number of pair datasets.
+! 33) Number of pair datasets.
       call pack_dbuf(lbuf,num_pairs_to_send,pface)
 
 

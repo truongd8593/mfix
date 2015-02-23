@@ -57,5 +57,17 @@
       INTEGER, PARAMETER :: DIMENSION_USR = 5
 ! Maximum of the number of scalars that can be read
       INTEGER, PARAMETER :: DIM_SCALAR = 100
+! Number of Equation types:
+!  1) Gas pressure
+!  2) Solids volume fraction
+!  3) Gas and solids U-Momentum equation
+!  4) Gas and solids V-Momentum equation
+!  5) Gas and solids W-Momentum equation
+!  6) Temperature
+!  7) Species Mass Fractions
+!  8) Granular Temperature
+!  9) User-defined scalar
+! 10) DES Diffusion
+      INTEGER, PARAMETER :: DIM_EQS = 10
 
       END MODULE param

@@ -47,8 +47,7 @@
       IER = 0
 
       DIF_TIME = 0.0d0
-      DIF_DT = DIF_TSTOP*0.05 ! min(1.0d-3, DIF_TSTOP)
-
+      DIF_DT = DIF_TSTOP*0.20
 
       IF(setDBG) THEN
          WRITE(ERR_MSG, 9000) VNAME, DIF_TSTOP, DIF_DT, &
@@ -73,8 +72,8 @@
 
          CALL ADJUST_LEQ(0.0d0, 10, 2, LEQI, LEQM, IER)
 
-         CALL SOLVE_LIN_EQ (VNAME, 9, PHI, A_M, B_M, 0, LEQI, LEQM, &
-            LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER)
+         CALL SOLVE_LIN_EQ (VNAME, 10, PHI, A_M, B_M, 0, LEQI, LEQM, &
+            LEQ_SWEEP(10), LEQ_TOL(10), LEQ_PC(10), IER)
 
          DIF_TIME = DIF_TIME + DIF_DT
       ENDDO

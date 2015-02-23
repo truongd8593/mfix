@@ -48,8 +48,10 @@ CONTAINS
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: FILTER_SIZE
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
+
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -176,15 +178,12 @@ CONTAINS
       ALLOCATE(F_GDS(DIMENSION_3))
       ALLOCATE(VXF_GDS(DIMENSION_3))
 
+      FILTER_SIZE = 0
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
-         IF(DO_K) THEN
-            ALLOCATE(FILTER_CELL(27, MAX_PIP))
-            ALLOCATE(FILTER_WEIGHT(27, MAX_PIP))
-         ELSE
-            ALLOCATE(FILTER_CELL(9, MAX_PIP))
-            ALLOCATE(FILTER_WEIGHT(9, MAX_PIP))
-         ENDIF
+         FILTER_SIZE = merge(27, 9, DO_K)
+         ALLOCATE(FILTER_CELL(FILTER_SIZE, MAX_PIP))
+         ALLOCATE(FILTER_WEIGHT(FILTER_SIZE, MAX_PIP))
       CASE(DES_INTERP_GARG)
          ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
          ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))

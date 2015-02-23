@@ -64,7 +64,7 @@
       INTEGER :: NSTEPRST
 
 ! Discretization scheme for different equations
-      INTEGER :: DISCRETIZE(9)
+      INTEGER :: DISCRETIZE(DIM_EQS)
 
 ! Use Chi scheme for discretizing certain equation sets
 !  (species mass fractions)

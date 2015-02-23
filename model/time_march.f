@@ -484,12 +484,12 @@
 
       IF (DT /= UNDEFINED) THEN
          IF(use_DT_prev) THEN
-	    TIME = TIME + DT_PREV
+            TIME = TIME + DT_PREV
          ELSE
-	    TIME = TIME + DT
+            TIME = TIME + DT
          ENDIF
          use_DT_prev = .FALSE.
-	 NSTEP = NSTEP + 1
+         NSTEP = NSTEP + 1
       ENDIF
 
       NIT_TOTAL = NIT_TOTAL+NIT

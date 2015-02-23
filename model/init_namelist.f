@@ -211,8 +211,8 @@
 !<keyword category="Run Control" required="false">
 !  <description>Solve species transport equations.</description>
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
-!  <valid value=".FALSE." note="Solve species equations."/>
-!  <valid value=".TRUE." note="Do not solve species equations."/>
+!  <valid value=".TRUE." note="Solve species equations."/>
+!  <valid value=".FALSE." note="Do not solve species equations."/>
       SPECIES_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
@@ -560,7 +560,7 @@
 !    LEQ Solver selection. BiCGSTAB is the default method for all
 !    equation types.
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
 !  <valid value="1" note="SOR - Successive over-relaxation"/>
 !  <valid value="2" note="BiCGSTAB - Biconjugate gradient stabilized."/>
 !  <valid value="3" note="GMRES - Generalized minimal residual method"/>
@@ -572,7 +572,7 @@
 !  <description>
 !    Linear Equation tolerance [1.0d-4].
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
 !  <dependent keyword="LEQ_METHOD" value="2"/>
 !  <dependent keyword="LEQ_METHOD" value="3"/>
       LEQ_TOL(:) = 1.0D-4
@@ -582,19 +582,20 @@
 !  <description>
 !    Number of iterations in the linear equation solver.
 !    o 20 iterations for equation types 1-2
-!    o  5 iterations for equation types 3-5
+!    o  5 iterations for equation types 3-5,10
 !    o 15 iterations for equation types 6-9
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-      LEQ_IT(1) = 20
-      LEQ_IT(2) = 20
-      LEQ_IT(3) = 5
-      LEQ_IT(4) = 5
-      LEQ_IT(5) = 5
-      LEQ_IT(6) = 15
-      LEQ_IT(7) = 15
-      LEQ_IT(8) = 15
-      LEQ_IT(9) = 15
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
+      LEQ_IT(1) =  20
+      LEQ_IT(2) =  20
+      LEQ_IT(3) =   5
+      LEQ_IT(4) =   5
+      LEQ_IT(5) =   5
+      LEQ_IT(6) =  15
+      LEQ_IT(7) =  15
+      LEQ_IT(8) =  15
+      LEQ_IT(9) =  15
+      LEQ_IT(10) =  5
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -603,7 +604,7 @@
 !    when using the LINE preconditioner with BiCGSTAB or CG methods.
 !    'RSRS' is the default for all equation types.
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
 !  <valid value="RSRS" note="(Red/Black Sweep, Send Receive) repeated twice"/>
 !  <valid value="ISIS" note="(Sweep in I, Send Receive) repeated twice"/>
 !  <valid value="JSJS" note="(Sweep in J, Send Receive) repeated twice"/>
@@ -617,7 +618,7 @@
 !    Linear precondition used by the BiCGSTAB and CG LEQ solvers. 'LINE'
 !    is the default for all equation types.
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
 !  <valid value="NONE" note="No preconditioner"/>
 !  <valid value="LINE" note="Line relaxation"/>
 !  <valid value="DIAG" note="Diagonal Scaling"/>
@@ -632,16 +633,17 @@
 !    o 0.5 for equation types 2,3,4,5,8
 !    o 1.0 for equation types 7
 !  </description>
-!  <arg index="1" id="Equation ID Number" min="1" max="9"/>
-      UR_FAC(1)  = 0.8D0             !pressure
-      UR_FAC(2)  = 0.5D0             !rho, ep
-      UR_FAC(3)  = 0.5D0             !U
-      UR_FAC(4)  = 0.5D0             !V
-      UR_FAC(5)  = 0.5D0             !W
-      UR_FAC(6)  = 1.0D0             !T
-      UR_FAC(7)  = 1.0D0             !X
-      UR_FAC(8)  = 0.5D0             !Th
-      UR_FAC(9)  = 0.8D0             !Scalar
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
+      UR_FAC(1)  = 0.8D0     ! pressure
+      UR_FAC(2)  = 0.5D0     ! rho, ep
+      UR_FAC(3)  = 0.5D0     ! U
+      UR_FAC(4)  = 0.5D0     ! V
+      UR_FAC(5)  = 0.5D0     ! W
+      UR_FAC(6)  = 1.0D0     ! T
+      UR_FAC(7)  = 1.0D0     ! X
+      UR_FAC(8)  = 0.5D0     ! Th
+      UR_FAC(9)  = 0.8D0     ! Scalar
+      UR_FAC(10) = 1.0D0     ! DES Diffusion
 !</keyword>
 
 !<keyword category="Numerical Parameters" required="false">
@@ -666,6 +668,7 @@
 
 !<keyword category="Numerical Parameters" required="false">
 !  <description>Discretization scheme of equations.</description>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
 !  <valid value="0" note="First-order upwinding."/>
 !  <valid value="1" note="First-order upwinding (using down-wind factors)."/>
 !  <valid value="3" note="Smart."/>

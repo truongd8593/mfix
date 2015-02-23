@@ -1,65 +1,45 @@
       MODULE leqsol
 
+      use param, only: DIM_EQS
 
-      Use param
-      Use param1
+! Maximum number of outer iterations
+      INTEGER :: MAX_NIT
 
+! Automatic adjustment of leq parameters possible (set in iterate after
+! the completion of first iteration).
+      LOGICAL :: LEQ_ADJUST
 
-!     leqsol.inc
-!     1   p
-!     2   rho, ep
-!     3   u
-!     4   v
-!     5   w
-!     6   T
-!     7   X
-!     8   Th
-!     9   S
-!
-!
-!                      Maximum number of outer iterations
-      INTEGER          MAX_NIT
-!
-!                      Automatic adjustment of leq parameters possible (set in
-!                      iterate after the completion of first iteration)
-      LOGICAL          LEQ_ADJUST
-!
-!                      Maximum number of linear equation solver iterations
-      INTEGER          LEQ_IT(9)
-!
-!                      linear equation solver method
-      INTEGER          LEQ_METHOD(9)
-!
-!                      Iteration total
-      INTEGER :: ITER_TOT(10) = 0
-!
-!                      linear equation solver sweep direction
-      CHARACTER(LEN=4) ::   LEQ_SWEEP(9)
-!
-!                      linear equation solver tolerance
-      DOUBLE PRECISION LEQ_TOL(9)
-!
-!                      Preconditioner option
-      CHARACTER(LEN=4) ::   LEQ_PC(9)
-!
-!                      Option to minimize dot products
-      LOGICAL     ::   minimize_dotproducts
-!
-!                      Option to transpose A_m
-      LOGICAL     ::   do_transpose
-!
-!                      Frequency of convergence check in BiCGStab
-      INTEGER     ::   icheck_bicgs
-!
-!                      Optimize for massively parallel machine
-      LOGICAL     ::   opt_parallel
-!
-!                      Linear and non-linear solver statistics
-      LOGICAL     ::   solver_statistics
-!
-!      COMMON / ITERS_DP /
-!     &
-!
-!
+! Maximum number of linear equation solver iterations
+      INTEGER :: LEQ_IT(DIM_EQS)
+
+! Linear equation solver method
+      INTEGER :: LEQ_METHOD(DIM_EQS)
+
+! Total Iterations
+      INTEGER :: ITER_TOT(DIM_EQS) = 0
+
+! Linear equation solver sweep direction
+      CHARACTER(LEN=4) :: LEQ_SWEEP(DIM_EQS)
+
+! Linear equation solver tolerance
+      DOUBLE PRECISION :: LEQ_TOL(DIM_EQS)
+
+! Preconditioner option
+      CHARACTER(LEN=4) :: LEQ_PC(DIM_EQS)
+
+! Option to minimize dot products
+      LOGICAL :: MINIMIZE_DOTPRODUCTS
+
+! Option to transpose A_m
+      LOGICAL :: DO_TRANSPOSE
+
+! Frequency of convergence check in BiCGStab
+      INTEGER :: ICHECK_BICGS
+
+! Optimize for massively parallel machine
+      LOGICAL :: OPT_PARALLEL
+
+! Linear and non-linear solver statistics
+      LOGICAL :: SOLVER_STATISTICS
 
       END MODULE leqsol
