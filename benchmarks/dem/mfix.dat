@@ -21,7 +21,7 @@
   Time   =   0.0
   Tstop  =   0.1
 
-  DT =     5.0d-4
+  DT =     1.0d-4
   DT_MAX = 5.0d-4
 
   ENERGY_EQ  = .F.
@@ -36,7 +36,7 @@
   DES_INTERP_MEAN_FIELDS = .T.
 
  DES_INTERP_SCHEME = 'SQUARE_DPVM'
- DES_INTERP_WIDTH = @(2*0.4)
+ DES_INTERP_WIDTH = @(0.4)
  DES_DIFFUSE_MEAN_FIELDS = .F.
  DES_EXPLICITLY_COUPLED = .T.
 
@@ -47,7 +47,8 @@
 
 ! Set the max-number of iterations before "stalled"
   MAX_NIT = 50
-
+  LEQ_PC = 9*'NONE'
+  NORM_G = 0
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -58,19 +59,11 @@
   ZLENGTH =   64   KMAX = 64
   YLENGTH =  200   JMAX = 200
 
-!  CARTESIAN_GRID = .T.
+! Search grid for DEM
+  DESGRIDSEARCH_IMAX =  64
+  DESGRIDSEARCH_KMAX =  64
+  DESGRIDSEARCH_JMAX = 200
 
-  USE_STL = .F.
-  STL_BC_ID = 3
-
-  TX_STL = -2.0
-  TY_STL =  0.0
-  TZ_STL = -2.0
-
-  FAC_DIM_MAX_CUT_CELL = 1.0
-  MAX_FACETS_PER_CELL_DES = 30
-
-  PRINT_PROGRESS_BAR = .T.
 
 #_______________________________________________________________________
 # MATERIAL SECTION
@@ -116,6 +109,7 @@
   DES_ETAT_FAC = 1.0
   DES_ETAT_W_FAC = 1.0
 
+
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
@@ -134,9 +128,8 @@
   IC_T_g(1) =     300.0     ! (K)
 
   IC_U_g(1) =       0.0     ! (cm/sec)
+  IC_V_g(1) =       200.0     ! (cm/sec)
   IC_W_g(1) =       0.0     ! (cm/sec)
-  IC_V_g(1) =       0.0     ! (cm/sec)
-
 
 ! Bed
 !---------------------------------------------------------------------//
@@ -153,8 +146,8 @@
   IC_T_g(2) =     300.0     ! (K)
 
   IC_U_g(2) =       0.0     ! (cm/sec)
+  IC_V_g(2) =       400.0   ! (cm/sec)
   IC_W_g(2) =       0.0     ! (cm/sec)
-  IC_V_g(2) =       0.0     ! (cm/sec)
 
   IC_EP_s(2,1) =    0.5     ! (-)
 
