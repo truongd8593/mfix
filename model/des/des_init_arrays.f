@@ -173,7 +173,7 @@
          DES_T_s_OLD(LB:UB) = ZERO
          DES_T_s_NEW(LB:UB) = ZERO
          DES_C_PS(LB:UB) = ZERO
-         DES_X_s(:,LB:UB) = ZERO
+         DES_X_s(LB:UB,:) = ZERO
          Q_Source(LB:UB) = ZERO
          IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(LB:UB) = ZERO
