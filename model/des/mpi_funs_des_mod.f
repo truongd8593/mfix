@@ -226,7 +226,7 @@
       use discretelement, only: PIP
       use discretelement, only: iGHOST_CNT
       use discretelement, only: DES_USR_VAR
-      use discretelement, only: dg_pic
+      use discretelement, only: dg_pic, pijk
 
       use run, only: ENERGY_EQ,ANY_SPECIES_EQ
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
@@ -258,6 +258,7 @@
                pea(lcurpar,1:4) = .false.
                fc(:,lcurpar) = 0.0
                des_pos_new(:,lcurpar)=0
+               pijk(lcurpar,:) = -10
                IF (DO_OLD) THEN
                   des_pos_old(:,lcurpar)=0
                   des_vel_old(:,lcurpar)=0

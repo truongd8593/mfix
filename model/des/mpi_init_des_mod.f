@@ -138,13 +138,6 @@
       allocate(igathercnts(0:numpes-1));  igathercnts=0
       allocate(idispls(0:numpes-1)); idispls=0
 
-! allocate variable for des grid binning
-      allocate(dg_pijk(max_pip)); dg_pijk=0
-      allocate(dg_pijkprv(max_pip)); dg_pijkprv=0
-
-! allocate variables related to ghost particles
-      allocate(ighost_updated(max_pip))
-
 ! call node exchange init in case
 ! this could be needed if des_interp_on is true (i.e., drag is interpolated)
 ! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)

@@ -7,7 +7,6 @@
 !----------------------------------------------------------------------!
       MODULE MPI_UNPACK_DES
 
-
       PRIVATE
       PUBLIC :: DESMPI_UNPACK_PARCROSS, DESMPI_UNPACK_GHOSTPAR
 
@@ -189,8 +188,8 @@
          endif
       enddo
 
-! iAdd new particles and clean up ghost particles if DO_NSEARCH is set.
-      if (do_nsearch) then
+! iAdd new ghost particles
+      if(lnewcnt > 0) then
          call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
@@ -413,7 +412,7 @@
          ENDIF
 
  1000 FORMAT(2/1X,72('*'),/1x,'From: DESMPI_UNPACK_PARCROSS: ',/       &
-         ' Error 1000: Unable to match particles corssing processor ', &
+         ' Error 1000: Unable to match particles crossing processor ', &
          'boundaries.',/3x,'Source Proc: ',I9,' ---> Destination ',    &
          'Proc: ', I9,/3x,'Global Particle ID: ',I12,/1x,72('*'))
 

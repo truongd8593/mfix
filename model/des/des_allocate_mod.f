@@ -69,13 +69,13 @@ CONTAINS
 ! For parallel processing the array size required should be either
 ! specified by the user or could be determined from total particles
 ! with some factor.
-      MAX_PIP = (PARTICLES/numPEs)*PARTICLES_FACTOR
+      MAX_PIP = merge(0, PARTICLES/numPEs, PARTICLES==UNDEFINED_I)
       MAX_PIP = MAX(MAX_PIP,4)
 
       WRITE(ERR_MSG,1000) trim(iVal(MAX_PIP))
       CALL FLUSH_ERR_MSG(HEADER = .FALSE., FOOTER = .FALSE.)
 
- 1000 FORMAT('DES Particle array size: ',A)
+ 1000 FORMAT('Initial DES Particle array size: ',A)
 
 ! DES Allocatable arrays
 !-----------------------------------------------
@@ -120,6 +120,16 @@ CONTAINS
 
 ! Torque
       Allocate(  TOW (DIMN,MAX_PIP) )
+
+
+! allocate variable for des grid binning
+      allocate(dg_pijk(max_pip)); dg_pijk=0
+      allocate(dg_pijkprv(max_pip)); dg_pijkprv=0
+
+! allocate variables related to ghost particles
+      allocate(ighost_updated(max_pip))
+
+
 
       Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, MAX_PIP) )
       wall_collision_facet_id(:,:) = -1
@@ -507,7 +517,6 @@ CONTAINS
            call real_grow2(OMEGA_NEW,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
            call logical_grow2_reverse(PEA,MAX_PIP)
-           pea(MAX_PIP/2+1:MAX_PIP,1) = .false.
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)
@@ -517,18 +526,14 @@ CONTAINS
            call real_grow2(TOW,MAX_PIP)
            call real_grow2(DES_USR_VAR,MAX_PIP)
            call real_grow(F_GP,MAX_PIP)
-           F_gp(MAX_PIP/2+1:MAX_PIP)  = ZERO
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
-           wall_collision_facet_id(:,MAX_PIP/2+1:MAX_PIP) = -1
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
-           wall_collision_pft(:,:,MAX_PIP/2+1:MAX_PIP) = ZERO
            call real_grow2(DRAG_FC,MAX_PIP)
 
-           SELECT CASE(DES_INTERP_SCHEME_ENUM)
-           CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+           IF(FILTER_SIZE > 0) THEN
               call integer_grow2(FILTER_CELL,MAX_PIP)
               call real_grow2(FILTER_WEIGHT,MAX_PIP)
-           END SELECT
+           ENDIF
 
            IF(MPPIC) THEN
               call real_grow(DES_STAT_WT,MAX_PIP)
@@ -571,6 +576,8 @@ CONTAINS
 
               call real_grow( Qint, MAX_PIP )
            ENDIF
+
+           CALL DES_INIT_PARTICLE_ARRAYS(MAX_PIP/2+1,MAX_PIP)
 
         ENDDO
 
