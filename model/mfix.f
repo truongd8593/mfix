@@ -86,6 +86,8 @@
 
       USE vtk, only : WRITE_VTK_FILES
 
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -117,6 +119,8 @@
 
       DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
+
+
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -192,6 +196,8 @@
       CALL PC_QUICKWIN
 
 
+      CALL INIT_ERR_MSG('MFIX')
+
 
   101 CONTINUE
 
@@ -231,11 +237,8 @@
        CASE ('RESTART_1')
 ! Read the time-dependant part of the restart file
          CALL READ_RES1
-         CALL START_LOG
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP
-         CALL END_LOG
-         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP
-         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP
+         WRITE(ERR_MSG, 1010) TIME, NSTEP
+         CALL FLUSH_ERR_MSG()
 
       CASE ('RESTART_2')
          TIME_SAVE = TIME
@@ -248,11 +251,10 @@
 
          CALL READ_RES1
          TIME = TIME_SAVE
-         CALL START_LOG
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1010) TIME, NSTEP
-         CALL END_LOG
-         if (myPE == PE_IO) WRITE (UNIT_OUT, 1010) TIME, NSTEP
-         IF (FULL_LOG) WRITE (*, 1010) TIME, NSTEP
+
+         WRITE(ERR_MSG, 1010) TIME, NSTEP
+         CALL FLUSH_ERR_MSG()
+
          CALL WRITE_RES0
 
 ! Writing the RES1 and SPX1 can only be done here when re-indexing is turned off
@@ -453,12 +455,14 @@
 ! Finalize and terminate MPI
       call parallel_fin
 
+      CALL FINL_ERR_MSG
+
       STOP
 
  1000 FORMAT(/1X,'MFIX ',A,' Simulation:'/)
- 1010 FORMAT(/1X,70('*')//' From: MFIX',/&
-         ' Message: Read in data from .RES file for TIME = ',G12.5,/&
-         ' Time step number (NSTEP) =',I7,/1X,70('*')/)
+
+ 1010 FORMAT('Message 1010: Read in data from .RES file for TIME = ',&
+         G12.5,/'Time step number (NSTEP) =',I7)
 
       END PROGRAM MFIX
 
