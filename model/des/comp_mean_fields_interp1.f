@@ -74,13 +74,6 @@
 ! Particle volume times the weight for this cell.
             VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
 ! Accumulate total solids volume (by phase)
-            if (Volxweight .lt. 0) then
-               print *,"volxweight = ",volxweight
-               print *, "vol_wt = ",vol_wt
-               print *,"pvol(np) = ",pvol(np)
-               print *,"FILTER_WEIGHT(LC,NP) = ",FILTER_WEIGHT(LC,NP)
-               CALL MFIX_EXIT(myPE)
-            endif
 !$omp atomic
             SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
             IF(MPPIC) THEN
@@ -118,18 +111,7 @@
 
 ! calculating the bulk density of solids phase m based on the total
 ! number of particles having their center in the cell
-            if (VOL(IJK) .lt. 0 .or. SOLVOLINC(IJK,M) .lt. 0 .or. DES_RO_S(M) .lt. 0) then
-               print *,"VOL(IJK) = ",VOL(IJK)
-               print *,"DES_RO_S(M) = ",DES_RO_S(M)
-               print *,"DES_ROP_S(IJK,M)",DES_ROP_S(IJK,M)
-               print *,"SOLVOLINC(IJK,M)",SOLVOLINC(IJK,M)
-               CALL MFIX_EXIT(myPE)
-            endif
             DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)/VOL(IJK)
-            if (DES_ROP_S(IJK,M) .lt. 0) then
-               print *,"DES_ROP_S(IJK,M)",DES_ROP_S(IJK,M)
-               CALL MFIX_EXIT(myPE)
-            endif
 
          ENDDO   ! end loop over M=1,DES_MMAX
 
