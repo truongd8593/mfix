@@ -388,7 +388,7 @@
 !$omp private(np, lepg, velfp, lc, ijk, weight, lforce, ldrag_bm)      &
 !$omp shared(max_pip, pea, lp_bnd, drag_fc, f_gp, des_vel_new, ugc,    &
 !$omp   vgc, wgc, mppic, drag_bm, vol, f_gds, ep_g, filter_weight,     &
-!$omp   des_stat_wt, filter_cell)
+!$omp   des_stat_wt, filter_cell, pijk)
 !$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
