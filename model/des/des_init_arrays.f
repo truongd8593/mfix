@@ -181,11 +181,11 @@
 
 ! Chemical reaction variables.
       IF(ANY_SPECIES_EQ)THEN
-         DES_R_sp(:,LB:UB) = ZERO
-         DES_R_sc(:,LB:UB) = ZERO
+         DES_R_sp(LB:UB,:) = ZERO
+         DES_R_sc(LB:UB,:) = ZERO
          IF (INTG_ADAMS_BASHFORTH) THEN
             dMdt_OLD(LB:UB) = ZERO
-            dXdt_OLD(:,LB:UB) = ZERO
+            dXdt_OLD(LB:UB,:) = ZERO
          ENDIF
          Qint(LB:UB) = ZERO
       ENDIF
