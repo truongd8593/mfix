@@ -323,7 +323,8 @@
 !$omp           cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt, &
 !$omp           kn_w,kt_w,des_coll_model_enum,mew_w,tow,   &
 !$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,wall_collision_facet_id,wall_collision_PFT,       &
-!$omp           use_cohesion,van_der_waals,hamaker_constant,vdw_outer_cutoff,vdw_inner_cutoff,asperities,surface_energy)
+!$omp           use_cohesion,van_der_waals,wall_hamaker_constant,wall_vdw_outer_cutoff,wall_vdw_inner_cutoff, &
+!$omp           asperities,surface_energy)
 !$omp do
       DO LL = 1, MAX_PIP
 
@@ -384,17 +385,17 @@
                DISTSQ = DOT_PRODUCT(DIST, DIST)
                R_LM = 2*DES_RADIUS(LL)
 
-               IF(DISTSQ < (R_LM+VDW_OUTER_CUTOFF)**2) THEN
-                  IF(DISTSQ > (VDW_INNER_CUTOFF+R_LM)**2) THEN
+               IF(DISTSQ < (R_LM+WALL_VDW_OUTER_CUTOFF)**2) THEN
+                  IF(DISTSQ > (WALL_VDW_INNER_CUTOFF+R_LM)**2) THEN
                      DistApart = (SQRT(DISTSQ)-R_LM)
-                     FORCE_COH = HAMAKER_CONSTANT * DES_RADIUS(LL) /   &
+                     FORCE_COH = WALL_HAMAKER_CONSTANT * DES_RADIUS(LL) /   &
                         (12d0*DistApart**2)*(Asperities/(Asperities +  &
                         DES_RADIUS(LL)) + ONE/(ONE+Asperities/         &
                         DistApart)**2)
                   ELSE
                      FORCE_COH = 2d0*PI*SURFACE_ENERGY*DES_RADIUS(LL)* &
                         (Asperities/(Asperities+DES_RADIUS(LL)) + ONE/ &
-                        (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
+                        (ONE+Asperities/WALL_VDW_INNER_CUTOFF)**2 )
                   ENDIF
                   FC(:,LL) = FC(:,LL) + DIST(:)*FORCE_COH/SQRT(DISTSQ)
                ENDIF
