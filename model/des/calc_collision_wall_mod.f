@@ -309,21 +309,19 @@
       INTEGER :: MAX_NF, axis
       DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX
 
-      type(facet_linked_list), POINTER :: current_p, previous_p
-
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
 !$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,fns1,fns2,list_of_cells,  &
 !$omp          cell_id,radsq,particle_max,particle_min,axis,nf,closest_pt,dist,r_lm,      &
-!$omp          distapart,force_coh,distsq,line_t,max_distsq,max_nf,&
+!$omp          distapart,force_coh,distsq,line_t,max_distsq,max_nf,                       &
 !$omp          normal,distmod,overlap_n,v_rel_trans_norm,tangent,phaseLL,sqrt_overlap,    &
-!$omp          kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,previous_p,overlap_t,        &
-!$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,current_p,pft)          &
+!$omp          kn_des_w,kt_des_w,etan_des_w,etat_des_w,fnorm,overlap_t,                   &
+!$omp          force_history,ftan,particle_slide,ftmd,fnmd,crossp,pft)              &
 !$omp    shared(max_pip,focus_particle,debug_des,pea,no_neighboring_facet_des,pijk, &
 !$omp           dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,des_radius,    &
 !$omp           cellneighbor_facet_num,cellneighbor_facet,vertex,hert_kwn,hert_kwt, &
-!$omp           kn_w,kt_w,des_coll_model_enum,particle_wall_collisions,mew_w,tow,   &
+!$omp           kn_w,kt_w,des_coll_model_enum,mew_w,tow,   &
 !$omp           des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face,wall_collision_facet_id,wall_collision_PFT,       &
 !$omp           use_cohesion,van_der_waals,hamaker_constant,vdw_outer_cutoff,vdw_inner_cutoff,asperities,surface_energy)
 !$omp do
@@ -404,15 +402,13 @@
 
             if (cellneighbor_facet(cell_id)%extentmin(cell_count) >    &
                particle_max(axis)) then
-               call remove_collision(LL, nf, particle_wall_collisions, &
-                  wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL, nf, wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
             if (cellneighbor_facet(cell_id)%extentmax(cell_count) <    &
                particle_min(axis)) then
-               call remove_collision(LL, nf, particle_wall_collisions, &
-                  wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL, nf, wall_collision_facet_id,wall_collision_PFT)
                cycle
             endif
 
@@ -462,8 +458,7 @@
 ! However, if the orthogonal projection shows no overlap, then
 ! that is a big fat negative and overlaps are not possible.
             if((line_t.le.-1.0001d0*des_radius(LL))) then  ! no overlap
-               call remove_collision(LL,nf,particle_wall_collisions,   &
-                  wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL,nf,wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
@@ -474,8 +469,7 @@
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
-               call remove_collision(LL,nf,particle_wall_collisions,&
-                  wall_collision_facet_id,wall_collision_PFT)
+               call remove_collision(LL,nf,wall_collision_facet_id,wall_collision_PFT)
                CYCLE
             ENDIF
 
@@ -529,7 +523,7 @@
 ! from facet-to-facet as long as the particle remains in contact with
 ! one or more facets.
 
-               pft = get_collision(LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+               pft = get_collision(LL,nf,wall_collision_facet_id,wall_collision_PFT)
 
                IF(sum(abs(PFT(:))) .gt. small_number) THEN
                   OVERLAP_T(:) = TANGENT(:) * DTSOLID
@@ -587,7 +581,7 @@
                   PFT(:) = FORCE_HISTORY(:)
                ENDIF
 
-               call update_collision(pft,LL,nf,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+               call update_collision(pft,LL,nf,wall_collision_facet_id,wall_collision_PFT)
 
          ENDDO
 
@@ -600,14 +594,13 @@
 
        contains
 
-         function get_collision(LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+         function get_collision(LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
+           use error_manager
            implicit none
            double precision, dimension(DIMN) :: get_collision
            Integer, intent(in) :: LLL,facet_id
-           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           type(facet_linked_list), POINTER :: curr_p, prev_p
            integer :: cc, free_index
 
            free_index = -1
@@ -621,7 +614,9 @@
               endif
            enddo
            if(-1 == free_index) then
-              stop 456
+              CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: GET_COLLISION")
+              WRITE(ERR_MSG, 1100)
+              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
            else
               wall_collision_facet_id(free_index,LLL) = facet_id
               wall_collision_PFT(:,free_index,LLL) = ZERO
@@ -629,40 +624,17 @@
               return
            endif
 
-           if (.not. associated(particle_wall_collisions(LLL)%pp)) then
-              allocate(particle_wall_collisions(LLL)%pp)
-              curr_p => particle_wall_collisions(LLL)%pp
-              curr_p%PFT(:) = ZERO
-              curr_p%facet_id = facet_id
-           else
-              curr_p => particle_wall_collisions(LLL)%pp
-              do while (associated(curr_p))
-                 if (curr_p%facet_id .eq. facet_id) exit
-                 prev_p => curr_p
-                 curr_p => curr_p%next
-              enddo
-
-              if (.not. associated(curr_p)) then
-                 allocate(curr_p)
-                 prev_p%next => curr_p
-                 curr_p%PFT(:) = ZERO
-                 curr_p%facet_id = facet_id
-              endif
-           endif
-
-           get_collision(:) = curr_p%PFT(:)
-           return
+1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
 
          end function get_collision
 
-         subroutine update_collision(pft,LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+         subroutine update_collision(pft,LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
+           use error_manager
            implicit none
            double precision, dimension(DIMN), intent(in) :: pft
            Integer, intent(in) :: LLL,facet_id
-           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           type(facet_linked_list), POINTER :: curr_p, prev_p
            integer :: cc, free_index
 
            do cc = 1, COLLISION_ARRAY_MAX
@@ -672,38 +644,20 @@
               endif
            enddo
 
-           stop 123
+           CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: UPDATE_COLLISION")
+           WRITE(ERR_MSG, 1100)
+           CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-           if (.not. associated(particle_wall_collisions(LLL)%pp)) then
-              allocate(particle_wall_collisions(LLL)%pp)
-              curr_p => particle_wall_collisions(LLL)%pp
-              curr_p%PFT(:) = PFT(:)
-              curr_p%facet_id = facet_id
-           else
-              curr_p => particle_wall_collisions(LLL)%pp
-              do while (associated(curr_p))
-                 if (curr_p%facet_id .eq. facet_id) exit
-                 prev_p => curr_p
-                 curr_p => curr_p%next
-              enddo
-
-              if (.not. associated(curr_p)) then
-                 allocate(curr_p)
-                 prev_p%next => curr_p
-                 curr_p%facet_id = facet_id
-              endif
-              curr_p%PFT(:) = PFT(:)
-           endif
+1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
 
          end subroutine update_collision
 
-         subroutine remove_collision(LLL,facet_id,particle_wall_collisions,wall_collision_facet_id,wall_collision_PFT)
+         subroutine remove_collision(LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
+           use error_manager
            implicit none
            Integer, intent(in) :: LLL,facet_id
-           type(facet_linked_list_p), DIMENSION(:), intent(inout) :: particle_wall_collisions
            INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
            DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           type(facet_linked_list), POINTER :: curr_p, prev_p
            integer :: cc
 
            do cc = 1, COLLISION_ARRAY_MAX
@@ -713,30 +667,7 @@
               endif
            enddo
 
-           return
-
-           if (associated(particle_wall_collisions(LLL)%pp)) then
-              curr_p => particle_wall_collisions(LLL)%pp
-              if (curr_p%facet_id .eq. facet_id) then
-                 particle_wall_collisions(LLL)%pp => curr_p%next
-                 deallocate(curr_p)
-              else
-                 prev_p => curr_p
-                 curr_p => curr_p%next
-
-                 do while (associated(curr_p))
-                    if (curr_p%facet_id .eq. facet_id) exit
-                    prev_p => curr_p
-                    curr_p => curr_p%next
-                 enddo
-
-                 if (associated(curr_p)) then
-                    prev_p%next => curr_p%next
-                    deallocate(curr_p)
-                 endif
-
-              endif
-           endif
+1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
 
          end subroutine remove_collision
 

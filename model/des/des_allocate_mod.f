@@ -136,7 +136,6 @@ CONTAINS
       Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, MAX_PIP) )
       wall_collision_facet_id(:,:) = -1
       Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, MAX_PIP) )
-      Allocate(  PARTICLE_WALL_COLLISIONS (MAX_PIP) )
 
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )

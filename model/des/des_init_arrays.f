@@ -56,11 +56,6 @@
 
       GRAV(:) = ZERO
 
-      DO II = 1, SIZE(particle_wall_collisions)
-         nullify(particle_wall_collisions(II)%pp)
-      ENDDO
-
-
       IF(ENERGY_EQ)THEN
          avgDES_T_s(:) = ZERO
          DES_ENERGY_SOURCE(:) = ZERO
