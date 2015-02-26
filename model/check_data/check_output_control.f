@@ -24,6 +24,7 @@
       USE scalars, only :NSCALAR
       USE mpi_utility, only: myPE, PE_IO,XLENGTH,YLENGTH,ZLENGTH
       USE DISCRETELEMENT, only:DISCRETE_ELEMENT
+      USE DISCRETELEMENT, only: PARTICLE_ORIENTATION
       USE cutcell, only: USE_STL
 
 ! Global Parameters:
@@ -151,9 +152,9 @@
 
 ! If VTK_VAR is defined, fill-up the variable list
 ! for the vtk subdomains
-     DO L = 1, DIM_VTK_VAR
-        IF(VTK_VAR(L)/=UNDEFINED_I) VTK_VARLIST(:,L) = VTK_VAR(L)
-     ENDDO
+      DO L = 1, DIM_VTK_VAR
+         IF(VTK_VAR(L)/=UNDEFINED_I) VTK_VARLIST(:,L) = VTK_VAR(L)
+      ENDDO
 
 
       DO L = 1, DIMENSION_VTK
@@ -166,148 +167,144 @@
 
                CASE (1)
                   VTK_EP_g(L) = .TRUE.
-
+ 
                CASE (2)
                   VTK_P_g(L)    = .TRUE.
                   VTK_P_star(L) = .TRUE.
-
+ 
                CASE (3)
                   VTK_VEL_G(L) = .TRUE.
-
+ 
                CASE (4)
                   DO M = 1,MMAX
                      VTK_VEL_S(L,M) = .TRUE.
                   END DO
-
+ 
                CASE (5)
                   DO M = 1,MMAX
-                  VTK_ROP_s(L,M) = .TRUE.
+                     VTK_ROP_s(L,M) = .TRUE.
                   END DO
-
-
+ 
                CASE (6)
                   VTK_T_g(L) = .TRUE.
                   DO M = 1,MMAX
                      VTK_T_s(L,M) = .TRUE.
                   END DO
-
+ 
                CASE (7)
-                  !DO N = 1,NMAX(0)
-                     VTK_X_g(L,:) = .TRUE.
-                  !END DO
-
+                 !DO N = 1,NMAX(0)
+                    VTK_X_g(L,:) = .TRUE.
+                 !END DO
+ 
                   DO M = 1, MMAX
-                     !DO N = 1,NMAX(M)
+                    !DO N = 1,NMAX(M)
                         VTK_X_s(L,M,:) = .TRUE.
-                     !END DO
+                    !END DO
                   END DO
-
-
+ 
+ 
                CASE (8)
                   DO M = 1,MMAX
                      VTK_Theta_m(L,M) = .TRUE.
                   END DO
-
-
+ 
                CASE (9)
                   DO N = 1,NSCALAR
                      VTK_Scalar(L,N) =.TRUE.
                   END DO
-
-
+ 
                CASE (10)
                   DO R = 1,nRR
                      VTK_RRate(L,R) = .TRUE.
                   END DO
-
+ 
                CASE (11)
                   IF(K_EPSILON) THEN
                      VTK_K_Turb_G(L) = .TRUE.
                      VTK_E_Turb_G(L) = .TRUE.
                   ENDIF
-
+ 
                CASE (12)
                   VTK_VORTICITY(L) = .TRUE.
                   VTK_LAMBDA_2(L)  = .TRUE.
-
+ 
                CASE (100)
                   VTK_PARTITION(L) = .TRUE.
-
+ 
                CASE (101)
                   VTK_BC_ID(L) = .TRUE.
-
+ 
                CASE (102)
                   VTK_DWALL(L) = .TRUE.
-
+ 
                CASE (103)
                   IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
                      VTK_FACET_COUNT_DES(L) = .TRUE.
                   ENDIF
-
+ 
                CASE (104)
                   IF(DISCRETE_ELEMENT.AND.USE_STL) THEN
                      VTK_NB_FACET_DES(L) = .TRUE.
                   ENDIF
-
-
+ 
                CASE(999)
                   VTK_IJK(L) = .TRUE.
-
+ 
                CASE(1000)
                   VTK_NORMAL(L) = .TRUE.
-
+ 
                CASE (1001)
                   VTK_DEBUG(L,1) = .TRUE.
-
+ 
                CASE (1002)
                   VTK_DEBUG(L,2) = .TRUE.
-
+ 
                CASE (1003)
                   VTK_DEBUG(L,3) = .TRUE.
-
+ 
                CASE (1004)
                   VTK_DEBUG(L,4) = .TRUE.
-
+ 
                CASE (1005)
                   VTK_DEBUG(L,5) = .TRUE.
-
+ 
                CASE (1006)
                   VTK_DEBUG(L,6) = .TRUE.
-
+ 
                CASE (1007)
                   VTK_DEBUG(L,7) = .TRUE.
-
+ 
                CASE (1008)
                   VTK_DEBUG(L,8) = .TRUE.
-
+ 
                CASE (1009)
                   VTK_DEBUG(L,9) = .TRUE.
-
+ 
                CASE (1010)
                   VTK_DEBUG(L,10) = .TRUE.
-
+ 
                CASE (1011)
                   VTK_DEBUG(L,11) = .TRUE.
-
+ 
                CASE (1012)
                   VTK_DEBUG(L,12) = .TRUE.
-
+ 
                CASE (1013)
                   VTK_DEBUG(L,13) = .TRUE.
-
+ 
                CASE (1014)
                   VTK_DEBUG(L,14) = .TRUE.
-
+ 
                CASE (1015)
                   VTK_DEBUG(L,15) = .TRUE.
-
-
+ 
+ 
                CASE (0) ! do nothing
-
+ 
                CASE (UNDEFINED_I) ! do nothing
-
+ 
                CASE DEFAULT
-
+ 
                   WRITE(*,*) ' Unknown VTK variable flag ',L,':',VTK_VAR(L)
                   WRITE(*,*) ' Available flags are : '
                   WRITE(*,*) ' 1 : Void fraction (EP_g)'
@@ -326,10 +323,14 @@
                   write(*,*) '101: Boundary condition flag for scalar cell (BC_ID)'
                   write(*,*) 'MFiX will exit now.'
                   CALL MFIX_EXIT(myPE)
+ 
+            END SELECT
+ 
+         ENDDO
 
-               END SELECT
+! Activate particle orientation calculation if one vtk region needs it.         
+         IF(VTK_PART_ORIENTATION(L)) PARTICLE_ORIENTATION = .TRUE.
 
-            ENDDO
       ENDDO   ! end loop over (l = 1,dimension_vtk)
 
 ! Finalize the error manager.

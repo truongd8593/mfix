@@ -240,7 +240,13 @@ use param, only: DIMENSION_N_S
 
 ! Particle velocity
       LOGICAL :: VTK_PART_VEL(DIMENSION_VTK)
-
+ 
+! Particle angular velocity
+      LOGICAL :: VTK_PART_ANGULAR_VEL(DIMENSION_VTK)
+ 
+! Particle orientation
+      LOGICAL :: VTK_PART_ORIENTATION(DIMENSION_VTK)
+ 
 ! Particle user-defined variable
       LOGICAL :: VTK_PART_USR_VAR(DIMENSION_VTK,3)
 

@@ -221,6 +221,7 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
+      use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION,INIT_ORIENTATION
       use discretelement, only: FC
       use discretelement, only: DO_OLD
       use discretelement, only: PIP
@@ -238,6 +239,7 @@
       use desmpi, only: iEXCHFLAG
 
       use param, only: DIMENSION_N_s
+      use param1, only: ZERO
 
       implicit none
 
@@ -265,6 +267,8 @@
                ENDIF
                des_vel_new(:,lcurpar)=0
                omega_new(:,lcurpar)=0
+
+               IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,lcurpar) = INIT_ORIENTATION
 
                if(ENERGY_EQ) then
                   des_t_s_new(lcurpar)=0

@@ -101,6 +101,8 @@ CONTAINS
       Allocate(  DES_VEL_NEW (DIMN,MAX_PIP) )
       Allocate(  OMEGA_NEW (DIMN,MAX_PIP) )
 
+      IF(PARTICLE_ORIENTATION) Allocate(  ORIENTATION (DIMN,MAX_PIP) )
+
       IF (DO_OLD) THEN
          Allocate(  DES_POS_OLD (DIMN,MAX_PIP) )
          Allocate(  DES_VEL_OLD (DIMN,MAX_PIP) )
@@ -515,6 +517,7 @@ CONTAINS
            call real_grow2(DES_POS_NEW,MAX_PIP)
            call real_grow2(DES_VEL_NEW,MAX_PIP)
            call real_grow2(OMEGA_NEW,MAX_PIP)
+           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
            call logical_grow2_reverse(PEA,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)

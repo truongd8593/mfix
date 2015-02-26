@@ -59,6 +59,8 @@
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
+! Particle orientation      
+      use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION
 ! Particle species composition
       use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
@@ -144,8 +146,9 @@
                dcycl_offset(pface,:),pface)
 ! 7) Translational Velocity
             call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
-! 8) Rotational Velocity
+! 8) Rotational Velocity and orientation
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
+            if(particle_orientation) call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
 ! 9) Exiting particle flag
             call pack_dbuf(lbuf,merge(1,0,pea(lcurpar,3)),pface)
 ! 10) Temperature
@@ -209,6 +212,8 @@
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
+! Particle orientation      
+      use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION
 ! Particle radius, volume, density, mass
       use discretelement, only: DES_RADIUS, PVOL, RO_SOL, PMASS
 ! Previous value for particle acceleration (tangential/rotational)
@@ -342,8 +347,9 @@
                dcycl_offset(pface,:),pface)
 ! 17) Translational velocity
             call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
-! 18) Rotational velocity
+! 18) Rotational velocity and orientation
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
+            if(particle_orientation) call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
 ! 19) Accumulated translational forces
             call pack_dbuf(lbuf,fc(:,lcurpar),pface)
 ! 20) Accumulated torque forces

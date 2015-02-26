@@ -970,16 +970,23 @@
       VTK_PART_DIAMETER= .FALSE.
 !</keyword>
 
-!<keyword category="Output Control" required="false">
-!  <description>Write particle radius in VTK file.</description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      VTK_PART_DIAMETER= .FALSE.
-!</keyword>
 
 !<keyword category="Output Control" required="false">
 !  <description>Write particle velocity in VTK file.</description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       VTK_PART_VEL= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle angular velocity in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_ANGULAR_VEL= .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>Write particle angular velocity in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_PART_ORIENTATION= .FALSE.
 !</keyword>
 
 !<keyword category="Output Control" required="false">

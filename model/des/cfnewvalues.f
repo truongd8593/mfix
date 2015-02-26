@@ -39,6 +39,7 @@
       INTEGER :: L
       DOUBLE PRECISION :: DD(3), NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
+      DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
 !-----------------------------------------------
 
       IF(MPPIC) THEN
@@ -106,6 +107,23 @@
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
+! Update particle orientation - Always first order
+! When omega is non-zero, compute the rotation angle, and apply the 
+! Rodrigues' rotation formula
+
+         IF(PARTICLE_ORIENTATION) THEN
+            OMEGA_MAG = OMEGA_NEW(1,L)**2 +OMEGA_NEW(2,L)**2 + OMEGA_NEW(3,L)**2
+
+            IF(OMEGA_MAG>ZERO) THEN
+               OMEGA_MAG=DSQRT(OMEGA_MAG)
+               OMEGA_UNIT(:) = OMEGA_NEW(:,L)/OMEGA_MAG
+               ROT_ANGLE = OMEGA_MAG * DTSOLID
+
+               ORIENTATION(:,L) = ORIENTATION(:,L)*DCOS(ROT_ANGLE) &
+                                 + DES_CROSSPRDCT(OMEGA_UNIT,ORIENTATION(:,L))*DSIN(ROT_ANGLE) &
+                                 + OMEGA_UNIT(:)*DOT_PRODUCT(OMEGA_UNIT,ORIENTATION(:,L))*(ONE-DCOS(ROT_ANGLE))
+            ENDIF
+         ENDIF
 
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius during one solids time step. if so, call stop

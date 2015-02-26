@@ -117,6 +117,11 @@
       DES_POS_NEW(:,LB:UB) = ZERO
       DES_VEL_NEW(:,LB:UB) = ZERO
       OMEGA_NEW(:,LB:UB) = ZERO
+      IF(PARTICLE_ORIENTATION) THEN
+         ORIENTATION(1,:) = INIT_ORIENTATION(1)
+         ORIENTATION(2,:) = INIT_ORIENTATION(2)
+         ORIENTATION(3,:) = INIT_ORIENTATION(3)
+      ENDIF
 
 ! Particle state flag
       PEA(LB:UB,:) = .FALSE.

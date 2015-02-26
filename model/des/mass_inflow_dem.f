@@ -309,6 +309,9 @@
 ! Set the initial angular velocity values
       OMEGA_NEW(:,lNP) = 0
 
+! Set the initial angular position values
+      IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,lNP) = INIT_ORIENTATION
+
 ! Set the particle radius value
       DES_RADIUS(lNP) = HALF * DES_D_P0(lM)
 

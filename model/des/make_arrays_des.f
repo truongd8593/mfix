@@ -197,6 +197,14 @@
 ! Initialize old values
          omega_new(:,:)   = zero
 
+! Particle orientation
+         IF(PARTICLE_ORIENTATION) THEN
+            ORIENTATION(1,:) = INIT_ORIENTATION(1)
+            ORIENTATION(2,:) = INIT_ORIENTATION(2)
+            ORIENTATION(3,:) = INIT_ORIENTATION(3)
+         ENDIF
+
+
          IF (DO_OLD) THEN
             omega_old(:,:)   = zero
             des_pos_old(:,:) = des_pos_new(:,:)
