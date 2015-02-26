@@ -129,7 +129,7 @@
 ! DES grid bin information
       DG_PIJK(LB:UB) = -1
       DG_PIJKPRV(LB:UB) = -1
-      IGHOST_UPDATED(LB:UB) = -1
+      IGHOST_UPDATED(LB:UB) = .false.
 
 ! Fluid cell bin information
       PIJK(LB:UB,:) = 0
