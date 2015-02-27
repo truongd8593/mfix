@@ -18,11 +18,11 @@
 !                       a dummy variable listed in usrnlst.inc
         DOUBLE PRECISION DUMMY_DP
 
-! set .true. if 2D flow in XY plane only
-        logical                               :: tec_no_k = .true.
-
 ! set .true. for entering tecplot output routine
         logical                               :: tecplot_output=.false.
+
+! set .true. if 2D flow in XY plane only
+        logical                               :: tec_no_k = .true.
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
 ! format (BLOCK format):
