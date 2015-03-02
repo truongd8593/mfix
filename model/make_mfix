@@ -54,6 +54,7 @@ AUTOCOMPILE=0
 CLEAN_OBJS=0
 
 # Set based upon user input.
+AR=ar
 COMP_FILE=
 FORT_FLAGS=
 FORT_FLAGS2=
