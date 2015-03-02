@@ -61,13 +61,6 @@
       IF (.FALSE.) CALL DES_GRANULAR_TEMPERATURE
       IF (.FALSE.) CALL WRITE_DES_THETA
 
-! Notify that output was written.
-      WRITE(ERR_MSG, 1000) trim(iVal(S_TIME))
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
- 1000 FORMAT('DES particle data written at time = ',A)
-
-
       RETURN
       END SUBROUTINE WRITE_DES_DATA
 !-----------------------------------------------

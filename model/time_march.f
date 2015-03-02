@@ -1,43 +1,13 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: TIME_MARCH                                              C
-!  Purpose: Controlling module for time marching and finding the       C
-!           solution of equations from TIME to TSTOP at intervals of   C
-!           DT, updating the b.c.'s, and creating output.              C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 21-JAN-92  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Change subroutine name from SET_GASFLUX to SET_FLUXES      C
-!           Add a CALC_THETA call for granular stresses                C
-!  Author: M. Syamlal                                 Date: 20-FEB-92  C
-!  Reviewer: S. Venkatesan                            Date: 11-DEC-92  C
-!  Revision Number: 2                                                  C
-!  Purpose: Changes for MFIX 2.0                                       C
-!  Author: M. Syamlal                                 Date: 12-APR-96  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number: 2                                                  C
-!  Purpose: To call DES related routines when doing DES                C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!                                                                      C
-!  Revision Number: 3                                                  C
-!  Purpose: To call ISAT to calculate chemical rxns                    C
-!  Author: Nan Xie                                    Date: 02-Aug-04  C
-!                                                                      C
-!  Revision Number: 4                                                  C
-!  Purpose: To call Cartesian grid subroutines, and update dasboard    C
-!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
-!                                                                      C
-!  Revision Number: 5                                                  C
-!  Purpose: Incorporation of QMOM for the solution of the particle     C
-!           kinetic equation                                           C
-!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: TIME_MARCH                                              !
+!  Author: M. Syamlal                                 Date: 21-JAN-92  !
+!                                                                      !
+!  Purpose: Controlling module for time marching and finding the       !
+!           solution of equations from TIME to TSTOP at intervals of   !
+!           DT, updating the b.c.'s, and creating output.              !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE TIME_MARCH
 
@@ -47,7 +17,6 @@
       USE param
       USE param1
       USE run
-      USE output
       USE physprop
       USE fldvar
       USE geometry
@@ -63,11 +32,11 @@
       USE scalars
       USE toleranc
       USE drag
-      USE rxns
+      USE rxns, only: nRR
       USE compar
       USE time_cpu
       USE discretelement
-      USE leqsol
+      USE leqsol, only: SOLVER_STATISTICS, REPORT_SOLVER_STATS
       use mpi_utility
       USE cdist
       USE MFIX_netcdf
@@ -81,33 +50,17 @@
       USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
       USE vtp
 
+      use output, only: RES_DT, NLOG
+
+
       IMPLICIT NONE
-!-----------------------------------------------
-! Local parameters
-!-----------------------------------------------
-      DOUBLE PRECISION, PARAMETER :: ONEMEG = 1048576
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! Flag to indicate one pass through iterate for steady
 ! state conditions.
       LOGICAL :: FINISH
-! Time at which standard output is to be written
-      DOUBLE PRECISION :: OUT_TIME
-! Time at which restart file is to be written
-      DOUBLE PRECISION :: RES_TIME
-! Time at which REAL restart file is to be written
-      DOUBLE PRECISION :: SPX_TIME(N_SPX)
-! Disk space needed for one variable and each SPX file
-      DOUBLE PRECISION :: DISK_ONE, DISK(N_SPX)
-! Total Disk space
-      DOUBLE PRECISION :: DISK_TOT
-! number SPX writes
-      INTEGER :: ISPX
 
-      LOGICAL :: RES_MSG, SPX_MSG
-! Time at which special output is to be written
-      DOUBLE PRECISION :: USR_TIME (DIMENSION_USR)
 ! Loop indices
       INTEGER :: L, M , I, IJK, N
 ! Error index
@@ -119,19 +72,10 @@
 ! dummy logical variable for initializing adjust_dt
       LOGICAL :: dummy
 
-      CHARACTER(LEN=35) ::  EXT_END
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
       LOGICAL :: eofBATCHQ
-! not used remove after verification
-      LOGICAL :: bWrite_netCDF_files
-
-      DOUBLE PRECISION :: TIME_START
-      DOUBLE PRECISION :: WALL_START ! wall time at the beginning
-      DOUBLE PRECISION :: WALL_NOW   ! wall time at the end of each timestep
-      DOUBLE PRECISION :: WALL_LEFT, WALL_TOTAL
-      CHARACTER(LEN=4) TUNIT, TOT_UNIT
 
 !-----------------------------------------------
 ! External functions
@@ -142,12 +86,10 @@
       DOUBLE PRECISION :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
 
       LOGICAL , EXTERNAL :: ADJUST_DT
-      DOUBLE PRECISION :: WALL_TIME
 !-----------------------------------------------
 
       IF(AUTOMATIC_RESTART) RETURN
 
-      EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
       FINISH  = .FALSE.
       NCHECK  = NSTEP
@@ -157,75 +99,7 @@
       eofBATCHQ = .FALSE.
 
 
-! Initialize times for writing outputs
-      OUT_TIME = TIME
-      LOG_HEADER = .TRUE.
-      RES_MSG = .TRUE.
-      SPX_MSG = .TRUE.
-
-! Initialize disk space calculations
-      DISK_TOT = ZERO
-      DISK_ONE = 4.*IJKMAX2/ONEMEG
-      DISK(1) = DISK_ONE
-      DISK(2) = 2.*DISK_ONE
-      DISK(3) = 3.*DISK_ONE
-      DISK(4) = MMAX*3.*DISK_ONE
-      DISK(5) = MMAX*DISK_ONE
-      DISK(6) = 3.*DISK_ONE
-      DISK(7) = NMAX(0)*DISK_ONE
-      M = 1
-      IF (MMAX > 0) THEN
-         DISK(7) = DISK(7) + SUM(NMAX(1:MMAX)*DISK_ONE)
-         M = MMAX + 1
-      ENDIF
-      DISK(8) = MMAX*DISK_ONE
-      DISK(9) = NScalar*DISK_ONE
-      DISK(10) = nRR*DISK_ONE
-      IF(K_Epsilon) THEN
-         DISK(11) = 2.*DISK_ONE
-      ELSE
-         DISK(11) = ZERO
-      ENDIF
-
-
-      IF (RUN_TYPE == 'NEW') THEN
-         RES_TIME = TIME
-         SPX_TIME(:N_SPX) = TIME
-         L = N_SPX + 1
-      ELSE
-         IF (DT /= UNDEFINED) THEN
-            RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
-            SPX_TIME(:N_SPX) = (INT((TIME+0.1d0*DT)/SPX_DT(:N_SPX))+1)*&
-               SPX_DT(:N_SPX)
-            L = N_SPX + 1
-         ENDIF
-      ENDIF
-
-      DO L = 1, DIMENSION_USR
-         USR_TIME(L) = UNDEFINED
-         IF (USR_DT(L) /= UNDEFINED) THEN
-            IF (RUN_TYPE == 'NEW') THEN
-               USR_TIME(L) = TIME
-            ELSE
-               USR_TIME(L) = (INT((TIME+0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
-            ENDIF
-         ENDIF
-      ENDDO
-
-! JFD modification: cartesian grid implementation
-! Initialize VTK_TIME
-      IF(WRITE_VTK_FILES) THEN
-         DO L = 1, DIMENSION_VTK
-            VTK_TIME(L) = UNDEFINED
-            IF (VTK_DT(L) /= UNDEFINED) THEN
-               IF (RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2') THEN
-                  VTK_TIME(L) = TIME
-               ELSE
-                  VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
-               ENDIF
-            ENDIF
-         ENDDO
-      ENDIF
+      CALL INIT_OUTPUT_VARS
 
 ! Parse residual strings
       CALL PARSE_RESID_STRING (IER)
@@ -292,12 +166,9 @@
          STOP
       ENDIF
 
-      WALL_START = WALL_TIME()
-      TIME_START = TIME
 
 ! The TIME loop begins here.............................................
  100  CONTINUE
-
 
 ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
 ! queue terminates
@@ -325,10 +196,7 @@
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1
 
-      CALL CPU_TIME(CPU0_IO)
-
-      CALL OUTPUT_MANAGEMENT
-
+      CALL OUTPUT_MANAGER(eofBATCHQ, FINISH)
 
       IF (DT == UNDEFINED) THEN
          IF (FINISH) THEN
@@ -337,27 +205,12 @@
             FINISH = .TRUE.
          ENDIF
 
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-      ELSEIF (TIME + 0.1d0*DT >= TSTOP.OR.eofBATCHQ) THEN
-         IF(solver_statistics) then
-            WRITE(*,*) 'Total number of non-linear iterations', &
-               NIT_TOTAL
-            WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
-            WRITE(*,*) 'Equation number', '-----', &
-               'Number of linear solves'
-            DO I = 1, 10
-               WRITE(*,*) I, '---------',  iter_tot(I)
-            ENDDO
-            WRITE(*,*) 'Equation number', '-----', &
-               'Avg. number of linear solves for NIT'
-            DO I = 1, 10
-               WRITE(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
-            ENDDO
-         ENDIF
+! Mechanism to terminate MFIX normally before batch queue terminates.
+      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. eofBATCHQ) THEN
+         IF(SOLVER_STATISTICS) &
+            CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
          RETURN
       ENDIF
-
 
 ! Update previous-time-step values of field variables
       CALL UPDATE_OLD
@@ -418,24 +271,15 @@
          CALL ITERATE (IER, NIT)
       ENDDO
 
-      WALL_NOW = WALL_TIME()
-      WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/                  &
-         max(TIME-TIME_START,1.0d-6)
-      CALL GET_TUNIT(WALL_LEFT,TUNIT)
-      WALL_TOTAL = (WALL_NOW-WALL_START)*(TSTOP-TIME_START)/           &
-         max(TIME-TIME_START,1.0d-6)
-      CALL GET_TUNIT(WALL_TOTAL,TOT_UNIT)
-      IF(DMP_LOG) WRITE (*,2000) 'Remaining', WALL_LEFT, trim(TUNIT),  &
-         'Total',WALL_TOTAL, trim(TOT_UNIT)
-
- 2000 FORMAT('Estimated Wall Time: ',2(3x,A,F9.3,1X,A))
 
       IF(DT.LT.DT_MIN) THEN
          IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
-            IF (DMP_LOG)WRITE(UNIT_LOG,*) &
-                 'Automatic restart not possible as Total Time < RES_DT'
+            WRITE(ERR_MSG,1000)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             AUTO_RESTART = .FALSE.
          ENDIF
+
+ 1000 FORMAT('Automatic restart not possible as Total Time < RES_DT')
 
          IF(AUTO_RESTART) THEN
             AUTOMATIC_RESTART = .TRUE.
@@ -460,21 +304,17 @@
 
 ! Check over mass and elemental balances.  This routine is not active by default.
 ! Edit the routine and specify a reporting interval to activate it.
-      Call check_mass_balance (1)
+      CALL CHECK_MASS_BALANCE (1)
 
-! DES
+! Othe solids model implementations
       IF (DEM_SOLIDS) CALL DES_TIME_MARCH
       IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
-
-
-! Alberto Passalacqua: QMOMK
       IF (QMOMK) CALL QMOMK_TIME_MARCH
-
       IF (CALL_DQMOM) CALL USR_DQMOM
 
 ! Advance the time step and continue
-      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-          (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+      IF((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
+         (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
 ! Double the timestep for 2nd order accurate time implementation
          DT = 2.d0*DT
          ODT = ODT * 0.5d0
@@ -494,33 +334,14 @@
 
       NIT_TOTAL = NIT_TOTAL+NIT
 
-! AIKEDEBUG 081101
 ! write (*,"('Compute the Courant number')")
 ! call get_stats(IER)
 
       FLUSH (6)
+! The TIME loop ends here....................................................
       GOTO 100
 
-      IF(solver_statistics) then
-         WRITE(*,*) 'Total number of non-linear iterations', NIT_TOTAL
-         WRITE(*,*) 'Average number per time-step', NIT_TOTAL/NSTEP
-         WRITE(*,*) 'Equation number', '-----', &
-            'Number of linear solves'
-         DO I = 1, 10
-            Write(*,*) I, '---------',  iter_tot(I)
-         ENDDO
-         WRITE(*,*) 'Equation number', '-----',&
-            'Avg. number of linear solves for NIT'
-         DO I = 1, 10
-            Write(*,*) I, '---------',  iter_tot(I)/NIT_TOTAL
-         ENDDO
-      ENDIF
-
-! The TIME loop ends here....................................................
-
-
-
-
+      IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
 
       contains
 
@@ -534,6 +355,8 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_BATCH_QUEUE_END
 
+      use time_cpu, only: WALL_START
+
       use error_manager
 
 ! Logical flags for hault cases.
@@ -542,6 +365,8 @@
       DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
 ! Time units for formatted output.
       CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
+! External function
+      DOUBLE PRECISION :: WALL_TIME
 
 ! Calculate the current elapsed wall time.
       WALL_STOP = WALL_TIME()
@@ -551,17 +376,9 @@
       WALL_HAULT = ((WALL_STOP+TERM_BUFFER) >= BATCH_WALLCLOCK)
       INQUIRE(file="MFIX.STOP", exist=USER_HAULT)
 
-! Fancy format the elapsed wall time and get its unit.
-      CALL GET_TUNIT(WALL_STOP,WT_UNIT)
-
-! Write out the amount of elapsed wall time.
-      WRITE(ERR_MSG,1000) WALL_STOP, WT_UNIT
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
- 1000 FORMAT('Elapsed Wall time: ',F9.2,1X,A)
-
 ! Report that the max user wall time was reached and exit.
       IF(WALL_HAULT) THEN
+         CALL GET_TUNIT(WALL_STOP,WT_UNIT)
          FANCY_BUFF = TERM_BUFFER
          CALL GET_TUNIT(FANCY_BUFF, BF_UNIT)
          FANCY_BATCH = BATCH_WALLCLOCK
@@ -593,175 +410,6 @@
       call bcast (eofBATCHQ,PE_IO)
 
       END SUBROUTINE CHECK_BATCH_QUEUE_END
-
-
-!----------------------------------------------------------------------!
-!                                                                      !
-!  Subroutine: OUTPUT_MANAGEMENT                                       !
-!  Author: J.Musser                                   Date:            !
-!                                                                      !
-!  Purpose: Relocate calls to write output files (RES, SPx, VTP). This !
-!  was done to simplify the time_march code.                           !
-!                                                                      !
-!----------------------------------------------------------------------!
-      SUBROUTINE OUTPUT_MANAGEMENT
-
-! Write standard output, if needed
-      IF (OUT_DT /= UNDEFINED) THEN
-         IF (DT == UNDEFINED) THEN
-            CALL WRITE_OUT1
-         ELSE IF (TIME + 0.1d0*DT>=OUT_TIME .OR. TIME+0.1d0*DT>=TSTOP) THEN
-            OUT_TIME = (INT((TIME + 0.1d0*DT)/OUT_DT) + 1)*OUT_DT
-            CALL WRITE_OUT1
-         ENDIF
-      ENDIF
-
-! Write SPx files, if needed
-      bWrite_netCDF_files = .false.
-      ISPX = 0
-      DO L = 1, N_SPX
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) THEN
-               bWrite_netCDF_files = .true.
-               CALL WRITE_SPX1 (L, 0)
-               DISK_TOT = DISK_TOT + DISK(L)
-               ISPX = ISPX + 1
-
-               IF (SPX_MSG) THEN
-                  IF (RES_MSG) THEN
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
-                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
-                  ELSE
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
-                     IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
-                  ENDIF
-                  SPX_MSG = .FALSE.
-               ENDIF
-               IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-               IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
-            ENDIF
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-         ELSEIF (TIME + 0.1d0*DT>=SPX_TIME(L) .OR. &
-                 TIME+0.1d0*DT>=TSTOP.OR.eofBATCHQ) THEN
-            SPX_TIME(L) = (INT((TIME + 0.1d0*DT)/SPX_DT(L))+1)*SPX_DT(L)
-            CALL WRITE_SPX1 (L, 0)
-            bWrite_netCDF_files = .true.
-            DISK_TOT = DISK_TOT + DISK(L)
-            ISPX = ISPX + 1
-! remove this redundant call here to write_des_data in case of new
-! coupled runs that contain at least a particle and involve some initial
-! settling of the system.
-! the call made in des_time_march is a better call for capturing the
-! initial state of such a des continuum coupled system
-            IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. L.EQ.1 .AND. &
-               .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
-                     NFACTOR >0 .AND. TIME == ZERO)) THEN
-                  CALL WRITE_DES_DATA
-            ENDIF
-
-            IF (SPX_MSG) THEN
-               IF (RES_MSG) THEN
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1001,  ADVANCE='NO') TIME
-                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1001,  ADVANCE='NO') TIME
-               ELSE
-                  IF(DMP_LOG)WRITE (UNIT_LOG, 1002,  ADVANCE='NO')
-                  IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1002,  ADVANCE='NO')
-               ENDIF
-               SPX_MSG = .FALSE.
-            ENDIF
-            IF(DMP_LOG)WRITE (UNIT_LOG, 1011,  ADVANCE='NO') EXT_END(L:L)
-            IF (FULL_LOG .and. myPE.eq.PE_IO) &
-               WRITE (*, 1011,  ADVANCE='NO') EXT_END(L:L)
-         ENDIF
-      ENDDO
-
-      if (bWrite_netCDF_files) call write_netcdf(0,0,time)
-
-      IF (.NOT.SPX_MSG) THEN
-         DO L = 1, N_SPX - ISPX
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(A)', ADVANCE='NO') '   '
-            IF (FULL_LOG .and. myPE.eq.PE_IO) &
-               WRITE (*, '(A)', ADVANCE='NO') '   ' !//
-         ENDDO
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1015) DISK_TOT
-         IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, 1015) DISK_TOT !//
-      ELSEIF (.NOT.RES_MSG) THEN
-         IF(DMP_LOG)WRITE (UNIT_LOG, *)
-         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, *) !//
-      ENDIF
-
-
-! Write restart file, if needed
-      CALL START_LOG
-      IF (DT == UNDEFINED) THEN
-         IF (FINISH) THEN
-            CALL WRITE_RES1
-            RES_MSG = .FALSE.
-            IF(DMP_LOG)WRITE (UNIT_LOG, '(" t=",F10.4, "  Wrote RES;")', ADVANCE='NO') TIME
-            IF (FULL_LOG .and. myPE.eq.PE_IO) THEN
-               WRITE (*, 1000,  ADVANCE="NO") TIME
-            ENDIF
-         ENDIF
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-      ELSEIF (TIME + 0.1d0*DT>=RES_TIME .OR. TIME+0.1d0*DT>=TSTOP &
-              .OR. eofBATCHQ) THEN
-         RES_TIME = (INT((TIME + 0.1d0*DT)/RES_DT) + 1)*RES_DT
-         CALL WRITE_RES1
-         IF(DISCRETE_ELEMENT) CALL WRITE_RES0_DES
-         IF(QMOMK) CALL QMOMK_WRITE_RESTART
-         RES_MSG = .FALSE.
-         IF(DMP_LOG)WRITE (UNIT_LOG, 1000,  ADVANCE='NO') TIME
-         IF (FULL_LOG .and. myPE.eq.PE_IO) WRITE (*, 1000,  ADVANCE='NO') TIME
-      ENDIF
-
-      RES_MSG = .TRUE.
-      SPX_MSG = .TRUE.
-      CALL END_LOG
-
-      CALL CPU_TIME(CPU1_IO)
-      CPU_IO = CPU_IO + (CPU1_IO-CPU0_IO)
-
-! Write special output, if needed
-      DO L = 1, DIMENSION_USR
-         IF (DT == UNDEFINED) THEN
-            IF (FINISH) CALL WRITE_USR1 (L)
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-         ELSEIF (USR_TIME(L)/=UNDEFINED .AND. &
-                 TIME+0.1d0*DT>=USR_TIME(L) .OR. eofBATCHQ) THEN
-            USR_TIME(L) = (INT((TIME + 0.1d0*DT)/USR_DT(L))+1)*USR_DT(L)
-            CALL WRITE_USR1 (L)
-         ENDIF
-      ENDDO
-
-! JFD modification: cartesian grid implementation
-! Write vtk file, if needed
-      IF(WRITE_VTK_FILES) THEN
-         DO L = 1, DIMENSION_VTK
-            IF (DT == UNDEFINED) THEN
-               IF (FINISH) THEN
-                  CALL WRITE_VTU_FILE(L)
-                  IF(DISCRETE_ELEMENT.AND.(DES_CONTINUUM_COUPLED))   CALL WRITE_VTP_FILE(L)
-               ENDIF
-            ELSEIF (VTK_TIME(L)/=UNDEFINED .AND.  TIME+0.1d0*DT>=VTK_TIME(L)) THEN
-               VTK_TIME(L) = (INT((TIME + 0.1d0*DT)/VTK_DT(L))+1)*VTK_DT(L)
-               CALL WRITE_VTU_FILE(L)
-               IF(DISCRETE_ELEMENT.AND.(DES_CONTINUUM_COUPLED))   CALL WRITE_VTP_FILE(L)
-            ENDIF
-         ENDDO
-      ENDIF
-
- 1000 FORMAT(' t=',F10.4,'  Wrote RES;')
- 1001 FORMAT(' t=',F10.4,'  Wrote      SPx:')
- 1002 FORMAT(' SPx:')
- 1010 FORMAT(I2,',')
- 1011 FORMAT(A2,',')
- 1015 FORMAT(14X,'Disk=',F7.2,' Mb')
-
-      END SUBROUTINE OUTPUT_MANAGEMENT
-
 
       END SUBROUTINE TIME_MARCH
 

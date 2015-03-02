@@ -406,6 +406,7 @@ common_SOURCES = \
 	model/namelist.inc \
 	model/open_file.f \
 	model/open_files.f \
+	model/output_manager.f \
 	model/output_mod.f \
 	model/parallel_mod.f \
 	model/param1_mod.f \

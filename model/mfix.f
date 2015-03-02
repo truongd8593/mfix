@@ -377,15 +377,14 @@
 
 ! In case of a RESTART_2, write the RES1 and SPX1 files here
 ! This was commented out earlier in this file.
-      IF(RUN_TYPE == 'RESTART_2') THEN
-         CALL WRITE_RES1
-         DO L = 1, N_SPX
-            CALL WRITE_SPX0 (L, 0)
-            CALL WRITE_SPX1 (L, 0)
-         END DO
-         call write_netcdf(0,0,time)
-      ENDIF
-
+         IF(RUN_TYPE == 'RESTART_2') THEN
+            CALL WRITE_RES1
+            DO L = 1, N_SPX
+               CALL WRITE_SPX0 (L, 0)
+               CALL WRITE_SPX1 (L, 0)
+            END DO
+            call write_netcdf(0,0,time)
+         ENDIF
       ENDIF
 
 !=======================================================================

@@ -43,6 +43,10 @@
       USE compar           !//
       USE mpi_utility      !//
       USE cutcell
+      use discretelement, only: PRINT_DES_DATA
+      use discretelement, only: DISCRETE_ELEMENT
+      use discretelement, only: PARTICLES, NFACTOR
+
 !//       USE tmp_array
       IMPLICIT NONE
 !-----------------------------------------------
@@ -121,6 +125,21 @@
             WRITE (uspx + L, REC=3) NEXT_REC, NUM_REC
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
+
+
+! remove this redundant call here to write_des_data in case of new
+! coupled runs that contain at least a particle and involve some initial
+! settling of the system.
+! the call made in des_time_march is a better call for capturing the
+! initial state of such a des continuum coupled system
+         IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. &
+            .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
+                  NFACTOR >0 .AND. TIME == ZERO)) THEN
+               CALL WRITE_DES_DATA
+         ENDIF
+
+
+
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
 ! ".SP2" FILE         P_g , P_star
