@@ -22,18 +22,18 @@
         logical                               :: tecplot_output=.false.
 
 ! set .true. if 2D flow in XY plane only
-        logical                               :: tec_no_k = .true.
+        logical                               :: tec_no_k = .false.
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
 ! format (BLOCK format):
-        logical                               :: tec_output_block = .true.
+        logical                               :: tec_output_block = .false.
 
 ! set .true. for writing out tecplot data at cell-center locations 
 ! (POINT format)
-        logical                               :: tec_output_point = .true.
+        logical                               :: tec_output_point = .false.
 
 ! set .true. if raw output (where calculated) is desired
-        logical                               :: tec_output_raw = .true.
+        logical                               :: tec_output_raw = .false.
 
 ! temporary array for discretization error: de = p_g - mms_p_g ; etc.
         double precision, allocatable         :: de_ep_g(:)

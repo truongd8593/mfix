@@ -18,8 +18,8 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'MMS2D'
-  Description   = '2D Sinusoidal MMS Case'
+  Run_name      = 'MMS3D2P'
+  Description   = '3D Two-phase MMS Case'
   Units         = 'SI'
   Run_type      = 'new'
 
@@ -60,9 +60,9 @@
   ylength = 1.0
   zlength = 1.0
 
-  imax    = 8  ! set via command line
-  jmax    = 8  ! set via command line
-  kmax    = 8  ! set via command line
+!  imax    = 8  ! set via command line
+!  jmax    = 8  ! set via command line
+!  kmax    = 8  ! set via command line
 
 #_______________________________________________________________________
 # GAS-PHASE SECTION
