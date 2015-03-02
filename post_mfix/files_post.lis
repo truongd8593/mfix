@@ -192,6 +192,7 @@ calc_vol.f
 chem/stiff_chem_mod.f
 correl_mod.f
 deallocate_arrays.f
+des/write_des_data.f
 examine_data.f
 f_init_data.f
 file_handle.f
