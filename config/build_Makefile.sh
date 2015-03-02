@@ -30,6 +30,7 @@ fi
 
 
 # Include the base definitions:
+echo "AR=${AR}" >> ${tmpMFILE}
 echo "DPO=${DPO}" >> ${tmpMFILE}
 echo "OBJ_EXT=${OBJ_EXT}" >> ${tmpMFILE}
 echo "FORTRAN_EXT=${FORTRAN_EXT}" >> ${tmpMFILE}

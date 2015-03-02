@@ -1,22 +1,30 @@
+# Initialize some variables.
 omp=
-incs=
+mpi=
+mkl=
 
 mpi_libs=
 misc_libs=
 
-echo "Intel Fortarn Compiler"
+AR=ar
+
+echo "Intel Fortran Compiler"
 
 MODDIRPREFIX="-module "
 
 # Add some additinal flags to the object directory
-DPO=${DPO_BASE}/${DPO}_INTEL/
-if test ! -d ${DPO}; then mkdir ${DPO}; fi
+if [[ -n $USE_MIC ]]; then
+    DPO=${DPO_BASE}/${DPO}_INTEL_MIC/;
+else
+    DPO=${DPO_BASE}/${DPO}_INTEL/;
+fi
+if test ! -d $DPO; then  mkdir $DPO; fi
 
 # Set OpenMP flags.
-if test ${USE_SMP} = 1; then omp="-openmp"; fi
+if test $USE_SMP = 1; then omp="-openmp"; fi
 
-# Set MPI flags.
-if test ${USE_DMP} = 1; then
+# Set compiler commands for DMP or serial.
+if test $USE_DMP = 1; then
   FORTRAN_CMD=mpiifort
   LINK_CMD=mpiifort
 else
@@ -24,18 +32,15 @@ else
   LINK_CMD=ifort
 fi
 
-# Set the MPI include path.  This must occur after
-# the Fortran command is defined.
-SET_MPI_INCLUDE
-if test ${USE_DMP} = 1; then
-  incs=${incs}" -I${MPI_INCLUDE_PATH}"
-fi
-
-
 # --> Verify compiler is in $PATH <-- #
 
+SET_MPI_INCLUDE
+if test $USE_DMP = 1; then
+  mpi="-I$MPI_INCLUDE_PATH"
+  mpi_libs=
+fi
 
-# Set library paths:
+# Set generic library information:
 ode="${DPO}odepack.a"
 blas="${DPO}blas90.a"
 dgtsv="${DPO}dgtsv90.a"
@@ -45,33 +50,55 @@ LIB_FLAGS="${ode} ${mkl_libs} ${misc_libs} ${mpi_libs} "
 
 # Debug flags for Intel Fortran
 dbg=
-if test ${USE_DEBUG} = 1; then dbg="-g"; fi
+if test "${USE_DEBUG}" = "1"; then dbg="-g"; fi
 
-# Base flags for GNU Fortran
+# Common compile flags.
 common="-c -I. -convert big_endian -assume byterecl -cpp"
+
+if [[ -n $USE_MKL ]]; then
+    mkl="-mkl"
+    common=${common}" -mkl"
+else
+    LIB_FLAGS="${LIB_FLAGS} ${blas} ${dgtsv}"
+fi
+
+# To display the flags mfix.exe is compiled with, run:
+# >
+# > readelf -p .debug_str mfix.exe | grep switches
+
+if [[ -n $USE_MIC ]]; then
+    common=${common}" -mmic"
+else
+    common=${common}" -xHost"
+fi
+
+if test "${USE_CODECOV}" = "1"; then common=${common}" -prof-gen=srcpos"; fi
 
 case $OPT in
   0)echo "Setting flags for debugging."
-    dbg="-traceback -check all -fpe:0 -fp-model precise"
-    FORT_FLAGS="${omp} ${incs} ${common} -FR ${dbg} -O0 -g "
-    FORT_FLAGS3="${common} ${dbg} ${incs} -O0 -g "
-    LINK_FLAGS="${omp} -g";;
+    dbg="-traceback -check all -O0"
+    if [[ -z $USE_MIC ]]; then dbg="$dbg -fpe:0" ; fi
+    FORT_FLAGS="${omp} ${mpi} ${common} -FR ${dbg} -g"
+    FORT_FLAGS3="${common} -O0 -g"
+    LINK_FLAGS="${omp} ${mkl} -g";;
 
   1)echo "Setting flags for low optimization."
-    FORT_FLAGS="${omp} ${incs} ${common} -FR -O1 ${dbg} "
-    FORT_FLAGS3="${common} ${incs} -O1 ${dbg} "
-    LINK_FLAGS="${omp} ${dbg}";;
+    FORT_FLAGS="${omp} ${mpi} ${common} -FR -O1 ${dbg}"
+    FORT_FLAGS3="${common} -O1 ${dbg}"
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
 
   2)echo "Setting flags for medium optimization."
-    FORT_FLAGS="${omp} ${common} ${incs} -FR -O2 ${dbg}"
-    FORT_FLAGS3="${common} -O1 ${dbg}"
-    LINK_FLAGS="${omp} ${dbg}";;
+    FORT_FLAGS="${omp} ${mpi} ${common} -FR -O2 ${dbg}"
+    FORT_FLAGS3="${common} -O2 ${dbg}"
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
 
   3)echo "Setting flags for high optimization."
-    FORT_FLAGS="${omp} ${incs} ${common} -FR -O3"
-    FORT_FLAGS3="${common} -O2"
-    LINK_FLAGS="${omp}";;
-
+    AR=xiar
+    FORT_FLAGS="${omp} ${mpi} -FR -fast ${common} ${dbg}"
+    FORT_FLAGS3="${common} -fast ${dbg}"
+    LINK_FLAGS="${omp} ${mkl} ${dbg}";;
   *)echo "Unsupported optimization level."
     exit;;
 esac
+
+if [[ -n $USE_MIC ]]; then LINK_FLAGS=${LINK_FLAGS}" -mmic"; fi

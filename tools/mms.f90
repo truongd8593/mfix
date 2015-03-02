@@ -651,7 +651,7 @@
       WRITE(OUT, 5050)
       CALL FLUSH_OUT_BUFFER
 
- 5050 FORMAT(/'$(DPO)blas90.a : $(DPO)BLAS.o',/'	ar cr $(DPO)', &
+ 5050 FORMAT(/'$(DPO)blas90.a : $(DPO)BLAS.o',/'	$(AR) cr $(DPO)', &
          'blas90.a $(DPO)BLAS.o',/'$(DPO)BLAS.o : BLAS.f',/            &
          '	$(FORTRAN_CMD) $(FORT_FLAGS) BLAS.f -o $(DPO)BLAS.o')
 
@@ -659,7 +659,7 @@
       WRITE(OUT, 5051)
       CALL FLUSH_OUT_BUFFER
 
- 5051 FORMAT(/'$(DPO)dgtsv90.a : $(DPO)DGTSV.o',/'	ar cr $(DPO)', &
+ 5051 FORMAT(/'$(DPO)dgtsv90.a : $(DPO)DGTSV.o',/'	$(AR) cr $(DPO)', &
          'dgtsv90.a $(DPO)DGTSV.o',/'$(DPO)DGTSV.o : DGTSV.f',/        &
          '	$(FORTRAN_CMD) $(FORT_FLAGS) DGTSV.f -o $(DPO)DGTSV.o')
 
@@ -667,7 +667,7 @@
       WRITE(OUT, 5052)
       CALL FLUSH_OUT_BUFFER
 
- 5052 FORMAT(/'$(DPO)odepack.a : $(DPO)ODEPACK.o',/'	ar cr $(DPO)', &
+ 5052 FORMAT(/'$(DPO)odepack.a : $(DPO)ODEPACK.o',/'	$(AR) cr $(DPO)', &
          'odepack.a $(DPO)ODEPACK.o',/'$(DPO)ODEPACK.o : ODEPACK.F',/  &
          '	$(FORTRAN_CMD) $(FORT_FLAGS3) ODEPACK.F -o ',          &
          '$(DPO)ODEPACK.o')
