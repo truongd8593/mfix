@@ -20,6 +20,7 @@ echo "# This file is generated from running
 #  SRCDIR: $SRCDIR
 #  FCCPP: $FCCPP
 #  OBJEXT: $OBJEXT
+#  MODDIR: $MODDIR
 #  MODEXT: $MODEXT
 #  IGNORE: $IGNORE
 #  TOUCH: $TOUCH
@@ -87,7 +88,7 @@ ${UNIQSTR} ${UNIQSTR}" | \
           if test -n "${uses}" ; then
             printf "${l%.*}.${OBJEXT}:"
             for x in ${uses} ; do
-              printf " ${x}.${MODEXT}"
+              printf " ${MODDIR}/${x}.${MODEXT}"
             done
             echo ""
           fi

@@ -1,0 +1,182 @@
+#!/bin/bash
+#
+# MFIX script file for obtaining user-defined files and
+# executing 'make'
+#  Usage:
+#     1) on unix machines     :  sh    mfix/model/make_mfix
+#     2) on NT using PGI bash :  bash  mfix/model/make_mfix
+
+input=$@
+
+MFIX_VERSION="2014-1"
+EXEC_FILE=mfix.exe
+MAKEFILE="Makefile"
+DPO_BASE=".."
+DPO="OBJ"
+OBJ_EXT="o"
+FORTRAN_EXT="f"
+
+RUN_DIR=
+MFIX_SRC=
+MFIX_CONFIG=
+MFIX_TOOLS=
+MFIX_POST=
+
+# Set some of the folder paths.
+RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
+MFIX_SRC=$(realpath $(dirname $0))
+MFIX_HOME=$(dirname ${MFIX_SRC})
+MFIX_CONFIG=${MFIX_HOME}/config
+
+# This sets absolute paths.
+. ${MFIX_CONFIG}/sys_info.sh
+
+# Request variables.
+REQ_MODE=1
+REQ_OPT=1
+REQ_COMP=1
+
+# Collected from the user
+USE_TAU=0
+USE_NETCDF=0
+EXPERT=0
+FORCE_COMPILE=0
+USE_DEBUG=0
+
+# SMP/DMP Variables
+USE_SMP=0
+USE_DMP=0
+
+# Auto-compile
+#  0 : User provides all input
+#  1 : Use last build
+AUTOCOMPILE=0
+
+CLEAN_OBJS=0
+
+# Set based upon user input.
+COMP_FILE=
+FORT_FLAGS=
+FORT_FLAGS2=
+FORT_FLAGS3=
+LINK_CMD=
+LINK_FLAGS=
+LIB_FLAGS=
+FORTRAN_CMD=
+MODULE_CODE=
+
+# Subdirectories to be checked.
+FOLDER_LIST="."
+FOLDER_LIST=${FOLDER_LIST}" cartesian_grid"
+FOLDER_LIST=${FOLDER_LIST}" chem"
+FOLDER_LIST=${FOLDER_LIST}" des"
+FOLDER_LIST=${FOLDER_LIST}" des/mpi_donothing"
+FOLDER_LIST=${FOLDER_LIST}" dmp_modules"
+FOLDER_LIST=${FOLDER_LIST}" dmp_modules/mpi_donothing"
+FOLDER_LIST=${FOLDER_LIST}" dqmom"
+FOLDER_LIST=${FOLDER_LIST}" GhdTheory"
+FOLDER_LIST=${FOLDER_LIST}" qmomk"
+FOLDER_LIST=${FOLDER_LIST}" thermochemical"
+FOLDER_LIST=${FOLDER_LIST}" check_data"
+
+EXT_LIST="f F inc"
+
+# Import functions for MPI setup
+. $MFIX_CONFIG/mpi_fun.sh
+
+# Parse user arguments.
+. $MFIX_CONFIG/parse_args.sh
+
+if [[ ${USE_MKL} && ! ${COMP_FILE} =~ .*intel.* ]]; then
+    echo "  Error: --mkl option only works with the Intel Fortran Compiler"
+    exit -1
+fi
+
+# Load compiler and library information.
+if test ${AUTOCOMPILE} -ne 1; then
+
+# Collect user information.
+# > Build options
+  . $MFIX_CONFIG/req_usr.sh
+
+# > Compiler
+  . $MFIX_CONFIG/sys_comp.sh
+
+# Set the compiler flags.
+  . $COMP_FILE
+
+# Set NetCDF library flags
+  . ${MFIX_CONFIG}/netcdf.sh
+# Set Trilinos library flags
+
+# Set TAU wrappers
+  if test $USE_TAU = 1; then
+    . ${MFIX_CONFIG}/tau_wrapper.sh
+  fi
+
+fi # End of Autocompile <= 1
+
+# Reaction preprocessor.
+if test ${REQ_RXNS} = 1; then
+  . ${MFIX_CONFIG}/rxn_preproc.sh
+fi
+
+if [[ -n $USE_MIC ]]; then
+    EXEC_FILE=${EXEC_FILE}.mic
+fi
+
+if test ${CLEAN_OBJS} -eq 1; then
+  /bin/rm -rf ${DPO}
+  mkdir ${DPO}
+fi
+
+ARGS=
+test ${USE_DMP} -eq 1 && ARGS="${ARGS} --enable-dmp"
+test ${USE_SMP} -eq 1 && ARGS="${ARGS} --enable-smp"
+test ${OPT} -eq 0 && FCFLAGS="-O0"
+test ${OPT} -eq 1 && FCFLAGS="-O1"
+test ${OPT} -eq 2 && FCFLAGS="-O2"
+test ${OPT} -eq 3 && FCFLAGS="-O3"
+test ${COMP_FILE} = "gcc_default.sh"   && FC="gfortran" && F77="gfortran"
+test ${COMP_FILE} = "intel_default.sh" && FC="ifort"    && F77="ifort"
+
+test ${USE_DMP} && test ${COMP_FILE} = "gcc_default.sh"   && FC="mpif90"   && F77="mpif90"
+test ${USE_DMP} && test ${COMP_FILE} = "intel_default.sh" && FC="mpiifort" && F77="mpiifort"
+
+# Construct the makefile
+cd ${MFIX_HOME}
+[ -f configure ] || autoreconf -i
+./configure ${ARGS} FCFLAGS="${FCFLAGS}"
+cp ${MFIX_HOME}/build-aux/Makefile.usr ${RUN_DIR}/${MAKEFILE}
+
+# Run Make
+echo "Please wait..."
+cd ${RUN_DIR}
+EXEEXT=.exe make ${MAKE_ARGS} -f ${MAKEFILE} mfix
+result=$?
+
+if test $result = 0; then
+  if test ${USE_DMP} -eq 1; then
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: ${EXEC_FILE} created"
+    echo " To run MFIX type (or equivalent): "
+    echo "   mpirun -np<# processors> ${EXEC_FILE}"
+    echo "**********************************************"
+    echo
+  else
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: ${EXEC_FILE} created"
+    echo " To run MFIX type: ./${EXEC_FILE}"
+    echo "**********************************************"
+    echo
+  fi
+else
+  echo
+  echo
+  echo "*** File ${EXEC_FILE} NOT created."
+  echo
+fi
+
+exit $result
