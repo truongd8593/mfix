@@ -24,7 +24,7 @@ MFIX_POST=
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
-MFIX_SRC=$(realpath $(dirname $0))
+MFIX_SRC=$(readlink -f $(dirname $0))
 MFIX_HOME=$(dirname ${MFIX_SRC})
 MFIX_CONFIG=${MFIX_HOME}/config
 
