@@ -3,7 +3,7 @@
 #  Processes the output of fortran-decomp to remve the MODDIR prefix
 #  for those modules built in the current directory
 
-SEDTMP=$(mktemp)
+SEDTMP=$(mktemp -t usrdep)
 
 ${GREP} -o "^[a-zA-Z0-9_]*.${MODEXT}" $1 > ${SEDTMP}
 

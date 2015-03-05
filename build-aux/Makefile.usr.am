@@ -44,7 +44,7 @@ usrmodule.deps: $(src_overrides)
 
 # use mktemp so GREP doesn't hang if src_overrides is empty
 inc.deps: $(src_overrides)
-	$(GREP) -l species.inc $(shell mktemp -p .) $^| $(SED) 's/$$/:\ species.inc/g' > $@
+	$(GREP) -l species.inc $(shell mktemp -t inc) $^| $(SED) 's/$$/:\ species.inc/g' > $@
 
 $(eval -include usrmodule.deps)
 $(eval -include inc.deps)
