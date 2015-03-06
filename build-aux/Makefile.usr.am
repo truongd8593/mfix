@@ -1,5 +1,5 @@
-F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS) -c
-FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS) -c
+F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS)
+FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -I. -I$(top_srcdir)/model -cpp
@@ -18,14 +18,11 @@ bin_PROGRAMS = mfix
 mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
 mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
 
-libmfix.a:
-	$(MAKE) -C $(top_srcdir) libmfix.a
-
-libodepack.a:
-	$(MAKE) -C $(top_srcdir) libodepack.a
-
 # add dependency to make sure libmfix.a and libodepack.a are built first
-$(top_srcdir)/model/mfix.f: libmfix.a libodepack.a
+$(top_srcdir)/model/mfix.f: mfixlibs
+
+mfixlibs:
+	$(MAKE) -C $(top_srcdir) libmfix.a libodepack.a
 
 species.inc:
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
@@ -34,6 +31,8 @@ species.inc:
 #
 #  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
 #
+#      GREP /dev/null so it doesn't hang if $^ is empty
+#
 #########################################################################
 
 usrmodule.deps: $(src_overrides)
@@ -41,14 +40,10 @@ usrmodule.deps: $(src_overrides)
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-
-# use mktemp so GREP doesn't hang if src_overrides is empty
-inc.deps: $(src_overrides)
-	$(GREP) -l species.inc $(shell mktemp -t inc) $^| $(SED) 's/$$/:\ species.inc/g' > $@
+	$(GREP) -l species.inc /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
 $(eval -include usrmodule.deps)
-$(eval -include inc.deps)
-CLEANFILES += usrmodule.deps inc.deps species.inc
+CLEANFILES += usrmodule.deps species.inc
 
 ################################################################
 #                                                              #

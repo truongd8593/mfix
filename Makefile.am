@@ -4,8 +4,8 @@
 #                                                              #
 ################################################################
 
-F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS) -c
-FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS) -c
+F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS)
+FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -I$(top_srcdir)/model -cpp
@@ -690,6 +690,6 @@ cases := $(shell find -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
-	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile; \
+	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
 	  $(MAKE) -C $$(dirname $$case) mfix || exit; \
 	done
