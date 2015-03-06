@@ -18,7 +18,7 @@ AC_LANG(Fortran)
 
 # Checks for programs.
 AC_PROG_F77
-AC_PROG_FC([gfortran ifort])
+AC_PROG_FC([ifort gfortran])
 AC_PROG_GREP
 AC_PROG_RANLIB
 AC_PROG_SED
