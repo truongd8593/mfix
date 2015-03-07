@@ -131,17 +131,17 @@ if test ${CLEAN_OBJS} -eq 1; then
 fi
 
 ARGS=
-test ${COMP_FILE} = "gcc_default.sh"   && FC="gfortran" && F77="gfortran"
-test ${COMP_FILE} = "intel_default.sh" && FC="ifort"    && F77="ifort"
-test ${OPT} -eq 0 && FCFLAGS="-O0"
-test ${OPT} -eq 1 && FCFLAGS="-O1"
-test ${OPT} -eq 2 && FCFLAGS="-O2"
-test ${OPT} -eq 3 && FCFLAGS="-O3"
+[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran" && F77="gfortran"
+[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"    && F77="ifort"
+[[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
+[[ ${OPT} -eq 1 ]] && FCFLAGS="-O1"
+[[ ${OPT} -eq 2 ]] && FCFLAGS="-O2"
+[[ ${OPT} -eq 3 ]] && FCFLAGS="-O3"
 
-test ${USE_SMP} -eq 1 && ARGS="${ARGS} --enable-smp"
-test ${USE_DMP} -eq 1 && ARGS="${ARGS} --enable-dmp"
-test ${USE_DMP} && test ${COMP_FILE} = "gcc_default.sh"   && FC="mpif90"   && F77="mpif90"
-test ${USE_DMP} && test ${COMP_FILE} = "intel_default.sh" && FC="mpiifort" && F77="mpiifort"
+[[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
+[[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"   && F77="mpif90"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort" && F77="mpiifort"
 
 # Construct the makefile
 cd ${MFIX_HOME}
