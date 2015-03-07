@@ -146,7 +146,7 @@ ARGS=
 # Construct the makefile
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
-./configure ${ARGS} FCFLAGS="${FCFLAGS}"
+./configure ${ARGS} FCFLAGS="${FCFLAGS}" || exit
 test $PWD != $RUN_DIR && cp ${MFIX_HOME}/build-aux/Makefile.usr ${RUN_DIR}/${MAKEFILE}
 
 # Run Make
