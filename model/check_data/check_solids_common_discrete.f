@@ -447,7 +447,7 @@
          MIN_DEPTH = 2.0d0*MAX_RADIUS
          IF(ZLENGTH < MIN_DEPTH)THEN
             WRITE(ERR_MSG, 1300)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
          ENDIF
       ENDIF
 
