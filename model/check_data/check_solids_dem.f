@@ -416,7 +416,7 @@
 ! Initialize.
       TCOLL = UNDEFINED
 
-! Check for particle-particle normal spring constatns.
+! Check for particle-particle normal spring constants.
       IF(KN == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) 'KN'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -434,7 +434,7 @@
 ! Calculate the particle-particle tangential spring factor.
       KT = KT_FAC*KN
 
-! Check for particle-wall normal spring constatns.
+! Check for particle-wall normal spring constants.
       IF(KN_W == UNDEFINED) THEN
          WRITE(ERR_MSG, 1000) 'KN_W'
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -476,7 +476,7 @@
       ENDIF
 
  2101 FORMAT('Warning 2101: Tangential damping factor ',A,' not ',     &
-         'specified',/'in mfix.dat. Seting to default: (1/2).')
+         'specified',/'in mfix.dat. Setting to default: (1/2).')
 
 
       LC = 0
@@ -541,7 +541,7 @@
 ! Calculate masses used for collision calculations.
          MASS_EFF = MASS_M
 
-! Calculate the M-Wall normal and tangential damping cofficients.
+! Calculate the M-Wall normal and tangential damping coefficients.
          IF(EN .NE. ZERO) THEN
             DES_ETAN_WALL(M) = 2.d0*SQRT(KN_W*MASS_EFF)*ABS(LOG(EN))
             DES_ETAN_WALL(M) = DES_ETAN_WALL(M)/SQRT(PI*PI+(LOG(EN))**2)
@@ -658,7 +658,7 @@
 !---------------------------------------------------------------------//
 ! Loop index.
       INTEGER :: M, L, LC
-! Message for formated output.
+! Message for formatted output.
       CHARACTER(len=64) :: MSG
 ! Collision length scale.
       DOUBLE PRECISION :: TCOLL, TCOLL_TMP
