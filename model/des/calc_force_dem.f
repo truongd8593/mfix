@@ -91,7 +91,7 @@
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
 !$omp    shared(pairs,pair_num,des_pos_new,des_radius,                 &
 !$omp    des_coll_model_enum,kn,kt,pv_pair,pft_pair,pfn_pair,pijk,     &
-!$omp    des_etan,des_etat,mew,use_cohesion,                           &
+!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des,            &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy, pea,              &
 !$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
