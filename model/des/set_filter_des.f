@@ -24,11 +24,8 @@
       use particle_filter, only: DES_INTERP_GAUSS
       use particle_filter, only: DES_INTERP_SCHEME
 
-      use particle_filter, only: DIF_TSTOP
       use particle_filter, only: DES_INTERP_WIDTH
       use particle_filter, only: FILTER_WIDTH_INTERP
-      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
-      use particle_filter, only: DES_DIFFUSE_WIDTH
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
       use particle_filter, only: DES_INTERP_ON
 
@@ -75,23 +72,6 @@
 
       ENDIF
 
-! Check the diffusion fileter specs.
-      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
-
-         DIF_TSTOP = MAX((0.5*DES_DIFFUSE_WIDTH)**2-DXYZ_MIN**2,0.0d0)/&
-            16.0d0*log(2.0)
-
-         IF(DIF_TSTOP == 0.0) THEN
-            WRITE(ERR_MSG,2131)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-
-      ENDIF
-
- 2131 FORMAT('Error 2131: The DES_DIFFUSE_WIDTH is too small for ',    &
-         'diffusive filtering ',/'on the current mesh and will ',      &
-         'have no effect. Either increase',/'DES_DIFFUSE_WIDTH or ',   &
-         'set DES_DIFFUSE_MEAN_FIELDS=.FALSE.')
 
 ! Calculate reused quanties
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
