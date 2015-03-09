@@ -138,24 +138,8 @@
       allocate(igathercnts(0:numpes-1));  igathercnts=0
       allocate(idispls(0:numpes-1)); idispls=0
 
-! call node exchange init in case
-! this could be needed if des_interp_on is true (i.e., drag is interpolated)
-! or DES_INTERP_MEAN_FIELDS is true (i.e., mean fields are interpolated)
-      IF(DES_INTERP_SCHEME_ENUM == DES_INTERP_GARG) THEN
-         IF(DMP_LOG) WRITE(UNIT_LOG,'(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
-         &setting the node indices &
-         &for MPI communication', 'of nodal information needed for backward &
-         &interpolation'
-         IF(myPE.eq.pe_IO) WRITE(*, '(/,5x,A,/,5x,A,/)') 'In desmpi_mod, &
-         &setting the node indices &
-         &for MPI communication', 'of nodal information needed for backward &
-         &interpolation'
-         call des_setnodeindices
-      ENDIF
-
-
 ! set the communication flags
-      call desmpi_setcomm
+      CALL DESMPI_SETCOMM
 
 !      call des_dbgmpi(1)
 

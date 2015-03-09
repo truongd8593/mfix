@@ -138,7 +138,8 @@
       WALL_COLLISION_PFT(:,:,LB:UB) = ZERO
 
 ! Initializing user defined array
-      DES_USR_VAR(:,LB:UB) = ZERO
+      IF(DES_USR_VAR_SIZE > 0) &
+         DES_USR_VAR(:,LB:UB) = ZERO
 
 ! Paritcle center drag coefficient and explit drag force
       F_GP(LB:UB) = ZERO

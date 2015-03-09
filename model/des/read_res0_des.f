@@ -66,6 +66,13 @@
          ENDDO
       ENDIF
 
+      IF(VERSION >= 1.1) THEN
+         CALL READ_RES_DES(lNEXT_REC, DES_USR_VAR_SIZE)
+         DO LC1=1, DES_USR_VAR_SIZE
+            CALL READ_RES_pARRAY(lNEXT_REC, DES_USR_VAR(:,LC1))
+         ENDDO
+      ENDIF
+
 ! RES2 does not need the collision of BC information.
       IF(RUN_TYPE == 'RESTART_2') RETURN
 

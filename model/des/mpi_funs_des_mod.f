@@ -226,7 +226,7 @@
       use discretelement, only: DO_OLD
       use discretelement, only: PIP
       use discretelement, only: iGHOST_CNT
-      use discretelement, only: DES_USR_VAR
+      use discretelement, only: DES_USR_VAR_SIZE, DES_USR_VAR
       use discretelement, only: dg_pic, pijk
 
       use run, only: ENERGY_EQ,ANY_SPECIES_EQ
@@ -279,7 +279,8 @@
                   des_x_s(lcurpar,1:dimension_n_s)= 0
                endif
 
-               des_usr_var(1:3,lcurpar)= 0
+               IF(DES_USR_VAR_SIZE > 0)&
+                  des_usr_var(:,lcurpar)= 0
 
             end do
          end do

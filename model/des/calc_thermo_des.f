@@ -43,12 +43,6 @@
 ! species and energy equations
       INTEGER INTERP_IJK(2**3)
       DOUBLE PRECISION INTERP_WEIGHTS(2**3)
-! Flag to calculate gas/particle convective heat transfer.
-      LOGICAL :: CALC_CONV
-! Flag to calculate radiative heat transfer
-      LOGICAL :: CALC_RADT(DIM_M)
-! Flag to calculate conductive heat transfer
-      LOGICAL :: CALC_COND(DIM_M)
 
 ! Functions
 !---------------------------------------------------------------------//
@@ -58,24 +52,6 @@
 ! this routine should be split apart to avoid the particle loops for
 ! cold-flow, non-reacting cases.
       IF(.NOT.ENERGY_EQ .AND. .NOT.ANY_SPECIES_EQ) RETURN
-
-      CALC_CONV = .FALSE.
-      CALC_RADT = .FALSE.
-      CALC_COND = .FALSE.
-
-! Set flags for energy equations:
-      IF(ENERGY_EQ) THEN
-! Flag to calculate convection.
-         CALC_CONV = DES_CONTINUUM_COUPLED
-         DO M=1, SMAX + DES_MMAX
-! Only interested in discrete solids.
-            IF(SOLIDS_MODEL(M) == 'TFM') CYCLE
-! Flag to calculate radiation.
-            IF(DES_Em(M) > ZERO) CALC_RADT(M) = .TRUE.
-! Flag to calculate conduction.
-            IF(K_s0(M) > ZERO) CALC_COND(M) = .TRUE.
-         ENDDO
-      ENDIF
 
 ! Loop over fluid cells.
 !---------------------------------------------------------------------//
@@ -113,11 +89,11 @@
             M = PIJK(NP,5)
 
 ! calculate heat transfer via convection
-            IF(CALC_CONV) CALL DES_CONVECTION(NP, M, IJK, &
+            IF(CALC_CONV_DES) CALL DES_CONVECTION(NP, M, IJK, &
                INTERP_IJK, INTERP_WEIGHTS, FOCUS)
 
 ! calculate heat transfer via radiation
-            IF(CALC_RADT(M)) CALL DES_RADIATION(NP, M, IJK, FOCUS)
+            IF(CALC_RADT_DES(M)) CALL DES_RADIATION(NP, M, IJK, FOCUS)
 
 ! Calculate reaction rates and interphase mass transfer
             IF(ANY_SPECIES_EQ) CALL DES_RRATES0(NP, M, IJK, &

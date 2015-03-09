@@ -35,7 +35,8 @@
 
 
 ! Set the version of the DES RES file.
-      VERSION = 1.0d0
+      VERSION = 1.1
+
 ! Set the output dimension.
       lDIMN = merge(2,3,NO_K)
 
@@ -78,11 +79,18 @@
          ENDDO
       ENDIF
 
+! DES User defined variable :: added for VERSION>= 1.1
+      CALL WRITE_RES_DES(lNEXT_REC, DES_USR_VAR_SIZE)
+      DO LC1=1,DES_USR_VAR_SIZE
+         CALL WRITE_RES_pARRAY(lNEXT_REC, DES_USR_VAR(:,LC1))
+      ENDDO
+
       DO LC1=1,2
          CALL WRITE_RES_cARRAY(lNEXT_REC, PAIRS(LC1,:), pLOC2GLB=.TRUE.)
       ENDDO
 
       CALL WRITE_RES_cARRAY(lNEXT_REC, PV_PAIR(:))
+
       DO LC1=1, lDIMN
          CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_PAIR(LC1,:))
          CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_PAIR(LC1,:))

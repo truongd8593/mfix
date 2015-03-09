@@ -63,6 +63,11 @@
       DOUBLE PRECISION DES_MIN_COND_DIST
 
 
+! Run time flags for calculating the various modes of heat transfer
+      LOGICAL :: CALC_CONV_DES
+      LOGICAL :: CALC_COND_DES(DIM_M)
+      LOGICAL :: CALC_RADT_DES(DIM_M)
+
 ! Fluid/Paricle coupling
 !---------------------------------------------------------------------//
 ! Source term for TFM gas phase energy equation.

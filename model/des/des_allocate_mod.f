@@ -112,7 +112,8 @@ CONTAINS
       ENDIF
 
 ! Allocating user defined array
-      Allocate(  DES_USR_VAR(3,MAX_PIP) )
+      IF(DES_USR_VAR_SIZE > 0) &
+         Allocate( DES_USR_VAR(DES_USR_VAR_SIZE,MAX_PIP) )
 
 ! Particle positions at the last call neighbor search algorithm call
       Allocate(  PPOS (DIMN,MAX_PIP) )
@@ -526,7 +527,6 @@ CONTAINS
            call logical_grow(ighost_updated,MAX_PIP)
            call real_grow2(FC,MAX_PIP)
            call real_grow2(TOW,MAX_PIP)
-           call real_grow2(DES_USR_VAR,MAX_PIP)
            call real_grow(F_GP,MAX_PIP)
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
@@ -578,6 +578,9 @@ CONTAINS
 
               call real_grow( Qint, MAX_PIP )
            ENDIF
+
+           IF(DES_USR_VAR_SIZE > 0) &
+              call real_grow2(DES_USR_VAR,MAX_PIP)
 
            CALL DES_INIT_PARTICLE_ARRAYS(MAX_PIP/2+1,MAX_PIP)
 

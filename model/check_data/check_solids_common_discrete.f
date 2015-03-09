@@ -245,7 +245,8 @@
 
       use discretelement, only: DES_MMAX
 
-      use physprop, only: MMAX
+      use physprop, only: SMAX
+      use physprop, only: K_S0
 
       use des_thermo, only: DES_CONV_CORR
       use des_thermo, only: DES_CONV_CORR_ENUM
@@ -254,9 +255,17 @@
       use des_thermo, only: SB_CONST
       use des_thermo, only: DES_Em
 
+      use des_thermo, only: CALC_CONV_DES ! Convection
+      use des_thermo, only: CALC_COND_DES ! Conduction
+      use des_thermo, only: CALC_RADT_DES ! Radiation
+
+      use discretelement, only: DES_CONTINUUM_COUPLED
+
+      use run, only: SOLIDS_MODEL
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: UNDEFINED
+      use param1, only: ZERO, UNDEFINED
 
 
 ! Use the error manager for posting error messages.
@@ -278,6 +287,18 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_ENERGY")
 
+
+! Set runtime flags for which modes of heat transfer to calculate.
+      CALC_CONV_DES = DES_CONTINUUM_COUPLED
+      DO M = SMAX+1, SMAX+DES_MMAX
+! Only interested in discrete solids.
+         IF(SOLIDS_MODEL(M) == 'TFM') CYCLE
+! Flag to calculate radiation.
+         IF(DES_Em(M) > ZERO) CALC_RADT_DES(M) = .TRUE.
+! Flag to calculate conduction.
+         CALC_COND_DES(M) = (K_s0(M) > ZERO .AND. K_s0(M) /= UNDEFINED)
+      ENDDO
+
 ! Gas/Solids convection:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ! Verify the selected convective heat transfer coefficient model
@@ -298,13 +319,12 @@
 ! Radiation Equation:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ! Verify that a emmisivity value is specified for each solids pase
-      DO M = MMAX+1, MMAX+DES_MMAX
+      DO M = SMAX+1, SMAX+DES_MMAX
          IF(DES_Em(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_Em',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
-
 
 ! Set the value of the Stefan-Boltzman Constant based on the untis
       IF(UNITS == 'SI')THEN

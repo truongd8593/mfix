@@ -48,9 +48,6 @@
       GRAV(3) = GRAVITY_Z
       GRAV_MAG = sqrt(dot_product(GRAV,GRAV))
 
-! compute the volume of nodes needed in drag_fgs.f
-      CALL COMPUTE_VOLUME_OF_NODES
-
       IF(DEM_SOLIDS) CALL CFASSIGN_DEM
       IF(PIC_SOLIDS) CALL CFASSIGN_PIC
 

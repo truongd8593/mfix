@@ -142,7 +142,7 @@
 
          IF (ENERGY_EQ) THEN
             ! Calculate conduction and radiation for thermodynamic neighbors
-            IF(K_s0(PIJK(LL,5)) > ZERO) THEN
+            IF(CALC_COND_DES(PIJK(LL,5))) THEN
                QQ_TMP = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
 
                !$omp atomic

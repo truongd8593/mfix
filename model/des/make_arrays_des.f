@@ -25,7 +25,6 @@
       USE stl
       use mfix_pic, only:  MPPIC
       use mpi_funs_des, only: DES_PAR_EXCHANGE
-      use mpi_init_des, only: DESMPI_INIT
       use constant, only: PI
 
       IMPLICIT NONE
@@ -49,8 +48,6 @@
 
 ! cfassign and des_init_bc called before reading the particle info
       CALL CFASSIGN
-
-      CALL DESMPI_INIT
 
       VOL_SURR(:) = ZERO
 

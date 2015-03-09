@@ -549,6 +549,7 @@
       use mpi_init_des, only: DES_RESTART_GHOST
       use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_SUM
+      use mpi_utility, only: GLOBAL_ALL_SUM
       use in_binary_512i
 
       implicit none
@@ -574,6 +575,7 @@
       CALL DES_RESTART_GHOST
 
       allocate(iPAR_COL(2, cIN_COUNT))
+      iPAR_COL = 0
 
 ! Only the IO proccess reads positions.
       IF(myPE == PE_IO) THEN
@@ -584,7 +586,7 @@
       ENDIF
 
 ! Broadcast collision data to all the other processes.
-      CALL BCAST(iPAR_COL, PE_IO)
+       CALL GLOBAL_ALL_SUM(iPAR_COL)
 
 ! Determine which process owns the pair datasets. This is done either
 ! through matching global ids or a search. The actual method depends
@@ -659,7 +661,7 @@
       CALL GLOBAL_ALL_MAX(MAX_ID)
 
       allocate(lGLOBAL_OWNER(MAX_ID), STAT=lSTAT)
-      CALL GLOBAL_ALL_SUM(IER)
+      CALL GLOBAL_ALL_SUM(lSTAT)
 
 ! All ranks successfully allocated the array. This permits a crude
 ! but much faster collision owner detection.
@@ -684,7 +686,6 @@
                lCOL_CNT(myPE) = lCOL_CNT(myPE) + 1
             ENDIF
          ENDDO
-
 ! One or more ranks could not allocate the memory needed to do the
 ! quick and dirty match so do a search instead.
       ELSE
@@ -716,7 +717,7 @@
       CALL GLOBAL_ALL_SUM(lCOL_CNT)
       IF(sum(lCOL_CNT) /= cIN_COUNT) THEN
          WRITE(ERR_MSG,1000) cIN_COUNT, sum(lCOL_CNT)
-         CALL FLUSH_ERR_MSG
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
 1000 FORMAT('Error 1000: Unable to establish the own of all read ',    &
@@ -1097,7 +1098,7 @@
 
       LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1
+      INTEGER :: LC1, lc2
 
       INTEGER :: lPROC
 

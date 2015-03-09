@@ -306,39 +306,41 @@
       IER = 0
       IF(bDIST_IO .OR. myPE == PE_IO) THEN
 
+! The file should be new but could exist due to restarting.
+         STATUS_VTP = 'NEW'
 ! Check to see if the file already exists.
          INQUIRE(FILE=FNAME_VTP,EXIST=EXISTS_VTP)
 ! The given file should not exist if the run type is NEW.
-         IF(RUN_TYPE == 'NEW' .AND. EXISTS_VTP)THEN
-            IER = 1
-
-! A RESTART_1 case may over-write vtp files created during past run
-         ELSEIF(RUN_TYPE == 'RESTART_1' .AND. EXISTS_VTP) THEN
-            STATUS_VTP = 'REPLACE'
-
-! Set the status to NEW so that any problems in opening the file
-! will be accurately reported.
-         ELSE
-            STATUS_VTP = 'NEW'
+         IF(EXISTS_VTP)THEN
+! The VTP should never exist for a NEW run.
+            IF(RUN_TYPE == 'NEW')THEN
+               IER = 1
+! The file may exist during a RESTART.
+            ELSE
+               STATUS_VTP = 'REPLACE'
+            ENDIF
          ENDIF
 
 ! Open the file and record any erros.
-         OPEN(UNIT=DES_UNIT, FILE=FNAME_VTP, STATUS=STATUS_VTP, IOSTAT=IOS)
-         IF(IOS /= 0) IER = 1
+         IF(IER == 0) THEN
+            OPEN(UNIT=DES_UNIT, FILE=FNAME_VTP,                        &
+               STATUS=STATUS_VTP, IOSTAT=IOS)
+            IF(IOS /= 0) IER = 2
+         ENDIF
       ENDIF
 
-      CALL GLOBAL_ALL_SUM(IER)
+      CALL GLOBAL_ALL_MAX(IER)
 
       IF(IER /= 0) THEN
          CALL INIT_ERR_MSG("VTP_MOD --> OPEN_VTP")
-         WRITE(ERR_MSG, 1100)
+         WRITE(ERR_MSG, 1100) IER
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
  1100 FORMAT('Error 1100: Unable to open VTP file. This could be ',    &
-         'causes by a VTP',/'with the same file name already ',        &
-         'existing. or an error code returned',/'from the OPEN ',      &
-         'function'/'Aborting.')
+         'caused by a VTP',/'file with the same file name already ',   &
+         'existing. or an error code',/' returned by the OPEN ',       &
+         'function.'/'Error code: ',I2,4x,'Aborting.')
 
 
       END SUBROUTINE VTP_OPEN_FILE
@@ -560,7 +562,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE WRITE_VTP_FILE(LCV)
+      SUBROUTINE WRITE_VTP_FILE(LCV)
 
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED, FRAME
       USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
@@ -569,6 +571,7 @@
       USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
       USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
       USE output, only: FULL_LOG
+
 
       IMPLICIT NONE
       INTEGER :: I,J,K,L,M,N,R,IJK,LCV
@@ -621,7 +624,7 @@
                CALL WRITE_VECTOR_IN_VTP_BIN('Orientation', ORIENTATION,PASS)
          ENDIF
 
-         DO N=1, 3
+         DO N=1, DES_USR_VAR_SIZE
             IF(VTK_PART_USR_VAR(VTK_REGION,N)) &
               CALL WRITE_SCALAR_IN_VTP_BIN('User Defined Var',DES_USR_VAR(N,:),PASS)
          ENDDO
