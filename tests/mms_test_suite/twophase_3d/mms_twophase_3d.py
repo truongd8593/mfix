@@ -1,6 +1,6 @@
 # Purpose: SymPy script to generate manufactured solution source terms
-# by substituting the manufactured solution functions into the governing
-# equations.
+# by substituting the manufactured solution functions into the 
+# governing equations.
 #
 # To run: $ python mms_twophase_3d.py > mms_twophase_3d.dat
 # 
@@ -12,7 +12,7 @@
 # Author: Aniruddha Choudhary (aniruddhac@gmail.com)
 #
 # Date: March 9, 2015
-#
+#######################################################################
 
 # Import sympy. Sympy library should be in PYTHONPATH environment
 # variable.
@@ -40,8 +40,8 @@ ros = symbols('ros')
 rog = symbols('rog')
 mug = symbols('mug')
 mus = symbols('mus')
-Cpg, kg = symbols('Cpg, kg')
-Cps, ks = symbols('Cps, ks')
+Cpg, kg = symbols('Cpg kg')
+Cps, ks = symbols('Cps ks')
 
 # symbols for MMS constants:
 ug0,ugx,ugy,ugz,ugxy,ugyz,ugzx = symbols('ug0 ugx ugy ugz ugxy ugyz ugzx')
@@ -108,7 +108,7 @@ vs = vs0*cos((pi*(xt + yt + zt))/2.)**2
 ws = ws0
 
 # check divergence free
-divus = (diff(ug,xt)+diff(vg,yt)+diff(wg,zt)).subs(us0,vs0)
+divus = (diff(us,xt)+diff(vs,yt)+diff(ws,zt)).subs(us0,vs0)
 print('\n Solid velocity field is divergence free:')
 print(simplify(divus)==0)
 
