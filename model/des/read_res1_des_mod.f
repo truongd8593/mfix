@@ -161,6 +161,8 @@
             CALL FLUSH_ERR_MSG
          ENDIF
 
+         CALL BCAST(lVERSION, PE_IO)
+
 ! Allocate the collision restart map array. All ranks allocatet this
 ! array so that mapping the collision data can be done in parallel.
          CALL BCAST(cIN_COUNT, PE_IO)
@@ -724,7 +726,6 @@
          'collision data.',/3x,'Number of Collisions: ',I10,/3x,       &
          'Matched Collisions:   ',I10)
 
-
 ! Sync the collision restart map arcross all ranks.
       CALL GLOBAL_ALL_SUM(cRestartMap)
 
@@ -905,7 +906,7 @@
          READ(RDES_UNIT, REC=lNEXT_REC) INPUT_I
       ELSE
          IF(myPE == PE_IO) READ(RDES_UNIT, REC=lNEXT_REC) INPUT_I
-         CALL BCAST(INPUT_I)
+         CALL BCAST(INPUT_I, PE_IO)
       ENDIF
 
       lNEXT_REC = lNEXT_REC + 1

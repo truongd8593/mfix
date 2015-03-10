@@ -242,6 +242,10 @@
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
 
+! The drag force is not calculated on entering or exiting particles
+! as their velocities are fixed and may exist in 'non fluid' cells.
+        IF(any(PEA(NP,2:3))) CYCLE
+
          lEPG = ZERO
          VELFP = ZERO
 

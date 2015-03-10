@@ -14,6 +14,8 @@
       use des_bc
       use discretelement
 
+      use mpi_utility, only: BCAST
+
       implicit none
 
       INTEGER :: IP, LS, M, NP, IJK, LC
@@ -24,6 +26,8 @@
       INTEGER :: IJKP(3)
 
       DOUBLE PRECISION :: DIST, POS(3)
+! Random numbers -shared by all ranks-
+      DOUBLE PRECISION :: RAND(3)
 
       CHECK_FOR_ERRORS = .FALSE.
 
@@ -49,6 +53,11 @@
             ENDDO
          ENDDO
 
+! All ranks generate random numbers but PE_IO BCASTS its values so that
+! the calculated position (with random wiggles) is the same on all ranks.
+         CALL RANDOM_NUMBER(RAND)
+         CALL BCAST(RAND)
+
 ! Check if any particles need seeded this time step.
          IF(DEM_MI_TIME(BCV_I) > S_TIME) CYCLE
 
@@ -61,7 +70,7 @@
             iMAX_GLOBAL_ID = iMAX_GLOBAL_ID + 1
 
 ! Determine the location and phase of the incoming particle.
-            CALL SEED_NEW_PARTICLE(BCV, BCV_I, M, POS, IJKP, OWNS)
+            CALL SEED_NEW_PARTICLE(BCV, BCV_I, RAND, M, POS, IJKP, OWNS)
 
 ! Only the rank receiving the new particle needs to continue
             IF(.NOT.OWNS) CYCLE PLoop
@@ -110,7 +119,8 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE SEED_NEW_PARTICLE(lBCV, lBCV_I, lM, lPOS, lIJKP, lOWNS)
+      SUBROUTINE SEED_NEW_PARTICLE(lBCV, lBCV_I, lRAND, lM, lPOS,      &
+         lIJKP, lOWNS)
 
 !-----------------------------------------------
 ! Modules
@@ -130,6 +140,8 @@
 !-----------------------------------------------
 ! The associated bc no.
       INTEGER, INTENT(IN) :: lBCV, lBCV_I
+! Random numbers
+      DOUBLE PRECISION, INTENT(IN) :: lRAND(3)
 ! Phase of incoming particle.
       INTEGER, INTENT(OUT) :: lM
 ! Position of incoming particle.
@@ -144,7 +156,7 @@
 !-----------------------------------------------
 ! the associated bc no.
 !      INTEGER :: BCV
-! a random number between 0-1
+! Random position
       DOUBLE PRECISION RAND1, RAND2
 ! Array index of vacant position
       INTEGER :: VACANCY
@@ -153,6 +165,7 @@
 
       INTEGER :: RAND_I
       INTEGER :: lI, lJ, lK
+      INTEGER :: llI, llJ, llK
 
       DOUBLE PRECISION :: WINDOW
 
@@ -167,26 +180,24 @@
 !         call bcast(m)
 !      ENDIF
 
-! Obtain a random numbers from (0,1]
-      CALL RANDOM_NUMBER(RAND1)
-      CALL RANDOM_NUMBER(RAND2)
 
 ! Assign the phase of the incoming particle.
       IF(DEM_MI(lBCV_I)%POLYDISPERSE) THEN
-         RAND_I = ceiling(dble(NUMFRAC_LIMIT)*RAND1)
+         RAND_I = ceiling(dble(NUMFRAC_LIMIT)*lRAND(1))
          lM = DEM_BC_POLY_LAYOUT(lBCV_I, RAND_I)
       ELSE
          lM = DEM_BC_POLY_LAYOUT(lBCV_I,1)
       ENDIF
 
       WINDOW = DEM_MI(lBCV_I)%WINDOW
-      RAND1 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*RAND1
-      RAND2 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*RAND2
+      RAND1 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*lRAND(1)
+      RAND2 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*lRAND(2)
 
 
 ! Set the physical location and I/J/K location of the particle.
       SELECT CASE(BC_PLANE(lBCV))
       CASE('N','S')
+
          lPOS(1) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
          lPOS(3) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
          lPOS(2) = DEM_MI(lBCV_I)%OFFSET
@@ -196,6 +207,7 @@
          lIJKP(2) = DEM_MI(lBCV_I)%L
 
       CASE('E','W')
+
          lPOS(2) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
          lPOS(3) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
          lPOS(1) = DEM_MI(lBCV_I)%OFFSET
@@ -205,6 +217,7 @@
          lIJKP(1) = DEM_MI(lBCV_I)%L
 
       CASE('T','B')
+
          lPOS(1) = DEM_MI(lBCV_I)%P(VACANCY) + RAND1
          lPOS(2) = DEM_MI(lBCV_I)%Q(VACANCY) + RAND2
          lPOS(3) = DEM_MI(lBCV_I)%OFFSET
@@ -212,21 +225,15 @@
          lIJKP(1) = DEM_MI(lBCV_I)%W(VACANCY)
          lIJKP(2) = DEM_MI(lBCV_I)%H(VACANCY)
          lIJKP(3) = DEM_MI(lBCV_I)%L
+
       END SELECT
 
 ! Easier and cleaner to clear out the third component at the end.
       IF(NO_K) lPOS(3) = ZERO
 
-! This is a crude fix for des inlets when running in dmp mode. The
-! current 'OWNER' information is not 100% correct because a inlet
-! cell can overlap DMP partitions.
-      lI = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(LPOS(1))))
-      lJ = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(LPOS(2))))
-      IF(NO_K) THEN
-         lK = 1
-      ELSE
-         lK = MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(LPOS(3))))
-      END IF
+      lI = IofPOS(lPOS(1))
+      lJ = JofPOS(lPOS(2))
+      lK = KofPOS(lPOS(3))
 
       lOWNS = ((DG_ISTART <= lI) .AND. (lI <= DG_IEND) .AND.           &
          (DG_JSTART <= lJ) .AND. (lJ <= DG_JEND) .AND.                 &
