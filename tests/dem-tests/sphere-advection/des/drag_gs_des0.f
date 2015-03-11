@@ -11,7 +11,7 @@
 !       include the gas-solids drag force and gas pressure force       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DRAG_GS_DES_INTERP0
+      SUBROUTINE DRAG_GS_DES0
 
 !-----------------------------------------------
 ! Modules
@@ -34,18 +34,14 @@
       USE cutcell
       USE mfix_pic
       USE functions
-      use mpi_node_des, only: des_addnodevalues
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! local variable used for debugging
-      LOGICAL FOCUS
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
-      INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
+      INTEGER :: IPJK, IJPK, IJKP,&
                  IPJPK, IPJKP, IJPKP, IPJPKP
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
@@ -90,11 +86,15 @@
 ! There is some issue associated to gstencil, vstencil which are
 ! allocatable variables
 
-!$omp parallel do default(shared)                                       &
+!$omp parallel do default(none)                                         &
+!$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,  &
+!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new, &
+!$omp        des_vel_new, mppic, mppic_pdrag_implicit,p_force,          &
+!$omp        u_g,v_g,w_g,model_b,pvol,fc,f_gp,ep_g)                     &
 !$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
 !$omp         onew, ii, jj, kk,cur_ijk, ipjk, ijpk, ipjpk,              &
 !$omp         gst_tmp, vst_tmp, velfp, desposnew, ijpkp, ipjkp, &
-!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force)
+!$omp         ipjpkp,ijkp,nindx,np,weight_ft,d_force, vel_new)
       DO ijk = ijkstart3,ijkend3
          if(.not.fluid_at(ijk) .or. pinc(ijk).eq.0) cycle
          i = i_of(ijk)
@@ -137,7 +137,7 @@
                      ipjkp   = funijk_map_c(ii+1,jj,kk+1)
                      ipjpkp  = funijk_map_c(ii+1,jj+1,kk+1)
                      ijkp    = funijk_map_c(ii,jj,kk+1)
-                                         vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
+                     vst_tmp(i,j,k,1) = vst_tmp(i,j,k,1) + avg_factor*(u_g(ijkp) + u_g(ijpkp))
                      vst_tmp(i,j,k,2) = vst_tmp(i,j,k,2) + avg_factor*(v_g(ijkp) + v_g(ipjkp))
                      vst_tmp(i,j,k,3) = avg_factor*(w_g(cur_ijk)+&
                           w_g(ijpk)+w_g(ipjk)+w_g(ipjpk))
@@ -165,7 +165,6 @@
 !----------------------------------------------------------------------!
                    DES_VEL_NEW(:,NP) = VELFP
 !......................................................................!
-
 ! Calculate the particle centered drag coefficient (F_GP) using the
 ! particle velocity and the interpolated gas velocity.  Note F_GP
 ! obtained from des_drag_gp subroutine is given as:
@@ -174,7 +173,7 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
+            CALL DES_DRAG_GP(NP, VEL_NEW, VELFP, EP_G(IJK))
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
@@ -191,7 +190,7 @@
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
-               FC(:3,NP) = FC(:3,NP) + p_force(1:3,IJK)*pvol(NP)
+               FC(:3,NP) = FC(:3,NP) + P_FORCE(:,IJK)*PVOL(NP)
             ENDIF
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
@@ -200,7 +199,7 @@
 
 
       RETURN
-      END SUBROUTINE DRAG_GS_DES_INTERP0
+      END SUBROUTINE DRAG_GS_DES0
 
 
 
@@ -218,7 +217,7 @@
 !       x, y and z momentum balances using F_GP.                       C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DRAG_GS_GAS_INTERP0
+      SUBROUTINE DRAG_GS_GAS0
 
 !-----------------------------------------------
 ! Modules
@@ -278,13 +277,6 @@
       DOUBLE PRECISION :: AVG_FACTOR
 ! Statistical weight of the particle. Equal to one for DEM
       DOUBLE PRECISION :: WTP
-! for error messages
-      INTEGER :: IER
-! Flag only used when the hybrid model is invoked and notifies the
-! routine that the solid phase index M refers to the indice of a
-! discrete 'phase' not a continuous phase so that the appropriate
-! variables are referenced.
-      LOGICAL :: DISCRETE_FLAG
 !Handan Liu added temporary variables on April 20 2012
       DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
       DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
@@ -314,13 +306,13 @@
 ! allocatable variables
 
 
-!!$omp parallel default(shared)                                        &
-!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                &
-!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
-!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
-!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
-!!$omp             vcell,ovol)
-!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
+!!!$omp parallel default(shared)                                        &
+!!!$omp private(ijk,i,j,k,pcell,iw,ie,js,jn,kb,ktp,onew,                &
+!!!$omp         ii,jj,kk,cur_ijk,ipjk,ijpk,ipjpk,                       &
+!!!$omp         gst_tmp,vst_tmp,velfp,desposnew,ijpkp,ipjkp,            &
+!!!$omp         ipjpkp,ijkp,nindx,focus,np,wtp,m,weight_ft,             &
+!!!$omp             vcell,ovol)
+!!!$omp do reduction(+:drag_am) reduction(+:drag_bm)
       DO IJK = IJKSTART3,IJKEND3
          IF(.NOT.FLUID_AT(IJK) .OR. PINC(IJK)==0) cycle
          i = i_of(ijk)
@@ -394,7 +386,7 @@
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
             VEL_NEW(:) = DES_VEL_NEW(:,NP)
-            CALL DES_DRAG_GP(NP, velfp, VEL_NEW)
+            CALL DES_DRAG_GP(NP, VEL_NEW, VELFP, EP_G(IJK))
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in
 ! the gas phase momentum balances.
@@ -420,7 +412,7 @@
                      vcell = des_vol_node(cur_ijk)
                      ovol = one/vcell
 
-!!$omp critical
+!!!$omp critical
                      drag_am(cur_ijk) = drag_am(cur_ijk) + &
                         f_gp(np)*weight_ft(i,j,k)*ovol*wtp
 
@@ -428,14 +420,14 @@
                         drag_bm(cur_ijk,1:3) + &
                         f_gp(np) * vel_new(1:3) * &
                         weight_ft(i,j,k)*ovol*wtp
-!!$omp end critical
+!!!$omp end critical
                   ENDDO
                ENDDO
             ENDDO
          ENDDO   ! end do (nindx = 1,pinc(ijk))
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
-!!$omp end parallel
+!!!$omp end parallel
 
 
 ! At the interface drag_am and drag_bm have to be added
@@ -451,10 +443,10 @@
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
       AVG_FACTOR = merge(0.25d0, 0.125D0, NO_K)
 
-!$omp parallel do default(shared)                               &
-!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
-!$omp         imjmkm)                                           &
-!$omp schedule (guided,20)
+!!$omp parallel do default(shared)                               &
+!!$omp private(ijk,i,j,k,imjk,ijmk,imjmk,ijkm,imjkm,ijmkm,       &
+!!$omp         imjmkm)                                           &
+!!$omp schedule (guided,20)
       DO ijk = ijkstart3, ijkend3
          IF(FLUID_AT(IJK)) THEN
 
@@ -486,7 +478,76 @@
          ENDIF   ! end if/else (fluid_at(ijk))
 
       ENDDO   ! end do loop (ijk=ijkstart3,ijkend3)
-!$omp end parallel do
+!!$omp end parallel do
 
       RETURN
-      END SUBROUTINE DRAG_GS_GAS_INTERP0
+      END SUBROUTINE DRAG_GS_GAS0
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!  Subroutine: DRAG_INTERPOLATION                                       C
+!  Purpose: DES - Calculate the fluid velocity interpolated at the      C
+!           particle's location and weights. Replace 'interpolator'     C
+!                       interface for OpenMP implementation.            C
+!                                                                       C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
+      SUBROUTINE DRAG_INTERPOLATION(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
+
+      use geometry, only: NO_K
+
+        IMPLICIT NONE
+
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
+        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
+        DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
+        DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
+        DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
+        INTEGER :: II, JJ, KK
+
+        DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
+        DOUBLE PRECISION :: DXX, DYY, DZZ
+        DOUBLE PRECISION, DIMENSION(3) :: ZETAA
+
+        DXX = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
+        DYY = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
+
+        ZETAA(1:2) = DESPOS(1:2) - GSTEN(1,1,1,1:2)
+
+        ZETAA(1) = ZETAA(1)/DXX
+        ZETAA(2) = ZETAA(2)/DYY
+
+        XXVAL(1)=1-ZETAA(1)
+        YYVAL(1)=1-ZETAA(2)
+        XXVAL(2)=ZETAA(1)
+        YYVAL(2)=ZETAA(2)
+
+        VELFP(:) = 0.D0
+
+        IF(NO_K) THEN
+           DO JJ=1,2
+              DO II=1,2
+                 WEIGHTFACTOR(II,JJ,1) = XXVAL(II)*YYVAL(JJ)
+                 VELFP(1:2) = VELFP(1:2) + VSTEN(II,JJ,1,1:2)*WEIGHTFACTOR(II,JJ,1)
+              ENDDO
+           ENDDO
+        ELSE
+           DZZ = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
+           ZETAA(3) = DESPOS(3) - GSTEN(1,1,1,3)
+           ZETAA(3) = ZETAA(3)/DZZ
+           ZZVAL(1)=1-ZETAA(3)
+           ZZVAL(2)=ZETAA(3)
+           DO KK=1,2
+              DO JJ=1,2
+                 DO II=1,2
+                    WEIGHTFACTOR(II,JJ,KK) = XXVAL(II)*YYVAL(JJ)*ZZVAL(KK)
+                    VELFP(1:3) = VELFP(1:3) + VSTEN(II,JJ,KK,1:3)*WEIGHTFACTOR(II,JJ,KK)
+                 ENDDO
+              ENDDO
+           ENDDO
+        ENDIF
+
+      END SUBROUTINE DRAG_INTERPOLATION

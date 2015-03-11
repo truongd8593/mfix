@@ -267,6 +267,8 @@
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
+! Flag to explicitly couple source terms and DES
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -344,7 +346,7 @@
       CASE(DES_INTERP_NONE)
       CASE DEFAULT
          WRITE(ERR_MSG,2000) trim(adjustl(DES_INTERP_SCHEME))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         CALL FLUSH_ERR_MSG()
       END SELECT
 
  2000 FORMAT('WARNING 2000: The selected interpolation scheme (',A,    &
@@ -352,7 +354,17 @@
          'tation. All energy',/'equation variables will use the ',     &
          'centroid method for interphase',/'data exchange.')
 
+      IF(DES_EXPLICITLY_COUPLED)THEN
+         WRITE(ERR_MSG, 2100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2100 FORMAT('Error 2100: The DES Energy equation implementation ',    &
+         'does not',/'currently support explicit coupling (DES_',      &
+         'EXPLICITLY_COUPLED).','Please correct the mfix.dat file.')
+
       CALL FINL_ERR_MSG
+
 
       RETURN
 
@@ -379,12 +391,17 @@
 
       use run, only: ANY_SPECIES_EQ
       use stiff_chem, only: STIFF_CHEMISTRY
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+! User input for DES interpolation scheme.
+      use particle_filter, only: DES_INTERP_SCHEME
+! Enumerated interpolation scheme for faster access
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
 
       use error_manager
 
       IMPLICIT NONE
-
-
 
 !......................................................................!
 
@@ -401,6 +418,27 @@
  9003 FORMAT('Error 9003: The stiff chemistry solver is not ',         &
       'available in DES',/'simulations. Please correct the input file.')
 
+! Notify that interpolation is not support for thermo variables
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+      CASE(DES_INTERP_NONE)
+      CASE DEFAULT
+         WRITE(ERR_MSG,2000) trim(adjustl(DES_INTERP_SCHEME))
+         CALL FLUSH_ERR_MSG()
+      END SELECT
+
+ 2000 FORMAT('WARNING 2000: The selected interpolation scheme (',A,    &
+         ') is not',/'supported by the DES Species equation implemen', &
+         'tation. All energy',/'equation variables will use the ',     &
+         'centroid method for interphase',/'data exchange.')
+
+      IF(DES_EXPLICITLY_COUPLED)THEN
+         WRITE(ERR_MSG, 2100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
+ 2100 FORMAT('Error 2100: The DES Species equation implementation ',   &
+         'does not',/'currently support explicit coupling (DES_',      &
+         'EXPLICITLY_COUPLED).','Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG
 

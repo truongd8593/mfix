@@ -13,6 +13,8 @@
 
       use constant, only: PSI_s => C
       use constant, only: GRAVITY
+! Fluid cell I, J, K, IJK containing particle and phase
+      use discretelement, only: PIJK
 
       use error_manager
 
@@ -43,6 +45,11 @@
 ! Drag correlation.
       DOUBLE PRECISION :: C_d
 
+! Phase index
+      INTEGER :: M
+
+! Get the particle phase index.
+      M = PIJK(MNP,4)
 
       C_d = (0.69d0*GRAVITY*(DPM**3)*ROg*1.33*(ROs-ROg))/    &
          (Mug**2*((GRAVITY*(PSI_s(M)**1.6)*(DPM**3)*ROg*(ROs-ROg)) / &
