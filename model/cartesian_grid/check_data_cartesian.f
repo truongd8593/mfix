@@ -584,6 +584,73 @@
                   CALL MFIX_EXIT(MYPE)
                ENDIF
 
+            CASE ('REACTOR1')       ! Cylinder-cone-cylinder  - Hard coded in define_quadrics.f
+
+               IF(REACTOR1_Y2(Q) < REACTOR1_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q
+                     WRITE(*,*)'MUST HAVE REACTOR1_Y2 >= REACTOR1_Y1.'
+                     WRITE(*,*)'REACTOR1_Y1,REACTOR1_Y2 =', REACTOR1_Y1(Q),REACTOR1_Y2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF((REACTOR1_Y1(Q) == REACTOR1_Y2(Q)).AND.(REACTOR1_R1(Q)/=REACTOR1_R2(Q))) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q, &
+                        ' REACTOR1_Y1=REACTOR1_Y2 BUT REACTOR1_R1/=REACTOR1_R2:'
+                     WRITE(*,*)'REACTOR1_Y1,REACTOR1_Y2 =', REACTOR1_Y1(Q),REACTOR1_Y2(Q)
+                     WRITE(*,*)'REACTOR1_R1,REACTOR1_R2 =', REACTOR1_R1(Q),REACTOR1_R2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+
+               IF(REACTOR1_YR2(Q) <= REACTOR1_Y2(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q
+                     WRITE(*,*)'MUST HAVE REACTOR1_YR2 > REACTOR1_Y2.'
+                     WRITE(*,*)'REACTOR1_YR2,REACTOR1_Y2 =', REACTOR1_YR2(Q),REACTOR1_Y2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(REACTOR1_YR1(Q) >= REACTOR1_Y1(Q)) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q
+                     WRITE(*,*)'MUST HAVE REACTOR1_YR1 < REACTOR1_Y1.'
+                     WRITE(*,*)'REACTOR1_YR1,REACTOR1_Y1 =', REACTOR1_YR1(Q),REACTOR1_Y1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(REACTOR1_THETA1(Q) <= ZERO.OR.REACTOR1_THETA1(Q) > 90.0D0) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q
+                     WRITE(*,*)'MUST HAVE 0.0 < REACTOR1_THETA1 <= 90 DEGREES.'
+                     WRITE(*,*)'REACTOR1_THETA1 =', REACTOR1_THETA1(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+
+               IF(REACTOR1_THETA2(Q) <= ZERO.OR.REACTOR1_THETA2(Q) > 90.0D0) THEN
+                  IF(MyPE == PE_IO) THEN
+                     WRITE(*,*)'INPUT ERROR: REACTOR1:', Q
+                     WRITE(*,*)'MUST HAVE 0.0 < REACTOR1_THETA2 <= 90 DEGREES.'
+                     WRITE(*,*)'REACTOR1_THETA2 =', REACTOR1_THETA2(Q)
+                     WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
+                  ENDIF
+                  CALL MFIX_EXIT(MYPE)
+               ENDIF
+! Convert angles from degrees to radians
+               REACTOR1_THETA1(Q) = REACTOR1_THETA1(Q)/180.0D0*PI
+               REACTOR1_THETA2(Q) = REACTOR1_THETA2(Q)/180.0D0*PI
+
 
             CASE DEFAULT
                IF(MyPE == PE_IO) THEN

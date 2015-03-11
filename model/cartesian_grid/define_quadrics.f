@@ -111,6 +111,10 @@
       LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
       LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
 
+      DOUBLE PRECISION :: YR1,YR2,RR1,RR2,THETA_R1,THETA_R2
+      DOUBLE PRECISION :: YRR1,YRR2,RC1,RC2,YC1,YC2
+
+
 !======================================================================
 
        PIECE_X = (piece_xmin(Q_ID) <= x1).AND.( x1 <= piece_xmax(Q_ID))
@@ -416,6 +420,94 @@
             f = (xtr/R)**2 + (ztr/R)**2 - 1.0
 
 
+         ELSEIF(TRIM(quadric_form(Q_ID))=='REACTOR1') THEN
+! This shape defines a reactor (interior flow), made of two vertical cylinders,
+! connected by a conical section.
+! Each cylinder is rounded and closed by a conical cap.
+
+!           Translation
+            xt = x1-t_x(Q_ID)
+            yt = x2-t_y(Q_ID)
+            zt = x3-t_z(Q_ID)
+
+!           Rotation
+            xtr = xt
+            ytr = yt
+            ztr = zt
+
+! Cylinders Radii
+            R1  = REACTOR1_R1(Q_ID)  ! Lower section
+            R2  = REACTOR1_R2(Q_ID)  ! Upper section
+
+! Conical transition
+            Y1 = REACTOR1_Y1(Q_ID)  ! Conical transition between lower        
+            Y2 = REACTOR1_Y2(Q_ID)  ! and upper sections
+
+! Rounding
+            YR1    = REACTOR1_YR1(Q_ID)  ! Lower rounding
+            RR1    = REACTOR1_RR1(Q_ID)  ! Lower section rounding
+            THETA1 = REACTOR1_THETA1(Q_ID) ! angle (radians)
+
+            YR2    = REACTOR1_YR2(Q_ID)  ! Upper rounding
+            RR2    = REACTOR1_RR2(Q_ID)  ! Lower section rounding
+            THETA2 = REACTOR1_THETA2(Q_ID) ! angle (radians)
+
+
+            YRR1 = YR1 - RR1 * DSIN(THETA1)
+            RC1  = R1-RR1*(ONE-DCOS(THETA1)) 
+            YC1  = YRR1 - RC1/DTAN(THETA1)
+            YRR2 = YR2 + RR2 * DSIN(THETA2)
+            RC2  = R2-RR2*(ONE-DCOS(THETA2)) 
+            YC2  = YRR2 + RC2/DTAN(THETA2)
+
+            IF(ytr>=YC2) THEN  ! Above upper conical cap
+
+               R = ZERO
+
+            ELSEIF(YRR2<=ytr.AND.ytr<=YC2) THEN   ! upper conical cap
+
+               R = RC2/(YRR2-YC2)*(ytr-YC2)
+
+            ELSEIF(YR2<=ytr.AND.ytr<=YRR2) THEN   ! upper rounding
+
+               R = R2 - RR2 + DSQRT(RR2**2 - (YR2-ytr)**2)
+
+            ELSEIF(Y2<=ytr.AND.ytr<=YR2) THEN     ! upper cylinder
+
+               R = R2
+
+            ELSEIF(Y1<=ytr.AND.ytr<=Y2) THEN      ! conical transition
+
+               R = R1 + (R2-R1)/(Y2-Y1)*(ytr-Y1)
+
+            ELSEIF(YR1<=ytr.AND.ytr<=Y1) THEN     ! lower cylinder
+
+               R = R1
+
+            ELSEIF(YRR1<=ytr.AND.ytr<=YR1) THEN   ! lower rounding
+
+               R = R1 - RR1 + DSQRT(RR1**2 - (YR1-ytr)**2)
+
+            ELSEIF(YC1<=ytr.AND.ytr<=YRR1) THEN   ! lower conical cap 
+
+               R = RC1/(YRR1-YC1)*(ytr-YC1)
+
+            ELSE
+
+               R = ZERO
+
+            ENDIF
+
+
+            IF(R>ZERO) THEN
+               f = (xtr/R)**2 + (ztr/R)**2 - 1.0
+            ELSE
+               IF(ytr<=YC1) THEN
+                  f = YC1 - ytr     ! below lower conical cap
+               ELSE
+                  f = ytr - YC2     ! above upper conical cap
+               ENDIF
+            ENDIF
 
 
          ELSE

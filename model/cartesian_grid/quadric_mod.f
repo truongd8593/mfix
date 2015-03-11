@@ -40,6 +40,16 @@
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: C2C_R1, C2C_R2
 !     Half-angle for cone (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: Half_angle
+!     Reactor 1 lower, upper cylinder radii
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: REACTOR1_R1,REACTOR1_R2
+!     Reactor 1 lower, upper conical transition between cylinders
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: REACTOR1_Y1,REACTOR1_Y2
+!     Reactor 1 lower, upper rounding locations
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: REACTOR1_YR1,REACTOR1_YR2
+!     Reactor 1 lower, upper rounding radii
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: REACTOR1_RR1,REACTOR1_RR2
+!     Reactor 1 lower, upper rounding angles
+      DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: REACTOR1_THETA1,REACTOR1_THETA2
 !     Normal vector components for plane (pre-defined quadrics)
       DOUBLE PRECISION, DIMENSION(DIM_QUADRIC) :: n_x,n_y,n_z
 !     A-matrices of the quadrics

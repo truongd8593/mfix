@@ -21,6 +21,9 @@
       UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2, &
       BEND_R1, BEND_R2, BEND_THETA1, BEND_THETA2, &
       C2C_R1, C2C_R2, C2C_Y1,C2C_Y2, &
+      REACTOR1_R1,REACTOR1_R2,REACTOR1_Y1,REACTOR1_Y2, &
+      REACTOR1_YR1,REACTOR1_YR2, &
+      REACTOR1_RR1, REACTOR1_RR2,REACTOR1_THETA1,REACTOR1_THETA2, &
       t_x, t_y, t_z, &
       clip_xmin, clip_xmax, clip_ymin, clip_ymax, clip_zmin, clip_zmax, &
       piece_xmin, piece_xmax, piece_ymin, piece_ymax, piece_zmin, piece_zmax, &

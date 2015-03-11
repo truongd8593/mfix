@@ -303,6 +303,78 @@
 !</keyword>
 
 !<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, lower cylinder radius.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_R1 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, upper cylinder radius.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_R2 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, lower conical transition between cylinders.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_Y1 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, upper conical transition between cylinders.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_Y2 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, lower rounding below cylinder.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_YR1 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, upper rounding above cylinder.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_YR2 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, lower rounding radius.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_RR1 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, upper rounding radius.</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_RR2 = UNDEFINED
+!</keyword>
+
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, lower rounding angle (degrees).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_THETA1 = UNDEFINED
+!</keyword>
+
+!<keyword category="cartesian grid" required="false">
+!  <description>Reactor 1, upper rounding angle (degrees).</description>
+!  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      REACTOR1_THETA2 = UNDEFINED
+!</keyword>
+
+
+!<keyword category="cartesian grid" required="false">
 !  <description>X-component of normal vector defining the plane (used when quadric_form = plane)</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
