@@ -15,20 +15,16 @@ src_objs := $(patsubst %.f,%.o,$(src_overrides))
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides) read_database.f rxn_com_mod.f
+mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
 mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
 
-# add dependency to make sure libmfix.a and libodepack.a are built first
-$(top_srcdir)/model/mfix.f: mfixlibs
+# top level directory needs to be built first
+main:
+	$(MAKE) -C $(top_srcdir) mfix
 
-mfixlibs:
-	$(MAKE) -C $(top_srcdir) libmfix.a libodepack.a
-
-read_database.f:
-	cp $(top_srcdir)/model/$@ $@
-
-rxn_com_mod.f:
-	cp $(top_srcdir)/model/$@ $@
+$(top_srcdir)/model/mfix.f: main
+$(top_srcdir)/libodepack.a: main
+$(top_srcdir)/libmfix.a: main
 
 species.inc:
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh

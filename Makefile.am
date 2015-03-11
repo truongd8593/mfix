@@ -338,8 +338,8 @@ libmfix_a_SOURCES += \
 	model/des/cfwallposvel.f \
 	model/des/check_cell_movement.f \
 	model/des/comp_mean_fields.f \
-	model/des/comp_mean_fields_interp0.f \
-	model/des/comp_mean_fields_interp1.f \
+	model/des/comp_mean_fields0.f \
+	model/des/comp_mean_fields1.f \
 	model/des/des_allocate_mod.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_mod.f \
@@ -369,10 +369,8 @@ libmfix_a_SOURCES += \
 	model/des/diffuse_mean_fields.f \
 	model/des/discretelement_mod.f \
 	model/des/drag_gp_des.f \
-	model/des/drag_gp_des1.f \
-	model/des/drag_gs_des_interp0.f \
-	model/des/drag_gs_des_interp1.f \
-	model/des/drag_gs_des_noninterp.f \
+	model/des/drag_gs_des0.f \
+	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
 	model/des/generate_particle_config.f \
@@ -508,7 +506,6 @@ libmfix_a_SOURCES += \
 	model/namelist.inc \
 	model/open_file.f \
 	model/open_files.f \
-	model/output_manager.f \
 	model/out_array.f \
 	model/out_array_c.f \
 	model/out_array_k.f \
@@ -517,6 +514,7 @@ libmfix_a_SOURCES += \
 	model/out_bin_512i.f \
 	model/out_bin_512r.f \
 	model/out_bin_r.f \
+	model/output_manager.f \
 	model/output_mod.f \
 	model/parallel_mod.f \
 	model/param1_mod.f \
