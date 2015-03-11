@@ -35,8 +35,8 @@
       IF(DES_INTERP_MEAN_FIELDS) THEN
          SELECT CASE(DES_INTERP_SCHEME_ENUM)
          CASE(DES_INTERP_NONE) ; CALL COMP_MEAN_FIELDS_ZERO_ORDER
-         CASE(DES_INTERP_GARG) ; CALL COMP_MEAN_FIELDS_INTERP0
-         CASE DEFAULT; CALL COMP_MEAN_FIELDS_INTERP1
+         CASE(DES_INTERP_GARG) ; CALL COMP_MEAN_FIELDS0
+         CASE DEFAULT; CALL COMP_MEAN_FIELDS1
          END SELECT
       ELSE
          CALL COMP_MEAN_FIELDS_ZERO_ORDER
@@ -127,8 +127,6 @@
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.
 !----------------------------------------------------------------//
-!!$omp parallel do if(ijkend3 .ge. 2000) default(shared)        &
-!!$omp private(IJK,M,OoSOLVOL)
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
@@ -148,7 +146,6 @@
          ENDDO   ! end loop over M=1,DES_MMAX
 
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
-!!$omp end parallel do
 
 ! Halo exchange of solids volume fraction data.
       CALL SEND_RECV(DES_ROP_S,2)

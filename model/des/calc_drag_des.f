@@ -44,9 +44,8 @@
 ! Calculate gas-solids drag force on particle
          IF(DES_CONTINUUM_COUPLED) THEN
             SELECT CASE(DES_INTERP_SCHEME_ENUM)
-            CASE(DES_INTERP_NONE) ; CALL DRAG_GS_DES_NONINTERP
-            CASE(DES_INTERP_GARG) ; CALL DRAG_GS_DES_INTERP0
-            CASE DEFAULT; CALL DRAG_GS_DES_INTERP1
+            CASE(DES_INTERP_GARG) ; CALL DRAG_GS_DES0
+            CASE DEFAULT; CALL DRAG_GS_DES1
             END SELECT
          ENDIF
 
@@ -76,7 +75,6 @@
       use discretelement, only: DES_CONTINUUM_HYBRID
 
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
-      use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
 
       IMPLICIT NONE
@@ -85,9 +83,8 @@
 ! Calculate gas-solids drag force.
       IF(DES_CONTINUUM_COUPLED) THEN
          SELECT CASE(DES_INTERP_SCHEME_ENUM)
-         CASE(DES_INTERP_NONE) ; CALL DRAG_GS_GAS_NONINTERP
-         CASE(DES_INTERP_GARG) ; CALL DRAG_GS_GAS_INTERP0
-         CASE DEFAULT; CALL DRAG_GS_GAS_INTERP1
+         CASE(DES_INTERP_GARG) ; CALL DRAG_GS_GAS0
+         CASE DEFAULT; CALL DRAG_GS_GAS1
          END SELECT
       ENDIF
 
@@ -116,15 +113,7 @@
       SUBROUTINE CALC_DRAG_DES_EXPLICIT
 
       use discretelement, only: DES_CONTINUUM_COUPLED
-      use discretelement, only: DES_CONTINUUM_HYBRID
-
-      use particle_filter, only: DES_INTERP_SCHEME_ENUM
-      use particle_filter, only: DES_INTERP_NONE
-      use particle_filter, only: DES_INTERP_GARG
-
       use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
-
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 
 ! Contribution to gas momentum equation due to drag
       use discretelement, only: DRAG_BM
@@ -145,12 +134,7 @@
       CALL COMP_MEAN_FIELDS
 
 ! Calculate gas-solids drag force on particle
-      IF(DES_CONTINUUM_COUPLED) THEN
-         SELECT CASE(DES_INTERP_SCHEME_ENUM)
-         CASE(DES_INTERP_NONE) ; CALL DRAG_GS_EXPLICIT_NONINTERP
-         CASE DEFAULT; CALL DRAG_GS_EXPLICIT_INTERP1
-         END SELECT
-      ENDIF
+      IF(DES_CONTINUUM_COUPLED) CALL DRAG_GS_EXPLICIT1
 
 ! Apply the diffusion filter.
       IF(DES_DIFFUSE_MEAN_FIELDS) THEN

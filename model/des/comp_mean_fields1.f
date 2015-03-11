@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE COMP_MEAN_FIELDS_INTERP1
+      SUBROUTINE COMP_MEAN_FIELDS1
 
 !-----------------------------------------------
 ! Modules
@@ -74,17 +74,20 @@
 ! Particle volume times the weight for this cell.
             VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
 ! Accumulate total solids volume (by phase)
-!$omp atomic
+            !$omp atomic
             SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
             IF(MPPIC) THEN
 ! Accumulate total solids momentum (by phase)
-!$omp atomic
-               DES_U_S(IJK,M) = DES_U_S(IJK,M) + DES_VEL_NEW(1,NP)*VOLxWEIGHT
-!$omp atomic
-               DES_V_S(IJK,M) = DES_V_S(IJK,M) + DES_VEL_NEW(2,NP)*VOLxWEIGHT
+               !$omp atomic
+               DES_U_S(IJK,M) = DES_U_S(IJK,M) + &
+                  DES_VEL_NEW(1,NP)*VOLxWEIGHT
+               !$omp atomic
+               DES_V_S(IJK,M) = DES_V_S(IJK,M) + &
+                  DES_VEL_NEW(2,NP)*VOLxWEIGHT
                IF(DO_K) THEN
-!$omp atomic
-                  DES_W_S(IJK,M) = DES_W_S(IJK,M) + DES_VEL_NEW(3,NP)*VOLxWEIGHT
+                  !$omp atomic
+                  DES_W_S(IJK,M) = DES_W_S(IJK,M) + &
+                     DES_VEL_NEW(3,NP)*VOLxWEIGHT
                ENDIF
             ENDIF
          ENDDO
@@ -97,7 +100,7 @@
 !---------------------------------------------------------------------//
 !$omp parallel do if(ijkend3 .ge. 2000) default(shared)                &
 !$omp private(IJK,M,OoSOLVOL)
-      do IJK = IJKSTART3, IJKEND3
+      DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
 ! calculating the cell average solids velocity for each solids phase
@@ -115,11 +118,11 @@
 
          ENDDO   ! end loop over M=1,DES_MMAX
 
-      endDO     ! end loop over IJK=ijkstart3,ijkend3
+      ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 !$omp end parallel do
 
 
 ! Halo exchange of solids volume fraction data.
       calL SEND_RECV(DES_ROP_S,2)
 
-      end SUBROUTINE COMP_MEAN_FIELDS_INTERP1
+      end SUBROUTINE COMP_MEAN_FIELDS1

@@ -9,7 +9,7 @@
 !  force is being calculated.                                          !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DRAG_USR(IJK, M, lDgA, EPg, Mug, ROg, VREL, DPM, ROs)
+      SUBROUTINE DRAG_USR(IJK, MNP, lDgA, EPg, Mug, ROg, VREL, DPM, ROs)
 
       use error_manager
 
@@ -17,8 +17,9 @@
 
 ! Index of fluid cell:
       INTEGER, INTENT(IN) :: IJK
-! Index of phase:
-      INTEGER, INTENT(IN) :: M
+! TFM SOLIDS --> Index of phase (M)
+! DES SOLIDS --> Index of particle (NP); M = PIJK(NP,4)
+      INTEGER, INTENT(IN) :: MNP
 
 ! drag coefficient
       DOUBLE PRECISION, INTENT(INOUT) :: lDgA

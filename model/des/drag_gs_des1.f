@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CALC_GS_DES_INTERP1                                     !
+!  Subroutine: CALC_GS_DES1                                            !
 !  Author: J.Musser                                   Date: 21-NOV-14  !
 !                                                                      !
 !  Purpose: This routine is called from the DISCRETE side to calculate !
@@ -16,17 +16,20 @@
 !    D_FORCE = beta*VOL_P/EP_s*(Ug - Us) = F_GP *(Ug - Us)             !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DRAG_GS_DES_INTERP1
+      SUBROUTINE DRAG_GS_DES1
 
 ! Gas phase volume fraction
       use fldvar, only: EP_G
 ! Gas phase velocities
       use fldvar, only: U_G, V_G, W_G
-
+! Size of particle arrays on this processor.
       use discretelement, only: MAX_PIP
-      use particle_filter, only: FILTER_CELL
-      use particle_filter, only: FILTER_WEIGHT
-
+! Flag to use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Interpolation cells and weights
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+! IJK of fluid cell containing particles center
+      use discretelement, only: PIJK
 ! Flags indicating the state of particle
       use discretelement, only: PEA
 ! Drag force on each particle
@@ -41,16 +44,10 @@
       use discretelement, only: PVOL
 ! Model B momentum equation
       use run, only: MODEL_B
-
 ! Cell-center gas velocities.
       use tmp_array, only: UGC => ARRAY1
       use tmp_array, only: VGC => ARRAY2
       use tmp_array, only: WGC => ARRAY3
-! Lock/Unlock the temp arrays to prevent double usage.
-      use tmp_array, only: LOCK_TMP_ARRAY
-      use tmp_array, only: UNLOCK_TMP_ARRAY
-
-
 ! Flag for MPPIC runs.
       use mfix_pic, only: MPPIC
 ! Flag to use implicit drag for MPPIC
@@ -66,6 +63,10 @@
 !---------------------------------------------------------------------//
 ! Double precision values.
       use param1, only: ZERO
+
+! Lock/Unlock the temp arrays to prevent double usage.
+      use tmp_array, only: LOCK_TMP_ARRAY
+      use tmp_array, only: UNLOCK_TMP_ARRAY
 
 
       IMPLICIT NONE
@@ -104,21 +105,31 @@
          VELFP = ZERO
          lPF = ZERO
 
-         DO LC=1,LP_BND
-
-            IJK = FILTER_CELL(LC,NP)
-            WEIGHT = FILTER_WEIGHT(LC,NP)
+! Calculate the gas volume fraction, velocity, and pressure force at
+! the particle's position.
+         IF(DES_INTERP_ON) THEN
+            DO LC=1,LP_BND
+               IJK = FILTER_CELL(LC,NP)
+               WEIGHT = FILTER_WEIGHT(LC,NP)
 ! Gas phase volume fraction.
-            lEPG = lEPG + EP_G(IJK)*WEIGHT
+               lEPG = lEPG + EP_G(IJK)*WEIGHT
 ! Gas phase velocity.
-            VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
-            VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
-            VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
+               VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
+               VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
+               VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
 ! Gas pressure force.
-            lPF = lPF + P_FORCE(:,IJK)*WEIGHT
-         ENDDO
+               lPF = lPF + P_FORCE(:,IJK)*WEIGHT
+            ENDDO
+         ELSE
+            IJK = PIJK(NP,4)
+            lEPG = EP_G(IJK)
+            VELFP(1) = UGC(IJK)
+            VELFP(2) = VGC(IJK)
+            VELFP(3) = WGC(IJK)
+            lPF = P_FORCE(:,IJK)
+         ENDIF
 
-         CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
+         CALL DES_DRAG_GP(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
 
 ! Calculate the gas-solids drag force on the particle
          IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
@@ -141,13 +152,13 @@
       CALL UNLOCK_TMP_ARRAY
 
       RETURN
-      END SUBROUTINE DRAG_GS_DES_INTERP1
+      END SUBROUTINE DRAG_GS_DES1
 
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DRAG_GS_GAS_INTERP1                                     !
+!  Subroutine: DRAG_GS_GAS1                                            !
 !  Author: J.Musser                                   Date: 21-NOV-14  !
 !                                                                      !
 !                                                                      !
@@ -162,17 +173,18 @@
 !  by the current process will have non-zero weights.                  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DRAG_GS_GAS_INTERP1
+      SUBROUTINE DRAG_GS_GAS1
 
 ! Gas phase volume fraction
       use fldvar, only: EP_G
 ! Gas phase velocities
       use fldvar, only: U_G, V_G, W_G
-
+! Size of particle array on this process.
       use discretelement, only: MAX_PIP
-      use particle_filter, only: FILTER_CELL
-      use particle_filter, only: FILTER_WEIGHT
-
+! Flag to use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Interpolation cells and weights
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Flags indicating the state of particle
       use discretelement, only: PEA
 ! IJK of fluid cell containing particles center
@@ -207,7 +219,7 @@
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Double precision values.
-      use param1, only: ZERO
+      use param1, only: ZERO, ONE
 
       IMPLICIT NONE
 
@@ -249,34 +261,52 @@
          lEPG = ZERO
          VELFP = ZERO
 
-         DO LC=1,LP_BND
-            IJK = FILTER_CELL(LC,NP)
-            WEIGHT = FILTER_WEIGHT(LC,NP)
+! Calculate the gas volume fraction, velocity, and at the 
+! particle's position.
+         IF(DES_INTERP_ON) THEN
+            DO LC=1,LP_BND
+               IJK = FILTER_CELL(LC,NP)
+               WEIGHT = FILTER_WEIGHT(LC,NP)
 ! Gas phase volume fraction.
-            lEPG = lEPG + EP_G(IJK)*WEIGHT
+               lEPG = lEPG + EP_G(IJK)*WEIGHT
 ! Gas phase velocity.
-            VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
-            VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
-            VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
-         ENDDO
+               VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
+               VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
+               VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
+            ENDDO
+         ELSE
+            IJK = PIJK(NP,4)
+            lEPG = EP_G(IJK)
+            VELFP(1) = UGC(IJK)
+            VELFP(2) = VGC(IJK)
+            VELFP(3) = WGC(IJK)
+         ENDIF
 
 ! This avoids FP exceptions for some ghost particles.
          IF(lEPg == ZERO) lEPG = EP_g(PIJK(NP,4))
 
-         CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
+         CALL DES_DRAG_GP(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
 
          lFORCE = F_GP(NP)
          IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
 
          lDRAG_BM = lFORCE*DES_VEL_NEW(:,NP)
 
-         DO LC=1,LP_BND
-            IJK = FILTER_CELL(LC,NP)
-            WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
+         IF(DES_INTERP_ON) THEN
+            DO LC=1,LP_BND
+               IJK = FILTER_CELL(LC,NP)
+               WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
+
+               DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
+               F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
+            ENDDO
+         ELSE
+            IJK = PIJK(NP,4)
+            WEIGHT = ONE/VOL(IJK)
 
             DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
-         ENDDO
+         ENDIF
 
       ENDDO
 
@@ -289,11 +319,11 @@
 
 
       RETURN
-      END SUBROUTINE DRAG_GS_GAS_INTERP1
+      END SUBROUTINE DRAG_GS_GAS1
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: DRAG_GS_EXPLICIT_INTERP1                                !
+!  Subroutine: DRAG_GS_EXPLICIT1                                       !
 !  Author: J.Musser                                   Date: 21-NOV-14  !
 !                                                                      !
 !                                                                      !
@@ -308,17 +338,18 @@
 !  by the current process will have non-zero weights.                  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DRAG_GS_EXPLICIT_INTERP1
+      SUBROUTINE DRAG_GS_EXPLICIT1
 
 ! Gas phase volume fraction
       use fldvar, only: EP_G
 ! Gas phase velocities
       use fldvar, only: U_G, V_G, W_G
-
+! Size of particle array on this process.
       use discretelement, only: MAX_PIP
-      use particle_filter, only: FILTER_CELL
-      use particle_filter, only: FILTER_WEIGHT
-
+! Flag to use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Interpolation cells and weights
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Flags indicating the state of particle
       use discretelement, only: PEA
 ! IJK of fluid cell containing particles center
@@ -352,10 +383,11 @@
       use sendrecv, only: SEND_RECV
 
 
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Double precision values.
-      use param1, only: ZERO
+      use param1, only: ZERO, ONE
 
       IMPLICIT NONE
 
@@ -392,7 +424,7 @@
 !$omp private(np, lepg, velfp, lc, ijk, weight, lforce, ldrag_bm)      &
 !$omp shared(max_pip, pea, lp_bnd, drag_fc, f_gp, des_vel_new, ugc,    &
 !$omp   vgc, wgc, mppic, drag_bm, vol, f_gds, ep_g, filter_weight,     &
-!$omp   des_stat_wt, filter_cell, pijk)
+!$omp   des_stat_wt, filter_cell, pijk, des_interp_on)
 !$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.PEA(NP,1)) CYCLE
@@ -407,21 +439,31 @@
          lEPG = ZERO
          VELFP = ZERO
 
-         DO LC=1,LP_BND
-            IJK = FILTER_CELL(LC,NP)
-            WEIGHT = FILTER_WEIGHT(LC,NP)
+! Calculate the gas volume fraction, velocity, and at the 
+! particle's position.
+         IF(DES_INTERP_ON) THEN
+            DO LC=1,LP_BND
+               IJK = FILTER_CELL(LC,NP)
+               WEIGHT = FILTER_WEIGHT(LC,NP)
 ! Gas phase volume fraction.
-            lEPG = lEPG + EP_G(IJK)*WEIGHT
+               lEPG = lEPG + EP_G(IJK)*WEIGHT
 ! Gas phase velocity.
-            VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
-            VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
-            VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
-         ENDDO
+               VELFP(1) = VELFP(1) + UGC(IJK)*WEIGHT
+               VELFP(2) = VELFP(2) + VGC(IJK)*WEIGHT
+               VELFP(3) = VELFP(3) + WGC(IJK)*WEIGHT
+            ENDDO
+         ELSE
+            IJK = PIJK(NP,4)
+            lEPG = EP_G(IJK)
+            VELFP(1) = UGC(IJK)
+            VELFP(2) = VGC(IJK)
+            VELFP(3) = WGC(IJK)
+         ENDIF
 
 ! This avoids FP exceptions for some ghost particles.
          IF(lEPG == ZERO) lEPG = EP_G(PIJK(NP,4))
 
-         CALL DES_DRAG_GP_NEW(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
+         CALL DES_DRAG_GP(NP, DES_VEL_NEW(:,NP), VELFP, lEPg)
 
 ! Evaluate the drag force acting on the particle.
          DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
@@ -432,20 +474,31 @@
 
          lDRAG_BM(:) = lFORCE*(DES_VEL_NEW(:,NP) - VELFP)
 
-         DO LC=1,LP_BND
-            IJK = FILTER_CELL(LC,NP)
-            WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
-
-!$omp atomic
+         IF(DES_INTERP_ON) THEN
+            DO LC=1,LP_BND
+               IJK = FILTER_CELL(LC,NP)
+               WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
+               !$omp atomic
+               DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
+               !$omp atomic
+               DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
+               !$omp atomic
+               DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
+               !$omp atomic
+               F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
+            ENDDO
+         ELSE
+            IJK = PIJK(NP,4)
+            WEIGHT = ONE/VOL(IJK)
+            !$omp atomic
             DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
-!$omp atomic
+            !$omp atomic
             DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
-!$omp atomic
+            !$omp atomic
             DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
-!$omp atomic
+            !$omp atomic
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
-         ENDDO
-
+         ENDIF
       ENDDO
 !$omp end do
 !$omp end parallel
@@ -459,7 +512,7 @@
 
 
       RETURN
-      END SUBROUTINE DRAG_GS_EXPLICIT_INTERP1
+      END SUBROUTINE DRAG_GS_EXPLICIT1
 
 
 

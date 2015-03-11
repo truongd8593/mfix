@@ -203,6 +203,9 @@
 
       DO_OLD = INTG_ADAMS_BASHFORTH .OR. MPPIC
 
+! Check interpolation input.
+      CALL CHECK_SOLIDS_COMMON_DISCRETE_INTERP
+
 ! Set flags for energy equations
       IF(ENERGY_EQ) CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
 
@@ -211,10 +214,6 @@
 
 ! Check geometry constrains.
       CALL CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
-
-! Check interpolation input.
-      CALL CHECK_SOLIDS_COMMON_DISCRETE_INTERP
-
 
       CALL FINL_ERR_MSG
 
@@ -262,6 +261,12 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 
       use run, only: SOLIDS_MODEL
+! User input for DES interpolation scheme.
+      use particle_filter, only: DES_INTERP_SCHEME
+! Enumerated interpolation scheme for faster access
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_NONE
+      use particle_filter, only: DES_INTERP_GARG
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -333,6 +338,19 @@
          SB_CONST = 1.355282d0*(10.0d0**(-12)) ! cal/((cm^2).sec.K^4)
       ENDIF
 
+
+! Notify that interpolation is not support for thermo variables
+      SELECT CASE(DES_INTERP_SCHEME_ENUM)
+      CASE(DES_INTERP_NONE)
+      CASE DEFAULT
+         WRITE(ERR_MSG,2000) trim(adjustl(DES_INTERP_SCHEME))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END SELECT
+
+ 2000 FORMAT('WARNING 2000: The selected interpolation scheme (',A,    &
+         ') is not',/'supported by the DES energy equation implemen',  &
+         'tation. All energy',/'equation variables will use the ',     &
+         'centroid method for interphase',/'data exchange.')
 
       CALL FINL_ERR_MSG
 

@@ -79,7 +79,7 @@
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
 
       CASE(DES_INTERP_GARG)
-! Compute the volume of nodes needed in drag_fgs_des_interp0.f
+! Compute the volume of nodes needed in drag_fgs_des0.f
          CALL COMPUTE_VOLUME_OF_NODES
 ! Setup MPI exchange arrys for nodes
          CALL DES_SETNODEINDICES
