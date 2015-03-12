@@ -389,8 +389,8 @@ postmfix_SOURCES += \
 	../model/des/cfwallposvel.f \
 	../model/des/check_cell_movement.f \
 	../model/des/comp_mean_fields.f \
-	../model/des/comp_mean_fields_interp0.f \
-	../model/des/comp_mean_fields_interp1.f \
+	../model/des/comp_mean_fields0.f \
+	../model/des/comp_mean_fields1.f \
 	../model/des/des_allocate_mod.f \
 	../model/des/des_bc_mod.f \
 	../model/des/des_cluster_mod.f \
@@ -420,10 +420,8 @@ postmfix_SOURCES += \
 	../model/des/diffuse_mean_fields.f \
 	../model/des/discretelement_mod.f \
 	../model/des/drag_gp_des.f \
-	../model/des/drag_gp_des1.f \
-	../model/des/drag_gs_des_interp0.f \
-	../model/des/drag_gs_des_interp1.f \
-	../model/des/drag_gs_des_noninterp.f \
+	../model/des/drag_gs_des0.f \
+	../model/des/drag_gs_des1.f \
 	../model/des/drag_ss_dem_noninterp.f \
 	../model/des/gas_drag.f \
 	../model/des/generate_particle_config.f \
