@@ -248,7 +248,8 @@
                   CALL DRAG_BVK(DgA,EPg,Mu,ROPg,VREL,DPM,DPA,phis)
 
                CASE (USER_DRAG)
-                  CALL DRAG_USR(IJK,M,DgA,EPg,Mu,ROg,VREL,DPM,ROs)
+                  CALL DRAG_USR(IJK, M, DgA, EPg, Mu, ROg, VREL, DPM,  &
+                     ROs, UGC, VGC, WGC)
 
                CASE (HYS)
 ! calculate velocity components of each solids phase

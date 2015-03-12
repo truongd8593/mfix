@@ -37,7 +37,7 @@
 
   CALL_USR = .T.
 
-  DRAG_TYPE = 'WEN_YU'
+  DRAG_TYPE = 'USR_DRAG'
 
   DES_CONTINUUM_COUPLED = .T.
 
@@ -136,6 +136,7 @@
   SPX_DT    =   0.01  ! EPg
   SPX_DT(2) = 8*1.00  ! Everything else
 
+  GROUP_RESID = .T.
 
   PRINT_DES_DATA = .F.
 

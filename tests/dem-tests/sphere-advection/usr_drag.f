@@ -25,6 +25,9 @@
       SUBROUTINE DRAG_USR(IJK, M_NP, lDgA, EPg, Mug, ROg, VREL, DPM, &
          ROs, lUg, lVg, lWg)
 
+! Fluid cell I, J, K, IJK containing particle and phase
+      use discretelement, only: DES_VEL_NEW
+
       use error_manager
 
       IMPLICIT NONE
@@ -56,23 +59,14 @@
       DOUBLE PRECISION, INTENT(IN) :: lUg, lVg, lWg
 
 
-! The following error message is used to make sure that if a user
-! defined drag law is invoked, that this routine has been modified.
+! This case doesn't need a drag force.
+      lDgA = 0.0d0
 
+! Set the particle velocity to the gas velocity
+      DES_VEL_NEW(1,M_NP) = lUg
+      DES_VEL_NEW(2,M_NP) = lVg
+      DES_VEL_NEW(3,M_NP) = lWg
 
-!- REMOVE THE FOLLOWING ---------------------------------------------->>
-
-      lDgA = 0.0
-
-      CALL INIT_ERR_MSG('USR_DRAG')
-      WRITE(ERR_MSG,9999)
-      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
- 9999 FORMAT('ERROR 9999: The user-defined drag routine was invoked ', &
-         'but this',/'generic error message exits. Either choose a ',  &
-         'different drag law',/'or correct mfix/model/usr_drag.f')
-
-!- END REMOVE --------------------------------------------------------<<
 
       RETURN
       END SUBROUTINE DRAG_USR
