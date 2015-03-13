@@ -459,69 +459,64 @@
       select case(idx)
       case(1)
       !pg!
-        mms_function = pg0 + pgx*Cos(apgx*Pi*xt) + pgy*Cos(apgy*Pi*yt)+&
-         pgxy*Cos(apgxy*Pi*xt*yt) + pgzx*Cos(apgzx*Pi*xt*zt) + &
-         pgz*Sin(apgz*Pi*zt) + pgyz*Sin(apgyz*Pi*yt*zt)
+        mms_function = pg0 + pgx*cos(apgx*pi*xt) + pgxy*cos(apgxy*pi*xt*yt) +&
+         pgy*cos(apgy*pi*yt) + pgyz*sin(apgyz*pi*yt*zt) + pgz*sin(apgz*pi*zt) +&
+         pgzx*cos(apgzx*pi*xt*zt)
       case(2)
       !ug!
-        mms_function = awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-         awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-         avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-         awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-         avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-         avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)
+        mms_function = (-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*pi*vgz*sin(avgz*pi*zt) +&
+         avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*pi*wgy*cos(awgy*pi*yt) + awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)
       case(3)
       !vg!
-        mms_function = -(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-         augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-         awgx*Pi*wgx*Sin(awgx*Pi*xt) - augz*Pi*ugz*Sin(augz*Pi*zt) - &
-         augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-         awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt)
+        mms_function = (augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt) -&
+         augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)
       case(4)
       !wg!
-        mms_function = avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-         augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-         augy*Pi*ugy*Sin(augy*Pi*yt) + &
-         augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-         avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-         avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt)
+        mms_function = (augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
       case(5)
       !us!
-        mms_function = us0*Sin((Pi*(xt + yt + zt))/2.0d0)**2
+        mms_function = us0*sin(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))
       case(6)
       !vs!
-        mms_function = vs0*Cos((Pi*(xt + yt + zt))/2.0d0)**2
+        mms_function = vs0*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))
       case(7)
       !ws!
-        mms_function = ws0
+        mms_function = ws0/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))
       case(8)
       !tg!
-        mms_function = Tg0 + Tgx*Cos(aTgx*Pi*xt) + Tgy*Cos(aTgy*Pi*yt)+&
-        Tgxy*Cos(aTgxy*Pi*xt*yt) + Tgzx*Cos(aTgzx*Pi*xt*zt) + &
-        Tgz*Sin(aTgz*Pi*zt) + Tgyz*Sin(aTgyz*Pi*yt*zt)
+        mms_function = tg0 + tgx*cos(atgx*pi*xt) + tgxy*cos(atgxy*pi*xt*yt) +&
+         tgy*cos(atgy*pi*yt) + tgyz*sin(atgyz*pi*yt*zt) + tgz*sin(atgz*pi*zt) +&
+         tgzx*cos(atgzx*pi*xt*zt)
       case(9)
       !ts!
-        mms_function = Ts0 + Tsx*Cos(aTsx*Pi*xt) + Tsy*Cos(aTsy*Pi*yt)+&
-         Tsxy*Cos(aTsxy*Pi*xt*yt) + Tszx*Cos(aTszx*Pi*xt*zt) + &
-         Tsz*Sin(aTsz*Pi*zt) + Tsyz*Sin(aTsyz*Pi*yt*zt)
+        mms_function = ts0 + tsx*cos(atsx*pi*xt) + tsxy*cos(atsxy*pi*xt*yt) +&
+         tsy*cos(atsy*pi*yt) + tsyz*sin(atsyz*pi*yt*zt) + tsz*sin(atsz*pi*zt) +&
+         tszx*cos(atszx*pi*xt*zt)
       case(10)
       !ep_g!
-        mms_function = 1.0d0 - es0 - esx*Cos(aesx*Pi*xt) - &
-         esy*Cos(aesy*Pi*yt) - esxy*Cos(aesxy*Pi*xt*yt) - &
-         eszx*Cos(aeszx*Pi*xt*zt) - esz*Sin(aesz*Pi*zt) - &
-         esyz*Sin(aesyz*Pi*yt*zt)
+        mms_function = 1.0d0 - (es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + &
+         esz*sin(aesz*pi*zt))
       case(11)
       !rop_s!
-        mms_function = ros*(es0 + esx*Cos(aesx*Pi*xt) + &
-         esy*Cos(aesy*Pi*yt) + esxy*Cos(aesxy*Pi*xt*yt) + &
-         eszx*Cos(aeszx*Pi*xt*zt) + esz*Sin(aesz*Pi*zt) + &
-         esyz*Sin(aesyz*Pi*yt*zt))
+        mms_function = ros*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))
       case(12)
       !theta_m!
-        mms_function = Ths0 + Thsx*Cos(aThsx*Pi*xt) + &
-         Thsy*Cos(aThsy*Pi*yt) + Thsxy*Cos(aThsxy*Pi*xt*yt) + &
-         Thszx*Cos(aThszx*Pi*xt*zt) + Thsz*Sin(aThsz*Pi*zt) + &
-         Thsyz*Sin(aThsyz*Pi*yt*zt)
+        mms_function = ths0 + thsx*cos(athsx*pi*xt) + thsxy*cos(athsxy*pi*xt*yt) +&
+         thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) + thsz*sin(athsz*pi*zt) +&
+         thszx*cos(athszx*pi*xt*zt)
       end select
 
 
@@ -626,408 +621,914 @@
         stop
       case(2)
       !ugsrc!
-        mms_source = -(mug*(awgxy**3*Pi**3*wgxy*xt*yt**2*&
-              Cos(awgxy*Pi*xt*yt) + &
-              2*awgxy**2*Pi**2*wgxy*yt*Sin(awgxy*Pi*xt*yt))) - &
-         mug*(-(awgxy**3*Pi**3*wgxy*xt*yt**2*Cos(awgxy*Pi*xt*yt)) + &
-            2*avgzx**2*Pi**2*vgzx*zt*Cos(avgzx*Pi*xt*zt) - &
-            2*awgxy**2*Pi**2*wgxy*yt*Sin(awgxy*Pi*xt*yt) - &
-            avgzx**3*Pi**3*vgzx*xt*zt**2*Sin(avgzx*Pi*xt*zt)) - &
-         mug*(-2*avgzx**2*Pi**2*vgzx*zt*Cos(avgzx*Pi*xt*zt) + &
-            avgzx**3*Pi**3*vgzx*xt*zt**2*Sin(avgzx*Pi*xt*zt)) + &
-         (-(apgx*pgx*Pi*Sin(apgx*Pi*xt)) - apgxy*pgxy*Pi*yt*&
-            Sin(apgxy*Pi*xt*yt) - &
-            apgzx*pgzx*Pi*zt*Sin(apgzx*Pi*xt*zt))*&
-          (1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt)) - &
-         mug*(-(awgy**3*Pi**3*wgy*Cos(awgy*Pi*yt)) - &
-            awgxy**3*Pi**3*wgxy*xt**3*Cos(awgxy*Pi*xt*yt) + &
-            avgyz**3*Pi**3*vgyz*yt**3*Cos(avgyz*Pi*yt*zt) - &
-            awgyz**3*Pi**3*wgyz*zt**3*Cos(awgyz*Pi*yt*zt) + &
-            awgxy*Pi*wgxy*(-(awgxy**2*Pi**2*xt*yt**2*&
-            Cos(awgxy*Pi*xt*yt)) - &
-               2*awgxy*Pi*yt*Sin(awgxy*Pi*xt*yt)) - &
-            avgz**3*Pi**3*vgz*Sin(avgz*Pi*zt) - &
-            avgzx**3*Pi**3*vgzx*xt**3*Sin(avgzx*Pi*xt*zt) + &
-            avgzx*Pi*vgzx*(2*avgzx*Pi*zt*Cos(avgzx*Pi*xt*zt) - &
-               avgzx**2*Pi**2*xt*zt**2*Sin(avgzx*Pi*xt*zt)) - &
-            avgyz*Pi*(-(avgyz**2*Pi**2*vgyz*yt*zt**2*&
-            Cos(avgyz*Pi*yt*zt)) - &
-               2*avgyz*Pi*vgyz*zt*Sin(avgyz*Pi*yt*zt)) + &
-            awgyz*Pi*wgyz*(-(awgyz**2*Pi**2*yt**2*zt*&
-            Cos(awgyz*Pi*yt*zt)) - &
-               2*awgyz*Pi*yt*Sin(awgyz*Pi*yt*zt))) + &
-         rog*(1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt))*&
-          (2*(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt) + &
-               avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt) - &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) + &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt))*&
-             (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-             awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
-            (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-            awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt))*&
-             (-(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) + &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) - &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)) + &
-            (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-            awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt))*&
-             (-(avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt)) - &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) - &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt) + &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)) + &
-            (avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-            augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt))*&
-             (avgz**2*Pi**2*vgz*Cos(avgz*Pi*zt) + &
-               avgzx**2*Pi**2*vgzx*xt**2*Cos(avgzx*Pi*xt*zt) + &
-               awgyz*Pi*wgyz*Cos(awgyz*Pi*yt*zt) + &
-               avgyz**2*Pi**2*vgyz*yt**2*Sin(avgyz*Pi*yt*zt) - &
-               awgyz**2*Pi**2*wgyz*yt*zt*Sin(awgyz*Pi*yt*zt)) + &
-            (-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt))*&
-             (-(avgyz*Pi*vgyz*Cos(avgyz*Pi*yt*zt)) - &
-               awgy**2*Pi**2*wgy*Sin(awgy*Pi*yt) - &
-               awgxy**2*Pi**2*wgxy*xt**2*Sin(awgxy*Pi*xt*yt) + &
-               avgyz**2*Pi**2*vgyz*yt*zt*Sin(avgyz*Pi*yt*zt) - &
-               awgyz**2*Pi**2*wgyz*zt**2*Sin(awgyz*Pi*yt*zt)))
+        mms_source = -mug*(pi**2*(-2*aesx**2*esx**2*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*vgz*sin(avgz*pi*zt) + avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*wgy*cos(awgy*pi*yt) +&
+         awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesx**2*esx*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*vgz*sin(avgz*pi*zt) +&
+         avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*wgy*cos(awgy*pi*yt) + awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesx*pi*xt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         2*aesx*esx*(avgzx**2*pi*vgzx*xt*zt*cos(avgzx*pi*xt*zt) + avgzx*vgzx*sin(avgzx*pi*xt*zt) -&
+         awgxy**2*pi*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*wgxy*cos(awgxy*pi*xt*yt))*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         avgzx**3*pi*vgzx*xt*zt**2*sin(avgzx*pi*xt*zt) - 2*avgzx**2*vgzx*zt*cos(avgzx*pi*xt*zt) +&
+         awgxy**3*pi*wgxy*xt*yt**2*cos(awgxy*pi*xt*yt) +&
+         2*awgxy**2*wgxy*yt*sin(awgxy*pi*xt*yt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0) +&
+         pi**2*(-2*aesy**2*esy**2*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*vgz*sin(avgz*pi*zt) + avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*wgy*cos(awgy*pi*yt) +&
+         awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesy*pi*yt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesy**2*esy*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*vgz*sin(avgz*pi*zt) +&
+         avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*wgy*cos(awgy*pi*yt) + awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesy*pi*yt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesy*esy*(-avgyz**2*pi*vgyz*yt*zt*sin(avgyz*pi*yt*zt) + avgyz*vgyz*cos(avgyz*pi*yt*zt)&
+         + awgxy**2*pi*wgxy*xt**2*sin(awgxy*pi*xt*yt) + awgy**2*pi*wgy*sin(awgy*pi*yt) +&
+         awgyz**2*pi*wgyz*zt**2*sin(awgyz*pi*yt*zt))*sin(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         avgyz**3*pi*vgyz*yt*zt**2*cos(avgyz*pi*yt*zt) - 2*avgyz**2*vgyz*zt*sin(avgyz*pi*yt*zt) +&
+         awgxy**3*pi*wgxy*xt**3*cos(awgxy*pi*xt*yt) + awgy**3*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz**3*pi*wgyz*zt**3*cos(awgyz*pi*yt*zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         pi**2*(-2*aesz**2*esz**2*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*vgz*sin(avgz*pi*zt) + avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*wgy*cos(awgy*pi*yt) +&
+         awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesz**2*esz*pi*(-avgyz*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*vgz*sin(avgz*pi*zt) +&
+         avgzx*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*wgy*cos(awgy*pi*yt) + awgyz*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesz*esz*(avgyz**2*pi*vgyz*yt**2*sin(avgyz*pi*yt*zt) + avgz**2*pi*vgz*cos(avgz*pi*zt) +&
+         avgzx**2*pi*vgzx*xt**2*cos(avgzx*pi*xt*zt) - awgyz**2*pi*wgyz*yt*zt*sin(awgyz*pi*yt*zt) +&
+         awgyz*wgyz*cos(awgyz*pi*yt*zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         avgyz**3*pi*vgyz*yt**3*cos(avgyz*pi*yt*zt) + avgz**3*pi*vgz*sin(avgz*pi*zt) +&
+         avgzx**3*pi*vgzx*xt**3*sin(avgzx*pi*xt*zt) +&
+         awgyz**3*pi*wgyz*yt**2*zt*cos(awgyz*pi*yt*zt) +&
+         2*awgyz**2*wgyz*yt*sin(awgyz*pi*yt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0)) -&
+         mug*(2*aesx**2*esx**2*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx**2*esx*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*pi*vgz*sin(avgz*pi*zt) +&
+         avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*pi*wgy*cos(awgy*pi*yt) + awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesx*pi*xt)/(-es0&
+         - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         2*aesx*esx*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-avgzx**3*pi**3*vgzx*xt*zt**2*sin(avgzx*pi*xt*zt) +&
+         2*avgzx**2*pi**2*vgzx*zt*cos(avgzx*pi*xt*zt) -&
+         awgxy**3*pi**3*wgxy*xt*yt**2*cos(awgxy*pi*xt*yt) -&
+         2*awgxy**2*pi**2*wgxy*yt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(2*aesx*aesy*esx*esy*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesy*esy*pi*(-augzx**2*pi**2*ugzx*xt*zt*cos(augzx*pi*xt*zt) -&
+         augzx*pi*ugzx*sin(augzx*pi*xt*zt) + awgx**2*pi**2*wgx*cos(awgx*pi*xt) +&
+         awgxy**2*pi**2*wgxy*yt**2*sin(awgxy*pi*xt*yt) +&
+         awgzx**2*pi**2*wgzx*zt**2*cos(awgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (awgxy**3*pi**3*wgxy*xt*yt**2*cos(awgxy*pi*xt*yt) +&
+         2*awgxy**2*pi**2*wgxy*yt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(-2*aesx*aesz*esx*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(augxy**2*pi**2*ugxy*xt*yt*cos(augxy*pi*xt*yt) +&
+         augxy*pi*ugxy*sin(augxy*pi*xt*yt) - avgx**2*pi**2*vgx*sin(avgx*pi*xt) -&
+         avgxy**2*pi**2*vgxy*yt**2*cos(avgxy*pi*xt*yt) -&
+         avgzx**2*pi**2*vgzx*zt**2*cos(avgzx*pi*xt*zt))*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (avgzx**3*pi**3*vgzx*xt*zt**2*sin(avgzx*pi*xt*zt) -&
+         2*avgzx**2*pi**2*vgzx*zt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) +&
+         2*mug*(2*aesx**2*esx**2*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx**2*esx*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*pi*vgz*sin(avgz*pi*zt) +&
+         avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*pi*wgy*cos(awgy*pi*yt) + awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesx*pi*xt)/(-es0&
+         - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         2*aesx*aesy*esx*esy*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         2*aesx*aesz*esx*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesx*esx*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         2*aesx*esx*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesy*esy*pi*(-augzx**2*pi**2*ugzx*xt*zt*cos(augzx*pi*xt*zt) -&
+         augzx*pi*ugzx*sin(augzx*pi*xt*zt) + awgx**2*pi**2*wgx*cos(awgx*pi*xt) +&
+         awgxy**2*pi**2*wgxy*yt**2*sin(awgxy*pi*xt*yt) +&
+         awgzx**2*pi**2*wgzx*zt**2*cos(awgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(augxy**2*pi**2*ugxy*xt*yt*cos(augxy*pi*xt*yt) +&
+         augxy*pi*ugxy*sin(augxy*pi*xt*yt) - avgx**2*pi**2*vgx*sin(avgx*pi*xt) -&
+         avgxy**2*pi**2*vgxy*yt**2*cos(avgxy*pi*xt*yt) -&
+         avgzx**2*pi**2*vgzx*zt**2*cos(avgzx*pi*xt*zt))*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (avgzx**3*pi**3*vgzx*xt*zt**2*sin(avgzx*pi*xt*zt) -&
+         2*avgzx**2*pi**2*vgzx*zt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (awgxy**3*pi**3*wgxy*xt*yt**2*cos(awgxy*pi*xt*yt) +&
+         2*awgxy**2*pi**2*wgxy*yt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (-avgzx**3*pi**3*vgzx*xt*zt**2*sin(avgzx*pi*xt*zt) +&
+         2*avgzx**2*pi**2*vgzx*zt*cos(avgzx*pi*xt*zt) -&
+         awgxy**3*pi**3*wgxy*xt*yt**2*cos(awgxy*pi*xt*yt) -&
+         2*awgxy**2*pi**2*wgxy*yt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0))/3 + rog*(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) +&
+         1.0)*(-2*aesx*esx*pi*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) + avgz*pi*vgz*sin(avgz*pi*zt)&
+         + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) + awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) +&
+         awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))**2*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         2*aesy*esy*pi*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt) -&
+         augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         2*aesz*esz*pi*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         (-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) + augyz*pi*ugyz*cos(augyz*pi*yt*zt) +&
+         awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (2*avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         2*avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - 2*awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         2*awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (avgyz**2*pi**2*vgyz*yt**2*sin(avgyz*pi*yt*zt) +&
+         avgz**2*pi**2*vgz*cos(avgz*pi*zt) + avgzx**2*pi**2*vgzx*xt**2*cos(avgzx*pi*xt*zt) -&
+         awgyz**2*pi**2*wgyz*yt*zt*sin(awgyz*pi*yt*zt) +&
+         awgyz*pi*wgyz*cos(awgyz*pi*yt*zt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (avgyz**2*pi**2*vgyz*yt*zt*sin(avgyz*pi*yt*zt) -&
+         avgyz*pi*vgyz*cos(avgyz*pi*yt*zt) - awgxy**2*pi**2*wgxy*xt**2*sin(awgxy*pi*xt*yt) -&
+         awgy**2*pi**2*wgy*sin(awgy*pi*yt) -&
+         awgyz**2*pi**2*wgyz*zt**2*sin(awgyz*pi*yt*zt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2) + (-apgx*pgx*pi*sin(apgx*pi*xt) -&
+         apgxy*pgxy*pi*yt*sin(apgxy*pi*xt*yt) - apgzx*pgzx*pi*zt*sin(apgzx*pi*xt*zt))*(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
       case(3)
       !vgsrc!
-        mms_source = -(mug*(-(awgxy**3*Pi**3*wgxy*xt**2*yt*&
-        Cos(awgxy*Pi*xt*yt)) - &
-              2*awgxy**2*Pi**2*wgxy*xt*Sin(awgxy*Pi*xt*yt))) + &
-         (apgyz*pgyz*Pi*zt*Cos(apgyz*Pi*yt*zt) - &
-         apgy*pgy*Pi*Sin(apgy*Pi*yt) - &
-            apgxy*pgxy*Pi*xt*Sin(apgxy*Pi*xt*yt))*&
-          (1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt)) - &
-         mug*(awgxy**3*Pi**3*wgxy*xt**2*yt*Cos(awgxy*Pi*xt*yt) - &
-            augyz**3*Pi**3*ugyz*yt*zt**2*Cos(augyz*Pi*yt*zt) + &
-            2*awgxy**2*Pi**2*wgxy*xt*Sin(awgxy*Pi*xt*yt) - &
-            2*augyz**2*Pi**2*ugyz*zt*Sin(augyz*Pi*yt*zt)) - &
-         mug*(augyz**3*Pi**3*ugyz*yt*zt**2*Cos(augyz*Pi*yt*zt) + &
-            2*augyz**2*Pi**2*ugyz*zt*Sin(augyz*Pi*yt*zt)) - &
-         mug*(awgxy**3*Pi**3*wgxy*yt**3*Cos(awgxy*Pi*xt*yt) - &
-            augyz**3*Pi**3*ugyz*yt**3*Cos(augyz*Pi*yt*zt) - &
-            awgx**3*Pi**3*wgx*Sin(awgx*Pi*xt) - &
-            awgxy*Pi*(-(awgxy**2*Pi**2*wgxy*xt**2*yt*&
-            Cos(awgxy*Pi*xt*yt)) - &
-               2*awgxy*Pi*wgxy*xt*Sin(awgxy*Pi*xt*yt)) + &
-            augz**3*Pi**3*ugz*Sin(augz*Pi*zt) + &
-            augzx**3*Pi**3*ugzx*xt**3*Sin(augzx*Pi*xt*zt) - &
-            augzx*Pi*(2*augzx*Pi*ugzx*zt*Cos(augzx*Pi*xt*zt) - &
-               augzx**2*Pi**2*ugzx*xt*zt**2*Sin(augzx*Pi*xt*zt)) - &
-            awgzx**3*Pi**3*wgzx*zt**3*Sin(awgzx*Pi*xt*zt) + &
-            awgzx*Pi*wgzx*(2*awgzx*Pi*xt*Cos(awgzx*Pi*xt*zt) - &
-               awgzx**2*Pi**2*xt**2*zt*Sin(awgzx*Pi*xt*zt)) + &
-            augyz*Pi*ugyz*(-(augyz**2*Pi**2*yt*zt**2*&
-            Cos(augyz*Pi*yt*zt)) - &
-               2*augyz*Pi*zt*Sin(augyz*Pi*yt*zt))) + &
-         rog*(1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt))*&
-          ((awgx**2*Pi**2*wgx*Cos(awgx*Pi*xt) - &
-               augzx**2*Pi**2*ugzx*xt*zt*Cos(augzx*Pi*xt*zt) + &
-               awgzx**2*Pi**2*wgzx*zt**2*Cos(awgzx*Pi*xt*zt) + &
-               awgxy**2*Pi**2*wgxy*yt**2*Sin(awgxy*Pi*xt*yt) - &
-               augzx*Pi*ugzx*Sin(augzx*Pi*xt*zt))*&
-             (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-             awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
-            (awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt) + &
-               avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt) - &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) + &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt))*&
-             (-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt)) + &
-            (avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-            augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt))*&
-             (-(augz**2*Pi**2*ugz*Cos(augz*Pi*zt)) - &
-               augzx**2*Pi**2*ugzx*xt**2*Cos(augzx*Pi*xt*zt) + &
-               awgzx**2*Pi**2*wgzx*xt*zt*Cos(awgzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*Sin(awgzx*Pi*xt*zt) - &
-               augyz**2*Pi**2*ugyz*yt**2*Sin(augyz*Pi*yt*zt)) + &
-            2*(-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt))*&
-             (-(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) + &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) - &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)) + &
-            (-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt))*&
-             (-(avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt)) - &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) - &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt) + &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt))) 
+        mms_source = -mug*(pi**2*(-2*aesy**2*esy**2*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*ugz*sin(augz*pi*zt) - augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesy**2*esy*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) - augz*ugz*sin(augz*pi*zt) -&
+         augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesy*esy*(augyz**2*pi*ugyz*yt*zt*sin(augyz*pi*yt*zt) - augyz*ugyz*cos(augyz*pi*yt*zt) -&
+         awgxy**2*pi*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*wgxy*cos(awgxy*pi*xt*yt))*sin(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         augyz**3*pi*ugyz*yt*zt**2*cos(augyz*pi*yt*zt) + 2*augyz**2*ugyz*zt*sin(augyz*pi*yt*zt) -&
+         awgxy**3*pi*wgxy*xt**2*yt*cos(awgxy*pi*xt*yt) -&
+         2*awgxy**2*wgxy*xt*sin(awgxy*pi*xt*yt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0) +&
+         pi**2*(-2*aesx**2*esx**2*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) - augz*ugz*sin(augz*pi*zt)&
+         - augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesx*pi*xt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesx**2*esx*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) - augz*ugz*sin(augz*pi*zt) -&
+         augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         2*aesx*esx*(-augzx**2*pi*ugzx*xt*zt*cos(augzx*pi*xt*zt) - augzx*ugzx*sin(augzx*pi*xt*zt)&
+         + awgx**2*pi*wgx*cos(awgx*pi*xt) + awgxy**2*pi*wgxy*yt**2*sin(awgxy*pi*xt*yt) +&
+         awgzx**2*pi*wgzx*zt**2*cos(awgzx*pi*xt*zt))*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         augzx**3*pi*ugzx*xt*zt**2*sin(augzx*pi*xt*zt) + 2*augzx**2*ugzx*zt*cos(augzx*pi*xt*zt) +&
+         awgx**3*pi*wgx*sin(awgx*pi*xt) - awgxy**3*pi*wgxy*yt**3*cos(awgxy*pi*xt*yt) +&
+         awgzx**3*pi*wgzx*zt**3*sin(awgzx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         pi**2*(2*aesz**2*esz**2*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) - augz*ugz*sin(augz*pi*zt)&
+         - augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 +&
+         aesz**2*esz*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) - augz*ugz*sin(augz*pi*zt) -&
+         augzx*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*wgx*sin(awgx*pi*xt) -&
+         awgxy*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesz*esz*(augyz**2*pi*ugyz*yt**2*sin(augyz*pi*yt*zt) + augz**2*pi*ugz*cos(augz*pi*zt) +&
+         augzx**2*pi*ugzx*xt**2*cos(augzx*pi*xt*zt) - awgzx**2*pi*wgzx*xt*zt*cos(awgzx*pi*xt*zt) -&
+         awgzx*wgzx*sin(awgzx*pi*xt*zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         augyz**3*pi*ugyz*yt**3*cos(augyz*pi*yt*zt) + augz**3*pi*ugz*sin(augz*pi*zt) +&
+         augzx**3*pi*ugzx*xt**3*sin(augzx*pi*xt*zt) -&
+         awgzx**3*pi*wgzx*xt**2*zt*sin(awgzx*pi*xt*zt) +&
+         2*awgzx**2*wgzx*xt*cos(awgzx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0)) -&
+         mug*(2*aesy**2*esy**2*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesy**2*esy*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt) -&
+         augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         2*aesy*esy*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-augyz**3*pi**3*ugyz*yt*zt**2*cos(augyz*pi*yt*zt) -&
+         2*augyz**2*pi**2*ugyz*zt*sin(augyz*pi*yt*zt) +&
+         awgxy**3*pi**3*wgxy*xt**2*yt*cos(awgxy*pi*xt*yt) +&
+         2*awgxy**2*pi**2*wgxy*xt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(2*aesx*aesy*esx*esy*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(avgyz**2*pi**2*vgyz*yt*zt*sin(avgyz*pi*yt*zt) -&
+         avgyz*pi*vgyz*cos(avgyz*pi*yt*zt) - awgxy**2*pi**2*wgxy*xt**2*sin(awgxy*pi*xt*yt) -&
+         awgy**2*pi**2*wgy*sin(awgy*pi*yt) -&
+         awgyz**2*pi**2*wgyz*zt**2*sin(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesy*esy*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-awgxy**3*pi**3*wgxy*xt**2*yt*cos(awgxy*pi*xt*yt) -&
+         2*awgxy**2*pi**2*wgxy*xt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(-2*aesy*aesz*esy*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesy*esy*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(augxy**2*pi**2*ugxy*xt**2*cos(augxy*pi*xt*yt) +&
+         augy**2*pi**2*ugy*cos(augy*pi*yt) + augyz**2*pi**2*ugyz*zt**2*sin(augyz*pi*yt*zt) -&
+         avgxy**2*pi**2*vgxy*xt*yt*cos(avgxy*pi*xt*yt) -&
+         avgxy*pi*vgxy*sin(avgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (augyz**3*pi**3*ugyz*yt*zt**2*cos(augyz*pi*yt*zt) +&
+         2*augyz**2*pi**2*ugyz*zt*sin(augyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) +&
+         2*mug*(2*aesx*aesy*esx*esy*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(avgyz**2*pi**2*vgyz*yt*zt*sin(avgyz*pi*yt*zt) -&
+         avgyz*pi*vgyz*cos(avgyz*pi*yt*zt) - awgxy**2*pi**2*wgxy*xt**2*sin(awgxy*pi*xt*yt) -&
+         awgy**2*pi**2*wgy*sin(awgy*pi*yt) -&
+         awgyz**2*pi**2*wgyz*zt**2*sin(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         2*aesy**2*esy**2*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesy**2*esy*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt) -&
+         augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         2*aesy*aesz*esy*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         2*aesy*esy*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesy*esy*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         aesy*esy*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(augxy**2*pi**2*ugxy*xt**2*cos(augxy*pi*xt*yt) +&
+         augy**2*pi**2*ugy*cos(augy*pi*yt) + augyz**2*pi**2*ugyz*zt**2*sin(augyz*pi*yt*zt) -&
+         avgxy**2*pi**2*vgxy*xt*yt*cos(avgxy*pi*xt*yt) -&
+         avgxy*pi*vgxy*sin(avgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (augyz**3*pi**3*ugyz*yt*zt**2*cos(augyz*pi*yt*zt) +&
+         2*augyz**2*pi**2*ugyz*zt*sin(augyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (-awgxy**3*pi**3*wgxy*xt**2*yt*cos(awgxy*pi*xt*yt) -&
+         2*awgxy**2*pi**2*wgxy*xt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (-augyz**3*pi**3*ugyz*yt*zt**2*cos(augyz*pi*yt*zt) -&
+         2*augyz**2*pi**2*ugyz*zt*sin(augyz*pi*yt*zt) +&
+         awgxy**3*pi**3*wgxy*xt**2*yt*cos(awgxy*pi*xt*yt) +&
+         2*awgxy**2*pi**2*wgxy*xt*sin(awgxy*pi*xt*yt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0))/3 + rog*(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) +&
+         1.0)*(-2*aesx*esx*pi*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt)&
+         - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         2*aesy*esy*pi*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) - augz*pi*ugz*sin(augz*pi*zt) -&
+         augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) + awgx*pi*wgx*sin(awgx*pi*xt) -&
+         awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))**2*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         2*aesz*esz*pi*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         (-2*augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) + 2*augyz*pi*ugyz*cos(augyz*pi*yt*zt) +&
+         2*awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         2*awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (-augyz**2*pi**2*ugyz*yt**2*sin(augyz*pi*yt*zt) -&
+         augz**2*pi**2*ugz*cos(augz*pi*zt) - augzx**2*pi**2*ugzx*xt**2*cos(augzx*pi*xt*zt) +&
+         awgzx**2*pi**2*wgzx*xt*zt*cos(awgzx*pi*xt*zt) +&
+         awgzx*pi*wgzx*sin(awgzx*pi*xt*zt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (-augzx**2*pi**2*ugzx*xt*zt*cos(augzx*pi*xt*zt) -&
+         augzx*pi*ugzx*sin(augzx*pi*xt*zt) + awgx**2*pi**2*wgx*cos(awgx*pi*xt) +&
+         awgxy**2*pi**2*wgxy*yt**2*sin(awgxy*pi*xt*yt) +&
+         awgzx**2*pi**2*wgzx*zt**2*cos(awgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2) + (-apgxy*pgxy*pi*xt*sin(apgxy*pi*xt*yt) -&
+         apgy*pgy*pi*sin(apgy*pi*yt) + apgyz*pgyz*pi*zt*cos(apgyz*pi*yt*zt))*(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
       case(4)
       !wgsrc!
-        mms_source = -(mug*(2*avgzx**2*Pi**2*vgzx*xt*&
-        Cos(avgzx*Pi*xt*zt) - &
-              avgzx**3*Pi**3*vgzx*xt**2*zt*Sin(avgzx*Pi*xt*zt))) + &
-         (apgz*pgz*Pi*Cos(apgz*Pi*zt) + &
-         apgyz*pgyz*Pi*yt*Cos(apgyz*Pi*yt*zt) - &
-            apgzx*pgzx*Pi*xt*Sin(apgzx*Pi*xt*zt))*&
-          (1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt)) - &
-         mug*(-(augyz**3*Pi**3*ugyz*yt**2*zt*Cos(augyz*Pi*yt*zt)) - &
-            2*augyz**2*Pi**2*ugyz*yt*Sin(augyz*Pi*yt*zt)) - &
-         mug*(-2*avgzx**2*Pi**2*vgzx*xt*Cos(avgzx*Pi*xt*zt) + &
-            augyz**3*Pi**3*ugyz*yt**2*zt*Cos(augyz*Pi*yt*zt) + &
-            avgzx**3*Pi**3*vgzx*xt**2*zt*Sin(avgzx*Pi*xt*zt) + &
-            2*augyz**2*Pi**2*ugyz*yt*Sin(augyz*Pi*yt*zt)) - &
-         mug*(-(avgx**3*Pi**3*vgx*Cos(avgx*Pi*xt)) + &
-            augyz**3*Pi**3*ugyz*zt**3*Cos(augyz*Pi*yt*zt) - &
-            augy**3*Pi**3*ugy*Sin(augy*Pi*yt) - &
-            augxy**3*Pi**3*ugxy*xt**3*Sin(augxy*Pi*xt*yt) + &
-            augxy*Pi*ugxy*(2*augxy*Pi*yt*Cos(augxy*Pi*xt*yt) - &
-               augxy**2*Pi**2*xt*yt**2*Sin(augxy*Pi*xt*yt)) + &
-            avgxy**3*Pi**3*vgxy*yt**3*Sin(avgxy*Pi*xt*yt) - &
-            avgxy*Pi*(2*avgxy*Pi*vgxy*xt*Cos(avgxy*Pi*xt*yt) - &
-               avgxy**2*Pi**2*vgxy*xt**2*yt*Sin(avgxy*Pi*xt*yt)) + &
-            avgzx**3*Pi**3*vgzx*zt**3*Sin(avgzx*Pi*xt*zt) - &
-            avgzx*Pi*(2*avgzx*Pi*vgzx*xt*Cos(avgzx*Pi*xt*zt) - &
-               avgzx**2*Pi**2*vgzx*xt**2*zt*Sin(avgzx*Pi*xt*zt)) - &
-            augyz*Pi*(-(augyz**2*Pi**2*ugyz*yt**2*zt*&
-            Cos(augyz*Pi*yt*zt)) - &
-               2*augyz*Pi*ugyz*yt*Sin(augyz*Pi*yt*zt))) + &
-         rog*(1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-            esxy*Cos(aesxy*Pi*xt*yt) - eszx*Cos(aeszx*Pi*xt*zt) - &
-            esz*Sin(aesz*Pi*zt) - esyz*Sin(aesyz*Pi*yt*zt))*&
-          ((augxy**2*Pi**2*ugxy*xt*yt*Cos(augxy*Pi*xt*yt) - &
-               avgxy**2*Pi**2*vgxy*yt**2*Cos(avgxy*Pi*xt*yt) - &
-               avgzx**2*Pi**2*vgzx*zt**2*Cos(avgzx*Pi*xt*zt) - &
-               avgx**2*Pi**2*vgx*Sin(avgx*Pi*xt) + &
-               augxy*Pi*ugxy*Sin(augxy*Pi*xt*yt))*&
-             (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-             awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
-            (awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt) + &
-               avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt) - &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) + &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt))*&
-             (avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-             augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt)) + &
-            (avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-            augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt))*&
-             (-(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) + &
-               awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) - &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)) + &
-            2*(avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-            augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt))*&
-             (-(avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt)) - &
-               augyz*Pi*ugyz*Cos(augyz*Pi*yt*zt) - &
-               avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt) + &
-               augyz**2*Pi**2*ugyz*yt*zt*Sin(augyz*Pi*yt*zt)) + &
-            (-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-               augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt))*&
-             (augy**2*Pi**2*ugy*Cos(augy*Pi*yt) + &
-               augxy**2*Pi**2*ugxy*xt**2*Cos(augxy*Pi*xt*yt) - &
-               avgxy**2*Pi**2*vgxy*xt*yt*Cos(avgxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*Sin(avgxy*Pi*xt*yt) + &
-               augyz**2*Pi**2*ugyz*zt**2*Sin(augyz*Pi*yt*zt)))
+        mms_source =-mug*(-pi**2*(2*aesz**2*esz**2*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*ugy*sin(augy*pi*yt) - augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 +&
+         aesz**2*esz*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) + augy*ugy*sin(augy*pi*yt) -&
+         augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesz*esz*(-augyz**2*pi*ugyz*yt*zt*sin(augyz*pi*yt*zt) + augyz*ugyz*cos(augyz*pi*yt*zt)&
+         + avgzx**2*pi*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*vgzx*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         augyz**3*pi*ugyz*yt**2*zt*cos(augyz*pi*yt*zt) + 2*augyz**2*ugyz*yt*sin(augyz*pi*yt*zt) +&
+         avgzx**3*pi*vgzx*xt**2*zt*sin(avgzx*pi*xt*zt) -&
+         2*avgzx**2*vgzx*xt*cos(avgzx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0) +&
+         pi**2*(-2*aesx**2*esx**2*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) + augy*ugy*sin(augy*pi*yt)&
+         - augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesx*pi*xt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesx**2*esx*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) + augy*ugy*sin(augy*pi*yt) -&
+         augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*cos(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         2*aesx*esx*(-augxy**2*pi*ugxy*xt*yt*cos(augxy*pi*xt*yt) - augxy*ugxy*sin(augxy*pi*xt*yt)&
+         + avgx**2*pi*vgx*sin(avgx*pi*xt) + avgxy**2*pi*vgxy*yt**2*cos(avgxy*pi*xt*yt) +&
+         avgzx**2*pi*vgzx*zt**2*cos(avgzx*pi*xt*zt))*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         augxy**3*pi*ugxy*xt*yt**2*sin(augxy*pi*xt*yt) - 2*augxy**2*ugxy*yt*cos(augxy*pi*xt*yt) +&
+         avgx**3*pi*vgx*cos(avgx*pi*xt) - avgxy**3*pi*vgxy*yt**3*sin(avgxy*pi*xt*yt) -&
+         avgzx**3*pi*vgzx*zt**3*sin(avgzx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         pi**2*(-2*aesy**2*esy**2*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) + augy*ugy*sin(augy*pi*yt)&
+         - augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesy*pi*yt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0)**2 -&
+         aesy**2*esy*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) + augy*ugy*sin(augy*pi*yt) -&
+         augyz*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*vgx*cos(avgx*pi*xt) -&
+         avgxy*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*vgzx*zt*sin(avgzx*pi*xt*zt))*cos(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) -&
+         2*aesy*esy*(augxy**2*pi*ugxy*xt**2*cos(augxy*pi*xt*yt) + augy**2*pi*ugy*cos(augy*pi*yt) +&
+         augyz**2*pi*ugyz*zt**2*sin(augyz*pi*yt*zt) - avgxy**2*pi*vgxy*xt*yt*cos(avgxy*pi*xt*yt) -&
+         avgxy*vgxy*sin(avgxy*pi*xt*yt))*sin(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) - 1.0) +&
+         augxy**3*pi*ugxy*xt**3*sin(augxy*pi*xt*yt) + augy**3*pi*ugy*sin(augy*pi*yt) -&
+         augyz**3*pi*ugyz*zt**3*cos(augyz*pi*yt*zt) -&
+         avgxy**3*pi*vgxy*xt**2*yt*sin(avgxy*pi*xt*yt) +&
+         2*avgxy**2*vgxy*xt*cos(avgxy*pi*xt*yt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt) - 1.0)) -&
+         mug*(2*aesz**2*esz**2*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesz**2*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         2*aesz*esz*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (augyz**3*pi**3*ugyz*yt**2*zt*cos(augyz*pi*yt*zt) +&
+         2*augyz**2*pi**2*ugyz*yt*sin(augyz*pi*yt*zt) +&
+         avgzx**3*pi**3*vgzx*xt**2*zt*sin(avgzx*pi*xt*zt) -&
+         2*avgzx**2*pi**2*vgzx*xt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(-2*aesx*aesz*esx*esz*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(avgyz**2*pi**2*vgyz*yt**2*sin(avgyz*pi*yt*zt) +&
+         avgz**2*pi**2*vgz*cos(avgz*pi*zt) + avgzx**2*pi**2*vgzx*xt**2*cos(avgzx*pi*xt*zt) -&
+         awgyz**2*pi**2*wgyz*yt*zt*sin(awgyz*pi*yt*zt) +&
+         awgyz*pi*wgyz*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-avgzx**3*pi**3*vgzx*xt**2*zt*sin(avgzx*pi*xt*zt) +&
+         2*avgzx**2*pi**2*vgzx*xt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) -&
+         mug*(-2*aesy*aesz*esy*esz*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesy*esy*pi*(-augyz**2*pi**2*ugyz*yt**2*sin(augyz*pi*yt*zt) -&
+         augz**2*pi**2*ugz*cos(augz*pi*zt) - augzx**2*pi**2*ugzx*xt**2*cos(augzx*pi*xt*zt) +&
+         awgzx**2*pi**2*wgzx*xt*zt*cos(awgzx*pi*xt*zt) +&
+         awgzx*pi*wgzx*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-augyz**3*pi**3*ugyz*yt**2*zt*cos(augyz*pi*yt*zt) -&
+         2*augyz**2*pi**2*ugyz*yt*sin(augyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) +&
+         2*mug*(-2*aesx*aesz*esx*esz*pi**2*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesx*esx*pi*(avgyz**2*pi**2*vgyz*yt**2*sin(avgyz*pi*yt*zt) +&
+         avgz**2*pi**2*vgz*cos(avgz*pi*zt) + avgzx**2*pi**2*vgzx*xt**2*cos(avgzx*pi*xt*zt) -&
+         awgyz**2*pi**2*wgyz*yt*zt*sin(awgyz*pi*yt*zt) +&
+         awgyz*pi*wgyz*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 -&
+         2*aesy*aesz*esy*esz*pi**2*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesy*esy*pi*(-augyz**2*pi**2*ugyz*yt**2*sin(augyz*pi*yt*zt) -&
+         augz**2*pi**2*ugz*cos(augz*pi*zt) - augzx**2*pi**2*ugzx*xt**2*cos(augzx*pi*xt*zt) +&
+         awgzx**2*pi**2*wgzx*xt*zt*cos(awgzx*pi*xt*zt) +&
+         awgzx*pi*wgzx*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         2*aesz**2*esz**2*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)**2/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         aesz**2*esz*pi**2*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*sin(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) +&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) + awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         2*aesz*esz*pi*(augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         augyz*pi*ugyz*cos(augyz*pi*yt*zt) - avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         aesz*esz*pi*(avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**2 +&
+         (-augyz**3*pi**3*ugyz*yt**2*zt*cos(augyz*pi*yt*zt) -&
+         2*augyz**2*pi**2*ugyz*yt*sin(augyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (-avgzx**3*pi**3*vgzx*xt**2*zt*sin(avgzx*pi*xt*zt) +&
+         2*avgzx**2*pi**2*vgzx*xt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) +&
+         (augyz**3*pi**3*ugyz*yt**2*zt*cos(augyz*pi*yt*zt) +&
+         2*augyz**2*pi**2*ugyz*yt*sin(augyz*pi*yt*zt) +&
+         avgzx**3*pi**3*vgzx*xt**2*zt*sin(avgzx*pi*xt*zt) -&
+         2*avgzx**2*pi**2*vgzx*xt*cos(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0))/3 + rog*(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) +&
+         1.0)*(-2*aesx*esx*pi*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt)&
+         - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))*sin(aesx*pi*xt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 -&
+         2*aesy*esy*pi*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))*sin(aesy*pi*yt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         2*aesz*esz*pi*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) + augy*pi*ugy*sin(augy*pi*yt) -&
+         augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
+         avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))**2*cos(aesz*pi*zt)/(-es0 - esx*cos(aesx*pi*xt) -&
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)**3 +&
+         (-augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) + augyz*pi*ugyz*cos(augyz*pi*yt*zt) +&
+         awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) -&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (2*augyz**2*pi**2*ugyz*yt*zt*sin(augyz*pi*yt*zt) -&
+         2*augyz*pi*ugyz*cos(augyz*pi*yt*zt) - 2*avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) -&
+         2*avgzx*pi*vgzx*sin(avgzx*pi*xt*zt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (avgzx**2*pi**2*vgzx*xt*zt*cos(avgzx*pi*xt*zt) +&
+         avgzx*pi*vgzx*sin(avgzx*pi*xt*zt) - awgxy**2*pi**2*wgxy*xt*yt*sin(awgxy*pi*xt*yt) +&
+         awgxy*pi*wgxy*cos(awgxy*pi*xt*yt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (augxy**2*pi**2*ugxy*xt**2*cos(augxy*pi*xt*yt) +&
+         augy**2*pi**2*ugy*cos(augy*pi*yt) + augyz**2*pi**2*ugyz*zt**2*sin(augyz*pi*yt*zt) -&
+         avgxy**2*pi**2*vgxy*xt*yt*cos(avgxy*pi*xt*yt) -&
+         avgxy*pi*vgxy*sin(avgxy*pi*xt*yt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2 + (augxy**2*pi**2*ugxy*xt*yt*cos(augxy*pi*xt*yt) +&
+         augxy*pi*ugxy*sin(augxy*pi*xt*yt) - avgx**2*pi**2*vgx*sin(avgx*pi*xt) -&
+         avgxy**2*pi**2*vgxy*yt**2*cos(avgxy*pi*xt*yt) -&
+         avgzx**2*pi**2*vgzx*zt**2*cos(avgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0)**2) + (apgyz*pgyz*pi*yt*cos(apgyz*pi*yt*zt) +&
+         apgz*pgz*pi*cos(apgz*pi*zt) - apgzx*pgzx*pi*xt*sin(apgzx*pi*xt*zt))*(-es0 -&
+         esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
       case(5)
       !ussrc!
-        mms_source = -(mus*Pi**2*us0*&
-        Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (mus*Pi**2*vs0*Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (-(apgx*pgx*Pi*Sin(apgx*Pi*xt)) - &
-         apgxy*pgxy*Pi*yt*Sin(apgxy*Pi*xt*yt) - &
-            apgzx*pgzx*Pi*zt*Sin(apgzx*Pi*xt*zt))*&
-          (es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt)) + &
-         (mus*Pi**2*us0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. - &
-         (mus*Pi**2*vs0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. - &
-         3*mus*us0*((Pi**2*Cos((Pi*(xt + yt + zt))/2.)**2)/2. - &
-            (Pi**2*Sin((Pi*(xt + yt + zt))/2.)**2)/2.) + &
-         ros*(es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt))*&
-          (Pi*us0*ws0*Cos((Pi*(xt + yt + zt))/2.)*&
-          Sin((Pi*(xt + yt + zt))/2.) + &
-            Pi*us0*vs0*Cos((Pi*(xt + yt + zt))/2.)**3*&
-            Sin((Pi*(xt + yt + zt))/2.) + &
-            2*Pi*us0**2*Cos((Pi*(xt + yt + zt))/2.)*&
-            Sin((Pi*(xt + yt + zt))/2.)**3 - &
-            Pi*us0*vs0*Cos((Pi*(xt + yt + zt))/2.)*&
-            Sin((Pi*(xt + yt + zt))/2.)**3)
+        mms_source =2*aesx*aesz*esx*esz*mus*pi**2*ws0*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         mus*(pi**2*us0*(2*aesx**2*esx**2*sin(0.5*pi*(xt + yt + zt))**2*sin(aesx*pi*xt)**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         aesx**2*esx*sin(0.5*pi*(xt + yt + zt))**2*cos(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + 2.0*aesx*esx*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 0.5*sin(0.5*pi*(xt + yt + zt))**2 +&
+         0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) + pi**2*us0*(2*aesy**2*esy**2*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesy*pi*yt)**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**2 + aesy**2*esy*sin(0.5*pi*(xt + yt + zt))**2*cos(aesy*pi*yt)/(es0&
+         + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         2.0*aesy*esy*sin(0.5*pi*(xt + yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 0.5*sin(0.5*pi*(xt +&
+         yt + zt))**2 + 0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + pi**2*us0*(2*aesz**2*esz**2*sin(0.5*pi*(xt +&
+         yt + zt))**2*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**2 + aesz**2*esz*sin(0.5*pi*(xt + yt + zt))**2*sin(aesz*pi*zt)/(es0&
+         + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) -&
+         2.0*aesz*esz*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))*cos(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 0.5*sin(0.5*pi*(xt +&
+         yt + zt))**2 + 0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) -&
+         mus*(2*aesx**2*esx**2*pi**2*us0*sin(0.5*pi*(xt + yt + zt))**2*sin(aesx*pi*xt)**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         aesx**2*esx*pi**2*us0*sin(0.5*pi*(xt + yt + zt))**2*cos(aesx*pi*xt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         2.0*aesx*esx*pi**2*us0*sin(0.5*pi*(xt + yt + zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt +&
+         zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         0.5*pi**2*us0*sin(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + 0.5*pi**2*us0*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) -&
+         mus*(2*aesx*aesy*esx*esy*pi**2*vs0*sin(aesx*pi*xt)*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         1.0*aesx*esx*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt +&
+         zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         1.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         0.5*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 0.5*pi**2*vs0*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) +&
+         2*mus*(2*aesx**2*esx**2*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))**2*sin(aesx*pi*xt)**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         aesx**2*esx*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))**2*cos(aesx*pi*xt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         2*aesx*aesy*esx*esy*pi**2*vs0*sin(aesx*pi*xt)*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         2*aesx*aesz*esx*esz*pi**2*ws0*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt)&
+         + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 + 1.0*aesx*esx*pi**2*vs0*sin(0.5*pi*(xt +&
+         yt + zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 - 1.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt +&
+         yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2)/3 + ros*(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))*(2*aesx*esx*pi*us0**2*sin(0.5*pi*(xt + yt +&
+         zt))**4*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 + 2*aesy*esy*pi*us0*vs0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 - 2*aesz*esz*pi*us0*ws0*sin(0.5*pi*(xt + yt&
+         + zt))**2*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 + 2.0*pi*us0**2*sin(0.5*pi*(xt + yt + zt))**3*cos(0.5*pi*(xt + yt&
+         + zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         1.0*pi*us0*vs0*sin(0.5*pi*(xt + yt + zt))**3*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         1.0*pi*us0*vs0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))**3/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         1.0*pi*us0*ws0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2) +&
+         (-apgx*pgx*pi*sin(apgx*pi*xt) - apgxy*pgxy*pi*yt*sin(apgxy*pi*xt*yt) -&
+         apgzx*pgzx*pi*zt*sin(apgzx*pi*xt*zt))*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) 
       case(6)
       !vssrc!
-        mms_source = -(mus*Pi**2*us0*&
-        Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (mus*Pi**2*vs0*Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (apgyz*pgyz*Pi*zt*Cos(apgyz*Pi*yt*zt) - &
-         apgy*pgy*Pi*Sin(apgy*Pi*yt) - &
-            apgxy*pgxy*Pi*xt*Sin(apgxy*Pi*xt*yt))*&
-          (es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt)) + &
-         (mus*Pi**2*us0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. - &
-         (mus*Pi**2*vs0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. - &
-         3*mus*vs0*(-(Pi**2*Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-            (Pi**2*Sin((Pi*(xt + yt + zt))/2.)**2)/2.) + &
-         ros*(es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt))*&
-          (-(Pi*vs0*ws0*Cos((Pi*(xt + yt + zt))/2.)*&
-          Sin((Pi*(xt + yt + zt))/2.)) + &
-            Pi*us0*vs0*Cos((Pi*(xt + yt + zt))/2.)**3*&
-            Sin((Pi*(xt + yt + zt))/2.) - &
-            2*Pi*vs0**2*Cos((Pi*(xt + yt + zt))/2.)**3*&
-            Sin((Pi*(xt + yt + zt))/2.) - &
-            Pi*us0*vs0*Cos((Pi*(xt + yt + zt))/2.)*&
-            Sin((Pi*(xt + yt + zt))/2.)**3)
+        mms_source =2*aesy*aesz*esy*esz*mus*pi**2*ws0*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         mus*(pi**2*vs0*(2*aesx**2*esx**2*sin(aesx*pi*xt)**2*cos(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         aesx**2*esx*cos(0.5*pi*(xt + yt + zt))**2*cos(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 2.0*aesx*esx*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + 0.5*sin(0.5*pi*(xt + yt + zt))**2 -&
+         0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) + pi**2*vs0*(2*aesy**2*esy**2*sin(aesy*pi*yt)**2*cos(0.5*pi*(xt + yt&
+         + zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         aesy**2*esy*cos(0.5*pi*(xt + yt + zt))**2*cos(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 2.0*aesy*esy*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + 0.5*sin(0.5*pi*(xt + yt + zt))**2 -&
+         0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) + pi**2*vs0*(2*aesz**2*esz**2*cos(0.5*pi*(xt + yt +&
+         zt))**2*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**2 + aesz**2*esz*sin(aesz*pi*zt)*cos(0.5*pi*(xt + yt + zt))**2/(es0&
+         + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         2.0*aesz*esz*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))*cos(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + 0.5*sin(0.5*pi*(xt +&
+         yt + zt))**2 - 0.5*cos(0.5*pi*(xt + yt + zt))**2)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) -&
+         mus*(2*aesy**2*esy**2*pi**2*vs0*sin(aesy*pi*yt)**2*cos(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         aesy**2*esy*pi**2*vs0*cos(0.5*pi*(xt + yt + zt))**2*cos(aesy*pi*yt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         2.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         0.5*pi**2*vs0*sin(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) - 0.5*pi**2*vs0*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) -&
+         mus*(2*aesx*aesy*esx*esy*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt))**3 + 1.0*aesx*esx*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 + 1.0*aesy*esy*pi**2*us0*sin(0.5*pi*(xt +&
+         yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 - 0.5*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         0.5*pi**2*us0*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) +&
+         2*mus*(2*aesx*aesy*esx*esy*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)*sin(aesy*pi*yt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt))**3 + 1.0*aesx*esx*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         2*aesy**2*esy**2*pi**2*vs0*sin(aesy*pi*yt)**2*cos(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         aesy**2*esy*pi**2*vs0*cos(0.5*pi*(xt + yt + zt))**2*cos(aesy*pi*yt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         2*aesy*aesz*esy*esz*pi**2*ws0*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt)&
+         + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 - 1.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt +&
+         yt + zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2)/3 + ros*(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))*(2*aesx*esx*pi*us0*vs0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         2*aesy*esy*pi*vs0**2*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))**4/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         2*aesz*esz*pi*vs0*ws0*cos(0.5*pi*(xt + yt + zt))**2*cos(aesz*pi*zt)/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         1.0*pi*us0*vs0*sin(0.5*pi*(xt + yt + zt))**3*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         1.0*pi*us0*vs0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))**3/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         2.0*pi*vs0**2*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))**3/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         1.0*pi*vs0*ws0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2) +&
+         (-apgxy*pgxy*pi*xt*sin(apgxy*pi*xt*yt) - apgy*pgy*pi*sin(apgy*pi*yt) +&
+         apgyz*pgyz*pi*zt*cos(apgyz*pi*yt*zt))*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) 
       case(7)
       !wssrc!
-        mms_source = -(mus*Pi**2*us0*&
-        Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (mus*Pi**2*vs0*Cos((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         (apgz*pgz*Pi*Cos(apgz*Pi*zt) + &
-         apgyz*pgyz*Pi*yt*Cos(apgyz*Pi*yt*zt) - &
-            apgzx*pgzx*Pi*xt*Sin(apgzx*Pi*xt*zt))*&
-          (es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt)) + &
-         (mus*Pi**2*us0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. - &
-         (mus*Pi**2*vs0*Sin((Pi*(xt + yt + zt))/2.)**2)/2. + &
-         ros*(es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-            esxy*Cos(aesxy*Pi*xt*yt) + eszx*Cos(aeszx*Pi*xt*zt) + &
-            esz*Sin(aesz*Pi*zt) + esyz*Sin(aesyz*Pi*yt*zt))*&
-          (Pi*us0*ws0*Cos((Pi*(xt + yt + zt))/2.)*&
-          Sin((Pi*(xt + yt + zt))/2.) - &
-            Pi*vs0*ws0*Cos((Pi*(xt + yt + zt))/2.)*&
-            Sin((Pi*(xt + yt + zt))/2.))
+        mms_source =-2*aesz**2*esz**2*mus*pi**2*ws0*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         aesz**2*esz*mus*pi**2*ws0*sin(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         mus*(aesx**2*esx*pi**2*ws0*(2*esx*sin(aesx*pi*xt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + cos(aesx*pi*xt))/(es0 + esx*cos(aesx*pi*xt)&
+         + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         aesy**2*esy*pi**2*ws0*(2*esy*sin(aesy*pi*yt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + cos(aesy*pi*yt))/(es0 + esx*cos(aesx*pi*xt)&
+         + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         aesz**2*esz*pi**2*ws0*(2*esz*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) + sin(aesz*pi*zt))/(es0 + esx*cos(aesx*pi*xt)&
+         + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2) -&
+         mus*(-2*aesx*aesz*esx*esz*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt))**3 + 1.0*aesx*esx*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 - 1.0*aesz*esz*pi**2*us0*sin(0.5*pi*(xt +&
+         yt + zt))*cos(0.5*pi*(xt + yt + zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 - 0.5*pi**2*us0*sin(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         0.5*pi**2*us0*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) -&
+         mus*(-2*aesy*aesz*esy*esz*pi**2*vs0*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 - 1.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 + 1.0*aesz*esz*pi**2*vs0*sin(0.5*pi*(xt +&
+         yt + zt))*cos(0.5*pi*(xt + yt + zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 + 0.5*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) -&
+         0.5*pi**2*vs0*cos(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) +&
+         2*mus*(-2*aesx*aesz*esx*esz*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt))**3 + 1.0*aesx*esx*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesx*pi*xt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         2*aesy*aesz*esy*esz*pi**2*vs0*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 - 1.0*aesy*esy*pi**2*vs0*sin(0.5*pi*(xt + yt +&
+         zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 +&
+         2*aesz**2*esz**2*pi**2*ws0*cos(aesz*pi*zt)**2/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 +&
+         aesz**2*esz*pi**2*ws0*sin(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**2)/3 + ros*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))*(2*aesx*esx*pi*us0*ws0*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 + 2*aesy*esy*pi*vs0*ws0*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**3 -&
+         2*aesz*esz*pi*ws0**2*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**3 + 1.0*pi*us0*ws0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt +&
+         zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         1.0*pi*vs0*ws0*sin(0.5*pi*(xt + yt + zt))*cos(0.5*pi*(xt + yt + zt))/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2) +&
+         (apgyz*pgyz*pi*yt*cos(apgyz*pi*yt*zt) + apgz*pgz*pi*cos(apgz*pi*zt) -&
+         apgzx*pgzx*pi*xt*sin(apgzx*pi*xt*zt))*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) 
       case(8)
       !tgsrc!
-        mms_source = -(kg*(-(aTgx**2*Pi**2*Tgx*Cos(aTgx*Pi*xt)) - &
-              aTgxy**2*Pi**2*Tgxy*yt**2*Cos(aTgxy*Pi*xt*yt) - &
-              aTgzx**2*Pi**2*Tgzx*zt**2*Cos(aTgzx*Pi*xt*zt))) + &
-         Cpg*rog*((-(aTgx*Pi*Tgx*Sin(aTgx*Pi*xt)) - &
-         aTgxy*Pi*Tgxy*yt*Sin(aTgxy*Pi*xt*yt) - &
-               aTgzx*Pi*Tgzx*zt*Sin(aTgzx*Pi*xt*zt))*&
-             (awgy*Pi*wgy*Cos(awgy*Pi*yt) + &
-             awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - &
-               avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
-               awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
-               avgz*Pi*vgz*Sin(avgz*Pi*zt) + &
-               avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
-            (aTgz*Pi*Tgz*Cos(aTgz*Pi*zt) + &
-            aTgyz*Pi*Tgyz*yt*Cos(aTgyz*Pi*yt*zt) - &
-               aTgzx*Pi*Tgzx*xt*Sin(aTgzx*Pi*xt*zt))*&
-             (avgx*Pi*vgx*Cos(avgx*Pi*xt) - &
-             augyz*Pi*ugyz*zt*Cos(augyz*Pi*yt*zt) + &
-               augy*Pi*ugy*Sin(augy*Pi*yt) + &
-               augxy*Pi*ugxy*xt*Sin(augxy*Pi*xt*yt) - &
-               avgxy*Pi*vgxy*yt*Sin(avgxy*Pi*xt*yt) - &
-               avgzx*Pi*vgzx*zt*Sin(avgzx*Pi*xt*zt)) + &
-            (aTgyz*Pi*Tgyz*zt*Cos(aTgyz*Pi*yt*zt) - &
-            aTgy*Pi*Tgy*Sin(aTgy*Pi*yt) - &
-               aTgxy*Pi*Tgxy*xt*Sin(aTgxy*Pi*xt*yt))*&
-             (-(awgxy*Pi*wgxy*yt*Cos(awgxy*Pi*xt*yt)) + &
-             augyz*Pi*ugyz*yt*Cos(augyz*Pi*yt*zt) + &
-               awgx*Pi*wgx*Sin(awgx*Pi*xt) - &
-               augz*Pi*ugz*Sin(augz*Pi*zt) - &
-               augzx*Pi*ugzx*xt*Sin(augzx*Pi*xt*zt) + &
-               awgzx*Pi*wgzx*zt*Sin(awgzx*Pi*xt*zt)))*&
-          (1. - es0 - esx*Cos(aesx*Pi*xt) - esy*Cos(aesy*Pi*yt) - &
-          esxy*Cos(aesxy*Pi*xt*yt) - &
-            eszx*Cos(aeszx*Pi*xt*zt) - esz*Sin(aesz*Pi*zt) - &
-            esyz*Sin(aesyz*Pi*yt*zt)) - &
-         kg*(-(aTgzx**2*Pi**2*Tgzx*xt**2*Cos(aTgzx*Pi*xt*zt)) - &
-         aTgz**2*Pi**2*Tgz*Sin(aTgz*Pi*zt) - &
-            aTgyz**2*Pi**2*Tgyz*yt**2*Sin(aTgyz*Pi*yt*zt)) - &
-         kg*(-(aTgy**2*Pi**2*Tgy*Cos(aTgy*Pi*yt)) - &
-         aTgxy**2*Pi**2*Tgxy*xt**2*Cos(aTgxy*Pi*xt*yt) - &
-            aTgyz**2*Pi**2*Tgyz*zt**2*Sin(aTgyz*Pi*yt*zt))
+        mms_source =Cpg*rog*((-atgx*pi*tgx*sin(atgx*pi*xt) - atgxy*pi*tgxy*yt*sin(atgxy*pi*xt*yt) -&
+         atgzx*pi*tgzx*zt*sin(atgzx*pi*xt*zt))*(-avgyz*pi*vgyz*yt*cos(avgyz*pi*yt*zt) +&
+         avgz*pi*vgz*sin(avgz*pi*zt) + avgzx*pi*vgzx*xt*sin(avgzx*pi*xt*zt) +&
+         awgxy*pi*wgxy*xt*cos(awgxy*pi*xt*yt) + awgy*pi*wgy*cos(awgy*pi*yt) +&
+         awgyz*pi*wgyz*zt*cos(awgyz*pi*yt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0) + (-atgxy*pi*tgxy*xt*sin(atgxy*pi*xt*yt) -&
+         atgy*pi*tgy*sin(atgy*pi*yt) +&
+         atgyz*pi*tgyz*zt*cos(atgyz*pi*yt*zt))*(augyz*pi*ugyz*yt*cos(augyz*pi*yt*zt) -&
+         augz*pi*ugz*sin(augz*pi*zt) - augzx*pi*ugzx*xt*sin(augzx*pi*xt*zt) +&
+         awgx*pi*wgx*sin(awgx*pi*xt) - awgxy*pi*wgxy*yt*cos(awgxy*pi*xt*yt) +&
+         awgzx*pi*wgzx*zt*sin(awgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0) + (atgyz*pi*tgyz*yt*cos(atgyz*pi*yt*zt) +&
+         atgz*pi*tgz*cos(atgz*pi*zt) -&
+         atgzx*pi*tgzx*xt*sin(atgzx*pi*xt*zt))*(augxy*pi*ugxy*xt*sin(augxy*pi*xt*yt) +&
+         augy*pi*ugy*sin(augy*pi*yt) - augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) +&
+         avgx*pi*vgx*cos(avgx*pi*xt) - avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
+         avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0))*(-es0 - esx*cos(aesx*pi*xt) - esy*cos(aesy*pi*yt) -&
+         esz*sin(aesz*pi*zt) + 1.0) - kg*(-atgx**2*pi**2*tgx*cos(atgx*pi*xt) -&
+         atgxy**2*pi**2*tgxy*yt**2*cos(atgxy*pi*xt*yt) -&
+         atgzx**2*pi**2*tgzx*zt**2*cos(atgzx*pi*xt*zt)) -&
+         kg*(-atgxy**2*pi**2*tgxy*xt**2*cos(atgxy*pi*xt*yt) - atgy**2*pi**2*tgy*cos(atgy*pi*yt) -&
+         atgyz**2*pi**2*tgyz*zt**2*sin(atgyz*pi*yt*zt)) -&
+         kg*(-atgyz**2*pi**2*tgyz*yt**2*sin(atgyz*pi*yt*zt) - atgz**2*pi**2*tgz*sin(atgz*pi*zt) -&
+         atgzx**2*pi**2*tgzx*xt**2*cos(atgzx*pi*xt*zt)) 
       case(9)
       !tssrc!
-        mms_source = -(ks*(-(aTsx**2*Pi**2*Tsx*Cos(aTsx*Pi*xt)) - &
-              aTsxy**2*Pi**2*Tsxy*yt**2*Cos(aTsxy*Pi*xt*yt) - &
-              aTszx**2*Pi**2*Tszx*zt**2*Cos(aTszx*Pi*xt*zt))) - &
-         ks*(-(aTszx**2*Pi**2*Tszx*xt**2*Cos(aTszx*Pi*xt*zt)) - &
-         aTsz**2*Pi**2*Tsz*Sin(aTsz*Pi*zt) - &
-            aTsyz**2*Pi**2*Tsyz*yt**2*Sin(aTsyz*Pi*yt*zt)) - &
-         ks*(-(aTsy**2*Pi**2*Tsy*Cos(aTsy*Pi*yt)) - &
-         aTsxy**2*Pi**2*Tsxy*xt**2*Cos(aTsxy*Pi*xt*yt) - &
-            aTsyz**2*Pi**2*Tsyz*zt**2*Sin(aTsyz*Pi*yt*zt)) + &
-         Cps*ros*(es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-         esxy*Cos(aesxy*Pi*xt*yt) + &
-            eszx*Cos(aeszx*Pi*xt*zt) + esz*Sin(aesz*Pi*zt) + &
-            esyz*Sin(aesyz*Pi*yt*zt))*&
-          (vs0*Cos((Pi*(xt + yt + zt))/2.)**2*&
-             (aTsyz*Pi*Tsyz*zt*Cos(aTsyz*Pi*yt*zt) - &
-             aTsy*Pi*Tsy*Sin(aTsy*Pi*yt) - &
-               aTsxy*Pi*Tsxy*xt*Sin(aTsxy*Pi*xt*yt)) + &
-            ws0*(aTsz*Pi*Tsz*Cos(aTsz*Pi*zt) + &
-            aTsyz*Pi*Tsyz*yt*Cos(aTsyz*Pi*yt*zt) - &
-               aTszx*Pi*Tszx*xt*Sin(aTszx*Pi*xt*zt)) + &
-            us0*(-(aTsx*Pi*Tsx*Sin(aTsx*Pi*xt)) - &
-            aTsxy*Pi*Tsxy*yt*Sin(aTsxy*Pi*xt*yt) - &
-               aTszx*Pi*Tszx*zt*Sin(aTszx*Pi*xt*zt))*&
-               Sin((Pi*(xt + yt + zt))/2.)**2)
+        mms_source = Cps*ros*(us0*(-atsx*pi*tsx*sin(atsx*pi*xt) - atsxy*pi*tsxy*yt*sin(atsxy*pi*xt*yt)&
+         - atszx*pi*tszx*zt*sin(atszx*pi*xt*zt))*sin(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         vs0*(-atsxy*pi*tsxy*xt*sin(atsxy*pi*xt*yt) - atsy*pi*tsy*sin(atsy*pi*yt) +&
+         atsyz*pi*tsyz*zt*cos(atsyz*pi*yt*zt))*cos(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         ws0*(atsyz*pi*tsyz*yt*cos(atsyz*pi*yt*zt) + atsz*pi*tsz*cos(atsz*pi*zt) -&
+         atszx*pi*tszx*xt*sin(atszx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)))*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) - ks*(-atsx**2*pi**2*tsx*cos(atsx*pi*xt) -&
+         atsxy**2*pi**2*tsxy*yt**2*cos(atsxy*pi*xt*yt) -&
+         atszx**2*pi**2*tszx*zt**2*cos(atszx*pi*xt*zt)) -&
+         ks*(-atsxy**2*pi**2*tsxy*xt**2*cos(atsxy*pi*xt*yt) - atsy**2*pi**2*tsy*cos(atsy*pi*yt) -&
+         atsyz**2*pi**2*tsyz*zt**2*sin(atsyz*pi*yt*zt)) -&
+         ks*(-atsyz**2*pi**2*tsyz*yt**2*sin(atsyz*pi*yt*zt) - atsz**2*pi**2*tsz*sin(atsz*pi*zt) -&
+         atszx**2*pi**2*tszx*xt**2*cos(atszx*pi*xt*zt)) 
       case(10)
       !ropgsrc!
         mms_source = zero
@@ -1036,42 +1537,43 @@
         mms_source = zero
       case(12)
       !thssrc!
-        mms_source = -(ks*(-(aThsx**2*Pi**2*Thsx*Cos(aThsx*Pi*xt)) - &
-              aThsxy**2*Pi**2*Thsxy*yt**2*Cos(aThsxy*Pi*xt*yt) - &
-              aThszx**2*Pi**2*Thszx*zt**2*Cos(aThszx*Pi*xt*zt))) - &
-         ks*(-(aThszx**2*Pi**2*Thszx*xt**2*Cos(aThszx*Pi*xt*zt)) - &
-            aThsz**2*Pi**2*Thsz*Sin(aThsz*Pi*zt) - &
-            aThsyz**2*Pi**2*Thsyz*yt**2*Sin(aThsyz*Pi*yt*zt))&
-          - ks*(-(aThsy**2*Pi**2*Thsy*Cos(aThsy*Pi*yt)) - &
-            aThsxy**2*Pi**2*Thsxy*xt**2*Cos(aThsxy*Pi*xt*yt) - &
-            aThsyz**2*Pi**2*Thsyz*zt**2*Sin(aThsyz*Pi*yt*zt)) + &
-         (3*ros*(es0 + esx*Cos(aesx*Pi*xt) + esy*Cos(aesy*Pi*yt) + &
-         esxy*Cos(aesxy*Pi*xt*yt) + &
-              eszx*Cos(aeszx*Pi*xt*zt) + esz*Sin(aesz*Pi*zt) + &
-              esyz*Sin(aesyz*Pi*yt*zt))*&
-            (vs0*Cos((Pi*(xt + yt + zt))/2.)**2*&
-               (aThsyz*Pi*Thsyz*zt*Cos(aThsyz*Pi*yt*zt) - &
-               aThsy*Pi*Thsy*Sin(aThsy*Pi*yt) - &
-                 aThsxy*Pi*Thsxy*xt*Sin(aThsxy*Pi*xt*yt)) + &
-              ws0*(aThsz*Pi*Thsz*Cos(aThsz*Pi*zt) + &
-              aThsyz*Pi*Thsyz*yt*Cos(aThsyz*Pi*yt*zt) - &
-                 aThszx*Pi*Thszx*xt*Sin(aThszx*Pi*xt*zt)) + &
-              Pi*us0*Cos((Pi*(xt + yt + zt))/2.)*&
-               (Ths0 + Thsx*Cos(aThsx*Pi*xt) + Thsy*Cos(aThsy*Pi*yt) + &
-               Thsxy*Cos(aThsxy*Pi*xt*yt) + &
-                 Thszx*Cos(aThszx*Pi*xt*zt) + Thsz*Sin(aThsz*Pi*zt) + &
-                 Thsyz*Sin(aThsyz*Pi*yt*zt))*&
-               Sin((Pi*(xt + yt + zt))/2.) - &
-              Pi*vs0*Cos((Pi*(xt + yt + zt))/2.)*&
-               (Ths0 + Thsx*Cos(aThsx*Pi*xt) + Thsy*Cos(aThsy*Pi*yt) + &
-               Thsxy*Cos(aThsxy*Pi*xt*yt) + &
-                 Thszx*Cos(aThszx*Pi*xt*zt) + Thsz*Sin(aThsz*Pi*zt) + &
-                 Thsyz*Sin(aThsyz*Pi*yt*zt))*&
-               Sin((Pi*(xt + yt + zt))/2.) + &
-              us0*(-(aThsx*Pi*Thsx*Sin(aThsx*Pi*xt)) - &
-              aThsxy*Pi*Thsxy*yt*Sin(aThsxy*Pi*xt*yt) - &
-                 aThszx*Pi*Thszx*zt*Sin(aThszx*Pi*xt*zt))*&
-                 Sin((Pi*(xt + yt + zt))/2.)**2))/2.
+        mms_source = -ks*(-athsx**2*pi**2*thsx*cos(athsx*pi*xt) -&
+         athsxy**2*pi**2*thsxy*yt**2*cos(athsxy*pi*xt*yt) -&
+         athszx**2*pi**2*thszx*zt**2*cos(athszx*pi*xt*zt)) -&
+         ks*(-athsxy**2*pi**2*thsxy*xt**2*cos(athsxy*pi*xt*yt) -&
+         athsy**2*pi**2*thsy*cos(athsy*pi*yt) - athsyz**2*pi**2*thsyz*zt**2*sin(athsyz*pi*yt*zt))&
+         - ks*(-athsyz**2*pi**2*thsyz*yt**2*sin(athsyz*pi*yt*zt) -&
+         athsz**2*pi**2*thsz*sin(athsz*pi*zt) - athszx**2*pi**2*thszx*xt**2*cos(athszx*pi*xt*zt))&
+         + 3*ros*(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))*(aesx*esx*pi*us0*(ths0 + thsx*cos(athsx*pi*xt) +&
+         thsxy*cos(athsxy*pi*xt*yt) + thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) +&
+         thsz*sin(athsz*pi*zt) + thszx*cos(athszx*pi*xt*zt))*sin(0.5*pi*(xt + yt +&
+         zt))**2*sin(aesx*pi*xt)/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt))**2 + aesy*esy*pi*vs0*(ths0 + thsx*cos(athsx*pi*xt) +&
+         thsxy*cos(athsxy*pi*xt*yt) + thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) +&
+         thsz*sin(athsz*pi*zt) + thszx*cos(athszx*pi*xt*zt))*sin(aesy*pi*yt)*cos(0.5*pi*(xt + yt +&
+         zt))**2/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 -&
+         aesz*esz*pi*ws0*(ths0 + thsx*cos(athsx*pi*xt) + thsxy*cos(athsxy*pi*xt*yt) +&
+         thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) + thsz*sin(athsz*pi*zt) +&
+         thszx*cos(athszx*pi*xt*zt))*cos(aesz*pi*zt)/(es0 + esx*cos(aesx*pi*xt) +&
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))**2 + 1.0*pi*us0*(ths0 + thsx*cos(athsx*pi*xt)&
+         + thsxy*cos(athsxy*pi*xt*yt) + thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) +&
+         thsz*sin(athsz*pi*zt) + thszx*cos(athszx*pi*xt*zt))*sin(0.5*pi*(xt + yt +&
+         zt))*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) - 1.0*pi*vs0*(ths0 + thsx*cos(athsx*pi*xt) +&
+         thsxy*cos(athsxy*pi*xt*yt) + thsy*cos(athsy*pi*yt) + thsyz*sin(athsyz*pi*yt*zt) +&
+         thsz*sin(athsz*pi*zt) + thszx*cos(athszx*pi*xt*zt))*sin(0.5*pi*(xt + yt +&
+         zt))*cos(0.5*pi*(xt + yt + zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) +&
+         esz*sin(aesz*pi*zt)) + us0*(-athsx*pi*thsx*sin(athsx*pi*xt) -&
+         athsxy*pi*thsxy*yt*sin(athsxy*pi*xt*yt) -&
+         athszx*pi*thszx*zt*sin(athszx*pi*xt*zt))*sin(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         vs0*(-athsxy*pi*thsxy*xt*sin(athsxy*pi*xt*yt) - athsy*pi*thsy*sin(athsy*pi*yt) +&
+         athsyz*pi*thsyz*zt*cos(athsyz*pi*yt*zt))*cos(0.5*pi*(xt + yt + zt))**2/(es0 +&
+         esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) +&
+         ws0*(athsyz*pi*thsyz*yt*cos(athsyz*pi*yt*zt) + athsz*pi*thsz*cos(athsz*pi*zt) -&
+         athszx*pi*thszx*xt*sin(athszx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
+         + esz*sin(aesz*pi*zt)))/2 
       end select
 
 

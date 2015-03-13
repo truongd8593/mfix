@@ -9,7 +9,7 @@ module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
 cp ../usr_common/usr_mod.f ./usr_mod.f
 cp ../usr_common/usr3.f ./usr3.f
 
-cp ../nonuniform_grids_3d/mesh_*.dat .
+#cp ../nonuniform_grids_3d/mesh_*.dat .
 
 # compile MFIX
 echo "******** Compiling MFIX..."
@@ -23,15 +23,15 @@ if [ -e [de_norms_collected.dat] ]; then rm de_norms_collected.dat; fi
 
 # create backup before adding user-defined grid spacing to input file
 echo "******** Creating backup for mfix.dat..."
-cp $CASE_DIR/mfix.dat $CASE_DIR/mfix_backup.dat
+#cp $CASE_DIR/mfix.dat $CASE_DIR/mfix_backup.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
 #cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
 $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log}
-rm $CASE_DIR/solution_*.dat
+#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+#rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log}
+#rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_8
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_8/
 
@@ -88,8 +88,8 @@ rm $CASE_DIR/solution_*.dat
 #mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
 
 rm $CASE_DIR/{usr_mod.f,usr3.f,mfix.exe}
-rm $CASE_DIR/mesh_*.dat
+#rm $CASE_DIR/mesh_*.dat
 
-mv mfix_backup.dat mfix.dat
+#mv mfix_backup.dat mfix.dat
 
 echo "******** Done."
