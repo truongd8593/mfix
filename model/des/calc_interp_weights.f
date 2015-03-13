@@ -34,10 +34,9 @@
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
       use geometry, only: DO_K
-
       use functions, only: FUNIJK
       use functions, only: FLUID_AT
-      use functions, only: IS_ON_MYPE_OWNS
+      use functions, only: IS_ON_MYPE_PLUS2LAYERS
 
       use param1, only: ZERO, ONE
 
@@ -97,11 +96,11 @@
 ! Calculate weights for ghost particles. Only store weights that the
 ! current process owns.
          DO KC=Km,Kp
-         DO JC=-1,+1
          DO IC=-1,+1
+         DO JC=-1,+1
             IDX=IDX+1
             WEIGHT = WEIGHT_I(IC)*WEIGHT_J(JC)*WEIGHT_K(KC)
-            IF(IS_ON_MYPE_OWNS(I+IC,J+JC,K+KC)) THEN
+            IF(IS_ON_MYPE_PLUS2LAYERS(I+IC,J+JC,K+KC)) THEN
                IJKt = FUNIJK(I+IC,J+JC,K+KC)
                IF(FLUID_AT(IJKt)) THEN
                   FILTER_CELL(IDX,L) = IJKt

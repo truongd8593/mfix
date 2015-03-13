@@ -205,6 +205,7 @@ MODULE functions
   !
   !                      Logical function to identify No IS at Top of the cell
   !      LOGICAL          NO_IS_AT_T
+
   !\\   Added to determine whether I am on my PE
   !\\   Logical function to determine whether I am on my PE's domain
   !      LOGICAL          IS_ON_myPE_owns
@@ -270,52 +271,112 @@ CONTAINS
          + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
   END FUNCTION FUNIJK_IO
 
-  LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-    IS_ON_myPE_plus2layers = LI.ge.istart3.and.LI.le.iend3.and. &
-         LJ.ge.jstart3.and.LJ.le.jend3.and. &
-         LK.ge.kstart3.and.LK.le.kend3
-  END FUNCTION IS_ON_myPE_plus2layers
-
-  !      IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
-  !                               LJ.ge.jstart3.and.LJ.le.jend3.and. &
-  !                                LK.ge.kstart3.and.LK.le.kend3.and. &
-  !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
 
 
-  LOGICAL FUNCTION IS_ON_myPE_plus1layer (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_OWNS                                           !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process.                          !
+!                                                                      !
+!  o Ownership is defined as belonging to the current PE's domain but  !
+!    as a cell in any of the PE's ghost layers.                        !
+!                                                                      !
+!  o Each computational cell is owned by one -and only one- PE.        !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_OWNS(LI, LJ, LK)
 
-    IS_ON_myPE_plus1layer = LI.ge.istart2.and.LI.le.iend2.and. &
-         LJ.ge.jstart2.and.LJ.le.jend2.and. &
-         LK.ge.kstart2.and.LK.le.kend2
-  END FUNCTION IS_ON_myPE_plus1layer
+      IMPLICIT NONE
 
-  LOGICAL FUNCTION IS_ON_myPE_owns (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
+      INTEGER, INTENT(IN) :: LI, LJ, LK
 
-    IS_ON_myPE_owns = LI.ge.istart.and.LI.le.iend.and. &
-         LJ.ge.jstart.and.LJ.le.jend.and. &
-         LK.ge.kstart.and.LK.le.kend
-  END FUNCTION IS_ON_myPE_owns
+      IS_ON_MYPE_OWNS = &
+         LI >= ISTART .AND. LI <= IEND .AND. &
+         LJ >= JSTART .AND. LJ <= JEND .AND. &
+         LK >= KSTART .AND. LK <= KEND
 
-  !      IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
-  !                               LJ.ge.jstart.and.LJ.le.jend.and. &
-  !                                LK.ge.kstart.and.LK.le.kend.and. &
-  !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+      RETURN
+      END FUNCTION IS_ON_MYPE_OWNS
 
 
-  LOGICAL FUNCTION IS_ON_myPE_wobnd (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_WOBND                                          !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process and not a exterior ghost  !
+!  cell.                                                               !
+!                                                                      !
+!  o This is a subset of IS_ON_myPE_OWNS.                              !
+!                                                                      !
+!  o Exterior ghost cells are those in cells surrounding the domain.   !
+!    These are cells created to fully define boundary conditions       !
+!    (e.g., I == 1 where X_E(1) == ZERO).                              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_wobnd (LI, LJ, LK)
 
-    IS_ON_myPE_wobnd = LI.ge.istart1.and.LI.le.iend1.and. &
-         LJ.ge.jstart1.and.LJ.le.jend1.and. &
-         LK.ge.kstart1.and.LK.le.kend1
-  END FUNCTION IS_ON_myPE_wobnd
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_WOBND = &
+         LI >= ISTART1 .AND. LI <= IEND1 .AND. &
+         LJ >= JSTART1 .AND. LJ <= JEND1 .AND. &
+         LK >= KSTART1 .AND. LK <= KEND1
+
+      RETURN
+      END FUNCTION IS_ON_myPE_wobnd
+
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_Plus1Layer                                     !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process or contained in the fisrt !
+!  layer of ghost cells seen by the current PE.                        !
+!                                                                      !
+!  o This is a superset of IS_ON_myPE_OWNS.                            !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_plus1layer (LI, LJ, LK)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_PLUS1LAYER = &
+         LI >= ISTART2 .AND. LI <= IEND2 .AND. &
+         LJ >= JSTART2 .AND. LJ <= JEND2 .AND. &
+         LK >= KSTART2 .AND. LK <= KEND2
+
+      RETURN
+      END FUNCTION IS_ON_myPE_plus1layer
+
+
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_Plus2Layer                                     !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process or contained in the fisrt !
+!  two layers of ghost cells seen by the current PE.                   !
+!                                                                      !
+!  o This is a superset of IS_ON_Plus1Layer.                           !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_PLUS2LAYERS = &
+         LI >= ISTART3 .AND. LI <= IEND3 .AND. &
+         LJ >= JSTART3 .AND. LJ <= JEND3 .AND. &
+         LK >= KSTART3 .AND. LK <= KEND3
+
+      RETURN
+      END FUNCTION IS_ON_myPE_plus2layers
+
+
 
   !      WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
   !      EAST_OF  (IJK)   = IJK + INCREMENT_FOR_e (CELL_CLASS(IJK))

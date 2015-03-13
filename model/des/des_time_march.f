@@ -160,7 +160,7 @@
          IF(DO_NSEARCH) THEN
             CALL DES_PAR_EXCHANGE
             CALL NEIGHBOUR
-         ELSEIF (1 < numPEs) THEN
+         ELSEIF ((numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
             CALL DES_PAR_EXCHANGE
          ENDIF
 

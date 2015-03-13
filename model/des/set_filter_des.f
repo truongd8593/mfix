@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: SET_FILTER_DES                                   !
+!  Subroutine: SET_FILTER_DES                                          !
 !  Author: J.Musser                                   Date: 25-Nov-14  !
 !                                                                      !
 !  Purpose:                                                            !
@@ -32,15 +32,18 @@
       use particle_filter, only: OoFILTER_VOL
       use particle_filter, only: FILTER_WIDTH_INTERPx3
 
-      use param1, only: UNDEFINED, UNDEFINED_C
+      use desgrid, only: DG_DXinv, DG_DYinv, DG_DZinv
+
+      use param1, only: ONE, UNDEFINED, UNDEFINED_C
 
       use sendrecvnode, only: DES_SETNODEINDICES
+      use mpi_utility, only: GLOBAL_ALL_MIN
 
       use error_manager
 
       IMPLICIT NONE
 
-      DOUBLE PRECISION :: DXYZ_MIN
+      DOUBLE PRECISION :: DXYZ_MIN, DG_DXYZ_MIN
 
 
 !......................................................................!
@@ -48,29 +51,46 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_FILTER_DES")
 
-
+! Get the minimum fluid cell dimension
       DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
       IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
+
+! Get the minimum DES grid cell dimension
+      DG_DXYZ_MIN = min(ONE/DG_DXinv, ONE/DG_DYinv)
+      IF(DO_K) DG_DXYZ_MIN = min(DG_DXYZ_MIN, ONE/DG_DZinv)
+      CALL GLOBAL_ALL_MIN(DG_DXYZ_MIN)
 
 ! Verify that the interpolation scheme doesn't exceed the grid.
       IF(DES_INTERP_WIDTH /= UNDEFINED) THEN
 
-         IF(0.5d0*DES_INTERP_WIDTH < DXYZ_MIN) THEN
-             FILTER_WIDTH_INTERP = 0.500d0*DES_INTERP_WIDTH
-         ELSEIF(0.5d0*DES_INTERP_WIDTH == DXYZ_MIN) THEN
-             FILTER_WIDTH_INTERP = 0.999d0*DXYZ_MIN
-         ELSE
-            WRITE(ERR_MSG,2130) DXYZ_MIN, DES_INTERP_WIDTH
+         IF(0.5d0*DES_INTERP_WIDTH > DXYZ_MIN .OR.                     &
+            0.5d0*DES_INTERP_WIDTH > DG_DXYZ_MIN) THEN
+
+            WRITE(ERR_MSG,2130) DXYZ_MIN, DG_DXYZ_MIN, DES_INTERP_WIDTH
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
 
  2130 FORMAT('Error 2130: The specified DES_INTERP_WIDTH is too ',     &
-         'large to interpolate',/'to the fuild grid as it spans ',     &
-         'further than adjacent neighbors.',/'Discrease the ',         &
-         'interpolation width so that its half width is less than',/   &
-         'or equal to the minimum cell dimension:',2/3X,               &
-         'DES_INTERP_WIDTH/2.0 <= min(DX,DY,DZ)',2/3x,'Minimum Cell ', &
-         'dimension: ',g12.4,/3x,'Filter Width: ',g12.4)
+         'large. The',/'interpolation half-width should not exceed ',  &
+         'either the minimum fluid',/'cell dimension [DES_INTERP_',    &
+         'WIDTH/2.0 <= min(DX,DY,DZ)] nor should it',/'exceed the ',   &
+         'minimum DES grid cell.',2/3x,'Minimum fluid cell dimension:',&
+         5x,g12.4,/3x,'Minimum DES grid cell dimension:',2x,g12.4/3x,  &
+         'DES_INTERP_WIDTH:',17x,g12.4,2/,'By default, the DES grid ', &
+         'dimensions are calculated as three times the',/'maximum ',   &
+         'particle diameter. This can be altered by specifying',/'DES',&
+         'GRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, and DESGRIDSEARH_KMAX ',&
+         'in the',/'mfix.dat file.')
+
+! Shrink the filter just a little if it matches exactly to ensure that
+! interpolation remains within the 27 cell bounds.
+         ELSEIF(0.5d0*DES_INTERP_WIDTH == DXYZ_MIN .OR.                &
+            0.5d0*DES_INTERP_WIDTH == DG_DXYZ_MIN) THEN
+
+            FILTER_WIDTH_INTERP = 0.499d0*DXYZ_MIN
+         ELSE
+            FILTER_WIDTH_INTERP = 0.500d0*DES_INTERP_WIDTH
+         ENDIF
+
 
       ENDIF
 

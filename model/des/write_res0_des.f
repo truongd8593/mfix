@@ -82,7 +82,7 @@
 ! DES User defined variable :: added for VERSION>= 1.1
       CALL WRITE_RES_DES(lNEXT_REC, DES_USR_VAR_SIZE)
       DO LC1=1,DES_USR_VAR_SIZE
-         CALL WRITE_RES_pARRAY(lNEXT_REC, DES_USR_VAR(:,LC1))
+         CALL WRITE_RES_pARRAY(lNEXT_REC, DES_USR_VAR(LC1,:))
       ENDDO
 
       DO LC1=1,2
