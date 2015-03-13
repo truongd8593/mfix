@@ -442,9 +442,9 @@
                 aTsx=0.5d0, aTsy=0.9d0, aTsz=0.8d0, &
                 aTsxy=0.5d0, aTsyz=0.65d0, aTszx=0.4d0
       double precision      :: es0=0.3d0, &
-                esx=0.0d0, esy=0.0d0, esz=0.0d0, &
+                esx=0.06d0, esy=-0.1d0, esz=0.06d0, &
                 esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
-                aesx=0.5d0, aesy=0.5d0, aesz=0.5d0, &
+                aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
                 aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
       double precision      :: Ths0=100.0d0, &
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
@@ -588,10 +588,10 @@
                 aTsx=0.5d0, aTsy=0.9d0, aTsz=0.8d0, &
                 aTsxy=0.5d0, aTsyz=0.65d0, aTszx=0.4d0
       double precision      :: es0=0.3d0, &
-                esx=0.0d0, esy=0.0d0, esz=0.0d0, &
+                esx=0.06d0, esy=-0.1d0, esz=0.06d0, &
                 esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
-                aesx=0.5d0, aesy=0.5d0, aesz=0.5d0, &
-                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
+                aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
+                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0              
       double precision      :: Ths0=100.0d0, &
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
