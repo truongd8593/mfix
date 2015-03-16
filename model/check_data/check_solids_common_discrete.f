@@ -23,6 +23,8 @@
       USE discretelement, only: DES_CONTINUUM_HYBRID
 ! Runtime Flag: Solve energy equations
       USE run, only: ENERGY_EQ
+! Runtime Flag: One or more species equations are solved.
+      use run, only: ANY_SPECIES_EQ
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
 ! DEM solid phase diameters and densities.
@@ -210,7 +212,8 @@
       IF(ENERGY_EQ) CALL CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
 
 ! Check thermodynamic properties of discrete solids.
-      CALL CHECK_SOLIDS_COMMON_DISCRETE_THERMO
+      IF(ANY_SPECIES_EQ) &
+         CALL CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
 ! Check geometry constrains.
       CALL CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
@@ -438,7 +441,7 @@
 
  2100 FORMAT('Error 2100: The DES Species equation implementation ',   &
          'does not',/'currently support explicit coupling (DES_',      &
-         'EXPLICITLY_COUPLED).','Please correct the mfix.dat file.')
+         'EXPLICITLY_COUPLED).',/'Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG
 
