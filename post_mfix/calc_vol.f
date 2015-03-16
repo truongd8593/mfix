@@ -37,11 +37,12 @@ SUBROUTINE CALC_VOL
 
   IMPLICIT NONE
   INTEGER  I, J, K, IJK
+  INTEGER, EXTERNAL :: FUNIJK_LOC
 
   DO K = 1,KMAX2
      DO J = 1,JMAX2
         DO I = 1,IMAX2
-           IJK = FUNIJK(I,J,K)
+           IJK = FUNIJK_LOC(I,J,K)
            VOL(IJK)    = DX(I)   * DY(J)   * X(I)*DZ(K)
            VOL_U(IJK)  = DX_E(I) * DY(J)   * X_E(I)*DZ(K)
            VOL_V(IJK)  = DX(I)   * DY_N(J) * X(I)*DZ(K)

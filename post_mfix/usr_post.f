@@ -51,6 +51,7 @@
 !
       INTEGER           NT, NI
       INTEGER           I, J, IJK
+      INTEGER, EXTERNAL :: FUNIJK_LOC
 !
       WRITE (*,*) ' Enter start-time and end-time'
       READ  (*,*) TIME_START, TIME_LAST
@@ -106,7 +107,7 @@
         SUMI = ZERO
 
         DO I = 2, IMAX1
-          IJK = funijk(I, J, 1)
+          IJK = funijk_LOC(I, J, 1)
           IF(FLUID_AT(IJK)) THEN
             IF(EP_g(IJK) < 0.5)THEN
               NI = NI + 1

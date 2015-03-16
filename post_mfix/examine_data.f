@@ -272,6 +272,7 @@
       REAL FLUX_gx, FLUX_gy, FLUX_gz
       REAL FLUX_sx, FLUX_sy, FLUX_sz
       REAL CALC_RO_g
+      INTEGER, EXTERNAL :: FUNIJK_LOC
 !
 !                   1       2      3         4      5      6
       DATA VAR_DAT/'EP_g', 'P_g', 'P_star', 'U_g', 'V_g', 'W_g', &
@@ -1808,13 +1809,6 @@
 
     CONTAINS
 
-      ! This routine appears to need its own version of the funijk routine
-      DOUBLE PRECISION FUNCTION FUNIJK_LOC(LI, LJ, LK)
-        IMPLICIT NONE
-        INTEGER, INTENT(IN) :: LI, LJ, LK
-        FUNIJK_LOC = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
-      END FUNCTION FUNIJK_LOC
-
       DOUBLE PRECISION FUNCTION DZ_T(K)
         IMPLICIT NONE
         INTEGER, INTENT(IN) :: K
@@ -1834,6 +1828,14 @@
       END FUNCTION DX_E
 
       END
+
+      ! This routine appears to need its own version of the funijk routine
+      INTEGER FUNCTION FUNIJK_LOC(LI, LJ, LK)
+        USE geometry
+	IMPLICIT NONE
+        INTEGER, INTENT(IN) :: LI, LJ, LK
+        FUNIJK_LOC = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+      END FUNCTION FUNIJK_LOC
 !
       SUBROUTINE WRITE_LINE(FILE_NAME,LINE,NCHARS)
       IMPLICIT NONE
