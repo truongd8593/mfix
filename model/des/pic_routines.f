@@ -227,18 +227,18 @@
 !  Purpose:                                                            !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_COMP_EULERIAN_VELS_NON_CG
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE geometry
-      USE indices
-      USE discretelement
-      use desmpi
-      !USE cutcell
-      USE mfix_pic
-      USE functions
-      IMPLICIT NONE
+        USE compar
+        USE constant
+        USE discretelement
+        USE functions
+        USE geometry
+        USE indices
+        USE mfix_pic
+        USE parallel
+        USE param
+        USE param1
+        use desmpi
+        IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -309,18 +309,19 @@
 !  Puryyse:                                                            !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MPPIC_COMP_EULERIAN_VELS_CG
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE geometry
-      USE indices
-      USE discretelement
-      use desmpi
-      USE cutcell
-      USE mfix_pic
-      USE functions
-      IMPLICIT NONE
+        USE compar
+        USE constant
+        USE cutcell
+        USE desmpi
+        USE discretelement
+        USE functions
+        USE geometry
+        USE indices
+        USE mfix_pic
+        USE parallel
+        USE param
+        USE param1
+        IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

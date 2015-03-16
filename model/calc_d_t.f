@@ -125,12 +125,12 @@
       use fun_avg, only: AVG_Z
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
-! Function to convert to phases to single array
-      use functions, only: FUNLM
+! Function to convert to phases to single array, IJK of cell to top
+      use functions, only: FUNLM, TOP_OF
 ! Flags: Impermeable surface and mass flow at top face
       use functions, only: IP_AT_T, MFLOW_AT_T
-! Indices: K index of cell, IJK of cell to top
-      use functions, only: K_OF, TOP_OF
+! Indices: K index of cell
+      use indices, only: K_OF
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -380,10 +380,10 @@
       use fun_avg, only: AVG_Z
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
-! Flags: Impermeable surface and mass flow at top face
-      use functions, only: IP_AT_T, MFLOW_AT_T
-! Indices: K index of cell, IJK of cell to top
-      use functions, only: K_OF, TOP_OF
+! Flags: Impermeable surface and mass flow at top face, IJK of cell to top
+      use functions, only: IP_AT_T, MFLOW_AT_T, TOP_OF
+! Indices: K index of cell
+      use indices, only: K_OF
 ! Flag and variables for QMOM implementation.
       use qmom_kinetic_equation, only: QMOMK, QMOMK_NN
       use qmom_kinetic_equation, only: QMOMK_F_GS, QMOMK_F_GS
@@ -507,12 +507,12 @@
       use fun_avg, only: AVG_Z
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
-! Function to convert to phases to single array
-      use functions, only: FUNLM
+! Function to convert to phases to single array, IJK of cell to top
+      use functions, only: FUNLM, TOP_OF
 ! Flags: Impermeable surface and mass flow at top face
       use functions, only: IP_AT_T, MFLOW_AT_T
-! Indices: K index of cell, IJK of cell to top
-      use functions, only: K_OF, TOP_OF
+! Indices: K index of cell
+      use indices, only: K_OF
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

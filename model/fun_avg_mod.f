@@ -1,8 +1,5 @@
 MODULE fun_avg
 
-  USE param1
-  USE geometry
-
 CONTAINS
 
   !   average at i+1/2 location
@@ -10,6 +7,7 @@ CONTAINS
   !     i+1/2, j, k. Use IJKE for scalar
   !          F(IJK) F(IPJK)  I
   DOUBLE PRECISION FUNCTION AVG_X(XXXm, XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -22,6 +20,7 @@ CONTAINS
   !     i+1, j, k
   !          F(IJK) F(IPJK)  IP
   DOUBLE PRECISION FUNCTION AVG_X_E(XXXm, XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -34,6 +33,7 @@ CONTAINS
   !     i, j+1/2, k. Use IJKN for scalar
   !           F(IJK) F(IJPK) J
   DOUBLE PRECISION FUNCTION AVG_Y(XXXm, XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -46,6 +46,7 @@ CONTAINS
   !     i, j+1, k
   !           F(IJK) F(IJPK)
   DOUBLE PRECISION FUNCTION AVG_Y_N(XXXm,  XXXp)
+    USE param1
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
 
@@ -57,6 +58,7 @@ CONTAINS
   !     i, j, k+1/2. Use IJKT for scalar
   !           F(IJK) F(IJKP) K
   DOUBLE PRECISION FUNCTION AVG_Z(XXXm, XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -69,6 +71,7 @@ CONTAINS
   !     i, j, k+1
   !           F(IJK) F(IJKP)
   DOUBLE PRECISION FUNCTION AVG_Z_T(XXXm,  XXXp)
+    USE param1
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
 
@@ -80,6 +83,8 @@ CONTAINS
   !     i+1/2, j, k. Use IJKE for scalar
   !             F(IJK) F(IPJK)  I
   DOUBLE PRECISION FUNCTION AVG_X_h(XXXm, XXXp, xL)
+    USE geometry
+    USE param1
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -93,6 +98,8 @@ CONTAINS
   !     i, j+1/2, k. Use IJKN for scalar
   !             F(IJK) F(IJPK) J
   DOUBLE PRECISION FUNCTION AVG_Y_h(XXXm,  XXXp,   xL)
+    USE geometry
+    USE param1
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -106,6 +113,8 @@ CONTAINS
   !     i, j, k+1/2. Use IJKT for scalar
   !             F(IJK) F(IJKP) K
   DOUBLE PRECISION FUNCTION AVG_Z_h(XXXm,  XXXp,   xL)
+    USE geometry
+    USE param1
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -120,6 +129,7 @@ CONTAINS
   !     i+1/2, j, k. Use IJKE for scalar
   !             F(IJK) F(IPJK)  I
   DOUBLE PRECISION FUNCTION AVG_X_S(XXXm,  XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -133,6 +143,7 @@ CONTAINS
   !     i, j+1/2, k. Use IJKN for scalar
   !             F(IJK) F(IJPK) J
   DOUBLE PRECISION FUNCTION AVG_Y_S(XXXm, XXXp, xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL
@@ -146,6 +157,7 @@ CONTAINS
   !     i, j, k+1/2. Use IJKT for scalar
   !             F(IJK) F(IJKP) K
   DOUBLE PRECISION FUNCTION AVG_Z_S(XXXm,  XXXp,   xL)
+    USE geometry
     IMPLICIT NONE
     DOUBLE PRECISION XXXp, XXXm
     INTEGER          xL

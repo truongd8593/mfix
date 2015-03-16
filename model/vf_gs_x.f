@@ -13,14 +13,16 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE discretelement
+      USE drag
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
       USE physprop
-      USE compar
-      USE drag
-      USE discretelement
-      USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -36,7 +38,6 @@
 ! Index of continuum solids phases
       INTEGER :: M
 !-----------------------------------------------
-
 
       DO M = 1, SMAX
          DO IJK = IJKSTART3, IJKEND3
@@ -67,7 +68,6 @@
 
       RETURN
       END SUBROUTINE VF_GS_X
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

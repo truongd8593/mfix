@@ -327,7 +327,8 @@
       use cutcell, only: CUT_V_TREATMENT_AT, THETA_VN, THETA_VN_BAR
       use cutcell, only: CUT_W_TREATMENT_AT, THETA_WT, THETA_WT_BAR
 ! Functions to lookup adjacent cells by index.
-      use functions, only: I_OF, IM_OF, JM_OF, KM_OF
+      use functions, only: IM_OF, JM_OF, KM_OF
+      use indices, only: I_OF
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 
