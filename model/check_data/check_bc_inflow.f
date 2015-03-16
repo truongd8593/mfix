@@ -498,6 +498,10 @@
          IF(SKIP(M)) THEN
             BC_EP_S(BCV,M)  = ZERO
             BC_ROP_S(BCV,M) = ZERO
+            IF(SPECIES_EQ(M))THEN
+               BC_X_S(BCV,M,:) = ZERO
+               BC_X_S(BCV,M,1) = ONE
+            ENDIF
             CYCLE
          ENDIF
 
@@ -631,6 +635,26 @@
          ENDIF
       ENDDO
 
+! Check K-Epsilon BCs.
+      IF(K_Epsilon) THEN
+         IF(BC_K_Turb_G(BCV) == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1000) trim(iVar('BC_K_Turb_G',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+         ELSEIF(BC_E_Turb_G(BCV) == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1000) trim(iVar('BC_E_Turb_G',BCV))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDIF
+
+! Check scalar equation BCs.
+      DO N = 1, NScalar
+         IF(BC_Scalar(BCV,N) == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1001) trim(iVar('BC_Scalar',BCV,N))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+
 ! Check that velocities are also specified. These are essentially used
 ! as initial conditions for the boundary region. If they are not
 ! specified then a deafult value is set here otherwise check_data_20
@@ -674,11 +698,13 @@
          'set ',/ 'to zero to be used as the inital value in the BC ',&
          'region.')
 
-      CALL FINL_ERR_MSG
-
-      RETURN
-
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
          'correct the mfix.dat file.')
 
+ 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
+         'Please correct the mfix.dat file.')
+
+      CALL FINL_ERR_MSG
+
+      RETURN
       END SUBROUTINE CHECK_BC_P_INFLOW

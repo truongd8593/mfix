@@ -4,29 +4,26 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-MODULE scales
-
-  Use param
-  Use param1
+      MODULE scales
 
 ! reference pressure
-  DOUBLE PRECISION P_ref
+      DOUBLE PRECISION :: P_ref
 
 ! pressure scale
-  DOUBLE PRECISION P_scale
+      DOUBLE PRECISION :: P_scale
 
-CONTAINS
+      CONTAINS
 
-  DOUBLE PRECISION FUNCTION SCALE(XXX)
-    IMPLICIT NONE
-    DOUBLE PRECISION XXX
-    SCALE   = (XXX - P_ref) / P_scale
-  END FUNCTION SCALE
+      DOUBLE PRECISION FUNCTION SCALE(XXX)
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: XXX
+      SCALE   = (XXX - P_ref) / P_scale
+      END FUNCTION SCALE
 
-  DOUBLE PRECISION FUNCTION UNSCALE(XXX)
-    IMPLICIT NONE
-    DOUBLE PRECISION XXX
-    UNSCALE = (XXX * P_scale + P_ref)
-  END FUNCTION UNSCALE
+      DOUBLE PRECISION FUNCTION UNSCALE(XXX)
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: XXX
+      UNSCALE = (XXX * P_scale + P_ref)
+      END FUNCTION UNSCALE
 
-END MODULE scales
+      END MODULE scales

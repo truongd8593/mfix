@@ -4,13 +4,6 @@
 !  Purpose: Set up the phi boundary conditions                         C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 30-APR-97  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 14-APR-04  C
-!  Reviewer:                                          Date:            C
-!  Purpose: include the variable (VAR) in the interface                C
-!                                                                      C
-!  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -18,9 +11,9 @@
       SUBROUTINE BC_PHI(VAR, BC_PHIF, BC_PHIW, BC_HW_PHI, &
                         BC_C_PHI, M, A_M, B_M, IER)
 
-!-----------------------------------------------
+
 ! Modules
-!-----------------------------------------------
+!--------------------------------------------------------------------//
       USE param
       USE param1
       USE matrix
@@ -32,9 +25,9 @@
       USE fun_avg
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!--------------------------------------------------------------------//
 ! The field variable being solved for:
 !     e.g., T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
@@ -59,15 +52,15 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!--------------------------------------------------------------------//
 ! Boundary condition index
       INTEGER :: L
 ! Indices
       INTEGER :: I, J, K, I1, I2, J1, J2, K1, K2, IJK, &
                  IM, JM, KM
-!-----------------------------------------------
+!--------------------------------------------------------------------//
 
 ! Set up the default walls (i.e., bc_type='dummy' or undefined/default
 ! boundaries) as non-conducting...
@@ -357,8 +350,7 @@
                 BC_TYPE(L)=='PAR_SLIP_WALL') THEN
 ! Dummy statement to do nothing.  The bcs were set in the previous loop
                 I1 = 1
-            ELSEIF (BC_TYPE(L)=='P_INFLOW' .OR. &
-                    BC_TYPE(L)=='P_OUTFLOW' .OR. &
+            ELSEIF (BC_TYPE(L)=='P_OUTFLOW' .OR. &
                     BC_TYPE(L)=='MASS_OUTFLOW' .OR. &
                     BC_TYPE(L)=='OUTFLOW') THEN
                I1 = BC_I_W(L)
@@ -404,15 +396,15 @@
                      ENDDO
                   ENDDO
                ENDDO
-! end setting p_inflow, p_outflow, mass_outflow or outflow flow boundary
+! end setting p_outflow, mass_outflow or outflow flow boundary
 ! conditions
 ! ----------------------------------------------------------------<<<
 
             ELSE
 
-! Setting bc that are defined but not nsw, fsw, psw, p_inflow,
-! p_outflow, mass_outflow or outflow (at this time, this section
-! addresses mass_inflow type boundaries)
+! Setting bc that are defined but not nsw, fsw, psw, p_outflow,
+! mass_outflow or outflow (at this time, this section addresses
+! p_inflow and mass_inflow type boundaries)
 ! ----------------------------------------------------------------<<<
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
@@ -709,5 +701,3 @@
 
       RETURN
       END SUBROUTINE BC_PHI_CG
-
-
