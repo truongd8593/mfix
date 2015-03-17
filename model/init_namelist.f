@@ -904,20 +904,20 @@
 !    Flag for making the x-direction cyclic without pressure drop. No other
 !    boundary conditions for the x-direction should be specified.
 !</description>
-!  <valid value=".FALSE." note="no cyclic condition at x-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition at x-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at x-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition at x-boundary."/>
       CYCLIC_X = .FALSE.
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    Flag for making the x-direction cyclic with pressure drop. if the
+!    Flag for making the x-direction cyclic with pressure drop. If the
 !    keyword FLUX_G is given a value this becomes a cyclic boundary
-!    condition with specified mass flux. no other boundary conditions
+!    condition with specified mass flux. No other boundary conditions
 !    for the x-direction should be specified.
 !  </description>
-!  <valid value=".FALSE." note="no cyclic condition at x-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition with pressure drop at x-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at x-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition with pressure drop at x-boundary."/>
       CYCLIC_X_PD = .FALSE.
 !</keyword>
 
@@ -964,8 +964,8 @@
 !    Flag for making the z-direction cyclic without pressure drop. No
 !    other boundary conditions for the z-direction should be specified.
 !  </description>
-!  <valid value=".FALSE." note="no cyclic condition at z-boundary."/>
-!  <valid value=".TRUE." note="cyclic condition at z-boundary."/>
+!  <valid value=".FALSE." note="No cyclic condition at z-boundary."/>
+!  <valid value=".TRUE." note="Cyclic condition at z-boundary."/>
       CYCLIC_Z = .FALSE.
 !</keyword>
 
@@ -1272,6 +1272,8 @@
 !     note="Garzo and Dufty (1999). Phys. Rev. E 59(5), 5895."/>
 !  <valid value="GHD"
 !    note="Garzo, Hrenya and Dufty (2007). Phys. Rev. E 76(3), 31304"/>
+!  <valid value="GTSH"
+!    note="Garzo, Tenneti, Subramaniam, Hrenya (2012). J.Fluid Mech. 712, 129."/>
 !  <valid value="IA_NONEP"
 !     note="Iddir & Arastoopour (2005). AIChE J. 51(6), 1620"/>
 !  <valid value="LUN_1984"
@@ -1514,7 +1516,7 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Used in calculating the initial slope of segregation: see
-!    Gera et al. (2004) - recommended value 0.3. increasing this
+!    Gera et al. (2004) - recommended value 0.3. Increasing this
 !    coefficient results in decrease in segregation of particles
 !    in binary mixtures.
 !  </description>

@@ -1222,14 +1222,14 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of first dx in a segment (x-direction). a negative /
+!  <description>Value of first dx in a segment (x-direction). A negative
 !      value will copy dx from previous segment (if available).
 !  </description>
       FIRST_DX = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dx in a segment (x-direction). a
+!  <description>Value of last dx in a segment (x-direction). A
 !  negative value will copy dx from next segment (if
 !  available).</description>
       LAST_DX  = ZERO
@@ -1252,14 +1252,14 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of first dy in a segment (y-direction). a
+!  <description>Value of first dy in a segment (y-direction). A
 !  negative value will copy dy from previous segment (if
 !  available).</description>
       FIRST_DY = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dy in a segment (y-direction). a
+!  <description>Value of last dy in a segment (y-direction). A
 !  negative value will copy dy from next segment (if
 !  available).</description>
       LAST_DY  = ZERO
@@ -1281,14 +1281,14 @@
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of first dz in a segment (z-direction). a
+!  <description>Value of first dz in a segment (z-direction). A
 !  negative value will copy dz from previous segment (if
 !  available).</description>
       FIRST_DZ = ZERO
 !</keyword>
 
 !<keyword category="Geometry and Discretization" required="false">
-!  <description>Value of last dz in a segment (z-direction). a
+!  <description>Value of last dz in a segment (z-direction). A
 !  negative value will copy dz from next segment (if
 !  available).</description>
       LAST_DZ  = ZERO

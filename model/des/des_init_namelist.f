@@ -60,27 +60,6 @@
 
 
 
-
-!#####################################################################!
-!                      Geometry and Discretization                    !
-!#####################################################################!
-
-!<keyword category="Cartesian Grid" required="false">
-!  <description>
-!    Flag to use triangular facet representation for particle/parcel-
-!    wall interactions. If PIC model is used, then this flag is forced
-!    to true. For DEM model, it will be made default, but currently
-!    setting it to false as cohesion model has not been extended to
-!    new routines. Expand the size of the particle arrays by an
-!    arbitrary factor (multiple of the number of particles). Serves
-!    as a knob to allocate more particles than initially specified
-!    in the particle configuration file.
-!  </description>
-      USE_STL_DES  = .false.
-!</keyword>
-
-
-
 !#####################################################################!
 !                          Output Control                             !
 !#####################################################################!
@@ -205,17 +184,6 @@
 !    provided in the particle_input.dat file. A runtime error occurs if
 !    this file is not provided."/>
       GENER_PART_CONFIG = .FALSE.
-!</keyword>
-
-
-!<keyword category="Discrete Element Simulation" required="false">
-!  <description>Expand the size of the particle arrays by
-! an arbitrary factor (multiple of the number of particles). Serves
-! as a knob to allocate more particles than initially specified in the
-! particle configuration file. </description>
-!  <dependent keyword="PARTICLES" value="DEFINED"/>
-      PARTICLES_FACTOR = 1.2D0
-!  <range min="1.0" max="+Inf" />
 !</keyword>
 
 !<keyword category="Discrete Element Simulation" required="false">

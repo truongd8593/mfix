@@ -59,8 +59,6 @@
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
-! Particle orientation      
-      use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION
 ! Particle species composition
       use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
@@ -146,9 +144,8 @@
                dcycl_offset(pface,:),pface)
 ! 7) Translational Velocity
             call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
-! 8) Rotational Velocity and orientation
+! 8) Rotational Velocity
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
-            if(particle_orientation) call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
 ! 9) Exiting particle flag
             call pack_dbuf(lbuf,merge(1,0,pea(lcurpar,3)),pface)
 ! 10) Temperature
@@ -347,9 +344,8 @@
                dcycl_offset(pface,:),pface)
 ! 17) Translational velocity
             call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
-! 18) Rotational velocity and orientation
+! 18) Rotational velocity
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
-            if(particle_orientation) call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
 ! 19) Accumulated translational forces
             call pack_dbuf(lbuf,fc(:,lcurpar),pface)
 ! 20) Accumulated torque forces
@@ -366,11 +362,10 @@
 ! 24) User defined variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
-! 25) Interpolation cells and weights
-            IF(FILTER_SIZE > 0) THEN
-               call pack_dbuf(lbuf,filter_cell(:,lcurpar),pface)
-               call pack_dbuf(lbuf,filter_weight(:,lcurpar),pface)
-            ENDIF
+! 25) Particle orientation
+            IF(PARTICLE_ORIENTATION) &
+               call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
+
 ! -- Higher order integration variables
             IF (DO_OLD) THEN
 ! 26) Position (previous)

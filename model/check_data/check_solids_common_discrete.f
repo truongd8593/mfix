@@ -468,14 +468,10 @@
       USE geometry, only: DO_I, DO_J, DO_K
       USE geometry, only: NO_I, NO_J, NO_K
       USE geometry, only: ZLENGTH
-
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
       USE discretelement, only: DES_CONTINUUM_COUPLED
       USE discretelement, only: MAX_RADIUS
-
-! Flag: Use STL for DEM walls
-      USE discretelement, only: USE_STL_DES
 ! Flag: Use Cartesian grid cut-cell implementation
       USE cutcell, only: CARTESIAN_GRID
 ! Flag: Use STL represenation in CG
@@ -545,10 +541,6 @@
          'and polygons are not',/'supported.')
 
 
-      IF(CARTESIAN_GRID.AND.USE_STL.AND..NOT.USE_STL_DES)              &
-         USE_STL_DES = .TRUE.
-
-
       CALL FINL_ERR_MSG
 
       RETURN
@@ -596,6 +588,10 @@
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
 ! Flag: Interplate variables for drag calculation.
       use particle_filter, only: DES_INTERP_ON
+! Size of interpolation filter
+      use particle_filter, only: FILTER_SIZE
+! Runtime FLag: 3D simulation
+      use geometry, only: DO_K
 
       use param1, only: UNDEFINED, UNDEFINED_C
 
@@ -692,6 +688,9 @@
           'quantites. Please correct',/'the input file.')
 
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+
+! Set the size of the interpolation filter.
+         FILTER_SIZE = merge(27, 9, DO_K)
 
          IF(DES_INTERP_WIDTH == UNDEFINED) THEN
             WRITE(ERR_MSG,2120) trim(adjustl(DES_INTERP_SCHEME))

@@ -32,9 +32,13 @@
 ! The start and end indices of IJK loops
       use compar, only: IJKStart3, IJKEnd3
 ! The Upper and Loper indices covered by the current process.
-      use compar, only: ISTART2, IEND2
-      use compar, only: JSTART2, JEND2
-      use compar, only: KSTART2, KEND2
+      use compar, only: ISTART3, IEND3
+      use compar, only: JSTART3, JEND3
+      use compar, only: KSTART3, KEND3
+! Fluid grid cell dimensions and mesh size
+      USE geometry, only: IMIN2, IMAX2
+      USE geometry, only: JMIN2, JMAX2
+      USE geometry, only: KMIN2, KMAX2
 ! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
 ! Function to conpute IJK from I/J/K
@@ -71,9 +75,9 @@
          IF(.NOT.PEA(L,1)) CYCLE
 
          I = PIJK(L,1)
-         IF(I <= ISTART2 .OR. I >= IEND2) THEN
+         IF(I <= ISTART3 .OR. I >= IEND3) THEN
             CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                   &
-               DIMENSION_I, ISTART2, IEND2)
+               DIMENSION_I, IMIN2, IMAX2)
          ELSE
             IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                     &
                (DES_POS_NEW(1,L) <  XE(I))) THEN
@@ -86,15 +90,15 @@
                I = I-1
             ELSE
                CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                &
-                  DIMENSION_I, ISTART2, IEND2)
+                  DIMENSION_I, IMIN2, IMAX2)
             ENDIF
          ENDIF
 
 
          J = PIJK(L,2)
-         IF(J <= JSTART2 .OR. J >= JEND2) THEN
+         IF(J <= JSTART3 .OR. J >= JEND3) THEN
             CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                   &
-               DIMENSION_J, JSTART2, JEND2)
+               DIMENSION_J, JMIN2, JMAX2)
          ELSE
             IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                     &
                (DES_POS_NEW(2,L) < YN(J))) THEN
@@ -107,7 +111,7 @@
                J = J-1
             ELSE
                CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                &
-                  DIMENSION_J, JSTART2, JEND2)
+                  DIMENSION_J, JMIN2, JMAX2)
             ENDIF
          ENDIF
 
@@ -116,9 +120,9 @@
             K = 1
          ELSE
             K = PIJK(L,3)
-            IF(K <= KSTART2 .OR. K >= KEND2) THEN
+            IF(K <= KSTART3 .OR. K >= KEND3) THEN
                CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                &
-                  DIMENSION_K, KSTART2, KEND2)
+                  DIMENSION_K, KMIN2, KMAX2)
             ELSE
                IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                  &
                   (DES_POS_NEW(3,L) < ZT(K))) THEN
@@ -131,7 +135,7 @@
                   K = K-1
                ELSE
                   CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,             &
-                     DIMENSION_K, KSTART2, KEND2)
+                     DIMENSION_K, KMIN2, KMAX2)
                ENDIF
             ENDIF
          ENDIF
@@ -271,11 +275,11 @@
 ! the Eulerian fluid grid.
 
          CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                      &
-            DIMENSION_I, ISTART2, IEND2)
+            DIMENSION_I, IMIN2, IMAX2)
          PIJK(L,1) = I
 
          CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                      &
-            DIMENSION_J, JSTART2, JEND2)
+            DIMENSION_J, JMIN2, JMAX2)
          PIJK(L,2) = J
 
          IF(NO_K) THEN
@@ -283,7 +287,7 @@
             PIJK(L,3) = 1
          ELSE
             CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                   &
-               DIMENSION_K, KSTART2, KEND2)
+               DIMENSION_K, KMIN2, KMAX2)
             PIJK(L,3) = K
          ENDIF
 

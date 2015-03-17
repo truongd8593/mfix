@@ -45,12 +45,12 @@
 
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_GARG
-      use particle_filter, only: FILTER_SIZE
 
       use desmpi, only: iGhostPacketSize
       use desmpi, only: iParticlePacketSize
       use desmpi, only: iPairPacketSize
-
+! Particle orientation
+      use discretelement, only: PARTICLE_ORIENTATION
       use discretelement, only: DES_USR_VAR_SIZE
 
       use error_manager
@@ -68,12 +68,12 @@
 !-----------------------------------------------
 
 ! Calculate the size of ghost particle packets:
-      iGhostPacketSize = 15 + DES_USR_VAR_SIZE + FILTER_SIZE
+      iGhostPacketSize = 15 + DES_USR_VAR_SIZE
       IF(ENERGY_EQ) &
          iGhostPacketSize = iGhostPacketSize + 1
 
 ! Calculate the size of particle packets.
-      iParticlePacketSize = 30 + DES_USR_VAR_SIZE + FILTER_SIZE
+      iParticlePacketSize = 30 + DES_USR_VAR_SIZE
       IF(ENERGY_EQ) &
          iParticlePacketSize = iParticlePacketSize + 1
       IF(ANY_SPECIES_EQ) &
@@ -86,6 +86,8 @@
          iParticlePacketSize = iParticlePacketSize + 1
       IF(MPPIC) &
          iParticlePacketSize = iParticlePacketSize + 1
+      IF(PARTICLE_ORIENTATION) &
+         iParticlePacketSize = iParticlePacketSize + 3
 
 ! Calculate the size of neighbor data
       iPairPacketSize = 11

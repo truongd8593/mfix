@@ -32,11 +32,6 @@
 
 ! Total number of particles in simulation: read from input or generated
       INTEGER PARTICLES
-! Constant factor used to expand size of arrays beyond particle no.
-      DOUBLE PRECISION PARTICLES_FACTOR
-
-! Flag to turn on particle-wall interaction through triangular factes
-      LOGICAL :: USE_STL_DES
 
 ! Start particle tracking quantities
 !----------------------------------------------------------------->>>

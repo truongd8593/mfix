@@ -164,6 +164,9 @@
             CALL DES_PAR_EXCHANGE
          ENDIF
 
+! Explicitly coupled simulations do not need to rebin particles to
+! the fluid grid every time step. However, this implies that the
+! fluid cell information and interpolation weights become stale.
          IF(.NOT.DES_EXPLICITLY_COUPLED) THEN
 ! Bin particles to fluid grid.
             CALL PARTICLES_IN_CELL
