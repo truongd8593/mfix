@@ -1,0 +1,42 @@
+
+ Gas velocity field meets continuity criteria: True
+
+ Solid velocity field meets continuity criteria: True
+
+ ****** MMS Functions ******
+
+ pg = xt**2
+
+ ug = 3.0*yt**2 + 2.0
+
+ vg = 3.0*xt**2 + 2.0
+
+ wg = 0.0
+
+ us = 2.0*yt**2 + 1.0
+
+ vs = 2.0*xt**2 + 1.0
+
+ ws = 0.0
+
+ es = 0.1*xt**2 + 0.3
+
+ rops = ros*(0.1*xt**2 + 0.3)
+
+ ****** MMS Source terms ******
+
+ ugSrc = -6.0*mug + 6.0*rog*yt*(-0.1*xt**2 + 0.7)*(3.0*xt**2 + 2.0) +
+ 2*xt*(-0.1*xt**2 + 0.7)
+
+ vgSrc = -6.0*mug + 6.0*rog*xt*(-0.1*xt**2 + 0.7)*(3.0*yt**2 + 2.0)
+
+ wgSrc = 0
+
+ usSrc = -4.0*mus + 4.0*ros*yt*(0.1*xt**2 + 0.3)*(2.0*xt**2 + 1.0) +
+ 2*xt*(0.1*xt**2 + 0.3)
+
+ vsSrc = -4.0*mus + 4.0*ros*xt*(0.1*xt**2 + 0.3)*(2.0*yt**2 + 1.0)
+
+ wsSrc = 0
+
+ ropgSrc = -0.2*rog*xt*(3.0*yt**2 + 2.0)
