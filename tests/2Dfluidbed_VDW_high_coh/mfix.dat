@@ -153,8 +153,6 @@
   DES_INTERP_ON = .FALSE.     ! interpolate for gas-solids drag force
                               ! [.FALSE.]
   PARTICLES = 4000     ! total number of initial particles
-  PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
-                             ! arbitrary factor [1.2]
   NFACTOR = 10     ! length of dem settling period in no. of loops [10]
 
 ! Neighbor search parameters --------------------

@@ -81,8 +81,6 @@
 
 !  PARTICLES = 2560   ! Number of particles
 
-  PARTICLES_FACTOR = 4.0
-
   KN = 2.4d+6        ! Normal inter-particle collision spring constant
   KT_FAC = @(2/7)    ! Tangential spring factor = KT/KN
   MEW = 0.3          ! Inter-particle friction coeffienct

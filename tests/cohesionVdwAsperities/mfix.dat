@@ -156,7 +156,6 @@
   DES_CONTINUUM_COUPLED = .FALSE.    ! couple gas and solids flow 
                                      ! together [.FALSE.]
   PARTICLES = 3     ! total number of initial particles
-  PARTICLES_FACTOR = 1.2     ! expand size of particle arrays by an 
                              ! arbitrary factor [1.2]
   NFACTOR = 0     ! length of dem settling period in no. of loops   [10]
 

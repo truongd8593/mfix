@@ -99,8 +99,6 @@
   DES_NEIGHBOR_SEARCH = 4      ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   = 1      ! Steps between neighbor search
 
-  PARTICLES_FACTOR = 3 
-
 ! Solids phase 1
 !---------------------------------------------------------------------//
   SOLIDS_MODEL(1) = 'DEM'
