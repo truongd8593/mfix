@@ -40,7 +40,7 @@ $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
 #cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
 #$CASE_DIR/mfix.exe imax=16 jmax=16 kmax=16 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-#rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log,solution_*.dat}
+#rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log,solution_*.dat}
 #rm $CASE_DIR/solution_*.dat
 ##mkdir $CASE_DIR/mesh_16
 ##mv $CASE_DIR/solution_* $CASE_DIR/mesh_16/
@@ -50,7 +50,7 @@ $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
 #cat $CASE_DIR/mfix_backup.dat mesh_32.dat > mfix.dat
 #mpirun -np 8 $CASE_DIR/mfix.exe imax=32 jmax=32 kmax=32 nodesi=2 nodesj=2 nodesk=2 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-#rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+#rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log}
 #rm $CASE_DIR/solution_*.dat
 ##mkdir $CASE_DIR/mesh_32
 ##mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
@@ -60,7 +60,7 @@ $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
 #cat $CASE_DIR/mfix_backup.dat mesh_64.dat > mfix.dat
 #mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 kmax=64 nodesi=4 nodesj=2 nodesk=2 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-#rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+#rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log}
 #rm $CASE_DIR/solution_*.dat
 ##mkdir $CASE_DIR/mesh_64
 ##mv $CASE_DIR/solution_* $CASE_DIR/mesh_64/
@@ -70,7 +70,7 @@ $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
 #cat $CASE_DIR/mfix_backup.dat mesh_128.dat > mfix.dat
 #mpirun -np 16 $CASE_DIR/mfix.exe imax=128 jmax=128 kmax=128 nodesi=4 nodesj=2 nodesk=2 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-#rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+#rm $CASE_DIR/{MMS3DVEPG.*,de_norms.dat,out.log}
 #rm $CASE_DIR/solution_*.dat
 ##mkdir $CASE_DIR/mesh_128
 ##mv $CASE_DIR/solution_* $CASE_DIR/mesh_128/

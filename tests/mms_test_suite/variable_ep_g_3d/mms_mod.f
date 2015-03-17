@@ -499,11 +499,13 @@
         mms_function = tg0 + tgx*cos(atgx*pi*xt) + tgxy*cos(atgxy*pi*xt*yt) +&
          tgy*cos(atgy*pi*yt) + tgyz*sin(atgyz*pi*yt*zt) + tgz*sin(atgz*pi*zt) +&
          tgzx*cos(atgzx*pi*xt*zt)
+        mms_function = zero
       case(9)
       !ts!
         mms_function = ts0 + tsx*cos(atsx*pi*xt) + tsxy*cos(atsxy*pi*xt*yt) +&
          tsy*cos(atsy*pi*yt) + tsyz*sin(atsyz*pi*yt*zt) + tsz*sin(atsz*pi*zt) +&
          tszx*cos(atszx*pi*xt*zt)
+        mms_function = zero
       case(10)
       !ep_g!
         mms_function = 1.0d0 - (es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + &
@@ -1511,6 +1513,7 @@
          atgyz**2*pi**2*tgyz*zt**2*sin(atgyz*pi*yt*zt)) -&
          kg*(-atgyz**2*pi**2*tgyz*yt**2*sin(atgyz*pi*yt*zt) - atgz**2*pi**2*tgz*sin(atgz*pi*zt) -&
          atgzx**2*pi**2*tgzx*xt**2*cos(atgzx*pi*xt*zt)) 
+        mms_source = zero
       case(9)
       !tssrc!
         mms_source = Cps*ros*(us0*(-atsx*pi*tsx*sin(atsx*pi*xt) - atsxy*pi*tsxy*yt*sin(atsxy*pi*xt*yt)&
@@ -1529,6 +1532,7 @@
          atsyz**2*pi**2*tsyz*zt**2*sin(atsyz*pi*yt*zt)) -&
          ks*(-atsyz**2*pi**2*tsyz*yt**2*sin(atsyz*pi*yt*zt) - atsz**2*pi**2*tsz*sin(atsz*pi*zt) -&
          atszx**2*pi**2*tszx*xt**2*cos(atszx*pi*xt*zt)) 
+        mms_source = zero
       case(10)
       !ropgsrc!
         mms_source = zero
@@ -1574,6 +1578,7 @@
          ws0*(athsyz*pi*thsyz*yt*cos(athsyz*pi*yt*zt) + athsz*pi*thsz*cos(athsz*pi*zt) -&
          athszx*pi*thszx*xt*sin(athszx*pi*xt*zt))/(es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt)&
          + esz*sin(aesz*pi*zt)))/2 
+        mms_source = zero
       end select
 
 
