@@ -407,8 +407,11 @@
          ELSE
             lFOUND  = LOCATE_PAR(lPARID,lPRVIJK,lLOCPAR)
             IF (.NOT. lFOUND) THEN
-               WRITE(*,1000) iNEIGHPROC(PFACE), MYPE, lPARID
-               CALL DES_MPI_STOP
+               lFOUND = exten_locate_par(lPARID, lPARIJK, lLOCPAR)
+               IF(.NOT.lFOUND) THEN
+                  WRITE(*,1000) iNEIGHPROC(PFACE), MYPE, lPARID
+                  CALL DES_MPI_STOP
+               ENDIF
             ENDIF
             iGHOST_CNT = iGHOST_CNT - 1
          ENDIF
@@ -498,9 +501,11 @@
 
 ! Locate the particle on the current process.
          if (.not. locate_par(lparid,lparijk,llocpar)) then
-            print *,"at buffer location",lbuf," pface = ",pface
-            print *,"COULD NOT FIND PARTICLE ",lparid," IN IJK ",lparijk
-            call des_mpi_stop
+            if (.not. exten_locate_par(lparid,lparijk,llocpar)) then
+               print *,"at buffer location",lbuf," pface = ",pface
+               print *,"COULD NOT FIND PARTICLE ",lparid," IN IJK ",lparijk
+               call des_mpi_stop
+            endif
          endif
 ! 36) Global ID of neighbor particle.
          call unpack_dbuf(lbuf,lneighid,pface)
