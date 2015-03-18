@@ -109,7 +109,7 @@
          ENDIF
 
 ! Update particle orientation - Always first order
-! When omega is non-zero, compute the rotation angle, and apply the 
+! When omega is non-zero, compute the rotation angle, and apply the
 ! Rodrigues' rotation formula
 
          IF(PARTICLE_ORIENTATION) THEN

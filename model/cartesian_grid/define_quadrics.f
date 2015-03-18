@@ -440,7 +440,7 @@
             R2  = REACTOR1_R2(Q_ID)  ! Upper section
 
 ! Conical transition
-            Y1 = REACTOR1_Y1(Q_ID)  ! Conical transition between lower        
+            Y1 = REACTOR1_Y1(Q_ID)  ! Conical transition between lower
             Y2 = REACTOR1_Y2(Q_ID)  ! and upper sections
 
 ! Rounding
@@ -454,10 +454,10 @@
 
 
             YRR1 = YR1 - RR1 * DSIN(THETA1)
-            RC1  = R1-RR1*(ONE-DCOS(THETA1)) 
+            RC1  = R1-RR1*(ONE-DCOS(THETA1))
             YC1  = YRR1 - RC1/DTAN(THETA1)
             YRR2 = YR2 + RR2 * DSIN(THETA2)
-            RC2  = R2-RR2*(ONE-DCOS(THETA2)) 
+            RC2  = R2-RR2*(ONE-DCOS(THETA2))
             YC2  = YRR2 + RC2/DTAN(THETA2)
 
             IF(ytr>=YC2) THEN  ! Above upper conical cap
@@ -488,7 +488,7 @@
 
                R = R1 - RR1 + DSQRT(RR1**2 - (YR1-ytr)**2)
 
-            ELSEIF(YC1<=ytr.AND.ytr<=YRR1) THEN   ! lower conical cap 
+            ELSEIF(YC1<=ytr.AND.ytr<=YRR1) THEN   ! lower conical cap
 
                R = RC1/(YRR1-YC1)*(ytr-YC1)
 

@@ -59,7 +59,7 @@
 ! Flag that the header (time) has not be written.
       LOGICAL :: HDR_MSG
 ! SPX file extensions.
-      CHARACTER(LEN=35) ::  EXT_END 
+      CHARACTER(LEN=35) ::  EXT_END
 ! Wall time at the start of IO operations.
       DOUBLE PRECISION :: WALL_START
 
@@ -264,8 +264,8 @@
       use funits, only: DMP_LOG
       use funits, only: UNIT_LOG
 
-      use time_cpu, only: TIME_START 
-      use time_cpu, only: WALL_START 
+      use time_cpu, only: TIME_START
+      use time_cpu, only: WALL_START
 
       use output, only: NLOG
 

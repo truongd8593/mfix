@@ -16,7 +16,7 @@
       use bc, only: ijk_p_g
       use bc, only: bc_type, bc_defined
       use fldvar, only: x_g, t_g, p_g
-      use mms, only: use_mms
+      use mms, only: calculate_mms, calculate_mms_source, use_mms
 
       use param, only: dimension_bc
       use param1, only: undefined_i
@@ -400,7 +400,7 @@
       INTEGER :: FIJK
 ! number densities for use in GHD theory only
       DOUBLE PRECISION :: nM, nTOT
-! calculation for normal component of mixture velocity 
+! calculation for normal component of mixture velocity
       DOUBLE PRECISION :: lvel_s
 !--------------------------------------------------------------------//
 

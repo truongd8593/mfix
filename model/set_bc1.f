@@ -59,7 +59,7 @@
             K2 = BC_K_T(L)
 
             SELECT CASE(TRIM(BC_TYPE(L)))
-            CASE ('P_OUTFLOW') 
+            CASE ('P_OUTFLOW')
                CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2)
                CALL SET_BC1_REPORT_OUTFLOW(L)
             CASE ('MASS_OUTFLOW')
@@ -269,7 +269,7 @@
 
       use fldvar, only: u_g, v_g, w_g
       use fldvar, only: u_s, v_s, w_s, rop_s
-  
+
       use physprop, only: smax, mmax
       use param1, only: undefined, zero, small_number
       use run, only: time, dt, tstop

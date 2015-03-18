@@ -96,7 +96,7 @@
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
-                  IF (BC_TYPE(BCV)=='P_INFLOW') & 
+                  IF (BC_TYPE(BCV)=='P_INFLOW') &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! set the boundary cell value of the normal component of velocity
@@ -163,7 +163,7 @@
                   ENDIF
                   V_G(IJK) = V_G(FIJK)
                   W_G(IJK) = W_G(FIJK)
- 
+
                   DO M = 1, MMAX
                      IF (U_S(IJK,M) == UNDEFINED) THEN
                         IF (ROP_S(IJK,M) > ZERO) THEN
@@ -278,7 +278,7 @@
                   ENDIF
                   U_G(IJK) = U_G(FIJK)
                   V_G(IJK) = V_G(FIJK)
- 
+
                   IF (MMAX > 0) THEN
                     WHERE (ROP_S(IJK,:MMAX) > ZERO)
                         W_S(IJK,:MMAX) = ROP_S(FIJK,:MMAX)*&
@@ -316,7 +316,7 @@
                   ENDIF
                   U_G(IJK) = U_G(FIJK)
                   V_G(IJK) = V_G(FIJK)
- 
+
                   DO M = 1, MMAX
                      IF (W_S(IJK,M) == UNDEFINED) THEN
                         IF (ROP_S(IJK,M) > ZERO) THEN
@@ -477,7 +477,7 @@
       DO M = 1, SMAX
 !        IF (BC_TYPE(BCV) == 'P_INFLOW') THEN
 ! a pressure inflow bc is fully defined and should be able to handle
-! entering or exiting solids. A hook is placed here, however, for 
+! entering or exiting solids. A hook is placed here, however, for
 ! potential future extension (note this value will currently be
 ! overwritten by bc_rop_s anyway). If we allow the code to assign the
 ! bulk density at the boundary care must be taken that both rop_s and
@@ -485,7 +485,7 @@
 !           ROP_S(IJK,M) = ROP_S(FIJK,M)
 !        ELSE
 ! the other outflow type bc do not permit 're-entering' solids, in
-! which case, the solids are removed 
+! which case, the solids are removed
            IF (RVEL_S(M) >= ZERO) THEN
 ! solids are leaving the domain
                ROP_S(IJK,M) = ROP_S(FIJK,M)

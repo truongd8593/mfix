@@ -261,7 +261,7 @@
          lEPG = ZERO
          VELFP = ZERO
 
-! Calculate the gas volume fraction, velocity, and at the 
+! Calculate the gas volume fraction, velocity, and at the
 ! particle's position.
          IF(DES_INTERP_ON) THEN
             DO LC=1,LP_BND
@@ -439,7 +439,7 @@
          lEPG = ZERO
          VELFP = ZERO
 
-! Calculate the gas volume fraction, velocity, and at the 
+! Calculate the gas volume fraction, velocity, and at the
 ! particle's position.
          IF(DES_INTERP_ON) THEN
             DO LC=1,LP_BND
