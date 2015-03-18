@@ -22,20 +22,21 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
       USE compar
-      USE sendrecv
-      USE drag
+      USE constant
       USE discretelement
+      USE drag
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -67,10 +68,6 @@
       DOUBLE PRECISION :: EPSoDP
 ! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
-!-----------------------------------------------
-! External Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       LM = FUNLM(L,M)
@@ -239,17 +236,18 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param1
-      USE constant
-      USE physprop
-      USE fldvar
-      USE sendrecv
-      USE drag
-      use kintheory
       USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
-      USE functions
+      USE kintheory
+      USE param1
+      USE physprop
+      USE radial
+      USE sendrecv
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -275,10 +273,6 @@
                           R4p_lm, R10p_lm, Bp_lm
       DOUBLE PRECISION :: Fss_ip, Fnus_ip, FTsM_ip, FTsL_ip, &
                           F_common_term
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: G_0
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3

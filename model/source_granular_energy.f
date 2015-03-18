@@ -45,27 +45,28 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE physprop
-      USE run
-      USE drag
-      USE geometry
-      USE fldvar
-      USE visc_g
-      USE visc_s
-      USE trace
-      USE turb
-      USE indices
-      USE constant
-      USE toleranc
       USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
       USE kintheory
       USE mms
-      USE fun_avg
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE run
       USE solids_pressure
-      USE functions
+      USE toleranc
+      USE trace
+      USE turb
+      USE visc_g
+      USE visc_s
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -102,10 +103,6 @@
                           S7_rhs
 ! Source terms to be kept on lhs
       DOUBLE PRECISION :: S1_lhs, S3_lhs, S4_lhs, S6_lhs
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       I = I_OF(IJK)
@@ -594,26 +591,27 @@
 !-----------------------------------------------
 !  Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE physprop
-      USE run
-      USE drag
-      USE geometry
-      USE fldvar
-      USE visc_g
-      USE visc_s
-      USE trace
-      USE turb
-      USE indices
-      USE constant
-      USE toleranc
-      USE residual
-      use kintheory
       USE compar
+      USE constant
+      USE drag
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE residual
+      USE run
+      USE toleranc
+      USE trace
+      USE turb
+      USE visc_g
+      USE visc_s
+      use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -655,7 +653,6 @@
 !-----------------------------------------------
 ! Function subroutines
 !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_0
       DOUBLE PRECISION, EXTERNAL :: G_gtsh
 !-----------------------------------------------
 

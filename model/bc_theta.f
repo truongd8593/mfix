@@ -294,23 +294,24 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE fldvar
-      USE run
-      USE turb
-      USE visc_s
-      USE geometry
-      USE indices
       USE bc
       USE compar
-      USE toleranc
-      USE mpi_utility
-      USE rxns
+      USE constant
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE run
+      USE rxns
+      USE toleranc
+      USE turb
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -364,7 +365,7 @@
 ! Radial distribution function
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
-      DOUBLE PRECISION :: g0EPs_avg, G_0
+      DOUBLE PRECISION :: g0EPs_avg
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------

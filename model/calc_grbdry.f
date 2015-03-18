@@ -23,22 +23,23 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE fldvar
-      USE run
-      USE turb
-      USE visc_s
-      USE geometry
-      USE indices
       USE bc
       USE compar
-      USE toleranc
-      USE mpi_utility
+      USE constant
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE run
+      USE toleranc
+      USE turb
+      USE visc_s
       IMPLICIT NONE
 
 !-----------------------------------------------
@@ -102,8 +103,6 @@
       DOUBLE PRECISION :: VREL
 ! slip velocity between wall and particles for Jenkins bc (sof)
       DOUBLE PRECISION :: VSLIP
-! Average Radial distribution function
-      DOUBLE PRECISION :: g_0AVG
 ! radial distribution function at contact
       DOUBLE PRECISION :: g0(DIMENSION_M)
 ! Sum of eps*G_0
@@ -1236,22 +1235,23 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE constant
+      USE fldvar
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE constant
       USE physprop
-      USE fldvar
+      USE radial
       USE run
       USE turb
       USE visc_s
-      USE geometry
-      USE indices
-      USE bc
-      USE compar
       Use cutcell
       use toleranc
-      USE fun_avg
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1304,8 +1304,6 @@
       DOUBLE PRECISION g0(DIMENSION_M)
 ! Sum of eps*G_0
       DOUBLE PRECISION g0EPs_avg
-! Radial distribution function
-      DOUBLE PRECISION g_0AVG
 !-----------------------------------------------
 
 !  Note:  EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).  Hence

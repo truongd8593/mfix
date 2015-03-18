@@ -1,18 +1,17 @@
 
       SUBROUTINE Source_population_eq(x,y,dydx)
 
-      USE physprop
       USE constant
       USE fldvar
+      USE physprop
+      USE radial
       USE scalars
-
 
       IMPLICIT NONE
 
       double precision x,y(*),dydx(*)
       double precision K_v
       double precision m1,m2, dav,theta,c11
-      double precision, external :: g_0
       double precision epstotal
       integer L,n,np,i,j,k,IJK
 

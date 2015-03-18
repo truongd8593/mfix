@@ -14,18 +14,19 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE kintheory
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE toleranc
-      use kintheory
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -52,10 +53,6 @@
                           D_PL, DPSUMo2
       DOUBLE PRECISION :: Ap_lm, Dp_lm, R1p_lm, R10p_lm, R3p_lm, &
                           R4p_lm, R5p_lm, Bp_lm
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION G_0
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -204,19 +201,20 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
       USE compar
-      USE fldvar
-      USE indices
-      USE physprop
-      USE run
       USE constant
-      USE toleranc
-      use kintheory
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE run
+      USE toleranc
+      use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -235,10 +233,6 @@
                           lambda_num, cd_num, zeta1
       DOUBLE PRECISION :: D_PM, EP_SM
       DOUBLE PRECISION :: nu0, Chi
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION G_0
 !-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
@@ -319,19 +313,20 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
       USE compar
-      USE fldvar
-      USE indices
-      USE physprop
-      USE run
       USE constant
-      USE toleranc
-      use kintheory
+      USE fldvar
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE radial
+      USE run
+      USE toleranc
+      use kintheory
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -354,7 +349,6 @@
 !-----------------------------------------------
 ! Function subroutines
 !-----------------------------------------------
-      DOUBLE PRECISION G_0
       DOUBLE PRECISION S_star
       DOUBLE PRECISION G_gtsh
 !-----------------------------------------------

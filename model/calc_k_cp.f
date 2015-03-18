@@ -27,21 +27,22 @@
 !-----------------------------------------------
 ! Modules
 !----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE fldvar
       USE physprop
-      USE indices
       USE pscor
-      USE geometry
-      USE constant
+      USE radial
       USE run
-      USE visc_s
-      USE trace
-      USE compar
       USE sendrecv
       USE solids_pressure
-      USE functions
+      USE trace
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -61,7 +62,6 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-      DOUBLE PRECISION :: G_0
       DOUBLE PRECISION :: DZETAoDEPs
       DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !-----------------------------------------------
@@ -269,19 +269,20 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE fldvar
       USE physprop
-      USE indices
       USE pscor
-      USE geometry
-      USE constant
+      USE radial
       USE run
-      USE visc_s
       USE trace
-      USE compar
-      USE functions
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -297,11 +298,6 @@
       DOUBLE PRECISION :: g0
 ! Other variables
       DOUBLE PRECISION :: Mu, Mu_b,  DEPs2G_0oDEPs, F1, DF1oDEPs
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION :: G_0
-      DOUBLE PRECISION :: DG_0DNU
 !-----------------------------------------------
 
       g0 = G_0(IJK, M, M)

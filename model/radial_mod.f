@@ -1,11 +1,21 @@
 !``````````````````````````````````````````````````````````````````````!
-!  Function: G_0AVG                                                    !
-!  Author: M. Syamlal                                 Date: 05-JAN-05  !
+!  Module: G_0                                                         !
 !                                                                      !
+!  Calculate radial distribution functions.                            !
 !  Note that routines G_0AVG, G_0, and DG_0DNU need to be modified to  !
 !  effect a change in the radial distribution function g_0. The old    !
 !  routine G_0EP has been replaced with G_0CS, which used only for     !
 !  Carnahan-Starling g_0.                                              !
+!......................................................................!
+
+MODULE radial
+
+CONTAINS
+
+!``````````````````````````````````````````````````````````````````````!
+!  Function: G_0AVG                                                    !
+!  Author: M. Syamlal                                 Date: 05-JAN-05  !
+!                                                                      !
 !......................................................................!
       DOUBLE PRECISION FUNCTION G_0AVG (IJK1, IJK2, DIR, L, M1, M2)
 
@@ -37,7 +47,6 @@
 ! Solids phase index-2
       INTEGER, INTENT(IN) :: M2
 
-
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Solids phase index
@@ -59,18 +68,9 @@
 ! Average D_P for phase M1 and M2
       DOUBLE PRECISION :: DP_AVG_M1, DP_AVG_M2, DP_AVG
 
-
-! External Functions:
-!---------------------------------------------------------------------//
-! Averaging function
-      DOUBLE PRECISION , EXTERNAL :: avg_xyz
-! Radial distribution functions
-      DOUBLE PRECISION , EXTERNAL :: G_0, G_0CS
-
       IF(IJK1 == IJK2)THEN
          G_0AVG = G_0(IJK1, M1, M2)
       ELSE
-
          SELECT CASE(RDF_TYPE_ENUM)
 
 ! Lebowitz, J.L. (1964) The Physical Review, A133, 895-899
@@ -279,14 +279,7 @@
       DOUBLE PRECISION :: VOLP
 ! Quantity employed in rdf calculation
       DOUBLE PRECISION :: XI
-
-
-! External Functions:
 !---------------------------------------------------------------------//
-! Other radial distribution functions
-      DOUBLE PRECISION , EXTERNAL :: G_0CS
-
-!......................................................................!
 
       SUM_EPS = ZERO
       EPg = EP_G(IJK)
@@ -295,9 +288,7 @@
           SUM_EPS = SUM_EPS + EPS
       END DO
 
-
       SELECT CASE(RDF_TYPE_ENUM)
-
 
 ! Lebowitz, J.L. (1964) The Physical Review, A133, 895-899
 !---------------------------------------------------------------------//
@@ -312,8 +303,6 @@
 
          G_0 = ONE/EPg + 3.0d0 * EPSoDP * D_p(IJK,M1) * D_p(IJK,M2) /  &
             (EPg*EPg *(D_p(IJK,M1) + D_p(IJK,M2)))
-
-
 
 ! REF: ?
 !---------------------------------------------------------------------//
@@ -517,3 +506,5 @@
 
       RETURN
       END FUNCTION AVG_XYZ
+
+    END MODULE radial

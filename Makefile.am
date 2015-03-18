@@ -453,7 +453,6 @@ libmfix_a_SOURCES += \
 	model/function3_mod.f \
 	model/functions_mod.f \
 	model/funits_mod.f \
-	model/g_0.f \
 	model/geometry_mod.f \
 	model/get_bc_area.f \
 	model/get_data.f \
@@ -547,6 +546,7 @@ libmfix_a_SOURCES += \
 	model/qmomk/qmomk_tools_mod.f \
 	model/qmomk/qmomk_write_restart.f \
 	model/qmomk/qmomknamelist.inc \
+	model/radial_mod.f \
 	model/radial_vel_correction.f \
 	model/read_database.f \
 	model/read_namelist.f \

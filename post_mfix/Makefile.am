@@ -504,7 +504,7 @@ postmfix_SOURCES += \
 	../model/function3_mod.f \
 	../model/functions_mod.f \
 	../model/funits_mod.f \
-	../model/g_0.f \
+	../model/g0_mod.f \
 	../model/geometry_mod.f \
 	../model/get_bc_area.f \
 	../model/get_eq.f \

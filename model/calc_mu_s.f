@@ -367,18 +367,19 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE trace
-      USE functions
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -406,11 +407,6 @@
       DOUBLE PRECISION :: EP_sxSQRTHETA
 ! Value of EP_s * EP_s * THETA for Mth solids phase continuum
       DOUBLE PRECISION :: EP_s2xTHETA, temp_local
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
 !!$omp parallel do default(shared)                                    &
@@ -536,9 +532,11 @@
       USE drag, only: f_gs, dga_s
 ! primarily needed for function.inc
       USE compar
+      USE functions
+! radial distribution function, dg0/dep
       USE geometry
       USE indices
-      USE functions
+      USE radial
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -556,14 +554,6 @@
       DOUBLE PRECISION :: Mu_star, Kth, Kth_star
 ! sum of ep_s * g_0
       DOUBLE PRECISION :: SUM_EpsGo
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
-! dg0/dep
-      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
-
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -702,6 +692,8 @@
       USE turb
       USE drag
       USE functions
+! radial distribution function, dg0/dep
+      USE radial
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -720,15 +712,6 @@
       DOUBLE PRECISION :: Tmp_Ahmadi_Const
 ! sum of ep_s * g_0
       DOUBLE PRECISION :: SUM_EpsGo
-
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
-! dg0/dep
-      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
-
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -830,20 +813,21 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE toleranc
       USE turb
-      USE drag
-      USE functions
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -863,14 +847,6 @@
       DOUBLE PRECISION :: MU_2_T_Kin, Mu_2_Col, Kappa_kin, Kappa_Col
 ! sum of ep_s * g_0
       DOUBLE PRECISION :: SUM_EpsGo
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
-! dg0/dep
-      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
-
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1009,20 +985,21 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE toleranc
-      USE drag
+      USE visc_s
       use kintheory
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1045,14 +1022,6 @@
                           gamma_star, eta_k_star, eta_star, eta0, &
                           kappa0, nu_kappa_star, kappa_k_star, &
                           qmu_k_star, qmu_star, kappa_star, press_star
-
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
-! dg0/dep
-      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1211,20 +1180,21 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE toleranc
-      USE drag
+      USE visc_s
       use kintheory
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1251,10 +1221,6 @@
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
-! dg0/dep
-      DOUBLE PRECISION, EXTERNAL :: DG_0DNU
 ! function gamma: eq. (8.1), S_star and K_phi in GTSH theory
       DOUBLE PRECISION, EXTERNAL :: G_gtsh
       DOUBLE PRECISION, EXTERNAL :: S_star
@@ -1450,22 +1416,23 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE drag
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE kintheory
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE toleranc
       USE turb
-      USE drag
-      USE kintheory
       USE ur_facs
-      USE functions
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1494,11 +1461,6 @@
       DOUBLE PRECISION :: SUM_EpsGo
 ! Current value of Kth_sl_ip (i.e., without underrelaxation)
       DOUBLE PRECISION :: Kth_sL_iptmp
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -1841,18 +1803,19 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE compar
-      USE fldvar
-      USE indices
-      USE visc_s
       USE physprop
+      USE radial
       USE run
-      USE constant
       USE trace
-      USE functions
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -1873,11 +1836,6 @@
       DOUBLE PRECISION :: SUM_EPS_CP
 !     parameters in pressure linearization; simple averaged Dp
       DOUBLE PRECISION :: dpc_dphi, dp_avg
-!-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-! radial distribution function
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       DO 200 IJK = ijkstart3, ijkend3
@@ -2596,10 +2554,11 @@
 
 ! primarily needed for function.inc
       USE compar
-      USE geometry
-      USE indices
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
+      USE radial
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -2675,11 +2634,6 @@
       DOUBLE PRECISION :: SRT
 ! single particle drag coefficient, reynolds number
       DOUBLE PRECISION :: C_d, Re
-
-!-----------------------------------------------
-!     Functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_0
 !-----------------------------------------------
 
       IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
