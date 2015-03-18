@@ -101,7 +101,6 @@
 ../model/flow_to_vel.f
 ../model/fun_avg_mod.f
 ../model/funits_mod.f
-../model/g_0.f
 ../model/geometry_mod.f
 ../model/get_bc_area.f
 ../model/ic_mod.f
@@ -135,6 +134,7 @@
 ../model/qmomk/qmom_kinetic_equation_mod.f
 ../model/qmomk/qmomk_init_namelist.f
 ../model/qmomk/qmomk_parameters_mod.f
+../model/radial_mod.f
 ../model/read_database.f
 ../model/read_namelist.f
 ../model/read_res0.f
