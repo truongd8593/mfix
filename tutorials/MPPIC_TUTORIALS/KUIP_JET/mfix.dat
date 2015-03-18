@@ -173,9 +173,7 @@
 
 ! DES INPUT
 
-  DISCRETE_ELEMENT = .TRUE. 
  
-  MPPIC = .t.	
 !  PIC_REPORT_MIN_EPG = .t.
 ! First and second coefficients of restituion for the 
 ! frictional stres in MPPIC model 
