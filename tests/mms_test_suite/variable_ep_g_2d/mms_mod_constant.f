@@ -231,7 +231,7 @@
       call allocate_mms_vars
 
 ! set reference point for shifting pressure
-      ijk_sh = funijk_gl( imax1/2+1, jmax1/2+1, kmin1)  ! for3D
+      ijk_sh = funijk_gl( imax1/2+1, jmax1/2+1, kmin1)  ! for2D
 
 ! generate grid locations for plotting and mms calculations
       do ijk = ijkstart3, ijkend3

@@ -251,7 +251,8 @@
 !      ENDDO
 
 !! FLAGMMS: begin
-! Set PHASE_4_P_G and PHASE_4_P_S for MMS     
+! Set PHASE_4_P_G and PHASE_4_P_S for MMS
+! Mark the gas phase as the phase for solving continuity equation.
       DO IJK = ijkstart3, ijkend3
         IF(FLUID_AT(IJK).AND.USE_MMS) THEN
           PHASE_4_P_G(IJK) = 1

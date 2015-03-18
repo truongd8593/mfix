@@ -6,8 +6,8 @@ module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
 #module load intel/2013.5.192 intelmpi/4.1.1.036
 
 # copy common files
-#cp ../usr_common/usr_mod.f ./usr_mod.f
-#cp ../usr_common/usr3.f ./usr3.f
+cp ../usr_common/usr_mod.f ./usr_mod.f
+cp ../usr_common/usr3.f ./usr3.f
 
 #cp ../nonuniform_grids_3d/mesh_*.dat .
 
@@ -87,7 +87,7 @@ $CASE_DIR/mfix.exe imax=8 jmax=8 > out.log
 #mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
 #mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
 
-#rm $CASE_DIR/{usr_mod.f,usr3.f,mfix.exe}
+rm $CASE_DIR/{usr_mod.f,usr3.f,mfix.exe}
 #rm $CASE_DIR/mesh_*.dat
 
 #mv mfix_backup.dat mfix.dat

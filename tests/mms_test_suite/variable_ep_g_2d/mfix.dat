@@ -50,6 +50,9 @@
   Discretize    = 9*9
 
 !  UR_fac(6)     = 0.01     ! energy equations 
+  UR_fac(1)     = 0.1 ! gas pressure
+  UR_fac(2)     = 0.1 ! solids volume fraction
+
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -85,7 +88,8 @@
   Friction          = .F.   ! no Princeton solid stress model
   Schaeffer         = .F.   ! no Schaeffer frictional stress formulation
 
-  ro_s0(1)          = 2.0
+!  ro_s0(1)          = 2.0
+  ro_s0(1)          = 1.0   ! 1.0 for testing ! FLAGMMS
   d_p0(1)           = 1.0e-5  ! particle diameter: should not affect 
                               ! mms solution
 
@@ -97,7 +101,7 @@
 
   ep_star           = 0.4
 
-!  close_packed      = .F.
+  close_packed      = .T.
 
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION

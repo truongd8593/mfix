@@ -122,9 +122,9 @@ rops = ros*es
 #
 #wg = ( diff(Fvecy, xt) - diff(Fvecx, yt) )
 
-ug = 2.0 + 3.0*yt**2
+ug = (2.0 + 3.0*yt**2)
 
-vg = 2.0 + 3.0*xt**2
+vg = (2.0 + 3.0*xt**2)
 
 wg = 0.0
 
@@ -141,8 +141,8 @@ print(simplify(diff(ug,xt)+diff(vg,yt)+diff(wg,zt))==0)
 #
 #ws = ( ws0 )
 
-us = 1.0 + 2.0*yt**2
-vs = 1.0 + 2.0*xt**2
+us = (1.0 + 2.0*yt**2)
+vs = (1.0 + 2.0*xt**2)
 ws = 0.0
 
 
@@ -192,32 +192,62 @@ print('\n rops =')
 print(rops)
 
 # mms source terms
-ugSrc = ( rog*eg*(diff(ug**2, xt) + diff(ug*vg, yt) + diff(ug*wg, zt)) - 
+#ugSrc = ( rog*eg*(diff(ug**2, xt) + diff(ug*vg, yt) + diff(ug*wg, zt)) - 
+#   mug*(diff(ug, xt, 2) + diff(ug, yt, 2) + diff(ug, zt, 2)) - (diff(
+#      mug*diff(ug, xt), xt) + diff(mug*diff(vg, xt), yt) + 
+#     diff(mug*diff(wg, xt), zt) + diff(-Rational(2,3)*mug*divug, xt)) + eg*diff(pg, xt) )
+#
+#vgSrc = ( rog*eg*(diff(ug*vg, xt) + diff(vg**2, yt) + diff(vg*wg, zt)) - 
+#   mug*(diff(vg, xt, 2) + diff(vg, yt, 2) + diff(vg, zt, 2)) - (diff(
+#      mug*diff(ug, yt), xt) + diff(mug*diff(vg, yt), yt) + 
+#     diff(mug*diff(wg, yt), zt) + diff(-Rational(2,3)*mug*divug, yt)) + eg*diff(pg, yt) )
+#
+#wgSrc = ( rog*eg*(diff(ug*wg, xt) + diff(vg*wg, yt) + diff(wg**2, zt)) - 
+#  mug*(diff(wg, xt, 2) + diff(wg, yt, 2) + diff(wg, zt, 2)) - (diff(
+#     mug*diff(ug, zt), xt) + diff(mug*diff(vg, zt), yt) + 
+#    diff(mug*diff(wg, zt), zt) + diff(-Rational(2,3)*mug*divug, zt)) + eg*diff(pg, zt) )
+#
+#usSrc = ( rops*(diff(us**2, xt) + diff(us*vs, yt) + diff(us*ws, zt)) - 
+#  mus*(diff(us, xt, 2) + diff(us, yt, 2) + diff(us, zt, 2)) - (diff(
+#     mus*diff(us, xt), xt) + diff(mus*diff(vs, xt), yt) + 
+#    diff(mus*diff(ws, xt), zt) + diff(-Rational(2,3)*mus*divus, xt)) + es*diff(pg, xt) )
+#
+#vsSrc = ( rops*(diff(us*vs, xt) + diff(vs**2, yt) + diff(vs*ws, zt)) - 
+#  mus*(diff(vs, xt, 2) + diff(vs, yt, 2) + diff(vs, zt, 2)) - (diff(
+#     mus*diff(us, yt), xt) + diff(mus*diff(vs, yt), yt) + 
+#    diff(mus*diff(ws, yt), zt) + diff(-Rational(2,3)*mus*divus, yt)) + es*diff(pg, yt) )
+#
+#wsSrc = ( rops*(diff(us*ws, xt) + diff(vs*ws, yt) + diff(ws**2, zt)) - 
+#  mus*(diff(ws, xt, 2) + diff(ws, yt, 2) + diff(ws, zt, 2)) - (diff(
+#     mus*diff(us, zt), xt) + diff(mus*diff(vs, zt), yt) + 
+#    diff(mus*diff(ws, zt), zt) + diff(-Rational(2,3)*mus*divus, zt)) + es*diff(pg, zt) )
+
+ugSrc = ( rog*(diff(eg*ug**2, xt) + diff(eg*ug*vg, yt) + diff(eg*ug*wg, zt)) - 
    mug*(diff(ug, xt, 2) + diff(ug, yt, 2) + diff(ug, zt, 2)) - (diff(
       mug*diff(ug, xt), xt) + diff(mug*diff(vg, xt), yt) + 
      diff(mug*diff(wg, xt), zt) + diff(-Rational(2,3)*mug*divug, xt)) + eg*diff(pg, xt) )
 
-vgSrc = ( rog*eg*(diff(ug*vg, xt) + diff(vg**2, yt) + diff(vg*wg, zt)) - 
+vgSrc = ( rog*(diff(eg*ug*vg, xt) + diff(eg*vg**2, yt) + diff(eg*vg*wg, zt)) - 
    mug*(diff(vg, xt, 2) + diff(vg, yt, 2) + diff(vg, zt, 2)) - (diff(
       mug*diff(ug, yt), xt) + diff(mug*diff(vg, yt), yt) + 
      diff(mug*diff(wg, yt), zt) + diff(-Rational(2,3)*mug*divug, yt)) + eg*diff(pg, yt) )
 
-wgSrc = ( rog*eg*(diff(ug*wg, xt) + diff(vg*wg, yt) + diff(wg**2, zt)) - 
+wgSrc = ( rog*(diff(eg*ug*wg, xt) + diff(eg*vg*wg, yt) + diff(eg*wg**2, zt)) - 
   mug*(diff(wg, xt, 2) + diff(wg, yt, 2) + diff(wg, zt, 2)) - (diff(
      mug*diff(ug, zt), xt) + diff(mug*diff(vg, zt), yt) + 
     diff(mug*diff(wg, zt), zt) + diff(-Rational(2,3)*mug*divug, zt)) + eg*diff(pg, zt) )
 
-usSrc = ( rops*(diff(us**2, xt) + diff(us*vs, yt) + diff(us*ws, zt)) - 
+usSrc = ( ros*(diff(es*us**2, xt) + diff(es*us*vs, yt) + diff(es*us*ws, zt)) - 
   mus*(diff(us, xt, 2) + diff(us, yt, 2) + diff(us, zt, 2)) - (diff(
      mus*diff(us, xt), xt) + diff(mus*diff(vs, xt), yt) + 
     diff(mus*diff(ws, xt), zt) + diff(-Rational(2,3)*mus*divus, xt)) + es*diff(pg, xt) )
 
-vsSrc = ( rops*(diff(us*vs, xt) + diff(vs**2, yt) + diff(vs*ws, zt)) - 
+vsSrc = ( ros*(diff(es*us*vs, xt) + diff(es*vs**2, yt) + diff(es*vs*ws, zt)) - 
   mus*(diff(vs, xt, 2) + diff(vs, yt, 2) + diff(vs, zt, 2)) - (diff(
      mus*diff(us, yt), xt) + diff(mus*diff(vs, yt), yt) + 
     diff(mus*diff(ws, yt), zt) + diff(-Rational(2,3)*mus*divus, yt)) + es*diff(pg, yt) )
 
-wsSrc = ( rops*(diff(us*ws, xt) + diff(vs*ws, yt) + diff(ws**2, zt)) - 
+wsSrc = ( ros*(diff(es*us*ws, xt) + diff(es*vs*ws, yt) + diff(es*ws**2, zt)) - 
   mus*(diff(ws, xt, 2) + diff(ws, yt, 2) + diff(ws, zt, 2)) - (diff(
      mus*diff(us, zt), xt) + diff(mus*diff(vs, zt), yt) + 
     diff(mus*diff(ws, zt), zt) + diff(-Rational(2,3)*mus*divus, zt)) + es*diff(pg, zt) )

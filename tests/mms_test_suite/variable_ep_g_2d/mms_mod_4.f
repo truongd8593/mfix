@@ -607,21 +607,23 @@
         stop
       case(2)
       !ugsrc!
-        mms_source = -6.0*mug + 6.0*rog*yt*(-0.1*xt**2 + 0.7)*(3.0*xt**2 + 2.0) +&
-         2*xt*(-0.1*xt**2 + 0.7)
+        mms_source = -6.0*mug + rog*(-0.2*xt*(3.0*yt**2 + 2.0)**2 + 6.0*yt*(-0.1*xt**2 +&
+         0.7)*(3.0*xt**2 + 2.0)) + 2*xt*(-0.1*xt**2 + 0.7)
       case(3)
       !vgsrc!
-        mms_source = -6.0*mug + 6.0*rog*xt*(-0.1*xt**2 + 0.7)*(3.0*yt**2 + 2.0)
+        mms_source = -6.0*mug + rog*(6.0*xt*(-0.1*xt**2 + 0.7)*(3.0*yt**2 + 2.0) -&
+         0.2*xt*(3.0*xt**2 + 2.0)*(3.0*yt**2 + 2.0))
       case(4)
       !wgsrc!
         mms_source = zero
       case(5)
       !ussrc!
-        mms_source = -4.0*mus + 4.0*ros*yt*(0.1*xt**2 + 0.3)*(2.0*xt**2 + 1.0) +&
-         2*xt*(0.1*xt**2 + 0.3)
+        mms_source = -4.0*mus + ros*(0.2*xt*(2.0*yt**2 + 1.0)**2 + 4.0*yt*(0.1*xt**2 +&
+         0.3)*(2.0*xt**2 + 1.0)) + 2*xt*(0.1*xt**2 + 0.3)
       case(6)
       !vssrc!
-        mms_source = -4.0*mus + 4.0*ros*xt*(0.1*xt**2 + 0.3)*(2.0*yt**2 + 1.0)
+        mms_source = -4.0*mus + ros*(4.0*xt*(0.1*xt**2 + 0.3)*(2.0*yt**2 + 1.0) +&
+         0.2*xt*(2.0*xt**2 + 1.0)*(2.0*yt**2 + 1.0))
       case(7)
       !wssrc!
         mms_source = zero

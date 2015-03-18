@@ -34,6 +34,7 @@
       USE pgcor
       USE compar
       USE functions
+      USE mms, only : USE_MMS, MMS_ROP_G_SRC
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -68,12 +69,17 @@
             IJMK = JM_OF(IJK)
             IJKM = KM_OF(IJK)
 
-! FLAGMMS: begin            
-!            DEL_V = U_G(IJK)*AYZ(IJK) - U_G(IMJK)*AYZ(IMJK) + &
-!                    V_G(IJK)*AXZ(IJK) - V_G(IJMK)*AXZ(IJMK) + &
-!                    W_G(IJK)*AXY(IJK) - W_G(IJKM)*AXY(IJKM)
-            DEL_V = ZERO            
+! FLAGMMS: begin
+            IF(USE_MMS) THEN
+            !IF(.false.) THEN
+              DEL_V = ZERO
+            ELSE
+              DEL_V = U_G(IJK)*AYZ(IJK) - U_G(IMJK)*AYZ(IMJK) + &
+                      V_G(IJK)*AXZ(IJK) - V_G(IJMK)*AXZ(IJMK) + &
+                      W_G(IJK)*AXY(IJK) - W_G(IJKM)*AXY(IJKM)
+            ENDIF
 ! FLAGMMS: end
+
             IF (ROP_G(IJK) > ZERO) THEN
                SRC = VOL(IJK)*ZMAX((-SUM_R_G(IJK)))/ROP_G(IJK)
             ELSE
@@ -87,20 +93,22 @@
                            ZMAX((-DEL_V))*ROP_G(IJK)+&
                            ZMAX(SUM_R_G(IJK))*VOL(IJK))
 
-!! FLAGMMS: commented the following IF statement                           
-!            IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN
-!               IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN
-!                  A_M(IJK,0,0) = -ONE
-!                  B_M(IJK,0) = ZERO
-!               ELSE
-!!!$omp             critical
-!                  WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
-!                     ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0)
-!                  CALL WRITE_ERROR ('SOURCE_ROP_g', LINE, 1)
-!!!$omp             end critical
-!               ENDIF
-!            ENDIF
-!! FLAGMMS: end commenting                           
+            IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN
+               IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN
+                  A_M(IJK,0,0) = -ONE
+                  B_M(IJK,0) = ZERO
+               ELSE
+!!$omp             critical
+                  WRITE (LINE, '(A,I6,A,I1,A,G12.5)') 'Error: At IJK = ', IJK, &
+                     ' M = ', 0, ' A = 0 and b = ', B_M(IJK,0)
+                  CALL WRITE_ERROR ('SOURCE_ROP_g', LINE, 1)
+!!$omp             end critical
+               ENDIF
+            ENDIF
+!! FLAGMMS: begin
+            IF (USE_MMS) B_M(IJK,0) = B_M(IJK,0) &
+                - MMS_ROP_G_SRC(IJK)*VOL(IJK)
+!! FLAGMMS: end
          ELSE
 ! set the value of rop_g in all wall and flow boundary cells to what is
 ! known for that cell
