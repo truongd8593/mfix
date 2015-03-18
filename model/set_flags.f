@@ -51,6 +51,7 @@
       USE sendrecv
       USE sendrecv3
       USE boundfunijk
+      use mpi_utility
       USE function3
       USE functions
       IMPLICIT NONE
@@ -63,6 +64,7 @@
       INTEGER :: L
 ! Temporary storage for FLAG value
       INTEGER :: FLAGX
+      integer, allocatable :: arr1(:)
 !-----------------------------------------------
 
 !  Cell flag definitions
@@ -81,6 +83,7 @@
 ! 107       C      CYCLIC_PD      Cyclic b.c. with pressure drop
 ! Flag values greater than 100 are considered to be wall cells
 ! (see function.inc).
+
 
 
 ! make the wall cells adjacent to flow boundaries free-slip wall to
@@ -318,6 +321,18 @@
       call send_recv(flag_e,2)
       ENDDO    ! end do loop (l = 1, dimension_is)
 ! ----------------------------------------------------------------<<<
+
+      IF (MYPE.EQ.PE_IO) THEN
+         ALLOCATE (ARR1(IJKMAX3))
+      ELSE
+         ALLOCATE (ARR1(1))
+      ENDIF
+
+      CALL GATHER(FLAG,ARR1,ROOT)
+      CALL SCATTER(FLAG,ARR1,ROOT)
+
+      DEALLOCATE (ARR1)
+
 
       RETURN
  1000 FORMAT(/1X,70('*')//' From: SET_FLAGS',/&
