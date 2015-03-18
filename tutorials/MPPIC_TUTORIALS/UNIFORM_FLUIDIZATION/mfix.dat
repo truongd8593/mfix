@@ -121,8 +121,6 @@
   MAX_INLET_VEL_FAC=100000
 
 ! DES INPUT
-  DISCRETE_ELEMENT      = .TRUE. 
-
 
   PARTICLES  = 1280000  !Number of parcels used to intialize arrays
 ! the actual number of parcels will be determined from the intial
