@@ -345,14 +345,9 @@
 ! ---------------------------------------------------------------->>>
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. &
-                BC_TYPE(L)=='FREE_SLIP_WALL' .OR. &
-                BC_TYPE(L)=='PAR_SLIP_WALL') THEN
-! Dummy statement to do nothing.  The bcs were set in the previous loop
-                I1 = 1
-            ELSEIF (BC_TYPE(L)=='P_OUTFLOW' .OR. &
-                    BC_TYPE(L)=='MASS_OUTFLOW' .OR. &
-                    BC_TYPE(L)=='OUTFLOW') THEN
+            IF (BC_TYPE(L)=='P_OUTFLOW' .OR. &
+                BC_TYPE(L)=='MASS_OUTFLOW' .OR. &
+                BC_TYPE(L)=='OUTFLOW') THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -400,7 +395,8 @@
 ! conditions
 ! ----------------------------------------------------------------<<<
 
-            ELSE
+            ELSEIF(BC_TYPE(L)=='P_INFLOW' .OR. &
+                   BC_TYPE(L)=='MASS_INFLOW') THEN
 
 ! Setting bc that are defined but not nsw, fsw, psw, p_outflow,
 ! mass_outflow or outflow (at this time, this section addresses
@@ -433,9 +429,7 @@
                   ENDDO
                ENDDO
             ENDIF   ! end if/else (bc_type)
-                    ! ns, fs, psw; else
-                    ! p_inflow, p_outflow, mass_outflow or outflow; else
-! end setting of 'else' flow boundary conditions (mass_inflow)
+! end setting of p_inflow or mass_inflow boundary conditions 
 ! ----------------------------------------------------------------<<<
 
          ENDIF   ! end if (bc_defined)

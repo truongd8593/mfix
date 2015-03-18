@@ -175,7 +175,7 @@
 !  boundary types.                                                     C
 !                                                                      C
 !  Comments: For a new run the field variables are undefined in the    C
-!  boundary cell locations. While for a restart run the field variable C
+!  boundary cell locations, while for a restart run the field variable C
 !  may have an existing value based on the preceding simulation.       C
 !  Regardless, a user defined BC value will supercede any existing     C
 !  value.                                                              C
@@ -263,8 +263,6 @@
             WHERE (BC_Scalar(BCV,:NScalar) /= UNDEFINED) &
             Scalar(IJK,:NScalar) = BC_Scalar(BCV,:NScalar)
 
-! technically shouldn't be 'set' in any type of outflow as its value is
-! unused by the corresponding matrix equation
          IF (K_Epsilon) THEN
             IF (BC_K_Turb_G(BCV) /= UNDEFINED) &
                K_Turb_G(IJK) = BC_K_Turb_G(BCV)
@@ -330,8 +328,8 @@
 !                                                                      C
 !  Subroutine: set_bc0_inflow                                          C
 !  Purpose: Set the initial settings of the boundary conditions        C
-!  for mass outflow (MO), pressure inflow (PI) and mass inflow (MI)    C
-!  boundary types.                                                     C
+!  pressure inflow (PI) and. mass inflow (MI) boundary types. Also do  C
+!  mass outflow (MO) boundary types... due to velocity...              C
 !                                                                      C
 !  Comments: Unlike the treament of PO or O boundary types no checks   C
 !  are made for these boundary types to determine whether the given    C

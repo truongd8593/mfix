@@ -4,130 +4,70 @@
 !  Purpose: Equation of state for gas and initial solids density       C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
-!  Reviewer: P. Nicoletti, W. Rogers, S. Venkatesan   Date: 29-JAN-92  C
-!                                                                      C
-!  Literature/Document References:                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-MODULE eos
+      MODULE eos
 
-CONTAINS
+      CONTAINS
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: EOSG (MW, PG, TG)                                      C
+!  Function: EOSG                                                      C
 !  Purpose: Equation of state for gas                                  C
 !                                                                      C
-!  Variables referenced: GAS_CONST                                     C
-!  Variables modified: EOSG                                            C
-!                                                                      C
-!  Local variables: None                                               C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       DOUBLE PRECISION FUNCTION EOSG (MW, PG, TG)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE scales
+
+! Global Variables:
+!---------------------------------------------------------------------//
+      USE constant, only: gas_const
+      USE scales, only: unscale
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      DOUBLE PRECISION MW, PG, TG
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, INTENT(IN) :: MW, PG, TG
 
       EOSG = UNSCALE(PG)*MW/(GAS_CONST*TG)
-
       RETURN
       END FUNCTION EOSG
-!
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: dROodP_g(ROG, PG)                                      C
+!  Function: dROodP_g                                                  C
 !  Purpose: derivative of gas density w.r.t pressure                   C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 14-AUG-96  C
 !                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: GAS_CONST                                     C
-!  Variables modified: EOSG                                            C
-!                                                                      C
-!  Local variables: None                                               C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       DOUBLE PRECISION FUNCTION DROODP_G (ROG, PG)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE scales
+
+! Global Variables:
+!---------------------------------------------------------------------//
+      USE scales, only: p_ref
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!                      gas density
-!
-!                      Gas pressure
-      DOUBLE PRECISION ROG, PG
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!-----------------------------------------------
-!
-!
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! gas density and pressure
+      DOUBLE PRECISION, INTENT(IN) :: ROG, PG
+
       DROODP_G = ROG/(PG + P_REF)
-!
       RETURN
       END FUNCTION DROODP_G
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: EOSS0                                                  !
-!                                                                      !
+!  Function: EOSS0                                                     !
 !  Author: J.Musser                                   Date: 02-Dec-13  !
-!  Reviewer:                                                           !
 !                                                                      !
 !  Purpose: Calculate the initial solids density. This calculation is  !
 !  only valid at time zero. Thus, this routine should only be invoked  !
 !  by the initialization routines.                                     !
-!                                                                      !
-!  Literature/Document References:                                     !
-!                                                                      !
-!  Local variables: None                                               !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       DOUBLE PRECISION FUNCTION EOSS0(M)
@@ -204,16 +144,11 @@ CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: EOSS                                                   !
-!                                                                      !
+!  Function: EOSS                                                      !
 !  Author: J.Musser                                   Date: 09-Oct-13  !
-!  Reviewer:                                                           !
 !                                                                      !
 !  Purpose: Calculate solid density - runtime.                         !
 !                                                                      !
-!  Literature/Document References:                                     !
-!                                                                      !
-!  Local variables: None                                               !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       DOUBLE PRECISION FUNCTION EOSS(pBase, Xs0_INERT, Xs_INERT)

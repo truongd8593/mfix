@@ -1,9 +1,8 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SET_OUTFLOW                                             C
-!  Purpose: Set specified pressure outflow bc for a specified range    C
-!  of cells. This routine is also called for mass_outflow, outflow     C
-!  and now inflow bc                                                   C
+!  Purpose: Set specified outflow bc for pressure outflow,             C
+!  mass outflow, outflow and now also pressure inflow bc               C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-JAN-92  C
 !                                                                      C
@@ -20,8 +19,10 @@
 !  adjacent fluid cell if it is on the E, N, T side (similar to the    C
 !  respective momentum bc routines). The primary addition here is      C
 !  that the tangential components of a bc cell are set to that of      C
-!  the adjacent fluid cell (note the tangential components are not     C
-!  explictly handled in the momentumbc routines).                      C
+!  the adjacent fluid cell. Note the tangential components are not     C
+!  explictly handled in the momentum _BC_ routines; instead their      C
+!  values are based on solution of the momentum equation which is      C
+!  replaced here                                                       C
 !                                                                      C
 !  Several routines are called which perform the following tasks:      C
 !  set_outflow_misc - several derived quantities are set in the        C
@@ -31,12 +32,15 @@
 !  set_outflow_fluxes - convective fluxes are set in the boundary      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE SET_OUTFLOW(BCV, I1, I2, J1, J2, K1, K2)
+      SUBROUTINE SET_OUTFLOW(BCV)
 
 ! Modules
-!--------------------------------------------------------------------//
-      use bc, only: bc_type
+!---------------------------------------------------------------------//
+      use bc, only: bc_type, bc_plane
+      use bc, only: bc_k_b, bc_k_t
+      use bc, only: bc_j_s, bc_j_n
+      use bc, only: bc_i_w, bc_i_e
+
       use run, only: kt_type_enum, ghd_2007
       use fldvar, only: rop_g, rop_s
       use fldvar, only: u_g, v_g, w_g
@@ -54,18 +58,12 @@
       IMPLICIT NONE
 
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! Boundary condition number
       INTEGER, INTENT(IN) :: BCV
-! Starting and ending I index
-      INTEGER, INTENT(IN) :: I1, I2
-! Starting and ending J index
-      INTEGER, INTENT(IN) :: J1, J2
-! Starting and ending K index
-      INTEGER, INTENT(IN) :: K1, K2
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: I, J, K, M
 ! index for boundary cell
@@ -74,20 +72,20 @@
       INTEGER :: FIJK
 ! local value for normal component of gas and solids velocity defined
 ! such that
-
       DOUBLE PRECISION :: RVEL_G, RVEL_S(DIMENSION_M)
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
-      DO K = K1, K2
-         DO J = J1, J2
-            DO I = I1, I2
+! Loop over the range of boundary cells
+      DO K = BC_K_B(BCV), BC_K_T(BCV)
+         DO J = BC_J_S(BCV), BC_J_N(BCV)
+            DO I = BC_I_W(BCV), BC_I_E(BCV)
 ! Check if current i,j,k resides on this PE
                IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
                IF(DEAD_CELL_AT(I,J,K)) CYCLE
                IJK = FUNIJK(I,J,K)
 
 ! Fluid cell at West
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(IM_OF(IJK))) THEN
                   FIJK = IM_OF(IJK)
                   RVEL_G = U_G(FIJK)
@@ -95,34 +93,33 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-
                   IF (BC_TYPE(BCV)=='P_INFLOW') &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
-! set the boundary cell value of the normal component of velocity
-! according to the value in the adjacent fluid cell
+! Set the boundary cell value of the normal component of velocity
+! according to the value in the adjacent fluid cell. Note the value 
+! of the boundary velocity is a scaled version of the value of the 
+! adjacent fluid velocity based on the concentration ratio of the fluid
+! cell to the boundary cell.
+! - For the gas phase, this ratio is most likely 1 except for
+!   compressible cases with a PO/PI boundary where P_g of the boundary
+!   is set and may differ from the value of the adjacent fluid cell.
+! - For the solids phase this seems unnecessary..? Differences may arise
+!   if bc_rop_s is set...
                   IF (ROP_G(IJK) > ZERO) THEN
-! scale boundary velocity to adjacent fluid velocity based on the
-! concentration ratio of fluid cell to boundary cell. This ratio is most
-! likely 1 except for compressible cases with a PO boundary where P_g
-! of the boundary is set and may differ from the value of the adjacent
-! fluid cell
-                     U_G(IJK) = ROP_G(FIJK)*U_G(FIJK)/ROP_G(IJK)
+                    U_G(IJK) = ROP_G(FIJK)*U_G(FIJK)/ROP_G(IJK)
                   ELSE
                      U_G(IJK) = ZERO
                   ENDIF
-! unclear why we assign the tangential components and whether this
-! is actually necessary
+
+! the tangential components are not explicitly handled in the boundary
+! condition routines of the corresponding momentum equation
                   V_G(IJK) = V_G(FIJK)
                   W_G(IJK) = W_G(FIJK)
 
                   IF (MMAX > 0) THEN
                      WHERE (ROP_S(IJK,:MMAX) > ZERO)
-! scale boundary velocity to adjacent fluid velocity based on the
-! concentration ratio of fluid cell to boundary cell. Since solids are
-! incompressible this is likely unnecessary. However, differences may
-! arise if bc_rop_s is set.
-                        U_S(IJK,:MMAX) = ROP_S(FIJK,:MMAX)*&
+                       U_S(IJK,:MMAX) = ROP_S(FIJK,:MMAX)*&
                            U_S(FIJK,:MMAX)/ROP_S(IJK,:MMAX)
                      ELSEWHERE
                         U_S(IJK,:MMAX) = ZERO
@@ -133,11 +130,10 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! end if (fluid_at(im_of(ijk)))
-! ----------------------------------------------------------------<<<
 
 
 ! Fluid cell at East
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(IP_OF(IJK))) THEN
                   FIJK = IP_OF(IJK)
 ! define normal component such that it is positive when exiting the
@@ -153,7 +149,8 @@
 ! provide an initial value for the velocity component through the domain
 ! otherwise its present value (from solution of the corresponding
 ! momentum eqn) is kept. values for the velocity components in the off
-! directions are modified
+! directions are modified (needed for PO or O boundaries but not MO or
+! PI as velocities should be fully specified by this point)
                   IF (U_G(IJK) == UNDEFINED) THEN
                      IF (ROP_G(IJK) > ZERO) THEN
                         U_G(IJK) = ROP_G(FIJK)*U_G(FIJK)/ROP_G(IJK)
@@ -179,12 +176,10 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! end if (fluid_at(ip_of(ijk)))
-! ----------------------------------------------------------------<<<
-
 
 
 ! Fluid cell at South
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(JM_OF(IJK))) THEN
                   FIJK = JM_OF(IJK)
                   RVEL_G = V_G(FIJK)
@@ -216,11 +211,10 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! end if (fluid_at(jm_of(ijk)))
-! ----------------------------------------------------------------<<<
 
 
 ! Fluid cell at North
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(JP_OF(IJK))) THEN
                   FIJK = JP_OF(IJK)
                   RVEL_G = -V_G(IJK)
@@ -256,11 +250,10 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! if (fluid_at(jp_of(ijk)))
-! ----------------------------------------------------------------<<<
 
 
 ! Fluid cell at Bottom
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(KM_OF(IJK))) THEN
                   FIJK = KM_OF(IJK)
                   RVEL_G = W_G(FIJK)
@@ -292,11 +285,10 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! if (fluid_at(km_of(ijk)))
-! ----------------------------------------------------------------<<<
 
 
 ! Fluid cell at Top
-! ---------------------------------------------------------------->>>
+! --------------------------------------------------------------------//
                IF (FLUID_AT(KP_OF(IJK))) THEN
                   FIJK = KP_OF(IJK)
                   RVEL_G = -W_G(IJK)
@@ -332,7 +324,6 @@
 
                   CALL SET_OUTFLOW_FLUXES(IJK, FIJK)
                ENDIF   ! if (fluid_at(kp_of(ijk)))
-! ----------------------------------------------------------------<<<
 
             ENDDO   ! end do (i=i1,i2)
          ENDDO   ! end do (j=j1,j2)
@@ -362,11 +353,10 @@
 !  other routine will.                                                 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SET_OUTFLOW_MISC(BCV, IJK, FIJK)
 
 ! Global variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_type
       use run, only: kt_type_enum, ghd_2007
       use fldvar, only: p_g, ro_g, T_g
@@ -376,19 +366,19 @@
       use eos, only: EOSG
 
 ! Global parameters
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use param1, only: undefined
       IMPLICIT NONE
 
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! Boundary condition number
       INTEGER, INTENT(IN) :: BCV
 ! ijk index for boundary cell
       INTEGER, INTENT(IN) :: IJK
 ! ijk index for adjacent fluid cell
       INTEGER, INTENT(IN) :: FIJK
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
       IF (BC_TYPE(BCV) /= 'P_OUTFLOW' .AND. &
           BC_TYPE(BCV) /= 'P_INFLOW') P_G(IJK) = P_G(FIJK)
@@ -421,11 +411,10 @@
 !  cell.                                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! Global variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_type, bc_ep_g, bc_rop_s
       use run, only: kt_type_enum, ghd_2007
       use physprop, only: smax, mmax
@@ -434,14 +423,14 @@
       use discretelement, only: discrete_element, des_mmax
       use discretelement, only: des_rop_s, des_ro_s
 ! Global parameters
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use constant, only: pi
       use param, only: dimension_m
       use param1, only: undefined, zero, one
-
       IMPLICIT NONE
+
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! Boundary condition number
       INTEGER, INTENT(IN) :: BCV
 ! ijk index for boundary cell
@@ -459,7 +448,7 @@
       DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_M) :: RVEL_S
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: M, mm
 ! solids volume fraction
@@ -468,32 +457,27 @@
       DOUBLE PRECISION :: SUM_EPs
 ! sum of solids phases bulk densities
       DOUBLE PRECISION :: SUM_ROPS
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
 ! initializing summation quantities
       SUM_ROPS = ZERO
       SUM_EPS = ZERO
 
       DO M = 1, SMAX
-!        IF (BC_TYPE(BCV) == 'P_INFLOW') THEN
-! a pressure inflow bc is fully defined and should be able to handle
-! entering or exiting solids. A hook is placed here, however, for
-! potential future extension (note this value will currently be
-! overwritten by bc_rop_s anyway). If we allow the code to assign the
-! bulk density at the boundary care must be taken that both rop_s and
-! ep_g are consistent..
-!           ROP_S(IJK,M) = ROP_S(FIJK,M)
-!        ELSE
-! the other outflow type bc do not permit 're-entering' solids, in
-! which case, the solids are removed
-           IF (RVEL_S(M) >= ZERO) THEN
+
+         IF(BC_TYPE(BCV) == 'P_INFLOW') THEN
+            ROP_S(IJK,M) = ROP_S(FIJK,M)
+         ELSE
+! the outflow type bc do not permit 're-entering' solids, in which
+! case the solids are removed
+            IF (RVEL_S(M) >= ZERO) THEN
 ! solids are leaving the domain
                ROP_S(IJK,M) = ROP_S(FIJK,M)
-           ELSE
+            ELSE
 ! solids cannot enter the domain at an outflow cell
                ROP_S(IJK,M) = ZERO
-           ENDIF
-!        ENDIF
+            ENDIF
+         ENDIF
 
 ! if bc_rop_s is defined, set value of rop_s in the ijk boundary cell
 ! according to user definition
@@ -553,7 +537,7 @@
       SUBROUTINE SET_OUTFLOW_FLUXES(IJK,FIJK)
 
 ! Global variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use physprop, only: mmax
       use run, only: kt_type_enum, ghd_2007
       use run, only: added_mass
@@ -564,12 +548,12 @@
       use mflux, only: flux_sse, flux_ssn, flux_sst
 
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! ijk index for boundary cell
       INTEGER, INTENT(IN) :: IJK
 ! ijk index for adjacent fluid cell
       INTEGER, INTENT(IN) :: FIJK
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
       Flux_gE(IJK) = Flux_gE(FIJK)
       Flux_gN(IJK) = Flux_gN(FIJK)
@@ -618,7 +602,7 @@
       SUBROUTINE SET_PINOUTFLOW(BCV,IJK,FIJK,RVEL_G,RVEL_S)
 
 ! Global variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_type
       use bc, only: bc_t_g, bc_x_g
       use bc, only: bc_scalar, bc_k_turb_g, bc_e_turb_g
@@ -634,14 +618,14 @@
       use scalars, only: nscalar, phase4scalar
 
 ! Global parameters
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use param, only: dimension_m
       use param1, only: zero
       use constant, only: pi
       IMPLICIT NONE
 
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! Boundary condition number
       INTEGER, INTENT(IN) :: BCV
 ! index for boundary cell
@@ -653,12 +637,12 @@
       DOUBLE PRECISION, INTENT(IN) :: RVEL_G, RVEL_S(DIMENSION_M)
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! number density
       DOUBLE PRECISION :: Nm, NTot
 ! indices
       INTEGER :: M, N, Ms
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
 ! address gas phase
       IF (RVEL_G < 0) THEN   ! inflow (apply BC)

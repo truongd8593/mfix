@@ -5,72 +5,38 @@
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 29-JAN-92  C
 !                                                                      C
-!                                                                      C
-!  Locally modified variables:                                         C
-!     For MI   : BC_TIME, BC_JET_G, U_g, V_g, W_g                      C
-!     For PI   : -------                                               C
-!         ALSO calls set_outflow                                       C
-!     For PO, O: BC_TIME, BC_MOUT_G, BC_VOUT_G, BC_OUT_N               C
-!                BC_MOUT_S, BC_VOUT_S                                  C
-!         ALSO calls set_outflow                                       C
-!     For MO   : BC_TIME, BC_MOUT_G, BC_VOUT_G, BC_OUT_N               C
-!                BC_MOUT_S, BC_VOUT_S,                                 C
-!                BC_U_g, BC_V_g, BC_W_g, BC_U_S, BC_V_S, BC_W_S,       C
-!                U_g, V_g, W_g, U_s, V_s, W_s                          C
-!         ALSO calls set_outflow                                       C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SET_BC1
 
-!-----------------------------------------------
 ! Modules
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_defined, bc_type
-      use bc, only: bc_k_b, bc_k_t
-      use bc, only: bc_j_s, bc_j_n
-      use bc, only: bc_i_w, bc_i_e
-
       USE param, only: dimension_bc
       IMPLICIT NONE
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! index for boundary condition
       INTEGER :: L
-! Starting and ending I index
-      INTEGER :: I1, I2
-! Starting and ending J index
-      INTEGER :: J1, J2
-! Starting and ending K index
-      INTEGER :: K1, K2
-!--------------------------------------------------------------------//
+
 
 ! Set the boundary conditions
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
 
-! The range of boundary cells
-            I1 = BC_I_W(L)
-            I2 = BC_I_E(L)
-            J1 = BC_J_S(L)
-            J2 = BC_J_N(L)
-            K1 = BC_K_B(L)
-            K2 = BC_K_T(L)
-
             SELECT CASE(TRIM(BC_TYPE(L)))
             CASE ('P_OUTFLOW')
-               CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2)
+               CALL SET_OUTFLOW(L)
                CALL SET_BC1_REPORT_OUTFLOW(L)
             CASE ('MASS_OUTFLOW')
-               CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2)
+               CALL SET_OUTFLOW(L)
                CALL SET_BC1_ADJUST_OUTFLOW(L)
             CASE ('MASS_INFLOW')
                CALL SET_BC1_JET(L)
             CASE ('P_INFLOW')
-               CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2)
+               CALL SET_OUTFLOW(L)
             CASE ('OUTFLOW')
-               CALL SET_OUTFLOW (L, I1, I2, J1, J2, K1, K2)
+               CALL SET_OUTFLOW(L)
                CALL SET_BC1_REPORT_OUTFLOW(L)
             END SELECT
          ENDIF   ! end if (bc_defined(l))
@@ -90,7 +56,7 @@
       SUBROUTINE SET_BC1_JET(BCV)
 
 ! Modules
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_plane
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
@@ -114,19 +80,19 @@
 
       IMPLICIT NONE
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! index for boundary condition
       INTEGER, INTENT(IN) :: BCV
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: I, J, K, IJK
 ! IJK index for setting velocity bc
       INTEGER :: IJK2
 ! Solids phase index
       INTEGER :: M
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
       IF (TIME + 0.1d0*DT>=BC_TIME(BCV) .AND. &
           BC_JET_G(BCV)/=UNDEFINED) THEN
@@ -184,6 +150,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SET_BC1_REPORT_OUTFLOW(BCV)
 
+! Modules
+!---------------------------------------------------------------------//
       use bc, only: bc_dt_0, bc_time
       use bc, only: bc_out_n
       use bc, only: bc_mout_g, bc_mout_s
@@ -193,13 +161,14 @@
       use physprop, only: smax
       use run, only: time, dt, tstop
       IMPLICIT NONE
+
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! index for boundary condition
       INTEGER, INTENT(IN) :: BCV
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER :: M
 
@@ -252,7 +221,7 @@
       SUBROUTINE SET_BC1_ADJUST_OUTFLOW(BCV)
 
 ! Modules
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
       use bc, only: bc_plane
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
@@ -283,12 +252,12 @@
 
       IMPLICIT NONE
 ! Dummy arguments
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! index for boundary condition
       INTEGER, INTENT(IN) :: BCV
 
 ! Local variables
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 ! indices
       INTEGER :: I, J, K, IJK
 ! IJK index for setting velocity bc
@@ -297,7 +266,7 @@
       INTEGER :: M
 ! local solids velocity for mixture (for ghd)
       DOUBLE PRECISION :: lvel_s
-!--------------------------------------------------------------------//
+!---------------------------------------------------------------------//
 
       CALL CALC_OUTFLOW(BCV)
 
