@@ -20,27 +20,24 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_MU_s
-!
-      Use param
-      Use param1
-      Use fldvar
-      Use geometry
-      Use physprop
-      Use indices
-      Use visc_s
-      Use run
-      Use constant
-      Use funits
-      Use compar
-      Use functions
-!
+
+      USE radial
+      USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE visc_s
+
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
-!
-!  Functions
-!
-      DOUBLE PRECISION G_0
-!
+
       DOUBLE PRECISION    ARRAY(DIMENSION_3,DIMENSION_M), K_1m
       LOGICAL             INTER
       INTEGER             IER, M, IJK
