@@ -59,7 +59,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE solids_pressure
       USE toleranc
@@ -603,7 +603,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE residual
       USE run
       USE toleranc

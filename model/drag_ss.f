@@ -35,7 +35,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
@@ -246,7 +246,7 @@
       USE kintheory
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE sendrecv
 
       IMPLICIT NONE

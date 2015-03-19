@@ -1,5 +1,5 @@
 !``````````````````````````````````````````````````````````````````````!
-!  Module: G_0                                                         !
+!  Module: rdf                                                         !
 !                                                                      !
 !  Calculate radial distribution functions.                            !
 !  Note that routines G_0AVG, G_0, and DG_0DNU need to be modified to  !
@@ -8,7 +8,7 @@
 !  Carnahan-Starling g_0.                                              !
 !......................................................................!
 
-MODULE radial
+MODULE rdf
 
 CONTAINS
 
@@ -30,7 +30,7 @@ CONTAINS
       USE constant
       USE run
       USE toleranc
-      use functions
+      USE functions
 
       IMPLICIT NONE
 
@@ -248,7 +248,7 @@ CONTAINS
       USE constant
       USE run
       USE toleranc
-      use functions
+      USE functions
 
       IMPLICIT NONE
 
@@ -326,8 +326,6 @@ CONTAINS
          G_0 = (ONE/(ONE-SUM_EPS/(ONE-EP_star_array(IJK)) )) + 3.0d0 * &
             ((D_p(IJK,M1)*D_p(IJK,M2))/(D_p(IJK,M1)+D_p(IJK,M2)))*EPSoDP
 
-
-
 ! Mansoori, GA, Carnahan N.F., Starling, K.E. Leland, T.W. (1971).
 ! The Journal of Chemical Physics, Vol. 54:1523-1525.
 !---------------------------------------------------------------------//
@@ -355,8 +353,6 @@ CONTAINS
             ( (D_P(IJK,M1)*D_P(IJK,M2))/(D_P(IJK,M1)+D_P(IJK,M2)) ) *  &
             ( (D_P(IJK,M1)*D_P(IJK,M2))/(D_P(IJK,M1)+D_P(IJK,M2)) ) *  &
             ( (XI*XI)/((ONE-SUM_EPS)*(ONE-SUM_EPS)*(ONE-SUM_EPS)) )
-
-
 
 ! van Wachem, B.G.M., Schouten, J.C., van den Bleek, C.M., Krishna, R.
 ! and Sinclair, J. L. (2001). AIChE Journal 47:1035–1051.
@@ -391,8 +387,6 @@ CONTAINS
             (ONE-SUM_EPS/(ONE-EP_star_array(IJK)))*                    &
             (ONE-SUM_EPS/(ONE-EP_star_array(IJK)))) )
 
-
-
 ! Carnahan, N.F. and Starling K.E. (1969).
 ! The Journal of Chemical Physics, Vol. 51(2):635-636.
       CASE(CARNAHAN_STARLING)
@@ -416,8 +410,8 @@ CONTAINS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: ZERO, ONE
-      use physprop, only: MMAX
+      USE param1, only: ZERO, ONE
+      USE physprop, only: MMAX
 
       IMPLICIT NONE
 
@@ -434,7 +428,6 @@ CONTAINS
       RETURN
       END FUNCTION DG_0DNU
 
-
 !``````````````````````````````````````````````````````````````````````!
 !  Module name: G_0CS(EPs)                                             !
 !                                                                      !
@@ -444,7 +437,7 @@ CONTAINS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: ONE
+      USE param1, only: ONE
 
       IMPLICIT NONE
 
@@ -458,8 +451,6 @@ CONTAINS
       RETURN
       END FUNCTION G_0CS
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 !  Function: AVG_XYZ                                                   !
 !                                                                      !
@@ -472,7 +463,7 @@ CONTAINS
       USE geometry
       USE indices
       USE compar
-      use functions
+      USE functions
       USE fun_avg
 
       IMPLICIT NONE
@@ -507,4 +498,4 @@ CONTAINS
       RETURN
       END FUNCTION AVG_XYZ
 
-    END MODULE radial
+    END MODULE rdf

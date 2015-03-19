@@ -587,8 +587,8 @@ postmfix_SOURCES += \
 	../model/qmomk/qmomk_tools_mod.f \
 	../model/qmomk/qmomk_write_restart.f \
 	../model/qmomk/qmomknamelist.inc \
-	../model/radial_mod.f \
 	../model/radial_vel_correction.f \
+	../model/rdf_mod.f \
 	../model/read_database.f \
 	../model/read_namelist.f \
 	../model/read_res0.f \

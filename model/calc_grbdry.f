@@ -35,7 +35,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       USE turb
@@ -1246,7 +1246,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE turb
       USE visc_s

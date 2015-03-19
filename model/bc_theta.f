@@ -306,7 +306,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE rxns
       USE toleranc

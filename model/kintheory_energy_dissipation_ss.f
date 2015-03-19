@@ -24,7 +24,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       IMPLICIT NONE
@@ -211,7 +211,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       use kintheory
@@ -323,7 +323,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       use kintheory

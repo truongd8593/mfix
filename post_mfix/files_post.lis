@@ -134,7 +134,7 @@
 ../model/qmomk/qmom_kinetic_equation_mod.f
 ../model/qmomk/qmomk_init_namelist.f
 ../model/qmomk/qmomk_parameters_mod.f
-../model/radial_mod.f
+../model/rdf_mod.f
 ../model/read_database.f
 ../model/read_namelist.f
 ../model/read_res0.f
