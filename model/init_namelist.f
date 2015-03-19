@@ -74,7 +74,7 @@
 !  <description> Name used to create output files. The name should
 !    generate legal file names after appending extensions.
 !    Ex: Given the input, RUN_NAME = "bub01", MFIX will generate
-!    the output files: BUB01.LOG, BUB01.OUT, BUB01.RES, etcs.
+!    the output files: BUB01.LOG, BUB01.OUT, BUB01.RES, etc.
 !  </description>
       RUN_NAME = UNDEFINED_C
 !</keyword>
@@ -175,7 +175,7 @@
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".TRUE." note="Solve X-momentum equations."/>
 !  <valid value=".FALSE." note="The X velocity initial conditions
-!   persist throughout the entire simulation."/>
+!   persist throughout the simulation."/>
       MOMENTUM_X_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
@@ -186,7 +186,7 @@
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".TRUE." note="Solve Y-momentum equations."/>
 !  <valid value=".FALSE." note="The Y velocity initial conditions
-!   persist throughout the entire simulation."/>
+!   persist throughout the simulation."/>
       MOMENTUM_Y_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
@@ -197,14 +197,14 @@
 !  <arg index="1" id="Phase" min="0" max="DIM_M"/>
 !  <valid value=".TRUE." note="Solve Z-momentum equations."/>
 !  <valid value=".FALSE." note="The Z velocity initial conditions
-!   persist throughout the entire simulation."/>
+!   persist throughout the simulation."/>
       MOMENTUM_Z_EQ(:DIM_M) = .TRUE.
 !</keyword>
 
 !<keyword category="Run Control" required="false">
 !  <description>Solve energy equations.</description>
-!  <valid value=".FALSE." note="Do not solve energy equations."/>
 !  <valid value=".TRUE." note="Solve energy equations."/>
+!  <valid value=".FALSE." note="Do not solve energy equations."/>
       ENERGY_EQ = .TRUE.
 !</keyword>
 
@@ -224,7 +224,6 @@
 !    note="Use granular energy transport equation (PDE) formulation."/>
       GRANULAR_ENERGY = .FALSE.
 !</keyword>
-
 
 !<keyword category="Run Control" required="false">
 !  <description>
@@ -264,33 +263,16 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
-!  <description> The number of user-defined scalar transport equations
-!    to solve.
-!  </description>
-!  <range min="0" max="DIM_SCALAR" />
-      NScalar = 0
-!</keyword>
-
-!<keyword category="Run Control" required="false">
-!  <description>
-!    The phase convecting the indexed scalar transport equation.
-!  </description>
-!  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
-!  <range min="0" max="DIM_M" />
-      Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Run Control" required="false">
 !  <description>
 !     Available gas-solids drag models.
 !     Note: The extension _PCF following the specified drag model
 !     indicates that the polydisperse correction factor is available.
 !     For PCF details see:
-!     * Van der Hoef MA, Beetstra R, Kuipers JAM. (2005)
+!     o Van der Hoef MA, Beetstra R, Kuipers JAM. (2005)
 !       Journal of Fluid Mechanics.528:233-254.
-!     * Beetstra, R., van der Hoef, M. A., Kuipers, J.A.M. (2007).
+!     o Beetstra, R., van der Hoef, M. A., Kuipers, J.A.M. (2007).
 !       AIChE Journal, 53:489-501.
-!     * Erratum (2007), AIChE Journal, Volume 53:3020
+!     o Erratum (2007), AIChE Journal, Volume 53:3020
 !  </description>
 !
 !  <valid value="SYAM_OBRIEN" note="Syamlal M, OBrien TJ (1988).
@@ -348,11 +330,11 @@
 !  <description>
 !    The lubrication cutoff distance for HYS drag model.  In practice
 !    this number should be on the order of the mean free path of the
-!    gas for smooth particles, or the rms roughness of a particle if
+!    gas for smooth particles, or the RMS roughness of a particle if
 !    they are rough (if particle roughness is larger than the mean
 !   free path).
 !  </description>
-!  <dependents>USE_DEF_LAM_HYS</dependents>
+!  <dependent keyword="DRAG_TYPE" value="HYS"/>
       LAM_HYS = UNDEFINED
 !</keyword>
 
@@ -362,7 +344,7 @@
 !  </description>
 !
 !  <valid value="Igci" note="
-!   Igci, Y., Pannala, ., Benyahia, S., and Sundaresan S. (2012).
+!   Igci, Y., Pannala, S., Benyahia, S., and Sundaresan S. (2012).
 !   Industrial & Engineering Chemistry Research, 2012, 51(4):2094-2103"/>
 !
 !  <valid value="Milioli" note="
@@ -401,6 +383,22 @@
       MODEL_B = .FALSE.
 !</keyword>
 
+!<keyword category="Run Control" required="false">
+!  <description> The number of user-defined scalar transport equations
+!    to solve.
+!  </description>
+!  <range min="0" max="DIM_SCALAR" />
+      NScalar = 0
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>
+!    The phase convecting the indexed scalar transport equation.
+!  </description>
+!  <arg index="1" id="Scalar Equation" min="0" max="DIM_SCALAR"/>
+!  <range min="0" max="DIM_M" />
+      Phase4Scalar(:DIM_SCALAR) = UNDEFINED_I
+!</keyword>
 
 
 !#####################################################################!
@@ -409,17 +407,17 @@
 
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>Reference pressure.</description>
+!  <description>Reference pressure. [0.0]</description>
       P_REF = ZERO
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>Scale factor for pressure.</description>
+!  <description>Scale factor for pressure. [1.0]</description>
       P_SCALE = ONE
 !</keyword>
 
 !<keyword category="Physical Parameters" required="false">
-!  <description>Gravitational acceleration. </description>
+!  <description>Gravitational acceleration. [980.7 in CGS]</description>
       GRAVITY = UNDEFINED
 !</keyword>
 
@@ -699,8 +697,8 @@
 !    a flux limiter is used with higher order spatial discretization
 !    schemes. Note: The chi-scheme is implemented for SMART and MUSCL
 !    discretization schemes.
-!    Darwish, M.S., Moukalled, F. (2003). International Journal of
-!    Heat and Mass Transfer, 46(4):599-611.
+!    Darwish, M.S., Moukalled, F. (2003). Computer Methods in Applied
+!    Mech. Eng., 192(13):1711-1730.
 !  </description>
 !  <valid value=".FALSE." note="Do not use the chi-scheme."/>
 !  <valid value=".TRUE."  note="Use the chi-scheme correction."/>
@@ -711,9 +709,9 @@
 !  <description>
 !    Four point fourth order interpolation and is upstream biased.
 !    Notes:
-!    * DISCRETIZE(*) defaults to Superbee if this scheme is chosen
+!    o DISCRETIZE(*) defaults to Superbee if this scheme is chosen
 !      and DISCRETIZE(*) < 2.
-!    * Set C_FAC between 0 and 1 when using this scheme.
+!    o Set C_FAC between 0 and 1 when using this scheme.
 !  </description>
 !  <dependent keyword="C_FAC" value="DEFINED"/>
       FPFOI = .FALSE.
@@ -723,8 +721,8 @@
 !  <description>
 !    Factor between zero and one used in the universal limiter when
 !    using four point, fourth order interpolation (FPFOI).
-!    * Choosing one gives (diffusive) first order upwinding.
-!    * The scheme becomes more compressive as values near zero.
+!    o Choosing one gives (diffusive) first order upwinding.
+!    o The scheme becomes more compressive as values near zero.
 !  </description>
 !  <range min="0.0" max="1.0" />
 !  <dependent keyword="fpfoi" value=".TRUE."/>
@@ -819,9 +817,10 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Cell sizes in the x (r) direction. Enter values from DX(0) to
-!    DX(IMAX-1). (Use uniform mesh size with higher-order
-!    discretization methods.  Also in cylindrical coordinates DX
-!    should be kept uniform for strict momentum conservation.)
+!    DX(IMAX-1). 
+!    o Use uniform mesh size with higher-order discretization methods.
+!    o DX should be kept uniform in cylindrical coordinates
+!      for strict momentum conservation.
 !  </description>
 !  <arg index="1" id="Cell" min="0" max="DIM_I"/>
       DX(:DIM_I) = UNDEFINED
@@ -855,8 +854,8 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Cell sizes in the y-direction. Enter values from DY(0) to
-!    DY(IMAX-1). (Use uniform mesh size with second-order
-!    discretization methods.)
+!    DY(IMAX-1). Use uniform mesh size with second-order
+!    discretization methods.
 !  </description>
 !  <arg index="1" id="Cell" min="0" max="DIM_J"/>
       DY(:DIM_J) = UNDEFINED
@@ -870,8 +869,8 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Flag to disable the third dimension (i.e., 2D simulation).
-!      * Z axis in Cartesian coordinate system
-!      * Theta in Cylindrical coordinate system
+!      o Z axis in Cartesian coordinate system
+!      o Theta in Cylindrical coordinate system
 !  </description>
 !  <valid value=".FALSE." note="3D simulation."/>
 !  <valid value=".TRUE."  note="2D simulation."/>
@@ -886,8 +885,8 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Cell sizes in the z (theta) direction. Enter values from DZ(0) to
-!    DZ(IMAX-1). (Use uniform mesh size with second-order discretization
-!    methods.)
+!    DZ(IMAX-1). Use uniform mesh size with second-order discretization
+!    methods.
 !  </description>
 !  <arg index="1" id="Cell" min="0" max="DIM_K"/>
       DZ(:DIM_K) = UNDEFINED
@@ -996,7 +995,8 @@
 !    x coordinate. This feature should only be used when CYCLIC_X is
 !    .TRUE. and the keyword V_SH is set.
 !  </description>
-!  <dependents>cyclic_x v_sh</dependents>
+!  <dependent keyword="CYCLIC_X" value=".TRUE."/>
+!  <dependent keyword="V_SH" value="DEFINED"/>
       SHEAR = .FALSE.
 !</keyword>
 
@@ -1026,10 +1026,33 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Applies the 2.5D model for cylindrical column by combining 2D assumption
-!    and axi-symmetric assumption.!
+!    and axi-symmetric assumption.
+!    Li et al. (2015). A 2.5D computational method to simulate 
+!    cylindrical fluidized beds, Chemical Engineering Science,
+!    123:236-246.
 !  </description>
       CYLINDRICAL_2D = .FALSE.
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>
+!    Parameter to control the plate half width and the wedge radius
+!    in the 2.5D cylindrical model. This value should be less than
+!    half the grid cells in the radial direction (IMAX/2).  [1]
+!  </description>
+!  <dependent keyword="CYLINDRICAL_2D" value=".TRUE."/>
       I_CYL_NUM = 1
+!</keyword>
+
+!<keyword category="Geometry and Discretization" required="false">
+!  <description>
+!    Parameter to smooth the transition from cylindrical to 2D in
+!    the 2.5D cylindrical model. [2]
+!  </description>
+!  <valid value="2" note="Two cell smoothing transition."/>
+!  <valid value="1" note="One cell smoothing transition."/>
+!  <valid value="0" note="No smoothing."/>
+!  <dependent keyword="CYLINDRICAL_2D" value=".TRUE."/>
       I_CYL_TRANSITION = 2
 !</keyword>
 
@@ -1126,7 +1149,7 @@
 !    define the DEM solids phases.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-!  <valid value='TFM' note='Two-fluid Model (continuum).' />
+!  <valid value='TFM' note='Two-fluid Model (continuum)' />
 !  <valid value='DEM' note='Discrete Element Model' />
 !  <valid value='PIC' note='Multiphase-Particle in Cell' />
       SOLIDS_MODEL(:DIM_M) = 'TFM'
@@ -1260,10 +1283,10 @@
 !#####################################################################!
 
 
-!<keyword category="Two Fluid Model" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids phase stress model. This is only needed when solving the
-!    granular energy PDE (GRANULAR_ENERGY = .TRUE.).
+!    Solids phase stress model [LUN_1984]. This is only needed when 
+!    solving the granular energy PDE (GRANULAR_ENERGY = .TRUE.).
 !  </description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
 !  <valid value="AHMADI"
@@ -1291,7 +1314,7 @@
 ! Use: KT_TYPE = "SIMONIN"
       SIMONIN = .FALSE.
 
-!<keyword category="Two Fluid Model" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Solids stress model selection.
 !  </description>
@@ -1303,10 +1326,10 @@
       FRICTION = .FALSE.
 !</keyword>
 
-!<keyword category="Two Fluid Model" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    For a term appearing in the frictional stress model
-!    invoked with friction = .TRUE.
+!    invoked with FRICTION keyword.
 !  </description>
 !  <valid value="0" note="Use S:S in the frictional stress model."/>
 !  <valid value="1" note="Use an alternate form suggested by Savage."/>
@@ -1315,10 +1338,10 @@
       SAVAGE = 1
 !</keyword>
 
-!<keyword category="Two Fluid Model" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>Schaeffer frictional stress tensor formulation. </description>
 !  <dependent keyword="PHI" value="DEFINED"/>
-!  <valid value=".TRUE." note="Use the Schaeffer model"/>
+!  <valid value=".TRUE." note="Use the Schaeffer model."/>
 !  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
       SCHAEFFER = .TRUE.
 !</keyword>
@@ -1373,7 +1396,7 @@
       FEDORS_LANDEL = .FALSE.
 !</keyword>
 
-!<keyword category="Two Fluid Model" required="false">
+!<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Radial distribution function at contact for polydisperse systems.
 !    Do not specify any RDF for monodisperse systems because Carnahan-
@@ -1463,7 +1486,7 @@
 !    is calculated internally in the code. Do not modify unless an
 !    accurate number is known.
 !  </description>
-!  <dependents>BC_JJ_M</dependents>
+!  <dependent keyword="BC_JJ_M" value=".TRUE."/>
       phip0 = undefined
 !</keyword>
 
@@ -1494,9 +1517,10 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Minimum solids fraction above which friction sets in. (when
-!    friction = .TRUE.)</description>
-!  <dependents>friction</dependents>
+!    Minimum solids fraction above which friction sets in. [0.5] (when
+!    FRICTION = .TRUE.)
+!  </description>
+!  <dependent keyword="FRICTION" value=".TRUE."/>
       EPS_F_MIN = 0.5D0
 !</keyword>
 
@@ -1531,7 +1555,8 @@
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>Specified constant granular viscosity. If this value is
+!  <description>
+!    Specified constant granular viscosity. If this value is
 !    specified, then the kinetic theory calculation is turned off and
 !    P_S = 0 and LAMBDA_S = -2/3 MU_S0.
 !  </description>
@@ -1542,6 +1567,7 @@
 !  <description>Specified constant solids diffusivity.</description>
       DIF_S0 = UNDEFINED
 !</keyword>
+
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Packed bed void fraction. Used to calculate plastic stresses (for
@@ -2068,10 +2094,10 @@
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <valid value='0'
 !    note='Do not use Johnson and Jackson partial slip bc. Default
-!      if granular energy transport equation is not solved./>
+!      if granular energy transport equation is not solved.'/>
 !  <valid value='1'
 !    note='Use Johnson and Jackson partial slip bc. Default if
-!      granular energy transport equation is solved. />
+!      granular energy transport equation is solved.'/>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
          BC_JJ_PS(LC) = UNDEFINED_I
 !</keyword>
@@ -2814,18 +2840,20 @@
 !</keyword>
 
 !<keyword category="Output Control" required="false">
-!  <description>Interval at which .SPX files are updated. </description>
-!  <valid value="SP1" note="void fraction (EP_G"/>
-!  <valid value="SP2" note="Gas pressure (P_G), and Solids pressure (P_star)"/>
-!  <valid value="SP3" note="Gas velocity (U_G, V_G, W_G)"/>
-!  <valid value="SP4" note="Solids velocity (U_S, V_S, W_S)"/>
-!  <valid value="SP5" note="Solids bulk density (ROP_s)"/>
-!  <valid value="SP6" note="Gas and solids temperature (T_G, T_S)"/>
-!  <valid value="SP7" note="Gas and solids mass fractions (X_G, X_S)"/>
-!  <valid value="SP8" note="Granular temperature (THETA_M)"/>
-!  <valid value="SP9" note="User defined scalars. (SCALAR)"/>
-!  <valid value="SPA" note="Reaction Rates (ReactionRates)"/>
-!  <valid value="SPB" note="Turbulence quantities (K_TURB_G, E_TURB_G)"/>
+!  <description>
+!    Interval at which .SPX files are updated.
+!    o SP1: void fraction (EP_G)
+!    o SP2: Gas pressure (P_G) and Solids pressure (P_star)
+!    o SP3: Gas velocity (U_G, V_G, W_G)
+!    o SP4: Solids velocity (U_S, V_S, W_S)
+!    o SP5: Solids bulk density (ROP_s)
+!    o SP6: Gas and solids temperature (T_G, T_S)
+!    o SP7: Gas and solids mass fractions (X_G, X_S)
+!    o SP8: Granular temperature (THETA_M)
+!    o SP9: User defined scalars. (SCALAR)
+!    o SPA: Reaction Rates (ReactionRates)
+!    o SPB: Turbulence quantities (K_TURB_G, E_TURB_G)
+!  </description>
 !  <arg index="1" id="SP Value" min="1" max="N_SPX"/>
       SPX_DT(:N_SPX) = UNDEFINED
 !</keyword>
@@ -2907,9 +2935,9 @@
 !<keyword category="Output Control" required="false">
 !  <description>
 !    Output the variable specularity coefficient when BC_JJ_M is
-!    .TRUE.. The specularity coefficient will be stored in reactionrates
-!    array for post-processing by post-mfix. user needs to set nrr to 1
-!    for this purpose. be careful with this setting when reacting flow
+!    .TRUE.. The specularity coefficient will be stored in ReactionRates
+!    array for post-processing by post-mfix. User needs to set NRR to 1
+!    for this purpose. Be careful with this setting when reacting flow
 !    is simulated.
 !  </description>
       PHIP_OUT_JJ=.FALSE.

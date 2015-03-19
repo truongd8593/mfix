@@ -85,7 +85,8 @@
       PRINT_DES_DATA = .FALSE.
 !</keyword>
 
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false"
+!  dem="true" pic="true">
 !  <description>
 !    The frequency at which particle data is written. This only applies
 !    to pure granular simulations. For coupled simulation, the output
@@ -98,7 +99,8 @@
       DES_SPX_DT = LARGE_NUMBER
 !</keyword>
 
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false"
+!  dem="true" pic="true">
 !  <description>
 !    The frequency at which _DES.RES file is written. This only applies
 !    to pure granular simulations as the restart frequency is governed
@@ -118,7 +120,8 @@
       DES_OUTPUT_TYPE = "PARAVIEW"
 !</keyword>
 
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false" 
+!  dem="true" pic="true">
 !  <description>
 !    Runtime flag to generate debugging information. Additional data for
 !    FOCUS_PARTICLE is saved.
@@ -126,7 +129,7 @@
       DEBUG_DES = .FALSE.
 !</keyword>
 
-!<keyword category="Output Control" required="false">
+!<keyword category="Output Control" required="false" dem="true" pic="true">
 !  <description>
 !    Specify particle number for particle level debugging details.
 !  </description>
@@ -160,7 +163,8 @@
 !#####################################################################!
 
 
-!<keyword category="Discrete Element Simulation" required="false">
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
 !  <description>
 !    Number of particles to be read in from the particle_input.dat file.
 !    This value is overwritten when using automatic particle generation.
@@ -171,7 +175,8 @@
       PARTICLES = UNDEFINED_I
 !</keyword>
 
-!<keyword category="Discrete Element Simulation" required="false">
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
 !  <description>
 !    Automatically generate the initial particle position and velocity
 !    data based on the parameters specified for each initial condition
@@ -186,7 +191,8 @@
       GENER_PART_CONFIG = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element Simulation" required="false">
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
 !  <description>
 !    To switch between pure granular or coupled simulations of carried
 !    and dispersed phase flows.
@@ -195,52 +201,14 @@
       DES_CONTINUUM_COUPLED = .FALSE.
 !</keyword>
 
-!<keyword category="Discrete Element Simulation" required="false">
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
 !  <description>Run one-way coupled simulations. The fluid does not
 ! see the particles in terms of drag force. The effect of particle volume
 ! is still felt by the fluid through non-unity voidage values.
 ! </description>
       DES_ONEWAY_COUPLED = .FALSE.
 !</keyword>
-
-!<keyword category="Discrete Element Simulation" required="false">
-!  <description>
-!    Use interpolate to calculate field variables at the particle's
-!    position when evaluating fuild-particle interactions.
-!  </description>
-      DES_INTERP_ON = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element Simulation" required="false">
-!  <description>
-!    Use interpolation to compute dispersed phase average fields, such
-!    as, solids volume fraction. This is enabled automatically when
-!    using particle interpolation (DES_INTERP_ON), when using the
-!    MPPIC solids model, or the DES cut-cell implementation.
-!  </description>
-!  <valid value=".TRUE."
-!    note="Use interpolation to calculate field quantities."/>
-!  <valid value=".FALSE."
-!    note="Use cell-based averaging to calculate field quantities."/>
-      DES_INTERP_MEAN_FIELDS = .FALSE.
-!</keyword>
-
-
-!<keyword category="Discrete Element Simulation" required="false">
-!  <description>
-!    Solve a diffusion equation to smooth Lagrangian data mapped to
-!    the Eulerian grid (e.g., volume fraction).
-!  </description>
-      DES_DIFFUSE_MEAN_FIELDS = .FALSE.
-!</keyword>
-
-
-      DES_INTERP_SCHEME = 'NONE'
-      DES_INTERP_WIDTH = UNDEFINED
-
-      DES_DIFFUSE_WIDTH = UNDEFINED
-
-      DES_EXPLICITLY_COUPLED = .FALSE.
 
 !<keyword category="Discrete Element Simulation" required="false" dem="true">
 !  <description>
@@ -253,8 +221,151 @@
       DES_INTG_METHOD = 'EULER'
 !</keyword>
 
-
+!<keyword category="Discrete Element Simulation" required="false" dem="true">
+!  <description>
+!    Defines the size of the particle-based user variable:
+!    DES_USR_VAR(SIZE, PARTICLES). Information in this array follows
+!    the particle throughout a simulation.
+!  </description>
       DES_USR_VAR_SIZE = 0
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the I-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times the
+!    maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_IMAX = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the J-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_JMAX = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Number of des grid cells in the K-direction. If left undefined,
+!    then it is set by MFIX such that its size equals three times
+!    the maximum particle diameter with a minimum of 1 cell.
+!  </description>
+      DESGRIDSEARCH_KMAX = UNDEFINED_I
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Specify the scheme used to map data to/from a particle's position
+!    and the Eulerian grid. This keyword is required when
+!    DES_INTERP_MEAN_FIELDS and/or DES_INTERP_ON are specified. A 
+!    graphical representation of the schemes is shown below.
+!  </description>
+!  <valid value="NONE" note="Do not use interpolation."/>
+!  <valid value="GARG_2012" note="Interpolate to/from a particle's
+!    position using the corners (nodes) of the fluid cells. This was
+!    the default behavior prior to the 2015-1 Release. 
+!    See Garg et al. (2012) Documentation of the open-souce MFIX-DEM
+!    software for gas-solids flows."/>
+!  <valid value="SQUARE_DPVM" note="Divided Particle Volume Method:
+!    Information is interpolated to/from a particle's position using
+!    a square filter of size DES_INTERP_WIDTH. This scheme is not
+!    available to MFIX-PIC simulations."/>
+      DES_INTERP_SCHEME = 'NONE'
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false" dem="true">
+!  <description>
+!    The length used in interpolating data to/from a particle's position
+!    and the Eulerian grid. The interpolation width is only applicable
+!    to the DPVM_SQUARE and DPVM_GAUSS interpolation schemes as the 
+!    GARG_2012 scheme's interpolation width is determined by the 
+!    Eulerian grid dimensions. 
+!    o The interpolation half-width cannot exceed the minimum cell
+!      dimension because interpolation is restricted to the 27-cell
+!      neighborhood surrounding a particle (9-cell neighborhood in 2D).
+!    o It is recommend that the DES_INTERP_WIDTH be set equal to the
+!      maximum particle diameter when using STL defined boundaries.
+!      Field data can be smooth by specifying DES_DIFFUSE_WIDTH.
+!  </description>
+      DES_INTERP_WIDTH = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!    Enables/Disables interpolation of field quantities to a particle's
+!    position. This is used in calculating gas-particle interactions,
+!    such as the drag force.
+!  </description>
+!  <valid value=".FALSE." note="Use fluid values from the cell containing
+!    the particle's center."/>
+!  <valid value=".TRUE." note="Interpolate fluid values from the 27-cell
+!    neighborhood to a particle's position."/>
+      DES_INTERP_ON = .FALSE.
+!</keyword>
+
+!<keyword category="Discrete Element Simulation" required="false"
+!  dem="true" pic="true">
+!  <description>
+!  <description>
+!    Enables/Disables interpolation of particle data (e.g., solids
+!    volume and drag force) from a particle's position to the
+!    Eulerian grid.            
+!  </description>
+!  <valid value=".FALSE." note="Assign particle data to the fluid 
+!    grid cell containing the particle's center."/>
+!  <valid value=".TRUE." note="Interpolate particle data from the
+!    particle's position to the 27-cell neighborhood surrounding 
+!    the particle."/>
+      DES_INTERP_MEAN_FIELDS = .FALSE.
+!</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false" dem="true">
+!  <description>
+!    The length scale used to smooth dispersed phase averaged fields by
+!    solving a diffusion equation. This approach is typically used when
+!    particle sizes near or exceed the size of the Eulerian grid cell sizes.
+!    o  Mean filed diffusion is disabled if DES_DIFFUSE_WIDTH is not specified. 
+!    o  Mean filed diffusion cannot be used with the GARG_2012
+!       interpolation scheme.
+!    o  It is recommend that mean field diffusion be used in conjunction
+!       with DES_EXPLICTLY_COUPLED to minimize the computational cost of
+!       diffusing field data.
+!    o  The DES diffusion equation is listed as equation type 10 in the
+!       Numerical Parameters section.
+!  </description>
+      DES_DIFFUSE_WIDTH = UNDEFINED
+!</keyword>
+
+
+!<keyword category="Discrete Element Simulation" required="false" dem="true">
+!  <description>
+!    Enable/Disable explicit coupling of DEM solids and the fluid. This
+!    algorithm is presently limited to hydrodynamic simulations. 
+!  </description>
+!  <valid value=".FALSE." note="The fluid and particles calculate 
+!    interphase forces at their respective time scales. The fluid phase
+!    calculates the interphase coupling forces once per fluid time step.
+!    Similarly, DEM particles calculate the interface coupling forces at
+!    each solids time-step. The DEM must also bin particles to the fluid
+!    grid and recalculate the fluid volume fraction every time-step."/>
+!  <valid value=".TRUE." note="Interphase forces are calculated during 
+!    the fluid time step and stored for each particle. The interphase 
+!    forces are then distributed among the solids time-steps. This 
+!    approach can substantially reduce the computational overhead for
+!    coupled simulations."/>
+      DES_EXPLICITLY_COUPLED = .FALSE.
+!</keyword>
 
 
 !#####################################################################!
@@ -286,39 +397,8 @@
 !    Flag to set the neighbor search algorithm.
 !  </description>
 !  <valid value="1" note="N-Square search algorithm (most expensive)"/>
-!  <valid value="2-4" note="Grid-Based Neighbor Search (Recommended)"/>
+!  <valid value="4" note="Grid-Based Neighbor Search (Recommended)"/>
       DES_NEIGHBOR_SEARCH = 4
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the I-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times the
-!    maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_IMAX = UNDEFINED_I
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the J-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times
-!    the maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_JMAX = UNDEFINED_I
-!</keyword>
-
-
-!<keyword category="Discrete Element Model" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    Number of des grid cells in the K-direction. If left undefined,
-!    then it is set by MFIX such that its size equals three times
-!    the maximum particle diameter with a minimum of 1 cell.
-!  </description>
-      DESGRIDSEARCH_KMAX = UNDEFINED_I
 !</keyword>
 
 
@@ -654,7 +734,7 @@
 !  <description>
 !    Fluid lens proportion constant used to calculate the radius of
 !    the fluid lens that surrounds a particle. This parameter is used
-!    in the  particle-fluid-particle conduction model.
+!    in the particle-fluid-particle conduction model.
 !  </description>
       FLPC = 1.0d0/5.0d0
 !</keyword>
