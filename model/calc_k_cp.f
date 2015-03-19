@@ -37,7 +37,7 @@
       USE param1
       USE physprop
       USE pscor
-      USE radial
+      USE rdf
       USE run
       USE sendrecv
       USE solids_pressure
@@ -279,7 +279,7 @@
       USE param1
       USE physprop
       USE pscor
-      USE radial
+      USE rdf
       USE run
       USE trace
       USE visc_s

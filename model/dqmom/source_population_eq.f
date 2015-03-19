@@ -4,7 +4,7 @@
       USE constant
       USE fldvar
       USE physprop
-      USE radial
+      USE rdf
       USE scalars
 
       IMPLICIT NONE

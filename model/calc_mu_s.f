@@ -376,7 +376,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE trace
       USE visc_s
@@ -536,7 +536,7 @@
 ! radial distribution function, dg0/dep
       USE geometry
       USE indices
-      USE radial
+      USE rdf
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -693,7 +693,7 @@
       USE drag
       USE functions
 ! radial distribution function, dg0/dep
-      USE radial
+      USE rdf
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -823,7 +823,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       USE turb
@@ -995,7 +995,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       USE visc_s
@@ -1190,7 +1190,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       USE visc_s
@@ -1427,7 +1427,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE toleranc
       USE turb
@@ -1812,7 +1812,7 @@
       USE param
       USE param1
       USE physprop
-      USE radial
+      USE rdf
       USE run
       USE trace
       USE visc_s
@@ -2558,7 +2558,7 @@
       USE functions
       USE geometry
       USE indices
-      USE radial
+      USE rdf
 
       IMPLICIT NONE
 !-----------------------------------------------
