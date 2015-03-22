@@ -63,8 +63,9 @@
 ! Full path to Burcat and Ruscic database
       CHARACTER(len=147) FILENAME
 
-! Tcom +/- SMALL_NUMBER: This is done so that the specific heat poly-
-! nomail can be evaluate at Tcom with the high and low coefficients.
+! Tcom +/- SMALL_NUMBER: This is done so that the specific heat
+! polynomial can be evaluated at Tcom with the high and low
+! coefficients.
       DOUBLE PRECISION :: xTc
 
 ! Various integrations of the specific heat polynomials:
@@ -76,7 +77,7 @@
 ! Database being searched.
       CHARACTER(len=256) :: DB
 
-      CALL INIT_ERR_MSG('READ_DATABALSE')
+      CALL INIT_ERR_MSG('READ_DATABASE')
 
 ! Initialize the file unit to be used.
       FUNIT = UNIT_DAT  ! .dat file unit
@@ -122,7 +123,7 @@
             IF(lMW == UNDEFINED) lMW = dbMW
 ! There are a number of species with Tlow as 300, for which the
 ! following calculation will produce an error because T_ref = 298.  So
-! slightly extend validity of the correaltion.
+! slightly extend validity of the correlation.
             IF(ABS(Tlow(lM,lN)-T_ref)<=2.0D0 .AND. &
                Tlow(lM,lN) > T_ref) Tlow(lM,lN) = T_ref
 
@@ -220,7 +221,7 @@
 
 ! Error message returned from Read_Therm and sent to calling routine
       INTEGER IER
-! Loop indicies for mass phase and species
+! Loop indices for mass phase and species
       INTEGER M, N
 ! Loop counter for continuum and discrete species
       INTEGER Nsp, DES_Nsp
