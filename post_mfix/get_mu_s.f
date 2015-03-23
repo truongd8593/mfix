@@ -21,7 +21,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE GET_MU_s
 
-      USE radial
       USE compar
       USE constant
       USE fldvar
@@ -32,6 +31,7 @@
       USE param
       USE param1
       USE physprop
+      USE rdf
       USE run
       USE visc_s
 
