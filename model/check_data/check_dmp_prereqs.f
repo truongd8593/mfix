@@ -130,7 +130,7 @@
  1002 FORMAT('Error 1002:  Too many DMP partitions specified for ',    &
          A1,' axis.',/'There must be at least ',I2,' computational ',  &
          'cells per DMP parition.',/' >>> Computational Cells/DMP ',   &
-         'Partition = int(',A1,'MAX/NODES',A1,' = ',I2,/'Refer to ',   &
+         'Partition = int(',A1,'MAX/NODES',A1,') = ',I2,/'Refer to ',  &
          'the users manual for required input and make the necessary',/&
          'corrections to the input data file.')
 
