@@ -93,6 +93,10 @@
   DES_NEIGHBOR_SEARCH =  4     ! Grid based neighbor search
   NEIGHBOR_SEARCH_N   = 99     ! Steps between neighbor search
 
+  DESGRIDSEARCH_IMAX = 4
+  DESGRIDSEARCH_JMAX = 4
+  DESGRIDSEARCH_KMAX = 4
+
 ! Solids phase 1
 !---------------------------------------------------------------------//
   SOLIDS_MODEL(1) = 'DEM'
