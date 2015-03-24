@@ -2,8 +2,10 @@
 ! ******************************************************************** !
 ! *  There are minor differences between this file and the file of   * !
 ! *  the same name in the model directory:                           * !
-! *  1) FUNIJK is set to FUNIJK_IO                                   * !
-! *  2) FUNIJK_IO is calcluated differently                          * !
+! *  1) FUNIJK_IO is calcluated differently                          * !
+! *  2) FUNIJK is set to FUNIJK_IO                                   * !
+! *  3) FUNIJK_0 is set to FUNIJK_IO                                 * !
+! *  4) FUNIJK_GL is set to FUNIJK_IO                                * !
 ! ******************************************************************** !
 !----------------------------------------------------------------------!
       MODULE functions
@@ -234,23 +236,30 @@ CONTAINS
   !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
   !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
   !      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
-  INTEGER FUNCTION funijk_0(li,lj,lk)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-    funijk_0 = funijk_io(li,lj,lk)
-  END FUNCTION funijk_0
+      INTEGER FUNCTION funijk_0(li,lj,lk)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+      funijk_0 = funijk_io(li,lj,lk)
+      END FUNCTION funijk_0
 
-  INTEGER FUNCTION funijk(li,lj,lk)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-    funijk = funijk_io(li,lj,lk)
-  END FUNCTION funijk
+      INTEGER FUNCTION funijk(li,lj,lk)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+      funijk = funijk_io(li,lj,lk)
+      END FUNCTION funijk
 
-  !//SP
-  !     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
-  !     (LJ-jstart3_all(LIPROC))*(iend3_all(LIPROC)-istart3_all(LIPROC)+1) &
-  !     + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
-  !     (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
+      INTEGER FUNCTION FUNIJK_GL (LI, LJ, LK)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+      FUNIJK_GL = FUNIJK_IO(LI, LJ, LK)
+      END FUNCTION FUNIJK_GL
+
+      INTEGER FUNCTION FUNIJK_IO(LI, LJ, LK)
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+      FUNIJK_IO = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+      END FUNCTION FUNIJK_IO
+
 
   INTEGER FUNCTION FUNIJK_PROC(LI, LJ, LK, LIPROC)
     IMPLICIT NONE
@@ -261,23 +270,6 @@ CONTAINS
          (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
   END FUNCTION FUNIJK_PROC
 
-  !     FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
-  !     + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
-  !
-  INTEGER FUNCTION FUNIJK_GL (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-    FUNIJK_GL = 1 + (LJ - jmin3) + (LI-imin3)*(jmax3-jmin3+1) &
-         + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
-  END FUNCTION FUNIJK_GL
-
-  INTEGER FUNCTION FUNIJK_IO (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-!    FUNIJK_IO = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
-!         + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
-     FUNIJK_IO = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
-  END FUNCTION FUNIJK_IO
 
   LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
     IS_ON_myPE_plus2layers = LI.ge.istart3.and.LI.le.iend3.and. &
@@ -756,9 +748,7 @@ CONTAINS
   LOGICAL FUNCTION DEFAULT_WALL_AT(IJK)
     IMPLICIT NONE
     INTEGER, INTENT(IN) :: IJK
-    DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
-         (ICBC_FLAG(IJK)(1:1) .NE. 'c'  .AND. &
-         ICBC_FLAG(IJK)(1:1) .NE. 'C')
+    DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--'
   END FUNCTION DEFAULT_WALL_AT
 
   DOUBLE PRECISION FUNCTION ZMAX(XXX)
