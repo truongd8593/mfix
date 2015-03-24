@@ -21,17 +21,18 @@ all_aliases="_Blank"
 alias_count=0
 duplicate_aliases=""
 
-#ALPEMI MacOS Revised the following for MacOS compatability of sed
-# Check if file exists to trigger the alternative GNU based sed for MacOS.
-if test -r ${MFIX_CONFIG}/compilers/Load_MACHINE_TYPE.sh; then
-    source ${MFIX_CONFIG}/compilers/Load_MACHINE_TYPE.sh
-fi    
-sedcmd=sed
-if [ "$mfix_os" == "MacOS" ]; then
-   # Define an alternate GNU-sed for MacOS only
-   sedcmd=/usr/local/bin/gsed
-   echo "Using sed command replacement for MacOS: " $sedcmd
-fi
+osx_sed_err() {
+  echo " "
+  echo "  *********************************************************************"
+  echo "  * MFIX on OS X requires the GNU version of the sed command.         *"
+  echo "  * Please install GNU sed from MacPorts (www.macports.org) or        *"
+  echo "  * Homebrew (http://brew.sh) and make sure that the \"gsed\" command is  *"
+  echo "  * in your PATH before building MFIX.                                *"
+  echo "  *********************************************************************"
+  echo " "
+  echo " "
+  return
+}
 
 format_err() {
   echo " "
@@ -70,6 +71,15 @@ duplicate_err() {
   return
 }
 
+# Check for the alternative GNU sed on Mac OS X.
+sedcmd=sed
+if [ "$(uname)" == "Darwin" ]; then
+   # Define an alternate GNU sed for OS X
+   sedcmd=gsed
+   type gsed > /dev/null || osx_sed_err
+   type gsed > /dev/null || exit
+   echo "Using sed command replacement for MacOS: " $sedcmd
+fi
 
 check_val () {
 # $1: Type of variable: Species Alias, Reaction Name
