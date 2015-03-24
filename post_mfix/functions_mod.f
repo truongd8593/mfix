@@ -1,11 +1,16 @@
-! This file sets funijk to funijk_io for post_mfix. Other than that, it is
-! the same as the file under the model directory.
+!----------------------------------------------------------------------!
+! ******************************************************************** !
+! *  There are minor differences between this file and the file of   * !
+! *  the same name in the model directory:                           * !
+! *  1) FUNIJK is set to FUNIJK_IO                                   * !
+! *  2) FUNIJK_IO is calcluated differently                          * !
+! ******************************************************************** !
+!----------------------------------------------------------------------!
+      MODULE functions
 
-MODULE functions
-
-  USE compar
-  USE geometry
-  USE indices
+      USE compar
+      USE geometry
+      USE indices
 
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   !
@@ -271,7 +276,7 @@ CONTAINS
     INTEGER, INTENT(IN) :: LI, LJ, LK
 !    FUNIJK_IO = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
 !         + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
-     FUNIJK_IO = lj + c0 + li*c1 + lk*c2
+     FUNIJK_IO = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
   END FUNCTION FUNIJK_IO
 
   LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
