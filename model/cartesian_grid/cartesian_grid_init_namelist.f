@@ -140,6 +140,23 @@
 !    surface but is defined as a basic shape."/>
 !  <valid value="Torus_ext" note="Torus, external flow. Needs to define
 !    TORUS_R1(QID) and TORUS_R2(QID)."/>
+!  <valid value="Y_UCOIL_EXT" note="Pair of parallel cylinders (y-direction),
+!     capped at both ends by half a torus, to create a U-shaped coil. Needs
+!     UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2."/>
+!  <valid value="Y_UCOIL_EXT" note="Pair of parallel cylinders (y-direction),
+!     capped at both ends by a cylinder at 90 degree angle
+!     to create a U-shaped coil. Needs
+!     UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2."/>
+!  <valid value="XY_BEND_INT" note="Bend between 
+!     two cylinders in the XY plane, Needs
+!     BEND_R1,BEND_R2,BEND_THETA1,BEND_THETA2."/>
+!  <valid value="Y_C2C_INT" note="connects two vertical cylinders by a 
+!     conical section. Needs C2C_R1,C2C_R2,C2C_Y1,C2C_Y2."/>
+!  <valid value="REACTOR1" note="Reactor, made of two vertical cylinders,
+!     connected by a conical section.Each cylinder is rounded and closed 
+!     by a conical cap. Needs REACTOR1_R1,REACTOR1_R2,REACTOR1_Y1,REACTOR1_Y2,
+!     REACTOR1_YR1,REACTOR1_YR2,REACTOR1_RR1,REACTOR1_RR2,      
+!     REACTOR1_THETA1,REACTOR1_THETA2."/>
       quadric_form = 'NORMAL'
 !</keyword>
 
