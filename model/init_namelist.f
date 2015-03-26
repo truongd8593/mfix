@@ -313,7 +313,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>
 !    Quantity for calibrating Syamlal-O'Brien drag correlation using Umf
-!    data.  This are determined using the Umf spreadsheet.
+!    data.  This is determined using the Umf spreadsheet.
 !  </description>
       DRAG_C1 = 0.8d0
 !</keyword>
@@ -321,7 +321,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>
 !    Quantity for calibrating Syamlal-O'Brien drag correlation using Umf
-!    data.  This are determined using the Umf spreadsheet.
+!    data.  This is determined using the Umf spreadsheet.
 !  </description>
       DRAG_D1 = 2.65d0
 !</keyword>
@@ -1013,7 +1013,7 @@
 
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
-!    If a value is specified (in units of g/cm2.s), the domain-averaged gas
+!    If a value is specified (in units of g/cm^2.s), the domain-averaged gas
 !    flux is held constant at that value in simulations over a periodic
 !    domain.  A pair of boundaries specified as periodic with fixed
 !    pressure drop is then treated as periodic with fixed mass flux.
@@ -1074,7 +1074,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas viscosity [poise or g/(cm.s) in CGS].
+!    Specified constant gas viscosity [g/(cm.s) in CGS].
 !  </description>
       MU_G0 = UNDEFINED
 !</keyword>
@@ -1095,21 +1095,24 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Specified constant gas diffusivity [g/(cm.s) in CGS].
+!    Specified constant gas diffusivity [(cm^2/s) in CGS].
 !  </description>
       DIF_G0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Average molecular weight of gas. Used in calculating the gas density
-!    for non-reacting flows when the gas composition is not defined.
+!    Average molecular weight of gas [(g/mol) in CGS]. Used in 
+!    calculating the gas density for non-reacting flows when the gas
+!    composition is not defined.
 !  </description>
       MW_AVG = UNDEFINED
 !</keyword>
 
 !<keyword category="Gas Phase" required="false">
-!  <description>Molecular weight of gas species.</description>
+!  <description>
+!    Molecular weight of gas species [(g/mol) in GCS].
+!  </description>
 !  <arg index="1" id="Species" min="1" max="DIM_N_G"/>
       MW_G(:DIM_N_G) = UNDEFINED
 !</keyword>
@@ -1243,7 +1246,7 @@
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
-!    Molecular weight of solids phase species.
+!    Molecular weight of solids phase species [(g/mol) in CGS].
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_s"/>
@@ -1556,15 +1559,17 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Specified constant granular viscosity. If this value is
-!    specified, then the kinetic theory calculation is turned off and
-!    P_S = 0 and LAMBDA_S = -2/3 MU_S0.
+!    Specified constant granular viscosity [g/(cm.s) in CGS]. If this
+!    value is specified, then the kinetic theory calculation is turned
+!    off and P_S = 0 and LAMBDA_S = -2/3 MU_S0.
 !  </description>
       MU_S0 = UNDEFINED
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>Specified constant solids diffusivity.</description>
+!  <description>
+!    Specified constant solids diffusivity [(cm^2)/s in CGS].
+!  </description>
       DIF_S0 = UNDEFINED
 !</keyword>
 
@@ -2652,13 +2657,9 @@
 !  <description>Permeability</description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_PC(LC,1) = UNDEFINED
-!</keyword>
-
-!<keyword category="Internal Surface" required="false">
-!  <description>Inertial resistance coefficient.</description>
-!  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
          IS_PC(LC,2) = ZERO
 !</keyword>
+
 
 
 !<keyword category="Internal Surface" required="false">

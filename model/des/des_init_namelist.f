@@ -316,7 +316,6 @@
 !<keyword category="Discrete Element Simulation" required="false"
 !  dem="true" pic="true">
 !  <description>
-!  <description>
 !    Enables/Disables interpolation of particle data (e.g., solids
 !    volume and drag force) from a particle's position to the
 !    Eulerian grid.            
@@ -447,8 +446,8 @@
 
 !<keyword category="Discrete Element Model" required="false" dem="true">
 !  <description>
-!    Normal spring constant for inter-particle collisions needed when
-!    using the linear spring-dashpot collision model.
+!    Normal spring constant [dyne/cm in CGS] for inter-particle collisions.
+!    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN = UNDEFINED
 !</keyword>
@@ -469,8 +468,8 @@
 
 !<keyword category="Discrete Element Model" required="false" dem=.true.>
 !  <description>
-!    Normal spring constant for particle-wall collisions. Needed when
-!    using the linear spring-dashpot collision model.
+!    Normal spring constant [dyne/cm in CGS] for particle-wall collisions.
+!    Required when using the linear spring-dashpot collision model.
 !  </description>
       KN_W = UNDEFINED
 !</keyword>
@@ -481,7 +480,7 @@
 !    Ratio of the tangential spring constant to normal spring constant
 !    for particle-wall collisions. Use it to specify the tangential
 !    spring constant for particle-wall collisions as KT_W_FAC*KN_W.
-!    Needed when using the linear spring-dashpot collision model.
+!    Required when using the linear spring-dashpot collision model.
 !  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="LSD"/>
 !  <range min="0.0" max="1.0" />
@@ -589,26 +588,29 @@
 
 
 !<keyword category="Discrete Element Model" required="false">
-!  <description>Youngs modulus for the wall. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
+!  <description>
+!    Youngs modulus for the wall [barye in CGS]. Required when using the
+!    Hertzian spring-dashpot model.
+!  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       EW_YOUNG = UNDEFINED
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false">
-!  <description>Poisson ratio for the wall. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
+!  <description>
+!    Poisson ratio for the wall. Required when using the Hertzian
+!    spring-dashpot model.
+!  </description>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       VW_POISSON = UNDEFINED
 !</keyword>
 
 
 !<keyword category="Discrete Element Model" required="false">
-!  <description>Youngs modulus for the particle. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
+!  <description>
+!    Youngs modulus for the particle [barye in CGS]. Required when using
+!    the Hertzian spring-dashpot model.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       E_YOUNG(:DIM_M) = UNDEFINED
@@ -616,9 +618,10 @@
 
 
 !<keyword category="Discrete Element Model" required="false">
-!  <description>Poissons ratio for the particle. Needed when using the Hertzian
-! spring-dashpot model for soft-spring collision modelling under DEM.
-!</description>
+!  <description>
+!    Poissons ratio for the particle. Required when using the Hertzian
+!    spring-dashpot model.
+!  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
 !  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
       V_POISSON(:DIM_M) = UNDEFINED
