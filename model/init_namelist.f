@@ -1837,14 +1837,14 @@
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
-!  <description>Initial mass fraction of gas species n.</description>
+!  <description>Initial mass fraction of gas species.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          IC_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Initial Condition" required="false">
-!  <description>Initial mass fraction of gas species n.</description>
+!  <description>Initial mass fraction of solids species.</description>
 !  <arg index="1" id="IC" min="1" max="DIMENSION_IC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="3" id="Species" min="1" max="DIM_N_S"/>
@@ -2362,14 +2362,14 @@
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Mass fraction of gas species n at the BC plane.</description>
+!  <description>Mass fraction of gas species at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          BC_X_G(LC,:DIM_N_G) = UNDEFINED
 !</keyword>
 
 !<keyword category="Boundary Condition" required="false">
-!  <description>Mass fraction of solids phase-m, species n at the BC plane.</description>
+!  <description>Mass fraction of solids species at the BC plane.</description>
 !  <arg index="1" id="BC" min="1" max="DIMENSION_BC"/>
 !  <arg index="2" id="Phase" min="1" max="DIM_M"/>
 !  <arg index="3" id="Species" min="1" max="DIM_N_S"/>
@@ -2654,13 +2654,20 @@
 !</keyword>
 
 !<keyword category="Internal Surface" required="false">
-!  <description>Permeability</description>
+!  <description>
+!    Parameters defining the internal surface. These values need to be
+!    specified for semipermeable surfaces only. The thickness used for
+!    pressure drop computation is that of the momentum cell (DX_e,
+!    DY_n, or DZ_t). To turn off the resistance, use a large value
+!    for permeability. 
+!    o IDX=1: Permeability [1.0E32]
+!    o IDX=2: Inertial resistance coefficient [0.0]
+!  </description>
 !  <arg index="1" id="IS" min="1" max="DIMENSION_IS"/>
+!  <arg index="2" id="IDX" min="1" max="2"/>
          IS_PC(LC,1) = UNDEFINED
          IS_PC(LC,2) = ZERO
 !</keyword>
-
-
 
 !<keyword category="Internal Surface" required="false">
 !  <description>Value of fixed solids velocity through semipermeable surfaces.</description>

@@ -275,7 +275,7 @@
 !    See Garg et al. (2012) Documentation of the open-souce MFIX-DEM
 !    software for gas-solids flows."/>
 !  <valid value="SQUARE_DPVM" note="Divided Particle Volume Method:
-!    Information is interpolated to/from a particle's position using
+!    Information is interpolated to/from a particles position using
 !    a square filter of size DES_INTERP_WIDTH. This scheme is not
 !    available to MFIX-PIC simulations."/>
       DES_INTERP_SCHEME = 'NONE'
