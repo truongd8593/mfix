@@ -608,6 +608,8 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_INTERP")
 
+! Set the runtime flag for diffusing mean fields
+      DES_DIFFUSE_MEAN_FIELDS = (DES_DIFFUSE_WIDTH /= UNDEFINED)
 
 ! Set the interpolation ENUM value.
       SELECT CASE(trim(adjustl(DES_INTERP_SCHEME)))
@@ -702,18 +704,6 @@
          'input file.')
 
       END SELECT
-
-
-      IF(DES_DIFFUSE_MEAN_FIELDS) THEN
-         IF(DES_DIFFUSE_WIDTH == UNDEFINED) THEN
-            WRITE(ERR_MSG,2130)
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
-
- 2130 FORMAT('Error 2130: The diffusion lenght scale (DES_DIFFUSE_',   &
-         'WIDTH) must be',/'specified with DES_DIFFUSE_MEAN_FIELDS. ', &
-         'Please correct the input file.')
 
       CALL FINL_ERR_MSG
 
