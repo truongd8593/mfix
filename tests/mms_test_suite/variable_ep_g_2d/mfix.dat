@@ -27,7 +27,7 @@
   Tstop         = 1.0
 
   Mmax          = 1
-  Energy_eq     = .F.
+  Energy_eq     = .T.
   Species_eq(0) = .F.
   Species_eq(1) = .F.
 
@@ -38,7 +38,7 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  Max_nit       = 1 ! 200000  ! large enough for all mesh levels
+  Max_nit       = 200000  ! large enough for all mesh levels
 
   Norm_g        = 0.0d0
   Norm_s        = 0.0d0
@@ -50,8 +50,8 @@
   Discretize    = 9*9
 
 !  UR_fac(6)     = 0.01     ! energy equations 
-  UR_fac(1)     = 0.1 ! gas pressure
-  UR_fac(2)     = 0.1 ! solids volume fraction
+!  UR_fac(1)     = 0.1 ! gas pressure
+!  UR_fac(2)     = 0.1 ! solids volume fraction
 
 
 #_______________________________________________________________________
@@ -101,7 +101,7 @@
 
   ep_star           = 0.4
 
-  close_packed      = .T.
+!  close_packed      = .T.
 
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
@@ -116,13 +116,13 @@
   IC_EP_g(1)  = 0.7   
   IC_U_g(1)   = 5.0   
   IC_V_g(1)   = 5.0     
-!  IC_W_g(1)   = 5.0
-  IC_U_s(1,1) = 5.0
-  IC_V_s(1,1) = 5.0
-!  IC_W_s(1,1) = 5.0
-  IC_P_g(1)   = 0.0
-!  IC_T_g(1)   = 350.0
-!  IC_T_s(1,1) = 300.0
+!  IC_W_g(1)   = 0.0
+  IC_U_s(1,1) = 2.0
+  IC_V_s(1,1) = 2.0
+!  IC_W_s(1,1) = 0.0
+  IC_P_g(1)   = 10.0
+  IC_T_g(1)   = 350.0
+  IC_T_s(1,1) = 300.0
 !  IC_Theta_m(1,1) =100.0
 
 #_______________________________________________________________________
@@ -148,8 +148,8 @@
   BC_V_s(1,1) = 5.0
 !  BC_W_s(1,1) = 5.0
   BC_P_g(1)   = 0.0
-!  BC_T_g(1)   = 350.0
-!  BC_T_s(1,1) = 300.0
+  BC_T_g(1)   = 350.0
+  BC_T_s(1,1) = 300.0
 !  BC_Theta_m(1,1) =100.0
 
 ! South: set as MI for MMS
@@ -172,8 +172,8 @@
   BC_V_s(2,1) = 5.0
 !  BC_W_s(2,1) = 5.0
   BC_P_g(2)   = 0.0
-!  BC_T_g(2)   = 350.0
-!  BC_T_s(2,1) = 300.0
+  BC_T_g(2)   = 350.0
+  BC_T_s(2,1) = 300.0
 !  BC_Theta_m(2,1) =100.0
 
 ! Bottom: set as MI for MMS
@@ -220,8 +220,8 @@
   BC_V_s(4,1) = 5.0
 !  BC_W_s(4,1) = 5.0
   BC_P_g(4)   = 0.0
-!  BC_T_g(4)   = 350.0
-!  BC_T_s(4,1) = 300.0
+  BC_T_g(4)   = 350.0
+  BC_T_s(4,1) = 300.0
 !  BC_Theta_m(4,1) =100.0
 
 ! North: set as MI for MMS
@@ -244,8 +244,8 @@
   BC_V_s(5,1) = -5.0
 !  BC_W_s(5,1) = 5.0
   BC_P_g(5)   = 0.0
-!  BC_T_g(5)   = 350.0
-!  BC_T_s(5,1) = 300.0
+  BC_T_g(5)   = 350.0
+  BC_T_s(5,1) = 300.0
 !  BC_Theta_m(5,1) =100.0
 
 ! Top: set as MI for MMS
@@ -281,7 +281,7 @@
   Full_log    = .T.              
   Spx_dt      = 9*1.
 
-  Resid_string  = 'P0' 'U0' 'V0' 'U1' 'V1' 
+  Resid_string  = 'P0' 'U0' 'V0' 'U1' 'V1' 'T0' 'T1'
 
 #_______________________________________________________________________
 # DMP SETUP

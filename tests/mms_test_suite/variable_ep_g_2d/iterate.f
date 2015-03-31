@@ -176,33 +176,11 @@
 
       CALL CALC_RESID_MB(0, errorpercent)
 
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   before conv_rop')
-      call out_array(U_G,     'U_g,   before conv_rop')
-      call out_array(V_G,     'V_g,   before conv_rop')
-      call out_array(U_S(:,1),'U_s,   before conv_rop')
-      call out_array(V_S(:,1),'V_s,   before conv_rop')
-      call out_array(EP_G,    'EP_g,  before conv_rop')
-      call out_array(ROP_G,   'ROP_g, before conv_rop')
-      call out_array(ROP_S,   'ROP_s, before conv_rop')
-!! FLAGMMS: debug end
-
 ! Calculate the face values of densities and mass fluxes for the first
 ! solve_vel_star call.
       CALL CONV_ROP(IER)
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
-
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   after conv_rop')
-      call out_array(U_G,     'U_g,   after conv_rop')
-      call out_array(V_G,     'V_g,   after conv_rop')
-      call out_array(U_S(:,1),'U_s,   after conv_rop')
-      call out_array(V_S(:,1),'V_s,   after conv_rop')
-      call out_array(EP_G,    'EP_g,  after conv_rop')
-      call out_array(ROP_G,   'ROP_g, after conv_rop')
-      call out_array(ROP_S,   'ROP_s, after conv_rop')
-!! FLAGMMS: debug end
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -250,31 +228,8 @@
 ! for MMS cases.
       IF(USE_MMS) CALL CALC_TRD_AND_TAU(IER)
 
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   before solve_vel_star')
-      call out_array(U_G,     'U_g,   before solve_vel_star')
-      call out_array(V_G,     'V_g,   before solve_vel_star')
-      call out_array(U_S(:,1),'U_s,   before solve_vel_star')
-      call out_array(V_S(:,1),'V_s,   before solve_vel_star')
-      call out_array(EP_G,    'EP_g,  before solve_vel_star')
-      call out_array(ROP_G,   'ROP_g, before solve_vel_star')
-      call out_array(ROP_S,   'ROP_s, before solve_vel_star')
-!! FLAGMMS: debug end
-
-
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)
-
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   after solve_vel_star')
-      call out_array(U_G,     'U_g,   after solve_vel_star')
-      call out_array(V_G,     'V_g,   after solve_vel_star')
-      call out_array(U_S(:,1),'U_s,   after solve_vel_star')
-      call out_array(V_S(:,1),'V_s,   after solve_vel_star')
-      call out_array(EP_G,    'EP_g,  after solve_vel_star')
-      call out_array(ROP_G,   'ROP_g, after solve_vel_star')
-      call out_array(ROP_S,   'ROP_s, after solve_vel_star')
-!! FLAGMMS: debug end
 
 ! Correct the centerline velocity for cylindrical simulations.
       IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
@@ -293,7 +248,9 @@
          IF (MMAX > 0) THEN
 ! MMS:  Solve gas continuity only.
             IF(USE_MMS) THEN
-               CALL SOLVE_CONTINUITY(0,IER)
+! Don't solve continuity for MMS              
+!               CALL SOLVE_CONTINUITY(0,IER)
+              CONTINUE
 ! Regular, non-MMS cases.
             ELSE
                IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
@@ -330,16 +287,6 @@
 
       ENDIF  ! end if (.not.discrete_element)
 
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   after solve_continuity')
-      call out_array(U_G,     'U_g,   after solve_continuity')
-      call out_array(V_G,     'V_g,   after solve_continuity')
-      call out_array(U_S(:,1),'U_s,   after solve_continuity')
-      call out_array(V_S(:,1),'V_s,   after solve_continuity')
-      call out_array(EP_G,    'EP_g,  after solve_continuity')
-      call out_array(ROP_G,   'ROP_g, after solve_continuity')
-      call out_array(ROP_S,   'ROP_s, after solve_continuity')
-!! FLAGMMS: debug end
 
 ! Calculate P_star in cells where solids continuity equation is
 ! solved
@@ -354,23 +301,11 @@
 
       IF (RO_G0 /= ZERO) THEN
 ! Solve fluid pressure correction equation
-      call out_array(PP_G,   'PP_g,   before solve_pp_g')
-         CALL SOLVE_PP_G (NORMG, RESG, IER)
-      call out_array(PP_G,   'PP_g,   after solve_pp_g')
+! Don't solve pressure correction equation for this MMS case         
+!         CALL SOLVE_PP_G (NORMG, RESG, IER)
 ! Correct pressure, velocities, and density
          CALL CORRECT_0 (IER)
       ENDIF
-
-!! FLAGMMS: debug begin
-      call out_array(P_G,     'P_g,   after correct_0')
-      call out_array(U_G,     'U_g,   after correct_0')
-      call out_array(V_G,     'V_g,   after correct_0')
-      call out_array(U_S(:,1),'U_s,   after correct_0')
-      call out_array(V_S(:,1),'V_s,   after correct_0')
-      call out_array(EP_G,    'EP_g,  after correct_0')
-      call out_array(ROP_G,   'ROP_g, after correct_0')
-      call out_array(ROP_S,   'ROP_s, after correct_0')
-!! FLAGMMS: debug end
 
 ! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)

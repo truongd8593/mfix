@@ -32,7 +32,7 @@ eg, es, rops = symbols('eg es rops')
 ugSrc, vgSrc, wgSrc = symbols('ugSrc vgSrc wgSrc')
 usSrc, vsSrc, wsSrc = symbols('usSrc vsSrc wsSrc')
 TgSrc, TsSrc, ThsSrc = symbols('TgSrc TsSrc ThsSrc')
-ropgSrc = symbols('ropgSrc')
+ropgSrc, ropsSrc = symbols('ropgSrc ropsSrc')
 
 # symbols for physical variables:
 ros = symbols('ros')
@@ -73,15 +73,17 @@ aesx,aesy,aesz,aesxy,aesyz,aeszx = symbols('aesx aesy aesz aesxy aesyz aeszx')
 divug, divus = symbols('divug divus')
 
 # gas pressure variable
-pg = ( 0.0 + xt**2 )
+pg = ( 10.0 + xt**2 )
 
 # gas temperature variable
 #tg = ( tg0 + tgx*cos(atgx*pi*xt) + tgy*cos(atgy*pi*yt) + tgxy*cos(atgxy*pi*xt*yt) + 
 #       tgzx*cos(atgzx*pi*xt*zt) + tgz*sin(atgz*pi*zt) + tgyz*sin(atgyz*pi*yt*zt) )
+tg = 300.0 + 20.0*xt*yt
 
 # solid temperature variable
 #ts = ( ts0 + tsx*cos(atsx*pi*xt) + tsy*cos(atsy*pi*yt) + tsxy*cos(atsxy*pi*xt*yt) + 
 #       tszx*cos(atszx*pi*xt*zt) + tsz*sin(atsz*pi*zt) + tsyz*sin(atsyz*pi*yt*zt) )
+ts = 350.0 + 30.0*xt*yt
 
 # solid volume fraction
 #es = ( es0 + esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt) )
@@ -122,17 +124,17 @@ rops = ros*es
 #
 #wg = ( diff(Fvecy, xt) - diff(Fvecx, yt) )
 
-ug = (2.0 + 3.0*yt**2)
+ug = (2.0 + 3.0*yt**2)/eg
 
-vg = (2.0 + 3.0*xt**2)
+vg = (2.0 + 3.0*xt**2)/eg
 
 wg = 0.0
 
 # check gas continuity
 divug = diff(ug,xt)+diff(vg,yt)+diff(wg,zt)
 print('\n Gas velocity field meets continuity criteria:')
-#print(simplify(diff(eg*ug,xt)+diff(eg*vg,yt)+diff(eg*wg,zt))==0)
-print(simplify(diff(ug,xt)+diff(vg,yt)+diff(wg,zt))==0)
+print(simplify(diff(eg*ug,xt)+diff(eg*vg,yt)+diff(eg*wg,zt))==0)
+#print(simplify(diff(ug,xt)+diff(vg,yt)+diff(wg,zt))==0)
 
 # solid velocity variable
 #us = ( us0*sin((pi*(xt + yt + zt))/2.0)**2 )
@@ -141,16 +143,16 @@ print(simplify(diff(ug,xt)+diff(vg,yt)+diff(wg,zt))==0)
 #
 #ws = ( ws0 )
 
-us = (1.0 + 2.0*yt**2)
-vs = (1.0 + 2.0*xt**2)
+us = (1.0 + 2.0*yt**2)/es
+vs = (1.0 + 2.0*xt**2)/es
 ws = 0.0
 
 
 # check solid continuity
 divus = (diff(us,xt)+diff(vs,yt)+diff(ws,zt)).subs(us0,vs0)
 print('\n Solid velocity field meets continuity criteria:')
-#print(simplify((diff(es*us,xt)+diff(es*vs,yt)+diff(es*ws,zt)).subs(us0,vs0))==0)
-print(simplify((diff(us,xt)+diff(vs,yt)+diff(ws,zt)).subs(us0,vs0))==0)
+print(simplify((diff(es*us,xt)+diff(es*vs,yt)+diff(es*ws,zt)).subs(us0,vs0))==0)
+#print(simplify((diff(us,xt)+diff(vs,yt)+diff(ws,zt)).subs(us0,vs0))==0)
 
 # print mms functions
 print('\n ****** MMS Functions ******')
@@ -176,11 +178,11 @@ print(vs)
 print('\n ws =')
 print(ws)
 
-#print('\n tg =')
-#print(tg)
+print('\n tg =')
+print(tg)
 
-#print('\n ts =')
-#print(ts)
+print('\n ts =')
+print(ts)
 
 #print('\n ths =')
 #print(ths)
@@ -252,18 +254,20 @@ wsSrc = ( ros*(diff(es*us*ws, xt) + diff(es*vs*ws, yt) + diff(es*ws**2, zt)) -
      mus*diff(us, zt), xt) + diff(mus*diff(vs, zt), yt) + 
     diff(mus*diff(ws, zt), zt) + diff(-Rational(2,3)*mus*divus, zt)) + es*diff(pg, zt) )
 
-#TgSrc = ( eg*rog*Cpg*(ug*diff(tg, xt) + vg*diff(tg, yt) + wg*diff(tg, zt)) + 
-#  diff((-kg*diff(tg, xt)), xt) + diff((-kg*diff(tg, yt)), yt) + 
-#  diff((-kg*diff(tg, zt)), zt) )
-#
-#TsSrc = ( rops*Cps*(us*diff(ts, xt) + vs*diff(ts, yt) + ws*diff(ts, zt)) + 
-#  diff((-ks*diff(ts, xt)), xt) + diff((-ks*diff(ts, yt)), yt) + 
-#  diff((-ks*diff(ts, zt)), zt) )
-#
+TgSrc = ( eg*rog*Cpg*(ug*diff(tg, xt) + vg*diff(tg, yt) + wg*diff(tg, zt)) + 
+  diff((-kg*diff(tg, xt)), xt) + diff((-kg*diff(tg, yt)), yt) + 
+  diff((-kg*diff(tg, zt)), zt) )
+
+TsSrc = ( rops*Cps*(us*diff(ts, xt) + vs*diff(ts, yt) + ws*diff(ts, zt)) + 
+  diff((-ks*diff(ts, xt)), xt) + diff((-ks*diff(ts, yt)), yt) + 
+  diff((-ks*diff(ts, zt)), zt) )
+
 #ThsSrc = ( Rational(3,2)*rops*(diff(us*ths, xt) + diff(vs*ths, yt) + diff(ws*ths, zt)) - 
 #  diff(ks*diff(ths, xt), xt) - diff(ks*diff(ths, yt), yt) - diff(ks*diff(ths, zt), zt) )
 
 ropgSrc = ( diff(eg*rog*ug, xt) + diff(eg*rog*vg, yt) + diff(eg*rog*wg, zt) )
+
+ropsSrc = ( diff(es*ros*us, xt) + diff(es*ros*vs, yt) + diff(es*ros*ws, zt) )
 
 # print mms source terms
 print('\n ****** MMS Source terms ******')
@@ -289,14 +293,17 @@ print(vsSrc)
 print('\n wsSrc =')
 print(wsSrc)
 
-#print('\n TgSrc =')
-#print(TgSrc)
-#
-#print('\n TsSrc =')
-#print(TsSrc)
-#
+print('\n TgSrc =')
+print(TgSrc)
+
+print('\n TsSrc =')
+print(TsSrc)
+
 #print('\n ThsSrc =')
 #print(ThsSrc)
 
 print('\n ropgSrc =')
 print(ropgSrc)
+
+print('\n ropsSrc =')
+print(ropsSrc)

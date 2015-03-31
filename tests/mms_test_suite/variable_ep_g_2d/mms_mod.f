@@ -228,7 +228,7 @@
       if(myPE == PE_IO) write(*,"(3x, 'Calculating MMS')")
 
 ! allocate mms variables here
-      call allocate_mms_vars
+!      call allocate_mms_vars
 
 ! set reference point for shifting pressure
       ijk_sh = funijk_gl( imax1/2+1, jmax1/2+1, kmin1)  ! for2D
@@ -464,31 +464,31 @@
       select case(idx)
       case(1)
       !pg!
-        mms_function = xt**2
+        mms_function = xt**2 + 10.0
       case(2)
       !ug!
-        mms_function = 3.0*yt**2 + 2.0
+        mms_function = (3.0*yt**2 + 2.0)/(-0.1*xt**2 + 0.7)
       case(3)
       !vg!
-        mms_function = 3.0*xt**2 + 2.0
+        mms_function = (3.0*xt**2 + 2.0)/(-0.1*xt**2 + 0.7)
       case(4)
       !wg!
         mms_function = zero
       case(5)
       !us!
-        mms_function = 2.0*yt**2 + 1.0
+        mms_function = (2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3)
       case(6)
       !vs!
-        mms_function = 2.0*xt**2 + 1.0
+        mms_function = (2.0*xt**2 + 1.0)/(0.1*xt**2 + 0.3)
       case(7)
       !ws!
         mms_function = zero
       case(8)
       !tg!
-        mms_function = zero
+        mms_function = 20.0*xt*yt + 300.0
       case(9)
       !ts!
-        mms_function = zero
+        mms_function = 30.0*xt*yt + 350.0
       case(10)
       !ep_g!
         mms_function = 1.0d0 - ( 0.1*xt**2 + 0.3 )
@@ -607,33 +607,50 @@
         stop
       case(2)
       !ugsrc!
-        mms_source = -6.0*mug + 6.0*rog*yt*(-0.1*xt**2 + 0.7)*(3.0*xt**2 + 2.0) +&
-         2*xt*(-0.1*xt**2 + 0.7)
+        mms_source = -0.0266666666666667*mug*xt**2*(3.0*yt**2 + 2.0)/(-0.1*xt**2 + 0.7)**3&
+         - mug*(-6.0/(0.1*xt**2 - 0.7) + (3.0*yt**2 + 2.0)*(-0.08*xt**2/(0.1*xt**2 -&
+         0.7) + 0.2)/(0.1*xt**2 - 0.7)**2) - 0.0666666666666667*mug*(3.0*yt**2 +&
+         2.0)/(-0.1*xt**2 + 0.7)**2 + rog*(0.2*xt*(3.0*yt**2 + 2.0)**2/(-0.1*xt**2 +&
+         0.7)**2 + 6.0*yt*(3.0*xt**2 + 2.0)/(-0.1*xt**2 + 0.7)) + 2*xt*(-0.1*xt**2 +&
+         0.7)
       case(3)
       !vgsrc!
-        mms_source = -6.0*mug + 6.0*rog*xt*(-0.1*xt**2 + 0.7)*(3.0*yt**2 + 2.0)
+        mms_source = -0.4*mug*xt*yt/(-0.1*xt**2 + 0.7)**2 - mug*(2.4*xt**2/(0.1*xt**2 -&
+         0.7) - 0.08*xt**2*(3.0*xt**2 + 2.0)/(0.1*xt**2 - 0.7)**2 - 6.0 + (0.6*xt**2 +&
+         0.4)/(0.1*xt**2 - 0.7))/(0.1*xt**2 - 0.7) + rog*(6.0*xt*(3.0*yt**2 +&
+         2.0)/(-0.1*xt**2 + 0.7) + 0.2*xt*(3.0*xt**2 + 2.0)*(3.0*yt**2+&
+         2.0)/(-0.1*xt**2 + 0.7)**2)
       case(4)
       !wgsrc!
         mms_source = zero
       case(5)
       !ussrc!
-        mms_source = -4.0*mus + 4.0*ros*yt*(0.1*xt**2 + 0.3)*(2.0*xt**2 + 1.0) +&
-         2*xt*(0.1*xt**2 + 0.3)
+        mms_source = -0.0266666666666667*mus*xt**2*(2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3)**3 -&
+         mus*(4.0/(0.1*xt**2 + 0.3) + (2.0*yt**2 + 1.0)*(0.08*xt**2/(0.1*xt**2 + 0.3) -&
+         0.2)/(0.1*xt**2 + 0.3)**2) + 0.0666666666666667*mus*(2.0*yt**2 +&
+         1.0)/(0.1*xt**2 + 0.3)**2 + ros*(-0.2*xt*(2.0*yt**2 + 1.0)**2/(0.1*xt**2 +&
+         0.3)**2 + 4.0*yt*(2.0*xt**2 + 1.0)/(0.1*xt**2 + 0.3)) + 2*xt*(0.1*xt**2 + 0.3)
       case(6)
       !vssrc!
-        mms_source = -4.0*mus + 4.0*ros*xt*(0.1*xt**2 + 0.3)*(2.0*yt**2 + 1.0)
+        mms_source = 0.266666666666667*mus*xt*yt/(0.1*xt**2 + 0.3)**2 -&
+         mus*(-1.6*xt**2/(0.1*xt**2 + 0.3) + 0.08*xt**2*(2.0*xt**2 + 1.0)/(0.1*xt**2 +&
+         0.3)**2 + (-0.4*xt**2 - 0.2)/(0.1*xt**2 + 0.3) + 4.0)/(0.1*xt**2 + 0.3) +&
+         ros*(4.0*xt*(2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3) - 0.2*xt*(2.0*xt**2 +&
+         1.0)*(2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3)**2)
       case(7)
       !wssrc!
         mms_source = zero
       case(8)
       !tgsrc!
-        mms_source = zero
+        mms_source = Cpg*rog*(-0.1*xt**2 + 0.7)*(20.0*xt*(3.0*xt**2 + 2.0)/(-0.1*xt**2 +&
+         0.7) + 20.0*yt*(3.0*yt**2 + 2.0)/(-0.1*xt**2 + 0.7))
       case(9)
       !tssrc!
-        mms_source = zero
+        mms_source = Cps*ros*(0.1*xt**2 + 0.3)*(30.0*xt*(2.0*xt**2 + 1.0)/(0.1*xt**2 + 0.3)&
+         + 30.0*yt*(2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3))
       case(10)
       !ropgsrc!
-        mms_source = -0.2*rog*xt*(3.0*yt**2 + 2.0)
+        mms_source = zero 
       case(11)
       !ropssrc!
         mms_source = zero
