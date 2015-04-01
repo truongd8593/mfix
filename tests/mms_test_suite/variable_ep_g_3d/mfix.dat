@@ -27,7 +27,7 @@
   Tstop         = 1.0
 
   Mmax          = 1
-  Energy_eq     = .F.
+  Energy_eq     = .T.
   Species_eq(0) = .F.
   Species_eq(1) = .F.
 
@@ -38,7 +38,7 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  Max_nit       = 1 ! 200000  ! large enough for all mesh levels
+  Max_nit       = 200000  ! large enough for all mesh levels
 
   Norm_g        = 0.0d0
   Norm_s        = 0.0d0

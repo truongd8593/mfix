@@ -248,7 +248,7 @@
          IF (MMAX > 0) THEN
 ! MMS:  Solve gas continuity only.
             IF(USE_MMS) THEN
-! Don't solve continuity for MMS  ! FLAGMMS              
+! Don't solve continuity for MMS  !! FLAGMMS              
 !               CALL SOLVE_CONTINUITY(0,IER)
               CONTINUE
 ! Regular, non-MMS cases.
