@@ -1,112 +1,85 @@
-Changes from MFIX2013-2 (Date: 09/18/2013) to MFIX2014-1 (Date: 10/01/2014)
+Changes from MFIX 2014-1 (Date: 10/01/2014) to MFIX 2015-1 (Date: 04/03/2015)
 
-
-Note for MFIX 2013-2 users
---------------------------
-
-Some feature improvements are fairly aggressive and required major
-changes to the code. As a result, backward compatibility is not
-guaranteed for either input or restart files. Please contact the
-development team through the mailing list (See User Guide [1]) if you
-have difficulties running a previous model with the new release.
 
 New features added:
 -------------------
 
-* Variable solids density
-  o The material density of a solids phase changes as a result of
-    chemical reactions (changing species composition) with the
-    assumption that the solids volume fraction remains constant.
+* 2.5D model for cylindrical coordinates – A new method for pseudo
+  two-dimensional (2.5D) simulations for cylindrical coordinates is
+  available by combining the benefits of Cartesian 2D and axisymmetric
+  assumptions.
 
-* DEM Complex boundaries
-  o The DEM/Cartesian cut-cell implementation was updated such that
-    boundaries (walls) can be defined through STL files. This change
-    allows for greater geometry complexity with better particle-wall
-    collision detection.
+  Li, T., Benyahia, S., Dietiker, J., Musser, J., and Sun, X. (2015)
+  “A 2.5D computational method to simulate cylindrical fluidized beds,”
+  Chemical Engineering Science, 123:236-246.
+
+* Runtime Arguments – A simulation can be passed keywords as runtime
+  arguments to override or supplement input provided in the mfix.dat
+  file.
+
+* Additional VTK Output Capabilities –
+  o All simulations using Cartesian coordinates can export data in VTK
+    file formats. Previously this file format was limited to Cartesian
+    cut-cell based simulations.
+  o Users may specify subdomains for data extraction. This allows users
+    to save data only in regions of interest thereby reducing overall file
+    sizes and simplifying post-processing. See the output controls section
+    for details and mfix/tutorials/vtk_regions tutorial for an example.
+  o A python script was added under the tools directory to extract ‘probe
+    data’ from VTK data files.
+
 
 Changes in existing features:
 -----------------------------
 
-* DEM code refactoring for better performance gave a 4x speedup
-  compared to the Release 2013-2 (for tutorials/FluidBed_DES with 38,400
-  particles running in serial.)
+* Arrays for the storage of particle data are automatically grown as 
+  the number of particles in the system (or processor) increases. This
+  removes guess work to approximate adequate array sizes. As a result,
+  the keywords MAX_PIS and PARTICLES_FACTOR were removed. 
 
-* DEM particle configuration is based on initial condition settings
-  (e.g., IC_EP_s).
+* New built in shapes (quadric forms) were added for greater geometrical
+  flexibility.
 
-* Cartesian grid cut-cell re-indexing method was implemented to
-  re-order cells when a large number of inactive cells are
-  generated. This provides a more efficient way of looping through
-  computational cells which can substantially speedup the code
-  execution for complex geometries.
+* The DES drag implementation was generalized and a new interpolation
+  scheme was incorporated. Users must now specify which interpolation
+  scheme is desired. See the DES keywords section for additional details.
 
-* The make_mfix build script was completely overhauled.
-
-  o Build script was split into several files/scripts.
-
-  o Build settings can be passed as build arguments.
-
-  o Parallel-make build support.
-
-  o Automatic Makefile generation at build time for dependency
-    detection.
-
-  o Each supported system and compiler has its own settings file
-    allowing for easier modification and maintenance.
-
-* Improved checks for user input
-
-  o Checks on solids model specifications are restricted to the solids
-    model type so that unnecessary data is no longer needed. This
-    improvement applies mainly to DEM and PIC solids models.
-
-  o Error messages are consistently managed based on user input
-    settings. If FULL_LOG is specified, error messages are written the
-    LOG file and sent to std-out. Otherwise, error messages are only
-    written to the LOG file.
 
 * Documentation:
 ----------------
 
 * Updated documentation:
-  o Readme file renamed to MFIX User Guide  [1]
+  o MFIX User Guide  [1]
 
 
 Community Involvement:
 ------------------
 
-
-* Improved center-line treatment for cylindrical coordinate systems.
+* A new kinetic theory model was implemented for MFIX-TFM.
 
   Bakshi, A., Altantzis, C., Ghoniem, A.F. (2014). "Towards accurate
   three-dimensional simulation of dense multi-phase flows using
   cylindrical coordinates," Powder Technology, 264:242-255.
 
-
-* A shape dependent particle-fluid drag coefficient was used to create
-  a tutorial for the new user defined drag functions (see
-  mfix/tutorials/usr_drag).
-
-  Dioguardi, F., Dellino, P., Mele, D. (2014). "Integration of a new
-  shape-dependent particle-fluid drag coefficient law in the
-  multiphase Eulerian-Lagrangian code MFIX-DEM," Powder Technology,
-  260:68-77.
+  Garzó, V., Tenneti, S., Subramaniam, S., and Hrenya, C.M. (2012).
+  “Enskog kinetic theory for monodisperse gas-solid flows,” Journal
+  of Fluid Mechanics, 712:129-168. 
 
 
 Project Metrics:
 ----------------
 
-* Change from 2013-2 Release:
-  o 46 files and about 6,000 lines of code were added (net count)
+* Change from 2014-1 Release:
+  o 12 fewer files and about 3,000 lines of code added
 
-* 2014-1 Total count:
-  o Files: 572
-  o Lines: 211,825
-  o Blank Lines: 32,272
-  o Code Lines: 120,990
-  o Comment Lines: 62,139
-  o Statements: 87,625
+* 2015-1 Total count:
+  o Files: 560
+  o Lines: 217,316
+  o Blank Lines: 34,558
+  o Code Lines: 123,918
+  o Comment Lines: 62,291
+  o Statements: 88,854
 
 References:
 -----------
-[1] https://mfix.netl.doe.gov/documentation/mfix_user_guide.pdf
+[1] https://mfix.netl.doe.gov/download/mfix/mfix_current_documentation/mfix_user_guide.pdf
