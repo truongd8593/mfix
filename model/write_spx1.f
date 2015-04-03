@@ -85,7 +85,10 @@
 
       INTEGER  uspx   ! UNIT_SPX + offset from post_mfix
       CHARACTER(LEN=50), DIMENSION(1) :: LINE   !error message
-      double precision, dimension(DIMENSION_3) :: TMP_VAR
+      double precision, dimension(:), allocatable :: TMP_VAR
+
+      allocate(TMP_VAR(DIMENSION_3))
+
 !-----------------------------------------------
       uspx = UNIT_SPX + unit_add
 
@@ -532,8 +535,9 @@
 
 !//      call unlock_tmp_array
 !
-      deallocate (array1)    !//
-      deallocate (array2)    !//
+      deallocate (array1)
+      deallocate (array2)
+      deallocate (TMP_VAR)
 !
       RETURN
       END SUBROUTINE WRITE_SPX1
@@ -549,7 +553,10 @@
         integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1
         double precision, dimension(ijkmax3) :: array2
-        double precision, dimension(DIMENSION_3) :: VAR,TMP_VAR
+        double precision, dimension(DIMENSION_3) :: VAR
+        double precision, dimension(:), allocatable :: TMP_VAR
+
+        allocate(TMP_VAR(DIMENSION_3))
 
 !       call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
         IF(RE_INDEXING) THEN
@@ -566,6 +573,8 @@
            call convert_to_io_dp(array2,array1,ijkmax2)
            CALL OUT_BIN_R (uspxL, array1, IJKMAX2, NEXT_REC)
         end if
+
+        deallocate(TMP_VAR)
 
       End subroutine gatherWriteSpx
 

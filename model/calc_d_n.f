@@ -57,12 +57,13 @@
 ! Numerator and demoninator needed for evaluation of pressure correction
 ! coefficient for GAS phase. A temporary variable is used for local
 ! manipulations.
-      DOUBLE PRECISION :: AM0(DIMENSION_3, 0:DIMENSION_M)
+      DOUBLE PRECISION, dimension(:,:), allocatable :: AM0
 ! Flag: One or more solids momentum equations are solved.
       LOGICAL :: ANY_SOLIDS_Y_MOMENTUM
 
 !......................................................................!
 
+      allocate(AM0(DIMENSION_3, 0:DIMENSION_M))
 
 ! Initialize the error flag.
       IER = 0
@@ -89,6 +90,8 @@
       ELSEIF(ANY_SOLIDS_Y_MOMENTUM) THEN
          CALL CALC_D_N_SOLIDS_ONLY(AM0, VxF_GS, VxF_SS, D_N)
       ENDIF
+
+      deallocate(AM0)
 
       RETURN
       END SUBROUTINE CALC_D_N
