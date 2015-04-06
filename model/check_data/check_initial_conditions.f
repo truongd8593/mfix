@@ -344,7 +344,7 @@
 
 
  1101 FORMAT('Error 1101: Initial condition region ',I2,' is ill-',    &
-         'defined.',/' > ',A,/'Please correct the mfix.dat file.')
+         'defined.',/3x,A,/'Please correct the mfix.dat file.')
 
       ENDDO   ! end loop over (icv=1,dimension_ic)
 
@@ -880,13 +880,38 @@
 
             IF(.NOT.COMPARE(IC_EP_S(ICV,M)*IC_ROs(M),                  &
                IC_ROP_S(ICV,M))) THEN
-               WRITE(ERR_MSG,1406) M, ICV
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
 
- 1406 FORMAT('Error 1406: IC_EP_s and IC_ROP_s are inconsistent for ',&
+! BASIC_IC regions require that the IC_ROP_s and IC_EP_s specifications
+! match although it is unlikely that anyone would specify both.
+               IF(BASIC_IC) THEN
+
+                  WRITE(ERR_MSG,1406) M, ICV
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+1406 FORMAT('Error 1406: IC_EP_s and IC_ROP_s are inconsistent for ',&
          'phase ',I2,/,'in IC region ', I3,'. Please correct the ',&
          'mfix.dat file.')
+
+
+! PachedeIC regions defer to IC_EP_s if the values do not match. This
+! prevents a dead lock or the need to define both. This case is rather
+! common as a defined IC_EP_s is converted to IC_ROP_s. Therefore, if
+! a patch region is used more than once, these values may not match.
+               ELSE
+
+                  WRITE(ERR_MSG,1407) trim(iVar('IC_ROP_s',ICV,M)), &
+                     trim(iVAL(IC_ROP_S(ICV,M))), trim(iVar('IC_EP_s',&
+                     ICV,M)), trim(iVAL(IC_EP_S(ICV,M)))
+                  CALL FLUSH_ERR_MSG()
+
+1407 FORMAT('Warning 1407: IC_EP_s and IC_ROP_s are inconsistent:',    &
+         2(/3x,A,' = ',A),/'Deferring to IC_EP_s to overcome conflict.')
+
+                  IC_ROP_S(ICV,M) = IC_EP_S(ICV,M)*IC_ROs(M)
+
+               ENDIF
+            ENDIF
+
 
 ! Compute IC_EP_s from IC_ROP_s
          ELSEIF(IC_EP_S(ICV,M) == UNDEFINED)THEN
