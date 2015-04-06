@@ -36,6 +36,9 @@
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
 
+! Error Flag.
+      INTEGER :: IER_EM
+
       contains
 
 !``````````````````````````````````````````````````````````````````````!
@@ -83,8 +86,9 @@
 ! Integer error flag
       INTEGER :: IER(0:numPEs-1)
 
-! Initizilae the error flag.
+! Initizilae the error flags.
       IER = 0
+      IER_EM = 0
 ! Initialize the call tree depth.
       CALL_DEPTH = 0
 ! Clear the error message storage container.
@@ -209,7 +213,7 @@
 ! Purpose: Finalize the error manager. The call is needed to clear out !
 ! old information and unset the lock.                                  !
 !......................................................................!
-      SUBROUTINE FINL_ERR_MSG
+      SUBROUTINE FINL_ERR_MSG(pIER)
 
 ! Rank ID of process
       use compar, only: myPE
@@ -221,6 +225,9 @@
       use funits, only: UNIT_LOG
 
       implicit none
+
+! Integer error flag.
+      INTEGER, INTENT(OUT), OPTIONAL :: pIER
 
 ! Single line.
       CHARACTER(LEN=LINE_LENGTH) :: LINE
@@ -274,6 +281,7 @@
          CALL MFIX_EXIT(myPE)
       ENDIF
 
+
 ! This shouldn't be needed, but it doesn't hurt.
       ERR_MSG = ''
 
@@ -309,6 +317,8 @@
       use funits, only: DMP_LOG
 ! File unit for LOG messages.
       use funits, only: UNIT_LOG
+! Flag to reinitialize the code.
+      use run, only: REINITIALIZING
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -456,8 +466,12 @@
 
 ! Abort the run if specified.
       IF(A_FLAG) THEN
-         IF(D_FLAG) WRITE(*,3000) myPE
-         CALL MFIX_EXIT(myPE)
+         IF(REINITIALIZING)THEN
+            IER_EM = 1
+         ELSE
+            IF(D_FLAG) WRITE(*,3000) myPE
+            CALL MFIX_EXIT(myPE)
+         ENDIF
       ENDIF
 
       RETURN
@@ -626,5 +640,20 @@
       END FUNCTION iVal_log
 
 
+
+!``````````````````````````````````````````````````````````````````````!
+! Function: Reports TRUE if one or more processes set an ABORT flag.   !
+!......................................................................!
+      LOGICAL FUNCTION REINIT_ERROR()
+
+! Global Routine Access:
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+
+      CALL GLOBAL_ALL_SUM(IER_EM)
+      REINIT_ERROR = (IER_EM /= 0)
+      IER_EM = 0
+      RETURN
+      END FUNCTION REINIT_ERROR
 
       END MODULE ERROR_MANAGER

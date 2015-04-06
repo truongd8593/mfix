@@ -24,8 +24,8 @@
       USE run, only: DT, ODT
 ! Flag: Use K-Epsilon turbulence model.
       USE run, only: K_EPSILON
-! Turbulence lenghth scale.
-      use constant, only: L_SCALE0
+! Turbulence lenghth scale and viscosity bound.
+      use constant, only: L_SCALE0, MU_GMAX
 
 
 ! Global Parameters:
@@ -110,6 +110,13 @@
  2001 FORMAT('Error 2001: Cannot set K_EPSILON = .T. and specify ',    &
          'L_SCALE0 /= ZERO')
       ENDIF
+
+!  Check whether MU_gmax is specified for turbulence (sof)
+      IF (K_Epsilon .AND. MU_GMAX==UNDEFINED) THEN
+         WRITE(ERR_MSG, 1000) 'MU_GMAX'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
 
 
 ! Clear the error manager
