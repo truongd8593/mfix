@@ -51,7 +51,7 @@
       USE vtp
 
       use output, only: RES_DT, NLOG
-
+      use interactive, only: INTERACT
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -75,7 +75,7 @@
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
-      LOGICAL :: eofBATCHQ
+      LOGICAL :: EXIT_SIGNAL
 
 !-----------------------------------------------
 ! External functions
@@ -96,7 +96,7 @@
       DNCHECK = 1
       CPU_IO  = ZERO
       NIT_TOTAL = 0
-      eofBATCHQ = .FALSE.
+      EXIT_SIGNAL = .FALSE.
 
 
       CALL INIT_OUTPUT_VARS
@@ -170,8 +170,9 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
 
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
+      IF(INTERACTIVE_MODE) CALL INTERACT(EXIT_SIGNAL)
+
+! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END
 
       IF (CALL_USR) CALL USR1
@@ -196,7 +197,7 @@
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1
 
-      CALL OUTPUT_MANAGER(eofBATCHQ, FINISH)
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
 
       IF (DT == UNDEFINED) THEN
          IF (FINISH) THEN
@@ -206,7 +207,7 @@
          ENDIF
 
 ! Mechanism to terminate MFIX normally before batch queue terminates.
-      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. eofBATCHQ) THEN
+      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. EXIT_SIGNAL) THEN
          IF(SOLVER_STATISTICS) &
             CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
          RETURN
@@ -272,8 +273,8 @@
       ENDDO
 
 
-      IF(DT.LT.DT_MIN) THEN
-         IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
+      IF(DT < DT_MIN) THEN
+         IF(TIME <= RES_DT .AND. AUTO_RESTART) THEN
             WRITE(ERR_MSG,1000)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             AUTO_RESTART = .FALSE.
@@ -293,6 +294,7 @@
          ENDIF
       ENDIF
 
+
 ! Stiff Chemistry Solver.
       IF(STIFF_CHEMISTRY) THEN
          CALL STIFF_CHEM_SOLVER(DT, IER)
@@ -306,7 +308,7 @@
 ! Edit the routine and specify a reporting interval to activate it.
       CALL CHECK_MASS_BALANCE (1)
 
-! Othe solids model implementations
+! Other solids model implementations
       IF (DEM_SOLIDS) CALL DES_TIME_MARCH
       IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
       IF (QMOMK) CALL QMOMK_TIME_MARCH
@@ -323,12 +325,12 @@
       ENDIF
 
       IF (DT /= UNDEFINED) THEN
-         IF(use_DT_prev) THEN
+         IF(USE_DT_PREV) THEN
             TIME = TIME + DT_PREV
          ELSE
             TIME = TIME + DT
          ENDIF
-         use_DT_prev = .FALSE.
+         USE_DT_PREV = .FALSE.
          NSTEP = NSTEP + 1
       ENDIF
 
@@ -343,73 +345,6 @@
 
       IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
 
-      contains
-
-!----------------------------------------------------------------------!
-!                                                                      !
-!  Subroutine: CHECK_BATCH_QUEUE_END                                   !
-!  Author: A.Gel                                      Date:            !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!----------------------------------------------------------------------!
-      SUBROUTINE CHECK_BATCH_QUEUE_END
-
-      use time_cpu, only: WALL_START
-
-      use error_manager
-
-! Logical flags for hault cases.
-      LOGICAL :: USER_HAULT, WALL_HAULT
-! Elapsed wall time, and fancy formatted buffer/batch queue times.
-      DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
-! Time units for formatted output.
-      CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
-! External function
-      DOUBLE PRECISION :: WALL_TIME
-
-! Calculate the current elapsed wall time.
-      WALL_STOP = WALL_TIME()
-      WALL_STOP = WALL_STOP - WALL_START
-
-! Set flags for wall time exceeded or user specified hault.
-      WALL_HAULT = ((WALL_STOP+TERM_BUFFER) >= BATCH_WALLCLOCK)
-      INQUIRE(file="MFIX.STOP", exist=USER_HAULT)
-
-! Report that the max user wall time was reached and exit.
-      IF(WALL_HAULT) THEN
-         CALL GET_TUNIT(WALL_STOP,WT_UNIT)
-         FANCY_BUFF = TERM_BUFFER
-         CALL GET_TUNIT(FANCY_BUFF, BF_UNIT)
-         FANCY_BATCH = BATCH_WALLCLOCK
-         CALL GET_TUNIT(FANCY_BATCH, BC_UNIT)
-         WRITE(ERR_MSG, 1100) WALL_STOP, WT_UNIT, FANCY_BUFF, BF_UNIT, &
-            FANCY_BATCH, BC_UNIT
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-      ENDIF
-
- 1100 FORMAT(2/,15('='),' REQUESTED CPU TIME LIMIT REACHED ',('='),/   &
-         'Batch Wall Time:',3X,F9.2,1X,A,/'Elapsed Wall Time: ',F9.2,  &
-         1X,A,/'Term Buffer:',7X,F9.2,A,/15('='),' REQUESTED CPU ',    &
-         'TIME LIMIT REACHED ',('='))
-
-! Report that the hault signal was detected.
-      IF(USER_HAULT) THEN
-         WRITE(ERR_MSG, 1200)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-      ENDIF
-
- 1200 FORMAT(2/,19('='),' MFIX STOP SIGNAL DETECTED ',19('='),/'MFIX.',&
-         'STOP file detected in run directory. Terminating MFIX.',/    &
-         'Please DO NOT FORGET to erase the MFIX.STOP file before ',   &
-         'restarting',/19('='),'MFIX STOP SIGNAL DETECTED ',19('='))
-
-! This routine was restructured so all MPI ranks to the same action. As
-! a result, broadcasting the BATCHQ flag may not be needed.
-      eofBATCHQ = (WALL_HAULT .OR. USER_HAULT)
-      call bcast (eofBATCHQ,PE_IO)
-
-      END SUBROUTINE CHECK_BATCH_QUEUE_END
-
+      RETURN
       END SUBROUTINE TIME_MARCH
 

@@ -23,6 +23,8 @@
       use run, only: RUN_TYPE
 ! Runtime flag specifying MPPIC solids
       use run, only: PIC_SOLIDS
+! Flag: Adjusting runtime parameters
+      use run, only: REINITIALIZING
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -52,14 +54,14 @@
 
 ! Verify user input for defined defined IC.
          IF(IC_DEFINED(ICV)) THEN
-! Skip checks for PATCH restarts.
-            IF (IC_TYPE(ICV) == 'PATCH') CYCLE
+! Gas phase checks.
             CALL CHECK_IC_GAS_PHASE(ICV)
+! Generic solids phase checks.
             CALL CHECK_IC_SOLIDS_PHASES(ICV)
 
 ! Verify that no data was defined for unspecified IC. ICs are only
 ! defined for new runs, so these checks are restricted to new runs.
-         ELSEIF(RUN_TYPE == 'NEW') THEN
+         ELSEIF(RUN_TYPE == 'NEW' .AND. .NOT.REINITIALIZING) THEN
             CALL CHECK_IC_OVERFLOW(ICV)
          ENDIF
       ENDDO
@@ -106,6 +108,7 @@
       use geometry, only: NO_K, KMAX, KMIN1, KMAX1, ZLENGTH, DZ
 ! Flag: New run or a restart.
       use run, only: RUN_TYPE
+      use run, only: REINITIALIZING
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -151,9 +154,17 @@
          IF (IC_K_B(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
          IF (IC_K_T(ICV) /= UNDEFINED_I) IC_DEFINED(ICV) = .TRUE.
 
-! For restart runs IC is defined only if IC_TYPE='PATCH'
-         IF(RUN_TYPE/='NEW' .AND. IC_TYPE(ICV)/='PATCH') &
+! An IC is defined for restart runs only if it is a 'PATCH'.
+         IF(RUN_TYPE /= 'NEW' .AND. IC_TYPE(ICV) /= 'PATCH') &
             IC_DEFINED(ICV) = .FALSE.
+
+! Ignore patched IC regions for new runs. It may be better to flag this as
+! and error to avoid user confusion.
+         IF(RUN_TYPE == 'NEW' .AND. IC_TYPE(ICV) == 'PATCH') &
+            IC_DEFINED(ICV) = .FALSE.
+
+! Enable only PATCH IC regions when initializing.
+         IF(REINITIALIZING) IC_DEFINED(ICV)=(IC_TYPE(ICV)=='PATCH')
 
          IF(.NOT.IC_DEFINED(ICV)) CYCLE
 
@@ -365,6 +376,8 @@
       use ic, only: IC_K_TURB_G, IC_E_TURB_G
 ! IC for user-defined scalar equation.
       use ic, only: IC_SCALAR
+! IC Type: UNDEFINED or PATCH.
+      use ic, only: IC_TYPE
 
 ! Flag. Solve Energy equations
       use run, only: ENERGY_EQ
@@ -406,42 +419,50 @@
       INTEGER :: N
 ! Sum of mass fraction.
       DOUBLE PRECISION :: SUM
+! Flag for regular IC regions
+      LOGICAL :: BASIC_IC
 !......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_GAS_PHASE")
 
+! Patch ICs skip various checks.
+      BASIC_IC = (IC_TYPE(ICV) /= 'PATCH')
 
-! Check that gas phase velocity components are initialized
-      IF(IC_U_G(ICV) == UNDEFINED) THEN
-         IF(NO_I) THEN
-            IC_U_G(ICV) = ZERO
-         ELSE
-            WRITE(ERR_MSG, 1000) trim(iVar('IC_U_g',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+! Check that gas phase velocity components are initialized.
+      IF(BASIC_IC) THEN
+         IF(IC_U_G(ICV) == UNDEFINED) THEN
+            IF(NO_I) THEN
+               IC_U_G(ICV) = ZERO
+            ELSE
+               WRITE(ERR_MSG, 1000) trim(iVar('IC_U_g',ICV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF(IC_V_G(ICV) == UNDEFINED) THEN
+            IF(NO_J) THEN
+               IC_V_G(ICV) = ZERO
+            ELSE
+               WRITE(ERR_MSG, 1000) trim(iVar('IC_V_g',ICV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+
+         IF(IC_W_G(ICV) == UNDEFINED) THEN
+            IF (NO_K) THEN
+               IC_W_G(ICV) = ZERO
+            ELSE
+               WRITE(ERR_MSG, 1000) trim(iVar('IC_W_g',ICV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+           ENDIF
          ENDIF
       ENDIF
 
-      IF(IC_V_G(ICV) == UNDEFINED) THEN
-         IF(NO_J) THEN
-            IC_V_G(ICV) = ZERO
-         ELSE
-            WRITE(ERR_MSG, 1000) trim(iVar('IC_V_g',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
-
-      IF(IC_W_G(ICV) == UNDEFINED) THEN
-         IF (NO_K) THEN
-            IC_W_G(ICV) = ZERO
-         ELSE
-            WRITE(ERR_MSG, 1000) trim(iVar('IC_W_g',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDIF
-
-! check that gas phase void fraction is initialized
-      IF(IC_EP_G(ICV) == UNDEFINED) THEN
+! Check that gas phase void fraction is initialized. Patched ICs may
+! have an undefined volume fration. A second check is preformed on
+! the solids.
+      IF(IC_EP_G(ICV) == UNDEFINED .AND. BASIC_IC) THEN
          WRITE(ERR_MSG, 1000) trim(iVar('IC_EP_g',ICV))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -460,11 +481,12 @@
          'compressible flow',/'Illegal value: ',A,' = ',A,/'Please ',  &
          'correct the mfix.dat file.')
 
-
-      IF(ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED) THEN
-         IF(IC_T_G(ICV)==UNDEFINED) THEN
-            WRITE(ERR_MSG, 1000) trim(iVar('IC_T_g',ICV))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      IF(BASIC_IC) THEN
+         IF(ENERGY_EQ .OR. RO_G0==UNDEFINED .OR. MU_G0==UNDEFINED) THEN
+            IF(IC_T_G(ICV)==UNDEFINED) THEN
+               WRITE(ERR_MSG, 1000) trim(iVar('IC_T_g',ICV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
          ENDIF
       ENDIF
 
@@ -497,7 +519,11 @@
 ! Enforce that the species mass fractions must sum to one.
       IF(.NOT.COMPARE(ONE,SUM)) THEN
 
-         IF(SPECIES_EQ(0)) THEN
+! No error for ZERO sum PATCH IC data.
+         IF(.NOT.BASIC_IC .AND. COMPARE(ZERO,SUM))THEN
+
+! Error for regular IC regions when solving species equations.
+         ELSEIF(SPECIES_EQ(0)) THEN
             WRITE(ERR_MSG, 1110) ICV
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
@@ -505,6 +531,7 @@
          'gas phase',/'species equations are solved. Please correct ', &
          'the mfix.dat file.')
 
+! Error for slightly compressible flows with MW_AVG specified.
          ELSEIF(RO_G0 == UNDEFINED .AND. MW_AVG == UNDEFINED) THEN
             WRITE(ERR_MSG, 1111) ICV
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -533,7 +560,7 @@
       ENDDO
 
 
-      IF(K_Epsilon) THEN
+      IF(K_Epsilon .AND. BASIC_IC) THEN
          IF (IC_K_Turb_G(ICV) == UNDEFINED) THEN
             WRITE(ERR_MSG, 1000) iVar('IC_K_Turb_G',ICV)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -581,6 +608,8 @@
       use ic, only: IC_GAMA_RS, IC_T_RS
 ! Gas phase volume fraction and temperature.
       use ic, only: IC_EP_g, IC_T_g
+! IC Type: UNDEFINED or PATCH.
+      use ic, only: IC_TYPE
 
 ! Flag. Solve Energy equations
       use run, only: ENERGY_EQ
@@ -636,29 +665,47 @@
       LOGICAL :: SKIP(1:DIM_M)
 ! Total number of solids phases (TFM + DEM + MPPIC)
       INTEGER :: MMAX_TOT
+! Flag for PATCH IC regions
+      LOGICAL :: BASIC_IC
 !......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_SOLIDS_PHASES")
+
+! Patch ICs skip various checks.
+      BASIC_IC = (IC_TYPE(ICV) /= 'PATCH')
 
 ! The total number of solids phases (all models).
       MMAX_TOT = SMAX + DES_MMAX
 
 ! Calculate EP_s from EP_g if there is only one solids phase.
       IF(MMAX_TOT == 1 .AND. IC_EP_S(ICV,1) == UNDEFINED) THEN
-         IC_EP_S(ICV,1) = ONE - IC_EP_g(ICV)
+         IF(IC_EP_g(ICV) /= UNDEFINED) IC_EP_S(ICV,1) = ONE-IC_EP_g(ICV)
       ENDIF
 
 ! Bulk density or solids volume fraction must be explicitly defined
 ! if there are more than one solids phase.
       IF(MMAX_TOT > 1 .AND. .NOT.COMPARE(IC_EP_g(ICV),ONE)) THEN
-         DO M = 1, SMAX + DES_MMAX
-            IF(IC_ROP_S(ICV,M) == UNDEFINED .AND. &
-               IC_EP_S(ICV,M) == UNDEFINED) THEN
-               WRITE(ERR_MSG, 1400) M, ICV, 'IC_ROP_s and IC_EP_s'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDDO
+! IC_EP_g may be undefined for PATCH IC regions.
+         IF(IC_EP_g(ICV) /= UNDEFINED) THEN
+            DO M = 1, MMAX_TOT
+               IF(IC_ROP_S(ICV,M) == UNDEFINED .AND. &
+                  IC_EP_S(ICV,M) == UNDEFINED) THEN
+                  WRITE(ERR_MSG, 1400) M, ICV, 'IC_ROP_s and IC_EP_s'
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDDO
+
+! If IC_EP_G is undefined, then ROP_s and EP_s should be too.
+         ELSE
+            DO M = 1, MMAX_TOT
+               IF(IC_ROP_S(ICV,M) /= UNDEFINED .AND. &
+                  IC_EP_S(ICV,M) /= UNDEFINED) THEN
+                  WRITE(ERR_MSG, 1400) M, ICV, 'IC_ROP_s and IC_EP_s'
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDDO
+         ENDIF
       ENDIF
 
  1400 FORMAT('Error 1400: Insufficient solids phase ',I2,' ',          &
@@ -676,60 +723,62 @@
       DO M=1, MMAX_TOT
 
 ! check that solids phase m velocity components are initialized
-         IF(IC_U_S(ICV,M) == UNDEFINED) THEN
-            IF (SKIP(M) .OR. NO_I) THEN
-               IC_U_S(ICV,M) = ZERO
-            ELSE
-               WRITE(ERR_MSG, 1000)trim(iVar('IC_U_s',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDIF
-
-         IF(IC_V_S(ICV,M) == UNDEFINED) THEN
-            IF(SKIP(M) .OR. NO_J) THEN
-               IC_V_S(ICV,M) = ZERO
-            ELSE
-               WRITE(ERR_MSG, 1000)trim(iVar('IC_V_s',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDIF
-
-         IF(IC_W_S(ICV,M) == UNDEFINED) THEN
-            IF(SKIP(M) .OR. NO_K) THEN
-               IC_W_S(ICV,M) = ZERO
-            ELSE
-               WRITE(ERR_MSG, 1000)trim(iVar('IC_W_s',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDIF
-
-         IF(ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN
-            IF(SKIP(M)) THEN
-               IC_T_S(ICV,M) = IC_T_G(ICV)
-            ELSE
-               WRITE(ERR_MSG, 1000)trim(iVar('IC_T_s',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDIF
-
-         IF(GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN
-            IF(SKIP(M)) THEN
-               IC_THETA_M(ICV,M) = ZERO
-            ELSE
-               WRITE(ERR_MSG, 1000)trim(iVar('IC_Theta_M',ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
-         ENDIF
-
-         IF(ENERGY_EQ) THEN
-            IF(IC_GAMA_RS(ICV,M) < ZERO) THEN
-               WRITE(ERR_MSG, 1001)trim(iVar('IC_GAMA_Rs',ICV,M)),     &
-                  iVal(IC_GAMA_RS(ICV,M))
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF (IC_GAMA_RS(ICV,M) > ZERO) THEN
-               IF(IC_T_RS(ICV,M) == UNDEFINED) THEN
-                  WRITE(ERR_MSG, 1001)trim(iVar('IC_T_Rs',ICV,M))
+         IF(BASIC_IC) THEN
+            IF(IC_U_S(ICV,M) == UNDEFINED) THEN
+               IF (SKIP(M) .OR. NO_I) THEN
+                  IC_U_S(ICV,M) = ZERO
+               ELSE
+                  WRITE(ERR_MSG, 1000)trim(iVar('IC_U_s',ICV,M))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDIF
+
+            IF(IC_V_S(ICV,M) == UNDEFINED) THEN
+               IF(SKIP(M) .OR. NO_J) THEN
+                  IC_V_S(ICV,M) = ZERO
+               ELSE
+                  WRITE(ERR_MSG, 1000)trim(iVar('IC_V_s',ICV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDIF
+
+            IF(IC_W_S(ICV,M) == UNDEFINED) THEN
+               IF(SKIP(M) .OR. NO_K) THEN
+                  IC_W_S(ICV,M) = ZERO
+               ELSE
+                  WRITE(ERR_MSG, 1000)trim(iVar('IC_W_s',ICV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDIF
+
+            IF(ENERGY_EQ .AND. IC_T_S(ICV,M)==UNDEFINED) THEN
+               IF(SKIP(M)) THEN
+                  IC_T_S(ICV,M) = IC_T_G(ICV)
+               ELSE
+                  WRITE(ERR_MSG, 1000)trim(iVar('IC_T_s',ICV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDIF
+
+            IF(GRANULAR_ENERGY .AND. IC_THETA_M(ICV,M)==UNDEFINED) THEN
+               IF(SKIP(M)) THEN
+                  IC_THETA_M(ICV,M) = ZERO
+               ELSE
+                  WRITE(ERR_MSG, 1000)trim(iVar('IC_Theta_M',ICV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+           ENDIF
+
+            IF(ENERGY_EQ) THEN
+               IF(IC_GAMA_RS(ICV,M) < ZERO) THEN
+                  WRITE(ERR_MSG, 1001)trim(iVar('IC_GAMA_Rs',ICV,M)),  &
+                     iVal(IC_GAMA_RS(ICV,M))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ELSEIF (IC_GAMA_RS(ICV,M) > ZERO) THEN
+                  IF(IC_T_RS(ICV,M) == UNDEFINED) THEN
+                     WRITE(ERR_MSG, 1001)trim(iVar('IC_T_Rs',ICV,M))
+                     CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+                  ENDIF
                ENDIF
             ENDIF
          ENDIF
@@ -748,7 +797,10 @@
 ! Enforce that the species mass fractions must sum to one.
          IF(.NOT.COMPARE(ONE,SUM)) THEN
 
-            IF(SPECIES_EQ(M) .AND. .NOT.SKIP(M)) THEN
+! Summing to zero is not an error for PATCH IC regions.
+            IF(.NOT.BASIC_IC .AND. COMPARE(ZERO,SUM)) THEN
+
+            ELSEIF(SPECIES_EQ(M) .AND. .NOT.SKIP(M)) THEN
                WRITE(ERR_MSG, 1402) ICV, M
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
@@ -814,9 +866,13 @@
       DO M=1, MMAX_TOT
 
 ! Clear out both varaibles if this phase is skipped.
-         IF(SKIP(M)) THEN
+         IF(BASIC_IC .AND. SKIP(M)) THEN
             IC_EP_S(ICV,M)  = ZERO
             IC_ROP_S(ICV,M) = ZERO
+
+! Leave everything undefined for PATCH ICs that are not specifed.
+         ELSEIF(.NOT.BASIC_IC .AND. (IC_ROP_S(ICV,M) == UNDEFINED      &
+            .AND. IC_EP_S(ICV,M) == UNDEFINED)) THEN
 
 ! If both input parameters are defined. Make sure they are equivalent.
          ELSEIF(IC_ROP_S(ICV,M) /= UNDEFINED .AND.                     &
@@ -833,7 +889,7 @@
          'mfix.dat file.')
 
 ! Compute IC_EP_s from IC_ROP_s
-         ELSEIF(IC_EP_S(ICV,M) == UNDEFINED) THEN
+         ELSEIF(IC_EP_S(ICV,M) == UNDEFINED)THEN
             IC_EP_S(ICV,M) = IC_ROP_S(ICV,M) / IC_ROs(M)
 
 ! Compute IC_ROP_s from IC_EP_s and IC_ROs
@@ -848,7 +904,7 @@
       ENDDO
 
 ! Verify that the volume fractions sum to one.
-      IF(.NOT.COMPARE(SUM_EP,ONE)) THEN
+      IF(BASIC_IC .AND. .NOT.COMPARE(SUM_EP,ONE)) THEN
          WRITE(ERR_MSG,1410) ICV
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
@@ -908,6 +964,8 @@
       use ic, only: IC_T_s, IC_X_s, IC_THETA_M
 ! Radiation model parameters.
       use ic, only: IC_GAMA_RS, IC_T_RS
+! IC Type: UNDEFINED or PATCH.
+      use ic, only: IC_TYPE
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -935,10 +993,10 @@
       INTEGER :: M, N
 !......................................................................!
 
+      IF (IC_TYPE(ICV) == 'PATCH') RETURN
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_IC_OVERFLOW")
-
 
 ! GAS PHASE quantities
 ! -------------------------------------------->>>

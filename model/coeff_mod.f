@@ -103,21 +103,31 @@
 
 ! Allocate and initialize:
 !```````````````````````````````````````````````````````````````````````
-      allocate( DENSITY(0:DIMENSION_M)); DENSITY = .FALSE.
-      allocate( SP_HEAT(0:DIMENSION_M)); SP_HEAT = .FALSE.
-      allocate( PSIZE(0:DIMENSION_M)); PSIZE   = .FALSE.
+      IF(.NOT.allocated(DENSITY)) allocate( DENSITY(0:DIMENSION_M))
+      IF(.NOT.allocated(SP_HEAT)) allocate( SP_HEAT(0:DIMENSION_M))
+      IF(.NOT.allocated(PSIZE)) allocate( PSIZE(0:DIMENSION_M))
 
-      allocate( VISC(0:DIMENSION_M)); VISC = .FALSE.
-      allocate( COND(0:DIMENSION_M)); COND = .FALSE.
-      allocate( DIFF(0:DIMENSION_M)); DIFF = .FALSE.
-      allocate( GRAN_DISS(0:DIMENSION_M)); GRAN_DISS = .FALSE.
+      DENSITY = .FALSE.
+      SP_HEAT = .FALSE.
+      PSIZE   = .FALSE.
 
-      allocate( DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M))
+      IF(.NOT.allocated(VISC)) allocate( VISC(0:DIMENSION_M))
+      IF(.NOT.allocated(COND)) allocate( COND(0:DIMENSION_M))
+      IF(.NOT.allocated(DIFF)) allocate( DIFF(0:DIMENSION_M))
+      IF(.NOT.allocated(GRAN_DISS)) allocate( GRAN_DISS(0:DIMENSION_M))
+
+      VISC = .FALSE.
+      COND = .FALSE.
+      DIFF = .FALSE.
+      GRAN_DISS = .FALSE.
+
+      IF(.NOT.allocated(DRAGCOEF)) &
+         allocate( DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M))
+      IF(.NOT.allocated(HEAT_TR)) &
+         allocate( HEAT_TR(0:DIMENSION_M,0:DIMENSION_M))
+
       DRAGCOEF = .FALSE.
-
-      allocate( HEAT_TR(0:DIMENSION_M,0:DIMENSION_M))
       HEAT_TR = .FALSE.
-
 
 ! Coefficients for gas phase parameters.
 !```````````````````````````````````````````````````````````````````````

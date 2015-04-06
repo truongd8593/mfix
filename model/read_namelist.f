@@ -6,7 +6,7 @@
 !     Purpose: Read in the NAMELIST variables                          !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE READ_NAMELIST(POST)
+      SUBROUTINE READ_NAMELIST(READ_ACTION)
 
       USE param
       USE param1
@@ -55,9 +55,8 @@
 
 ! Dummy Arguments:
 !------------------------------------------------------------------------//
-!  This routine is called from: 0 -  mfix; 1 - post_mfix
-      INTEGER :: POST
-
+! Specify how much of the input to process.
+      INTEGER, INTENT(IN) :: READ_ACTION
 
 ! Local Variables:
 !------------------------------------------------------------------------//
@@ -83,6 +82,15 @@
       CHARACTER(len=256) :: STRING
       INTEGER :: IOS, II
 
+! Flags restricting what data from the mfix.dat to process
+      LOGICAL :: READ_LOCKED, READ_FULL
+
+! Local Parameters:
+!---------------------------------------------------------------------//
+      INTEGER, PARAMETER :: READ_MFIX = 0
+      INTEGER, PARAMETER :: READ_POST = 1
+      INTEGER, PARAMETER :: READ_INIT = 2
+
 ! External Functions
 !---------------------------------------------------------------------//
 ! Returns integer if data past column MAXCOL.
@@ -92,15 +100,6 @@
 ! Blank line function
       LOGICAL, EXTERNAL :: BLANK_LINE
 
-! External namelist files:
-!---------------------------------------------------------------------//
-      INCLUDE 'usrnlst.inc'
-      INCLUDE 'namelist.inc'
-      INCLUDE 'des/desnamelist.inc'
-      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
-      INCLUDE 'qmomk/qmomknamelist.inc'
-
-
 
       E = UNDEFINED
       RXN_FLAG = .FALSE.
@@ -108,6 +107,17 @@
       NO_OF_RXNS = 0
       LINE_NO = 0
 
+      SELECT CASE(READ_ACTION)
+      CASE(READ_MFIX)
+         READ_LOCKED = .TRUE.
+         READ_FULL = .TRUE.
+      CASE(READ_POST)
+         READ_LOCKED = .TRUE.
+         READ_FULL = .FALSE.
+      CASE(READ_INIT)
+         READ_LOCKED = .FALSE.
+         READ_FULL = .TRUE.
+      END SELECT
 
 ! Open the mfix.dat file. Report errors if the file is not located or
 ! there is difficulties opening it.
@@ -136,8 +146,6 @@
       READ_LP: DO
          READ (UNIT_DAT,"(A)",IOSTAT=IOS) LINE_STRING
          IF(IOS < 0) EXIT READ_LP
-         IF(IOS > 0) THEN
-         ENDIF
 
          LINE_NO = LINE_NO + 1
 
@@ -184,20 +192,51 @@
 
       RETURN
 
-CONTAINS
+      CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Subroutine: SET_KEYWORD(ERROR)                                       !
+! Author: P. Nicoletti                                Date: 25-NOV-91  !
+!                                                                      !
+! Purpose: Process LINE_STRING for MFIX keyword data.                  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE SET_KEYWORD(ERROR)
+
+      IMPLICIT NONE
+
+      LOGICAL, INTENT(OUT) ::ERROR
 
 
-! returns true if there is an error
-  SUBROUTINE SET_KEYWORD(ERROR)
 
-    IMPLICIT NONE
+! External namelist files:
+!---------------------------------------------------------------------//
+      INCLUDE 'namelists/run_control.inc'
+      INCLUDE 'namelists/physical_params.inc'
+      INCLUDE 'namelists/numerical_params.inc'
+      INCLUDE 'namelists/geometry.inc'
+      INCLUDE 'namelists/gas_phase.inc'
+      INCLUDE 'namelists/solids_phase.inc'
+      INCLUDE 'namelists/tfm_solids.inc'
+      INCLUDE 'namelists/initial_conditions.inc'
+      INCLUDE 'namelists/boundary_conditions.inc'
+      INCLUDE 'namelists/internal_surfaces.inc'
+      INCLUDE 'namelists/point_sources.inc'
+      INCLUDE 'namelists/output_control.inc'
+      INCLUDE 'namelists/usr_hooks.inc'
+      INCLUDE 'namelists/chem_equations.inc'
+      INCLUDE 'namelists/dmp_batch_control.inc'
+      INCLUDE 'des/desnamelist.inc'
+      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
+      INCLUDE 'qmomk/qmomknamelist.inc'
+      INCLUDE 'namelists/legacy.inc'
+      INCLUDE 'usrnlst.inc'
 
-    LOGICAL, INTENT(OUT) ::ERROR
-
-    ERROR = .FALSE.
+      ERROR = .FALSE.
 
 ! Make upper case all except species names
-    if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
+      if(index(LINE_STRING,'SPECIES_NAME') == 0 .AND. &
          index(LINE_STRING,'species_name') == 0 .AND. &
          index(LINE_STRING,'Species_Name') == 0 .AND. &
          index(LINE_STRING,'SPECIES_g') == 0 .AND.    &
@@ -208,54 +247,246 @@ CONTAINS
          index(LINE_STRING,'species_s') == 0)         &
          CALL MAKE_UPPER_CASE (LINE_STRING, LINE_LEN)
 
-    CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
-    CALL REMOVE_PAR_BLANKS(LINE_STRING)
+      CALL REPLACE_TAB (LINE_STRING, LINE_LEN)
+      CALL REMOVE_PAR_BLANKS(LINE_STRING)
 
 ! Complete arithmetic operations and expand line
-    CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG)
+      CALL PARSE_LINE (LINE_STRING, LINE_LEN, RXN_FLAG, READ_FLAG)
 
 ! Write the current line to a scratch file
 ! and read the scratch file in NAMELIST format
-    IF(.NOT.READ_FLAG) RETURN
+      IF(.NOT.READ_FLAG) RETURN
 
-! Standard model input parameters.
-    STRING=''; STRING = '&INPUT_DATA '//&
+
+! Run control keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&RUN_CONTROL_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=RUN_CONTROL_LOCKED,  IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&RUN_CONTROL_UNLOCKED '//&
          trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-    READ(STRING, NML=INPUT_DATA, IOSTAT=IOS)
-    IF(IOS == 0)  RETURN
+      READ(STRING, NML=RUN_CONTROL_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Physcial parameter keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&PHYSICAL_PARAM_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=PHYSICAL_PARAM_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&PHYSICAL_PARAM_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=PHYSICAL_PARAM_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Numerical parameter keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&NUMERICAL_PARAM_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=NUMERICAL_PARAM_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&NUMERICAL_PARAM_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=NUMERICAL_PARAM_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Geometry and discretization keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&GEOMETRY_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=GEOMETRY_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&GEOMETRY_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=GEOMETRY_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Gas phase keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&GAS_PHASE_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=GAS_PHASE_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&GAS_PHASE_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=GAS_PHASE_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Solidss phase keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&SOLIDS_PHASE_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=SOLIDS_PHASE_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&SOLIDS_PHASE_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=SOLIDS_PHASE_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Two-fluid solids keywords
+      STRING=''; STRING = '&TFM_SOLIDS_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=TFM_SOLIDS_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Initial condtion keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&INITIAL_CONDITIONS_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=INITIAL_CONDITIONS_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&INITIAL_CONDITIONS_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=INITIAL_CONDITIONS_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Boundary condition keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&BOUNDARY_CONDITIONS_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=BOUNDARY_CONDITIONS_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&BOUNDARY_CONDITIONS_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=BOUNDARY_CONDITIONS_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Internal surface keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&INTERNAL_SURFACES_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=INTERNAL_SURFACES_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&INTERNAL_SURFACES_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=INTERNAL_SURFACES_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Point source keywords
+      STRING=''; STRING = '&POINT_SOURCES_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=POINT_SOURCES_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Output control keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&OUTPUT_CONTROL_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=OUTPUT_CONTROL_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&OUTPUT_CONTROL_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=OUTPUT_CONTROL_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! User hook keywords
+      STRING=''; STRING = '&USER_HOOKS_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=USER_HOOKS_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Chemical equation keywords
+      STRING=''; STRING = '&CHEM_EQUATIONS_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=CHEM_EQUATIONS_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! DMP and Batch Queue control keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&DMP_BATCH_CONTROL_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=DMP_BATCH_CONTROL_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
+
+      STRING=''; STRING = '&DMP_BATCH_CONTROL_UNLOCKED '//&
+         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+      READ(STRING, NML=DMP_BATCH_CONTROL_UNLOCKED, IOSTAT=IOS)
+      IF(IOS == 0)  RETURN
+
+
+! Legacy keywords
+      IF(READ_LOCKED) THEN
+         STRING=''; STRING = '&LEGACY_LOCKED '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=LEGACY_LOCKED, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+
+      ENDIF
 
 ! Stop processing keyword inputs if runing POST_MFIX
-    IF(POST == 1) RETURN
+       IF(.NOT.READ_FULL) RETURN
+
+
+      IF(READ_LOCKED) THEN
 
 ! Discrete Element model input parameters.
-    STRING=''; STRING = '&DES_INPUT_DATA '//&
-         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-    READ(STRING, NML=DES_INPUT_DATA, IOSTAT=IOS)
-    IF(IOS == 0)  RETURN
+         STRING=''; STRING = '&DES_INPUT_DATA '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=DES_INPUT_DATA, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+
 
 ! User defined input parameters.
-    STRING=''; STRING = '&USR_INPUT_DATA '//&
-         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-    READ(STRING, NML=USR_INPUT_DATA, IOSTAT=IOS)
-    IF(IOS == 0)  RETURN
+         STRING=''; STRING = '&USR_INPUT_DATA '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=USR_INPUT_DATA, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+
 
 ! Cartesian grid cut-cell input parameters.
-    STRING=''; STRING = '&CARTESIAN_GRID_INPUT_DATA '//&
-         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-    READ(STRING, NML=CARTESIAN_GRID_INPUT_DATA, IOSTAT=IOS)
-    IF(IOS == 0)  RETURN
+         STRING=''; STRING = '&CARTESIAN_GRID_INPUT_DATA '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=CARTESIAN_GRID_INPUT_DATA, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+
 
 ! QMOMK input parameters.
-    STRING=''; STRING = '&QMOMK_INPUT_DATA '//&
-         trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
-    READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
-    IF(IOS == 0)  RETURN
+         STRING=''; STRING = '&QMOMK_INPUT_DATA '//&
+            trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'
+         READ(STRING, NML=QMOMK_INPUT_DATA, IOSTAT=IOS)
+         IF(IOS == 0)  RETURN
+      ENDIF
 
-    ERROR = .TRUE.
+      IF(READ_LOCKED) ERROR = .TRUE.
 
-    RETURN
-
-  END SUBROUTINE SET_KEYWORD
+      RETURN
+      END SUBROUTINE SET_KEYWORD
 
 END SUBROUTINE READ_NAMELIST
 

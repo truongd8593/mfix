@@ -168,18 +168,23 @@
       ENDIF
 
 
-! detect whether the run is stalled :  every 5 iterations check whether
-! the total residual has decreased
-      IF (DETECT_STALL) THEN
-         IF (MOD(NIT,5) == 0) THEN
-            IF (NIT > 10) THEN
-               IF (SUM5_RESID <= SUM) THEN
-                  MUSTIT = 2                     !stalled
+! Every 5 iterations detect whether the run is stalled by checking
+! that the total residual has decreased.
+      IF(DETECT_STALL .AND. MOD(NIT,5) == 0) THEN
+         IF(NIT > 10) THEN
+            IF(SUM5_RESID <= SUM) THEN
+! The run is stalled. Reduce the time step.
+               IF(.NOT.PERSISTENT_MODE) THEN
+                  MUSTIT = 2
+                  RETURN
+! Forces the max number of iterations for DT=DT_MIN
+               ELSEIF(DT > DT_MIN) THEN
+                  MUSTIT = 2
                   RETURN
                ENDIF
             ENDIF
-            SUM5_RESID = SUM
          ENDIF
+         SUM5_RESID = SUM
       ENDIF
 
 ! total residual
