@@ -1,68 +1,82 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: ADJUST_DT(IER, NIT)                                    C
-!  Purpose: Automatically adjust time step                             C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: FEB-10-97  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!                                                                      C
-!  Variables modified:
-!                                                                      C
-!  Local variables: NONE                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: ADJUST_DT(IER, NIT)                                    !
+!  Author: M. Syamlal                                 Date: FEB-10-97  !
+!                                                                      !
+!  Purpose: Automatically adjust time step.                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       LOGICAL FUNCTION ADJUST_DT (IER, NIT)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE compar
-      USE mpi_utility
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! User defined type of run: new or restart
+      use run, only: RUN_TYPE
+! User defined aximum number of iterations
+      use leqsol, only: MAX_NIT
+! User defined: min, max DT and adjustment factor
+      use run, only: DT_MIN, DT_MAX, DT_FAC
+! Flag: Use stored DT value for advancing TIME
+      use run, only: USE_DT_PREV
+! Flag: 2nd order time implementation
+      use run, only: CN_ON
+! Flag: Continue to run at DT_MIN
+      use run, only: PERSISTENT_MODE
+! The current number of time steps (value at restart).
+      use run, only: NSTEP, NSTEPRST
+! Current DT (1/DT) and direction of last change (+/-)
+      use run, only: DT, oDT, DT_DIR
+
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, ONE, UNDEFINED
+
+
+! Module proceedures:
+!---------------------------------------------------------------------//
+      use error_manager
 
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER IER, NIT
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-      INTEGER, PARAMETER :: STEPS_MIN = 5
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      DOUBLE PRECISION :: NITOS_NEW
-      CHARACTER(LEN=70), DIMENSION(1) :: LINE
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-!-----------------------------------------------
-!
-!
-!//  only do this routine if the root processor
-!//SP
-!     if (myPE.ne.PE_IO) return
 
-      ADJUST_DT = .FALSE.                     !No need to iterate again
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Integer flag: 0=Good, 100=initialize, otherwise bad.
+      INTEGER, INTENT(IN) :: IER
+! Number of iterations for current time step
+      INTEGER, INTENT(IN) :: NIT
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Number of steps in between DT adjustments.
+      INTEGER, PARAMETER :: STEPS_MIN = 5
+! Number of time steps since last DT adjustment
+      INTEGER, SAVE :: STEPS_TOT=0
+! number of iterations since last DT adjustment
+      INTEGER, SAVE :: NIT_TOT=0
+! Iterations per second for last dt
+      DOUBLE PRECISION, SAVE :: NIToS=0.0
+! Current number of iterations per second
+      DOUBLE PRECISION :: NITOS_NEW
+! Flag to half/double the current time step
+      LOGICAL :: CN_ADJUST_DT
+!......................................................................!
+
+
+! Initialize the function result.
+      ADJUST_DT = .FALSE.
+      USE_DT_PREV = .FALSE.
+
+! Steady-state simulation.
       IF (DT==UNDEFINED .OR. DT<ZERO) RETURN
 
-      use_DT_prev = .FALSE.  ! when false use current dt to advance time.
+! Local flag for adjusting the time step for CN implementation.
+      CN_ADJUST_DT = CN_ON .AND. ((RUN_TYPE=='NEW' .AND. NSTEP>1) .OR. &
+         (RUN_TYPE/='NEW' .AND. NSTEP >= (NSTEPRST+1)))
 
 
-!     Initialize
+! Initialize first call from time march.
       IF (IER == 100) THEN
          DT_DIR = -1
          STEPS_TOT = 0
@@ -73,12 +87,11 @@
 !---------------------------------------------------------------------//
       ELSE IF(IER == 0) THEN
 
-!AE TIME 041601: Set back the timestep to original size which was
-! halved previously for 2nd order accurate time implementation.
-         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 2.D0*DT
+! Set back the timestep to original size which was halved previously for
+! 2nd order accurate time implementation.
+         IF(CN_ADJUST_DT) DT = 2.0D0*DT
 
+! Calculate a new DT every STEPS_MIN time steps.
          IF(STEPS_TOT >= STEPS_MIN) THEN
             NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT)
             IF (NITOS_NEW > NITOS) DT_DIR = DT_DIR*(-1)
@@ -86,100 +99,71 @@
             NITOS = NITOS_NEW
             NIT_TOT = 0
             IF (DT_DIR > 0) THEN
-               DT = MIN(DT_MAX,DT/DT_FAC)
+               IF(NIT < MAX_NIT) DT = MIN(DT_MAX,DT/DT_FAC)
             ELSE
                DT = DT*DT_FAC
+               IF(PERSISTENT_MODE) DT = max(DT, DT_MIN)
             ENDIF
-! in case IER = 0 and DT is modified, use DT_prev to advance time
-           use_DT_prev = .TRUE.
-            IF (FULL_LOG.and.myPE.eq.PE_IO) &
-               WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS)
+
+! DT was modified. Use the stored DT should be used to update TIME.
+            USE_DT_PREV = .TRUE.
+
+! Write the convergence stats to the screen/log file.
+            WRITE(ERR_MSG,"('DT=',A,3x,'NIT/s=',A)")  &
+               trim(iVal(DT)), trim(iVal(nint(NITOS)))
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
          ELSE
             STEPS_TOT = STEPS_TOT + 1
             NIT_TOT = NIT_TOT + NIT
          ENDIF
 ! No need to iterate again
          ADJUST_DT = .FALSE.
-
-!AE TIME 041601: Cut the timestep into half for 2nd order accurate
-! time implementation.
-         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 0.5D0*DT
+! Cut the timestep into half for 2nd order accurate time implementation.
+         IF(CN_ADJUST_DT) DT = 0.5d0*DT
 
 ! Iterate failed to converge.
 !---------------------------------------------------------------------//
       ELSE
-!AE TIME 041601: Set back the timestep to original size which was
-! halved previously for 2nd order accurate time implementation
-         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 2.D0*DT
 
-! The step size has decreased to the minimum.
-         IF (DT < DT_MIN) THEN
-            IF(AUTO_RESTART) THEN
-               LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart'
-              ELSE
-                 LINE(1) = 'DT < DT_MIN.  Recovery not possible!'
-              ENDIF
-            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1)
-            CALL WRITE_ERROR ('ADJUST_DT', LINE, 1)
-!           CALL MFIX_EXIT(myPE)
+! Reset the timestep to original size which was halved previously for
+! 2nd order accurate time implementation.
+         IF(CN_ADJUST_DT) DT = 2.0d0*DT
 
-! The time step cannot be reduced the step size is fixed.
-         ELSE IF (DT_FAC >= ONE) THEN
-            LINE(1) = 'DT_FAC >= 1.  Recovery not possible!'
-            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1)
-            CALL WRITE_ERROR ('ADJUST_DT', LINE, 1)
-            CALL MFIX_EXIT(myPE)
-         ELSE
+! Reset counters.
+         DT_DIR = -1
+         STEPS_TOT = 0
+         NITOS = 0.
+         NIT_TOT = 0
 
 ! Reduce the step size.
-            DT_DIR = -1
-            STEPS_TOT = 0
-            NITOS = 0.
-            NIT_TOT = 0
-            DT = DT*DT_FAC
+         DT = DT*DT_FAC
 
-            IF (FULL_LOG) THEN
-               IF(myPE.eq.PE_IO) then
-                  WRITE (*, '(12X,A,G12.5,9X,A)') &
-                     ' Dt=', DT, ' Recovered            :-)'
-               ENDIF
-               CALL START_LOG
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G12.5,9X,A)') &
-                  ' Dt=', DT, ' Recovered            :-)'
-               CALL END_LOG
-            ENDIF
+! The step size has decreased to the minimum.
+         IF (DT > DT_MIN) THEN
+
+            WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G11.5,' :-)')") DT
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
             CALL RESET_NEW
+
 ! Iterate again with new dt
             ADJUST_DT = .TRUE.
 
+! Cut the timestep for 2nd order accurate time implementation.
+            IF(CN_ADJUST_DT) DT = 0.5d0*DT
 
-!AE TIME 041601: Cut the timestep into half for 2nd order accurate
-! time implementation.
-            IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-               (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP>=(NSTEPRST+1)))&
-                 DT = 0.5D0*DT
+! Set the return flag stop iterating.
+         ELSE
+
+! Prevent DT from dropping below DT_MIN.
+            IF(PERSISTENT_MODE) DT = max(DT, DT_MIN)
+            ADJUST_DT = .FALSE.
          ENDIF
-
-! Get courant numbers and max p_star for the diverged iteration.
-!        call get_stats(IER)
-
       ENDIF
 
-!AIKEDEBUG Get the min. Courant number displayed.
-!      call get_stats(IER)
-
+! Update ONE/DT variable.
       ODT = ONE/DT
 
-      call bcast (dt,root)
-      call bcast (odt,root)
-!
       RETURN
       END FUNCTION ADJUST_DT
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 400 Added mpi_utility module and other global reduction (bcast) calls

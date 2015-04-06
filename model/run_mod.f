@@ -126,6 +126,9 @@
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
 
+! If .TRUE. force time-step when NIT=MAX_NIT and DT=DT_MIN
+      LOGICAL :: PERSISTENT_MODE
+
 ! If .TRUE. solve population balance  equations
       LOGICAL :: Call_DQMOM
 
@@ -261,18 +264,15 @@
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
 
+! If. .TRUE. code will respond during runtime
+      LOGICAL :: INTERACTIVE_MODE
+
+! If .TRUE. code will automatically restart for DT < DT_MIN
+      LOGICAL :: REINITIALIZING = .FALSE.
+
 ! parameters for dynamically adjusting time step
 ! +1 -> increase dt; -1 decrease dt
       INTEGER :: DT_dir
-
-! number of steps since last adjustment
-      INTEGER :: STEPS_tot
-
-! number of iterations since last adjustment
-      INTEGER :: NIT_tot
-
-! iterations per second for last dt
-      DOUBLE PRECISION :: NITos
 
 ! Maximum Time step.
       DOUBLE PRECISION :: DT_MAX

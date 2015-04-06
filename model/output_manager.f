@@ -7,7 +7,7 @@
 !  was done to simplify the time_march code.                           !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE OUTPUT_MANAGER(BATCHQ_END, FINISHED)
+      SUBROUTINE OUTPUT_MANAGER(EXIT_SIGNAL, FINISHED)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -46,7 +46,7 @@
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Flag that the the user specified batch time (plus buffer) is met.
-      LOGICAL, INTENT(IN) :: BATCHQ_END
+      LOGICAL, INTENT(IN) :: EXIT_SIGNAL
 ! Flag that a steady state case is completed.
       LOGICAL, INTENT(IN) :: FINISHED
 
@@ -79,7 +79,7 @@
       WALL_START = WALL_TIME()
 
 ! Write restart file, if needed
-      IF(CHECK_TIME(RES_TIME) .OR. BATCHQ_END) THEN
+      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
 
          RES_TIME = NEXT_TIME(RES_DT)
          CALL WRITE_RES1
