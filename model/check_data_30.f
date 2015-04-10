@@ -345,6 +345,8 @@
       use functions, only: FUNIJK
       use functions, only: WALL_AT
 
+      use param1, only: UNDEFINED
+
       IMPLICIT NONE
 
 ! Local variables:
@@ -372,6 +374,11 @@
  4000 FORMAT('Time = ',G12.5,/'Warning: The sum of mass fractions ',   &
       'is not equal to one.')
 
+! Initialize the counters
+      COUNT = 0
+      MAX_VAL = -UNDEFINED
+      MIN_VAL =  UNDEFINED
+
 ! Collect stats on species across the domain.
       DO K = KSTART2, KEND2
       DO J = JSTART2, JEND2
@@ -384,7 +391,8 @@
                IF (lSUM < MIN_VAL(0)) THEN
                   MIN_VAL(0) = lSUM
                   MIN_LOC(0) = IJK
-               ELSEIF (lSUM > MAX_VAL(0)) THEN
+               ENDIF
+               IF (lSUM > MAX_VAL(0)) THEN
                   MAX_VAL(0) = lSUM
                   MAX_LOC(0) = IJK
                ENDIF
@@ -418,7 +426,8 @@
                      IF(lSUM < MIN_VAL(M)) THEN
                         MIN_VAL(M) = lSUM
                         MIN_LOC(M) = IJK
-                     ELSE IF (lSUM > MAX_VAL(M)) THEN
+                     ENDIF
+                     IF (lSUM > MAX_VAL(M)) THEN
                         MAX_VAL(M) = lSUM
                         MAX_LOC(M) = IJK
                      ENDIF
@@ -458,7 +467,8 @@
 
 
  4100 FORMAT(//'Statistics of sum of gas species mass fraction',/      &
-         1X,'Minimum sum of X_g=',G12.5,/1X,'Maximum sum of X_g=',G12.5)
+         1X,'Minimum sum of X_g=',G12.5,/1X,'Maximum sum of X_g=',     &
+         G12.5,2/,3x,'Sum of X_g',T20,'No of Cells  Distribution')
 
       IF(REPORT_SPECIES(0)) THEN
          lSUM = SUM(COUNT(0,:))
@@ -469,14 +479,16 @@
       ENDIF
 
 
- 4200 FORMAT(//'Statistics of sum of solids phase ',I2,' species ',&
-         'mass fractions',/1X,'Minimum sum of X_g=',G12.5,/1X,&
-         'Maximum sum of X_g=',G12.5)
+ 4200 FORMAT(//'Statistics of sum of solids phase ',I2,' species ',    &
+         'mass fractions',/1X,'Minimum sum of X_s=',G12.5,/1X,         &
+         'Maximum sum of X_s=',G12.5,2/,3x,'Sum of ',A,T20,'No of ',   &
+         'Cells',2x,'Distribution')
 
       DO M=1,SMAX
          IF(REPORT_SPECIES(M)) THEN
             lSUM = SUM(COUNT(M,:))
-            WRITE(ERR_MSG,4200) M,  MIN_VAL(M), MAX_VAL(M)
+            WRITE(ERR_MSG,4200) M,  MIN_VAL(M), MAX_VAL(M), &
+               trim(iVAR('X_s',M))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             WRITE(ERR_MSG,4999) (COUNT(M,L),DBLE(COUNT(M,L))/lSUM,L=1,9)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
@@ -486,7 +498,7 @@
       WRITE(ERR_MSG,"(/'End of report.')")
       CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
 
- 4999 FORMAT(/3x,'Sum of X_x',T20,'No of Cells  Distribution',/ &
+ 4999 FORMAT(                                    &
          1X,'<0.9            ',T20,I9,T33,G12.5,/&
          1X,' 0.9    - 0.99  ',T20,I9,T33,G12.5,/&
          1X,' 0.99   - 0.999 ',T20,I9,T33,G12.5,/&
