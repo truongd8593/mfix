@@ -408,7 +408,8 @@
       use run, only: ENERGY_EQ
 ! Flag: Solve species equations
       use run, only: SPECIES_EQ
-
+! FLag: Reinitializing the code
+      use run, only: REINITIALIZING
 ! Flag: Database for phase X was read for species Y
       use rxns, only: rDatabase
 ! Solids phase species database names.
@@ -487,7 +488,7 @@
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
          EEQ_CPS = (ENERGY_EQ .AND. C_PS0(M) == UNDEFINED)
-         IF(EEQ_CPS)THEN
+         IF(EEQ_CPS .AND. .NOT.REINITIALIZING)THEN
             WRITE(ERR_MSG,2000)
             CALL FLUSH_ERR_MSG
          ENDIF
@@ -505,7 +506,7 @@
             ENDIF
          ENDDO
 
-         IF(SEQ_MWs) THEN
+         IF(SEQ_MWs .AND. .NOT.REINITIALIZING) THEN
             WRITE(ERR_MSG, 2001) M
             CALL FLUSH_ERR_MSG
          ENDIF
@@ -519,10 +520,12 @@
 ! Initialize flag indicating the database was read for a species.
          rDatabase(M,:) = .FALSE.
 
-         IF(EEQ_CPS .OR. SEQ_MWs) THEN
+         IF(EEQ_CPS .OR. SEQ_MWs)THEN
 
-            WRITE(ERR_MSG, 3000) M
-            CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+            IF(.NOT.REINITIALIZING) THEN
+               WRITE(ERR_MSG, 3000) M
+               CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+            ENDIF
 
  3000 FORMAT('Message 3000: Searching thermochemical databases for ',  &
          'solids phase',I3,/'species data.',/'  ')
@@ -538,8 +541,10 @@
                      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                   ENDIF
 ! Update the log files.
-                  WRITE(ERR_MSG, 3001) N, trim(SPECIES_s(M,N))
-                  CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+                  IF(.NOT.REINITIALIZING) THEN
+                     WRITE(ERR_MSG, 3001) N, trim(SPECIES_s(M,N))
+                     CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+                  ENDIF
                   3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
                   CALL READ_DATABASE(M, N, SPECIES_s(M,N), MW_S(M,N))
@@ -547,7 +552,7 @@
                   rDatabase(M,N) = .TRUE.
                ENDIF
             ENDDO ! Loop over species
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+            IF(.NOT.REINITIALIZING) CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
          ENDIF
 
 ! Verify that no additional species information was given.

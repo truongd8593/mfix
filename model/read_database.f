@@ -29,7 +29,7 @@
       USE discretelement
       USE des_rxns
       USE read_thermochemical, only: read_therm, calc_ICpoR
-
+      use run, only: REINITIALIZING
       use error_manager
 
       IMPLICIT NONE
@@ -149,12 +149,14 @@
 
          ErrorFlag = .TRUE.
          IF(IER == 0) THEN
-            WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            IF(.NOT.REINITIALIZING)THEN
+               WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
             if(testCP) CALL writeCp(lM, lN, lName, lMW)
             ErrorFlag = .FALSE.
             EXIT DB_LP
-        ELSE
+        ELSEIF(.NOT.REINITIALIZING) THEN
             WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Not found.'
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
         ENDIF

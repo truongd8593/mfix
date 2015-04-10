@@ -280,6 +280,8 @@
       USE compar, only: numPEs
 ! Flag: My rank reports errors.
       use funits, only: DMP_LOG
+! Flag: The log had to be opened.
+      use funits, only: LOG_WAS_CLOSED
 
       IMPLICIT NONE
 
@@ -306,6 +308,9 @@
 ! Return to the caller if this rank is already connect to a log file.
       INQUIRE(UNIT=UNIT_LOG, OPENED=DO_NOTHING)
       IF(DO_NOTHING) RETURN
+
+! Flag that the log had to be opened.
+      LOG_WAS_CLOSED = .TRUE.
 
 ! Verify the length of user-provided name.
       LOGFILE = ''
@@ -334,3 +339,47 @@
 
       RETURN
       END SUBROUTINE OPEN_PE_LOG
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: CLOSE_PE_LOG                                           !
+!  Author: P. Nicoletti                               Date: 12-DEC-91  !
+!                                                                      !
+!  Purpose: Every rank open a .LOG file for domain specific errors.    !
+!  This routine should only be invoked before writing to the log and   !
+!  exiting.                                                            !
+!                                                                      !
+!  This routine only opens files when the following are met:           !
+!    (1) MFIX is run in DMP parallel (MPI)                             !
+!    (2) ENABLE_DMP_LOG is not set in the mfix.dat file.               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CLOSE_PE_LOG
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! File unit for LOG files.
+      USE funits, only: UNIT_LOG
+! Flag: My rank reports errors.
+      use funits, only: DMP_LOG
+! Flag: The log had to be opened.
+      use funits, only: LOG_WAS_CLOSED
+
+      IMPLICIT NONE
+
+!......................................................................!
+
+
+! The log had to be opened for global error.
+      IF(LOG_WAS_CLOSED) THEN
+! Reset the flag.
+         LOG_WAS_CLOSED = .FALSE.
+! Disable output from this rank and close connection to LOG.
+         DMP_LOG = .FALSE.
+! Return to the caller if this rank is already connect to a log file.
+         CLOSE(UNIT_LOG)
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CLOSE_PE_LOG

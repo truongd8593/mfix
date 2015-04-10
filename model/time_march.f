@@ -51,7 +51,7 @@
       USE vtp
 
       use output, only: RES_DT, NLOG
-      use interactive, only: INTERACT
+      use interactive, only: INTERACT, INIT_INTERACTIVE_MODE
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -75,7 +75,11 @@
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
-      LOGICAL :: EXIT_SIGNAL
+
+! Flag to save results and cleanly exit.
+      LOGICAL :: EXIT_SIGNAL = .FALSE.
+! Flag to cleanly exit without saving results.
+      LOGICAL :: ABORT_SIGNAL = .FALSE.
 
 !-----------------------------------------------
 ! External functions
@@ -96,10 +100,12 @@
       DNCHECK = 1
       CPU_IO  = ZERO
       NIT_TOTAL = 0
-      EXIT_SIGNAL = .FALSE.
-
 
       CALL INIT_OUTPUT_VARS
+
+
+      IF(INTERACTIVE_MODE) CALL INIT_INTERACTIVE_MODE
+
 
 ! Parse residual strings
       CALL PARSE_RESID_STRING (IER)
@@ -132,8 +138,6 @@
       CALL ZERO_ARRAY (E_N, IER)
       CALL ZERO_ARRAY (E_T, IER)
 
-! Initialize adjust_ur
-      dummy = ADJUST_DT(100, 0)
 
 ! calculate shear velocities if periodic shear BCs are used
       IF(SHEAR) CALL CAL_D(V_sh)
@@ -170,7 +174,10 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
 
-      IF(INTERACTIVE_MODE) CALL INTERACT(EXIT_SIGNAL)
+      IF(INTERACTIVE_MODE) THEN
+         CALL INTERACT(EXIT_SIGNAL, ABORT_SIGNAL)
+         IF(ABORT_SIGNAL) RETURN
+      ENDIF
 
 ! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END
@@ -272,20 +279,29 @@
          CALL ITERATE (IER, NIT)
       ENDDO
 
+! A single to interupt the time step was sent for interactive mode.
+      IF(INTERUPT) GOTO 100
 
       IF(DT < DT_MIN) THEN
-         IF(TIME <= RES_DT .AND. AUTO_RESTART) THEN
-            WRITE(ERR_MSG,1000)
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            AUTO_RESTART = .FALSE.
-         ENDIF
+         AUTO_RESTART = .FALSE.
+         IF(AUTO_RESTART) THEN
+            IF(TIME <= RES_DT) THEN
 
  1000 FORMAT('Automatic restart not possible as Total Time < RES_DT')
 
-         IF(AUTO_RESTART) THEN
-            AUTOMATIC_RESTART = .TRUE.
+               WRITE(ERR_MSG,1000)
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               AUTOMATIC_RESTART = .TRUE.
+            ENDIF
             RETURN
+
          ELSE
+
+ 1100 FORMAT('DT < DT_MIN.  Recovery not possible!')
+
+            WRITE(ERR_MSG,1100)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
             IF(WRITE_DASHBOARD) THEN
                RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
                CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')

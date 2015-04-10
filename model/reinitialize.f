@@ -23,6 +23,9 @@
       IER = 0
       REINITIALIZING = .TRUE.
 
+! Clean up reaction data if needed
+      CALL REINIT_RXN_DATA
+
 ! Read in the namelist variables from the ascii input file.
       CALL READ_NAMELIST(2)
 
@@ -158,3 +161,82 @@
 
       RETURN
       END SUBROUTINE REINITIALIZE0
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: REINIT_RXN_DATA                                         !
+!  Purpose: read and verify input data, open files                     !
+!                                                                      !
+!  Author: P. Nicoletti                               Date: 04-DEC-91  !
+!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE REINIT_RXN_DATA
+
+      use parse, only: RXN_NAME, DES_RXN_NAME
+      use parse, only: RXN_CHEM_EQ, DES_RXN_CHEM_EQ
+      use parse, only: usrDH, DES_usrDH
+      use parse, only: usrfDH, DES_usrfDH
+
+      use rxns, only: NO_OF_RXNS
+      use rxns, only: REACTION
+      use des_rxns, only: NO_OF_DES_RXNS
+      use des_rxns, only: DES_REACTION
+
+      use run, only: REINITIALIZING
+
+      use error_manager
+
+      IMPLICIT NONE
+
+      INTEGER :: LC
+
+! Reaction Names: Allocate/Initialize
+      IF(allocated( RXN_NAME )) deallocate(RXN_NAME)
+! Chemcial Equations: Allocate/Initialize
+      IF(allocated( RXN_CHEM_EQ )) deallocate(RXN_CHEM_EQ)
+! User defined heat of reaction: Allocate/Initialize
+      IF(allocated( usrDH ))deallocate(usrDH)
+! User defined heat of reaction partitions: Allocate/Initialize
+      IF(allocated( usrfDH )) deallocate(usrfDH)
+
+
+      IF(allocated(Reaction)) THEN
+         DO LC=1,NO_OF_RXNS
+            IF(allocated(Reaction(LC)%HoR)) &
+               deallocate(Reaction(LC)%HoR)
+            IF(allocated(Reaction(LC)%rPhase)) &
+               deallocate(Reaction(LC)%rPhase)
+            IF(allocated(Reaction(LC)%Species)) &
+               deallocate(Reaction(LC)%Species)
+         ENDDO
+         deallocate(Reaction)
+      ENDIF
+      NO_OF_RXNS = 0
+
+! Reaction Names: Allocate/Initialize
+      IF(allocated( DES_RXN_NAME )) deallocate(DES_RXN_NAME)
+! Chemcial Equations: Allocate/Initialize
+      IF(allocated( DES_RXN_CHEM_EQ )) deallocate(DES_RXN_CHEM_EQ)
+! User defined heat of reaction: Allocate/Initialize
+      IF(allocated( DES_usrDH )) deallocate( DES_usrDH)
+! User defined heat of reaction partitions: Allocate/Initialize
+      IF(Allocated( DES_usrfDH )) deallocate( DES_usrfDH)
+
+      IF(allocated(DES_Reaction)) THEN
+         DO LC=1,NO_OF_DES_RXNS
+            IF(allocated(DES_Reaction(LC)%HoR)) &
+               deallocate(DES_Reaction(LC)%HoR)
+            IF(allocated(DES_Reaction(LC)%rPhase)) &
+               deallocate(DES_Reaction(LC)%rPhase)
+            IF(allocated(DES_Reaction(LC)%Species)) &
+               deallocate(DES_Reaction(LC)%Species)
+         ENDDO
+         deallocate(DES_Reaction)
+      ENDIF
+      NO_OF_DES_RXNS = 0
+
+
+      RETURN
+      END SUBROUTINE REINIT_RXN_DATA
