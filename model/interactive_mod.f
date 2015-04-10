@@ -1,14 +1,19 @@
       MODULE INTERACTIVE
 
       use param1, only: UNDEFINED_I, UNDEFINED
+      use error_manager
 
       IMPLICIT NONE
 
       PUBLIC :: INTERACT
+      PUBLIC :: CHECK_INTERACT_ITER
+      PUBLIC :: CHECK_TIMESTEP_FAIL_RATE
+      PUBLIC :: INIT_INTERACTIVE_MODE
+
       PRIVATE
 
+! Actions supported in interactive mode.
 !----------------------------------------------------------------------!
-
       INTEGER :: ACTION
 ! Do nothing (release interactive control)
       INTEGER, PARAMETER :: NULL_ENUM=0
@@ -16,27 +21,41 @@
       INTEGER, PARAMETER :: WAIT_ENUM=1
 ! Exit the simulation cleanly.
       INTEGER, PARAMETER :: EXIT_ENUM=2
+! Exit the simulation without save current state.
+      INTEGER, PARAMETER :: ABORT_ENUM=3
+
 ! Take N time-steps then wait for next command.
-      INTEGER, PARAMETER :: NSTEPS_ENUM=3
-! Take N time-steps then wait for next command.
-      INTEGER, PARAMETER :: WAIT_AT_ENUM=4
-
-
-      INTEGER, PARAMETER :: WRITE_RES_ENUM=10
-
+      INTEGER, PARAMETER :: NSTEPS_ENUM=10
+! Run to a user-specified time then wait for next command.
+      INTEGER, PARAMETER :: WAIT_AT_ENUM=11
+! Wite a RES file
+      INTEGER, PARAMETER :: WRITE_RES_ENUM=12
 ! Refresh the simulation by processing the mfix.dat file.
       INTEGER, PARAMETER :: REINITIALIZE_ENUM=100
 
+
+! Generic variables for interactive communication.
+!---------------------------------------------------------------------//
+      INTEGER, PARAMETER :: ACT_DIMN=50
 ! Integer input for action items
-      INTEGER :: ACTION_INT
+      INTEGER :: ACTION_INT(ACT_DIMN)
 ! Float input for action items
-      DOUBLE PRECISION :: ACTION_DP
+      DOUBLE PRECISION :: ACTION_DP(ACT_DIMN)
+! String input for action items
+      CHARACTER(LEN=256), DIMENSION(ACT_DIMN) :: ACTION_STR
 
 
+! Internal data storage variables.
+!---------------------------------------------------------------------//
       INTEGER :: USER_DEFINED_STEPS = UNDEFINED_I
+      INTEGER :: USER_DEFINED_NITS = UNDEFINED_I
       INTEGER :: STEP_CNT
 
       DOUBLE PRECISION :: USER_WAIT_AT_TIME = UNDEFINED
+
+      INTEGER :: HISTORY_POS
+      DOUBLE PRECISION :: FAILRATE, MAX_FAILRATE
+      INTEGER, ALLOCATABLE :: TIMESTEP_HISTORY(:)
 
       CONTAINS
 !----------------------------------------------------------------------!
@@ -47,7 +66,7 @@
 !  Purpose: Interact with MFIX via text files at runtime.              !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE INTERACT(pEXIT_SIGNAL)
+      SUBROUTINE INTERACT(pEXIT_SIGNAL, pABORT_SIGNAL)
 
       use compar, only: myPE, PE_IO
 
@@ -57,6 +76,9 @@
       LOGICAL :: INTERACTING
 
       LOGICAL, INTENT(INOUT) :: pEXIT_SIGNAL
+      LOGICAL, INTENT(OUT) :: pABORT_SIGNAL
+
+      pABORT_SIGNAL = .FALSE.
 
       CALL CHECK_INTERACT_SIGNAL(INTERACTING)
 
@@ -73,6 +95,10 @@
 
          CASE(EXIT_ENUM)
             pEXIT_SIGNAL = .TRUE.
+            INTERACTING = .FALSE.
+
+         CASE(ABORT_ENUM)
+            pABORT_SIGNAL = .TRUE.
             INTERACTING = .FALSE.
 
          CASE(NSTEPS_ENUM)
@@ -110,7 +136,7 @@
 
       use compar, only: myPE, PE_IO
       use param1, only: UNDEFINED_I, UNDEFINED
-
+      use run, only: INTERUPT
       use run, only: TIME, DT
 
       use mpi_utility
@@ -120,9 +146,15 @@
 ! Root checks if there is there is information from the user.
       IF(myPE == PE_IO) THEN
 
-         INQUIRE(file="interact.dat", exist=pINTERACT)
+         IF(INTERUPT) THEN
+            pINTERACT = .TRUE.
+            INTERUPT = .FALSE.
+            CALL INTERACTIVE_WAIT
+         ELSE
+            INQUIRE(file="interact.dat", exist=pINTERACT)
+         ENDIF
 
-         IF(USER_DEFINED_STEPS /= UNDEFINED_I) THEN
+         IF(.NOT.pINTERACT .AND. USER_DEFINED_STEPS /= UNDEFINED_I) THEN
             STEP_CNT = STEP_CNT + 1
             IF(STEP_CNT >= USER_DEFINED_STEPS) THEN
                STEP_CNT = UNDEFINED_I
@@ -132,7 +164,7 @@
             ENDIF
          ENDIF
 
-         IF(USER_WAIT_AT_TIME /= UNDEFINED) THEN
+         IF(.NOT.pINTERACT .AND. USER_WAIT_AT_TIME /= UNDEFINED) THEN
             IF(TIME + 0.1d0*DT >= USER_WAIT_AT_TIME) THEN
                USER_WAIT_AT_TIME = UNDEFINED
                pINTERACT = .TRUE.
@@ -140,12 +172,105 @@
             ENDIF
          ENDIF
 
+
       ENDIF
 
       CALL BCAST(pINTERACT, PE_IO)
 
       RETURN
       END SUBROUTINE CHECK_INTERACT_SIGNAL
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: CHECK_INTERACTIVE_NSTEPS                                !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_INTERACT_ITER(iMUSTIT)
+
+      use run, only: INTERACTIVE_NITS
+      use compar, only: myPE, PE_IO
+
+      INTEGER, INTENT(OUT) :: iMUSTIT
+      LOGICAL :: INTERACTING
+
+      INTERACTIVE_NITS = INTERACTIVE_NITS - 1
+
+      IF(INTERACTIVE_NITS > 0) THEN
+         iMUSTIT = 1
+         RETURN
+      ENDIF
+
+      iMUSTIT = 0
+      INTERACTIVE_NITS = UNDEFINED_I
+
+      CALL INTERACTIVE_WAIT
+
+      INTERACTING = .TRUE.
+      DO WHILE(INTERACTING)
+
+         CALL GET_INTERACTIVE_DATA
+
+         SELECT CASE(ACTION)
+         CASE(NULL_ENUM)
+            INTERACTING = .FALSE.
+
+         CASE(WAIT_ENUM)
+            INTERACTING = .TRUE.
+
+         CASE(NSTEPS_ENUM)
+            CALL CHECK_INTERACTIVE_NSTEPS(INTERACTING)
+            IF(INTERACTIVE_NITS /= UNDEFINED_I) iMUSTIT = 1
+
+         CASE(WAIT_AT_ENUM)
+            CALL CHECK_INTERACTIVE_WAIT_AT(INTERACTING)
+
+         CASE DEFAULT
+            CALL UNAVAILABLE_INTERACTIVE_CMD
+            INTERACTING = .TRUE.
+
+         END SELECT
+
+         IF(INTERACTING) CALL INTERACTIVE_WAIT
+      ENDDO
+
+
+      RETURN
+      END SUBROUTINE CHECK_INTERACT_ITER
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: CHECK_INTERACTIVE_WAIT_AT                               !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_INTERACTIVE_WAIT_AT(pINTERACT)
+
+      use compar, only: myPE, PE_IO
+
+      LOGICAL, INTENT(OUT) :: pINTERACT
+
+      IF(ACTION_DP(1) == UNDEFINED_I) THEN
+         IF(myPE == PE_IO) THEN
+            WRITE(*,*) ' '
+            WRITE(*,*) ' ACTION: WAIT_AT is not fully specified.'
+            WRITE(*,*) ' I will wait until you fix it...'
+            WRITE(*,*) ' '
+         ENDIF
+         pINTERACT = .TRUE.
+      ELSE
+         USER_WAIT_AT_TIME = ACTION_DP(1)
+         pINTERACT = .FALSE.
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CHECK_INTERACTIVE_WAIT_AT
+
 
 
 !----------------------------------------------------------------------!
@@ -173,6 +298,29 @@
 
 !----------------------------------------------------------------------!
 !                                                                      !
+!  Subroutine: UNKNOWN_AVAILABLE_CMD                                   !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE UNAVAILABLE_INTERACTIVE_CMD
+
+      use compar, only: myPE, PE_IO
+
+      IF(myPE == PE_IO) THEN
+         WRITE(*,*) ' '
+         WRITE(*,*) ' '
+         WRITE(*,*) ' Unavailable interactive command.'
+         WRITE(*,*) ' Enter a different command.'
+         WRITE(*,*) ' '
+      ENDIF
+
+      RETURN
+      END SUBROUTINE UNAVAILABLE_INTERACTIVE_CMD
+
+!----------------------------------------------------------------------!
+!                                                                      !
 !  Subroutine: CHECK_INTERACTIVE_NSTEPS                                !
 !  Author: J.Musser                                   Date: APR-15-02  !
 !                                                                      !
@@ -181,11 +329,12 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_INTERACTIVE_NSTEPS(pINTERACT)
 
+      use run, only: INTERACTIVE_NITS
       use compar, only: myPE, PE_IO
 
       LOGICAL, INTENT(OUT) :: pINTERACT
 
-      IF(ACTION_INT == UNDEFINED_I) THEN
+      IF(ACTION_INT(1) == UNDEFINED_I) THEN
          IF(myPE == PE_IO) THEN
             WRITE(*,*) ' '
             WRITE(*,*) ' ACTION: NSTEPS is not fully specified.'
@@ -194,43 +343,29 @@
          ENDIF
          pINTERACT = .TRUE.
       ELSE
-         USER_DEFINED_STEPS = ACTION_INT
+         USER_DEFINED_STEPS = ACTION_INT(1)
          STEP_CNT = 0
          pINTERACT = .FALSE.
       ENDIF
 
-      RETURN
-      END SUBROUTINE CHECK_INTERACTIVE_NSTEPS
+      IF(USER_DEFINED_STEPS > 0) RETURN
 
-!----------------------------------------------------------------------!
-!                                                                      !
-!  Subroutine: CHECK_INTERACTIVE_WAIT_AT                               !
-!  Author: J.Musser                                   Date: APR-15-02  !
-!                                                                      !
-!  Purpose: Interact with MFIX via text files at runtime.              !
-!                                                                      !
-!----------------------------------------------------------------------!
-      SUBROUTINE CHECK_INTERACTIVE_WAIT_AT(pINTERACT)
-
-      use compar, only: myPE, PE_IO
-
-      LOGICAL, INTENT(OUT) :: pINTERACT
-
-      IF(ACTION_DP == UNDEFINED_I) THEN
-         IF(myPE == PE_IO) THEN
+      IF(ACTION_INT(2) == UNDEFINED_I) THEN
+         IF(myPE == PE_IO)THEN
             WRITE(*,*) ' '
-            WRITE(*,*) ' ACTION: WAIT_AT is not fully specified.'
+            WRITE(*,*) ' ACTION: NSTEPS=0 is not fully specified.'
             WRITE(*,*) ' I will wait until you fix it...'
             WRITE(*,*) ' '
          ENDIF
-         pINTERACT = .TRUE.
+         pINTERACT=.TRUE.
       ELSE
-         USER_WAIT_AT_TIME = ACTION_DP
-         pINTERACT = .FALSE.
+         INTERACTIVE_NITS = ACTION_INT(2)
       ENDIF
 
+
       RETURN
-      END SUBROUTINE CHECK_INTERACTIVE_WAIT_AT
+      END SUBROUTINE CHECK_INTERACTIVE_NSTEPS
+
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -353,6 +488,73 @@
 
       RETURN
       END SUBROUTINE INTERACTIVE_WAIT
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: UPDATE_FAILURE_RATE                                     !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_TIMESTEP_FAIL_RATE(IER)
+
+      use run, only: INTERUPT
+      use run, only: TIMESTEP_FAIL_RATE
+
+      INTEGER, INTENT(IN) :: IER
+      INTEGER :: WINDOW, NEW, OLD
+
+      WINDOW = TIMESTEP_FAIL_RATE(2)
+
+      NEW = merge(0,1, IER == 0)
+      OLD = TIMESTEP_HISTORY(HISTORY_POS)
+
+      TIMESTEP_HISTORY(HISTORY_POS) = NEW
+      HISTORY_POS = MOD(HISTORY_POS, WINDOW) + 1
+
+      FAILRATE = FAILRATE + DBLE(NEW-OLD)/DBLE(WINDOW)
+
+      IF(FAILRATE >= MAX_FAILRATE) THEN
+         INTERUPT = .TRUE.
+         FAILRATE = 0.0
+         WRITE(ERR_MSG, 1000) trim(iVal(TIMESTEP_FAIL_RATE(1))), &
+            trim(iVal(TIMESTEP_FAIL_RATE(2)))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+      ENDIF
+
+ 1000 FORMAT(2/,70('*'),/'DT reduced ',A,' times over the last ',A,1x, &
+         'steps. The current time step was',/'reset. User action is ', &
+         'required.')
+
+      RETURN
+      END SUBROUTINE CHECK_TIMESTEP_FAIL_RATE
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: INIT_INTERACTIVE_MODE                                   !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE INIT_INTERACTIVE_MODE
+
+      use run, only: TIMESTEP_FAIL_RATE
+
+      ALLOCATE(TIMESTEP_HISTORY(TIMESTEP_FAIL_RATE(2)))
+      TIMESTEP_HISTORY = 0
+
+      HISTORY_POS = 1
+      FAILRATE = 0.0
+      MAX_FAILRATE = dble(TIMESTEP_FAIL_RATE(1)) / &
+         dble(TIMESTEP_FAIL_RATE(2))
+
+      RETURN
+      END SUBROUTINE INIT_INTERACTIVE_MODE
+
 
 
       END MODULE INTERACTIVE

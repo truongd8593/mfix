@@ -22,11 +22,14 @@
       use run, only: CN_ON
 ! Flag: Continue to run at DT_MIN
       use run, only: PERSISTENT_MODE
+! Flag: Running in interactive mode
+      use run, only: INTERACTIVE_MODE
+! Flag: Interupt the code in interactive mode
+      use run, only: INTERUPT
 ! The current number of time steps (value at restart).
       use run, only: NSTEP, NSTEPRST
 ! Current DT (1/DT) and direction of last change (+/-)
       use run, only: DT, oDT, DT_DIR
-
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -35,6 +38,8 @@
 
 ! Module proceedures:
 !---------------------------------------------------------------------//
+! Routine to break successive time step reductions.
+      use interactive, only: CHECK_TIMESTEP_FAIL_RATE
       use error_manager
 
       IMPLICIT NONE
@@ -42,7 +47,7 @@
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Integer flag: 0=Good, 100=initialize, otherwise bad.
-      INTEGER, INTENT(IN) :: IER
+      INTEGER, INTENT(INOUT) :: IER
 ! Number of iterations for current time step
       INTEGER, INTENT(IN) :: NIT
 
@@ -63,7 +68,6 @@
       LOGICAL :: CN_ADJUST_DT
 !......................................................................!
 
-
 ! Initialize the function result.
       ADJUST_DT = .FALSE.
       USE_DT_PREV = .FALSE.
@@ -75,17 +79,14 @@
       CN_ADJUST_DT = CN_ON .AND. ((RUN_TYPE=='NEW' .AND. NSTEP>1) .OR. &
          (RUN_TYPE/='NEW' .AND. NSTEP >= (NSTEPRST+1)))
 
-
-! Initialize first call from time march.
-      IF (IER == 100) THEN
-         DT_DIR = -1
-         STEPS_TOT = 0
-         NITOS = 0.
-         NIT_TOT = 0
+! Stop sequential DT reductions by reseting the time-step and returning
+! control waiting for new user input.
+      IF(INTERACTIVE_MODE) &
+         CALL CHECK_TIMESTEP_FAIL_RATE(IER)
 
 ! Iterate successfully converged.
 !---------------------------------------------------------------------//
-      ELSE IF(IER == 0) THEN
+      IF(IER == 0) THEN
 
 ! Set back the timestep to original size which was halved previously for
 ! 2nd order accurate time implementation.
@@ -126,12 +127,14 @@
 !---------------------------------------------------------------------//
       ELSE
 
+! Clear the error flag.
+         IER = 0
+
 ! Reset the timestep to original size which was halved previously for
 ! 2nd order accurate time implementation.
          IF(CN_ADJUST_DT) DT = 2.0d0*DT
 
 ! Reset counters.
-         DT_DIR = -1
          STEPS_TOT = 0
          NITOS = 0.
          NIT_TOT = 0
@@ -142,8 +145,10 @@
 ! The step size has decreased to the minimum.
          IF (DT > DT_MIN) THEN
 
-            WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G11.5,' :-)')") DT
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            IF(.NOT.INTERUPT) THEN
+               WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G11.5,' :-)')") DT
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
 
             CALL RESET_NEW
 
@@ -160,10 +165,14 @@
             IF(PERSISTENT_MODE) DT = max(DT, DT_MIN)
             ADJUST_DT = .FALSE.
          ENDIF
+
       ENDIF
 
 ! Update ONE/DT variable.
       ODT = ONE/DT
+
+! Break out of the iterate loop if INTERUPT signal is given
+      IF(INTERUPT) ADJUST_DT = .FALSE.
 
       RETURN
       END FUNCTION ADJUST_DT

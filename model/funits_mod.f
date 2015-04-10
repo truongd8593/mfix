@@ -5,6 +5,9 @@
 ! to write a log file by setting ENABLE_DMP_LOG to .true. in output_mod.f.
       LOGICAL :: DMP_LOG
 
+! Flag indicated that the log was opened globally.
+      LOGICAL :: LOG_WAS_CLOSED = .FALSE.
+
 ! RRATES debug file unit number
       INTEGER, PARAMETER :: UNIT_RRATES = 43
 

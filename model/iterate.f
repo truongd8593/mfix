@@ -62,6 +62,8 @@
       USE stiff_chem, only : STIFF_CHEMISTRY
       USE rxns, only : USE_RRATES, NO_OF_RXNS
       USE mms, only: USE_MMS
+      USE interactive, only: CHECK_INTERACT_ITER
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -496,7 +498,14 @@
 
 ! not converged (mustit = 1, !=0,2 )
 ! ---------------------------------------------------------------->>>
-      IF (NIT < MAX_NIT) THEN
+      IF(INTERACTIVE_MODE .AND. INTERACTIVE_NITS/=UNDEFINED_I) THEN
+         CALL CHECK_INTERACT_ITER(MUSTIT)
+         IF(MUSTIT == 1) THEN
+            GOTO 50
+         ELSE
+            GOTO 1000
+         ENDIF
+      ELSEIF(NIT < MAX_NIT) THEN
          MUSTIT = 0
          GOTO 50
       ENDIF ! continue iterate

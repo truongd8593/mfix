@@ -267,12 +267,23 @@
 ! If. .TRUE. code will respond during runtime
       LOGICAL :: INTERACTIVE_MODE
 
+! Number of interactive iterations.
+      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
+
+! If .TRUE. code will halt at call to interact
+      LOGICAL :: INTERUPT = .FALSE.
+
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: REINITIALIZING = .FALSE.
 
+! Time-step failure rate:
+! 1) Number of failed time steps
+! 2) Observation window
+      INTEGER :: TIMESTEP_FAIL_RATE(2)
+
 ! parameters for dynamically adjusting time step
 ! +1 -> increase dt; -1 decrease dt
-      INTEGER :: DT_dir
+      INTEGER :: DT_dir = -1
 
 ! Maximum Time step.
       DOUBLE PRECISION :: DT_MAX
@@ -305,9 +316,6 @@
       LOGICAL :: REPORT_NEG_DENSITY
 
        common /run_dp/ time      !for Linux
-
-! Flag to invoke the variable solids density model.
-!      LOGICAL          SOLID_RO_V
 
 
 ! Flags indicating variable solids density.

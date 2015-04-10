@@ -165,6 +165,11 @@
          IF(K_EPSILON) RESID_GRP(KE_GRP) = RESID(RESID_ke,0)
       ENDIF
 
+! Flag set in interactive mode to bypass time-step advancement.
+      IF(INTERACTIVE_NITS /= UNDEFINED_I) THEN
+         MUSTIT = 1
+         RETURN
+      ENDIF
 
 ! Every 5 iterations detect whether the run is stalled by checking
 ! that the total residual has decreased.
@@ -177,7 +182,7 @@
                   RETURN
 ! Forces the max number of iterations for DT=DT_MIN
                ELSEIF(DT > DT_MIN) THEN
-                  MUSTIT = 2
+                  MUSTIT = 1
                   RETURN
                ENDIF
             ENDIF
@@ -185,13 +190,13 @@
          SUM5_RESID = SUM
       ENDIF
 
-! total residual
+! Require at least two iterations.
       IF(NIT == 1) THEN
          MUSTIT = 1
          RETURN
       ENDIF
 
-
+! total residual
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
          RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X &
         .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon &
