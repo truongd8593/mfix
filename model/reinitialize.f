@@ -17,9 +17,6 @@
 
       INTEGER :: IER
 
-      WRITE(ERR_MSG,"('Reinitializing.')")
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
       IER = 0
       REINITIALIZING = .TRUE.
 
@@ -34,10 +31,15 @@
       REINITIALIZING = .FALSE.
 
       IF(IER /=0) THEN
-         WRITE(ERR_MSG,"('Reinitialization failed!')")
+         WRITE(ERR_MSG, 2000)
       ELSE
-         WRITE(ERR_MSG,"('Done.')")
+         WRITE(ERR_MSG, 2100)
       ENDIF
+
+ 2000 FORMAT(2/70('*'),/'Reinitialization failed!',/'Correct all ',    &
+         'reported errors and reinitialize again.',/70('*'))
+
+ 2100 FORMAT(2/,70('*'),/'Successfully reinitialized!'/70('*'))
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
@@ -155,6 +157,13 @@
 ! Calculate all the coefficients once before entering the time loop
       CALL INIT_COEFF(IER)
       IF(REINIT_ERROR()) RETURN
+
+! After reinitialization, the field vars should pass these checks too
+      CALL CHECK_DATA_30()
+      IF(REINIT_ERROR()) RETURN
+
+      CALL WRITE_RES0()
+      CALL WRITE_OUT0()
 
 ! Made it here without error.
       pIER = 0

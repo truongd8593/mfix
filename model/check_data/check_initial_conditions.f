@@ -510,7 +510,7 @@
       DO N = 1, NMAX(0)
          IF(IC_X_G(ICV,N) /= UNDEFINED) THEN
             SUM = SUM + IC_X_G(ICV,N)
-         ELSE
+         ELSEIF(BASIC_IC) THEN
             IC_X_G(ICV,N) = ZERO
          ENDIF
       ENDDO
@@ -789,7 +789,7 @@
          DO N = 1, NMAX(M)
             IF(IC_X_S(ICV,M,N) /= UNDEFINED) THEN
                SUM = SUM + IC_X_S(ICV,M,N)
-            ELSE
+            ELSEIF(BASIC_IC) THEN
                IC_X_S(ICV,M,N) = ZERO
             ENDIF
          ENDDO
