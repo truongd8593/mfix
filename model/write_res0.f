@@ -311,7 +311,7 @@
 ! Version 01.12
 ! ------------------------------------------------------------------------
       WRITE (UNIT_RES, REC=NEXT_RECA) P_REF, P_SCALE, UR_FAC, TOL_RESID, DT_MAX&
-         , DT_MIN, DT_FAC, CLOSE_PACKED, GRAVITY, MU_S0
+         , DT_MIN, DT_FAC, CLOSE_PACKED, GRAVITY, MU_S0(1)
       NEXT_RECA = NEXT_RECA + 1
       WRITE (UNIT_RES, REC=NEXT_RECA) LEQ_IT, LEQ_METHOD
       NEXT_RECA = NEXT_RECA + 1

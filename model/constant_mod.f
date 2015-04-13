@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module: constant                                                   C
+!  Module: constant                                                    C
 !  Purpose: Common block containing physical constants and constants   C
 !           used in the numerical technique                            C
 !                                                                      C
@@ -14,20 +14,16 @@
 !    Johnson, P. C., and Jackson, R., "Frictional-collisional          C
 !      constitutive relations for granluar materials, with application C
 !      to plane shearing", JFM, Vol. 176, 1987, pp. 67-93.             C
-!    Garzo, V., Tenneti, S., Subramaniam, S., and Hrenya, C. M.,       C
-!      "Enskog kinetic theory for monodisperse gas-solid flows", JFM,  C
-!      Vol. 712, 2012, pp. 129-168                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       MODULE constant
 
-!-----------------------------------------------
+
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       Use param, only: dim_m, dimension_c
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 ! Packed bed (close packed) void fraction
       DOUBLE PRECISION :: EP_star
@@ -43,7 +39,6 @@
 ! Index to rearrange particles from coarsest to finest for use in
 ! function CALC_ep_star(IJK,IER)
       INTEGER :: M_MAX(DIM_M)
-
 
 ! SWITCH enables us to turn on/off modifications to certain kinetic
 ! theory models for granular solids (i.e. no gas) that have been
@@ -78,9 +73,6 @@
 ! Iddir-Arastoopour.
       LOGICAL, PARAMETER :: SWITCH_IA = .TRUE.
 
-! parameter in the theory of GTSH that is related to length scale
-! of lubrication effects. For details see GTSH, 2012.
-      DOUBLE PRECISION, PARAMETER :: EpM = 0.01d0
 
 ! PHIP = Specularity coefficient associated with particle wall
 ! collisions
@@ -110,57 +102,54 @@
       PARAMETER(Fr = 0.5d0, N_Pc=2d0, D_Pc=5d0, N_Pf=1.03d0, delta=1d-2)
 
 ! Coefficient of restitution
-      DOUBLE PRECISION C_e
+      DOUBLE PRECISION :: C_e
 
 ! (1+C_e)/2.
-      DOUBLE PRECISION eta
+      DOUBLE PRECISION :: eta
 
 ! particle-type dependent rest. coef. for use in GHD theory
-      DOUBLE PRECISION r_p(DIM_M, DIM_M)
+      DOUBLE PRECISION :: r_p(DIM_M, DIM_M)
 
 ! Coeficient of friction
-      DOUBLE PRECISION C_f
+      DOUBLE PRECISION :: C_f
 
 ! Angle of internal friction (degrees)
-      DOUBLE PRECISION Phi
+      DOUBLE PRECISION :: Phi
 
 ! Angle of wall-particle friction (degrees)
-      DOUBLE PRECISION Phi_w
+      DOUBLE PRECISION :: Phi_w
 
-! (k=) Sin(PHI) in Plastic-flow stress formulation
-      DOUBLE PRECISION Sin_Phi
+! (k=) Sin(PHI) in frictional-flow stress formulation
+      DOUBLE PRECISION :: Sin_Phi
 
-! Sin^2(PHI)
-      DOUBLE PRECISION Sin2_Phi
+! Sin^2(PHI) in plastic-flow stress formulation
+      DOUBLE PRECISION :: Sin2_Phi
 
 ! (3-2k^2)/6k^2 in Plastic-flow stress formulation
-      DOUBLE PRECISION F_Phi
+      DOUBLE PRECISION :: F_Phi
 
 ! tan(PHI_w)
-      DOUBLE PRECISION tan_Phi_w
-
-! Default value for characteristic length for turbulence
-      DOUBLE PRECISION L_scale0
-
-! Maximum value of turbulent viscosity
-      DOUBLE PRECISION MU_gmax
+      DOUBLE PRECISION :: tan_Phi_w
 
 ! Excluded volume (Boyle-Massoudi stress tensor)
-      DOUBLE PRECISION V_ex
+      DOUBLE PRECISION :: V_ex
 
 ! Coefficients for calibrating Syamlal-O'Brien drag correlation with
 ! Umf data
-      DOUBLE PRECISION drag_c1, drag_d1
+      DOUBLE PRECISION :: drag_c1, drag_d1
 
 ! success-factor for aggregation and breakage
       DOUBLE PRECISION :: AGGREGATION_EFF
       DOUBLE PRECISION :: BREAKAGE_EFF
 
+! UNIT conversion factor for pressure (Barye to Pa if SI)
+      DOUBLE PRECISION :: to_SI
+
 ! Gravitational acceleration
-      DOUBLE PRECISION GRAVITY, to_SI, GRAVITY_X,GRAVITY_Y, GRAVITY_Z
+      DOUBLE PRECISION :: GRAVITY, GRAVITY_X, GRAVITY_Y, GRAVITY_Z
 
 ! Universal gas constant
-      DOUBLE PRECISION GAS_CONST
+      DOUBLE PRECISION :: GAS_CONST
 
 ! Universal gas constant in cal/mol.K
       DOUBLE PRECISION, PARAMETER :: GAS_CONST_cal = 1.987207D0
@@ -172,12 +161,23 @@
       DOUBLE PRECISION, PARAMETER :: SQRT_Pi = 2.D0*SQRT(ATAN(1.D0))
 
 ! Maximum pressure correction allowed in one iteration
-      DOUBLE PRECISION MAX_DELP
+      DOUBLE PRECISION :: MAX_DELP
 
 ! User defined constants
-      DOUBLE PRECISION C (DIMENSION_C)
+      DOUBLE PRECISION :: C (DIMENSION_C)
 
 ! Names of user defined constants (for output file only)
       CHARACTER(LEN=20) :: C_NAME (DIMENSION_C)
+
+! Move these to turb at some point:
+! Scale factor for gas turbulence length scale
+      DOUBLE PRECISION :: K_scale
+
+! Default value for characteristic length for turbulence
+      DOUBLE PRECISION :: L_scale0
+
+! Maximum value of turbulent viscosity
+      DOUBLE PRECISION :: MU_gmax
+
 
       END MODULE constant

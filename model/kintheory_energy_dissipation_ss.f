@@ -1,6 +1,6 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_IA_ENERGY_DISSIPATION_SS                     C
+!  Subroutine: CALC_IA_ENERGY_DISSIPATION_SS                           C
 !                                                                      C
 !  Purpose: Implement kinetic theory of Iddir & Arastoopour (2005)     C
 !     for calculation of source terms in granular energy equation      C
@@ -8,44 +8,38 @@
 !  Author: Janine E. Galvin, Univeristy of Colorado                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_IA_ENERGY_DISSIPATION_SS(M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE compar
-      USE constant
-      USE fldvar
-      USE functions
-      USE geometry
-      USE indices
-      USE kintheory
-      USE param
-      USE param1
-      USE physprop
-      USE rdf
-      USE run
-      USE toleranc
+!---------------------------------------------------------------------//
+      USE constant, only: pi
+      USE constant, only: C_e
+      USE fldvar, only: ro_s, rop_s, d_p
+      USE fldvar, only: theta_m
+      USE kintheory, only: ed_ss_ip, edt_s_ip
+      USE kintheory, only: edvel_sl_ip, edvel_sm_ip
+      USE physprop, only: mmax
+      USE rdf, only: g_0
+      USE param1, only: zero
+
+      USE functions, only: fluid_at, funlm
+      USE compar, only: ijkstart3, ijkend3
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! Index
-      INTEGER :: IJK, I, J, K
 
+! Local variables
+!---------------------------------------------------------------------//
+! Index
+      INTEGER :: IJK
 ! Solids phase index
       INTEGER :: L
-
 ! Index for storing solids-solids drag coefficients
 ! in the upper triangle of the matrix
       INTEGER :: LM
-
 ! variables for IA theory
       DOUBLE PRECISION :: ED_common_term
       DOUBLE PRECISION :: EDvel_sL, EDvel_sM
@@ -53,13 +47,9 @@
                           D_PL, DPSUMo2
       DOUBLE PRECISION :: Ap_lm, Dp_lm, R1p_lm, R10p_lm, R3p_lm, &
                           R4p_lm, R5p_lm, Bp_lm
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3
-          I = I_OF(IJK)
-          J = J_OF(IJK)
-          K = K_OF(IJK)
-
           IF ( FLUID_AT(IJK) ) THEN
 
              D_PM = D_P(IJK,M)
@@ -190,56 +180,46 @@
 !  Subroutine: CALC_GD_99_ENERGY_DISSIPATION_SS                        C
 !                                                                      C
 !  Purpose: Implement kinetic theory of Garzo & Dufty (1999)           C
-!     for calculation of source terms in granular energy equation      C
+!  for calculation of source terms in granular energy equation         C
 !                                                                      C
 !  Author: Janine E. Galvin                                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE compar
-      USE constant
-      USE fldvar
-      USE fun_avg
-      USE functions
-      USE geometry
-      USE indices
-      USE param
-      USE param1
-      USE physprop
-      USE rdf
-      USE run
-      USE toleranc
-      use kintheory
+!---------------------------------------------------------------------//
+      USE constant, only: pi
+      USE constant, only: C_e
+      USE fldvar, only: rop_s, d_p
+      USE fldvar, only: theta_m, ep_s
+      USE kintheory, only: edt_s_ip, edvel_sm_ip
+      USE rdf, only: g_0
+
+      USE functions, only: fluid_at
+      USE compar, only: ijkstart3, ijkend3
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: IJK, I, J, K
+      INTEGER :: IJK
 ! variables for GD model
-      DOUBLE PRECISION :: press_star, c_star, zeta0_star, nu_gamma_star, &
+      DOUBLE PRECISION :: press_star, c_star, zeta0_star, &
+                          nu_gamma_star, &
                           lambda_num, cd_num, zeta1
       DOUBLE PRECISION :: D_PM, EP_SM
       DOUBLE PRECISION :: nu0, Chi
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3
-          I = I_OF(IJK)
-          J = J_OF(IJK)
-          K = K_OF(IJK)
-
           IF ( FLUID_AT(IJK) ) THEN
 
 ! Note: k_boltz = M_PM
@@ -301,41 +281,40 @@
 !  Subroutine: CALC_GTSH_ENERGY_DISSIPATION_SS                         C
 !                                                                      C
 !  Purpose: Implement kinetic theory of Garzo, Tenneti, Subramaniam    C
-!     Hrenya (2012) for calculation of source terms in granular        C
-!     energy equation                                                  C
+!  Hrenya (2012) for calculation of source terms in granular           C
+!  energy equation                                                     C
 !                                                                      C
 !  Author: Sofiane Benyahia                                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_GTSH_ENERGY_DISSIPATION_SS(M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE compar
-      USE constant
-      USE fldvar
-      USE fun_avg
-      USE functions
-      USE geometry
-      USE indices
-      USE param
-      USE param1
-      USE physprop
-      USE rdf
-      USE run
-      USE toleranc
-      use kintheory
+!---------------------------------------------------------------------//
+      USE constant, only: pi
+      USE constant, only: C_e
+      USE fldvar, only: ep_s
+      USE fldvar, only: ro_g, rop_g
+      USE fldvar, only: ro_s, d_p
+      USE fldvar, only: theta_m
+      USE kintheory, only: edt_s_ip, edvel_sm_ip
+      USE kintheory, only: a2_gtsh, xsi_gtsh
+      USE kintheory, only: kt_rvel
+      USE physprop, only: mu_g 
+      USE rdf, only: g_0
+      USE param1, only: zero, one, small_number
+
+      USE functions, only: fluid_at
+      USE compar, only: ijkstart3, ijkend3
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
       INTEGER :: IJK, I, J, K, IMJK, IJMK, IJKM
 ! variables
@@ -346,44 +325,29 @@
       DOUBLE PRECISION :: zeta_star, mu2_0, mu4_0, mu4_1
       DOUBLE PRECISION :: omega, nu_j, rho_10, rho_11
 
-!-----------------------------------------------
 ! Function subroutines
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION S_star
       DOUBLE PRECISION G_gtsh
-!-----------------------------------------------
-!
-      DO IJK = ijkstart3, ijkend3
-          I = I_OF(IJK)
-          J = J_OF(IJK)
-          K = K_OF(IJK)
-          IMJK = IM_OF(IJK)
-          IJMK = JM_OF(IJK)
-          IJKM = KM_OF(IJK)
+!---------------------------------------------------------------------//
 
-          IF ( FLUID_AT(IJK) ) THEN
+      DO IJK = ijkstart3, ijkend3
+         IF ( FLUID_AT(IJK) ) THEN
 
 ! Local aliases
-             Chi = G_0(IJK,M,M)
-             EP_SM = EP_s(IJK,M)
-             D_PM = D_P(IJK,M)
-             V_p = pi*D_PM**3/6d0
-             n_p = EP_SM/V_p
-             M_p = V_p * ro_s(ijk,m)
+            Chi = G_0(IJK,M,M)
+            EP_SM = EP_s(IJK,M)
+            D_PM = D_P(IJK,M)
+            V_p = pi*D_PM**3/6d0
+            n_p = EP_SM/V_p
+            M_p = V_p * ro_s(ijk,m)
 
-             nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
-
+            nu0 = (96.d0/5.d0)*(EP_SM/D_PM)*DSQRT(Theta_m(IJK,M)/PI)
 
 ! First calculate the Re number (Re_m, Re_T) in eq. 3.1 in GTSH theory
-            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
-            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-            USCM = AVG_X_E(U_S(IMJK,M),U_S(IJK,M),I)
-            VSCM = AVG_Y_N(V_S(IJMK,M),V_S(IJK,M))
-            WSCM = AVG_Z_T(W_S(IJKM,M),W_S(IJK,M))
-            VREL = DSQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
-
-            Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)  ! rop_g = ro_g * (1-phi)
+            VREL = KT_RVEL(IJK, M)
+! Note: rop_g = ro_g * (1-phi)
+            Re_m = D_PM*VREL*ROP_g(ijk)/Mu_g(ijk)
             Re_T = ro_g(ijk)*D_PM*dsqrt(theta_m(ijk,m)) / mu_g(ijk)
 
 ! Now calculate and store xsi (used in many spots) in eq. 8.2 in
@@ -456,8 +420,8 @@
 !  Functions: G_tsh, K_phi, R_d, S_star                                C
 !                                                                      C
 !  Purpose: Implement kinetic theory of Garzo, Tenneti, Subramaniam    C
-!     Hrenya (2012) for calculation of source terms in granular        C
-!     energy equation                                                  C
+!  Hrenya (2012) for calculation of source terms in granular           C
+!  energy equation                                                     C
 !                                                                      C
 !  Author: Sofiane Benyahia                                            C
 !                                                                      C
@@ -466,21 +430,20 @@
 !     Function gamma, eq. (8.1) in GTSH theory                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       DOUBLE PRECISION FUNCTION G_gtsh (EP_SM, Chi, IJK, M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE physprop
-      USE fldvar
-      USE constant
+!---------------------------------------------------------------------//
+      USE constant, only: pi
+      USE param1, only: one
+      USE physprop, only: mu_g
+      USE fldvar, only: ro_g
+      USE fldvar, only: d_p, theta_m
+      USE kintheory, only: epm
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! solids volume fraction of phase m at ijk
       DOUBLE PRECISION, INTENT(IN) :: EP_SM
 ! radial distribution function of phase M at ijk
@@ -490,16 +453,16 @@
 ! Solids phase index. Note M should be equal to 1 since theory
 ! valid for only mmax = 1.
       INTEGER, INTENT(IN) :: M
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION :: Re_T
       DOUBLE PRECISION :: Rdiss, RdissP
-!-----------------------------------------------
+
 ! Functions
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION :: K_phi
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       if(EP_SM <= 0.1d0) then
          RdissP = one+3d0*dsqrt(EP_SM/2d0)
@@ -528,12 +491,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION K_phi (phi)
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! solids volume fraction
       DOUBLE PRECISION, INTENT(IN) :: phi
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       K_phi = (0.096d0 + 0.142d0*phi**0.212d0) / (1d0-phi)**4.454d0
       K_phi = 0.0d0 ! set to zero for compatibility with GTSH JFM (2012)
@@ -549,12 +512,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION R_d (phi)
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! solids volume fraction
       DOUBLE PRECISION, INTENT(IN) :: phi
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       R_d = 1.0d0  ! this avoids singularity at phi = 0.0
       if((phi > 1d-15) .and. (phi <= 0.4d0)) then
@@ -575,18 +538,18 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION S_star (phi, Chi)
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! solids volume fraction
       DOUBLE PRECISION, INTENT(IN) :: phi
 ! radial distribution function
       DOUBLE PRECISION, INTENT(IN) :: Chi
-!-----------------------------------------------
+
 ! Functions
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION R_d
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       S_star = 1.0d0
       if(phi >= 0.1d0) &

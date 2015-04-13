@@ -1,36 +1,59 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: set_constprop                                           C
-!  Purpose: This routine sets various constant physical properties     C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 12-MAY-97  C
-!                                                                      C
-!  Local variables:                                                    C
+!  Purpose: This routine serves two purposes:                          C
+!    1) initializes various variables everywhere in the domain with    C
+!       a zero value. the real need for this is unclear. undefined     C
+!       may be a better approach...                                    C
+!    2) if defined, sets physical properties to their specified        C
+!       constant value in the fluid domain. cannot set in flow         C
+!       boundaries or later checks will also complain (may be          C
+!       overly strict check)                                           C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SET_CONSTPROP
 
-!-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
       USE param1, only: zero, half, one, undefined
-      USE fldvar
-      USE visc_s
-      USE visc_g
-      USE energy
-      USE geometry
-      USE indices
-      USE physprop
+
+      USE fldvar, only: ro_g
+      USE fldvar, only: ro_s, d_p
+      use fldvar, only: p_s
+
+      USE visc_g, only: mu_gt, lambda_gt, recalc_visc_g
+      USE visc_s, only: mu_s, lambda_s, lambda_s_c
+      USE visc_s, only: ep_star_array
+      USE visc_s, only: ep_g_blend_start, ep_g_blend_end
+
+      USE physprop, only: nmax, mmax, smax
+      USE physprop, only: ro_s0, ro_g0, d_p0
+      USE physprop, only: mu_g0, mu_g, mu_s0
+      USE physprop, only: mw_avg, mw_mix_g
+      USE physprop, only: c_pg0, k_g0, c_pg, k_g, dif_g0, dif_g
+      USE physprop, only: c_ps0, k_s0, c_ps, k_s, dif_s0, dif_s
+      USE physprop, only: cv
+
       USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
       use constant, only: ep_star, l_scale0
-      USE run
+
+      USE run, only: energy_eq, k_epsilon, call_dqmom
+      USE run, only: yu_standish, fedors_landel
+      USE run, only: kt_type_enum, ia_2005, gd_1999, gtsh_2012
+      USE run, only: blending_stress, sigm_blend, tanh_blend
+
       USE drag, only: f_gs, f_ss
-      USE compar
-      use kintheory
+
+      use kintheory, only: mu_sm_ip, mu_sl_ip, xi_sm_ip, xi_sl_ip
+      use kintheory, only: fnu_s_ip, ft_sm_ip, ft_sl_ip
+      use kintheory, only: kth_sl_ip, knu_sm_ip, knu_sl_ip, kvel_s_ip
+      use kintheory, only: ed_ss_ip, edvel_sl_ip, edt_s_ip, edvel_sm_ip
+      use kintheory, only: a2_gtsh, xsi_gtsh
+
       use mms, only: use_mms
-      use functions
+
+      USE compar, only: ijkstart3, ijkend3
+      use functions, only: wall_at, fluid_at
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -41,17 +64,34 @@
       DOUBLE PRECISION :: old_value, DP_TMP(SMAX)
 !-----------------------------------------------
 
-! Initialize transport coefficients to zero everywhere
+! First, initialize certain transport coefficients, physical
+! properties, and other variable types everywhere in the
+! domain to zero. Then, set these to their specified value
+! (if defined) in fluid cells. Some are also set in flow cells.
+! NOTE: DO NOT simply zero existing field variables.
+      RO_g = ZERO
+      MU_g = ZERO
       MU_gt = ZERO
       LAMBDA_GT = ZERO
+      K_g = ZERO
+      C_PG = ZERO
+      MW_MIX_G = zero
+      DIF_g = ZERO
+      F_GS = ZERO
+
+      RO_S = ZERO
+      D_P = zero     ! this is done in init_fvars
       MU_s = ZERO
       LAMBDA_s_c = ZERO
       LAMBDA_s = ZERO
-      K_g = ZERO
+! not defining p_s in flow cells can become a problem for certain
+! cases as gradients in P_s are used (e.g., when a PO is west of a
+! MI...?). Simply assigning it a zero value may not be the best 
+! approach but it is currently used....
+      P_S = ZERO
       K_s = ZERO
-      DIF_g = ZERO
+      C_PS = ZERO
       DIF_S = ZERO
-      F_GS = ZERO
       F_SS = ZERO
 
 ! Set the flag for recalculating gas viscosity.
@@ -76,11 +116,14 @@
          ED_ss_ip = ZERO
          EDvel_sL_ip = ZERO
       ENDIF
-      IF (KT_TYPE_ENUM == IA_2005 .OR. KT_TYPE_ENUM == GD_1999 .OR.  &
+
+      IF (KT_TYPE_ENUM == IA_2005 .OR. &
+          KT_TYPE_ENUM == GD_1999 .OR.  &
           KT_TYPE_ENUM == GTSH_2012) THEN
          EDT_s_ip = ZERO
          EDvel_sM_ip = ZERO
       ENDIF
+
       IF(KT_TYPE_ENUM == GTSH_2012) THEN
          A2_gtsh = ZERO
          xsi_gtsh = zero
@@ -89,39 +132,32 @@
 ! Set specified constant physical properties values
       DO IJK = ijkstart3, ijkend3
 
-! All wall cells: FLAG >= 100
-         IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN
-            RO_G(IJK) = ZERO
-            MU_G(IJK) = ZERO
-            K_G(IJK) = ZERO
-            C_PG(IJK) = ZERO
-            MW_MIX_G(IJK) = ZERO
-         ELSE
+         IF (.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100
             IF (RO_G0 /= UNDEFINED) RO_G(IJK) = RO_G0
             IF (C_PG0 /= UNDEFINED) C_PG(IJK) = C_PG0
             IF (MW_AVG /= UNDEFINED) MW_MIX_G(IJK) = MW_AVG
+         ENDIF
 
-! Strictly fluid cells: FLAG = 1
-            IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
-               IF (MU_G0 /= UNDEFINED) THEN
-                  MU_G(IJK) = MU_G0
-                  MU_GT(IJK) = MU_G0
-                  LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
-               ENDIF
-               IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
-               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
-            ELSE
-! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
-! initialize transport coefficients to zero in inflow/outflow cells
-               IF (MU_G0 /= UNDEFINED) THEN
-                  MU_G(IJK) = ZERO
-                  MU_GT(IJK) = ZERO
-                  LAMBDA_GT(IJK) = ZERO
-               ENDIF
-               IF (K_G0 /= UNDEFINED) K_G(IJK) = ZERO
-               IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = ZERO
+         IF (FLUID_AT(IJK)) THEN
+! Strictly Fluid cells: FLAG = 1
+            IF (MU_G0 /= UNDEFINED) THEN
+               MU_G(IJK) = MU_G0
+               MU_GT(IJK) = MU_G0
+               LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
             ENDIF
+            IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
+            IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
+         ENDIF
+
+         IF (USE_MMS) THEN
+            IF (MU_G0 /= UNDEFINED) THEN
+               MU_G(IJK) = MU_G0
+               MU_GT(IJK) = MU_G0
+               LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
+            ENDIF
+            IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
+            IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
          ENDIF
 
       ENDDO
@@ -129,46 +165,31 @@
 
       DO M = 1, MMAX
          DO IJK = ijkstart3, ijkend3
-! All wall cells: FLAG >= 100
-            IF (WALL_AT(IJK) .AND. .NOT.USE_MMS) THEN
-               P_S(IJK,M) = ZERO
-               MU_S(IJK,M) = ZERO
-               LAMBDA_S(IJK,M) = ZERO
-               ALPHA_S(IJK,M) = ZERO
-               K_S(IJK,M) = ZERO
-               C_PS(IJK,M) = ZERO
-               D_p(IJK,M) = ZERO
-               RO_S(IJK,M) = ZERO
-            ELSE
+            IF(.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100
                IF (RO_S0(M) /= UNDEFINED) RO_S(IJK,M) = RO_S0(M)
                IF (C_PS0(M) /= UNDEFINED) C_PS(IJK,M) = C_PS0(M)
                IF (D_P0(M) /= UNDEFINED) D_P(IJK,M) = D_P0(M)
-
-! Strictly fluid cells: FLAG = 1
-               IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
-                  IF (MU_S0 /= UNDEFINED) THEN
-                     P_S(IJK,M) = ZERO
-                     MU_S(IJK,M) = MU_S0
-                     LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
-                     ALPHA_S(IJK,M) = ZERO
-                  ENDIF
-                  IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
-                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
-               ELSE
-! ONLY inflow/outflow cells: FLAG .NE. 1 and FLAG < 100
-! initialize transport coefficients to zero in inflow/outflow cells
-                  IF (MU_S0 /= UNDEFINED) THEN
-                     P_S(IJK,M) = ZERO
-                     MU_S(IJK,M) = ZERO
-                     LAMBDA_S(IJK,M) = ZERO
-                     ALPHA_S(IJK,M) = ZERO
-                  ENDIF
-                  IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = ZERO
-                  IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = ZERO
-               ENDIF
             ENDIF
 
+            IF (FLUID_AT(IJK)) THEN
+! Strictly fluid cells: FLAG = 1 
+               IF (MU_S0(M) /= UNDEFINED) THEN
+                  MU_S(IJK,M) = MU_S0(M)
+                  LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+               ENDIF
+               IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
+               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+            ENDIF
+
+            IF (USE_MMS) THEN
+               IF (MU_S0(M) /= UNDEFINED) THEN
+                  MU_S(IJK,M) = MU_S0(M)
+                  LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+               ENDIF
+               IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
+               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+            ENDIF
 
 ! set ep_star_array to user input ep_star in all cells.
             EP_star_array(ijk) = ep_star
@@ -186,11 +207,6 @@
 
          ENDDO   ! end loop over ijk
       ENDDO   ! end loop over MMAX
-
-
-      IF (RO_G0 == ZERO .AND. MMAX > 0) THEN
-         IF(allocated(F_GS)) F_GS = ZERO
-      ENDIF
 
 
 ! Initializing parameters needed if a correlation is used to compute

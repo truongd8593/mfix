@@ -761,15 +761,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Function: F_HW                                                      C
-!                                                                      C
 !  Purpose: Function for hw                                            C
-!                                                                      C
-!  Author: K. Agrawal & A. Srivastava, Princeton Univ. Date: 24-JAN-98 C
-!  Reviewer:                                           Date:           C
-!                                                                      C
-!  Modified: Sofiane Benyahia, Fluent Inc.             Date: 02-FEB-05 C
-!  Purpose: Include conductivity defined by Simonin and Ahmadi         C
-!           Also included Jenkins small frictional limit               C
 !                                                                      C
 !  Literature/Document References:                                     C
 !     See calc_mu_s.f for references on kinetic theory models          C
@@ -809,6 +801,7 @@
       USE param
       USE param1
       USE constant
+      USE kintheory, only: epm
       USE physprop
       USE run
       USE fldvar

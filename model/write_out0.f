@@ -323,10 +323,13 @@
 
          IF(TFM_SOLIDS) THEN
             WRITE (UNIT_OUT, 1430) EP_STAR
-            IF(MU_S0 /= UNDEFINED) WRITE(UNIT_OUT, 1431) MU_S0
+            DO M = 1,MMAX
+               IF(MU_S0(M) /= UNDEFINED) &
+                  WRITE(UNIT_OUT, 1431) M, MU_S0(M)
+            ENDDO
          ENDIF
  1430 FORMAT(/7X,'Void fraction at maximum packing (EP_star) = ',G12.5)
- 1431 FORMAT(7X,'Constant solids viscosity (MU_s0) = ',G12.5)
+ 1431 FORMAT(7X,'Constant solids viscosity (MU_s0(',I2,') = ',G12.5)
 
 
          IF(DEM_SOLIDS .OR. PIC_SOLIDS) THEN

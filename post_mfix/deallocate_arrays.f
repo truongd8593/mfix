@@ -169,7 +169,7 @@
       Deallocate(  VOL_W  )
 
       Deallocate(  IJK_ARRAY_OF, DEAD_CELL_AT  )
-      Deallocate(  ro_s, ro_so, dgA_s  )
+      Deallocate(  ro_s, ro_so )
 
 
 !indices
@@ -303,7 +303,6 @@
       Deallocate(  EP_star_array )
       Deallocate(  EP_g_blend_start )
       Deallocate(  EP_g_blend_end )
-      Deallocate(  VREL_array )
       Deallocate(  I2_devD_s )
       Deallocate(  TrM_s )
       Deallocate(  TrDM_s )

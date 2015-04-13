@@ -67,8 +67,5 @@
 ! Trace of (D_s)(M_s)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: trDM_s
 
-! Relative velocity array
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VREL_array
-
 
             END MODULE visc_s

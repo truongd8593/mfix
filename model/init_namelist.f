@@ -1342,7 +1342,8 @@
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
-!  <description>Schaeffer frictional stress tensor formulation. </description>
+!  <description>
+!    Schaeffer frictional stress tensor formulation. </description>
 !  <dependent keyword="PHI" value="DEFINED"/>
 !  <valid value=".TRUE." note="Use the Schaeffer model."/>
 !  <valid value=".FALSE." note="Do not use the Schaeffer model."/>
@@ -1351,8 +1352,8 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Blend the Schaeffer stresses with that of algebraic kinetic theory
-!    around EP_STAR.
+!    Blend the Schaeffer stresses with the stresses resulting from
+!    algebraic kinetic kinetic theory around the value of EP_STAR.
 !  </description>
       BLENDING_STRESS = .FALSE.
 !</keyword>
@@ -1559,11 +1560,17 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Specified constant granular viscosity [g/(cm.s) in CGS]. If this
-!    value is specified, then the kinetic theory calculation is turned
-!    off and P_S = 0 and LAMBDA_S = -2/3 MU_S0.
+!    Specified constant viscosity. If any value is specified then:
+!    1) kinetic theory calculations (granular_energy) are off, which
+!       means zero granular pressure contribution (P_S = 0),
+!    2) frictional/plastic calculations are off, which means zero
+!       frictional viscosity contributions, however, a plastic pressure
+!       term is still invoked (P_STAR), and
+!    3) LAMBDA_S = -2/3 MU_S0.
 !  </description>
-      MU_S0 = UNDEFINED
+!  <conflict keyword="GRANULAR_ENERGY" value=".TRUE."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      MU_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">

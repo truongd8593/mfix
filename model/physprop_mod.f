@@ -1,26 +1,19 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: physprop                                               C
+!  Module: physprop                                                    C
 !  Purpose: Common block containing physical property data             C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: dd-mmm-yy  C
 !  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE physprop
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       Use param, only: dim_m, dim_n, dim_n_g, dim_n_s
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
-
-! Scale factor for gas turbulence length scale
-      DOUBLE PRECISION :: K_scale
 
 ! Number of solids phases
       INTEGER :: MMAX
@@ -53,7 +46,7 @@
       DOUBLE PRECISION :: SHAPE_FACTOR(DIM_M)
 
 ! Specified constant solids viscosity
-      DOUBLE PRECISION MU_s0
+      DOUBLE PRECISION MU_s0(DIM_M)
 
 ! Flag indicates whether the phase becomes close-packed at ep_star
       LOGICAL :: CLOSE_PACKED (DIM_M)

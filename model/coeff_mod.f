@@ -150,9 +150,12 @@
 ! Variable solids density.
          if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
 
-! Solids viscosity. CALC_MU_s must be invoked every iteration, even if
-! MU_s0 /= UNDEFINED, so that initialization of global variables occurs.
-         VISC(1:MMAX) = .TRUE.
+! Solids viscosity. 
+         DO M = 1, MMAX
+            IF (MU_s0(M) == UNDEFINED) THEN
+               VISC(M) = .TRUE.
+            ENDIF
+         ENDDO
 
 ! Specific heat and thermal conductivity.
          if(ENERGY_EQ) THEN

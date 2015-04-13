@@ -61,7 +61,6 @@
 !drag
       Allocate(  F_gs(DIMENSION_3, DIMENSION_M) )
       Allocate(  F_ss(DIMENSION_3, 0:DIMENSION_LM) )
-      Allocate(  dgA_s(DIMENSION_3, DIMENSION_M) )
 
 !Off diagonal friction coefficient in HYS drag relation
       IF(DRAG_TYPE_ENUM.EQ.HYS) &
@@ -221,7 +220,6 @@
         Allocate(  K_12 (DIMENSION_3) )
         Allocate(  Tau_12 (DIMENSION_3) )
         Allocate(  Tau_1 (DIMENSION_3) )
-        Allocate(  Cos_theta (DIMENSION_3) )
       ENDIF
 
 !tau_g
@@ -275,7 +273,6 @@
       Allocate(  EP_star_array (DIMENSION_3) )
       Allocate(  EP_g_blend_start (DIMENSION_3) )
       Allocate(  EP_g_blend_end (DIMENSION_3) )
-      Allocate(  VREL_array (DIMENSION_3, DIMENSION_M) )
       Allocate(  trD_s(DIMENSION_3, DIMENSION_M) )
       Allocate(  I2_devD_s (DIMENSION_3) )
       Allocate(  TrM_s (DIMENSION_3) )

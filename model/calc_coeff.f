@@ -179,10 +179,11 @@
 
       RETURN
  1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&
-         ' Species balance equations are being solved; but chemical',/,      &
-         ' reactions are not specified in mfix.dat or in rrates.f.',/,       &
-         ' Copy the file mfix/model/rrates.f into the run directory ',/,     &
-         ' and remove the initial section that returns IER=1.',/1X,70('*')/)
+         ' Species balance equations are being solved; but chemical',/, &
+         ' reactions are not specified in mfix.dat or in rrates.f.',/,  &
+         ' Copy the file mfix/model/rrates.f into the run directory ',/, &
+         ' and remove the initial section that returns IER=1.',/&
+         1X,70('*')/)
 
       END SUBROUTINE CALC_RRATE
 

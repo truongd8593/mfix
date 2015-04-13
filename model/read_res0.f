@@ -877,7 +877,7 @@
            READ (UNIT_RES, REC=NEXT_RECA) P_REF, &
               P_SCALE, UR_FAC, TOL_RESID, DT_MAX, &
               DT_MIN, DT_FAC, CLOSE_PACKED, GRAVITY, &
-              MU_S0
+              MU_S0(1)
             NEXT_RECA = NEXT_RECA + 1
         ENDIF
         call bcast(P_REF,PE_IO)        ! BCAST0d
@@ -889,7 +889,7 @@
         call bcast(DT_FAC,PE_IO)       ! BCAST0d
         call bcast(CLOSE_PACKED,PE_IO) ! BCAST0l
         call bcast(GRAVITY,PE_IO)      ! BCAST0d
-        call bcast(MU_S0,PE_IO)        ! BCAST0d
+        call bcast(MU_S0(1),PE_IO)        ! BCAST0d
 
         IF (myPE == PE_IO) THEN
            READ (UNIT_RES, REC=NEXT_RECA) LEQ_IT, LEQ_METHOD

@@ -257,7 +257,8 @@
 ! Ratio of filter size to computational cell size
       USE run, only: FILTER_SIZE_RATIO
 ! User specifed subgrid model: IGCI or MILIOLI
-      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM, UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
+      USE run, only: SUBGRID_TYPE, SUBGRID_TYPE_ENUM
+      USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
 ! Initial turbulcence length scale

@@ -1,6 +1,7 @@
 
       SUBROUTINE Source_population_eq(x,y,dydx)
 
+      use param1, only: zero, small_number
       USE constant
       USE fldvar
       USE physprop

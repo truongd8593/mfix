@@ -26,9 +26,10 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-      INTEGER :: LC
+      INTEGER :: LC, M
       DOUBLE PRECISION :: lsin_phi
-
+! counters for number of phases with defined/undefined mu_s0
+      INTEGER :: def_mus0, undef_mus0
 !......................................................................!
 
 
@@ -51,29 +52,51 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! CHECK MU_s0
-      IF (MU_S0 < ZERO) THEN
-         WRITE(ERR_MSG, 1001) 'MU_s0', MU_s0
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
-
 ! CHECK DIF_s0
       IF (DIF_S0 < ZERO) THEN
          WRITE(ERR_MSG, 1001) 'DIF_s0', DIF_s0
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
+! CHECK MU_s0
+      def_mus0 = 0
+      DO M = 1, SMAX
+         IF (MU_s0(M) /= UNDEFINED) THEN
+            def_mus0 = def_mus0 + 1
+            IF(MU_s0(M) < ZERO) THEN
+               WRITE(ERR_MSG, 1001) trim(iVar('Mu_s0',M)), &
+                  iVal(Mu_s0(M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+      ENDDO
+      undef_mus0 = smax - def_mus0
 
-! Constant solids viscosity is employed
-      IF (MU_S0 .NE. UNDEFINED) THEN
-! many of the solids phase transport coefficients that are needed for
-! the granular energy equation will have be skipped in calc_mu_s. so
-! do not evaluate granular energy if the solids viscosity is set to
-! a constant.
+      DO M = SMAX+1, DIM_M
+         IF(MU_s0(M) /= UNDEFINED)THEN
+            WRITE(ERR_MSG,1002) trim(iVar('Mu_s0',M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+
+! Solids phase with constant solids viscosity is employed
+!---------------------------------------------------------------------//
+      IF (def_mus0 > 0) THEN
          IF(GRANULAR_ENERGY) THEN
+! calculation of many of the solids phase transport coefficients
+! needed by the granular energy equation will be skipped in the
+! calc_mu_s if mu_s0 is defined. so make sure that the granular
+! energy eqn is not evaluated when the solids viscosity is set to
+! a constant.
+! Also do not allow a mixed case of constant viscosity and pde
+! granular energy. To permit such would require going through the
+! KT sections of the code and ensuring that the solids phase with
+! granular energy doesn't interact or depend on a phase with a
+! constant viscosity.
             WRITE(ERR_MSG,1100)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
+
 ! needed by default solids-solids drag model
          IF (SMAX >=2) THEN
             IF (C_E == UNDEFINED) THEN
@@ -84,34 +107,43 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
-      ELSE
+      ENDIF
+
+
 ! PDE granular energy. Check kinetic theory specifications.
-         IF (GRANULAR_ENERGY) THEN
-            CALL CHECK_KT_TYPE
-         ELSE
+!---------------------------------------------------------------------//
+      IF (GRANULAR_ENERGY) THEN
+         IF(def_mus0 >0) THEN
+            WRITE(ERR_MSG,1100)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         CALL CHECK_KT_TYPE
+      ENDIF
+
 ! Algebraic granular energy equation
-            IF (C_E == UNDEFINED) THEN
-               WRITE(ERR_MSG,1101)
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ENDIF
+!---------------------------------------------------------------------//
+      IF (.NOT.GRANULAR_ENERGY .AND. undef_mus0 > 0) THEN
+         IF (C_E == UNDEFINED) THEN
+            WRITE(ERR_MSG,1101)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
 ! needed by default solids-solids drag model. SMAX may be 1 for
 ! hybrid simulations and C_F is still needed.
-            IF (SMAX >=2 .OR. DEM_SOLIDS) THEN
-               IF (C_F == UNDEFINED) THEN
-                  WRITE(ERR_MSG,1102)
-                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-               ENDIF
+         IF (SMAX >=2 .OR. DEM_SOLIDS) THEN
+            IF (C_F == UNDEFINED) THEN
+               WRITE(ERR_MSG,1102)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
       ENDIF
-
  1100 FORMAT('Error 1100: Constant viscosity is specified but', /&
          'GRANULAR_ENERGY=.TRUE. Please correct the mfix.dat file')
  1101 FORMAT('Error 1101: Coefficient of restitution (C_E) not ',      &
          'specified.',/'Please correct the mfix.dat file.')
  1102 FORMAT('Error 1102: Coefficient of friction (C_F) not ',         &
          'specified.',/'Please correct the mfix.dat file.')
-!
+
+
 
 ! If frictional stress modeling check various dependent/conflicting
 ! settings
@@ -284,6 +316,8 @@
             'correct the mfix.dat file.')
  1001 FORMAT('Error 1001: Illegal or unphysical input: ',A,' = ',A,/   &
          'Please correct the mfix.dat file.')
+ 1002 FORMAT('Error 1002: Illegal input: ',A,' specified out of ',&
+         'range.', /,'Please correct the mfix.dat file.')
 
 
       CALL FINL_ERR_MSG

@@ -386,8 +386,7 @@
       g0EPs_avg = ZERO
 
 ! added for Simonin model (sof)
-      IF(KT_TYPE_ENUM == SIMONIN_1996 .OR. &
-         KT_TYPE_ENUM == AHMADI_1995) THEN
+      IF(KT_TYPE_ENUM == SIMONIN_1996) THEN
          K_12_avg = K_12(IJK2)
          Tau_12_avg = Tau_12(IJK2)
       ELSE
