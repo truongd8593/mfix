@@ -116,7 +116,7 @@
   D_p0(1) = 0.02     ! particle diameter of phase 1
   D_p0(2) = 0.012     ! particle diameter of phase 2
 
-  MU_s0 = 1.8E-4    ! constant solids viscosity
+  MU_s0 = 1.8E-4  1.8E-4   ! constant solids viscosity for both phases
 
 ! solids phase(s) forms a packed bed with indicated void fraction
 ! ep_star
