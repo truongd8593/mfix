@@ -129,6 +129,8 @@
 ! Awkward here but captures what was done in early version of
 ! calc_mu_s. Otherwise any call to this routine must be done with
 ! 'shear' already applied to v_s.
+      vs_j = V_S(IJK,M)
+      vs_jm = V_S(IJMK,M)
       IF (SHEAR) THEN
          vs_j = V_S(IJK,M)+VSH(IJK)
          IF(FLUID_AT(IJMK)) THEN
@@ -200,6 +202,8 @@
 ! Awkward here but captures what was done in early version of
 ! calc_mu_s. Otherwise any call to this routine must be done with
 ! 'shear' already applied to v_s.
+      vs_j = V_S(IJK,M)
+      vs_jm = V_S(IJMK,M)
       IF (SHEAR) THEN
          vs_j = V_S(IJK,M)+VSH(IJK)
          IF(FLUID_AT(IJMK)) THEN
