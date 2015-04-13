@@ -1353,7 +1353,7 @@
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
 !    Blend the Schaeffer stresses with the stresses resulting from
-!    algebraic kinetic kinetic theory around the value of EP_STAR.
+!    algebraic kinetic theory around the value of EP_STAR.
 !  </description>
       BLENDING_STRESS = .FALSE.
 !</keyword>

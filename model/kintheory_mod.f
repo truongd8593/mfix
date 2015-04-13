@@ -269,12 +269,10 @@
       DOUBLE PRECISION :: C_d, Re
 ! local value for relative velocity
       DOUBLE PRECISION :: rvel
-! local variable for drag coefficient/ep_s
-      DOUBLE PRECISION :: dga_s
 !---------------------------------------------------------------------//
 
 ! initialization
-      dga_s = zero
+      kt_dga = zero
       rvel = zero
       RVEL = KT_RVEL(IJK, M)
 
@@ -289,10 +287,10 @@
       ENDIF
 
 ! dga_s is local to this routine as is lrvel
-      DgA_s = 0.75d0 * C_d * RVEL * ROP_g(IJK) / D_p(IJK,M)
+      kt_dga = 0.75d0 * C_d * RVEL * ROP_g(IJK) / D_p(IJK,M)
 
 ! set value for 1st iteration and 1st time step
-      IF(RVEL == ZERO) DgA_s = LARGE_NUMBER
+      IF(RVEL == ZERO) kt_dga = LARGE_NUMBER
 
       RETURN
       END FUNCTION KT_DGA
