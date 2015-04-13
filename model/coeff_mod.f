@@ -41,8 +41,8 @@
 
 ! Global Variables:
 !-----------------------------------------------------------------------
-! Number of solids phases.
       use param, only: DIMENSION_M
+      use param1, only: UNDEFINED
 ! Kinetic theory model.
       USE run, only: kt_type_enum
       USE run, only: lun_1984
@@ -75,13 +75,11 @@
 ! Specified constant specific heat.
       use physprop, only: C_PG0, C_PS0
 ! Specified constant thermal conductivity.
-      use physprop, only: K_G0,  K_S0
+      use physprop, only: K_G0, K_S0
 ! Specified number of solids phases.
       use physprop, only: MMAX
-! Number to determined unspecified double percision entries.
-      use param1, only: UNDEFINED
-! Constant value gas viscosity.
-      use physprop, only: MU_g0
+! Specified constant viscosity.
+      use physprop, only: MU_g0, Mu_s0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
 ! MMS flag
