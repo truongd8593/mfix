@@ -230,7 +230,7 @@
       IF(SPEED > Small_Number .AND. RVEL > Small_Number .AND. &
          EP_S(IJK,M) > ZERO_EP_S) THEN
          KT_Cos_Theta = ( (UGC-USCM)*USCM + (VGC-VSCM)*VSCM + &
-                       (WGC-WSCM)*WSCM )/(RVEL - SPEED)
+                       (WGC-WSCM)*WSCM )/(RVEL*SPEED)
       ELSE
          KT_Cos_Theta = ZERO
       ENDIF
