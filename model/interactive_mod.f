@@ -1,6 +1,6 @@
       MODULE INTERACTIVE
 
-      use param1, only: UNDEFINED_I, UNDEFINED
+      use param1, only: UNDEFINED_I, UNDEFINED, UNDEFINED_C
       use error_manager
 
       IMPLICIT NONE
@@ -28,8 +28,12 @@
       INTEGER, PARAMETER :: NSTEPS_ENUM=10
 ! Run to a user-specified time then wait for next command.
       INTEGER, PARAMETER :: WAIT_AT_ENUM=11
+! Create a RES file backup.
+      INTEGER, PARAMETER :: BCKUP_RES_ENUM=20
 ! Wite a RES file
-      INTEGER, PARAMETER :: WRITE_RES_ENUM=12
+      INTEGER, PARAMETER :: WRITE_RES_ENUM=21
+! Read a RES file
+      INTEGER, PARAMETER :: READ_RES_ENUM=22
 ! Refresh the simulation by processing the mfix.dat file.
       INTEGER, PARAMETER :: REINITIALIZE_ENUM=100
 
@@ -106,6 +110,18 @@
 
          CASE(WAIT_AT_ENUM)
             CALL CHECK_INTERACTIVE_WAIT_AT(INTERACTING)
+
+         CASE(BCKUP_RES_ENUM)
+            CALL CHECK_RES_ACTION
+            INTERACTING = .TRUE.
+
+         CASE(WRITE_RES_ENUM)
+            CALL CHECK_RES_ACTION
+            INTERACTING = .TRUE.
+
+         CASE(READ_RES_ENUM)
+            CALL CHECK_RES_ACTION
+            INTERACTING = .TRUE.
 
          CASE(REINITIALIZE_ENUM)
             CALL REINITIALIZE
@@ -366,6 +382,87 @@
       RETURN
       END SUBROUTINE CHECK_INTERACTIVE_NSTEPS
 
+!----------------------------------------------------------------------!
+!                                                                      !
+!  Subroutine: CHECK_RES_ACTION                                        !
+!  Author: J.Musser                                   Date: APR-15-02  !
+!                                                                      !
+!  Purpose: Interact with MFIX via text files at runtime.              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE CHECK_RES_ACTION
+
+      use run, only: RUN_NAME, TIME
+
+      use compar, only: myPE, PE_IO
+
+      LOGICAL :: EXISTS
+
+      CHARACTER(LEN=128) :: tFNAME
+      CHARACTER(LEN=256) :: CMD
+
+      DOUBLE PRECISION :: lTIME
+
+      IF(ACTION_STR(1) == UNDEFINED_C) THEN
+         IF(ACTION == BCKUP_RES_ENUM .OR. &
+            ACTION == READ_RES_ENUM) THEN
+            IF(myPE == PE_IO) THEN
+               WRITE(*,*) ' '
+               WRITE(*,*) ' ACTION: BCKUP_RES is not fully specified.'
+               WRITE(*,*) ' I will wait until you fix it...'
+               WRITE(*,*) ' '
+            ENDIF
+            RETURN
+         ENDIF
+      ELSEIF(myPE == PE_IO) THEN
+         tFNAME=''; WRITE(tFNAME,"(A,'.RES')") trim(RUN_NAME)
+         WRITE(*,*) 'Create RES backup: ',trim(ACTION_STR(1))
+         CMD=''; WRITE(CMD,"('cp ',2(1x,A))") &
+            trim(tFNAME), trim(ACTION_STR(1))
+
+         write(*,*) trim(CMD)
+         CALL SYSTEM(trim(CMD))
+      ENDIF
+
+      IF(ACTION == WRITE_RES_ENUM) THEN
+         IF(myPE==PE_IO) WRITE(*,*) 'Writing RES file.'
+         CALL WRITE_RES1
+
+      ELSEIF(ACTION == READ_RES_ENUM) THEN
+         IF(ACTION_STR(2) == UNDEFINED_C) THEN
+            IF(myPE == PE_IO) THEN
+               WRITE(*,*) ' '
+               WRITE(*,*) ' ACTION: READ_RES is not fully specified.'
+               WRITE(*,*) ' I will wait until you fix it...'
+               WRITE(*,*) ' '
+            ENDIF
+            RETURN
+         ELSE
+            INQUIRE(FILE=trim(ACTION_STR(2)), EXIST=EXISTS)
+            IF(.NOT.EXISTS)THEN
+               IF(myPE == PE_IO) THEN
+                  WRITE(*,*) ' '
+                  WRITE(*,*) ' ACTION: READ_RES is missing.'
+                  WRITE(*,*) ' I will wait until you fix it...'
+                  WRITE(*,*) ' '
+                  RETURN
+               ENDIF
+            ENDIF
+         ENDIF
+         IF(myPE==PE_IO) WRITE(*,*) 'Reading RES file.'
+         tFNAME=''; WRITE(tFNAME,"(A,'.RES')") trim(RUN_NAME)
+         CMD=''; WRITE(CMD,"('cp ',2(1x,A))") &
+            trim(ACTION_STR(2)), trim(tFNAME)
+         write(*,*) trim(CMD)
+         CALL SYSTEM(trim(CMD))
+
+         lTIME = TIME
+         CALL READ_RES1
+         TIME = lTIME
+      ENDIF
+
+      RETURN
+      END SUBROUTINE CHECK_RES_ACTION
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -401,6 +498,7 @@
 
       ACTION_INT = UNDEFINED_I
       ACTION_DP = UNDEFINED
+      ACTION_STR = UNDEFINED_C
 
       RETURN
       END SUBROUTINE INTERACTIVE_DATA_INIT
@@ -422,7 +520,8 @@
       INTEGER :: IOS
       CHARACTER(LEN=512) :: LINE_STRING, STRING
 
-      NAMELIST / INTERACT_INPUT / ACTION, ACTION_INT, ACTION_DP
+      NAMELIST / INTERACT_INPUT / ACTION, &
+         ACTION_INT, ACTION_DP, ACTION_STR
 
       OPEN(UNIT=UNIT_DAT, FILE='interact.dat', STATUS='OLD', IOSTAT=IOS)
 
