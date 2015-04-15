@@ -64,6 +64,8 @@
       USE mms, only: USE_MMS
       USE interactive, only: CHECK_INTERACT_ITER
 
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -393,20 +395,27 @@
 
             CALL START_LOG
             IF (ENERGY_EQ) THEN
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS,&
-                  HLOSS, CPU_NOW
-               IF(FULL_LOG.and.myPE.eq.PE_IO) &
-                  WRITE(*,5000)TIME,DT,NIT,SMASS, HLOSS,CPU_NOW
+               WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ELSE
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, &
-                  SMASS, CPU_NOW
-               IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                  WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW
+               WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
+
+ 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
+
+ 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         T84,'CPU=',F8.0,' s')
 
             IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
             IF (FULL_LOG .and. myPE.eq.PE_IO) &
                WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
+
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
+
+
+
             IF (.NOT.FULL_LOG) THEN
                TLEFT = (TSTOP - TIME)*CPUOS
                CALL GET_TUNIT (TLEFT, TUNIT)
@@ -524,10 +533,6 @@
       RETURN
 
 
- 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5,' Hl=',G12.5,&
-         T84,'CPU=',F8.0,' s')
- 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, T84,'CPU=',F8.0,' s')
- 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
  5050 FORMAT(5X,'Average ',A,G12.5)
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
  5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, 'MbErr%=', G11.4)
