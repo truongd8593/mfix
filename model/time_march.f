@@ -179,7 +179,7 @@
       ENDIF
 
 ! Terminate MFIX normally before batch queue terminates.
-      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END
+      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
 
       IF (CALL_USR) CALL USR1
 

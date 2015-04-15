@@ -168,6 +168,7 @@
       use physprop, only: MU_G
       use physprop, only: MW_MIX_G
 
+      use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_OR
 
       use functions, only: FUNIJK
@@ -306,6 +307,7 @@
       ENDDO ! DO J = JSTART2, JEND2
       ENDDO ! DO K = KSTART2, KEND2
 
+      CALL GLOBAL_ALL_SUM(IER)
 
       IF(IER /= 0) THEN
          WRITE(ERR_MSG,"('End of Report.')")

@@ -383,7 +383,8 @@
       INTEGER :: LC
 
 ! Initialize times for writing outputs
-      OUT_TIME = TIME
+      OUT_TIME = merge(TIME, UNDEFINED, OUT_DT /= UNDEFINED)
+
 ! Initialize the amount of time spent on IO
       CPU_IO = 0.0d0
 
