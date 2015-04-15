@@ -20,6 +20,9 @@ mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(to
 
 # top level directory needs to be built first
 main:
+	rm $(top_srcdir)/model/mfix_directory_path.inc
+	rm $(top_srcdir)/model/read_database.o
+	rm $(top_srcdir)/model/rxn_com_mod.o
 	$(MAKE) -C $(top_srcdir) mfix
 
 $(top_srcdir)/model/mfix.f: main
@@ -33,7 +36,7 @@ species.inc:
 #
 #  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
 #
-#      GREP /dev/null so it doesn't hang if $^ is empty
+#      Include /dev/null so GREP doesn't hang if $^ is empty
 #
 #########################################################################
 
