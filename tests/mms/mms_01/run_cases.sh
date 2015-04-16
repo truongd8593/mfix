@@ -13,7 +13,7 @@ cp ../usr_common/usr3.f ./usr3.f
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
 ../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
-#../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
+#../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
 
 # remove these files if exists:
 echo "******** Removing old files..."
