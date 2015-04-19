@@ -207,15 +207,15 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALCULATE_MMS
-      use compar, only      : myPE, PE_IO
       use compar, only      : ijkstart3, ijkend3
-      use functions, only   : funijk_gl
-      use functions, only   : i_of, j_of, k_of
-      use functions, only   : IS_ON_myPE_owns
-      use geometry, only    : imax1, jmax1, kmin1
-      use geometry, only    : dx, dy, dz
-      use param1, only      : zero, half
+      use compar, only      : myPE, PE_IO
       use fldvar, only      : p_g
+      use functions, only   : IS_ON_myPE_owns
+      use functions, only   : funijk_gl
+      use geometry, only    : dx, dy, dz
+      use geometry, only    : imax1, jmax1, kmin1
+      use indices, only     : i_of, j_of, k_of
+      use param1, only      : zero, half
       IMPLICIT NONE
 
 ! indices
@@ -321,8 +321,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALCULATE_MMS_SOURCE
       use compar, only      : ijkstart3, ijkend3
-      use functions, only   : i_of, j_of, k_of
       use geometry, only    : dx, dy, dz
+      use indices, only   : i_of, j_of, k_of
       use param1, only      : half
       IMPLICIT NONE
 
