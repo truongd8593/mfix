@@ -833,6 +833,10 @@
          IF(dFlag) write(*,"(3x,A)")                                   &
             'Compressible: IJK_P_g remaining undefined.'
          return
+      ELSEIF(RO_G0 == 0.0d0) THEN
+         IF(dFlag) write(*,"(3x,A)")                                   &
+            'No gas phase: IJK_P_g remaining undefined.'
+         return
       ENDIF
 
 ! If there are no cyclic boundaries, look for a pressure outflow.

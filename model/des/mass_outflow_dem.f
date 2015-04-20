@@ -107,7 +107,7 @@
       ENDDO
 
 ! Sync the search flag across all processes.
-      CALL GLOBAL_ALL_OR(FORCE_NSEARCH)
+!      CALL GLOBAL_ALL_OR(FORCE_NSEARCH)
 
       RETURN
       END SUBROUTINE MASS_OUTFLOW_DEM
