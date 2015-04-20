@@ -1,4 +1,4 @@
-#!/bin/bash -lex 
+#!/bin/bash -exl
 
 # set case directory
 export CASE_DIR=`pwd`
