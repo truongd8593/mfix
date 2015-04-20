@@ -66,6 +66,7 @@
 
       use functions, only: FUNIJK
       use functions, only: FLOW_AT
+      use compar, only: DEAD_CELL_AT
 
       IMPLICIT NONE
 
@@ -86,6 +87,9 @@
       DO K = KSTART2, KEND2
       DO J = JSTART2, JEND2
       DO I = ISTART2, IEND2
+
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
+
          IJK = FUNIJK(I,J,K)
 
          IF(FLOW_AT(IJK)) THEN
@@ -173,6 +177,7 @@
 
       use functions, only: FUNIJK
       use functions, only: WALL_AT
+      use compar, only: DEAD_CELL_AT
 
       IMPLICIT NONE
 
@@ -192,6 +197,7 @@
       DO K = KSTART2, KEND2
       DO J = JSTART2, JEND2
       DO I = ISTART2, IEND2
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
          IJK = FUNIJK(I,J,K)
          IF (.NOT.WALL_AT(IJK)) THEN
 
@@ -348,6 +354,7 @@
       use functions, only: WALL_AT
 
       use param1, only: UNDEFINED
+      use compar, only: DEAD_CELL_AT
 
       IMPLICIT NONE
 
@@ -385,6 +392,7 @@
       DO K = KSTART2, KEND2
       DO J = JSTART2, JEND2
       DO I = ISTART2, IEND2
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
          IJK = FUNIJK(I,J,K)
          IF (.NOT.WALL_AT(IJK)) THEN
 
@@ -550,6 +558,7 @@
       USE discretelement
       USE mms
       USE functions
+      use compar, only: DEAD_CELL_AT
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -586,6 +595,7 @@
       DO K = KSTART2, KEND2
       DO J = JSTART2, JEND2
       DO I = ISTART2, IEND2
+         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
          IJK = FUNIJK(I,J,K)
          IF (.NOT.WALL_AT(IJK)) THEN
 
