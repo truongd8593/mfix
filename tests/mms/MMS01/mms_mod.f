@@ -322,7 +322,7 @@
       SUBROUTINE CALCULATE_MMS_SOURCE
       use compar, only      : ijkstart3, ijkend3
       use geometry, only    : dx, dy, dz
-      use indices, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use param1, only      : half
       IMPLICIT NONE
 
