@@ -861,27 +861,29 @@
 ! Local variables
 !-----------------------------------------------
       integer lcurpar,lkoffset
-      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt
+      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt,cc
       double precision lsearch_rad,ldistsquared
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
       integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,lSIZE2,lcurpar_index,lijk2
-!$      INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP
+!$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
+!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
-!$    integer num_threads
+!$    INTEGER omp_get_num_threads
+!$    INTEGER omp_get_thread_num
+
 !-----------------------------------------------
 
 ! loop through neighbours and build the contact particles list for particles
 ! present in the system
       lkoffset = dimn-2
 
-!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,   &
+!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, lSIZE2, int_tmp) &
-!$omp    shared(max_pip,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
-!$omp           num_threads, des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
+!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 
 !$      PAIR_NUM_SMP = 0
 !$      PAIR_MAX_SMP = 1024
@@ -889,21 +891,26 @@
 
 !$omp do
 
+      do lcurpar =1,max_pip
 
-      do lijk2 = dg_ijkstart2,dg_ijkend2
+!$  if (.false.) then
+            if (NEIGHBOR_INDEX(lcurpar) .eq. 0) then
+                if (lcurpar .eq. 1) then
+                    NEIGHBOR_INDEX(lcurpar) = 1
+                else
+                    NEIGHBOR_INDEX(lcurpar) = NEIGHBOR_INDEX(lcurpar-1)
+                endif
+            endif
+!$  endif
 
-         do lcurpar_index = 1, dg_pic(lijk2)%isize
-            lcurpar = dg_pic(lijk2)%p(lcurpar_index)
-
-!      do lcurpar =1,max_pip
          if (.not. pea(lcurpar,1)) cycle
          if (pea(lcurpar,2)) cycle
          if (pea(lcurpar,4)) cycle
          lneighcnt = 0
-!         lijk = dg_pijk(lcurpar)
-         lic = dg_iof_lo(lijk2)
-         ljc = dg_jof_lo(lijk2)
-         lkc = dg_kof_lo(lijk2)
+         lijk = dg_pijk(lcurpar)
+         lic = dg_iof_lo(lijk)
+         ljc = dg_jof_lo(lijk)
+         lkc = dg_kof_lo(lijk)
 
          il_off = 1
          iu_off = 1
@@ -982,7 +989,8 @@
 
 !$  else
 !!!!! Serial version
-                  call add_pair(lcurpar, lneigh)
+
+      cc = add_pair(lcurpar, lneigh)
 !$  endif
                endif
             end do
@@ -990,14 +998,37 @@
          end do
          end do
       end do
-      end do
 !$omp end do
 
-!$omp critical
-!$     do MM = 1, PAIR_NUM_SMP
-!$        call add_pair(PAIRS_SMP(1,MM), PAIRS_SMP(2,MM))
-!$     enddo
-!$omp end critical
+!$  curr_tt = omp_get_thread_num()+1  ! add one because thread numbering starts at zero
+
+!$omp do ordered schedule(static,1)
+!$    do tt = 1, omp_get_num_threads()
+!$omp ordered
+!$        do MM = 1, PAIR_NUM_SMP
+!$            lcurpar = PAIRS_SMP(1,MM)
+!$            if (NEIGHBOR_INDEX(lcurpar) .eq. 0) then
+!$                if (lcurpar .eq. 1) then
+!$                    NEIGHBOR_INDEX(lcurpar) = 1
+!$                else
+!!    find the last particle with neighbors (and initialize neighbor_index)
+!$                    diff = 0
+!$                    do while (NEIGHBOR_INDEX(lcurpar-diff) .eq. 0 .and. diff .lt. lcurpar)
+!$                         diff = diff + 1
+!$                    enddo
+!$                    if (diff .eq. lcurpar) then
+!$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = 1
+!$                    else
+!$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = NEIGHBOR_INDEX(lcurpar-diff)
+!$                    endif
+!$                endif
+!$            endif
+!$            cc = add_pair(lcurpar, PAIRS_SMP(2,MM))
+!$        enddo
+!$omp end ordered
+
+!$     end do
+!$omp  end do
 
 !$    deallocate( PAIRS_SMP )
 

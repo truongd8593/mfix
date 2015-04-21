@@ -6,6 +6,7 @@
 *.mic
 *.mod
 *.o
+*.vtp
 *~
 .dirstamp
 Makefile

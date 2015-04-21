@@ -105,7 +105,7 @@
 
       use discretelement, only: PEA
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
 
       use machine, only: OPEN_N1
 
@@ -140,7 +140,6 @@
 
          lGHOST_CNT = iGHOST_CNT
 
-         cROOTCNT = PAIR_NUM
          cPROCCNT = cROOTCNT
       ELSE
 
@@ -170,16 +169,17 @@
          ENDDO
 
 
-! Setup data for pair arrays
+! Setup data for neighbor arrays
          cROOTCNT = 10
-! Count the number of real pairs.
+! Count the number of real neighbors.
          cPROCCNT = 0
-         DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1))          &
+         DO LC1 = 1, NEIGH_MAX
+            IF(PEA(NEIGHBORS(LC1),1)) THEN
                cPROCCNT = cPROCCNT +1
+            ENDIF
          ENDDO
 
-! Rank 0 gets the total number of gloabl particles.
+! Rank 0 gets the total number of global particles.
          CALL GLOBAL_SUM(cPROCCNT, cROOTCNT)
 
 ! Construct an array for the Root process that states the number of
@@ -542,7 +542,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -565,15 +565,15 @@
 
       LC2 = 1
       IF(lLOC2GLB) THEN
-         DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+         DO LC1 = 1, NEIGH_MAX
+            IF(PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
                LC2 = LC2 + 1
             ENDIF
          ENDDO
       ELSE
-         DO LC1 = 1, PAIR_NUM
-            IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+         DO LC1 = 1, NEIGH_MAX
+            IF(PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = INPUT_I(LC1)
                LC2 = LC2 + 1
             ENDIF
@@ -605,7 +605,7 @@
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
       use discretelement, only: PEA
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
@@ -621,8 +621,8 @@
       iGatherCnts   = cGATHER
 
       LC2 = 1
-      DO LC1 = 1, PAIR_NUM
-         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+      DO LC1 = 1, NEIGH_MAX
+         IF(PEA(NEIGHBORS(LC1),1)) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -653,7 +653,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -670,8 +670,8 @@
 
 ! Pack the local buffer, skipping data for deleted particles.
       LC2 = 1
-      DO LC1 = 1, PAIR_NUM
-         IF(PEA(PAIRS(1,LC1),1) .AND. PEA(PAIRS(2,LC1),1)) THEN
+      DO LC1 = 1, NEIGH_MAX
+         IF(PEA(NEIGHBORS(LC1),1)) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF

@@ -26,24 +26,25 @@
 ! Local variables
 !-----------------------------------------------
 
-INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
+INTEGER :: cc,dd,ii,jj,iii,jjj,ddd,ll,cc_start,cc_end,cc_start_old,cc_end_old,cc_old
+LOGICAL :: found
 
 !-----------------------------------------------
 ! Reset PPOS and NEIGHBOURS back to initialized values
       PPOS(:,:) = DES_POS_NEW(:,:)
+      neighbor_index_old(:) = neighbor_index(:)
 
 !$omp parallel do default(none) private(cc) &
-!$omp             shared(pair_num,pairs_old,pairs,pv_pair_old,pv_pair,pfn_pair_old,pfn_pair,pft_pair_old,pft_pair)
-      do cc= 1, pair_num
-         pairs_old(:,cc) = pairs(:,cc)
-         pv_pair_old(cc) = pv_pair(cc)
-         pfn_pair_old(:,cc) = pfn_pair(:,cc)
-         pft_pair_old(:,cc) = pft_pair(:,cc)
-      end do
+!$omp             shared(neighbors,neighbors_old,pv_neighbor,pv_neighbor_old,pfn_neighbor,pfn_neighbor_old,pft_neighbor,pft_neighbor_old)
+      do cc=1, size(neighbors)
+         neighbors_old(cc) = neighbors(cc)
+         pv_neighbor_old(cc) = pv_neighbor(cc)
+         pfn_neighbor_old(:,cc) = pfn_neighbor(:,cc)
+         pft_neighbor_old(:,cc) = pft_neighbor(:,cc)
+      enddo
 !$omp end parallel do
 
-      old_pair_num = pair_num
-      pair_num = 0
+      NEIGHBOR_INDEX(:) = 0
 
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
@@ -51,44 +52,38 @@ INTEGER :: cc,dd,ii,jj,iii,jjj,ddd
           CALL DESGRID_NEIGH_BUILD
       ENDIF
 
-      dd = 1
-      iii = pairs_old(1,dd)
-      jjj = pairs_old(2,dd)
+!$omp parallel do default(none) private(cc,ll,found,cc_start,cc_end,cc_start_old,cc_end_old) &
+!$omp          shared(max_pip,neighbors,neighbor_index,neighbor_index_old,neighbors_old,pv_neighbor,pfn_neighbor,pft_neighbor,pfn_neighbor_old,pft_neighbor_old,pv_neighbor_old,neigh_max)
 
-!$omp parallel do default(none) private(cc,ii,jj,iii,jjj,ddd) &
-!$omp          shared(pair_num,pairs,pairs_old,pv_pair,pfn_pair,pft_pair,pfn_pair_old,pft_pair_old,pv_pair_old,old_pair_num) &
-!$omp          firstprivate(dd)
+      do ll = 1, max_pip
 
-      do cc = 1, pair_num
-         ii = pairs(1,cc)
-         jj = pairs(2,cc)
+         CC_START = 1
+         IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
+         CC_END   = NEIGHBOR_INDEX(LL)
 
-         iii = pairs_old(1,dd)
-         jjj = pairs_old(2,dd)
+         CC_START_OLD = 1
+         IF (LL.gt.1) CC_START_OLD = NEIGHBOR_INDEX_OLD(LL-1)
+         CC_END_OLD   = NEIGHBOR_INDEX_OLD(LL)
 
-         do while (dd .le. old_pair_num .and. (iii < ii))
-            dd = dd + 1
-            iii = pairs_old(1,dd)
-            jjj = pairs_old(2,dd)
+         DO CC = CC_START, CC_END-1
+            found = .false.
+            DO CC_OLD = CC_START_OLD, CC_END_OLD-1
+               if (neighbors(cc) .eq. neighbors_old(cc_old)) then
+                  pv_neighbor(cc) = pv_neighbor_old(cc_old)
+                  pfn_neighbor(:,cc) = pfn_neighbor_old(:,cc_old)
+                  pft_neighbor(:,cc) = pft_neighbor_old(:,cc_old)
+                  found = .true.
+                  exit
+               endif
+            enddo
+
+            if (.not. found) then
+               pv_neighbor(cc) = .false.
+               pfn_neighbor(:,cc) = 0.0
+               pft_neighbor(:,cc) = 0.0
+            endif
+
          enddo
-
-         ddd = dd
-         do while (ddd .le. old_pair_num .and. iii.eq.ii .and. jjj.ne.jj )
-            ddd = ddd + 1
-            iii = pairs_old(1,ddd)
-            jjj = pairs_old(2,ddd)
-         enddo
-
-         if (ii.eq.iii .and. jj.eq.jjj) then
-            pv_pair(cc) = pv_pair_old(ddd)
-            pfn_pair(:,cc) = pfn_pair_old(:,ddd)
-            pft_pair(:,cc) = pft_pair_old(:,ddd)
-         else
-            pv_pair(cc) = .false.
-            pfn_pair(:,cc) = 0.0
-            pft_pair(:,cc) = 0.0
-         endif
-
       enddo
 !$omp end parallel do
 

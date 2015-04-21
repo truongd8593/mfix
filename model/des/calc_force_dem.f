@@ -27,7 +27,7 @@
 ! percent of particle radius when excess overlap will be flagged
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
-      INTEGER :: I, LL, CC
+      INTEGER :: I, LL, cc, CC_START, CC_END
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal direction
       DOUBLE PRECISION :: OVERLAP_N
@@ -39,10 +39,10 @@
       DOUBLE PRECISION :: R_LM,DIST_CI,DIST_CL
 ! the normal and tangential components of the translational relative
 ! velocity
-      DOUBLE PRECISION :: V_REL_TRANS_NORM
+      DOUBLE PRECISION :: V_REL_TRANS_NORM, rad
 ! distance vector between two particle centers or between a particle
 ! center and wall at current and previous time steps
-      DOUBLE PRECISION :: DIST(3), DIST_NORM(3), DIST_MAG
+      DOUBLE PRECISION :: DIST(3), DIST_NORM(3), DIST_MAG, POS(3)
 ! tangent to the plane of contact at current time step
       DOUBLE PRECISION :: V_REL_TANG(3)
 ! normal and tangential forces
@@ -80,35 +80,42 @@
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
 
-! Check particle LL neighbour contacts
+! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
-!$omp parallel default(none) private(cc,ll,i,dist,r_lm,             &
+!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,dist,r_lm,             &
 !$omp    overlap_n,v_rel_tang,v_rel_trans_norm,sqrt_overlap,           &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fns1,fns2,fts1,fts2,pft_tmp,fn,ft,particle_slide,    &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,dist_norm,        &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
-!$omp    shared(pairs,pair_num,des_pos_new,des_radius,                 &
-!$omp    des_coll_model_enum,kn,kt,pv_pair,pft_pair,pfn_pair,pijk,     &
+!$omp    shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,neigh_max,    &
+!$omp    des_coll_model_enum,kn,kt,pv_neighbor,pft_neighbor,pfn_neighbor,pijk,     &
 !$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des,            &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy, pea,              &
 !$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
-      DO CC = 1, PAIR_NUM
-         LL = PAIRS(1,CC)
-         I  = PAIRS(2,CC)
 
+      DO LL = 1, MAX_PIP
          IF(.NOT.PEA(LL,1)) CYCLE
-         IF(.NOT.PEA(I, 1)) CYCLE
+         pos = DES_POS_NEW(:,LL)
+         rad = DES_RADIUS(LL)
 
-         R_LM = DES_RADIUS(LL) + DES_RADIUS(I)
-         DIST(:) = DES_POS_NEW(:,I) - DES_POS_NEW(:,LL)
-         DIST_MAG = dot_product(DIST,DIST)
+         CC_START = 1
+         IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
+         CC_END   = NEIGHBOR_INDEX(LL)
 
-         FC_TMP(:) = ZERO
+         DO CC = CC_START, CC_END-1
+            I  = NEIGHBORS(CC)
+            IF(.NOT.PEA(I, 1)) CYCLE
+
+            R_LM = rad + DES_RADIUS(I)
+            DIST(:) = DES_POS_NEW(:,I) - POS(:)
+            DIST_MAG = dot_product(DIST,DIST)
+
+            FC_TMP(:) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
          IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -154,9 +161,7 @@
          ENDIF
 
          IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
-            PV_PAIR(CC) = .false.
-            PFT_PAIR(:,CC) = 0.0
-            PFN_PAIR(:,CC) = 0.0
+            if (PV_NEIGHBOR(CC)) PV_NEIGHBOR(CC) = .false.
             CYCLE
          ENDIF
 
@@ -203,10 +208,15 @@
          FNS2(:) = -ETAN_DES * V_REL_TRANS_NORM*DIST_NORM(:)
          FN(:) = FNS1(:) + FNS2(:)
 
+         if (.NOT.PV_NEIGHBOR(CC)) THEN
+            PFT_NEIGHBOR(:,CC) = 0.0
+            PFN_NEIGHBOR(:,CC) = 0.0
+         ENDIF
+
          call calc_tangential_displacement(pft_tmp(:),DIST_NORM(:), &
-            pfn_pair(:,cc),pft_pair(:,cc),overlap_n,                   &
-            v_rel_trans_norm,v_rel_tang(:),PV_PAIR(CC))
-         PV_PAIR(CC) = .true.
+            pfn_neighbor(:,cc),pft_neighbor(:,cc),overlap_n,                   &
+            v_rel_trans_norm,v_rel_tang(:),PV_NEIGHBOR(CC))
+         PV_NEIGHBOR(CC) = .true.
 
 ! Calculate the tangential contact force
          FTS1(:) = -KT_DES * PFT_TMP(:)
@@ -233,14 +243,9 @@
 ! Calculate the total force FC of a collision pair
 ! total contact force ( FC_TMP may already include cohesive force)
          FC_TMP(:) = FC_TMP(:) + FN(:) + FT(:)
-            !$omp atomic
-            FC(1,LL) = FC(1,LL) + FC_TMP(1)
-            !$omp atomic
-            FC(2,LL) = FC(2,LL) + FC_TMP(2)
-            !$omp atomic
-            FC(3,LL) = FC(3,LL) + FC_TMP(3)
 
-            I  = PAIRS(2,CC)
+            FC(:,LL) = FC(:,LL) + FC_TMP(:)
+
             !$omp atomic
             FC(1,I) = FC(1,I) - FC_TMP(1)
             !$omp atomic
@@ -250,12 +255,7 @@
 
 
 ! for each particle the signs of norm and ft both flip, so add the same torque
-            !$omp atomic
-            TOW(1,LL) = TOW(1,LL) + TOW_TMP(1,1)
-            !$omp atomic
-            TOW(2,LL) = TOW(2,LL) + TOW_TMP(2,1)
-            !$omp atomic
-            TOW(3,LL) = TOW(3,LL) + TOW_TMP(3,1)
+            TOW(:,LL) = TOW(:,LL) + TOW_TMP(:,1)
 
             !$omp atomic
             TOW(1,I)  = TOW(1,I)  + TOW_TMP(1,2)
@@ -264,17 +264,17 @@
             !$omp atomic
             TOW(3,I)  = TOW(3,I)  + TOW_TMP(3,2)
 
-
 ! Save tangential displacement history with Coulomb's law correction
          IF (PARTICLE_SLIDE) THEN
 ! Since FT might be corrected during the call to cfslide, the tangential
 ! displacement history needs to be changed accordingly
-            PFT_PAIR(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
+            PFT_NEIGHBOR(:,CC) = -( FT(:) - FTS2(:) ) / KT_DES
          ELSE
-            PFT_PAIR(:,CC) = PFT_TMP(:)
+            PFT_NEIGHBOR(:,CC) = PFT_TMP(:)
          ENDIF
 
       ENDDO
+   ENDDO
 !$omp end do
 
 !$omp end parallel

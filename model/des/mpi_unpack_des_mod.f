@@ -337,10 +337,10 @@
       use discretelement, only: DRAG_FC
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
-! Particle pair (neighborhood) arrays:
-      use discretelement, only: PAIR_NUM, PAIRS
-! Pair collision history information
-      use discretelement, only: PV_PAIR, PFN_PAIR, PFT_PAIR
+! Particle neighbor (neighborhood) arrays:
+      use discretelement, only: NEIGHBORS
+! Neighbor collision history information
+      use discretelement, only: PV_NEIGHBOR, PFN_NEIGHBOR, PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
 ! The ID of the current process
@@ -366,7 +366,7 @@
       logical :: lfound
       integer :: lbuf,ltmpbuf,lcount
       logical :: lcontactfound,lneighfound
-      integer :: cc,ii,kk,num_pairs_sent
+      integer :: cc,ii,kk,num_neighborlists_sent,nn
 
       integer :: pair_match
       logical :: do_add_pair
@@ -491,9 +491,9 @@
 
 ! 33) Number of pair datasets
       lbuf = lparcnt*iParticlePacketSize + ibufoffset
-      call unpack_dbuf(lbuf,num_pairs_sent,pface)
+      call unpack_dbuf(lbuf,num_neighborlists_sent,pface)
 
-      do cc = 1, num_pairs_sent
+      do nn = 1, num_neighborlists_sent
 ! 34) Global ID of packed particle.
          call unpack_dbuf(lbuf,lparid,pface)
 ! 35) DES grid IJK of cell receiving the particle.
@@ -525,30 +525,15 @@
          endif
 
 ! If the neighbor particle is a 'real' particle on this processor, then
-! the pair data may already exist. Check before addeding it.
-         do_add_pair = .TRUE.
-         if(pea(lneigh,1) .and. .not.pea(lneigh,4)) then
-            do ii=1,pair_num
-               if(PAIRS(1,II) == lneigh) then
-                  if(PAIRS(2,II) == llocpar) then
-                     do_add_pair = .FALSE.
-                     pair_match = II
-                     exit
-                  endif
-               endif
-            enddo
-         endif
+! the pair data may already exist. Check before adding it.
 ! Create a new neighbor pair if it was not matched to an exiting pair.
-         if(do_add_pair) then
-            call add_pair(llocpar,lneigh)
-            pair_match = pair_num
-         endif
-! 38) Flag indicating induring contact for the pair.
-         call unpack_dbuf(lbuf,pv_pair(pair_num),pface)
+          cc = add_pair(llocpar,lneigh)
+! 38) Flag indicating enduring contact for the pair.
+         call unpack_dbuf(lbuf,pv_neighbor(cc),pface)
 ! 39) Normal collision history.
-         call unpack_dbuf(lbuf,pfn_pair(:,pair_num),pface)
+         call unpack_dbuf(lbuf,pfn_neighbor(:,cc),pface)
 ! 40) Tangential collision history.
-         call unpack_dbuf(lbuf,pft_pair(:,pair_num),pface)
+         call unpack_dbuf(lbuf,pft_neighbor(:,cc),pface)
       enddo
 
       END SUBROUTINE desmpi_unpack_parcross

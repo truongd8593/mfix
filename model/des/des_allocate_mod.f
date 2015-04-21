@@ -9,7 +9,7 @@
 
 MODULE DES_ALLOCATE
 
-  PUBLIC:: DES_ALLOCATE_ARRAYS, ADD_PAIR, PARTICLE_GROW, PAIR_GROW, ALLOCATE_DEM_MI
+  PUBLIC:: DES_ALLOCATE_ARRAYS, ADD_PAIR, PARTICLE_GROW, ALLOCATE_DEM_MI
 
 CONTAINS
 
@@ -141,18 +141,19 @@ CONTAINS
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
-      OLD_PAIR_NUM = 0
-      PAIR_NUM = 0
-      PAIR_MAX = 1024
+      NEIGH_MAX = MAX_PIP
 
-      Allocate(  PAIRS (2,PAIR_MAX) )
-      Allocate(  PAIRS_OLD (2,PAIR_MAX) )
-      Allocate(  PV_PAIR (PAIR_MAX) )
-      Allocate(  PV_PAIR_OLD (PAIR_MAX) )
-      Allocate(  PFT_PAIR (3,PAIR_MAX) )
-      Allocate(  PFT_PAIR_OLD (3,PAIR_MAX) )
-      Allocate(  PFN_PAIR (3,PAIR_MAX) )
-      Allocate(  PFN_PAIR_OLD (3,PAIR_MAX) )
+      Allocate(  NEIGHBOR_INDEX (MAX_PIP) )
+      Allocate(  NEIGHBOR_INDEX_OLD (MAX_PIP) )
+      Allocate(  NEIGHBORS (NEIGH_MAX) )
+      NEIGHBORS(:) = 0
+      Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
+      Allocate(  PV_NEIGHBOR (NEIGH_MAX) )
+      Allocate(  PV_NEIGHBOR_OLD (NEIGH_MAX) )
+      Allocate(  PFT_NEIGHBOR (3,NEIGH_MAX) )
+      Allocate(  PFT_NEIGHBOR_OLD (3,NEIGH_MAX) )
+      Allocate(  PFN_NEIGHBOR (3,NEIGH_MAX) )
+      Allocate(  PFN_NEIGHBOR_OLD (3,NEIGH_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -426,65 +427,97 @@ CONTAINS
       RETURN
       END SUBROUTINE ALLOCATE_PIC_MIO
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: ADD_PAIR                                                 !
 !                                                                      !
 ! Purpose: Adds a neighbor pair to the pairs array.                    !
 !                                                                      !
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE add_pair(ii,jj)
+      DOUBLE PRECISION FUNCTION add_pair(ii,jj)
       USE discretelement
-      USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
 
-      pair_num = pair_num +1
+      if (NEIGHBOR_INDEX(ii) > NEIGH_MAX) then
+         NEIGH_MAX = 2*NEIGH_MAX
+      endif
 
-! Reallocate to double the size of the arrays if needed.
-      IF(PAIR_NUM > PAIR_MAX) THEN
-         PAIR_MAX = PAIR_MAX*2
-         CALL PAIR_GROW
-      ENDIF
+      CALL NEIGHBOR_GROW(NEIGH_MAX)
 
-      pairs(1,pair_num) = ii
-      pairs(2,pair_num) = jj
+      NEIGHBORS(NEIGHBOR_INDEX(ii)) = jj
+      NEIGHBOR_INDEX(ii) = NEIGHBOR_INDEX(ii) + 1
+      add_pair = NEIGHBOR_INDEX(ii)
 
       RETURN
-      END SUBROUTINE add_pair
+      END FUNCTION add_pair
 
 !``````````````````````````````````````````````````````````````````````!
-! Subroutine: PAIR_GROW                                                !
+! Subroutine: NEIGHBOR_GROW                                            !
 !                                                                      !
-! Purpose: Grow pair arrays to pair_max. Note that pair                !
+! Purpose: Grow neighbors arrays to new_neigh_max. Note that neighbor      !
 ! max should be increased before calling this routine. Also, no        !
 ! assumption to the previous array size is made as needed for restarts.!
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE PAIR_GROW
-
+      SUBROUTINE NEIGHBOR_GROW(new_neigh_max)
         USE discretelement
-
+        USE geometry
         IMPLICIT NONE
 
-        call integer_grow2(pairs,pair_max)
-        call integer_grow2(pairs_old,pair_max)
+        integer, intent(in) :: new_neigh_max
 
-        call logical_grow(pv_pair,pair_max)
-        call logical_grow(pv_pair_old,pair_max)
+        INTEGER :: lSIZE1
+        INTEGER, DIMENSION(:), ALLOCATABLE :: neigh_tmp
+        LOGICAL, DIMENSION(:), ALLOCATABLE :: pv_tmp
+        DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: pf_tmp
 
-        call real_grow2(pft_pair,pair_max)
-        call real_grow2(pft_pair_old,pair_max)
-        call real_grow2(pfn_pair,pair_max)
-        call real_grow2(pfn_pair_old,pair_max)
+        lSIZE1 = size(neighbors,1)
 
-        RETURN
+        allocate(neigh_tmp(new_neigh_max))
+        neigh_tmp(1:lSIZE1) = neighbors(1:lSIZE1)
+        neigh_tmp(lSIZE1+1:) = 0
+        call move_alloc(neigh_tmp,neighbors)
 
-      END SUBROUTINE PAIR_GROW
+        allocate(neigh_tmp(new_neigh_max))
+        neigh_tmp(1:lSIZE1) = neighbors_old(1:lSIZE1)
+        neigh_tmp(lSIZE1+1:) = 0
+        call move_alloc(neigh_tmp,neighbors_old)
+
+        allocate(pv_tmp(new_neigh_max))
+        pv_tmp(1:lSIZE1) = pv_neighbor(1:lSIZE1)
+        pv_tmp(lSIZE1+1:) = .false.
+        call move_alloc(pv_tmp,pv_neighbor)
+
+        allocate(pv_tmp(new_neigh_max))
+        pv_tmp(1:lSIZE1) = pv_neighbor_old(1:lSIZE1)
+        pv_tmp(lSIZE1+1:) = .false.
+        call move_alloc(pv_tmp,pv_neighbor_old)
+
+        allocate(pf_tmp(3,new_neigh_max))
+        pf_tmp(:,1:lSIZE1) = pft_neighbor(:,1:lSIZE1)
+        pf_tmp(:,lSIZE1+1:) = 0
+        call move_alloc(pf_tmp,pft_neighbor)
+
+        allocate(pf_tmp(3,new_neigh_max))
+        pf_tmp(:,1:lSIZE1) = pft_neighbor_old(:,1:lSIZE1)
+        pf_tmp(:,lSIZE1+1:) = 0
+        call move_alloc(pf_tmp,pft_neighbor_old)
+
+        allocate(pf_tmp(3,new_neigh_max))
+        pf_tmp(:,1:lSIZE1) = pfn_neighbor(:,1:lSIZE1)
+        pf_tmp(:,lSIZE1+1:) = 0
+        call move_alloc(pf_tmp,pfn_neighbor)
+
+        allocate(pf_tmp(3,new_neigh_max))
+        pf_tmp(:,1:lSIZE1) = pfn_neighbor_old(:,1:lSIZE1)
+        pf_tmp(:,lSIZE1+1:) = 0
+        call move_alloc(pf_tmp,pfn_neighbor_old)
+
+      END SUBROUTINE NEIGHBOR_GROW
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: PARTICLE_GROW                                            !
 !                                                                      !
-! Purpose: Grow pair arrays to pair_max. Note that pair                !
+! Purpose: Grow particle arrays to new_max_pip. Note that pair         !
 ! max should be increased before calling this routine. Also, no        !
 ! assumption to the previous array size is made as needed for restarts.!
 !``````````````````````````````````````````````````````````````````````!
@@ -529,6 +562,9 @@ CONTAINS
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
            call real_grow2(DRAG_FC,MAX_PIP)
+
+           call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
+           call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)
 
            IF(FILTER_SIZE > 0) THEN
               call integer_grow2(FILTER_CELL,MAX_PIP)
@@ -641,14 +677,30 @@ CONTAINS
         INTEGER, INTENT(IN) :: new_size
         LOGICAL, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: logical_array
         LOGICAL, DIMENSION(:), ALLOCATABLE :: logical_tmp
-        INTEGER lSIZE2
+        INTEGER lSIZE
 
-        lSIZE2 = size(logical_array,1)
+        lSIZE = size(logical_array,1)
         allocate(logical_tmp(new_size))
-        logical_tmp(1:lSIZE2) = logical_array(1:lSIZE2)
+        logical_tmp(1:lSIZE) = logical_array(1:lSIZE)
         call move_alloc(logical_tmp,logical_array)
 
       END SUBROUTINE LOGICAL_GROW
+
+      SUBROUTINE LOGICAL_GROW2(logical_array,new_size)
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN) :: new_size
+        LOGICAL, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: logical_array
+        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: logical_tmp
+        INTEGER lSIZE, lSIZE2
+
+        lSIZE = size(logical_array,1)
+        lSIZE2 = size(logical_array,2)
+        allocate(logical_tmp(lSIZE,new_size))
+        logical_tmp(:,1:lSIZE2) = logical_array(:,1:lSIZE2)
+        call move_alloc(logical_tmp,logical_array)
+
+      END SUBROUTINE LOGICAL_GROW2
 
       SUBROUTINE REAL_GROW(real_array,new_size)
         IMPLICIT NONE

@@ -23,7 +23,7 @@
 ! Local variables
 !-----------------------------------------------
       INTEGER I, J, K
-      INTEGER L, LL
+      INTEGER L, LL, CC
       DOUBLE PRECISION DISTVEC(3), DIST, R_LM
 ! Temporary variables to adjust particle position in event of periodic
 ! boundaries
@@ -38,6 +38,9 @@
 
       PC=1
       DO L=1, MAX_PIP
+
+         NEIGHBOR_INDEX(L) = 1
+         if (L .gt. 1) NEIGHBOR_INDEX(L) = NEIGHBOR_INDEX(L-1)
 
          IF(PC .GE. PIP ) EXIT
          IF(.NOT.PEA(L,1)) CYCLE
@@ -121,7 +124,7 @@
 ! ------------------------------
 
             IF (DIST < R_LM**2) THEN
-               call add_pair(L, LL)
+               cc = add_pair(L, LL)
             ENDIF
             PNPC = PNPC - 1
          ENDDO   ! end loop over LL
