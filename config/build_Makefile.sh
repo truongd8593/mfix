@@ -93,14 +93,6 @@ fi
 # Remove the file list.
 rm ${mlist}
 
-
-# Swap the module folder references.
-if test ${USE_DMP} = 0; then
-  ex ${tmpMFILE} < ${MFIX_SRC}/dmp_modules/ex.commands
-  ex ${tmpMFILE} < ${MFIX_SRC}/des/ex.commands
-fi
-
-
 # Only copy over the tmp make file if it differs from
 # the existing make file.
 if test -f ${MAKEFILE}; then
