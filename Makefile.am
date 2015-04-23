@@ -112,24 +112,6 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
-if MPI
-libmfix_a_SOURCES += \
-	model/des/desmpi_wrapper_mod.f \
-	model/dmp_modules/mpi_mod.f \
-	model/dmp_modules/mpi_utility_mod.f \
-	model/dmp_modules/parallel_mpi_mod.f \
-	model/dmp_modules/sendrecv3_mod.f \
-	model/dmp_modules/sendrecv_mod.f
-else
-libmfix_a_SOURCES += \
-	model/des/mpi_donothing/desmpi_wrapper_mod.f \
-	model/dmp_modules/mpi_donothing/mpi_mod.f \
-	model/dmp_modules/mpi_donothing/mpi_utility_mod.f \
-	model/dmp_modules/mpi_donothing/parallel_mpi_mod.f \
-	model/dmp_modules/mpi_donothing/sendrecv3_mod.f \
-	model/dmp_modules/mpi_donothing/sendrecv_mod.f
-endif
-
 ################################################################
 #      libmfix_a_SOURCES                                          #
 #                                                              #
@@ -362,6 +344,7 @@ libmfix_a_SOURCES += \
 	model/des/des_time_march.f \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
+	model/des/desmpi_wrapper_mod.f \
 	model/des/desnamelist.inc \
 	model/des/dif_phi_bc_des.f \
 	model/des/dif_phi_des.f \
@@ -431,6 +414,11 @@ libmfix_a_SOURCES += \
 	model/dmp_modules/dbg_util_mod.f \
 	model/dmp_modules/debug_mod.f \
 	model/dmp_modules/gridmap_mod.f \
+	model/dmp_modules/mpi_mod.f \
+	model/dmp_modules/mpi_utility_mod.f \
+	model/dmp_modules/parallel_mpi_mod.f \
+	model/dmp_modules/sendrecv3_mod.f \
+	model/dmp_modules/sendrecv_mod.f \
 	model/dqmom/gaussj.f \
 	model/dqmom/odeint.f \
 	model/dqmom/rkck.f \

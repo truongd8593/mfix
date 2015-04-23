@@ -1,5 +1,9 @@
-      module mpi
+module mpi
 
-      include "mpif.h"
+#ifdef MPI
+  include "mpif.h"
+#else
+  integer :: MPI_COMM_WORLD
+#endif
 
-      end module mpi
+end module mpi

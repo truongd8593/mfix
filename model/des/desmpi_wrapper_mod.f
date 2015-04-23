@@ -39,9 +39,11 @@
       implicit none
 ! local variables
       character(len=80), parameter :: name = 'des_mpi_barrier'
+#ifdef MPI
       integer lerr
       call mpi_barrier(mpi_comm_world, lerr)
       call mpi_check( name //':mpi_barrier ', lerr )
+#endif
       return
       end subroutine
 
@@ -54,7 +56,10 @@
 ! dummy variables
       double precision, dimension(:) :: precvbuf
       integer :: precvcnt,ptoproc,ptag,preq,perr
+#ifdef MPI
       call mpi_irecv(precvbuf,precvcnt,mpi_double_precision,ptoproc,ptag,mpi_comm_world,preq,perr)
+#endif
+      return
       end subroutine
 
 !------------------------------------------------------------------------
@@ -66,7 +71,10 @@
 ! dummy variables
       double precision, dimension(:) :: psendbuf
       integer :: psendcnt,ptoproc,ptag,preq,perr
+#ifdef MPI
       call mpi_isend(psendbuf,psendcnt,mpi_double_precision,ptoproc,ptag,mpi_comm_world,preq,perr)
+#endif
+      return
       end subroutine
 
 !------------------------------------------------------------------------
@@ -77,11 +85,13 @@
       implicit none
 ! dummy variables
       integer :: preq,perr
+#ifdef MPI
 ! local variables
       integer :: lmpi_status(mpi_status_size)
       call mpi_wait(preq,lmpi_status,perr)
+#endif
+      return
       end subroutine
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_mpi_scatterv_db
@@ -95,8 +105,13 @@
       integer, dimension (:) :: pdispls,pscattercnts
       integer :: precvcnt,proot,perr
 
+#ifdef MPI
       call mpi_scatterv(prootbuf,pscattercnts,pdispls,mpi_double_precision, &
                         pprocbuf,precvcnt,mpi_double_precision,proot,mpi_comm_world,perr )
+#else
+      pprocbuf = prootbuf
+#endif
+      return
       end subroutine
 !------------------------------------------------------------------------
 ! Subroutine       : des_mpi_scatterv_i
@@ -110,8 +125,13 @@
       integer, dimension (:) :: pdispls,pscattercnts
       integer :: precvcnt,proot,perr
 
+#ifdef MPI
       call mpi_scatterv(prootbuf,pscattercnts,pdispls,mpi_integer, &
                         pprocbuf,precvcnt,mpi_integer,proot,mpi_comm_world,perr )
+#else
+      pprocbuf = prootbuf
+#endif
+      return
       end subroutine
 !------------------------------------------------------------------------
 ! Subroutine       : des_mpi_gatherv_db
@@ -125,8 +145,13 @@
       integer, dimension (:) :: pdispls,precvcnts
       integer :: psendcnt,proot,perr
 
+#ifdef MPI
       call mpi_gatherv(psendbuf,psendcnt,mpi_double_precision,precvbuf,precvcnts, &
                        pdispls,mpi_double_precision,proot,mpi_comm_world,perr )
+#else
+      precvbuf = psendbuf
+#endif
+      return
       end subroutine
 !------------------------------------------------------------------------
 ! Subroutine       : des_mpi_gatherv_i
@@ -140,8 +165,13 @@
       integer, dimension (:) :: pdispls,precvcnts
       integer :: psendcnt,proot,perr
 
+#ifdef MPI
       call mpi_gatherv(psendbuf,psendcnt,mpi_integer,precvbuf,precvcnts, &
                        pdispls,mpi_integer,proot,mpi_comm_world,perr )
+#else
+      precvbuf = psendbuf
+#endif
+      return
       end subroutine
 
 !------------------------------------------------------------------------
@@ -154,6 +184,8 @@
       implicit none
 
       integer, optional, intent(in) :: myid
+
+#ifdef MPI
 
       INTEGER :: mylid, ERRORCODE
 
@@ -180,7 +212,9 @@
       call MPI_Finalize(mpierr)
 
       STOP 'MPI terminated from des_mpi_stop'
-
+#else
+      stop
+#endif
       end subroutine
 
       end module

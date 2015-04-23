@@ -36,7 +36,7 @@ fi
 
 SET_MPI_INCLUDE
 if test $USE_DMP = 1; then
-  mpi="-I$MPI_INCLUDE_PATH"
+  mpi="-I$MPI_INCLUDE_PATH -DMPI"
   mpi_libs=
 fi
 

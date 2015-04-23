@@ -1,7 +1,0 @@
-set ignorecase
-1,$ s$dmp_modules/mpif$dmp_modules/mpi_donothing/mpif$g
-1,$ s$dmp_modules/mpi_mod$dmp_modules/mpi_donothing/mpi_mod$g
-1,$ s$dmp_modules/mpi_utility$dmp_modules/mpi_donothing/mpi_utility$g
-1,$ s$dmp_modules/parallel_mpi_mod$dmp_modules/mpi_donothing/parallel_mpi_mod$g
-1,$ s$dmp_modules/sendrecv$dmp_modules/mpi_donothing/sendrecv$g
-w

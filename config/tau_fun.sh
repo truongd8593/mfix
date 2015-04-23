@@ -162,7 +162,6 @@ skip_this(){
 
   PDTPARSER=f95parse
 
-  if test $USE_DMP = 1; then
     echo " Running parser for parallel compilation"
     $PDTPARSER -I$MFIX_SRC -I$MFIX_SRC/des \
       $MFIX_SRC/*.f $MFIX_SRC/dmp_modules/*.f $MFIX_SRC/des/*.f \
@@ -170,20 +169,6 @@ skip_this(){
       $MFIX_SRC/chem/*.f \
       $MFIX_SRC/cohesion/*.f -R free \
       -o$MFIX_SRC/$MFIX_PDB
-
-  else
-
-    $PDTPARSER -I$MFIX_SRC -I$MFIX_SRC/des \
-      $MFIX_SRC/*.f \
-      $MFIX_SRC/dmp_modules/mpi_donothing/*.f \
-      $MFIX_SRC/des/*.f \
-      $MFIX_SRC/dqmom/*.f $MFIX_SRC/thermochemical/*.f  \
-      $MFIX_SRC/chem/*.f \
-      $MFIX_SRC/cohesion/*.f -R free \
-      -o$MFIX_SRC/$MFIX_PDB
-  fi
-
-
 
 #instrumented files (*.inst.f) from the temporary location
 # and remove the temporary directory created for storing these files during parsing

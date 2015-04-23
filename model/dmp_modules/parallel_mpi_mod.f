@@ -12,6 +12,9 @@
 
         integer :: ierr
 
+        numPEs = 1
+        myPE = 0
+#ifdef MPI
 
         call MPI_Init(ierr)
         call MPI_Check( 'parallel_init:MPI_Init ', ierr)
@@ -21,16 +24,18 @@
 
         call MPI_COMM_RANK( MPI_COMM_WORLD, myPE, ierr )
         call MPI_Check( 'parallel_init:MPI_Comm_size ', ierr )
-
+#endif
         return
         end subroutine parallel_init
 
         subroutine parallel_fin()
 
+#ifdef MPI
         integer :: ierr
 
         call MPI_Finalize(ierr)
         call MPI_Check( 'parallel_init:MPI_Finalize ', ierr)
+#endif
 
         return
         end subroutine parallel_fin
@@ -39,6 +44,7 @@
         character(len=*),intent(in) :: msg
         integer, intent(in) :: ierr
 
+#ifdef MPI
         character(len=512) :: errmsg
         integer :: resultlen, ierror
 
@@ -48,6 +54,7 @@
                 print*, errmsg(1:resultlen)
                 stop '** ERROR ** '
         endif
+#endif
 
         return
         end subroutine MPI_Check

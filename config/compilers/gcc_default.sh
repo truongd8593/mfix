@@ -1,4 +1,5 @@
 incs=
+mpi=
 
 # Functions for MPI
 . $MFIX_CONFIG/mpi_fun.sh
@@ -26,6 +27,7 @@ fi
 if test $USE_DMP = 1; then
   FORTRAN_CMD=mpif90
   LINK_CMD=mpif90
+  mpi="-DMPI"
 else
   FORTRAN_CMD=gfortran
   LINK_CMD=gfortran
@@ -55,7 +57,7 @@ dbg=
 if test ${USE_DEBUG} = 1; then dbg="-g"; fi
 
 # Base flags for GNU Fortran
-common="-c -I. ${incs} -fconvert='big-endian' -cpp"
+common="-c -I. ${mpi} ${incs} -fconvert='big-endian' -cpp"
 # To display the flags mfix.exe is compiled with, run:
 # >
 # > readelf -p .GCC.command.line mfix.exe
