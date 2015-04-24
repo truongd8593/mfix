@@ -1,7 +1,20 @@
-#!/bin/bash -exl
+#!/bin/csh -ex
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N mms_01
+##
+## Number of cores to request
+#$ -pe dev 32
+##
+#$ -r n
+##
+## Queue Name
+#$ -q dev
 
 # set case directory
-export CASE_DIR=`pwd`
+setenv CASE_DIR `pwd`
 
 # load modules
 module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
@@ -18,8 +31,9 @@ cd $CASE_DIR
 #../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
 
 # remove these files if exists:
-echo "******** Removing old files..."
-if [ -e [de_norms_collected.dat] ]; then rm de_norms_collected.dat; fi
+ echo "******** Removing old files..."
+ #if [ -e [de_norms_collected.dat] ]; then rm de_norms_collected.dat; fi
+ rm de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
@@ -28,10 +42,10 @@ cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
-echo "******** Running mesh_16..."
-$CASE_DIR/mfix.exe imax=16 jmax=16 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+# echo "******** Running mesh_16..."
+# $CASE_DIR/mfix.exe imax=16 jmax=16 > out.log
+# cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+# rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
@@ -43,17 +57,17 @@ rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
 echo "******** Running mesh_64..."
-mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+#mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
+#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+#rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #mkdir mesh_64
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_64/
 
 # Run mesh_128 (i.e., 128x128 for 2D, 128x128x128 for 3D)
 echo "******** Running mesh_128..."
-mpirun -np 16 $CASE_DIR/mfix.exe imax=128 jmax=128 nodesi=8 nodesj=2 nodesk=1 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+#mpirun -np 16 $CASE_DIR/mfix.exe imax=128 jmax=128 nodesi=8 nodesj=2 nodesk=1 > out.log
+#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+#rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Evaluate observed orders
 cp ../usr_common/ooa_test.f95 $CASE_DIR
