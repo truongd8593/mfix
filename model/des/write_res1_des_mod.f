@@ -174,6 +174,7 @@
 ! Count the number of real neighbors.
          cPROCCNT = 0
          DO LC1 = 1, NEIGH_MAX
+            if (0 .eq. NEIGHBORS(LC1)) EXIT
             IF(PEA(NEIGHBORS(LC1),1)) THEN
                cPROCCNT = cPROCCNT +1
             ENDIF
@@ -566,6 +567,7 @@
       LC2 = 1
       IF(lLOC2GLB) THEN
          DO LC1 = 1, NEIGH_MAX
+            if (0 .eq. NEIGHBORS(LC1)) EXIT
             IF(PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
                LC2 = LC2 + 1
@@ -573,6 +575,7 @@
          ENDDO
       ELSE
          DO LC1 = 1, NEIGH_MAX
+            if (0 .eq. NEIGHBORS(LC1)) EXIT
             IF(PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = INPUT_I(LC1)
                LC2 = LC2 + 1
@@ -622,6 +625,7 @@
 
       LC2 = 1
       DO LC1 = 1, NEIGH_MAX
+         if (0 .eq. NEIGHBORS(LC1)) EXIT
          IF(PEA(NEIGHBORS(LC1),1)) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
@@ -671,6 +675,7 @@
 ! Pack the local buffer, skipping data for deleted particles.
       LC2 = 1
       DO LC1 = 1, NEIGH_MAX
+         if (0 .eq. NEIGHBORS(LC1)) EXIT
          IF(PEA(NEIGHBORS(LC1),1)) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
