@@ -9,7 +9,7 @@ CLEANFILES=*.$(FC_MODEXT)
 MODULE=$(top_srcdir)
 AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 
-src_overrides := $(wildcard *.f) $(wildcard **/*.f)
+src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_namelist.f)
 src_objs := $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
@@ -17,6 +17,10 @@ src_objs := $(patsubst %.f,%.o,$(src_overrides))
 bin_PROGRAMS = mfix
 mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
 mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
+
+# read_namelist needs rebuilt here in case usrnlst.inc is overridden
+read_namelist.f:
+	cp $(top_srcdir)/model/read_namelist.f .
 
 # top level directory needs to be built first
 main:
