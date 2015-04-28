@@ -10,12 +10,13 @@ MODULE=$(top_srcdir)
 AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_database.f read_namelist.f rxn_com_mod.f)
+src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
-mfix_LDADD = $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
+mfix_SOURCES = $(top_srcdir)/model/mfix.f
+mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
 
 # read_namelist needs rebuilt here in case usrnlst.inc is overridden
 read_database.f: mfix_directory_path.inc
