@@ -9,6 +9,24 @@ CLEANFILES=*.$(FC_MODEXT)
 MODULE=$(top_srcdir)
 AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 
+################################################################
+#                                                              #
+#      OpenMP and MPI support                                  #
+#                                                              #
+#      --enable-smp and --enable-dmp options in configure.ac   #
+#                                                              #
+################################################################
+
+if OPENMP
+AM_FCFLAGS += $(OPENMP_FCFLAGS)
+AM_LDFLAGS += $(OPENMP_FCFLAGS)
+endif
+
+if MPI
+AM_FCFLAGS += -DMPI
+AM_LDFLAGS += -DMPI
+endif
+
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_database.f read_namelist.f rxn_com_mod.f)
 src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
