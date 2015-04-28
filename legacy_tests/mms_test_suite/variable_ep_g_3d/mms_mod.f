@@ -210,7 +210,7 @@
       use compar, only      : myPE, PE_IO
       use compar, only      : ijkstart3, ijkend3
       use functions, only   : funijk_gl
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use functions, only   : IS_ON_myPE_owns
       use geometry, only    : imax1, jmax1, kmax1
       use geometry, only    : dx, dy, dz
@@ -321,7 +321,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALCULATE_MMS_SOURCE
       use compar, only      : ijkstart3, ijkend3
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use geometry, only    : dx, dy, dz
       use param1, only      : half
       IMPLICIT NONE
@@ -417,7 +417,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -450,7 +450,7 @@
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
       double precision      :: ros
 
 
@@ -481,7 +481,7 @@
          augyz*pi*ugyz*zt*cos(augyz*pi*yt*zt) + avgx*pi*vgx*cos(avgx*pi*xt) -&
          avgxy*pi*vgxy*yt*sin(avgxy*pi*xt*yt) -&
          avgzx*pi*vgzx*zt*sin(avgzx*pi*xt*zt))/(-es0 - esx*cos(aesx*pi*xt) -&
-         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)
       case(5)
       !us!
         mms_function = us0*sin(0.5*pi*(xt + yt + zt))**2/(es0 + esx*cos(aesx*pi*xt) +&
@@ -564,7 +564,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -592,12 +592,12 @@
                 esx=0.06d0, esy=-0.1d0, esz=0.06d0, &
                 esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
                 aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
-                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0              
+                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
       double precision      :: Ths0=100.0d0, &
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
 
 ! local variables within source functions
       double precision      :: ros, mug, rog, MW, Rg, mus, Cpg, kg, &
@@ -610,7 +610,7 @@
       kg    = K_g0
       MW    = MW_AVG
       Rg    = Gas_Const
-      mus   = MU_s0
+      mus   = MU_s0(1)
       ros   = ro_s0(1)
       Cps   = C_ps0(1)
       ks    = K_s0(1)
@@ -858,7 +858,7 @@
          esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) +&
          (-apgx*pgx*pi*sin(apgx*pi*xt) - apgxy*pgxy*pi*yt*sin(apgxy*pi*xt*yt) -&
          apgzx*pgzx*pi*zt*sin(apgzx*pi*xt*zt))*(-es0 - esx*cos(aesx*pi*xt) -&
-         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)
       case(3)
       !vgsrc!
         mms_source = -mug*(pi**2*(-2*aesy**2*esy**2*pi*(augyz*ugyz*yt*cos(augyz*pi*yt*zt) -&
@@ -1100,7 +1100,7 @@
          esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)) +&
          (-apgxy*pgxy*pi*xt*sin(apgxy*pi*xt*yt) - apgy*pgy*pi*sin(apgy*pi*yt) +&
          apgyz*pgyz*pi*zt*cos(apgyz*pi*yt*zt))*(-es0 - esx*cos(aesx*pi*xt) -&
-         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0) 
+         esy*cos(aesy*pi*yt) - esz*sin(aesz*pi*zt) + 1.0)
       case(4)
       !wgsrc!
         mms_source = -mug*(-pi**2*(2*aesz**2*esz**2*pi*(augxy*ugxy*xt*sin(augxy*pi*xt*yt) +&
@@ -1427,7 +1427,7 @@
          esx*cos(aesx*pi*xt) + esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))) +&
          (-apgx*pgx*pi*sin(apgx*pi*xt) - apgxy*pgxy*pi*yt*sin(apgxy*pi*xt*yt) -&
          apgzx*pgzx*pi*zt*sin(apgzx*pi*xt*zt))*(es0 + esx*cos(aesx*pi*xt) +&
-         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt)) 
+         esy*cos(aesy*pi*yt) + esz*sin(aesz*pi*zt))
       case(6)
       !vssrc!
         mms_source = 2*aesy*aesz*esy*esz*mus*pi**2*ws0*sin(aesy*pi*yt)*cos(aesz*pi*zt)/(es0&
@@ -1611,7 +1611,7 @@
          atgyz**2*pi**2*tgyz*zt**2*sin(atgyz*pi*yt*zt)) -&
          kg*(-atgyz**2*pi**2*tgyz*yt**2*sin(atgyz*pi*yt*zt) -&
          atgz**2*pi**2*tgz*sin(atgz*pi*zt) -&
-         atgzx**2*pi**2*tgzx*xt**2*cos(atgzx*pi*xt*zt)) 
+         atgzx**2*pi**2*tgzx*xt**2*cos(atgzx*pi*xt*zt))
       case(9)
       !tssrc!
         mms_source = Cps*ros*(us0*(-atsx*pi*tsx*sin(atsx*pi*xt) -&
@@ -1633,7 +1633,7 @@
          atsyz**2*pi**2*tsyz*zt**2*sin(atsyz*pi*yt*zt)) -&
          ks*(-atsyz**2*pi**2*tsyz*yt**2*sin(atsyz*pi*yt*zt) -&
          atsz**2*pi**2*tsz*sin(atsz*pi*zt) -&
-         atszx**2*pi**2*tszx*xt**2*cos(atszx*pi*xt*zt)) 
+         atszx**2*pi**2*tszx*xt**2*cos(atszx*pi*xt*zt))
       case(10)
       !ropgsrc!
         mms_source = zero
@@ -1642,7 +1642,7 @@
         mms_source = zero
       case(12)
       !thssrc!
-        mms_source = zero 
+        mms_source = zero
       end select
 
 
