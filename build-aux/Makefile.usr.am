@@ -49,6 +49,9 @@ usrmodule.deps: $(src_overrides)
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
+	for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $1); do \
+	    echo "${main_mod}: main" >> $1; \
+	done;
 	$(GREP) -l species.inc /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
 $(eval -include usrmodule.deps)

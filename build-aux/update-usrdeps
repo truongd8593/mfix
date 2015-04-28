@@ -9,8 +9,3 @@ ESC_MODDIR=$(echo ${MODDIR} | sed 's/\./\\./g')
 for p in $(${GREP} -o "^[a-zA-Z0-9_]*.${MODEXT}" $1); do
     ${SED} -i -e "s!${ESC_MODDIR}/${p}!${p}!g" $1;
 done
-
-# make every target depend on target "main"
-for p in $(${GREP} -o -E "\S+\.${MODEXT}" $1); do
-    echo "$p: main" >> $1
-done
