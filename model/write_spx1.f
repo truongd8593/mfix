@@ -585,6 +585,7 @@
 
 
      USE geometry
+     use param, only: dimension_3
      USE compar           !//
      USE mpi_utility      !//d pnicol : for gatherWriteSpx
      USE sendrecv         !//d pnicol : for gatherWriteSpx
@@ -629,6 +630,7 @@
 
 
      USE geometry
+     use param, only: dimension_3
      USE compar           !//
      USE mpi_utility      !//d pnicol : for gatherWriteSpx
      USE sendrecv         !//d pnicol : for gatherWriteSpx

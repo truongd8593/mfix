@@ -245,10 +245,12 @@
       END SUBROUTINE READ_RES1
 
       subroutine readScatterRes(VAR, array2, array1, init, NEXT_REC)
+        use param1, only: zero, undefined
+        use param, only: dimension_3
         USE geometry
         USE funits
         USE compar
-          USE cdist
+        USE cdist
         USE mpi_utility
         USE sendrecv
         USE in_binary_512
@@ -284,7 +286,7 @@
 
 
       subroutine readScatterRes_netcdf(VAR, array2, array1, ncid , varid)
-
+      USE param, only: dimension_3
       USE geometry
       USE compar
       USE cdist

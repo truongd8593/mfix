@@ -34,6 +34,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE INIT_ICBC_FLAG
 
+      use param1, only: zero
       use run, only: RUN_TYPE
 
       use mpi_utility
@@ -215,6 +216,8 @@
       use ic, only: IC_I_W, IC_I_E
       use ic, only: IC_J_S, IC_J_N
       use ic, only: IC_K_B, IC_K_T
+
+      use param, only: dimension_ic
 
       use sendrecv
       use mpi_utility

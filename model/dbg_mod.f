@@ -241,7 +241,8 @@
 !      use run
 !      use sendrecv
       use functions
-
+      use param, only: dimension_3, dimension_m
+      use param1, only: zero
 
       IMPLICIT NONE
 

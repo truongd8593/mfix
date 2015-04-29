@@ -15,26 +15,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       MODULE tmp_array
+      IMPLICIT NONE
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE compar
-      USE funits
-!-----------------------------------------------
-
-! temporary storage of dimension (IJK)
+! temporary storage of dimension_3
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: &
          ARRAY1, ARRAY2, ARRAY3, ARRAY4
 
-! temporary storage array of dimension (IJK, LM)
+! temporary storage array of dimension_3, dimension_lm
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: &
          ArrayLM
 
-! temporary storage for 4th order scheme
+! temporary storage for 4th order scheme of dimension_4
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
 
-! temporary storage of dimension (ijk)
+! temporary storage of dimension of dimension_3
       INTEGER, DIMENSION(:), ALLOCATABLE :: ARRAY1I
 
       character(LEN=3), dimension(:), pointer :: ARRAY1C
@@ -49,6 +43,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_tmp_array
+      USE compar, only: myPE
+      USE funits, only: dmp_log
+      IMPLICIT NONE
       IF(tmp_array_locked) THEN
          IF (DMP_LOG) WRITE(*,*) &
             'Error:  Multiple use of tmp_array (tmp_array_mod.f)'
@@ -62,6 +59,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE unlock_tmp_array
+      IMPLICIT NONE
       tmp_array_locked = .false.
       END SUBROUTINE unlock_tmp_array
 
@@ -69,6 +67,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_tmp_array2
+      USE compar, only: myPE
+      USE funits, only: dmp_log
+      IMPLICIT NONE
       IF(tmp_array2_locked) THEN
          IF(DMP_LOG) WRITE(*,*) &
             'Error:  Multiple use of tmp_array2 (tmp_array_mod.f)'
@@ -82,6 +83,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE unlock_tmp_array2
+      IMPLICIT NONE
       tmp_array2_locked = .false.
       END SUBROUTINE unlock_tmp_array2
 
@@ -89,6 +91,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_tmp4_array
+      USE compar, only: myPE
+      USE funits, only: dmp_log
+      IMPLICIT NONE
       IF(tmp4_array_locked) THEN
          IF(DMP_LOG) WRITE(*,*) &
             'Error:  Multiple use of tmp_array4 (tmp_array_mod.f)'
@@ -102,6 +107,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE unlock_tmp4_array
+      IMPLICIT NONE
       tmp4_array_locked = .false.
       END SUBROUTINE unlock_tmp4_array
 

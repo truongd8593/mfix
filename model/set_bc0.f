@@ -976,6 +976,7 @@
 ! IJK location where Ppg is fixed.
       use bc, only: IJK_P_g
       use indices
+      use param1, only: undefined_i
       use mpi_utility
       use functions
       implicit none

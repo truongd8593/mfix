@@ -86,6 +86,7 @@
 !---------------------------------------------------------------------//
       use funits,   only : DMP_LOG
       use output,   only : FULL_LOG
+      use param1,   only : zero
       use run,      only : TIME
 
       use mpi_utility

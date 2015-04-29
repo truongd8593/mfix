@@ -109,6 +109,8 @@
       use funits, only: DMP_LOG
 ! Solids species mass fractions.
       use fldvar, only: X_s
+
+      use param1, only: zero
 ! Number of phase species.
       use physprop, only: NMAX
 ! Index of inert species.

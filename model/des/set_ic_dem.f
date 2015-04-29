@@ -28,6 +28,8 @@
 
       USE des_rxns, only: DES_X_s
 
+      use param1, only: undefined, zero
+
       use physprop, only: C_PS0
       use physprop, only: SMAX, NMAX
 

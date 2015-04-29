@@ -1,34 +1,29 @@
       MODULE matrix
 
+! Definitions for sparse matrix
 
-      Use param
-      Use param1
-
-
-!   Definitions for sparse matrix
-!
-!                      East
-      INTEGER          e
+! East
+      INTEGER :: e
       PARAMETER (e = 1)
-!
-!                      West
-      INTEGER          w
+
+! West
+      INTEGER :: w
       PARAMETER (w =-1)
-!
-!                      North
-      INTEGER          n
+
+! North
+      INTEGER :: n
       PARAMETER (n = 2)
-!
-!                      South
-      INTEGER          s
+
+! South
+      INTEGER :: s
       PARAMETER (s =-2)
-!
-!                      Top
-      INTEGER          t
+
+! Top
+      INTEGER :: t
       PARAMETER (t = 3)
-!
-!                      Bottom
-      INTEGER          b
+
+! Bottom
+      INTEGER :: b
       PARAMETER (b =-3)
 
       END MODULE matrix
