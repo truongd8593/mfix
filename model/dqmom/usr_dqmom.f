@@ -13,6 +13,7 @@
       USE scalars, only: NSCALAR
       USE scalars, only: IJK_INDEX, YSTART
       USE fldvar, only: ROP_s, RO_s, SCALAR
+      use param, only: dim_scalar2
 
       USE geometry
       USE indices
