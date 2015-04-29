@@ -18,7 +18,7 @@
 ! Flag: Set optimal LEQ solver parameters for parallel runs.
       use leqsol, only: OPT_PARALLEL
 ! Discretization scheme for various equations
-      USE run, only: DISCRETIZE
+      USE run, only: DISCRETIZE, SHEAR
 ! Solve system transpose
       use leqsol, only: DO_TRANSPOSE
 ! Minimize dot porducts in BiCGSTAB
@@ -34,6 +34,7 @@
 ! Calculate dot-products more efficiently for serial runs.
       use parallel, only: IS_SERIAL
 
+      use param, only: dim_eqs
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -59,16 +60,26 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_NUMERICS")
 
+      DO L = 1,DIM_EQS
+         IF(DISCRETIZE(L) > 8 .OR. DISCRETIZE(L) < 0) THEN
+            WRITE(ERR_MSG,2002) trim(ivar('DISCRETIZE',L)),&
+               trim(ival(DISCRETIZE(L)))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+ 2002 FORMAT('Error 2002: Invalid option ', A,' = ', A, '.',/  &
+         'Please correct the mfix.dat file.')
+
 
 ! Check  Fourth-order scheme requirements.
       IF (FPFOI) THEN
-         DO L = 1,8
+         DO L = 1,DIM_EQS
             IF(DISCRETIZE(L) <= 1) THEN
                WRITE(ERR_MSG,2000)
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDDO
- 2000 FORMAT('Error 2000: Fourth-order scheme (FPFOI) requireds ',     &
+ 2000 FORMAT('Error 2000: Fourth-order scheme (FPFOI) requires ',     &
          'DISCRETIZE >= 2',/'for all equations. Please correct the ',  &
          'mfix.dat file.')
       ENDIF
@@ -82,7 +93,14 @@
  2001 FORMAT('Error 2001: CHI_SCHEME for species equations is only ',  &
          'implemented',/'for SMART and MUSCL discretization schemes ', &
          '[DISCRTIZE(7)].',/'Please correct the mfix.dat file.')
-        ENDIF
+         ENDIF
+         IF (SHEAR) THEN
+            WRITE(ERR_MSG,2003)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+ 2003 FORMAT('Error 2003: CHI_SCHEME is currently not implemented ',   &
+         'with SHEAR ',/'option. See calc_chi in module chischeme for '&
+         'details.',/'Please correct the mfix.dat file.')
+         ENDIF
       ENDIF
 
 
