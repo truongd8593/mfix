@@ -2,45 +2,34 @@
 !                                                                      C
 !  Subroutine: CONV_DIF_U_s                                            C
 !  Purpose: Determine convection diffusion terms for U_s momentum eqs  C
-!           The off-diagonal coefficients calculated here must be      C
-!           positive. The center coefficient and the source vector     C
-!           are negative;                                              C
-!           See source_u_s                                             C
+!  The off-diagonal coefficients calculated here must be posotive.     C
+!  The center coefficient and the source vector are negative.          C
+!  See source_u_s                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 24-DEC-96  C
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CONV_DIF_U_S(A_M, B_M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-! maximum number of computational cells, number of solids phases
+!---------------------------------------------------------------------//
       USE param, only: dimension_3, dimension_m
-
-! kinetic theories
       USE run, only: kt_type_enum
       USE run, only: ghd_2007
-! run time flag for deferred correction
       USE run, only: def_cor
-! run time flag to solve x momentum equation
       USE run, only: momentum_x_eq
-! discretization scheme for indicated equation
       USE run, only: discretize
 
-! number of solids phases
       USE physprop, only: mmax
 
-! solids phase viscosity
       USE visc_s, only: mu_s
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 
@@ -48,12 +37,12 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER :: M
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       DO M = 1, MMAX
         IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
@@ -75,7 +64,7 @@
                 ENDIF
              ENDIF
 
-            CALL DIF_U_IS (MU_S(1,M), A_M, B_M, M, IER)
+            CALL DIF_U_IS (MU_S(1,M), A_M, M, IER)
           ENDIF
         ENDIF
       ENDDO
@@ -87,14 +76,13 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: STORE_A_U_s0                                            C
-!  Purpose: Determine convection diffusion terms for U_s momentum eqs  C
-!           The off-diagonal coefficients calculated here must be      C
-!           positive. The center coefficient and the source vector     C
-!           are negative. FOUP                                         C
-!           See source_u_s                                             C
+!  Purpose: Determine convection diffusion terms for U_s momentum eqs. C
+!  The off-diagonal coefficients calculated here must be positive.     C
+!  The center coefficient and the source vector are negative. See      C
+!  source_u_s.                                                         C
+!  Implement FOUP discretization.                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 29-APR-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
@@ -102,12 +90,10 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE STORE_A_U_S0(A_U_S, M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE parallel
@@ -126,18 +112,18 @@
       USE fun_avg
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,&
                  IJKNE, IJKP, IJKT, IJKTE
@@ -150,7 +136,7 @@
       DOUBLE PRECISION :: D_f
 ! for cartesian grid:
       DOUBLE PRECISION :: AW,HW,VELW
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 ! Calculate convection-diffusion fluxes through each of the faces
 
@@ -348,12 +334,11 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: STORE_A_U_sdc                                           C
-!  Purpose: To use deferred correction method to solve the u-momentum  C
-!           equation. This method combines first order upwind and a    C
-!           user specified higher order method                         C
+!  Purpose: Use deferred correction method to solve the u-momentum     C
+!  equation. This method combines first order upwind and a user        C
+!  specified higher order method                                       C
 !                                                                      C
 !  Author: C. GUENTHER                                Date: 8-APR-99   C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
@@ -361,12 +346,10 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE STORE_A_U_SDC(A_U_S, M, B_M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE compar
       USE cutcell
       USE discretization, ONLY: fpfoi_of
@@ -392,24 +375,24 @@
       USE xsi_array
       Use tmp_array,  U => Array1, V => Array2, WW => Array3
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,&
-                 IJKNE, IJKP, IJKT, IJKTE
-      INTEGER :: IMJK, IM, IJKW
-      INTEGER :: IJMK, JM, IPJMK, IJKS, IJKSE
-      INTEGER :: IJKM, KM, IPJKM, IJKB, IJKBE
+      INTEGER :: I, J, K, IP, IM, JM, KM, IJK
+      INTEGER :: IPJK, IMJK
+      INTEGER :: IJPK, IJMK
+      INTEGER :: IJKP, IJKM
+      INTEGER :: IPJMK, IPJKM
       INTEGER :: IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
       INTEGER :: IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
 ! indicator for shear
@@ -442,7 +425,7 @@
 ! the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
 
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_tmp4_array
       call lock_tmp_array   ! locks array1, array2, array3 (locally u, v, ww)
@@ -462,12 +445,11 @@
          CALL send_recv3(tmp4)
       ENDIF
 
-!!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
+!!$omp parallel do private(IJK,I,IP,IPJK)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          IP = IP1(I)
          IPJK = IP_OF(IJK)
-         IJKE = EAST_OF(IJK)
 
 ! East face (i+1, j, k)
          IF(CUT_U_TREATMENT_AT(IJK)) THEN
@@ -517,13 +499,11 @@
 ! ---------------------------------------------------------------->>>
 
 !!$omp      parallel do         &
-!!$omp&     private(I,  J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,    &
-!!$omp&                    IJKNE, IJKP, IJKT, IJKTE,  D_f,      &
-!!$omp&                    IMJK, IM, IJKW,      &
-!!$omp&                    IJMK, JM, IPJMK, IJKS, IJKSE,        &
-!!$omp&                    IJKM, KM, IPJKM, IJKB, IJKBE, &
-!!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
-!!$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
+!!$omp&     private(I, J, K, IP, IM, JM, KM, IJK,               &
+!!$omp&             IPJK, IMJK, IJPK, IJMK, IJKP, IJKM,         &
+!!$omp&             IPJMK, IPJKM,                               &
+!!$omp&             D_f, MOM_HO, MOM_LO, EAST_DC, WEST_DC, NORTH_DC,&
+!!$omp&             SOUTH_DC, TOP_DC,BOTTOM_DC)
       DO IJK = ijkstart3, ijkend3
          IF (FLOW_AT_E(IJK)) THEN
             I = I_OF(IJK)
@@ -535,15 +515,7 @@
             IJMK = JM_OF(IJK)
             IJKP = KP_OF(IJK)
             IJKM = KM_OF(IJK)
-            IJKE = EAST_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKE
-            ELSE
-               IJKC = IJK
-            ENDIF
             IP = IP1(I)
-            IJKN = NORTH_OF(IJK)
-            IJKNE = EAST_OF(IJKN)
 
 ! Third Ghost layer information
             IPPP  = IP_OF(IP_OF(IPJK))
@@ -614,8 +586,6 @@
 ! DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i+1/2, j, k+1/2)
             IF (DO_K) THEN
                IJKP = KP_OF(IJK)
-               IJKT = TOP_OF(IJK)
-               IJKTE = EAST_OF(IJKT)
                IF(WW(IJK) >= ZERO)THEN
                   MOM_LO = U_S(IJK,M)
                   IF (FPFOI) MOM_HO = FPFOI_OF(U_S(IJKP,M), U_S(IJK,M), &
@@ -646,7 +616,6 @@
 ! DEFERRED CORRECTION CONTRIBUTION AT THE West face (i, j, k)
             IMJK = IM_OF(IJK)
             IM = IM1(I)
-            IJKW = WEST_OF(IJK)
             IF(U(IMJK) >= ZERO)THEN
                MOM_LO = U_S(IMJK,M)
                IF (FPFOI) MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IMJK,M), &
@@ -675,8 +644,6 @@
             IJMK = JM_OF(IJK)
             JM = JM1(J)
             IPJMK = IP_OF(IJMK)
-            IJKS = SOUTH_OF(IJK)
-            IJKSE = EAST_OF(IJKS)
             IF(V(IJMK) >= ZERO)THEN
                MOM_LO = U_S(IJMK,M)
                IF (FPFOI) MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJMK,M), &
@@ -706,8 +673,6 @@
                IJKM = KM_OF(IJK)
                KM = KM1(K)
                IPJKM = IP_OF(IJKM)
-               IJKB = BOTTOM_OF(IJK)
-               IJKBE = EAST_OF(IJKB)
                IF(WW(IJK) >= ZERO)THEN
                   MOM_LO = U_S(IJKM,M)
                   IF (FPFOI) MOM_HO = FPFOI_OF(U_S(IJK,M), U_S(IJKM,M), &
@@ -753,13 +718,12 @@
 !                                                                      C
 !  Subroutine: STORE_A_U_s1                                            C
 !  Purpose: Determine convection diffusion terms for U_s momentum eqs  C
-!           The off-diagonal coefficients calculated here must be      C
-!           positive. The center coefficient and the source vector     C
-!           are negative. Higher order                                 C
+!  The off-diagonal coefficients calculated here must be positive.     C
+!  The center coefficient and the source vector are negative.          C
+!  Implements higher order discretization.                             C
 !  See source_u_s                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 20-MAR-97  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
@@ -767,12 +731,10 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE STORE_A_U_S1(A_U_S, M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!----------------------------------------------------------------------//
       USE param
       USE param1
       USE parallel
@@ -795,16 +757,16 @@
       USE fun_avg
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, J, K, IP, IJK, IJKC, IPJK, IJPK, IJKE, IJKN,&
                  IJKNE, IJKP, IJKT, IJKTE
@@ -831,7 +793,7 @@
 ! the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
 
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_tmp_array
       call lock_xsi_array
@@ -839,37 +801,28 @@
 
 ! Calculate convection factors
 ! ---------------------------------------------------------------->>>
-!!$omp parallel do private(IJK,I,IP,IPJK,IJKE)
+!!$omp parallel do private(IJK,I,IP,IPJK)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          IP = IP1(I)
          IPJK = IP_OF(IJK)
-         IJKE = EAST_OF(IJK)
 
-! East face (i+1, j, k)
          IF(CUT_U_TREATMENT_AT(IJK)) THEN
+! East face (i+1, j, k)
             U(IJK) = (Theta_Ue_bar(IJK) * U_S(IJK,M) + &
                       Theta_Ue(IJK) * U_S(IPJK,M))
             CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',&
                     alpha_Ue_c(IJK),AW,HW,VELW)
             U(IJK) = U(IJK) * AW
-         ELSE
-            U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP)
-         ENDIF
 
 ! North face (i+1/2, j+1/2, k)
-         IF(CUT_U_TREATMENT_AT(IJK)) THEN
             V(IJK) = (Theta_U_nw(IJK) * V_S(IJK,M) + &
                       Theta_U_ne(IJK) * V_S(IPJK,M))
             CALL GET_INTERPOLATION_TERMS_S(IJK,M,'U_MOMENTUM',&
                     ALPHA_Un_c(IJK),AW,HW,VELW)
             V(IJK) = V(IJK) * AW
-         ELSE
-            V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I)
-         ENDIF
 
 ! Top face (i+1/2, j, k+1/2)
-         IF(CUT_U_TREATMENT_AT(IJK)) THEN
             IF (DO_K) THEN
                WW(IJK) = (Theta_U_tw(IJK) * W_S(IJK,M) + &
                           Theta_U_te(IJK) * W_S(IPJK,M))
@@ -878,6 +831,8 @@
                WW(IJK) = WW(IJK) * AW
             ENDIF
          ELSE
+            U(IJK) = AVG_X_E(U_S(IJK,M),U_S(IPJK,M),IP)
+            V(IJK) = AVG_X(V_S(IJK,M),V_S(IPJK,M),I)
             IF (DO_K) WW(IJK) = AVG_X(W_S(IJK,M),W_S(IPJK,M),I)
          ENDIF
       ENDDO   ! end do ijk
