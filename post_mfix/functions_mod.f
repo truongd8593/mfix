@@ -10,96 +10,144 @@
 !----------------------------------------------------------------------!
       MODULE functions
 
-      USE compar
-      USE geometry
-      USE indices
+      CONTAINS
 
- 
-CONTAINS
-
-  !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-  !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
-  !      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
+!//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
+!     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+!      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
       INTEGER FUNCTION funijk_0(li,lj,lk)
+      USE compar
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
       funijk_0 = funijk_io(li,lj,lk)
       END FUNCTION funijk_0
 
       INTEGER FUNCTION funijk(li,lj,lk)
+      USE compar
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
       funijk = funijk_io(li,lj,lk)
       END FUNCTION funijk
 
       INTEGER FUNCTION FUNIJK_GL (LI, LJ, LK)
+      USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
       FUNIJK_GL = FUNIJK_IO(LI, LJ, LK)
       END FUNCTION FUNIJK_GL
 
       INTEGER FUNCTION FUNIJK_IO(LI, LJ, LK)
+      USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
       FUNIJK_IO = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
       END FUNCTION FUNIJK_IO
 
 
-  INTEGER FUNCTION FUNIJK_PROC(LI, LJ, LK, LIPROC)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK, LIPROC
-    FUNIJK_PROC = 1 + (LJ - jstart3_all(LIPROC))+ &
-         (LI-Istart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1) &
-         + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
-         (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
-  END FUNCTION FUNIJK_PROC
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_OWNS                                           !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process.                          !
+!                                                                      !
+!  o Ownership is defined as belonging to the current PE's domain but  !
+!    as a cell in any of the PE's ghost layers.                        !
+!                                                                      !
+!  o Each computational cell is owned by one -and only one- PE.        !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_OWNS(LI, LJ, LK)
+        USE compar
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_OWNS = &
+         LI >= ISTART .AND. LI <= IEND .AND. &
+         LJ >= JSTART .AND. LJ <= JEND .AND. &
+         LK >= KSTART .AND. LK <= KEND
+
+      RETURN
+      END FUNCTION IS_ON_MYPE_OWNS
 
 
-  LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
-    IS_ON_myPE_plus2layers = LI.ge.istart3.and.LI.le.iend3.and. &
-         LJ.ge.jstart3.and.LJ.le.jend3.and. &
-         LK.ge.kstart3.and.LK.le.kend3
-  END FUNCTION IS_ON_myPE_plus2layers
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_WOBND                                          !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process and not a exterior ghost  !
+!  cell.                                                               !
+!                                                                      !
+!  o This is a subset of IS_ON_myPE_OWNS.                              !
+!                                                                      !
+!  o Exterior ghost cells are those in cells surrounding the domain.   !
+!    These are cells created to fully define boundary conditions       !
+!    (e.g., I == 1 where X_E(1) == ZERO).                              !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_wobnd (LI, LJ, LK)
+        USE compar
+        IMPLICIT NONE
 
-  !      IS_ON_myPE_plus2layers (LI, LJ, LK) = LI.ge.istart3.and.LI.le.iend3.and. &
-  !                               LJ.ge.jstart3.and.LJ.le.jend3.and. &
-  !                                LK.ge.kstart3.and.LK.le.kend3.and. &
-  !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+        INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_WOBND = &
+         LI >= ISTART1 .AND. LI <= IEND1 .AND. &
+         LJ >= JSTART1 .AND. LJ <= JEND1 .AND. &
+         LK >= KSTART1 .AND. LK <= KEND1   !.AND. &
+!        (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+
+      RETURN
+      END FUNCTION IS_ON_myPE_wobnd
+
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_Plus1Layer                                     !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process or contained in the fisrt !
+!  layer of ghost cells seen by the current PE.                        !
+!                                                                      !
+!  o This is a superset of IS_ON_myPE_OWNS.                            !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_plus1layer (LI, LJ, LK)
+        USE compar
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN) :: LI, LJ, LK
+
+      IS_ON_MYPE_PLUS1LAYER = &
+         LI >= ISTART2 .AND. LI <= IEND2 .AND. &
+         LJ >= JSTART2 .AND. LJ <= JEND2 .AND. &
+         LK >= KSTART2 .AND. LK <= KEND2
+
+      RETURN
+      END FUNCTION IS_ON_myPE_plus1layer
 
 
-  LOGICAL FUNCTION IS_ON_myPE_plus1layer (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
+!----------------------------------------------------------------------!
+!  Function: IS_ON_myPE_Plus2Layer                                     !
+!                                                                      !
+!  Purpose: Returns TRUE if the I,J,K values point to a computational  !
+!  cell that is OWNED by the current process or contained in the fisrt !
+!  two layers of ghost cells seen by the current PE.                   !
+!                                                                      !
+!  o This is a superset of IS_ON_Plus1Layer.                           !
+!                                                                      !
+!----------------------------------------------------------------------!
+      LOGICAL FUNCTION IS_ON_myPE_plus2layers (LI, LJ, LK)
+        USE compar
+        IMPLICIT NONE
 
-    IS_ON_myPE_plus1layer = LI.ge.istart2.and.LI.le.iend2.and. &
-         LJ.ge.jstart2.and.LJ.le.jend2.and. &
-         LK.ge.kstart2.and.LK.le.kend2
-  END FUNCTION IS_ON_myPE_plus1layer
+        INTEGER, INTENT(IN) :: LI, LJ, LK
 
-  LOGICAL FUNCTION IS_ON_myPE_owns (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
+      IS_ON_MYPE_PLUS2LAYERS = &
+         LI >= ISTART3 .AND. LI <= IEND3 .AND. &
+         LJ >= JSTART3 .AND. LJ <= JEND3 .AND. &
+         LK >= KSTART3 .AND. LK <= KEND3  !.AND. &
+!        (.NOT.DEAD_CELL_AT(LI,LJ,LK))
 
-    IS_ON_myPE_owns = LI.ge.istart.and.LI.le.iend.and. &
-         LJ.ge.jstart.and.LJ.le.jend.and. &
-         LK.ge.kstart.and.LK.le.kend
-  END FUNCTION IS_ON_myPE_owns
-
-  !      IS_ON_myPE_owns (LI, LJ, LK) = LI.ge.istart.and.LI.le.iend.and. &
-  !                               LJ.ge.jstart.and.LJ.le.jend.and. &
-  !                                LK.ge.kstart.and.LK.le.kend.and. &
-  !                                (.NOT.DEAD_CELL_AT(LI,LJ,LK))
-
-
-  LOGICAL FUNCTION IS_ON_myPE_wobnd (LI, LJ, LK)
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: LI, LJ, LK
-
-    IS_ON_myPE_wobnd = LI.ge.istart1.and.LI.le.iend1.and. &
-         LJ.ge.jstart1.and.LJ.le.jend1.and. &
-         LK.ge.kstart1.and.LK.le.kend1
-  END FUNCTION IS_ON_myPE_wobnd
-
+      RETURN
+      END FUNCTION IS_ON_myPE_plus2layers
 
 !---------------------------------------------------------------------//
 ! WEST_OF  (IJK)   = IJK + INCREMENT_FOR_w (CELL_CLASS(IJK))
@@ -419,25 +467,25 @@ CONTAINS
       END FUNCTION PS_WALL_AT
 
 ! Logical function to identify wall ICBC_FLAG
-  LOGICAL FUNCTION WALL_ICBC_FLAG(IJK)
-    USE geometry
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: IJK
-    WALL_ICBC_FLAG = ICBC_FLAG(IJK)(1:1) .EQ. 'W' .OR. &
+      LOGICAL FUNCTION WALL_ICBC_FLAG(IJK)
+      USE geometry
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IJK
+      WALL_ICBC_FLAG = ICBC_FLAG(IJK)(1:1) .EQ. 'W' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'S' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 's' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'c' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'C'
-  END FUNCTION WALL_ICBC_FLAG
+      END FUNCTION WALL_ICBC_FLAG
 
-  LOGICAL FUNCTION DEFAULT_WALL_AT(IJK)
-    USE geometry
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: IJK
-    DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
+      LOGICAL FUNCTION DEFAULT_WALL_AT(IJK)
+      USE geometry
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IJK
+      DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
          (ICBC_FLAG(IJK)(1:1) .NE. 'c'  .AND. &
          ICBC_FLAG(IJK)(1:1) .NE. 'C')
-  END FUNCTION DEFAULT_WALL_AT
+      END FUNCTION DEFAULT_WALL_AT
 
 
 ! Cyclic
