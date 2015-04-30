@@ -72,6 +72,8 @@
 ! Initialize time stepping variable for pure granular simulations.
       ELSE
          FACTOR = CEILING(real((TSTOP-TIME)/DTSOLID))
+         DT = DTSOLID
+         CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
       ENDIF   ! end if/else (des_continuum_coupled)
 
       NP = PIP - IGHOST_CNT
@@ -91,9 +93,9 @@
             IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
             IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
          ENDIF
-         DES_SPX_DT = SPX_DT(1)
          CALL CALC_PG_GRAD
       ENDIF
+
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
