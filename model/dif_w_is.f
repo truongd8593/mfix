@@ -119,7 +119,7 @@
                         IJKE = EAST_OF(IJK)
                         IJKT = TOP_OF(IJK)
                         IJKTE = EAST_OF(IJKT)
-                        IPJK = KP_OF(IJK)
+                        IPJK = IP_OF(IJK)
 !
                         D_F = AVG_Z_H(AVG_X_H(DIF(IJK),DIF(IJKE),I),AVG_X_H(DIF&
                            (IJKT),DIF(IJKTE),I),K)*ODX_E(I)*AYZ_W(IJK)
