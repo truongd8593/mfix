@@ -422,7 +422,7 @@
 !$omp     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,         &
 !$omp             D_fe, d_fw, d_fn, d_fs, d_ft, d_fb,              &
 !$omp             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)  &
-!$omp     shared(ijkstart3, ijkend3, do_k, a_w_g)
+!$omp     shared(ijkstart3, ijkend3, a_w_g)
 
       DO IJK = ijkstart3, ijkend3
 
