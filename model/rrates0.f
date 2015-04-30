@@ -84,6 +84,8 @@
       use param, only: DIMENSION_N_g
 ! Number of solids phase species.
       use param, only: DIMENSION_N_s
+      use param1, only: dimension_lm
+      use param1, only: zero
 ! Indicates that the energy equations are solved.
       use run, only: ENERGY_EQ
 ! Indicates that the species equations are solved.

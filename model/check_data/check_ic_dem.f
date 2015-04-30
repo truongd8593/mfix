@@ -4,14 +4,14 @@
 !  Author:   R.Garg                                   Date: 11-Mar-14  !
 !                                                                      !
 !  Purpose: check the initial conditions input section for DEM model   !
-!     - calculate the number of particles needed to initalize the      !
+!     - calculate the number of particles needed to initialize the      !
 !        DEM model                                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_DEM
 
 
-! Runtime Flag: Generate initial particle configuation.
+! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only : gener_part_config
 ! Simulation dimension (2D/3D)
       USE discretelement, only: DIMN

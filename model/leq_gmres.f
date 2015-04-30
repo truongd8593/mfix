@@ -171,15 +171,13 @@
 ! Local variables
 !-----------------------------------------------
 
-      DOUBLE PRECISION V(IJKSTART3:IJKEND3,ITMAX+1)
+      DOUBLE PRECISION, dimension(:,:), allocatable :: V
       DOUBLE PRECISION H(ITMAX+1,ITMAX)
       DOUBLE PRECISION CS(ITMAX)
       DOUBLE PRECISION SN(ITMAX)
       DOUBLE PRECISION Y(ITMAX)
 
-      DOUBLE PRECISION R(IJKSTART3:IJKEND3)
-      DOUBLE PRECISION TEMP(IJKSTART3:IJKEND3)
-      DOUBLE PRECISION WW(IJKSTART3:IJKEND3)
+      DOUBLE PRECISION, dimension(:), allocatable :: R,TEMP,WW
 
       DOUBLE PRECISION E1(ITMAX+2)
       DOUBLE PRECISION SS(ITMAX+2)
@@ -201,6 +199,12 @@
       CHARACTER(LEN=40) :: NAME
 !-----------------------------------------------
 
+
+      ! allocating
+      allocate(V(IJKSTART3:IJKEND3,ITMAX+1))
+      allocate(R(IJKSTART3:IJKEND3))
+      allocate(TEMP(IJKSTART3:IJKEND3))
+      allocate(WW(IJKSTART3:IJKEND3))
 
 ! initializing
       NAME = 'LEQ_GMRES0 ' // TRIM(VNAME)
@@ -593,6 +597,11 @@
          CALL WRITE_DEBUG(NAME, 'ERR RATIO ', ERROR/ERROR0 )
          CALL WRITE_DEBUG(NAME, 'RESID RATIO ', NORM_R/NORM_R0 )
       ENDIF   ! end if (jdebug>=1)
+
+      deallocate(V)
+      deallocate(R)
+      deallocate(TEMP)
+      deallocate(WW)
 
       RETURN
       END SUBROUTINE LEQ_GMRES0

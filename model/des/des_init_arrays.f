@@ -120,6 +120,7 @@
 
 ! Particle state flag
       PEA(LB:UB,:) = .FALSE.
+      NEIGHBOR_INDEX(:) = 0
 
 ! DES grid bin information
       DG_PIJK(LB:UB) = -1

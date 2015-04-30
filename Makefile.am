@@ -112,6 +112,11 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
+if MPI
+AM_FCFLAGS += -DMPI
+AM_LDFLAGS += -DMPI
+endif
+
 ################################################################
 #      libmfix_a_SOURCES                                          #
 #                                                              #

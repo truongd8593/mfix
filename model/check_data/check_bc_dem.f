@@ -14,7 +14,7 @@
 !---------------------------------------------------------------------//
 ! User specified BC
       use bc, only: BC_TYPE
-! User specifed: BC geometry
+! User specified: BC geometry
       use bc, only: BC_EP_s
 ! Use specified flag for ignoring PO BC for discrete solids
       USE bc, only: BC_PO_APPLY_TO_DES

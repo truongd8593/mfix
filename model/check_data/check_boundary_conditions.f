@@ -26,7 +26,7 @@
       use bc, only: BC_DEFINED
 ! Use specified BC type
       use bc, only: BC_TYPE
-! User specifed BC solids bulk density
+! User specified BC solids bulk density
       use bc, only: BC_ROP_s
 ! Solids volume fraction at BC
       use bc, only: BC_EP_s
@@ -162,7 +162,7 @@
 ! Gas phase BC varaibles
       use bc, only: BC_EP_g, BC_T_g, BC_X_g, BC_P_g
       use bc, only: BC_U_g, BC_V_g, BC_W_g
-! Sslids phase BC variables.
+! Solids phase BC variables.
       USE bc, only: BC_EP_s, BC_ROP_s, BC_T_s, BC_X_s
       use bc, only: BC_U_s, BC_V_s, BC_W_s
 ! Scalar equation BC variables.
@@ -171,7 +171,7 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Parameter constant for unspecifed values.
+! Parameter constant for unspecified values.
       use param1, only: UNDEFINED
 ! Maximum number of disperse phases.
       use param, only: DIM_M

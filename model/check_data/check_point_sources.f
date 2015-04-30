@@ -73,7 +73,7 @@
 !---------------------------------------------------------------------//
 ! Flag: PS contains geometric data and/or specified type
       use ps, only: PS_DEFINED, POINT_SOURCE
-! User specifed: PS geometry
+! User specified: PS geometry
       use ps, only: PS_X_e, PS_X_w, PS_I_e, PS_I_w
       use ps, only: PS_Y_n, PS_Y_s, PS_J_n, PS_J_s
       use ps, only: PS_Z_t, PS_Z_b, PS_K_t, PS_K_b
@@ -390,7 +390,7 @@
       use physprop, only: SMAX
 ! Number of discrete solids phases.
       use discretelement, only: DES_MMAX
-! Number of slolids species.
+! Number of solids species.
       use physprop, only: SMAX, NMAX
 
 ! Global Parameters:

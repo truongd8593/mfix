@@ -73,7 +73,7 @@
       SUBROUTINE calculate_de_norms
       Use param1, only    : zero
       Use compar, only    : ijkstart3, ijkend3, myPE
-      Use functions, only : i_of, j_of, k_of
+      Use indices, only   : i_of, j_of, k_of
       Use functions, only : IS_ON_myPE_owns
       Use usr, only       : de_p_g, de_u_g, de_v_g
       Use usr, only       : p_g_ex, u_g_ex, v_g_ex
@@ -258,7 +258,7 @@
 
       SUBROUTINE calculate_exact_solution_channel
       Use compar, only    : ijkstart3, ijkend3
-      Use functions, only : i_of, j_of, k_of
+      Use indices, only   : i_of, j_of, k_of
       Use geometry, only  : dx, dy, dz, imax1
       Use usr, only       : xtr, ytr, ztr
       Use usr, only       : p_g_ex, u_g_ex, v_g_ex

@@ -179,10 +179,10 @@
 ! Indicates type of Error control.
       ODE_ITOL = 2 ! :: EWT(i) = RTOL * ABS(Y(i)) * ATOL(i)
 
-! Relative error tolerance paramter.
+! Relative error tolerance parameter.
       ODE_RTOL(1) = 1.0D-5
 
-! Absolue error tolerance parameter.
+! Absolute error tolerance parameter.
       IF(.NOT.(allocated(ODE_ATOL))) allocate(ODE_ATOL(ODE_DIMN_all))
       ODE_ATOL(:) = 1.0D-6  ! All Equations
 

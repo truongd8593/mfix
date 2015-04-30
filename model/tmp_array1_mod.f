@@ -14,14 +14,7 @@
 
       MODULE tmp_array1
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE compar
-      USE funits
-!-----------------------------------------------
-
-! temporary storage
+! temporary storage of dimension_3, dimension_m
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: &
          ARRAYm1
 
@@ -33,6 +26,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_tmp_array1
+      USE compar, only: myPE
+      USE funits, only: dmp_log
+      IMPLICIT NONE
       IF(tmp_array1_locked) THEN
          IF(DMP_LOG) WRITE(*,*) &
             'Error:  Multiple use of tmp_array1 (tmp_array1_mod.f)'
@@ -46,6 +42,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE unlock_tmp_array1
+      IMPLICIT NONE
       tmp_array1_locked = .false.
       END SUBROUTINE unlock_tmp_array1
 

@@ -41,7 +41,7 @@
 
 ! Local Parameters:
 !---------------------------------------------------------------------//
-! The minimum number of computational cell layers requried.
+! The minimum number of computational cell layers required.
       INTEGER, PARAMETER :: DMP_MIN = 4
 
 ! Initialize the error manager.
@@ -138,7 +138,7 @@
          'inconsistent',/'with the domain decomposition, (NODESi * ',  &
          'NODESj * NODESk).',/' These numbers must match.',2/,         &
          '  Number of requested processes: ',I8,/,                     &
-         '  Doman decomposition : ',I8,/)
+         '  Domain decomposition : ',I8,/)
 
 
       END SUBROUTINE CHECK_DMP_PREREQS

@@ -505,7 +505,7 @@
             MASS_L = (PI/6.d0)*(DES_D_P0(L)**3)*DES_RO_S(L)
             MASS_EFF = MASS_M*MASS_L/(MASS_M+MASS_L)
 
-! Calculate the M-L normal and tangential damping cofficients.
+! Calculate the M-L normal and tangential damping coefficients.
             IF(EN .NE. ZERO) THEN
                DES_ETAN(M,L) = 2.0D0*SQRT(KN*MASS_EFF) * ABS(LOG(EN))
                DES_ETAN(M,L) = DES_ETAN(M,L)/SQRT(PI*PI + (LOG(EN)**2))
@@ -713,7 +713,7 @@
                iVal(V_POISSON(M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-! Calculate the shear moduleus for phase M.
+! Calculate the shear modulus for phase M.
          G_MOD(M) = 0.5d0*E_YOUNG(M)/(1.d0+V_POISSON(M))
 
 ! Calculate the mass of a phase M particle.

@@ -867,16 +867,17 @@
 ! initally specified velocity field and granular temperature
       USE ic, only: IC_U_s, IC_V_s, IC_W_s, IC_Theta_M
 
-! Cut_cell identifier array
-      USE cutcell, only: cut_cell_at
-
-      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE
-
 ! MPPIC specific IC region specification.
       USE ic, only: IC_PIC_CONST_NPC, IC_PIC_CONST_STATWT
 
+! Cut_cell identifier array
+      USE cutcell, only: cut_cell_at
+
 ! Maximum number of IC regions and solids phases
       USE param, only: DIMENSION_IC
+      USE param, only: DIM_M
+      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE, HALF
+
 
 ! Constant: 3.14159...
       USE constant, only: PI

@@ -32,7 +32,7 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Flag: Fluid affects particles, but particles do not impact fluid.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Number of discrtete solids phases.
+! Number of discrete solids phases.
       use discretelement, only: DES_MMAX
 ! Number of phases specified by the user.
       use physprop, only: MMAX, SMAX

@@ -9,20 +9,48 @@ CLEANFILES=*.$(FC_MODEXT)
 MODULE=$(top_srcdir)
 AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 
-src_overrides := $(wildcard *.f) $(wildcard **/*.f)
-src_objs := $(patsubst %.f,%.o,$(src_overrides))
+################################################################
+#                                                              #
+#      OpenMP and MPI support                                  #
+#                                                              #
+#      --enable-smp and --enable-dmp options in configure.ac   #
+#                                                              #
+################################################################
+
+if OPENMP
+AM_FCFLAGS += $(OPENMP_FCFLAGS)
+AM_LDFLAGS += $(OPENMP_FCFLAGS)
+endif
+
+if MPI
+AM_FCFLAGS += -DMPI
+AM_LDFLAGS += -DMPI
+endif
+
+src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_database.f read_namelist.f rxn_com_mod.f)
+src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
+mfix_SOURCES = $(top_srcdir)/model/mfix.f
 mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
+
+# read_namelist needs rebuilt here in case usrnlst.inc is overridden
+read_database.f: mfix_directory_path.inc
+	cp $(top_srcdir)/model/$@ .
+
+read_namelist.f: mfix_directory_path.inc
+	cp $(top_srcdir)/model/$@ .
+
+rxn_com_mod.f: mfix_directory_path.inc
+	cp $(top_srcdir)/model/$@ .
+
+mfix_directory_path.inc:
+	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
 
 # top level directory needs to be built first
 main:
-	rm -f $(top_srcdir)/model/mfix_directory_path.inc
-	rm -f $(top_srcdir)/model/read_database.o
-	rm -f $(top_srcdir)/model/rxn_com_mod.o
 	$(MAKE) -C $(top_srcdir) mfix
 
 $(top_srcdir)/model/mfix.f: main
@@ -41,11 +69,14 @@ species.inc:
 #########################################################################
 
 usrmodule.deps: $(src_overrides)
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-	$(GREP) -l species.inc /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
+	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
+	    echo "${main_mod}: main" >> $@; \
+	done;
+	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
 $(eval -include usrmodule.deps)
 CLEANFILES += usrmodule.deps species.inc

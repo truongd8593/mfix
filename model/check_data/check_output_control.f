@@ -34,7 +34,7 @@
 ! Number of SPx files.
       USE param1, only: N_SPX
 
-! Global Module proceedures:
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 
@@ -104,7 +104,7 @@
 
       IF(FRAME(1)<-1) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: INALID VALUE OF FRAME =', FRAME
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF FRAME =', FRAME
             WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF

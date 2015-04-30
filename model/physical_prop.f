@@ -33,6 +33,7 @@
       use geometry
       use indices
       use mpi_utility
+      use param, only: dimension_m
       use param1
       use physprop
 

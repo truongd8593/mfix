@@ -210,7 +210,7 @@
       use compar, only      : myPE, PE_IO
       use compar, only      : ijkstart3, ijkend3
       use functions, only   : funijk_gl
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use functions, only   : IS_ON_myPE_owns
       use geometry, only    : imax1, jmax1, kmax1
       use geometry, only    : dx, dy, dz
@@ -321,7 +321,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALCULATE_MMS_SOURCE
       use compar, only      : ijkstart3, ijkend3
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use geometry, only    : dx, dy, dz
       use param1, only      : half
       IMPLICIT NONE
@@ -614,7 +614,7 @@
       kg    = K_g0
       MW    = MW_AVG
       Rg    = Gas_Const
-      mus   = MU_s0
+      mus   = MU_s0(1)
       ros   = ro_s0(1)
       Cps   = C_ps0(1)
       ks    = K_s0(1)

@@ -79,7 +79,7 @@
 
       use discretelement, only: MAX_PIP, PIP
       use discretelement, only: iGHOST_CNT
-      use discretelement, only: PAIR_NUM, PAIR_MAX
+      use discretelement, only: NEIGH_MAX
 
       use compar, only: numPEs
       use machine, only: OPEN_N1
@@ -95,6 +95,7 @@
       INTEGER, INTENT(OUT) :: lNEXT_REC
 
       CHARACTER(len=32) :: lFNAME
+      INTEGER :: NEIGH_NUM
 
 ! Integer Error Flag
       INTEGER :: IER
@@ -126,12 +127,12 @@
          ENDIF
 
          PIP = pIN_COUNT
-         PAIR_NUM = cIN_COUNT
+         NEIGH_NUM = cIN_COUNT
 
-         DO WHILE(PAIR_NUM > PAIR_MAX)
-            PAIR_MAX = 2*PAIR_MAX
+         DO WHILE(NEIGH_NUM > NEIGH_MAX)
+            NEIGH_MAX = 2*NEIGH_MAX
          ENDDO
-         CALL PAIR_GROW
+         CALL PARTICLE_GROW(NEIGH_MAX)
 
       ELSE
 
@@ -545,7 +546,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_COL(lNEXT_REC)
 
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
       use compar, only: numPEs
 
       use mpi_init_des, only: DES_RESTART_GHOST
@@ -569,9 +570,7 @@
 
 ! All process read positions for distributed IO restarts.
       IF(bDIST_IO) THEN
-         DO LC1 = 1, 2
-            CALL READ_RES_DES(lNEXT_REC, PAIRS(LC1,:))
-         ENDDO
+         CALL READ_RES_DES(lNEXT_REC, NEIGHBORS(:))
       ENDIF
 
       CALL DES_RESTART_GHOST
@@ -590,7 +589,7 @@
 ! Broadcast collision data to all the other processes.
        CALL GLOBAL_ALL_SUM(iPAR_COL)
 
-! Determine which process owns the pair datasets. This is done either
+! Determine which process owns the neighbor datasets. This is done either
 ! through matching global ids or a search. The actual method depends
 ! on the ability to allocate a large enough array.
       CALL MAP_cARRAY_TO_PROC(COL_CNT)
@@ -599,15 +598,15 @@
       CALL GLOBAL_TO_LOC_COL
 
 ! Set up the read/scatter arrary information.
-      cPROCCNT = PAIR_NUM
+      cPROCCNT = NEIGH_MAX
       cROOTCNT = cIN_COUNT
 
 ! Set the recv count for this process.
-      cRECV = PAIR_NUM
+      cRECV = NEIGH_MAX
 
 ! Construct an array for the Root process that states the number of
 ! (real) particles on each process.
-      lScatterCnts(:) = 0; lScatterCnts(mype) = PAIR_NUM
+      lScatterCnts(:) = 0; lScatterCnts(mype) = NEIGH_MAX
       CALL GLOBAL_SUM(lScatterCnts,cSCATTER)
 
 ! Calculate the displacements for each process in the global array.
@@ -633,7 +632,7 @@
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP, PEA
-      use discretelement, only: PAIR_MAX, PAIR_NUM
+      use discretelement, only: NEIGH_MAX
 
 !      use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -649,6 +648,7 @@
       INTEGER :: IER
 ! Max global id.
       INTEGER :: MAX_ID, lSTAT
+      INTEGER :: NEIGH_NUM
 
       INTEGER, ALLOCATABLE :: lGLOBAL_OWNER(:)
 
@@ -669,7 +669,7 @@
 ! but much faster collision owner detection.
       IF(lSTAT == 0) THEN
 
-         WRITE(ERR_MSG,"('Matching DES pair data by global owner.')")
+         WRITE(ERR_MSG,"('Matching DES neighbor data by global owner.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE.,FOOTER=.FALSE.)
 
          lGLOBAL_OWNER = 0
@@ -678,7 +678,7 @@
                lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
          ENDDO
 
-! Loop over the neighbor pair list and match the read global ID to
+! Loop over the neighbor list and match the read global ID to
 ! one of the global IDs.
          lCOL_CNT = 0
          cRestartMap = 0
@@ -692,10 +692,10 @@
 ! quick and dirty match so do a search instead.
       ELSE
 
-         WRITE(ERR_MSG,"('Matching DES pair data by search.')")
+         WRITE(ERR_MSG,"('Matching DES neighbor data by search.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE.,FOOTER=.FALSE.)
 
-! Loop over the neighbor pair list and match the read global ID to
+! Loop over the neighbor list and match the read global ID to
 ! one of the global IDs.
          lCOL_CNT = 0
          cRestartMap = 0
@@ -738,8 +738,8 @@
                iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1100 FORMAT('Error 1100: Unable to locate process pair owner:',/      &
-         3x,'Pair Number:',A,/3x,'Particles: ',A,' and ',A)
+ 1100 FORMAT('Error 1100: Unable to locate process neighbor owner:',/      &
+         3x,'Neighbor Number:',A,/3x,'Particles: ',A,' and ',A)
 
          ELSEIF(cRestartMap(LC1) > numPEs) THEN
 
@@ -748,8 +748,8 @@
               iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1101 FORMAT('Error 1101: More than one process pair owner:',/         &
-         3x,'Pair Number:',A,/3x,'Particles: ',A,' and ',A)
+ 1101 FORMAT('Error 1101: More than one process neighbor owner:',/         &
+         3x,'Neighbor Number:',A,/3x,'Particles: ',A,' and ',A)
 
 ! Shift the rank ID to the correct value.
          ELSE
@@ -763,12 +763,12 @@
 
 ! Each process stores the number of particles-on-its-process. The error
 ! flag is set if that number exceeds the maximum.
-      PAIR_NUM = lCOL_CNT(myPE)
+      NEIGH_NUM = lCOL_CNT(myPE)
 
-      DO WHILE(PAIR_NUM > PAIR_MAX)
-         PAIR_MAX = 2*PAIR_MAX
+      DO WHILE(NEIGH_NUM > NEIGH_MAX)
+         NEIGH_MAX = 2*NEIGH_MAX
       ENDDO
-      CALL PAIR_GROW
+      CALL NEIGHBOR_GROW(NEIGH_MAX)
 
       CALL FINL_ERR_MSG
 
@@ -785,7 +785,7 @@
       SUBROUTINE GLOBAL_TO_LOC_COL
 
       use compar, only: numPEs
-      use discretelement, only: PAIRS, PAIR_NUM
+      use discretelement, only: NEIGHBORS, NEIGH_MAX
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
       use discretelement, only: PEA
@@ -843,30 +843,32 @@
       LC3 = 1
       LC2 = 0
       UNMATCHED = 0
-      LP1: DO LC1 = 1, cIN_COUNT
-         IF(cRestartMap(LC1) == myPE) THEN
-            LC2 = LC2 + 1
-            PAIRS(1,LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
-            PAIRS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
-! Verify that the local indices are valid. If they do not match it is
-! likely because one of the pair was removed via an outlet at the time
-! the RES file was written but the ghost data wasn't updated.
-            IF(PAIRS(1,LC2) == 0 .OR. PAIRS(2,LC2) == 0) THEN
-               UNMATCHED = UNMATCHED + 1
-               IF(dFLAG) THEN
-                  WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), PAIRS(1,LC2),   &
-                     iPAR_COL(2,LC1), PAIRS(2,LC2)
-                  CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
-               ENDIF
-               DO WHILE(PEA(LC3,1))
-                  LC3 = LC3 + 1
-               ENDDO
-               PAIRS(2,LC2) = LC3
-            ENDIF
-         ENDIF
-      ENDDO LP1
 
- 1100 FORMAT('Error 1100: Particle pair local indices are invalid.',/  &
+! FIXME Fix Restart
+ !      LP1: DO LC1 = 1, cIN_COUNT
+ !          IF(cRestartMap(LC1) == myPE) THEN
+ !             LC2 = LC2 + 1
+ !             NEIGHBORS(LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
+ !             NEIGHBORS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
+ ! ! Verify that the local indices are valid. If they do not match it is
+ ! ! likely because one of the neighbor was removed via an outlet at the time
+ ! ! the RES file was written but the ghost data wasn't updated.
+ !             IF(NEIGHBORS(1,LC2) == 0 .OR. NEIGHBORS(2,LC2) == 0) THEN
+ !                UNMATCHED = UNMATCHED + 1
+ !                IF(dFLAG) THEN
+ !                   WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), NEIGHBORS(1,LC2),   &
+ !                      iPAR_COL(2,LC1), NEIGHBORS(2,LC2)
+ !                   CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+ !                ENDIF
+ !                DO WHILE(PEA(LC3,1))
+ !                   LC3 = LC3 + 1
+ !                ENDDO
+ !                NEIGHBORS(2,LC2) = LC3
+ !             ENDIF
+ !          ENDIF
+ !       ENDDO LP1
+
+ 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
          5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
 
       CALL GLOBAL_ALL_SUM(UNMATCHED)
@@ -875,7 +877,7 @@
          CALL FLUSH_ERR_MSG
       ENDIF
 
- 1101 FORMAT(' Warning: 1101: ',A,' particle pair datasets were ',&
+ 1101 FORMAT(' Warning: 1101: ',A,' particle neighbor datasets were ',&
          'not matched',/' during restart.')
 
       IF(allocated(iLOCAL_ID)) deallocate(iLOCAL_ID)
@@ -899,8 +901,7 @@
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
-!      INTEGER, INTENT(OUT) :: INPUT_I
-      INTEGER :: INPUT_I
+      INTEGER, INTENT(OUT) :: INPUT_I
 
       IF(bDIST_IO) THEN
          READ(RDES_UNIT, REC=lNEXT_REC) INPUT_I
@@ -1304,7 +1305,7 @@
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
       use compar, only: numPEs
-      use discretelement, only: PAIR_NUM
+      use discretelement, only: NEIGH_MAX
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -1348,7 +1349,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, PAIR_NUM
+         DO LC1=1, NEIGH_MAX
             OUTPUT_I(LC1) = iProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1368,7 +1369,7 @@
       SUBROUTINE READ_RES_cARRAY_1D(lNEXT_REC, OUTPUT_D)
 
       use compar, only: numPEs
-      use discretelement, only: PAIR_NUM
+      use discretelement, only: NEIGH_MAX
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
       USE in_binary_512
@@ -1415,7 +1416,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=2)
-         DO LC1=1, PAIR_NUM
+         DO LC1=1, NEIGH_MAX
             OUTPUT_D(LC1) = dProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1435,7 +1436,7 @@
       SUBROUTINE READ_RES_cARRAY_1L(lNEXT_REC, OUTPUT_L)
 
       use compar, only: numPEs
-      use discretelement, only: PAIR_NUM
+      use discretelement, only: NEIGH_MAX
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
       USE in_binary_512i
@@ -1490,7 +1491,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, PAIR_NUM
+         DO LC1=1, NEIGH_MAX
             IF(iProcBuf(LC1) == 1) THEN
                OUTPUT_L(LC1) = .TRUE.
             ELSE

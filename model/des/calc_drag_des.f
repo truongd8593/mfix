@@ -134,7 +134,7 @@
       CALL COMP_MEAN_FIELDS
 
 ! Calculate gas-solids drag force on particle
-      IF(DES_CONTINUUM_COUPLED) CALL DRAG_GS_EXPLICIT1
+      IF(DES_CONTINUUM_COUPLED) CALL DRAG_GS_GAS1
 
 ! Apply the diffusion filter.
       IF(DES_DIFFUSE_MEAN_FIELDS) THEN

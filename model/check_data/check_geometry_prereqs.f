@@ -48,7 +48,7 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_GEOMETRY_PREREQS")
 
-! Verify that the domain decomposition was specifed.
+! Verify that the domain decomposition was specified.
       IF(IMAX == UNDEFINED_I .OR. JMAX == UNDEFINED_I .OR.             &
          (.NOT.NO_K .AND. KMAX == UNDEFINED_I) ) THEN
          WRITE(ERR_MSG,1000)
@@ -71,7 +71,7 @@
       ENDIF
 
  1100 FORMAT('Error 1100: Illegal geometry: NO_',A1,' is disabled. ',  &
-         'The same functionality',/'is acheived with one cell (',A1,   &
+         'The same functionality',/'is achieved with one cell (',A1,   &
          'MAX=1) and making the ',A,' walls',/'free-slip. Please ',    &
          'correct the mfix.dat file.')
 

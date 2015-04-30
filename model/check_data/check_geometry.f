@@ -115,7 +115,7 @@
       use discretelement, only: DESGRIDSEARCH_IMAX
       use discretelement, only: DESGRIDSEARCH_JMAX
       use discretelement, only: DESGRIDSEARCH_KMAX
-! Domain size specifed by the user.
+! Domain size specified by the user.
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
 ! Maximum particle size.
       use discretelement, only: MAX_RADIUS
@@ -144,7 +144,7 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_GEOMETRY_DES")
 
-! Calculate the max particle diamter and cell width.
+! Calculate the max particle diameter and cell width.
       MAX_DIAM = 2.0d0*MAX_RADIUS
       WIDTH = 3.0d0*(max_diam)
 

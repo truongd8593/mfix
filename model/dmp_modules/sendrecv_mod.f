@@ -91,7 +91,6 @@ contains
     integer, intent(in) :: ijkp
     integer, intent(out) :: i,j,k
 
-#ifdef MPI
     !-----------------------------------------------
     ! Local variables
     !-----------------------------------------------
@@ -144,7 +143,6 @@ contains
        call write_debug( name, 'i,j,k ', i,j,k )
        call write_debug( name, 'ijkp, gijk ', ijkp, gijk )
     endif
-#endif
 
     return
   end subroutine ijk_of
@@ -160,7 +158,6 @@ contains
     integer, intent(in) :: ijkp
     integer, intent(out) :: i,j,k
 
-#ifdef MPI
     !-----------------------------------------------
     ! Local variables
     !-----------------------------------------------
@@ -212,7 +209,6 @@ contains
        call write_debug( name, 'i,j,k ', i,j,k )
        call write_debug( name, 'ijkp, gijk ', ijkp, gijk )
     endif
-#endif
 
     return
   end subroutine ijk_of_gl

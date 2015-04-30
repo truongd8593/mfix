@@ -3131,6 +3131,7 @@
 
 
       DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N)
+      use param1, only: one
       USE constant
       USE mpi_utility
 

@@ -1,39 +1,45 @@
-MODULE xsi_array
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Use convection weighting factors for higher order          C
+!  discretization.                                                     C
+!                                                                      C
+!  IMPORTANT:  For using these arrays in a subroutine                  C
+!   -lock the module in the beginning of the subroutine                C
+!    call lock_xsi_array                                               C
+!   -and unlock the module at the end of the subroutine                C
+!    call unlock_xsi_array                                             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      Use param
-      Use param1
+      MODULE xsi_array
+      IMPLICIT NONE
 
-! IMPORTANT:  For using these arrays in a subroutine
-! lock the module in the beginning of the subroutine
-!   call lock_xsi_array
-!
-! and unlock the module at the end of the subroutine
-!   call unlock_xsi_array
-!
+! discretization factors xsi of dimension_3
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: XSI_e, XSI_n, &
+                                                     XSI_t
 
-!  discretization factors xsi
-   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: &
-      XSI_e, XSI_n, XSI_t
-
-!!!HPF$ align Xsi_e(:) with TT(:)
-!!!HPF$ align Xsi_n(:) with TT(:)
-!!!HPF$ align Xsi_t(:) with TT(:)
+      LOGICAL :: xsi_array_locked = .false.
 
 
-   LOGICAL :: xsi_array_locked = .false.
+      CONTAINS
 
-   CONTAINS
+
       SUBROUTINE lock_xsi_array
-        IF(xsi_array_locked)Then
-          Write(*,*)'Error:  Multiple use of xsi_array (xsi_array_mod.f)'
-          CALL MFIX_EXIT(myPE)
-        Else
-          xsi_array_locked = .true.
-        Endif
+      use compar, only: mype
+      IMPLICIT NONE
+      IF(xsi_array_locked) THEN
+         Write(*,*)'Error:  Multiple use of xsi_array ',&
+               '(xsi_array_mod.f)'
+         CALL MFIX_EXIT(myPE)
+      Else
+         xsi_array_locked = .true.
+      Endif
       END SUBROUTINE lock_xsi_array
 
+
       SUBROUTINE unlock_xsi_array
-        xsi_array_locked = .false.
+      IMPLICIT NONE
+      xsi_array_locked = .false.
       END SUBROUTINE unlock_xsi_array
 
-END MODULE xsi_array
+      END MODULE xsi_array

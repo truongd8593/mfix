@@ -210,7 +210,7 @@
       use compar, only      : myPE, PE_IO
       use compar, only      : ijkstart3, ijkend3
       use functions, only   : funijk_gl
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use functions, only   : IS_ON_myPE_owns
       use geometry, only    : imax1, jmax1, kmin1
       use geometry, only    : dx, dy, dz
@@ -321,7 +321,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALCULATE_MMS_SOURCE
       use compar, only      : ijkstart3, ijkend3
-      use functions, only   : i_of, j_of, k_of
+      use indices, only     : i_of, j_of, k_of
       use geometry, only    : dx, dy, dz
       use param1, only      : half
       IMPLICIT NONE
@@ -417,7 +417,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -450,12 +450,12 @@
 !                esx=0.0d0, esy=0.0d0, esz=0.0d0, &
 !                esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
 !                aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
-!                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0               
+!                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
       double precision      :: Ths0=100.0d0, &
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
       double precision      :: ros
 
 
@@ -544,7 +544,7 @@
                 ugx=3.0d0, ugy=-4.0d0, ugz=-3.0d0, &
                 ugxy=2.0d0, ugyz=1.5d0, ugzx=-2.0d0, &
                 augx=0.5d0, augy=0.85d0, augz=0.4d0, &
-                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0  
+                augxy=0.6d0, augyz=0.8d0, augzx=0.9d0
       double precision      :: vg0=9.0d0, &
                 vgx=-5.0d0, vgy=4.0d0, vgz=5.0d0, &
                 vgxy=-3.0d0, vgyz=2.5d0, vgzx=3.5d0, &
@@ -572,17 +572,17 @@
                 esx=0.06d0, esy=-0.1d0, esz=0.06d0, &
                 esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
                 aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
-                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0  
+                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
 !      double precision      :: es0=0.3d0, &
 !                esx=0.0d0, esy=0.0d0, esz=0.0d0, &
 !                esxy=0.0d0, esyz=0.0d0, eszx=0.0d0, &
 !                aesx=0.4d0, aesy=0.5d0, aesz=0.5d0, &
-!                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0                  
+!                aesxy=0.4d0, aesyz=0.4d0, aeszx=0.4d0
       double precision      :: Ths0=100.0d0, &
                 Thsx=5.0d0, Thsy=-10.0d0, Thsz=12.0d0, &
                 Thsxy=-8.0d0, Thsyz=10.0d0, Thszx=7.0d0, &
                 aThsx=0.8d0, aThsy=1.25d0, aThsz=0.7d0, &
-                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0                
+                aThsxy=0.5d0, aThsyz=0.6d0, aThszx=0.7d0
 
 ! local variables within source functions
       double precision      :: ros, mug, rog, MW, Rg, mus, Cpg, kg, &
@@ -595,7 +595,7 @@
       kg    = K_g0
       MW    = MW_AVG
       Rg    = Gas_Const
-      mus   = MU_s0
+      mus   = MU_s0(1)
       ros   = ro_s0(1)
       Cps   = C_ps0(1)
       ks    = K_s0(1)
@@ -650,7 +650,7 @@
          + 30.0*yt*(2.0*yt**2 + 1.0)/(0.1*xt**2 + 0.3))
       case(10)
       !ropgsrc!
-        mms_source = zero 
+        mms_source = zero
       case(11)
       !ropssrc!
         mms_source = zero

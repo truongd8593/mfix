@@ -7,14 +7,14 @@
 !     - ensure the first IC is defined over the entire domain with     !
 !        ep_g = 1 when more than one IC has solids                     !
 !     - ensure the ICs are non-overlapping                             !
-!     - calculate the number of particles needed to initalize the      !
+!     - calculate the number of particles needed to initialize the      !
 !        MPPIC model                                                   !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_MPPIC
 
 
-! Runtime Flag: Generate initial particle configuation.
+! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only : gener_part_config
 ! Simulation dimension (2D/3D)
       USE discretelement, only: DIMN

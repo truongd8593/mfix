@@ -25,7 +25,7 @@
       use rxns, only: USE_RRATES
 ! Number of continuum solids phases.
       use physprop, only: SMAX
-! Number of disctete (DEM/MPPIC) solids.
+! Number of discrete (DEM/MPPIC) solids.
       use discretelement, only: DES_MMAX
 ! User specified: Constant solids specific heat.
       use physprop, only: C_PS0
@@ -246,7 +246,7 @@
       USE run, only: FRICTION
 ! Flag: Solve granular energy eq
       USE run, only: GRANULAR_ENERGY
-! Flag: SOlve K-Epsilong Eq.
+! Flag: Solve K-Epsilon Eq.
       USE run, only: K_EPSILON
 ! Flag: Impose a mean shear on flow field.
       USE run, only: SHEAR
@@ -261,7 +261,7 @@
       USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
-! Initial turbulcence length scale
+! Initial turbulence length scale
       use constant, only: L_SCALE0
 ! Specularity coefficient for particle-wall collisions
       use constant, only: PHIP
@@ -287,7 +287,7 @@
 !---------------------------------------------------------------------//
 ! NONE
 
-! If the modles are not being used, return.
+! If the models are not being used, return.
       IF(SUBGRID_TYPE == UNDEFINED_C .AND. .NOT.SUBGRID_WALL) RETURN
 
 
@@ -332,7 +332,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2013 FORMAT('Error 2013: Invalid input. The SUBRID model is not ',    &
+ 2013 FORMAT('Error 2013: Invalid input. The SUBGRID model is not ',    &
           'available',/'with discrete solids phases.',/'Please ',      &
           'correct the mfix.dat file.')
 
@@ -579,7 +579,7 @@
 !----------------------------------------------------------------------!
 ! Subroutine: CHECK_SOLIDS_SPECIES_LEGACY                              !
 ! Purpose: These are legacy checks for using rrates.f to specify       !
-! chemcial reactions.                                                  !
+! chemical reactions.                                                  !
 !                                                                      !
 ! Author: J. Musser                                  Date: 03-FEB-14   !
 !----------------------------------------------------------------------!
@@ -841,8 +841,8 @@
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
 
- 1102 FORMAT('Error 1102: Invalid baseline inert speices mass',/       &
-         'fraction. The inert spcies mass fraction must be greater ',  &
+ 1102 FORMAT('Error 1102: Invalid baseline inert species mass',/       &
+         'fraction. The inert species mass fraction must be greater ',  &
          'than zero.',/' Phase ',I2,' Inert Species: ',I3,' X_s0 = 0.0')
 
 ! All of the information for variable solids density has been verified

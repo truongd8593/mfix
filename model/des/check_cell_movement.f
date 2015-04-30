@@ -388,6 +388,7 @@
 ! Location of cell faces (East, North, Top)
       use discretelement, only: XE, YN, ZT
 
+      use param1, only: large_number
       use mpi_utility
       USE error_manager
       USE functions

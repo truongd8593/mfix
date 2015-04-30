@@ -302,7 +302,7 @@
             WRITE(ERR_MSG, 1601) trim(adjustl(RDF_TYPE))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1601 FORMAT('Error 1601: The RDF_TYPE should NOT be sepecified when ',&
+ 1601 FORMAT('Error 1601: The RDF_TYPE should NOT be specified when ',&
          'MMAX = 1',/'because Carnahan-Starling is the only available',&
          ' radial distribution',/'function for monodisperse systems. ',&
          'Please correct the mfix.dat file.')

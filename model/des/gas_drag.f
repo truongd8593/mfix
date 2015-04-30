@@ -18,8 +18,6 @@
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
-! Flag: The fluid and discrete solids are explictly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
@@ -126,7 +124,7 @@
 
 !$omp parallel do default(none) &
 !$omp private(IJK, I, IJKE, tmp_A, tmp_B) &
-!$omp shared(IJKSTART3,IJKEND3,I_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_U, DES_EXPLICITLY_COUPLED, U_GO)
+!$omp shared(IJKSTART3,IJKEND3,I_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_U)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                I = I_OF(IJK)
@@ -134,8 +132,6 @@
 
                tmp_A = AVG_X(F_GDS(IJK), F_GDS(IJKE), I)
                tmp_B = AVG_X(DRAG_BM(IJK,1), DRAG_BM(IJKE,1), I)
-
-               IF(DES_EXPLICITLY_COUPLED) tmp_B = tmp_B+tmp_A*U_GO(IJK)
 
                A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_U(IJK) * tmp_A
                B_M(IJK,0) = B_M(IJK,0) - VOL_U(IJK) * tmp_B
@@ -167,8 +163,6 @@
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
-! Flag: The fluid and discrete solids are explictly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
@@ -275,7 +269,7 @@
 
 !$omp parallel do default(none) &
 !$omp private(IJK, J, IJKN, tmp_a, tmp_B) &
-!$omp shared(IJKSTART3, IJKEND3, J_OF, F_GDS, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V, DES_EXPLICITLY_COUPLED, V_GO)
+!$omp shared(IJKSTART3, IJKEND3, J_OF, F_GDS, DRAG_AM, DRAG_BM, A_M, B_M, VOL_V)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                J = J_OF(IJK)
@@ -283,8 +277,6 @@
 
                tmp_A = AVG_Y(F_GDS(IJK), F_GDS(IJKN), J)
                tmp_B = AVG_Y(DRAG_BM(IJK,2), DRAG_BM(IJKN,2), J)
-
-               IF(DES_EXPLICITLY_COUPLED) tmp_B = tmp_B+tmp_A*V_GO(IJK)
 
                A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_V(IJK) * tmp_A
                B_M(IJK,0) = B_M(IJK,0) - VOL_V(IJK) * tmp_B
@@ -315,8 +307,6 @@
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Flag: TFM and DEM solids exist.
       use discretelement, only: DES_CONTINUUM_HYBRID
-! Flag: The fluid and discrete solids are explictly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
@@ -417,7 +407,7 @@
 
 !$omp parallel do default(none) &
 !$omp private(IJK, K, IJKT, tmp_A, tmp_B) &
-!$omp shared(IJKSTART3,IJKEND3,K_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_W, DES_EXPLICITLY_COUPLED, W_GO)
+!$omp shared(IJKSTART3,IJKEND3,K_OF, F_GDS, DRAG_BM, A_M, B_M, VOL_W)
          DO IJK = IJKSTART3, IJKEND3
             IF(FLUID_AT(IJK)) THEN
                K = K_OF(IJK)
@@ -425,8 +415,6 @@
 
                tmp_A = AVG_Z(F_GDS(IJK), F_GDS(IJKT), K)
                tmp_B = AVG_Z(DRAG_BM(IJK,3), DRAG_BM(IJKT,3), K)
-
-               IF(DES_EXPLICITLY_COUPLED) tmp_B = tmp_B+tmp_A*W_GO(IJK)
 
                A_M(IJK,0,0) = A_M(IJK,0,0) - VOL_W(IJK) * tmp_A
                B_M(IJK,0) = B_M(IJK,0) - VOL_W(IJK) * tmp_B

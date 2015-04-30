@@ -67,7 +67,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param1, only: half, zero
+      USE param1, only: half, zero, undefined
       USE constant, only: pi
 
 ! trace of D_s at i, j, k

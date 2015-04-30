@@ -8,6 +8,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_PHASE_INDEX
 
+      use param1, only: small_number
+
       USE physprop, only: SMAX
 
       use discretelement, only: PEA, PIJK
