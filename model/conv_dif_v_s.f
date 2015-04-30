@@ -552,7 +552,7 @@
             JMMM  = JM_OF(JM_OF(IJMK))
             JMMM4 = funijk3(I_OF(JMMM), J_OF(JMMM), K_OF(JMMM))
             KPPP  = KP_OF(KP_OF(IJKP))
-            KPPP4 = funijk3(K_OF(IPPP), J_OF(KPPP), K_OF(KPPP))
+            KPPP4 = funijk3(I_OF(KPPP), J_OF(KPPP), K_OF(KPPP))
             KMMM  = KM_OF(KM_OF(IJKM))
             KMMM4 = funijk3(I_OF(KMMM), J_OF(KMMM), K_OF(KMMM))
 
