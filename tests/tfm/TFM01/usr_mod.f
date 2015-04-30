@@ -28,6 +28,9 @@
 ! format (BLOCK format):
         logical                               :: tec_output_block = .false.
 
+! set .true. for writing out the x-velocity profile:
+        logical                               :: x_velocity_profile = .true.
+
 ! exact solutions      
         double precision, allocatable         :: p_g_ex(:)
         double precision, allocatable         :: u_g_ex(:)

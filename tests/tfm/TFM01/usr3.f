@@ -398,13 +398,16 @@
       use geometry, only    : imin2, imin1, imax1, imax2
       use geometry, only    : jmin2, jmin1, jmax1, jmax2
       use geometry, only    : kmin2, kmin1, kmax1, kmax2
+      use geometry, only    : imax, jmax, kmax
+      use geometry, only    : dx, dy, dz
       use compar, only      : myPE, PE_IO
       use funits, only      : newunit
       use functions, only   : funijk_gl
       use fldvar, only      : p_g, u_g, v_g
       use usr, only         : p_g_ex, u_g_ex, v_g_ex
       use usr, only         : xtr, ytr, ztr
-      use usr, only         : tec_output_block, tec_no_k
+      use usr, only         : tec_output_block, tec_no_k, &
+                              x_velocity_profile
       use param1, only      : half
       use mpi_utility, only : gather
       IMPLICIT NONE
@@ -414,7 +417,7 @@
         integer             :: imjk, ijmk, ijkm
 
 ! file units
-        integer             :: ftcc
+        integer             :: ftcc, fxvp
 
 ! arrays to gather variables
         double precision, allocatable :: arr_Pg(:)
@@ -591,6 +594,43 @@
             close(ftcc)
 
           end if ! end of if(tec_output_block)
+
+! write tecplot data (point format) for the x-velocity profile at x=L/2:
+! - numerical solution for u_g          
+! - exact solution for u_g
+! - error for u_g
+
+          if(x_velocity_profile) then
+
+            open(unit=newunit(fxvp), &
+             file="solution_x_velocity_profile.dat", status='unknown')
+
+            write(fxvp,"(6a)") 'variables = "x""y""z""Ug""Ugex""UgErr"'
+            write(fxvp,*) 'zone T="',0,'" '
+            write(fxvp,*) 'J= ',JMAX
+
+            i = imax/2 + 1
+            k = kmin1
+            do j = jmin1, jmax1
+
+              ijk = funijk_gl(i,j,k)
+
+              xt = arr_xtr(ijk)
+              yt = arr_ytr(ijk) - dy(j)*half
+              zt = arr_ztr(ijk) - dz(k)*half
+
+              Ug_tmp(I,J,K) = arr_Ug(IJK)
+              Ugex_tmp(I,J,K) = arr_Ugex(IJK)
+
+              write(fxvp,*) xt, yt, zt, &
+                Ug_tmp(I,J,K), &
+                Ugex_tmp(I,J,K), &
+                Ug_tmp(I,J,K) - Ugex_tmp(I,J,K)
+
+            end do
+
+          endif ! end of if(x_velocity_profile)
+
 
         end if ! end of if(myPE==PE_IO)
 
