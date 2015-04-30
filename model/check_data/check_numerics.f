@@ -71,7 +71,7 @@
          'Please correct the mfix.dat file.')
 
 
-! Check  Fourth-order scheme requirements.
+! Check fourth-order scheme requirements.
       IF (FPFOI) THEN
          DO L = 1,DIM_EQS
             IF(DISCRETIZE(L) <= 1) THEN

@@ -100,7 +100,7 @@
 ! Functions for generating the LOCAL 3-D array index IJK from the
 ! 1-D indices I, J, and K.
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
-!      FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
+!     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
 !      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
       INTEGER FUNCTION funijk(li,lj,lk)
       USE compar
@@ -576,25 +576,25 @@
       END FUNCTION PS_WALL_AT
 
 ! Logical function to identify wall ICBC_FLAG
-  LOGICAL FUNCTION WALL_ICBC_FLAG(IJK)
-    USE geometry
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: IJK
-    WALL_ICBC_FLAG = ICBC_FLAG(IJK)(1:1) .EQ. 'W' .OR. &
+      LOGICAL FUNCTION WALL_ICBC_FLAG(IJK)
+      USE geometry
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IJK
+      WALL_ICBC_FLAG = ICBC_FLAG(IJK)(1:1) .EQ. 'W' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'S' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 's' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'c' .OR. &
          ICBC_FLAG(IJK)(1:1) .EQ. 'C'
-  END FUNCTION WALL_ICBC_FLAG
+      END FUNCTION WALL_ICBC_FLAG
 
-  LOGICAL FUNCTION DEFAULT_WALL_AT(IJK)
-    USE geometry
-    IMPLICIT NONE
-    INTEGER, INTENT(IN) :: IJK
-    DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
+      LOGICAL FUNCTION DEFAULT_WALL_AT(IJK)
+      USE geometry
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: IJK
+      DEFAULT_WALL_AT = ICBC_FLAG(IJK)(2:3) .EQ. '--' .AND. &
          (ICBC_FLAG(IJK)(1:1) .NE. 'c'  .AND. &
          ICBC_FLAG(IJK)(1:1) .NE. 'C')
-  END FUNCTION DEFAULT_WALL_AT
+      END FUNCTION DEFAULT_WALL_AT
 
 
 ! Cyclic

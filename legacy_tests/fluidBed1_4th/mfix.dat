@@ -14,7 +14,7 @@
   DT                    = 1.0E-4                        !time step
   ENERGY_EQ             = .FALSE.                       !do not solve energy eq
   SPECIES_EQ            = .FALSE.    .FALSE.            !do not solve species eq
-  DISCRETIZE = 8*2
+  DISCRETIZE = 10*2
   DEF_COR = .TRUE.
   FPFOI = .TRUE.
   C_FAC = 0.5
