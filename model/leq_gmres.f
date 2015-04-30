@@ -598,6 +598,11 @@
          CALL WRITE_DEBUG(NAME, 'RESID RATIO ', NORM_R/NORM_R0 )
       ENDIF   ! end if (jdebug>=1)
 
+      deallocate(V)
+      deallocate(R)
+      deallocate(TEMP)
+      deallocate(WW)
+
       RETURN
       END SUBROUTINE LEQ_GMRES0
 
