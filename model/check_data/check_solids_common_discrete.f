@@ -13,7 +13,7 @@
 !---------------------------------------------------------------------//
 ! Runtime Flag: Invoke gas/solids coupled simulation.
       USE discretelement, only: DES_CONTINUUM_COUPLED
-! Runtime Flag: Generate initial particle configuation.
+! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only: GENER_PART_CONFIG
 ! Runtime Flag: Invoke MPPIC model.
       USE mfix_pic, only: MPPIC
@@ -40,7 +40,7 @@
       USE discretelement, only: DES_NEIGHBOR_SEARCH
 ! User specified data out format (VTP, TecPlot)
       USE discretelement, only: DES_OUTPUT_TYPE
-! Max/Min particle radi
+! Max/Min particle radii
       USE discretelement, only: MAX_RADIUS, MIN_RADIUS
 ! Runtime Flag: Periodic boundaries
       USE discretelement, only: DES_PERIODIC_WALLS
@@ -147,7 +147,7 @@
         DES_PERIODIC_WALLS_Y .OR. DES_PERIODIC_WALLS_Z)
 
 
-! Overrite for restart cases.
+! Overwrite for restart cases.
       IF(TRIM(RUN_TYPE) .NE. 'NEW') GENER_PART_CONFIG = .FALSE.
 
 ! Check for valid neighbor search option.
@@ -314,7 +314,7 @@
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ! Verify the selected convective heat transfer coefficient model
       SELECT CASE(TRIM(DES_CONV_CORR))
-! Ranz, W.E. and Marshall, W.R., "Frication and transfer coefficients
+! Ranz, W.E. and Marshall, W.R., "Friction and transfer coefficients
 ! for single particles and packed beds,"  Chemical Engineering Science,
 ! Vol. 48, No. 5, pp 247-253, 1952.
       CASE ('RANZ_1952')
@@ -329,7 +329,7 @@
 
 ! Radiation Equation:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-! Verify that a emmisivity value is specified for each solids pase
+! Verify that a emmisivity value is specified for each solids phase
       DO M = SMAX+1, SMAX+DES_MMAX
          IF(DES_Em(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_Em',M))
@@ -337,7 +337,7 @@
          ENDIF
       ENDDO
 
-! Set the value of the Stefan-Boltzman Constant based on the untis
+! Set the value of the Stefan-Boltzman Constant based on the units
       IF(UNITS == 'SI')THEN
          SB_CONST = 5.6704d0*(10.0d0**(-8)) ! W/((m^2).K^4)
       ELSE
@@ -475,7 +475,7 @@
       USE discretelement, only: MAX_RADIUS
 ! Flag: Use Cartesian grid cut-cell implementation
       USE cutcell, only: CARTESIAN_GRID
-! Flag: Use STL represenation in CG
+! Flag: Use STL representation in CG
       USE cutcell, only: USE_STL
 
       use param1, only: UNDEFINED_I
@@ -495,7 +495,7 @@
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY")
 
 
-! DEM/MPPIC is restriced to CARTESIAN coordinates.
+! DEM/MPPIC is restricted to CARTESIAN coordinates.
       IF(COORDINATES == 'CYLINDRICAL') THEN
          WRITE (ERR_MSG, 1100)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -688,7 +688,7 @@
 
  2110 FORMAT('Error 2110: The selected interpolation scheme (',A,') ', &
          'does not',/'support diffusive filtering of mean field ',     &
-          'quantites. Please correct',/'the input file.')
+          'quantities. Please correct',/'the input file.')
 
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
 

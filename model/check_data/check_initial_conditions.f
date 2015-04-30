@@ -96,7 +96,7 @@
       use ic, only: IC_DEFINED
 ! Flag: IC type.
       use ic, only: IC_TYPE
-! User specifed: IC geometry
+! User specified: IC geometry
       use ic, only: IC_X_e, IC_X_w, IC_I_e, IC_I_w
       use ic, only: IC_Y_n, IC_Y_s, IC_J_n, IC_J_s
       use ic, only: IC_Z_t, IC_Z_b, IC_K_t, IC_K_b
@@ -124,7 +124,7 @@
 
 ! Local Variables:
 !---------------------------------------------------------------------//
-! Loop/varaible indices
+! Loop/variable indices
       INTEGER :: ICV
 ! Local spatial indices.
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
@@ -378,7 +378,7 @@
       use physprop, only: MW_AVG
 ! Number of gas phase species
       use physprop, only: NMAX
-! Specifed number of scalar equations.
+! Specified number of scalar equations.
       use scalars, only: NSCALAR
 ! Flag: Do not solve in specified direction.
       use geometry, only: NO_I, NO_J, NO_K
@@ -586,7 +586,7 @@
       use run, only: ENERGY_EQ
 ! Flag. Solve Species equations
       use run, only: SPECIES_EQ
-! Flag. Sovle Granular Energy PDE
+! Flag. Solve Granular Energy PDE
       use run, only: GRANULAR_ENERGY
 ! Flag. Solve variable solids density
       use run, only: SOLVE_ROs
@@ -797,7 +797,7 @@
  1405 FORMAT('Error 1405: No inert species for phase ',I2,' in IC ',   &
          'region ',I3,'.',/'Unable to calculate solids phase density. ',&
          'Please refer to the Readme',/' file for required variable ', &
-         'soilds density  model input parameters and',/' make the ',   &
+         'solids density  model input parameters and',/' make the ',   &
          'necessary corrections to the data file.')
 
 ! Calculate the solids density.
@@ -813,7 +813,7 @@
 
       DO M=1, MMAX_TOT
 
-! Clear out both varaibles if this phase is skipped.
+! Clear out both variables if this phase is skipped.
          IF(SKIP(M)) THEN
             IC_EP_S(ICV,M)  = ZERO
             IC_ROP_S(ICV,M) = ZERO

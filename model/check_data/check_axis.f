@@ -151,7 +151,7 @@
 ! 6) CHECK CONSISTENCY OF AXIS INPUT
   700 CONTINUE
 
-! This must be a legacy check becuase the code shouldn't get here
+! This must be a legacy check because the code shouldn't get here
 ! without exiting and DIMEN is calculated, not a hard-coded param.
       IF (NA<0 .OR. .NOT.NO_IJK .AND. NA>DIMEN-2) THEN
          WRITE(ERR_MSG, 1001) AXIS_INDEX//'MAX', trim(iVal(NA))

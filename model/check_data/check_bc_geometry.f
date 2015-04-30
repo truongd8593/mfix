@@ -15,7 +15,7 @@
       use bc, only: BC_DEFINED
 ! User specified BC
       use bc, only: BC_TYPE
-! User specifed: BC geometry
+! User specified: BC geometry
       use bc, only: BC_X_e, BC_X_w, BC_I_e, BC_I_w
       use bc, only: BC_Y_n, BC_Y_s, BC_J_n, BC_J_s
       use bc, only: BC_Z_t, BC_Z_b, BC_K_t, BC_K_b
@@ -417,7 +417,7 @@
 ! indices for error checking
       INTEGER :: IER
 
-! surface indictors
+! surface indicators
 ! a value of T indicates that the defined boundary region does not
 ! vary in indicated coordinate direction. that is, if bc_x_w is
 ! equal to bc_x_e then the boundary region must be in the yz plane

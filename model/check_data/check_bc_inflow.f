@@ -52,7 +52,7 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-! Sum together defiend gas phase species mass fractions.
+! Sum together defined gas phase species mass fractions.
       SUM_X = ZERO
       DO N = 1, NMAX(0)
          IF(BC_X_G(BCV,N) /= UNDEFINED) THEN
@@ -93,7 +93,7 @@
       ENDIF
 
 
-! Verify that species mass fractions are defined for mass flow BCs whe
+! Verify that species mass fractions are defined for mass flow BCs when
 ! using variable solids density. Needed to calculation RO_s
       DO M = 1, M_TOT
 
@@ -157,7 +157,7 @@
  1213 FORMAT('Error 1213: No inert species for phase ',I2,' in BC ',   &
          'region',I3,'.',/'Unable to calculate solids phase density. ',&
          'Please refer to the Readme',/' file for required variable ', &
-         'soilds density model input parameters and',/' make the ',   &
+         'solids density model input parameters and',/' make the ',   &
          'necessary corrections to the mfix.dat file.')
 
             ENDIF
@@ -500,7 +500,7 @@
       ENDDO
 
  1300 FORMAT('Warning 1300: ',A,' was undefined. This variable was ', &
-         'set ',/ 'to zero to be used as the inital value in the BC ',&
+         'set ',/ 'to zero to be used as the initial value in the BC ',&
          'region.')
 
       CALL FINL_ERR_MSG

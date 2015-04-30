@@ -24,7 +24,7 @@
       USE run, only: DT, ODT
 ! Flag: Use K-Epsilon turbulence model.
       USE run, only: K_EPSILON
-! Turbulence lenghth scale.
+! Turbulence length scale.
       use constant, only: L_SCALE0
 
 
@@ -33,7 +33,7 @@
       USE param1, only: UNDEFINED, UNDEFINED_C
       USE param1, only: ONE, ZERO
 
-! Global Module proceedures:
+! Global Module procedures:
 !---------------------------------------------------------------------//
       USE error_manager
 

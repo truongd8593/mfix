@@ -235,7 +235,7 @@
          ENDDO
 
        CASE ('RESTART_1')
-! Read the time-dependant part of the restart file
+! Read the time-dependent part of the restart file
          CALL READ_RES1
          WRITE(ERR_MSG, 1010) TIME, NSTEP
          CALL FLUSH_ERR_MSG()
@@ -467,7 +467,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutien: GEN_LOG_BASENAME                                        !
+!  Subroutine: GEN_LOG_BASENAME                                        !
 !  Author: Aytekin Gel                                Date: 19-SEP-03  !
 !                                                                      !
 !  Purpose: Generate the file base for DMP logs.                       !

@@ -21,7 +21,7 @@
       USE run, only: DISCRETIZE, SHEAR
 ! Solve system transpose
       use leqsol, only: DO_TRANSPOSE
-! Minimize dot porducts in BiCGSTAB
+! Minimize dot products in BiCGSTAB
       use leqsol, only: MINIMIZE_DOTPRODUCTS
 ! Report solver stats.
       use leqsol, only: SOLVER_STATISTICS
@@ -40,7 +40,7 @@
 !---------------------------------------------------------------------//
 ! NONE
 
-! Global Module proceedures:
+! Global Module procedures:
 !---------------------------------------------------------------------//
       use error_manager
 

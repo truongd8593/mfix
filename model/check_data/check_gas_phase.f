@@ -14,7 +14,7 @@
 !---------------------------------------------------------------------//
 ! Flag: Solve species equations.
       use run, only: SPECIES_EQ
-! Flag: Use legacy reaction rates implemenation
+! Flag: Use legacy reaction rates implementation
       use rxns, only: USE_RRATES
 ! User specified: Constant gas viscosity
       use physprop, only: MU_G0
@@ -341,7 +341,7 @@
 !----------------------------------------------------------------------!
 ! Subroutine: CHECK_GAS_SPECIES_LEGACY                                 !
 ! Purpose: These are legacy checks for using rrates.f to specify       !
-! chemcial reactions.                                                  !
+! chemical reactions.                                                  !
 !                                                                      !
 ! Author: J. Musser                                  Date: 03-FEB-14   !
 !----------------------------------------------------------------------!

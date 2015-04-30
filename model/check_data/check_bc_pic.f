@@ -17,7 +17,7 @@
       USE discretelement, only: DIMN
 ! User specified BC
       use bc, only: BC_TYPE
-! User specifed: BC geometry
+! User specified: BC geometry
       use bc, only: BC_EP_s
 ! Use specified flag for ignoring PO BC for discrete solids
       USE bc, only: BC_PO_APPLY_TO_DES
@@ -216,7 +216,7 @@
                !However, doing so will flag all BC's as overlapping since
                !BC's have to share common edges. So here the equality is considered
                !as existence of a separating axis, and hence, no overlap
-               !equality is also considered as separating axis whbch is
+               !equality is also considered as separating axis which is
                if ((bc_min .ge. bc2_max)  .or. (bc_max .le. bc2_min) ) then
                   sep_axis = .true.
                   exit
@@ -225,7 +225,7 @@
             end DO
 
             if(.not.sep_axis) then
-               !implies the BC regions could not find a separating axis and are thereofre
+               !implies the BC regions could not find a separating axis and are therefore
                !overlapping
 
                write(err_msg, 1004) BCV, BCV2

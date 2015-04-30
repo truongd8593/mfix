@@ -19,7 +19,7 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Maximum number of ISs that can be spedified.
+! Maximum number of ISs that can be specified.
       USE param, only: DIMENSION_IS
 
 ! Use the error manager for posting error messages.
@@ -42,7 +42,7 @@
 
 ! Check that the input is valid.
          IF(IS_DEFINED(ISV)) THEN
-! Convert spatial coors into I/J/K values.
+! Convert spatial coordinates into I/J/K values.
             CALL GET_IS(ISV)
 ! Check that the required input is specifed for all IS types.
             SELECT CASE(IS_TYPE(ISV))
@@ -53,7 +53,7 @@
                  'Z_SEMIPERMEABLE')
                CALL CHECK_IS_SEMIPERMEABLE(ISV)
             END SELECT
-! Check that nothing is specifed for undefined IS regtions.
+! Check that nothing is specifed for undefined IS regions.
          ELSE
             CALL CHECK_IS_OVERFLOW(ISV)
          ENDIF

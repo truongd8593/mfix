@@ -15,7 +15,7 @@
       use run, only: SOLIDS_MODEL
 ! Flag: Solve granular energy PDE
       use run, only: GRANULAR_ENERGY
-! Flag: Use Jenkins small small frication BC
+! Flag: Use Jenkins small friction BC
       use run, only: JENKINS
 ! Flag: Use revised phihp for JJ BC.
       use bc, only: BC_JJ_PS
@@ -579,7 +579,7 @@
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_DISCRETE")
 
-! DEM and PIC are restricted to adibatic walls.
+! DEM and PIC are restricted to adiabatic walls.
       IF(BC_HW_T_S(BCV,M) /= UNDEFINED) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_HW_T_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

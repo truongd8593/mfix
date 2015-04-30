@@ -20,7 +20,7 @@
       use rxns, only: NO_OF_RXNS, REACTION
 ! Number of discrete reactions and data object
       use des_rxns, only: NO_OF_DES_RXNS, DES_REACTION
-! User specifed species names and aliases:
+! User specified species names and aliases:
       use rxns, only: SPECIES_g, SPECIES_ALIAS_g
       use rxns, only: SPECIES_s, SPECIES_ALIAS_s
 
@@ -28,7 +28,7 @@
       use physprop, only: SMAX
 ! Number of discrete solids
       use discretelement, only: DES_MMAX
-! Number of spcies comprising each phase
+! Number of species comprising each phase
       use physprop, only: NMAX
 
 !
@@ -134,7 +134,7 @@
       CHARACTER(len=32), INTENT(IN) ::  NAME(DIMENSION_RXN)
 ! Chemical equations:
       CHARACTER(len=512), INTENT(IN) :: CHEM_EQ(DIMENSION_RXN)
-! User defined heat of reacation:
+! User defined heat of reaction:
       DOUBLE PRECISION, INTENT(IN) :: DH(DIMENSION_RXN)
 ! User defined heat of reaction partitions.
       DOUBLE PRECISION, INTENT(IN) :: fDH(DIMENSION_RXN,0:DIM_M)

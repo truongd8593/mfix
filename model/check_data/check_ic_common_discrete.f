@@ -12,7 +12,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_COMMON_DISCRETE
 
-! Runtime Flag: Generate initial particle configuation.
+! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only : gener_part_config
 ! Simulation dimension (2D/3D)
       USE discretelement, only: DIMN
@@ -150,7 +150,7 @@
             end DO
 
 ! Implies the IC regions could not find a separating axis and are
-! thereofre overlapping.
+! therefore overlapping.
             IF(.NOT.sep_axis) THEN
                WRITE(ERR_MSG, 1004) ICV, ICV2
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
