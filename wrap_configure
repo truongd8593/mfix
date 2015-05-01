@@ -1,0 +1,24 @@
+#!/bin/bash -e
+#
+#  Wrapper script for calling configure in MFIX_HOME and copying Makefile.usr into $PWD
+#
+
+# Set some of the folder paths.
+RUN_DIR=$(pwd)
+MFIX_HOME=$(cd $(dirname $0); pwd)
+MAKEFILE=${RUN_DIR}/Makefile
+MAKEFILE_USR=${MFIX_HOME}/build-aux/Makefile.usr
+
+cd ${MFIX_HOME}
+
+[ -f configure ] || autoreconf -i
+
+./configure $@ || exit
+
+echo $PWD
+echo $RUN_DIR
+echo $MAKEFILE_USR
+
+if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
+    cp ${MAKEFILE_USR} ${MAKEFILE}
+fi
