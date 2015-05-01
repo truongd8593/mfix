@@ -59,7 +59,7 @@
 !  and top face of a v-momentum cell                                   C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_VCELL_VTERMS(U, V, WW)
+      SUBROUTINE GET_VCELL_GVTERMS(U, V, WW)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -133,7 +133,7 @@
       ENDDO   ! end do ijk
 
       RETURN
-      END SUBROUTINE GET_VCELL_VTERMS
+      END SUBROUTINE GET_VCELL_GVTERMS
 
 
 
@@ -145,7 +145,7 @@
 !  bottom face.                                                        C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_VCELL_CFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
+      SUBROUTINE GET_VCELL_GCFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
          FLUX_S, FLUX_T, FLUX_B, IJK)
 
 ! Modules
@@ -245,7 +245,7 @@
       ENDIF   ! end if/else cut_v_treatmeant_at
 
       RETURN
-      END SUBROUTINE GET_VCELL_CFLUX_TERMS
+      END SUBROUTINE GET_VCELL_GCFLUX_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -256,7 +256,7 @@
 !  or bottom face.                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_VCELL_DIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
+      SUBROUTINE GET_VCELL_GDIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
          D_FT, D_FB, IJK)
 
 ! Modules
@@ -371,7 +371,7 @@
       ENDIF   ! end if (do_k)
 
       RETURN
-      END SUBROUTINE GET_VCELL_DIFF_TERMS
+      END SUBROUTINE GET_VCELL_GDIFF_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -440,9 +440,9 @@
          IF (FLOW_AT_N(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_VCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_VCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
-            CALL GET_VCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_VCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IPJK = IP_OF(IJK)
@@ -612,7 +612,7 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_VCELL_VTERMS(U, V, WW)
+      CALL GET_VCELL_GVTERMS(U, V, WW)
 
 ! Send recv the third ghost layer
       IF (FPFOI) THEN
@@ -642,7 +642,7 @@
          IF (FLOW_AT_N(IJK)) THEN
 
 ! Calculate convection fluxes through each of the faces
-            CALL GET_VCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_VCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
 
             IPJK = IP_OF(IJK)
@@ -854,7 +854,7 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_VCELL_VTERMS(U, V, WW)
+      CALL GET_VCELL_GVTERMS(U, V, WW)
 
 ! shear indicator: y-momentum
       incr=2
@@ -864,16 +864,16 @@
 
 !!!$omp      parallel do                                             &
 !!!$omp&     private(IJK, IMJK, IJMK, IPJK, IJPK, IJKM, IJKP,        &
-!!!$omp&             d_fe, d_fw, d_fn, d_fs, d_ft, d_fb,                 &
+!!!$omp&             d_fe, d_fw, d_fn, d_fs, d_ft, d_fb,             &
 !!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)
       DO IJK = ijkstart3, ijkend3
 
          IF (FLOW_AT_N(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_VCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_VCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
-            CALL GET_VCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_VCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IMJK = IM_OF(IJK)

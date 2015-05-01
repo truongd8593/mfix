@@ -61,7 +61,7 @@
 !  and top face of a u-momentum cell                                   C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_UCELL_VTERMS(U, V, WW)
+      SUBROUTINE GET_UCELL_GVTERMS(U, V, WW)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -136,7 +136,7 @@
       ENDDO   ! end do ijk
 
       RETURN
-      END SUBROUTINE GET_UCELL_VTERMS
+      END SUBROUTINE GET_UCELL_GVTERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -147,7 +147,7 @@
 !  bottom face.                                                        C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_UCELL_CFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
+      SUBROUTINE GET_UCELL_GCFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
          FLUX_S, FLUX_T, FLUX_B, IJK)
 
 ! Modules
@@ -199,7 +199,7 @@
          CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',&
             alpha_Ue_c(IJK), AW, HW, VELW)
          Flux_e = Flux_e * AW
-! west face: i-1, j, k
+! west face: i, j, k
          Flux_w = (Theta_Ue_bar(IMJK) * Flux_gE(IMJK) + &
                    Theta_Ue(IMJK) * Flux_gE(IJK))
          CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',&
@@ -246,7 +246,7 @@
          ENDIF
       ENDIF   ! end if/else cut_u_treatment_at
       RETURN
-      END SUBROUTINE GET_UCELL_CFLUX_TERMS
+      END SUBROUTINE GET_UCELL_GCFLUX_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -257,7 +257,7 @@
 !  or bottom face.                                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_UCELL_DIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
+      SUBROUTINE GET_UCELL_GDIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
          D_FT, D_FB, IJK)
 
 ! Modules
@@ -344,7 +344,7 @@
 
 ! East face (i+1, j, k)
       D_FE = MU_GT(IJKE)*C_AE*AYZ_U(IJK)
-! West face (i-1, j, k)
+! West face (i, j, k)
       D_FW = MU_GT(IJKC)*C_AW*AYZ_U(IMJK)
 
 
@@ -373,7 +373,7 @@
                 OX_E(I)*C_AB*AXY_U(IJKM)
       ENDIF
       RETURN
-      END SUBROUTINE GET_UCELL_DIFF_TERMS
+      END SUBROUTINE GET_UCELL_GDIFF_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -441,9 +441,9 @@
          IF (FLOW_AT_E(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_UCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_UCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
-            CALL GET_UCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_UCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IPJK = IP_OF(IJK)
@@ -613,7 +613,7 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_UCELL_VTERMS(U, V, WW)
+      CALL GET_UCELL_GVTERMS(U, V, WW)
 
 ! Send recv the third ghost layer
       IF (FPFOI) THEN
@@ -627,7 +627,7 @@
          CALL send_recv3(tmp4)
       ENDIF
 
-! shear indicator: x-momentum
+! shear indicator:
       incr=1
       CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, &
                      XSI_T, incr)
@@ -643,7 +643,7 @@
          IF (FLOW_AT_E(IJK)) THEN
 
 ! Calculate convection fluxes through each of the faces
-            CALL GET_UCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_UCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
 
             IPJK = IP_OF(IJK)
@@ -682,42 +682,6 @@
                                       (1.0-XSI_E(IJK))*U_G(IJK)
             EAST_DC = Flux_e *(MOM_LO - MOM_HO)
 
-
-! North face (i+1/2, j+1/2, k)
-            IF(V(IJK) >= ZERO)THEN
-               MOM_LO = U_G(IJK)
-               IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJPK), U_G(IJK), &
-                                   U_G(IJMK), U_G(JM_OF(IJMK)))
-            ELSE
-               MOM_LO = U_G(IJPK)
-               IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJPK), &
-                                   U_G(JP_OF(IJPK)), TMP4(JPPP4))
-            ENDIF
-            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJK)*U_G(IJPK)+ &
-                                      (1.0-XSI_N(IJK))*U_G(IJK)
-            NORTH_DC = Flux_n *(MOM_LO - MOM_HO)
-
-
-! Top face (i+1/2, j, k+1/2)
-            IF (DO_K) THEN
-               IF(WW(IJK) >= ZERO)THEN
-                  MOM_LO = U_G(IJK)
-                  IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJKP), U_G(IJK), &
-                                      U_G(IJKM), U_G(KM_OF(IJKM)))
-               ELSE
-                  MOM_LO = U_G(IJKP)
-                  IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKP), &
-                                      U_G(KP_OF(IJKP)), TMP4(KPPP4))
-               ENDIF
-               IF (.NOT. FPFOI) MOM_HO = XSI_T(IJK)*U_G(IJKP)+ &
-                                         (1.0-XSI_T(IJK))*U_G(IJK)
-
-               TOP_DC = Flux_t *(MOM_LO - MOM_HO)
-            ELSE
-               TOP_DC = ZERO
-            ENDIF   ! end if (do_k)
-
-
 ! West face (i, j, k)
             IF(U(IMJK) >= ZERO)THEN
                MOM_LO = U_G(IMJK)
@@ -733,6 +697,20 @@
             WEST_DC = Flux_w * (MOM_LO - MOM_HO)
 
 
+! North face (i+1/2, j+1/2, k)
+            IF(V(IJK) >= ZERO)THEN
+               MOM_LO = U_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJPK), U_G(IJK), &
+                                   U_G(IJMK), U_G(JM_OF(IJMK)))
+            ELSE
+               MOM_LO = U_G(IJPK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJPK), &
+                                   U_G(JP_OF(IJPK)), TMP4(JPPP4))
+            ENDIF
+            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJK)*U_G(IJPK)+ &
+                                      (1.0-XSI_N(IJK))*U_G(IJK)
+            NORTH_DC = Flux_n *(MOM_LO - MOM_HO)
+
 ! South face (i+1/2, j-1/2, k)
            IF(V(IJMK) >= ZERO)THEN
                MOM_LO = U_G(IJMK)
@@ -745,12 +723,25 @@
             ENDIF
             IF (.NOT. FPFOI) MOM_HO = XSI_N(IJMK)*U_G(IJK)+ &
                                       (1.0-XSI_N(IJMK))*U_G(IJMK)
-
             SOUTH_DC = Flux_s *(MOM_LO - MOM_HO)
 
 
-! Bottom face (i+1/2, j, k-1/2)
             IF (DO_K) THEN
+! Top face (i+1/2, j, k+1/2)
+               IF(WW(IJK) >= ZERO)THEN
+                  MOM_LO = U_G(IJK)
+                  IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJKP), U_G(IJK), &
+                                      U_G(IJKM), U_G(KM_OF(IJKM)))
+               ELSE
+                  MOM_LO = U_G(IJKP)
+                  IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKP), &
+                                      U_G(KP_OF(IJKP)), TMP4(KPPP4))
+               ENDIF
+               IF (.NOT. FPFOI) MOM_HO = XSI_T(IJK)*U_G(IJKP)+ &
+                                         (1.0-XSI_T(IJK))*U_G(IJK)
+               TOP_DC = Flux_t *(MOM_LO - MOM_HO)
+
+! Bottom face (i+1/2, j, k-1/2)
                IF(WW(IJK) >= ZERO)THEN
                   MOM_LO = U_G(IJKM)
                   IF (FPFOI) MOM_HO = FPFOI_OF(U_G(IJK), U_G(IJKM), &
@@ -762,9 +753,9 @@
                ENDIF
                IF (.NOT. FPFOI) MOM_HO = XSI_T(IJKM)*U_G(IJK)+ &
                                         (1.0-XSI_T(IJKM))*U_G(IJKM)
-
                BOTTOM_DC = Flux_b * (MOM_LO - MOM_HO)
             ELSE
+               TOP_DC = ZERO
                BOTTOM_DC = ZERO
             ENDIF   ! end if (do_k)
 
@@ -858,9 +849,9 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_UCELL_VTERMS(U, V, WW)
+      CALL GET_UCELL_GVTERMS(U, V, WW)
 
-! shear indicator: x-momentum
+! shear indicator:
       incr=1
       CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, &
                      XSI_T, incr)
@@ -875,9 +866,9 @@
          IF (FLOW_AT_E(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_UCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_UCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
-            CALL GET_UCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_UCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IPJK = IP_OF(IJK)

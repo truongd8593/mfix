@@ -34,17 +34,18 @@
 
       IF (.NOT.MOMENTUM_Z_EQ(0)) RETURN
 
-! USE DEFERRED CORRECTION TO SOLVE W_G
       IF (DEF_COR) THEN
+! USE DEFERRED CORRECTION TO SOLVE W_G
          CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
          IF (DISCRETIZE(5) > 1) CALL STORE_A_W_GDC(B_M(1,0))
+
       ELSE
 ! DO NOT USE DEFERRED CORRECTOIN TO SOLVE FOR W_G
-        IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP
-          CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
-        ELSE
-          CALL STORE_A_W_G1 (A_M(1,-3,0))
-        ENDIF
+         IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP
+            CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
+         ELSE
+            CALL STORE_A_W_G1 (A_M(1,-3,0))
+         ENDIF
       ENDIF
 
       CALL DIF_W_IS(MU_GT, A_M, 0, IER)
@@ -59,7 +60,7 @@
 !  and top face of a w-momentum cell                                   C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_WCELL_VTERMS(U, V, WW)
+      SUBROUTINE GET_WCELL_GVTERMS(U, V, WW)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -118,7 +119,7 @@
 
 ! Top face (i, j, k+1)
             WW(IJK) = (Theta_Wt_bar(IJK) * W_G(IJK) + &
-               Theta_Wt(IJK) * W_G(IJKP))
+                       Theta_Wt(IJK) * W_G(IJKP))
             CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM', &
                alpha_Wt_c(IJK), AW, HW, VELW)
             WW(IJK) = WW(IJK) * AW
@@ -131,7 +132,7 @@
       ENDDO   ! end do ijk
 
       RETURN
-      END SUBROUTINE GET_WCELL_VTERMS
+      END SUBROUTINE GET_WCELL_GVTERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -142,7 +143,7 @@
 !  bottom face.                                                        C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_WCELL_CFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
+      SUBROUTINE GET_WCELL_GCFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
          FLUX_S, FLUX_T, FLUX_B, IJK)
 
 ! Modules
@@ -237,7 +238,7 @@
       ENDIF   ! end if/else cut_w_treatment_at
 
       RETURN
-      END SUBROUTINE GET_WCELL_CFLUX_TERMS
+      END SUBROUTINE GET_WCELL_GCFLUX_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -248,7 +249,7 @@
 !  or bottom face.                                                     C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_WCELL_DIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
+      SUBROUTINE GET_WCELL_GDIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
          D_FT, D_FB, IJK)
 
 ! Modules
@@ -361,7 +362,7 @@
       D_Fb = MU_GT(IJK)*OX(I)*C_AB*AXY_W(IJKM)
 
       RETURN
-      END SUBROUTINE GET_WCELL_DIFF_TERMS
+      END SUBROUTINE GET_WCELL_GDIFF_TERMS
 
 
 
@@ -429,10 +430,10 @@
          IF (FLOW_AT_T(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_WCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
 
-            CALL GET_WCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_WCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IPJK = IP_OF(IJK)
@@ -594,7 +595,7 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_WCELL_VTERMS(U, V, WW)
+      CALL GET_WCELL_GVTERMS(U, V, WW)
 
 ! Send recv the third ghost layer
       IF (FPFOI) THEN
@@ -609,7 +610,6 @@
       ENDIF
 
 
-
 ! shear indicator: 
       incr=0
       CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
@@ -621,12 +621,12 @@
 !!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_b, flux_t, &
 !!!$omp&             MOM_HO, MOM_LO, EAST_DC, WEST_DC, NORTH_DC,     &
 !!!$omp&             SOUTH_DC, TOP_DC, BOTTOM_DC)
-
       DO IJK = ijkstart3, ijkend3
+
          IF (FLOW_AT_T(IJK)) THEN
 
 ! Calculate convection fluxes through each of the faces
-            CALL GET_WCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
 
             IPJK = IP_OF(IJK)
@@ -829,7 +829,7 @@
       call lock_tmp_array
       call lock_xsi_array
 
-      CALL GET_WCELL_VTERMS(U, V, WW)
+      CALL GET_WCELL_GVTERMS(U, V, WW)
 
 
 ! shear indicator:
@@ -841,15 +841,14 @@
 !!!$omp&     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,            &
 !!!$omp&             d_fe, d_fw, d_fn, d_fs, d_ft, d_fb,                 &
 !!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)
-
       DO IJK = ijkstart3, ijkend3
 
          IF (FLOW_AT_T(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-            CALL GET_WCELL_CFLUX_TERMS(flux_e, flux_w, flux_n, &
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
                flux_s, flux_t, flux_b, ijk)
-            CALL GET_WCELL_DIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+            CALL GET_WCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
                d_ft, d_fb, ijk)
 
             IPJK = IP_OF(IJK)
