@@ -20,4 +20,10 @@ rm $CASE_DIR/{TFM01.*,out.log}
 
 rm $CASE_DIR/mfix.exe
 
+
 echo "******** Done."
+
+
+# uncomment the following to generate plots:
+echo "******** Generating plots..."
+python plot_results.py &
