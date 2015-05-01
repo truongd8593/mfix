@@ -29,7 +29,6 @@
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
@@ -100,7 +99,7 @@
 
 ! Dummy arguments
 !---------------------------------------------------------------------//
-! solids phase index
+! phase index
       INTEGER, INTENT(IN) :: M
 ! velocity components
       DOUBLE PRECISION, INTENT(OUT) :: U(DIMENSION_3)
@@ -185,7 +184,7 @@
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! phase index
-      DOUBLE PRECISION, INTENT(IN) :: M
+      INTEGER, INTENT(IN) :: M
 ! fluxes through faces of given ijk u-momentum cell
       DOUBLE PRECISION, INTENT(OUT) :: flux_e, flux_w
       DOUBLE PRECISION, INTENT(OUT) :: flux_n, flux_s
@@ -434,7 +433,7 @@
 
 ! Dummy arguments
 !---------------------------------------------------------------------//
-! Solids phase index
+! phase index
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
