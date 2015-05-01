@@ -1,13 +1,14 @@
-F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS)
+F77 = $(FC)
+F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -I. -I$(top_srcdir)/model -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_srcdir)
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+MODULE=$(top_srcdir)/model
+AM_FCFLAGS += $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
 
 ################################################################
 #                                                              #
@@ -33,8 +34,8 @@ src_objs = $(patsubst %.f,%.o,$(src_overrides))
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f
-mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
+mfix_SOURCES = $(top_srcdir)/model/mfix.f $(top_srcdir)/model/ODEPACK.F
+mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a
 
 # read_namelist needs rebuilt here in case usrnlst.inc is overridden
 read_database.f: mfix_directory_path.inc
@@ -54,7 +55,6 @@ main:
 	$(MAKE) -C $(top_srcdir) mfix
 
 $(top_srcdir)/model/mfix.f: main
-$(top_srcdir)/libodepack.a: main
 $(top_srcdir)/libmfix.a: main
 
 species.inc:

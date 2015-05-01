@@ -93,7 +93,7 @@ ${UNIQSTR} ${UNIQSTR}" | \
             echo ""
           fi
           for x in ${mods} ; do
-            echo "${x}.${MODEXT}: ${l%.*}.${OBJEXT}"
+            echo "${MODDIR}/${x}.${MODEXT}: ${l%.*}.${OBJEXT}"
             case " ${TOUCH} " in
               *\ ${x}\ *)
               echo "	touch $""@"

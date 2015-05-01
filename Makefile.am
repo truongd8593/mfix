@@ -4,16 +4,17 @@
 #                                                              #
 ################################################################
 
-F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS)
+F77 = $(FC)
+F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -I$(top_srcdir)/model -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_srcdir)
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+MODULE=$(top_srcdir)/model
+AM_FCFLAGS += $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
 
 $(top_srcdir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
@@ -27,11 +28,11 @@ $(top_srcdir)/model/mfix_directory_path.inc:
 ################################################################
 bin_PROGRAMS = mfix
 
-mfix_LDADD = libmfix.a libodepack.a libmfix.a
-noinst_LIBRARIES = libmfix.a libodepack.a
+mfix_LDADD = libmfix.a
+noinst_LIBRARIES = libmfix.a
 
 #  SOURCES are fully defined further below
-mfix_SOURCES = model/mfix.f
+mfix_SOURCES = model/ODEPACK.F
 libmfix_a_SOURCES =
 
 ################################################################
@@ -59,7 +60,7 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 #                                                              #
 ################################################################
 
-mfixmodule.deps: $(mfix_SOURCES) $(libmfix_a_SOURCES)
+mfixmodule.deps: $(libmfix_a_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
@@ -67,23 +68,6 @@ mfixmodule.deps: $(mfix_SOURCES) $(libmfix_a_SOURCES)
 $(eval -include mfixmodule.deps)
 
 DISTCLEANFILES = mfixmodule.deps
-
-################################################################
-#      libmfix.a                                               #
-#                                                              #
-#      Static library archive of most MFiX code                #
-#                                                              #
-################################################################
-
-
-################################################################
-#      libodepack.a                                            #
-#                                                              #
-#      The only Fortran 77 source file still needed by MFiX    #
-#                                                              #
-################################################################
-
-libodepack_a_SOURCES = model/ODEPACK.F
 
 ################################################################
 #                                                              #
@@ -488,6 +472,7 @@ libmfix_a_SOURCES += \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
 	model/matrix_mod.f \
+	model/mfix.f \
 	model/mfix_directory_path.inc \
 	model/mfix_netcdf_mod.f \
 	model/mflux_mod.f \

@@ -129,8 +129,8 @@ if test ${CLEAN_OBJS} -eq 1; then
 fi
 
 ARGS=
-[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran" && F77="gfortran"
-[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"    && F77="ifort"
+[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
+[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
 [[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
 [[ ${OPT} -eq 1 ]] && FCFLAGS="-O1"
 [[ ${OPT} -eq 2 ]] && FCFLAGS="-O2"
@@ -138,13 +138,13 @@ ARGS=
 
 [[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
 [[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"   && F77="mpif90"
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort" && F77="mpiifort"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
 
 # Construct the makefile
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
-./configure ${ARGS} FC="${FC}" F77="${F77}" FCFLAGS="${FCFLAGS}" || exit
+./configure ${ARGS} FC="${FC}" FCFLAGS="${FCFLAGS}" || exit
 test $PWD != $RUN_DIR && cp ${MFIX_HOME}/build-aux/Makefile.usr ${RUN_DIR}/${MAKEFILE}
 
 # Run Make
