@@ -15,10 +15,6 @@ cd ${MFIX_HOME}
 
 ./configure $@ || exit
 
-echo $PWD
-echo $RUN_DIR
-echo $MAKEFILE_USR
-
 if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
     cp ${MAKEFILE_USR} ${MAKEFILE}
 fi
