@@ -20,13 +20,14 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE PARAM
-      USE PARAM1
-      USE MATRIX
       USE GEOMETRY
       USE INDICES
-      USE debug
+      USE MATRIX
+      USE PARAM
+      USE PARAM1
       USE compar
+      USE debug
+      USE leqsol
       USE mpi_utility
       IMPLICIT NONE
 !-----------------------------------------------
@@ -61,12 +62,6 @@
 ! Local Variables
 !-------------------------------------------------
       LOGICAL :: IS_BM_ZERO, ALL_IS_BM_ZERO
-!-------------------------------------------------
-! External subroutines
-!-------------------------------------------------
-! These procedures are effectively dummy arguments (procedures as
-! arguments within the subroutine leq_gmres0)
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE
 !-------------------------------------------------
 
       IS_BM_ZERO = (MAXVAL( ABS(B_M(:)) ) .EQ. ZERO)
@@ -106,28 +101,19 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE PARAM
-      USE PARAM1
-      USE PARALLEL
-      USE MATRIX
       USE GEOMETRY
       USE INDICES
+      USE MATRIX
+      USE PARALLEL
+      USE PARAM
+      USE PARAM1
       USE debug
+      USE functions
       USE funits
       USE gridmap
+      USE leqsol
       USE mpi_utility
-      USE functions
       IMPLICIT NONE
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      INTERFACE
-         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
-         use compar
-         use param
-         DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_3) :: R1, R2
-         END FUNCTION DOT_PRODUCT_PAR
-      END INTERFACE
 !-----------------------------------------------
 ! Dummy arguments/procedure
 !-----------------------------------------------
@@ -159,7 +145,6 @@
 !     matvec->leq_matvec
 ! for preconditioner (leq_pc)
 !     msolve->leq_msolve
-      EXTERNAL MATVEC, MSOLVE
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------

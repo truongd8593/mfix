@@ -160,25 +160,7 @@
 !-----------------------------------------------
 !   E x t e r n a l   F u n c t i o n s
 !-----------------------------------------------
-!     DOUBLE PRECISION , EXTERNAL :: DOT_PRODUCT_PAR
       EXTERNAL  MATVECt, MSOLVEt
-
-      INTERFACE
-         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
-         use compar
-         use param
-         DOUBLE PRECISION, INTENT(IN), DIMENSION(DIMENSION_3) :: R1,R2
-         END FUNCTION DOT_PRODUCT_PAR
-      END INTERFACE
-
-      INTERFACE
-         FUNCTION DOT_PRODUCT_PAR2( R1, R2, R3, R4 )
-         use compar
-         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
-                                                           R1,R2, R3, R4
-         DOUBLE PRECISION, DIMENSION(2) :: DOT_PRODUCT_PAR2
-         END FUNCTION DOT_PRODUCT_PAR2
-      END INTERFACE
 
       logical, parameter :: do_unit_scaling = .true.
 
