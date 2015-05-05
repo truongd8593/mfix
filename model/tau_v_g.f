@@ -240,13 +240,11 @@
       DOUBLE PRECISION :: DEL_H, Nx, Ny, Nz
       LOGICAL :: U_NODE_AT_NE, U_NODE_AT_NW, U_NODE_AT_SE, U_NODE_AT_SW
       LOGICAL :: W_NODE_AT_TN, W_NODE_AT_TS, W_NODE_AT_BN, W_NODE_AT_BS
-      DOUBLE PRECISION :: U_SUM, X_SUM, Y_SUM, Z_SUM
       DOUBLE PRECISION :: dudy_at_E, dudy_at_W
       DOUBLE PRECISION :: dwdy_at_T, dwdy_at_B
       DOUBLE PRECISION :: Xi, Yi, Zi, Ui, Wi, Sx, Sy, Sz
       DOUBLE PRECISION :: MU_GT_CUT, SSX_CUT, SSZ_CUT
       DOUBLE PRECISION :: UW_g, VW_g, WW_g
-      INTEGER :: N_SUM
       INTEGER :: BCV
       CHARACTER(LEN=9) :: BCT
 !---------------------------------------------------------------------//
@@ -430,12 +428,6 @@
                ELSE
                   dudy_at_W =  ZERO
                ENDIF
-
-               U_SUM = ZERO
-               X_SUM = ZERO
-               Y_SUM = ZERO
-               Z_SUM = ZERO
-               N_SUM = 0
 
                IF(U_NODE_AT_SE) THEN
                   CALL GET_DEL_H(IJK,'V_MOMENTUM', X_U(IJK), Y_U(IJK), &
