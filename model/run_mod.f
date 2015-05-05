@@ -11,12 +11,10 @@
 
       MODULE run
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      Use param
-      Use param1
-!-----------------------------------------------
+!---------------------------------------------------------------------//
+      Use param, only: dim_M, dim_eqs
+!---------------------------------------------------------------------//
 
 
 ! Main filename to be used for output files  Name must
@@ -86,6 +84,9 @@
 
 ! If .TRUE. solve Z momentum equations
       LOGICAL :: MOMENTUM_Z_EQ(0:DIM_M)
+
+! IF .TRUE. use Jackson form momentum equations
+      LOGICAL :: JACKSON
 
 ! If .TRUE. use Model-B momentum equations
       LOGICAL :: Model_B

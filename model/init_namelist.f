@@ -202,6 +202,16 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
+!  <description>
+!    Flag to enable Jackson form of momentum equations.
+!    note="Anderson and Jackson, (1967), IECF, 6(4), p.527."/>
+!  </description>
+!  <valid value=".TRUE." note="Solve Jackson form of momentum equations."/>
+!  <valid value=".FALSE." note="Default form."/>
+      JACKSON = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
 !  <description>Solve energy equations.</description>
 !  <valid value=".TRUE." note="Solve energy equations."/>
 !  <valid value=".FALSE." note="Do not solve energy equations."/>

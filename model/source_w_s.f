@@ -49,6 +49,7 @@
       USE indices
       USE is
       USE tau_s
+      USE tau_g, only: ctau_w_g
       USE bc
       USE compar
       USE sendrecv
@@ -93,11 +94,11 @@
 ! Average density differences
       DOUBLE PRECISION :: dro1, dro2, droa
 ! Average quantities
-      DOUBLE PRECISION :: ugt, Cte, Ctw, EPMUoX
+      DOUBLE PRECISION :: ugt, Cte, Ctw, cpe, cpw, MUoX
 ! Source terms (Surface)
-      DOUBLE PRECISION :: Sdp, Sdps, Sxzb, Vxza, Vxzb
+      DOUBLE PRECISION :: Sdp, Sdps
 ! Source terms (Volumetric)
-      DOUBLE PRECISION :: V0, Vmt, Vbf, Vcoa, Vcob, Vmttmp
+      DOUBLE PRECISION :: V0, Vmt, Vbf, Vcoa, Vcob, Vmttmp, vxza
 ! Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION :: Ghd_drag, avgRop
 ! Source terms for HYS drag relation
@@ -123,7 +124,7 @@
 !$omp         Uge, Ugw, Vgb, Vgt, Wge, Wgw, Wgn, Wgs, Wgt, Wgb,      &
 !$omp         Ugt, VMTtmp, VMT, DRO1, DRO2, DROA, VBF, Ghd_drag,     &
 !$omp         avgRop, HYS_drag, avgDrag, VCOA, VCOB, CTE, CTW,       &
-!$omp         SXZB, VXZA, VXZB, EPMUOX)
+!$omp         CPE, CPW, VXZA, MUOX)
             DO IJK = ijkstart3, ijkend3
 
 ! Skip walls where some values are undefined.
@@ -411,11 +412,11 @@
 ! Special terms for cylindrical coordinates
                   VCOA = ZERO
                   VCOB = ZERO
-                  SXZB = ZERO
                   VXZA = ZERO
-                  VXZB = ZERO
                   CTE  = ZERO
                   CTW  = ZERO
+                  CPE = ZERO
+                  CPW = ZERO
                   IF (CYLINDRICAL) THEN
 ! Coriolis force
                      IMJK = IM_OF(IJK)
@@ -452,36 +453,30 @@
                         !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 
 ! (mu/x)*(dw/dx) part of tau_xz/x
-                     EPMUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I)
-                     VXZB = ZERO
-                     A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*&
-                           VOL_W(IJK)
-                     A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*&
-                           VOL_W(IJK)
+                     MUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I)
+                     CPE = MUOX* HALF*MUOX*ODX_E(I)*VOL_W(IJK)
+                     CPW = MUOX* HALF*MUOX*ODX_E(IM)*VOL_W(IJK)
 
 ! -(mu/x)*(w/x) part of tau_xz/x
-                     VXZA = EPMUOX*OX(I)
-                  ELSE
-
-                     VCOA = ZERO
-                     VCOB = ZERO
-                     SXZB = ZERO
-                     VXZA = ZERO
-                     VXZB = ZERO
+                     VXZA = MUOX*OX(I)
                   ENDIF
 
 ! Collect the terms
+                  A_M(IJK,E,M) = A_M(IJK,E,M) + CPE
+                  A_M(IJK,W,M) = A_M(IJK,W,M) - CPW
+
                   A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
                      A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
                      A_M(IJK,B,M)+(V0+ZMAX(VMT)+VCOA+VXZA)*&
                      VOL_W(IJK)+ CTE - CTW)
+
                   A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
                   A_M(IJK,W,M) = A_M(IJK,W,M) + CTW
 
                   B_M(IJK,M) = B_m(IJK, M) - (SDP + SDPS + &
-                     TAU_W_S(IJK,M) + SXZB + F_vir + &
+                     TAU_W_S(IJK,M) + epsa*cTAU_W_G(IJK) + F_vir + &
                      ( (V0+ZMAX((-VMT)))*W_SO(IJK,M)+ &
-                     VBF + VCOB + VXZB + HYS_drag)*VOL_W(IJK) )
+                     VBF + VCOB + HYS_drag)*VOL_W(IJK) )
 ! MMS Source term.
                   IF(USE_MMS) B_M(IJK,M) = &
                      B_M(IJK,M) - MMS_W_S_SRC(IJK)*VOL_W(IJK)
@@ -1206,6 +1201,7 @@
       use fldvar
       use geometry
       use indices
+      use param1, only: one, small_number, zero
       use physprop
       use ps
       use run

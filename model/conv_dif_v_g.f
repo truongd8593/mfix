@@ -264,12 +264,14 @@
       USE cutcell, only: cut_v_treatment_at
       USE cutcell, only: oneodx_e_v, oneody_n_v, oneodz_t_v
 
+      USE fldvar, only: ep_g
+
       USE functions, only: wall_at
       USE functions, only: east_of, north_of, top_of
       USE functions, only: west_of, bottom_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h
+      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h, avg_y
 
       USE geometry, only: odx_e, ody, odz_t
       USE geometry, only: do_k
@@ -279,7 +281,10 @@
       USE indices, only: i_of, j_of, k_of
       USE indices, only: jp1, im1, km1
 
-      USE visc_g, only: mu_gt
+      USE matrix, only: e, w, n, s, t, b
+      USE param1, only: zero
+      USE run, only: jackson
+      USE visc_g, only: mu_gt, DF_gv
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -300,6 +305,8 @@
       INTEGER :: ijkt, ijktn, ijkb, ijkbn
 ! length terms
       DOUBLE PRECISION :: C_AE, C_AW, C_AN, C_AS, C_AT, C_AB
+! avg voidage
+      DOUBLE PRECISION :: EPGA
 !---------------------------------------------------------------------//
 
       IMJK = IM_OF(IJK)
@@ -354,6 +361,8 @@
 ! South face (i, j, k)
       D_Fs = MU_GT(IJKC)*C_AS*AXZ_V(IJMK)
 
+      D_FT = ZERO
+      D_FB = ZERO
       IF (DO_K) THEN
          IJKT = TOP_OF(IJK)
          IJKTN = NORTH_OF(IJKT)
@@ -369,6 +378,23 @@
                         AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)*&
                 OX(I)*C_AB*AXY_V(IJKM)
       ENDIF   ! end if (do_k)
+
+      DF_GV(IJK,E) = D_FE
+      DF_GV(IJK,W) = D_FW
+      DF_GV(IJK,N) = D_FN
+      DF_GV(IJK,S) = D_FS
+      DF_GV(IJK,T) = D_FT
+      DF_GV(IJK,B) = D_FB
+
+      IF (JACKSON) THEN
+         EPGA = AVG_Y(EP_G(IJKC), EP_G(IJKN), J)
+         D_FE = EPGA*D_FE
+         D_FW = EPGA*D_FW
+         D_FN = EPGA*D_FN
+         D_FS = EPGA*D_FS
+         D_FT = EPGA*D_FT
+         D_FB = EPGA*D_FB
+      ENDIF
 
       RETURN
       END SUBROUTINE GET_VCELL_GDIFF_TERMS

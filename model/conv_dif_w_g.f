@@ -257,12 +257,14 @@
       USE cutcell, only: cut_w_treatment_at
       USE cutcell, only: oneodx_e_w, oneody_n_w, oneodz_t_w
 
+      USE fldvar, only: ep_g
+
       USE functions, only: wall_at
       USE functions, only: east_of, north_of, top_of
       USE functions, only: west_of, south_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h
+      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h, avg_z
 
       USE geometry, only: odx_e, ody_n, odz
       USE geometry, only: ox
@@ -271,7 +273,9 @@
       USE indices, only: i_of, j_of, k_of
       USE indices, only: kp1, im1, jm1
 
-      USE visc_g, only: mu_gt
+      USE matrix, only: e, w, n, s, t, b
+      USE run, only: jackson
+      USE visc_g, only: mu_gt, df_gw
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -290,9 +294,10 @@
       INTEGER :: i, j, k, kp, im, jm
       INTEGER :: ijkc, ijkt, ijke, ijkte, ijkw, ijkwt
       INTEGER :: ijkn, ijktn, ijks, ijkst
-
 ! length terms
       DOUBLE PRECISION :: C_AE, C_AW, C_AN, C_AS, C_AT, C_AB
+! average voidage
+      DOUBLE PRECISION :: EPGA
 !---------------------------------------------------------------------//
 
       IMJK = IM_OF(IJK)
@@ -360,6 +365,23 @@
       D_Ft = MU_GT(IJKT)*OX(I)*C_AT*AXY_W(IJK)
 ! Bottom face (i, j, k)
       D_Fb = MU_GT(IJK)*OX(I)*C_AB*AXY_W(IJKM)
+
+      DF_GW(IJK,E) = D_FE
+      DF_GW(IJK,W) = D_FW
+      DF_GW(IJK,N) = D_FN
+      DF_GW(IJK,S) = D_FS
+      DF_GW(IJK,T) = D_FT
+      DF_GW(IJK,B) = D_FB
+
+      IF (JACKSON) THEN
+         EPGA = AVG_Z(EP_G(IJKC), EP_G(IJKT), K)
+         D_FE = EPGA*D_FE
+         D_FW = EPGA*D_FW
+         D_FN = EPGA*D_FN
+         D_FS = EPGA*D_FS
+         D_FT = EPGA*D_FT
+         D_FB = EPGA*D_FB
+      ENDIF
 
       RETURN
       END SUBROUTINE GET_WCELL_GDIFF_TERMS

@@ -49,6 +49,7 @@
       USE indices
       USE is
       USE tau_s
+      USE tau_g, only: ctau_v_g
       USE bc
       USE vshear
       USE compar
@@ -436,7 +437,8 @@
                      A_M(IJK,B,M)+(V0+ZMAX(VMT))*VOL_V(IJK))
 
                   B_M(IJK,M) = B_M(IJK,M) - (SDP + SDPS + &
-                        TAU_V_S(IJK,M) + Source_conv + F_vir + &
+                        TAU_V_S(IJK,M) + epsa*ctau_v_g(IJK) + &
+                        Source_conv + F_vir + &
                         ( (V0+ZMAX((-VMT)))*V_SO(IJK,M) + &
                         VBF + HYS_drag)*VOL_V(IJK) )
 ! MMS Source term
@@ -1152,6 +1154,7 @@
       use fldvar
       use geometry
       use indices
+      use param1, only: one, small_number
       use physprop
       use ps
       use run

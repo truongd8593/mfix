@@ -226,6 +226,12 @@
       Allocate(  TAU_U_g(DIMENSION_3p) )
       Allocate(  TAU_V_g(DIMENSION_3p) )
       Allocate(  TAU_W_g(DIMENSION_3p) )
+      Allocate(  DF_gu(DIMENSION_3p, -3:3) )
+      Allocate(  DF_gv(DIMENSION_3p, -3:3) )
+      Allocate(  DF_gw(DIMENSION_3p, -3:3) )
+      Allocate(  CTAU_U_G(DIMENSION_3P))
+      Allocate(  CTAU_V_G(DIMENSION_3P))
+      Allocate(  CTAU_W_G(DIMENSION_3P))
 
 !tau_s
       Allocate(  TAU_U_s(DIMENSION_3p, DIMENSION_M) )

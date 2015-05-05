@@ -134,6 +134,7 @@
       use constant
       use geometry
       use indices
+      use param1, only: small_number
       use physprop
       use ps
       use run

@@ -265,12 +265,14 @@
       USE cutcell, only: cut_u_treatment_at
       USE cutcell, only: oneodx_e_u, oneody_n_u, oneodz_t_u
 
+      USE fldvar, only: ep_g
+
       USE functions, only: wall_at
       USE functions, only: east_of, north_of, top_of
       USE functions, only: south_of, bottom_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h
+      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h, avg_x
 
       USE geometry, only: odx, ody_n, odz_t
       USE geometry, only: do_k
@@ -280,7 +282,10 @@
       USE indices, only: i_of, j_of, k_of
       USE indices, only: ip1, jm1, km1
 
-      USE visc_g, only: mu_gt
+      USE matrix, only: e, w, s, n, t, b
+      USE param1, only: zero
+      USE run, only: jackson
+      USE visc_g, only: mu_gt, DF_GU
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -299,9 +304,10 @@
       INTEGER :: i, j, k, ip, jm, km
       INTEGER :: ijkc, ijke, ijkn, ijkne, ijks, ijkse
       INTEGER :: ijkt, ijkte, ijkb, ijkbe
-
 ! length terms
       DOUBLE PRECISION :: C_AE, C_AW, C_AN, C_AS, C_AT, C_AB
+! avg voidage
+      DOUBLE PRECISION :: EPGA
 !---------------------------------------------------------------------//
 
       IMJK = IM_OF(IJK)
@@ -357,6 +363,8 @@
                      AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)*&
              C_AS*AXZ_U(IJMK)
 
+      D_FT = ZERO
+      D_FB = ZERO
       IF (DO_K) THEN
          IJKT = TOP_OF(IJK)
          IJKTE = EAST_OF(IJKT)
@@ -371,6 +379,23 @@
          D_FB = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),&
                         AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)*&
                 OX_E(I)*C_AB*AXY_U(IJKM)
+      ENDIF
+
+      DF_GU(IJK,E) = D_FE
+      DF_GU(IJK,W) = D_FW
+      DF_GU(IJK,N) = D_FN
+      DF_GU(IJK,S) = D_FS
+      DF_GU(IJK,T) = D_FT
+      DF_GU(IJK,B) = D_FB
+
+      IF (JACKSON) THEN
+         EPGA = AVG_X(EP_G(IJKC), EP_G(IJKE), I)
+         D_FE = EPGA*D_FE
+         D_FW = EPGA*D_FW
+         D_FN = EPGA*D_FN
+         D_FS = EPGA*D_FS
+         D_FT = EPGA*D_FT
+         D_FB = EPGA*D_FB
       ENDIF
       RETURN
       END SUBROUTINE GET_UCELL_GDIFF_TERMS
