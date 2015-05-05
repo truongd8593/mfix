@@ -128,7 +128,7 @@
 !$omp           ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,          &
 !$omp           U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse,        &
 !$omp           Usb, Ust, F_vir, WGE, Vcf, VTZA, MUGTA,              &
-!$omp           Ghd_drag, L, MM, avgRop, HYS_drag, avgDrag           &
+!$omp           Ghd_drag, L, MM, avgRop, HYS_drag, avgDrag,          &
 !$omp           ltau_u_g)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
