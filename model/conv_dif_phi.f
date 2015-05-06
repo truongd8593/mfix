@@ -412,7 +412,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 
 ! Error index
-      INTEGER, INTENT(OUT) :: IER
+      INTEGER, INTENT(INOUT) :: IER
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! Indices

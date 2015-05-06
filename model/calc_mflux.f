@@ -208,7 +208,7 @@
 ! phase index for phase of added_mass
       INTEGER, INTENT(IN) :: M_AM
 ! Error index
-      INTEGER, INTENT(OUT) :: IER
+      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

@@ -118,7 +118,7 @@
 !$omp         do_k, cylindrical, ltau_w_g, lctau_w_g,                  &
 !$omp         ep_g, mu_gt, lambda_gt, trd_g, v_g, w_g, u_g,            &
 !$omp         axy,  axy_w, ayz_w, axz_w, vol_w,                        &
-!$omp         dy, dz, ox, ox_e, odz, odz_t)                            &
+!$omp         dy, dz, ox, ox_e, odz, odz_t)
          DO IJK = IJKSTART3, IJKEND3
             K = K_OF(IJK)
             IJKT = TOP_OF(IJK)
