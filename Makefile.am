@@ -12,7 +12,7 @@ FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 AM_FCFLAGS = -I$(top_srcdir)/model -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
-CLEANFILES=*.$(FC_MODEXT)
+CLEANFILES=*.$(FC_MODEXT) mfixmodule.deps
 MODULE=$(top_srcdir)/model
 AM_FCFLAGS += $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
 
@@ -56,7 +56,8 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 ################################################################
 #                                                              #
-#  Use script "fortran-depcomp" to generate makefile rules     #
+#  Use script "fortran-depcomp" to find dependencies among     #
+#  source files.                                               #
 #                                                              #
 ################################################################
 
