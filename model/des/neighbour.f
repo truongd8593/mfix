@@ -35,7 +35,8 @@ LOGICAL :: found
       neighbor_index_old(:) = neighbor_index(:)
 
 !$omp parallel do default(none) private(cc) &
-!$omp             shared(neighbors,neighbors_old,pv_neighbor,pv_neighbor_old,pfn_neighbor,pfn_neighbor_old,pft_neighbor,pft_neighbor_old)
+!$omp             shared(neighbors,neighbors_old,pv_neighbor,pv_neighbor_old, &
+!$omp                    pfn_neighbor,pfn_neighbor_old,pft_neighbor,pft_neighbor_old)
       do cc=1, size(neighbors)
          neighbors_old(cc) = neighbors(cc)
          pv_neighbor_old(cc) = pv_neighbor(cc)
@@ -53,7 +54,8 @@ LOGICAL :: found
       ENDIF
 
 !$omp parallel do default(none) private(cc,ll,found,cc_start,cc_end,cc_start_old,cc_end_old) &
-!$omp          shared(max_pip,neighbors,neighbor_index,neighbor_index_old,neighbors_old,pv_neighbor,pfn_neighbor,pft_neighbor,pfn_neighbor_old,pft_neighbor_old,pv_neighbor_old,neigh_max)
+!$omp          shared(max_pip,neighbors,neighbor_index,neighbor_index_old,neighbors_old,     &
+!$omp                 pv_neighbor,pfn_neighbor,pft_neighbor,pfn_neighbor_old,pft_neighbor_old,pv_neighbor_old,neigh_max)
 
       do ll = 1, max_pip
 
