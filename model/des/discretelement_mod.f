@@ -227,7 +227,7 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_NEIGHBOR_OLD
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
-      INTEGER :: NEIGH_MAX
+      INTEGER :: NEIGH_NUM,NEIGH_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation

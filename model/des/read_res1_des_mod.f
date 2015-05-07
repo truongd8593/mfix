@@ -79,7 +79,7 @@
 
       use discretelement, only: MAX_PIP, PIP
       use discretelement, only: iGHOST_CNT
-      use discretelement, only: NEIGH_MAX
+      use discretelement, only: NEIGH_MAX,NEIGH_NUM
 
       use compar, only: numPEs
       use machine, only: OPEN_N1
@@ -95,7 +95,6 @@
       INTEGER, INTENT(OUT) :: lNEXT_REC
 
       CHARACTER(len=32) :: lFNAME
-      INTEGER :: NEIGH_NUM
 
 ! Integer Error Flag
       INTEGER :: IER
@@ -546,7 +545,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE READ_PAR_COL(lNEXT_REC)
 
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGH_NUM
       use compar, only: numPEs
 
       use mpi_init_des, only: DES_RESTART_GHOST
@@ -598,15 +597,15 @@
       CALL GLOBAL_TO_LOC_COL
 
 ! Set up the read/scatter arrary information.
-      cPROCCNT = NEIGH_MAX
+      cPROCCNT = NEIGH_NUM
       cROOTCNT = cIN_COUNT
 
 ! Set the recv count for this process.
-      cRECV = NEIGH_MAX
+      cRECV = NEIGH_NUM
 
 ! Construct an array for the Root process that states the number of
 ! (real) particles on each process.
-      lScatterCnts(:) = 0; lScatterCnts(mype) = NEIGH_MAX
+      lScatterCnts(:) = 0; lScatterCnts(mype) = NEIGH_NUM
       CALL GLOBAL_SUM(lScatterCnts,cSCATTER)
 
 ! Calculate the displacements for each process in the global array.
@@ -632,7 +631,7 @@
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP, PEA
-      use discretelement, only: NEIGH_MAX
+      use discretelement, only: NEIGH_MAX, NEIGH_NUM
 
 !      use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -648,7 +647,6 @@
       INTEGER :: IER
 ! Max global id.
       INTEGER :: MAX_ID, lSTAT
-      INTEGER :: NEIGH_NUM
 
       INTEGER, ALLOCATABLE :: lGLOBAL_OWNER(:)
 
@@ -785,7 +783,7 @@
       SUBROUTINE GLOBAL_TO_LOC_COL
 
       use compar, only: numPEs
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
       use discretelement, only: PEA
@@ -1305,7 +1303,7 @@
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
       use compar, only: numPEs
-      use discretelement, only: NEIGH_MAX
+      use discretelement, only: NEIGH_NUM
       USE in_binary_512i
 
       IMPLICIT NONE
@@ -1349,7 +1347,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, NEIGH_MAX
+         DO LC1=1, NEIGH_NUM
             OUTPUT_I(LC1) = iProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1369,7 +1367,7 @@
       SUBROUTINE READ_RES_cARRAY_1D(lNEXT_REC, OUTPUT_D)
 
       use compar, only: numPEs
-      use discretelement, only: NEIGH_MAX
+      use discretelement, only: NEIGH_NUM
       use desmpi, only: dRootBuf
       use desmpi, only: dProcBuf
       USE in_binary_512
@@ -1416,7 +1414,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=2)
-         DO LC1=1, NEIGH_MAX
+         DO LC1=1, NEIGH_NUM
             OUTPUT_D(LC1) = dProcBuf(LC1)
          ENDDO
       ENDIF
@@ -1436,7 +1434,7 @@
       SUBROUTINE READ_RES_cARRAY_1L(lNEXT_REC, OUTPUT_L)
 
       use compar, only: numPEs
-      use discretelement, only: NEIGH_MAX
+      use discretelement, only: NEIGH_NUM
       use desmpi, only: iRootBuf
       use desmpi, only: iProcBuf
       USE in_binary_512i
@@ -1491,7 +1489,7 @@
             deallocate(lCOUNT)
          ENDIF
          CALL DESMPI_SCATTERV(ptype=1)
-         DO LC1=1, NEIGH_MAX
+         DO LC1=1, NEIGH_NUM
             IF(iProcBuf(LC1) == 1) THEN
                OUTPUT_L(LC1) = .TRUE.
             ELSE
