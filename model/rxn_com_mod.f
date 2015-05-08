@@ -24,7 +24,7 @@
          DOUBLE PRECISION xXfr
 ! Index indicating enthalpy transfer associated with mass transfer.
          INTEGER mXfr
-! Molecular weight of speices multipling the stoichiometric coefficient
+! Molecular weight of speices multiplying the stoichiometric coefficient
          DOUBLE PRECISION MWxStoich
       END TYPE SPECIES_
 
@@ -80,7 +80,7 @@
 ! Solids phase speices aliases.
       CHARACTER(len=32), DIMENSION(DIM_M, DIM_N_s), INTENT(IN) :: SA_s
 
-! Loop indicles.
+! Loop indices.
       INTEGER M1, N1  ! Phase, Species
       INTEGER M2, N2  ! Phase, Species
 
@@ -161,8 +161,9 @@
       SUBROUTINE checkSpeciesInc(lNg, SA_g, lMMx, lNs, SA_s,           &
          lNRxn,  lRNames, lNRxn_DES, lRNames_DES)
 
-      use error_manager
-      use toleranc
+      USE error_manager
+      USE toleranc
+      USE utilities, ONLY: blank_line, seek_comment
 
       IMPLICIT NONE
 
@@ -202,10 +203,6 @@
       CHARACTER(len=32) :: tName
 ! Length of noncomment string
       INTEGER :: LINE_LEN
-! Integer function which returns COMMENT_INDEX
-      INTEGER, EXTERNAL :: SEEK_COMMENT
-! Blank line function
-      LOGICAL, EXTERNAL :: BLANK_LINE
 
 ! Full path to model directory.
       INCLUDE 'mfix_directory_path.inc'
@@ -766,8 +763,6 @@
 
       DOUBLE PRECISION, PARAMETER :: massBalanceTol = 1.0d-3
 
-! External Function for comparing two numbers.
-
 ! Initialize variables
       IER = 0
       rSUM = ZERO
@@ -809,7 +804,7 @@
             pSUM = pSUM + MWxStoich
          ENDIF
       ENDDO
-! Verify that the mass of products equlas reactants: (Mass Balance)
+! Verify that the mass of products equals reactants: (Mass Balance)
       IF (.NOT.COMPARE(rSUM,pSUM)) THEN
          IF(DMP_LOG) THEN
             WRITE(*,1001) trim(CALLER), trim(RxN%Name), rSUM, pSUM
@@ -890,8 +885,8 @@
 ! If there is only one phase referenced by the reaction, there there
 ! should be no interphase mass transfer.
       IF(RxN%nPhases == 1) THEN
-! Interphase mass transfer is set to zero. Small inconsistancies with
-! molecular weights can resunt in a non-zero value for homogeneous
+! Interphase mass transfer is set to zero. Small inconsistencies with
+! molecular weights can result in a non-zero value for homogeneous
 ! reactions. Presumably, the mass balance check caught any major errors.
          RxN%rPhase(:) = ZERO
 ! Void interphase transfer flags.
@@ -1263,7 +1258,7 @@
                      WRITE(UNIT_LOG,1000)
                   ENDIF
                   CALL WRITE_RXN_SUMMARY(RxN, lSAg(:), lSAs(:,:),.TRUE.)
-!Gas/solid cataltyic reaction:
+!Gas/solid catalytic reaction:
                ELSEIF(toPhase == 0) THEN
                   DO lN = 1, RxN%nSpecies
                      IF(RxN%Species(lN)%pMap == 0) THEN

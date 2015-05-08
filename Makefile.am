@@ -543,8 +543,6 @@ libmfix_a_SOURCES += \
 	model/scalar_prop.f \
 	model/scalars_mod.f \
 	model/scales_mod.f \
-	model/seek_comment.f \
-	model/seek_end.f \
 	model/set_bc0.f \
 	model/set_bc1.f \
 	model/set_bc_flow.f \
@@ -629,7 +627,7 @@ libmfix_a_SOURCES += \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
 	model/usrnlst.inc \
-	model/utilities.f \
+	model/utilities_mod.f \
 	model/vavg_u_g.f \
 	model/vavg_u_s.f \
 	model/vavg_v_g.f \

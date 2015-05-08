@@ -659,8 +659,6 @@
       RETURN
       END SUBROUTINE GET_TUNIT
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic
 !            domain with pressure drop is held constant at a
@@ -680,6 +678,7 @@
       USE compar
       USE run
       USE time_cpu
+      USE utilities, ONLY: isNan
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -704,7 +703,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, &
                                     VAVG_Flux_W_G
-      LOGICAL, EXTERNAL :: IsNan
 !-----------------------------------------------
 
       IF(CYCLIC_X_MF)THEN

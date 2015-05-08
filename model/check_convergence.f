@@ -21,16 +21,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
       USE geometry
       USE indices
-      USE physprop
-      USE run
-      USE residual
-      USE toleranc
       USE mpi_utility
+      USE param
+      USE param1
+      USE physprop
+      USE residual
+      USE run
       USE scalars, only :NScalar
+      USE toleranc
+      USE utilities, ONLY: check_vel_bound
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local parameters
@@ -60,9 +61,6 @@
 ! to indicate undefined residual in species eq at the
 ! beginning of iterations
       LOGICAL :: NO_RESID
-! to check upper bound (speed of sound) limit for gas and
-! solids velocity components
-      LOGICAL :: CHECK_VEL_BOUND
 !-----------------------------------------------
 
 ! sum the residuals from correction equation (pressure and/or
@@ -208,6 +206,8 @@
       ENDIF
 
 
+! to check upper bound (speed of sound) limit for gas and
+! solids velocity components
 ! only check velocity if any of the momentum equations are solved
       DO M = 0,MMAX
          IF (MOMENTUM_X_EQ(M) .OR. MOMENTUM_Y_EQ(M) .OR. &

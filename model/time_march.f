@@ -14,44 +14,44 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE MFIX_netcdf
+      USE bc
+      USE cdist
+      USE coeff
+      USE compar
+      USE cont
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE drag
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE leqsol, only: SOLVER_STATISTICS, REPORT_SOLVER_STATS
+      USE output, only: RES_DT, NLOG
       USE param
       USE param1
-      USE run
-      USE physprop
-      USE fldvar
-      USE geometry
       USE pgcor
+      USE physprop
       USE pscor
-      USE cont
+      USE qmom_kinetic_equation
+      USE run
+      USE rxns, only: nRR
+      USE scalars
+      USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
       USE tau_g
       USE tau_s
+      USE time_cpu
+      USE toleranc
+! use function MAX_VEL_INLET to compute max. velocity at inlet
+      USE utilities, ONLY: MAX_VEL_INLET
       USE visc_g
       USE visc_s
-      USE funits
       USE vshear
-      USE scalars
-      USE toleranc
-      USE drag
-      USE rxns, only: nRR
-      USE compar
-      USE time_cpu
-      USE discretelement
-      USE leqsol, only: SOLVER_STATISTICS, REPORT_SOLVER_STATS
-      use mpi_utility
-      USE cdist
-      USE MFIX_netcdf
-      USE cutcell
       USE vtk
-      USE qmom_kinetic_equation
-      USE dashboard
-      USE indices
-      USE bc
-      USE coeff
-      USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
       USE vtp
-
-      use output, only: RES_DT, NLOG
-
+      USE mpi_utility
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -80,8 +80,6 @@
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
-! use function MAX_VEL_INLET to compute max. velocity at inlet
-      DOUBLE PRECISION :: MAX_VEL_INLET
 ! use function vavg_v_g to catch NaN's
       DOUBLE PRECISION :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
 

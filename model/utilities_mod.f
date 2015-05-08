@@ -1,3 +1,9 @@
+MODULE utilities
+
+  IMPLICIT NONE
+
+CONTAINS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  function: isNaN                                                     !
@@ -249,3 +255,216 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 
       END FUNCTION CHECK_VEL_BOUND
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function name: SEEK_COMMENT (LINE_MAXCOL)                           C
+!  Purpose: determine if (and where) a comment character appears       C
+!           in a data input line                                       C
+!                                                                      C
+!  Author: P.Nicoletti                                Date: 25-NOV-91  C
+!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: SEEK_COMMENT                                    C
+!                                                                      C
+!  Local variables: DIM_COMMENT, COMMENT_CHAR, L, COMMENT, L2          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      INTEGER FUNCTION SEEK_COMMENT (LINE, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                   input data line
+      CHARACTER(len=*) LINE
+!
+!                   maximum column of input data line to search
+      INTEGER       MAXCOL
+!
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!
+!                   the number of designated comment characters
+      INTEGER, PARAMETER :: DIM_COMMENT = 2
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!                   loop indicies
+      INTEGER :: L, L2
+!
+!                   the comment characters
+      CHARACTER, DIMENSION(DIM_COMMENT) :: COMMENT_CHAR
+!-----------------------------------------------
+!
+!     The function SEEK_COMMENT returns the index to where a comment
+!     character was found in the input data line.  Equals MAXCOL + 1
+!     if no-comment characters in the line
+!
+!
+      DATA COMMENT_CHAR/'#', '!'/
+!
+      DO L = 1, MAXCOL
+         DO L2 = 1, DIM_COMMENT
+            IF (LINE(L:L) == COMMENT_CHAR(L2)) THEN
+               SEEK_COMMENT = L
+               RETURN
+            ENDIF
+         END DO
+      END DO
+      SEEK_COMMENT = MAXCOL + 1
+!
+      RETURN
+      END FUNCTION SEEK_COMMENT
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function name: SEEK_END (LINE, MAXCOL)                              C
+!  Purpose: determine where trailing blanks begin in a line            C
+!                                                                      C
+!  Author: P.Nicoletti, M. Syamlal                    Date: 7-AUG-92   C
+!  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: SEEK_END                                        C
+!                                                                      C
+!  Local variables: L                                                  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      INTEGER FUNCTION SEEK_END (LINE, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                   maximum column of input data line to search
+      INTEGER MAXCOL
+!
+!                   input data line
+      CHARACTER LINE*(*)
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+      INTEGER :: L
+!-----------------------------------------------
+!
+!     The function SEEK_END returns the index to where the last
+!     character was found in the input data line.  Equals MAXCOL
+!     if no trailing blank characters in the line
+!
+!
+      SEEK_END = 0
+      DO L = 1, MAXCOL
+         IF (LINE(L:L) /= ' ') SEEK_END = L
+      END DO
+      RETURN
+      END FUNCTION SEEK_END
+
+!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function name: LINE_TOO_BIG (LINE,LINE_LEN,MAXCOL)                  C
+!  Purpose: return an error condition if input data is located past    C
+!           column MAXCOL in the data input file                       C
+!                                                                      C
+!  Author: P.Nicoletti                                Date: 25-NOV-91  C
+!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced: None                                          C
+!  Variables modified: LINE_TOO_BIG                                    C
+!                                                                      C
+!  Local variables: L                                                  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      INTEGER FUNCTION LINE_TOO_BIG (LINE, LINE_LEN, MAXCOL)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                   input data line
+      CHARACTER(LEN=*) :: LINE
+!
+!                   length of input data line
+      INTEGER       LINE_LEN
+!
+!                   maximum column that non-blank charcaters are
+!                   are in the input data line
+      INTEGER       MAXCOL
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!               loop index
+      INTEGER :: L
+!-----------------------------------------------
+!
+!     The function LINE_TOO_BIG returns a value greater than 0 to
+!     indicate an error condition (data passed column MAXCOL in LINE)
+!
+!
+      DO L = MAXCOL + 1, LINE_LEN
+         IF (LINE(L:L) /= ' ') THEN
+            LINE_TOO_BIG = L
+            RETURN
+         ENDIF
+      END DO
+      LINE_TOO_BIG = 0
+      RETURN
+      END FUNCTION LINE_TOO_BIG
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+! Function: BLANK_LINE                                                !
+! Author: P. Nicoletti                                Date: 25-NOV-91  !
+!                                                                      !
+! Purpose: Return .TRUE. if a line contains no input or only spaces.   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      LOGICAL FUNCTION BLANK_LINE (line)
+
+      IMPLICIT NONE
+
+      CHARACTER :: LINE*(*)
+
+      INTEGER :: L
+
+      BLANK_LINE = .FALSE.
+      DO L=1, len(line)
+         IF(line(L:L)/=' ' .and. line(L:L)/='    ')RETURN
+      ENDDO
+
+      BLANK_LINE = .TRUE.
+      RETURN
+      END FUNCTION BLANK_LINE
+
+END MODULE utilities
