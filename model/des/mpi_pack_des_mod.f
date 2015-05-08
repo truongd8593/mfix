@@ -238,7 +238,7 @@
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 ! Particle pair (neighborhood) arrays:
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 ! Pair collision history information
       use discretelement, only: PV_NEIGHBOR, PFN_NEIGHBOR, PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
@@ -275,7 +275,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
       integer :: li, lj, lk
-      integer :: ltot_ind,lindx,cc,cc_start,cc_end,ii
+      integer :: ltot_ind,lindx,cc,ii
       integer :: lneigh,lijk,&
                  lpicloc,lparcnt,lcurpar
       integer :: lbuf,num_neighborlists_to_send
@@ -413,41 +413,41 @@
       lbuf = lbuf+1
 
        num_neighborlists_to_send = 0
-       do lcurpar = 1, MAX_PIP
+       lcurpar = 1
+       do cc = 1, NEIGH_NUM
+          IF (0 .eq. NEIGHBORS(cc)) EXIT
+
+          IF (cc.eq.NEIGHBOR_INDEX(lcurpar)) THEN
+             lcurpar = lcurpar + 1
+          ENDIF
+
 ! Only packup pairing data for particles being transfered.
           if (.not. going_to_send(lcurpar)) cycle
 
 ! Do not send pairing data if the pair no longer exists or if the
 ! particle is exiting as it may be locatable during unpacking.
-          CC_START = 1
-          IF (lcurpar.gt.1) CC_START = NEIGHBOR_INDEX(lcurpar-1)
-          CC_END   = NEIGHBOR_INDEX(lcurpar)
-
-          DO CC = CC_START, CC_END-1
-             lneigh = neighbors(cc)
-             if(0.eq.lneigh) cycle
-             if(.not.PEA(lneigh,1)) cycle
-             if(PEA(lneigh,3)) cycle
+          lneigh = neighbors(lcurpar)
+          if(.not.PEA(lneigh,1)) cycle
+          if(PEA(lneigh,3)) cycle
 
 ! 34) Global ID of particle being packed.
-             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
+          call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
 ! 35) DES grid IJK of cell receiving the particle.
-             call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
-                  ineighproc(pface)),pface)
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
+               ineighproc(pface)),pface)
 ! 36) Global ID of neighbor particle.
-             call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
+          call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
 ! 37) DES grid IJK of cell containing the neighbor particle.
-             call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
-                  ineighproc(pface)),pface)
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
+               ineighproc(pface)),pface)
 ! 38) Flag indicating induring contact for the pair.
-             call pack_dbuf(lbuf,PV_NEIGHBOR(CC),pface)
+          call pack_dbuf(lbuf,PV_NEIGHBOR(CC),pface)
 ! 39) Normal collision history.
-             call pack_dbuf(lbuf,PFN_NEIGHBOR(:,CC),pface)
+          call pack_dbuf(lbuf,PFN_NEIGHBOR(:,CC),pface)
 ! 40) Tangential collision history.
-             call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface)
+          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface)
 ! Increment the number of pairs being sent.
-             num_neighborlists_to_send = num_neighborlists_to_send + 1
-          enddo
+          num_neighborlists_to_send = num_neighborlists_to_send + 1
        enddo
 
 ! Store the number of pair datasets being sent. This information is
