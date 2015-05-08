@@ -26,7 +26,7 @@ AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 bin_PROGRAMS = postmfix
 
 #  SOURCES are fully defined further below
-postmfix_SOURCES = main_f.f
+postmfix_SOURCES = main_f.f ../model/dmp_modules/mpi_utility_mod.f
 postmfix_LDADD = ../model/ODEPACK.$(OBJEXT) $(top_srcdir)/libmfix.a
 
 # build main directory first

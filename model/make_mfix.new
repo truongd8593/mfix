@@ -129,15 +129,18 @@ if test ${CLEAN_OBJS} -eq 1; then
 fi
 
 ARGS=
-[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
-[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
 [[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
 [[ ${OPT} -eq 1 ]] && FCFLAGS="-O1"
 [[ ${OPT} -eq 2 ]] && FCFLAGS="-O2"
 [[ ${OPT} -eq 3 ]] && FCFLAGS="-O3"
 
+[[ ${USE_DEBUG} -eq 1 ]] && FCFLAGS="${FCFLAGS} -g"
+
 [[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
 [[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
+
+[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
+[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
 
