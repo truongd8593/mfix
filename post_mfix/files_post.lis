@@ -148,8 +148,6 @@
 ../model/rxns_mod.f
 ../model/scalars_mod.f
 ../model/scales_mod.f
-../model/seek_comment.f
-../model/seek_end.f
 ../model/set_constants.f
 ../model/set_geometry.f
 ../model/set_geometry1.f
@@ -172,6 +170,7 @@
 ../model/turb_mod.f
 ../model/ur_facs_mod.f
 ../model/usr_mod.f
+../model/utilities_mod.f
 ../model/visc_g_mod.f
 ../model/visc_s_mod.f
 ../model/vshear_mod.f
