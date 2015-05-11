@@ -13,7 +13,9 @@ cd ${MFIX_HOME}
 
 [ -f configure ] || autoreconf -i
 
-./configure $@ || exit
+echo BLAH "$@"
+
+./configure "$@" || exit
 
 if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
     cp ${MAKEFILE_USR} ${MAKEFILE}

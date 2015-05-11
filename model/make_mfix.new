@@ -145,10 +145,7 @@ ARGS=
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
 
 # Construct the makefile
-cd ${MFIX_HOME}
-[ -f configure ] || autoreconf -i
-./configure ${ARGS} FC="${FC}" FCFLAGS="${FCFLAGS}" || exit
-test $PWD != $RUN_DIR && cp ${MFIX_HOME}/build-aux/Makefile.usr ${RUN_DIR}/${MAKEFILE}
+${MFIX_HOME}/configure_mfix ${ARGS} FC="${FC}" FCFLAGS="${FCFLAGS}" || exit
 
 # Run Make
 echo "Please wait..."
