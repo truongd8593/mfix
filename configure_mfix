@@ -13,8 +13,6 @@ cd ${MFIX_HOME}
 
 [ -f configure ] || autoreconf -i
 
-echo BLAH "$@"
-
 ./configure "$@" || exit
 
 if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
