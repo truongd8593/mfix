@@ -144,6 +144,7 @@ ARGS=
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
 
+cd $RUN_DIR
 # Construct the makefile
 ${MFIX_HOME}/configure_mfix ${ARGS} FC="${FC}" FCFLAGS="${FCFLAGS}" || exit
 
