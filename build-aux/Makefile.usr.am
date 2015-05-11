@@ -8,7 +8,7 @@ AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 MODULE=$(top_srcdir)/model
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+AM_FCFLAGS += -I$(MODULE)
 
 ################################################################
 #                                                              #
