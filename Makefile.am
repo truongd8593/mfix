@@ -9,14 +9,16 @@ F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 
 # Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -I$(top_srcdir)/model -cpp
+AM_FCFLAGS = $(FC_MODINC)$(top_builddir)/model -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT) mfixmodule.deps
-MODULE=$(top_srcdir)/model
-AM_FCFLAGS += $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
+MODULE=$(top_builddir)/model
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
 
-$(top_srcdir)/model/mfix_directory_path.inc:
+SUBDIRS = post_mfix
+
+$(top_builddir)/model/mfix_directory_path.inc:
 	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
 
 .DEFAULT_GOAL := mfix
@@ -51,7 +53,7 @@ postmfix:
 #                                                              #
 ################################################################
 
-EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
+EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools post_mfix
 EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 ################################################################
@@ -68,7 +70,7 @@ mfixmodule.deps: $(libmfix_a_SOURCES)
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps
+DISTCLEANFILES = mfixmodule.deps $(top_builddir)/model/*.mod build-aux/Makefile.usr
 
 ################################################################
 #                                                              #
@@ -591,6 +593,7 @@ libmfix_a_SOURCES += \
 	model/source_v_s.f \
 	model/source_w_g.f \
 	model/source_w_s.f \
+	model/species.inc \
 	model/species_indices.inc \
 	model/tau_g_mod.f \
 	model/tau_s_mod.f \
