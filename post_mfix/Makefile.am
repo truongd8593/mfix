@@ -13,7 +13,7 @@ AM_FCFLAGS = -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_srcdir)/model
+MODULE=$(top_builddir)/model
 AM_FCFLAGS += $(FC_MODINC)$(MODULE)
 
 .DEFAULT_GOAL := postmfix
@@ -27,15 +27,15 @@ bin_PROGRAMS = postmfix
 
 #  SOURCES are fully defined further below
 postmfix_SOURCES = main_f.f mpi_utility_mod.f
-postmfix_LDADD = ../model/ODEPACK.$(OBJEXT) $(top_srcdir)/libmfix.a
+postmfix_LDADD = ../model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
 # build main directory first
-main_f.f: $(top_srcdir)/libmfix.a
+main_f.f: $(top_builddir)/libmfix.a
 
 mpi_utility_mod.f: ../model/dmp_modules/mpi_utility_mod.f
 	cp $^ $@
 
-$(top_srcdir)/libmfix.a:
+$(top_builddir)/libmfix.a:
 	$(MAKE) -C $(top_srcdir) libmfix.a
 
 ################################################################
