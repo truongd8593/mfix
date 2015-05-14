@@ -41,11 +41,11 @@
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
 !     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: Var
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: Var
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3,-3:3), INTENT(INOUT) :: A_m
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3,-3:3), INTENT(INOUT) :: A_m
 ! Vector b_m
-      DOUBLE PRECISION, DIMENSION(ijkstart3:ijkend3), INTENT(INOUT) :: B_m
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3), INTENT(INOUT) :: B_m
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
       CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
@@ -125,11 +125,11 @@
 !     e.g., pp_g, epp, rop_g, rop_s, u_g, u_s, v_g, v_s, w_g,
 !     w_s, T_g, T_s, x_g, x_s, Theta_m, scalar, K_Turb_G,
 !     e_Turb_G
-      DOUBLE PRECISION, INTENT(INOUT) :: Var(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(INOUT) :: Var(DIMENSION_3)
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(INOUT) :: A_m(ijkstart3:ijkend3,-3:3)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3,-3:3)
 ! Vector b_m
-      DOUBLE PRECISION, INTENT(INOUT) :: B_m(ijkstart3:ijkend3)
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3)
 ! Sweep direction of leq solver (leq_sweep)
 !     e.g., options = 'isis', 'rsrs' (default), 'asas'
       CHARACTER(LEN=*), INTENT(IN) :: CMETHOD
@@ -186,10 +186,10 @@
 
 
       ! allocating
-      allocate(V(IJKSTART3:IJKEND3,ITMAX+1))
-      allocate(R(IJKSTART3:IJKEND3))
-      allocate(TEMP(IJKSTART3:IJKEND3))
-      allocate(WW(IJKSTART3:IJKEND3))
+      allocate(V(DIMENSION_3,ITMAX+1))
+      allocate(R(DIMENSION_3))
+      allocate(TEMP(DIMENSION_3))
+      allocate(WW(DIMENSION_3))
 
 ! initializing
       NAME = 'LEQ_GMRES0 ' // TRIM(VNAME)
@@ -234,9 +234,9 @@
       CALL MATVEC(VNAME, VAR, A_M, R)   ! returns R=A*VAR
 
 !!$omp   parallel do private(ii,jj,kk,ijk)
-      DO KK=KSTART,KEND
-        DO JJ=JSTART,JEND
-          DO II=ISTART,IEND
+      DO KK=KSTART3,KEND3
+        DO JJ=JSTART3,JEND3
+          DO II=ISTART3,IEND3
              IJK = FUNIJK( II,JJ,KK )
              TEMP(IJK) = B_M(IJK) - R(IJK)
           ENDDO
@@ -269,9 +269,9 @@
 !        TEMP(:) = B_M(:) - R(:)
 
 !!$omp    parallel do private(ii,jj,kk,ijk)
-         DO KK=KSTART,KEND
-           DO JJ=JSTART,JEND
-             DO II=ISTART,IEND
+         DO KK=KSTART3,KEND3
+           DO JJ=JSTART3,JEND3
+             DO II=ISTART3,IEND3
                 IJK = FUNIJK( II,JJ,KK )
                 TEMP(IJK) = B_M(IJK) - R(IJK)
              ENDDO
@@ -287,9 +287,9 @@
 
 !         V(:,1) = R(:) * INV_NORM_R
 !!$omp    parallel do private(ii,jj,kk,ijk)
-         DO KK=KSTART,KEND
-           DO JJ=JSTART,JEND
-             DO II=ISTART,IEND
+         DO KK=KSTART3,KEND3
+           DO JJ=JSTART3,JEND3
+             DO II=ISTART3,IEND3
                 IJK = FUNIJK( II,JJ,KK )
                 V(IJK,1) = R(IJK) * INV_NORM_R
              ENDDO
@@ -314,9 +314,9 @@
 !               WW(:) = WW(:) - H(K,I)*V(:,K)
 
 !!$omp          parallel do private(ii,jj,kk,ijk)
-               DO KK=KSTART,KEND
-                 DO JJ=JSTART,JEND
-                   DO II=ISTART,IEND
+               DO KK=KSTART3,KEND3
+                 DO JJ=JSTART3,JEND3
+                   DO II=ISTART3,IEND3
                       IJK = FUNIJK( II,JJ,KK )
                       WW(IJK) = WW(IJK) - H(K,I)*V(IJK,K)
                    ENDDO
@@ -331,9 +331,9 @@
             INV_H_IP1_I = ONE / H(I+1,I)
 
 !!$omp       parallel do private(ii,jj,kk,ijk)
-            DO KK=KSTART,KEND
-              DO JJ=JSTART,JEND
-                DO II=ISTART,IEND
+            DO KK=KSTART3,KEND3
+              DO JJ=JSTART3,JEND3
+                DO II=ISTART3,IEND3
                    IJK = FUNIJK( II,JJ,KK )
                    V(IJK, I+1) = WW(IJK) * INV_H_IP1_I
                 ENDDO
@@ -424,9 +424,9 @@
 
 !               VAR(:)=VAR(:)+MATMUL(V(:,1:I),Y(1:I))
 !!$omp          parallel do private(ii,jj,kk,ijk)
-               DO KK=KSTART,KEND
-                 DO JJ=JSTART,JEND
-                   DO II=ISTART,IEND
+               DO KK=KSTART3,KEND3
+                 DO JJ=JSTART3,JEND3
+                   DO II=ISTART3,IEND3
                       IJK = FUNIJK( II,JJ,KK )
                       VAR(IJK) = VAR(IJK) + &
                          DOT_PRODUCT( V(IJK,1:I), Y(1:I) )
@@ -504,9 +504,9 @@
 
 !         VAR(:) = VAR(:) + MATMUL( V(:,1:M), Y(1:M) )
 !!$omp    parallel do private(ii,jj,kk,ijk)
-         DO KK=KSTART,KEND
-           DO JJ=JSTART,JEND
-             DO II=ISTART,IEND
+         DO KK=KSTART3,KEND3
+           DO JJ=JSTART3,JEND3
+             DO II=ISTART3,IEND3
                 IJK = FUNIJK( II,JJ,KK )
                 VAR(IJK) = VAR(IJK) + &
                    DOT_PRODUCT( V(IJK,1:M), Y(1:M) )
@@ -518,9 +518,9 @@
 
 !         TEMP(:) = B_M(:) - R(:)
 !!$omp    parallel do private(ii,jj,kk,ijk)
-         DO KK=KSTART,KEND
-           DO JJ=JSTART,JEND
-             DO II=ISTART,IEND
+         DO KK=KSTART3,KEND3
+           DO JJ=JSTART3,JEND3
+             DO II=ISTART3,IEND3
                 IJK = FUNIJK( II,JJ,KK )
                 TEMP(IJK) = B_M(IJK) - R(IJK)
              ENDDO
@@ -561,9 +561,9 @@
 
 !         R(:) = R(:) - B_M(:)
 !!$omp    parallel do private(ii,jj,kk,ijk)
-         DO KK=KSTART,KEND
-           DO JJ=JSTART,JEND
-             DO II=ISTART,IEND
+         DO KK=KSTART3,KEND3
+           DO JJ=JSTART3,JEND3
+             DO II=ISTART3,IEND3
                 IJK = FUNIJK( II,JJ,KK )
                 R(IJK) = R(IJK) - B_M(IJK)
              ENDDO
@@ -669,7 +669,7 @@
 ! Dummy arguments
 !-----------------------------------------------
 ! Septadiagonal matrix A_m
-      DOUBLE PRECISION, INTENT(INOUT) :: A_M(IJKSTART3:IJKEND3, -3:3)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_M(DIMENSION_3, -3:3)
 ! Variable name
       CHARACTER(LEN=*), INTENT(IN) :: VNAME
 !-----------------------------------------------
