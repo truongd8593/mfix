@@ -36,6 +36,9 @@ AC_ARG_ENABLE([mkl],
 esac],[mkl=false])
 AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
 
+AC_ARG_VAR([TAU_MAKEFILE],[ Path to TAU Makefile ])
+AC_ARG_VAR([TAU_F90],[ Actual Fortran compiler used by TAU compiler wrapper ])
+
 AC_ARG_ENABLE([smp],
 [  --enable-smp    Turn on OpenMP support],
 [case "${enableval}" in

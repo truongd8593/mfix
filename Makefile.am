@@ -15,6 +15,10 @@ FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT) mfixmodule.deps
 MODULE=$(top_builddir)/model
 AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
+TAU_F90=@TAU_F90@
+TAU_MAKEFILE=@TAU_MAKEFILE@
+export TAU_F90
+export TAU_MAKEFILE
 
 SUBDIRS = post_mfix
 
