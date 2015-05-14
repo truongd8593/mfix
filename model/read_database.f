@@ -58,8 +58,6 @@
 
 ! File name of Burcat and Ruscic database
       CHARACTER(len=10) :: THERM = 'BURCAT.THR'
-! Full path to model directory
-      INCLUDE 'mfix_directory_path.inc'
 ! Full path to Burcat and Ruscic database
       CHARACTER(len=147) FILENAME
 
@@ -97,13 +95,6 @@
             OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) TRIM(THERM)
-! Read thermochemical data from the BURCAT.THR database in the model
-! directory (model/thermochemical/BURCAT.THR).
-          ELSEIF(file == 3) THEN
-            FILENAME = trim(MFIX_PATH)//'/thermochemical/'//TRIM(THERM)
-            OPEN(UNIT=FUNIT,FILE=TRIM(FILENAME), STATUS='OLD',IOSTAT= IOS)
-            IF(IOS /= 0) CYCLE DB_LP
-            DB=''; WRITE(DB,1000) ('/thermochemical/'//TRIM(THERM))
           ELSE
             EXIT DB_LP
           ENDIF

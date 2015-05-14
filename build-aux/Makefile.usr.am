@@ -28,7 +28,7 @@ AM_FCFLAGS += -DMPI
 AM_LDFLAGS += -DMPI
 endif
 
-src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_database.f read_namelist.f rxn_com_mod.f)
+src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_namelist.f )
 src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
@@ -38,21 +38,13 @@ mfix_SOURCES = $(top_srcdir)/model/mfix.f $(top_srcdir)/model/ODEPACK.F
 mfix_LDADD = $(src_objs) $(top_builddir)/libmfix.a
 
 # read_namelist needs rebuilt here in case usrnlst.inc is overridden
-read_database.f: mfix_directory_path.inc
+read_namelist.f:
 	cp $(top_srcdir)/model/$@ .
-
-read_namelist.f: mfix_directory_path.inc
-	cp $(top_srcdir)/model/$@ .
-
-rxn_com_mod.f: mfix_directory_path.inc
-	cp $(top_srcdir)/model/$@ .
-
-mfix_directory_path.inc:
-	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
 
 # top level directory needs to be built first
 main:
 	$(MAKE) -C $(top_srcdir) mfix
+	ln -sf $(top_srcdir)/model/thermochemical/BURCAT.THR .
 
 $(top_builddir)/model/mfix.f: main
 $(top_builddir)/libmfix.a: main

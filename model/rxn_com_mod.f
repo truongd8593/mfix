@@ -204,9 +204,6 @@
 ! Length of noncomment string
       INTEGER :: LINE_LEN
 
-! Full path to model directory.
-      INCLUDE 'mfix_directory_path.inc'
-
       CALL INIT_ERR_MSG("RXN_COM --> checkDuplicateAliases")
 
       SRC = 0
@@ -221,13 +218,6 @@
             OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
             IF(IOS /= 0) CYCLE SRC_LP
             WRITE(ERR_MSG, 1000)'species.inc'
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
-! Check the model directory.
-         CASE(2); FILENAME = trim(MFIX_PATH)//'/species.inc'
-            OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
-            IF(IOS /= 0) CYCLE SRC_LP
-            WRITE(ERR_MSG, 1000)'mfix/model/species.inc'
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
  1000 FORMAT(/2X,'Verifying reaction aliases in ',A)

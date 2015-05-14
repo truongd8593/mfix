@@ -18,9 +18,6 @@ AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model $(FC_MODINC)$(MODULE) $(FC_MODOUT)
 
 SUBDIRS = post_mfix
 
-$(top_builddir)/model/mfix_directory_path.inc:
-	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
-
 .DEFAULT_GOAL := mfix
 
 ################################################################
@@ -476,7 +473,6 @@ libmfix_a_SOURCES += \
 	model/mark_phase_4_cor.f \
 	model/matrix_mod.f \
 	model/mfix.f \
-	model/mfix_directory_path.inc \
 	model/mfix_netcdf_mod.f \
 	model/mflux_mod.f \
 	model/mms_mod.f \
