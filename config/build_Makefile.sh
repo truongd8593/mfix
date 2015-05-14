@@ -28,21 +28,28 @@ fi
 #  echo "using Trilinos ?"
 #fi
 
-
 # Include the base definitions:
 echo "AR=${AR}" >> ${tmpMFILE}
 echo "DPO=${DPO}" >> ${tmpMFILE}
 echo "OBJ_EXT=${OBJ_EXT}" >> ${tmpMFILE}
 echo "FORTRAN_EXT=${FORTRAN_EXT}" >> ${tmpMFILE}
-echo "FORT_FLAGS=${FORT_FLAGS}" >> ${tmpMFILE}
-echo "FORT_FLAGS3=${FORT_FLAGS3}" >> ${tmpMFILE}
-echo "FORTRAN_CMD=${FORTRAN_CMD}" >> ${tmpMFILE}
 echo "LINK_FLAGS=${LINK_FLAGS}" >> ${tmpMFILE}
-echo "LINK_CMD=${LINK_CMD}" >> ${tmpMFILE}
 echo "LIB_FLAGS=${LIB_FLAGS}" >> ${tmpMFILE}
 echo "EXEC_FILE=${EXEC_FILE}" >> ${tmpMFILE}
 echo "MODDIRPREFIX=${MODDIRPREFIX}" >> ${tmpMFILE}
 
+# Include any TAU definitions.
+if test ${USE_TAU} = 1; then
+  echo "FORT_FLAGS=\$(TAU_OPTIONS) ${FORT_FLAGS}" >> ${tmpMFILE}
+  echo "FORT_FLAGS3=\$(TAU_OPTIONS) ${FORT_FLAGS3}" >> ${tmpMFILE}
+  echo "FORTRAN_CMD=\$(TAU_COMPILER) ${FORTRAN_CMD}" >> ${tmpMFILE}
+  echo "LINK_CMD=\$(TAU_COMPILER) ${LINK_CMD}" >> ${tmpMFILE}
+else
+  echo "FORT_FLAGS=${FORT_FLAGS}" >> ${tmpMFILE}
+  echo "FORT_FLAGS3=${FORT_FLAGS3}" >> ${tmpMFILE}
+  echo "FORTRAN_CMD=${FORTRAN_CMD}" >> ${tmpMFILE}
+  echo "LINK_CMD=${LINK_CMD}" >> ${tmpMFILE}
+fi
 
 echo "Updating file list."
 # Build a list of all files under the model directory.
