@@ -2,9 +2,7 @@
 
 module load gnu/4.6.4
 
-../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O2 -j
-
-rm POST_*.dat &> /dev/null
+../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
 
 RUN_NAME="DEM04"
 

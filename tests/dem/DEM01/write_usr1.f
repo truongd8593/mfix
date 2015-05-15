@@ -112,11 +112,19 @@
       endif
 
 ! Calculate the absolute and absolute relative errors.
-       Pos_aErr = lPos_Y - DES_POS_new(2,1)
-       Pos_rErr = abs(Pos_aErr/lPos_Y)*100
+       Pos_aErr = abs(lPos_Y - DES_POS_new(2,1))
+       if(lPos_Y > 0.0d0) then
+          Pos_rErr = Pos_aErr/lPos_Y*100
+       else
+          Pos_rErr = Pos_aErr*100
+       endif
 
-       Vel_aErr = lVel_Y - DES_VEL_new(2,1)
-       Vel_rErr = abs(Vel_aErr/lVel_Y)*100
+       Vel_aErr = abs(lVel_Y - DES_VEL_new(2,1))
+       if(lVel_Y > 0.0d0) then
+          Vel_rErr = Vel_aErr/lVel_Y*100
+       else
+          Vel_rErr = Vel_aErr*100
+       endif
 
 ! Write the results to a file.
       WRITE(uPos,"(F15.8,5x,I1,5X,F15.8,3(3x,F15.8))") lTime, &
