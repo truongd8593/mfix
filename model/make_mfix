@@ -107,11 +107,6 @@ if test ${AUTOCOMPILE} -ne 1; then
   . ${MFIX_CONFIG}/netcdf.sh
 # Set Trilinos library flags
 
-# Set TAU wrappers
-  if test $USE_TAU = 1; then
-    . ${MFIX_CONFIG}/tau_wrapper.sh
-  fi
-
 fi # End of Autocompile <= 1
 
 # Reaction preprocessor.
