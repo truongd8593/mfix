@@ -12,7 +12,7 @@ if test -f ${tmpMFILE}; then rm ${tmpMFILE}; fi
 # Include any TAU definitions.
 if test ${USE_TAU} = 1; then
   echo "include ${TAU_MAKEFILE}" >> ${tmpMFILE}
-  echo "TAU_OPTIONS=${TAU_OPTS}" >> ${tmpMFILE}
+  echo "TAU_OPTIONS=${TAU_OPTIONS}" >> ${tmpMFILE}
 fi
 
 

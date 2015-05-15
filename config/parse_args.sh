@@ -377,8 +377,12 @@ for arg in $input; do
 # Enable TAU profiling
 #-------------------------------------------------------------------------->>
     "--enable-tau" )
-      if test -z ${TAUROOT}; then
-        echo "  Fatal Error: TAUROOT not set!"
+      if test -z ${TAU_MAKEFILE}; then
+        echo "  Fatal Error: TAU_MAKEFILE not set!"
+        exit -1
+      fi
+      if test -z ${TAU_OPTIONS}; then
+        echo "  Fatal Error: TAU_OPTIONS not set!"
         exit -1
       fi
       USE_TAU=1
