@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash -lex
 
 module load gnu/4.6.4
 
