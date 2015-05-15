@@ -4,17 +4,14 @@ echo "Building Makefile."
 MAKEFILE=${MFIX_SRC}/${MAKEFILE}
 tmpMFILE=${MFIX_SRC}/tmp.make
 
-
 # Remove the previous tmp file if it exists.
 if test -f ${tmpMFILE}; then rm ${tmpMFILE}; fi
-
 
 # Include any TAU definitions.
 if test ${USE_TAU} = 1; then
   echo "include ${TAU_MAKEFILE}" >> ${tmpMFILE}
   echo "TAU_OPTIONS=${TAU_OPTIONS}" >> ${tmpMFILE}
 fi
-
 
 FORT_FLAGS="${FORT_FLAGS} -I${MFIX_SRC}/include"
 

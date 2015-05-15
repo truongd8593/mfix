@@ -13,8 +13,10 @@ AM_FCFLAGS = -cpp
 AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_builddir)/model
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+MODDIR=$(top_builddir)/model
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/post_mfix/include
+AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 
 .DEFAULT_GOAL := postmfix
 
@@ -45,9 +47,9 @@ $(top_builddir)/libmfix.a:
 ################################################################
 
 postmodule.deps: $(postmfix_SOURCES)
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
 	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
 	    echo "${main_mod}: main" >> $@; \
@@ -112,6 +114,7 @@ postmfix_SOURCES += \
 	header_main.f \
 	ik_avg.f \
 	ik_avg_out.f \
+	include/xforms.inc \
 	interp_res.f \
 	ornl_corr.f \
 	ornl_corr_c.f \
@@ -149,6 +152,4 @@ postmfix_SOURCES += \
 	usr_input.f \
 	usr_input_mod.f \
 	usr_post.f \
-	usr_write_out1.f \
-	usrnlst.inc \
-	xforms.inc
+	usr_write_out1.f
