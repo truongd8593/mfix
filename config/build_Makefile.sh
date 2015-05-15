@@ -16,12 +16,13 @@ if test ${USE_TAU} = 1; then
 fi
 
 
+FORT_FLAGS="${FORT_FLAGS} -I${MFIX_SRC}/include"
+
 # Include any NetCDF definitions.
 if test ${USE_NETCDF} = 1; then
   FORT_FLAGS="${FORT_FLAGS} -I${NETCDF_INCLUDE}"
   LIB_FLAGS="${LIB_FLAGS} -L${NETCDF_LIB} -lnetcdff"
 fi
-
 
 # Include any Trilinos definitions.
 #if test ${USE_TRILINOS} = 1; then
