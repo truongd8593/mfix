@@ -2,9 +2,7 @@
 
 module load gnu/4.6.4
 
-#../mfix/model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O2 -j
-
-/nfs/home/2/jmusser/projects/develop/mfix/model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
+../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O2 -j
 
 rm POST_*.dat &> /dev/null
 
