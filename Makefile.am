@@ -20,6 +20,7 @@ AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
 AM_LDFLAGS =
+
 TAU_F90=@TAU_F90@
 TAU_MAKEFILE=@TAU_MAKEFILE@
 export TAU_F90
@@ -28,6 +29,9 @@ export TAU_MAKEFILE
 SUBDIRS = post_mfix
 
 .DEFAULT_GOAL := mfix
+
+$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #

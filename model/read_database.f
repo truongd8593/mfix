@@ -28,7 +28,7 @@
       USE funits
       USE discretelement
       USE des_rxns
-      USE read_thermochemical, only: read_therm, calc_ICpoR
+      USE read_thermochemical, only: read_therm, calc_ICpoR, THERM
 
       use error_manager
 
@@ -56,11 +56,6 @@
 ! Identifies if an error was detected.
       LOGICAL ErrorFlag
 
-! File name of Burcat and Ruscic database
-      CHARACTER(len=10) :: THERM = 'BURCAT.THR'
-! Full path to Burcat and Ruscic database
-      CHARACTER(len=147) FILENAME
-
 ! Tcom +/- SMALL_NUMBER: This is done so that the specific heat
 ! polynomial can be evaluated at Tcom with the high and low
 ! coefficients.
@@ -74,6 +69,10 @@
       LOGICAL :: testCp = .FALSE.
 ! Database being searched.
       CHARACTER(len=256) :: DB
+
+#ifdef BURCAT_THR
+      THERM = BURCAT_THR
+#endif
 
       CALL INIT_ERR_MSG('READ_DATABASE')
 
@@ -157,7 +156,7 @@
 ! Write remaining error message if needed.
       IF(ErrorFlag) THEN
          CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
-         WRITE(ERR_MSG,1010) trim(lName), trim(FILENAME)
+         WRITE(ERR_MSG,1010) trim(lName), trim(THERM)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 

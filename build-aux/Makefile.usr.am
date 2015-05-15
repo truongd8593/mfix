@@ -37,13 +37,16 @@ src_objs = $(patsubst %.f,%.o,$(src_overrides))
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f $(top_srcdir)/model/ODEPACK.F
-mfix_LDADD = $(src_objs) $(builddir)/read_namelist.$(OBJEXT) $(top_builddir)/libmfix.a
+mfix_SOURCES = $(top_srcdir)/model/mfix.f
+mfix_SOURCES += $(top_srcdir)/model/ODEPACK.F
+mfix_LDADD = $(src_objs)
+mfix_LDADD += $(builddir)/read_database.$(OBJEXT)
+mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
+mfix_LDADD += $(top_builddir)/libmfix.a
 
 # top level directory needs to be built first
 main:
 	$(MAKE) -C $(top_srcdir) mfix
-	ln -sf $(top_srcdir)/model/thermochemical/BURCAT.THR .
 
 $(top_builddir)/model/mfix.f: main
 $(top_builddir)/libmfix.a: main
@@ -51,6 +54,9 @@ $(top_builddir)/libmfix.a: main
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
 $(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
 	$(FCCOMPILE) -c -o $@ $<
+
+$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc:
 	RUN_DIR=. $(top_builddir)/config/rxn_preproc.sh

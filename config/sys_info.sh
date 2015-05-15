@@ -35,7 +35,3 @@ else
 fi
 # Get back into the model directory.
 cd "${MFIX_SRC}"
-
-
-# symlink BURCAT.THR into RUN_DIR
-ln -sf ${MFIX_SRC}/thermochemical/BURCAT.THR ${RUN_DIR}/BURCAT.THR
