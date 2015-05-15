@@ -86,9 +86,9 @@
 !---------------------------------------------------------------------//
       INCLUDE 'usrnlst.inc'
       INCLUDE 'namelist.inc'
-      INCLUDE 'des/desnamelist.inc'
-      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
-      INCLUDE 'qmomk/qmomknamelist.inc'
+      INCLUDE 'desnamelist.inc'
+      INCLUDE 'cartesian_grid_namelist.inc'
+      INCLUDE 'qmomknamelist.inc'
 
       E = UNDEFINED
       RXN_FLAG = .FALSE.

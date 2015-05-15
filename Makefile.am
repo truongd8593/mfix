@@ -8,13 +8,18 @@ F77 = $(FC)
 F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = $(FC_MODINC)$(top_builddir)/model -cpp
-AM_LDFLAGS =
 FC_MODEXT=mod
-CLEANFILES=*.$(FC_MODEXT) mfixmodule.deps
-MODULE=$(top_builddir)/model
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model $(FC_MODINC)$(MODULE) $(FC_MODOUT)$(MODULE)
+
+# directory with all the *.mod files
+MODDIR=$(top_builddir)/model
+CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) mfixmodule.deps
+
+# Fortran preprocessor is used (-cpp)
+AM_FCFLAGS = -cpp
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
+AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
+AM_LDFLAGS =
 TAU_F90=@TAU_F90@
 TAU_MAKEFILE=@TAU_MAKEFILE@
 export TAU_F90
@@ -65,13 +70,13 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 ################################################################
 
 mfixmodule.deps: $(libmfix_a_SOURCES)
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps $(top_builddir)/model/*.mod build-aux/Makefile.usr
+DISTCLEANFILES = mfixmodule.deps build-aux/Makefile.usr
 
 ################################################################
 #                                                              #
@@ -201,7 +206,6 @@ libmfix_a_SOURCES += \
 	model/cartesian_grid/allocate_dummy_cut_cell_arrays.f \
 	model/cartesian_grid/calc_vort_out.f \
 	model/cartesian_grid/cartesian_grid_init_namelist.f \
-	model/cartesian_grid/cartesian_grid_namelist.inc \
 	model/cartesian_grid/check_data_cartesian.f \
 	model/cartesian_grid/cut_cell_preprocessing.f \
 	model/cartesian_grid/cutcell_mod.f \
@@ -338,7 +342,6 @@ libmfix_a_SOURCES += \
 	model/des/desgrid_mod.f \
 	model/des/desmpi_mod.f \
 	model/des/desmpi_wrapper_mod.f \
-	model/des/desnamelist.inc \
 	model/des/dif_phi_bc_des.f \
 	model/des/dif_phi_des.f \
 	model/des/dif_phi_source_des.f \
@@ -449,6 +452,13 @@ libmfix_a_SOURCES += \
 	model/ic_mod.f \
 	model/in_binary_512_mod.f \
 	model/in_binary_512i_mod.f \
+	model/include/cartesian_grid_namelist.inc \
+	model/include/desnamelist.inc \
+	model/include/namelist.inc \
+	model/include/qmomknamelist.inc \
+	model/include/species.inc \
+	model/include/species_indices.inc \
+	model/include/usrnlst.inc \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
@@ -483,7 +493,6 @@ libmfix_a_SOURCES += \
 	model/mod_bc_i.f \
 	model/mod_bc_j.f \
 	model/mod_bc_k.f \
-	model/namelist.inc \
 	model/open_file.f \
 	model/open_files.f \
 	model/out_array.f \
@@ -526,7 +535,6 @@ libmfix_a_SOURCES += \
 	model/qmomk/qmomk_time_march.f \
 	model/qmomk/qmomk_tools_mod.f \
 	model/qmomk/qmomk_write_restart.f \
-	model/qmomk/qmomknamelist.inc \
 	model/radial_vel_correction.f \
 	model/rdf_mod.f \
 	model/read_database.f \
@@ -593,8 +601,6 @@ libmfix_a_SOURCES += \
 	model/source_v_s.f \
 	model/source_w_g.f \
 	model/source_w_s.f \
-	model/species.inc \
-	model/species_indices.inc \
 	model/tau_g_mod.f \
 	model/tau_s_mod.f \
 	model/tau_u_g.f \
@@ -629,7 +635,6 @@ libmfix_a_SOURCES += \
 	model/usr_rates.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
-	model/usrnlst.inc \
 	model/utilities_mod.f \
 	model/vavg_u_g.f \
 	model/vavg_u_s.f \

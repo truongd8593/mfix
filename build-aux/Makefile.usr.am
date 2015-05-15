@@ -2,13 +2,16 @@ F77 = $(FC)
 F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = $(FC_MODINC). -cpp
-AM_LDFLAGS =
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_builddir)/model
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+MODDIR=$(top_builddir)/model
+
+# Fortran preprocessor is used (-cpp)
+AM_FCFLAGS = -cpp
+AM_FCFLAGS += $(FC_MODINC).
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
+AM_LDFLAGS =
 
 ################################################################
 #                                                              #
@@ -28,18 +31,14 @@ AM_FCFLAGS += -DMPI
 AM_LDFLAGS += -DMPI
 endif
 
-src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_namelist.f )
+src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
 src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
 bin_PROGRAMS = mfix
 mfix_SOURCES = $(top_srcdir)/model/mfix.f $(top_srcdir)/model/ODEPACK.F
-mfix_LDADD = $(src_objs) $(top_builddir)/libmfix.a
-
-# read_namelist needs rebuilt here in case usrnlst.inc is overridden
-read_namelist.f:
-	cp $(top_srcdir)/model/$@ .
+mfix_LDADD = $(src_objs) $(builddir)/read_namelist.$(OBJEXT) $(top_builddir)/libmfix.a
 
 # top level directory needs to be built first
 main:
@@ -48,6 +47,10 @@ main:
 
 $(top_builddir)/model/mfix.f: main
 $(top_builddir)/libmfix.a: main
+
+# read_namelist needs rebuilt in case usrnlst.inc is overridden
+$(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+	$(FCCOMPILE) -c -o $@ $<
 
 species.inc:
 	RUN_DIR=. $(top_builddir)/config/rxn_preproc.sh
@@ -61,9 +64,9 @@ species.inc:
 #########################################################################
 
 usrmodule.deps: $(src_overrides)
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
 	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
 	    echo "${main_mod}: main" >> $@; \
