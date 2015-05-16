@@ -130,6 +130,11 @@ ARGS=
 [[ ${OPT} -eq 3 ]] && FCFLAGS="-O3"
 
 [[ ${USE_DEBUG} -eq 1 ]] && FCFLAGS="${FCFLAGS} -g"
+
+[[ ${USE_MIC} -eq 1 ]] && LDFLAGS="${LDFLAGS} -mmic"
+[[ ${USE_MIC} -eq 1 ]] && FCFLAGS="${FCFLAGS} -mmic"
+[[ ${USE_MIC} -eq 1 ]] && ARGS="${ARGS} --host x86_64-intelmic"
+
 [[ ${USE_NETCDF} -eq 1 ]] && FCFLAGS="${FCFLAGS} -DNETCDF"
 
 [[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
@@ -142,7 +147,7 @@ ARGS=
 
 cd $RUN_DIR
 # Construct the makefile
-${MFIX_HOME}/configure_mfix ${ARGS} FC="${FC}" FCFLAGS="${FCFLAGS}" || exit
+${MFIX_HOME}/configure_mfix ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
 
 # Run Make
 echo "Please wait..."
