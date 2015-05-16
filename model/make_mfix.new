@@ -130,6 +130,7 @@ ARGS=
 [[ ${OPT} -eq 3 ]] && FCFLAGS="-O3"
 
 [[ ${USE_DEBUG} -eq 1 ]] && FCFLAGS="${FCFLAGS} -g"
+[[ ${USE_NETCDF} -eq 1 ]] && FCFLAGS="${FCFLAGS} -DNETCDF"
 
 [[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
 [[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"

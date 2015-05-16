@@ -21,10 +21,10 @@ AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
 AM_LDFLAGS =
 
-TAU_F90=@TAU_F90@
-TAU_MAKEFILE=@TAU_MAKEFILE@
-export TAU_F90
-export TAU_MAKEFILE
+NETCDF_LIB=@NETCDF_LIB@
+NETCDF_INCLUDE=@NETCDF_INCLUDE@
+export NETCDF_LIB
+export NETCDF_INCLUDE
 
 SUBDIRS = post_mfix
 
@@ -81,6 +81,22 @@ mfixmodule.deps: $(libmfix_a_SOURCES)
 $(eval -include mfixmodule.deps)
 
 DISTCLEANFILES = mfixmodule.deps build-aux/Makefile.usr
+
+################################################################
+#      TAU support
+################################################################
+TAU_F90=@TAU_F90@
+TAU_MAKEFILE=@TAU_MAKEFILE@
+export TAU_F90
+export TAU_MAKEFILE
+
+################################################################
+#      NETCDF support
+################################################################
+if USE_NETCDF
+AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
+mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
+endif
 
 ################################################################
 #                                                              #
@@ -144,10 +160,6 @@ libmfix_a_SOURCES += \
 	model/GhdTheory/thermal_diffusivity.f \
 	model/GhdTheory/thermal_mobility.f \
 	model/GhdTheory/transport_coeff_ghd.f \
-	model/MFIX_netcdf_constants.fi \
-	model/MFIX_netcdf_misc.fi \
-	model/MFIX_netcdf_overloads.fi \
-	model/MFIX_netcdf_variables.fi \
 	model/accum_resid.f \
 	model/adjust_a_u_g.f \
 	model/adjust_a_u_s.f \
@@ -459,6 +471,7 @@ libmfix_a_SOURCES += \
 	model/include/cartesian_grid_namelist.inc \
 	model/include/desnamelist.inc \
 	model/include/namelist.inc \
+	model/include/netcdf.inc \
 	model/include/qmomknamelist.inc \
 	model/include/species.inc \
 	model/include/species_indices.inc \

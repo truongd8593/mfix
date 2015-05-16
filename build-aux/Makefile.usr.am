@@ -83,6 +83,22 @@ $(eval -include usrmodule.deps)
 CLEANFILES += usrmodule.deps species.inc
 
 ################################################################
+#      TAU support
+################################################################
+TAU_F90=@TAU_F90@
+TAU_MAKEFILE=@TAU_MAKEFILE@
+export TAU_F90
+export TAU_MAKEFILE
+
+################################################################
+#      NETCDF support
+################################################################
+if USE_NETCDF
+AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
+mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
+endif
+
+################################################################
 #                                                              #
 #  Use absolute paths in the Makefile, so it can be copied     #
 #  to any mfix.dat directory.                                  #

@@ -36,6 +36,10 @@ AC_ARG_ENABLE([mkl],
 esac],[mkl=false])
 AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
 
+AC_ARG_VAR([NETCDF_LIB],[ Path to NETCDF module ])
+AC_ARG_VAR([NETCDF_INCLUDE],[ Path to NETCDF include file ])
+AM_CONDITIONAL([USE_NETCDF], [test ! -z "$NETCDF_INCLUDE"])
+
 AC_ARG_VAR([TAU_MAKEFILE],[ Path to TAU Makefile ])
 AC_ARG_VAR([TAU_F90],[ Actual Fortran compiler used by TAU compiler wrapper ])
 
