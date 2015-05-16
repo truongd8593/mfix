@@ -13,6 +13,7 @@ if test ${USE_TAU} = 1; then
   echo "TAU_OPTIONS=${TAU_OPTIONS}" >> ${tmpMFILE}
 fi
 
+FORT_FLAGS="${FORT_FLAGS} -I${RUN_DIR}"
 FORT_FLAGS="${FORT_FLAGS} -I${MFIX_SRC}/include"
 
 # Include any NetCDF definitions.
