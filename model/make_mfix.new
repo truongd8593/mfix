@@ -152,7 +152,7 @@ ARGS=
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
 cd ${DPO}
-${MFIX_HOME}/configure EXEEXT=.exe ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
+${MFIX_HOME}/configure ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
 
 MAKEFILE=${RUN_DIR}/Makefile
 MAKEFILE_USR=${DPO}/build-aux/Makefile.usr
