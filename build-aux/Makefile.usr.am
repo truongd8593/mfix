@@ -9,46 +9,28 @@ MODDIR=$(top_builddir)/model
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
+
+# Current directory comes first, and takes precedence over model/include/ and model/
 AM_FCFLAGS += $(FC_MODINC).
 AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_LDFLAGS =
 
-################################################################
-#                                                              #
-#      OpenMP and MPI support                                  #
-#                                                              #
-#      --enable-smp and --enable-dmp options in configure.ac   #
-#                                                              #
-################################################################
-
-if OPENMP
-AM_FCFLAGS += $(OPENMP_FCFLAGS)
-AM_LDFLAGS += $(OPENMP_FCFLAGS)
-endif
-
-if MPI
-AM_FCFLAGS += -DMPI
-AM_LDFLAGS += -DMPI
-endif
-
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
-src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix
-mfix_SOURCES =
-mfix_LDADD = $(src_objs)
-mfix_LDADD += $(builddir)/read_database.$(OBJEXT)
+mfix_SOURCES = $(src_overrides)
+mfix_LDADD = $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
 # top level directory needs to be built first
-$(top_builddir)/libmfix.a:
+$(LIBMFIX):
 	$(MAKE) -C $(top_builddir) mfix
 
 $(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
@@ -64,7 +46,7 @@ $(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc:
-	RUN_DIR=. $(top_builddir)/config/rxn_preproc.sh
+	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
 #########################################################################
 #
@@ -86,6 +68,24 @@ usrmodule.deps: $(src_overrides)
 
 $(eval -include usrmodule.deps)
 CLEANFILES += usrmodule.deps species.inc
+
+################################################################
+#                                                              #
+#      OpenMP and MPI support                                  #
+#                                                              #
+#      --enable-smp and --enable-dmp options in configure.ac   #
+#                                                              #
+################################################################
+
+if OPENMP
+AM_FCFLAGS += $(OPENMP_FCFLAGS)
+AM_LDFLAGS += $(OPENMP_FCFLAGS)
+endif
+
+if MPI
+AM_FCFLAGS += -DMPI
+AM_LDFLAGS += -DMPI
+endif
 
 ################################################################
 #      TAU support
