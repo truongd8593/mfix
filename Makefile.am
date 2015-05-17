@@ -43,7 +43,8 @@ bin_PROGRAMS = mfix
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-#  SOURCES are fully defined further below
+#  ODEPACK.F is not included in libmfix because it is excluded from
+#  mfixmodule.deps
 mfix_SOURCES = model/ODEPACK.F
 libmfix_a_SOURCES =
 

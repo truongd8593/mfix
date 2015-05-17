@@ -11,7 +11,7 @@ input=$@
 MFIX_VERSION="2015-1"
 EXEC_FILE=mfix.exe
 MAKEFILE="Makefile"
-DPO_BASE=".."
+DPO_BASE="build"
 DPO="OBJ"
 OBJ_EXT="o"
 FORTRAN_EXT="f"
@@ -27,6 +27,9 @@ RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
 MFIX_SRC=$(cd $(dirname $0); pwd)
 MFIX_HOME=$(dirname ${MFIX_SRC})
 MFIX_CONFIG=${MFIX_HOME}/config
+
+DPO_BASE=${MFIX_HOME}/${DPO_BASE}
+mkdir -p ${DPO_BASE} || exit
 
 # This sets absolute paths.
 . ${MFIX_CONFIG}/sys_info.sh
@@ -124,6 +127,14 @@ if test ${CLEAN_OBJS} -eq 1; then
 fi
 
 ARGS=
+[[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
+[[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
+
+[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
+[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
+[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
+
 [[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
 [[ ${OPT} -eq 1 ]] && FCFLAGS="-O1"
 [[ ${OPT} -eq 2 ]] && FCFLAGS="-O2"
@@ -137,22 +148,22 @@ ARGS=
 
 [[ ${USE_NETCDF} -eq 1 ]] && FCFLAGS="${FCFLAGS} -DNETCDF"
 
-[[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
-[[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
-
-[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
-[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
-
-cd $RUN_DIR
 # Construct the makefile
-${MFIX_HOME}/configure_mfix ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
+cd ${MFIX_HOME}
+[ -f configure ] || autoreconf -i
+cd ${DPO}
+${MFIX_HOME}/configure EXEEXT=.exe ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
+
+MAKEFILE=${RUN_DIR}/Makefile
+MAKEFILE_USR=${DPO}/build-aux/Makefile.usr
+if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
+    cp ${MAKEFILE_USR} ${MAKEFILE}
+fi
 
 # Run Make
 echo "Please wait..."
 cd ${RUN_DIR}
-EXEEXT=.exe make ${MAKE_ARGS} -f ${MAKEFILE} mfix
+make ${MAKE_ARGS} -f ${MAKEFILE} mfix
 result=$?
 
 if test $result = 0; then

@@ -1,6 +1,7 @@
 F77 = $(FC)
 F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
@@ -36,25 +37,29 @@ src_objs = $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
+LIBMFIX = $(top_builddir)/libmfix.a
+
 bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f
-mfix_SOURCES += $(top_srcdir)/model/ODEPACK.F
+mfix_SOURCES =
 mfix_LDADD = $(src_objs)
 mfix_LDADD += $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
-mfix_LDADD += $(top_builddir)/libmfix.a
+mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
+mfix_LDADD += $(LIBMFIX)
 
 # top level directory needs to be built first
-main:
-	$(MAKE) -C $(top_srcdir) mfix
+$(top_builddir)/libmfix.a:
+	$(MAKE) -C $(top_builddir) mfix
 
-$(top_builddir)/model/mfix.f: main
-$(top_builddir)/libmfix.a: main
+$(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
+$(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
 $(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
 	$(FCCOMPILE) -c -o $@ $<
 
+# read_database needs rebuilt to use the correct path to BURCAT.THR
 $(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
@@ -75,7 +80,7 @@ usrmodule.deps: $(src_overrides)
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
 	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
-	    echo "${main_mod}: main" >> $@; \
+	    echo "${main_mod}: ${LIBMFIX}" >> $@; \
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
