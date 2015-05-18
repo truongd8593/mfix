@@ -18,7 +18,7 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'MMS3D2P'
+  Run_name      = 'MMS02'
   Description   = '3D Two-phase MMS Case'
   Units         = 'SI'
   Run_type      = 'new'

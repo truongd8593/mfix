@@ -1,5 +1,20 @@
+#!/bin/csh -ex
+## Change into the current working directory
+#$ -cwd
+##
+## The name for the job. It will be displayed this way on qstat
+#$ -N MMS02
+##
+## Number of cores to request
+#$ -pe dev 64
+##
+#$ -r n
+##
+## Queue Name
+#$ -q dev
+
 # set case directory
-export CASE_DIR=`pwd`
+setenv CASE_DIR `pwd`
 
 # load modules
 module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
@@ -19,7 +34,8 @@ cd $CASE_DIR
 
 # remove these files if exist:
 echo "******** Removing old files..."
-if [ -e [de_norms_collected.dat] ]; then rm de_norms_collected.dat; fi
+# if [ -e [de_norms_collected.dat] ]; then rm de_norms_collected.dat; fi
+rm de_norms_collected.dat
 
 # create backup before adding user-defined grid spacing to input file
 echo "******** Creating backup for mfix.dat..."
@@ -30,7 +46,7 @@ echo "******** Running mesh_8..."
 cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
 $CASE_DIR/mfix.exe imax=8 jmax=8 kmax=8 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+rm $CASE_DIR/{MMS02.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_8
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_8/
@@ -40,7 +56,7 @@ echo "******** Running mesh_16..."
 cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
 $CASE_DIR/mfix.exe imax=16 jmax=16 kmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log,solution_*.dat}
+rm $CASE_DIR/{MMS02.*,de_norms.dat,out.log,solution_*.dat}
 rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_16
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_16/
@@ -50,7 +66,7 @@ echo "******** Running mesh_32..."
 cat $CASE_DIR/mfix_backup.dat mesh_32.dat > mfix.dat
 mpirun -np 8 $CASE_DIR/mfix.exe imax=32 jmax=32 kmax=32 nodesi=2 nodesj=2 nodesk=2 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+rm $CASE_DIR/{MMS02.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_32
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
@@ -58,9 +74,9 @@ rm $CASE_DIR/solution_*.dat
 # Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
 echo "******** Running mesh_64..."
 cat $CASE_DIR/mfix_backup.dat mesh_64.dat > mfix.dat
-mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 kmax=64 nodesi=4 nodesj=2 nodesk=2 > out.log
+mpirun -np 64 $CASE_DIR/mfix.exe imax=64 jmax=64 kmax=64 nodesi=4 nodesj=4 nodesk=4 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+rm $CASE_DIR/{MMS02.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_64
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_64/
@@ -68,9 +84,9 @@ rm $CASE_DIR/solution_*.dat
 # Run mesh_128 (i.e., 128x128 for 2D, 128x128x128 for 3D)
 echo "******** Running mesh_128..."
 cat $CASE_DIR/mfix_backup.dat mesh_128.dat > mfix.dat
-mpirun -np 16 $CASE_DIR/mfix.exe imax=128 jmax=128 kmax=128 nodesi=4 nodesj=2 nodesk=2 > out.log
+mpirun -np 64 $CASE_DIR/mfix.exe imax=128 jmax=128 kmax=128 nodesi=4 nodesj=4 nodesk=4 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS3D2P.*,de_norms.dat,out.log}
+rm $CASE_DIR/{MMS02.*,de_norms.dat,out.log}
 rm $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_128
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_128/
