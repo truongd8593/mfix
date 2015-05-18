@@ -54,7 +54,6 @@
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
       USE param1, only: zero, half, one
-      USE parallel
       USE constant
       USE physprop
       USE fldvar
@@ -244,7 +243,6 @@
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
       USE param1, only: zero, half, one
-      USE parallel
       USE constant
       USE physprop
       USE fldvar

@@ -34,12 +34,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_TAU_V_G(lTAU_V_G, lctau_v_g)
 
-
 ! Modules
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE parallel
       USE constant
       USE physprop
       USE fldvar
@@ -72,9 +70,9 @@
       INTEGER :: IJPK, IJMK, IMJK, IJKM
       INTEGER :: IMJPK, IJPKM
 ! Average volume fraction
-      DOUBLE PRECISION EPGA
+      DOUBLE PRECISION :: EPGA
 ! Source terms (Surface)
-      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz
+      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
 !---------------------------------------------------------------------//
 
       IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(4)==1)) THEN
@@ -166,6 +164,8 @@
                lctau_v_g(IJK) = ZERO
             ENDIF   ! end if (.NOT. IP_AT_N(IJK) .AND. EPGA>DIL_EP_S)
          ENDDO   ! end do ijk
+!$omp end parallel do
+
       ELSE
 ! cartesian grid case
          CALL CALC_CG_TAU_V_G(lTAU_V_G, lctau_v_g)
@@ -193,7 +193,6 @@
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE parallel
       USE constant
       USE physprop
       USE fldvar

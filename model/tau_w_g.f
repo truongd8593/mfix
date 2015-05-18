@@ -64,7 +64,6 @@
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE matrix
       USE constant
       USE physprop
       USE fldvar
@@ -262,7 +261,6 @@
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE matrix
       USE constant
       USE physprop
       USE fldvar
@@ -593,9 +591,6 @@
          ENDIF   ! end if (.NOT. IP_AT_T(IJK) .AND. EPGA>DIL_EP_S)
       ENDDO   ! end do ijk
 !$omp end parallel do
-
-      call send_recv(ltau_w_g,2)
-      call send_recv(lctau_w_g,2)
 
       RETURN
       END SUBROUTINE CALC_CG_TAU_W_G
