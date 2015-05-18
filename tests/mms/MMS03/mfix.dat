@@ -18,8 +18,8 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'MMS3DVEPG'
-  Description   = '3D Two-phase MMS Case'
+  Run_name      = 'MMS03'
+  Description   = '3D Two-phase MMS Case (Variable vol. fraction)'
   Units         = 'SI'
   Run_type      = 'new'
 
