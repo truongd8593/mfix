@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import numpy as np
-import pylab as pl
+import pylab as plt
 
 # load data file and ignore top three text lines
 with open('solution_x_velocity_profile.dat') as f:
@@ -9,24 +9,29 @@ with open('solution_x_velocity_profile.dat') as f:
 
 data = np.loadtxt(data_lines)
 
-# plot u_g (numerical) and u_g (exact) vs. y variable
-pl.figure(1, figsize=(3.0,3.0))
-plot1 = pl.plot(data[:,3], data[:,1], 'ro')
-plot2 = pl.plot(data[:,4], data[:,1], '-b+', linewidth=2)
-pl.xlabel('x-velocity (m/s)')
-pl.ylabel('y (m)')
-pl.xlim(0.0, 20.0)
-pl.ylim(0.0, 0.01)
-pl.legend([plot1, plot2], ('MFiX','Exact'), 'best')
-pl.savefig('x_velocity_profile.png', bbox_inches='tight')
-pl.close(1)
+# plot numerical and exact solution in first subplot
+# plot error in second subplot
+plt.figure(1, figsize=(7.0,3.0))
 
-#pl.figure(2, figsize=(4.0,3.0))
-#pl.plot(data[:,5], data[:,1], 'ro')
-#pl.xlabel('Error (m/s)')
-#pl.ylabel('y (m)')
-##pl.xlim(0.0, 20.0)
-##pl.ylim(0.0, 0.01)
-#
-#pl.savefig('x_velocity_error.png', bbox_inches='tight')
-#pl.close(2)
+plt.subplot(1,2,1)
+
+plot1 = plt.plot(data[:,3], data[:,1], 'ro')
+plot2 = plt.plot(data[:,4], data[:,1], '-b+', linewidth=2)
+plt.xlabel('x-velocity (m/s)',labelpad=20)
+plt.ylabel('y (m)')
+plt.xlim(0.0, 20.0)
+plt.ylim(0.0, 0.01)
+plt.legend([plot1, plot2], ('MFIX','Exact'), 'best')
+plt.title('(a)',x=0.5,y=-0.4)
+
+plt.subplot(1,2,2)
+plot3 = plt.plot(data[:,5], data[:,1], '-b+')
+plt.xlabel('Error (m/s)',labelpad=20)
+plt.ylabel('y (m)')
+plt.locator_params(axis='x',nbins=5)
+plt.title('(b)',x=0.5,y=-0.4)
+
+plt.subplots_adjust(wspace=0.5)
+
+plt.savefig('tfm01_01.png', bbox_inches='tight')
+plt.close(1)
