@@ -11,12 +11,15 @@ BUILD_DIR=${MFIX_HOME}/build
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
 
-mkdir -p ${BUILD_DIR}
-cd ${BUILD_DIR}
+if [ ${MFIX_HOME} != ${RUN_DIR} ]; then
+    mkdir -p ${BUILD_DIR}
+    cd ${BUILD_DIR}
+fi
+
 ${MFIX_HOME}/configure "$@" || exit
 
 MAKEFILE=${RUN_DIR}/Makefile
 MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
-if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
+if [ -f ${MAKEFILE_USR} ] && [ ${MFIX_HOME} != ${RUN_DIR} ]; then
     cp ${MAKEFILE_USR} ${MAKEFILE}
 fi
