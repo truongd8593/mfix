@@ -11,12 +11,12 @@ FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FC_MODEXT=mod
 
 # directory with all the *.mod files
-MODDIR=$(top_builddir)/model
+MODDIR=$(builddir)/model
 CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) mfixmodule.deps
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS += $(FC_MODINC)$(srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
 AM_LDFLAGS =
@@ -30,8 +30,8 @@ SUBDIRS = post_mfix
 
 .DEFAULT_GOAL := mfix
 
-$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
-	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+$(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
+	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #
@@ -55,7 +55,7 @@ libmfix_a_SOURCES =
 ################################################################
 
 postmfix:
-	$(MAKE) -C $(top_srcdir)/post_mfix postmfix
+	$(MAKE) -C $(builddir)/post_mfix postmfix
 
 ################################################################
 #                                                              #
@@ -76,7 +76,7 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 mfixmodule.deps: $(libmfix_a_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(srcdir)/build-aux/fortran-depcomp $^ > $@
 
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
