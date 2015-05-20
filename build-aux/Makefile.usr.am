@@ -3,6 +3,9 @@ F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
+.f.$(OBJEXT):
+	$(F77COMPILE) -c -o $@ $<
+
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 MODDIR=$(top_builddir)/model
@@ -17,6 +20,7 @@ AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_LDFLAGS =
 
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
+obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 .DEFAULT_GOAL := mfix
 
@@ -24,10 +28,12 @@ LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix
 mfix_SOURCES = $(src_overrides)
-mfix_LDADD = $(builddir)/read_database.$(OBJEXT)
+mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
+
+.PHONY: $(LIBMFIX)
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -61,8 +67,8 @@ usrmodule.deps: $(src_overrides)
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
-	    echo "${main_mod}: ${LIBMFIX}" >> $@; \
+	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
+	    echo "$${main_mod}: ${LIBMFIX}" >> $@; \
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
