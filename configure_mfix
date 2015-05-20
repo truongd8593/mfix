@@ -11,6 +11,7 @@ BUILD_DIR=${MFIX_HOME}/build
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
 
+mkdir -p ${BUILD_DIR}
 cd ${BUILD_DIR}
 ${MFIX_HOME}/configure "$@" || exit
 

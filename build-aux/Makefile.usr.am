@@ -45,7 +45,7 @@ $(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
 $(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
-species.inc:
+species.inc: mfix.dat
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
 #########################################################################

@@ -687,7 +687,7 @@ libmfix_a_SOURCES += \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
-cases := $(shell find -name mfix.dat)
+cases := $(shell find . -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
