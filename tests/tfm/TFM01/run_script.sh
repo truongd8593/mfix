@@ -17,6 +17,7 @@ cd $CASE_DIR
 echo "******** Running mesh_32..."
 mpirun -np 8 $CASE_DIR/mfix.exe imax=32 jmax=32 nodesi=4 nodesj=2 nodesk=1 > out.log
 rm $CASE_DIR/{TFM01.*,out.log}
+rm $CASE_DIR/de_norms.dat
 
 rm $CASE_DIR/mfix.exe
 
