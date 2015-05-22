@@ -601,42 +601,27 @@
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: DES_CROSSPRDCT
-!  Purpose: Calculate the cross product of two vectors that both have
-!           either 2 or 3 elements and return the result in the first
-!           argument
-!
+!                                                                     !
+!  Subroutine: DES_CROSSPRDCT                                         !
+!  Purpose: Calculate the cross product of two 3D vectors.            !
+!                                                                     !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      FUNCTION DES_CROSSPRDCT(XX,YY)
 
-      FUNCTION DES_CROSSPRDCT (XX,YY)
+      IMPLICIT NONE
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-        USE param
-        USE param1
-        use geometry, only: DO_K
-        IMPLICIT NONE
-!-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
-! sent vectors
+!---------------------------------------------------------------------//
+! Input vectors
       DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: XX, YY
-! returned result: cross product of vectors
+! Result: cross product of vectors
       DOUBLE PRECISION, DIMENSION(3) :: DES_CROSSPRDCT
-!-----------------------------------------------
+!......................................................................!
 
-      IF(DO_K) THEN
-         DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
-         DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
-      ELSE
-         DES_CROSSPRDCT(1) = ZERO
-         DES_CROSSPRDCT(2) = ZERO
-      ENDIF
-
+      DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
+      DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
       DES_CROSSPRDCT(3) = XX(1)*YY(2) - XX(2)*YY(1)
 
-    END FUNCTION DES_CROSSPRDCT
+      END FUNCTION DES_CROSSPRDCT
 
-  END MODULE DISCRETELEMENT
+      END MODULE DISCRETELEMENT

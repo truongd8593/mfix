@@ -181,8 +181,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lWRITE_DT
 
-      IF (DT /= UNDEFINED) &
+      IF (DT /= UNDEFINED) THEN
          NEXT_TIME = (INT((TIME + 0.1d0*DT)/lWRITE_DT)+1)*lWRITE_DT
+      ELSE
+         NEXT_TIME = 0.0
+      ENDIF
 
       RETURN
       END FUNCTION NEXT_TIME
@@ -301,8 +304,15 @@
          WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/               &
             max(TIME-TIME_START,1.0d-6)
          CALL GET_TUNIT(WALL_LEFT, UNIT_LEFT)
-         CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
-         CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+
+         IF (DT /= UNDEFINED) THEN
+            CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
+            CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+         ELSE
+            CHAR_LEFT = '0.0'
+            UNIT_LEFT = 's'
+         ENDIF
+
 ! Notify the user of usage/remaining wall times.
          WRITE(ERR_MSG,2000)                                           &
             'Elapsed:', trim(CHAR_ELAP), trim(UNIT_ELAP),              &

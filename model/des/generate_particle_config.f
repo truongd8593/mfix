@@ -233,7 +233,7 @@
       SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE calc_collision_wall
+      USE STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVELAPS_STL
       USE compar
       USE cutcell, only : cut_cell_at
       USE des_linked_list_funcs

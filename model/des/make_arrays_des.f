@@ -26,6 +26,8 @@
       use mfix_pic, only:  MPPIC
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use constant, only: PI
+      use stl_preproc_des, only: add_facet
+
 
       IMPLICIT NONE
 !-----------------------------------------------
