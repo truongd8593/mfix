@@ -27,9 +27,6 @@ RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
 MFIX_SRC=$(echo $0 | sed 's/\/make_mfix//')
 MFIX_CONFIG=${MFIX_SRC}/../config
 
-# symlink BURCAT.THR into RUN_DIR
-ln -sf ${MFIX_SRC}/thermochemical/BURCAT.THR ${RUN_DIR}/BURCAT.THR
-
 # This sets absolute paths.
 . ${MFIX_CONFIG}/sys_info.sh
 
