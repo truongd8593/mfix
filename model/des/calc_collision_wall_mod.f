@@ -46,15 +46,14 @@
 
       DOUBLE PRECISION V_REL_TRANS_NORM, DISTSQ, RADSQ, CLOSEST_PT(DIMN)
 ! local normal and tangential forces
-      DOUBLE PRECISION FNS1(DIMN), FNS2(DIMN)
       DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
-      DOUBLE PRECISION NORMAL(DIMN), TANGENT(DIMN), DIST(DIMN), DISTMOD
-      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T, PFT
+      DOUBLE PRECISION NORMAL(DIMN), VREL_T(DIMN), DIST(DIMN), DISTMOD
+      DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T
 
-      LOGICAL :: DES_LOC_DEBUG, PARTICLE_SLIDE
+      LOGICAL :: DES_LOC_DEBUG
       INTEGER :: COUNT_FAC, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
-      INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL
+      INTEGER :: PHASELL
 
       DOUBLE PRECISION :: CROSSP(DIMN)
       DOUBLE PRECISION :: FTMD, FNMD
@@ -66,7 +65,7 @@
 ! extended plane detects an overlap
       INTEGER, Parameter :: MAX_FACET_CONTS = 200
 
-      DOUBLE PRECISION :: FORCE_HISTORY(DIMN), DTSOLID_TMP
+      DOUBLE PRECISION :: DTSOLID_TMP
 
 
       DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
@@ -76,13 +75,12 @@
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
-!$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,fns1,  &
-!$omp    fns2,list_of_cells,cell_id,radsq,particle_max,particle_min,   &
+!$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,       &
+!$omp    list_of_cells,cell_id,radsq,particle_max,particle_min,        &
 !$omp    axis,nf,closest_pt,dist,r_lm,distapart,force_coh,distsq,      &
-!$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,tangent,    &
+!$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
-!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,force_history,ftan,     &
-!$omp    particle_slide,ftmd,fnmd,crossp,pft)                          &
+!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd,crossp)  &
 !$omp shared(max_pip,focus_particle,debug_des,no_neighboring_facet_des,&
 !$omp    pea,pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,&
 !$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
@@ -118,8 +116,6 @@
 
          FTS1(:) = ZERO
          FTS2(:) = ZERO
-         FNS1(:) = ZERO
-         FNS2(:) = ZERO
 
 ! Check particle LL for wall contacts
 
@@ -260,7 +256,7 @@
             OVERLAP_N = DES_RADIUS(LL) - DISTMOD
 
 ! Calculate the translational relative velocity
-            CALL CFRELVEL_WALL(LL, V_REL_TRANS_NORM,TANGENT,           &
+            CALL CFRELVEL_WALL(LL, V_REL_TRANS_NORM,VREL_T,           &
                NORMAL, DISTMOD)
 
 ! Calculate the spring model parameters.
@@ -282,75 +278,48 @@
             ENDIF
 
 ! Calculate the normal contact force
-            FNS1(:) = -KN_DES_W * OVERLAP_N * NORMAL(:)
-            FNS2(:) = -ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:)
-            FNORM(:) = FNS1(:) + FNS2(:)
+            FNORM(:) = -(KN_DES_W * OVERLAP_N * NORMAL(:) + &
+               ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:))
 
-! Calculate the tangential displacement. Note that only the maximum
-! wall collision is considered. Therefore, enduring contact can exist
-! from facet-to-facet as long as the particle remains in contact with
-! one or more facets.
-            PFT = GET_COLLISION(LL, NF, WALL_COLLISION_FACET_ID,       &
-               WALL_COLLISION_PFT)
-
-            IF(sum(abs(PFT)) > SMALL_NUMBER) THEN
-               OVERLAP_T(:) = TANGENT(:) * DTSOLID
+! Calculate the tangential displacement.
+            IF(V_REL_TRANS_NORM > ZERO) THEN
+               DTSOLID_TMP = min(DTSOLID, OVERLAP_N/V_REL_TRANS_NORM)
             ELSE
-               IF(V_REL_TRANS_NORM > ZERO) THEN
-                  DTSOLID_TMP = OVERLAP_N/(V_REL_TRANS_NORM)
-               ELSEIF(V_REL_TRANS_NORM < ZERO) THEN
-                  DTSOLID_TMP = DTSOLID
-               ELSE
-                  DTSOLID_TMP = OVERLAP_N /                         &
-                     (V_REL_TRANS_NORM+SMALL_NUMBER)
-               ENDIF
-               OVERLAP_T(:) = TANGENT(:) * MIN(DTSOLID,DTSOLID_TMP)
+               DTSOLID_TMP = DTSOLID
             ENDIF
 
-! Update the tangential history.
-            PFT(:) = PFT(:) + OVERLAP_T(:)
+            OVERLAP_T(:) = DTSOLID_TMP*VREL_T(:) + GET_COLLISION(LL,   &
+               NF, WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
 
-            FORCE_HISTORY = PFT - DOT_PRODUCT(PFT,NORMAL)*NORMAL
+            OVERLAP_T(:) = OVERLAP_T(:) -                              &
+               DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
 
 ! Calculate the tangential collision force.
-            FTS1(:) = -KT_DES_W * FORCE_HISTORY(:)
-            FTS2(:) = -ETAT_DES_W * TANGENT(:)
+            FTS1(:) = -KT_DES_W * OVERLAP_T(:)
+            FTS2(:) = -ETAT_DES_W * VREL_T(:)
             FTAN(:) =  FTS1(:) + FTS2(:)
-
-            PARTICLE_SLIDE = .FALSE.
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
             FTMD = DOT_PRODUCT(FTAN, FTAN)
             FNMD = DOT_PRODUCT(FNORM,FNORM)
-            IF (FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
-               PARTICLE_SLIDE = .TRUE.
-               IF(all(TANGENT.EQ.zero)) THEN
-                  FTAN(:) =  MEW_W * FTAN(:) * SQRT(FNMD/FTMD)
-               ELSE
-                  FTAN(:) = -MEW_W * TANGENT(:) * &
-                     SQRT(FNMD/dot_product(TANGENT,TANGENT))
+            IF(FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
+               IF(.NOT.ALL(VREL_T == ZERO)) THEN
+                  FTAN(:) = -MEW_W*OVERLAP_T*SQRT(FNMD/                &
+                     dot_product(OVERLAP_T,OVERLAP_T))
+                  OVERLAP_T(:) = (FTS2 - FTAN)/KT_DES_W
                ENDIF
             ENDIF
+
+! Save the tangential displacement.
+            CALL UPDATE_COLLISION(OVERLAP_T, LL, NF,                   &
+               WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
 
 ! Add the collision force to the total forces acting on the particle.
             FC(:,LL) = FC(:,LL) + FNORM(:) + FTAN(:)
 
-! Add the torque: The particle radius is used as the moment arm
-            CROSSP = DES_CROSSPRDCT(NORMAL, FTAN)
-!            TOW(:,LL) = TOW(:,LL) + DISTMOD*CROSSP(:)
-            TOW(:,LL) = TOW(:,LL) + DES_RADIUS(LL)*CROSSP(:)
-! Save the tangential displacement history with the correction of Coulomb's law
-            IF (PARTICLE_SLIDE) THEN
-! Since FT might be corrected during the call to cfslide, the tangential
-! displacement history needs to be changed accordingly
-               PFT(:) = -( FTAN(:) - FTS2(:) ) / KT_DES_W
-            ELSE
-               PFT(:) = FORCE_HISTORY(:)
-            ENDIF
-
-            CALL UPDATE_COLLISION(PFT, LL, NF, WALL_COLLISION_FACET_ID,&
-               WALL_COLLISION_PFT)
+! Add the torque force to the toal torque acting on the particle.
+            TOW(:,LL) = TOW(:,LL) + DISTMOD*DES_CROSSPRDCT(NORMAL,FTAN)
 
          ENDDO
 
@@ -362,82 +331,110 @@
 
        contains
 
-         function get_collision(LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
-           use error_manager
-           implicit none
-           double precision, dimension(DIMN) :: get_collision
-           Integer, intent(in) :: LLL,facet_id
-           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
-           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           integer :: cc, free_index
+!......................................................................!
+!  Function: GET_COLLISION                                             !
+!                                                                      !
+!  Purpose: Return the integrated (t0->t) tangential displacement.     !
+!......................................................................!
+      FUNCTION GET_COLLISION(LLL,FACET_ID,WALL_COLLISION_FACET_ID,     &
+          WALL_COLLISION_PFT)
 
-           free_index = -1
+      use error_manager
 
-           do cc = 1, COLLISION_ARRAY_MAX
-              if (facet_id == wall_collision_facet_id(cc,LLL)) then
-                 get_collision(:) = wall_collision_PFT(:,cc,LLL)
-                 return
-              else if (-1 == wall_collision_facet_id(cc,LLL)) then
-                 free_index = cc
-              endif
-           enddo
-           if(-1 == free_index) then
-              CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: GET_COLLISION")
-              WRITE(ERR_MSG, 1100)
-              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-           else
-              wall_collision_facet_id(free_index,LLL) = facet_id
-              wall_collision_PFT(:,free_index,LLL) = ZERO
-              get_collision(:) = wall_collision_PFT(:,free_index,LLL)
-              return
-           endif
+      IMPLICIT NONE
 
-1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
+      DOUBLE PRECISION :: GET_COLLISION(DIMN)
+      INTEGER, INTENT(IN) :: LLL,FACET_ID
+      INTEGER, INTENT(INOUT) :: WALL_COLLISION_FACET_ID(:,:)
+      DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
+      INTEGER :: CC, FREE_INDEX
 
-         end function get_collision
+      free_index = -1
 
-         subroutine update_collision(pft,LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
-           use error_manager
-           implicit none
-           double precision, dimension(DIMN), intent(in) :: pft
-           Integer, intent(in) :: LLL,facet_id
-           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
-           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           integer :: cc, free_index
+      do cc = 1, COLLISION_ARRAY_MAX
+         if (facet_id == wall_collision_facet_id(cc,LLL)) then
+            get_collision(:) = wall_collision_PFT(:,cc,LLL)
+            return
+         else if (-1 == wall_collision_facet_id(cc,LLL)) then
+            free_index = cc
+         endif
+      enddo
+      if(-1 == free_index) then
+         CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: GET_COLLISION")
+         WRITE(ERR_MSG, 1100)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      else
+         wall_collision_facet_id(free_index,LLL) = facet_id
+         wall_collision_PFT(:,free_index,LLL) = ZERO
+         get_collision(:) = wall_collision_PFT(:,free_index,LLL)
+         return
+      endif
 
-           do cc = 1, COLLISION_ARRAY_MAX
-              if (facet_id == wall_collision_facet_id(cc,LLL)) then
-                 wall_collision_PFT(:,cc,LLL) = PFT(:)
-                 return
-              endif
-           enddo
+ 1100 FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
 
-           CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: UPDATE_COLLISION")
-           WRITE(ERR_MSG, 1100)
-           CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      END FUNCTION GET_COLLISION
 
-1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
 
-         end subroutine update_collision
+!......................................................................!
+!  Function: UPDATE_COLLISION                                          !
+!                                                                      !
+!  Purpose: Update the integrated (t0->t) tangential displacement.     !
+!......................................................................!
+      SUBROUTINE UPDATE_COLLISION(PFT, LLL, FACET_ID,                  &
+         WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
 
-         subroutine remove_collision(LLL,facet_id,wall_collision_facet_id,wall_collision_PFT)
-           use error_manager
-           implicit none
-           Integer, intent(in) :: LLL,facet_id
-           INTEGER, DIMENSION(:,:), intent(inout) :: wall_collision_facet_id
-           DOUBLE PRECISION, DIMENSION(:,:,:), intent(inout) :: wall_collision_PFT
-           integer :: cc
+      use error_manager
+      implicit none
 
-           do cc = 1, COLLISION_ARRAY_MAX
-              if (facet_id == wall_collision_facet_id(cc,LLL)) then
-                 wall_collision_facet_id(cc,LLL) = -1
-                 return
-              endif
-           enddo
+      DOUBLE PRECISION, INTENT(IN) :: PFT(DIMN)
+      INTEGER, INTENT(IN) :: LLL,FACET_ID
+      INTEGER, INTENT(IN) :: WALL_COLLISION_FACET_ID(:,:)
+      DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
+      INTEGER :: CC, FREE_INDEX
 
-1100       FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
+      do cc = 1, COLLISION_ARRAY_MAX
+         if (facet_id == wall_collision_facet_id(cc,LLL)) then
+            wall_collision_PFT(:,cc,LLL) = PFT(:)
+            return
+         endif
+      enddo
 
-         end subroutine remove_collision
+      CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: UPDATE_COLLISION")
+      WRITE(ERR_MSG, 1100)
+      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+
+ 1100 FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
+
+      END SUBROUTINE UPDATE_COLLISION
+
+!......................................................................!
+!  Function: REMOVE_COLLISION                                          !
+!                                                                      !
+!  Purpose: Clear the integrated (t0->t) tangential displacement once  !
+!  the collision is over (contact ended).                              !
+!......................................................................!
+      SUBROUTINE REMOVE_COLLISION(LLL,FACET_ID,WALL_COLLISION_FACET_ID,&
+         WALL_COLLISION_PFT)
+
+      use error_manager
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: LLL,FACET_ID
+      INTEGER, INTENT(INOUT) :: WALL_COLLISION_FACET_ID(:,:)
+      DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
+      INTEGER :: CC
+
+      DO CC = 1, COLLISION_ARRAY_MAX
+         IF (FACET_ID == WALL_COLLISION_FACET_ID(CC,LLL)) THEN
+            WALL_COLLISION_FACET_ID(CC,LLL) = -1
+            RETURN
+         ENDIF
+      ENDDO
+
+ 1100 FORMAT('Error: COLLISION_ARRAY_MAX too small. ')
+
+      END SUBROUTINE REMOVE_COLLISION
 
       END SUBROUTINE CALC_DEM_FORCE_WITH_WALL_STL
 
