@@ -17,8 +17,6 @@ AC_MSG_NOTICE([==============================================================])
 AC_LANG(Fortran)
 
 # Checks for programs.
-AC_PROG_F77([ifort gfortran])
-AC_PROG_FC([ifort gfortran])
 AC_PROG_GREP
 AC_PROG_RANLIB
 AC_PROG_SED

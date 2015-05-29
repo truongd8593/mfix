@@ -12,7 +12,7 @@ FC_MODEXT=mod
 
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
-CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) mfixmodule.deps
+CLEANFILES=$(MODDIR)/*.$(FC_MODEXT)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
@@ -81,7 +81,7 @@ mfixmodule.deps: $(libmfix_a_SOURCES)
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps build-aux/Makefile.usr
+DISTCLEANFILES = mfixmodule.deps
 
 ################################################################
 #      TAU support

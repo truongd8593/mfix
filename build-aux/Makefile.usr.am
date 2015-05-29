@@ -39,6 +39,9 @@ mfix_LDADD += $(LIBMFIX)
 $(LIBMFIX):
 	$(MAKE) -C $(top_builddir) mfix
 
+clean-local:
+	-$(MAKE) -C $(top_builddir) clean
+
 $(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
 $(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
 $(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
@@ -74,6 +77,7 @@ usrmodule.deps: $(src_overrides)
 
 $(eval -include usrmodule.deps)
 CLEANFILES += usrmodule.deps species.inc
+DISTCLEANFILES = Makefile
 
 ################################################################
 #                                                              #
