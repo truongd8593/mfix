@@ -31,7 +31,7 @@
 
       USE drag, only: f_gs, beta_ij
       USE fldvar, only: p_g, ro_g, rop_g, rop_go, rop_s
-      USE fldvar, only: ep_g, ep_s
+      USE fldvar, only: ep_g, ep_s, epg_jfac
       USE fldvar, only: u_g, w_g, w_go, u_s, v_s, w_s, w_so
 
       USE fun_avg, only: avg_x, avg_z, avg_y
@@ -62,13 +62,12 @@
       USE run, only: model_b, added_mass, m_am
       USE run, only: kt_type_enum, drag_type_enum
       USE run, only: ghd_2007, hys
-      USE run, only: jackson
       USE run, only: odt
       USE rxns, only: sum_r_g
       USE scales, only: p_scale
       USE tau_g, only: tau_w_g
       USE toleranc, only: dil_ep_s
-      USE visc_g, only: mu_gt
+      USE visc_g, only: epmu_gt
       USE cutcell, only: cartesian_grid, cut_w_treatment_at
       USE cutcell, only: blocked_w_cell_at
       USE cutcell, only: a_wpg_t, a_wpg_b
@@ -96,7 +95,7 @@
 ! Pressure at top cell
       DOUBLE PRECISION :: PgT
 ! Average volume fraction
-      DOUBLE PRECISION :: EPGA
+      DOUBLE PRECISION :: EPGA, EPGAJ
 ! Average density
       DOUBLE PRECISION :: ROPGA, ROGA
 ! Average viscosity
@@ -129,10 +128,10 @@
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK,     &
 !$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE,     &
-!$omp          EPGA, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA, Vpm,      &
-!$omp          Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag, avgDrag, &
-!$omp          MM, L, VXZA, VCOA, VCOB, CTE, CTW, UGT, CPE, CPW,     &
-!$omp          MUOX, ltau_w_g)
+!$omp          EPGA, epgaj, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA,    &
+!$omp          vpm, Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag,     &
+!$omp          avgdrag, MM, L, VXZA, VCOA, VCOB, CTE, CTW, UGT,      &
+!$omp          cpe, cpw, MUOX, ltau_w_g)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -148,6 +147,8 @@
          IJMKP = KP_OF(IJMK)
 
          EPGA = AVG_Z(EP_G(IJK),EP_G(IJKT),K)
+! if jackson then avg ep_g otherwise 1
+         EPGAJ = AVG_Z(EPG_jfac(IJK),EPG_jfac(IJKT),K)
 
 ! Impermeable internal surface
          IF (IP_AT_T(IJK)) THEN
@@ -352,7 +353,7 @@
                   IF(Added_Mass) VCOB = VCOB - Cv*ROP_MA*UGT*W_G(IJK)*OX(I)
                ENDIF
 
-! term 14
+! if ishii, then viscosity is multiplied by void fraction otherwise by 1
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         1/x d/dx (x.mu.(-w/x)) xdxdydz =>
@@ -363,41 +364,38 @@
                IJKTW = TOP_OF(IJKW)
                IM = IM1(I)
                IPJK = IP_OF(IJK)
-               CTE = HALF*AVG_Z_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),&
-                                  AVG_X_H(MU_GT(IJKT),MU_GT(IJKTE),I),K)*&
+               CTE = HALF*AVG_Z_H(AVG_X_H(EPMU_GT(IJK),EPMU_GT(IJKE),I),&
+                                  AVG_X_H(EPMU_GT(IJKT),EPMU_GT(IJKTE),I),K)*&
                      OX_E(I)*AYZ_W(IJK)
-               CTW = HALF*AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),&
-                                  AVG_X_H(MU_GT(IJKTW),MU_GT(IJKT),IM),K)*&
+               CTW = HALF*AVG_Z_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJK),IM),&
+                                  AVG_X_H(EPMU_GT(IJKTW),EPMU_GT(IJKT),IM),K)*&
                      DY(J)*(HALF*(DZ(K)+DZ(KP1(K))))
 ! DY(J)*HALF(DZ(k)+DZ(kp)) = oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 
-! term 15:
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         mu/x dw/dx xdxdydz =>
 ! delta (mu/x.(dw/dx))Vp |p : at (i, j, k+1/2)
-               MUOX = AVG_Z(MU_GT(IJK),MU_GT(IJKT),K)*OX(I)
+               MUOX = AVG_Z(EPMU_GT(IJK),EPMU_GT(IJKT),K)*OX(I)
                CPE = MUOX*HALF*VOL_W(IJK)*ODX_E(I)
                CPW = MUOX*HALF*VOL_W(IJK)*ODX_E(IM)
-! term 16:
+
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         1/x d/dx (x.mu.(-w/x)) xdxdydz =>
 ! delta (mu/x.(-w/x))Vp |p : at (i, j, k+1/2)
                VXZA = MUOX*OX(I)
 
-               IF (JACKSON) THEN
-                  CTE = epga*CTE
-                  CTW = epga*CTW
-                  CPE = epga*CPE
-                  CPW = epga*CPW
-                  VXZA = epga*VXZA
-               ENDIF
+               CTE = epgaj*CTE
+               CTW = epgaj*CTW
+               CPE = epgaj*CPE
+               CPW = epgaj*CPW
+               VXZA = epgaj*VXZA
             ENDIF
 
-! jackson form of governing equations is ep_g del dot (tau_g)
-            ltau_w_g = tau_w_g(ijk)
-            IF (JACKSON) ltau_w_g = epga*(ltau_w_g)
+! if jackson, implement jackson form of governing equations (ep_g dot 
+! del tau_g): multiply by void fraction otherwise by 1
+            ltau_w_g = epgaj*tau_w_g(ijk)
 
 ! Collect the terms
             A_M(IJK,E,M) = A_M(IJK,E,M) + CPE

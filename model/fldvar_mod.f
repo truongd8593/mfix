@@ -12,6 +12,11 @@
 
 ! Void fraction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EP_g
+! Store the void/volume fraction or value of 1 depending on setting of
+! governing equations
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  epg_jfac
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  epg_ifac
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  eps_ifac
 
 ! Previous-time-step value of Void fraction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EP_go

@@ -212,6 +212,16 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
+!  <description>
+!    Flag to enable Ishii form of momentum equations.
+!    note="Ishii, (1975), Thermo-fluid dynamic theory of two-phase flow."/>
+!  </description>
+!  <valid value=".TRUE." note="Solve Ishii form of momentum equations."/>
+!  <valid value=".FALSE." note="Default form."/>
+      ISHII = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
 !  <description>Solve energy equations.</description>
 !  <valid value=".TRUE." note="Solve energy equations."/>
 !  <valid value=".FALSE." note="Do not solve energy equations."/>

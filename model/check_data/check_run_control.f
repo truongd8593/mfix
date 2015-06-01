@@ -24,6 +24,7 @@
       USE run, only: DT, ODT
 ! Flag: Use K-Epsilon turbulence model.
       USE run, only: K_EPSILON
+      USE run, only: ishii, jackson
 ! Turbulence length scale.
       use constant, only: L_SCALE0
 
@@ -111,6 +112,13 @@
          'L_SCALE0 /= ZERO')
       ENDIF
 
+! Ishii and jackson form of governing equations cannot both be invoked
+      IF (ISHII .AND. JACKSON) THEN
+         WRITE(ERR_MSG,2002)
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+ 2002 FORMAT('Error 2002: Cannot set both ISHII = .T. and JACKSON = ',&
+             '.T.',/,'Please correct the mfix.dat file.')
+      ENDIF
 
 ! Clear the error manager
       CALL FINL_ERR_MSG

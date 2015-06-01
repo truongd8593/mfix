@@ -18,7 +18,7 @@
       USE run, only: momentum_y_eq
       USE run, only: discretize
       USE run, only: def_cor
-      USE visc_g, only: mu_gt
+      USE visc_g, only: epmu_gt
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -47,7 +47,7 @@
          ENDIF
       ENDIF
 
-      CALL DIF_V_IS(MU_GT, A_M, 0, IER)
+      CALL DIF_V_IS(EPMU_GT, A_M, 0, IER)
 
       RETURN
       END SUBROUTINE CONV_DIF_V_G
@@ -264,7 +264,7 @@
       USE cutcell, only: cut_v_treatment_at
       USE cutcell, only: oneodx_e_v, oneody_n_v, oneodz_t_v
 
-      USE fldvar, only: ep_g
+      USE fldvar, only: epg_jfac
 
       USE functions, only: wall_at
       USE functions, only: east_of, north_of, top_of
@@ -283,8 +283,7 @@
 
       USE matrix, only: e, w, n, s, t, b
       USE param1, only: zero
-      USE run, only: jackson
-      USE visc_g, only: mu_gt, DF_gv
+      USE visc_g, only: epmu_gt, DF_gv
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -348,18 +347,18 @@
       ENDIF
 
 ! East face (i+1/2, j+1/2, k)
-      D_Fe = AVG_Y_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),&
-                     AVG_X_H(MU_GT(IJKN),MU_GT(IJKNE),I),J)*&
+      D_Fe = AVG_Y_H(AVG_X_H(EPMU_GT(IJKC),EPMU_GT(IJKE),I),&
+                     AVG_X_H(EPMU_GT(IJKN),EPMU_GT(IJKNE),I),J)*&
              C_AE*AYZ_V(IJK)
 ! West face (i-1/2, j+1/2, k)
-      D_Fw = AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),&
-                     AVG_X_H(MU_GT(IJKNW),MU_GT(IJKN),IM),J)*&
+      D_Fw = AVG_Y_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJKC),IM),&
+                     AVG_X_H(EPMU_GT(IJKNW),EPMU_GT(IJKN),IM),J)*&
              C_AW*AYZ_V(IMJK)
 
 ! North face (i, j+1, k)
-      D_Fn = MU_GT(IJKN)*C_AN*AXZ_V(IJK)
+      D_Fn = EPMU_GT(IJKN)*C_AN*AXZ_V(IJK)
 ! South face (i, j, k)
-      D_Fs = MU_GT(IJKC)*C_AS*AXZ_V(IJMK)
+      D_Fs = EPMU_GT(IJKC)*C_AS*AXZ_V(IJMK)
 
       D_FT = ZERO
       D_FB = ZERO
@@ -370,12 +369,12 @@
          IJKBN = NORTH_OF(IJKB)
 
 ! Top face (i, j+1/2, k+1/2)
-         D_Ft = AVG_Y_H(AVG_Z_H(MU_GT(IJKC),MU_GT(IJKT),K),&
-                        AVG_Z_H(MU_GT(IJKN),MU_GT(IJKTN),K),J)*&
+         D_Ft = AVG_Y_H(AVG_Z_H(EPMU_GT(IJKC),EPMU_GT(IJKT),K),&
+                        AVG_Z_H(EPMU_GT(IJKN),EPMU_GT(IJKTN),K),J)*&
                 OX(I)*C_AT*AXY_V(IJK)
 ! Bottom face (i, j+1/2, k-1/2)
-         D_Fb = AVG_Y_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),&
-                        AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)*&
+         D_Fb = AVG_Y_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJKC),KM),&
+                        AVG_Z_H(EPMU_GT(IJKBN),EPMU_GT(IJKN),KM),J)*&
                 OX(I)*C_AB*AXY_V(IJKM)
       ENDIF   ! end if (do_k)
 
@@ -386,15 +385,15 @@
       DF_GV(IJK,T) = D_FT
       DF_GV(IJK,B) = D_FB
 
-      IF (JACKSON) THEN
-         EPGA = AVG_Y(EP_G(IJKC), EP_G(IJKN), J)
-         D_FE = EPGA*D_FE
-         D_FW = EPGA*D_FW
-         D_FN = EPGA*D_FN
-         D_FS = EPGA*D_FS
-         D_FT = EPGA*D_FT
-         D_FB = EPGA*D_FB
-      ENDIF
+! if jackson, implement jackson style governing equations: multiply by
+! the void fraction otherwise multiply by 1
+      EPGA = AVG_Y(EPG_JFAC(IJKC), EPG_JFAC(IJKN), J)
+      D_FE = EPGA*D_FE
+      D_FW = EPGA*D_FW
+      D_FN = EPGA*D_FN
+      D_FS = EPGA*D_FS
+      D_FT = EPGA*D_FT
+      D_FB = EPGA*D_FB
 
       RETURN
       END SUBROUTINE GET_VCELL_GDIFF_TERMS

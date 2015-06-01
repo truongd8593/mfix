@@ -181,6 +181,7 @@
       CALL CONV_ROP(IER)
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -317,6 +318,7 @@
 ! Calculate the face values of mass fluxes
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW

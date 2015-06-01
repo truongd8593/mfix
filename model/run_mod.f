@@ -87,6 +87,8 @@
 
 ! IF .TRUE. use Jackson form momentum equations
       LOGICAL :: JACKSON
+! IF .TRUE. use Ishii form momentum equations
+      LOGICAL :: ISHII
 
 ! If .TRUE. use Model-B momentum equations
       LOGICAL :: Model_B

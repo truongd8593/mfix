@@ -77,6 +77,9 @@
 
 !fldvar
       Allocate(  EP_g (DIMENSION_3) )
+      Allocate(  epg_jfac (DIMENSION_3p) )
+      Allocate(  epg_ifac (DIMENSION_3p) )
+      Allocate(  eps_ifac (DIMENSION_3p, DIMENSION_M) )
       Allocate(  EP_go (DIMENSION_3p) )
       Allocate(  P_g (DIMENSION_3) )
       Allocate(  P_go (DIMENSION_3p) )
@@ -260,6 +263,7 @@
 !visc_g
       Allocate(  trD_g(DIMENSION_3) )
       Allocate(  MU_gt (DIMENSION_3) )
+      Allocate(  EPMU_gt (DIMENSION_3) )
       Allocate(  LAMBDA_gt (DIMENSION_3) )
       Allocate(  L_scale (DIMENSION_3) )
 

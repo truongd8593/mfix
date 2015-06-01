@@ -7,6 +7,11 @@
 ! and eddy viscosities
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_gt
 
+! Turbulent viscosity of fluid phase: sum of molecular
+! and eddy viscosities x the void fraction of fluid phase
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EPMU_gt
+
+
 ! Granular second coefficient of viscosity
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  LAMBDA_gt
 

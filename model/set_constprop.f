@@ -21,7 +21,7 @@
       USE fldvar, only: ro_s, d_p
       use fldvar, only: p_s
 
-      USE visc_g, only: mu_gt, lambda_gt, recalc_visc_g
+      USE visc_g, only: mu_gt, epmu_gt, lambda_gt, recalc_visc_g
       USE visc_s, only: mu_s, lambda_s, lambda_s_c
       USE visc_s, only: ep_star_array
       USE visc_s, only: ep_g_blend_start, ep_g_blend_end
@@ -72,6 +72,7 @@
       RO_g = ZERO
       MU_g = ZERO
       MU_gt = ZERO
+      EPMU_GT = ZERO
       LAMBDA_GT = ZERO
       K_g = ZERO
       C_PG = ZERO
@@ -144,6 +145,7 @@
             IF (MU_G0 /= UNDEFINED) THEN
                MU_G(IJK) = MU_G0
                MU_GT(IJK) = MU_G0
+               EPMU_GT(IJK) = MU_G0
                LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
             ENDIF
             IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
@@ -154,6 +156,7 @@
             IF (MU_G0 /= UNDEFINED) THEN
                MU_G(IJK) = MU_G0
                MU_GT(IJK) = MU_G0
+               EPMU_GT(IJK) = MU_G0
                LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
             ENDIF
             IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
