@@ -66,7 +66,7 @@ AC_FC_LINE_LENGTH([unlimited])
 AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
 
-AC_CONFIG_FILES([Makefile build-aux/Makefile.usr post_mfix/Makefile])
+AC_CONFIG_FILES([Makefile build-aux/Makefile.usr])
 
 AC_OUTPUT
 

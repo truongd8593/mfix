@@ -26,8 +26,6 @@ NETCDF_INCLUDE=@NETCDF_INCLUDE@
 export NETCDF_LIB
 export NETCDF_INCLUDE
 
-SUBDIRS = post_mfix
-
 .DEFAULT_GOAL := mfix
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
@@ -35,7 +33,7 @@ $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 
 ################################################################
 #                                                              #
-#      main exectuables:  mfix                                 #
+#           mfix executable                                    #
 #                                                              #
 ################################################################
 bin_PROGRAMS = mfix
@@ -50,12 +48,13 @@ libmfix_a_SOURCES =
 
 ################################################################
 #                                                              #
-#      convenience target for postmfix                         #
+#           postmfix executable                                #
 #                                                              #
 ################################################################
 
-postmfix:
-	$(MAKE) -C $(builddir)/post_mfix postmfix
+bin_PROGRAMS += post_mfix/postmfix
+
+post_mfix_postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
 ################################################################
 #                                                              #
@@ -64,7 +63,7 @@ postmfix:
 #                                                              #
 ################################################################
 
-EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools post_mfix
+EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
 EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 ################################################################
@@ -78,10 +77,22 @@ mfixmodule.deps: $(libmfix_a_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
+post_mfix/postmodule.deps: $(post_mfix_postmfix_SOURCES)
+	mkdir -p post_mfix
+	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
+	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
+	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
+	    echo "${main_mod}: main" >> $@; \
+	done;
+
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps
+$(eval -include post_mfix/postmodule.deps)
+
+DISTCLEANFILES = mfixmodule.deps post_mfix/postmodule.deps build-aux/Makefile.usr
 
 ################################################################
 #      TAU support
@@ -686,6 +697,89 @@ libmfix_a_SOURCES += \
 	model/xsi_mod.f \
 	model/zero_array.f \
 	model/zero_norm_vel.f
+
+################################################################
+#                                                              #
+#      postmfix                                                #
+#                                                              #
+################################################################
+
+post_mfix_postmfix_SOURCES = \
+	model/include/xforms.inc \
+	post_mfix/any_more_data.f \
+	post_mfix/calc_cell2.f \
+	post_mfix/calc_corr_01.f \
+	post_mfix/calc_corr_type_1.f \
+	post_mfix/calc_distance.f \
+	post_mfix/calc_dpody.f \
+	post_mfix/calc_ep_g.f \
+	post_mfix/calc_quantities.f \
+	post_mfix/calc_ro_g.f \
+	post_mfix/calc_vol.f \
+	post_mfix/correl_mod.f \
+	post_mfix/deallocate_arrays.f \
+	post_mfix/examine_data.f \
+	post_mfix/f_init_data.f \
+	post_mfix/file_handle.f \
+	post_mfix/finit.f \
+	post_mfix/flow_gx.f \
+	post_mfix/flow_gy.f \
+	post_mfix/flow_gz.f \
+	post_mfix/flow_sx.f \
+	post_mfix/flow_sy.f \
+	post_mfix/flow_sz.f \
+	post_mfix/gas_flux.f \
+	post_mfix/get_file_name.f \
+	post_mfix/get_file_status.f \
+	post_mfix/get_index.f \
+	post_mfix/get_location.f \
+	post_mfix/get_mu_s.f \
+	post_mfix/get_same_time.f \
+	post_mfix/get_selection.f \
+	post_mfix/get_substr.f \
+	post_mfix/granular_qty.f \
+	post_mfix/header_main.f \
+	post_mfix/ik_avg.f \
+	post_mfix/ik_avg_out.f \
+	post_mfix/interp_res.f \
+	post_mfix/main_f.f \
+	post_mfix/ornl_corr.f \
+	post_mfix/ornl_corr_c.f \
+	post_mfix/ornl_filt.f \
+	post_mfix/ornl_filt_c.f \
+	post_mfix/ornl_ft.f \
+	post_mfix/ornl_ft_c.f \
+	post_mfix/ornl_header.f \
+	post_mfix/ornl_pca.f \
+	post_mfix/ornl_stats.f \
+	post_mfix/ornl_stats_c.f \
+	post_mfix/ornl_sym.f \
+	post_mfix/ornl_util.f \
+	post_mfix/ornl_zone.f \
+	post_mfix/out_from_res.f \
+	post_mfix/out_from_spx.f \
+	post_mfix/out_spec_time.f \
+	post_mfix/out_time.f \
+	post_mfix/paralleldata_mod.f \
+	post_mfix/post3d_mod.f \
+	post_mfix/post_precision_mod.f \
+	post_mfix/print_out.f \
+	post_mfix/read_spx0.f \
+	post_mfix/read_spx1.f \
+	post_mfix/res_from_spx.f \
+	post_mfix/seek_time.f \
+	post_mfix/select_spx_rec.f \
+	post_mfix/set_dollar.f \
+	post_mfix/set_read_spx.f \
+	post_mfix/sol_flux.f \
+	post_mfix/strcmp.f \
+	post_mfix/streqs.f \
+	post_mfix/time_avg.f \
+	post_mfix/usr_init_namelist.f \
+	post_mfix/usr_input.f \
+	post_mfix/usr_input_mod.f \
+	post_mfix/usr_post.f \
+	post_mfix/usr_write_out1.f
 
 cases := $(shell find . -name mfix.dat)
 
