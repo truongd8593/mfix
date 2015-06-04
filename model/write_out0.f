@@ -358,6 +358,48 @@
 
          IF(DEM_SOLIDS) THEN
 
+ 1450 FORMAT(/7X,'Use ',A,' collsion model.',2/10X,&
+         'Spring Coefficients:',T37,'Normal',7x,'Tangential')
+
+            IF(DES_COLL_MODEL_ENUM .EQ. LSD) THEN
+               WRITE(UNIT_OUT,1450) 'Linear spring-dashpot'
+               WRITE(UNIT_OUT,1455) 'Particle-particle', KN, KT
+               WRITE(UNIT_OUT,1455) 'Particle-wall', KN_W, KT_W
+
+            ELSEIF(DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+               WRITE(UNIT_OUT,1450) 'Hertzian spring-dashpot'
+
+               DO M = 1, DES_MMAX
+                  DO N = M, DES_MMAX
+                     IF(M==N) THEN
+                       WRITE(UNIT_OUT,1456)M,N,HERT_KN(M,N),HERT_KT(M,N)
+                     ELSE
+                       WRITE(UNIT_OUT,1457)N,HERT_KN(M,N),HERT_KT(M,N)
+                     ENDIF
+                  ENDDO
+                  WRITE(UNIT_OUT,1458) HERT_KWN(M),HERT_KWT(M)
+               ENDDO
+            ENDIF
+
+            WRITE(UNIT_OUT,1451)
+ 1451 FORMAT(/10X,'Damping Coefficients:',T37,'Normal',7x,'Tangential')
+
+            DO M = 1, DES_MMAX
+               DO N = M, DES_MMAX
+                  IF(M==N) THEN
+                     WRITE(UNIT_OUT,1456)M,N,DES_ETAN(M,N),DES_ETAT(M,N)
+                  ELSE
+                     WRITE(UNIT_OUT,1457)N,DES_ETAN(M,N),DES_ETAT(M,N)
+                  ENDIF
+               ENDDO
+               WRITE(UNIT_OUT,1458) DES_ETAN_WALL(M),DES_ETAT_WALL(M)
+            ENDDO
+
+ 1455 FORMAT(12X,A,T35,g12.5,3x,g12.5)
+ 1456 FORMAT(12X,'Phase',I2,'-Phase',I2,' = ',T35,g12.5,3x,g12.5)
+ 1457 FORMAT(19X,'-Phase',I2,' = ',T35,g12.5,3x,g12.5)
+ 1458 FORMAT(19X,'-Wall',3x,' = ',T35,g12.5,3x,g12.5)
+
          ENDIF
 
          IF(PIC_SOLIDS) THEN
