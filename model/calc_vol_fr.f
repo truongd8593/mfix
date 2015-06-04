@@ -97,8 +97,6 @@
 
 ! Initialize:
       wHeader = .TRUE.
-
-
 ! Initialize error flag.
       Err_l = 0
 

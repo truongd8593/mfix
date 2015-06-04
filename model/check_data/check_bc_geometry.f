@@ -429,7 +429,7 @@
 ! Indices for error checking
       INTEGER :: IER
 
-! surface indicators
+! surface indictors:
 ! a value of T indicates that the defined boundary region does not
 ! vary in indicated coordinate direction. that is, if bc_x_w is
 ! equal to bc_x_e then the boundary region must be in the yz plane

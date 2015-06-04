@@ -128,7 +128,6 @@
 ! Clear the error manager
       CALL FINL_ERR_MSG
 
-
       RETURN
 
  1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
