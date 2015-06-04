@@ -86,8 +86,8 @@ DISTCLEANFILES = Makefile
 ################################################################
 
 postmfix: $(LIBMFIX)
-	$(MAKE) -C $(top_builddir) post_mfix/postmfix
-	cp $(top_builddir)/post_mfix/postmfix $@
+	$(MAKE) -C $(top_builddir) postmfix
+	ln -s $(top_builddir)/postmfix $@
 
 ################################################################
 #                                                              #

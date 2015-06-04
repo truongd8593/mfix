@@ -52,9 +52,9 @@ libmfix_a_SOURCES =
 #                                                              #
 ################################################################
 
-bin_PROGRAMS += post_mfix/postmfix
+bin_PROGRAMS += postmfix
 
-post_mfix_postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
+postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
 ################################################################
 #                                                              #
@@ -77,8 +77,7 @@ mfixmodule.deps: $(libmfix_a_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
-post_mfix/postmodule.deps: $(post_mfix_postmfix_SOURCES)
-	mkdir -p post_mfix
+postmodule.deps: $(postmfix_SOURCES)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
@@ -90,9 +89,9 @@ post_mfix/postmodule.deps: $(post_mfix_postmfix_SOURCES)
 # Use generated module dependency rules
 $(eval -include mfixmodule.deps)
 
-$(eval -include post_mfix/postmodule.deps)
+$(eval -include postmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps post_mfix/postmodule.deps build-aux/Makefile.usr
+DISTCLEANFILES = mfixmodule.deps postmodule.deps build-aux/Makefile.usr
 
 ################################################################
 #      TAU support
@@ -704,7 +703,7 @@ libmfix_a_SOURCES += \
 #                                                              #
 ################################################################
 
-post_mfix_postmfix_SOURCES = \
+postmfix_SOURCES = \
 	model/include/xforms.inc \
 	post_mfix/any_more_data.f \
 	post_mfix/calc_cell2.f \
