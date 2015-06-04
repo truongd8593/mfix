@@ -94,11 +94,11 @@
 ! External Functions
 !---------------------------------------------------------------------//
 ! Returns integer if data past column MAXCOL.
-      INTEGER, EXTERNAL :: LINE_TOO_BIG
+!      INTEGER, EXTERNAL :: LINE_TOO_BIG
 ! Integer function which returns COMMENT_INDEX
-      INTEGER, EXTERNAL :: SEEK_COMMENT
+!      INTEGER, EXTERNAL :: SEEK_COMMENT
 ! Blank line function
-      LOGICAL, EXTERNAL :: BLANK_LINE
+!      LOGICAL, EXTERNAL :: BLANK_LINE
 
       E = UNDEFINED
       RXN_FLAG = .FALSE.
@@ -211,25 +211,25 @@
 
 ! External namelist files:
 !---------------------------------------------------------------------//
-      INCLUDE 'namelists/run_control.inc'
-      INCLUDE 'namelists/physical_params.inc'
-      INCLUDE 'namelists/numerical_params.inc'
-      INCLUDE 'namelists/geometry.inc'
-      INCLUDE 'namelists/gas_phase.inc'
-      INCLUDE 'namelists/solids_phase.inc'
-      INCLUDE 'namelists/tfm_solids.inc'
-      INCLUDE 'namelists/initial_conditions.inc'
-      INCLUDE 'namelists/boundary_conditions.inc'
-      INCLUDE 'namelists/internal_surfaces.inc'
-      INCLUDE 'namelists/point_sources.inc'
-      INCLUDE 'namelists/output_control.inc'
-      INCLUDE 'namelists/usr_hooks.inc'
-      INCLUDE 'namelists/chem_equations.inc'
-      INCLUDE 'namelists/dmp_batch_control.inc'
-      INCLUDE 'des/desnamelist.inc'
-      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
-      INCLUDE 'qmomk/qmomknamelist.inc'
-      INCLUDE 'namelists/legacy.inc'
+      INCLUDE 'run_control.inc'
+      INCLUDE 'physical_params.inc'
+      INCLUDE 'numerical_params.inc'
+      INCLUDE 'geometry.inc'
+      INCLUDE 'gas_phase.inc'
+      INCLUDE 'solids_phase.inc'
+      INCLUDE 'tfm_solids.inc'
+      INCLUDE 'initial_conditions.inc'
+      INCLUDE 'boundary_conditions.inc'
+      INCLUDE 'internal_surfaces.inc'
+      INCLUDE 'point_sources.inc'
+      INCLUDE 'output_control.inc'
+      INCLUDE 'usr_hooks.inc'
+      INCLUDE 'chem_equations.inc'
+      INCLUDE 'dmp_batch_control.inc'
+      INCLUDE 'desnamelist.inc'
+      INCLUDE 'cartesian_grid_namelist.inc'
+      INCLUDE 'qmomknamelist.inc'
+      INCLUDE 'legacy.inc'
       INCLUDE 'usrnlst.inc'
 
       ERROR = .FALSE.

@@ -250,6 +250,7 @@ libmfix_a_SOURCES += \
 	model/cartesian_grid/write_progress_bar.f \
 	model/cdist_mod.f \
 	model/check_ab_m.f \
+	model/check_bqend.f \
 	model/check_convergence.f \
 	model/check_data/check_axis.f \
 	model/check_data/check_bc_dem.f \
@@ -482,6 +483,7 @@ libmfix_a_SOURCES += \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
+	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
@@ -559,6 +561,7 @@ libmfix_a_SOURCES += \
 	model/read_namelist.f \
 	model/read_res0.f \
 	model/read_res1.f \
+	model/reinitialize.f \
 	model/remove_comment.f \
 	model/reset_new.f \
 	model/residual_mod.f \
