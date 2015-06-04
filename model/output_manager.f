@@ -167,8 +167,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
-      CHECK_TIME = ((DT == UNDEFINED) .AND. FINISHED) .OR. &
-         (TIME + 0.1d0*DT>=lTIME) .OR. (TIME+0.1d0*DT>=TSTOP)
+      IF(DT == UNDEFINED) THEN
+         CHECK_TIME = FINISHED
+      ELSE
+         CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
+      ENDIF
 
       RETURN
       END FUNCTION CHECK_TIME
@@ -184,7 +187,7 @@
       IF (DT /= UNDEFINED) THEN
          NEXT_TIME = (INT((TIME + 0.1d0*DT)/lWRITE_DT)+1)*lWRITE_DT
       ELSE
-         NEXT_TIME = 0.0
+         NEXT_TIME = lWRITE_DT
       ENDIF
 
       RETURN
