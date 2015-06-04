@@ -118,9 +118,15 @@
 !$      INTEGER omp_get_thread_num
 
       DOUBLE PRECISION :: WALL_TIME
+
+! C Function
+      INTERFACE
+         SUBROUTINE CREATE_SERVER() BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+         END SUBROUTINE CREATE_SERVER
+      END INTERFACE
+
 !-----------------------------------------------
-
-
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -143,6 +149,13 @@
 ! set automatic restart flag to false
 !      AUTOMATIC_RESTART = .FALSE.
 !      ITER_RESTART      = 1
+
+      ! create libmsockets server
+#ifdef libmsock
+      CALL CREATE_SERVER()
+#else
+      stop 1
+#endif
 
 ! specify the number of processors to be used
 !$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)

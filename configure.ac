@@ -19,6 +19,7 @@ AC_LANG(Fortran)
 # Checks for programs.
 AC_PROG_GREP
 AC_PROG_RANLIB
+AC_PROG_CC
 AC_PROG_SED
 AC_OPENMP()
 
@@ -40,6 +41,15 @@ AM_CONDITIONAL([USE_NETCDF], [test ! -z "$NETCDF_INCLUDE"])
 
 AC_ARG_VAR([TAU_MAKEFILE],[ Path to TAU Makefile ])
 AC_ARG_VAR([TAU_F90],[ Actual Fortran compiler used by TAU compiler wrapper ])
+
+AC_ARG_ENABLE([msocket],
+[  --enable-msocket    Turn on msocket support],
+[case "${enableval}" in
+  yes) msocket=true ;;
+  no)  msocket=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-msocket]) ;;
+esac],[msocket=false])
+AM_CONDITIONAL([USE_MSOCKET], [test x$msocket = xtrue])
 
 AC_ARG_ENABLE([smp],
 [  --enable-smp    Turn on OpenMP support],
@@ -66,7 +76,7 @@ AC_FC_LINE_LENGTH([unlimited])
 AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
 
-AC_CONFIG_FILES([Makefile build-aux/Makefile.usr post_mfix/Makefile])
+AC_CONFIG_FILES([Makefile build-aux/Makefile.usr post_mfix/Makefile model/libmsock/Makefile])
 
 AC_OUTPUT
 

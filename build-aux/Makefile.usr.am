@@ -114,6 +114,14 @@ mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
 
 ################################################################
+#      MSocket server
+################################################################
+if USE_MSOCKET
+AM_FCFLAGS += -Dlibmsock
+AM_LDFLAGS += -lpthread
+endif
+
+################################################################
 #                                                              #
 #  Use absolute paths in the Makefile, so it can be copied     #
 #  to any mfix.dat directory.                                  #

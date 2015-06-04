@@ -15,6 +15,7 @@
 !---------------------------------------------------------------------//
       use param, only: dim_M, dim_eqs
       use param1, only: UNDEFINED_I
+      USE, INTRINSIC :: ISO_C_BINDING
 !---------------------------------------------------------------------//
 
 
@@ -50,7 +51,7 @@
       DOUBLE PRECISION :: TSTOP
 
 ! Time step.
-      DOUBLE PRECISION :: DT
+      REAL(C_DOUBLE), bind(C, name="simulation_time") :: DT
 
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
