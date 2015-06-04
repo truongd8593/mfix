@@ -3,7 +3,7 @@
 module load autoconf/2.69
 module load gnu/4.6.4
 
-MFIX=${MFIX_HOME-"../../../../mfix"}
+MFIX=${MFIX_HOME-"../../../"}
 
 GCC_DBGFLAGS="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
 ${MFIX}/configure_mfix FC=gfortran FCFLAGS="-O0 $GCC_DBGFLAGS" || exit $?
