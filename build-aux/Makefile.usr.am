@@ -81,6 +81,16 @@ DISTCLEANFILES = Makefile
 
 ################################################################
 #                                                              #
+#      convenience target for postmfix                         #
+#                                                              #
+################################################################
+
+postmfix: $(LIBMFIX)
+	$(MAKE) -C $(top_builddir) post_mfix/postmfix
+	cp $(top_builddir)/post_mfix/postmfix $@
+
+################################################################
+#                                                              #
 #      OpenMP and MPI support                                  #
 #                                                              #
 #      --enable-smp and --enable-dmp options in configure.ac   #
