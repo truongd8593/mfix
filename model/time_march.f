@@ -102,6 +102,7 @@
 
       CALL INIT_OUTPUT_VARS
 
+      write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
 
       IF(INTERACTIVE_MODE) CALL INIT_INTERACTIVE_MODE
 
@@ -173,6 +174,7 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
 
+      write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
       IF(INTERACTIVE_MODE) THEN
          CALL INTERACT(EXIT_SIGNAL, ABORT_SIGNAL)
          IF(ABORT_SIGNAL) RETURN

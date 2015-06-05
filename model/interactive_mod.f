@@ -84,6 +84,8 @@
 
       pABORT_SIGNAL = .FALSE.
 
+      write(*,*) 'In the INTERACT ROUTINE'
+
       CALL CHECK_INTERACT_SIGNAL(INTERACTING)
 
       DO WHILE(INTERACTING)
@@ -574,12 +576,16 @@
       use compar, only: myPE, PE_IO
       use mpi_utility
 
+      use run, only: INTERUPT
+
       LOGICAL :: FOUND
 
       IF(myPE == PE_IO) THEN
          DO; INQUIRE(file="interact.dat", exist=FOUND)
             IF(FOUND) EXIT
+            IF(.NOT.INTERUPT) EXIT
             CALL SLEEP(1)
+            write(*,*) 'I am waiting...'
          ENDDO
       ENDIF
 

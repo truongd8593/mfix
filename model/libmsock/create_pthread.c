@@ -103,9 +103,9 @@ void *thread_function(void *pp)
             (void) fprintf(stdout,"%s\n",szbuf);
             (void) fflush(stdout);
 
-	    nn = sprintf(szbuf,"Current time is: %g",simulation_time);
+	    //nn = sprintf(szbuf,"Current time is: %g",simulation_time);
 
-	    rc=sockPuts(sock_fd,szbuf); // rc should equal nn
+	    //rc=sockPuts(sock_fd,szbuf); // rc should equal nn
 
         }
     }
