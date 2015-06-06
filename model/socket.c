@@ -17,15 +17,18 @@ Code taken from the example on Wikipedia:  http://en.wikipedia.org/wiki/Select_(
 #include <err.h>
 #include <errno.h>
  
-#define PORT "8888"
- 
-extern void handle_command_(char*, char*, int*);
+extern void handle_command_(char*, char*, ssize_t*);
 
-/* function prototypes */
-void die(const char*);
-void check_socket();
-void init_socket();
+void die(const char *msg)
+{
+  perror(msg);
+  exit(EXIT_FAILURE);
+}
  
+//-----------------------------------------------
+// Global variables
+//-----------------------------------------------
+
 int sockfd, new, maxfd, on = 1, nready, ii;
 struct addrinfo *res0, *res, hints;
 struct timeval timeout;
@@ -35,11 +38,12 @@ fd_set master, readfds;
 int error;
 ssize_t nbytes;
 
-/*
+//-----------------------------------------------
 // for testing
-
+//-----------------------------------------------
+/*
 int main(int argc, char **argv) {
-  init_socket();
+  init_socket("8888");
 
   while(1) {
       printf("DO SOMETHING USEFUL\n");
@@ -49,7 +53,11 @@ int main(int argc, char **argv) {
   return 0;
 }*/
 
-void init_socket() {
+//-----------------------------------------------
+//     Initialize socket listening on port
+//-----------------------------------------------
+
+void init_socket(char* port) {
  
   (void)memset(&hints, '\0', sizeof(struct addrinfo));
  
@@ -58,7 +66,7 @@ void init_socket() {
   hints.ai_protocol = IPPROTO_TCP;
   hints.ai_flags = AI_PASSIVE;
  
-  if(0 != (error = getaddrinfo(NULL, PORT, &hints, &res0)))
+  if(0 != (error = getaddrinfo(NULL, port, &hints, &res0)))
     errx(EXIT_FAILURE, "%s", gai_strerror(error));
  
   for(res = res0; res; res = res->ai_next)
@@ -107,6 +115,10 @@ void init_socket() {
   timeout.tv_usec = 0;
 
 }
+
+//-----------------------------------------------
+//     Check for for connections on socket
+//-----------------------------------------------
 
     void check_socket() {
 
@@ -185,10 +197,4 @@ void init_socket() {
  
 	}
  
-}
- 
-void die(const char *msg)
-{
-  perror(msg);
-  exit(EXIT_FAILURE);
 }
