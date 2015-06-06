@@ -216,7 +216,6 @@ libmfix_src = \
 	model/calc_mflux.f \
 	model/calc_mu_g.f \
 	model/calc_mu_s.f \
-	model/calc_mw.f \
 	model/calc_outflow.f \
 	model/calc_p_star.f \
 	model/calc_resid.f \
@@ -491,7 +490,6 @@ libmfix_src = \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
-	model/kintheory_energy_dissipation_ss.f \
 	model/kintheory_mod.f \
 	model/kintheory_u_s.f \
 	model/kintheory_v_s.f \
@@ -503,7 +501,6 @@ libmfix_src = \
 	model/leq_sor.f \
 	model/leqsol_mod.f \
 	model/line_too_big.f \
-	model/location.f \
 	model/location_check.f \
 	model/machine.f \
 	model/machine_mod.f \

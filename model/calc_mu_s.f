@@ -62,6 +62,7 @@
       USE physprop, only: close_packed
 ! number of solids phases
       USE physprop, only: mmax
+      USE physprop, only: blend_function
 ! runtime flag to use qmomk
       USE qmom_kinetic_equation, only: qmomk
 
@@ -85,11 +86,7 @@
 ! blend factor
       DOUBLE PRECISION :: BLEND
 
-! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!---------------------------------------------------------------------//
-
 
 ! Constant solids viscosity
 !---------------------------------------------------------------------
@@ -1075,7 +1072,7 @@
 
       USE kintheory, only: EDT_s_ip, xsi_gtsh, a2_gtsh
       USE kintheory, only: kt_rvel
-      USE kintheory, only: epm
+      USE kintheory, only: epm, G_gtsh, S_star, K_phi, R_d
 
       USE param1, only: zero, one, small_number
 
@@ -1111,13 +1108,6 @@
       DOUBLE PRECISION :: dSdphi, R_dphi, Tau_st, dPsidn, MuK
 ! relative velocity
       DOUBLE PRECISION :: RVEL
-! Functions
-!---------------------------------------------------------------------//
-! function gamma: eq. (8.1), S_star and K_phi in GTSH theory
-      DOUBLE PRECISION, EXTERNAL :: G_gtsh
-      DOUBLE PRECISION, EXTERNAL :: S_star
-      DOUBLE PRECISION, EXTERNAL :: K_phi
-      DOUBLE PRECISION, EXTERNAL :: R_d
 !---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3

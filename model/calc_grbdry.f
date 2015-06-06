@@ -801,7 +801,7 @@
       USE param
       USE param1
       USE constant
-      USE kintheory, only: epm
+      USE kintheory, only: epm, k_phi, s_star
       USE physprop
       USE run
       USE fldvar
@@ -881,8 +881,6 @@
 !-----------------------------------------------
 ! Variable specularity coefficient
       DOUBLE PRECISION :: PHIP_JJ
-      DOUBLE PRECISION :: S_star
-      DOUBLE PRECISION :: K_phi
 !-----------------------------------------------
 
 ! This is done here similar to bc_theta to avoid small negative values of
