@@ -111,21 +111,13 @@ mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
 
 ################################################################
-#      MSocket server
+#      Socket server
 ################################################################
-if USE_MSOCKET
-AM_CFLAGS = $(FC_MODINC)$(top_srcdir)/model/include -lpthread
-AM_FCFLAGS += -Dlibmsock
-AM_LDFLAGS += -lpthread
-libmfix_a_SOURCES += model/libmsock/server.f
-libmfix_a_SOURCES += model/libmsock/sockets_mod.f
-libmfix_a_SOURCES += model/libmsock/create_pthread.c
-libmfix_a_SOURCES += model/libmsock/msock.c
-mfix_LDADD += $(top_builddir)/model/libmsock/libmsock.a
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
+libmfix_a_SOURCES += model/handle_command.f
+libmfix_a_SOURCES += model/socket.c
 endif
-
-$(top_builddir)/model/libmsock/libmsock.a:
-	$(MAKE) -C $(top_builddir)/model/libmsock
 
 ################################################################
 #                                                              #

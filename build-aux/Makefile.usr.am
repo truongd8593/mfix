@@ -124,11 +124,10 @@ mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
 
 ################################################################
-#      MSocket server
+#      Socket server
 ################################################################
-if USE_MSOCKET
-AM_FCFLAGS += -Dlibmsock
-AM_LDFLAGS += -lpthread
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
 endif
 
 ################################################################

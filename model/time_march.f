@@ -82,6 +82,13 @@
 ! Flag to cleanly exit without saving results.
       LOGICAL :: ABORT_SIGNAL = .FALSE.
 
+! C Function
+      INTERFACE
+         SUBROUTINE CHECK_SOCKET() BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+         END SUBROUTINE CHECK_SOCKET
+      END INTERFACE
+
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
@@ -267,6 +274,11 @@
 
 ! Advance the solution in time by iteratively solving the equations
  150  CALL ITERATE (IER, NIT)
+
+#ifdef socket
+      CALL CHECK_SOCKET()
+#endif
+
       IF(AUTOMATIC_RESTART) RETURN
 
 ! Just to Check for NaN's, Uncomment the following lines and also lines
