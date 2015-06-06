@@ -5,8 +5,10 @@ FILES=$*
 IGNORE="${IGNORE} iso_c_binding"
 FORTEXT="f F f90 F90 f95 F95 f03 F03 f08 F08"
 
+UNIQPATH=$(basename $1)
+
 UNIQSTR="QWERTZ"
-SEDTMP="qwertz_sed_tmp"
+SEDTMP="${UNIQPATH}qwertz_sed_tmp"
 FOREIGN=
 
 for x in ${IGNORE} ; do

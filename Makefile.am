@@ -26,6 +26,8 @@ NETCDF_INCLUDE=@NETCDF_INCLUDE@
 export NETCDF_LIB
 export NETCDF_INCLUDE
 
+SUFFIXES = .d
+
 .DEFAULT_GOAL := mfix
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
@@ -41,8 +43,6 @@ bin_PROGRAMS = mfix
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-#  ODEPACK.F is not included in libmfix because it is excluded from
-#  mfixmodule.deps
 mfix_SOURCES = model/ODEPACK.F
 libmfix_a_SOURCES =
 
@@ -73,25 +73,18 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 #                                                              #
 ################################################################
 
-mfixmodule.deps: $(libmfix_a_SOURCES)
+.f.d:
+	@mkdir -p $(@D)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-
-postmodule.deps: $(postmfix_SOURCES)
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
-	    echo "${main_mod}: main" >> $@; \
-	done;
 
 # Use generated module dependency rules
-$(eval -include mfixmodule.deps)
 
-$(eval -include postmodule.deps)
+$(eval -include $(libmfix_src:%.f=%.d) )
 
-DISTCLEANFILES = mfixmodule.deps postmodule.deps build-aux/Makefile.usr
+$(eval -include $(postmfix_SOURCES:%.f=%.d) )
+
+DISTCLEANFILES = build-aux/Makefile.usr $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 
 ################################################################
 #      TAU support
@@ -142,13 +135,24 @@ AM_LDFLAGS += -DMPI
 endif
 
 ################################################################
-#      libmfix_a_SOURCES                                          #
+#      libmfix_a_SOURCES                                       #
 #                                                              #
 #      The majority of source files for mfix and postmfix      #
 #      are listed here.                                        #
 ################################################################
 
 libmfix_a_SOURCES += \
+	model/include/cartesian_grid_namelist.inc \
+	model/include/desnamelist.inc \
+	model/include/namelist.inc \
+	model/include/netcdf.inc \
+	model/include/qmomknamelist.inc \
+	model/include/species.inc \
+	model/include/species_indices.inc \
+	model/include/usrnlst.inc \
+	model/include/xforms.inc
+
+libmfix_src = \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -479,14 +483,6 @@ libmfix_a_SOURCES += \
 	model/ic_mod.f \
 	model/in_binary_512_mod.f \
 	model/in_binary_512i_mod.f \
-	model/include/cartesian_grid_namelist.inc \
-	model/include/desnamelist.inc \
-	model/include/namelist.inc \
-	model/include/netcdf.inc \
-	model/include/qmomknamelist.inc \
-	model/include/species.inc \
-	model/include/species_indices.inc \
-	model/include/usrnlst.inc \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
@@ -697,6 +693,8 @@ libmfix_a_SOURCES += \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
+libmfix_a_SOURCES += $(libmfix_src)
+
 ################################################################
 #                                                              #
 #      postmfix                                                #
@@ -704,7 +702,6 @@ libmfix_a_SOURCES += \
 ################################################################
 
 postmfix_SOURCES = \
-	model/include/xforms.inc \
 	post_mfix/any_more_data.f \
 	post_mfix/calc_cell2.f \
 	post_mfix/calc_corr_01.f \
