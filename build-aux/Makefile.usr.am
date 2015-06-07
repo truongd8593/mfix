@@ -35,7 +35,10 @@ mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
-.PHONY: $(LIBMFIX)
+build:
+	$(LN_S) $(top_builddir) $@
+
+.PHONY: $(LIBMFIX) TAGS
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -77,8 +80,11 @@ species.inc: mfix.dat
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
+@make_ifnotclean@
 $(eval -include $(src_overrides:%.f=%.d) )
-CLEANFILES += usrmodule.deps species.inc
+@make_endif@
+
+CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
 DISTCLEANFILES = Makefile
 
 ################################################################
@@ -89,7 +95,7 @@ DISTCLEANFILES = Makefile
 
 postmfix: $(LIBMFIX)
 	$(MAKE) -C $(top_builddir) postmfix
-	ln -s $(top_builddir)/postmfix $@
+	$(LN_S) $(top_builddir)/postmfix $@
 
 ################################################################
 #                                                              #

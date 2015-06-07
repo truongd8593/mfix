@@ -18,6 +18,8 @@ AC_LANG(Fortran)
 
 # Checks for programs.
 AC_PROG_GREP
+AC_PROG_LN_S
+AC_PROG_MKDIR_P
 AC_PROG_RANLIB
 AC_PROG_SED
 AC_OPENMP()
@@ -67,6 +69,19 @@ AC_FC_MODULE_FLAG
 AC_FC_MODULE_OUTPUT_FLAG
 
 AC_CONFIG_FILES([Makefile build-aux/Makefile.usr])
+
+# Define Autoconf variables so Automake doesn't see GNU Make conditionals
+make_ifnotclean='
+ifneq ($(MAKECMDGOALS),clean)
+'
+AC_SUBST([make_ifnotclean])
+AM_SUBST_NOTMAKE([make_ifnotclean])
+
+make_endif='
+endif
+'
+AC_SUBST([make_endif])
+AM_SUBST_NOTMAKE([make_endif])
 
 AC_OUTPUT
 

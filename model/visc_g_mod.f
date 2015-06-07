@@ -21,7 +21,7 @@
 ! gas viscosity needs to be updated during iterations?
       LOGICAL :: Recalc_visc_g
 
-! diffusive component of conv-dif 
+! diffusive component of conv-dif
 ! stores diffusive term in matrix for x, y, z momentum cell
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DF_gu
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DF_gv

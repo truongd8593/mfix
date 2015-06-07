@@ -79,7 +79,7 @@
 ! initializing
       CALL ZERO_ARRAY (PP_G)
       DO M = 0, MMAX
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
       ENDDO
 
 ! If gas momentum equations in x and y directions are not solved return
@@ -91,8 +91,8 @@
       ENDIF
 
 ! Forming the sparse matrix equation.
-      CALL CONV_PP_G (A_M, B_M, IER)
-      CALL SOURCE_PP_G (A_M, B_M, B_MMAX, IER)
+      CALL CONV_PP_G (A_M, B_M)
+      CALL SOURCE_PP_G (A_M, B_M, B_MMAX)
       IF(POINT_SOURCE) CALL POINT_SOURCE_PP_G (B_M, B_MMAX)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
@@ -106,12 +106,12 @@
 ! and use this to form normalization factor
         CALL CALC_RESID_PP (B_MMAX, ONE, NUM_RESID(RESID_P,0), &
          DEN_RESID(RESID_P,0), RESID(RESID_P,0), MAX_RESID(RESID_P,0), &
-         IJK_RESID(RESID_P,0), IER)
+         IJK_RESID(RESID_P,0))
          NORMGloc = RESID(RESID_P,0)/DEN
       ENDIF
       CALL CALC_RESID_PP (B_M, NORMGloc, NUM_RESID(RESID_P,0),  &
          DEN_RESID(RESID_P,0), RESID(RESID_P,0), MAX_RESID(RESID_P,0), &
-         IJK_RESID(RESID_P,0), IER)
+         IJK_RESID(RESID_P,0))
       RESG = RESID(RESID_P,0)
 !      write(*,*) resid(resid_p, 0), max_resid(resid_p, 0), &
 !         ijk_resid(resid_p, 0)

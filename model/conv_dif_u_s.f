@@ -61,7 +61,7 @@
                 ENDIF
              ENDIF
 
-            CALL DIF_U_IS (MU_S(1,M), A_M, M, IER)
+            CALL DIF_U_IS (MU_S(1,M), A_M, M)
           ENDIF
         ENDIF
       ENDDO

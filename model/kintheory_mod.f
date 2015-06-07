@@ -595,7 +595,7 @@
       USE fldvar, only: ro_g, rop_g
       USE fldvar, only: ro_s, d_p
       USE fldvar, only: theta_m
-      USE physprop, only: mu_g 
+      USE physprop, only: mu_g
       USE rdf, only: g_0
       USE param1, only: zero, one, small_number
 

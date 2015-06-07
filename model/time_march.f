@@ -98,7 +98,7 @@
       CALL INIT_OUTPUT_VARS
 
 ! Parse residual strings
-      CALL PARSE_RESID_STRING (IER)
+      CALL PARSE_RESID_STRING ()
 
 ! Call user-defined subroutine to set constants, check data, etc.
       IF (CALL_USR) CALL USR0
@@ -109,24 +109,24 @@
       CALL INIT_COEFF(IER)
 
       DO M=1, MMAX
-         CALL ZERO_ARRAY (F_gs(1,M), IER)
+         CALL ZERO_ARRAY (F_gs(1,M))
       ENDDO
 
 ! Remove undefined values at wall cells for scalars
-      CALL UNDEF_2_0 (ROP_G, IER)
+      CALL UNDEF_2_0 (ROP_G)
       DO M = 1, MMAX
-         CALL UNDEF_2_0 (ROP_S(1,M), IER)
+         CALL UNDEF_2_0 (ROP_S(1,M))
       ENDDO
 
 ! Initialize d's and e's to zero
       DO M = 0, MMAX
-         CALL ZERO_ARRAY (D_E(1,M), IER)
-         CALL ZERO_ARRAY (D_N(1,M), IER)
-         CALL ZERO_ARRAY (D_T(1,M), IER)
+         CALL ZERO_ARRAY (D_E(1,M))
+         CALL ZERO_ARRAY (D_N(1,M))
+         CALL ZERO_ARRAY (D_T(1,M))
       ENDDO
-      CALL ZERO_ARRAY (E_E, IER)
-      CALL ZERO_ARRAY (E_N, IER)
-      CALL ZERO_ARRAY (E_T, IER)
+      CALL ZERO_ARRAY (E_E)
+      CALL ZERO_ARRAY (E_N)
+      CALL ZERO_ARRAY (E_T)
 
 ! Initialize adjust_ur
       dummy = ADJUST_DT(100, 0)
@@ -143,7 +143,7 @@
 ! Mark the phase whose continuity will be solved and used to correct
 ! void/volume fraction in calc_vol_fr (see subroutine for details)
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
-          DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
+          DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
 ! uncoupled discrete element simulations do not need to be within
 ! the two fluid model time-loop
@@ -222,7 +222,7 @@
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
          CALL CALC_KTMOMSOURCE_U_S (IER)
          CALL CALC_KTMOMSOURCE_V_S (IER)
-         CALL CALC_KTMOMSOURCE_W_S (IER)
+         CALL CALC_KTMOMSOURCE_W_S ()
       ENDIF
 
 ! Check rates and sums of mass fractions every NLOG time steps

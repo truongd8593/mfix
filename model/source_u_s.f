@@ -461,7 +461,7 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_U_S_BC (A_M, B_M, M)
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S_BC (A_M, B_M, M, IER)

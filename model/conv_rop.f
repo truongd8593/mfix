@@ -25,7 +25,7 @@
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER :: M

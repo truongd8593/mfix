@@ -143,7 +143,7 @@
 
 
 ! Initialize residuals
-      CALL INIT_RESID (IER)
+      CALL INIT_RESID ()
 
 
 ! Initialize the routine for holding gas mass flux constant with cyclic bc
@@ -221,7 +221,7 @@
       IF (IER_MANAGER(IER)) goto 1000
 
 ! Diffusion coefficient and source terms for user-defined scalars
-      IF(NScalar /= 0) CALL SCALAR_PROP(IER)
+      IF(NScalar /= 0) CALL SCALAR_PROP()
 
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
@@ -256,9 +256,9 @@
                IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
 ! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-                  CALL CALC_K_CP (K_CP, IER)
+                  CALL CALC_K_CP (K_CP)
                   CALL SOLVE_EPP (NORMS, RESS, IER)
-                  CALL CORRECT_1 (IER)
+                  CALL CORRECT_1 ()
                ELSE
 
 ! If one chooses to revert back to old mark_phase_4_cor wherein the
@@ -293,7 +293,7 @@
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          IF (MMAX > 0 .AND. .NOT.FRICTION) &
-            CALL CALC_P_STAR (EP_G, P_STAR, IER)
+            CALL CALC_P_STAR (EP_G, P_STAR)
       ENDIF
 
 ! Calculate the face values of densities.
@@ -314,7 +314,7 @@
 ! modified by sof to force wall functions so even when NSW or FSW are
 ! declared, default wall BC will still be treated as NSW and no wall
 ! functions will be used
-      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER)
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
 
 ! Calculate the face values of mass fluxes
       CALL CALC_MFLUX (IER)
@@ -373,7 +373,7 @@
 !-----------------------------------------------------------------
 
 ! Display residuals
-      IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER)
+      IF (FULL_LOG) CALL DISPLAY_RESID (NIT)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN

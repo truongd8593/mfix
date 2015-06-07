@@ -132,7 +132,7 @@
 !
 ! Equations solved for gas phase, thus M = 0
       M = 0
-          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
 ! Solve first fot the K_Turb_G Equation
 
@@ -174,7 +174,7 @@
             CALL SOURCE_PHI (S_P, S_C, EP_G, K_Turb_G, M, A_M, B_M)
 !
             CALL CALC_RESID_S (K_Turb_G, A_M, B_M, M, num_res, den_res, res1, &
-                               mres1, ires1, ZERO, IER)
+                               mres1, ires1, ZERO)
 
             RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
             NUM_RESID(RESID_ke,0) = NUM_RESID(RESID_ke,0)+num_res
@@ -184,7 +184,7 @@
               IJK_RESID(RESID_ke,0) = ires1
             endif
 !
-            CALL UNDER_RELAX_S (K_Turb_G, A_M, B_M, M, UR_FAC(9), IER)
+            CALL UNDER_RELAX_S (K_Turb_G, A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -195,7 +195,7 @@
 !          ier)
 !
             CALL ADJUST_LEQ (RESID(RESID_ke,0), LEQ_IT(9), LEQ_METHOD(9), &
-               LEQI, LEQM, IER)
+               LEQI, LEQM)
 !
             write(Vname, '(A,I2)')'K_Turb_G'
             CALL SOLVE_LIN_EQ (Vname, 9, K_Turb_G, A_M, B_M, M, LEQI, LEQM, &
@@ -216,7 +216,7 @@
 !!!!!!!!!!!!!
 !
 ! Initiate (again) the Am Bm matrix. This has to be done for every scalar equation.
-          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
           DO IJK = IJKSTART3, IJKEND3
 !
@@ -332,7 +332,7 @@
             ENDDO
 
             CALL CALC_RESID_S (E_Turb_G, A_M, B_M, M, num_res, den_res, res1, &
-                               mres1, ires1, ZERO, IER)
+                               mres1, ires1, ZERO)
 
             RESID(RESID_ke,0) = RESID(RESID_ke,0)+res1
             NUM_RESID(RESID_ke,0) = NUM_RESID(RESID_ke,0)+num_res
@@ -342,7 +342,7 @@
               IJK_RESID(RESID_ke,0) = ires1
             endif
 !
-            CALL UNDER_RELAX_S (E_Turb_G, A_M, B_M, M, UR_FAC(9), IER)
+            CALL UNDER_RELAX_S (E_Turb_G, A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -353,7 +353,7 @@
 !          ier)
 !
             CALL ADJUST_LEQ (RESID(RESID_ke,0), LEQ_IT(9), LEQ_METHOD(9), &
-               LEQI, LEQM, IER)
+               LEQI, LEQM)
 !
             write(Vname, '(A,I2)')'E_Turb_G'
             CALL SOLVE_LIN_EQ (Vname, 9, E_Turb_G, A_M, B_M, M, LEQI, LEQM, &

@@ -12,7 +12,7 @@ FC_MODEXT=mod
 
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
-CLEANFILES=$(MODDIR)/*.$(FC_MODEXT)
+CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
@@ -74,17 +74,18 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 ################################################################
 
 .f.d:
-	@mkdir -p $(@D)
+	$(MKDIR_P) $(@D)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
 # Use generated module dependency rules
 
+@make_ifnotclean@
 $(eval -include $(libmfix_src:%.f=%.d) )
-
 $(eval -include $(postmfix_SOURCES:%.f=%.d) )
+@make_endif@
 
-DISTCLEANFILES = build-aux/Makefile.usr $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+DISTCLEANFILES = build-aux/Makefile.usr
 
 ################################################################
 #      TAU support

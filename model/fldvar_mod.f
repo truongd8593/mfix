@@ -140,7 +140,7 @@
 ! Solids pressure that maintains EP_g >= EP_star
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_star
 
-! Previous-time-step value of Solids pressure that maintains 
+! Previous-time-step value of Solids pressure that maintains
 ! EP_g >= EP_star
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_staro
 

@@ -456,10 +456,10 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER)
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M)
 
           ENDIF   ! end if (momentum_y_eq)
         ENDIF   ! end if for GHD Theory

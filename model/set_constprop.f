@@ -87,7 +87,7 @@
       LAMBDA_s = ZERO
 ! not defining p_s in flow cells can become a problem for certain
 ! cases as gradients in P_s are used (e.g., when a PO is west of a
-! MI...?). Simply assigning it a zero value may not be the best 
+! MI...?). Simply assigning it a zero value may not be the best
 ! approach but it is currently used....
       P_S = ZERO
       K_s = ZERO
@@ -176,7 +176,7 @@
             ENDIF
 
             IF (FLUID_AT(IJK)) THEN
-! Strictly fluid cells: FLAG = 1 
+! Strictly fluid cells: FLAG = 1
                IF (MU_S0(M) /= UNDEFINED) THEN
                   MU_S(IJK,M) = MU_S0(M)
                   LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)

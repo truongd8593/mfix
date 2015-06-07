@@ -320,8 +320,8 @@
                   ENDDO
                ENDDO
             ENDIF
-! if jackson, implement jackson form of governing equations (ep_g dot 
-! del tau_g): multiply by void fraction otherwise by 1 
+! if jackson, implement jackson form of governing equations (ep_g dot
+! del tau_g): multiply by void fraction otherwise by 1
             ltau_v_g = epgaj*tau_v_g(ijk)
 
 
@@ -357,11 +357,11 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M)
 ! modifications for bc
       CALL SOURCE_V_G_BC(A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_V_G

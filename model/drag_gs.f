@@ -33,7 +33,7 @@
       USE funits
       USE geometry
       USE indices
-      USE machine, only: start_log, end_log 
+      USE machine, only: start_log, end_log
       USE mms
       USE parallel
       USE param

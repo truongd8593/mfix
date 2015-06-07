@@ -48,7 +48,7 @@
          ENDIF
       ENDIF
 
-      CALL DIF_W_IS(EPMU_GT, A_M, 0, IER)
+      CALL DIF_W_IS(EPMU_GT, A_M, 0)
 
       RETURN
       END SUBROUTINE CONV_DIF_W_G
@@ -630,7 +630,7 @@
       ENDIF
 
 
-! shear indicator: 
+! shear indicator:
       incr=0
       CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
          XSI_T, incr)
