@@ -23,24 +23,25 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE run
-      USE constant
       USE compar
-      USE drag
-      USE sendrecv
+      USE constant
       USE discretelement
-      USE ur_facs
-      USE funits
-      USE mms
+      USE drag
+      USE fldvar
       USE fun_avg
       USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log 
+      USE mms
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      USE ur_facs
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

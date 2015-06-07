@@ -32,6 +32,7 @@
       use tmp_array, only: UNLOCK_TMP_ARRAY
 ! Routines to mange messages to user.
       use error_manager
+      use machine, only: wall_time
 
       IMPLICIT NONE
 
@@ -50,8 +51,8 @@
       INTEGER :: LEQM, LEQI
 ! Start, stop and step size of diffusion time march
       DOUBLE PRECISION :: DIF_TIME, DIF_STOP, DIF_DT
-! External function for wall time and wall time at start
-      DOUBLE PRECISION :: WALL_TIME, WALL_START
+! wall time at start
+      DOUBLE PRECISION :: WALL_START
 ! Local flag to print debug messages
       LOGICAL, PARAMETER :: setDBG = .TRUE.
 !......................................................................!

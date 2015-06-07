@@ -34,34 +34,35 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE cont
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE leqsol
+      USE machine, only: start_log, end_log
+      USE mms, only: USE_MMS
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE funits
-      USE time_cpu
-      USE pscor
-      USE leqsol
-      USE visc_g
       USE pgcor
-      USE cont
-      USE scalars
-      USE compar
-      USE mpi_utility
-      USE discretelement
-      USE residual
-      USE cutcell
-      USE vtk
-      USE dashboard
+      USE physprop
+      USE pscor
       USE qmom_kinetic_equation
-      USE stiff_chem, only : STIFF_CHEMISTRY
+      USE residual
+      USE run
       USE rxns, only : USE_RRATES, NO_OF_RXNS
-      USE mms, only: USE_MMS
+      USE scalars
+      USE stiff_chem, only : STIFF_CHEMISTRY
+      USE time_cpu
+      USE toleranc
+      USE visc_g
+      USE vtk
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

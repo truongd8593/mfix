@@ -11,31 +11,32 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE physprop
+      USE bc
+      USE compar
+      USE constant
+      USE discretelement
+      USE fldvar
+      USE funits
       USE geometry
       USE ic
-      USE bc
-      USE is
-      USE fldvar
-      USE constant
       USE indices
-      USE funits
-      USE toleranc
-      USE scales
-      USE scalars
-      USE ur_facs
+      USE is
       USE leqsol
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE discretelement
-      USE rxns
+      USE machine
       USE mfix_pic
-      use particle_filter
+      USE mpi_utility
+      USE output
+      USE param
+      USE param1
+      USE particle_filter
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE ur_facs
 
       IMPLICIT NONE
 !-----------------------------------------------

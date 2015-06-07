@@ -81,13 +81,11 @@
 ! External functions
 !-----------------------------------------------
 ! use function vavg_v_g to catch NaN's
-      DOUBLE PRECISION :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
+      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
 
-      LOGICAL , EXTERNAL :: ADJUST_DT
 !-----------------------------------------------
 
       IF(AUTOMATIC_RESTART) RETURN
-
 
       FINISH  = .FALSE.
       NCHECK  = NSTEP
@@ -353,6 +351,7 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_BATCH_QUEUE_END
 
+      use machine, only: WALL_TIME
       use time_cpu, only: WALL_START
 
       use error_manager
@@ -363,8 +362,6 @@
       DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
 ! Time units for formatted output.
       CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
-! External function
-      DOUBLE PRECISION :: WALL_TIME
 
 ! Calculate the current elapsed wall time.
       WALL_STOP = WALL_TIME()

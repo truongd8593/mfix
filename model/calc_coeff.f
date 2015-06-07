@@ -133,10 +133,11 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE rxns,           only : RRATE, USE_RRATES
-      USE funits,         only : DMP_LOG, UNIT_LOG
       USE compar,         only : myPE
       USE discretelement, only : DISCRETE_ELEMENT
+      USE funits,         only : DMP_LOG, UNIT_LOG
+      USE machine, only: start_log, end_log
+      USE rxns,           only : RRATE, USE_RRATES
       use run, only: ANY_SPECIES_EQ
 
       IMPLICIT NONE

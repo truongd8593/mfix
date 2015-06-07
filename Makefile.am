@@ -182,7 +182,6 @@ libmfix_src = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_rop.f \
@@ -502,7 +501,6 @@ libmfix_src = \
 	model/leqsol_mod.f \
 	model/line_too_big.f \
 	model/location_check.f \
-	model/machine.f \
 	model/machine_mod.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \

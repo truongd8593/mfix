@@ -19,29 +19,30 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
-      USE physprop
-      USE run
-      USE ic
       USE bc
-      USE is
-      USE constant
-      USE funits
-      USE output
-      USE scales
-      USE ur_facs
-      USE toleranc
-      USE leqsol
-      USE scalars
-      USE rxns
       USE compar
-      USE mpi_utility
+      USE constant
       USE fldvar
-      USE stiff_chem
+      USE funits
+      USE geometry
+      USE ic
       USE in_binary_512
       USE in_binary_512i
+      USE is
+      USE leqsol
+      USE machine
+      USE mpi_utility
+      USE output
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      USE scales
+      USE stiff_chem
+      USE toleranc
+      USE ur_facs
 
       IMPLICIT NONE
 !-----------------------------------------------
