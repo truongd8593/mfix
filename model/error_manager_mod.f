@@ -301,7 +301,8 @@
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
-      SUBROUTINE FLUSH_ERR_MSG(DEBUG, HEADER, FOOTER, ABORT, CALL_TREE)
+      SUBROUTINE FLUSH_ERR_MSG(DEBUG, HEADER, FOOTER, ABORT, LOG, &
+         CALL_TREE)
 
 ! Rank ID of process
       use compar, only: myPE
@@ -320,6 +321,8 @@
       LOGICAL, INTENT(IN), OPTIONAL :: FOOTER
 ! Flag to abort execution by invoking MFIX_EXIT.
       LOGICAL, INTENT(IN), OPTIONAL :: ABORT
+! Flag to force (or override) writing data to the log file.
+      LOGICAL, INTENT(IN), OPTIONAL :: LOG
 ! Provide the call tree in error message.
       LOGICAL, INTENT(IN), OPTIONAL :: CALL_TREE
 
@@ -343,6 +346,8 @@
       LOGICAL :: A_FLAG
 ! Local call tree flag.
       LOGICAL :: CT_FLAG
+! Local flag to store output to UNIT_LOG
+      LOGICAL :: UNT_LOG
 
 ! The current calling routine.
       CHARACTER(LEN=128) :: CALLER
@@ -376,6 +381,13 @@
       ENDIF
 
 ! Set the call tree flag. Suppress the call tree by default.
+      IF(PRESENT(LOG)) THEN
+         UNT_LOG = DMP_LOG .AND. LOG
+      ELSE
+         UNT_LOG = DMP_LOG
+      ENDIF
+
+! Set the call tree flag. Suppress the call tree by default.
       IF(PRESENT(CALL_TREE)) THEN
          CT_FLAG = CALL_TREE
       ELSE
@@ -388,10 +400,10 @@
          CALLER = CALLERS(CALL_DEPTH)
          IF(D_FLAG) THEN
             IF(SCR_LOG) WRITE(*,2000) trim(CALLER)
-            IF(DMP_LOG) WRITE(UNIT_LOG,2000) trim(CALLER)
+            IF(UNT_LOG) WRITE(UNIT_LOG,2000) trim(CALLER)
          ELSE
             IF(SCR_LOG)WRITE(*,1000) trim(CALLER)
-            IF(DMP_LOG)WRITE(UNIT_LOG,1000) trim(CALLER)
+            IF(UNT_LOG)WRITE(UNIT_LOG,1000) trim(CALLER)
          ENDIF
       ENDIF
 
@@ -413,13 +425,13 @@
             LENGTH = len_trim(LINE)
             IF(LENGTH == 0) THEN
                IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, "EMPTY."
-               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "EMPTY."
+               IF(UNT_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "EMPTY."
             ELSEIF(LENGTH >=  LINE_LENGTH)THEN
                IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, "OVERFLOW."
-               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "OVERFLOW."
+               IF(UNT_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, "OVERFLOW."
             ELSE
                IF(SCR_LOG) WRITE(*,2001) LC, LENGTH, trim(LINE)
-               IF(DMP_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, trim(LINE)
+               IF(UNT_LOG) WRITE(UNIT_LOG,2001) LC, LENGTH, trim(LINE)
             ENDIF
          ENDDO
       ELSE
@@ -428,15 +440,15 @@
             LENGTH = len_trim(LINE)
             IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
                IF(SCR_LOG) WRITE(*,1001) trim(LINE)
-               IF(DMP_LOG) WRITE(UNIT_LOG,1001) trim(LINE)
+               IF(UNT_LOG) WRITE(UNIT_LOG,1001) trim(LINE)
             ELSE
                IF(SCR_LOG) WRITE(*,"('  ')")
-               IF(DMP_LOG) WRITE(UNIT_LOG,"('  ')")
+               IF(UNT_LOG) WRITE(UNIT_LOG,"('  ')")
             ENDIF
          ENDDO
          IF(LAST_LINE == 0) THEN
             IF(SCR_LOG) WRITE(*,"('  ')")
-            IF(DMP_LOG) WRITE(UNIT_LOG,"('  ')")
+            IF(UNT_LOG) WRITE(UNIT_LOG,"('  ')")
          ENDIF
       ENDIF
 
@@ -444,10 +456,10 @@
       IF(F_FLAG) THEN
          IF(D_FLAG) THEN
             IF(SCR_LOG) WRITE(*, 2002)
-            IF(DMP_LOG) WRITE(UNIT_LOG, 2002)
+            IF(UNT_LOG) WRITE(UNIT_LOG, 2002)
          ELSE
             IF(SCR_LOG) WRITE(*, 1002)
-            IF(DMP_LOG) WRITE(UNIT_LOG, 1002)
+            IF(UNT_LOG) WRITE(UNIT_LOG, 1002)
          ENDIF
       ENDIF
 
