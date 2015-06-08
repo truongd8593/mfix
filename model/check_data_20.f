@@ -198,6 +198,7 @@
       IF(ABORT) THEN
          WRITE(ERR_MSG, 2000)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
+         CALL FINL_ERR_MSG
          RETURN
       ENDIF
 
@@ -238,6 +239,7 @@
       IF(ABORT) THEN
          WRITE(ERR_MSG, 2000)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., ABORT=.TRUE.)
+         CALL FINL_ERR_MSG
          RETURN
       ENDIF
 
@@ -246,12 +248,13 @@
       IF (NONZERO .AND. MU_GMAX==UNDEFINED) THEN
          WRITE(ERR_MSG, 1300)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         CALL FINL_ERR_MSG
       ENDIF
 
  1300 FORMAT('Error 1300: Message: Turbulent length scale is nonzero.',&
          /'Specify MU_gmax in the mfix.dat file.')
 
-
+      CALL FINL_ERR_MSG
       RETURN
 
  2000 FORMAT('Please correct the mfix.dat file.')
