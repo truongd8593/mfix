@@ -19,9 +19,13 @@
 ! offset for periodic boundaries
       double precision, dimension(:,:), allocatable :: dcycl_offset
 
+      type array
+         double precision, dimension(:), allocatable :: facebuf
+      end type array
+
 ! following variables used for sendrecv ghost particles and particle exchange
-      double precision, dimension(:,:), allocatable :: dsendbuf
-      double precision, dimension(:,:), allocatable :: drecvbuf
+      type(array), dimension(:), allocatable :: dsendbuf
+      type(array), dimension(:), allocatable :: drecvbuf
 
       integer,dimension(:),allocatable:: isendcnt
       integer,dimension(:),allocatable:: isendreq
@@ -124,7 +128,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(1,lface)
+            lparcnt = dsendbuf(lface)%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -136,7 +140,7 @@
                 "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(dsendbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -145,7 +149,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = drecvbuf(1,lface)
+            lparcnt = drecvbuf(lface)%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -157,7 +161,7 @@
                  "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(drecvbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(drecvbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -185,7 +189,7 @@
          lpacketsize = 9*dimn + ltordimn*4 + 13
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(1,lface)
+            lparcnt = dsendbuf(lface)%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -197,51 +201,51 @@
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 8
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "phase density vol mass omoi pos_old"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 5+dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "pos_new     vel_old   vel_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 3*dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "omega_old     omega_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = ltordimn*2
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "acc_old     rot_acc_old   fc "
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "fn ft tow"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
 ! print neighbour information
-                  lneighcnt =dsendbuf(lbuf,lface);lbuf = lbuf + 1
+                  lneighcnt =dsendbuf(lface)%facebuf(lbuf);lbuf = lbuf + 1
                   write(44,*) "total neighbour=",lneighcnt
                   write(44,*) "neighbou",lneighcnt
                   do lneighindx = 1, lneighcnt
                      lsize = 3
-                     write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                     write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                      lbuf = lbuf + lsize
                   enddo
                enddo
