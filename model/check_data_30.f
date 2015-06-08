@@ -26,24 +26,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE discretelement
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log
+      USE mms
+      USE mpi_utility
       USE param
       USE param1
-      USE toleranc
-      USE fldvar
-      USE rxns
-      USE visc_s
-      USE visc_g
-      USE geometry
-      USE run
-      USE constant
       USE physprop
-      USE indices
-      USE funits
-      USE compar
-      USE mpi_utility
-      USE discretelement
-      USE mms
-      USE functions
+      USE run
+      USE rxns
+      USE toleranc
+      USE visc_g
+      USE visc_s
 
       IMPLICIT NONE
 !-----------------------------------------------

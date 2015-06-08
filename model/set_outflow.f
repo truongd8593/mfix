@@ -97,8 +97,8 @@
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! Set the boundary cell value of the normal component of velocity
-! according to the value in the adjacent fluid cell. Note the value 
-! of the boundary velocity is a scaled version of the value of the 
+! according to the value in the adjacent fluid cell. Note the value
+! of the boundary velocity is a scaled version of the value of the
 ! adjacent fluid velocity based on the concentration ratio of the fluid
 ! cell to the boundary cell.
 ! - For the gas phase, this ratio is most likely 1 except for

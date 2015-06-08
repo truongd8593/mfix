@@ -148,7 +148,7 @@
 ! Variable solids density.
          if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
 
-! Solids viscosity. 
+! Solids viscosity.
          DO M = 1, MMAX
             IF (MU_s0(M) == UNDEFINED) THEN
                VISC(M) = .TRUE.

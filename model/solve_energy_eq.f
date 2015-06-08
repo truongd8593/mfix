@@ -119,7 +119,7 @@
 
 ! initializing
       DO M = 0, TMP_SMAX
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
       ENDDO
 
       DO IJK = IJKSTART3, IJKEND3
@@ -163,7 +163,7 @@
       ENDDO
 
 ! Account for heat transfer between the discrete particles and the gas phase.
-      IF(DES_CONTINUUM_COUPLED) CALL DES_Hgm(S_C, S_P)
+      IF(DES_CONTINUUM_COUPLED) CALL DES_Hgm(S_C)
 
 ! calculate the convection-diffusion terms
       CALL CONV_DIF_PHI (T_g, K_G, DISCRETIZE(6), U_G, V_G, W_G, &
@@ -173,11 +173,11 @@
       CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix equation form
-      CALL SOURCE_PHI (S_P, S_C, EP_G, T_G, 0, A_M, B_M, IER)
+      CALL SOURCE_PHI (S_P, S_C, EP_G, T_G, 0, A_M, B_M)
 
 ! add point sources
       IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (T_g, PS_T_g, &
-         PS_CpxMFLOW_g, 0, A_M, B_M, IER)
+         PS_CpxMFLOW_g, 0, A_M, B_M)
 
       DO M = 1, TMP_SMAX
          DO IJK = IJKSTART3, IJKEND3
@@ -236,23 +236,23 @@
             BC_HW_T_S(1,M), BC_C_T_S(1,M), M, A_M, B_M, IER)
 
 ! set the source terms in a and b matrix equation form
-         CALL SOURCE_PHI (S_P, S_C, EPS, T_S(1,M), M, A_M, B_M, IER)
+         CALL SOURCE_PHI (S_P, S_C, EPS, T_S(1,M), M, A_M, B_M)
 
 ! Add point sources.
          IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (T_s(:,M), PS_T_s(:,M),&
-            PS_CpxMFLOW_s(:,M), M, A_M, B_M, IER)
+            PS_CpxMFLOW_s(:,M), M, A_M, B_M)
 
       ENDDO   ! end do (m=1,tmp_smax)
 
 ! use partial elimination on interphase heat transfer term
       IF (TMP_SMAX > 0 .AND. .NOT.USE_MMS) &
-        CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M, IER)
+        CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M)
 
       CALL CALC_RESID_S (T_G, A_M, B_M, 0, NUM_RESID(RESID_T,0),&
          DEN_RESID(RESID_T,0), RESID(RESID_T,0), MAX_RESID(RESID_T,&
-         0), IJK_RESID(RESID_T,0), ZERO, IER)
+         0), IJK_RESID(RESID_T,0), ZERO)
 
-      CALL UNDER_RELAX_S (T_G, A_M, B_M, 0, UR_FAC(6), IER)
+      CALL UNDER_RELAX_S (T_G, A_M, B_M, 0, UR_FAC(6))
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -264,14 +264,14 @@
       DO M = 1, TMP_SMAX
          CALL CALC_RESID_S (T_S(1,M), A_M, B_M, M, NUM_RESID(RESID_T,M), &
             DEN_RESID(RESID_T,M), RESID(RESID_T,M), MAX_RESID(&
-            RESID_T,M), IJK_RESID(RESID_T,M), ZERO, IER)
+            RESID_T,M), IJK_RESID(RESID_T,M), ZERO)
 
-         CALL UNDER_RELAX_S (T_S(1,M), A_M, B_M, M, UR_FAC(6), IER)
+         CALL UNDER_RELAX_S (T_S(1,M), A_M, B_M, M, UR_FAC(6))
       ENDDO
 
 ! set/adjust linear equation solver method and iterations
       CALL ADJUST_LEQ(RESID(RESID_T,0), LEQ_IT(6), LEQ_METHOD(6), &
-         LEQI, LEQM, IER)
+         LEQI, LEQM)
 !      call test_lin_eq(a_m(1, -3, 0), LEQI, LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6),  0, ier)
 
       CALL SOLVE_LIN_EQ ('T_g', 6, T_G, A_M, B_M, 0, LEQI, LEQM, &
@@ -289,7 +289,7 @@
 
       DO M = 1, TMP_SMAX
          CALL ADJUST_LEQ (RESID(RESID_T,M), LEQ_IT(6), LEQ_METHOD(6), &
-            LEQI, LEQM, IER)
+            LEQI, LEQM)
 !         call test_lin_eq(a_m(1, -3, M), LEQI, LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6),  0, ier)
          CALL SOLVE_LIN_EQ ('T_s', 6, T_S(1,M), A_M, B_M, M, LEQI, &
             LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER)

@@ -34,34 +34,35 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE cont
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE leqsol
+      USE machine, only: start_log, end_log
+      USE mms, only: USE_MMS
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE funits
-      USE time_cpu
-      USE pscor
-      USE leqsol
-      USE visc_g
       USE pgcor
-      USE cont
-      USE scalars
-      USE compar
-      USE mpi_utility
-      USE discretelement
-      USE residual
-      USE cutcell
-      USE vtk
-      USE dashboard
+      USE physprop
+      USE pscor
       USE qmom_kinetic_equation
-      USE stiff_chem, only : STIFF_CHEMISTRY
+      USE residual
+      USE run
       USE rxns, only : USE_RRATES, NO_OF_RXNS
-      USE mms, only: USE_MMS
+      USE scalars
+      USE stiff_chem, only : STIFF_CHEMISTRY
+      USE time_cpu
+      USE toleranc
+      USE visc_g
+      USE vtk
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -142,7 +143,7 @@
 
 
 ! Initialize residuals
-      CALL INIT_RESID (IER)
+      CALL INIT_RESID ()
 
 
 ! Initialize the routine for holding gas mass flux constant with cyclic bc
@@ -181,6 +182,7 @@
       CALL CONV_ROP(IER)
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -219,7 +221,7 @@
       IF (IER_MANAGER(IER)) goto 1000
 
 ! Diffusion coefficient and source terms for user-defined scalars
-      IF(NScalar /= 0) CALL SCALAR_PROP(IER)
+      IF(NScalar /= 0) CALL SCALAR_PROP()
 
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
       IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
@@ -254,9 +256,9 @@
                IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
 ! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-                  CALL CALC_K_CP (K_CP, IER)
+                  CALL CALC_K_CP (K_CP)
                   CALL SOLVE_EPP (NORMS, RESS, IER)
-                  CALL CORRECT_1 (IER)
+                  CALL CORRECT_1 ()
                ELSE
 
 ! If one chooses to revert back to old mark_phase_4_cor wherein the
@@ -291,7 +293,7 @@
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          IF (MMAX > 0 .AND. .NOT.FRICTION) &
-            CALL CALC_P_STAR (EP_G, P_STAR, IER)
+            CALL CALC_P_STAR (EP_G, P_STAR)
       ENDIF
 
 ! Calculate the face values of densities.
@@ -312,11 +314,12 @@
 ! modified by sof to force wall functions so even when NSW or FSW are
 ! declared, default wall BC will still be treated as NSW and no wall
 ! functions will be used
-      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER)
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
 
 ! Calculate the face values of mass fluxes
       CALL CALC_MFLUX (IER)
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -370,7 +373,7 @@
 !-----------------------------------------------------------------
 
 ! Display residuals
-      IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER)
+      IF (FULL_LOG) CALL DISPLAY_RESID (NIT)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN
@@ -659,8 +662,6 @@
       RETURN
       END SUBROUTINE GET_TUNIT
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic
 !            domain with pressure drop is held constant at a
@@ -680,6 +681,7 @@
       USE compar
       USE run
       USE time_cpu
+      USE utilities, ONLY: isNan
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -704,7 +706,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, &
                                     VAVG_Flux_W_G
-      LOGICAL, EXTERNAL :: IsNan
 !-----------------------------------------------
 
       IF(CYCLIC_X_MF)THEN

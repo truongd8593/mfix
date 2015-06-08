@@ -121,7 +121,7 @@ check_val () {
     fi
   done
 
-# Unique entries are addeed to an array for later comparison.
+# Unique entries are added to an array for later comparison.
   all_aliases=$all_aliases" "$2
   alias_count=$((alias_count+1))
 
@@ -144,7 +144,7 @@ if [ ! -f "${RUN_DIR}/mfix.dat" ]; then
   echo "  *********************************************************************"
   echo "  * Error: usr_rates.f located and mfix.dat is missing!               *"
   echo "  * ----------------------------------------------------------------- *"
-  echo "  * User defined file for chemcial reactions/phase changes was found  *"
+  echo "  * User defined file for chemical reactions/phase changes was found  *"
   echo "  * in the compile directory however, no mfix.dat file was found.     *"
   echo "  * Pre-processing  of the mfix.dat is required for reacting flows.   *"
   echo "  *********************************************************************"
@@ -156,25 +156,27 @@ else
 # Loop over each entry in the deck file.
   while read p ; do
 # Clean up some control characters (Windows)
-    p=$(echo $p | tr -d '\015')
-# Remove white spaces and tabs.
-    p=$(echo $p | sed -e 's/^[ \t]*//;s/[ \t]*$//')
-# Remove comments with hash.
-    p=$(echo $p | cut -d "#" -f1 | cut -d "!" -f1)
+
+# Remove leading/trailing whitespace and comments
+    p=$(echo $p \
+        | tr -d '\015' \
+	| $sedcmd -e 's/^[ \t]*//;s/[ \t]*$//' \
+        | cut -d "#" -f1 | cut -d "!" -f1)
+
+    [ -z "${p}" ] && continue
 
 # Pull off SPECIES_ALIAS lines.
-    p1g=$(echo $p | grep -i 'species_alias_g')
-#ALPEMI Revised sed command as $sedcmd for MacOS compatability    
-    p1g=$(echo $p1g | $sedcmd 's/.*\(species_alias_g.*\)/\1/gI')
-    p1g=$(echo $p1g | $sedcmd 's/species_g.*//gI')
+    p1g=$(echo $p | grep -i 'species_alias_g' \
+	| $sedcmd 's/.*\(species_alias_g.*\)/\1/gI' \
+        | $sedcmd 's/species_g.*//gI')
 
-    p1s=$(echo $p | grep -i "species_alias_s.*") # solids phases
-    p1s=$(echo $p1s | $sedcmd 's/.*\(species_alias_s.*\)/\1/gI')
-    p1s=$(echo $p1s | $sedcmd 's/species_s.*//gI')  
+    p1s=$(echo $p | grep -i "species_alias_s.*" \
+	| $sedcmd 's/.*\(species_alias_s.*\)/\1/gI' \
+	| $sedcmd 's/species_s.*//gI')
 
-    p1s_des=$(echo $p | grep -i "des_species_alias_s.*") # solids phases
-    p1s_des=$(echo $p1s_des | $sedcmd 's/.*\(des_species_alias_s.*\)/\1/gI')
-    p1s_des=$(echo $p1s_des | $sedcmd 's/des_species_s.*//gI')
+    p1s_des=$(echo $p | grep -i "des_species_alias_s.*" \
+	| $sedcmd 's/.*\(des_species_alias_s.*\)/\1/gI' \
+        | $sedcmd 's/des_species_s.*//gI')
 
 # Process gas phase species aliases.
 #-----------------------------------------------------------------------
@@ -189,7 +191,7 @@ else
       lc="0"
 # Loop over compound entries
       for p1a in $salias; do
-# Ensure that the speices aliases adhead to Fortran variable naming.
+# Ensure that the species aliases adhere to Fortran variable naming.
         check_val "Species Alias" $p1a 32
 # Calculate the species index (for compound entries)
         nsindex=$((sindex+lc))
@@ -215,7 +217,7 @@ else
       lc="0"
 # Loop over compound entries
       for p1b in $salias; do
-# Ensure that the speices aliases adhead to Fortran variable naming.
+# Ensure that the species aliases adhere to Fortran variable naming.
         check_val "Species Alias" $p1b 32
 # Calculate the species index (for compound entries)
         nsphase=$((sphase+lc))
@@ -239,7 +241,7 @@ else
       lc="0"
 # Loop over compound entries
       for p1b in $salias; do
-# Ensure that the speices aliases adhead to Fortran variable naming.
+# Ensure that the species aliases adhere to Fortran variable naming.
         check_val "Species Alias" $p1b 32
 # Calculate the species index (for compound entries)
         nsphase=$((sphase+lc))

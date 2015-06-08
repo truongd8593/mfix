@@ -153,7 +153,6 @@
          M, A_M, B_M)
 
       use compar
-
       use geometry
       use indices
       use physprop
@@ -201,10 +200,6 @@
 
 !-----------------------------------------------
 
-! External function. Integrates the temperature-dependent specific
-! heat from zero to T.
-      DOUBLE PRECISION, EXTERNAL :: calc_ICpoR
-
       PSV_LP: do PSV = 1, DIMENSION_PS
 
          if(.NOT.PS_DEFINED(PSV)) cycle PSV_LP
@@ -237,7 +232,6 @@
          enddo
 
       enddo PSV_LP
-
 
       RETURN
       END SUBROUTINE POINT_SOURCE_PHI

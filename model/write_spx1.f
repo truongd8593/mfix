@@ -29,20 +29,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE cdist
+      USE compar
+      USE cutcell
+      USE fldvar
+      USE funits
+      USE geometry
+      USE machine
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE fldvar
-      USE geometry
       USE physprop
       USE run
-      USE funits
-      USE scalars
-      USE output
       USE rxns
-      USE cdist
-      USE compar           !//
-      USE mpi_utility      !//
-      USE cutcell
+      USE scalars
       use discretelement, only: PRINT_DES_DATA
       use discretelement, only: DISCRETE_ELEMENT
       use discretelement, only: PARTICLES, NFACTOR

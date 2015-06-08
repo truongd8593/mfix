@@ -1908,10 +1908,6 @@
       DOUBLE PRECISION :: MW
 !
 !-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: CALC_MW
-!-----------------------------------------------
 
       DO BCV = 1, DIMENSION_BC
 
@@ -2115,11 +2111,6 @@
       INTEGER :: iproc
       INTEGER :: NPS,PSV
 
-
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 !
 
@@ -2318,10 +2309,6 @@
 !
       INTEGER :: NPS,PSV
 !
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: CALC_MW
 !-----------------------------------------------
 !
 
@@ -2537,8 +2524,6 @@
       DOUBLE PRECISION :: L,CELL_RATIO
 
       LOGICAL,DIMENSION(MAX_CP) :: INDEPENDENT_SEGMENT
-
-      DOUBLE PRECISION, EXTERNAL :: F
 
 !-----------------------------------------------
 !
@@ -3126,44 +3111,6 @@
 
       END SUBROUTINE GET_DXYZ_FROM_CONTROL_POINTS
 
-
-
-
-
-      DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N)
-      use param1, only: one
-      USE constant
-      USE mpi_utility
-
-      IMPLICIT NONE
-      DOUBLE PRECISION:: ALPHAC,D,D_Target,DU,L
-      INTEGER:: N
-      CHARACTER (LEN=5) :: POS
-
-      DU = L / DBLE(N)    ! Cell size if uniform distribution
-
-      IF(ALPHAC==ONE) THEN
-         D = DU
-      ELSE
-         IF(TRIM(POS)=='FIRST') THEN
-            D = L * (ONE - ALPHAC) / (ONE -ALPHAC**N)
-         ELSEIF(TRIM(POS)=='LAST') THEN
-            D = L * (ONE - ALPHAC) / (ONE -ALPHAC**N) * ALPHAC**(N-1)
-         ELSE
-            IF(MyPE==0) WRITE(*,*)' ERROR, IN FUNCTION F: POS MUST BE FIRST OR LAST.'
-            call mfix_exit(myPE)
-         ENDIF
-      ENDIF
-
-
-      F = D - D_Target
-
-      RETURN
-
-      END FUNCTION F
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: FIND_CELL_RATIO                                        C
@@ -3201,9 +3148,7 @@
       DOUBLE PRECISION :: ALPHA1,ALPHA2,ALPHA3,D_Target,L,DU
       DOUBLE PRECISION, PARAMETER :: ALPHAMAX = 10.0D0  ! maximum  value of cell ratio
       INTEGER :: N,niter
-      DOUBLE PRECISION, EXTERNAL :: F
       CHARACTER (LEN=5) :: POS
-
 
       DU = L / DBLE(N)                  ! Cell size if uniform distribution
 
@@ -3297,14 +3242,44 @@
           SOLUTION_FOUND = .FALSE.
         endif
 
-
  1000 FORMAT(A,3(2X,G12.5))
-
 
       RETURN
 
-      END SUBROUTINE FIND_CELL_RATIO
+    contains
 
+      DOUBLE PRECISION Function F(POS,ALPHAC,D_Target,L,N)
+        use param1, only: one
+        USE constant
+        USE mpi_utility
+
+        IMPLICIT NONE
+        DOUBLE PRECISION:: ALPHAC,D,D_Target,DU,L
+        INTEGER:: N
+        CHARACTER (LEN=5) :: POS
+
+        DU = L / DBLE(N)    ! Cell size if uniform distribution
+
+        IF(ALPHAC==ONE) THEN
+           D = DU
+        ELSE
+           IF(TRIM(POS)=='FIRST') THEN
+              D = L * (ONE - ALPHAC) / (ONE -ALPHAC**N)
+           ELSEIF(TRIM(POS)=='LAST') THEN
+              D = L * (ONE - ALPHAC) / (ONE -ALPHAC**N) * ALPHAC**(N-1)
+           ELSE
+              IF(MyPE==0) WRITE(*,*)' ERROR, IN FUNCTION F: POS MUST BE FIRST OR LAST.'
+              call mfix_exit(myPE)
+           ENDIF
+        ENDIF
+
+        F = D - D_Target
+
+        RETURN
+
+      END FUNCTION F
+
+    END SUBROUTINE FIND_CELL_RATIO
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-$script_dir/../../configure --enable-dmp FC=mpiifort F77=mpiifort FCFLAGS="" LDFLAGS=""

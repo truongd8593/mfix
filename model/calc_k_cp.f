@@ -63,7 +63,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION :: DZETAoDEPs
-      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !-----------------------------------------------
 
 ! initializing

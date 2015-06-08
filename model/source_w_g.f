@@ -20,53 +20,70 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOURCE_W_G(A_M, B_M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE bc
-      USE bodyforce
-      USE compar
-      USE constant
-      USE cutcell
-      USE drag
-      USE fldvar
-      USE fun_avg
-      USE functions
-      USE geometry
-      USE ghdtheory
-      USE indices
-      USE is
-      USE matrix
-      USE mms
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE quadric
-      USE run
-      USE rxns
-      USE scales
-      USE sendrecv
-      USE tau_g
-      USE toleranc
-      USE visc_g
+!---------------------------------------------------------------------//
+      USE bodyforce, only: bfz_g
+      USE bc, only: delp_z
 
+      USE compar, only: ijkstart3, ijkend3, kmap
+
+      USE drag, only: f_gs, beta_ij
+      USE fldvar, only: p_g, ro_g, rop_g, rop_go, rop_s
+      USE fldvar, only: ep_g, ep_s, epg_jfac
+      USE fldvar, only: u_g, w_g, w_go, u_s, v_s, w_s, w_so
+
+      USE fun_avg, only: avg_x, avg_z, avg_y
+      USE fun_avg, only: avg_x_h, avg_z_h
+      USE fun_avg, only: avg_x_e, avg_y_n, avg_z_t
+      USE functions, only: ip_at_t, sip_at_t, is_id_at_t
+      USE functions, only: ip_of, jp_of, kp_of, im_of, jm_of, km_of
+      USE functions, only: east_of, west_of, top_of, bottom_of
+      USE functions, only: zmax
+      USE geometry, only: kmax1, cyclic_z_pd, cylindrical, do_k
+      USE geometry, only: vol, vol_w
+      USE geometry, only: axy, ayz, axz, ayz_w
+      USE geometry, only: ox, ox_e, dy, dz, odx_e
+
+      USE ghdtheory, only: joiz
+
+      USE indices, only: i_of, j_of, k_of
+      USE indices, only: ip1, im1, jm1, kp1
+      USE is, only: is_pc
+      USE matrix, only: e, w, s, n, t, b
+
+      USE mms, only: use_mms, mms_w_g_src
+      USE param, only: dimension_3, dimension_m
+      USE param1, only: zero, one, half, small_number
+      USE physprop, only: mmax, smax
+      USE physprop, only: mu_g, cv
+      USE run, only: momentum_z_eq
+      USE run, only: model_b, added_mass, m_am
+      USE run, only: kt_type_enum, drag_type_enum
+      USE run, only: ghd_2007, hys
+      USE run, only: odt
+      USE rxns, only: sum_r_g
+      USE scales, only: p_scale
+      USE tau_g, only: tau_w_g
+      USE toleranc, only: dil_ep_s
+      USE visc_g, only: epmu_gt
+      USE cutcell, only: cartesian_grid, cut_w_treatment_at
+      USE cutcell, only: blocked_w_cell_at
+      USE cutcell, only: a_wpg_t, a_wpg_b
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, J, K, IJK, IJKT, IMJK, IJKP, IMJKP,&
                  IJKE, IJKW, IJKTE, IJKTW, IM, IPJK,   &
@@ -78,19 +95,19 @@
 ! Pressure at top cell
       DOUBLE PRECISION :: PgT
 ! Average volume fraction
-      DOUBLE PRECISION :: EPGA
+      DOUBLE PRECISION :: EPGA, EPGAJ
 ! Average density
       DOUBLE PRECISION :: ROPGA, ROGA
 ! Average viscosity
       DOUBLE PRECISION :: MUGA
 ! Average coefficients
-      DOUBLE PRECISION :: Cte, Ctw, EPMUoX
+      DOUBLE PRECISION :: Cte, Ctw, MUoX, cpe, cpw
 ! Average U_g
       DOUBLE PRECISION Ugt
 ! Source terms (Surface)
-      DOUBLE PRECISION Sdp, Sxzb
+      DOUBLE PRECISION Sdp
 ! Source terms (Volumetric)
-      DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcoa, Vcob, Vxza, Vxzb
+      DOUBLE PRECISION V0, Vpm, Vmt, Vbf, Vcoa, Vcob, Vxza
 ! Source terms (Volumetric) for GHD theory
       DOUBLE PRECISION Ghd_drag, avgRop
 ! Source terms for HYS drag relation
@@ -99,27 +116,22 @@
       DOUBLE PRECISION :: ROP_MA, U_se, Usw, Ust, Vsb, Vst, &
                           Wse, Wsw, Wsn, Wss, Wst, Wsb
       DOUBLE PRECISION F_vir
-!-----------------------------------------------
+! jackson terms: local stress tensor quantity
+      DOUBLE PRECISION :: ltau_w_g
+!---------------------------------------------------------------------//
 
 ! Set reference phase to gas
       M = 0
 
       IF (.NOT.MOMENTUM_Z_EQ(0)) RETURN
 
-!
-! trailing commas added to the first two lines in the
-! private list
-! Charles Crosby
-! CHPC, 26 September 2013
-!
-
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKT, IJKM, IJKP, IMJK, IPJK, IJMK,     &
 !$omp          IMJKP, IJPK, IJMKP, IJKTE, IJKTW, IM, IJKW, IJKE,     &
-!$omp          EPGA, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA, Vpm,      &
-!$omp          Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag, avgDrag, &
-!$omp          MM, L, VXZA, VXZB, VCOA, VCOB, CTE, CTW, UGT,         &
-!$omp          SXZB, EPMUOX)
+!$omp          EPGA, epgaj, PGT, SDP, ROPGA, ROGA, V0, ISV, MUGA,    &
+!$omp          vpm, Vmt, Vbf, F_vir, Ghd_drag, avgRop, HYS_drag,     &
+!$omp          avgdrag, MM, L, VXZA, VCOA, VCOB, CTE, CTW, UGT,      &
+!$omp          cpe, cpw, MUOX, ltau_w_g)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -135,6 +147,8 @@
          IJMKP = KP_OF(IJMK)
 
          EPGA = AVG_Z(EP_G(IJK),EP_G(IJKT),K)
+! if jackson then avg ep_g otherwise 1
+         EPGAJ = AVG_Z(EPG_jfac(IJK),EPG_jfac(IJKT),K)
 
 ! Impermeable internal surface
          IF (IP_AT_T(IJK)) THEN
@@ -317,11 +331,11 @@
 ! Special terms for cylindrical coordinates
             VCOA = ZERO
             VCOB = ZERO
-            SXZB = ZERO
             VXZA = ZERO
-            VXZB = ZERO
             CTE  = ZERO
             CTW  = ZERO
+            CPE  = ZERO
+            CPW  = ZERO
             IF (CYLINDRICAL) THEN
 ! Coriolis force
                IMJK = IM_OF(IJK)
@@ -332,57 +346,72 @@
                IF (UGT > ZERO) THEN
                   VCOA = ROPGA*UGT*OX(I)
                   VCOB = ZERO
-! virtual mass contribution
                   IF(Added_Mass) VCOA = VCOA + Cv*ROP_MA*UGT*OX(I)
                ELSE
                   VCOA = ZERO
                   VCOB = -ROPGA*UGT*W_G(IJK)*OX(I)
-! virtual mass contribution
                   IF(Added_Mass) VCOB = VCOB - Cv*ROP_MA*UGT*W_G(IJK)*OX(I)
                ENDIF
 
-! Term from tau_xz: integral of (1/x)*(d/dx)(x*mu*(-w/x))
+! if ishii, then viscosity is multiplied by void fraction otherwise by 1
+! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
+! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
+!         1/x d/dx (x.mu.(-w/x)) xdxdydz =>
+! delta (mu/x.(-w))Ayz |E-W : at (i+1/2 - i-1/2, j, k+1/2)
                IJKE = EAST_OF(IJK)
                IJKW = WEST_OF(IJK)
                IJKTE = TOP_OF(IJKE)
                IJKTW = TOP_OF(IJKW)
                IM = IM1(I)
                IPJK = IP_OF(IJK)
-               CTE = HALF*AVG_Z_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),&
-                                  AVG_X_H(MU_GT(IJKT),MU_GT(IJKTE),I),K)*&
-                                  OX_E(I)*AYZ_W(IJK)
-               CTW = HALF*AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),&
-                                  AVG_X_H(MU_GT(IJKTW),MU_GT(IJKT),IM),K)*&
-                                  DY(J)*(HALF*(DZ(K)+DZ(KP1(K))))
-                    ! same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
+               CTE = HALF*AVG_Z_H(AVG_X_H(EPMU_GT(IJK),EPMU_GT(IJKE),I),&
+                                  AVG_X_H(EPMU_GT(IJKT),EPMU_GT(IJKTE),I),K)*&
+                     OX_E(I)*AYZ_W(IJK)
+               CTW = HALF*AVG_Z_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJK),IM),&
+                                  AVG_X_H(EPMU_GT(IJKTW),EPMU_GT(IJKT),IM),K)*&
+                     DY(J)*(HALF*(DZ(K)+DZ(KP1(K))))
+! DY(J)*HALF(DZ(k)+DZ(kp)) = oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 
-! (mu/x)*(dw/dx) part of tau_xz/x
-               EPMUOX = AVG_Z(MU_GT(IJK),MU_GT(IJKT),K)*OX(I)
-               VXZB = ZERO
-               A_M(IJK,E,M) = A_M(IJK,E,M) + HALF*EPMUOX*ODX_E(I)*VOL_W(IJK)
-               A_M(IJK,W,M) = A_M(IJK,W,M) - HALF*EPMUOX*ODX_E(IM)*VOL_W(IJK)
+! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
+! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
+!         mu/x dw/dx xdxdydz =>
+! delta (mu/x.(dw/dx))Vp |p : at (i, j, k+1/2)
+               MUOX = AVG_Z(EPMU_GT(IJK),EPMU_GT(IJKT),K)*OX(I)
+               CPE = MUOX*HALF*VOL_W(IJK)*ODX_E(I)
+               CPW = MUOX*HALF*VOL_W(IJK)*ODX_E(IM)
 
-! -(mu/x)*(w/x) part of tau_xz/x
-               VXZA = EPMUOX*OX(I)
-            ELSE
-               VCOA = ZERO
-               VCOB = ZERO
-               SXZB = ZERO
-               VXZA = ZERO
-               VXZB = ZERO
+! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
+! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
+!         1/x d/dx (x.mu.(-w/x)) xdxdydz =>
+! delta (mu/x.(-w/x))Vp |p : at (i, j, k+1/2)
+               VXZA = MUOX*OX(I)
+
+               CTE = epgaj*CTE
+               CTW = epgaj*CTW
+               CPE = epgaj*CPE
+               CPW = epgaj*CPW
+               VXZA = epgaj*VXZA
             ENDIF
 
+! if jackson, implement jackson form of governing equations (ep_g dot
+! del tau_g): multiply by void fraction otherwise by 1
+            ltau_w_g = epgaj*tau_w_g(ijk)
+
 ! Collect the terms
+            A_M(IJK,E,M) = A_M(IJK,E,M) + CPE
+            A_M(IJK,W,M) = A_M(IJK,W,M) - CPW
+
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
                A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+&
                (V0+VPM+ZMAX(VMT)+VCOA + VXZA)*VOL_W(IJK) + CTE - CTW)
+
             A_M(IJK,E,M) = A_M(IJK,E,M) - CTE
             A_M(IJK,W,M) = A_M(IJK,W,M) + CTW
-            B_M(IJK,M) = B_M(IJK,M) - ( SDP + TAU_W_G(IJK) + SXZB + &
-               ( (V0+ZMAX((-VMT)))*W_GO(IJK) + VBF + VCOB + VXZB + &
+
+            B_M(IJK,M) = B_M(IJK,M) - ( SDP + lTAU_W_G + F_VIR + &
+               ( (V0+ZMAX((-VMT)))*W_GO(IJK) + VBF + VCOB + &
                Ghd_drag+HYS_drag)*VOL_W(IJK) )
-! adding explicit term of virtual mass force
-            B_M(IJK,M) = B_M(IJK,M) - F_vir
+
 ! MMS Source term.
             IF(USE_MMS) B_M(IJK,M) = &
                B_M(IJK,M) - MMS_W_G_SRC(IJK)*VOL_W(IJK)
@@ -391,14 +420,15 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_W_G(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_W_G(A_M, B_M)
 ! modifications for bc
       CALL SOURCE_W_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_W_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_W_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_W_G
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1011,6 +1041,7 @@
       RETURN
       END SUBROUTINE SOURCE_W_G_BC
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: POINT_SOURCE_W_G                                        C
@@ -1029,6 +1060,7 @@
       use constant
       use geometry
       use indices
+      use param1, only: one, small_number, zero
       use physprop
       use ps
       use run

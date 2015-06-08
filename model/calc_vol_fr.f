@@ -12,16 +12,14 @@
 !  Notes: see mark_phase_4_cor for more details                        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 5-JUL-96   C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_VOL_FR(P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
 
-!-----------------------------------------------
+
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE parallel
@@ -42,9 +40,9 @@
       USE functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids pressure
       DOUBLE PRECISION, INTENT(IN) :: P_star(DIMENSION_3)
 ! Gas density
@@ -57,9 +55,9 @@
       DOUBLE PRECISION, INTENT(INOUT) :: ROP_s(DIMENSION_3, DIMENSION_M)
 ! error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! volume of particle type M for GHD theory
       DOUBLE PRECISION :: VOL_M
 ! volume fraction of close-packed region
@@ -90,7 +88,8 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-!-----------------------------------------------
+
+!---------------------------------------------------------------------//
 
 ! Initialize error flag.
       Err_l = 0
@@ -221,4 +220,54 @@
       RETURN
       END SUBROUTINE CALC_VOL_FR
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SET_EP_FACTORS                                          C
+!  Purpose: Set multiplication factors to ep_g to control the form     C
+!  of the governing equations                                          C
+!                                                                      C
+!  References:                                                         C
+!  Anderson and Jackson, A fluid mechanical description of fluidized   C
+!     beds, Ind. Eng. Chem. Fundam., 6(4) 1967, 527-539.               C
+!  Ishii, Thermo-fluid dynamic theory of two-phase flow, des Etudes    C
+!     et Recherches D'Electricite de France, Eyrolles, Paris, France   C
+!     1975.                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SET_EP_FACTORS
 
+! Modules
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use fldvar, only: ep_g, ep_s
+      use fldvar, only: epg_ifac, eps_ifac, epg_jfac
+      use param1, only: one
+      use physprop, only: mmax
+      use run, only: jackson, ishii
+      IMPLICIT NONE
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: ijk, m
+!---------------------------------------------------------------------//
+      epg_jfac(:) = one
+      epg_ifac(:) = one
+      eps_ifac(:,:) = one
+
+      if (jackson) then
+         do ijk = ijkstart3, ijkend3
+            epg_jfac(ijk) = ep_g(ijk)
+         enddo
+      endif
+      if (ishii) then
+         do ijk = ijkstart3, ijkend3
+            epg_ifac(ijk) = ep_g(ijk)
+            do m = 1, mmax
+               eps_ifac(ijk,m) = ep_s(ijk,m)
+            enddo
+         enddo
+      endif
+
+      RETURN
+      END SUBROUTINE SET_EP_FACTORS

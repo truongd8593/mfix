@@ -454,10 +454,11 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
       USE param
       USE param1
       USE parse
-      USE compar
+      USE utilities, ONLY: seek_end
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -500,10 +501,6 @@
 !                      Substring taken from LINE
       CHARACTER(LEN=80) :: SUB_STR
 !
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      INTEGER , EXTERNAL :: SEEK_END
 !-----------------------------------------------
 !
 !

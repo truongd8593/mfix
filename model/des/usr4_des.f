@@ -31,7 +31,7 @@
 
       INTEGER, INTENT(IN) :: IJK ! Fluid cell index
 
-      INCLUDE '../usrnlst.inc'
+      INCLUDE 'usrnlst.inc'
 
       RETURN
       END SUBROUTINE USR4_DES

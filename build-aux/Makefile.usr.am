@@ -1,13 +1,101 @@
-F77COMPILE = $(F77) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC)  $(AM_FCFLAGS) $(FCFLAGS)
+F77 = $(FC)
+F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -I. -I$(top_srcdir)/model -cpp
-AM_LDFLAGS =
+.f.$(OBJEXT):
+	$(F77COMPILE) -c -o $@ $<
+
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
-MODULE=$(top_srcdir)
-AM_FCFLAGS += $(FC_MODINC)$(MODULE)
+MODDIR=$(top_builddir)/model
+
+# Fortran preprocessor is used (-cpp)
+AM_FCFLAGS = -cpp
+
+# Current directory comes first, and takes precedence over model/include/ and model/
+AM_FCFLAGS += $(FC_MODINC).
+AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
+AM_LDFLAGS =
+
+src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
+obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
+
+SUFFIXES = .d
+
+.DEFAULT_GOAL := mfix
+
+LIBMFIX = $(top_builddir)/libmfix.a
+
+bin_PROGRAMS = mfix
+mfix_SOURCES = $(src_overrides)
+mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
+mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
+mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
+mfix_LDADD += $(LIBMFIX)
+
+build:
+	$(LN_S) $(top_builddir) $@
+
+.PHONY: $(LIBMFIX) TAGS
+
+# top level directory needs to be built first
+$(LIBMFIX):
+	$(MAKE) -C $(top_builddir) mfix
+
+clean-local:
+	-$(MAKE) -C $(top_builddir) clean
+
+$(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
+$(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
+
+# read_namelist needs rebuilt in case usrnlst.inc is overridden
+$(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+	$(FCCOMPILE) -c -o $@ $<
+
+# read_database needs rebuilt to use the correct path to BURCAT.THR
+$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+
+species.inc: mfix.dat
+	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
+
+#########################################################################
+#
+#  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
+#
+#      Include /dev/null so GREP doesn't hang if $^ is empty
+#
+#########################################################################
+
+.f.d:
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
+	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
+	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
+	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
+	    echo "$${main_mod}: ${LIBMFIX}" >> $@; \
+	done;
+	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
+
+@make_ifnotclean@
+$(eval -include $(src_overrides:%.f=%.d) )
+@make_endif@
+
+CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
+DISTCLEANFILES = Makefile
+
+################################################################
+#                                                              #
+#      convenience target for postmfix                         #
+#                                                              #
+################################################################
+
+postmfix: $(LIBMFIX)
+	$(MAKE) -C $(top_builddir) postmfix
+	$(LN_S) $(top_builddir)/postmfix $@
 
 ################################################################
 #                                                              #
@@ -27,59 +115,21 @@ AM_FCFLAGS += -DMPI
 AM_LDFLAGS += -DMPI
 endif
 
-src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f) read_database.f read_namelist.f rxn_com_mod.f)
-src_objs = $(patsubst %.f,%.o,$(src_overrides))
+################################################################
+#      TAU support
+################################################################
+TAU_F90=@TAU_F90@
+TAU_MAKEFILE=@TAU_MAKEFILE@
+export TAU_F90
+export TAU_MAKEFILE
 
-.DEFAULT_GOAL := mfix
-
-bin_PROGRAMS = mfix
-mfix_SOURCES = $(top_srcdir)/model/mfix.f
-mfix_LDADD = $(src_objs) $(top_srcdir)/libmfix.a $(top_srcdir)/libodepack.a $(top_srcdir)/libmfix.a
-
-# read_namelist needs rebuilt here in case usrnlst.inc is overridden
-read_database.f: mfix_directory_path.inc
-	cp $(top_srcdir)/model/$@ .
-
-read_namelist.f: mfix_directory_path.inc
-	cp $(top_srcdir)/model/$@ .
-
-rxn_com_mod.f: mfix_directory_path.inc
-	cp $(top_srcdir)/model/$@ .
-
-mfix_directory_path.inc:
-	echo "     CHARACTER(len=132) :: MFIX_PATH = '${abs_top_srcdir}/model'" > $@
-
-# top level directory needs to be built first
-main:
-	$(MAKE) -C $(top_srcdir) mfix
-
-$(top_srcdir)/model/mfix.f: main
-$(top_srcdir)/libodepack.a: main
-$(top_srcdir)/libmfix.a: main
-
-species.inc:
-	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
-
-#########################################################################
-#
-#  "fortran-depcomp" generates makefile rules in "usrmodule.deps"
-#
-#      Include /dev/null so GREP doesn't hang if $^ is empty
-#
-#########################################################################
-
-usrmodule.deps: $(src_overrides)
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
-	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODULE)" \
-	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
-	    echo "${main_mod}: main" >> $@; \
-	done;
-	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
-
-$(eval -include usrmodule.deps)
-CLEANFILES += usrmodule.deps species.inc
+################################################################
+#      NETCDF support
+################################################################
+if USE_NETCDF
+AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
+mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
+endif
 
 ################################################################
 #                                                              #

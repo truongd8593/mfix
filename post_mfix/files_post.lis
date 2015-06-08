@@ -1,3 +1,4 @@
+../model/DGTSV.f
 ../model/GhdTheory/bulk_viscosity.f
 ../model/GhdTheory/chi_ij_GHD.f
 ../model/GhdTheory/cooling_rate.f
@@ -68,17 +69,17 @@
 ../model/deprecated.f
 ../model/des/des_allocate_mod.f
 ../model/des/des_bc_mod.f
-../model/des/des_init_namelist.f
 ../model/des/des_init_arrays.f
+../model/des/des_init_namelist.f
 ../model/des/des_rxns_mod.f
 ../model/des/des_stl_functions_mod.f
 ../model/des/des_thermo_mod.f
 ../model/des/desgrid_mod.f
 ../model/des/desmpi_mod.f
+../model/des/desmpi_wrapper_mod.f
 ../model/des/discretelement_mod.f
 ../model/des/mfix_pic_mod.f
 ../model/des/mpi_comm_des_mod.f
-../model/des/desmpi_wrapper_mod.f
 ../model/des/particle_filter_mod.f
 ../model/des/pic_bc_mod.f
 ../model/des/sendrecvnode_mod.f
@@ -116,6 +117,7 @@
 ../model/machine.f
 ../model/machine_mod.f
 ../model/make_upper_case.f
+../model/matrix_mod.f
 ../model/mfix_netcdf_mod.f
 ../model/mflux_mod.f
 ../model/mms_mod.f
@@ -146,8 +148,6 @@
 ../model/rxns_mod.f
 ../model/scalars_mod.f
 ../model/scales_mod.f
-../model/seek_comment.f
-../model/seek_end.f
 ../model/set_constants.f
 ../model/set_geometry.f
 ../model/set_geometry1.f
@@ -170,6 +170,7 @@
 ../model/turb_mod.f
 ../model/ur_facs_mod.f
 ../model/usr_mod.f
+../model/utilities_mod.f
 ../model/visc_g_mod.f
 ../model/visc_s_mod.f
 ../model/vshear_mod.f
@@ -179,6 +180,7 @@
 ../model/write_res1.f
 ../model/write_spx0.f
 ../model/write_spx1.f
+../model/xerbla.f
 ../model/xsi_array_mod.f
 any_more_data.f
 calc_cell2.f

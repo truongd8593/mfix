@@ -27,18 +27,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
       USE param
       USE param1
-      USE run
-      USE parallel
-      USE fldvar
-      USE bc
-      USE geometry
       USE physprop
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE functions
+      USE run
+      USE utilities, ONLY: isNan
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -58,8 +59,6 @@
 !
 !                      Total volume of computational cells
       DOUBLE PRECISION SUM_VOL
-
-      LOGICAL, EXTERNAL :: isNan
 
 !  Integrate the velocity values for the whole domain,
 !

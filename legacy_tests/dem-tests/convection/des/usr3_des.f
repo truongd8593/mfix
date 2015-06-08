@@ -24,7 +24,7 @@
 
       IMPLICIT NONE
 
-      INCLUDE '../usrnlst.inc'
+      INCLUDE 'usrnlst.inc'
 
       DES_ENERGY_SOURCE(:) = 0.0d0
 

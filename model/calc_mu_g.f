@@ -137,6 +137,8 @@
                (T_G(IJK)/273.0D0)**1.5D0 * (383.D0/(T_G(IJK)+110.D0))
 
             MU_GT(IJK) = MU_G(IJK)
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_GT(IJK)= EPG_IFAC(IJK)*MU_GT(IJK)
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
 ! K_epsilon model
@@ -166,6 +168,8 @@
                MU_GT(IJK) = MU_G(IJK) + RO_G(IJK)*C_MU*&
                   K_Turb_G(IJK)**2 / (E_Turb_G(IJK) + SMALL_NUMBER)
                MU_GT(IJK) = MIN(MU_GMAX, MU_GT(IJK))
+! if ishii then multiply by void fraction otherwise multiply by 1
+               EPMU_GT(IJK) = EPG_IFAC(IJK)*MU_GT(IJK)
                LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
             ENDIF
 ! ----------------------------------------------------------------<<<
@@ -173,6 +177,7 @@
          ELSE
             MU_G(IJK)  = ZERO
             MU_GT(IJK) = ZERO
+            EPMU_GT(IJK) = ZERO
             LAMBDA_GT(IJK) = ZERO
          ENDIF   ! end if (fluid_at(ijk))
 
@@ -184,6 +189,8 @@
          DO IJK = ijkstart3, ijkend3
             MU_G(IJK) = MU_G0
             MU_GT(IJK) = MU_G(IJK)
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_GT(IJK) = EPG_IFAC(IJK)*MU_GT(IJK)
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
          ENDDO
       END IF ! end if (USE_MMS)
@@ -280,6 +287,8 @@
 
             MU_GT(IJK) = MIN(MU_GMAX, MU_G(IJK)+2.0*&
                L_SCALE(IJK)*L_SCALE(IJK)*RO_G(IJK)*SQRT(I2_DEVD_G))
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_GT(IJK) = EPG_IFAC(IJK)*MU_GT(IJK)
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
 
          ENDIF ! end if (fluid_at(ijk) and l_scale(ijk)/=0))

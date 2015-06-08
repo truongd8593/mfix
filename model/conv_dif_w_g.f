@@ -1,512 +1,624 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CONV_DIF_W_g(A_m, B_m, IER)                            C
-!  Purpose: Determine convection diffusion terms for W_g momentum eqs  C
+!  Subroutine: CONV_DIF_W_g                                            C
+!  Purpose: Determine convection diffusion terms for w_g momentum eqs  C
 !  The off-diagonal coefficients calculated here must be positive. The C
 !  center coefficient and the source vector are negative;              C
 !  See source_w_g                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 24-DEC-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE CONV_DIF_W_G(A_M, B_M, IER)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE visc_g
-      USE compar
 
+! Modules
+!---------------------------------------------------------------------//
+      USE param, only: dimension_3, dimension_m
+      USE run, only: momentum_z_eq
+      USE run, only: discretize
+      USE run, only: def_cor
+      USE visc_g, only: epmu_gt
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 
-!
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
+!---------------------------------------------------------------------//
+
+
       IF (.NOT.MOMENTUM_Z_EQ(0)) RETURN
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       IF DEFERRED CORRECTION IS USED TO SOLVE W_G
+
       IF (DEF_COR) THEN
-        CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
-        IF (DISCRETIZE(5) > 1)CALL STORE_A_W_GDC (A_M(1,-3,0), B_M(1,0))
+! USE DEFERRED CORRECTION TO SOLVE W_G
+         CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
+         IF (DISCRETIZE(5) > 1) CALL STORE_A_W_GDC(B_M(1,0))
+
       ELSE
-!
-        IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP
-          CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
-        ELSE
-          CALL STORE_A_W_G1 (A_M(1,-3,0))
-        ENDIF
+! DO NOT USE DEFERRED CORRECTOIN TO SOLVE FOR W_G
+         IF (DISCRETIZE(5) == 0) THEN               ! 0 & 1 => FOUP
+            CALL STORE_A_W_G0 (A_M(1,-3,0), IER)
+         ELSE
+            CALL STORE_A_W_G1 (A_M(1,-3,0))
+         ENDIF
       ENDIF
-!
-      CALL DIF_W_IS (MU_GT, A_M, B_M, 0, IER)
-!
+
+      CALL DIF_W_IS(EPMU_GT, A_M, 0)
 
       RETURN
       END SUBROUTINE CONV_DIF_W_G
-!
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: STORE_A_W_g0(A_W_g, IER)                               C
-!  Purpose: Determine convection diffusion terms for W_g momentum eqs  C
-!  The off-diagonal coefficients calculated here must be positive. The C
-!  center coefficient and the source vector are negative; FOUP         C
-!  See source_w_g                                                      C
+!  Purpose: Calculate the components of velocity on the east, north,   C
+!  and top face of a w-momentum cell                                   C
 !                                                                      C
-!  Author: M. Syamlal                                 Date: 7-JUN-96   C
-!  Reviewer:                                          Date:            C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_GVTERMS(U, V, WW)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: theta_wt, theta_wt_bar
+      USE cutcell, only: theta_w_be, theta_w_te
+      USE cutcell, only: theta_w_bn, theta_w_tn
+      USE cutcell, only: alpha_we_c, alpha_wn_c, alpha_wt_c
+
+      USE fldvar, only: u_g, v_g, w_g
+
+      USE fun_avg, only: avg_z_t, avg_z
+      USE functions, only: kp_of
+      USE indices, only: k_of
+
+      USE param, only: dimension_3
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, INTENT(OUT) :: U(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: V(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: WW(DIMENSION_3)
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: IJK, K, IJKP
+! for cartesian grid
+      DOUBLE PRECISION :: AW, HW, VELW
+!---------------------------------------------------------------------//
+
+
+!!!$omp parallel do private(IJK,K,IJKT,IJKP)
+      DO IJK = ijkstart3, ijkend3
+         K = K_OF(IJK)
+         IJKP = KP_OF(IJK)
+
+         IF(CUT_W_TREATMENT_AT(IJK)) THEN
+
+! East face (i+1/2, j, k+1/2)
+            U(IJK) = (Theta_W_be(IJK) * U_G(IJK) + &
+                      Theta_W_te(IJK) * U_G(IJKP))
+            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM', &
+               ALPHA_We_c(IJK), AW, HW, VELW)
+            U(IJK) = U(IJK) * AW
+
+! North face (i, j+1/2, k+1/2)
+            V(IJK) = (Theta_W_bn(IJK) * V_G(IJK) + &
+                      Theta_W_tn(IJK) * V_G(IJKP))
+            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM', &
+               ALPHA_Wn_c(IJK), AW, HW, VELW)
+            V(IJK) = V(IJK) * AW
+
+! Top face (i, j, k+1)
+            WW(IJK) = (Theta_Wt_bar(IJK) * W_G(IJK) + &
+                       Theta_Wt(IJK) * W_G(IJKP))
+            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM', &
+               alpha_Wt_c(IJK), AW, HW, VELW)
+            WW(IJK) = WW(IJK) * AW
+
+         ELSE
+            U(IJK) = AVG_Z(U_G(IJK),U_G(IJKP),K)
+            V(IJK) = AVG_Z(V_G(IJK),V_G(IJKP),K)
+            WW(IJK) = AVG_Z_T(W_G(IJK),W_G(IJKP))
+         ENDIF   ! end if/else cut_w_treatment_at
+      ENDDO   ! end do ijk
+
+      RETURN
+      END SUBROUTINE GET_WCELL_GVTERMS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Calculate the convective fluxes through the faces of a     C
+!  w-momentum cell. Note the fluxes are calculated at all faces of     C
+!  regardless of flow_at_t of condition of the west, south, or         C
+!  bottom face.                                                        C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_GCFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
+         FLUX_S, FLUX_T, FLUX_B, IJK)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: theta_wt, theta_wt_bar
+      USE cutcell, only: theta_w_be, theta_w_te
+      USE cutcell, only: theta_w_bn, theta_w_tn
+      USE cutcell, only: alpha_we_c, alpha_wn_c, alpha_wt_c
+
+      USE functions, only: kp_of, im_of, jm_of, km_of
+
+      USE mflux, only: flux_ge, flux_gn, flux_gt
+
+      USE param1, only: half
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! fluxes through faces of given ijk u-momentum cell
+      DOUBLE PRECISION, INTENT(OUT) :: flux_e, flux_w
+      DOUBLE PRECISION, INTENT(OUT) :: flux_n, flux_s
+      DOUBLE PRECISION, INTENT(OUT) :: flux_t, flux_b
+! ijk index
+      INTEGER, INTENT(IN) :: ijk
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: imjk, ijmk, ijkm
+      INTEGER :: ijkp, imjkp, ijmkp
+
+! for cartesian grid
+      DOUBLE PRECISION :: AW, HW, VELW
+!---------------------------------------------------------------------//
+
+      IJKP = KP_OF(IJK)
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
+      IMJKP = KP_OF(IMJK)
+      IJMKP = KP_OF(IJMK)
+
+      IF(CUT_W_TREATMENT_AT(IJK)) THEN
+! East face (i+1/2, j, k+1/2)
+         Flux_e = (Theta_W_be(IJK) * Flux_gE(IJK) + &
+                 Theta_W_te(IJK) * Flux_gE(IJKP))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            ALPHA_We_c(IJK), AW, HW, VELW)
+         Flux_e = Flux_e * AW
+! West face (i-1/2, j, k+1/2)
+         Flux_w = (Theta_W_be(IMJK) * Flux_gE(IMJK) + &
+                   Theta_W_te(IMJK) * Flux_gE(IMJKP))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            ALPHA_We_c(IMJK), AW, HW, VELW)
+         Flux_w = Flux_w * AW
+
+
+! North face (i, j+1/2, k+1/2)
+         Flux_n = (Theta_W_bn(IJK) * Flux_gN(IJK) + &
+                 Theta_W_tn(IJK) * Flux_gN(IJKP))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            ALPHA_Wn_c(IJK), AW, HW, VELW)
+         Flux_n = Flux_n * AW
+! South face (i, j-1/2, k+1/2)
+         Flux_s = (Theta_W_bn(IJMK) * Flux_gN(IJMK) + &
+                   Theta_W_tn(IJMK) * Flux_gN(IJMKP))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            ALPHA_Wn_c(IJMK), AW, HW, VELW)
+         Flux_s = Flux_s * AW
+
+
+! Top face (i, j, k+1)
+         Flux_t = (Theta_Wt_bar(IJK) * Flux_gT(IJK) + &
+                   Theta_Wt(IJK) * Flux_gT(IJKP))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            alpha_Wt_c(IJK),AW,HW,VELW)
+         Flux_t = Flux_t * AW
+! Bottom face (i, j, k)
+         Flux_b = (Theta_Wt_bar(IJKM) * Flux_gT(IJKM) + &
+                   Theta_Wt(IJKM) * Flux_gT(IJK))
+         CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',&
+            alpha_Wt_c(IJKM), AW, HW, VELW)
+         Flux_b = Flux_b * AW
+      ELSE
+         Flux_e = HALF * (Flux_gE(IJK) + Flux_gE(IJKP))
+         Flux_w = HALF * (Flux_gE(IMJK) + Flux_gE(IMJKP))
+         Flux_n = HALF * (Flux_gN(IJK) + Flux_gN(IJKP))
+         Flux_s = HALF * (Flux_gN(IJMK) + Flux_gN(IJMKP))
+         Flux_t = HALF * (Flux_gT(IJK) + Flux_gT(IJKP))
+         Flux_b = HALF * (Flux_gT(IJKM) + Flux_gT(IJK))
+      ENDIF   ! end if/else cut_w_treatment_at
+
+      RETURN
+      END SUBROUTINE GET_WCELL_GCFLUX_TERMS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Calculate the components of diffusive flux through the     C
+!  faces of a w-momentum cell. Note the fluxes are calculated at       C
+!  all faces regardless of flow_at_t condition of the west, south      C
+!  or bottom face.                                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_GDIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
+         D_FT, D_FB, IJK)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: oneodx_e_w, oneody_n_w, oneodz_t_w
+
+      USE fldvar, only: epg_jfac
+
+      USE functions, only: wall_at
+      USE functions, only: east_of, north_of, top_of
+      USE functions, only: west_of, south_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h, avg_z
+
+      USE geometry, only: odx_e, ody_n, odz
+      USE geometry, only: ox
+      USE geometry, only: ayz_w, axz_w, axy_w
+
+      USE indices, only: i_of, j_of, k_of
+      USE indices, only: kp1, im1, jm1
+
+      USE matrix, only: e, w, n, s, t, b
+      USE visc_g, only: epmu_gt, df_gw
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! diffusion through faces of given ijk w-momentum cell
+      DOUBLE PRECISION, INTENT(OUT) :: d_fe, d_fw
+      DOUBLE PRECISION, INTENT(OUT) :: d_fn, d_fs
+      DOUBLE PRECISION, INTENT(OUT) :: d_ft, d_fb
+! ijk idnex
+      INTEGER, INTENT(IN) :: ijk
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: imjk, ijmk, ijkm
+      INTEGER :: i, j, k, kp, im, jm
+      INTEGER :: ijkc, ijkt, ijke, ijkte, ijkw, ijkwt
+      INTEGER :: ijkn, ijktn, ijks, ijkst
+! length terms
+      DOUBLE PRECISION :: C_AE, C_AW, C_AN, C_AS, C_AT, C_AB
+! average voidage
+      DOUBLE PRECISION :: EPGA
+!---------------------------------------------------------------------//
+
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
+
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      KP = KP1(K)
+      IM = IM1(I)
+      JM = JM1(J)
+
+      IJKT = TOP_OF(IJK)
+      IF (WALL_AT(IJK)) THEN
+         IJKC = IJKT
+      ELSE
+         IJKC = IJK
+      ENDIF
+      IJKE = EAST_OF(IJK)
+      IJKTE = EAST_OF(IJKT)
+      IJKN = NORTH_OF(IJK)
+      IJKTN = NORTH_OF(IJKT)
+      IJKW = WEST_OF(IJK)
+      IJKWT = TOP_OF(IJKW)
+      IJKS = SOUTH_OF(IJK)
+      IJKST = TOP_OF(IJKS)
+
+      IF(CUT_W_TREATMENT_AT(IJK)) THEN
+         C_AE = ONEoDX_E_W(IJK)
+         C_AW = ONEoDX_E_W(IMJK)
+         C_AN = ONEoDY_N_W(IJK)
+         C_AS = ONEoDY_N_W(IJMK)
+         C_AT = ONEoDZ_T_W(IJK)
+         C_AB = ONEoDZ_T_W(IJKM)
+      ELSE
+         C_AE = ODX_E(I)
+         C_AW = ODX_E(IM)
+         C_AN = ODY_N(J)
+         C_AS = ODY_N(JM)
+         C_AT = ODZ(KP)
+         C_AB = ODZ(K)
+      ENDIF
+
+! East face (i+1/2, j, k+1/2)
+      D_Fe = AVG_Z_H(AVG_X_H(EPMU_GT(IJKC),EPMU_GT(IJKE),I),&
+                     AVG_X_H(EPMU_GT(IJKT),EPMU_GT(IJKTE),I),K)*&
+               C_AE*AYZ_W(IJK)
+! West face (i-1/2, j, k+1/2)
+      D_Fw = AVG_Z_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJKC),IM),&
+                     AVG_X_H(EPMU_GT(IJKWT),EPMU_GT(IJKT),IM),K)*&
+                C_AW*AYZ_W(IMJK)
+
+! North face (i, j+1/2, k+1/2)
+      D_Fn = AVG_Z_H(AVG_Y_H(EPMU_GT(IJKC),EPMU_GT(IJKN),J),&
+                     AVG_Y_H(EPMU_GT(IJKT),EPMU_GT(IJKTN),J),K)*&
+                C_AN*AXZ_W(IJK)
+! South face (i, j-1/2, k+1/2)
+      D_Fs = AVG_Z_H(AVG_Y_H(EPMU_GT(IJKS),EPMU_GT(IJKC),JM),&
+                     AVG_Y_H(EPMU_GT(IJKST),EPMU_GT(IJKT),JM),K)*&
+                C_AS*AXZ_W(IJMK)
+
+! Top face (i, j, k+1)
+      D_Ft = EPMU_GT(IJKT)*OX(I)*C_AT*AXY_W(IJK)
+! Bottom face (i, j, k)
+      D_Fb = EPMU_GT(IJK)*OX(I)*C_AB*AXY_W(IJKM)
+
+      DF_GW(IJK,E) = D_FE
+      DF_GW(IJK,W) = D_FW
+      DF_GW(IJK,N) = D_FN
+      DF_GW(IJK,S) = D_FS
+      DF_GW(IJK,T) = D_FT
+      DF_GW(IJK,B) = D_FB
+
+! if jackson, implement jackson style governing equations: multiply by
+! the void fraction otherwise multiply by 1
+      EPGA = AVG_Z(EPG_JFAC(IJKC), EPG_JFAC(IJKT), K)
+      D_FE = EPGA*D_FE
+      D_FW = EPGA*D_FW
+      D_FN = EPGA*D_FN
+      D_FS = EPGA*D_FS
+      D_FT = EPGA*D_FT
+      D_FB = EPGA*D_FB
+
+      RETURN
+      END SUBROUTINE GET_WCELL_GDIFF_TERMS
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: STORE_A_W_g0                                            C
+!  Purpose: Determine convection diffusion terms for W_g momentum eqs. C
+!  The off-diagonal coefficients calculated here must be positive.     C
+!  The center coefficient and the source vector are negative. See      C
+!  source_w_g.                                                         C
+!  Implement FOUP discretization                                       C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 29-APR-96  C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE STORE_A_W_G0(A_W_G, IER)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE visc_g
-      USE toleranc
-      USE physprop
-      USE fldvar
-      USE output
-      USE compar
-      USE mflux
-      USE fun_avg
-      USE functions
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE param, only: dimension_3
+      USE param1, only: zero
+      USE matrix, only: e, w, n, s, t, b
+
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!
-!
-!                      Error index
-      INTEGER          IER
-!
-!                      Indices
-      INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                       IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER          IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER          IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER          IJKM, KM, IJKB
-!
-!                      Solids phase
-      INTEGER          M
-!
-!                      Face mass flux
-      DOUBLE PRECISION Flux
-!
-!                      Diffusion parameter
-      DOUBLE PRECISION D_f
-!
-!                      Septadiagonal matrix A_W_g
-      DOUBLE PRECISION A_W_g(DIMENSION_3, -3:3)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      DOUBLE PRECISION :: AW,HW,VELW
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
-!  Calculate convection-diffusion fluxes through each of the faces
-!
-!     Fluid phase
-      M = 0
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Septadiagonal matrix A_U_g
+      DOUBLE PRECISION, INTENT(INOUT) :: A_W_g(DIMENSION_3, -3:3)
+! Error index
+      INTEGER, INTENT(INOUT) :: IER
 
-!$omp     parallel do default(none)                                 &
-!$omp     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!$omp             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK, D_f,    &
-!$omp             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
-!$omp             IJMK, JM, IJMKP, IJKS, IJKST,                     &
-!$omp             IJKM, KM, IJKB, FLUX,VELW,HW,AW) &
-!$omp     shared (ijkstart3,ijkend3,i_of,j_of,k_of,kp1,cut_w_treatment_at,theta_vn_bar,flux_ge,theta_vn,alpha_ve_c,mu_gt, &
-!$omp            oneody_n_v,ayz_v,ody,theta_v_st,flux_gn,theta_v_nt,oneody_n_u,axz_v,axy_v,ody_n,do_k,theta_u_tw,flux_gt, &
-!$omp            theta_u_te,alpha_vt_c,oneodz_t_v,odz_t,im1,jm1,km1,a_w_g,theta_v_ne,oneodx_e_v,alpha_vn_c,theta_v_se,    &
-!$omp            odx_e,ox,theta_w_be,theta_w_te,alpha_we_c,ONEODX_E_W,AYZ_W,theta_w_bn,theta_w_tn,alpha_wn_c,oneody_n_w,  &
-!$omp            axz_w,theta_wt_bar,theta_wt,alpha_wt_c,oneodz_t_w,axy_w,odz)
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: IJK
+      INTEGER :: IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
+! Face mass flux
+      DOUBLE PRECISION :: flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
+! Diffusion parameter
+      DOUBLE PRECISION :: D_fe, d_fw, d_fn, d_fs, d_ft, d_fb
+
+!---------------------------------------------------------------------//
+
+!$omp     parallel do default(none)                                &
+!$omp     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,         &
+!$omp             D_fe, d_fw, d_fn, d_fs, d_ft, d_fb,              &
+!$omp             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)  &
+!$omp     shared(ijkstart3, ijkend3, a_w_g)
+
       DO IJK = ijkstart3, ijkend3
-!
+
          IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate convection-diffusion fluxes through each of the faces
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk)
+
+            CALL GET_WCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+               d_ft, d_fb, ijk)
+
             IPJK = IP_OF(IJK)
             IJPK = JP_OF(IJK)
-            IJKN = NORTH_OF(IJK )
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
             IJKP = KP_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
-!
-!           East face (i+1/2, j, k+1/2)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_gE(IJK) + Theta_W_te(IJK) * Flux_gE(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),AVG_X_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTE),I),K)*ONEoDX_E_W(IJK)*AYZ_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gE(IJK) + Flux_gE(IJKP))
-               D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),AVG_X_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTE),I),K)*ODX_E(I)*AYZ_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF (Flux >= ZERO) THEN
-               A_W_G(IJK,E) = D_F
-               A_W_G(IPJK,W) = D_F + Flux
-            ELSE
-               A_W_G(IJK,E) = D_F - Flux
-               A_W_G(IPJK,W) = D_F
-            ENDIF
-!
-!           North face (i, j+1/2, k+1/2)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_gN(IJK) + Theta_W_tn(IJK) * Flux_gN(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTN),J),K)*ONEoDY_N_W(IJK)*AXZ_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gN(IJK) + Flux_gN(IJKP))
-               D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTN),J),K)*ODY_N(J)*AXZ_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF (Flux >= ZERO) THEN
-               A_W_G(IJK,N) = D_F
-               A_W_G(IJPK,S) = D_F + Flux
-            ELSE
-               A_W_G(IJK,N) = D_F - Flux
-               A_W_G(IJPK,S) = D_F
-            ENDIF
-!
-!           Top face (i, j, k+1)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_gT(IJK) + Theta_Wt(IJK) * Flux_gT(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = MU_GT(IJKT)*ONEoDZ_T_W(IJK)*AXY_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gT(IJK) + Flux_gT(IJKP))
-               D_F = MU_GT(IJKT)*OX(I)*ODZ(KP)*AXY_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF (Flux >= ZERO) THEN
-               A_W_G(IJK,T) = D_F
-               A_W_G(IJKP,B) = D_F + Flux
-            ELSE
-               A_W_G(IJK,T) = D_F - Flux
-               A_W_G(IJKP,B) = D_F
-            ENDIF
-!
-!           West face (i-1/2, j, k+1/2)
             IMJK = IM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IMJK)) THEN
-               IM = IM1(I)
-               IJKW = WEST_OF(IJK)
-               IJKWT = TOP_OF(IJKW)
-               IMJKP = KP_OF(IMJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_be(IMJK) * Flux_gE(IMJK) + Theta_W_te(IMJK) * Flux_gE(IMJKP))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IMJK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),AVG_X_H(MU_GT(&
-                      IJKWT),MU_GT(IJKT),IM),K)*ONEoDX_E_W(IMJK)*AYZ_W(IMJK)
-                ELSE   ! Original terms
-                   Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IMJKP))
-                   D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),AVG_X_H(MU_GT(&
-                   IJKWT),MU_GT(IJKT),IM),K)*ODX_E(IM)*AYZ_W(IMJK)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_W_G(IJK,W) = D_F + Flux
-               ELSE
-                  A_W_G(IJK,W) = D_F
-               ENDIF
-            ENDIF
-!
-!           South face (i, j-1/2, k+1/2)
             IJMK = JM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJMK)) THEN
-               JM = JM1(J)
-               IJMKP = KP_OF(IJMK)
-               IJKS = SOUTH_OF(IJK)
-               IJKST = TOP_OF(IJKS)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_bn(IJMK) * Flux_gN(IJMK) + Theta_W_tn(IJMK) * Flux_gN(IJMKP))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJMK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
-                     IJKST),MU_GT(IJKT),JM),K)*ONEoDY_N_W(IJMK)*AXZ_W(IJMK)
-               ELSE   ! Original terms
-                  Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IJMKP))
-                  D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
-                     IJKST),MU_GT(IJKT),JM),K)*ODY_N(JM)*AXZ_W(IJMK)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_W_G(IJK,S) = D_F + Flux
-               ELSE
-                  A_W_G(IJK,S) = D_F
-               ENDIF
-            ENDIF
-!
-!           Bottom face (i, j, k)
             IJKM = KM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJKM)) THEN
-               KM = KM1(K)
-               IJKB = BOTTOM_OF(IJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_Wt_bar(IJKM) * Flux_gT(IJKM) + Theta_Wt(IJKM) * Flux_gT(IJK))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJKM),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = MU_GT(IJK)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM)
-               ELSE   ! Original terms
-                  Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IJK))
-                  D_F = MU_GT(IJK)*OX(I)*ODZ(K)*AXY_W(IJKM)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF (Flux >= ZERO) THEN
-                  A_W_G(IJK,B) = D_F + Flux
+
+! East face (i+1/2, j, k+1/2)
+            IF (Flux_e >= ZERO) THEN
+               A_W_G(IJK,E) = D_Fe
+               A_W_G(IPJK,W) = D_Fe + Flux_e
+            ELSE
+               A_W_G(IJK,E) = D_Fe - Flux_e
+               A_W_G(IPJK,W) = D_Fe
+            ENDIF
+! West face (i-1/2, j, k+1/2)
+            IF (.NOT.FLOW_AT_T(IMJK)) THEN
+               IF (Flux_w >= ZERO) THEN
+                  A_W_G(IJK,W) = D_Fw + Flux_w
                ELSE
-                  A_W_G(IJK,B) = D_F
+                  A_W_G(IJK,W) = D_Fw
                ENDIF
             ENDIF
-         ENDIF
-      END DO
+
+
+! North face (i, j+1/2, k+1/2)
+            IF (Flux_n >= ZERO) THEN
+               A_W_G(IJK,N) = D_Fn
+               A_W_G(IJPK,S) = D_Fn + Flux_n
+            ELSE
+               A_W_G(IJK,N) = D_Fn - Flux_n
+               A_W_G(IJPK,S) = D_Fn
+            ENDIF
+! South face (i, j-1/2, k+1/2)
+            IF (.NOT.FLOW_AT_T(IJMK)) THEN
+              IF (Flux_s >= ZERO) THEN
+                  A_W_G(IJK,S) = D_Fs + Flux_s
+               ELSE
+                  A_W_G(IJK,S) = D_Fs
+               ENDIF
+            ENDIF
+
+
+! Top face (i, j, k+1)
+            IF (Flux_T >= ZERO) THEN
+               A_W_G(IJK,T) = D_Ft
+               A_W_G(IJKP,B) = D_Ft + Flux_t
+            ELSE
+               A_W_G(IJK,T) = D_Ft - Flux_t
+               A_W_G(IJKP,B) = D_Ft
+            ENDIF
+! Bottom face (i, j, k)
+            IF (.NOT.FLOW_AT_T(IJKM)) THEN
+               IF (Flux_b >= ZERO) THEN
+                  A_W_G(IJK,B) = D_Fb + Flux_b
+               ELSE
+                  A_W_G(IJK,B) = D_Fb
+               ENDIF
+            ENDIF
+         ENDIF   ! end if (flow_at_t)
+      ENDDO   ! end do (ijk)
 !$omp end parallel do
 
       RETURN
       END SUBROUTINE STORE_A_W_G0
 
-!
-!
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: STORE_A_W_gdc(A_W_g, B_M, IER)                         C
-!  Purpose: TO USE DEFERRED CORRECTION METHOD TO SOLVE THE W-MOMENTUM  C
-!  EQUATION. THIS METHOD COMBINES FIRST ORDER UPWIND AND A USER        C
-!  SPECIFIED HIGH ORDER METHOD                                         C
+!  Subroutine: STORE_A_W_GDC                                           C
+!  Purpose: Use deferred correction method to solve the w-momentum     C
+!  equation. This method combines first order upwind and a user        C
+!  specified higher order method                                       C
 !                                                                      C
-!  Author: C. GUENTHER                                 Date:8-APR-99   C
-!  Reviewer:                                          Date:            C
+!  Author: C. GUENTHER                                Date: 8-APR-99   C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      SUBROUTINE STORE_A_W_GDC(A_W_G, B_M)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE compar
-      USE discretization, ONLY: fpfoi_of
-      USE fldvar
-      USE fun_avg
-      USE function3
-      USE functions
-      USE geometry
-      USE indices
-      USE matrix
-      USE mflux
-      USE output
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE run
-      USE sendrecv
-      USE sendrecv3
-      USE toleranc
-      USE visc_g
-      USE xsi
-      USE xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                       IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER          IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER          IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER          IJKM, KM, IJKB
-      INTEGER          IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
-      INTEGER          IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
-!
-! loezos
-        INTEGER incr
-! loezos
+      SUBROUTINE STORE_A_W_GDC(B_M)
 
-!                      Septadiagonal matrix A_W_g
-      DOUBLE PRECISION A_W_g(DIMENSION_3, -3:3)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3)
-!
-!       DEFERRED CORRCTION CONTRIBUTION FORM HIGH ORDER METHOD
-        DOUBLE PRECISION MOM_HO
-!
-!       LOW ORDER APPROXIMATION
-        DOUBLE PRECISION MOM_LO
-!
-!       CONVECTION FACTOR AT THE FACE
-        DOUBLE PRECISION Flux
-!
-!       DEFERRED CORRECTION CONTRIBUTIONS FROM EACH FACE
-        DOUBLE PRECISION        EAST_DC
-        DOUBLE PRECISION        WEST_DC
-        DOUBLE PRECISION        NORTH_DC
-        DOUBLE PRECISION        SOUTH_DC
-        DOUBLE PRECISION  TOP_DC
-        DOUBLE PRECISION  BOTTOM_DC
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      DOUBLE PRECISION :: AW,HW,VELW
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE discretization, only: fpfoi_of
+
+      USE fldvar, only: w_g
+
+      USE function3, only: funijk3
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE indices, only: i_of, j_of, k_of
+
+      USE matrix, only: e, w, n, s, t, b
+
+      USE param, only: dimension_3
+      USE param1, only: zero, half
+
+      USE run, only: discretize, fpfoi
+      USE sendrecv3, only: send_recv3
+
+      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
+      USE tmp_array, only: tmp4
+      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
+      USE tmp_array, only: lock_tmp4_array, unlock_tmp4_array
+
+      USE xsi, only: calc_xsi
+      USE xsi_array, only: xsi_e, xsi_n, xsi_t
+      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Vector b_m
+      DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3)
+
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: I, J, K, IJK
+      INTEGER :: IPJK, IMJK, IJMK, IJPK, IJKM, IJKP
+      INTEGER :: IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
+      INTEGER :: IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
+! indication for shear
+      INTEGER :: incr
+! deferred corrction contribution form high order method
+      DOUBLE PRECISION :: MOM_HO
+! low order approximation
+      DOUBLE PRECISION :: MOM_LO
+! convection factor at each face
+      DOUBLE PRECISION :: flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
+! deferred correction contributions from each face
+      DOUBLE PRECISION :: EAST_DC
+      DOUBLE PRECISION :: WEST_DC
+      DOUBLE PRECISION :: NORTH_DC
+      DOUBLE PRECISION :: SOUTH_DC
+      DOUBLE PRECISION :: TOP_DC
+      DOUBLE PRECISION :: BOTTOM_DC
+
+! temporary use of global arrays:
+! array1 (locally u)  - the x directional velocity
+!      DOUBLE PRECISION :: U(DIMENSION_3)
+! array2 (locally v)  - the y directional velocity
+!      DOUBLE PRECISION :: V(DIMENSION_3)
+! array3 (locally ww) - the z directional velocity
+!      DOUBLE PRECISION :: WW(DIMENSION_3)
+!---------------------------------------------------------------------//
+
       call lock_tmp4_array
       call lock_tmp_array
       call lock_xsi_array
-!
-!  Calculate convection factors
-!
-!
+
+      CALL GET_WCELL_GVTERMS(U, V, WW)
+
 ! Send recv the third ghost layer
-      IF ( FPFOI ) THEN
+      IF (FPFOI) THEN
          Do IJK = ijkstart3, ijkend3
             I = I_OF(IJK)
             J = J_OF(IJK)
@@ -518,95 +630,33 @@
       ENDIF
 
 
-!!!$omp parallel do private(IJK,K,IJKT,IJKP)
-      DO IJK = ijkstart3, ijkend3
-         K = K_OF(IJK)
-         IJKT = TOP_OF(IJK)
-         IJKP = KP_OF(IJK)
-!
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!           East face (i+1/2, j, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            U(IJK) = (Theta_W_be(IJK) * U_G(IJK) + Theta_W_te(IJK) * U_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IJK),AW,HW,VELW)
-            U(IJK) = U(IJK) * AW
-         ELSE   ! Original terms
-            U(IJK) = AVG_Z(U_G(IJK),U_G(IJKP),K)
-         ENDIF
-!
-!
-!           North face (i, j+1/2, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            V(IJK) = (Theta_W_bn(IJK) * V_G(IJK) + Theta_W_tn(IJK) * V_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJK),AW,HW,VELW)
-            V(IJK) = V(IJK) * AW
-         ELSE   ! Original terms
-            V(IJK) = AVG_Z(V_G(IJK),V_G(IJKP),K)
-         ENDIF
-!
-!
-!           Top face (i, j, k+1)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            WW(IJK) = (Theta_Wt_bar(IJK) * W_G(IJK) + Theta_Wt(IJK) * W_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJK),AW,HW,VELW)
-            WW(IJK) = WW(IJK) * AW
-         ELSE   ! Original terms
-            WW(IJK) = AVG_Z_T(W_G(IJK),W_G(IJKP))
-         ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      END DO
-
-! loezos
-        incr=0
-! loezos
-
+! shear indicator:
+      incr=0
       CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
-         XSI_T,incr)
-!
-!
-!
-!  Calculate convection-diffusion fluxes through each of the faces
-!
-!
+         XSI_T, incr)
 
-!!!$omp      parallel do                                               &
-!!!$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK,  D_f,        &
-!!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
-!!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,                     &
-!!!$omp&             IJKM, KM, IJKB, &
-!!!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
-!!!$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
+
+!!!$omp      parallel do                                             &
+!!!$omp&     private( I, J, K, IJK, IPJK, IMJK, IJPK, IJMK,          &
+!!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_b, flux_t, &
+!!!$omp&             MOM_HO, MOM_LO, EAST_DC, WEST_DC, NORTH_DC,     &
+!!!$omp&             SOUTH_DC, TOP_DC, BOTTOM_DC)
       DO IJK = ijkstart3, ijkend3
-!
+
          IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate convection fluxes through each of the faces
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk)
+
             IPJK = IP_OF(IJK)
             IMJK = IM_OF(IJK)
             IJPK = JP_OF(IJK)
             IJMK = JM_OF(IJK)
             IJKP = KP_OF(IJK)
             IJKM = KM_OF(IJK)
-            IJKN = NORTH_OF(IJK)
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
-            IJKP = KP_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
-!
-!           Third Ghost layer information
+
+! Third Ghost layer information
             IPPP  = IP_OF(IP_OF(IPJK))
             IPPP4 = funijk3(I_OF(IPPP), J_OF(IPPP), K_OF(IPPP))
             IMMM  = IM_OF(IM_OF(IMJK))
@@ -616,219 +666,107 @@
             JMMM  = JM_OF(JM_OF(IJMK))
             JMMM4 = funijk3(I_OF(JMMM), J_OF(JMMM), K_OF(JMMM))
             KPPP  = KP_OF(KP_OF(IJKP))
-            KPPP4 = funijk3(K_OF(IPPP), J_OF(KPPP), K_OF(KPPP))
+            KPPP4 = funijk3(I_OF(KPPP), J_OF(KPPP), K_OF(KPPP))
             KMMM  = KM_OF(KM_OF(IJKM))
             KMMM4 = funijk3(I_OF(KMMM), J_OF(KMMM), K_OF(KMMM))
-!
-!
 
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE East face (i+1/2, j, k+1/2)
-!
+
+! East face (i+1/2, j, k+1/2)
             IF(U(IJK) >= ZERO)THEN
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IPJK), W_G(IJK), &
-                            W_G(IMJK), W_G(IM_OF(IMJK)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IPJK), W_G(IJK), &
+                                   W_G(IMJK), W_G(IM_OF(IMJK)))
             ELSE
-              MOM_LO = W_G(IPJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IPJK), &
-                            W_G(IP_OF(IPJK)), TMP4(IPPP4))
+               MOM_LO = W_G(IPJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IPJK), &
+                                   W_G(IP_OF(IPJK)), TMP4(IPPP4))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                      MOM_HO = XSI_E(IJK)*W_G(IPJK)+ &
-                               (1.0-XSI_E(IJK))*W_G(IJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_gE(IJK) + Theta_W_te(IJK) * Flux_gE(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gE(IJK) + Flux_gE(IJKP))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            EAST_DC = Flux*(MOM_LO-MOM_HO)
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE North face (i, j+1/2, k+1/2)
-!
+            IF (.NOT. FPFOI) MOM_HO = XSI_E(IJK)*W_G(IPJK)+ &
+                                      (1.0-XSI_E(IJK))*W_G(IJK)
+            EAST_DC = Flux_e*(MOM_LO-MOM_HO)
+
+
+! North face (i, j+1/2, k+1/2)
             IF(V(IJK) >= ZERO)THEN
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJPK), W_G(IJK), &
-                            W_G(IJMK), W_G(JM_OF(IJMK)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJPK), W_G(IJK), &
+                                   W_G(IJMK), W_G(JM_OF(IJMK)))
             ELSE
-              MOM_LO = W_G(IJPK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJPK), &
-                            W_G(JP_OF(IJPK)), TMP4(JPPP4))
+               MOM_LO = W_G(IJPK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJPK), &
+                                   W_G(JP_OF(IJPK)), TMP4(JPPP4))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                       MOM_HO = XSI_N(IJK)*W_G(IJPK)+ &
-                                (1.0-XSI_N(IJK))*W_G(IJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_gN(IJK) + Theta_W_tn(IJK) * Flux_gN(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gN(IJK) + Flux_gN(IJKP))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            NORTH_DC = Flux*(MOM_LO-MOM_HO)
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j, k+1)
-!
+            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJK)*W_G(IJPK)+ &
+                                   (1.0-XSI_N(IJK))*W_G(IJK)
+            NORTH_DC = Flux_n*(MOM_LO-MOM_HO)
+
+
+! Top face (i, j, k+1)
             IF(WW(IJK) >= ZERO)THEN
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJKP), W_G(IJK), &
-                            W_G(IJKM), W_G(KM_OF(IJKM)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJKP), W_G(IJK), &
+                                   W_G(IJKM), W_G(KM_OF(IJKM)))
             ELSE
-              MOM_LO = W_G(IJKP)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJKP), &
-                            W_G(KP_OF(IJKP)), TMP4(KPPP4))
+               MOM_LO = W_G(IJKP)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJKP), &
+                                   W_G(KP_OF(IJKP)), TMP4(KPPP4))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                       MOM_HO = XSI_T(IJK)*W_G(IJKP)+ &
-                                (1.0-XSI_T(IJK))*W_G(IJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_gT(IJK) + Theta_Wt(IJK) * Flux_gT(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gT(IJK) + Flux_gT(IJKP))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            TOP_DC = Flux*(MOM_LO-MOM_HO)
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE West face (i-1/2, j, k+1/2)
-!
-            IMJK = IM_OF(IJK)
-            IM = IM1(I)
-            IJKW = WEST_OF(IJK)
-            IJKWT = TOP_OF(IJKW)
-            IMJKP = KP_OF(IMJK)
+            IF (.NOT. FPFOI) MOM_HO = XSI_T(IJK)*W_G(IJKP)+ &
+                                      (1.0-XSI_T(IJK))*W_G(IJK)
+            TOP_DC = Flux_t*(MOM_LO-MOM_HO)
+
+
+! West face (i-1/2, j, k+1/2)
             IF(U(IMJK) >= ZERO)THEN
-              MOM_LO = W_G(IMJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IMJK), &
-                            W_G(IM_OF(IMJK)), TMP4(IMMM4))
+               MOM_LO = W_G(IMJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IMJK), &
+                                   W_G(IM_OF(IMJK)), TMP4(IMMM4))
             ELSE
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IMJK), W_G(IJK), &
-                            W_G(IPJK), W_G(IP_OF(IPJK)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IMJK), W_G(IJK), &
+                                   W_G(IPJK), W_G(IP_OF(IPJK)))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                       MOM_HO = XSI_E(IMJK)*W_G(IJK)+ &
-                                (1.0-XSI_E(IMJK))*W_G(IMJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IMJK) * Flux_gE(IMJK) + Theta_W_te(IMJK) * Flux_gE(IMJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IMJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IMJKP))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            WEST_DC = Flux*(MOM_LO-MOM_HO)
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE South face (i, j-1/2, k+1/2)
-!
-            IJMK = JM_OF(IJK)
-            JM = JM1(J)
-            IJMKP = KP_OF(IJMK)
-            IJKS = SOUTH_OF(IJK)
-            IJKST = TOP_OF(IJKS)
+            IF (.NOT. FPFOI) MOM_HO = XSI_E(IMJK)*W_G(IJK)+ &
+                                      (1.0-XSI_E(IMJK))*W_G(IMJK)
+            WEST_DC = Flux_w*(MOM_LO-MOM_HO)
+
+
+! South face (i, j-1/2, k+1/2)
             IF(V(IJMK) >= ZERO)THEN
-              MOM_LO = W_G(IJMK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJMK), &
-                            W_G(JM_OF(IJMK)), TMP4(JMMM4))
+               MOM_LO = W_G(IJMK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJMK), &
+                                   W_G(JM_OF(IJMK)), TMP4(JMMM4))
             ELSE
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJMK), W_G(IJK), &
-                            W_G(IJPK), W_G(JP_OF(IJPK)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJMK), W_G(IJK), &
+                                   W_G(IJPK), W_G(JP_OF(IJPK)))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                        MOM_HO = XSI_N(IJMK)*W_G(IJK)+ &
-                                 (1.0-XSI_N(IJMK))*W_G(IJMK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJMK) * Flux_gN(IJMK) + Theta_W_tn(IJMK) * Flux_gN(IJMKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJMK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IJMKP))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            SOUTH_DC = Flux*(MOM_LO-MOM_HO)
-!
-!           DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i, j, k)
-!
-            IJKM = KM_OF(IJK)
-            KM = KM1(K)
-            IJKB = BOTTOM_OF(IJK)
+            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJMK)*W_G(IJK)+ &
+                                      (1.0-XSI_N(IJMK))*W_G(IJMK)
+            SOUTH_DC = Flux_s*(MOM_LO-MOM_HO)
+
+
+! Bottom face (i, j, k)
             IF(WW(IJK) >= ZERO)THEN
-              MOM_LO = W_G(IJKM)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJKM), &
-                            W_G(KM_OF(IJKM)), TMP4(KMMM4))
+               MOM_LO = W_G(IJKM)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJK), W_G(IJKM), &
+                                   W_G(KM_OF(IJKM)), TMP4(KMMM4))
             ELSE
-              MOM_LO = W_G(IJK)
-              IF ( FPFOI ) &
-                      MOM_HO = FPFOI_OF(W_G(IJKM), W_G(IJK), &
-                            W_G(IJKP), W_G(KP_OF(IJKP)))
+               MOM_LO = W_G(IJK)
+               IF (FPFOI) MOM_HO = FPFOI_OF(W_G(IJKM), W_G(IJK), &
+                                   W_G(IJKP), W_G(KP_OF(IJKP)))
             ENDIF
-            IF (.NOT. FPFOI ) &
-                       MOM_HO = XSI_T(IJKM)*W_G(IJK)+ &
-                                (1.0-XSI_T(IJKM))*W_G(IJKM)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJKM) * Flux_gT(IJKM) + Theta_Wt(IJKM) * Flux_gT(IJK))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJKM),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IJK))
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            BOTTOM_DC = Flux*(MOM_LO-MOM_HO)
-!
-!               CONTRIBUTION DUE TO DEFERRED CORRECTION
-!
+            IF (.NOT. FPFOI) MOM_HO = XSI_T(IJKM)*W_G(IJK)+ &
+                                      (1.0-XSI_T(IJKM))*W_G(IJKM)
+            BOTTOM_DC = Flux_b*(MOM_LO-MOM_HO)
+
+
+! CONTRIBUTION DUE TO DEFERRED CORRECTION
             B_M(IJK) = B_M(IJK)+WEST_DC-EAST_DC+SOUTH_DC-NORTH_DC&
                                 +BOTTOM_DC-TOP_DC
-!
-         ENDIF
-      END DO
+
+         ENDIF   ! end if flow_at_t
+      ENDDO   ! end do ijk
 
       call unlock_tmp4_array
       call unlock_tmp_array
@@ -838,356 +776,139 @@
       END SUBROUTINE STORE_A_W_GDC
 
 
-!
-!
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: STORE_A_W_g1(A_W_g, IER)                               C
+!  Subroutine: STORE_A_W_g1                                            C
 !  Purpose: Determine convection diffusion terms for W_g momentum eqs  C
-!  The off-diagonal coefficients calculated here must be positive. The C
-!  center coefficient and the source vector are negative. Higher order C
-!  discretization.                                                     C
+!  The off-diagonal coefficients calculated here must be positive.     C
+!  The center coefficient and the source vector are negative.          C
+!  Implements higher order discretization.                             C
 !  See source_w_g                                                      C
 !                                                                      C
-!  Author: M. Syamlal                                 Date:19-MAR-97   C
-!  Reviewer:                                          Date:            C
+!  Author: M. Syamlal                                 Date: 20-MAR-97  C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE STORE_A_W_G1(A_W_G)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE visc_g
-      USE toleranc
-      USE physprop
-      USE fldvar
-      USE output
-      USE vshear
-      USE xsi
-      USE xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
-      USE compar
-      USE mflux
-      USE fun_avg
-      USE functions
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      USE cutcell
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: w_g
+
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE param, only: dimension_3
+      USE param1, only: one
+
+      USE matrix, only: e, w, n, s, t, b
+
+      USE run, only: discretize
+
+      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
+      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
+
+      USE xsi, only: calc_xsi
+      USE xsi_array, only: xsi_e, xsi_n, xsi_t
+      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
 
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                       IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER          IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER          IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER          IJKM, KM, IJKB
-!
-! loezos
-        INTEGER incr
-! loezos
 
-!                      Face mass flux
-      DOUBLE PRECISION Flux
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Septadiagonal matrix A_W_g
+      DOUBLE PRECISION, INTENT(INOUT) :: A_W_g(DIMENSION_3, -3:3)
 
-!                      Diffusion parameter
-      DOUBLE PRECISION D_f
-!
-!                      Septadiagonal matrix A_W_g
-      DOUBLE PRECISION A_W_g(DIMENSION_3, -3:3)
-!
-!                      Convection weighting factors
-!      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
-!                       XSI_t(DIMENSION_3)
-!      DOUBLE PRECISION U(DIMENSION_3),&
-!                       V(DIMENSION_3), WW(DIMENSION_3)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      DOUBLE PRECISION :: AW,HW,VELW
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! Local variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: IJK, IPJK, IMJK, IJPK, IJMK, IJKP, IJKM
+! indicator for shear
+      INTEGER :: incr
+! Diffusion parameter
+      DOUBLE PRECISION :: d_fe, d_fw, d_fn, d_fs, d_ft, d_fb
+! Face mass flux
+      DOUBLE PRECISION :: Flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
+
+! temporary use of global arrays:
+! array1 (locally u)  - the x directional velocity
+!      DOUBLE PRECISION :: U(DIMENSION_3)
+! array2 (locally v)  - the y directional velocity
+!      DOUBLE PRECISION :: V(DIMENSION_3)
+! array3 (locally ww) - the z directional velocity
+!      DOUBLE PRECISION :: WW(DIMENSION_3)
+!---------------------------------------------------------------------//
 
       call lock_tmp_array
       call lock_xsi_array
 
-!
-!  Calculate convection factors
-!
+      CALL GET_WCELL_GVTERMS(U, V, WW)
 
-!!!$omp parallel do private(IJK,K,IJKT,IJKP)
-      DO IJK = ijkstart3, ijkend3
-         K = K_OF(IJK)
-         IJKT = TOP_OF(IJK)
-         IJKP = KP_OF(IJK)
-!
-!
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-!           East face (i+1/2, j, k+1/2)
-            U(IJK) = (Theta_W_be(IJK) * U_G(IJK) + Theta_W_te(IJK) * U_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IJK),AW,HW,VELW)
-            U(IJK) = U(IJK) * AW
-!           North face (i, j+1/2, k+1/2)
-            V(IJK) = (Theta_W_bn(IJK) * V_G(IJK) + Theta_W_tn(IJK) * V_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJK),AW,HW,VELW)
-            V(IJK) = V(IJK) * AW
-!           Top face (i, j, k+1)
-            WW(IJK) = (Theta_Wt_bar(IJK) * W_G(IJK) + Theta_Wt(IJK) * W_G(IJKP))
-            CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJK),AW,HW,VELW)
-            WW(IJK) = WW(IJK) * AW
-         ELSE   ! Original terms
-            U(IJK) = AVG_Z(U_G(IJK),U_G(IJKP),K)
-            V(IJK) = AVG_Z(V_G(IJK),V_G(IJKP),K)
-            WW(IJK) = AVG_Z_T(W_G(IJK),W_G(IJKP))
-         ENDIF
 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      END DO
-
-! loezos
-        incr=0
-! loezos
-
+! shear indicator:
+      incr=0
       CALL CALC_XSI (DISCRETIZE(5), W_G, U, V, WW, XSI_E, XSI_N,&
-               XSI_T,incr)
+         XSI_T, incr)
 
-! loezos
-! update to true velocity
-      IF (SHEAR) THEN
-!!!$omp parallel do private(IJK)
-         DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN
-           V(IJK)=V(IJK)+VSH(IJK)
-          END IF
-        END DO
-      END IF
-! loezos
-
-!
-!
-!
-!  Calculate convection-diffusion fluxes through each of the faces
-!
-!
-
-!!!!$omp      parallel do                                               &
-!!!!$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!!!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK,  D_f,        &
-!!!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,                     &
-!!!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,                     &
-!!!!$omp&             IJKM, KM, IJKB)
+!!!$omp      parallel do                                                 &
+!!!$omp&     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,            &
+!!!$omp&             d_fe, d_fw, d_fn, d_fs, d_ft, d_fb,                 &
+!!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)
       DO IJK = ijkstart3, ijkend3
-!
+
          IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate convection-diffusion fluxes through each of the faces
+            CALL GET_WCELL_GCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk)
+            CALL GET_WCELL_GDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+               d_ft, d_fb, ijk)
+
             IPJK = IP_OF(IJK)
             IJPK = JP_OF(IJK)
-            IJKN = NORTH_OF(IJK)
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
             IJKP = KP_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
-!
-!           East face (i+1/2, j, k+1/2)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_gE(IJK) + Theta_W_te(IJK) * Flux_gE(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),AVG_X_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTE),I),K)*ONEoDX_E_W(IJK)*AYZ_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gE(IJK) + Flux_gE(IJKP))
-               D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),AVG_X_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTE),I),K)*ODX_E(I)*AYZ_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-            A_W_G(IJK,E) = D_F - XSI_E(IJK)*Flux
-!
-            A_W_G(IPJK,W) = D_F + (ONE - XSI_E(IJK))*Flux
-!
-!           North face (i, j+1/2, k+1/2)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_gN(IJK) + Theta_W_tn(IJK) * Flux_gN(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTN),J),K)*ONEoDY_N_W(IJK)*AXZ_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gN(IJK) + Flux_gN(IJKP))
-               D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),AVG_Y_H(MU_GT(IJKT&
-                  ),MU_GT(IJKTN),J),K)*ODY_N(J)*AXZ_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-!
-            A_W_G(IJK,N) = D_F - XSI_N(IJK)*Flux
-!
-            A_W_G(IJPK,S) = D_F + (ONE - XSI_N(IJK))*Flux
-!
-!           Top face (i, j, k+1)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_gT(IJK) + Theta_Wt(IJK) * Flux_gT(IJKP))
-               CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = MU_GT(IJKT)*ONEoDZ_T_W(IJK)*AXY_W(IJK)
-            ELSE   ! Original terms
-               Flux = HALF * (Flux_gT(IJK) + Flux_gT(IJKP))
-               D_F = MU_GT(IJKT)*OX(I)*ODZ(KP)*AXY_W(IJK)
-            ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-            A_W_G(IJK,T) = D_F - XSI_T(IJK)*Flux
-            A_W_G(IJKP,B) = D_F + (ONE - XSI_T(IJK))*Flux
-!
-!           West face (i-1/2, j, k+1/2)
             IMJK = IM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IMJK)) THEN
-               IM = IM1(I)
-               IJKW = WEST_OF(IJK)
-               IJKWT = TOP_OF(IJKW)
-               IMJKP = KP_OF(IMJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_be(IMJK) * Flux_gE(IMJK) + Theta_W_te(IMJK) * Flux_gE(IMJKP))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_We_c(IMJK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),AVG_X_H(MU_GT(&
-                      IJKWT),MU_GT(IJKT),IM),K)*ONEoDX_E_W(IMJK)*AYZ_W(IMJK)
-               ELSE   ! Original terms
-                  Flux = HALF * (Flux_gE(IMJK) + Flux_gE(IMJKP))
-                  D_F = AVG_Z_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),AVG_X_H(MU_GT(&
-                     IJKWT),MU_GT(IJKT),IM),K)*ODX_E(IM)*AYZ_W(IMJK)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               A_W_G(IJK,W) = D_F + (ONE - XSI_E(IMJK))*Flux
-            ENDIF
-!
-!           South face (i, j-1/2, k+1/2)
             IJMK = JM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJMK)) THEN
-               JM = JM1(J)
-               IJMKP = KP_OF(IJMK)
-               IJKS = SOUTH_OF(IJK)
-               IJKST = TOP_OF(IJKS)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_bn(IJMK) * Flux_gN(IJMK) + Theta_W_tn(IJMK) * Flux_gN(IJMKP))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',ALPHA_Wn_c(IJMK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
-                     IJKST),MU_GT(IJKT),JM),K)*ONEoDY_N_W(IJMK)*AXZ_W(IJMK)
-               ELSE   ! Original terms
-                  Flux = HALF * (Flux_gN(IJMK) + Flux_gN(IJMKP))
-                  D_F = AVG_Z_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),AVG_Y_H(MU_GT(&
-                     IJKST),MU_GT(IJKT),JM),K)*ODY_N(JM)*AXZ_W(IJMK)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               A_W_G(IJK,S) = D_F + (ONE - XSI_N(IJMK))*Flux
-            ENDIF
-!
-!           Bottom face (i, j, k)
             IJKM = KM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJKM)) THEN
-               KM = KM1(K)
-               IJKB = BOTTOM_OF(IJK)
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_Wt_bar(IJKM) * Flux_gT(IJKM) + Theta_Wt(IJKM) * Flux_gT(IJK))
-                  CALL GET_INTERPOLATION_TERMS_G(IJK,'W_MOMENTUM',alpha_Wt_c(IJKM),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = MU_GT(IJK)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM)
-               ELSE   ! Original terms
-                  Flux = HALF * (Flux_gT(IJKM) + Flux_gT(IJK))
-                  D_F = MU_GT(IJK)*OX(I)*ODZ(K)*AXY_W(IJKM)
-               ENDIF
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-               A_W_G(IJK,B) = D_F + (ONE - XSI_T(IJKM))*Flux
+
+! East face (i+1/2, j, k+1/2)
+            A_W_G(IJK,E) = D_Fe - XSI_E(IJK)*Flux_e
+            A_W_G(IPJK,W) = D_Fe + (ONE - XSI_E(IJK))*Flux_e
+! West face (i-1/2, j, k+1/2)
+            IF (.NOT.FLOW_AT_T(IMJK)) THEN
+               A_W_G(IJK,W) = D_Fw + (ONE - XSI_E(IMJK))*Flux_w
             ENDIF
-         ENDIF
-      END DO
+
+
+! North face (i, j+1/2, k+1/2)
+            A_W_G(IJK,N) = D_Fn - XSI_N(IJK)*Flux_n
+            A_W_G(IJPK,S) = D_Fn + (ONE - XSI_N(IJK))*Flux_n
+! South face (i, j-1/2, k+1/2)
+            IF (.NOT.FLOW_AT_T(IJMK)) THEN
+               A_W_G(IJK,S) = D_Fs + (ONE - XSI_N(IJMK))*Flux_s
+            ENDIF
+
+
+! Top face (i, j, k+1)
+            A_W_G(IJK,T) = D_Ft - XSI_T(IJK)*Flux_t
+            A_W_G(IJKP,B) = D_Ft + (ONE - XSI_T(IJK))*Flux_t
+! Bottom face (i, j, k)
+            IF (.NOT.FLOW_AT_T(IJKM)) THEN
+              A_W_G(IJK,B) = D_Fb + (ONE - XSI_T(IJKM))*Flux_b
+            ENDIF
+
+         ENDIF   ! end if flow_at_t
+      ENDDO   ! end do ijk
 
       call unlock_tmp_array
       call unlock_xsi_array
 
       RETURN
       END SUBROUTINE STORE_A_W_G1
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-

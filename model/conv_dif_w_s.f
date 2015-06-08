@@ -12,49 +12,34 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^CC
-
       SUBROUTINE CONV_DIF_W_S(A_M, B_M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-! maximum number of computational cells, number of solids phases
+!---------------------------------------------------------------------//
       USE param, only: dimension_3, dimension_m
-
-! kinetic theories
       USE run, only: kt_type_enum
       USE run, only: ghd_2007
-! run time flag for deferred correction
       USE run, only: def_cor
-! run time flag to solve z momentum equation
       USE run, only: momentum_z_eq
-! discretization scheme for indicated equation
       USE run, only: discretize
-
-! number of solids phases
       USE physprop, only: mmax
-
-! solids phase viscosity
       USE visc_s, only: mu_s
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER :: M
-!------------------------------------------------
-
+!---------------------------------------------------------------------//
 
       DO M = 1, MMAX
         IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
@@ -62,13 +47,13 @@
 
           IF (MOMENTUM_Z_EQ(M)) THEN
 
-! IF DEFERRED CORRECTION IS TO BE USED TO SOLVE W_S
              IF (DEF_COR) THEN
+! USE DEFERRED CORRECTION TO SOLVE W_S
                 CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER)
-                IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (A_M(1,-3,M), M, B_M, IER)
-             ELSE
+                IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (M, B_M, IER)
 
-! NO DEFERRED CORRECTION IS TO BE USED TO SOLVE FOR W_S
+             ELSE
+! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR W_S
                 IF (DISCRETIZE(5) == 0) THEN         ! 0 & 1 => FOUP
                    CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER)
                 ELSE
@@ -76,13 +61,330 @@
                 ENDIF
              ENDIF
 
-            CALL DIF_W_IS (MU_S(1,M), A_M, B_M, M, IER)
+            CALL DIF_W_IS (MU_S(1,M), A_M, M)
           ENDIF
         ENDIF
       ENDDO
 
       RETURN
       END SUBROUTINE CONV_DIF_W_S
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Calculate the components of velocity on the east, north,   C
+!  and top face of a w-momentum cell                                   C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_SVTERMS(U, V, WW, M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: theta_wt, theta_wt_bar
+      USE cutcell, only: theta_w_be, theta_w_te
+      USE cutcell, only: theta_w_bn, theta_w_tn
+      USE cutcell, only: alpha_we_c, alpha_wn_c, alpha_wt_c
+
+      USE fldvar, only: u_s, v_s, w_s
+
+      USE fun_avg, only: avg_z_t, avg_z
+      USE functions, only: kp_of
+      USE indices, only: k_of
+
+      USE param, only: dimension_3
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! phase index
+      INTEGER, INTENT(IN) :: M
+! velocity components
+      DOUBLE PRECISION, INTENT(OUT) :: U(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: V(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: WW(DIMENSION_3)
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: IJK, K, IJKP
+! for cartesian grid
+      DOUBLE PRECISION :: AW, HW, VELW
+!---------------------------------------------------------------------//
+
+
+!!!$omp parallel do private(IJK,K,IJKT,IJKP)
+      DO IJK = ijkstart3, ijkend3
+         K = K_OF(IJK)
+         IJKP = KP_OF(IJK)
+
+         IF(CUT_W_TREATMENT_AT(IJK)) THEN
+
+! East face (i+1/2, j, k+1/2)
+            U(IJK) = (Theta_W_be(IJK) * U_S(IJK,M) + &
+                      Theta_W_te(IJK) * U_S(IJKP,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM', &
+               ALPHA_We_c(IJK), AW, HW, VELW)
+            U(IJK) = U(IJK) * AW
+
+! North face (i, j+1/2, k+1/2)
+            V(IJK) = (Theta_W_bn(IJK) * V_S(IJK,M) + &
+                      Theta_W_tn(IJK) * V_S(IJKP,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM', &
+               ALPHA_Wn_c(IJK), AW, HW, VELW)
+            V(IJK) = V(IJK) * AW
+
+! Top face (i, j, k+1)
+            WW(IJK) = (Theta_Wt_bar(IJK) * W_S(IJK,M) + &
+                      Theta_Wt(IJK) * W_S(IJKP,M))
+            CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM', &
+               alpha_Wt_c(IJK), AW, HW, VELW)
+            WW(IJK) = WW(IJK) * AW
+
+         ELSE
+            U(IJK) = AVG_Z(U_S(IJK,M),U_S(IJKP,M),K)
+            V(IJK) = AVG_Z(V_S(IJK,M),V_S(IJKP,M),K)
+            WW(IJK) = AVG_Z_T(W_S(IJK,M),W_S(IJKP,M))
+         ENDIF   ! end if/else cut_w_treatment_at
+      ENDDO   ! end do ijk
+
+      RETURN
+      END SUBROUTINE GET_WCELL_SVTERMS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Calculate the convective fluxes through the faces of a     C
+!  w-momentum cell. Note the fluxes are calculated at all faces of     C
+!  regardless of flow_at_t of condition of the west, south, or         C
+!  bottom face.                                                        C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_SCFLUX_TERMS(FLUX_E, FLUX_W, FLUX_N, &
+         FLUX_S, FLUX_T, FLUX_B, IJK, M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: theta_wt, theta_wt_bar
+      USE cutcell, only: theta_w_be, theta_w_te
+      USE cutcell, only: theta_w_bn, theta_w_tn
+      USE cutcell, only: alpha_we_c, alpha_wn_c, alpha_wt_c
+
+      USE functions, only: kp_of, im_of, jm_of, km_of
+
+      USE mflux, only: flux_se, flux_sn, flux_st
+
+      USE param1, only: half
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! phase index
+      INTEGER, INTENT(IN) :: M
+! fluxes through faces of given ijk u-momentum cell
+      DOUBLE PRECISION, INTENT(OUT) :: flux_e, flux_w
+      DOUBLE PRECISION, INTENT(OUT) :: flux_n, flux_s
+      DOUBLE PRECISION, INTENT(OUT) :: flux_t, flux_b
+! ijk index
+      INTEGER, INTENT(IN) :: ijk
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: imjk, ijmk, ijkm
+      INTEGER :: ijkp, imjkp, ijmkp
+
+! for cartesian grid
+      DOUBLE PRECISION :: AW, HW, VELW
+!---------------------------------------------------------------------//
+
+      IJKP = KP_OF(IJK)
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
+      IMJKP = KP_OF(IMJK)
+      IJMKP = KP_OF(IJMK)
+
+      IF(CUT_W_TREATMENT_AT(IJK)) THEN
+! East face (i+1/2, j, k+1/2)
+         Flux_e = (Theta_W_be(IJK) * Flux_sE(IJK,M) + &
+                 Theta_W_te(IJK) * Flux_sE(IJKP,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            ALPHA_We_c(IJK), AW, HW, VELW)
+         Flux_e = Flux_e * AW
+! West face (i-1/2, j, k+1/2)
+         Flux_w = (Theta_W_be(IMJK) * Flux_sE(IMJK,M) + &
+                   Theta_W_te(IMJK) * Flux_sE(IMJKP,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            ALPHA_We_c(IMJK), AW, HW, VELW)
+         Flux_w = Flux_w * AW
+
+
+! North face (i, j+1/2, k+1/2)
+         Flux_n = (Theta_W_bn(IJK) * Flux_sN(IJK,M) + &
+                 Theta_W_tn(IJK) * Flux_sN(IJKP,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            ALPHA_Wn_c(IJK), AW, HW, VELW)
+         Flux_n = Flux_n * AW
+! South face (i, j-1/2, k+1/2)
+         Flux_s = (Theta_W_bn(IJMK) * Flux_sN(IJMK,M) + &
+                   Theta_W_tn(IJMK) * Flux_sN(IJMKP,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            ALPHA_Wn_c(IJMK), AW, HW, VELW)
+         Flux_s = Flux_s * AW
+
+
+! Top face (i, j, k+1)
+         Flux_t = (Theta_Wt_bar(IJK) * Flux_sT(IJK,M) + &
+                   Theta_Wt(IJK) * Flux_sT(IJKP,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            alpha_Wt_c(IJK),AW,HW,VELW)
+         Flux_t = Flux_t * AW
+! Bottom face (i, j, k)
+         Flux_b = (Theta_Wt_bar(IJKM) * Flux_sT(IJKM,M) + &
+                   Theta_Wt(IJKM) * Flux_sT(IJK,M))
+         CALL GET_INTERPOLATION_TERMS_S(IJK, M, 'W_MOMENTUM',&
+            alpha_Wt_c(IJKM), AW, HW, VELW)
+         Flux_b = Flux_b * AW
+      ELSE
+         Flux_e = HALF * (Flux_sE(IJK,M)  + Flux_sE(IJKP,M))
+         Flux_w = HALF * (Flux_sE(IMJK,M) + Flux_sE(IMJKP,M))
+         Flux_n = HALF * (Flux_sN(IJK,M)  + Flux_sN(IJKP,M))
+         Flux_s = HALF * (Flux_sN(IJMK,M) + Flux_sN(IJMKP,M))
+         Flux_t = HALF * (Flux_sT(IJK,M)  + Flux_sT(IJKP,M))
+         Flux_b = HALF * (Flux_sT(IJKM,M) + Flux_sT(IJK,M))
+      ENDIF   ! end if/else cut_w_treatment_at
+
+      RETURN
+      END SUBROUTINE GET_WCELL_SCFLUX_TERMS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Purpose: Calculate the components of diffusive flux through the     C
+!  faces of a w-momentum cell. Note the fluxes are calculated at       C
+!  all faces regardless of flow_at_t condition of the west, south      C
+!  or bottom face.                                                     C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE GET_WCELL_SDIFF_TERMS(D_FE, D_FW, D_FN, D_FS, &
+         D_FT, D_FB, IJK, M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE cutcell, only: cut_w_treatment_at
+      USE cutcell, only: oneodx_e_w, oneody_n_w, oneodz_t_w
+
+      USE functions, only: wall_at
+      USE functions, only: east_of, north_of, top_of
+      USE functions, only: west_of, south_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h
+
+      USE geometry, only: odx_e, ody_n, odz
+      USE geometry, only: ox
+      USE geometry, only: ayz_w, axz_w, axy_w
+
+      USE indices, only: i_of, j_of, k_of
+      USE indices, only: kp1, im1, jm1
+
+      USE visc_s, only: mu_s
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! phase index
+      INTEGER, INTENT(IN) :: M
+! diffusion through faces of given ijk w-momentum cell
+      DOUBLE PRECISION, INTENT(OUT) :: d_fe, d_fw
+      DOUBLE PRECISION, INTENT(OUT) :: d_fn, d_fs
+      DOUBLE PRECISION, INTENT(OUT) :: d_ft, d_fb
+! ijk idnex
+      INTEGER, INTENT(IN) :: ijk
+
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: imjk, ijmk, ijkm
+      INTEGER :: i, j, k, kp, im, jm
+      INTEGER :: ijkc, ijkt, ijke, ijkte, ijkw, ijkwt
+      INTEGER :: ijkn, ijktn, ijks, ijkst
+
+! length terms
+      DOUBLE PRECISION :: C_AE, C_AW, C_AN, C_AS, C_AT, C_AB
+!---------------------------------------------------------------------//
+
+      IMJK = IM_OF(IJK)
+      IJMK = JM_OF(IJK)
+      IJKM = KM_OF(IJK)
+
+      I = I_OF(IJK)
+      J = J_OF(IJK)
+      K = K_OF(IJK)
+      KP = KP1(K)
+      IM = IM1(I)
+      JM = JM1(J)
+
+      IJKT = TOP_OF(IJK)
+      IF (WALL_AT(IJK)) THEN
+         IJKC = IJKT
+      ELSE
+         IJKC = IJK
+      ENDIF
+      IJKE = EAST_OF(IJK)
+      IJKTE = EAST_OF(IJKT)
+      IJKN = NORTH_OF(IJK)
+      IJKTN = NORTH_OF(IJKT)
+      IJKW = WEST_OF(IJK)
+      IJKWT = TOP_OF(IJKW)
+      IJKS = SOUTH_OF(IJK)
+      IJKST = TOP_OF(IJKS)
+
+      IF(CUT_W_TREATMENT_AT(IJK)) THEN
+         C_AE = ONEoDX_E_W(IJK)
+         C_AW = ONEoDX_E_W(IMJK)
+         C_AN = ONEoDY_N_W(IJK)
+         C_AS = ONEoDY_N_W(IJMK)
+         C_AT = ONEoDZ_T_W(IJK)
+         C_AB = ONEoDZ_T_W(IJKM)
+      ELSE
+         C_AE = ODX_E(I)
+         C_AW = ODX_E(IM)
+         C_AN = ODY_N(J)
+         C_AS = ODY_N(JM)
+         C_AT = ODZ(KP)
+         C_AB = ODZ(K)
+      ENDIF
+
+! East face (i+1/2, j, k+1/2)
+      D_Fe = AVG_Z_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
+                     AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*&
+               C_AE*AYZ_W(IJK)
+! West face (i-1/2, j, k+1/2)
+      D_Fw = AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJKC,M),IM),&
+                     AVG_X_H(MU_S(IJKWT,M),MU_S(IJKT,M),IM),K)*&
+                C_AW*AYZ_W(IMJK)
+
+! North face (i, j+1/2, k+1/2)
+      D_Fn = AVG_Z_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),&
+                     AVG_Y_H(MU_S(IJKT,M),MU_S(IJKTN,M),J),K)*&
+                C_AN*AXZ_W(IJK)
+! South face (i, j-1/2, k+1/2)
+      D_Fs = AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),&
+                     AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
+                C_AS*AXZ_W(IJMK)
+
+
+! Top face (i, j, k+1)
+      D_Ft = MU_S(IJKT,M)*OX(I)*C_AT*AXY_W(IJK)
+! Bottom face (i, j, k)
+      D_Fb = MU_S(IJK,M)*OX(I)*C_AB*AXY_W(IJKM)
+
+      RETURN
+      END SUBROUTINE GET_WCELL_SDIFF_TERMS
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -103,240 +405,128 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE STORE_A_W_S0(A_W_S, M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE physprop
-      USE visc_s
-      USE toleranc
-      USE fldvar
-      USE output
-      USE compar
-      USE mflux
-      USE cutcell
-      USE fun_avg
-      USE functions
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE param, only: dimension_3
+      USE param1, only: zero
+      USE matrix, only: e, w, n, s, t, b
+
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_W_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_W_s(DIMENSION_3, -3:3, M:M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                 IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER :: IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER :: IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER :: IJKM, KM, IJKB
+      INTEGER :: IJK
+      INTEGER :: IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
 ! Face mass flux
-      DOUBLE PRECISION :: Flux
+      DOUBLE PRECISION :: flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
 ! Diffusion parameter
-      DOUBLE PRECISION :: D_f
-! for cartesian grid:
-      DOUBLE PRECISION :: AW,HW,VELW
-!-----------------------------------------------
+      DOUBLE PRECISION :: D_fe, d_fw, d_fn, d_fs, d_ft, d_fb
 
-! Calculate convection-diffusion fluxes through each of the faces
+!---------------------------------------------------------------------//
 
-!!$omp      parallel do         &
-!!$omp&     private(IJK,  I,  J, K, IPJK, IJPK, IJKN, IJKC, KP, &
-!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, D_f,        &
-!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,       &
-!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,       &
-!!$omp&             IJKM, KM, IJKB)
+!$omp     parallel do default(none)                                &
+!$omp     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,         &
+!$omp             D_fe, d_fw, d_fn, d_fs, d_ft, d_fb,              &
+!$omp             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)  &
+!$omp     shared(ijkstart3, ijkend3, m, a_w_s)
+
       DO IJK = ijkstart3, ijkend3
 
          IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate convection-diffusion fluxes through each of the faces
+            CALL GET_WCELL_SCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk, M)
+
+            CALL GET_WCELL_SDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+               d_ft, d_fb, ijk, M)
+
             IPJK = IP_OF(IJK)
             IJPK = JP_OF(IJK)
-            IJKN = NORTH_OF(IJK)
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
             IJKP = KP_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 
 ! East face (i+1/2, j, k+1/2)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_sE(IJK,M) + &
-                       Theta_W_te(IJK) * Flux_sE(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
-                             AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*&
-                     ONEoDX_E_W(IJK)*AYZ_W(IJK)
+            IF (Flux_e >= ZERO) THEN
+               A_W_S(IJK,E,M) = D_Fe
+               A_W_S(IPJK,W,M) = D_Fe + Flux_e
             ELSE
-               Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IJKP,M))
-               D_F = AVG_Z_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
-                             AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*&
-                     ODX_E(I)*AYZ_W(IJK)
+               A_W_S(IJK,E,M) = D_Fe - Flux_e
+               A_W_S(IPJK,W,M) = D_Fe
             ENDIF
-            IF (Flux >= ZERO) THEN
-               A_W_S(IJK,E,M) = D_F
-               A_W_S(IPJK,W,M) = D_F + Flux
-            ELSE
-               A_W_S(IJK,E,M) = D_F - Flux
-               A_W_S(IPJK,W,M) = D_F
+! West face (i-1/2, j, k+1/2)
+            IF (.NOT.FLOW_AT_T(IMJK)) THEN
+               IF (Flux_w >= ZERO) THEN
+                  A_W_S(IJK,W,M) = D_Fw + Flux_w
+               ELSE
+                  A_W_S(IJK,W,M) = D_Fw
+               ENDIF
             ENDIF
+
 
 ! North face (i, j+1/2, k+1/2)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_sN(IJK,M) + &
-                       Theta_W_tn(IJK) * Flux_sN(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),&
-                             AVG_Y_H(MU_S(IJKT,M),MU_S(IJKTN,M),J),K)*&
-                     ONEoDY_N_W(IJK)*AXZ_W(IJK)
+            IF (Flux_n >= ZERO) THEN
+               A_W_S(IJK,N,M) = D_Fn
+               A_W_S(IJPK,S,M) = D_Fn + Flux_n
             ELSE
-               Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJKP,M))
-               D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),&
-                             AVG_Y_H(MU_S(IJKT,M),MU_S(IJKTN,M),J),K)*&
-                     ODY_N(J)*AXZ_W(IJK)
+               A_W_S(IJK,N,M) = D_Fn - Flux_n
+               A_W_S(IJPK,S,M) = D_Fn
             ENDIF
-            IF (Flux >= ZERO) THEN
-               A_W_S(IJK,N,M) = D_F
-               A_W_S(IJPK,S,M) = D_F + Flux
-            ELSE
-               A_W_S(IJK,N,M) = D_F - Flux
-               A_W_S(IJPK,S,M) = D_F
+! South face (i, j-1/2, k+1/2)
+            IF (.NOT.FLOW_AT_T(IJMK)) THEN
+              IF (Flux_s >= ZERO) THEN
+                  A_W_S(IJK,S,M) = D_Fs + Flux_s
+               ELSE
+                  A_W_S(IJK,S,M) = D_Fs
+               ENDIF
             ENDIF
+
 
 ! Top face (i, j, k+1)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_sT(IJK,M) + &
-                       Theta_Wt(IJK) * Flux_sT(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = MU_S(IJKT,M)*ONEoDZ_T_W(IJK)*AXY_W(IJK)
+            IF (Flux_T >= ZERO) THEN
+               A_W_S(IJK,T,M) = D_Ft
+               A_W_S(IJKP,B,M) = D_Ft + Flux_t
             ELSE
-               Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJKP,M))
-               D_F = MU_S(IJKT,M)*OX(I)*ODZ(KP)*AXY_W(IJK)
+               A_W_S(IJK,T,M) = D_Ft - Flux_t
+               A_W_S(IJKP,B,M) = D_Ft
             ENDIF
-            IF (Flux >= ZERO) THEN
-               A_W_S(IJK,T,M) = D_F
-               A_W_S(IJKP,B,M) = D_F + Flux
-            ELSE
-               A_W_S(IJK,T,M) = D_F - Flux
-               A_W_S(IJKP,B,M) = D_F
-            ENDIF
-
-! West face (i-1/2, j, k+1/2)
-            IMJK = IM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IMJK)) THEN
-               IM = IM1(I)
-               IJKW = WEST_OF(IJK)
-               IJKWT = TOP_OF(IJKW)
-               IMJKP = KP_OF(IMJK)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_be(IMJK) * Flux_sE(IMJK,M) + &
-                          Theta_W_te(IMJK) * Flux_sE(IMJKP,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          ALPHA_We_c(IMJK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJKC,M),IM),&
-                                AVG_X_H(MU_S(IJKWT,M),MU_S(IJKT,M),IM),K)*&
-                        ONEoDX_E_W(IMJK)*AYZ_W(IMJK)
-               ELSE
-                  Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IMJKP,M))
-                  D_F = AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJKC,M),IM),&
-                                AVG_X_H(MU_S(IJKWT,M),MU_S(IJKT,M),IM),K)*&
-                        ODX_E(IM)*AYZ_W(IMJK)
-               ENDIF
-               IF (Flux >= ZERO) THEN
-                  A_W_S(IJK,W,M) = D_F + Flux
-               ELSE
-                  A_W_S(IJK,W,M) = D_F
-               ENDIF
-            ENDIF
-
-! South face (i, j-1/2, k+1/2)
-            IJMK = JM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJMK)) THEN
-               JM = JM1(J)
-               IJMKP = KP_OF(IJMK)
-               IJKS = SOUTH_OF(IJK)
-               IJKST = TOP_OF(IJKS)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_bn(IJMK) * Flux_sN(IJMK,M) + &
-                          Theta_W_tn(IJMK) * Flux_sN(IJMKP,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          ALPHA_Wn_c(IJMK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),&
-                                AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
-                        ONEoDY_N_W(IJMK)*AXZ_W(IJMK)
-               ELSE
-                  Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IJMKP,M))
-                  D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),&
-                                AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
-                        ODY_N(JM)*AXZ_W(IJMK)
-               ENDIF
-               IF (Flux >= ZERO) THEN
-                  A_W_S(IJK,S,M) = D_F + Flux
-               ELSE
-                  A_W_S(IJK,S,M) = D_F
-               ENDIF
-            ENDIF
-
 ! Bottom face (i, j, k)
-            IJKM = KM_OF(IJK)
             IF (.NOT.FLOW_AT_T(IJKM)) THEN
-               KM = KM1(K)
-               IJKB = BOTTOM_OF(IJK)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_Wt_bar(IJKM) * Flux_sT(IJKM,M) + &
-                          Theta_Wt(IJKM) * Flux_sT(IJK,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          alpha_Wt_c(IJKM),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = MU_S(IJK,M)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM)
+               IF (Flux_b >= ZERO) THEN
+                  A_W_S(IJK,B,M) = D_Fb + Flux_b
                ELSE
-                  Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IJK,M))
-                  D_F = MU_S(IJK,M)*OX(I)*ODZ(K)*AXY_W(IJKM)
+                  A_W_S(IJK,B,M) = D_Fb
                ENDIF
-               IF (Flux >= ZERO) THEN
-                  A_W_S(IJK,B,M) = D_F + Flux
-               ELSE
-                  A_W_S(IJK,B,M) = D_F
-               ENDIF
-            ENDIF   ! end if (do_k)
+            ENDIF
 
          ENDIF   ! end if (flow_at_t)
       ENDDO   ! end do ijk
-
+!$omp end parallel do
 
       RETURN
       END SUBROUTINE STORE_A_W_S0
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -354,69 +544,66 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE STORE_A_W_SDC(M, B_M, IER)
 
-      SUBROUTINE STORE_A_W_SDC(A_W_S, M, B_M, IER)
-
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE compar
-      USE cutcell
-      USE discretization, ONLY: FPFOI_OF
-      USE fldvar
-      USE fun_avg
-      USE function3
-      USE functions
-      USE geometry
-      USE indices
-      USE matrix
-      USE mflux
-      USE output
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE run
-      USE sendrecv
-      USE sendrecv3
-      USE toleranc
-      USE visc_s
-      USE xsi
-      USE xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+
+      USE discretization, only: fpfoi_of
+
+      USE fldvar, only: w_s
+
+      USE function3, only: funijk3
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE indices, only: i_of, j_of, k_of
+
+      USE matrix, only: e, w, n, s, t, b
+
+      USE param, only: dimension_3, dimension_m
+      USE param1, only: zero, half
+
+      USE run, only: discretize, fpfoi
+      USE sendrecv3, only: send_recv3
+
+      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
+      USE tmp_array, only: tmp4
+      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
+      USE tmp_array, only: lock_tmp4_array, unlock_tmp4_array
+
+      USE xsi, only: calc_xsi
+      USE xsi_array, only: xsi_e, xsi_n, xsi_t
+      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
-! Solids phase index
+!---------------------------------------------------------------------//
+! phase index
       INTEGER, INTENT(IN) :: M
-! Septadiagonal matrix A_W_s
-      DOUBLE PRECISION, INTENT(INOUT) :: A_W_s(DIMENSION_3, -3:3, M:M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                 IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER :: IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER :: IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER :: IJKM, KM, IJKB
+      INTEGER :: I, J, K, IJK
+      INTEGER :: IPJK, IMJK, IJMK, IJPK, IJKM, IJKP
       INTEGER :: IJK4, IPPP, IPPP4, JPPP, JPPP4, KPPP, KPPP4
       INTEGER :: IMMM, IMMM4, JMMM, JMMM4, KMMM, KMMM4
-! indicator for shear
+! indication for shear
       INTEGER :: incr
-! Diffusion parameter
-      DOUBLE PRECISION :: D_f
-! Deferred correction contribution from high order method
+! deferred corrction contribution form high order method
       DOUBLE PRECISION :: MOM_HO
 ! low order approximation
       DOUBLE PRECISION :: MOM_LO
-! convection factor at the face
-      DOUBLE PRECISION :: Flux
+! convection factor at each face
+      DOUBLE PRECISION :: flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
 ! deferred correction contributions from each face
       DOUBLE PRECISION :: EAST_DC
       DOUBLE PRECISION :: WEST_DC
@@ -425,28 +612,21 @@
       DOUBLE PRECISION :: TOP_DC
       DOUBLE PRECISION :: BOTTOM_DC
 
-! for cartesian grid:
-      DOUBLE PRECISION :: AW,HW,VELW
-
 ! temporary use of global arrays:
-! array1 (locally u)
-! the x directional velocity
+! array1 (locally u)  - the x directional velocity
 !      DOUBLE PRECISION :: U(DIMENSION_3)
-! array2 (locally v)
-! the y directional velocity
+! array2 (locally v)  - the y directional velocity
 !      DOUBLE PRECISION :: V(DIMENSION_3)
-! array3 (locally ww)
-! the z directional velocity
+! array3 (locally ww) - the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
-
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_tmp4_array
       call lock_tmp_array   ! locks array1, array2, array3 (locally u, v, ww)
       call lock_xsi_array
 
-! Calculate convection factors
-! ---------------------------------------------------------------->>>
+      CALL GET_WCELL_SVTERMS(U, V, WW, M)
+
 ! Send recv the third ghost layer
       IF ( FPFOI ) THEN
          Do IJK = ijkstart3, ijkend3
@@ -460,86 +640,30 @@
       ENDIF
 
 
-!!$omp parallel do private(IJK,K,IJKT,IJKP )
-      DO IJK = ijkstart3, ijkend3
-         K = K_OF(IJK)
-         IJKT = TOP_OF(IJK)
-         IJKP = KP_OF(IJK)
-
-! East face (i+1/2, j, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            U(IJK) = (Theta_W_be(IJK) * U_S(IJK,M) + &
-                      Theta_W_te(IJK) * U_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    ALPHA_We_c(IJK),AW,HW,VELW)
-            U(IJK) = U(IJK) * AW
-         ELSE
-            U(IJK) = AVG_Z(U_S(IJK,M),U_S(IJKP,M),K)
-         ENDIF
-
-! North face (i, j+1/2, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            V(IJK) = (Theta_W_bn(IJK) * V_S(IJK,M) + &
-                      Theta_W_tn(IJK) * V_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    ALPHA_Wn_c(IJK) ,AW,HW,VELW)
-            V(IJK) = V(IJK) * AW
-         ELSE
-            V(IJK) = AVG_Z(V_S(IJK,M),V_S(IJKP,M),K)
-         ENDIF
-
-! Top face (i, j, k+1)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            WW(IJK) = (Theta_Wt_bar(IJK) * W_S(IJK,M) + &
-                       Theta_Wt(IJK) * W_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    alpha_Wt_c(IJK),AW,HW,VELW)
-            WW(IJK) = WW(IJK) * AW
-         ELSE
-            WW(IJK) = AVG_Z_T(W_S(IJK,M),W_S(IJKP,M))
-         ENDIF
-      ENDDO
-
-! shear
+! shear indicator:
       incr=0
-
       CALL CALC_XSI (DISCRETIZE(5), W_S(1,M), U, V, WW, XSI_E, XSI_N,&
-                     XSI_T,incr)
+                     XSI_T, incr)
 
-
-! Calculate convection-diffusion fluxes through each of the faces
-! ---------------------------------------------------------------->>>
-
-!!!$omp      parallel do        &
-!!!$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,     &
-!!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK,  D_f, &
-!!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,      &
-!!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,      &
-!!!$omp&             IJKM, KM, IJKB, &
-!!!$omp&              MOM_HO, MOM_LO, EAST_DC,WEST_DC,NORTH_DC,&
-!!!$omp&              SOUTH_DC, TOP_DC,BOTTOM_DC)
+!!!$omp      parallel do                                             &
+!!!$omp&     private( I, J, K, IJK, IPJK, IMJK, IJPK, IJMK,          &
+!!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_b, flux_t, &
+!!!$omp&             MOM_HO, MOM_LO, EAST_DC, WEST_DC, NORTH_DC,     &
+!!!$omp&             SOUTH_DC, TOP_DC, BOTTOM_DC)
       DO IJK = ijkstart3, ijkend3
+
          IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+
+! Calculate convection fluxes through each of the faces
+            CALL GET_WCELL_SCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk, M)
+
             IPJK = IP_OF(IJK)
             IMJK = IM_OF(IJK)
             IJPK = JP_OF(IJK)
             IJMK = JM_OF(IJK)
             IJKP = KP_OF(IJK)
             IJKM = KM_OF(IJK)
-            IJKN = NORTH_OF(IJK)
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
 
 ! Third Ghost layer information
             IPPP  = IP_OF(IP_OF(IPJK))
@@ -551,12 +675,12 @@
             JMMM  = JM_OF(JM_OF(IJMK))
             JMMM4 = funijk3(I_OF(JMMM), J_OF(JMMM), K_OF(JMMM))
             KPPP  = KP_OF(KP_OF(IJKP))
-            KPPP4 = funijk3(K_OF(IPPP), J_OF(KPPP), K_OF(KPPP))
+            KPPP4 = funijk3(I_OF(KPPP), J_OF(KPPP), K_OF(KPPP))
             KMMM  = KM_OF(KM_OF(IJKM))
             KMMM4 = funijk3(I_OF(KMMM), J_OF(KMMM), K_OF(KMMM))
 
 
-! DEFERRED CORRECTION CONTRIBUTION AT THE East face (i+1/2, j, k+1/2)
+! East face (i+1/2, j, k+1/2)
             IF(U(IJK) >= ZERO)THEN
                MOM_LO = W_S(IJK,M)
                IF (FPFOI) MOM_HO = FPFOI_OF(W_S(IPJK,M), W_S(IJK,M), &
@@ -566,80 +690,11 @@
                IF (FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IPJK,M), &
                                    W_S(IP_OF(IPJK),M), TMP4(IPPP4))
             ENDIF
-
             IF (.NOT. FPFOI) MOM_HO = XSI_E(IJK)*W_S(IPJK,M)+ &
                                       (1.0-XSI_E(IJK))*W_S(IJK,M)
+            EAST_DC = Flux_e*(MOM_LO-MOM_HO)
 
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_sE(IJK,M) + &
-                       Theta_W_te(IJK) * Flux_sE(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE
-               Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IJKP,M))
-            ENDIF
-            EAST_DC = Flux*(MOM_LO-MOM_HO)
-
-
-! DEFERRED CORRECTION CONTRIBUTION AT THE North face (i, j+1/2, k+1/2)
-            IF(V(IJK) >= ZERO)THEN
-               MOM_LO = W_S(IJK,M)
-               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJPK,M), W_S(IJK,M), &
-                                  W_S(IJMK,M), W_S(JM_OF(IJMK),M))
-            ELSE
-               MOM_LO = W_S(IJPK,M)
-               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJPK,M), &
-                                  W_S(JP_OF(IJPK),M), TMP4(JPPP4))
-            ENDIF
-
-            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJK)*W_S(IJPK,M)+ &
-                                      (1.0-XSI_N(IJK))*W_S(IJK,M)
-
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_sN(IJK,M) + &
-                       Theta_W_tn(IJK) * Flux_sN(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE
-               Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJKP,M))
-            ENDIF
-            NORTH_DC = Flux*(MOM_LO-MOM_HO)
-
-
-! DEFERRED CORRECTION CONTRIBUTION AT THE Top face (i, j, k+1)
-            IF(WW(IJK) >= ZERO)THEN
-               MOM_LO = W_S(IJK,M)
-               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJKP,M), W_S(IJK,M), &
-                                  W_S(IJKM,M), W_S(KM_OF(IJKM),M))
-            ELSE
-               MOM_LO = W_S(IJKP,M)
-               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJKP,M), &
-                                  W_S(KP_OF(IJKP),M), TMP4(KPPP4))
-            ENDIF
-
-            IF (.NOT. FPFOI) MOM_HO = XSI_T(IJK)*W_S(IJKP,M)+ &
-                                      (1.0-XSI_T(IJK))*W_S(IJK,M)
-
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_sT(IJK,M) + &
-                       Theta_Wt(IJK) * Flux_sT(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE
-               Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJKP,M))
-            ENDIF
-            TOP_DC = Flux*(MOM_LO-MOM_HO)
-
-
-! DEFERRED CORRECTION CONTRIBUTION AT THE West face (i-1/2, j, k+1/2)
-            IMJK = IM_OF(IJK)
-            IM = IM1(I)
-            IJKW = WEST_OF(IJK)
-            IJKWT = TOP_OF(IJKW)
-            IMJKP = KP_OF(IMJK)
+! West face (i-1/2, j, k+1/2)
             IF(U(IMJK) >= ZERO)THEN
                MOM_LO = W_S(IMJK,M)
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IMJK,M), &
@@ -649,28 +704,26 @@
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IMJK,M), W_S(IJK,M), &
                                   W_S(IPJK,M), W_S(IP_OF(IPJK),M))
             ENDIF
-
             IF (.NOT. FPFOI) MOM_HO = XSI_E(IMJK)*W_S(IJK,M)+ &
                                       (1.0-XSI_E(IMJK))*W_S(IMJK,M)
+            WEST_DC = Flux_w*(MOM_LO-MOM_HO)
 
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IMJK) * Flux_sE(IMJK,M) + &
-                       Theta_W_te(IMJK) * Flux_sE(IMJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_We_c(IMJK),AW,HW,VELW)
-               Flux = Flux * AW
+
+! North face (i, j+1/2, k+1/2)
+            IF(V(IJK) >= ZERO)THEN
+               MOM_LO = W_S(IJK,M)
+               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJPK,M), W_S(IJK,M), &
+                                  W_S(IJMK,M), W_S(JM_OF(IJMK),M))
             ELSE
-               Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IMJKP,M))
+               MOM_LO = W_S(IJPK,M)
+               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJPK,M), &
+                                  W_S(JP_OF(IJPK),M), TMP4(JPPP4))
             ENDIF
-            WEST_DC = Flux*(MOM_LO-MOM_HO)
+            IF (.NOT. FPFOI) MOM_HO = XSI_N(IJK)*W_S(IJPK,M)+ &
+                                      (1.0-XSI_N(IJK))*W_S(IJK,M)
+            NORTH_DC = Flux_n*(MOM_LO-MOM_HO)
 
-
-! CORRECTION CONTRIBUTION AT THE South face (i, j-1/2, k+1/2)
-            IJMK = JM_OF(IJK)
-            JM = JM1(J)
-            IJMKP = KP_OF(IJMK)
-            IJKS = SOUTH_OF(IJK)
-            IJKST = TOP_OF(IJKS)
+! South face (i, j-1/2, k+1/2)
             IF(V(IJMK) >= ZERO)THEN
                MOM_LO = W_S(IJMK,M)
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJMK,M), &
@@ -680,26 +733,26 @@
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJMK,M), W_S(IJK,M), &
                                   W_S(IJPK,M), W_S(JP_OF(IJPK),M))
             ENDIF
-
             IF (.NOT. FPFOI) MOM_HO = XSI_N(IJMK)*W_S(IJK,M)+ &
                                       (1.0-XSI_N(IJMK))*W_S(IJMK,M)
+            SOUTH_DC = Flux_s*(MOM_LO-MOM_HO)
 
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJMK) * Flux_sN(IJMK,M) + &
-                       Theta_W_tn(IJMK) * Flux_sN(IJMKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_Wn_c(IJMK),AW,HW,VELW)
-               Flux = Flux * AW
+
+! Top face (i, j, k+1)
+            IF(WW(IJK) >= ZERO)THEN
+               MOM_LO = W_S(IJK,M)
+               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJKP,M), W_S(IJK,M), &
+                                  W_S(IJKM,M), W_S(KM_OF(IJKM),M))
             ELSE
-               Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IJMKP,M))
+               MOM_LO = W_S(IJKP,M)
+               IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJKP,M), &
+                                  W_S(KP_OF(IJKP),M), TMP4(KPPP4))
             ENDIF
-            SOUTH_DC = Flux*(MOM_LO-MOM_HO)
+            IF (.NOT. FPFOI) MOM_HO = XSI_T(IJK)*W_S(IJKP,M)+ &
+                                      (1.0-XSI_T(IJK))*W_S(IJK,M)
+            TOP_DC = Flux_T*(MOM_LO-MOM_HO)
 
-
-! DEFERRED CORRECTION CONTRIBUTION AT THE Bottom face (i, j, k)
-            IJKM = KM_OF(IJK)
-            KM = KM1(K)
-            IJKB = BOTTOM_OF(IJK)
+! Bottom face (i, j, k)
             IF(WW(IJK) >= ZERO)THEN
                MOM_LO = W_S(IJKM,M)
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJK,M), W_S(IJKM,M), &
@@ -709,20 +762,9 @@
                IF(FPFOI) MOM_HO = FPFOI_OF(W_S(IJKM,M), W_S(IJK,M), &
                                   W_S(IJKP,M), W_S(KP_OF(IJKP),M))
             ENDIF
-
             IF (.NOT. FPFOI) MOM_HO = XSI_T(IJKM)*W_S(IJK,M)+ &
                                       (1.0-XSI_T(IJKM))*W_S(IJKM,M)
-
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJKM) * Flux_sT(IJKM,M) + &
-                       Theta_Wt(IJKM) * Flux_sT(IJK,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       alpha_Wt_c(IJKM),AW,HW,VELW)
-               Flux = Flux * AW
-            ELSE
-               Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IJK,M))
-            ENDIF
-            BOTTOM_DC = Flux*(MOM_LO-MOM_HO)
+            BOTTOM_DC = Flux_b*(MOM_LO-MOM_HO)
 
 
 ! CONTRIBUTION DUE TO DEFERRED CORRECTION
@@ -758,289 +800,117 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE STORE_A_W_S1(A_W_S, M)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE matrix
-      USE geometry
-      USE indices
-      USE run
-      USE physprop
-      USE visc_s
-      USE toleranc
-      USE fldvar
-      USE output
-      USE vshear
-      USE xsi
-      USE xsi_array
-      Use tmp_array,  U => Array1, V => Array2, WW => Array3
-      USE compar
-      USE mflux
-      USE cutcell
-      USE fun_avg
-      USE functions
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: w_s
+
+      USE functions, only: flow_at_t
+      USE functions, only: ip_of, jp_of, kp_of
+      USE functions, only: im_of, jm_of, km_of
+
+      USE param, only: dimension_3
+      USE param1, only: one
+
+      USE matrix, only: e, w, n, s, t, b
+
+      USE run, only: discretize
+
+      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
+      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
+
+      USE xsi, only: calc_xsi
+      USE xsi_array, only: xsi_e, xsi_n, xsi_t
+      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
+
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
-! Solids phase
+!---------------------------------------------------------------------//
+! phase index
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_W_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_W_s(DIMENSION_3, -3:3, M:M)
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IPJK, IJPK, IJKN, IJKC, KP, IJKE,&
-                 IJKTE, IJKP, IJKT, IJKTN, IJK
-      INTEGER :: IMJK, IM, IJKW, IJKWT, IMJKP
-      INTEGER :: IJMK, JM, IJMKP, IJKS, IJKST
-      INTEGER :: IJKM, KM, IJKB
+      INTEGER :: IJK, IPJK, IMJK, IJPK, IJMK, IJKP, IJKM
 ! indicator for shear
       INTEGER :: incr
-! Face mass flux
-      DOUBLE PRECISION :: Flux
 ! Diffusion parameter
-      DOUBLE PRECISION :: D_f
-! for cartesian grid:
-      DOUBLE PRECISION :: AW,HW,VELW
+      DOUBLE PRECISION :: d_fe, d_fw, d_fn, d_fs, d_ft, d_fb
+! Face mass flux
+      DOUBLE PRECISION :: Flux_e, flux_w, flux_n, flux_s
+      DOUBLE PRECISION :: flux_t, flux_b
 
 ! temporary use of global arrays:
-! array1 (locally u)
-! the x directional velocity
+! array1 (locally u)  - the x directional velocity
 !      DOUBLE PRECISION :: U(DIMENSION_3)
-! array2 (locally v)
-! the y directional velocity
+! array2 (locally v)  - the y directional velocity
 !      DOUBLE PRECISION :: V(DIMENSION_3)
-! array3 (locally ww)
-! the z directional velocity
+! array3 (locally ww) - the z directional velocity
 !      DOUBLE PRECISION :: WW(DIMENSION_3)
-
-!-----------------------------------------------'
+!---------------------------------------------------------------------//
 
       call lock_tmp_array
       call lock_xsi_array
 
-! Calculate convection factors
-! ---------------------------------------------------------------->>>
-!!$omp parallel do private(IJK,K,IJKT,IJKP )
-      DO IJK = ijkstart3, ijkend3
-         K = K_OF(IJK)
-         IJKT = TOP_OF(IJK)
-         IJKP = KP_OF(IJK)
+      CALL GET_WCELL_SVTERMS(U, V, WW, M)
 
-! East face (i+1/2, j, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            U(IJK) = (Theta_W_be(IJK) * U_S(IJK,M) + &
-                      Theta_W_te(IJK) * U_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    ALPHA_We_c(IJK),AW,HW,VELW)
-            U(IJK) = U(IJK) * AW
-         ELSE
-            U(IJK) = AVG_Z(U_S(IJK,M),U_S(IJKP,M),K)
-         ENDIF
 
-! North face (i, j+1/2, k+1/2)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            V(IJK) = (Theta_W_bn(IJK) * V_S(IJK,M) + &
-                      Theta_W_tn(IJK) * V_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    ALPHA_Wn_c(IJK) ,AW,HW,VELW)
-            V(IJK) = V(IJK) * AW
-         ELSE
-            V(IJK) = AVG_Z(V_S(IJK,M),V_S(IJKP,M),K)
-         ENDIF
-
-! Top face (i, j, k+1)
-         IF(CUT_W_TREATMENT_AT(IJK)) THEN
-            WW(IJK) = (Theta_Wt_bar(IJK) * W_S(IJK,M) + &
-                       Theta_Wt(IJK) * W_S(IJKP,M))
-            CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                    alpha_Wt_c(IJK),AW,HW,VELW)
-            WW(IJK) = WW(IJK) * AW
-         ELSE
-            WW(IJK) = AVG_Z_T(W_S(IJK,M),W_S(IJKP,M))
-         ENDIF
-      ENDDO   ! end do ijk
-
-! shear indicator
+! shear indicator:
       incr=0
-
       CALL CALC_XSI (DISCRETIZE(5), W_S(1,M), U, V, WW, XSI_E, XSI_N,&
-                     XSI_T,incr)
+                     XSI_T, incr)
 
+!!!$omp      parallel do                                                 &
+!!!$omp&     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,            &
+!!!$omp&             d_fe, d_fw, d_fn, d_fs, d_ft, d_fb,                 &
+!!!$omp&             flux_e, flux_w, flux_n, flux_s, flux_t, flux_b)
+      DO IJK = ijkstart3, ijkend3
 
-! shear: update to true velocity
-      IF (SHEAR) THEN
-!!!$omp      parallel do private(IJK)
-         DO IJK = ijkstart3, ijkend3
-            IF (FLUID_AT(IJK)) THEN
-               V(IJK)=V(IJK)+VSH(IJK)
-            ENDIF
-         ENDDO
-      ENDIF
-
+         IF (FLOW_AT_T(IJK)) THEN
 
 ! Calculate convection-diffusion fluxes through each of the faces
-! ---------------------------------------------------------------->>>
-!!$omp      parallel do         &
-!!$omp&     private( I,  J, K, IPJK, IJPK, IJKN, IJKC, KP,      &
-!!$omp&             IJKE, IJKTE, IJKP, IJKT, IJKTN, IJK,  D_f,  &
-!!$omp&             IMJK, IM, IJKW, IJKWT, IMJKP,       &
-!!$omp&             IJMK, JM, IJMKP, IJKS, IJKST,       &
-!!$omp&             IJKM, KM, IJKB)
-      DO IJK = ijkstart3, ijkend3
-         IF (FLOW_AT_T(IJK)) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
+            CALL GET_WCELL_SCFLUX_TERMS(flux_e, flux_w, flux_n, &
+               flux_s, flux_t, flux_b, ijk, M)
+            CALL GET_WCELL_SDIFF_TERMS(d_fe, d_fw, d_fn, d_fs, &
+               d_ft, d_fb, ijk, M)
+
             IPJK = IP_OF(IJK)
             IJPK = JP_OF(IJK)
-            IJKN = NORTH_OF(IJK)
-            IJKT = TOP_OF(IJK)
-            IF (WALL_AT(IJK)) THEN
-               IJKC = IJKT
-            ELSE
-               IJKC = IJK
-            ENDIF
-            KP = KP1(K)
-            IJKE = EAST_OF(IJK)
             IJKP = KP_OF(IJK)
-            IJKTN = NORTH_OF(IJKT)
-            IJKTE = EAST_OF(IJKT)
-
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
 
 ! East face (i+1/2, j, k+1/2)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_be(IJK) * Flux_sE(IJK,M) + &
-                       Theta_W_te(IJK) * Flux_sE(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_We_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
-                             AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*&
-                     ONEoDX_E_W(IJK)*AYZ_W(IJK)
-            ELSE
-               Flux = HALF * (Flux_sE(IJK,M) + Flux_sE(IJKP,M))
-               D_F = AVG_Z_H(AVG_X_H(MU_S(IJKC,M),MU_S(IJKE,M),I),&
-                             AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*&
-                     ODX_E(I)*AYZ_W(IJK)
+            A_W_S(IJK,E,M) = D_Fe - XSI_E(IJK)*Flux_e
+            A_W_S(IPJK,W,M) = D_Fe + (ONE - XSI_E(IJK))*Flux_e
+! West face (i-1/2, j, k+1/2)
+            IF (.NOT.FLOW_AT_T(IMJK)) THEN
+               A_W_S(IJK,W,M) = D_Fw + (ONE - XSI_E(IMJK))*Flux_w
             ENDIF
-            A_W_S(IJK,E,M) = D_F - XSI_E(IJK)*Flux
-            A_W_S(IPJK,W,M) = D_F + (ONE - XSI_E(IJK))*Flux
 
 
 ! North face (i, j+1/2, k+1/2)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_W_bn(IJK) * Flux_sN(IJK,M) + &
-                       Theta_W_tn(IJK) * Flux_sN(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       ALPHA_Wn_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),&
-                             AVG_Y_H(MU_S(IJKT,M),MU_S(IJKTN,M),J),K)*&
-                     ONEoDY_N_W(IJK)*AXZ_W(IJK)
-            ELSE
-               Flux = HALF * (Flux_sN(IJK,M) + Flux_sN(IJKP,M))
-               D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKC,M),MU_S(IJKN,M),J),&
-                             AVG_Y_H(MU_S(IJKT,M),MU_S(IJKTN,M),J),K)*&
-                     ODY_N(J)*AXZ_W(IJK)
+            A_W_S(IJK,N,M) = D_Fn - XSI_N(IJK)*Flux_n
+            A_W_S(IJPK,S,M) = D_Fn + (ONE - XSI_N(IJK))*Flux_n
+! South face (i, j-1/2, k+1/2)
+            IF (.NOT.FLOW_AT_T(IJMK)) THEN
+               A_W_S(IJK,S,M) = D_Fs + (ONE - XSI_N(IJMK))*Flux_s
             ENDIF
-            A_W_S(IJK,N,M) = D_F - XSI_N(IJK)*Flux
-            A_W_S(IJPK,S,M) = D_F + (ONE - XSI_N(IJK))*Flux
 
 
 ! Top face (i, j, k+1)
-            IF(CUT_W_TREATMENT_AT(IJK)) THEN
-               Flux = (Theta_Wt_bar(IJK) * Flux_sT(IJK,M) + &
-                       Theta_Wt(IJK) * Flux_sT(IJKP,M))
-               CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                       alpha_Wt_c(IJK),AW,HW,VELW)
-               Flux = Flux * AW
-               D_F = MU_S(IJKT,M)*ONEoDZ_T_W(IJK)*AXY_W(IJK)
-            ELSE
-               Flux = HALF * (Flux_sT(IJK,M) + Flux_sT(IJKP,M))
-               D_F = MU_S(IJKT,M)*OX(I)*ODZ(KP)*AXY_W(IJK)
-            ENDIF
-            A_W_S(IJK,T,M) = D_F - XSI_T(IJK)*Flux
-            A_W_S(IJKP,B,M) = D_F + (ONE - XSI_T(IJK))*Flux
-
-
-! West face (i-1/2, j, k+1/2)
-            IMJK = IM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IMJK)) THEN
-               IM = IM1(I)
-               IJKW = WEST_OF(IJK)
-               IJKWT = TOP_OF(IJKW)
-               IMJKP = KP_OF(IMJK)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_be(IMJK) * Flux_sE(IMJK,M) + &
-                          Theta_W_te(IMJK) * Flux_sE(IMJKP,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          ALPHA_We_c(IMJK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJKC,M),IM),&
-                                AVG_X_H(MU_S(IJKWT,M),MU_S(IJKT,M),IM),K)*&
-                        ONEoDX_E_W(IMJK)*AYZ_W(IMJK)
-               ELSE
-                  Flux = HALF * (Flux_sE(IMJK,M) + Flux_sE(IMJKP,M))
-                  D_F = AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJKC,M),IM),&
-                                AVG_X_H(MU_S(IJKWT,M),MU_S(IJKT,M),IM),K)*&
-                        ODX_E(IM)*AYZ_W(IMJK)
-               ENDIF
-               A_W_S(IJK,W,M) = D_F + (ONE - XSI_E(IMJK))*Flux
-            ENDIF
-
-
-! South face (i, j-1/2, k+1/2)
-            IJMK = JM_OF(IJK)
-            IF (.NOT.FLOW_AT_T(IJMK)) THEN
-               JM = JM1(J)
-               IJMKP = KP_OF(IJMK)
-               IJKS = SOUTH_OF(IJK)
-               IJKST = TOP_OF(IJKS)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_W_bn(IJMK) * Flux_sN(IJMK,M) + &
-                          Theta_W_tn(IJMK) * Flux_sN(IJMKP,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          ALPHA_Wn_c(IJMK),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),&
-                                AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
-                        ONEoDY_N_W(IJMK)*AXZ_W(IJMK)
-               ELSE
-                  Flux = HALF * (Flux_sN(IJMK,M) + Flux_sN(IJMKP,M))
-                  D_F = AVG_Z_H(AVG_Y_H(MU_S(IJKS,M),MU_S(IJKC,M),JM),&
-                                AVG_Y_H(MU_S(IJKST,M),MU_S(IJKT,M),JM),K)*&
-                        ODY_N(JM)*AXZ_W(IJMK)
-               ENDIF
-               A_W_S(IJK,S,M) = D_F + (ONE - XSI_N(IJMK))*Flux
-            ENDIF
-
-
+            A_W_S(IJK,T,M) = D_Ft - XSI_T(IJK)*Flux_t
+            A_W_S(IJKP,B,M) = D_Ft + (ONE - XSI_T(IJK))*Flux_t
 ! Bottom face (i, j, k)
-            IJKM = KM_OF(IJK)
             IF (.NOT.FLOW_AT_T(IJKM)) THEN
-               KM = KM1(K)
-               IJKB = BOTTOM_OF(IJK)
-               IF(CUT_W_TREATMENT_AT(IJK)) THEN
-                  Flux = (Theta_Wt_bar(IJKM) * Flux_sT(IJKM,M) + &
-                          Theta_Wt(IJKM) * Flux_sT(IJK,M))
-                  CALL GET_INTERPOLATION_TERMS_S(IJK,M,'W_MOMENTUM',&
-                          alpha_Wt_c(IJKM),AW,HW,VELW)
-                  Flux = Flux * AW
-                  D_F = MU_S(IJK,M)*ONEoDZ_T_W(IJKM)*AXY_W(IJKM)
-               ELSE
-                  Flux = HALF * (Flux_sT(IJKM,M) + Flux_sT(IJK,M))
-                  D_F = MU_S(IJK,M)*OX(I)*ODZ(K)*AXY_W(IJKM)
-               ENDIF
-               A_W_S(IJK,B,M) = D_F + (ONE - XSI_T(IJKM))*Flux
+              A_W_S(IJK,B,M) = D_Fb + (ONE - XSI_T(IJKM))*Flux_b
             ENDIF
 
          ENDIF   ! end if flow_at_t

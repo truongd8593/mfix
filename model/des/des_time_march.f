@@ -30,6 +30,7 @@
       use discretelement
       use error_manager
       use functions
+      use machine
       use mpi_utility
       use sendrecv
 
@@ -51,7 +52,7 @@
       DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
 
 ! Numbers to calculate wall time spent in DEM calculations.
-      DOUBLE PRECISION :: WALL_TIME, TMP_WALL
+      DOUBLE PRECISION :: TMP_WALL
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME

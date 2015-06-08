@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#  Processes the output of fortran-decomp to remve the MODDIR prefix
+#  Processes the output of fortran-decomp to remove the MODDIR prefix
 #  for those modules built in the current directory
 
 # escape dots in MODDIR (which could a relative path, e.g. ../..)

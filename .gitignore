@@ -1,6 +1,7 @@
 *.0f
 *.0inc
 *.a
+*.d
 *.deps
 *.exe
 *.mic
@@ -14,6 +15,5 @@ Makefile.in
 OBJ*/
 model/dmp_modules/mpif.h
 model/files.lis
-model/mfix_directory_path.inc
 model/mpif.h
 tmp.*

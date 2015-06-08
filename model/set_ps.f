@@ -11,6 +11,7 @@
       SUBROUTINE SET_PS
 
       use param
+      use param1, only: zero, small_number, undefined
       use run
       use physprop
       use ps

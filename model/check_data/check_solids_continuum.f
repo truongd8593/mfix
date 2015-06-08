@@ -16,7 +16,7 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      USE param1, only: zero, undefined, undefined_i
+      USE param1, only: zero, one, undefined, undefined_i
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//

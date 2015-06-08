@@ -1184,6 +1184,7 @@
       use geometry
       use indices
       use physprop
+      use param1
       use ps
       use run
       use functions

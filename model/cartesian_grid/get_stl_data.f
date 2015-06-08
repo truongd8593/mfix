@@ -585,11 +585,13 @@
 
 
       SUBROUTINE SKIP(FILE_UNIT,N_SKIP)
-      INTEGER ::FILE_UNIT,I
-      DO I = 1,N_SKIP
-         READ(FILE_UNIT,*)
-      END DO
-      RETURN
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) ::FILE_UNIT,N_SKIP
+        INTEGER :: I
+        DO I = 1,N_SKIP
+           READ(FILE_UNIT,*)
+        END DO
+        RETURN
       END SUBROUTINE SKIP
 
       SUBROUTINE TEXT_HEX2INT(STRING,INT)

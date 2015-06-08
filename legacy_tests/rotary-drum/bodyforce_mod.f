@@ -10,7 +10,7 @@
 
       MODULE bodyforce
 
-      USE constant, only: gravity_x, gravity_y, gravity_z
+      USE constant, only: gravity
       USE param1, only: zero
       USE indices, only: k_of
       USE geometry, only: z, z_t

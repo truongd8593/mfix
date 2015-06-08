@@ -133,10 +133,11 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE rxns,           only : RRATE, USE_RRATES
-      USE funits,         only : DMP_LOG, UNIT_LOG
       USE compar,         only : myPE
       USE discretelement, only : DISCRETE_ELEMENT
+      USE funits,         only : DMP_LOG, UNIT_LOG
+      USE machine, only: start_log, end_log
+      USE rxns,           only : RRATE, USE_RRATES
       use run, only: ANY_SPECIES_EQ
 
       IMPLICIT NONE
@@ -207,17 +208,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_TRD_AND_TAU(IER)
 
+      USE run, only: jackson
 ! Stress tensor trace.
       USE visc_g, only : TRD_g
       USE visc_s, only : TRD_S
 ! Stress tensor cross terms.
       USE tau_g, only : TAU_U_G, TAU_V_G, TAU_W_G
+      USE tau_g, only : cTAU_U_G, cTAU_V_G, cTAU_W_G
       USE tau_s, only : TAU_U_S, TAU_V_S, TAU_W_S
 ! Runtime flag for DEM model.
       USE discretelement, only: DISCRETE_ELEMENT
 ! Runtime flag for TFM-DEM hybrid model.
       USE discretelement, only: DES_CONTINUUM_HYBRID
 
+      USE param1, only: zero
       implicit none
 
 ! Dummy arguments
@@ -231,9 +235,15 @@
       CALL CALC_TRD_G (TRD_G, IER)
 
 ! Calculate the cross terms of the stress tensor (gas phase; m=0)
-      CALL CALC_TAU_U_G (TAU_U_G, IER)
-      CALL CALC_TAU_V_G (TAU_V_G, IER)
-      CALL CALC_TAU_W_G (TAU_W_G, IER)
+      CALL CALC_TAU_U_G (TAU_U_G, CTAU_U_G, IER)
+      CALL CALC_TAU_V_G (TAU_V_G, CTAU_V_G, IER)
+      CALL CALC_TAU_W_G (TAU_W_G, CTAU_W_G, IER)
+
+      IF (.NOT. JACKSON) THEN
+         CTAU_U_G = ZERO
+         CTAU_V_G = ZERO
+         CTAU_W_G = ZERO
+      ENDIF
 
 ! Bypass the following calculations if there are no TFM solids.
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN

@@ -21,6 +21,9 @@ MODULE read_thermochemical
 
   IMPLICIT NONE
 
+! Full path to Burcat and Ruscic database
+  CHARACTER(len=142) :: THERM = 'BURCAT.THR'
+
 CONTAINS
 
 !      Program Test; CALL Read_Therm_tester; END Program Test
@@ -34,7 +37,6 @@ CONTAINS
       CHARACTER(LEN=18) :: SPECIES
       integer funit, IER
       CHARACTER(len=142) FILENAME
-      CHARACTER(len=10) :: THERM = 'BURCAT.THR'
       LOGICAL LocalCopy
 
       SPECIES = 'CH4'
@@ -45,7 +47,7 @@ CONTAINS
       IF(LocalCopy)Then
         OPEN(UNIT=funit,FILE=TRIM(THERM))
       ELSE
-        FILENAME = TRIM(PATH) // '/'  // TRIM(THERM)
+        FILENAME = './BURCAT.THR'
         OPEN(UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
       ENDIF
 

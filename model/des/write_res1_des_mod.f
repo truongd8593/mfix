@@ -105,7 +105,7 @@
 
       use discretelement, only: PEA
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 
       use machine, only: OPEN_N1
 
@@ -119,19 +119,16 @@
       INTEGER :: lGHOST_CNT
 ! Local gather counts for send/recv
       INTEGER :: lGatherCnts(0:NUMPEs-1)
-! Loop counter
-      INTEGER :: LC1
-
+! Loop counters
+      INTEGER :: LC1,part
 
       CALL OPEN_RES_DES(BASE)
-
 
       allocate(pGATHER(0:numPEs-1))
       allocate(pDISPLS(0:numPEs-1))
 
       allocate(cGATHER(0:numPEs-1))
       allocate(cDISPLS(0:numPEs-1))
-
 
       IF(bDIST_IO) THEN
 
@@ -140,6 +137,7 @@
 
          lGHOST_CNT = iGHOST_CNT
 
+         cROOTCNT = NEIGH_NUM
          cPROCCNT = cROOTCNT
       ELSE
 
@@ -173,11 +171,16 @@
          cROOTCNT = 10
 ! Count the number of real neighbors.
          cPROCCNT = 0
-         DO LC1 = 1, NEIGH_MAX
-            if (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF(PEA(NEIGHBORS(LC1),1)) THEN
+         part = 1
+         DO LC1 = 1, NEIGH_NUM
+            IF (0 .eq. NEIGHBORS(LC1)) EXIT
+            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+               part = part + 1
+            ENDIF
+            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
                cPROCCNT = cPROCCNT +1
             ENDIF
+
          ENDDO
 
 ! Rank 0 gets the total number of global particles.
@@ -543,7 +546,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -552,7 +555,7 @@
 
       LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1, LC2, part
 
       lLOC2GLB = .FALSE.
       IF(present(pLOC2GLB)) lLOC2GLB = pLOC2GLB
@@ -565,18 +568,25 @@
       iGatherCnts   = cGATHER
 
       LC2 = 1
+      part = 1
       IF(lLOC2GLB) THEN
-         DO LC1 = 1, NEIGH_MAX
-            if (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF(PEA(NEIGHBORS(LC1),1)) THEN
+         DO LC1 = 1, NEIGH_NUM
+            IF (0 .eq. NEIGHBORS(LC1)) EXIT
+            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+               part = part + 1
+            ENDIF
+            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
                LC2 = LC2 + 1
             ENDIF
          ENDDO
       ELSE
-         DO LC1 = 1, NEIGH_MAX
-            if (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF(PEA(NEIGHBORS(LC1),1)) THEN
+         DO LC1 = 1, NEIGH_NUM
+            IF (0 .eq. NEIGHBORS(LC1)) EXIT
+            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+               part = part + 1
+            ENDIF
+            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
                iProcBuf(LC2) = INPUT_I(LC1)
                LC2 = LC2 + 1
             ENDIF
@@ -608,13 +618,13 @@
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
       use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
 
 ! Loop counters
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1, LC2, part
 
       allocate(dPROCBUF(cPROCCNT))
       allocate(dROOTBUF(cROOTCNT))
@@ -624,9 +634,13 @@
       iGatherCnts   = cGATHER
 
       LC2 = 1
-      DO LC1 = 1, NEIGH_MAX
-         if (0 .eq. NEIGHBORS(LC1)) EXIT
-         IF(PEA(NEIGHBORS(LC1),1)) THEN
+      part = 1
+      DO LC1 = 1, NEIGH_NUM
+         IF (0 .eq. NEIGHBORS(LC1)) EXIT
+         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+            part = part + 1
+         ENDIF
+         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -657,13 +671,13 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGH_MAX
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
 
 ! Loop counters
-      INTEGER :: LC1, LC2
+      INTEGER :: LC1, LC2, part
 
       allocate(iPROCBUF(cPROCCNT))
       allocate(iROOTBUF(cROOTCNT))
@@ -674,9 +688,13 @@
 
 ! Pack the local buffer, skipping data for deleted particles.
       LC2 = 1
-      DO LC1 = 1, NEIGH_MAX
-         if (0 .eq. NEIGHBORS(LC1)) EXIT
-         IF(PEA(NEIGHBORS(LC1),1)) THEN
+      part = 1
+      DO LC1 = 1, NEIGH_NUM
+         IF (0 .eq. NEIGHBORS(LC1)) EXIT
+         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+            part = part + 1
+         ENDIF
+         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF

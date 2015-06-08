@@ -103,7 +103,7 @@
       INTEGER :: NP
       INTEGER :: M
 
-      include "../species.inc"
+      include "species.inc"
 
 ! Local Functions
 !---------------------------------------------------------------------//

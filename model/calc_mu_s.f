@@ -62,6 +62,7 @@
       USE physprop, only: close_packed
 ! number of solids phases
       USE physprop, only: mmax
+      USE physprop, only: blend_function
 ! runtime flag to use qmomk
       USE qmom_kinetic_equation, only: qmomk
 
@@ -85,11 +86,7 @@
 ! blend factor
       DOUBLE PRECISION :: BLEND
 
-! Functions
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
-!---------------------------------------------------------------------//
-
 
 ! Constant solids viscosity
 !---------------------------------------------------------------------
@@ -97,17 +94,17 @@
 ! viscosity case we should safely be able to remove this statement...
       IF( MU_s0(M) /= UNDEFINED) RETURN
 
-! GHD Theory is called only for the mixture granular energy, 
+! GHD Theory is called only for the mixture granular energy,
 ! i.e. for m == mmax
       IF (KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) RETURN
 
-! General initializations 
+! General initializations
 !---------------------------------------------------------------------
 ! Zero out various quantities
       CALL INIT0_MU_S(M, IER)
 
 ! Calculate quantities that are functions of velocity only and may be
-! needed for subsequent calculations by various model options 
+! needed for subsequent calculations by various model options
       CALL INIT1_MU_S(M, IER)
 
 
@@ -181,7 +178,7 @@
          DO IJK = ijkstart3, ijkend3
             blend =  blend_function(IJK)
             Mu_s(IJK,M) = (ONE-blend)*Mu_s_p(IJK) &
-                + blend*Mu_s_v(IJK) 
+                + blend*Mu_s_v(IJK)
 ! no point in blending lambda_s_p since it has no value
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
@@ -287,7 +284,7 @@
                       + 2.D0*K_3m*trD_s2(IJK,M))
 
 ! Boyle-Massoudi Stress term
-               IF(V_ex .NE. ZERO) THEN                  
+               IF(V_ex .NE. ZERO) THEN
                   K_5m = 0.4 * (ONE + C_e) * G_0(IJK, M,M) * &
                      RO_S(IJK,M) * ( (V_ex * D_p(IJK,M)) / &
                      (ONE - EP_s(IJK,M) * V_ex) )**2
@@ -430,7 +427,7 @@
                 /(5.d0*Pi)
 
 ! added Ro_g = 0 for granular flows (no gas). sof Aug-02-2005
-            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN
                Mu_star = Mu_s_v(IJK)
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Mu_star = ZERO
@@ -460,7 +457,7 @@
             Kth=75d0*RO_S(IJK,M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
                 (48d0*Eta*(41d0-33d0*Eta))
 
-            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN
                Kth_star=Kth
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Kth_star = ZERO
@@ -524,13 +521,13 @@
       USE constant, only: C_e, eta
 
       USE drag, only: f_gs
- 
+
       USE fldvar, only: p_s_v
       USE fldvar, only: ROP_s, ro_s, d_p, theta_m
       USE fldvar, only: ep_s
       USE fldvar, only: k_turb_g, e_turb_g
       USE kintheory, only: kt_dga
- 
+
       USE param1, only: zero, half, one, small_number
 
       USE physprop, only: smax
@@ -577,7 +574,7 @@
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
 
-! Define time scales and constants 
+! Define time scales and constants
 
 ! time scale of turbulent eddies
             Tau_1(ijk) = 3.d0/2.d0*C_MU*K_Turb_G(IJK)/&
@@ -595,7 +592,7 @@
             ELSE
                dgA_sl = kt_dga(IJK, L)
                Tau_12_st = RO_S(IJK,M)/DgA_SL
-            ENDIF 
+            ENDIF
 
 
 ! The following is purely an ad-hoc modification so that the underlying
@@ -680,7 +677,7 @@
       USE constant, only: pi
 
       USE drag, only: f_gs
- 
+
       USE fldvar, only: p_s_v
       USE fldvar, only: ep_g, ro_g
       USE fldvar, only: ROP_s, ro_s, d_p, theta_m
@@ -928,7 +925,7 @@
              dChiOdphi = DG_0DNU(EP_SM)
              IF(EP_SM <= DIL_EP_S) &
                 dga_sm = KT_DGA(IJK, M)
- 
+
 
 ! Pressure/Viscosity/Bulk Viscosity
 ! Note: k_boltz = M_PM
@@ -1075,7 +1072,7 @@
 
       USE kintheory, only: EDT_s_ip, xsi_gtsh, a2_gtsh
       USE kintheory, only: kt_rvel
-      USE kintheory, only: epm
+      USE kintheory, only: epm, G_gtsh, S_star, K_phi, R_d
 
       USE param1, only: zero, one, small_number
 
@@ -1111,13 +1108,6 @@
       DOUBLE PRECISION :: dSdphi, R_dphi, Tau_st, dPsidn, MuK
 ! relative velocity
       DOUBLE PRECISION :: RVEL
-! Functions
-!---------------------------------------------------------------------//
-! function gamma: eq. (8.1), S_star and K_phi in GTSH theory
-      DOUBLE PRECISION, EXTERNAL :: G_gtsh
-      DOUBLE PRECISION, EXTERNAL :: S_star
-      DOUBLE PRECISION, EXTERNAL :: K_phi
-      DOUBLE PRECISION, EXTERNAL :: R_d
 !---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3
@@ -1305,7 +1295,7 @@
       USE constant, only: switch, switch_ia
       USE constant, only: C_e
       USE constant, only: pi
- 
+
       USE drag, only: f_gs
       USE fldvar, only: RO_g
       USE fldvar, only: ROP_s, RO_s, D_p, theta_m
@@ -1704,7 +1694,7 @@
       USE visc_s, only: ep_g_blend_end
       USE visc_s, only: mu_s_p, lambda_s_p
       USE visc_s, only: i2_devD_s
-    
+
       USE compar, only: ijkstart3, ijkend3
       USE functions, only: fluid_at
       IMPLICIT NONE
@@ -1736,9 +1726,9 @@
          IF ( FLUID_AT(IJK) ) THEN
 
             IF(EP_g(IJK) .LT. EP_g_blend_end(IJK)) THEN
-! Tardos, PT, (1997), pp. 61-74 explains in his equation (3) that 
+! Tardos, PT, (1997), pp. 61-74 explains in his equation (3) that
 ! solids normal and shear frictional stresses have to be treated
-! consistently. Therefore, add closed_packed check for consistency 
+! consistently. Therefore, add closed_packed check for consistency
 ! with the treatment of the normal frictional force (see for example
 ! source_v_s.f). sof May 24 2005.
                SUM_EPS_CP=0.0
@@ -1775,8 +1765,8 @@
 
                LAMBDA_s_p(IJK) = ZERO
 
-! when solving for the granular energy equation (PDE) setting 
-! theta = 0 is done in solve_granular_energy.f to avoid 
+! when solving for the granular energy equation (PDE) setting
+! theta = 0 is done in solve_granular_energy.f to avoid
 ! convergence problems. (sof)
                IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
             ENDIF
@@ -2472,6 +2462,9 @@
       USE visc_s, only: lambda_s, lambda_s_v, lambda_s_p, lambda_s_f
       USE visc_s, only: alpha_s
 !---------------------------------------------------------------------//
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: M, IER
+
       IF (V_EX /= ZERO)  ALPHA_s(:,M) = ZERO
 
 !      IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
@@ -2686,7 +2679,7 @@
                V_s_W = AVG_X(                                & !i-1/2, j, k
                    AVG_Y_N((V_s(IMJMK, M) - VSH(IMJMK) + &
                             VSH(IJMK) - SRT*ONE/oDX_E(IM1(I))),&
-                           (V_s(IMJK, M) - VSH(IMJK) + & 
+                           (V_s(IMJK, M) - VSH(IMJK) + &
                             VSH(IJK) - SRT*ONE/oDX_E(IM1(I))) ),&
                    AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM)
             ELSE

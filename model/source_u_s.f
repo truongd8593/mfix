@@ -47,6 +47,7 @@
       USE indices
       USE is
       USE tau_s
+      USE tau_g, only: ctau_u_g
       USE bc
       USE compar
       USE sendrecv
@@ -91,7 +92,7 @@
 ! Average density difference
       DOUBLE PRECISION :: dro1, dro2, droa
 ! Average quantities
-      DOUBLE PRECISION :: wse, EPMUSA
+      DOUBLE PRECISION :: wse, MUSA
 ! Source terms (Surface)
       DOUBLE PRECISION :: Sdp, Sdps
 ! Source terms (Volumetric)
@@ -119,7 +120,7 @@
 !$omp           EPSA, EPSw, EPSe, EPSn, EPSs, EPSt, EPSb, PGE, Sdp,  &
 !$omp           SUM_EPS_CP, Sdps, MM, ROPSA,V0, ROP_MA, L, Vgw, Vge, &
 !$omp           Uge, Ugw, Ugs, Ugn, Wgt, Wgb, Ugt, Ugb, F_vir, VMT,  &
-!$omp           VMTtmp, DRO1, DRO2, DROA, WSE, VCF, EPMUSA, VTZA,    &
+!$omp           VMTtmp, DRO1, DRO2, DROA, WSE, VCF, MUSA, VTZA,    &
 !$omp           Vbf, avgRop, Ghd_drag, HYS_drag, avgDrag)
 
             DO IJK = ijkstart3, ijkend3
@@ -429,8 +430,8 @@
                      IF(Added_Mass .AND. M==M_AM) &
                         VCF = VCF + Cv*ROP_MA*WSE**2*OX_E(I) ! virtual mass contribution
 ! -(2mu/x)*(u/x) part of Tau_zz/X
-                     EPMUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I)
-                     VTZA = 2.d0*EPMUSA*OX_E(I)*OX_E(I)
+                     MUSA = AVG_X(MU_S(IJK,M),MU_S(IJKE,M),I)
+                     VTZA = 2.d0*MUSA*OX_E(I)*OX_E(I)
                   ELSE
                      VCF = ZERO
                      VTZA = ZERO
@@ -441,8 +442,8 @@
                      A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+&
                      A_M(IJK,B,M)+(V0+ZMAX(VMT)+VTZA)*VOL_U(IJK))
 
-                    B_M(IJK,M) = B_M(IJK,M) - (SDP + SDPS + &
-                       TAU_U_S(IJK,M) + F_vir + &
+                  B_M(IJK,M) = B_M(IJK,M) - (SDP + SDPS + &
+                       TAU_U_S(IJK,M) + epsa*cTAU_U_G(IJK) + F_vir + &
                        ( (V0+ZMAX((-VMT)))*U_SO(IJK,M)+&
                        VBF + VCF + HYS_drag)*VOL_U(IJK) )
 ! MMS Source term
@@ -460,7 +461,7 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_U_S_BC (A_M, B_M, M)
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S_BC (A_M, B_M, M, IER)
@@ -1160,6 +1161,7 @@
       use fldvar
       use geometry
       use indices
+      use param1, only: one, small_number
       use physprop
       use ps
       use run

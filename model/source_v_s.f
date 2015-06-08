@@ -49,6 +49,7 @@
       USE indices
       USE is
       USE tau_s
+      USE tau_g, only: ctau_v_g
       USE bc
       USE vshear
       USE compar
@@ -436,7 +437,8 @@
                      A_M(IJK,B,M)+(V0+ZMAX(VMT))*VOL_V(IJK))
 
                   B_M(IJK,M) = B_M(IJK,M) - (SDP + SDPS + &
-                        TAU_V_S(IJK,M) + Source_conv + F_vir + &
+                        TAU_V_S(IJK,M) + epsa*ctau_v_g(IJK) + &
+                        Source_conv + F_vir + &
                         ( (V0+ZMAX((-VMT)))*V_SO(IJK,M) + &
                         VBF + HYS_drag)*VOL_V(IJK) )
 ! MMS Source term
@@ -454,10 +456,10 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_V_S_BC (A_M, B_M, M, IER)
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M)
 
           ENDIF   ! end if (momentum_y_eq)
         ENDIF   ! end if for GHD Theory
@@ -1152,6 +1154,7 @@
       use fldvar
       use geometry
       use indices
+      use param1, only: one, small_number
       use physprop
       use ps
       use run

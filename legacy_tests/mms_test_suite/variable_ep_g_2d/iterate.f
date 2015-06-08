@@ -677,13 +677,14 @@
 
 !-----------------------------------------------
 ! Modules
-!-----------------------------------------------
       USE bc
-      USE geometry
-      USE constant
       USE compar
+      USE constant
+      USE geometry
       USE run
       USE time_cpu
+      USE utilities, ONLY: isNan
+!-----------------------------------------------
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -708,7 +709,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_Flux_U_G, VAVG_Flux_V_G, &
                                     VAVG_Flux_W_G
-      LOGICAL, EXTERNAL :: IsNan
 !-----------------------------------------------
 
       IF(CYCLIC_X_MF)THEN

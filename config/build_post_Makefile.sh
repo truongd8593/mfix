@@ -9,12 +9,14 @@ tmpMFILE=${MFIX_POST}/tmp.make
 # Remove the previous tmp file if it exists.
 if test -f ${tmpMFILE}; then rm ${tmpMFILE}; fi
 
+FORT_FLAGS="${FORT_FLAGS} -I./include"
+FORT_FLAGS="${FORT_FLAGS} -I${MFIX_SRC}/include"
+
 # Include any NetCDF definitions.
 if test ${USE_NETCDF} = 1; then
   FORT_FLAGS="${FORT_FLAGS} -I${NETCDF_INCLUDE}"
   LIB_FLAGS="${LIB_FLAGS} -L${NETCDF_LIB} -lnetcdff"
 fi
-
 
 # Include the base definitions:
 echo "DPO=${DPO}" >> ${tmpMFILE}

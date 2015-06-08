@@ -23,24 +23,25 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE run
-      USE constant
       USE compar
-      USE drag
-      USE sendrecv
+      USE constant
       USE discretelement
-      USE ur_facs
-      USE funits
-      USE mms
+      USE drag
+      USE fldvar
       USE fun_avg
       USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log
+      USE mms
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      USE ur_facs
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -361,29 +362,6 @@
       RETURN
       END SUBROUTINE DRAG_GS
 
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Function(s): C_DsxRe                                                C
-!  Purpose:                                                            C
-!     Calculate single sphere drag correlation multiplied by           C
-!     the Reynolds number or                                           C
-!     Calculate the single sphere drag correlation                     C
-!                                                                      C
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-
-! Dalla Valle (1948)
-!----------------------------------------------------------------->>>
-      DOUBLE PRECISION FUNCTION C_DSXRE_DV(RE)
-      USE param
-      USE param1
-      IMPLICIT NONE
-      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
-
-      C_DSXRE_DV = (0.63D0*SQRT(RE) + 4.8D0)**2
-      RETURN
-      END FUNCTION C_DSXRE_DV
 !-----------------------------------------------------------------<<<
 
 ! Turton and Levenspiel (1986)
@@ -399,22 +377,6 @@
       RETURN
       END FUNCTION C_DSXRE_TL
 !-----------------------------------------------------------------<<<
-
-
-! Schiller and Naumann (1933)
-!----------------------------------------------------------------->>>
-      DOUBLE PRECISION FUNCTION C_DS_SN(RE)
-      USE param
-      USE param1
-      IMPLICIT NONE
-      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
-
-      C_DS_SN = 24.D0*(1.D0 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER)
-      RETURN
-      END FUNCTION C_DS_SN
-!-----------------------------------------------------------------<<<
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -475,11 +437,6 @@
 ! Reynolds number
       DOUBLE PRECISION :: RE
 !-----------------------------------------------
-! External functions
-!-----------------------------------------------
-! Single sphere drag coefficient x Re
-      DOUBLE PRECISION, EXTERNAL :: C_DSXRE_DV
-!-----------------------------------------------
 
       IF(Mug > ZERO) THEN
          RE = DPM*VREL*ROg/Mug
@@ -510,8 +467,32 @@
       IF (RE == ZERO) lDgA = ZERO
 
       RETURN
-      END SUBROUTINE DRAG_SYAM_OBRIEN
 
+      CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Function(s): C_DsxRe                                                C
+!  Purpose:                                                            C
+!     Calculate single sphere drag correlation multiplied by           C
+!     the Reynolds number or                                           C
+!     Calculate the single sphere drag correlation                     C
+!                                                                      C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+
+! Dalla Valle (1948)
+!----------------------------------------------------------------->>>
+      DOUBLE PRECISION FUNCTION C_DSXRE_DV(RE)
+      USE param
+      USE param1
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
+
+      C_DSXRE_DV = (0.63D0*SQRT(RE) + 4.8D0)**2
+      RETURN
+      END FUNCTION C_DSXRE_DV
+
+      END SUBROUTINE DRAG_SYAM_OBRIEN
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -550,9 +531,6 @@
 ! average particle diameter if PCF
       DOUBLE PRECISION, INTENT(IN) :: DPM
 
-!
-      DOUBLE PRECISION, EXTERNAL :: C_DS_SN
-
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -561,7 +539,6 @@
 ! Single sphere drag coefficient
       DOUBLE PRECISION :: C_d
 !-----------------------------------------------
-
 
 ! Note the presence of gas volume fraction in ROPG
       RE = merge(DPM*VREL*ROPg/Mug, LARGE_NUMBER, MUg > ZERO)
@@ -584,9 +561,23 @@
       IF (RE == ZERO) lDgA = ZERO
 
       RETURN
+
+      CONTAINS
+
+! Schiller and Naumann (1933)
+!----------------------------------------------------------------->>>
+      DOUBLE PRECISION FUNCTION C_DS_SN(RE)
+      USE param
+      USE param1
+      IMPLICIT NONE
+      DOUBLE PRECISION, INTENT(IN) :: RE ! Reynolds number
+
+      C_DS_SN = 24.D0*(1.D0 + 0.15D0*RE**0.687D0)/(RE+SMALL_NUMBER)
+      RETURN
+      END FUNCTION C_DS_SN
+!-----------------------------------------------------------------<<<
+
       END SUBROUTINE DRAG_GIDASPOW
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

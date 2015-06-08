@@ -142,10 +142,10 @@
 ! calculate the source terms for the gas and solids phase u-momentum
 ! equations
       CALL SOURCE_U_G (A_M, B_M, IER)
-      IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M, IER)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M)
       IF(DO_SOLIDS) THEN
          CALL SOURCE_U_S (A_M, B_M, IER)
-         IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M, IER)
+         IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M)
       ENDIF
 
 ! evaluate local variable vxf_gs and vxf_ss.  both terms are sent to the
@@ -197,7 +197,7 @@
          CALL CALC_RESID_U (U_G, V_G, W_G, A_M, B_M, 0, &
             NUM_RESID(RESID_U,0), DEN_RESID(RESID_U,0), &
             RESID(RESID_U,0), MAX_RESID(RESID_U,0), &
-            IJK_RESID(RESID_U,0), IER)
+            IJK_RESID(RESID_U,0))
          CALL UNDER_RELAX_U (U_G, A_M, B_M, 0, UR_FAC(3))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -214,7 +214,7 @@
                   CALL CALC_RESID_U (U_S(1,M), V_S(1,M), W_S(1,M), A_M,&
                      B_M, M, NUM_RESID(RESID_U,M), &
                      DEN_RESID(RESID_U,M), RESID(RESID_U,M), &
-                     MAX_RESID(RESID_U,M), IJK_RESID(RESID_U,M), IER)
+                     MAX_RESID(RESID_U,M), IJK_RESID(RESID_U,M))
                   CALL UNDER_RELAX_U (U_S(1,M), A_M, B_M, M, &
                      UR_FAC(3))
 !                  call check_ab_m(a_m, b_m, m, .false., ier)
@@ -269,12 +269,12 @@
       IF(DO_SOLIDS) CALL CONV_DIF_V_S (A_M, B_M, IER)
 
       CALL SOURCE_V_G (A_M, B_M, IER)
-      IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M, IER)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M)
 
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(DO_SOLIDS) THEN
          CALL SOURCE_V_S (A_M, B_M, IER)
-         IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M, IER)
+         IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M)
       END IF
 
       CALL VF_GS_Y (VXF_GS, IER)
@@ -291,7 +291,7 @@
 
       IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids pressure correction equation
-         IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N, IER)
+         IF (MMAX > 0) CALL CALC_E_N (A_M, MCP, E_N)
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
@@ -325,7 +325,7 @@
          CALL CALC_RESID_V (U_G, V_G, W_G, A_M, B_M, 0, &
             NUM_RESID(RESID_V,0), DEN_RESID(RESID_V,0), &
             RESID(RESID_V,0), MAX_RESID(RESID_V,0), &
-            IJK_RESID(RESID_V,0), IER)
+            IJK_RESID(RESID_V,0))
          CALL UNDER_RELAX_V (V_G, A_M, B_M, 0, UR_FAC(4))
 !         call check_ab_m(a_m, b_m, 0, .false., ier)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -342,7 +342,7 @@
                   CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M,&
                      B_M, M, NUM_RESID(RESID_V,M), &
                      DEN_RESID(RESID_V,M),RESID(RESID_V,M), &
-                     MAX_RESID(RESID_V,M), IJK_RESID(RESID_V,M), IER)
+                     MAX_RESID(RESID_V,M), IJK_RESID(RESID_V,M))
                   CALL UNDER_RELAX_V (V_S(1,M),A_M,B_M,M,UR_FAC(4))
 !                  call check_ab_m(a_m, b_m, m, .false., ier)
 !                  write(*,*) &
@@ -397,11 +397,11 @@
          IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M, IER)
 
          CALL SOURCE_W_G (A_M, B_M, IER)
-         IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M, IER)
+         IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
          IF(DO_SOLIDS) THEN
             CALL SOURCE_W_S (A_M, B_M, IER)
-            IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M, IER)
+            IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M)
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 
@@ -419,7 +419,7 @@
 
          IF(DO_SOLIDS) THEN
 ! calculate coefficients for a solids pressure correction equation
-            IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T, IER)
+            IF (MMAX > 0) CALL CALC_E_T (A_M, MCP, E_T)
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
@@ -450,7 +450,7 @@
             CALL CALC_RESID_W (U_G, V_G, W_G, A_M, B_M, 0, &
                NUM_RESID(RESID_W,0), DEN_RESID(RESID_W,0), &
                RESID(RESID_W,0), MAX_RESID(RESID_W,0), &
-               IJK_RESID(RESID_W,0), IER)
+               IJK_RESID(RESID_W,0))
             CALL UNDER_RELAX_W (W_G, A_M, B_M, 0, UR_FAC(5))
 !            call check_ab_m(a_m, b_m, 0, .false., ier)
 !            write(*,*) &
@@ -466,7 +466,7 @@
                      CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M),&
                         A_M, B_M, M, NUM_RESID(RESID_W,M), &
                         DEN_RESID(RESID_W,M), RESID(RESID_W,M), &
-                        MAX_RESID(RESID_W,M), IJK_RESID(RESID_W,M), IER)
+                        MAX_RESID(RESID_W,M), IJK_RESID(RESID_W,M))
                      CALL UNDER_RELAX_W (W_S(1,M), A_M, B_M, M, &
                         UR_FAC(5))
 !                     call check_ab_m(a_m, b_m, m, .false., ier)

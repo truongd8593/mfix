@@ -1022,12 +1022,13 @@
 
       use compar
       use constant
+      use functions
       use geometry
       use indices
+      use param1
       use physprop
       use ps
       use run
-      use functions
 
       IMPLICIT NONE
 !-----------------------------------------------

@@ -28,24 +28,25 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE discretelement
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log
+      USE mfix_pic
       USE param
       USE param1
-      USE toleranc
-      USE fldvar
-      USE run
-      USE geometry
-      USE constant
       USE physprop
-      USE indices
-      USE funits
-      USE visc_g
+      USE run
       USE rxns
       USE scalars
-      USE compar
       USE sendrecv
-      USE discretelement
-      USE mfix_pic
-      USE functions
+      USE toleranc
+      USE visc_g
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables

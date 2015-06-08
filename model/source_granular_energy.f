@@ -651,10 +651,6 @@
 ! local var. for GTSH theory
       DOUBLE PRECISION :: chi, Sgama_lhs, Spsi_rhs
 !-----------------------------------------------
-! Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: G_gtsh
-!-----------------------------------------------
 
       I = I_OF(IJK)
       J = J_OF(IJK)

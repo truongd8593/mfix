@@ -13,12 +13,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE funits
+      USE machine
+      USE output
       USE param
       USE param1
       USE run
-      USE output
-      USE funits
-      USE compar       !//d
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

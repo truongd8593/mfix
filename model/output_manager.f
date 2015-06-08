@@ -38,7 +38,7 @@
       use param1, only: UNDEFINED
 
       use vtp, only: write_vtp_file
-
+      use machine, only: wall_time
 
       IMPLICIT NONE
 
@@ -63,10 +63,6 @@
 ! Wall time at the start of IO operations.
       DOUBLE PRECISION :: WALL_START
 
-! External function:
-!---------------------------------------------------------------------//
-! Returns the current wall time.
-      DOUBLE PRECISION :: WALL_TIME
 !......................................................................!
 
 
@@ -167,8 +163,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
-      CHECK_TIME = ((DT == UNDEFINED) .AND. FINISHED) .OR. &
-         (TIME + 0.1d0*DT>=lTIME) .OR. (TIME+0.1d0*DT>=TSTOP)
+      IF(DT == UNDEFINED) THEN
+         CHECK_TIME = FINISHED
+      ELSE
+         CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
+      ENDIF
 
       RETURN
       END FUNCTION CHECK_TIME
@@ -181,8 +180,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lWRITE_DT
 
-      IF (DT /= UNDEFINED) &
+      IF (DT /= UNDEFINED) THEN
          NEXT_TIME = (INT((TIME + 0.1d0*DT)/lWRITE_DT)+1)*lWRITE_DT
+      ELSE
+         NEXT_TIME = lWRITE_DT
+      ENDIF
 
       RETURN
       END FUNCTION NEXT_TIME
@@ -272,7 +274,7 @@
       use run, only: NSTEP
 
       use error_manager
-
+      use machine, only: wall_time
 
       DOUBLE PRECISION :: WALL_ELAP, WALL_LEFT, WALL_NOW
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT
@@ -301,8 +303,15 @@
          WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/               &
             max(TIME-TIME_START,1.0d-6)
          CALL GET_TUNIT(WALL_LEFT, UNIT_LEFT)
-         CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
-         CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+
+         IF (DT /= UNDEFINED) THEN
+            CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
+            CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+         ELSE
+            CHAR_LEFT = '0.0'
+            UNIT_LEFT = 's'
+         ENDIF
+
 ! Notify the user of usage/remaining wall times.
          WRITE(ERR_MSG,2000)                                           &
             'Elapsed:', trim(CHAR_ELAP), trim(UNIT_ELAP),              &
@@ -325,46 +334,37 @@
 !----------------------------------------------------------------------!
       SUBROUTINE INIT_OUTPUT_VARS
 
+      use geometry, only: IJKMAX2
+      use machine, only: wall_time
+      use output, only: DISK, DISK_TOT
+      use output, only: ONEMEG
+      use output, only: OUT_TIME, OUT_DT
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
-      use output, only: OUT_TIME, OUT_DT
       use output, only: USR_TIME, USR_DT
-      use vtk, only:    VTK_TIME, VTK_DT
-
-      use output, only: DISK, DISK_TOT
-
-      use param1, only: N_SPX
       use param, only: DIMENSION_USR
-      use vtk, only: DIMENSION_VTK
-
-
-      use physprop, only: MMAX, NMAX
-      use run, only: RUN_TYPE
-      use run, only: K_EPSILON
-      use param1, only: ZERO
-      use geometry, only: IJKMAX2
-
-      use vtk, only: DIMENSION_VTK
-      use vtk, only: WRITE_VTK_FILES
-      use vtk, only: VTK_TIME, VTK_DT
-
+      use param1, only: N_SPX
       use param1, only: UNDEFINED
+      use param1, only: ZERO
+      use physprop, only: MMAX, NMAX
+      use run, only: K_EPSILON
+      use run, only: RUN_TYPE
       use run, only: TIME, DT
-
+      use rxns, only: nRR
+      use scalars, only: NScalar
       use time_cpu, only: CPU_IO
       use time_cpu, only: TIME_START
       use time_cpu, only: WALL_START
-      use rxns, only: nRR
-      use scalars, only: NScalar
-      use output, only: ONEMEG
+      use vtk, only:    VTK_TIME, VTK_DT
+      use vtk, only: DIMENSION_VTK
+      use vtk, only: DIMENSION_VTK
+      use vtk, only: VTK_TIME, VTK_DT
+      use vtk, only: WRITE_VTK_FILES
 
       IMPLICIT NONE
 
 ! Disk space needed for one variable and each SPX file
       DOUBLE PRECISION :: DISK_ONE
-
-! External function for geting job wall time
-      DOUBLE PRECISION :: WALL_TIME
 
 ! Loop counter
       INTEGER :: LC

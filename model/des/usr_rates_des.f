@@ -75,8 +75,8 @@
 ! Reaction specific variables:
 !`````````````````````````````````````````````````````````````````````//
 
-      INCLUDE '../species.inc'
-      INCLUDE '../usrnlst.inc'
+      INCLUDE 'species.inc'
+      INCLUDE 'usrnlst.inc'
 
 ! Reaction rates:
 !`````````````````````````````````````````````````````````````````````//

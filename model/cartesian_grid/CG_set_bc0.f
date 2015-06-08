@@ -70,11 +70,6 @@
 !                      Dummy variable for gas pressure
       DOUBLE PRECISION PJ
 !
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-      DOUBLE PRECISION , EXTERNAL :: CALC_MW
-!-----------------------------------------------
 !----------------------------------------------
 
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1
@@ -310,12 +305,8 @@
                   (IJK),P_G(IJK),T_G(IJK))
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
 
-
             ENDIF
          ENDIF
-
-
-
 
          IF(DEFAULT_WALL_AT(IJK)) THEN
 
@@ -343,12 +334,7 @@
 
          ENDIF
 
-
-
       ENDDO
-
-
-
 
       RETURN
       END SUBROUTINE CG_SET_BC0

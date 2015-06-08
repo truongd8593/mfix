@@ -8,48 +8,48 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE READ_NAMELIST(POST)
 
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE physprop
+      USE bc
+      USE cdist
+      USE compar
+      USE constant
+      USE cutcell
+      USE dashboard
+      USE des_bc
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
+      USE error_manager
+      USE fldvar
+      USE funits
       USE geometry
       USE ic
-      USE is
-      USE bc
-      USE ps
-      USE fldvar
-      USE constant
       USE indices
-      USE toleranc
-      USE funits
-      USE scales
-      USE ur_facs
+      USE is
       USE leqsol
+      USE mfix_pic
+      USE output
+      USE parallel
+      USE param
+      USE param1
+      USE particle_filter
+      USE physprop
+      USE pic_bc
+      USE polygon
+      USE ps
+      USE qmom_kinetic_equation
+      USE quadric
       USE residual
+      USE run
       USE rxns
       USE scalars
-      USE compar
-      USE parallel
-      USE discretelement
-      USE mfix_pic
-      USE usr
-      USE des_bc
-      USE pic_bc
-      USE des_thermo
-      USE des_rxns
+      USE scales
       USE stiff_chem
-      USE cdist
-      USE quadric
-      USE cutcell
+      USE toleranc
+      USE ur_facs
+      USE usr
+      USE utilities, ONLY: blank_line, line_too_big, seek_comment
       USE vtk
-      USE polygon
-      USE dashboard
       Use stl
-      USE qmom_kinetic_equation
-      use particle_filter
-
-      use error_manager
 
       IMPLICIT NONE
 
@@ -57,7 +57,6 @@
 !------------------------------------------------------------------------//
 !  This routine is called from: 0 -  mfix; 1 - post_mfix
       INTEGER :: POST
-
 
 ! Local Variables:
 !------------------------------------------------------------------------//
@@ -83,31 +82,19 @@
       CHARACTER(len=256) :: STRING
       INTEGER :: IOS, II
 
-! External Functions
-!---------------------------------------------------------------------//
-! Returns integer if data past column MAXCOL.
-      INTEGER, EXTERNAL :: LINE_TOO_BIG
-! Integer function which returns COMMENT_INDEX
-      INTEGER, EXTERNAL :: SEEK_COMMENT
-! Blank line function
-      LOGICAL, EXTERNAL :: BLANK_LINE
-
 ! External namelist files:
 !---------------------------------------------------------------------//
       INCLUDE 'usrnlst.inc'
       INCLUDE 'namelist.inc'
-      INCLUDE 'des/desnamelist.inc'
-      INCLUDE 'cartesian_grid/cartesian_grid_namelist.inc'
-      INCLUDE 'qmomk/qmomknamelist.inc'
-
-
+      INCLUDE 'desnamelist.inc'
+      INCLUDE 'cartesian_grid_namelist.inc'
+      INCLUDE 'qmomknamelist.inc'
 
       E = UNDEFINED
       RXN_FLAG = .FALSE.
       READ_FLAG = .TRUE.
       NO_OF_RXNS = 0
       LINE_NO = 0
-
 
 ! Open the mfix.dat file. Report errors if the file is not located or
 ! there is difficulties opening it.
@@ -258,29 +245,3 @@ CONTAINS
   END SUBROUTINE SET_KEYWORD
 
 END SUBROUTINE READ_NAMELIST
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-! Funcation: BLANK_LINE                                                !
-! Author: P. Nicoletti                                Date: 25-NOV-91  !
-!                                                                      !
-! Purpose: Return .TRUE. if a line contains no input or only spaces.   !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION BLANK_LINE (line)
-
-      IMPLICIT NONE
-
-      CHARACTER :: LINE*(*)
-
-      INTEGER :: L
-
-      BLANK_LINE = .FALSE.
-      DO L=1, len(line)
-         IF(line(L:L)/=' ' .and. line(L:L)/='    ')RETURN
-      ENDDO
-
-      BLANK_LINE = .TRUE.
-      RETURN
-      END FUNCTION BLANK_LINE

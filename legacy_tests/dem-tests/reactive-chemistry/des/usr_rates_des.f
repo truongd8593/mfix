@@ -33,7 +33,7 @@
       DOUBLE PRECISION, INTENT(OUT) :: DES_RATES(NO_OF_DES_RXNS)
 
 
-      INCLUDE '../species.inc'
+      INCLUDE 'species.inc'
 
 
 ! EX_RXN:    A(g) + 2B(s) --> C(g) + D(s)

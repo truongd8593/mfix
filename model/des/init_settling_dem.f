@@ -39,7 +39,11 @@
 ! Skip this routine if not a new run.
       IF(RUN_TYPE /= 'NEW') RETURN
 ! Skip if not coupled.
-      IF(.NOT.DES_CONTINUUM_COUPLED) RETURN
+      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
+         IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
+         RETURN
+      ENDIF
+
 ! Skip if using cohesion. (Why?)
       IF(USE_COHESION) RETURN
 

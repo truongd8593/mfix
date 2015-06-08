@@ -202,6 +202,26 @@
 !</keyword>
 
 !<keyword category="Run Control" required="false">
+!  <description>
+!    Flag to enable Jackson form of momentum equations.
+!    note="Anderson and Jackson, (1967), IECF, 6(4), p.527."/>
+!  </description>
+!  <valid value=".TRUE." note="Solve Jackson form of momentum equations."/>
+!  <valid value=".FALSE." note="Default form."/>
+      JACKSON = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
+!  <description>
+!    Flag to enable Ishii form of momentum equations.
+!    note="Ishii, (1975), Thermo-fluid dynamic theory of two-phase flow."/>
+!  </description>
+!  <valid value=".TRUE." note="Solve Ishii form of momentum equations."/>
+!  <valid value=".FALSE." note="Default form."/>
+      ISHII = .FALSE.
+!</keyword>
+
+!<keyword category="Run Control" required="false">
 !  <description>Solve energy equations.</description>
 !  <valid value=".TRUE." note="Solve energy equations."/>
 !  <valid value=".FALSE." note="Do not solve energy equations."/>
@@ -817,7 +837,7 @@
 !<keyword category="Geometry and Discretization" required="false">
 !  <description>
 !    Cell sizes in the x (r) direction. Enter values from DX(0) to
-!    DX(IMAX-1). 
+!    DX(IMAX-1).
 !    o Use uniform mesh size with higher-order discretization methods.
 !    o DX should be kept uniform in cylindrical coordinates
 !      for strict momentum conservation.
@@ -1027,7 +1047,7 @@
 !  <description>
 !    Applies the 2.5D model for cylindrical column by combining 2D assumption
 !    and axi-symmetric assumption.
-!    Li et al. (2015). A 2.5D computational method to simulate 
+!    Li et al. (2015). A 2.5D computational method to simulate
 !    cylindrical fluidized beds, Chemical Engineering Science,
 !    123:236-246.
 !  </description>
@@ -1102,7 +1122,7 @@
 
 !<keyword category="Gas Phase" required="false">
 !  <description>
-!    Average molecular weight of gas [(g/mol) in CGS]. Used in 
+!    Average molecular weight of gas [(g/mol) in CGS]. Used in
 !    calculating the gas density for non-reacting flows when the gas
 !    composition is not defined.
 !  </description>
@@ -1288,7 +1308,7 @@
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
 !  <description>
-!    Solids phase stress model [LUN_1984]. This is only needed when 
+!    Solids phase stress model [LUN_1984]. This is only needed when
 !    solving the granular energy PDE (GRANULAR_ENERGY = .TRUE.).
 !  </description>
 !  <dependent keyword="GRANULAR_ENERGY" value=".TRUE."/>
@@ -2666,7 +2686,7 @@
 !    specified for semipermeable surfaces only. The thickness used for
 !    pressure drop computation is that of the momentum cell (DX_e,
 !    DY_n, or DZ_t). To turn off the resistance, use a large value
-!    for permeability. 
+!    for permeability.
 !    o IDX=1: Permeability [1.0E32]
 !    o IDX=2: Inertial resistance coefficient [0.0]
 !  </description>

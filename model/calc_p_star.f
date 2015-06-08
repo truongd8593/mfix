@@ -66,7 +66,6 @@
 ! External functions
 !-----------------------------------------------
       DOUBLE PRECISION :: CALC_EP_STAR
-      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !-----------------------------------------------
 
 !!$omp parallel do private(ijk)
@@ -364,97 +363,3 @@
 
       RETURN
       END FUNCTION CALC_ep_star
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  FUNCTION: blend_function                                            C
-!  Purpose: To calculate blending function                             C
-!                                                                      C
-!  Author: S. Pannala                                 Date: 28-FEB-06  C
-!  Reviewer:                                          Date:            C
-!  Modified:                                          Date: 24-OCT-06  C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      DOUBLE PRECISION FUNCTION blend_function(IJK)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE constant
-      USE toleranc
-      USE compar
-      USE run
-      USE visc_s
-      USE fun_avg
-      USE functions
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! IJK index
-      INTEGER, INTENT(IN) :: IJK
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! Logical to see whether this is the first entry to this routine
-      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-! Blend Factor
-      Double Precision:: blend, blend_right
-! Scale Factor
-      Double Precision, Save:: scale
-! Midpoint
-      Double Precision, Save:: ep_mid_point
-!-----------------------------------------------
-
-! Tan hyperbolic blending of stresses
-      IF(TANH_BLEND) THEN
-         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk).AND. EP_g(IJK) .GT. ep_g_blend_start(ijk)) THEN
-            ep_mid_point = (ep_g_blend_end(IJK)+ep_g_blend_start(IJK))/2.0d0
-            blend = tanh(2.0d0*pi*(ep_g(IJK)-ep_mid_point)/ &
-            (ep_g_blend_end(IJK)-ep_g_blend_start(IJK)))
-            blend = (blend+1.0d0)/2.0d0
-         ELSEIF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
-            blend = 1.0d0
-         ELSEIF(EP_g(IJK) .LE. ep_g_blend_start(ijk)) THEN
-            blend = 0.0d0
-         ENDIF
-
-! Truncated and Scaled Sigmoidal blending of stresses
-      ELSEIF(SIGM_BLEND) THEN
-         IF(FIRST_PASS) THEN
-            blend_right =  1.0d0/(1+0.01d0**((ep_g_blend_end(IJK)-ep_star_array(IJK))&
-            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
-            blend_right = (blend_right+1.0d0)/2.0d0
-            scale = 1.0d0/blend_right
-            write(*,*) 'Blending value at end and scaling factor', blend_right, scale
-            FIRST_PASS = .FALSE.
-         ENDIF
-         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk)) THEN
-            blend =  scale/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
-            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
-         ELSEIF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
-            blend = 1.0d0
-         ENDIF
-
-      ENDIF
-
-      blend_function = blend
-
-      RETURN
-      END FUNCTION blend_function
-

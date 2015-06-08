@@ -59,15 +59,6 @@
 ! error indicator
       INTEGER, INTENT(INOUT) :: IER
 !-------------------------------------------------
-! Local Variables
-!-------------------------------------------------
-!-------------------------------------------------
-! External subroutines
-!-------------------------------------------------
-! These procedures are effectively dummy arguments (procedures as
-! arguments within the subroutine leq_cg0)
-      EXTERNAL LEQ_MATVEC, LEQ_MSOLVE, LEQ_MSOLVE0, LEQ_MSOLVE1
-!--------------------------------------------------
 
       if(PC.eq.'LINE') then   ! default
          call LEQ_CG0( Vname, Vno, Var, A_m, B_m,  &
@@ -152,7 +143,6 @@
 !    'line' msolve->leq_msolve  (default)
 !    'diag' msolve->leq_msolve1
 !    'none' msolve->leq_msolve0
-      EXTERNAL MATVEC, MSOLVE
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
@@ -171,19 +161,6 @@
       LOGICAL :: isconverged
       INTEGER :: i, j, k, ijk
       INTEGER :: iter
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-!     DOUBLE PRECISION , EXTERNAL :: DOT_PRODUCT_PAR
-
-      INTERFACE
-         DOUBLE PRECISION FUNCTION DOT_PRODUCT_PAR( R1, R2 )
-         use compar
-         DOUBLE PRECISION, INTENT(IN), DIMENSION(ijkstart3:ijkend3) :: &
-                                       R1,R2
-         END FUNCTION DOT_PRODUCT_PAR
-      END INTERFACE
-
 !-----------------------------------------------
 
       is_serial = numPEs.eq.1.and.is_serial

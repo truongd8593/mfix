@@ -24,7 +24,7 @@
 
       IMPLICIT NONE
 
-      INCLUDE '../usrnlst.inc'
+      INCLUDE 'usrnlst.inc'
 
       RETURN
       END SUBROUTINE USR0_DES

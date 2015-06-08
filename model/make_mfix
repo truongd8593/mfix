@@ -27,6 +27,9 @@ RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
 MFIX_SRC=$(echo $0 | sed 's/\/make_mfix//')
 MFIX_CONFIG=${MFIX_SRC}/../config
 
+# symlink BURCAT.THR into RUN_DIR
+ln -sf ${MFIX_SRC}/thermochemical/BURCAT.THR ${RUN_DIR}/BURCAT.THR
+
 # This sets absolute paths.
 . ${MFIX_CONFIG}/sys_info.sh
 
@@ -106,11 +109,6 @@ if test ${AUTOCOMPILE} -ne 1; then
 # Set NetCDF library flags
   . ${MFIX_CONFIG}/netcdf.sh
 # Set Trilinos library flags
-
-# Set TAU wrappers
-  if test $USE_TAU = 1; then
-    . ${MFIX_CONFIG}/tau_wrapper.sh
-  fi
 
 fi # End of Autocompile <= 1
 

@@ -119,6 +119,7 @@
       use param, only: DIMENSION_BC
       use param1, only: UNDEFINED
       use param1, only: ZERO
+      use physprop, only: CALC_MW
       use physprop, only: MW_AVG, MW_g
       use physprop, only: NMAX
       use physprop, only: RO_g0
@@ -133,8 +134,6 @@
       DOUBLE PRECISION :: VOLFLOW
 ! Average molecular weight
       DOUBLE PRECISION :: MW
-
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW
 
       CALL INIT_ERR_MSG("GAS_MASSFLOW_TO_VOLFLOW")
 
@@ -678,10 +677,6 @@
       INTEGER :: INERT
 ! Solids density at BC plane
       DOUBLE PRECISION :: BC_ROs
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW
 !-----------------------------------------------
 
 ! When both flow rates and velocities are specified, a consistency check is done

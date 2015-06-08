@@ -2,10 +2,10 @@
 !                                                                      C
 !  Subroutine: SOURCE_V_g                                              C
 !  Purpose: Determine source terms for V_g momentum eq. The terms      C
-!     appear in the center coefficient and RHS vector.    The center   C
-!     coefficient and source vector are negative.  The off-diagonal    C
-!     coefficients are positive.                                       C
-!     The drag terms are excluded from the source at this stage        C
+!  appear in the center coefficient and RHS vector. The center         C
+!  coefficient and source vector are negative.  The off-diagonal       C
+!  coefficients are positive.                                          C
+!  The drag terms are excluded from the source at this stage.          C
 !                                                                      C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 7-JUN-96   C
@@ -16,58 +16,72 @@
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
 !                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOURCE_V_G(A_M, B_M, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE bc
-      USE bodyforce
-      USE compar
-      USE constant
-      USE cutcell
-      USE drag
-      USE fldvar
-      USE fun_avg
-      USE functions
-      USE geometry
-      USE ghdtheory
-      USE indices
-      USE is
-      USE matrix
-      USE mms
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE quadric
-      USE run
-      USE rxns
-      USE scales
-      USE sendrecv
-      USE tau_g
-      USE toleranc
-      USE visc_g
-      USE vshear
+!---------------------------------------------------------------------//
+      USE bodyforce, only: bfy_g
+      USE bc, only: delp_y
 
+      USE compar, only: ijkstart3, ijkend3, jmap
+
+      USE drag, only: f_gs, beta_ij
+      USE fldvar, only: p_g, ro_g, rop_g, rop_go, rop_s
+      USE fldvar, only: ep_g, ep_s, epg_jfac
+      USE fldvar, only: v_g, v_go, u_s, v_s, w_s, v_so
+
+      USE fun_avg, only: avg_x, avg_z, avg_y
+      USE fun_avg, only: avg_x_e, avg_y_n, avg_z_t
+      USE functions, only: ip_at_n, sip_at_n, is_id_at_n
+      USE functions, only: ip_of, jp_of, kp_of, im_of, jm_of, km_of
+      USE functions, only: north_of, south_of
+      USE functions, only: zmax
+      USE geometry, only: jmax1, cyclic_y_pd, do_k, xlength
+      USE geometry, only: vol, vol_v
+      USE geometry, only: axy, ayz, axz
+      USE geometry, only: ox, odx_e
+
+      USE ghdtheory, only: joiy
+
+      USE indices, only: i_of, j_of, k_of
+      USE indices, only: ip1, im1, jm1, kp1
+      USE is, only: is_pc
+      USE matrix, only: e, w, s, n, t, b
+
+      USE mms, only: use_mms, mms_v_g_src
+      USE param, only: dimension_3, dimension_m
+      USE param1, only: zero, one, half, small_number
+      USE physprop, only: mmax, smax
+      USE physprop, only: mu_g, cv
+      USE run, only: momentum_y_eq
+      USE run, only: model_b, added_mass, m_am
+      USE run, only: kt_type_enum, drag_type_enum
+      USE run, only: ghd_2007, hys
+      USE run, only: odt
+      USE run, only: v_sh, shear
+      USE rxns, only: sum_r_g
+      USE scales, only: p_scale
+      USE vshear, only: vsh
+      USE tau_g, only: tau_v_g
+      USE toleranc, only: dil_ep_s
+      USE cutcell, only: cartesian_grid, cut_v_treatment_at
+      USE cutcell, only: blocked_v_cell_at
+      USE cutcell, only: a_vpg_n, a_vpg_s
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
+
+! Dummy Arguments
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Indices
       INTEGER :: I, J, K, IJK, IJKN, &
                  IMJK, IPJK, IJMK, IJPK, IJKP, IJKM, IMJPK, IJPKM
@@ -78,7 +92,7 @@
 ! Pressure at north cell
       DOUBLE PRECISION :: PgN
 ! Average volume fraction
-      DOUBLE PRECISION :: EPGA
+      DOUBLE PRECISION :: EPGA, EPGAJ
 ! Average density
       DOUBLE PRECISION :: ROPGA, ROGA
 ! Average viscosity
@@ -98,7 +112,9 @@
 ! loezos: shear terms
       DOUBLE PRECISION :: VSH_n,VSH_s,VSH_e,VSH_w,VSH_p,Source_conv
       DOUBLE PRECISION :: SRT
-!-----------------------------------------------
+! jackson terms: local stress tensor quantity
+      DOUBLE PRECISION :: ltau_v_g
+!---------------------------------------------------------------------//
 
 ! Set reference phase to gas
       M = 0
@@ -108,11 +124,12 @@
 
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,    &
-!$omp          IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA,       &
-!$omp          ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,          &
+!$omp          IJKM, IJPKM, IJKP, EPGA, EPGAJ, PGN, SDP, ROPGA,      &
+!$omp          ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,    &
 !$omp          Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst,         &
 !$omp          Vsb, F_vir, Ghd_drag, avgRop, avgDrag, HYS_drag,      &
-!$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT)
+!$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT,  &
+!$omp          ltau_v_g)
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -128,6 +145,8 @@
          IJKP = KP_OF(IJK)
 
          EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
+! if jackson avg ep_g otherwise 1
+         EPGAJ = AVG_Y(EPG_jfac(IJK),EPG_jfac(IJKN),J)
 
 ! Impermeable internal surface
          IF (IP_AT_N(IJK)) THEN
@@ -265,7 +284,7 @@
 
 ! Interphase mass transfer
             IF(.NOT.CUT_V_TREATMENT_AT(IJK)) THEN
-              VMT = AVG_Y(SUM_R_G(IJK),SUM_R_G(IJKN),J)
+               VMT = AVG_Y(SUM_R_G(IJK),SUM_R_G(IJKN),J)
             ELSE
                VMT = (VOL(IJK)*SUM_R_G(IJK) + VOL(IJKN)*SUM_R_G(IJKN))/&
                   (VOL(IJK) + VOL(IJKN))
@@ -301,6 +320,10 @@
                   ENDDO
                ENDDO
             ENDIF
+! if jackson, implement jackson form of governing equations (ep_g dot
+! del tau_g): multiply by void fraction otherwise by 1
+            ltau_v_g = epgaj*tau_v_g(ijk)
+
 
 ! loezos: Shear Source terms from convective mom. flux
             IF (SHEAR) THEN
@@ -322,11 +345,9 @@
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
                A_M(IJK,N,M)+A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+&
                (V0+VPM+ZMAX(VMT))*VOL_V(IJK))
-            B_M(IJK,M) = B_M(IJK,M) - (SDP + TAU_V_G(IJK) + &
+            B_M(IJK,M) = B_M(IJK,M) - (SDP + lTAU_V_G + F_VIR + &
                Source_conv + ((V0+ZMAX((-VMT)))*V_GO(IJK) + VBF + &
                Ghd_drag + HYS_drag)*VOL_V(IJK) )
-! adding explicit-part of virtual mass force
-            B_M(IJK,M) = B_M(IJK,M) - F_vir
 ! MMS Source term.
             IF(USE_MMS) B_M(IJK,M) = &
                B_M(IJK,M) - MMS_V_G_SRC(IJK)*VOL_V(IJK)
@@ -336,11 +357,11 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M)
 ! modifications for bc
       CALL SOURCE_V_G_BC(A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_V_G
@@ -920,6 +941,7 @@
       use constant
       use geometry
       use indices
+      use param1, only: one, small_number
       use physprop
       use ps
       use run

@@ -87,7 +87,7 @@
 ! However, the equation is based on the index of MCP.
 
 ! initializing
-      CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
+      CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
       CALL ZERO_ARRAY (EPP)
 
 ! for consistency set m=mcp and use m rather than specifically using
@@ -106,7 +106,7 @@
       CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER)
 
 ! Add point source contributions.
-      IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax, IER)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -121,13 +121,13 @@
 ! and use this to form normalization factor
          CALL CALC_RESID_PP (B_MMAX, ONE, NUM_RESID(RESID_P,M), &
             DEN_RESID(RESID_P,M), RESID(RESID_P,M), &
-            MAX_RESID(RESID_P,M), IJK_RESID(RESID_P,M), IER)
+            MAX_RESID(RESID_P,M), IJK_RESID(RESID_P,M))
          NORMSloc = RESID(RESID_P,M)/DEN
       ENDIF
 
       CALL CALC_RESID_PP (B_M, NORMSloc, NUM_RESID(RESID_P,M), &
          DEN_RESID(RESID_P,M), RESID(RESID_P,M), MAX_RESID(RESID_P,M), &
-         IJK_RESID(RESID_P,M), IER)
+         IJK_RESID(RESID_P,M))
       RESS = RESID(RESID_P,M)
 !      write(*,*) resid(resid_p, 1), max_resid(resid_p, 1), &
 !         ijk_resid(resid_p, 1)
@@ -135,7 +135,7 @@
 
 ! Solve EP_s_prime equation
       CALL ADJUST_LEQ(RESID(RESID_P,M), LEQ_IT(2), LEQ_METHOD(2),&
-                      LEQI, LEQM, IER)
+                      LEQI, LEQM)
 ! note index 0 is used here since that is the index that was used for
 ! creating this matrix equation
       CALL SOLVE_LIN_EQ ('EPp', 2, EPP, A_M, B_M, 0, LEQI, LEQM, &
