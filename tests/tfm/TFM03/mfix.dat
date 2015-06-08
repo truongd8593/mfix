@@ -4,32 +4,30 @@
 #                                                                      #
 # Author: M. Syamlal                                    Date: Dec 1999 #
 #                                                                      #
-# Revision: 1
-#   Author: Aniruddha Choudhary (anirudd@vt.edu)
-#   Date  : Jun 2015
-#   Notes : 
-#   Case setup to compare MFIX results with 
-#     Ghia et al., 1982, Journal of Computational Physics, 
-#       doi: 10.1016/0021-9991(82)90058-4
-#       and 
-#     Botella & Peyret, 1998, Computers and Fluids,
-#       doi: 10.1016/S0045-7930(98)00002-4
+# Revision: 1							       #
+#   Author: Aniruddha Choudhary (anirudd@vt.edu)                       #
+#   Date  : Jun 2015                                                   #
+#   Notes :                                                            #
+#   Case setup to compare MFIX results with                            #
+#     Ghia et al., 1982, Journal of Computational Physics,             #
+#       doi: 10.1016/0021-9991(82)90058-4                              #
+#       and                                                            #
+#     Botella & Peyret, 1998, Computers and Fluids,                    #  
+#       doi: 10.1016/S0045-7930(98)00002-4                             #
 ########################################################################
 
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'TFM02'
-  Description   = 'Steady-state 1D heat conduction'
+  Run_name      = 'TFM03'
+  Description   = 'Lid-driven cavity'
   Units         = 'SI'
   Run_type      = 'new'
 
   Time          = 0.0 ! Steady state solution
   Tstop         = 1.0
 
-  Energy_eq     = .T.
-  Momentum_x_eq = .F.
-  Momentum_y_eq = .F.
+  Energy_eq     = .F.
   Species_eq(0) = .F.
 
   Gravity       = 0.0
@@ -39,9 +37,9 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  Max_nit       = 200000  ! large enough for all mesh levels
+  Max_nit       = 200000
 
-  Tol_resid_T   = 1.0E-10
+  Tol_resid     = 1.0E-10
 
   Leq_pc        = 9*'NONE'
 
@@ -52,20 +50,19 @@
 
   Coordinates   = 'cartesian'
 
-  xlength = 0.20  
-  ylength = 0.50
+  xlength = 1.0  
+  ylength = 1.0
 
-  imax    = 40  ! set via command line
-  jmax    = 2   ! set via command line
+  imax    = 128 
+  jmax    = 128
 
   no_k = .T.
 
 #_______________________________________________________________________
 # GAS-PHASE SECTION
 
-  mu_g0 = 0.001 ! shouldn't affect solution
-  ro_g0 = 1.0   ! shouldn't affect solution
-  C_Pg0 = 1.2   ! (W/m-degC) shouldn't affect solution
+  mu_g0 = 0.01
+  ro_g0 = 1.0
 
 #_______________________________________________________________________
 # SOLIDS-PHASE SECTION
@@ -76,67 +73,35 @@
 # INITIAL CONDITIONS SECTION
 
   IC_X_w(1)   = 0.0     
-  IC_X_e(1)   = 0.2    
+  IC_X_e(1)   = 1.0    
   IC_Y_s(1)   = 0.0    
-  IC_Y_n(1)   = 0.5    
+  IC_Y_n(1)   = 1.0    
 
   IC_EP_g(1)  = 1.0   
+
   IC_U_g(1)   = 0.0   
   IC_V_g(1)   = 0.0     
-  IC_P_g(1)   = 0.0
-  IC_T_g(1)   = 350.0
-
-  IC_X_g(1,1) =   1.0	   
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
 
-! Fixed temperature bath on West (400K) and East (320K)
+! West, East and South: no-slip walls
+! 	- Set as NSW by default
+! North: Lid with a constant velocity of 1.0 m/s along +x
+! 	- Set as PSW (partial-slip wall)
+! 	- PSW is implemented as: dv/dn + hw(v-vw) = 0
+!       - So, hw = 1.0, and vw = 1.0  
 !---------------------------------------------------------------------//
 
-! West wall
-  BC_X_w(1)   = 0.0 	
-  BC_X_e(1)   = 0.0
-  BC_Y_s(1)   = 0.0	
-  BC_Y_n(1)   = 0.5
+  BC_X_w(4)   = 0.0
+  BC_X_e(4)   = 1.0
+  BC_Y_s(4)   = 1.0
+  BC_Y_n(4)   = 1.0
 
-  BC_Type(1)  = 'NSW'
- 
-  BC_TW_g(1)  = 400.0
+  BC_TYPE(4)  = 'PSW'
 
-! East wall
-  BC_X_w(2)   = 0.2 	
-  BC_X_e(2)   = 0.2
-  BC_Y_s(2)   = 0.0	
-  BC_Y_n(2)   = 0.5
-
-  BC_Type(2)  = 'NSW'
- 
-  BC_TW_g(2)  = 320.0
-
-! Zero heat flux on Top and Bottom walls
-!---------------------------------------------------------------------//
-
-! Bottom wall
-  BC_X_w(3)   = 0.0 	
-  BC_X_e(3)   = 0.2
-  BC_Y_s(3)   = 0.0	
-  BC_Y_n(3)   = 0.0
-
-  BC_Type(3)  = 'NSW'
-
-  BC_HW_T_g(3)= 0.0
-  BC_C_T_g(3) = 0.0
-
-! Top wall
-  BC_X_w(4)   = 0.0 	
-  BC_X_e(4)   = 0.2
-  BC_Y_s(4)   = 0.5	
-  BC_Y_n(4)   = 0.5
-  BC_Type(4)  = 'NSW'
-
-  BC_HW_T_g(4)= 0.0
-  BC_C_T_g(4) = 0.0
+  BC_Uw_g(4)  = 1.0
+  BC_Vw_g(4)  = 0.0
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
@@ -147,9 +112,9 @@
   Full_log    = .T.              
   Spx_dt      = 9*1.
 
-  Resid_string  = 'T0'
+  Resid_string  = 'P0' 'U0' 'V0'
 
 #_______________________________________________________________________
 # DMP SETUP
 
-!  NODESI =  2  NODESJ =  1  NODESK =  1  ! set via command line
+!  NODESI =  2  NODESJ =  2  NODESK =  1  ! set via command line
