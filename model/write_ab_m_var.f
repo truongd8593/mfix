@@ -32,6 +32,9 @@
       USE mpi_utility
       USE indices
       USE functions
+
+      use machine
+
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
