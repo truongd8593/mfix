@@ -34,7 +34,6 @@ void die(const char *msg)
 int sockfd, new, maxfd, on = 1, nready, ii;
 struct addrinfo *res0, *res, hints;
 struct timeval timeout;
-char buffer[BUFSIZ];
 char outbuffer[BUFSIZ];
 fd_set master, readfds;
 int error;
@@ -116,6 +115,8 @@ void init_socket(char* port) {
   timeout.tv_sec = 0;
   timeout.tv_usec = 0;
 
+  signal(SIGPIPE, SIG_IGN);
+
 }
 
 //-----------------------------------------------
@@ -166,35 +167,14 @@ void init_socket(char* port) {
 
              else
               {
-//              (void)printf("recv() data from one of descriptors(s)\n");
-
-                nbytes = recv(ii, buffer, sizeof(buffer), 0);
-                if(nbytes <= 0)
-                  {
-                    if(EWOULDBLOCK != errno)
-                     perror("recv()");
-
-                    break;
-                  }
-
-//              (void)printf("%zi bytes received.\n", nbytes);
-
-                buffer[nbytes] = '\0';
-//              printf("Client said:  %s", buffer);
-                fwrite(buffer,sizeof(char), nbytes, stdout);
-
-//              handle_command_(outbuffer, buffer, &nbytes);
                 flush_err_msg_gui(outbuffer);
 
                 if ((nbytes = send(ii, outbuffer, strlen(outbuffer), 0)) == -1) {
+		  // Client probably disconnected
                   perror("send");
+		  close(ii);
+		  FD_CLR(ii, &master);
                 }
-
-//              (void)printf("%zi bytes sent.\n", nbytes);
-
-                close(ii);
-                FD_CLR(ii, &master);
-
               }
            }
 
