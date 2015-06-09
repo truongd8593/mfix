@@ -16,6 +16,7 @@ Code taken from the example on Wikipedia:  http://en.wikipedia.org/wiki/Select_(
 #include <unistd.h>
 #include <err.h>
 #include <errno.h>
+#include <signal.h>
 
 extern void handle_command_(char*, char*, ssize_t*);
 

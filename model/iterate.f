@@ -376,7 +376,7 @@
 !-----------------------------------------------------------------
 
 ! Display residuals
-      IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER)
+      CALL DISPLAY_RESID (NIT, IER)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN
