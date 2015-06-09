@@ -181,11 +181,15 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
 
-      write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
+
+#ifdef socket
       IF(INTERACTIVE_MODE) THEN
+         write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
+         CALL CHECK_SOCKET()
          CALL INTERACT(EXIT_SIGNAL, ABORT_SIGNAL)
          IF(ABORT_SIGNAL) RETURN
       ENDIF
+#endif
 
 ! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
@@ -274,10 +278,6 @@
 
 ! Advance the solution in time by iteratively solving the equations
  150  CALL ITERATE (IER, NIT)
-
-#ifdef socket
-      CALL CHECK_SOCKET()
-#endif
 
       IF(AUTOMATIC_RESTART) RETURN
 
