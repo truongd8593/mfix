@@ -22,7 +22,7 @@
 !  > part of 1/x d/dx(x.tau_xx) xdxdydz =>                             C
 !            1/x d/dx (x.mu.du/dx) xdxdydz =>                          C
 !    delta (mu du/dx)Ayz |E-W                                          C
-!  > part of d/dy (tau_xy) xdxdydz =>                                   C
+!  > part of d/dy (tau_xy) xdxdydz =>                                  C
 !           d/dy (mu.dv/dx) xdxdydz =>                                 C
 !    delta (mu.dv/dx)Axz |N-S                                          C
 !  > part of 1/x d/dz (tau_xz) xdxdydz =>                              C
@@ -145,8 +145,8 @@
 ! combines 1/x d/dx (x.lambda.trcD) xdxdydz - (lambda/x.trcD) xdxdydz =>
 !              d/dx (lambda.trcD) xdxdydz
 ! delta (lambda.trcD)Ap |E-W : at (i+1 - i-1), j, k
-               SBV = (LAMBDA_GT(IJKE)*TRD_G(IJKE)-&
-                      LAMBDA_GT(IJK)*TRD_G(IJK))*AYZ(IJK)
+               SBV = (EPLAMBDA_GT(IJKE)*TRD_G(IJKE)-&
+                      EPLAMBDA_GT(IJK)*TRD_G(IJK))*AYZ(IJK)
 
 ! shear stress terms at i+1/2, j, k
 ! part of 1/x d/dx(x.tau_xx) xdxdydz =>
@@ -346,8 +346,8 @@
 
 
 ! bulk viscosity term
-            SBV = (LAMBDA_GT(IJKE)*TRD_G(IJKE)) * AYZ_U(IJK) - &
-                  (LAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK)
+            SBV = (EPLAMBDA_GT(IJKE)*TRD_G(IJKE)) * AYZ_U(IJK) - &
+                  (EPLAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK)
 
 ! shear stress terms
             IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
@@ -677,7 +677,6 @@
          SSY = DF_GU(IJK,N)*(U_G(IJPK)-U_G(IJK)) - &
                DF_GU(IJK,S)*(U_G(IJK)-U_G(IJMK))
 
-         SSZ = ZERO
          IF (DO_K) THEN
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu/x.du/dz) xdxdydz =>

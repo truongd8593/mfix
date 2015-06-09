@@ -4,6 +4,10 @@
 ! Granular first coefficient of (shear) viscosity(i,j,k)
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  MU_s
 
+! 'Solids' first coefficient of (shear) viscosity(i,j,k) multiplied
+! by the volume fraction of that phase if ishii otherwise by 1
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  EPMU_s
+
 ! Granular first coefficient of (shear) viscosity(i,j,k)
 ! Viscous contribution
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  MU_s_v
@@ -25,6 +29,10 @@
 
 ! Granular second coefficient of viscosity(i,j,k)
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  LAMBDA_s
+
+! 'Solids' second coefficient of viscosity(i,j,k) multiplied by
+! the volume fraction of that phase if ishii otherwise by 1
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  EPLAMBDA_s
 
 ! Granular second coefficient of (shear) viscosity(i,j,k)
 ! Viscous contribution

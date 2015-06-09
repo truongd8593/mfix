@@ -9,11 +9,16 @@
 
 ! Turbulent viscosity of fluid phase: sum of molecular
 ! and eddy viscosities x the void fraction of fluid phase
+! when ishii model is invoked
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EPMU_gt
 
 
-! Granular second coefficient of viscosity
+! Second coefficient of viscosity
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  LAMBDA_gt
+
+! Second coefficient of viscosity x void fraction of fluid phase
+! when ishii model is invoked
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EPLAMBDA_gt
 
 ! Characteristic length for turbulence
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  L_scale
