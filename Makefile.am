@@ -74,7 +74,7 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 ################################################################
 
 .f.d:
-	$(MKDIR_P) $(@D)
+	@$(MKDIR_P) $(@D)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 

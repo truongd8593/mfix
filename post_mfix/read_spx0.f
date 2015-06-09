@@ -24,11 +24,12 @@
       SUBROUTINE READ_SPX0(READ_SPX)
 !
 !
-      Use param
-      Use param1
-      Use run
-      Use funits
-      Use post3d
+      USE funits
+      USE machine
+      USE param
+      USE param1
+      USE post3d
+      USE run
       IMPLICIT NONE
 !
       logical read_spx(*)
