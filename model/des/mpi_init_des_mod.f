@@ -111,6 +111,7 @@
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*iGhostPacketSize
+      imaxbuf = 10
 
       WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, ONEMBo8/iGhostPacketSize,  &
          ONEMBo8/iParticlePacketSize, ONEMBo8/iPairPacketSize
@@ -121,9 +122,9 @@
          F6.0,1X,'Neighbor Pairs/MB')
 
 
-      allocate (dsendbuf(lfaces));
-      allocate (drecvbuf(lfaces));
-      do ii=1, lfaces
+      allocate (dsendbuf(2));
+      allocate (drecvbuf(2));
+      do ii=1, size(dsendbuf)
          allocate (dsendbuf(ii)%facebuf(imaxbuf));
          allocate (drecvbuf(ii)%facebuf(imaxbuf));
       end do
@@ -567,7 +568,7 @@
          enddo
 ! update pic required as particles in ghost cell can move between ghost cells
          do lface = linter*2-1,linter*2
-            if(dsendbuf(lface)%facebuf(1).gt.0.or.drecvbuf(lface)%facebuf(1).gt.0) then
+            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
             endif

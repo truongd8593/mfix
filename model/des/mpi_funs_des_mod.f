@@ -106,7 +106,7 @@
          end do
 ! update pic this is required for particles crossing corner cells
          do lface = linter*2-1,linter*2
-            if(dsendbuf(lface)%facebuf(1).gt.0.or.drecvbuf(lface)%facebuf(1).gt.0) then
+            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
             end if
@@ -141,7 +141,7 @@
 
 ! Rebin particles to the DES grid as ghost particles may be moved.
             do lface = linter*2-1,linter*2
-               if(dsendbuf(lface)%facebuf(1).gt.0.or.drecvbuf(lface)%facebuf(1).gt.0) then
+               if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                   call desgrid_pic(plocate=.false.)
                   exit
                end if
@@ -212,8 +212,8 @@
       if (imaxbuf .lt. lmaxcnt*lpacketsize+ibufoffset) then
          imaxbuf = lmaxcnt*lpacketsize*lfactor
          do lface = 1,2*dimn
-            if(allocated(dsendbuf(lface)%facebuf)) deallocate(dsendbuf(lface)%facebuf,drecvbuf(lface)%facebuf)
-            allocate(dsendbuf(lface)%facebuf(imaxbuf),drecvbuf(lface)%facebuf(imaxbuf))
+            if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
+            allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
          end do
       endif
 

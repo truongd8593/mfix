@@ -114,14 +114,14 @@
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-      lparcnt = drecvbuf(pface)%facebuf(1)
+      lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
       lnewcnt = lparcnt
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2))
       lfound(:) = .false.
       lnewspot(:) =0
       lnewpic = 0
 
-      print *,"GHOST rank:",myPE," face: ",pface, " USED ",lparcnt*iGhostPacketSize*storage_size(drecvbuf(pface)%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(pface)%facebuf)*size(drecvbuf(pface)%facebuf)/8, " or %%% ",lparcnt*iGhostPacketSize*100./size(drecvbuf(pface)%facebuf)
+      print *,"GHOST rank:",myPE," face: ",pface, " USED ",lparcnt*iGhostPacketSize*storage_size(drecvbuf(1+mod(pface,2))%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(1+mod(pface,2))%facebuf)*size(drecvbuf(1+mod(pface,2))%facebuf)/8, " or %%% ",lparcnt*iGhostPacketSize*100./size(drecvbuf(1+mod(pface,2))%facebuf)
 
       do lcurpar = 1,lparcnt
          lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
@@ -376,9 +376,9 @@
 !......................................................................!
 
 ! loop through particles and locate them and make changes
-      lparcnt = drecvbuf(pface)%facebuf(1)
+      lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
 
-      print *,"PARCROSS rank:",myPE," face: ",pface, " USED ",lparcnt*iParticlePacketSize*storage_size(drecvbuf(pface)%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(pface)%facebuf)*size(drecvbuf(pface)%facebuf)/8, " or %%% ",lparcnt*iParticlePacketSize*100./size(drecvbuf(pface)%facebuf)
+      print *,"PARCROSS rank:",myPE," face: ",pface, " USED ",lparcnt*iParticlePacketSize*storage_size(drecvbuf(1+mod(pface,2))%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(1+mod(pface,2))%facebuf)*size(drecvbuf(1+mod(pface,2))%facebuf)/8, " or %%% ",lparcnt*iParticlePacketSize*100./size(drecvbuf(1+mod(pface,2))%facebuf)
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)
@@ -663,7 +663,7 @@
       integer, intent(in) :: pface
       double precision, intent(inout) :: idata
 
-      idata = drecvbuf(pface)%facebuf(lbuf)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf)
       lbuf = lbuf + 1
 
       return
@@ -682,7 +682,7 @@
 
       lsize = size(idata)
 
-      idata = drecvbuf(pface)%facebuf(lbuf:lbuf+lsize-1)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1)
       lbuf = lbuf + lsize
 
       return
@@ -698,7 +698,7 @@
       integer, intent(in) :: pface
       integer, intent(inout) :: idata
 
-      idata = drecvbuf(pface)%facebuf(lbuf)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf)
       lbuf = lbuf + 1
 
       return
@@ -717,7 +717,7 @@
 
       lsize = size(idata)
 
-      idata = drecvbuf(pface)%facebuf(lbuf:lbuf+lsize-1)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1)
       lbuf = lbuf + lsize
 
       return
@@ -732,7 +732,7 @@
       integer, intent(in) :: pface
       logical, intent(inout) :: idata
 
-      idata = merge(.true.,.false.,0.5<drecvbuf(pface)%facebuf(lbuf))
+      idata = merge(.true.,.false.,0.5<drecvbuf(1+mod(pface,2))%facebuf(lbuf))
       lbuf = lbuf + 1
 
       return

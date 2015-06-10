@@ -128,7 +128,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(lface)%facebuf(1)
+            lparcnt = dsendbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -140,7 +140,7 @@
                 "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -149,7 +149,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = drecvbuf(lface)%facebuf(1)
+            lparcnt = drecvbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -161,7 +161,7 @@
                  "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(drecvbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(drecvbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -189,7 +189,7 @@
          lpacketsize = 9*dimn + ltordimn*4 + 13
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(lface)%facebuf(1)
+            lparcnt = dsendbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -201,51 +201,51 @@
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 8
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "phase density vol mass omoi pos_old"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 5+dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "pos_new     vel_old   vel_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 3*dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "omega_old     omega_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = ltordimn*2
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "acc_old     rot_acc_old   fc "
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "fn ft tow"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
 ! print neighbour information
-                  lneighcnt =dsendbuf(lface)%facebuf(lbuf);lbuf = lbuf + 1
+                  lneighcnt =dsendbuf(1+mod(lface,2))%facebuf(lbuf);lbuf = lbuf + 1
                   write(44,*) "total neighbour=",lneighcnt
                   write(44,*) "neighbou",lneighcnt
                   do lneighindx = 1, lneighcnt
                      lsize = 3
-                     write(44,'(5(2x,f8.4))') (dsendbuf(lface)%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
+                     write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                      lbuf = lbuf + lsize
                   enddo
                enddo

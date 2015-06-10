@@ -163,7 +163,7 @@
             lpar_cnt = lpar_cnt + 1
          end do
       end do
-      dsendbuf(pface)%facebuf(1)=lpar_cnt
+      dsendbuf(1+mod(pface,2))%facebuf(1)=lpar_cnt
       isendcnt(pface) = lpar_cnt*iGhostPacketSize + ibufoffset
 
       end subroutine desmpi_pack_ghostpar
@@ -457,7 +457,7 @@
 ! 33) Number of pair datasets.
       call pack_dbuf(lbuf,num_neighborlists_to_send,pface)
 
-      dsendbuf(pface)%facebuf(1) = lparcnt
+      dsendbuf(1+mod(pface,2))%facebuf(1) = lparcnt
       isendcnt(pface) = lparcnt*iParticlePacketSize +                  &
          num_neighborlists_to_send*iPairPacketSize + ibufoffset + 3
 
@@ -475,7 +475,7 @@
       integer, intent(in) :: pface
       double precision, intent(in) :: idata
 
-      dsendbuf(pface)%facebuf(lbuf) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = idata
       lbuf = lbuf + 1
 
       return
@@ -494,7 +494,7 @@
 
       lsize = size(idata)
 
-      dsendbuf(pface)%facebuf(lbuf:lbuf+lsize-1) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1) = idata
       lbuf = lbuf + lsize
 
       return
@@ -510,7 +510,7 @@
       integer, intent(in) :: pface
       integer, intent(in) :: idata
 
-      dsendbuf(pface)%facebuf(lbuf) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = idata
       lbuf = lbuf + 1
 
       return
@@ -529,7 +529,7 @@
 
       lsize = size(idata)
 
-      dsendbuf(pface)%facebuf(lbuf:lbuf+lsize-1) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1) = idata
       lbuf = lbuf + lsize
 
       return
@@ -545,7 +545,7 @@
       integer, intent(in) :: pface
       logical, intent(in) :: ldata
 
-      dsendbuf(pface)%facebuf(lbuf) = merge(1.0, 0.0, ldata)
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = merge(1.0, 0.0, ldata)
       lbuf = lbuf + 1
 
       return
