@@ -29,6 +29,22 @@
       funijk = funijk_io(li,lj,lk)
       END FUNCTION funijk
 
+! Function for generating the LOCAL 3-D array index IJK from the
+! the 1-D indices I, J, K and IPROC.
+!     FUNIJK_PROC(LI, LJ, LK, LIPROC) = 1 + (LI - istart3_all(LIPROC))+ &
+!     (LJ-jstart3_all(LIPROC))*(iend3_all(LIPROC)-istart3_all(LIPROC)+1) &
+!     + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
+!     (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
+      INTEGER FUNCTION FUNIJK_PROC(LI, LJ, LK, LIPROC)
+      USE compar
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK, LIPROC
+      FUNIJK_PROC = 1 + (LJ - jstart3_all(LIPROC))+ &
+         (LI-Istart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1) &
+         + (LK-kstart3_all(LIPROC))*(jend3_all(LIPROC)-jstart3_all(LIPROC)+1)* &
+         (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
+      END FUNCTION FUNIJK_PROC
+
       INTEGER FUNCTION FUNIJK_GL (LI, LJ, LK)
       USE geometry
       IMPLICIT NONE

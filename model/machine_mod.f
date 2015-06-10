@@ -66,7 +66,7 @@
       JUST_FLUSH = .TRUE.
 
       RETURN
-      END
+      END SUBROUTINE MACHINE_CONS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_RUN_ID                                             C
@@ -113,7 +113,7 @@
       CALL GET_ENVIRONMENT_VARIABLE('HOSTNAME',ID_NODE)
 !
       RETURN
-      END
+      END SUBROUTINE GET_RUN_ID
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Function name: WALL_TIME (CPU)                                      C
@@ -160,7 +160,7 @@
 
       WALL_TIME      = DBLE(COUNT)/DBLE(COUNT_RATE) &
                      + DBLE(WRAP) * DBLE(COUNT_MAX)/DBLE(COUNT_RATE)
-      END
+      END FUNCTION WALL_TIME
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: START_LOG                                              C
@@ -186,7 +186,7 @@
       SUBROUTINE START_LOG
       IMPLICIT NONE
       RETURN
-      END
+      END SUBROUTINE START_LOG
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: END_LOG                                                C
@@ -214,19 +214,19 @@
       IMPLICIT NONE
       IF(DMP_LOG) FLUSH(UNIT_LOG)
       RETURN
-      END
+      END SUBROUTINE END_LOG
 
       subroutine slumber
       return
-      end
+      end subroutine slumber
 
       subroutine pc_quickwin
       return
-      end
+      end subroutine pc_quickwin
 
       subroutine ran
       return
-      end
+      end subroutine ran
 
       subroutine flush_bin(iunit)
       implicit none
@@ -234,13 +234,13 @@
 
       flush(iunit)
       return
-      end
+      end subroutine flush_bin
 
       subroutine flush_res(iunit)
       implicit none
       integer :: iunit
       flush(iunit)
       return
-      end
+      end subroutine flush_res
 
       END MODULE machine

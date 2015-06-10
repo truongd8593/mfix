@@ -117,7 +117,7 @@
 !$omp         do_k, cylindrical, ltau_w_g, lctau_w_g,                  &
 !$omp         ep_g, epmu_gt, lambda_gt, trd_g, v_g, w_g, u_g,          &
 !$omp         axy,  axy_w, ayz_w, axz_w, vol_w,                        &
-!$omp         dy, dz, ox, ox_e, odz, odz_t)
+!$omp         dy, dz, ox, ox_e, odz, odz_t, eplambda_gt)
          DO IJK = IJKSTART3, IJKEND3
             K = K_OF(IJK)
             IJKT = TOP_OF(IJK)
@@ -151,11 +151,10 @@
 ! part of 1/x d/dz (tau_zz) xdxdydz =>
 !         1/x d/dz (lambda.trcD) xdxdydz=>
 ! delta (lambda.trcD)Ap |T-B : at (i, j, k+1 - k-1)
-               SBV = (LAMBDA_GT(IJKT)*TRD_G(IJKT)-&
-                      LAMBDA_GT(IJK)*TRD_G(IJK))*AXY(IJK)
+               SBV = (EPLAMBDA_GT(IJKT)*TRD_G(IJKT)-&
+                      EPLAMBDA_GT(IJK)*TRD_G(IJK))*AXY(IJK)
 
 ! shear stress terms
-! term 9
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz) ) xdxdydz =>
 !         1/x d/dx(mu.du/dz) xdxdydz =>
@@ -170,7 +169,6 @@
                         (HALF*(DZ(K)+DZ(KP)))
 ! DY(J)*HALF(DZ(k)+DZ(kp)) = oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 
-! term 10
 ! part of d/dy (tau_zy) xdxdydz =>
 !         d/dy (mu/x dv/dz) xdxdydz =>
 ! delta (mu/x dv/dz)Axz |N-S : at (i, j+1/2 - j-1/2, k+1/2)
@@ -181,7 +179,6 @@
                              AVG_Y_H(EPMU_GT(IJKST),EPMU_GT(IJKT),JM),K)*&
                         (V_G(IJMKP)-V_G(IJMK))*OX(I)*ODZ_T(K)*AXZ_W(IJMK)
 
-! term 11
 ! part of 1/x d/dz (tau_zz) xdxdydz =>
 !         1/x d/dz (mu/x dw/dz) xdxdydz =>
 ! delta (mu/x dw/dz)Axy |T-B : at (i, j, k+1 - k-1)
@@ -194,7 +191,6 @@
 ! Special terms for cylindrical coordinates
                IF (CYLINDRICAL) THEN
 
-! term 13
 ! part of 1/x d/dz (tau_zz) xdxdydz =>
 !         1/x d/dz (2.mu/x u) xdxdydz =>
 ! delta (2.mu/x u)Axy |T-B : at (i, j, k+1 - k-1)
@@ -203,7 +199,6 @@
                               EPMU_GT(IJK)*(U_G(IJK)+U_G(IMJK))*&
                                  OX(I)*AXY_W(IJKM)
 
-! term 12
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         1/x (mu/x du/dz) xdxdydz =>
@@ -333,7 +328,7 @@
 !$omp         oneodz_t_u, oneodz_t_v, oneodz_t_w,                      &
 !$omp         x_u, y_u, z_u, x_v, y_v, z_v, x_w, y_w, z_w,             &
 !$omp         wall_u_at, wall_v_at, area_w_cut, cut_w_cell_at,         &
-!$omp         blocked_u_cell_at, blocked_v_cell_at)
+!$omp         blocked_u_cell_at, blocked_v_cell_at, eplambda_gt)
       DO IJK = IJKSTART3, IJKEND3
          K = K_OF(IJK)
          IJKT = TOP_OF(IJK)
@@ -362,8 +357,8 @@
             IJKTW = WEST_OF(IJKT)
 
 ! bulk viscosity term
-            SBV =  (LAMBDA_GT(IJKT)*TRD_G(IJKT)) * AXY_W(IJK) &
-                  -(LAMBDA_GT(IJK) *TRD_G(IJK) ) * AXY_W(IJKM)
+            SBV =  (EPLAMBDA_GT(IJKT)*TRD_G(IJKT)) * AXY_W(IJK) &
+                  -(EPLAMBDA_GT(IJK) *TRD_G(IJK) ) * AXY_W(IJKM)
 
 ! shear stress terms
             IF(.NOT.CUT_W_CELL_AT(IJK))   THEN
@@ -610,7 +605,7 @@
 !---------------------------------------------------------------------//
       USE fldvar, only: u_g, w_g
 
-      USE functions, only: east_of, west_of, top_of
+      USE functions, only: east_of, west_of, top_of, flow_at_t
       USE functions, only: im_of, jm_of, km_of
       USE functions, only: ip_of, jp_of, kp_of
 
@@ -706,24 +701,30 @@
 
 
 ! convection terms
+      SSX = ZERO
+      SSY = ZERO
+      SSZ = ZERO
+      IF (FLOW_AT_T(IJK)) THEN
 ! part of 1/x^2 d/dx (x^2 tau_xz) xdxdydz => or equivalently
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         1/x d/dx (x.mu.dw/dx) xdxdydz =>
 ! delta (mu.dw/dx.Ayz) |E-W : at (i+1/2 - i-1/2), j, k+1/2
-      SSX = DF_GW(IJK,E)*(W_G(IPJK) - W_G(IJK)) - &
-            DF_GW(IJK,W)*(W_G(IJK) - W_G(IJKM))
+         SSX = DF_GW(IJK,E)*(W_G(IPJK) - W_G(IJK)) - &
+               DF_GW(IJK,W)*(W_G(IJK) - W_G(IJKM))
 
 ! part of d/dy (tau_zy) xdxdydz =>
 !         d/dy (mu.dw/dy) xdxdydz =>
 ! delta (mu.dw/dy.Axz) |N-S : at (i, j+1/2 - j-1/2, k+1/2)
-      SSY = DF_GW(IJK,N)*(W_G(IJPK)-W_G(IJK)) - &
-            DF_GW(IJK,S)*(W_G(IJK)-W_G(IJMK))
+         SSY = DF_GW(IJK,N)*(W_G(IJPK)-W_G(IJK)) - &
+               DF_GW(IJK,S)*(W_G(IJK)-W_G(IJMK))
 
 ! part of 1/x d/dz (tau_zz) xdxdydz =>
 !         1/x d/dz (mu/x.dw/dz) xdxdydz =>
 ! delta (mu/x.dw/dz.Axy) |T-B : at (i, j, k+1 - k-1)
-      SSZ = DF_GW(IJK,T)*(W_G(IJKP)-W_G(IJK)) - &
-            DF_GW(IJK,B)*(W_G(IJK)-W_G(IJKM))
+         SSZ = DF_GW(IJK,T)*(W_G(IJKP)-W_G(IJK)) - &
+               DF_GW(IJK,B)*(W_G(IJK)-W_G(IJKM))
+
+      ENDIF
 
 ! Add the terms
       lctau_W_g(IJK) = (lTAU_W_G(IJK) + SSX + SSY + SSZ + VXZA + &

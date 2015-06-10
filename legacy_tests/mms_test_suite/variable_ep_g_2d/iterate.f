@@ -43,6 +43,7 @@
       USE fldvar
       USE output
       USE indices
+      USE machine
       USE funits
       USE time_cpu
       USE pscor
@@ -108,8 +109,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-      DOUBLE PRECISION :: WALL_TIME
-
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------

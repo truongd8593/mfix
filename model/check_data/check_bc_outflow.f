@@ -50,6 +50,7 @@
 
             IF(SOLIDS_MODEL(M) /= 'TFM' .AND. FLAG_WARNING) THEN
                WRITE(ERR_MSG, 1101) trim(iVar('BC_EP_g',BCV))
+               CALL FLUSH_ERR_MSG
                FLAG_WARNING = .FALSE.
             ENDIF
 
@@ -94,6 +95,7 @@
             IF(BC_ROP_S(BCV,M) /= UNDEFINED) THEN
                IF(SOLIDS_MODEL(M) /= 'TFM') THEN
                   WRITE(ERR_MSG, 1101) trim(iVar('BC_ROP_s',BCV,M))
+                  CALL FLUSH_ERR_MSG
                ENDIF
                SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
             ENDIF

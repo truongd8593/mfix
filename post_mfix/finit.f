@@ -22,19 +22,20 @@
 !
       SUBROUTINE F_INIT
 !
-      Use param
-      Use param1
-      Use run
-      Use post3d
-      Use geometry
-      Use indices
-      Use fldvar
-      Use physprop
-      Use constant
-      Use funits
-      Use parallel_mpi
-      Use gridmap
-      Use cdist
+      USE cdist
+      USE constant
+      USE fldvar
+      USE funits
+      USE geometry
+      USE gridmap
+      USE indices
+      USE machine
+      USE parallel_mpi
+      USE param
+      USE param1
+      USE physprop
+      USE post3d
+      USE run
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'

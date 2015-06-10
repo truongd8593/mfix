@@ -263,13 +263,16 @@
 !visc_g
       Allocate(  trD_g(DIMENSION_3) )
       Allocate(  MU_gt (DIMENSION_3) )
-      Allocate(  EPMU_gt (DIMENSION_3) )
-      Allocate(  LAMBDA_gt (DIMENSION_3) )
+      Allocate(  EPMU_gt (DIMENSION_3p) )
+      Allocate(  LAMBDA_gt (DIMENSION_3p) )
+      Allocate(  EPLAMBDA_gt (DIMENSION_3) )
       Allocate(  L_scale (DIMENSION_3) )
 
 !visc_s
       Allocate(  MU_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  EPMU_s (DIMENSION_3p, DIMENSION_M) )
       Allocate(  LAMBDA_s (DIMENSION_3, DIMENSION_M) )
+      Allocate(  EPLAMBDA_s (DIMENSION_3p, DIMENSION_M) )
       Allocate(  ALPHA_s (DIMENSION_3, DIMENSION_M) )
       Allocate(  MU_s_c (DIMENSION_3, DIMENSION_M) )
       Allocate(  LAMBDA_s_c (DIMENSION_3, DIMENSION_M) )

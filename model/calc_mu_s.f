@@ -43,13 +43,15 @@
       USE run, only: blending_stress
 
 ! solids transport coefficients
-      USE visc_s, only: mu_s, mu_s_c, mu_s_v
+      USE visc_s, only: mu_s, epmu_s, mu_s_c, mu_s_v
       USE visc_s, only: mu_s_p, mu_s_f
-      USE visc_s, only: lambda_s, lambda_s_c, lambda_s_v
+      USE visc_s, only: lambda_s, eplambda_s, lambda_s_c, lambda_s_v
       USE visc_s, only: lambda_s_p, lambda_s_f
 ! solids pressure
       USE fldvar, only: p_s, p_s_c, p_s_v
       USE fldvar, only: p_s_p, p_s_f
+! factor of ep_s if ishii otherwise 1
+      USE fldvar, only: eps_ifac
 
 ! some constants
       USE param1, only: one, undefined
@@ -85,14 +87,14 @@
       INTEGER :: IJK
 ! blend factor
       DOUBLE PRECISION :: BLEND
-
 !---------------------------------------------------------------------//
 
-! Constant solids viscosity
-!---------------------------------------------------------------------
-! Given none of the quantities after this are needed within a solids
-! viscosity case we should safely be able to remove this statement...
-      IF( MU_s0(M) /= UNDEFINED) RETURN
+      IF (MU_S0(M) /= UNDEFINED) THEN
+          CALL CALC_MU_S0(M)
+! return as none of the subroutines below should be called for 
+! constant viscosity case
+          RETURN
+      ENDIF
 
 ! GHD Theory is called only for the mixture granular energy,
 ! i.e. for m == mmax
@@ -182,17 +184,87 @@
 ! no point in blending lambda_s_p since it has no value
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
-! no point in blending P_s_p since it is never assigned
-        ENDDO
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
+! is there any point in blending P_s_p since it is never assigned?
+! the only thing it would effectively do is reduce P_s_v by the blend
+! value and therefore P_s.
+         ENDDO
       ELSE
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
          LAMBDA_s(:,M) = Lambda_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
          P_s(:,M) = P_s_v(:) + P_s_f(:)
-
+! if ishii then multiply by void fraction otherwise multiply by 1
+         EPMU_s(:,M) = EPS_IFAC(:,M)*Mu_s(:,M)
+         EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*Lambda_s(:,M)
       ENDIF  ! end if/else (blending_stress)
 
       RETURN
       END SUBROUTINE CALC_MU_s
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_MU_s0                                              C
+!  Purpose: Calculate transport coefficients (viscosity,               C
+!  bulk viscosity) for a non-granular material                         C
+!                                                                      C
+!  Comments: Provide a mechanism for variable viscosity for 'solids'   C
+!  phases that is not based on granular model                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CALC_MU_S0(M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE constant, only: to_si
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: eps_ifac
+      USE fldvar, only: T_s, X_s, P_s
+      USE functions, only: fluid_at
+      USE param1, only: zero
+      USE physprop, only: mu_s0
+      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+
+! Local variables
+!---------------------------------------------------------------------//
+! cell index
+      INTEGER :: IJK
+
+!---------------------------------------------------------------------//
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+! 'pressure' of this phase.  At this point this quantity is simply 
+! set to zero.  Care must be taken in considering how MFIX's governing
+! equations have been posed (nominally for gas-solids). In particular,
+! the gradient in gas phase pressure is already present in the 'solids'
+! phase momentum balance (see source_*_s for details).  For a gas-
+! liquid system the quantity P_S could be considered to represent a 
+! capillary pressure type term. 
+            P_s(IJK,M) = ZERO  
+
+! viscosity of water in Poise
+! here is where a user would enter their function
+            MU_S(IJK,M) = MU_S0(M)
+            LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*MU_S(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*LAMBDA_S(IJK,M)
+         ELSE
+            MU_S(IJK,M) = ZERO
+            LAMBDA_S(IJK,M) = ZERO
+            EPMU_S(IJK,M) = ZERO
+            EPLAMBDA_S(IJK,M) = ZERO
+         ENDIF
+      ENDDO
+      RETURN
+      END SUBROUTINE CALC_MU_S0
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2464,17 +2536,9 @@
 !---------------------------------------------------------------------//
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: M, IER
+!---------------------------------------------------------------------//
 
       IF (V_EX /= ZERO)  ALPHA_s(:,M) = ZERO
-
-!      IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
-! should not need to zero out totals as they should take on no value
-! unless explictly assigned
-! total
-!        Mu_s(:,M)     = ZERO
-!        LAMBDA_s(:,M) = ZERO
-!        P_s(:,M) = ZERO
-!      ENDIF
 
 ! viscous contributions
       Mu_s_v(:)     = ZERO
