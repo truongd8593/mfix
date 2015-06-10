@@ -110,7 +110,7 @@
 !$omp         do_k, cylindrical, ltau_u_g, lctau_u_g,                  &
 !$omp         ep_g, epmu_gt, lambda_gt, trd_g, u_g, v_g, w_g,          &
 !$omp         axy_u, axz_u, ayz, ayz_u, vol_u,                         &
-!$omp         ox_e, odx_e, ox, odx, odz)
+!$omp         ox_e, odx_e, ox, odx, odz, eplambda_gt)
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
             IJKE = EAST_OF(IJK)
@@ -315,7 +315,7 @@
 !$omp         oneodx_e_u, oneodx_e_v, oneodx_e_w,                      &
 !$omp         x_u, y_u, z_u, x_v, y_v, z_v, x_w, y_w, z_w,             &
 !$omp         wall_v_at, wall_w_at, area_u_cut, cut_u_cell_at,         &
-!$omp         blocked_v_cell_at, blocked_w_cell_at)
+!$omp         blocked_v_cell_at, blocked_w_cell_at, eplambda_gt)
 
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK)
