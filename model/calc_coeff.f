@@ -232,12 +232,12 @@
 !-----------------------------------------------------------------------
 
 ! Calculate the trace of the stress tensor (gas phase; m=0)
-      CALL CALC_TRD_G (TRD_G, IER)
+      CALL CALC_TRD_G (TRD_G)
 
 ! Calculate the cross terms of the stress tensor (gas phase; m=0)
-      CALL CALC_TAU_U_G (TAU_U_G, CTAU_U_G, IER)
-      CALL CALC_TAU_V_G (TAU_V_G, CTAU_V_G, IER)
-      CALL CALC_TAU_W_G (TAU_W_G, CTAU_W_G, IER)
+      CALL CALC_TAU_U_G (TAU_U_G, CTAU_U_G)
+      CALL CALC_TAU_V_G (TAU_V_G, CTAU_V_G)
+      CALL CALC_TAU_W_G (TAU_W_G, CTAU_W_G)
 
       IF (.NOT. JACKSON) THEN
          CTAU_U_G = ZERO
@@ -248,11 +248,11 @@
 ! Bypass the following calculations if there are no TFM solids.
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
 ! Calculate the cross terms of the stress tensor (solids phases; m>0)
-         CALL CALC_TRD_S (TRD_S, IER)
+         CALL CALC_TRD_S (TRD_S)
 ! Calculate the trace of the stress tensor (solids phases; m>0)
-         CALL CALC_TAU_U_S (TAU_U_S, IER)
-         CALL CALC_TAU_V_S (TAU_V_S, IER)
-         CALL CALC_TAU_W_S (TAU_W_S, IER)
+         CALL CALC_TAU_U_S (TAU_U_S)
+         CALL CALC_TAU_V_S (TAU_V_S)
+         CALL CALC_TAU_W_S (TAU_W_S)
       ENDIF
 
       RETURN
