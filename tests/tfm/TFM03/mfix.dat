@@ -45,6 +45,13 @@
 
   Discretize    = 9*2
 
+! Under relaxation factors
+! Defaults:
+!      [UR_FAC(1,6,9)=0.8]
+!      [UR_FAC(2,3,4,5,8)=0.5]
+!      [UR_FAC(7)=1]
+  ur_fac(1) = 0.8    ! pressure
+
 #_______________________________________________________________________
 # GEOMETRY SECTION
 
