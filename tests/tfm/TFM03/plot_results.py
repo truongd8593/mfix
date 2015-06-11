@@ -14,31 +14,35 @@ with open('v_profile.dat') as fv:
 
 data_v = np.loadtxt(data_lines)
 
-# plot vertical centerline comparisons in 1st plot
-# plot horizontal centerline comparisons in 2nd plot
-plt.figure(1, figsize=(7.0,3.0))
+# plot vertical centerline comparisons in 1st sub plot
+# plot horizontal centerline comparisons in 2nd sub plot
+plt.figure(1, figsize=(7.0,3.0)) # size of the full figure in inches
 
 plt.subplot(1,2,1)
 
-plot1 = plt.plot(data[:,0], data[:,3], 'ro')
-plot2 = plt.plot(data[:,0], data[:,4], '-b+', linewidth=2)
+plot1 = plt.plot(data_u[:,0], data_u[:,1], '-b+', linewidth=2)
+plot2 = plt.plot(data_u[:,0], data_u[:,2], 'ro')
 #plt.xlabel('x (m)',labelpad=10)
-plt.xlabel('x (m)')
-plt.ylabel('Temperature (K)')
-plt.xlim(0.0, 0.2)
-plt.ylim(300.0, 450.0)
-plt.legend([plot1, plot2], ('MFIX','Exact'), 'best')
+plt.xlabel('y (m)')
+plt.ylabel('U_g (m/s)')
+#plt.xlim(0.0, 1.0)
+#plt.ylim(0.0, 1.0)
+plt.legend([plot1, plot2], ('MFIX','Ghia'), 'best')
 plt.title('(a)',x=0.5,y=-0.3)
 
 plt.subplot(1,2,2)
-plot3 = plt.plot(data[:,0], data[:,5], '-b+')
+plot3 = plt.plot(data_v[:,0], data_v[:,1], '-b+', linewidth=2)
+plot4 = plt.plot(data_v[:,0], data_v[:,2], 'ro')
 #plt.xlabel('x (m)',labelpad=10)
 plt.xlabel('x (m)')
-plt.ylabel('Error (K)')
+plt.ylabel('V_g (m/s)')
+#plt.xlim(0.0, 1.0)
+#plt.ylim(0.0, 1.0)
+plt.legend([plot1, plot2], ('MFIX','Ghia'), 'best')
 #plt.locator_params(axis='x',nbins=5)
 plt.title('(b)',x=0.5,y=-0.3)
 
 plt.subplots_adjust(wspace=0.3)
 
-plt.savefig('tfm02_01.png', bbox_inches='tight')
+plt.savefig('tfm03_01.png', bbox_inches='tight')
 plt.close(1)
