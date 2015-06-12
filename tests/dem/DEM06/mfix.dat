@@ -46,8 +46,6 @@
 
   DES_CONTINUUM_COUPLED = .T.
 
-  DES_USR_VAR_SIZE = 2
-
 #_______________________________________________________________________
 # NUMERICAL SECTION
 

@@ -25,8 +25,6 @@
       SUBROUTINE DRAG_USR(IJK, M_NP, lDgA, EPg, Mug, ROg, VREL, DPM, &
          ROs, lUg, lVg, lWg)
 
-
-      use discretelement, only: DES_USR_VAR
       use usr, only: Re, Cd
 
       use error_manager
@@ -61,13 +59,8 @@
 
 !......................................................................!
 
-
 ! Drag force
       lDgA = 0.75*(ROg*VREL/DPM) * Cd(Re(VREL))
-
-
-       DES_USR_VAR(1,1) = VREL
-       DES_USR_VAR(2,1) = lVg
 
       RETURN
       END SUBROUTINE DRAG_USR

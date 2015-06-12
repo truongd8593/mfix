@@ -89,14 +89,6 @@
 ! Close the output file.
       CLOSE(lUNIT)
 
-! Open the file.
-      OPEN(UNIT=lUNIT, FILE='POST_TMP.dat',                            &
-         POSITION="APPEND", STATUS='OLD')
-! Write the results to file.
-      WRITE(lUNIT,1000) lTime, DES_USR_VAR(1,1), DES_USR_VAR(2,1), 0.0
-! Close the output file.
-      CLOSE(lUNIT)
-
       RETURN
 
  1000 FORMAT(3x,F15.8,5X,F15.8,2(3x,F15.8))

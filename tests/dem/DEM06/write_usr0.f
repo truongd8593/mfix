@@ -17,7 +17,6 @@
 
       CALL WRITE_DAT_HEADER('POST_POS.dat','Pos')
       CALL WRITE_DAT_HEADER('POST_VEL.dat','Vel')
-      CALL WRITE_DAT_HEADER('POST_TMP.dat','TMP')
 
       RETURN
 
