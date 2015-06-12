@@ -22,7 +22,7 @@
       USE des_linked_list_funcs
       USE cutcell, only : CARTESIAN_GRID
       USE discretelement, only: dimn, xe, yn, zt
-      USE discretelement, only: particles, pip, DEBUG_DES
+      USE discretelement, only: particles, pip
 
       USE mpi_utility
 
@@ -63,8 +63,6 @@
          'deleting particles located outsidte the domain.')
 
          indomain = .true.
-         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
-            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION", indomain)
 
          write(err_msg, '(A)') 'Now Marking particles to be deleted'
          call flush_err_msg(header = .false., footer = .false.)
@@ -74,13 +72,7 @@
          write(ERR_MSG,"('Finished marking particles to delete.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
-            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("AFTER_DELETION", indomain)
-
          indomain = .false.
-         IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
-            CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("DELETED", indomain)
-
       ENDIF
 
 
