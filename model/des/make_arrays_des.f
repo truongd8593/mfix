@@ -167,9 +167,9 @@
 
 ! Set the initial particle data.
       IF(RUN_TYPE == 'NEW') THEN
-
          IF(PARTICLES /= 0) THEN
             IF(GENER_PART_CONFIG) THEN
+               CALL GENERATE_PARTICLE_CONFIG
                CALL COPY_PARTICLE_CONFIG_FROMLISTS
             ELSE
                CALL READ_PAR_INPUT

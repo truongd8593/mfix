@@ -66,18 +66,10 @@
          IF(WRITE_VTP_FILES .AND. DEBUG_DES) &
             CALL DBG_WRITE_PART_VTP_FILE_FROM_LIST("BEFORE_DELETION", indomain)
 
-         IF(MPPIC) THEN
-            write(err_msg, '(A)') 'Now Marking particles to be deleted'
-            call flush_err_msg(header = .false., footer = .false.)
+         write(err_msg, '(A)') 'Now Marking particles to be deleted'
+         call flush_err_msg(header = .false., footer = .false.)
 
-            CALL MARK_PARTS_TOBE_DEL_PIC_STL
-         ELSE
-
-            write(err_msg, '(A)') 'Now Marking particles to be deleted'
-            call flush_err_msg(header = .false., footer = .false.)
-
-            CALL MARK_PARTS_TOBE_DEL_DEM_STL
-         END IF
+         CALL MARK_PARTS_TOBE_DEL_STL
 
          write(ERR_MSG,"('Finished marking particles to delete.')")
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
@@ -187,7 +179,6 @@
             DES_RADIUS(count_part) = part%rad
             RO_SOL(count_part)  = part%dens
 
-            PIJK(count_part,1:4) = part%cell(1:4)
             PIJK(count_part,5) = part%M
             phase  = part%M
             IF (DO_OLD) THEN
@@ -230,7 +221,7 @@
 !          information                                                 !
 !                                                                      !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
+      SUBROUTINE MARK_PARTS_TOBE_DEL_STL
 
       USE DES_LINKED_LIST_Data, only : orig_part_list, particle
       USE STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVELAPS_STL
@@ -242,6 +233,7 @@
       USE functions
       USE geometry
       USE indices
+      USE mfix_pic, only : mppic
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -256,7 +248,7 @@
 ! done only during first call to particles_in_cell.
 
 ! Initialize the error manager.
-      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
+      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_STL")
 
       part => orig_part_list
       DO WHILE (ASSOCIATED(part))
@@ -265,146 +257,44 @@
 
 ! Only look for particles that are in domain. Particles in dead cells
 ! have already been flagged as outside of the domain in
-! BIN_PARTICLES_TO_CELL.
+!  BIN_PARTICLES_TO_CELL.
          IF(part%indomain) THEN
+
+            IF(MPPIC) THEN
+
+               IF(FLUID_AT(IJK)) then
+
+                  CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), &
+                       DELETE_PART)
+               ELSE
+                  DELETE_PART = .true.
+               ENDIF
+
+            ELSE
 
 ! Since checking if a particle is on other side of a triangle is tricky,
 ! for safety, initially remove all the particles in the cut-cell.
 ! now cut-cell and actualy geometry could be off, so this might not work
 ! very robustly.
-            IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+               IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
 
 ! Check if any of the particles are overlapping with the walls. This
 ! will include the normal ghost cell walls and also the cut cells.
-               CALL CHECK_IF_PARTICLE_OVELAPS_STL(PART%POSITION(:), &
-                  PART%RAD, DELETE_PART)
-            ELSE
-               DELETE_PART = .TRUE.
+                  CALL CHECK_IF_PARTICLE_OVELAPS_STL(PART%POSITION(:), &
+                       PART%RAD, DELETE_PART)
+               ELSE
+                  DELETE_PART = .TRUE.
+               ENDIF
             ENDIF
+
          ENDIF
+
          IF(DELETE_PART) PART%INDOMAIN = .FALSE.
          PART => PART%NEXT
        ENDDO
 
        RETURN
-       END SUBROUTINE MARK_PARTS_TOBE_DEL_DEM_STL
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-! Subroutine: MARK_PARTS_TOBE_DEL_PIC_ST                               !
-! Author: R. Garg                                     Date: 25-Mar-14  !
-!                                                                      !
-! Purpose: Mark particles that are outside the domain using the factes !
-!          information                                                 !
-!                                                                      !
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE MARK_PARTS_TOBE_DEL_PIC_STL
-
-      USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE des_linked_list_funcs
-      USE discretelement, only: dimn
-
-      USE cutcell, only : cut_cell_at
-      USE indices
-      USE geometry
-      USE compar
-      USE error_manager
-      USE functions
-
-      IMPLICIT NONE
-      INTEGER :: IJK
-      LOGICAL :: DELETE_PART
-
-      type(particle), pointer :: part => null()
-
-! This call will delete the particles outside the domain. It will then
-! re-arrange the arrays such that the active particles are in a block.
-! This works only for MPPIC as the cell information is added to
-! particles in generate_particle_config_mppic itself. For DEM particles,
-! the cell information is not added in generate_particle_config but is
-! done only during first call to particles_in_cell.
-
-! Initialize the error manager.
-      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_PIC_STL")
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         DELETE_PART = .false.
-         IJK = part%cell(4)
-         IF(part%indomain) THEN
-
-! Only look for particles that are in domain. Particles in dead cells
-! have already been flagged as outside of the domain in
-!  BIN_PARTICLES_TO_CELL.
-
-            IF(FLUID_AT(IJK)) then
-
-               CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), &
-                    DELETE_PART)
-            ELSE
-               DELETE_PART = .true.
-            ENDIF
-         ENDIF
-         if(delete_part) part%indomain = .false.
-         part => part%next
-       ENDDO
-       END SUBROUTINE MARK_PARTS_TOBE_DEL_PIC_STL
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-! Subroutine: BIN_PARTICLES_TO_CELL                                    !
-! Author: R. Garg                                     Date: 21-Mar-14  !
-!                                                                      !
-! Purpose: Routine to bin particles in particle lists using brute force!
-!          technique needed to determine out of domain particles       !
-!                                                                      !
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-
-      SUBROUTINE BIN_PARTICLES_TO_CELL
-
-      USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE des_linked_list_funcs
-      USE discretelement, only: dimn, xe, yn, zt
-      USE indices
-      USE geometry
-      USE compar
-      USE mpi_utility
-      USE discretelement, only:DES_GETINDEXFROMPOS
-      USE error_manager
-      USE functions
-
-      IMPLICIT NONE
-      type(particle), pointer :: part => null()
-
-! Initialize the error manager.
-      CALL INIT_ERR_MSG("BIN_PARTICLES_TO_CELL")
-
-      !Compute the particle cell coordinates by brute forces
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         part%cell(1) = DES_GETINDEXFROMPOS(ISTART1, IEND1, &
-         part%position(1), XE(1:size(XE,1)-1),'X','I')
-         !-1 above since xe ranges from 0:IMAX3, so size is imax3 + 1.
-         !therefore, (1:size(xe,1)) will give 1:imax3 + 1, resulting in a seg error.
-
-         part%cell(2) = DES_GETINDEXFROMPOS(JSTART1,JEND1,part%position(2), &
-         YN(1:size(YN,1)-1),'Y','J')
-
-         part%cell(3) = 1
-         IF(DO_K) part%cell(3) = DES_GETINDEXFROMPOS(KSTART1, &
-         KEND1,part%position(3),ZT(1:size(ZT,1)-1),'Z','K')
-
-         IF(.NOT.DEAD_CELL_AT(part%cell(1), part%cell(2), part%cell(3))) THEN
-            part%cell(4) = FUNIJK(part%cell(1), part%cell(2), part%cell(3))
-         ELSE
-            part%indomain = .false.  ! flag particle as outside domain
-         ENDIF
-
-         part => part%next !step
-      ENDDO
-
-      CALL FINL_ERR_MSG
-      END SUBROUTINE BIN_PARTICLES_TO_CELL
-
+     END SUBROUTINE MARK_PARTS_TOBE_DEL_STL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1236,224 +1126,3 @@
 
       CALL FINL_ERR_MSG
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: DBG_WRITE_PART_VTP_FILE_FROM_LIST                       C
-!                                                                      C
-!  Purpose: Subroutine to write initial particle lists to vtp files    C
-!           for debugging purporse.                                    C
-!           This only writes process wise files since constructor does C
-!           not exist to gather linked-lists on root processor.        C
-!                                                                      C
-!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DBG_WRITE_PART_VTP_FILE_FROM_LIST(part_fname, writeindomain)
-      USE run
-      USE param1
-      USE discretelement, only : dimn, s_time
-      USE compar
-      USE constant
-      USE cutcell
-      USE funits
-      USE indices
-      USE physprop
-      USE parallel
-      USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
-      USE des_linked_list_funcs
-      use geometry, only: NO_K
-! Use the error manager for posting error messages.
-!---------------------------------------------------------------------//
-      use error_manager
-
-      Implicit none
-      CHARACTER (LEN=*), intent(in) :: part_fname
-      logical , intent(in) :: writeindomain
-      !facet id and particle id
-      Integer ::  vtp_unit , k, nparts, pvd_unit, ipe
-      CHARACTER(LEN=100) :: vtp_fname, pvd_fname
-
-      type(particle), pointer :: part => null()
-      ! dummy values to maintain format for dimn=2
-      REAL POS_Z, VEL_W
-
-! formatted solids time
-      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
-! Initialize the error manager.
-      CALL INIT_ERR_MSG("WRITE_PARTICLE_VTP_FILE")
-      vtp_unit = 1002
-
-      POS_Z = 0.0
-      vel_w = 0.0
-
-      nparts = 0
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         if(part%INDOMAIN.and.writeindomain) then
-            nparts = nparts + 1
-         elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-            nparts = nparts + 1
-         endif
-         part => part%next
-      ENDDO
-
-      if(mype.eq.pe_io) then
-         write(pvd_fname,'(A,"_", A, ".pvd")') &
-         trim(run_name),trim(part_fname)
-         pvd_unit = 1002
-         open(pvd_unit, file = pvd_fname, form='formatted')
-
-
-         WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
-         WRITE(PVD_UNIT,"(A,A)")'<VTKFile type="Collection" ',&
-         'version="0.1" byte_order="LittleEndian">'
-         WRITE(PVD_UNIT,"(3X,A)")'<Collection>'
-
-         S_TIME_CHAR = '0.0'
-         do ipe = 0, numpes-1
-            write(vtp_fname,'(A,"_", A, "_",I5.5,".vtp")') &
-            trim(run_name),trim(part_fname), ipe
-            WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
-            '<DataSet timestep="',TRIM(S_TIME_CHAR),'" ',& ! simulation time
-            'group="" part="0" ',& ! necessary file data
-            'file="',TRIM(VTP_FNAME),'"/>' ! file name of vtp
-
-         enddo
-
-
-! Write the closing tags
-         WRITE(PVD_UNIT,"(3X,A)")'</Collection>'
-         WRITE(PVD_UNIT,"(A)")'</VTKFile>'
-
-         CLOSE(PVD_UNIT)
-
-      endif
-
-      write(vtp_fname,'(A,"_", A, "_",I5.5,".vtp")') &
-      trim(run_name),trim(part_fname), mype
-
-      open(vtp_unit, file = vtp_fname, form='formatted')
-      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
-! Write the S_TIME as a comment for reference
-      write(vtp_unit,"(a,es24.16,a)") '<!-- Time =',s_time,'s -->'
-
-! Write the necessary header information for a PolyData file type
-      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
-      ' version="0.1" byte_order="LittleEndian">'
-      write(vtp_unit,"(3x,a)") '<PolyData>'
-
-! Write Piece tag and identify the number of particles in the system.
-      write(vtp_unit,"(6x,a,i10.10,a,a)")&
-      '<Piece NumberOfPoints="',nparts,&
-      '" NumberOfVerts="0" ',&
-      'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
-      write(vtp_unit,"(9x,a)")&
-      '<PointData Scalars="Diameter" Vectors="Velocity">'
-
-! Write the diameter data.
-      write(vtp_unit,"(12x,a)")&
-      '<DataArray type="Float32" Name="Diameter" format="ascii">'
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         if(part%INDOMAIN.and.writeindomain) then
-            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
-         elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-            write (vtp_unit,"(15x,es13.6)") (real(2.d0*part%rad))
-         endif
-         part => part%next
-      ENDDO
-
-      write(vtp_unit,"(12x,a)") '</DataArray>'
-
-      ! Write velocity data. Force to three dimensions. So for 2D runs, a
-! dummy value of zero is supplied as the 3rd point.
-      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
-      'Name="Velocity" NumberOfComponents="3" format="ascii">'
-      if(NO_K) then
-         part => orig_part_list
-         DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN.and.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%velocity(k)),k=1,dimn),vel_w
-            elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%velocity(k)),k=1,dimn),vel_w
-            endif
-            part => part%next
-         ENDDO
-
-      else                      ! 3d
-         part => orig_part_list
-         DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN.and.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-                    (real(part%velocity(k)),k=1,dimn)
-            elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-                    (real(part%velocity(k)),k=1,dimn)
-            endif
-            part => part%next
-         ENDDO
-      endif
-      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
-
-! Skip CellData tag, no data. (vtp format style)
-      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
-
-! Write position data. Point data must be supplied in 3 dimensions. So
-! for 2D runs, a dummy value of zero is supplied as the 3rd point.
-      write(vtp_unit,"(9x,a)") '<Points>'
-      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
-      'Name="Position" NumberOfComponents="3" format="ascii">'
-      if(NO_K) then
-
-         part => orig_part_list
-         DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN.and.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%position(k)),k=1,dimn),pos_z
-            elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-                    (real(part%position(k)),k=1,dimn),pos_z
-            endif
-            part => part%next
-         ENDDO
-      else
-
-         part => orig_part_list
-         DO WHILE (ASSOCIATED(part))
-            if(part%INDOMAIN.and.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-               (real(part%position(k)),k=1,dimn)
-            elseif(.not.part%INDOMAIN.and..not.writeindomain) then
-               write (vtp_unit,"(15x,3(es13.6,3x))")&
-                    (real(part%position(k)),k=1,dimn)
-            endif
-
-            part => part%next
-         ENDDO
-      endif
-      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
-
-! Write tags for data not included (vtp format style)
-      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
-      '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
-      write(vtp_unit,"(6x,a,/3x,a,/a)")&
-      '</Piece>','</PolyData>','</VTKFile>'
-
-      close(vtp_unit, status = 'keep')
-
-
-      write(ERR_MSG, 1000) part_fname
-
- 1000 FORMAT( 'For debugging purposes, processor wise particle configurations ', &
-      'written to files containing ', /, A, /)
-
-      CALL FLUSH_ERR_MSG(header=.false., footer = .false.)
-
-      CALL FINL_ERR_MSG
-      END SUBROUTINE  DBG_WRITE_PART_VTP_FILE_FROM_LIST
-
-

@@ -136,11 +136,7 @@
          CALL DESGRID_INIT
          CALL DESMPI_INIT
          CALL DES_STL_PREPROCESSING
-         IF(RUN_TYPE == 'NEW' .AND. PARTICLES /= 0) THEN
-            IF(GENER_PART_CONFIG) CALL GENERATE_PARTICLE_CONFIG
-         ENDIF
       ENDIF
-
 
 !--------------------------  ARRAY ALLOCATION -----------------------!
 
