@@ -121,8 +121,6 @@
       lnewspot(:) =0
       lnewpic = 0
 
-      print *,"GHOST rank:",myPE," face: ",pface, " USED ",lparcnt*iGhostPacketSize*storage_size(drecvbuf(1+mod(pface,2))%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(1+mod(pface,2))%facebuf)*size(drecvbuf(1+mod(pface,2))%facebuf)/8, " or %%% ",lparcnt*iGhostPacketSize*100./size(drecvbuf(1+mod(pface,2))%facebuf)
-
       do lcurpar = 1,lparcnt
          lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
 
@@ -377,8 +375,6 @@
 
 ! loop through particles and locate them and make changes
       lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
-
-      print *,"PARCROSS rank:",myPE," face: ",pface, " USED ",lparcnt*iParticlePacketSize*storage_size(drecvbuf(1+mod(pface,2))%facebuf)/8," bytes out of buffer of size ",storage_size(drecvbuf(1+mod(pface,2))%facebuf)*size(drecvbuf(1+mod(pface,2))%facebuf)/8, " or %%% ",lparcnt*iParticlePacketSize*100./size(drecvbuf(1+mod(pface,2))%facebuf)
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)

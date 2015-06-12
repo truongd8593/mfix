@@ -33,16 +33,13 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: I, J, K, L, IJK
       INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
-      INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
+      INTEGER :: lcurpar, lpip_all(0:numpes-1), lglobal_id
       INTEGER :: CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
-      INTEGER :: FACTOR
-
 ! MPPIC related quantities
-      DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
 
 ! Check interpolation input.
