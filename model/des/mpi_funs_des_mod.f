@@ -69,7 +69,7 @@
 ! Local variables:
 !---------------------------------------------------------------------//
 ! Loop counters.
-      integer :: linter, lface
+      integer :: linter, lface, ii
 ! Number of calls since the buffer was last checked.
       integer, save :: lcheckbuf = 0
 
@@ -87,7 +87,11 @@
       lcheckbuf = lcheckbuf + 1
 
 ! call particle crossing the boundary exchange in T-B,N-S,E-W order
-      dsendbuf(1,:) = 0; drecvbuf(1,:) =0
+      do ii=1, size(dsendbuf)
+         dsendbuf(ii)%facebuf(1) = 0
+         drecvbuf(ii)%facebuf(1) = 0
+      end do
+
       ispot = 1
       do linter = merge(2,3,NO_K),1,-1
          do lface = linter*2-1,linter*2
@@ -102,7 +106,7 @@
          end do
 ! update pic this is required for particles crossing corner cells
          do lface = linter*2-1,linter*2
-            if(dsendbuf(1,lface).gt.0.or.drecvbuf(1,lface).gt.0) then
+            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
             end if
@@ -115,7 +119,12 @@
 
       IF(.NOT.MPPIC) THEN
 ! call ghost particle exchange in E-W, N-S, T-B order
-         dsendbuf(1,:) = 0; drecvbuf(1,:) =0
+
+         do ii=1, size(dsendbuf)
+            dsendbuf(ii)%facebuf(1) = 0
+            drecvbuf(ii)%facebuf(1) = 0
+         end do
+
          ighost_updated(:) = .false.
          ispot = 1
          do linter = 1,merge(2,3,NO_K)
@@ -132,7 +141,7 @@
 
 ! Rebin particles to the DES grid as ghost particles may be moved.
             do lface = linter*2-1,linter*2
-               if(dsendbuf(1,lface).gt.0.or.drecvbuf(1,lface).gt.0) then
+               if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                   call desgrid_pic(plocate=.false.)
                   exit
                end if
@@ -202,8 +211,10 @@
       call global_all_max(lmaxcnt)
       if (imaxbuf .lt. lmaxcnt*lpacketsize+ibufoffset) then
          imaxbuf = lmaxcnt*lpacketsize*lfactor
-         if(allocated(dsendbuf)) deallocate(dsendbuf,drecvbuf)
-         allocate(dsendbuf(imaxbuf,2*dimn),drecvbuf(imaxbuf,2*dimn))
+         do lface = 1,2*dimn
+            if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
+            allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
+         end do
       endif
 
       END SUBROUTINE DESMPI_CHECK_SENDRECVBUF

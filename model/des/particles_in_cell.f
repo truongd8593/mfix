@@ -53,8 +53,6 @@
       INTEGER L
 ! accounted for particles
       INTEGER PC
-! solids phase no.
-      INTEGER M
 ! ijk indices
       INTEGER I, J, K, IJK
 ! variables that count/store the number of particles in i, j, k cell
@@ -248,10 +246,6 @@
       INTEGER :: M
 ! ijk indices
       INTEGER :: I, J, K, IJK
-! particle x,y,z position
-      DOUBLE PRECISION :: lPOS
-! IER for error reporting
-      INTEGER :: IER
 
       CALL INIT_ERR_MSG("INIT_PARTICLES_IN_CELL")
 
