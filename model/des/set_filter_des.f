@@ -81,12 +81,6 @@
          'GRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, and DESGRIDSEARH_KMAX ',&
          'in the',/'mfix.dat file.')
 
-! Shrink the filter just a little if it matches exactly to ensure that
-! interpolation remains within the 27 cell bounds.
-         ELSEIF(0.5d0*DES_INTERP_WIDTH == DXYZ_MIN .OR.                &
-            0.5d0*DES_INTERP_WIDTH == DG_DXYZ_MIN) THEN
-
-            FILTER_WIDTH_INTERP = 0.499d0*DXYZ_MIN
          ELSE
             FILTER_WIDTH_INTERP = 0.500d0*DES_INTERP_WIDTH
          ENDIF
