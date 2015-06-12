@@ -746,7 +746,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  SUBROUTINE: CHECK_IF_PARTICLE_OVELAPS_STL                           C
+!  SUBROUTINE: CHECK_IF_PARTICLE_OVERLAPS_STL                           C
 !                                                                      C
 !  Purpose: This subroutine is special written to check if a particle  C
 !          overlaps any of the STL faces. The routine exits on         C
@@ -758,7 +758,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL(POSITION, RADIUS, &
+      SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL(POSITION, RADIUS, &
          OVERLAP_EXISTS)
 
       USE run
@@ -886,7 +886,7 @@
 
       RETURN
 
-      END SUBROUTINE CHECK_IF_PARTICLE_OVELAPS_STL
+    END SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

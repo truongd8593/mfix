@@ -10,6 +10,7 @@
       USE calc_collision_wall
       USE compar
       USE cutcell
+      USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE des_rxns
       USE des_stl_functions
       USE des_thermo
@@ -170,7 +171,6 @@
          IF(PARTICLES /= 0) THEN
             IF(GENER_PART_CONFIG) THEN
                CALL GENERATE_PARTICLE_CONFIG
-               CALL COPY_PARTICLE_CONFIG_FROMLISTS
             ELSE
                CALL READ_PAR_INPUT
             ENDIF

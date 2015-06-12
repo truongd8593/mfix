@@ -1,3 +1,24 @@
+MODULE GENERATE_PARTICLES
+
+      TYPE PARTICLE
+      INTEGER :: CELL(4)
+      LOGICAL :: INDOMAIN
+! Solid phase
+      INTEGER :: M
+      double precision :: RAD, DENS, STATWT
+      double precision :: VELOCITY(3), POSITION(3)
+
+      !could be made allocatable later to reduce memory usage for 2-D runs
+      TYPE (PARTICLE), POINTER :: NEXT=>NULL() ! NEXT PARTICLE ADDRESS
+      TYPE (PARTICLE), POINTER :: PREV=>NULL() ! PREVIOUS PARTICLE ADDRESS
+
+      END TYPE PARTICLE
+
+! This is the linked list of first set of particles
+      TYPE (PARTICLE), POINTER :: ORIG_PART_LIST => NULL()
+
+CONTAINS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                C
@@ -17,21 +38,15 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE mfix_pic, only: MPPIC
-      USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
-      USE des_linked_list_funcs
-      USE cutcell, only : CARTESIAN_GRID
-      USE discretelement, only: dimn, xe, yn, zt
-      USE discretelement, only: particles, pip
-
+      USE des_allocate, only: PARTICLE_GROW
+      USE discretelement
+      USE mfix_pic, only: MPPIC, DES_STAT_WT
       USE mpi_utility
-
-      USE mfix_pic, only : mppic
+      USE run, only: solids_model
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
-
 
       IMPLICIT NONE
       INTEGER :: IPE
@@ -39,12 +54,9 @@
 
       INTEGER :: LORIG_ALL(0:Numpes-1)
       INTEGER :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
+      INTEGER :: count_part, phase
 
-      Logical :: write_vtp_files, indomain
 ! Initialize the error manager.
-
-      WRITE_VTP_FILES = .true.
-
       CALL INIT_ERR_MSG("Generate_Particle_Config")
 
       IF(MPPIC) THEN
@@ -54,27 +66,6 @@
       ENDIF
 
       LORIG_ALL = 0
-
-
-      IF(CARTESIAN_GRID) then
-         write(ERR_MSG, 3000)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
- 3000 FORMAT('Cartesian grid detected with particle configuration,'/&
-         'deleting particles located outsidte the domain.')
-
-         indomain = .true.
-
-         write(err_msg, '(A)') 'Now Marking particles to be deleted'
-         call flush_err_msg(header = .false., footer = .false.)
-
-         CALL MARK_PARTS_TOBE_DEL_STL
-
-         write(ERR_MSG,"('Finished marking particles to delete.')")
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
-         indomain = .false.
-      ENDIF
-
 
       write(err_msg, '(/,70("-"),/,A)') 'Particle statistics reporting'
 
@@ -95,7 +86,6 @@
 
          part => part%next
       ENDDO
-
 
       CALL global_all_sum(LORIG_ALL)
       CALL global_all_sum(LREM_ALL)
@@ -137,22 +127,6 @@
       CALL FLUSH_ERR_MSG (header = .false.)
 
       CALL FINL_ERR_MSG
-      END SUBROUTINE GENERATE_PARTICLE_CONFIG
-
-      SUBROUTINE COPY_PARTICLE_CONFIG_FROMLISTS
-      USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE des_linked_list_funcs
-      use error_manager
-      USE mfix_pic
-! Flag: solids_model array
-      use run, only: solids_model
-
-      USE discretelement
-      use des_allocate, only: PARTICLE_GROW
-
-      IMPLICIT NONE
-      type(particle), pointer :: part => null()
-      integer :: count_part, phase
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
@@ -202,91 +176,8 @@
       CALL FINL_ERR_MSG
 
       CALL DEALLOC_PART_LIST(orig_part_list)
-      END SUBROUTINE COPY_PARTICLE_CONFIG_FROMLISTS
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-! Subroutine: MARK_PARTS_TOBE_DEL_DEM_ST                               !
-! Author: R. Garg                                     Date: 21-Mar-14  !
-!                                                                      !
-! Purpose: Mark particles that are outside the domain using the factes !
-!          information                                                 !
-!                                                                      !
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-      SUBROUTINE MARK_PARTS_TOBE_DEL_STL
-
-      USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVELAPS_STL
-      USE compar
-      USE cutcell, only : cut_cell_at
-      USE des_linked_list_funcs
-      USE discretelement, only: dimn
-      USE error_manager
-      USE functions
-      USE geometry
-      USE indices
-      USE mfix_pic, only : mppic
-
-      IMPLICIT NONE
-      INTEGER :: IJK
-      LOGICAL :: DELETE_PART
-      type(particle), pointer :: part => null()
-
-! This call will delete the particles outside the domain. It will then
-! re-arrange the arrays such that the active particles are in a block.
-! This works only for MPPIC as the cell information is added to
-! particles in generate_particle_config_mppic itself. For DEM particles,
-! the cell information is not added in generate_particle_config but is
-! done only during first call to particles_in_cell.
-
-! Initialize the error manager.
-      CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_STL")
-
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         DELETE_PART = .false.
-         IJK = part%cell(4)
-
-! Only look for particles that are in domain. Particles in dead cells
-! have already been flagged as outside of the domain in
-!  BIN_PARTICLES_TO_CELL.
-         IF(part%indomain) THEN
-
-            IF(MPPIC) THEN
-
-               IF(FLUID_AT(IJK)) then
-
-                  CALL CHECK_IF_PARCEL_OVELAPS_STL(part%position(1:dimn), &
-                       DELETE_PART)
-               ELSE
-                  DELETE_PART = .true.
-               ENDIF
-
-            ELSE
-
-! Since checking if a particle is on other side of a triangle is tricky,
-! for safety, initially remove all the particles in the cut-cell.
-! now cut-cell and actualy geometry could be off, so this might not work
-! very robustly.
-               IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
-
-! Check if any of the particles are overlapping with the walls. This
-! will include the normal ghost cell walls and also the cut cells.
-                  CALL CHECK_IF_PARTICLE_OVELAPS_STL(PART%POSITION(:), &
-                       PART%RAD, DELETE_PART)
-               ELSE
-                  DELETE_PART = .TRUE.
-               ENDIF
-            ENDIF
-
-         ENDIF
-
-         IF(DELETE_PART) PART%INDOMAIN = .FALSE.
-         PART => PART%NEXT
-       ENDDO
-
-       RETURN
-     END SUBROUTINE MARK_PARTS_TOBE_DEL_STL
+      END SUBROUTINE GENERATE_PARTICLE_CONFIG
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -371,9 +262,9 @@
 ! direction wise spans of the domain and grid spacing in each direction
       Use geometry, only: xlength, ylength, zlength
 
-      USE DES_LINKED_LIST_Data, only : orig_part_list, particle
-      USE des_linked_list_funcs
       USE functions
+      USE cutcell, only : CARTESIAN_GRID, CUT_CELL_AT
+      USE STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVERLAPS_STL
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -401,6 +292,8 @@
       double precision :: rad, dens, position(dimn), velocity(dimn), wtp
 
       type(particle), pointer :: part_list_byic => NULL(), part => NULL(), part_old => NULL()
+
+      LOGICAL :: DELETE_PART
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
 
@@ -561,6 +454,24 @@
                      CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
                      VELOCITY(1:DIMN), RAD, DENS, WTP)
 
+                     IF(CARTESIAN_GRID.and.part%indomain) then
+! Since checking if a particle is on other side of a triangle is tricky,
+! for safety, initially remove all the particles in the cut-cell.
+! now cut-cell and actualy geometry could be off, so this might not work
+! very robustly.
+                        DELETE_PART = .false.
+                        IJK = part%cell(4)
+
+                        IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+
+! Check if any of the particles are overlapping with the walls. This
+! will include the normal ghost cell walls and also the cut cells.
+                           CALL CHECK_IF_PARTICLE_OVERLAPS_STL(PART%POSITION(:), &
+                                PART%RAD, DELETE_PART)
+                        ELSE
+                           DELETE_PART = .TRUE.
+                        ENDIF
+                     ENDIF
 
                      PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
                      PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
@@ -650,6 +561,31 @@
             part_old%RAD, &
             part_old%DENS, part_old%statwt)
 
+! This will delete the particles outside the domain. It will then
+! re-arrange the arrays such that the active particles are in a block.
+! This works only for MPPIC as the cell information is added to
+! particles in generate_particle_config_mppic itself. For DEM particles,
+! the cell information is not added in generate_particle_config but is
+! done only during first call to particles_in_cell.
+
+            IF(CARTESIAN_GRID.and.part%indomain) then
+! Only look for particles that are in domain. Particles in dead cells
+! have already been flagged as outside of the domain in
+!  BIN_PARTICLES_TO_CELL.
+
+               DELETE_PART = .false.
+               IJK = part%cell(4)
+               IF(FLUID_AT(IJK)) then
+
+                  CALL CHECK_IF_PARCEL_OVERLAPS_STL(part%position(1:dimn), &
+                       DELETE_PART)
+               ELSE
+                  DELETE_PART = .true.
+               ENDIF
+
+               IF(DELETE_PART) PART%INDOMAIN = .FALSE.
+            ENDIF
+
             !find its linearized cell ID which is used in
             !flagging out of domain particles
 
@@ -680,16 +616,12 @@
 
          END DO
 
-
       end DO IC_LOOP
-
 
       CALL FINL_ERR_MSG
 
       RETURN
     END SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -703,8 +635,6 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE DES_LINKED_LIST_DATA, only : orig_part_list, particle
-      USE des_linked_list_funcs
       USE cutcell, only : CARTESIAN_GRID
       USE discretelement, only: dimn, xe, yn, zt
       USE discretelement, only: particles, pip
@@ -791,10 +721,13 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: RANDPOS
       double precision :: vel_mean(3), vel_sig(3)
 
+      LOGICAL :: DELETE_PART
 
       double precision, dimension(:,:), allocatable :: pvel_temp
 
       type(particle), pointer :: part_list_byic
+
+      type(particle), pointer :: part
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
       !ALLOCATE(CNP_ARRAY(DIM3_TEMP, DES_MMAX))
@@ -1078,11 +1011,22 @@
          ENDDO MLOOP
          ! Now merge this IC specific list to the master list
          if(associated(part_list_byic)) then
-            CALL merge_part_lists(part_list_byic, orig_part_list)
+            If(.not.associated(orig_part_list)) then
+               !just point the orig_part_list to part_list_byic
+               orig_part_list => part_list_byic
+            else
+               nullify(part)
+               part => orig_part_list
+               DO WHILE (ASSOCIATED(part%next))
+                  part => part%next
+               ENDDO
+
+               part%next => part_list_byic
+               part_list_byic%prev => part
+            endif
+
             nullify(part_list_byic)
          endif
-
-
       ENDDO                     !ICV = 1, DIMENSION_IC
 
 
@@ -1118,3 +1062,56 @@
 
       CALL FINL_ERR_MSG
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
+
+      SUBROUTINE DEALLOC_PART_LIST(LIST_NAME)
+
+      IMPLICIT NONE
+
+      TYPE(PARTICLE), POINTER  :: LIST_NAME, part => NULL(), part_old => NULL()
+
+      IF(.not.associated(list_name)) return !do nothing
+
+      part =>  list_name
+
+      DO WHILE (ASSOCIATED(part))
+         part_old => part
+         part => part%next
+         DEALLOCATE(part_old)
+      enddo
+      RETURN
+      END SUBROUTINE DEALLOC_PART_LIST
+      SUBROUTINE GEN_AND_ADD_TO_PART_LIST(LIST_NAME, PHASE, POS, VEL,RAD, DENS, STATWT)
+      USE discretelement, only : dimn
+
+      IMPLICIT NONE
+
+      TYPE(PARTICLE), POINTER  :: LIST_NAME
+      INTEGER, INTENT(IN) ::  PHASE
+      double precision, INTENT(IN), DIMENSION(DIMN) :: POS, VEL
+      double precision, INTENT(IN) :: RAD, DENS, STATWT
+
+      TYPE(PARTICLE), POINTER  :: NEW_PART => NULL()
+
+      ALLOCATE(NEW_PART)
+
+      NEW_PART%M = PHASE
+      NEW_PART%INDOMAIN = .true.
+
+      NEW_PART%POSITION(1:DIMN) = POS(1:DIMN)
+      NEW_PART%VELOCITY(1:DIMN) = VEL(1:DIMN)
+      NEW_PART%STATWT = STATWT
+
+      NEW_PART%RAD = RAD
+      NEW_PART%DENS = DENS
+      NEW_PART%STATWT = STATWT
+
+      IF(.NOT.ASSOCIATED(LIST_NAME)) THEN !FIRST ENTRY
+         LIST_NAME => NEW_PART  !make the new entry as head
+      ELSE
+         NEW_PART%NEXT => LIST_NAME
+         LIST_NAME%PREV => NEW_PART
+         LIST_NAME =>  NEW_PART
+      END IF
+      END SUBROUTINE GEN_AND_ADD_TO_PART_LIST
+
+    END MODULE GENERATE_PARTICLES

@@ -356,8 +356,6 @@ libmfix_src = \
 	model/des/des_granular_temperature.f \
 	model/des/des_init_arrays.f \
 	model/des/des_init_namelist.f \
-	model/des/des_linked_list_data_mod.f \
-	model/des/des_linked_list_funcs_mod.f \
 	model/des/des_physical_prop.f \
 	model/des/des_reaction_model.f \
 	model/des/des_rrates0.f \
@@ -382,7 +380,7 @@ libmfix_src = \
 	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
-	model/des/generate_particle_config.f \
+	model/des/generate_particles_mod.f \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
