@@ -38,7 +38,6 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE des_allocate, only: PARTICLE_GROW
       USE discretelement
       USE mfix_pic, only: MPPIC, DES_STAT_WT
       USE mpi_utility
@@ -60,32 +59,14 @@ CONTAINS
       CALL INIT_ERR_MSG("Generate_Particle_Config")
 
       IF(MPPIC) THEN
-         CALL GENERATE_PARTICLE_CONFIG_MPPIC
+         CALL GENERATE_PARTICLE_CONFIG_MPPIC(LORIG_ALL, LREM_ALL, LDEL_ALL)
       ELSE
-         CALL GENERATE_PARTICLE_CONFIG_DEM
+         CALL GENERATE_PARTICLE_CONFIG_DEM(LORIG_ALL, LREM_ALL, LDEL_ALL)
       ENDIF
-
-      LORIG_ALL = 0
 
       write(err_msg, '(/,70("-"),/,A)') 'Particle statistics reporting'
 
       call flush_err_msg(header = .false., footer = .false.)
-
-      LDEL_ALL = 0
-      LREM_ALL = 0
-
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         LORIG_ALL(mype) = LORIG_ALL(mype) + 1
-
-         IF(part%INDOMAIN) then
-            LREM_ALL(mype) = LREM_ALL(mype) + 1
-         else
-            LDEL_ALL(mype) = LDEL_ALL(mype) + 1
-         ENDIF
-
-         part => part%next
-      ENDDO
 
       CALL global_all_sum(LORIG_ALL)
       CALL global_all_sum(LREM_ALL)
@@ -131,48 +112,6 @@ CONTAINS
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("MARK_PARTS_TOBE_DEL_DEM_STL")
 
-      CALL PARTICLE_GROW(PIP)
-
-      part => orig_part_list
-      count_part = 0
-      DO WHILE (ASSOCIATED(part))
-         IF(part%INDOMAIN) then
-            count_part = count_part + 1
-
-            des_pos_new(1:dimn, count_part) = part%position(1:dimn)
-            des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
-
-            DES_RADIUS(count_part) = part%rad
-            RO_SOL(count_part)  = part%dens
-
-            PIJK(count_part,5) = part%M
-            phase  = part%M
-            IF (DO_OLD) THEN
-               des_vel_old(:, count_part) = des_vel_new(:, count_part)
-               des_pos_old(:, count_part) = des_pos_new(:, count_part)
-            ENDIF
-
-            PEA(count_part,1) = .TRUE.
-
-            IF(SOLIDS_MODEL(phase).eq.'PIC') then
-               DES_STAT_WT(count_part) = part%STATWT
-            ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
-               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
-               OMEGA_NEW(:, count_part) = zero
-            ENDIF
-
-         ENDIF
-         part => part%next
-
-      ENDDO
-      if(count_part.ne.pip) then
-         write(err_msg, 1000) count_part, pip
-         call flush_err_msg(abort = .true.)
-      endif
-
- 1000 format('Particles copied from linked lists:', 2x, i15, /, &
-      'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
-      'This should not have happened, exitting')
       CALL FINL_ERR_MSG
 
       CALL DEALLOC_PART_LIST(orig_part_list)
@@ -193,12 +132,12 @@ CONTAINS
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM
+      SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM(LORIG_ALL, LREM_ALL, LDEL_ALL)
 
 
 ! Global Variables:
 ! Runtime Flag: Generate initial particle configuation.
-      USE discretelement, only: GENER_PART_CONFIG
+      USE discretelement, only: GENER_PART_CONFIG, DO_OLD, OMEGA_OLD, OMEGA_NEW
 ! particle radius and density
       USE discretelement, only: DES_RADIUS, RO_Sol
 ! particle position new and old
@@ -225,7 +164,7 @@ CONTAINS
 ! Number of particles to read from input file.
       USE discretelement, only: PARTICLES
 
-      USE discretelement, only: PEA
+      USE discretelement
 ! Constant: 3.14159...
 
       USE discretelement, only:DES_GETINDEXFROMPOS
@@ -258,14 +197,20 @@ CONTAINS
 
       use error_manager
 
-
 ! direction wise spans of the domain and grid spacing in each direction
       Use geometry, only: xlength, ylength, zlength
 
       USE functions
       USE cutcell, only : CARTESIAN_GRID, CUT_CELL_AT
       USE STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVERLAPS_STL
+      USE run, only: solids_model
+      USE mfix_pic, only: MPPIC, DES_STAT_WT
+      USE des_allocate, only: PARTICLE_GROW
       IMPLICIT NONE
+
+      INTEGER, INTENT(OUT) :: LORIG_ALL(0:Numpes-1)
+      INTEGER, INTENT(OUT) :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -293,9 +238,14 @@ CONTAINS
 
       type(particle), pointer :: part_list_byic => NULL(), part => NULL(), part_old => NULL()
 
+      INTEGER :: count_part, phase
       LOGICAL :: DELETE_PART
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_DEM")
+
+      LORIG_ALL = 0
+      LDEL_ALL = 0
+      LREM_ALL = 0
 
 ! initializing particle count
       lproc_parcount = 0
@@ -471,6 +421,17 @@ CONTAINS
                         ELSE
                            DELETE_PART = .TRUE.
                         ENDIF
+
+                        IF(DELETE_PART) PART%INDOMAIN = .FALSE.
+
+                     ENDIF
+
+                     LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+
+                     IF(part%INDOMAIN) then
+                        LREM_ALL(mype) = LREM_ALL(mype) + 1
+                     else
+                        LDEL_ALL(mype) = LDEL_ALL(mype) + 1
                      ENDIF
 
                      PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
@@ -586,6 +547,14 @@ CONTAINS
                IF(DELETE_PART) PART%INDOMAIN = .FALSE.
             ENDIF
 
+            LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+
+            IF(part%INDOMAIN) then
+               LREM_ALL(mype) = LREM_ALL(mype) + 1
+            else
+               LDEL_ALL(mype) = LDEL_ALL(mype) + 1
+            ENDIF
+
             !find its linearized cell ID which is used in
             !flagging out of domain particles
 
@@ -620,6 +589,49 @@ CONTAINS
 
       CALL FINL_ERR_MSG
 
+      CALL PARTICLE_GROW(PIP)
+
+      part => orig_part_list
+      count_part = 0
+      DO WHILE (ASSOCIATED(part))
+         IF(part%INDOMAIN) then
+            count_part = count_part + 1
+
+            des_pos_new(1:dimn, count_part) = part%position(1:dimn)
+            des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
+
+            DES_RADIUS(count_part) = part%rad
+            RO_SOL(count_part)  = part%dens
+
+            PIJK(count_part,5) = part%M
+            phase  = part%M
+            IF (DO_OLD) THEN
+               des_vel_old(:, count_part) = des_vel_new(:, count_part)
+               des_pos_old(:, count_part) = des_pos_new(:, count_part)
+            ENDIF
+
+            PEA(count_part,1) = .TRUE.
+
+            IF(SOLIDS_MODEL(phase).eq.'PIC') then
+               DES_STAT_WT(count_part) = part%STATWT
+            ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
+               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
+               OMEGA_NEW(:, count_part) = zero
+            ENDIF
+
+         ENDIF
+         part => part%next
+
+      ENDDO
+      if(count_part.ne.pip) then
+         write(err_msg, 1000) count_part, pip
+         call flush_err_msg(abort = .true.)
+      endif
+
+ 1000 format('Particles copied from linked lists:', 2x, i15, /, &
+      'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
+      'This should not have happened, exitting')
+
       RETURN
     END SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM
 
@@ -630,14 +642,13 @@ CONTAINS
 !  Author: Rahul Garg                                 Date: 3-May-2011 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
+      SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC(LORIG_ALL, LREM_ALL, LDEL_ALL)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
       USE cutcell, only : CARTESIAN_GRID
-      USE discretelement, only: dimn, xe, yn, zt
-      USE discretelement, only: particles, pip
+      USE discretelement
 
       USE discretelement, only:DES_GETINDEXFROMPOS
 ! Number of DES solids phases.
@@ -655,7 +666,7 @@ CONTAINS
 ! Global Number of implied real particles
       USE discretelement, only: REALPART_MPHASE
 
-      USE mfix_pic, only : mppic
+      USE mfix_pic, only : mppic, DES_STAT_WT
 
 ! Implied total number of physical particles
       USE mfix_pic, only: rnp_pic
@@ -699,8 +710,13 @@ CONTAINS
       USE randomno
       USE error_manager
       USE functions
-
+      USE run, only: solids_model
+      USE des_allocate, only: PARTICLE_GROW
       IMPLICIT NONE
+
+      INTEGER, INTENT(OUT) :: LORIG_ALL(0:Numpes-1)
+      INTEGER, INTENT(OUT) :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -723,6 +739,8 @@ CONTAINS
 
       LOGICAL :: DELETE_PART
 
+      INTEGER :: count_part, phase
+
       double precision, dimension(:,:), allocatable :: pvel_temp
 
       type(particle), pointer :: part_list_byic
@@ -731,6 +749,10 @@ CONTAINS
 
       CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
       !ALLOCATE(CNP_ARRAY(DIM3_TEMP, DES_MMAX))
+
+      LORIG_ALL = 0
+      LDEL_ALL = 0
+      LREM_ALL = 0
 
       ALLOCATE(RNP_PIC(DES_MMAX))
       ALLOCATE(CNP_PIC(DES_MMAX))
@@ -1061,6 +1083,50 @@ CONTAINS
       CALL FLUSH_ERR_MSG(HEADER = .false.)
 
       CALL FINL_ERR_MSG
+
+      CALL PARTICLE_GROW(PIP)
+
+      part => orig_part_list
+      count_part = 0
+      DO WHILE (ASSOCIATED(part))
+         IF(part%INDOMAIN) then
+            count_part = count_part + 1
+
+            des_pos_new(1:dimn, count_part) = part%position(1:dimn)
+            des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
+
+            DES_RADIUS(count_part) = part%rad
+            RO_SOL(count_part)  = part%dens
+
+            PIJK(count_part,5) = part%M
+            phase  = part%M
+            IF (DO_OLD) THEN
+               des_vel_old(:, count_part) = des_vel_new(:, count_part)
+               des_pos_old(:, count_part) = des_pos_new(:, count_part)
+            ENDIF
+
+            PEA(count_part,1) = .TRUE.
+
+            IF(SOLIDS_MODEL(phase).eq.'PIC') then
+               DES_STAT_WT(count_part) = part%STATWT
+            ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
+               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
+               OMEGA_NEW(:, count_part) = zero
+            ENDIF
+
+         ENDIF
+         part => part%next
+
+      ENDDO
+      if(count_part.ne.pip) then
+         write(err_msg, 1000) count_part, pip
+         call flush_err_msg(abort = .true.)
+      endif
+
+ 1000 format('Particles copied from linked lists:', 2x, i15, /, &
+      'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
+      'This should not have happened, exitting')
+
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
 
       SUBROUTINE DEALLOC_PART_LIST(LIST_NAME)
