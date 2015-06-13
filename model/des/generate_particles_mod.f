@@ -68,12 +68,6 @@ CONTAINS
 
       call flush_err_msg(header = .false., footer = .false.)
 
-      CALL global_all_sum(LORIG_ALL)
-      CALL global_all_sum(LREM_ALL)
-      CALL global_all_sum(LDEL_ALL)
-
-      PIP = LREM_ALL(mype) !Setting pip on each processor equal to remaining paticles
-
       !total number of particles used to allocate the arrays is set equal to sum
       !of remaining particles on all processors
       PARTICLES  = SUM(LREM_ALL(0:numPEs-1))
@@ -522,26 +516,22 @@ CONTAINS
             part_old%RAD, &
             part_old%DENS, part_old%statwt)
 
-! This will delete the particles outside the domain. It will then
-! re-arrange the arrays such that the active particles are in a block.
-! This works only for MPPIC as the cell information is added to
-! particles in generate_particle_config_mppic itself. For DEM particles,
-! the cell information is not added in generate_particle_config but is
-! done only during first call to particles_in_cell.
-
             IF(CARTESIAN_GRID.and.part%indomain) then
-! Only look for particles that are in domain. Particles in dead cells
-! have already been flagged as outside of the domain in
-!  BIN_PARTICLES_TO_CELL.
-
+! Since checking if a particle is on other side of a triangle is tricky,
+! for safety, initially remove all the particles in the cut-cell.
+! now cut-cell and actualy geometry could be off, so this might not work
+! very robustly.
                DELETE_PART = .false.
                IJK = part%cell(4)
-               IF(FLUID_AT(IJK)) then
 
-                  CALL CHECK_IF_PARCEL_OVERLAPS_STL(part%position(1:dimn), &
-                       DELETE_PART)
+               IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+
+! Check if any of the particles are overlapping with the walls. This
+! will include the normal ghost cell walls and also the cut cells.
+                  CALL CHECK_IF_PARTICLE_OVERLAPS_STL(PART%POSITION(:), &
+                       PART%RAD, DELETE_PART)
                ELSE
-                  DELETE_PART = .true.
+                  DELETE_PART = .TRUE.
                ENDIF
 
                IF(DELETE_PART) PART%INDOMAIN = .FALSE.
@@ -588,6 +578,12 @@ CONTAINS
       end DO IC_LOOP
 
       CALL FINL_ERR_MSG
+
+      CALL global_all_sum(LORIG_ALL)
+      CALL global_all_sum(LREM_ALL)
+      CALL global_all_sum(LDEL_ALL)
+
+      PIP = LREM_ALL(mype) !Setting pip on each processor equal to remaining paticles
 
       CALL PARTICLE_GROW(PIP)
 
@@ -1083,6 +1079,52 @@ CONTAINS
       CALL FLUSH_ERR_MSG(HEADER = .false.)
 
       CALL FINL_ERR_MSG
+
+! This will delete the particles outside the domain. It will then
+! re-arrange the arrays such that the active particles are in a block.
+! This works only for MPPIC as the cell information is added to
+! particles in generate_particle_config_mppic itself. For DEM particles,
+! the cell information is not added in generate_particle_config but is
+! done only during first call to particles_in_cell.
+
+      part => orig_part_list
+      DO WHILE (ASSOCIATED(part))
+         IF(CARTESIAN_GRID.and.part%indomain) then
+! Only look for particles that are in domain. Particles in dead cells
+! have already been flagged as outside of the domain in
+!  BIN_PARTICLES_TO_CELL.
+            DELETE_PART = .false.
+            IJK = part%cell(4)
+            IF(FLUID_AT(IJK)) then
+               CALL CHECK_IF_PARCEL_OVERLAPS_STL(part%position(1:dimn), &
+                    DELETE_PART)
+            ELSE
+               DELETE_PART = .true.
+            ENDIF
+
+            IF(DELETE_PART) PART%INDOMAIN = .FALSE.
+         ENDIF
+         part => part%next
+      ENDDO
+
+      part => orig_part_list
+      DO WHILE (ASSOCIATED(part))
+         LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+
+         IF(part%INDOMAIN) then
+            LREM_ALL(mype) = LREM_ALL(mype) + 1
+         else
+            LDEL_ALL(mype) = LDEL_ALL(mype) + 1
+         ENDIF
+
+         part => part%next
+      ENDDO
+
+      CALL global_all_sum(LORIG_ALL)
+      CALL global_all_sum(LREM_ALL)
+      CALL global_all_sum(LDEL_ALL)
+
+      PIP = LREM_ALL(mype) !Setting pip on each processor equal to remaining paticles
 
       CALL PARTICLE_GROW(PIP)
 
