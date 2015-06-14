@@ -295,7 +295,6 @@ CONTAINS
 
          CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
 
-
          XSTART_IC = IC_X_W(ICV)
          YSTART_IC = IC_Y_S(ICV)
          ZSTART_IC = IC_Z_B(ICV)
@@ -314,6 +313,68 @@ CONTAINS
          DO M = 1, DES_MMAX
             if(PART_MPHASE_BYIC(ICV,M).eq.0) cycle
 
+            SEED_X = 1
+            SEED_Y = 1
+            SEED_Z = 1
+
+            ADJ_DIA = LFAC*DES_D_P0(M)
+
+            SEED_X = FLOOR((XEND_IC - XINIT)/ADJ_DIA)
+            SEED_Y = FLOOR((YEND_IC - YINIT)/ADJ_DIA)
+            SEED_Z = FLOOR((ZEND_IC - ZINIT)/ADJ_DIA)
+
+            if(NO_K) seed_z = 1
+
+            DO  J = 1, SEED_Y
+               DO  K = 1, SEED_Z
+                  DO  I = 1, SEED_X
+                     XP = XINIT + I*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     YP = YINIT + J*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     ZP = ZINIT + K*ADJ_DIA - DES_D_P0(M)*0.5D0
+
+                     IF((PCOUNT_BYIC_BYPHASE(ICV,M)) + 1.GT.PART_MPHASE_BYIC(ICV,M)) EXIT
+                     PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
+
+                     PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
+                     PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
+                     PART_CEN_MAX(1)  = MAX(XP , PART_CEN_MAX(1))
+                     PART_CEN_MAX(2)  = MAX(YP , PART_CEN_MAX(2))
+                     IF(DO_K) THEN
+                        PART_CEN_MIN(3)  = MIN(ZP, PART_CEN_MIN(3))
+                        PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
+                     ENDIF
+                     YMAX = YP + DES_D_P0(M)*0.5D0
+                  end DO
+               end DO
+            end DO
+            YINIT = YMAX
+         end DO                 ! DO M = 1, DES_MMAX
+
+         refit_fac = 1.d0
+         IF(IC_DES_FIT_TO_REGION(ICV)) THEN
+
+            DO IDIM = 1, DIMN
+               IF((PART_CEN_MAX(IDIM)-PART_CEN_MIN(IDIM).GT.LMAX_DIA).AND. &
+                    (MAX_IC_PT(IDIM) - PART_CEN_MAX(IDIM).GT.LMAX_DIA)) THEN
+
+                  REFIT_FAC(IDIM)  = MAX_IC_PT(IDIM)/PART_CEN_MAX(IDIM)
+                  !write(*,*) ' REFI, IDIM =', IDIM, REFIT_FAC(IDIM)
+               END IF
+            END DO
+
+            write(err_msg, 2020) ICV, refit_fac(1:dimn)
+            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+
+ 2020       Format(/5x, 'Refitting to box for IC', I4, /5x,   &
+            'Refitting factors (1-DIMN): ', 3(2x,g17.8))
+
+         END IF              !DES_IC_FIT_TO_REGION
+
+         PCOUNT_BYIC_BYPHASE(:,:)  = 0
+
+         DO M = 1, DES_MMAX
+            if(PART_MPHASE_BYIC(ICV,M).eq.0) cycle
+
             VEL_MEAN(1) = IC_U_S(ICV, M)
             VEL_MEAN(2) = IC_V_S(ICV, M)
             IF(DO_K) VEL_MEAN(3) = IC_W_S(ICV, M)
@@ -326,7 +387,6 @@ CONTAINS
             write(ERR_MSG,2022) M,  &
                  vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
             CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
-
 
  2022       FORMAT(1X,70('.'),/5x, &
             'PHASE INDEX, M                              =  ', I5,2X, /5x, &
@@ -373,13 +433,7 @@ CONTAINS
                      !Associate this new particle to the solid phase id based on the map_to_proc defined
                      !earlier
 
-
                      PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
-
-                     !computational FLUID grid (xe,yn, zt)
-                     !IF ( XP.GE.XE(ISTART1-1) .AND.XP.LT.XE(IEND1) &
-                     !     .AND.YP.GE.YN(JSTART1-1) .AND.YP.LT.YN(JEND1) &
-                     !     .AND.ZP.GE.ZT(KSTART1-1) .AND.ZP.LT.ZT(KEND1)) THEN
 
                      RAD = DES_D_P0(M)*HALF
                      DENS  =  DES_RO_S(M)
@@ -390,17 +444,6 @@ CONTAINS
 
                      CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
                      VELOCITY(1:DIMN), RAD, DENS, WTP)
-
-
-                     PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
-                     PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
-
-                     PART_CEN_MAX(1)  = MAX(XP , PART_CEN_MAX(1))
-                     PART_CEN_MAX(2)  = MAX(YP , PART_CEN_MAX(2))
-                     IF(DO_K) THEN
-                        PART_CEN_MIN(3)  = MIN(ZP, PART_CEN_MIN(3))
-                        PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
-                     ENDIF
 
                      YMAX = YP + DES_D_P0(M)*0.5D0
 
@@ -421,27 +464,6 @@ CONTAINS
 
 
          end DO                 ! DO M = 1, DES_MMAX
-
-         refit_fac = 1.d0
-         IF(IC_DES_FIT_TO_REGION(ICV)) THEN
-
-            DO IDIM = 1, DIMN
-               IF((PART_CEN_MAX(IDIM)-PART_CEN_MIN(IDIM).GT.LMAX_DIA).AND. &
-                    (MAX_IC_PT(IDIM) - PART_CEN_MAX(IDIM).GT.LMAX_DIA)) THEN
-
-                  REFIT_FAC(IDIM)  = MAX_IC_PT(IDIM)/PART_CEN_MAX(IDIM)
-                  !write(*,*) ' REFI, IDIM =', IDIM, REFIT_FAC(IDIM)
-               END IF
-            END DO
-
-            write(err_msg, 2020) ICV, refit_fac(1:dimn)
-            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
-
- 2020       Format(/5x, 'Refitting to box for IC', I4, /5x,   &
-            'Refitting factors (1-DIMN): ', 3(2x,g17.8))
-
-
-         END IF              !DES_IC_FIT_TO_REGION
 
          ALLOCATE(ORIG_PART_LIST)
 
