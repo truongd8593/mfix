@@ -201,7 +201,7 @@ CONTAINS
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: M, ICV, I,J, K, idim, IJK
+      INTEGER :: M, ICV, I, J, K, idim, IJK, II, JJ, KK
       INTEGER :: lproc_parcount, pcount_byic_byphase(dimension_ic, DES_MMAX)
       INTEGER :: seed_x, seed_y, seed_z
       INTEGER :: TOTAL_PARTS_IC, TMP_PART_COUNT_INTHIS_IC
@@ -221,9 +221,7 @@ CONTAINS
 
       double precision, dimension(:,:), allocatable :: pvel_temp
 
-      double precision :: rad, dens, position(dimn), velocity(dimn), wtp
-
-      type(particle), pointer :: part_list_byic => NULL(), part => NULL(), part_old => NULL()
+      type(particle) :: part
 
       INTEGER :: count_part, phase
       LOGICAL :: DELETE_PART
@@ -253,10 +251,7 @@ CONTAINS
 
  2015 FORMAT('IC region wise report on particle initialization')
 
-      WTP = 1.d0
-
       IC_LOOP : DO ICV = 1, DIMENSION_IC
-      IF(associated(part_list_byic)) Nullify(part_list_byic)
 
          PART_MPHASE_BYIC(ICV,:) = 0
          REALPART_MPHASE_BYIC(ICV,:) = 0
@@ -359,38 +354,18 @@ CONTAINS
             !write(*,*) 'seedx  = ', seed_x, seed_y, seed_z
             if(NO_K) seed_z = 1
 
-            outerloop :  DO  J = 1, SEED_Y
+            TMP_PART_COUNT_INTHIS_IC = (PCOUNT_BYIC_BYPHASE(ICV,M)) + 1
+
+            DO  J = 1, SEED_Y
                DO  K = 1, SEED_Z
                   DO  I = 1, SEED_X
                      XP = XINIT + I*ADJ_DIA - DES_D_P0(M)*0.5D0
                      YP = YINIT + J*ADJ_DIA - DES_D_P0(M)*0.5D0
                      ZP = ZINIT + K*ADJ_DIA - DES_D_P0(M)*0.5D0
 
-                     TMP_PART_COUNT_INTHIS_IC = (PCOUNT_BYIC_BYPHASE(ICV,M)) + 1
+                     TMP_PART_COUNT_INTHIS_IC = (TMP_PART_COUNT_INTHIS_IC) + 1
 
-                     IF(TMP_PART_COUNT_INTHIS_IC.GT.PART_MPHASE_BYIC(ICV,M)) EXIT outerloop
-
-                     !Associate this new particle to the solid phase id based on the map_to_proc defined
-                     !earlier
-
-
-                     PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
-
-                     !computational FLUID grid (xe,yn, zt)
-                     !IF ( XP.GE.XE(ISTART1-1) .AND.XP.LT.XE(IEND1) &
-                     !     .AND.YP.GE.YN(JSTART1-1) .AND.YP.LT.YN(JEND1) &
-                     !     .AND.ZP.GE.ZT(KSTART1-1) .AND.ZP.LT.ZT(KEND1)) THEN
-
-                     RAD = DES_D_P0(M)*HALF
-                     DENS  =  DES_RO_S(M)
-                     POSITION(1) = XP
-                     POSITION(2) = YP
-                     IF(DO_K) POSITION(3) = ZP
-                     VELOCITY(1:DIMN) = PVEL_TEMP(PCOUNT_BYIC_BYPHASE(ICV,M),1:DIMN)
-
-                     CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
-                     VELOCITY(1:DIMN), RAD, DENS, WTP)
-
+                     IF(TMP_PART_COUNT_INTHIS_IC.GT.PART_MPHASE_BYIC(ICV,M)) EXIT
 
                      PART_CEN_MIN(1)  = MIN(XP , PART_CEN_MIN(1))
                      PART_CEN_MIN(2)  = MIN(YP , PART_CEN_MIN(2))
@@ -402,25 +377,9 @@ CONTAINS
                         PART_CEN_MAX(3)  = MAX(ZP, PART_CEN_MAX(3))
                      ENDIF
 
-                     YMAX = YP + DES_D_P0(M)*0.5D0
-
                   end DO
                end DO
-            end DO outerloop
-
-            YINIT = YMAX
-
-            DEALLOCATE(pvel_temp)
-
-            EP_SM = IC_EP_S(ICV,M)
-            WRITE(ERR_MSG,2017) EP_SM
-
-            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
-
- 2017       FORMAT(5x, 'Solids vol fraction for M   =  ', (G15.8,2X))
-
-
-         end DO                 ! DO M = 1, DES_MMAX
+            end DO
 
          refit_fac = 1.d0
          IF(IC_DES_FIT_TO_REGION(ICV)) THEN
@@ -440,138 +399,141 @@ CONTAINS
  2020       Format(/5x, 'Refitting to box for IC', I4, /5x,   &
             'Refitting factors (1-DIMN): ', 3(2x,g17.8))
 
-
          END IF              !DES_IC_FIT_TO_REGION
 
-         ALLOCATE(ORIG_PART_LIST)
+            outerloop :  DO  JJ = 1, SEED_Y
+               DO  KK = 1, SEED_Z
+                  DO  II = 1, SEED_X
+                     XP = XINIT + II*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     YP = YINIT + JJ*ADJ_DIA - DES_D_P0(M)*0.5D0
+                     ZP = ZINIT + KK*ADJ_DIA - DES_D_P0(M)*0.5D0
 
-         part => part_list_byic
-         DO WHILE (ASSOCIATED(part))
-            !
-            part_old => part
-            part => part%next
-            !Increment part here itself since the later
-            !part of the logic under this loop will be executed
-            !processor wise only
-            do idim = 1, dimn
-               part_old%position(idim) = &
-                    part_old%position(idim)*REFIT_FAC(IDIM)
-            ENDDO
+                     TMP_PART_COUNT_INTHIS_IC = (PCOUNT_BYIC_BYPHASE(ICV,M)) + 1
 
-            I = DES_GETINDEXFROMPOS(ISTART1, IEND1, &
-            part_old%position(1), XE(1:size(XE,1)-1),'X','I')
-            !-1 above since xe ranges from 0:IMAX3, so size is imax3 + 1.
-            !therefore, (1:size(xe,1)) will give 1:imax3 + 1, resulting in a seg error.
+                     IF(TMP_PART_COUNT_INTHIS_IC.GT.PART_MPHASE_BYIC(ICV,M)) EXIT outerloop
 
-            J = DES_GETINDEXFROMPOS(JSTART1,JEND1, &
-            part_old%position(2),YN(1:size(YN,1)-1),'Y','J')
+                     !Associate this new particle to the solid phase id based on the map_to_proc defined
+                     !earlier
 
-            K = 1
-            IF(DO_K) K = DES_GETINDEXFROMPOS(KSTART1, &
-            KEND1,part_old%position(3),ZT(1:size(ZT,1)-1),'Z','K')
+                     PCOUNT_BYIC_BYPHASE(ICV,M)  = PCOUNT_BYIC_BYPHASE(ICV,M) + 1
 
-            IF(.not.IS_ON_myPE_wobnd(I,J,K)) cycle
+                     PART%RAD = DES_D_P0(M)*HALF
+                     PART%DENS = DES_RO_S(M)
+                     PART%POSITION(1) = XP
+                     PART%POSITION(2) = YP
+                     IF(DO_K) PART%POSITION(3) = ZP
+                     PART%VELOCITY(1:DIMN) = PVEL_TEMP(PCOUNT_BYIC_BYPHASE(ICV,M),1:DIMN)
 
-            IF(DEAD_CELL_AT(I,J,K)) cycle
+                     do idim = 1, dimn
+                        PART%position(idim) = &
+                             PART%position(idim)*REFIT_FAC(IDIM)
+                     ENDDO
 
-            IJK = FUNIJK(I, J, K)
-            IF(.not.FLUID_AT(IJK)) cycle
+                     I = DES_GETINDEXFROMPOS(ISTART1, IEND1, &
+                          PART%position(1), XE(1:size(XE,1)-1),'X','I')
+                     !-1 above since xe ranges from 0:IMAX3, so size is imax3 + 1.
+                     !therefore, (1:size(xe,1)) will give 1:imax3 + 1, resulting in a seg error.
 
-            ORIG_PART_LIST%M = part_old%M
-            ORIG_PART_LIST%INDOMAIN = .true.
+                     J = DES_GETINDEXFROMPOS(JSTART1,JEND1, &
+                          PART%position(2),YN(1:size(YN,1)-1),'Y','J')
 
-            ORIG_PART_LIST%POSITION(1:DIMN) = part_old%POSITION(1:DIMN)
-            ORIG_PART_LIST%VELOCITY(1:DIMN) = part_old%VELOCITY(1:DIMN)
-            ORIG_PART_LIST%STATWT = part_old%statwt
+                     K = 1
+                     IF(DO_K) K = DES_GETINDEXFROMPOS(KSTART1, &
+                          KEND1,PART%position(3),ZT(1:size(ZT,1)-1),'Z','K')
 
-            ORIG_PART_LIST%RAD = part_old%RAD
-            ORIG_PART_LIST%DENS = part_old%DENS
-            ORIG_PART_LIST%STATWT = part_old%statwt
+                     IF(.not.IS_ON_myPE_wobnd(I,J,K)) cycle
 
-            !find its linearized cell ID which is used in
-            !flagging out of domain particles
+                     IF(DEAD_CELL_AT(I,J,K)) cycle
 
-            orig_part_list%cell(1) = I
-            orig_part_list%cell(2) = J
-            orig_part_list%cell(3) = K
-            orig_part_list%cell(4) = FUNIJK(I, J, K)
+                     IJK = FUNIJK(I, J, K)
+                     IF(.not.FLUID_AT(IJK)) cycle
 
-            IF(CARTESIAN_GRID) then
-               DELETE_PART = .false.
-               IJK = orig_part_list%cell(4)
+                     PART%M = M
+                     PART%INDOMAIN = .true.
 
+                     PART%STATWT = 1.d0
+
+                     IF(CARTESIAN_GRID) then
 ! Only look for particles that are in domain. Particles in dead cells
 ! have already been flagged as outside of the domain in
 !  BIN_PARTICLES_TO_CELL.
-               IF(orig_part_list%indomain) THEN
 ! Since checking if a particle is on other side of a triangle is tricky,
 ! for safety, initially remove all the particles in the cut-cell.
 ! now cut-cell and actualy geometry could be off, so this might not work
 ! very robustly.
-                  IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+                        IF(.not.CUT_CELL_AT(IJK)) THEN
 ! Check if any of the particles are overlapping with the walls. This
 ! will include the normal ghost cell walls and also the cut cells.
-                     CALL CHECK_IF_PARTICLE_OVERLAPS_STL(ORIG_PART_LIST%POSITION(:), &
-                          ORIG_PART_LIST%RAD, DELETE_PART)
-                  ELSE
-                     DELETE_PART = .TRUE.
-                  ENDIF
-               ENDIF
+                           DELETE_PART = .false.
+                           CALL CHECK_IF_PARTICLE_OVERLAPS_STL(PART%POSITION(:), &
+                                PART%RAD, DELETE_PART)
+                           IF(DELETE_PART) PART%INDOMAIN = .FALSE.
+                        ELSE
+                           PART%INDOMAIN = .FALSE.
+                        ENDIF
+                     ENDIF
 
-               IF(DELETE_PART) ORIG_PART_LIST%INDOMAIN = .FALSE.
+                     LORIG_ALL(mype) = LORIG_ALL(mype) + 1
 
-            ENDIF
+                     IF(part%INDOMAIN) then
+                        count_part = count_part + 1
+                        CALL PARTICLE_GROW(count_part)
+                        des_pos_new(1:dimn, count_part) = part%position(1:dimn)
+                        des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
 
-            LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+                        DES_RADIUS(count_part) = part%rad
+                        RO_SOL(count_part)  = part%dens
 
-            IF(orig_part_list%INDOMAIN) then
-               count_part = count_part + 1
-               CALL PARTICLE_GROW(count_part)
-               des_pos_new(1:dimn, count_part) = orig_part_list%position(1:dimn)
-               des_vel_new(1:dimn, count_part) = orig_part_list%velocity(1:dimn)
+                        PIJK(count_part,5) = part%M
+                        phase  = part%M
+                        IF (DO_OLD) THEN
+                           des_vel_old(:, count_part) = des_vel_new(:, count_part)
+                           des_pos_old(:, count_part) = des_pos_new(:, count_part)
+                        ENDIF
 
-               DES_RADIUS(count_part) = orig_part_list%rad
-               RO_SOL(count_part)  = orig_part_list%dens
+                        PEA(count_part,1) = .TRUE.
 
-               PIJK(count_part,5) = orig_part_list%M
-               phase  = orig_part_list%M
-               IF (DO_OLD) THEN
-                  des_vel_old(:, count_part) = des_vel_new(:, count_part)
-                  des_pos_old(:, count_part) = des_pos_new(:, count_part)
-               ENDIF
+                        IF(SOLIDS_MODEL(phase).eq.'PIC') then
+                           DES_STAT_WT(count_part) = part%STATWT
+                        ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
+                           IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
+                           OMEGA_NEW(:, count_part) = zero
+                        ENDIF
 
-               PEA(count_part,1) = .TRUE.
+                        LREM_ALL(mype) = LREM_ALL(mype) + 1
+                     ELSE
+                        LDEL_ALL(mype) = LDEL_ALL(mype) + 1
+                     ENDIF
 
-               IF(SOLIDS_MODEL(phase).eq.'PIC') then
-                  DES_STAT_WT(count_part) = orig_part_list%STATWT
-               ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
-                  IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
-                  OMEGA_NEW(:, count_part) = zero
-               ENDIF
+                     REALPART_MPHASE_BYIC(ICV, part%M) =  &
+                          REALPART_MPHASE_BYIC(ICV, part%M) + 1
 
-               LREM_ALL(mype) = LREM_ALL(mype) + 1
-            ELSE
-               LDEL_ALL(mype) = LDEL_ALL(mype) + 1
-            ENDIF
+                     YMAX = YP + DES_D_P0(M)*0.5D0
 
-            REALPART_MPHASE_BYIC(ICV, part_old%M) =  &
-                 REALPART_MPHASE_BYIC(ICV, part_old%M) + 1
-         ENDDO
+                  end DO
+               end DO
+            end DO outerloop
 
-         !delete this list from the memory
-         CALL DEALLOC_PART_LIST(part_list_byic)
+            YINIT = YMAX
+
+            DEALLOCATE(pvel_temp)
+
+            EP_SM = IC_EP_S(ICV,M)
+            WRITE(ERR_MSG,2017) EP_SM
+            CALL FLUSH_ERR_MSG(HEADER = .false., Footer = .false.)
+ 2017       FORMAT(5x, 'Solids vol fraction for M   =  ', (G15.8,2X))
+
+         end DO                 ! DO M = 1, DES_MMAX
 
          CALL global_all_sum(REALPART_MPHASE_BYIC(ICV, 1:DES_MMAX))
 
          DO M = 1, DES_MMAX
-
             WRITE(ERR_MSG,'(//, 70("-"),/5x, A, I5,/5x,A, I15, /5x, A, I15)') &
                  'For Phase M:              ', M,  &
                  '# of particles estimated      :',  PART_MPHASE_BYIC(ICV, M), &
                  '# of particles acutally seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
 
             CALL FLUSH_ERR_MSG(header = .false. ,footer = .false.)
-
          END DO
 
       end DO IC_LOOP
@@ -591,8 +553,6 @@ CONTAINS
       'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
       'This should not have happened, exiting')
       CALL FINL_ERR_MSG
-
-      CALL DEALLOC_PART_LIST(orig_part_list)
 
       RETURN
     END SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM
@@ -878,9 +838,7 @@ CONTAINS
                   ENDDO
                ENDDO
 
-
             ELSEIF(CONST_STATWT) THEN
-
 
                CORD_START(1) = IC_X_W(ICV)
                CORD_START(2) = IC_Y_S(ICV)
