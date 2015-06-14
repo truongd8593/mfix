@@ -238,6 +238,10 @@ CONTAINS
 ! the maximum particle diameter. seed at ~particle radii
       lfac = 1.05d0
 
+      LORIG_ALL = 0
+      LDEL_ALL = 0
+      LREM_ALL = 0
+      count_part = 0
 
       if(.not.allocated(part_mphase_byic)) &
            ALLOCATE(PART_MPHASE_BYIC(DIMENSION_IC, DES_MMAX))
@@ -439,6 +443,8 @@ CONTAINS
 
          END IF              !DES_IC_FIT_TO_REGION
 
+         ALLOCATE(ORIG_PART_LIST)
+
          part => part_list_byic
          DO WHILE (ASSOCIATED(part))
             !
@@ -471,10 +477,16 @@ CONTAINS
             IJK = FUNIJK(I, J, K)
             IF(.not.FLUID_AT(IJK)) cycle
 
-            CALL GEN_AND_ADD_TO_PART_LIST(ORIG_PART_LIST, part_old%M, &
-            part_old%POSITION(1:DIMN),part_old%VELOCITY(1:DIMN), &
-            part_old%RAD, &
-            part_old%DENS, part_old%statwt)
+            ORIG_PART_LIST%M = part_old%M
+            ORIG_PART_LIST%INDOMAIN = .true.
+
+            ORIG_PART_LIST%POSITION(1:DIMN) = part_old%POSITION(1:DIMN)
+            ORIG_PART_LIST%VELOCITY(1:DIMN) = part_old%VELOCITY(1:DIMN)
+            ORIG_PART_LIST%STATWT = part_old%statwt
+
+            ORIG_PART_LIST%RAD = part_old%RAD
+            ORIG_PART_LIST%DENS = part_old%DENS
+            ORIG_PART_LIST%STATWT = part_old%statwt
 
             !find its linearized cell ID which is used in
             !flagging out of domain particles
@@ -484,13 +496,70 @@ CONTAINS
             orig_part_list%cell(3) = K
             orig_part_list%cell(4) = FUNIJK(I, J, K)
 
+            IF(CARTESIAN_GRID) then
+               DELETE_PART = .false.
+               IJK = orig_part_list%cell(4)
+
+! Only look for particles that are in domain. Particles in dead cells
+! have already been flagged as outside of the domain in
+!  BIN_PARTICLES_TO_CELL.
+               IF(orig_part_list%indomain) THEN
+! Since checking if a particle is on other side of a triangle is tricky,
+! for safety, initially remove all the particles in the cut-cell.
+! now cut-cell and actualy geometry could be off, so this might not work
+! very robustly.
+                  IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
+! Check if any of the particles are overlapping with the walls. This
+! will include the normal ghost cell walls and also the cut cells.
+                     CALL CHECK_IF_PARTICLE_OVERLAPS_STL(ORIG_PART_LIST%POSITION(:), &
+                          ORIG_PART_LIST%RAD, DELETE_PART)
+                  ELSE
+                     DELETE_PART = .TRUE.
+                  ENDIF
+               ENDIF
+
+               IF(DELETE_PART) ORIG_PART_LIST%INDOMAIN = .FALSE.
+
+            ENDIF
+
+            LORIG_ALL(mype) = LORIG_ALL(mype) + 1
+
+            IF(orig_part_list%INDOMAIN) then
+               count_part = count_part + 1
+               CALL PARTICLE_GROW(count_part)
+               des_pos_new(1:dimn, count_part) = orig_part_list%position(1:dimn)
+               des_vel_new(1:dimn, count_part) = orig_part_list%velocity(1:dimn)
+
+               DES_RADIUS(count_part) = orig_part_list%rad
+               RO_SOL(count_part)  = orig_part_list%dens
+
+               PIJK(count_part,5) = orig_part_list%M
+               phase  = orig_part_list%M
+               IF (DO_OLD) THEN
+                  des_vel_old(:, count_part) = des_vel_new(:, count_part)
+                  des_pos_old(:, count_part) = des_pos_new(:, count_part)
+               ENDIF
+
+               PEA(count_part,1) = .TRUE.
+
+               IF(SOLIDS_MODEL(phase).eq.'PIC') then
+                  DES_STAT_WT(count_part) = orig_part_list%STATWT
+               ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
+                  IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
+                  OMEGA_NEW(:, count_part) = zero
+               ENDIF
+
+               LREM_ALL(mype) = LREM_ALL(mype) + 1
+            ELSE
+               LDEL_ALL(mype) = LDEL_ALL(mype) + 1
+            ENDIF
+
             REALPART_MPHASE_BYIC(ICV, part_old%M) =  &
                  REALPART_MPHASE_BYIC(ICV, part_old%M) + 1
          ENDDO
 
          !delete this list from the memory
          CALL DEALLOC_PART_LIST(part_list_byic)
-
 
          CALL global_all_sum(REALPART_MPHASE_BYIC(ICV, 1:DES_MMAX))
 
@@ -501,70 +570,11 @@ CONTAINS
                  '# of particles estimated      :',  PART_MPHASE_BYIC(ICV, M), &
                  '# of particles acutally seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
 
-
             CALL FLUSH_ERR_MSG(header = .false. ,footer = .false.)
 
          END DO
 
       end DO IC_LOOP
-
-      IF(CARTESIAN_GRID) then
-         write(ERR_MSG, 3000)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
- 3000 FORMAT('Cartesian grid detected with particle configuration,'/&
-         'deleting particles located outsidte the domain.')
-
-         write(err_msg, '(A)') 'Now Marking particles to be deleted'
-         call flush_err_msg(header = .false., footer = .false.)
-
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         DELETE_PART = .false.
-         IJK = part%cell(4)
-
-! Only look for particles that are in domain. Particles in dead cells
-! have already been flagged as outside of the domain in
-!  BIN_PARTICLES_TO_CELL.
-         IF(part%indomain) THEN
-! Since checking if a particle is on other side of a triangle is tricky,
-! for safety, initially remove all the particles in the cut-cell.
-! now cut-cell and actualy geometry could be off, so this might not work
-! very robustly.
-               IF(FLUID_AT(IJK).and.(.not.CUT_CELL_AT(IJK))) THEN
-! Check if any of the particles are overlapping with the walls. This
-! will include the normal ghost cell walls and also the cut cells.
-                  CALL CHECK_IF_PARTICLE_OVERLAPS_STL(PART%POSITION(:), &
-                       PART%RAD, DELETE_PART)
-               ELSE
-                  DELETE_PART = .TRUE.
-               ENDIF
-         ENDIF
-
-         IF(DELETE_PART) PART%INDOMAIN = .FALSE.
-         PART => PART%NEXT
-       ENDDO
-
-         write(ERR_MSG,"('Finished marking particles to delete.')")
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
-      ENDIF
-
-      LORIG_ALL = 0
-      LDEL_ALL = 0
-      LREM_ALL = 0
-
-      part => orig_part_list
-      DO WHILE (ASSOCIATED(part))
-         LORIG_ALL(mype) = LORIG_ALL(mype) + 1
-
-         IF(part%INDOMAIN) then
-            LREM_ALL(mype) = LREM_ALL(mype) + 1
-         else
-            LDEL_ALL(mype) = LDEL_ALL(mype) + 1
-         ENDIF
-
-         part => part%next
-      ENDDO
 
       CALL global_all_sum(LORIG_ALL)
       CALL global_all_sum(LREM_ALL)
@@ -572,48 +582,14 @@ CONTAINS
 
       PIP = LREM_ALL(mype) !Setting pip on each processor equal to remaining paticles
 
-      CALL PARTICLE_GROW(PIP)
-
-      part => orig_part_list
-      count_part = 0
-      DO WHILE (ASSOCIATED(part))
-         IF(part%INDOMAIN) then
-            count_part = count_part + 1
-
-            des_pos_new(1:dimn, count_part) = part%position(1:dimn)
-            des_vel_new(1:dimn, count_part) = part%velocity(1:dimn)
-
-            DES_RADIUS(count_part) = part%rad
-            RO_SOL(count_part)  = part%dens
-
-            PIJK(count_part,5) = part%M
-            phase  = part%M
-            IF (DO_OLD) THEN
-               des_vel_old(:, count_part) = des_vel_new(:, count_part)
-               des_pos_old(:, count_part) = des_pos_new(:, count_part)
-            ENDIF
-
-            PEA(count_part,1) = .TRUE.
-
-            IF(SOLIDS_MODEL(phase).eq.'PIC') then
-               DES_STAT_WT(count_part) = part%STATWT
-            ELSEIF(SOLIDS_MODEL(phase).eq.'DEM') then
-               IF (DO_OLD) OMEGA_OLD(:, count_part) = zero
-               OMEGA_NEW(:, count_part) = zero
-            ENDIF
-
-         ENDIF
-         part => part%next
-
-      ENDDO
-      if(count_part.ne.pip) then
-         write(err_msg, 1000) count_part, pip
+      if(count_part.ne.PIP) then
+         write(err_msg, 1000) count_part, PIP
          call flush_err_msg(abort = .true.)
       endif
 
  1000 format('Particles copied from linked lists:', 2x, i15, /, &
       'not equal to particles earlier calculated to be inside domain', 2x, i15, / &
-      'This should not have happened, exitting')
+      'This should not have happened, exiting')
       CALL FINL_ERR_MSG
 
       CALL DEALLOC_PART_LIST(orig_part_list)
