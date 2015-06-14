@@ -508,8 +508,6 @@ CONTAINS
 
       end DO IC_LOOP
 
-      CALL FINL_ERR_MSG
-
       IF(CARTESIAN_GRID) then
          write(ERR_MSG, 3000)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
@@ -1066,8 +1064,6 @@ CONTAINS
 
       WRITE(ERR_MSG,*) ''
       CALL FLUSH_ERR_MSG(HEADER = .false.)
-
-      CALL FINL_ERR_MSG
 
       IF(CARTESIAN_GRID) then
          write(ERR_MSG, 3000)
