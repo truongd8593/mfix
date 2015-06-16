@@ -118,6 +118,7 @@
 
       END SUBROUTINE generate_grid_locations
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Module name: read_literature_results                                !
@@ -191,98 +192,6 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: find_centerline_values                                 !
-!  Purpose: Find u_g and v_g at centerlines of the cavity.             !
-!                                                                      !
-!  Author: Aniruddha Choudhary                        Date: Jun 2015   !
-!  email: anirudd@vt.edu					       !
-!  Reviewer:                                          Date:            !
-!                                                                      !
-!  Revision Number #                                  Date:            !
-!  Author: #                                                           !
-!  Purpose: #                                                          !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-      SUBROUTINE find_centerline_values
-      use geometry, only    : ijkmax3      
-      use geometry, only    : imax, jmax
-      use geometry, only    : kmin1
-      use geometry, only    : dx, dy, dz
-      use functions, only   : funijk_gl
-      use compar, only      : myPE, PE_IO      
-      use fldvar, only      : u_g, v_g
-      use usr, only         : npts
-      use usr, only         : y_loc, x_loc
-      use usr, only         : u_mfix
-      use usr, only         : v_mfix
-      use param1, only      : zero, half
-      use mpi_utility, only : gather      
-      IMPLICIT NONE
-
-
-! indices
-        integer             :: i, j, k, ijk
-        integer             :: n
-
-! temporary variables for x, y, z coordinates        
-        double precision    :: xt, yt, zt
-
-! arrays to gather variables
-        double precision, allocatable :: arr_Ug(:)
-        double precision, allocatable :: arr_Vg(:)
-
-        
-! allocate variables as ijkmax3 size 1D arrays
-        allocate(arr_Ug(ijkmax3))
-        allocate(arr_Vg(ijkmax3))
-
-! gather the MFIX global variables into ijkmax3 sized variables
-        call gather(U_G,arr_Ug,PE_IO)
-        call gather(V_G,arr_Vg,PE_IO)
-
-        if(myPE==PE_IO) then
-        
-! vertical centerline        
-        do n = 1,npts
-          xt = half     ! cavity of unit dimensions
-          yt = y_loc(n)
-
-          CALL CALC_CELL_INTERSECT(ZERO, xt, DX, IMAX, i)
-          CALL CALC_CELL_INTERSECT(ZERO, yt, DY, JMAX, j)
-          k = kmin1
-     
-          ijk = funijk_gl(i,j,k)
-
-          u_mfix(n) = arr_Ug(ijk)
-
-        end do
-
-! horizontal centerline
-        do n = 1,npts
-          xt = x_loc(n)
-          yt = half     ! cavity of unit dimensions
-
-          CALL CALC_CELL_INTERSECT(ZERO, xt, DX, IMAX, i)
-          CALL CALC_CELL_INTERSECT(ZERO, yt, DY, JMAX, j)
-          k = kmin1
-     
-          ijk = funijk_gl(i,j,k)
-
-          v_mfix(n) = arr_Vg(ijk)
-        end do
-
-      end if ! end of (myPE==PE_IO)
-
-! deallocate local arrays        
-      deallocate(arr_Ug)
-      deallocate(arr_Vg)
-
-
-      END SUBROUTINE find_centerline_values
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
 !  Module name: write_tecplot_data                                     !
 !  Purpose: Write data for visualization in Tecplot.                   !
 !                                                                      !
@@ -321,6 +230,7 @@
 ! indices
         integer             :: i, j, k, ijk
         integer             :: imjk, ijmk, ijkm
+        integer             :: ipjk, ijpk
 
 ! file units
         integer             :: ftcc, fup, fvp
@@ -473,23 +383,33 @@
 ! write tecplot data (point format) for:
 ! x-velocity profile at x=L/2 (vertical centerline), and
 ! y-velocity profile at y=H/2 (horizonontal centerline).
+! face-centered values are averaged to obtain data at grid nodes.          
 ! Also included are results from literature.          
 
           if(uv_profile) then
 
             call read_literature_results
 
-            call find_centerline_values
-
             open(unit=newunit(fup), &
              file="u_profile.dat", status='unknown')
 
-            write(fup,"(3a)") 'variables = "y""Ug (MFIX)""Ghia"'
+            write(fup,"(4a)") 'variables = "x""y""z""Ug"'
             write(fup,*) 'zone T="',0,'" '
-            write(fup,*) 'I= ', npts
+            write(fup,*) 'I= ', JMAX1
 
-            do i = 1,npts
-              write(fup,*) y_loc(i), u_mfix(i), u_ghia(i)  
+            i = imax/2 + 1
+            k = kmin1
+            do j = jmin2, jmax1
+
+              ijk = funijk_gl(i,j,k)
+              ijpk = funijk_gl(i,j+1,k)
+
+              xt = arr_xtr(ijk)
+              yt = arr_ytr(ijk)
+              zt = arr_ztr(ijk)
+
+              write(fup,*) xt, yt, zt, HALF*(arr_Ug(ijk)+arr_Ug(ijpk))
+
             end do
 
             close(fup)
@@ -497,12 +417,23 @@
             open(unit=newunit(fvp), &
              file="v_profile.dat", status='unknown')
 
-            write(fvp,"(3a)") 'variables = "x""Vg (MFIX)""Ghia"'
+            write(fvp,"(4a)") 'variables = "x""y""z""Vg"'
             write(fvp,*) 'zone T="',0,'" '
-            write(fvp,*) 'I= ', npts
+            write(fvp,*) 'I= ', IMAX1
 
-            do i = 1,npts
-              write(fvp,*) x_loc(i), v_mfix(i), v_ghia(i)  
+            j = jmax/2 + 1
+            k = kmin1
+            do i = imin2, imax1
+
+              ijk = funijk_gl(i,j,k)
+              ipjk = funijk_gl(i+1,j,k)
+
+              xt = arr_xtr(ijk)
+              yt = arr_ytr(ijk)
+              zt = arr_ztr(ijk)
+
+              write(fvp,*) xt, yt, zt, HALF*(arr_Vg(ijk)+arr_Vg(ipjk))
+
             end do
 
             close(fvp)

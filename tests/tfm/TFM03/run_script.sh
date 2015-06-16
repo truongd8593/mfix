@@ -15,7 +15,8 @@ cd $CASE_DIR
 
 # Run case
 echo "******** Running simulation..."
-mpirun -np 1 $CASE_DIR/mfix.exe imax=64 jmax=64 nodesi=1 nodesj=1 nodesk=1 > out.log
+mpirun -np 4 $CASE_DIR/mfix.exe mu_g0=0.01 imax=32 jmax=32 \
+  nodesi=2 nodesj=2 nodesk=1 #> out.log
 #rm $CASE_DIR/{TFM03.*,out.log}
 #rm $CASE_DIR/mfix.exe
 
