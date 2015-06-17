@@ -11,9 +11,6 @@
 #   Case setup to compare MFIX results with                            #
 #     Ghia et al., 1982, Journal of Computational Physics,             #
 #       doi: 10.1016/0021-9991(82)90058-4                              #
-#       and                                                            #
-#     Botella & Peyret, 1998, Computers and Fluids,                    #  
-#       doi: 10.1016/S0045-7930(98)00002-4                             #
 ########################################################################
 
 #_______________________________________________________________________
@@ -39,23 +36,27 @@
 
   Max_nit       = 200000
 
-  Tol_resid     = 1.0E-10
+  Tol_resid     = 1.0E-8
 
-  Leq_pc        = 9*'NONE'
+  Leq_pc        = 9*'DIAG'
+
+!  Leq_sweep     = 9*'ISIS'
+
+!  Leq_tol       = 9*1.0d-2
 
   Discretize    = 9*2
 
-!  Norm_g        = 0
+  Norm_g        = 0
 
 ! Under relaxation factors
 ! Defaults:
 !      [UR_FAC(1,6,9)=0.8]
 !      [UR_FAC(2,3,4,5,8)=0.5]
 !      [UR_FAC(7)=1]
-!  ur_fac(1) = 0.1    ! pressure
-!  ur_fac(3) = 0.1
-!  ur_fac(4) = 0.1
-!  ur_fac(5) = 0.1
+!  ur_fac(1) = 0.25    ! pressure
+!  ur_fac(3) = 0.15    ! u-mtm
+!  ur_fac(4) = 0.15    ! v-mtm
+
 #_______________________________________________________________________
 # GEOMETRY SECTION
 
@@ -90,7 +91,7 @@
 
   IC_EP_g(1)  = 1.0   
 
-  IC_U_g(1)   = 1.0   
+  IC_U_g(1)   = 0.1  
   IC_V_g(1)   = 0.0     
 
 #_______________________________________________________________________

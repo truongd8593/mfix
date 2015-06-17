@@ -121,77 +121,6 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: read_literature_results                                !
-!  Purpose: read results for centerline velocities from literature     !  
-!                                                                      !
-!  Author: Aniruddha Choudhary                        Date: Jun 2015   !
-!  email: anirudd@vt.edu					       !
-!  Reviewer:                                          Date:            !
-!                                                                      !
-!  Revision Number #                                  Date:            !
-!  Author: #                                                           !
-!  Purpose: #                                                          !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-      SUBROUTINE read_literature_results
-      Use compar, only      : ijkstart3, ijkend3
-      Use indices, only     : i_of, j_of, k_of
-      Use funits, only      : newunit
-      Use usr, only         : npts
-      Use usr, only         : y_loc, x_loc
-      Use usr, only         : u_ghia, v_ghia
-      use compar, only      : myPE, PE_IO      
-      IMPLICIT NONE
-
-! indices
-        integer           :: i
-
-! file units
-        integer           :: fug, fvg
-
-! temporary variables
-        double precision  :: xtmp, ytmp, utmp, vtmp
-
-! read from PE_IO processor
-        if(myPE==PE_IO) then
-
-          ! read vertical centerline data 
-          open(unit=newunit(fug), file="ghia_results_u.dat", &
-                                  status='old')
-          do i = 1,3 
-            read(fug,*) ! read and discard first 3 lines
-          end do
-
-          do i = 1,npts
-            read(fug,*) xtmp, y_loc(npts-i+1), u_ghia(npts-i+1), utmp
-          end do
-
-          close(fug)
-
-          ! read horizontal centerline data 
-          open(unit=newunit(fvg), file="ghia_results_v.dat", &
-                                  status='old')
-          do i = 1,3 
-            read(fvg,*) ! read and discard first 3 lines
-          end do
-
-          do i = 1,npts
-            read(fvg,*) x_loc(npts-i+1), ytmp, v_ghia(npts-i+1), vtmp
-          end do
-
-          close(fvg)
-
-        end if ! end of if (myPE==PE_IO)
-
-
-      RETURN
-
-      END SUBROUTINE read_literature_results
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
 !  Module name: write_tecplot_data                                     !
 !  Purpose: Write data for visualization in Tecplot.                   !
 !                                                                      !
@@ -216,10 +145,6 @@
       use funits, only      : newunit
       use functions, only   : funijk_gl
       use fldvar, only      : p_g, u_g, v_g
-      use usr, only         : npts
-      use usr, only         : y_loc, x_loc
-      use usr, only         : u_mfix, u_ghia
-      use usr, only         : v_mfix, v_ghia
       use usr, only         : xtr, ytr, ztr
       use usr, only         : tec_output_block, tec_no_k, &
                               uv_profile
@@ -387,8 +312,6 @@
 ! Also included are results from literature.          
 
           if(uv_profile) then
-
-            call read_literature_results
 
             open(unit=newunit(fup), &
              file="u_profile.dat", status='unknown')
