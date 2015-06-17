@@ -25,30 +25,11 @@
         logical                               :: tecplot_output=.true.
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
-! format (BLOCK format):
+! format (BLOCK format):&
         logical                               :: tec_output_block = .false.
 
 ! set .true. for writing out the centerline velocity profiles:
         logical                               :: uv_profile = .true.
-
-! number of points for comparison with Ghia et al. (1982)
-        integer, parameter                    :: npts = 17
-
-! vertical centerline (x=0.5)
-        double precision, dimension(npts)     :: y_loc
-
-! horizontal centerline (y=0.5)
-        double precision, dimension(npts)     :: x_loc
-
-! data for u_g at vertical centerline and v_g at horizontal centerline
-        double precision, dimension(npts)     :: u_mfix
-        double precision, dimension(npts)     :: v_mfix
-
-! data from literature at horizontal and vertical centerlines        
-        double precision, dimension(npts)     :: u_ghia
-        double precision, dimension(npts)     :: v_ghia
-!        double precision, dimension(npts)     :: u_botella
-!        double precision, dimension(npts)     :: v_botella
 
 ! x, y, z coordinates of the top-right corner of a cell.
 ! used to find the node locations in the mesh  

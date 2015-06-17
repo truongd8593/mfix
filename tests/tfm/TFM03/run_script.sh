@@ -15,9 +15,24 @@ cd $CASE_DIR
 
 # Run case
 echo "******** Running simulation..."
-mpirun -np 4 $CASE_DIR/mfix.exe mu_g0=0.01 imax=32 jmax=32 \
-  nodesi=2 nodesj=2 nodesk=1 #> out.log
-#rm $CASE_DIR/{TFM03.*,out.log}
+
+mpirun -np 16 mfix.exe \
+  mu_g0=0.01 \
+  imax=128 jmax=128 \
+  nodesi=4 nodesj=4 nodesk=1 #> out.log
+mv u_profile.dat u_profile_Re100_S.dat
+mv v_profile.dat v_profile_Re100_S.dat
+rm {TFM03.*,out.log}
+
+mpirun -np 16 mfix.exe \
+  mu_g0=0.0025 \
+  ur_fac=0.25,0.5,0.15,0.15,0.5,0.8,1.0,0.5,0.8 \
+  imax=128 jmax=128 \
+  nodesi=4 nodesj=4 nodesk=1 #> out.log
+mv u_profile.dat u_profile_Re400_S.dat
+mv v_profile.dat v_profile_Re400_S.dat
+rm {TFM03.*,out.log}
+
 #rm $CASE_DIR/mfix.exe
 
 echo "******** Done."
