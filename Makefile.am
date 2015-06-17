@@ -557,7 +557,6 @@ libmfix_src = \
 	model/rdf_mod.f \
 	model/read_database.f \
 	model/read_namelist.f \
-	model/read_res0.f \
 	model/read_res1.f \
 	model/remove_comment.f \
 	model/reset_new.f \
@@ -754,6 +753,7 @@ postmfix_SOURCES = \
 	post_mfix/post3d_mod.f \
 	post_mfix/post_precision_mod.f \
 	post_mfix/print_out.f \
+	post_mfix/read_res0.f \
 	post_mfix/read_spx0.f \
 	post_mfix/read_spx1.f \
 	post_mfix/res_from_spx.f \

@@ -197,7 +197,6 @@
 ../model/rdf_mod.f
 ../model/read_database.f
 ../model/read_namelist.f
-../model/read_res0.f
 ../model/read_res1.f
 ../model/remove_comment.f
 ../model/reset_new.f
