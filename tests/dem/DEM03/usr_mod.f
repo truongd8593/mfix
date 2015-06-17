@@ -251,6 +251,8 @@
 !......................................................................!
       SUBROUTINE RK4_V4(DT, y1_a, x1_a, y2_a, x2_a)
 
+      implicit none
+
       double precision, intent(in) :: DT
 
       double precision, intent(inout) :: y1_a, x1_a
@@ -259,6 +261,8 @@
       double precision :: y1, x1
       double precision :: y2, x2
 
+      double precision :: x1_k1, x1_k2, x1_k3, x1_k4, x2_k1, x2_k2, x2_k3, x2_k4
+      double precision :: y1_k1, y1_k2, y1_k3, y1_k4, y2_k1, y2_k2, y2_k3, y2_k4
 
       y1 = y1_a
       y2 = y2_a
