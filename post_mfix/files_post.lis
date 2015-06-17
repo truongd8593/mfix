@@ -313,6 +313,7 @@ paralleldata_mod.f
 post3d_mod.f
 post_precision_mod.f
 print_out.f
+read_res0.f
 read_spx0.f
 read_spx1.f
 res_from_spx.f
