@@ -665,7 +665,7 @@
          Allocate(IGTEMP1(1))   ! ALLOCate INT Global scratch
          Allocate(iGTEMP2(1))   ! ALLOCate INT Global scratch
       endif
-      call scatter(flag,iGTEMP2,PE_IO)        !//PAR_I/O SCATTER1d
+      flag = iGTEMP2
       DeAllocate (IGTEMP1, iGTEMP2)
 
 
