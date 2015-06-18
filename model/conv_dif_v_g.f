@@ -35,15 +35,15 @@
 
       IF (DEF_COR) THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_G
-         CALL STORE_A_V_G0 (A_M(1,-3,0), IER)
+         CALL STORE_A_V_G0 (A_M, IER)
          IF (DISCRETIZE(4) > 1) CALL STORE_A_V_GDC(B_M(1,0), IER)
 
       ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE V_G
          IF (DISCRETIZE(4) == 0) THEN               ! 0 & 1 => FOUP
-            CALL STORE_A_V_G0(A_M(1,-3,0), IER)
+            CALL STORE_A_V_G0(A_M, IER)
          ELSE
-            CALL STORE_A_V_G1(A_M(1,-3,0))
+            CALL STORE_A_V_G1(A_M)
          ENDIF
       ENDIF
 
@@ -428,7 +428,7 @@
 
       USE geometry, only: do_k
 
-      USE param, only: dimension_3
+      USE param, only: dimension_3, dimension_m
       USE param1, only: zero
       USE matrix, only: e, w, n, s, t, b
 
@@ -437,7 +437,7 @@
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_V_g
-      DOUBLE PRECISION, INTENT(INOUT) :: A_V_g(DIMENSION_3, -3:3)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_V_g(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
@@ -477,36 +477,36 @@
 
 ! East face (i+1/2, j+1/2, k)
             IF (Flux_e >= ZERO) THEN
-               A_V_G(IJK,E) = D_Fe
-               A_V_G(IPJK,W) = D_Fe + Flux_e
+               A_V_G(IJK,E,0) = D_Fe
+               A_V_G(IPJK,W,0) = D_Fe + Flux_e
             ELSE
-               A_V_G(IJK,E) = D_Fe - Flux_e
-               A_V_G(IPJK,W) = D_Fe
+               A_V_G(IJK,E,0) = D_Fe - Flux_e
+               A_V_G(IPJK,W,0) = D_Fe
             ENDIF
 ! West face (i-1/2, j+1/2, k)
             IF (.NOT.FLOW_AT_N(IMJK)) THEN
                IF (Flux_w >= ZERO) THEN
-                  A_V_G(IJK,W) = D_Fw + Flux_w
+                  A_V_G(IJK,W,0) = D_Fw + Flux_w
                ELSE
-                  A_V_G(IJK,W) = D_Fw
+                  A_V_G(IJK,W,0) = D_Fw
                ENDIF
             ENDIF
 
 
 ! North face (i, j+1, k)
             IF (Flux_n >= ZERO) THEN
-               A_V_G(IJK,N) = D_Fn
-               A_V_G(IJPK,S) = D_Fn + Flux_n
+               A_V_G(IJK,N,0) = D_Fn
+               A_V_G(IJPK,S,0) = D_Fn + Flux_n
             ELSE
-               A_V_G(IJK,N) = D_Fn - Flux_n
-               A_V_G(IJPK,S) = D_Fn
+               A_V_G(IJK,N,0) = D_Fn - Flux_n
+               A_V_G(IJPK,S,0) = D_Fn
             ENDIF
 ! South face (i, j, k)
             IF (.NOT.FLOW_AT_N(IJMK)) THEN
                IF (Flux_s >= ZERO) THEN
-                  A_V_G(IJK,S) = D_Fs + Flux_s
+                  A_V_G(IJK,S,0) = D_Fs + Flux_s
                ELSE
-                  A_V_G(IJK,S) = D_Fs
+                  A_V_G(IJK,S,0) = D_Fs
                ENDIF
             ENDIF
 
@@ -517,18 +517,18 @@
 
 ! Top face (i, j+1/2, k+1/2)
                IF (Flux_t >= ZERO) THEN
-                  A_V_G(IJK,T) = D_Ft
-                  A_V_G(IJKP,B) = D_Ft + Flux_t
+                  A_V_G(IJK,T,0) = D_Ft
+                  A_V_G(IJKP,B,0) = D_Ft + Flux_t
                ELSE
-                  A_V_G(IJK,T) = D_Ft - Flux_t
-                  A_V_G(IJKP,B) = D_Ft
+                  A_V_G(IJK,T,0) = D_Ft - Flux_t
+                  A_V_G(IJKP,B,0) = D_Ft
                ENDIF
 ! Bottom face (i, j+1/2, k-1/2)
                IF (.NOT.FLOW_AT_N(IJKM)) THEN
                   IF (Flux_b >= ZERO) THEN
-                     A_V_G(IJK,B) = D_Fb + Flux_b
+                     A_V_G(IJK,B,0) = D_Fb + Flux_b
                   ELSE
-                     A_V_G(IJK,B) = D_Fb
+                     A_V_G(IJK,B,0) = D_Fb
                   ENDIF
                ENDIF
             ENDIF   ! end if (do_k)
