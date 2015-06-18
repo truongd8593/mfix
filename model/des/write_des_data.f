@@ -110,7 +110,7 @@
 
       IMPLICIT NONE
 
-
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_DIAMETER !(PARTICLES)
       CHARACTER(len=10) :: lNoP
       CHARACTER(len=24) :: sTIMEc
       INTEGER :: N
@@ -147,7 +147,11 @@
       CALL VTP_WRITE_ELEMENT('<PointData Scalars="Diameter" &
          &Vectors="Velocity">')
 
-      CALL VTP_WRITE_DATA('Diameter', 2.0d0*DES_RADIUS)
+      ALLOCATE(DES_DIAMETER(SIZE(DES_RADIUS)))
+      DES_DIAMETER(:) = 2.0d0*DES_RADIUS(:)
+      CALL VTP_WRITE_DATA('Diameter', DES_DIAMETER)
+      DEALLOCATE(DES_DIAMETER)
+
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
 
       IF(DES_USR_VAR_SIZE > 0) &
