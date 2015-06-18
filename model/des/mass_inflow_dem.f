@@ -236,8 +236,9 @@
       lK = KofPOS(lPOS(3))
 
       lOWNS = ((DG_ISTART <= lI) .AND. (lI <= DG_IEND) .AND.           &
-         (DG_JSTART <= lJ) .AND. (lJ <= DG_JEND) .AND.                 &
-         (DG_KSTART <= lK) .AND. (lK <= DG_KEND))
+         (DG_JSTART <= lJ) .AND. (lJ <= DG_JEND))
+
+      IF(DO_K) lOWNS = lOWNS .AND. (DG_KSTART<=lK) .AND. (lK<=DG_KEND)
 
       RETURN
       END SUBROUTINE SEED_NEW_PARTICLE
