@@ -378,7 +378,7 @@
 !    gas-solid is started.
 !  </description>
 !  <range min="0" max="+Inf" />
-      NFACTOR = 10
+      NFACTOR = 0
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false">
