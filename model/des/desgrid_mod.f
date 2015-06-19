@@ -1059,7 +1059,7 @@
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype
-      open(44,file=filename)
+      open(44,file=filename,convert='big_endian')
       do lproc = 0,numpes-1
          write(44,*) "Information for Proc =", lproc
          liproc= iofproc(lproc)

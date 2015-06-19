@@ -909,7 +909,7 @@
       if(dbg_level >= 2) then
          filename=''
          write(filename,"('dbg_check_',I2.2,'.txt')")myPE
-         open(unit=202, file=filename, &
+         open(convert='big_endian',unit=202, file=filename, &
             status='replace', position='append')
          write(202,"(3x,'check A')")
       endif
@@ -1236,7 +1236,7 @@
 
          filename = ''
          write(filename,"('dbg_pCnt_',I2.2,'.txt')") myPE
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(//3x,'Time:',F18.6)")Time
          write(201,"(3x,'Number of Clusters: ',I4)") cCnt(myPE)
 
@@ -1268,7 +1268,7 @@
       CASE (3); if(myPE /= clusterPE) return
 
          filename = 'dbg_pCnt_dsp.txt'
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          write(201,"(3x,'cCnt_sum: ',I4)") cCnt_sum
          do lc1 =0, numPEs-1
@@ -1361,7 +1361,7 @@
 !``````````````````````````````````````````````````````````````````````!
       CASE (7); if(myPE /= clusterPE) return
 
-         open(unit=201, file='dbg_gpIDs.txt', status='replace')
+         open(convert='big_endian',unit=201, file='dbg_gpIDs.txt', status='replace')
          do lc1=1,size(gpIDs_all)
             write(201,"(5x,' Global particle ID: ',I8)") gpIDs_all(lc1)
          enddo
@@ -1385,7 +1385,7 @@
 
          filename = ''
          write(filename,"('dbg_mergeMap_',A,I2.2,'.txt')") trim(lmsg)
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
 
          write(201,"(/3x,'Time:',F18.6)")Time
 
@@ -1431,7 +1431,7 @@
 
          filename = ''
          write(filename,"('dbg_PEA_',I2.2,'.txt')") myPE
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          do lc1 =1, send_cnt
             write(201,"(5x,'PEA(',I8,'): ',L2)")lc1, gpPEA(lc1)
@@ -1448,7 +1448,7 @@
 !``````````````````````````````````````````````````````````````````````!
       CASE (10); if(myPE /= clusterPE) return
 
-         open(unit=201, file='dbg_PEA_all.txt', status='replace')
+         open(convert='big_endian',unit=201, file='dbg_PEA_all.txt', status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          do lc1 =1, recv_sum
             write(201,"(5x,'PEA(',I8,'): ',L2)")lc1, gpPEA_all(lc1)
@@ -1504,7 +1504,7 @@
             do lc1=1, clusterCount_all
                filename = ''
                write(filename,"('dbg_cluster_',I3.3,'.txt')")lc1
-               open(unit=201, file=filename, status='replace')
+               open(convert='big_endian',unit=201, file=filename, status='replace')
                write(201,"(3x,'Time:',F10.6)") Time
 
                cThis => clusters(lc1)

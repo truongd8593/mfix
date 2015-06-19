@@ -323,7 +323,7 @@
 
 ! Open the file and record any erros.
          IF(IER == 0) THEN
-            OPEN(UNIT=DES_UNIT, FILE=FNAME_VTP,                        &
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=DES_UNIT, FILE=FNAME_VTP,                        &
                STATUS=STATUS_VTP, IOSTAT=IOS)
             IF(IOS /= 0) IER = 2
          ENDIF
@@ -424,7 +424,7 @@
                IF(EXISTS_PVD) THEN
                   IER = 1
                ELSE
-                  OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
+                  OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
                   WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
                   WRITE(PVD_UNIT,"(A)")'<VTKFile type="Collection" &
                      &version="0.1" byte_order="LittleEndian">'
@@ -439,7 +439,7 @@
             ELSE ! a restart run
                IF(EXISTS_PVD) THEN
 ! Open the file at the beginning.
-                  OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+                  OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,&
                      POSITION="REWIND",STATUS='OLD',IOSTAT=IOS)
                   IF(IOS /= 0) IER = 2
                ELSE ! a pvd file does not exist
@@ -483,7 +483,7 @@
             FIRST_PASS = .FALSE.
 
          ELSE ! not FIRST_PASS
-            OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,&
                POSITION="APPEND",STATUS='OLD',IOSTAT=IOS)
             IF (IOS /= 0) IER = 2
          ENDIF
@@ -654,7 +654,7 @@
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
-         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
          DO L = 1, DIMENSION_VTK
             IF(VTK_DEFINED(L)) WRITE(VTU_FRAME_UNIT,*) L,FRAME(L)
          ENDDO
@@ -709,7 +709,7 @@
       IF(TIME_DEPENDENT_FILENAME) THEN
          INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
          IF(VTU_FRAME_FILE_EXISTS) THEN
-            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
             DO L = 1, DIMENSION_VTK
                IF(VTK_DEFINED(L)) THEN
                   READ(VTU_FRAME_UNIT,*)BUFF1,BUFF2
@@ -767,7 +767,7 @@
       IF (NEED_TO_WRITE_VTP) THEN
 
          VTU_UNIT = 678
-         OPEN(UNIT     = VTU_UNIT,           &
+         OPEN(CONVERT='BIG_ENDIAN',UNIT     = VTU_UNIT,           &
               FILE     = TRIM(VTU_FILENAME), &
               FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'BINARY' if 'UNFORMATTED' is not supported
@@ -820,7 +820,7 @@
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
 
-         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+         OPEN(CONVERT='BIG_ENDIAN',UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
 
          WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
          WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'

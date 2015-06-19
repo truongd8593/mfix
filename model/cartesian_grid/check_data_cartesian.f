@@ -3562,7 +3562,7 @@
 !         INQUIRE(FILE='gridmap.dat',EXIST=PRESENT)
 !         IF(PRESENT) THEN
 !          WRITE(*,*)'Reading gridmap from grimap.dat...'
-!            OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+!            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 !            DO IPROC = 0,NumPEs-1
 !                  READ(777,*) jsize_all(IPROC)
 !            ENDDO
@@ -4483,7 +4483,7 @@
          ENDIF                  ! DOMAIN DECOMPOSITION IN K-DIRECTION
 
 
-         OPEN(UNIT=777, FILE='suggested_gridmap.dat')
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
          WRITE (777, 1005) NODESI,NODESJ,NODESK, '     ! NODESI, NODESJ, NODESK'
          DO IPROC = 0,NODESI-1
                WRITE(777,1060) IPROC,Isize_all(IPROC)
@@ -5197,7 +5197,7 @@
             ENDIF
 
 
-            OPEN(UNIT=777, FILE='suggested_gridmap.dat')
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='suggested_gridmap.dat')
             WRITE (777, 1000) 'J-SIZE DISTRIBUTION'
             WRITE (777, 1010) 'NUMBER OF PROCESSORS = ',NumPEs
             WRITE (777, 1000) '================================================='

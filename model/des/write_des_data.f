@@ -277,17 +277,17 @@
          write(fname_data,'(A,"_DES_DATA",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
          write(fname_extra,'(A,"_DES_EXTRA",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
          write(fname_eps,'(A,"_DES_EPS",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
-         open(unit=des_data,file=fname_data,status='new',err=999)
-         open(unit=des_ex,file=fname_extra,status='new',err=999)
-         open(unit=des_eps,file=fname_eps,status='new',err=999)
+         open(convert='big_endian',unit=des_data,file=fname_data,status='new',err=999)
+         open(convert='big_endian',unit=des_ex,file=fname_extra,status='new',err=999)
+         open(convert='big_endian',unit=des_eps,file=fname_eps,status='new',err=999)
       else
          if(mype.eq.pe_io) then
             write(fname_data,'(A,"_DES_DATA_",I4.4,".dat")') trim(run_name),tecplot_findex
             write(fname_extra,'(A,"_DES_EXTRA_",I4.4,".dat")') trim(run_name),tecplot_findex
             write(fname_eps,'(A,"_DES_EPS_",I4.4,".dat")') trim(run_name),tecplot_findex
-            open(unit=des_data,file=fname_data,status='new',err=999)
-            open(unit=des_ex,file=fname_extra,status='new',err=999)
-            open(unit=des_eps,file=fname_eps,status='new',err=999)
+            open(convert='big_endian',unit=des_data,file=fname_data,status='new',err=999)
+            open(convert='big_endian',unit=des_ex,file=fname_extra,status='new',err=999)
+            open(convert='big_endian',unit=des_eps,file=fname_eps,status='new',err=999)
          end if
       end if
       tecplot_findex = tecplot_findex + 1
@@ -473,7 +473,7 @@
 ! If the file does not exist, then create it with the necessary
 ! header information.
          IF (.NOT.F_EXISTS) THEN
-            OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,&
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,&
                FORM="formatted",STATUS="new")
          ELSE
 ! To prevent overwriting existing files accidently, exit if the file
@@ -484,13 +484,13 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
             ENDIF
          ENDIF
          FIRST_PASS = .FALSE.
       ELSE
 ! Open the file and mark for appending
-         OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
       ENDIF
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
@@ -560,12 +560,12 @@
          IF (.NOT.F_EXISTS) THEN
 ! If the file does not exist, then create it with the necessary
 ! header information.
-            OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='NEW')
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='NEW')
          ELSE
             IF(RUN_TYPE .EQ. 'NEW') THEN
 ! If the run is new and the GT file already exists replace it with a
 ! new file.
-!               OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
+!               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
 ! Prevent overwriting an existing file by exiting if the file exists
 ! and this is a NEW run.
                WRITE(*,1001) FNAME_GT
@@ -573,13 +573,13 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(UNIT=GT_UNIT, FILE=FNAME_GT, POSITION='APPEND')
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT, FILE=FNAME_GT, POSITION='APPEND')
             ENDIF
          ENDIF
          FIRST_PASS =  .FALSE.
       ELSE
 ! Open file and mark for appending
-         OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,POSITION='APPEND')
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,POSITION='APPEND')
       ENDIF   ! endif (first_pass)
 
       WRITE(GT_UNIT,*) ''

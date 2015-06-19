@@ -500,9 +500,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)),                         &
-            status='old', position='append')
+            status='old', position='append', convert='big_endian')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new')
+         open(lUnit,file=trim(adjustl(lFile)), status='new', convert='big_endian')
       endif
 
       if(fHeader) then
@@ -594,9 +594,9 @@
       inquire(file=trim(lFile),exist=lExists)
       if(lExists) then
          open(lUnit,file=trim(adjustl(lFile)),                         &
-            status='old', position='append')
+            status='old', position='append',convert='big_endian')
       else
-         open(lUnit,file=trim(adjustl(lFile)), status='new')
+         open(lUnit,file=trim(adjustl(lFile)), status='new',convert='big_endian')
       endif
 
       if(fHeader) then

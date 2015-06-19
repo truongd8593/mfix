@@ -325,9 +325,9 @@
 
       inquire(file=lFile,exist=lExist)
       if(lExist) then
-         open(OEL_Unit,file=trim(adjustl(lFile)), position='append')
+         open(OEL_Unit,file=trim(adjustl(lFile)), position='append',convert='big_endian')
       else
-         open(OEL_Unit,file=trim(adjustl(lFile)), status='new')
+         open(OEL_Unit,file=trim(adjustl(lFile)), status='new',convert='big_endian')
       endif
 
 

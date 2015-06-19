@@ -64,7 +64,7 @@
             CALL FLUSH_ERR_MSG
             IOS = 1
          ELSE
-            OPEN(UNIT=lUNIT, FILE=lFILENAME, FORM="FORMATTED")
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=lUNIT, FILE=lFILENAME, FORM="FORMATTED")
          ENDIF
       ENDIF
 

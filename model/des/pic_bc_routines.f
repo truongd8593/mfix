@@ -960,8 +960,8 @@
       WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
       WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
 
-      open(vtp_unit, file = vtp_fname, form='formatted')
-      open(stl_unit, file = stl_fname, form='formatted')
+      open(vtp_unit, file = vtp_fname, form='formatted',convert='big_endian')
+      open(stl_unit, file = stl_fname, form='formatted',convert='big_endian')
 
       write(vtp_unit,"(a)") '<?xml version="1.0"?>'
       write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'

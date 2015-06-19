@@ -164,9 +164,9 @@
          ENDIF
          inquire(file=trim(lFName),exist=lExists)
          IF(lExists) THEN
-            OPEN(unit=lUnit,file=trim(lFName),status='replace')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='replace')
          ELSE
-            OPEN(unit=lUnit,file=trim(lFName),status='new')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='new')
          ENDIF
       ENDIF
 
