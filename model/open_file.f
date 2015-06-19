@@ -104,13 +104,13 @@
 ! No matter the status passed to the routine, the file is created as
 ! NEW if it doesn't exist in the run directory.
          IF(.NOT.FILE_EXISTS) THEN
-            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='NEW',       &
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='NEW',       &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
          ELSEIF(OPEN_STAT == 'REPLACE') THEN
-            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,   &
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,   &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
          ELSEIF(OPEN_STAT == 'APPEND' .OR. OPEN_STAT == 'UNKNOWN') THEN
-            OPEN(UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS='UNKNOWN',   &
                ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, POSITION='APPEND',  &
                IOSTAT=IER)
          ELSE

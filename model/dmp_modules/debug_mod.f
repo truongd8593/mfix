@@ -30,7 +30,7 @@
         write(filename,'("debug",f6.3)') dble(myPE)/dble(1000)
         print*,'filename ', filename
 
-        open(unit_log, file=filename, access='sequential',form='formatted')
+        open(unit_log, file=filename, access='sequential',form='formatted',convert='big_endian')
         rewind(unit_log)
 
         return

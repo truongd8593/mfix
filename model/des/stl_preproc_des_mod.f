@@ -364,7 +364,7 @@
             TRIM(RUN_NAME), '_I', I, '_J', J, '_K', K
          endif
 
-         open(stl_unit, file = fname, form='formatted')
+         open(stl_unit, file = fname, form='formatted',convert='big_endian')
          write(stl_unit,*)'solid vcg'
 
          DO COUNT  = 1, CURRENT_COUNT
@@ -437,7 +437,7 @@
          WRITE(FN,'("FACETS_DG_GRID_",I5.5,".DAT")') myPE
       ENDIF
 
-      OPEN(1001, file = TRIM(FN), form ='formatted')
+      OPEN(1001, file = TRIM(FN), form ='formatted',CONVERT='BIG_ENDIAN')
 
       DO K=DG_KSTART2, DG_KEND2
       DO J=DG_JSTART2, DG_JEND2
@@ -493,7 +493,7 @@
  2000 FORMAT('Saving STL geometry on DES grid: FACETS_TO_DG.stl',      &
          11x,'Facet Count:',I10,/2x,'DES Grid Facet Count:',I10)
 
-      OPEN(UNIT=444, FILE='FACETS_TO_DG.stl')
+      OPEN(UNIT=444, FILE='FACETS_TO_DG.stl',CONVERT='BIG_ENDIAN')
       write(444,*)'solid vcg'
 
       DO N = 1, N_FACETS_DES
@@ -560,11 +560,11 @@
       ENDIF
 
       IF(COUNT_FACET_TYPE_PO.GE.1) THEN
-         OPEN(UNIT=443, FILE=TRIM(FN_PO))
+         OPEN(UNIT=443, FILE=TRIM(FN_PO),CONVERT='BIG_ENDIAN')
          write(443,*)'solid vcg'
       endif
 
-      OPEN(UNIT=444, FILE=trim(FN))
+      OPEN(UNIT=444, FILE=trim(FN),CONVERT='BIG_ENDIAN')
       write(444,*)'solid vcg'
 
       DO K=DG_KSTART2, DG_KEND2
@@ -585,10 +585,10 @@
             WRITE(FN_PO,'("GEOM_DG_PO",3("_",I3.3),"_",I8.8,".stl")') &
                I,J,K,CELL_ID
 
-            OPEN(UNIT=446, FILE=FN)
+            OPEN(UNIT=446, FILE=FN,CONVERT='BIG_ENDIAN')
             WRITE(446,*)'solid vcg'
 
-            OPEN(UNIT=445, FILE=FN_PO)
+            OPEN(UNIT=445, FILE=FN_PO,CONVERT='BIG_ENDIAN')
             WRITE(445,*)'solid vcg'
          ENDIF
 
@@ -924,8 +924,8 @@
       WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
       WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
 
-      open(vtp_unit, file = vtp_fname, form='formatted')
-      open(stl_unit, file = stl_fname, form='formatted')
+      open(vtp_unit, file = vtp_fname, form='formatted',convert='big_endian')
+      open(stl_unit, file = stl_fname, form='formatted',convert='big_endian')
 
       write(vtp_unit,"(a)") '<?xml version="1.0"?>'
       write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'

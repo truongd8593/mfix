@@ -304,16 +304,16 @@
       IF(myPE == PE_IO) THEN
          inquire(file=trim(AmFName),exist=lexist)
          IF(lexist) THEN
-            open(AmUnit,file=trim(AmFName), status='replace')
+            open(AmUnit,file=trim(AmFName), status='replace',convert='big_endian')
          ELSE
-            open(AmUnit,file=trim(AmFName), status='new')
+            open(AmUnit,file=trim(AmFName), status='new',convert='big_endian')
          ENDIF
 
          inquire(file=trim(BmFName),exist=lexist)
          IF(lexist) THEN
-            open(BmUnit,file=trim(BmFName), status='replace')
+            open(BmUnit,file=trim(BmFName), status='replace',convert='big_endian')
          ELSE
-            open(BmUnit,file=trim(BmFName), status='new')
+            open(BmUnit,file=trim(BmFName), status='new',convert='big_endian')
          ENDIF
       ENDIF
 
@@ -686,14 +686,14 @@
          IF(lExist) THEN
             IF(fApnd) THEN
                open(dbgUnit,file=trim(VarFName),                       &
-                  status='old', position='append', iostat=iErr)
+                  status='old', position='append', iostat=iErr,convert='big_endian')
             ELSE
                open(dbgUnit,file=trim(VarFName),                       &
-                  status='replace', iostat=iErr)
+                  status='replace', iostat=iErr,convert='big_endian')
             ENDIF
          ELSE
             open(dbgUnit,file=trim(VarFName),                          &
-               status='new', iostat=iErr)
+               status='new', iostat=iErr,convert='big_endian')
          ENDIF
       ENDIF
       CALL BCAST(iErr, PE_IO)

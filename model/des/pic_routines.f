@@ -1259,7 +1259,7 @@
       character(LEN=100) :: filename
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
+      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
       IF(DIMN.eq.2) then
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
               ' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
@@ -1298,7 +1298,7 @@
       return
 
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') TRIM(RUN_NAME)//'_PS_FORCE_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
+      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
 
       IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
            ' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
