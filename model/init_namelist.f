@@ -696,6 +696,7 @@
 !  <valid value="7" note="van Leer."/>
 !  <valid value="6" note="MUSCL."/>
 !  <valid value="8" note="minmod."/>
+!  <valid value="9" note="Central (often unstable; useful for testing)."/>
       DISCRETIZE(:) = 0
 !</keyword>
 
