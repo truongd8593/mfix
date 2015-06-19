@@ -15,8 +15,8 @@ plt.figure(1, figsize=(7.0,3.0))
 
 plt.subplot(1,2,1)
 
-plot1 = plt.plot(data[:,0], data[:,3], 'ro')
-plot2 = plt.plot(data[:,0], data[:,4], '-b+', linewidth=2)
+plot1 = plt.plot(data[:,0], data[:,3], '-', c='b', lw=2)
+plot2 = plt.plot(data[:,0], data[:,4], 'o', mfc='none', mec='r', mew='1')
 #plt.xlabel('x (m)',labelpad=10)
 plt.xlabel('x (m)')
 plt.ylabel('Temperature (K)')
