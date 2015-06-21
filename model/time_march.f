@@ -84,9 +84,9 @@
 
 ! C Function
       INTERFACE
-         SUBROUTINE CHECK_SOCKET() BIND ( C )
+         SUBROUTINE CHECK_SOCKETS() BIND ( C )
            use, INTRINSIC :: iso_c_binding
-         END SUBROUTINE CHECK_SOCKET
+         END SUBROUTINE CHECK_SOCKETS
       END INTERFACE
 
 !-----------------------------------------------
@@ -185,7 +185,7 @@
 #ifdef socket
       IF(INTERACTIVE_MODE) THEN
          write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
-         CALL CHECK_SOCKET()
+         CALL CHECK_SOCKETS()
          CALL INTERACT(EXIT_SIGNAL, ABORT_SIGNAL)
          IF(ABORT_SIGNAL) RETURN
       ENDIF

@@ -380,9 +380,9 @@
 
 
       INTERFACE
-         SUBROUTINE CHECK_SOCKET() BIND ( C )
+         SUBROUTINE CHECK_SOCKETS() BIND ( C )
            use, INTRINSIC :: iso_c_binding
-         END SUBROUTINE CHECK_SOCKET
+         END SUBROUTINE CHECK_SOCKETS
       END INTERFACE
 
 
@@ -501,7 +501,7 @@
 
 
 #ifdef socket
-      CALL CHECK_SOCKET()
+      CALL CHECK_SOCKETS()
 #endif
 
 

@@ -121,10 +121,14 @@
 
 ! C Function
       INTERFACE
-         SUBROUTINE INIT_SOCKET(port) BIND ( C )
+         SUBROUTINE INIT_CMD_SOCKET(port) BIND ( C )
            use, INTRINSIC :: iso_c_binding
            CHARACTER(KIND=C_CHAR), INTENT(IN) :: port(*)
-         END SUBROUTINE INIT_SOCKET
+         END SUBROUTINE INIT_CMD_SOCKET
+         SUBROUTINE INIT_LOG_SOCKET(port) BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+           CHARACTER(KIND=C_CHAR), INTENT(IN) :: port(*)
+         END SUBROUTINE INIT_LOG_SOCKET
       END INTERFACE
 
 !-----------------------------------------------
@@ -153,7 +157,8 @@
 
       ! create libmsockets server
 #ifdef socket
-      CALL INIT_SOCKET("8888"//CHAR(0))
+      CALL INIT_CMD_SOCKET("7777"//CHAR(0))
+      CALL INIT_LOG_SOCKET("8888"//CHAR(0))
 #endif
 
 ! specify the number of processors to be used
