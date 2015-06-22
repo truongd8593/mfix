@@ -3040,6 +3040,50 @@
 !</keyword>
 
 !<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROg,
+!    in model/usr_physical_prop.f  for calculating the gas phase
+!    density, RO_g.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_ROg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPg,
+!    in model/usr_physical_prop.f  for calculating the gas phase
+!    constant pressure specific heat, C_PG.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_CPg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROs,
+!    in model/usr_physical_prop.f  for calculating the solids phase
+!    density, RO_s.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_ROs = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPs,
+!    in model/usr_physical_prop.f  for calculating the solids phase
+!    constant pressure specific heat, C_PS.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_CPs = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
 !  <description>User defined constants.</description>
       C(:DIMENSION_C) = UNDEFINED
 !</keyword>

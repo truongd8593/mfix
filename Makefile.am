@@ -649,6 +649,7 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
+	model/usr_physical_prop.f \
 	model/usr_rates.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \

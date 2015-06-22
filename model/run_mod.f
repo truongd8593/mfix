@@ -115,6 +115,9 @@
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
 
+! If .TRUE. call user-defined physical properties routines
+      LOGICAL :: USR_ROg, USR_ROs, USR_CPg, USR_CPs
+
 ! If .TRUE. solve population balance  equations
       LOGICAL :: Call_DQMOM
 
