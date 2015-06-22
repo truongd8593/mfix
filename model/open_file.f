@@ -98,7 +98,7 @@
 
 ! Open direct access files.
       IF (OPEN_ACCESS == 'DIRECT') THEN
-         OPEN (UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=IUNIT, FILE=trim(FULL_NAME), STATUS=OPEN_STAT,     &
             RECL=IRECL, ACCESS=OPEN_ACCESS, FORM=OPEN_FORM, IOSTAT=IER)
       ELSE
 ! No matter the status passed to the routine, the file is created as
