@@ -18,6 +18,7 @@
              SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, &
              GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
              YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
+             USR_ROG, USR_ROS, USR_CPG, USR_CPS, &
 
 ! see run_mod for details
              CHK_BATCHQ_END, BATCH_WALLCLOCK, TERM_BUFFER,&

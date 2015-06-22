@@ -146,9 +146,12 @@
       use toleranc, only: OMW_MAX
 ! Run time flag for generating negative gas density log files
       use run, only: REPORT_NEG_DENSITY
-      use functions
 ! Equation of State - GAS
       use eos, only: EOSG
+! Flag for user defined function
+      use run, only: USR_ROg
+
+      use functions
 
       implicit none
 
@@ -156,12 +159,17 @@
 !-----------------------------------------------------------------------
 ! Average molecular weight
       DOUBLE PRECISION :: MW
-
 ! Loop indicies
       INTEGER :: IJK   ! Computational cell
-
 ! Flag to write log header
-      LOGICAL wHeader
+      LOGICAL :: wHeader
+!......................................................................!
+
+! User-defined function
+      IF(USR_ROg) THEN
+         CALL USR_PHYSICAL_PROP_ROg
+         RETURN
+      ENDIF
 
 ! Initialize:
       wHeader = .TRUE.
@@ -224,23 +232,32 @@
       use run, only: REPORT_NEG_DENSITY
 ! Minimum solids volume fraction
       use toleranc, only: DIL_EP_s
-      use functions
 ! Equation of State - Solid
       use eos, only: EOSS
+! Flag for user defined function
+      use run, only: USR_ROs
+
+      use functions
 
       implicit none
 
 ! Local Variables:
 !-----------------------------------------------------------------------
 ! Loop indicies
-      INTEGER :: IJK   ! Computational cell
-      INTEGER :: M     ! Solids phase
+      INTEGER :: IJK, M
 ! Index of inert species
       INTEGER :: IIS
 ! Flag to write log header
-      LOGICAL wHeader
-
+      LOGICAL :: wHeader
+! Minimum bulk density
       DOUBLE PRECISION :: minROPs
+!......................................................................!
+
+! User defined function
+      IF(USR_ROs) THEN
+         CALL USR_PHYSICAL_PROP_ROs
+         RETURN
+      ENDIF
 
       M_LP: DO M=1, MMAX
          IF(.NOT.SOLVE_ROs(M)) cycle M_LP
@@ -300,9 +317,12 @@
       use fldvar, only: T_g
 ! Units: CGS/SI
       use run, only: UNITS
-      use functions
-
+! Function to calculate Cp over gas constant R
       use read_thermochemical, only: calc_CpoR
+! Flag for user defined function
+      use run, only: USR_CPg
+
+      use functions
 
       implicit none
 
@@ -314,8 +334,14 @@
       INTEGER :: lCP_Err
       INTEGER :: gCP_Err
 ! Loop indicies
-      INTEGER :: IJK   ! Computational cell
-      INTEGER :: N     ! Species index
+      INTEGER :: IJK, N
+!......................................................................!
+
+! User defined function
+      IF(USR_CPg) THEN
+         CALL USR_PHYSICAL_PROP_CPg
+         RETURN
+      ENDIF
 
 !-----------------------------------------------------------------------
 
@@ -365,23 +391,36 @@
       use constant, only: RGAS => GAS_CONST_cal
 ! Units: CGS/SI
       use run, only: UNITS
+! Max value for molecular weight inverse
       use toleranc, only: OMW_MAX
+! Solids temperature
       use fldvar, only: T_s
+! Solids species mass fractions
       use fldvar, only: X_s
-      use functions
+! Function to calculate Cp over gas constant R
       use read_thermochemical, only: calc_CpoR
+! Flag for user defined function
+      use run, only: USR_CPs
+
+      use functions
 
       implicit none
 
+! Local variables:
+!---------------------------------------------------------------------//
+! Local value for Cp
       DOUBLE PRECISION :: lCp
-
 ! Loop indicies
-      INTEGER :: IJK   ! Computational cell
-      INTEGER :: M     ! Solids phase
-      INTEGER :: N     ! Species index
-
+      INTEGER :: IJK, M, N
 ! Local error flag indicating that the Cp is out of range.
       INTEGER :: lCP_Err
+!......................................................................!
+
+! User defined function
+      IF(USR_CPs) THEN
+         CALL USR_PHYSICAL_PROP_CPs
+         RETURN
+      ENDIF
 
 ! Ensure that the database was read. This *should* have been caught by
 ! check_data_05 but this call remains to prevent an accident.
