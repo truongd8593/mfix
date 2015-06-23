@@ -354,6 +354,7 @@
       use output, only: SPX_TIME, SPX_DT
       use output, only: USR_TIME, USR_DT
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
+      use output, only: RES_BACKUPS
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use param1, only: UNDEFINED
@@ -372,6 +373,9 @@
       use vtk, only: DIMENSION_VTK
       use vtk, only: VTK_TIME, VTK_DT
       use vtk, only: WRITE_VTK_FILES
+
+      use compar, only: myPE, PE_IO
+      use param1, only:  Undefined_i
 
       IMPLICIT NONE
 
@@ -448,6 +452,11 @@
             ENDIF
          ENDDO
       ENDIF
+
+! Create a subdir for RES backup files.
+      IF(RES_BACKUPS /= UNDEFINED_I .AND. myPE==PE_IO)                 &
+         CALL SYSTEM('mkdir BACKUP_RES')
+
 
       WALL_START = WALL_TIME()
       TIME_START = TIME
@@ -543,8 +552,10 @@
       INTEGER, INTENT(IN), OPTIONAL :: pINDX
 
 ! Set the file format for backup copies
-      IF(PRESENT(pINDX)) THEN
-         pFNAME=''
+      pFNAME=''
+      IF(.NOT.PRESENT(pINDX)) THEN
+         WRITE(pFNAME,1000) trim(RUN_NAME),pEXT
+      ELSE
          IF(RES_BACKUPS < 10) THEN
             WRITE(pFNAME,1001) trim(RUN_NAME), pEXT, pINDX
          ELSEIF(RES_BACKUPS < 100) THEN
@@ -558,18 +569,15 @@
          ELSE
             WRITE(pFNAME,1006) trim(RUN_NAME), pEXT, pINDX
          ENDIF
-      ELSE
-         pFNAME=''
-         WRITE(pFNAME,1000)trim(RUN_NAME),pEXT
       ENDIF
 
  1000 FORMAT(2A)
- 1001 FORMAT(2A,I1.1)
- 1002 FORMAT(2A,I2.2)
- 1003 FORMAT(2A,I3.3)
- 1004 FORMAT(2A,I4.4)
- 1005 FORMAT(2A,I5.5)
- 1006 FORMAT(2A,I6.6)
+ 1001 FORMAT('BACKUP_RES/',2A,I1.1)
+ 1002 FORMAT('BACKUP_RES/',2A,I2.2)
+ 1003 FORMAT('BACKUP_RES/',2A,I3.3)
+ 1004 FORMAT('BACKUP_RES/',2A,I4.4)
+ 1005 FORMAT('BACKUP_RES/',2A,I5.5)
+ 1006 FORMAT('BACKUP_RES/',2A,I6.6)
 
       RETURN
       END SUBROUTINE SET_FNAME
