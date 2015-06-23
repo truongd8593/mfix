@@ -4,6 +4,8 @@
 AC_PREREQ([2.69])
 AC_INIT(mfix, 2015.1, develop@mfix.netl.doe.gov)
 
+m4_include([build-aux/ax_check_compile_flag.m4])
+
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([       MFIX: Multiphase Flow with Interphase eXchanges])
@@ -24,6 +26,8 @@ AC_PROG_RANLIB
 AC_PROG_CC
 AC_PROG_SED
 AC_OPENMP()
+AX_CHECK_COMPILE_FLAG([-assume byterecl], [
+                        FCFLAGS="$FCFLAGS -assume byterecl"])
 
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability])
