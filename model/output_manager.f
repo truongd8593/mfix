@@ -19,6 +19,7 @@
       use vtk, only:    VTK_TIME, VTK_DT
 
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
+      use output, only: RES_BACKUPS
 
       use output, only: DISK, DISK_TOT
 
@@ -77,7 +78,7 @@
       WALL_START = WALL_TIME()
 
 ! Create a backup copy of the RES file.
-      IF(CHECK_TIME(RES_BACKUP_TIME)) THEN
+      IF(TIME+0.1d0*DT>=RES_BACKUP_TIME) THEN
          RES_BACKUP_TIME = NEXT_TIME(RES_BACKUP_DT)
          CALL BACKUP_RES
       ENDIF
