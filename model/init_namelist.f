@@ -2870,9 +2870,25 @@
 !                          Output Control                             !
 !#####################################################################!
 
-!<keyword category="Output Control" required="false">
-!  <description>Interval at which restart (.res) file is updated.</description>
+!<keyword category="Output Control" required="true">
+!  <description>
+!    Interval at which restart (.res) file is updated.
+!  </description>
       RES_DT = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Interval at which a backup copy of the restart file is created.
+!  </description>
+      RES_BACKUP_DT = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    The number of backup restart files to retain.
+!  </description>
+      RES_BACKUPS = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required="false">

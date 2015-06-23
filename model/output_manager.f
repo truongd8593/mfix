@@ -18,6 +18,8 @@
       use output, only: USR_TIME, USR_DT
       use vtk, only:    VTK_TIME, VTK_DT
 
+      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
+
       use output, only: DISK, DISK_TOT
 
       use param1, only: N_SPX
@@ -73,6 +75,12 @@
 
 ! Get the current time before any IO operations begin
       WALL_START = WALL_TIME()
+
+! Create a backup copy of the RES file.
+      IF(CHECK_TIME(RES_BACKUP_TIME)) THEN
+         RES_BACKUP_TIME = NEXT_TIME(RES_BACKUP_DT)
+         CALL BACKUP_RES
+      ENDIF
 
 ! Write restart file, if needed
       IF(CHECK_TIME(RES_TIME) .OR. BATCHQ_END) THEN
@@ -327,10 +335,12 @@
       END SUBROUTINE FLUSH_NOTIFY_USER
 
       END SUBROUTINE OUTPUT_MANAGER
+
+
 !----------------------------------------------------------------------!
-!                                                                      !
-!                                                                      !
-!                                                                      !
+! Subroutine: INIT_OUTPUT_VARS                                         !
+! Purpose: Initialize variables used for controling ouputs of the      !
+! various files.                                                       !
 !----------------------------------------------------------------------!
       SUBROUTINE INIT_OUTPUT_VARS
 
@@ -342,6 +352,7 @@
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
       use output, only: USR_TIME, USR_DT
+      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
       use param, only: DIMENSION_USR
       use param1, only: N_SPX
       use param1, only: UNDEFINED
@@ -391,6 +402,7 @@
       DISK(11) = merge(2.0*DISK_ONE, ZERO, K_EPSILON)  ! K-Epsilon
 
 
+! Initizle RES and SPX_TIME
       IF (RUN_TYPE == 'NEW') THEN
          RES_TIME = TIME
          SPX_TIME(:N_SPX) = TIME
@@ -403,6 +415,12 @@
          ENDIF
       ENDIF
 
+! Initizle RES_BACKUP_TIME
+      RES_BACKUP_TIME = UNDEFINED
+      IF(RES_BACKUP_DT /= UNDEFINED) RES_BACKUP_TIME =                 &
+         RES_BACKUP_DT * (INT((TIME+0.1d0*DT)/RES_BACKUP_DT)+1)
+
+! Initialize USR_TIME
       DO LC = 1, DIMENSION_USR
          USR_TIME(LC) = UNDEFINED
          IF (USR_DT(LC) /= UNDEFINED) THEN
@@ -436,3 +454,124 @@
       RETURN
       END SUBROUTINE INIT_OUTPUT_VARS
 
+
+
+!----------------------------------------------------------------------!
+! Subroutine: BACKUP_RES                                               !
+! Purpose: Shift existing RES file backup files by one index, then     !
+! create a copy of the current RES file.                               !
+!----------------------------------------------------------------------!
+      SUBROUTINE BACKUP_RES
+
+      use compar, only: myPE, PE_IO
+      use output, only: RES_BACKUPS
+      use discretelement, only: DISCRETE_ELEMENT
+
+      IMPLICIT NONE
+
+      CHARACTER(len=256) :: FNAME0, FNAME1
+
+      INTEGER :: LC
+
+      IF(myPE /= PE_IO) RETURN
+
+! Shift all the existing backups by one.
+      DO LC=RES_BACKUPS,2,-1
+         CALL SET_FNAME(FNAME0,'.RES', LC-1)
+         CALL SET_FNAME(FNAME1,'.RES', LC)
+         CALL SHIFT_RES(FNAME0, FNAME1, 'mv')
+
+         IF(DISCRETE_ELEMENT) THEN
+            CALL SET_FNAME(FNAME0,'_DES.RES', LC-1)
+            CALL SET_FNAME(FNAME1,'_DES.RES', LC)
+            CALL SHIFT_RES(FNAME0, FNAME1, 'mv')
+         ENDIF
+      ENDDO
+
+! Copy RES to RES1
+      CALL SET_FNAME(FNAME0, '.RES')
+      CALL SET_FNAME(FNAME1, '.RES' ,1)
+      CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
+
+      IF(DISCRETE_ELEMENT) THEN
+         CALL SET_FNAME(FNAME0, '_DES.RES')
+         CALL SET_FNAME(FNAME1, '_DES.RES' ,1)
+         CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
+      ENDIF
+
+
+      RETURN
+
+      contains
+
+!----------------------------------------------------------------------!
+! Subroutine: SHIFT_RES                                                !
+! Purpose: Shift RES(LC-1) to RES(LC)                                  !
+!----------------------------------------------------------------------!
+      SUBROUTINE SHIFT_RES(pFN0, pFN1, ACT)
+
+      implicit none
+
+      CHARACTER(LEN=*), INTENT(IN) :: pFN0, pFN1, ACT
+      CHARACTER(len=1024) :: CMD
+      LOGICAL :: EXISTS
+
+      INQUIRE(FILE=trim(pFN0),EXIST=EXISTS)
+      IF(EXISTS) THEN
+         CMD=''; WRITE(CMD,1000)trim(ACT), trim(pFN0),trim(pFN1)
+         CALL SYSTEM(trim(CMD))
+      ENDIF
+
+ 1000 FORMAT(A,1x,A,1X,A)
+
+      RETURN
+      END SUBROUTINE SHIFT_RES
+
+!----------------------------------------------------------------------!
+! Subroutine: SET_FNAME                                                !
+! Purpose: Set the backup RES file name based on pINDX.                !
+!----------------------------------------------------------------------!
+      SUBROUTINE SET_FNAME(pFNAME, pEXT, pINDX)
+
+      use run, only: RUN_NAME
+      use output, only: RES_BACKUP_FF
+
+      implicit none
+
+      CHARACTER(LEN=*), INTENT(OUT) :: pFNAME
+      CHARACTER(LEN=*), INTENT(IN) ::  pEXT
+      INTEGER, INTENT(IN), OPTIONAL :: pINDX
+
+! Set the file format for backup copies
+      IF(PRESENT(pINDX)) THEN
+         pFNAME=''
+         IF(RES_BACKUPS < 10) THEN
+            WRITE(pFNAME,1001) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 100) THEN
+            WRITE(pFNAME,1002) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 1000) THEN
+            WRITE(pFNAME,1003) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 10000) THEN
+            WRITE(pFNAME,1004) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 10000) THEN
+            WRITE(pFNAME,1005) trim(RUN_NAME), pEXT, pINDX
+         ELSE
+            WRITE(pFNAME,1006) trim(RUN_NAME), pEXT, pINDX
+         ENDIF
+      ELSE
+         pFNAME=''
+         WRITE(pFNAME,1000)trim(RUN_NAME),pEXT
+      ENDIF
+
+ 1000 FORMAT(2A)
+ 1001 FORMAT(2A,I1.1)
+ 1002 FORMAT(2A,I2.2)
+ 1003 FORMAT(2A,I3.3)
+ 1004 FORMAT(2A,I4.4)
+ 1005 FORMAT(2A,I5.5)
+ 1006 FORMAT(2A,I6.6)
+
+      RETURN
+      END SUBROUTINE SET_FNAME
+
+      END SUBROUTINE BACKUP_RES

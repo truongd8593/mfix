@@ -27,7 +27,7 @@
 
 ! 1.2 Output control section
 ! ---------------------------------------------------------------->>>
-             RES_DT, SPX_DT , OUT_DT, &
+             RES_DT, SPX_DT , OUT_DT, RES_BACKUP_DT, RES_BACKUPS, &
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, &

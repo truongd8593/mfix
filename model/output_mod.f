@@ -13,6 +13,10 @@
 
 ! Interval at which restart (.RES) file data is updated.
       DOUBLE PRECISION :: RES_DT
+! Interval to create a backup copy of the RES file.
+      DOUBLE PRECISION :: RES_BACKUP_DT
+! Number of RES file copies to retain.
+      INTEGER :: RES_BACKUPS
 ! Interval at which REAL restart (.SPx) files data are updated.
       DOUBLE PRECISION :: SPX_DT(N_SPX)
 ! Interval at which standard output (.OUT) file data is updated.
@@ -34,6 +38,8 @@
       DOUBLE PRECISION :: USR_TIME(DIMENSION_USR)
 ! Time at which restart file is to be written
       DOUBLE PRECISION :: RES_TIME
+! Time at which restart backup file is to be written
+      DOUBLE PRECISION :: RES_BACKUP_TIME
 ! Time at which REAL restart file is to be written
       DOUBLE PRECISION :: SPX_TIME(N_SPX)
 ! Time at which standard output is to be written
