@@ -714,6 +714,8 @@
       use physprop, only: X_s0
 ! Index of inert solids species
       use physprop, only: INERT_SPECIES
+! Inert species mass fraction in dilute region
+      use physprop, only: DIL_INERT_X_VSD
 ! Number of solids phase species.
       use physprop, only: NMAX
 
@@ -802,6 +804,14 @@
                   trim(iVal(INERT_SPECIES(M)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
+            IF(DIL_INERT_X_VSD(M)<=ZERO) THEN
+               WRITE(ERR_MSG,1103) M, DIL_INERT_X_VSD(M)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF(DIL_INERT_X_VSD(M)>ONE) THEN
+               WRITE(ERR_MSG,1104) M, DIL_INERT_X_VSD(M)
+               print*,'M,DIL_INERT_X_VSD(M)=',M,DIL_INERT_X_VSD(M)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
             DO N=1, NMAX(M)
 ! Check RO_Xs0
                IF(RO_Xs0(M,N) == UNDEFINED) THEN
@@ -844,6 +854,16 @@
  1102 FORMAT('Error 1102: Invalid baseline inert species mass',/       &
          'fraction. The inert species mass fraction must be greater ',  &
          'than zero.',/' Phase ',I2,' Inert Species: ',I3,' X_s0 = 0.0')
+
+ 1103 FORMAT('Error 1103: Invalid dilute region inert species mass',/   &
+         'fraction. The inert species mass fraction must be greater ',  &
+         'than zero.',/' Phase ',I2,/ &
+         ' Please check the value of DIL_INERT_X_VSD:',G14.4)
+
+ 1104 FORMAT('Error 1104: Invalid dilute region inert species mass',/   &
+         'fraction. The inert species mass fraction must be less ',  &
+         'than or equal to one.',/' Phase ',I2,/ &
+         ' Please check the value of DIL_INERT_X_VSD:',G14.4)
 
 ! All of the information for variable solids density has been verified
 ! as of this point. Calculate and store the baseline density.
