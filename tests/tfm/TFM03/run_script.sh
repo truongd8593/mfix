@@ -33,6 +33,19 @@ mv u_profile.dat u_profile_Re400_S.dat
 mv v_profile.dat v_profile_Re400_S.dat
 rm {TFM03.*,out.log}
 
+# Re=1000 case on a fine mesh.
+# Not for regular testing. Takes a long time to converge.
+# Norm_G is NOT set to 0 for this case.
+#mpirun -np 64 mfix.exe \
+#  mu_g0=0.001 \
+#  leq_method(1)=3 \
+#  ic_u_g(1)=0.001 \
+#  imax=512 jmax=512 \
+#  nodesi=8 nodesj=8 nodesk=1 #> out.log
+#mv u_profile.dat u_profile_Re1000_S.dat
+#mv v_profile.dat v_profile_Re1000_S.dat
+#rm {TFM03.*,out.log}
+
 #rm $CASE_DIR/mfix.exe
 
 echo "******** Done."

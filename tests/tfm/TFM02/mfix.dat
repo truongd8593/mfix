@@ -107,7 +107,7 @@
 ! Zero heat flux on Top and Bottom walls
 !---------------------------------------------------------------------//
 
-! Bottom wall
+! South wall
   BC_X_w(3)   = 0.0 	
   BC_X_e(3)   = 0.2
   BC_Y_s(3)   = 0.0	
@@ -118,7 +118,7 @@
   BC_HW_T_g(3)= 0.0
   BC_C_T_g(3) = 0.0
 
-! Top wall
+! North wall
   BC_X_w(4)   = 0.0 	
   BC_X_e(4)   = 0.2
   BC_Y_s(4)   = 0.5	

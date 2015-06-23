@@ -102,7 +102,7 @@
 ! North: Lid with a constant velocity of 1.0 m/s along +x
 ! 	- Set as PSW (partial-slip wall)
 ! 	- PSW is implemented as: dv/dn + hw(v-vw) = 0
-!       - So, hw = 1.0, and vw = 1.0  
+!       - Here, vw = 1.0 and hw=unsepcified (i.e., no-slip moving wall)
 !---------------------------------------------------------------------//
 
   BC_X_w(4)   = 0.0
