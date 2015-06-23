@@ -59,7 +59,6 @@
       INTEGER:: npic, pos
 !......................................................................!
 
-
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
@@ -75,7 +74,7 @@
          I = PIJK(L,1)
          IF(I <= ISTART3 .OR. I >= IEND3) THEN
             CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                   &
-               DIMENSION_I, IMIN2, IMAX2)
+               DIMENSION_I, IMIN2, IMAX2, L)
          ELSE
             IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                     &
                (DES_POS_NEW(1,L) <  XE(I))) THEN
@@ -88,15 +87,14 @@
                I = I-1
             ELSE
                CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                &
-                  DIMENSION_I, IMIN2, IMAX2)
+                  DIMENSION_I, IMIN2, IMAX2, L)
             ENDIF
          ENDIF
-
 
          J = PIJK(L,2)
          IF(J <= JSTART3 .OR. J >= JEND3) THEN
             CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                   &
-               DIMENSION_J, JMIN2, JMAX2)
+               DIMENSION_J, JMIN2, JMAX2, L)
          ELSE
             IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                     &
                (DES_POS_NEW(2,L) < YN(J))) THEN
@@ -109,7 +107,7 @@
                J = J-1
             ELSE
                CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                &
-                  DIMENSION_J, JMIN2, JMAX2)
+                  DIMENSION_J, JMIN2, JMAX2, L)
             ENDIF
          ENDIF
 
@@ -120,7 +118,7 @@
             K = PIJK(L,3)
             IF(K <= KSTART3 .OR. K >= KEND3) THEN
                CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                &
-                  DIMENSION_K, KMIN2, KMAX2)
+                  DIMENSION_K, KMIN2, KMAX2, L)
             ELSE
                IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                  &
                   (DES_POS_NEW(3,L) < ZT(K))) THEN
@@ -133,10 +131,13 @@
                   K = K-1
                ELSE
                   CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,             &
-                     DIMENSION_K, KMIN2, KMAX2)
+                     DIMENSION_K, KMIN2, KMAX2, L)
                ENDIF
             ENDIF
          ENDIF
+
+! Skip particles that were removed by pic_search.
+         IF(.NOT.PEA(L,1)) CYCLE
 
 ! Calculate the fluid cell index.
          IJK = FUNIJK(I,J,K)
@@ -269,11 +270,11 @@
 ! the Eulerian fluid grid.
 
          CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                      &
-            DIMENSION_I, IMIN2, IMAX2)
+            DIMENSION_I, IMIN2, IMAX2, L)
          PIJK(L,1) = I
 
          CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                      &
-            DIMENSION_J, JMIN2, JMAX2)
+            DIMENSION_J, JMIN2, JMAX2, L)
          PIJK(L,2) = J
 
          IF(NO_K) THEN
@@ -281,7 +282,7 @@
             PIJK(L,3) = 1
          ELSE
             CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                   &
-               DIMENSION_K, KMIN2, KMAX2)
+               DIMENSION_K, KMIN2, KMAX2, L)
             PIJK(L,3) = K
          ENDIF
 
@@ -313,7 +314,10 @@
 !  contains the particle centroid.                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE PIC_SEARCH(IDX, lPOS, ENT_POS, lDIMN, lSTART, lEND)
+      SUBROUTINE PIC_SEARCH(IDX, lPOS, ENT_POS, lDIMN, lSTART, lEND, LL)
+
+! Flags that classify particles
+      use discretelement, only: PEA
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -329,10 +333,16 @@
       DOUBLE PRECISION, INTENT(IN) :: ENT_POS(0:lDIMN)
 ! Search bounds (by rank)
       INTEGER, INTENT(IN) :: lSTART, lEND
+! Index of particle
+      INTEGER, INTENT(IN) :: LL
 
       DO IDX = lSTART,lEND
-         IF(lPOS >= ENT_POS(IDX-1) .AND. lPOS < ENT_POS(IDX)) EXIT
+         IF(lPOS >= ENT_POS(IDX-1) .AND. lPOS < ENT_POS(IDX)) RETURN
       ENDDO
+
+! Remove particles that are outside the search region. This should only
+! occur when the fluid and DES grids are the same size.
+      IF(PEA(LL,4)) PEA(LL,:) = .FALSE.
 
       RETURN
       END SUBROUTINE PIC_SEARCH
