@@ -534,7 +534,6 @@
       SUBROUTINE SET_FNAME(pFNAME, pEXT, pINDX)
 
       use run, only: RUN_NAME
-      use output, only: RES_BACKUP_FF
 
       implicit none
 
