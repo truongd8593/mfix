@@ -239,6 +239,7 @@
 ../model/ur_facs_mod.f
 ../model/usr_drag.f
 ../model/usr_mod.f
+../model/usr_physical_prop.f
 ../model/usr_rates.f
 ../model/utilities_mod.f
 ../model/visc_g_mod.f
