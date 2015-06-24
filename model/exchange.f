@@ -36,7 +36,7 @@
       CALL CALC_DRAG (DRAGCOEF, IER)
 
 ! Calculate interphase heat transfer coefficients
-      CALL CALC_GAMA (HEAT_TR, IER)
+      CALL CALC_GAMA (HEAT_TR)
 
 
       return

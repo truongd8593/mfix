@@ -819,7 +819,6 @@
       LOGICAL :: dFlag
       INTEGER :: iErr
 
-      EXTERNAL JKI_MAP, IKJ_MAP, KIJ_MAP
 !--------------------------------------------------------------------//
 
       dFlag = (DMP_LOG .AND. setDBG)
@@ -961,6 +960,51 @@
           2(/3x,A1,': ',I8,' x ',I8))
 
  9999 FORMAT(/' Fatal Error --> Invoking MFIX_EXIT',/1x,70('*'),2/)
+
+
+    CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Author: J. Musser                                  Date: 09-Oct-13  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE JKI_MAP(in1, in2, in3, lI, lJ, lK)
+      implicit none
+
+! Dummy arguments
+!--------------------------------------------------------------------//
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in1; lJ=in3; lK=in2; return
+      return
+      END SUBROUTINE JKI_MAP
+
+
+      SUBROUTINE IKJ_MAP(in1, in2, in3, lI, lJ, lK)
+      implicit none
+! Dummy arguments
+!--------------------------------------------------------------------//
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in3; lJ=in1; lK=in2; return
+      return
+      END SUBROUTINE IKJ_MAP
+
+
+      SUBROUTINE KIJ_MAP(in1, in2, in3, lI, lJ, lK)
+      implicit none
+! Dummy arguments
+!--------------------------------------------------------------------//
+      INTEGER, intent(in) :: in1, in2, in3
+      INTEGER, intent(out) :: lI, lJ, lK
+
+      lI=in2; lJ=in1; lK=in3; return
+      return
+      END SUBROUTINE KIJ_MAP
 
 
       END SUBROUTINE SET_IJK_P_G
@@ -1142,46 +1186,3 @@
       IERR = 0
       RETURN
       END SUBROUTINE IJK_Pg_SEARCH
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Author: J. Musser                                  Date: 09-Oct-13  !
-!  Reviewer:                                          Date:            !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE JKI_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in1; lJ=in3; lK=in2; return
-      return
-      END SUBROUTINE JKI_MAP
-
-
-      SUBROUTINE IKJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in3; lJ=in1; lK=in2; return
-      return
-      END SUBROUTINE IKJ_MAP
-
-
-      SUBROUTINE KIJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in2; lJ=in1; lK=in3; return
-      return
-      END SUBROUTINE KIJ_MAP

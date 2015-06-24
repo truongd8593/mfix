@@ -49,7 +49,7 @@
          ENDIF
       ENDIF
 
-      CALL DIF_U_IS(EPMU_GT, A_M, 0, IER)
+      CALL DIF_U_IS(EPMU_GT, A_M, 0)
 
       RETURN
       END SUBROUTINE CONV_DIF_U_G

@@ -344,7 +344,7 @@
                VTZA = 2.d0*EPGAJ*MUGTA*OX_E(I)*OX_E(I)
             ENDIF
 
-! if jackson, implement jackson form of governing equations (ep_g dot 
+! if jackson, implement jackson form of governing equations (ep_g dot
 ! del tau_g): multiply by void fraction otherwise by 1
             ltau_u_g = epgaJ*tau_u_g(ijk)
 
@@ -370,7 +370,7 @@
 ! modifications for bc
       CALL SOURCE_U_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_U_G

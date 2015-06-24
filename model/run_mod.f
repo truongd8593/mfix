@@ -38,9 +38,6 @@
 ! counter to keep track of how many auto_retart were performed
       INTEGER :: ITER_RESTART
 
-! computer node name/id
-      CHARACTER(LEN=64) :: ID_NODE
-
 ! version.release of software
       CHARACTER(LEN=10) :: ID_VERSION
 
@@ -69,14 +66,6 @@
 ! Use Chi scheme for discretizing certain equation sets
 !  (species mass fractions)
       LOGICAL :: Chi_scheme
-
-! RUN ID info
-      INTEGER :: ID_MONTH
-      INTEGER :: ID_DAY
-      INTEGER :: ID_YEAR
-      INTEGER :: ID_HOUR
-      INTEGER :: ID_MINUTE
-      INTEGER :: ID_SECOND
 
 ! If .TRUE. solve X momentum equations
       LOGICAL :: MOMENTUM_X_EQ(0:DIM_M)

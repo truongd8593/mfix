@@ -14,6 +14,7 @@
       use mpi_utility, only: BCAST
       use time_cpu, only: WALL_START
 
+      use machine, only: WALL_TIME
       use compar, only: PE_IO
 
       use error_manager
@@ -29,8 +30,6 @@
       DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
 ! Time units for formatted output.
       CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
-! External function
-      DOUBLE PRECISION :: WALL_TIME
 
 ! Calculate the current elapsed wall time.
       WALL_STOP = WALL_TIME()

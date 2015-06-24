@@ -53,6 +53,7 @@
       USE scalars
       USE compar
       USE mpi_utility
+      USE machine
       USE discretelement
       USE residual
       USE cutcell
@@ -108,8 +109,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-      DOUBLE PRECISION :: WALL_TIME
-
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------

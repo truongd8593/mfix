@@ -630,8 +630,7 @@
       GUI_MSG(LC) = CHAR(10)
       LC=LC+1
 
-
-      LINE=''; WRITE(LINE,"('From: ',A))") trim(lCALLER)
+      LINE=''; WRITE(LINE,"('From: ',A)") trim(lCALLER)
       LENGTH = len_trim(LINE)
       DO LL=1,min(LENGTH,1022-LC)
          GUI_MSG(LC) = LINE(LL:LL)

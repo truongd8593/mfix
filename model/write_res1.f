@@ -29,20 +29,21 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE geometry
-      USE physprop
-      USE run
-      USE scalars
-      USE rxns
-      USE funits
-      USE output
-      USE energy
       USE cdist
       USE compar           !//
+      USE energy
+      USE fldvar
+      USE funits
+      USE geometry
+      USE machine, only: flush_res
       USE mpi_utility      !//d pnicol : for gather
+      USE output
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
       USE sendrecv         !//d pnicol : for gather
 !//d pnicol  ... not needed    USE tmp_array
       IMPLICIT NONE

@@ -7,6 +7,7 @@
              AUTO_RESTART,&
              ENERGY_EQ, SPECIES_EQ, CALL_USR, &
              MOMENTUM_X_EQ, MOMENTUM_Y_EQ, MOMENTUM_Z_EQ, &
+             JACKSON, ISHII, &
              Call_DQMOM, AGGREGATION_EFF,BREAKAGE_EFF, NScalar, &
              Phase4Scalar, &
              K_Epsilon, SIMONIN, AHMADI, JENKINS, &

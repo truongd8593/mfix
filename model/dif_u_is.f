@@ -40,7 +40,7 @@
 ! Solids phase
       INTEGER, INTENT(IN) :: M
 
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 ! Internal surface
       INTEGER :: L

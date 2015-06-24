@@ -22,24 +22,25 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE toleranc
-      USE fldvar
-      USE rxns
-      USE geometry
-      USE run
       USE bc
-      USE constant
-      USE physprop
-      USE indices
-      USE funits
+      USE check
       USE compar
+      USE constant
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log
+      USE mflux
       USE mpi_utility
       USE output
-      USE check
-      USE mflux
-      USE functions
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE toleranc
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

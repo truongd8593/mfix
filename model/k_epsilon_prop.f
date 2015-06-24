@@ -122,9 +122,9 @@
 
 ! M should be forced to be equal to one to get some info.
 ! from solids phase.
-      M = 1 
+      M = 1
 
-! Add constants. Most of these constants have the same names and values 
+! Add constants. Most of these constants have the same names and values
 ! as the ones defined in Wilcox book (turbulence modeling for CFD).
 ! Some are necessary only for Simonin turbulence model
 
@@ -279,7 +279,7 @@
                   F2O3 * RO_G(IJK) * K_Turb_G(IJK)*Trace_g - &
                   F2O3 * Mu_gas_t * Trace_g**2
 
-            ELSE  ! CUT_CELL  
+            ELSE  ! CUT_CELL
 ! This is actually not used because of wall functions in cut cells
 !               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(                             &
 !                  D_G(1,1) * UG(1,1)  +                      &
@@ -401,7 +401,7 @@
                         2.0D+0/Kappa))/K_Turb_G(IJK)
                   ENDIF !for check_log less than zero
                ENDIF ! for cylindrical
- 
+
                IF(CUT_CELL_AT(IJK)) THEN
                   Check_Log = LOG(9.81*C_mu**0.25* RO_G(IJK)*          &
                   SQRT(K_Turb_G(IJK))*DELH_Scalar(IJK)/Mu_g(IJK))
@@ -431,7 +431,7 @@
                E_Turb_G_c (IJK) = (Ceps_1 *&
                   EP_g(IJK)*Pos_Tauij_gDUi_gODxj*                      &
                   E_Turb_G(IJK)/K_Turb_G(IJK) +                        &
-                  C_Eps_3*Pos_PI_kq_2*E_Turb_G(IJK)/K_Turb_G(IJK)) 
+                  C_Eps_3*Pos_PI_kq_2*E_Turb_G(IJK)/K_Turb_G(IJK))
 
 ! Pope Correction in Xsi_Pope, Add it to E_Turb_G_c to use this option.
                   ! + C_Eps_Pope*RO_G(IJK)*EP_g(IJK)*&

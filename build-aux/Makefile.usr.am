@@ -22,6 +22,8 @@ AM_LDFLAGS =
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
 obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
+SUFFIXES = .d
+
 .DEFAULT_GOAL := mfix
 
 LIBMFIX = $(top_builddir)/libmfix.a
@@ -33,7 +35,10 @@ mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
-.PHONY: $(LIBMFIX)
+build:
+	$(LN_S) $(top_builddir) $@
+
+.PHONY: $(LIBMFIX) TAGS
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -65,7 +70,7 @@ species.inc: mfix.dat
 #
 #########################################################################
 
-usrmodule.deps: $(src_overrides)
+.f.d:
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
@@ -75,8 +80,11 @@ usrmodule.deps: $(src_overrides)
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
-$(eval -include usrmodule.deps)
-CLEANFILES += usrmodule.deps species.inc
+@make_ifnotclean@
+$(eval -include $(src_overrides:%.f=%.d) )
+@make_endif@
+
+CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
 DISTCLEANFILES = Makefile
 
 ################################################################
@@ -86,8 +94,8 @@ DISTCLEANFILES = Makefile
 ################################################################
 
 postmfix: $(LIBMFIX)
-	$(MAKE) -C $(top_builddir) post_mfix/postmfix
-	cp $(top_builddir)/post_mfix/postmfix $@
+	$(MAKE) -C $(top_builddir) postmfix
+	$(LN_S) $(top_builddir)/postmfix $@
 
 ################################################################
 #                                                              #

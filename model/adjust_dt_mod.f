@@ -1,3 +1,7 @@
+      MODULE ADJUST_DT
+
+      CONTAINS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Module name: ADJUST_DT(IER, NIT)                                    !
@@ -6,7 +10,7 @@
 !  Purpose: Automatically adjust time step.                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      LOGICAL FUNCTION ADJUST_DT (IER, NIT)
+      LOGICAL FUNCTION ADJUSTDT (IER, NIT)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -69,7 +73,7 @@
 !......................................................................!
 
 ! Initialize the function result.
-      ADJUST_DT = .FALSE.
+      ADJUSTDT = .FALSE.
       USE_DT_PREV = .FALSE.
 
 ! Steady-state simulation.
@@ -119,7 +123,7 @@
             NIT_TOT = NIT_TOT + NIT
          ENDIF
 ! No need to iterate again
-         ADJUST_DT = .FALSE.
+         ADJUSTDT = .FALSE.
 ! Cut the timestep into half for 2nd order accurate time implementation.
          IF(CN_ADJUST_DT) DT = 0.5d0*DT
 
@@ -153,7 +157,7 @@
             CALL RESET_NEW
 
 ! Iterate again with new dt
-            ADJUST_DT = .TRUE.
+            ADJUSTDT = .TRUE.
 
 ! Cut the timestep for 2nd order accurate time implementation.
             IF(CN_ADJUST_DT) DT = 0.5d0*DT
@@ -163,7 +167,7 @@
 
 ! Prevent DT from dropping below DT_MIN.
             IF(PERSISTENT_MODE) DT = max(DT, DT_MIN)
-            ADJUST_DT = .FALSE.
+            ADJUSTDT = .FALSE.
          ENDIF
 
       ENDIF
@@ -172,7 +176,9 @@
       ODT = ONE/DT
 
 ! Break out of the iterate loop if INTERUPT signal is given
-      IF(INTERUPT) ADJUST_DT = .FALSE.
+      IF(INTERUPT) ADJUSTDT = .FALSE.
 
       RETURN
-      END FUNCTION ADJUST_DT
+      END FUNCTION ADJUSTDT
+
+      END MODULE ADJUST_DT

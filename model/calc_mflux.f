@@ -51,7 +51,7 @@
 
          CALL CALC_MFLUX0 (U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, &
                            Flux_gSE, Flux_gSN, Flux_gST)
-         DO M = 1, MMAX 
+         DO M = 1, MMAX
 ! New fluxes are defined for M = M_am where virtual mass force is added.
            IF(M==M_AM) THEN
               CALL CALC_MFLUX_AM (U_s(1,M), V_s(1,M), W_s(1,M), &
@@ -103,7 +103,7 @@
       DOUBLE PRECISION, INTENT(IN) :: V(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: W(DIMENSION_3)
 ! Face value of density (for calculating convective fluxes)
-      DOUBLE PRECISION, INTENT(IN) :: ROP_E(DIMENSION_3) 
+      DOUBLE PRECISION, INTENT(IN) :: ROP_E(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: ROP_N(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: ROP_T(DIMENSION_3)
 ! Convective mass fluxes
@@ -194,7 +194,7 @@
       DOUBLE PRECISION, INTENT(IN) :: V(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: W(DIMENSION_3)
 ! Face value of density (for calculating convective fluxes)
-      DOUBLE PRECISION, INTENT(IN) :: ROP_E(DIMENSION_3) 
+      DOUBLE PRECISION, INTENT(IN) :: ROP_E(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: ROP_N(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: ROP_T(DIMENSION_3)
 ! Face value of density of added mass phase

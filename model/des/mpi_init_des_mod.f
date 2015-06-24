@@ -61,7 +61,7 @@
 ! local variables
 !-----------------------------------------------
       integer :: lfaces,lfactor=4
-      integer :: lmaxlen1,lmaxlen2,lmaxarea,lmaxghostpar
+      integer :: lmaxlen1,lmaxlen2,lmaxarea,lmaxghostpar,ii
 
       DOUBLE PRECISION, PARAMETER :: ONEMBo8 = 131072.0
 
@@ -111,6 +111,7 @@
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*iGhostPacketSize
+      imaxbuf = 10
 
       WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, ONEMBo8/iGhostPacketSize,  &
          ONEMBo8/iParticlePacketSize, ONEMBo8/iPairPacketSize
@@ -121,8 +122,12 @@
          F6.0,1X,'Neighbor Pairs/MB')
 
 
-      allocate (dsendbuf(imaxbuf,lfaces)); dsendbuf=0.0
-      allocate (drecvbuf(imaxbuf,lfaces)); drecvbuf=0.0
+      allocate (dsendbuf(2));
+      allocate (drecvbuf(2));
+      do ii=1, size(dsendbuf)
+         allocate (dsendbuf(ii)%facebuf(imaxbuf));
+         allocate (drecvbuf(ii)%facebuf(imaxbuf));
+      end do
 
       allocate (isendindices(lmaxarea,lfaces)); isendindices=0
       allocate (irecvindices(lmaxarea,lfaces)); irecvindices=0
@@ -533,7 +538,7 @@
       integer linter,lface
       integer lparcnt,lcurpar,lneigh,lneighid,lneighindx,lcontact,&
               lcontactid,lcontactindx
-      integer lcurijk,lcount
+      integer lcurijk,lcount,ii
       logical lneighfound,lcontactfound
 !-----------------------------------------------
 ! set do_nsearch true so that the ghost cell will be updated
@@ -542,7 +547,12 @@
       call desmpi_check_sendrecvbuf
 
 !call ghost particle exchange in E-W, N-S, T-B order
-      dsendbuf(1,:) = 0; drecvbuf(1,:) =0
+
+      do ii=1, size(dsendbuf)
+         dsendbuf(ii)%facebuf(1) = 0
+         drecvbuf(ii)%facebuf(1) = 0
+      end do
+
       ighost_updated(:) = .false.
       ispot = 1
       do linter = 1,dimn
@@ -558,7 +568,7 @@
          enddo
 ! update pic required as particles in ghost cell can move between ghost cells
          do lface = linter*2-1,linter*2
-            if(dsendbuf(1,lface).gt.0.or.drecvbuf(1,lface).gt.0) then
+            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
             endif

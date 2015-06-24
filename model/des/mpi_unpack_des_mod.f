@@ -87,6 +87,7 @@
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 
       use des_allocate
+      use compar, only: myPE
 
 ! Global Constants:
 !---------------------------------------------------------------------//
@@ -113,7 +114,7 @@
 ! if it already exists update the position
 ! if not and do_nsearch is true then add to the particle array
 
-      lparcnt = drecvbuf(1,pface)
+      lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
       lnewcnt = lparcnt
       allocate (lfound(lparcnt),lnewspot(lparcnt),lnewpic(dg_ijksize2))
       lfound(:) = .false.
@@ -373,7 +374,7 @@
 !......................................................................!
 
 ! loop through particles and locate them and make changes
-      lparcnt = drecvbuf(1,pface)
+      lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)
@@ -658,7 +659,7 @@
       integer, intent(in) :: pface
       double precision, intent(inout) :: idata
 
-      idata = drecvbuf(lbuf,pface)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf)
       lbuf = lbuf + 1
 
       return
@@ -677,7 +678,7 @@
 
       lsize = size(idata)
 
-      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1)
       lbuf = lbuf + lsize
 
       return
@@ -693,7 +694,7 @@
       integer, intent(in) :: pface
       integer, intent(inout) :: idata
 
-      idata = drecvbuf(lbuf,pface)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf)
       lbuf = lbuf + 1
 
       return
@@ -712,7 +713,7 @@
 
       lsize = size(idata)
 
-      idata = drecvbuf(lbuf:lbuf+lsize-1,pface)
+      idata = drecvbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1)
       lbuf = lbuf + lsize
 
       return
@@ -727,7 +728,7 @@
       integer, intent(in) :: pface
       logical, intent(inout) :: idata
 
-      idata = merge(.true.,.false.,0.5<drecvbuf(lbuf,pface))
+      idata = merge(.true.,.false.,0.5<drecvbuf(1+mod(pface,2))%facebuf(lbuf))
       lbuf = lbuf + 1
 
       return

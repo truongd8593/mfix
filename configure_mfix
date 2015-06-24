@@ -1,31 +1,29 @@
 #!/bin/bash -e
 #
-#  Wrapper script for calling configure in MFIX_HOME and copying Makefile.usr into $PWD
+#  Wrapper script for running autoreconf (if necessary), running configure, and copying Makefile.usr to $PWD/Makefile
 #
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd)
 MFIX_HOME=$(cd $(dirname $0); pwd)
 
-rm -f usrmodule.deps
-
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
 args=("${@/--dmp/--enable-dmp}")
 args=("${args[@]/--smp/--enable-smp}")
 
-args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
-BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
-
-if [ ${MFIX_HOME} != ${RUN_DIR} ]; then
+if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
+    # building in MFIX_HOME, no need to copy Makefile.usr
+    ${MFIX_HOME}/configure "${args[@]}" || exit $?
+else
+    args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
+    BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
     mkdir -p ${BUILD_DIR}
     cd ${BUILD_DIR}
-fi
-
-${MFIX_HOME}/configure "${args[@]}" || exit $?
-
-MAKEFILE=${RUN_DIR}/Makefile
-MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
-if [ -f ${MAKEFILE_USR} ] && [ ${MFIX_HOME} != ${RUN_DIR} ]; then
-    cp ${MAKEFILE_USR} ${MAKEFILE}
+    ${MFIX_HOME}/configure "${args[@]}" || exit $?
+    MAKEFILE=${RUN_DIR}/Makefile
+    MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
+    if [ -f ${MAKEFILE_USR} ]; then
+	cp ${MAKEFILE_USR} ${MAKEFILE}
+    fi
 fi

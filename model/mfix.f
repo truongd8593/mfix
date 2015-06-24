@@ -64,25 +64,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE MFIX_netcdf
+      USE cdist
+      USE compar
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE fldvar
+      USE functions
+      USE funits
+      USE machine
+      USE mfix_pic
+      USE mpi_utility
+      USE output
+      USE parallel_mpi
       USE param
       USE param1
+      USE qmom_kinetic_equation
+      USE quadric
       USE run
       USE time_cpu
-      USE funits
-      USE output
-      USE compar
-      USE mpi_utility
-      USE parallel_mpi
-      USE discretelement
-      USE mfix_pic
-      USE cdist
-      USE MFIX_netcdf
-      USE fldvar
-      USE cutcell
-      USE quadric
-      USE dashboard
-      USE qmom_kinetic_equation
-      USE functions
 
       USE vtk, only : WRITE_VTK_FILES
 
@@ -116,8 +117,6 @@
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER omp_get_num_threads
 !$      INTEGER omp_get_thread_num
-
-      DOUBLE PRECISION :: WALL_TIME
 
 ! C Function
       INTERFACE

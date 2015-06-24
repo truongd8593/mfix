@@ -251,8 +251,8 @@
       use compar, only: ijkstart3, ijkend3
       use fldvar, only: ep_g, ep_s
       use fldvar, only: epg_ifac, eps_ifac, epg_jfac
-      use param1, only: one
-      use physprop, only: mmax
+      use param1, only: one, undefined
+      use physprop, only: mmax, mu_s0
       use run, only: jackson, ishii
       IMPLICIT NONE
 ! Local variables
@@ -273,7 +273,11 @@
          do ijk = ijkstart3, ijkend3
             epg_ifac(ijk) = ep_g(ijk)
             do m = 1, mmax
-               eps_ifac(ijk,m) = ep_s(ijk,m)
+! This seems more appropriate for non-granular systems
+! So currently only incorporate this for 'constant' viscosity cases
+               IF (mu_s0(m) /= undefined) THEN
+                  eps_ifac(ijk,m) = ep_s(ijk,m)
+               ENDIF
             enddo
          enddo
       endif

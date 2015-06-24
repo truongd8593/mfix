@@ -27,14 +27,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE compar
-      USE parallel
-      USE sendrecv
-      USE run
-      USE leqsol
-      USE time_cpu
-      Use residual
       USE dashboard
+      USE leqsol
+      USE machine
+      USE parallel
+      USE run
+      USE sendrecv
+      USE time_cpu
       USE vtk
+      Use residual
 
       IMPLICIT NONE
 

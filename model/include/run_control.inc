@@ -9,7 +9,7 @@
       RUN_NAME, UNITS, RUN_TYPE, TIME, &
       ENERGY_EQ, SPECIES_EQ, K_EPSILON, GRANULAR_ENERGY, &
       CALL_DQMOM, AGGREGATION_EFF, BREAKAGE_EFF, &
-      NSCALAR, PHASE4SCALAR
+      NSCALAR, PHASE4SCALAR, JACKSON, ISHII
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

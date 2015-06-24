@@ -146,7 +146,7 @@
          ENDIF
       END DO
 
-      CALL DIF_PHI_IS(DIF, A_M, B_M, M, IER)
+      CALL DIF_PHI_IS(DIF, A_M, M)
 
 
       RETURN

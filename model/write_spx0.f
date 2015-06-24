@@ -13,9 +13,9 @@
 ! User defined run_name
       use run, only: RUN_NAME
 ! Calendar information for start of run.
-      use run, only: ID_MONTH, ID_DAY, ID_YEAR
+      use machine, only: ID_MONTH, ID_DAY, ID_YEAR
 ! Time information for start of run.
-      use run, only: ID_HOUR, ID_MINUTE, ID_SECOND
+      use machine, only: ID_HOUR, ID_MINUTE, ID_SECOND
 ! Base file unit for SPx files.
       use funits, only: UNIT_SPX
 ! Flag: Use distributed I/O

@@ -28,6 +28,7 @@
       USE funits
       USE geometry
       USE indices
+      USE machine
       USE param
       USE param1
       USE physprop

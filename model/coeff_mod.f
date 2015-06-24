@@ -158,12 +158,16 @@
 ! Variable solids density.
          if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
 
-! Solids viscosity. 
-         DO M = 1, MMAX
-            IF (MU_s0(M) == UNDEFINED) THEN
-               VISC(M) = .TRUE.
-            ENDIF
-         ENDDO
+! Solids viscosity.
+!         DO M = 1, MMAX
+!            IF (MU_s0(M) == UNDEFINED) THEN
+!               VISC(M) = .TRUE.
+!            ENDIF
+!         ENDDO
+! Calc_mu_s must be invoked every iteration even if constant viscosity
+! (mu_s0 /= undefined) to incorporate ishii form of governing equations
+! wherein the viscosity is multiplied by the phase volume fraction
+         VISC(1:MMAX) = .TRUE.
 
 ! Specific heat and thermal conductivity.
          if(ENERGY_EQ) THEN

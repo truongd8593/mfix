@@ -17,4 +17,5 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       NAMELIST / SOLIDS_PHASE_UNLOCKED /&
 
-      D_p0, RO_s0, X_s0, RO_Xs0, INERT_SPECIES, K_s0, C_ps0, MW_s
+      D_p0, RO_s0, X_s0, RO_Xs0, INERT_SPECIES, K_s0, C_ps0, MW_s, &
+      DIL_FACTOR_VSD, DIL_INERT_X_VSD
