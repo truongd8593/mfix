@@ -374,8 +374,9 @@
       use vtk, only: VTK_TIME, VTK_DT
       use vtk, only: WRITE_VTK_FILES
 
-      use compar, only: myPE, PE_IO
-      use param1, only:  Undefined_i
+      use param1, only:  UNDEFINED_I
+
+      use funits, only: CREATE_DIR
 
       IMPLICIT NONE
 
@@ -455,8 +456,7 @@
       ENDIF
 
 ! Create a subdir for RES backup files.
-      IF(RES_BACKUPS /= UNDEFINED_I .AND. myPE==PE_IO)                 &
-         CALL SYSTEM('mkdir BACKUP_RES')
+      IF(RES_BACKUPS /= UNDEFINED_I) CALL CREATE_DIR('BACKUP_RES')
 
 
       WALL_START = WALL_TIME()
