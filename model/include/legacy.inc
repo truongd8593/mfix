@@ -4,5 +4,5 @@
 !                                                                      !
 !  Purpose: List MFIX keywords that CANNOT be edited during a run.     !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      NAMELIST / LEGACY_LOCKED / USE_RRATES, NMAX
+      NAMELIST / LEGACY_LOCKED / USE_RRATES, NMAX, SPECIES_NAME
 

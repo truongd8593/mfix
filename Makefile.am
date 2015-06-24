@@ -152,13 +152,28 @@ endif
 ################################################################
 
 libmfix_a_SOURCES += \
+	model/include/boundary_conditions.inc \
 	model/include/cartesian_grid_namelist.inc \
+	model/include/chem_equations.inc \
 	model/include/desnamelist.inc \
-	model/include/namelist.inc \
+	model/include/dmp_batch_control.inc \
+	model/include/gas_phase.inc \
+	model/include/geometry.inc \
+	model/include/initial_conditions.inc \
+	model/include/internal_surfaces.inc \
+	model/include/legacy.inc \
 	model/include/netcdf.inc \
+	model/include/numerical_params.inc \
+	model/include/output_control.inc \
+	model/include/physical_params.inc \
+	model/include/point_sources.inc \
 	model/include/qmomknamelist.inc \
+	model/include/run_control.inc \
+	model/include/solids_phase.inc \
 	model/include/species.inc \
 	model/include/species_indices.inc \
+	model/include/tfm_solids.inc \
+	model/include/usr_hooks.inc \
 	model/include/usrnlst.inc \
 	model/include/xforms.inc
 
@@ -192,6 +207,7 @@ libmfix_src = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
+	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_rop.f \

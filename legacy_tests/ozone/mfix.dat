@@ -10,7 +10,9 @@
   DESCRIPTION = 'Ozone decomposition - 8 cm/s, fine, 3d'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  = 0.0    TSTOP = 0.20e-2     DT = 0.2E-3    
+  TIME  = 0.0
+  TSTOP = 0.20e-2
+  DT = 0.2E-3    
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .TRUE.    .FALSE.
 
