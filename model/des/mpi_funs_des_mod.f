@@ -212,7 +212,9 @@
       if (imaxbuf .lt. lmaxcnt*lpacketsize+ibufoffset) then
          imaxbuf = lmaxcnt*lpacketsize*lfactor
          do lface = 1,2*dimn
-            if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
+            if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) then
+               deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
+            endif
             allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
          end do
       endif

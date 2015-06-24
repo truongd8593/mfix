@@ -727,6 +727,7 @@
 !  <valid value="7" note="van Leer."/>
 !  <valid value="6" note="MUSCL."/>
 !  <valid value="8" note="minmod."/>
+!  <valid value="9" note="Central (often unstable; useful for testing)."/>
       DISCRETIZE(:) = 0
 !</keyword>
 
@@ -1277,6 +1278,36 @@
       INERT_SPECIES(:DIM_M) = UNDEFINED_I
 !</keyword>
 
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>
+!    Mass fraction of inert solids phase species in the dilute region.
+!    In dilute region (see DIL_FACTOR_VSD), the solids density is computed based 
+!    on this inert species mass fraction, rather than the current inert species mass fraction.
+!    This may help convergence when the Variable Solids Density model is invoked.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      DIL_INERT_X_VSD(:DIM_M) = ONE
+!</keyword>
+
+!<keyword category="Solids Phase" required="false" tfm="true" dem="true">
+!  <description>
+!    Factor to define the dilute region where the solids density is set using DIL_INERT_X_VSD.
+!    Cells where the solids volume fraction is between DIL_EP_S and DIL_EP_S x DIL_FACTOR_VSD
+!    will automatically set the solids density using DIL_INERT_X_VSD instead of the current 
+!    inerts species mass fraction. Set this factor to zero to always use the current inert
+!    species mass fraction.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+!  <dependent keyword="SPECIES_EQ" value=".TRUE."/>
+!  <dependent keyword="X_s0" value="DEFINED"/>
+!  <dependent keyword="RO_Xs0" value="DEFINED"/>
+!  <conflict keyword="RO_s0" value="DEFINED"/>
+      DIL_FACTOR_VSD = 10.0D0
+!</keyword>
 
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
@@ -2893,9 +2924,25 @@
 !                          Output Control                             !
 !#####################################################################!
 
-!<keyword category="Output Control" required="false">
-!  <description>Interval at which restart (.res) file is updated.</description>
+!<keyword category="Output Control" required="true">
+!  <description>
+!    Interval at which restart (.res) file is updated.
+!  </description>
       RES_DT = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Interval at which a backup copy of the restart file is created.
+!  </description>
+      RES_BACKUP_DT = UNDEFINED
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
+!    The number of backup restart files to retain.
+!  </description>
+      RES_BACKUPS = UNDEFINED_I
 !</keyword>
 
 !<keyword category="Output Control" required="false">
@@ -3060,6 +3107,50 @@
 !  <valid value=".TRUE." note="Call user-defined subroutines."/>
 !  <valid value=".FALSE." note="Do NOT call user-defined subroutines."/>
       CALL_USR = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROg,
+!    in model/usr_physical_prop.f  for calculating the gas phase
+!    density, RO_g.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_ROg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPg,
+!    in model/usr_physical_prop.f  for calculating the gas phase
+!    constant pressure specific heat, C_PG.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_CPg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROs,
+!    in model/usr_physical_prop.f  for calculating the solids phase
+!    density, RO_s.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_ROs = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPs,
+!    in model/usr_physical_prop.f  for calculating the solids phase
+!    constant pressure specific heat, C_PS.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_CPs = .FALSE.
 !</keyword>
 
 !<keyword category="UDF Control" required="false">

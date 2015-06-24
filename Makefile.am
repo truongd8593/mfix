@@ -366,8 +366,6 @@ libmfix_src = \
 	model/des/des_granular_temperature.f \
 	model/des/des_init_arrays.f \
 	model/des/des_init_namelist.f \
-	model/des/des_linked_list_data_mod.f \
-	model/des/des_linked_list_funcs_mod.f \
 	model/des/des_physical_prop.f \
 	model/des/des_reaction_model.f \
 	model/des/des_rrates0.f \
@@ -392,7 +390,7 @@ libmfix_src = \
 	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
-	model/des/generate_particle_config.f \
+	model/des/generate_particles_mod.f \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
@@ -570,7 +568,6 @@ libmfix_src = \
 	model/rdf_mod.f \
 	model/read_database.f \
 	model/read_namelist.f \
-	model/read_res0.f \
 	model/read_res1.f \
 	model/reinitialize.f \
 	model/remove_comment.f \
@@ -664,6 +661,7 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
+	model/usr_physical_prop.f \
 	model/usr_rates.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
@@ -768,6 +766,7 @@ postmfix_SOURCES = \
 	post_mfix/post3d_mod.f \
 	post_mfix/post_precision_mod.f \
 	post_mfix/print_out.f \
+	post_mfix/read_res0.f \
 	post_mfix/read_spx0.f \
 	post_mfix/read_spx1.f \
 	post_mfix/res_from_spx.f \

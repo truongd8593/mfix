@@ -129,7 +129,7 @@
                   (DES_POS_NEW(3,L) < ZT(K+1))) THEN
                   K = K+1
                ELSEIF((DES_POS_NEW(3,L) >= ZT(K-2)) .AND.              &
-                  (DES_POS_NEW(3,L) >= ZT(K-1))) THEN
+                  (DES_POS_NEW(3,L) < ZT(K-1))) THEN
                   K = K-1
                ELSE
                   CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,             &

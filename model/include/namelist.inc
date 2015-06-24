@@ -18,6 +18,7 @@
              SUBGRID_TYPE, filter_size_ratio, SUBGRID_Wall, &
              GRANULAR_ENERGY, KT_TYPE, RDF_TYPE, &
              YU_STANDISH, FEDORS_LANDEL, Added_Mass, M_AM, &
+             USR_ROG, USR_ROS, USR_CPG, USR_CPS, &
 
 ! see run_mod for details
              CHK_BATCHQ_END, BATCH_WALLCLOCK, TERM_BUFFER,&
@@ -26,7 +27,7 @@
 
 ! 1.2 Output control section
 ! ---------------------------------------------------------------->>>
-             RES_DT, SPX_DT , OUT_DT, &
+             RES_DT, SPX_DT , OUT_DT, RES_BACKUP_DT, RES_BACKUPS, &
              USR_DT, USR_TYPE, USR_VAR, USR_FORMAT, USR_EXT,&
              USR_X_w , USR_X_e , USR_Y_s , USR_Y_n ,&
              USR_Z_b , USR_Z_t, NLOG, FULL_LOG, &
@@ -77,6 +78,7 @@
              MU_s0, D_p0, EP_star, MMAX, MW_s, CLOSE_PACKED, &
              K_s0, C_ps0, DIF_s0, NMAX_g, NMAX_s, &
              RO_s0, X_s0, RO_Xs0, INERT_SPECIES, &
+             DIL_FACTOR_VSD, DIL_INERT_X_VSD, &
              SOLIDS_MODEL, &
 ! ----------------------------------------------------------------<<<
 

@@ -287,7 +287,7 @@
 
 ! pradeep remove print the flags
       write(filename,'("dbg_nodesr",I4.4,".dat")') mype
-      open(44,file=filename)
+      open(44,file=filename,convert='big_endian')
       do lcount = 1,itotalneigh
          lstart = istartindx(lcount);lend=istartindx(lcount+1)-1
          write(44,*) "--------------------------------------------"

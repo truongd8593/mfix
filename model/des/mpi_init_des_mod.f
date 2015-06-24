@@ -111,7 +111,6 @@
       lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
       if(lmaxghostpar.lt.100) lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*iGhostPacketSize
-      imaxbuf = 10
 
       WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, ONEMBo8/iGhostPacketSize,  &
          ONEMBo8/iParticlePacketSize, ONEMBo8/iPairPacketSize

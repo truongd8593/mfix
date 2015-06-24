@@ -1,13 +1,3 @@
-# Data Index
-#                     A-B
-#  * En = 1.0    --  01
-#  * En = 0.9    --  02
-#  * En = 0.8    --  03
-#  * En = 0.7    --  04
-#  * En = 0.6    --  05
-#  * En = 0.5    --  06
-#                        
-
 # color definitions
 set border linewidth 1.5
 set style line 1 lt 1 lc rgb '#000000' lw 1 # black
@@ -37,9 +27,9 @@ scaled(x,val) = ( scld = x*val, scld)
 
 #-------------------------------------------------------------------------------------
 
-set terminal wxt 1 size 900,400 enhanced dashed
-#set terminal pngcairo size 900,400 enhanced font 'Verdana, 10' dashed
-#set output "DEM04_all.png"
+#et terminal wxt 1 size 900,400 enhanced dashed
+set terminal pngcairo size 900,400 enhanced font 'Verdana, 10' dashed
+set output "DEM06_diff.png"
 
 set multiplot layout 1,2 title
 
@@ -48,33 +38,39 @@ set ylabel "Abs Relative Difference (%)"
 set yrange [0.00 : 0.005]
 set ytics nomirror 0.0,0.001,0.005
 
-set key inside right top
+set key Left reverse inside top right nobox
 
-plot 'POST_VEL.dat' index 1 using 1:4 w linespoints ls 1 title "index 1", \
-     'POST_VEL.dat' index 2 using 1:4 w linespoints ls 2 title "index 2", \
-     'POST_VEL.dat' index 3 using 1:4 w linespoints ls 3 title "index 3"
+plot 'POST_VEL.dat' index 1 using 1:4 w linespoints ls 1 title "Centroid", \
+     'POST_VEL.dat' index 2 using 1:4 w linespoints ls 2 title "Garg 2012", \
+     'POST_VEL.dat' index 3 using 1:4 w linespoints ls 3 title "DPVM (2.0d-4)"
 
 
 set ylabel "Abs Relative Difference (%)"
 set yrange [0.00 : 5.0]
 set ytics nomirror 0.0,1,5.0
 
-set key inside right center
+#set key inside right center
+set key at 0.34,3.75 box
 
-plot 'POST_VEL.dat' index 4 using 1:4 w linespoints ls 1 ps 2 title "index 4", \
-     'POST_VEL.dat' index 5 using 1:4 w linespoints ls 2 title "index 5", \
-     'POST_VEL.dat' index 6 using 1:4 w linespoints ls 3 title "index 6", \
-     'POST_VEL.dat' index 7 using 1:4 w linespoints ls 4 title "index 7"
+plot 'POST_VEL.dat' index 4 using 1:4 w linespoints ls 1 ps 2 title "Centroid", \
+     'POST_VEL.dat' index 5 using 1:4 w linespoints ls 2 title "Garg 2012", \
+     'POST_VEL.dat' index 6 using 1:4 w linespoints ls 3 title "DVPM (3.0d-4)", \
+     'POST_VEL.dat' index 7 using 1:4 w linespoints ls 4 title "DVPM (4.0d-4)"
 
 unset multiplot
 
 
-#set ylabel "Particle Velocity (m/sec)"
-#set yrange [0.00 : 0.075]
-#set ytics nomirror 0.0,0.025,0.075
 
-#set key inside left top
+#set terminal wxt 2 size 450,400 enhanced dashed
+set terminal pngcairo size 450,400 enhanced font 'Verdana, 10' dashed
+set output "DEM06_MFIX.png"
 
-#plot 'POST_VEL.dat' index 1 using 1:(scaled(column(2),-1)) w lines ls 1 title "RK4", \
-#     'POST_VEL.dat' index 1 using 1:(scaled(column(3),-1)) \
-#        w points pointtype  6 ps 1.5 lc rgb '#000000' title "index 1"
+set ylabel "Particle Velocity (m/sec)"
+set yrange [0.00 : 0.075]
+set ytics nomirror 0.0,0.025,0.075
+
+set key inside left top nobox
+
+plot 'POST_VEL.dat' index 1 using 1:(scaled(column(2),-1)) w lines ls 1 title "RK4", \
+     'POST_VEL.dat' index 1 using 1:(scaled(column(3),-1)) \
+        w points pointtype  6 ps 1.5 lc rgb '#000000' title "MFIX-DEM"

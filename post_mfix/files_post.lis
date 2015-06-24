@@ -197,7 +197,6 @@
 ../model/rdf_mod.f
 ../model/read_database.f
 ../model/read_namelist.f
-../model/read_res0.f
 ../model/read_res1.f
 ../model/remove_comment.f
 ../model/reset_new.f
@@ -240,6 +239,7 @@
 ../model/ur_facs_mod.f
 ../model/usr_drag.f
 ../model/usr_mod.f
+../model/usr_physical_prop.f
 ../model/usr_rates.f
 ../model/utilities_mod.f
 ../model/visc_g_mod.f
@@ -314,6 +314,7 @@ paralleldata_mod.f
 post3d_mod.f
 post_precision_mod.f
 print_out.f
+read_res0.f
 read_spx0.f
 read_spx1.f
 res_from_spx.f

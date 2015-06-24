@@ -24,6 +24,10 @@
       use physprop, only: X_S0
 ! Index of inert solids phase species.
       use physprop, only: INERT_SPECIES
+! Inert solids phase species mass fraction in dilute region.
+      use physprop, only: DIL_INERT_X_VSD
+! Factor to define dilute region where DIL_INERT_X_VSD is used
+      use physprop, only: DIL_FACTOR_VSD
 ! Run-time flag for variable soilds density
       use run, only: SOLVE_ROs
 ! Constant solids density.
@@ -63,7 +67,8 @@
 ! Set the index of the intert phase.
             IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-            minROPs = BASE_ROs(M)*DIL_EP_s
+!            minROPs = BASE_ROs(M)*DIL_EP_s
+            minROPs = BASE_ROs(M)*(DIL_FACTOR_VSD*DIL_EP_s)
 ! Debug/Development option.
             IF(dbgMode) CALL CHECK_SET_ROs(M)
 
@@ -74,7 +79,9 @@
                   RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),         &
                      X_s(IJK,M,IIS))
                ELSE
-                  RO_s(IJK,M) = BASE_ROs(M)
+!                  RO_s(IJK,M) = BASE_ROs(M)
+                  RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),            &
+                     DIL_INERT_X_VSD(M))
                ENDIF
             ENDDO
          ELSE
@@ -164,9 +171,9 @@
          ENDIF
          inquire(file=trim(lFName),exist=lExists)
          IF(lExists) THEN
-            OPEN(unit=lUnit,file=trim(lFName),status='replace')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='replace')
          ELSE
-            OPEN(unit=lUnit,file=trim(lFName),status='new')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='new')
          ENDIF
       ENDIF
 

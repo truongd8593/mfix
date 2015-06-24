@@ -37,7 +37,7 @@
 !  Module name: NEWUNIT                                                !
 !  Purpose: Finds an open i/o unit number; Usage:                      !
 !   integer myunit                                                     !
-!   open(unit=newunit(myunit),file='filename')                         !
+!   open(convert='big_endian',unit=newunit(myunit),file='filename')    !
 !                                                                      !
 !  Author: A. Choudhary                               Date: 01/21/2015 !
 !                                                                      !

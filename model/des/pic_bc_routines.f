@@ -484,7 +484,7 @@
                      FC(:, NEW_SPOT) = zero
                      DELETE_PART = .false.
                      IF(PIC_BCMI_INCL_CUTCELL(BCV_I)) &
-                          CALL CHECK_IF_PARCEL_OVELAPS_STL &
+                          CALL CHECK_IF_PARCEL_OVERLAPS_STL &
                           (des_pos_new(1:dimn, NEW_SPOT), &
                           DELETE_PART)
 
@@ -779,7 +779,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  SUBROUTINE: CHECK_IF_PARCEL_OVELAPS_STL                             C
+!  SUBROUTINE: CHECK_IF_PARCEL_OVERLAPS_STL                            C
 !  Authors: Rahul Garg                               Date: 21-Mar-2014 C
 !                                                                      C
 !  Purpose: This subroutine is special written to check if a particle  C
@@ -789,7 +789,7 @@
 !          particles                                                   C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL(POSITION, &
+      SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL(POSITION, &
       OVERLAP_EXISTS)
 
       USE constant
@@ -930,8 +930,7 @@
 
       RETURN
 
-      END SUBROUTINE CHECK_IF_PARCEL_OVELAPS_STL
-
+      END SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL
 
       SUBROUTINE write_this_facet_and_parcel(FID, position, velocity)
       USE run
@@ -961,8 +960,8 @@
       WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
       WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
 
-      open(vtp_unit, file = vtp_fname, form='formatted')
-      open(stl_unit, file = stl_fname, form='formatted')
+      open(vtp_unit, file = vtp_fname, form='formatted',convert='big_endian')
+      open(stl_unit, file = stl_fname, form='formatted',convert='big_endian')
 
       write(vtp_unit,"(a)") '<?xml version="1.0"?>'
       write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
