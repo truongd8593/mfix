@@ -147,7 +147,18 @@
          DT = DT*DT_FAC
 
 ! The step size has decreased to the minimum.
-         IF (DT > DT_MIN) THEN
+         IF (DT_FAC >= ONE) THEN
+
+            IF(PERSISTENT_MODE) THEN
+               ADJUSTDT = .FALSE.
+            ELSE
+               WRITE(ERR_MSG,"(3X,A)") &
+                  'DT_FAC >= 1. Recovery not possible!'
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE., &
+                  HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
+
+         ELSEIF (DT > DT_MIN) THEN
 
             IF(.NOT.INTERUPT) THEN
                WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G11.5,' :-)')") DT
