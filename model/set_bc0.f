@@ -886,7 +886,7 @@
 ! this case to maximize search region for 2D problems.
       IF(l3 == UNDEFINED_I) THEN
          Map = 'KIJ_MAP'
-         l3 = merge((KMAX1 - KMIN1)/2 + 1, KMIN1, do_K)
+         l3 = merge(max((KMAX1-KMIN1)/2+1,2), KMIN1, do_K)
          l2 = IMIN1;  u2 = IMAX1
          l1 = JMIN1;  u1 = JMAX1
          lMsg='Center of domain'
