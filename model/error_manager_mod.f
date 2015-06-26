@@ -231,7 +231,7 @@
 ! Purpose: Finalize the error manager. The call is needed to clear out !
 ! old information and unset the lock.                                  !
 !......................................................................!
-      SUBROUTINE FINL_ERR_MSG(pIER)
+      SUBROUTINE FINL_ERR_MSG
 
 ! Rank ID of process
       use compar, only: myPE
@@ -243,8 +243,6 @@
       use funits, only: UNIT_LOG
 
       implicit none
-! Integer error flag.
-      INTEGER, INTENT(OUT), OPTIONAL :: pIER
 
 ! Single line.
       CHARACTER(LEN=LINE_LENGTH) :: LINE
