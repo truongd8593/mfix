@@ -100,5 +100,6 @@ AM_SUBST_NOTMAKE([make_endif])
 AC_OUTPUT
 
 AC_MSG_NOTICE([==============================================================])
-AC_MSG_NOTICE([Now run "make" to build mfix])
+AC_MSG_NOTICE([Now run "make" to build mfix with:])
+AC_MSG_NOTICE([FCFLAGS=$FCFLAGS])
 AC_MSG_NOTICE([==============================================================])
