@@ -114,9 +114,10 @@
             USE_DT_PREV = .TRUE.
 
 ! Write the convergence stats to the screen/log file.
-            WRITE(ERR_MSG,"('DT=',A,3x,'NIT/s=',A)")  &
-               trim(iVal(DT)), trim(iVal(nint(NITOS)))
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            WRITE(ERR_MSG,"('DT=',g11.4,3x,'NIT/s=',A)")  &
+               DT, trim(iVal(nint(NITOS)))
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., &
+               FOOTER=.FALSE., LOG=.FALSE.)
 
          ELSE
             STEPS_TOT = STEPS_TOT + 1
