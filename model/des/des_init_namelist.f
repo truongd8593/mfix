@@ -749,6 +749,13 @@
 !</keyword>
 
 
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to turn on/off optimizing the list of facets at each des grid cell
+!  </description>
+!  <dependent keyword="USE_STL" value=".TRUE."/>
+      MINIMIZE_DES_FACET_LIST =.TRUE.
+!</keyword>
 
 !#####################################################################!
 !                          Particle In Cell                           !

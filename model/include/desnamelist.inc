@@ -57,5 +57,7 @@
 
 ! flag to convert des outside box to facets needed if outside box not part of stl geom
 
-         des_convert_box_to_facets
+         des_convert_box_to_facets, &
 
+! Flag to turn on/off optimizing the list of facets at each des grid cell
+         MINIMIZE_DES_FACET_LIST
