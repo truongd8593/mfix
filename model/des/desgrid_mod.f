@@ -503,9 +503,9 @@
       do lkproc=0,nodesk-1
          do ljproc=0,nodesj-1
             do liproc=0,nodesi-1
-               dg_isize_all(liproc) = (xe(iend1_all(lijkproc))-xe(istart1_all(lijkproc)-1))/ltempdx
-               dg_jsize_all(ljproc) = (yn(jend1_all(lijkproc))-yn(jstart1_all(lijkproc)-1))/ltempdy
-               if(do_k) dg_ksize_all(lkproc) = (zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz
+               dg_isize_all(liproc) = NINT((xe(iend1_all(lijkproc))-xe(istart1_all(lijkproc)-1))/ltempdx)
+               dg_jsize_all(ljproc) = NINT((yn(jend1_all(lijkproc))-yn(jstart1_all(lijkproc)-1))/ltempdy)
+               if(do_k) dg_ksize_all(lkproc) = NINT((zt(kend1_all(lijkproc))-zt(kstart1_all(lijkproc)-1))/ltempdz)
                dg_istart1_all(lijkproc) = sum(dg_isize_all(0:liproc-1)) + 2
                dg_jstart1_all(lijkproc) = sum(dg_jsize_all(0:ljproc-1)) + 2
                dg_kstart1_all(lijkproc) = sum(dg_ksize_all(0:lkproc-1)) + 2
