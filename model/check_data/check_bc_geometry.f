@@ -23,6 +23,8 @@
       use geometry, only: NO_I, XLENGTH
       use geometry, only: NO_J, YLENGTH
       use geometry, only: NO_K, ZLENGTH
+! Flag: Reinitializing field conditions.
+      use run, only: REINITIALIZING
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -62,8 +64,10 @@
            'CG_PO           '/)
 !......................................................................!
 
+! Skip this routine if reinitializing as BC locations cannot be changed.
+      IF(REINITIALIZING) RETURN
+ 
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY")
-
 
       L50: DO BCV = 1, DIMENSION_BC
 
@@ -203,32 +207,51 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_GEOMETRY_WALL(BCV)
 
-      USE bc
-      USE compar
-      USE error_manager
-      USE fldvar
-      USE funits
-      USE geometry
-      USE indices
-      USE param
-      USE param1
-      USE physprop
-      USE sendrecv
-      USE toleranc
+! Global Variables:
+!---------------------------------------------------------------------//
+! Boundary condition locations and corresponding grid index
+      use bc, only: BC_X_w, BC_X_e, BC_I_w, BC_I_e
+      use bc, only: BC_Y_s, BC_Y_n, BC_J_s, BC_J_n
+      use bc, only: BC_Z_b, BC_Z_t, BC_K_b, BC_K_t
+! Basic grid information
+      use geometry, only: NO_I, XLENGTH, DX, IMAX, IMAX2, XMIN
+      use geometry, only: NO_J, YLENGTH, DY, JMAX, JMAX2
+      use geometry, only: NO_K, ZLENGTH, DZ, KMAX, KMAX2
+! Flag: Reinitializing field conditions.
+      use run, only: REINITIALIZING
+! Fucntion to compare two values
+      use toleranc, only: COMPARE
+
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, UNDEFINED_I, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
+      use error_manager
+
 
       IMPLICIT NONE
 
-! loop index
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Index of boundary condition.
       INTEGER, INTENT(in) :: BCV
 
-! loop/variable indices
-!      INTEGER :: I , J , K , IJK
-! calculated indices of the wall boundary
+! Local Variables:
+!---------------------------------------------------------------------//
+! Calculated indices of the wall boundary
       INTEGER :: I_w , I_e , J_s , J_n , K_b , K_t
+! Integer error flag
       INTEGER :: IER
+!......................................................................!
+
+
+! Skip this routine if reinitializing as BC locations cannot be changed.
+      IF(REINITIALIZING) RETURN
 
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY_WALL")
-
 
       IF(BC_X_W(BCV)/=UNDEFINED .AND. BC_X_E(BCV)/=UNDEFINED) THEN
 
@@ -359,70 +382,62 @@
 
 
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: GET_FLOW_BC                                             C
-!  Purpose: Find and validate i, j, k locations for flow BC's. Also    C
-!           set value of bc_plane for flow BC's.                       C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 10-DEC-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 27-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: BC_DEFINED, BC_X_w, BC_X_e, BC_Y_s, BC_Y_n    C
-!                        BC_Z_b, BC_Z_t, DX, DY, DZ, IMAX, JMAX, KMAX  C
-!                                                                      C
-!  Variables modified: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t  C
-!                      ICBC_FLAG, BC_PLANE                             C
-!                                                                      C
-!  Local variables: BC, I, J, K, IJK, I_w, I_e, J_s, J_n, K_b, K_t     C
-!                   ERROR, X_CONSTANT, Y_CONSTANT, Z_CONSTANT          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: CHECK_BC_GEOMETRY_FLOW                                  !
+!  Author: P. Nicoletti                               Date: 10-DEC-91  !
+!                                                                      !
+!  Purpose: Find and validate i, j, k locations for flow BC's. Also    !
+!           set value of bc_plane for flow BC's.                       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_GEOMETRY_FLOW(BCV)
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE bc
-      USE indices
-      USE funits
-      USE compar
-      USE sendrecv
+! Global Variables:
+!---------------------------------------------------------------------//
+! Boundary condition locations and corresponding grid index
+      use bc, only: BC_X_w, BC_X_e, BC_I_w, BC_I_e
+      use bc, only: BC_Y_s, BC_Y_n, BC_J_s, BC_J_n
+      use bc, only: BC_Z_b, BC_Z_t, BC_K_b, BC_K_t
+! Basic grid information
+      use geometry, only: NO_I, DX, IMAX, IMAX2, XMIN
+      use geometry, only: NO_J, DY, JMAX, JMAX2
+      use geometry, only: NO_K, DZ, KMAX, KMAX2
+! Flag: Reinitializing field conditions.
+      use run, only: REINITIALIZING
 
+! Global Parameters:
+!---------------------------------------------------------------------//
+      use param1, only: ZERO, UNDEFINED_I, UNDEFINED
+
+! Use the error manager for posting error messages.
+!---------------------------------------------------------------------//
       use error_manager
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! note : this routine will not work if indices are specified ...
-!        x_constant etc.
 
+
+! Dummy Arguments:
+!---------------------------------------------------------------------//
+! Index of boundary condition.
       INTEGER, INTENT(in) :: BCV
 
-! calculated indices of the wall boundary
+! Local Variables:
+!---------------------------------------------------------------------//
+! Calculated indices of the wall boundary
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
-! indices for error checking
+! Indices for error checking
       INTEGER :: IER
 
-! surface indicators
+! surface indictors:
 ! a value of T indicates that the defined boundary region does not
 ! vary in indicated coordinate direction. that is, if bc_x_w is
 ! equal to bc_x_e then the boundary region must be in the yz plane
       LOGICAL :: X_CONSTANT, Y_CONSTANT, Z_CONSTANT
+!......................................................................!
 
+! Skip this routine if reinitializing as BC locations cannot be changed.
+      IF(REINITIALIZING) RETURN
 
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY_FLOW")
 

@@ -1311,7 +1311,7 @@ subroutine usr_get_fname
               READ(*,*)IANS
               IF(IANS .NE. 1)GOTO 70
            ENDIF
-           OPEN (UNIT=40,FILE=usr_fname,STATUS='UNKNOWN')
+           OPEN (UNIT=40,FILE=usr_fname,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
         ENDIF
      ENDIF
   ENDIF

@@ -104,6 +104,15 @@ mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
 
 ################################################################
+#      Socket server
+################################################################
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
+libmfix_a_SOURCES += model/handle_command.f
+libmfix_a_SOURCES += model/socket.c
+endif
+
+################################################################
 #                                                              #
 #      MKL support (only with Intel Fortran compiler)          #
 #                                                              #
@@ -143,13 +152,28 @@ endif
 ################################################################
 
 libmfix_a_SOURCES += \
+	model/include/boundary_conditions.inc \
 	model/include/cartesian_grid_namelist.inc \
+	model/include/chem_equations.inc \
 	model/include/desnamelist.inc \
-	model/include/namelist.inc \
+	model/include/dmp_batch_control.inc \
+	model/include/gas_phase.inc \
+	model/include/geometry.inc \
+	model/include/initial_conditions.inc \
+	model/include/internal_surfaces.inc \
+	model/include/legacy.inc \
 	model/include/netcdf.inc \
+	model/include/numerical_params.inc \
+	model/include/output_control.inc \
+	model/include/physical_params.inc \
+	model/include/point_sources.inc \
 	model/include/qmomknamelist.inc \
+	model/include/run_control.inc \
+	model/include/solids_phase.inc \
 	model/include/species.inc \
 	model/include/species_indices.inc \
+	model/include/tfm_solids.inc \
+	model/include/usr_hooks.inc \
 	model/include/usrnlst.inc \
 	model/include/xforms.inc
 
@@ -183,6 +207,7 @@ libmfix_src = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
+	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_rop.f \
@@ -263,6 +288,7 @@ libmfix_src = \
 	model/cartesian_grid/write_progress_bar.f \
 	model/cdist_mod.f \
 	model/check_ab_m.f \
+	model/check_bqend.f \
 	model/check_convergence.f \
 	model/check_data/check_axis.f \
 	model/check_data/check_bc_dem.f \
@@ -485,6 +511,7 @@ libmfix_src = \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
+	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
@@ -558,6 +585,7 @@ libmfix_src = \
 	model/read_database.f \
 	model/read_namelist.f \
 	model/read_res1.f \
+	model/reinitialize.f \
 	model/remove_comment.f \
 	model/reset_new.f \
 	model/residual_mod.f \
@@ -649,6 +677,7 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
+	model/usr_physical_prop.f \
 	model/usr_rates.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \

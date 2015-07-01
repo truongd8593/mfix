@@ -987,6 +987,7 @@
       USE scalars
       USE toleranc
       USE vtk
+      use error_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1001,6 +1002,31 @@
 !======================================================================
 ! Boundary conditions
 !======================================================================
+
+      CALL INIT_ERR_MSG("CHECK_BC_FLAGS")
+
+      DO BCV = 1, DIMENSION_BC
+         IF(CG_MI_CONVERTED_TO_PS(BCV)) THEN
+            IF(BC_MASSFLOW_g(BCV)==UNDEFINED) THEN
+               WRITE(ERR_MSG, 1710) BCV
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            DO M = 1, MMAX
+               IF(BC_MASSFLOW_s(BCV,M)==UNDEFINED) THEN
+                  WRITE(ERR_MSG, 1711) BCV, M
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               ENDIF
+            ENDDO
+         ENDIF
+      ENDDO
+
+1710 FORMAT('Error 1110: BC :',I3,'. When using CG_MI, the gas mass flow rate',/1X, &
+         'must be specified, including when it is zero.',/1X, &
+         ' Please correct the mfix.dat file.')
+
+1711 FORMAT('Error 1111: BC :',I3,'. When using CG_MI, the solids mass flow rate',/1X, &
+         'for M=',I4,' must be specified, including when it is zero.',/1X, &
+         ' Please correct the mfix.dat file.')
 
       DO IJK = ijkstart3, ijkend3
          BCV = BC_ID(IJK)

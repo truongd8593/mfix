@@ -93,7 +93,7 @@
             OPEN (UNIT=UNIT_SPX+L_SPX+unit_add,FILE=TEMP_FILE, &
                  STATUS='NEW', &
                  RECL=OPEN_N1,ACCESS='DIRECT',FORM='UNFORMATTED', &
-                 ERR=101)
+                 ERR=101,CONVERT='BIG_ENDIAN')
          END IF
 !
 ! allocate variables as needed  (what if no scalars or nRR ??)

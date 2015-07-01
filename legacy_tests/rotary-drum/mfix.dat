@@ -9,7 +9,11 @@
   DESCRIPTION = 'Rotary drum'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-   TIME  =0.0  TSTOP = 1.0E-4   DT = 1.0e-4   DT_MAX = 1.0e-4   OUT_DT = 1.0e-4
+  TIME  =0.0
+  TSTOP = 1.0E-4
+  DT = 1.0e-4
+  DT_MAX = 1.0e-4
+  OUT_DT = 1.0e-4
 #   TIME  =0.0  TSTOP = 1.0  DT = 1.0e-4 
   
   ENERGY_EQ = .FALSE.

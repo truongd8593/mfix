@@ -118,6 +118,18 @@
 !$      INTEGER omp_get_num_threads
 !$      INTEGER omp_get_thread_num
 
+! C Function
+      INTERFACE
+         SUBROUTINE INIT_CMD_SOCKET(port) BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+           CHARACTER(KIND=C_CHAR), INTENT(IN) :: port(*)
+         END SUBROUTINE INIT_CMD_SOCKET
+         SUBROUTINE INIT_LOG_SOCKET(port) BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+           CHARACTER(KIND=C_CHAR), INTENT(IN) :: port(*)
+         END SUBROUTINE INIT_LOG_SOCKET
+      END INTERFACE
+
 !-----------------------------------------------
 
 ! DISTIO
@@ -141,6 +153,12 @@
 ! set automatic restart flag to false
 !      AUTOMATIC_RESTART = .FALSE.
 !      ITER_RESTART      = 1
+
+      ! create libmsockets server
+#ifdef socket
+      CALL INIT_CMD_SOCKET("7777"//CHAR(0))
+      CALL INIT_LOG_SOCKET("8888"//CHAR(0))
+#endif
 
 ! specify the number of processors to be used
 !$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)

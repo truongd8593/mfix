@@ -6,6 +6,8 @@
 !----------------------------------------------------------------------!
       MODULE ERROR_MANAGER
 
+      use, intrinsic :: ISO_C_BINDING
+
       implicit none
 
 ! Interface
@@ -15,6 +17,8 @@
          module procedure iVal_dbl
          module procedure iVal_log
       end interface
+
+
 
 
 ! Maximum number of lines a message can have before a flush is needed.
@@ -35,6 +39,19 @@
 
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
+! Flag for writing messages to the GUI I/O port.
+#ifdef socket
+      LOGICAL, PRIVATE, PARAMETER :: GUI_LOG=.TRUE.
+#else
+      LOGICAL, PRIVATE, PARAMETER :: GUI_LOG=.FALSE.
+#endif
+
+! Error Flag.
+      INTEGER :: IER_EM
+
+! Messages formatted for GUI ouput stream
+      CHARACTER(KIND=C_CHAR, LEN=1), PRIVATE :: GUI_MSG(1024)
+      INTEGER, PRIVATE :: GUI_LC
 
       contains
 
@@ -83,14 +100,18 @@
 ! Integer error flag
       INTEGER :: IER(0:numPEs-1)
 
-! Initizilae the error flag.
+! Initizilae the error flags.
       IER = 0
+      IER_EM = 0
 ! Initialize the call tree depth.
       CALL_DEPTH = 0
 ! Clear the error message storage container.
       ERR_MSG = ''
 ! Clear the caller routine information.
       CALLERS = ''
+! Clear the GUI message buffer
+      GUI_MSG = ''
+      GUI_LC = 1
 
 ! This turns on error messaging from all processes.
       DMP_LOG = (myPE == PE_IO) .OR. ENABLE_DMP_LOG
@@ -191,6 +212,7 @@
 
 ! Clear out the error manager.
       ERR_MSG=''
+      GUI_MSG=''
 
       RETURN
 
@@ -310,6 +332,8 @@
       use funits, only: DMP_LOG
 ! File unit for LOG messages.
       use funits, only: UNIT_LOG
+! Flag to reinitialize the code.
+      use run, only: REINITIALIZING
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -333,7 +357,7 @@
 ! Line length with trailing space removed.
       INTEGER :: LENGTH
 ! Index of last line in the message.
-      INTEGER :: LAST_LINE, tsize
+      INTEGER :: LAST_LINE
 ! Line Counter
       INTEGER :: LC
 ! Local debug flag.
@@ -351,6 +375,14 @@
 
 ! The current calling routine.
       CHARACTER(LEN=128) :: CALLER
+
+
+      INTERFACE
+         SUBROUTINE CHECK_SOCKETS() BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+         END SUBROUTINE CHECK_SOCKETS
+      END INTERFACE
+
 
 ! Set the abort flag. Continue running by default.
       IF(PRESENT(ABORT))THEN
@@ -402,8 +434,9 @@
             IF(SCR_LOG) WRITE(*,2000) trim(CALLER)
             IF(UNT_LOG) WRITE(UNIT_LOG,2000) trim(CALLER)
          ELSE
-            IF(SCR_LOG)WRITE(*,1000) trim(CALLER)
-            IF(UNT_LOG)WRITE(UNIT_LOG,1000) trim(CALLER)
+            IF(SCR_LOG) WRITE(*,1000) trim(CALLER)
+            IF(UNT_LOG) WRITE(UNIT_LOG,1000) trim(CALLER)
+            IF(GUI_LOG) CALL GUI_MSG_HEADER(CALLER)
          ENDIF
       ENDIF
 
@@ -412,10 +445,7 @@
       DO LC = 1, LINE_COUNT
          LINE = ERR_MSG(LC)
          LENGTH = len_trim(LINE)
-         IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
-            LAST_LINE = LC
-            tsize = length
-         ENDIF
+         IF(0 < LENGTH .AND. LENGTH < 256 ) LAST_LINE = LC
       ENDDO
 
 ! Write the message body.
@@ -441,14 +471,17 @@
             IF(0 < LENGTH .AND. LENGTH < 256 ) THEN
                IF(SCR_LOG) WRITE(*,1001) trim(LINE)
                IF(UNT_LOG) WRITE(UNIT_LOG,1001) trim(LINE)
+               IF(GUI_LOG) CALL GUI_MSG_BODY(LINE, LENGTH)
             ELSE
                IF(SCR_LOG) WRITE(*,"('  ')")
                IF(UNT_LOG) WRITE(UNIT_LOG,"('  ')")
+               IF(GUI_LOG) CALL GUI_MSG_BODY(LINE,0)
             ENDIF
          ENDDO
          IF(LAST_LINE == 0) THEN
             IF(SCR_LOG) WRITE(*,"('  ')")
             IF(UNT_LOG) WRITE(UNIT_LOG,"('  ')")
+            IF(GUI_LOG) CALL GUI_MSG_BODY(LINE,0)
          ENDIF
       ENDIF
 
@@ -460,16 +493,32 @@
          ELSE
             IF(SCR_LOG) WRITE(*, 1002)
             IF(UNT_LOG) WRITE(UNIT_LOG, 1002)
+            IF(GUI_LOG) CALL GUI_MSG_FOOTER
          ENDIF
       ENDIF
+
+
+#ifdef socket
+      CALL CHECK_SOCKETS()
+#endif
+
 
 ! Clear the message array.
       ERR_MSG=''
 
+! Clear the message container.
+      GUI_MSG=''
+      GUI_LC=1
+
+
 ! Abort the run if specified.
       IF(A_FLAG) THEN
-         IF(D_FLAG) WRITE(*,3000) myPE
-         CALL MFIX_EXIT(myPE)
+         IF(REINITIALIZING)THEN
+            IER_EM = 1
+         ELSE
+            IF(D_FLAG) WRITE(*,3000) myPE
+            CALL MFIX_EXIT(myPE)
+         ENDIF
       ENDIF
 
       RETURN
@@ -486,6 +535,143 @@
 
       END SUBROUTINE FLUSH_ERR_MSG
 
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      SUBROUTINE FLUSH_ERR_MSG_GUI(OBUFF) &
+         BIND (C, NAME="flush_err_msg_gui")
+
+      use, intrinsic :: ISO_C_BINDING
+
+      implicit none
+
+      CHARACTER(KIND=C_CHAR, LEN=1), INTENT(OUT) :: OBUFF(1024)
+
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Line Counter
+      INTEGER :: LC
+
+
+! Copy over the formatted GUI message
+      DO LC = 1, GUI_LC
+         OBUFF(LC) = GUI_MSG(LC)
+      ENDDO
+! Null terminate the string.
+      OBUFF(GUI_LC+1) = CHAR(00)
+
+
+      RETURN
+      END SUBROUTINE FLUSH_ERR_MSG_GUI
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      SUBROUTINE GUI_MSG_BODY(LINE, LENGTH)
+
+      implicit none
+
+! Single line.
+      CHARACTER(LEN=LINE_LENGTH), INTENT(IN) :: LINE
+! Line length with trailing space removed.
+      INTEGER, INTENT(IN) :: LENGTH
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Line Counter
+      INTEGER :: LC, LL
+
+      LC = GUI_LC
+
+      IF(LENGTH > 0) THEN
+         DO LL=1,min(LENGTH,1022-LC)
+            GUI_MSG(LC) = LINE(LL:LL)
+            LC=LC+1
+         ENDDO
+      ENDIF
+      GUI_MSG(LC) = CHAR(10)
+      GUI_LC=LC+1
+
+      RETURN
+      END SUBROUTINE GUI_MSG_BODY
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      SUBROUTINE GUI_MSG_HEADER(lCALLER)
+
+      implicit none
+
+      CHARACTER(LEN=128), INTENT(IN) :: lCALLER
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Single line.
+      CHARACTER(LEN=LINE_LENGTH) :: LINE
+! Line length with trailing space removed.
+      INTEGER :: LENGTH
+! Line Counter
+      INTEGER :: LC, LL
+
+      LC = GUI_LC
+
+      LINE=''; WRITE(LINE,"(70('*'))")
+      LENGTH = len_trim(LINE)
+      DO LL=1,min(LENGTH,1022-LC)
+         GUI_MSG(LC) = LINE(LL:LL)
+         LC=LC+1
+      ENDDO
+      GUI_MSG(LC) = CHAR(10)
+      LC=LC+1
+
+      LINE=''; WRITE(LINE,"('From: ',A)") trim(lCALLER)
+      LENGTH = len_trim(LINE)
+      DO LL=1,min(LENGTH,1022-LC)
+         GUI_MSG(LC) = LINE(LL:LL)
+         LC=LC+1
+      ENDDO
+      GUI_MSG(LC) = CHAR(10)
+
+      GUI_LC=LC+1
+
+      RETURN
+      END SUBROUTINE GUI_MSG_HEADER
+
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!......................................................................!
+      SUBROUTINE GUI_MSG_FOOTER
+
+      implicit none
+
+! Local Variables:
+!---------------------------------------------------------------------//
+! Single line.
+      CHARACTER(LEN=LINE_LENGTH) :: LINE
+! Line length with trailing space removed.
+      INTEGER :: LENGTH
+! Line Counter
+      INTEGER :: LC, LL
+
+      LC = GUI_LC
+
+      LINE=''; WRITE(LINE,"(70('*'))")
+      LENGTH = len_trim(LINE)
+      DO LL=1,min(LENGTH,1022-LC)
+         GUI_MSG(LC) = LINE(LL:LL)
+         LC=LC+1
+      ENDDO
+      GUI_MSG(LC) = CHAR(10)
+
+      GUI_LC=LC+1
+
+      RETURN
+      END SUBROUTINE GUI_MSG_FOOTER
 
 
 !``````````````````````````````````````````````````````````````````````!
@@ -638,5 +824,19 @@
       END FUNCTION iVal_log
 
 
+!``````````````````````````````````````````````````````````````````````!
+! Function: Reports TRUE if one or more processes set an ABORT flag.   !
+!......................................................................!
+      LOGICAL FUNCTION REINIT_ERROR()
+
+! Global Routine Access:
+!---------------------------------------------------------------------//
+      use mpi_utility, only: GLOBAL_ALL_SUM
+
+      CALL GLOBAL_ALL_SUM(IER_EM)
+      REINIT_ERROR = (IER_EM /= 0)
+      IER_EM = 0
+      RETURN
+      END FUNCTION REINIT_ERROR
 
       END MODULE ERROR_MANAGER

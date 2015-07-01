@@ -886,7 +886,7 @@
 ! this case to maximize search region for 2D problems.
       IF(l3 == UNDEFINED_I) THEN
          Map = 'KIJ_MAP'
-         l3 = merge((KMAX1 - KMIN1)/2 + 1, KMIN1, do_K)
+         l3 = merge(max((KMAX1-KMIN1)/2+1,2), KMIN1, do_K)
          l2 = IMIN1;  u2 = IMAX1
          l1 = JMIN1;  u1 = JMAX1
          lMsg='Center of domain'
@@ -902,16 +902,7 @@
       ENDIF
 
 ! Invoke the search routine.
-      SELECT CASE (Map)
-      CASE ('JKI_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, JKI_MAP, dFlag, iErr)
-      CASE ('IKJ_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, IKJ_MAP, dFlag, iErr)
-      CASE ('KIJ_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, KIJ_MAP, dFlag, iErr)
-      CASE DEFAULT
-         iErr = 1001
-      END SELECT
+      CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, MAP, dFlag, iErr)
 
       IF(iErr == 0) RETURN
 
@@ -961,54 +952,7 @@
 
  9999 FORMAT(/' Fatal Error --> Invoking MFIX_EXIT',/1x,70('*'),2/)
 
-
-    CONTAINS
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Author: J. Musser                                  Date: 09-Oct-13  !
-!  Reviewer:                                          Date:            !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE JKI_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in1; lJ=in3; lK=in2; return
-      return
-      END SUBROUTINE JKI_MAP
-
-
-      SUBROUTINE IKJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in3; lJ=in1; lK=in2; return
-      return
-      END SUBROUTINE IKJ_MAP
-
-
-      SUBROUTINE KIJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in2; lJ=in1; lK=in3; return
-      return
-      END SUBROUTINE KIJ_MAP
-
-
       END SUBROUTINE SET_IJK_P_G
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -1034,13 +978,12 @@
       INTEGER, INTENT(IN)  :: ll3
       INTEGER, INTENT(IN)  :: ll2, lu2
       INTEGER, INTENT(IN)  :: ll1, lu1
-      LOGICAL, intent(in) :: ldFlag
+      LOGICAL, INTENT(IN) :: ldFlag
       INTEGER, INTENT(OUT)  :: iErr
+      CHARACTER(len=*), INTENT(IN) :: lMAP
 
 ! Local variables
 !--------------------------------------------------------------------//
-      EXTERNAL lMAP
-
       INTEGER :: lc2, lS2, lE2
       INTEGER :: lc1, lS1, lE1
       INTEGER :: I, J, K, IJK
@@ -1083,7 +1026,16 @@
          lp2: do lc2 = lS2, lE2
          lp1: do lc1 = lS1, lE1
 ! Map the loop counters to I/J/K indices.
-            CALL lMAP(lc1, lc2, ll3, I, J, K)
+            SELECT CASE (lMap)
+            CASE ('JKI_MAP')
+               I=lc1; J=ll3; K=lc2
+            CASE ('IKJ_MAP')
+               I=ll3; J=lc1; K=lc2
+            CASE ('KIJ_MAP')
+               I=lc2; J=lc1; K=ll3
+            CASE DEFAULT
+               iErr = 1001
+            END SELECT
 
 ! Only the rank that owns this I/J/K proceeds.
             if(.NOT.IS_ON_myPE_owns(I,J,K)) cycle

@@ -547,6 +547,10 @@
       Integer, dimension(:), allocatable :: STL_FACET_TYPE
 
       Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
+
+! Flag to turn on/off optimizing the list of facets at each des grid cell
+
+      LOGICAL :: MINIMIZE_DES_FACET_LIST
 !-----------------------------------------------------------------<<<
 
 

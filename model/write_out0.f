@@ -197,48 +197,53 @@
       DO L = 1, DIMENSION_C
          IF (C(L) /= UNDEFINED) WRITE (UNIT_OUT, 1190) C_NAME(L), L, C(L)
       END DO
-      WRITE (UNIT_OUT, 1200)
-      WRITE (UNIT_OUT, 1201) COORDINATES
-      IF (CYCLIC_X_PD) THEN
-         WRITE (UNIT_OUT, 1202) 'X', ' with pressure drop'
-         WRITE (UNIT_OUT, 1203) 'X', DELP_X
-      ELSE IF (CYCLIC_X) THEN
-         WRITE (UNIT_OUT, 1202) 'X'
+
+! Geometry and Discretization.
+      IF(.NOT.REINITIALIZING) THEN
+         WRITE (UNIT_OUT, 1200)
+         WRITE (UNIT_OUT, 1201) COORDINATES
+         IF (CYCLIC_X_PD) THEN
+            WRITE (UNIT_OUT, 1202) 'X', ' with pressure drop'
+            WRITE (UNIT_OUT, 1203) 'X', DELP_X
+         ELSE IF (CYCLIC_X) THEN
+            WRITE (UNIT_OUT, 1202) 'X'
+         ENDIF
+         IF (CYCLIC_Y_PD) THEN
+            WRITE (UNIT_OUT, 1202) 'Y', ' with pressure drop'
+            WRITE (UNIT_OUT, 1203) 'Y', DELP_Y
+         ELSE IF (CYCLIC_Y) THEN
+            WRITE (UNIT_OUT, 1202) 'Y'
+         ENDIF
+         IF (CYCLIC_Z_PD) THEN
+            WRITE (UNIT_OUT, 1202) 'Z', ' with pressure drop'
+            WRITE (UNIT_OUT, 1203) 'Z', DELP_Z
+         ELSE IF (CYCLIC_Z) THEN
+            WRITE (UNIT_OUT, 1202) 'Z'
+         ENDIF
+         WRITE (UNIT_OUT, 1210)
+         LEGEND(1) = '  I'
+         LEGEND(2) = ' DX'
+         LEGEND(3) = 'X_E'
+         CALL WRITE_TABLE (LEGEND, DX, XMIN, 1, IMAX2)
+         IF (XMIN /= ZERO) WRITE (UNIT_OUT, 1211) XMIN
+         WRITE (UNIT_OUT, 1212) IMAX
+         WRITE (UNIT_OUT, 1213) XLENGTH
+         WRITE (UNIT_OUT, 1220)
+         LEGEND(1) = '  J'
+         LEGEND(2) = ' DY'
+         LEGEND(3) = 'Y_N'
+         CALL WRITE_TABLE (LEGEND, DY, ZERO, 1, JMAX2)
+         WRITE (UNIT_OUT, 1221) JMAX
+         WRITE (UNIT_OUT, 1222) YLENGTH
+         WRITE (UNIT_OUT, 1230)
+         LEGEND(1) = '  K'
+         LEGEND(2) = ' DZ'
+         LEGEND(3) = 'Z_T'
+         CALL WRITE_TABLE (LEGEND, DZ, ZERO, 1, KMAX2)
+         WRITE (UNIT_OUT, 1231) KMAX
+         WRITE (UNIT_OUT, 1232) ZLENGTH
       ENDIF
-      IF (CYCLIC_Y_PD) THEN
-         WRITE (UNIT_OUT, 1202) 'Y', ' with pressure drop'
-         WRITE (UNIT_OUT, 1203) 'Y', DELP_Y
-      ELSE IF (CYCLIC_Y) THEN
-         WRITE (UNIT_OUT, 1202) 'Y'
-      ENDIF
-      IF (CYCLIC_Z_PD) THEN
-         WRITE (UNIT_OUT, 1202) 'Z', ' with pressure drop'
-         WRITE (UNIT_OUT, 1203) 'Z', DELP_Z
-      ELSE IF (CYCLIC_Z) THEN
-         WRITE (UNIT_OUT, 1202) 'Z'
-      ENDIF
-      WRITE (UNIT_OUT, 1210)
-      LEGEND(1) = '  I'
-      LEGEND(2) = ' DX'
-      LEGEND(3) = 'X_E'
-      CALL WRITE_TABLE (LEGEND, DX, XMIN, 1, IMAX2)
-      IF (XMIN /= ZERO) WRITE (UNIT_OUT, 1211) XMIN
-      WRITE (UNIT_OUT, 1212) IMAX
-      WRITE (UNIT_OUT, 1213) XLENGTH
-      WRITE (UNIT_OUT, 1220)
-      LEGEND(1) = '  J'
-      LEGEND(2) = ' DY'
-      LEGEND(3) = 'Y_N'
-      CALL WRITE_TABLE (LEGEND, DY, ZERO, 1, JMAX2)
-      WRITE (UNIT_OUT, 1221) JMAX
-      WRITE (UNIT_OUT, 1222) YLENGTH
-      WRITE (UNIT_OUT, 1230)
-      LEGEND(1) = '  K'
-      LEGEND(2) = ' DZ'
-      LEGEND(3) = 'Z_T'
-      CALL WRITE_TABLE (LEGEND, DZ, ZERO, 1, KMAX2)
-      WRITE (UNIT_OUT, 1231) KMAX
-      WRITE (UNIT_OUT, 1232) ZLENGTH
+
 !
 !  Gas Section
 !
@@ -313,8 +318,6 @@
  1421 FORMAT(2(2x,G12.5))
 
             END DO
-
-
          END DO
 
 

@@ -10,7 +10,9 @@
   DESCRIPTION = 'Bubbling Fluidized Bed Simulation'                             
   RUN_TYPE = 'new'                                                              
   UNITS = 'cgs'                                                                 
-  TIME  = 0.0    TSTOP = 1.0    DT = 1.0E-4                                     
+  TIME  = 0.0 
+  TSTOP = 1.0
+  DT = 1.0E-4                                     
   ENERGY_EQ = .FALSE.                                                           
   SPECIES_EQ = .FALSE.    .FALSE.                                               
 #                                                                               

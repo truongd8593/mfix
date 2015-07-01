@@ -13,7 +13,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      Use param, only: dim_M, dim_eqs
+      use param, only: dim_M, dim_eqs
+      use param1, only: UNDEFINED_I
+      USE, INTRINSIC :: ISO_C_BINDING
 !---------------------------------------------------------------------//
 
 
@@ -46,7 +48,7 @@
       DOUBLE PRECISION :: TSTOP
 
 ! Time step.
-      DOUBLE PRECISION :: DT
+      REAL(C_DOUBLE), bind(C, name="simulation_time") :: DT
 
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
@@ -114,6 +116,12 @@
 
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
+
+! If .TRUE. call user-defined physical properties routines
+      LOGICAL :: USR_ROg, USR_ROs, USR_CPg, USR_CPs
+
+! If .TRUE. force time-step when NIT=MAX_NIT and DT=DT_MIN
+      LOGICAL :: PERSISTENT_MODE
 
 ! If .TRUE. solve population balance  equations
       LOGICAL :: Call_DQMOM
@@ -250,18 +258,26 @@
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
 
+! If. .TRUE. code will respond during runtime
+      LOGICAL :: INTERACTIVE_MODE
+
+! Number of interactive iterations.
+      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
+
+! If .TRUE. code will halt at call to interact
+      LOGICAL :: INTERUPT = .FALSE.
+
+! If .TRUE. code will automatically restart for DT < DT_MIN
+      LOGICAL :: REINITIALIZING = .FALSE.
+
+! Time-step failure rate:
+! 1) Number of failed time steps
+! 2) Observation window
+      INTEGER :: TIMESTEP_FAIL_RATE(2)
+
 ! parameters for dynamically adjusting time step
 ! +1 -> increase dt; -1 decrease dt
-      INTEGER :: DT_dir
-
-! number of steps since last adjustment
-      INTEGER :: STEPS_tot
-
-! number of iterations since last adjustment
-      INTEGER :: NIT_tot
-
-! iterations per second for last dt
-      DOUBLE PRECISION :: NITos
+      INTEGER :: DT_dir = -1
 
 ! Maximum Time step.
       DOUBLE PRECISION :: DT_MAX
@@ -295,9 +311,6 @@
 
        common /run_dp/ time      !for Linux
 
-! Flag to invoke the variable solids density model.
-!      LOGICAL          SOLID_RO_V
-
 
 ! Flags indicating variable solids density.
       LOGICAL :: SOLVE_ROs(DIM_M), ANY_SOLVE_ROs
@@ -313,189 +326,5 @@
       INTEGER :: TFM_COUNT = 0
       INTEGER :: DEM_COUNT = 0
       INTEGER :: PIC_COUNT = 0
-
-    CONTAINS
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Function name: ADJUST_DT(IER, NIT)                                  C
-!  Purpose: Automatically adjust time step                             C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: FEB-10-97  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!                                                                      C
-!  Variables modified:
-!                                                                      C
-!  Local variables: NONE                                               C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
-      LOGICAL FUNCTION ADJUST_DT (IER, NIT)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE compar
-      USE machine, only: start_log, end_log
-      USE mpi_utility
-      USE output
-      USE param
-      USE param1
-
-      IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-      INTEGER IER, NIT
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-      INTEGER, PARAMETER :: STEPS_MIN = 5
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-      DOUBLE PRECISION :: NITOS_NEW
-      CHARACTER(LEN=70), DIMENSION(1) :: LINE
-!-----------------------------------------------
-!   E x t e r n a l   F u n c t i o n s
-!-----------------------------------------------
-!-----------------------------------------------
-!
-!
-!//  only do this routine if the root processor
-!//SP
-!     if (myPE.ne.PE_IO) return
-
-      ADJUST_DT = .FALSE.                     !No need to iterate again
-      IF (DT==UNDEFINED .OR. DT<ZERO) RETURN
-
-      use_DT_prev = .FALSE.  ! when false use current dt to advance time.
-
-
-!     Initialize
-      IF (IER == 100) THEN
-         DT_DIR = -1
-         STEPS_TOT = 0
-         NITOS = 0.
-         NIT_TOT = 0
-
-! Iterate successfully converged.
-!---------------------------------------------------------------------//
-      ELSE IF(IER == 0) THEN
-
-!AE TIME 041601: Set back the timestep to original size which was
-! halved previously for 2nd order accurate time implementation.
-         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 2.D0*DT
-
-         IF(STEPS_TOT >= STEPS_MIN) THEN
-            NITOS_NEW = DBLE(NIT_TOT)/(STEPS_TOT*DT)
-            IF (NITOS_NEW > NITOS) DT_DIR = DT_DIR*(-1)
-            STEPS_TOT = 0
-            NITOS = NITOS_NEW
-            NIT_TOT = 0
-            IF (DT_DIR > 0) THEN
-               DT = MIN(DT_MAX,DT/DT_FAC)
-            ELSE
-               DT = DT*DT_FAC
-            ENDIF
-! in case IER = 0 and DT is modified, use DT_prev to advance time
-           use_DT_prev = .TRUE.
-            IF (FULL_LOG.and.myPE.eq.PE_IO) &
-               WRITE (*, *) 'DT = ', DT, '  NIT/s = ', NINT(NITOS)
-         ELSE
-            STEPS_TOT = STEPS_TOT + 1
-            NIT_TOT = NIT_TOT + NIT
-         ENDIF
-! No need to iterate again
-         ADJUST_DT = .FALSE.
-
-!AE TIME 041601: Cut the timestep into half for 2nd order accurate
-! time implementation.
-         IF((CN_ON.AND.NSTEP>1 .AND. RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 0.5D0*DT
-
-! Iterate failed to converge.
-!---------------------------------------------------------------------//
-      ELSE
-!AE TIME 041601: Set back the timestep to original size which was
-! halved previously for 2nd order accurate time implementation
-         IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-            (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) &
-            DT = 2.D0*DT
-
-! The step size has decreased to the minimum.
-         IF (DT < DT_MIN) THEN
-            IF(AUTO_RESTART) THEN
-               LINE(1) = 'DT < DT_MIN.  Recovery not possible! Trying Automatic Restart'
-              ELSE
-                 LINE(1) = 'DT < DT_MIN.  Recovery not possible!'
-              ENDIF
-            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1)
-            CALL WRITE_ERROR ('ADJUST_DT', LINE, 1)
-!           CALL MFIX_EXIT(myPE)
-
-! The time step cannot be reduced the step size is fixed.
-         ELSE IF (DT_FAC >= ONE) THEN
-            LINE(1) = 'DT_FAC >= 1.  Recovery not possible!'
-            IF (FULL_LOG.and.myPE.eq.PE_IO) WRITE (*, *) LINE(1)
-            CALL WRITE_ERROR ('ADJUST_DT', LINE, 1)
-            CALL MFIX_EXIT(myPE)
-         ELSE
-
-! Reduce the step size.
-            DT_DIR = -1
-            STEPS_TOT = 0
-            NITOS = 0.
-            NIT_TOT = 0
-            DT = DT*DT_FAC
-
-            IF (FULL_LOG) THEN
-               IF(myPE.eq.PE_IO) then
-                  WRITE (*, '(12X,A,G12.5,9X,A)') &
-                     ' Dt=', DT, ' Recovered            :-)'
-               ENDIF
-               CALL START_LOG
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(12X,A,G12.5,9X,A)') &
-                  ' Dt=', DT, ' Recovered            :-)'
-               CALL END_LOG
-            ENDIF
-            CALL RESET_NEW
-! Iterate again with new dt
-            ADJUST_DT = .TRUE.
-
-
-!AE TIME 041601: Cut the timestep into half for 2nd order accurate
-! time implementation.
-            IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-               (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP>=(NSTEPRST+1)))&
-                 DT = 0.5D0*DT
-         ENDIF
-
-! Get courant numbers and max p_star for the diverged iteration.
-!        call get_stats(IER)
-
-      ENDIF
-
-!AIKEDEBUG Get the min. Courant number displayed.
-!      call get_stats(IER)
-
-      ODT = ONE/DT
-
-      call bcast (dt,root)
-      call bcast (odt,root)
-!
-      RETURN
-      END FUNCTION ADJUST_DT
 
       END MODULE RUN

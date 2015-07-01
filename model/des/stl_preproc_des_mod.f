@@ -294,6 +294,8 @@
       use desgrid, only: dg_ystart, dg_dyinv
       use desgrid, only: dg_zstart, dg_dzinv
 
+      Use discretelement, only: MINIMIZE_DES_FACET_LIST
+
       Use stl
       use error_manager
 
@@ -332,8 +334,10 @@
       CALL TESTTRIANGLEAABB(VERTEX(:,:,N), NORM_FACE(:,N),             &
          BOX_ORIGIN(:), BOX_EXTENTS(:), SA_EXIST, SEP_AXIS,I,J,K )
 
-! A sparating axis exists so the cell and the triangle do not intersect.
-      IF(SA_EXIST) RETURN
+! A separating axis exists so the cell and the triangle do not intersect.
+! JFD: If MINIMIZE_DES_FACET_LIST is .FALSE. then the facet is still added to the list.
+!      This seems to prevent particle leakage for some des gris setups.
+      IF(SA_EXIST.AND.MINIMIZE_DES_FACET_LIST ) RETURN
 
       CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 

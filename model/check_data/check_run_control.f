@@ -25,9 +25,8 @@
 ! Flag: Use K-Epsilon turbulence model.
       USE run, only: K_EPSILON
       USE run, only: ishii, jackson
-! Turbulence length scale.
-      use constant, only: L_SCALE0
-
+! Turbulence lenghth scale and viscosity bound.
+      use constant, only: L_SCALE0, MU_GMAX
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -120,9 +119,14 @@
              '.T.',/,'Please correct the mfix.dat file.')
       ENDIF
 
+!  Check whether MU_gmax is specified for turbulence (sof)
+      IF (K_Epsilon .AND. MU_GMAX==UNDEFINED) THEN
+         WRITE(ERR_MSG, 1000) 'MU_GMAX'
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+
 ! Clear the error manager
       CALL FINL_ERR_MSG
-
 
       RETURN
 

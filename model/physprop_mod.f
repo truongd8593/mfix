@@ -42,6 +42,14 @@
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
 
+! Inert solids phase species mass fraction in dilute region.  This is needed for
+! calculating the variable solids phase density.
+      DOUBLE PRECISION :: DIL_INERT_X_VSD(DIM_M)
+
+! Factor to define dilute region for special treatment of
+! the variable solids phase density.
+      DOUBLE PRECISION :: DIL_FACTOR_VSD
+
 ! Particle shape factor
       DOUBLE PRECISION :: SHAPE_FACTOR(DIM_M)
 

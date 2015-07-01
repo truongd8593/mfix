@@ -8,7 +8,9 @@
   DESCRIPTION = 'Plug-flow reactor'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-!  TIME  = 0.0    TSTOP = 1.0  DT = 100.0E-4  !commented out for steady-state
+!  TIME  = 0.0
+!  TSTOP = 1.0
+!  DT = 100.0E-4  !commented out for steady-state
   ENERGY_EQ = .FALSE.
   SPECIES_EQ =   .TRUE. .FALSE.
 

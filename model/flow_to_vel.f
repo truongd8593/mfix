@@ -30,6 +30,7 @@
       use bc, only: BC_VOLFLOW_G
       use bc, only: BC_MASSFLOW_S
       use bc, only: BC_VOLFLOW_S
+      use run, only: REINITIALIZING
 
       use error_manager
       use toleranc
@@ -74,13 +75,14 @@
 
       DO M=1,M_TOT
          IF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
-            CALL SOLIDS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV, M, SKIP(M))
+            CALL SOLIDS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK,BCV,M,SKIP(M))
 ! Set the conversion flag.
             CONVERTED = .TRUE.
          ENDIF
       ENDDO
 
-      IF(CONVERTED .AND. (NO_I .OR. NO_J .OR. NO_K)) THEN
+      IF(CONVERTED .AND. .NOT.REINITIALIZING .AND. &
+         (NO_I.OR.NO_J.OR.NO_K)) THEN
          WRITE(ERR_MSG, 1100)
          CALL FLUSH_ERR_MSG
       ENDIF

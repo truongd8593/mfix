@@ -82,6 +82,8 @@
       use physprop, only: MU_g0, Mu_s0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
+! UDF flags for physical properties
+      use run, only: USR_ROg, USR_ROs, USR_CPg, USR_CPs
 ! MMS flag
       use mms, only: USE_MMS
       implicit none
@@ -101,26 +103,36 @@
 
 ! Allocate and initialize:
 !```````````````````````````````````````````````````````````````````````
-      allocate( DENSITY(0:DIMENSION_M)); DENSITY = .FALSE.
-      allocate( SP_HEAT(0:DIMENSION_M)); SP_HEAT = .FALSE.
-      allocate( PSIZE(0:DIMENSION_M)); PSIZE   = .FALSE.
+      IF(.NOT.allocated(DENSITY)) allocate( DENSITY(0:DIMENSION_M))
+      IF(.NOT.allocated(SP_HEAT)) allocate( SP_HEAT(0:DIMENSION_M))
+      IF(.NOT.allocated(PSIZE)) allocate( PSIZE(0:DIMENSION_M))
 
-      allocate( VISC(0:DIMENSION_M)); VISC = .FALSE.
-      allocate( COND(0:DIMENSION_M)); COND = .FALSE.
-      allocate( DIFF(0:DIMENSION_M)); DIFF = .FALSE.
-      allocate( GRAN_DISS(0:DIMENSION_M)); GRAN_DISS = .FALSE.
+      DENSITY = .FALSE.
+      SP_HEAT = .FALSE.
+      PSIZE   = .FALSE.
 
-      allocate( DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M))
+      IF(.NOT.allocated(VISC)) allocate( VISC(0:DIMENSION_M))
+      IF(.NOT.allocated(COND)) allocate( COND(0:DIMENSION_M))
+      IF(.NOT.allocated(DIFF)) allocate( DIFF(0:DIMENSION_M))
+      IF(.NOT.allocated(GRAN_DISS)) allocate( GRAN_DISS(0:DIMENSION_M))
+
+      VISC = .FALSE.
+      COND = .FALSE.
+      DIFF = .FALSE.
+      GRAN_DISS = .FALSE.
+
+      IF(.NOT.allocated(DRAGCOEF)) &
+         allocate( DRAGCOEF(0:DIMENSION_M,0:DIMENSION_M))
+      IF(.NOT.allocated(HEAT_TR)) &
+         allocate( HEAT_TR(0:DIMENSION_M,0:DIMENSION_M))
+
       DRAGCOEF = .FALSE.
-
-      allocate( HEAT_TR(0:DIMENSION_M,0:DIMENSION_M))
       HEAT_TR = .FALSE.
-
 
 ! Coefficients for gas phase parameters.
 !```````````````````````````````````````````````````````````````````````
 ! Compressible flow.
-      if(RO_G0 == UNDEFINED) DENSITY(0) = .TRUE.
+      if(RO_G0 == UNDEFINED .OR. USR_ROg) DENSITY(0) = .TRUE.
 ! Viscosity is recalculated iteration-to-iteration if:
 ! 1) the energy equations are solved
 ! 2) a turbulace length scale is defined (L_SCALE0 /= ZERO)
@@ -131,6 +143,7 @@
          if(C_PG0 == UNDEFINED) SP_HEAT(0) = .TRUE.
          if(K_G0  == UNDEFINED) COND(0) = .TRUE.
       endif
+      if(USR_CPg) SP_HEAT(0) = .TRUE.
 ! Species diffusivity.
       if(SPECIES_EQ(0)) DIFF(0) = .TRUE.
 
@@ -147,6 +160,7 @@
 
 ! Variable solids density.
          if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
+         if(USR_ROs) DENSITY(1:MMAX) = .TRUE.
 
 ! Solids viscosity.
 !         DO M = 1, MMAX
@@ -160,12 +174,13 @@
          VISC(1:MMAX) = .TRUE.
 
 ! Specific heat and thermal conductivity.
-         if(ENERGY_EQ) THEN
-            do M=1,MMAX
+         do M=1,MMAX
+            if(ENERGY_EQ) THEN
                if(C_PS0(M) == UNDEFINED) SP_HEAT(M) = .TRUE.
                if(K_S0(M)  == UNDEFINED) COND(M) = .TRUE.
-            enddo
-         endif
+            endif
+            if(USR_CPS) SP_HEAT(M) = .TRUE.
+         enddo
 
 ! Species diffusivity. There is no reason to invoke this routine as the
 ! diffusion coefficient for solids is always zero.

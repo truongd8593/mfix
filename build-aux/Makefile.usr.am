@@ -133,6 +133,32 @@ mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
 
 ################################################################
+#      Socket server
+################################################################
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
+endif
+
+################################################################
+#      run this case
+################################################################
+
+POST_SCRIPT=AUTOTEST/post.script.NEW
+
+run: mfix
+	./mfix
+	touch run
+
+test: postmfix run
+	rm -f POST*.dat
+	if [ -e $(POST_SCRIPT) ]; then \
+	    ./postmfix < $(POST_SCRIPT); \
+	    for test_post_file in AUTOTEST/POST*.dat; do \
+	        numdiff -a 0.000001 -r 0.05 $$test_post_file $$( basename $$test_post_file ) || echo "file $$test_post_file does not match"; \
+	    done; \
+	fi
+
+################################################################
 #                                                              #
 #  Use absolute paths in the Makefile, so it can be copied     #
 #  to any mfix.dat directory.                                  #
