@@ -1,7 +1,7 @@
 ########################################################################
 # Gresho problem: A stationary rotating vortex.                        #
 #                                                                      #
-# References:                                                          # 
+# References:                                                          #
 #   [1] Liska, R. & Wendroff, B. (2003). Comparison of Several         #
 #   Difference Schemes on 1D and 2D Test Problems for the              #
 #   Euler Equations.                                                   #
@@ -10,12 +10,12 @@
 #                                                                      #
 #   [2] Gresho, P. M. & Chan, S. T. (1990). On the theory of           #
 #   semi-implicit projection methods for viscous incompressible flow   #
-#   and its implementation via a finite element method that also       # 
-#   introduces a nearly consistent mass matrix.                        # 
+#   and its implementation via a finite element method that also       #
+#   introduces a nearly consistent mass matrix.                        #
 #   Part 2: Implementation.                                            #
 #   International Journal for Numerical Methods in Fluids,             #
 #   11, 621--659.                                                      #
-#   doi: 10.1002/fld.1650110510                                        #                        
+#   doi: 10.1002/fld.1650110510                                        #
 #                                                                      #
 # Author: Aniruddha Choudhary (anirudd@vt.edu)          Date: Jun 2015 #
 #                                                                      #
@@ -32,7 +32,7 @@
   Time          = 0.0
   DT            = 0.1
   Tstop         = 3.0
-  DT_Fac        = 1.0
+!  DT_Fac        = 1.0
 
   Energy_eq     = .F.
   Species_eq(0) = .F.
@@ -46,7 +46,7 @@
 
   Max_nit       = 200000
 
-  Tol_resid     = 1.0E-8
+  Tol_resid     = 1.0E-4
 
   Leq_pc        = 9*'DIAG'
 
@@ -72,10 +72,10 @@
 
   Coordinates   = 'cartesian'
 
-  xlength = 1.0  
+  xlength = 1.0
   ylength = 1.0
 
-  imax    = 40 
+  imax    = 40
   jmax    = 40
 
   no_k = .T.
@@ -83,7 +83,7 @@
 #_______________________________________________________________________
 # GAS-PHASE SECTION
 
-  mu_g0 = 0.0
+!  mu_g0 = 0.0
   ro_g0 = 1.0
 
 #_______________________________________________________________________
@@ -94,15 +94,17 @@
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION
 
-  IC_X_w(1)   = 0.0     
-  IC_X_e(1)   = 1.0    
-  IC_Y_s(1)   = 0.0    
-  IC_Y_n(1)   = 1.0    
+  IC_X_w(1)   = 0.0
+  IC_X_e(1)   = 1.0
+  IC_Y_s(1)   = 0.0
+  IC_Y_n(1)   = 1.0
 
-  IC_EP_g(1)  = 1.0   
+  IC_EP_g(1)  = 1.0
 
-  IC_U_g(1)   = 0.0  
-  IC_V_g(1)   = 0.0     
+  IC_U_g(1)   = 0.0
+  IC_V_g(1)   = 0.0
+
+  IC_T_g(1)   = 300.0
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
@@ -115,12 +117,12 @@
 
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
- 
-  Out_dt      = 1.                 
-  Res_dt      = 1.                 
-  Nlog        = 1                  
-  Full_log    = .T.              
-  Spx_dt      = 9*1.
+
+  Out_dt      = 1.0
+  Res_dt      = 0.1
+  Nlog        = 1
+  Full_log    = .T.
+  Spx_dt      = 9*0.1
 
   Resid_string  = 'P0' 'U0' 'V0'
 

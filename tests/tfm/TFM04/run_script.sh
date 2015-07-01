@@ -17,7 +17,7 @@ cd $CASE_DIR
 echo "******** Running simulation..."
 
 mpirun -np 1 mfix.exe \
-  nodesi=1 nodesj=1 nodesk=1 #> out.log
+  nodesi=1 nodesj=1 nodesk=1 > out.log
 #rm {TFM04.*,out.log}
 
 #rm $CASE_DIR/mfix.exe

@@ -189,7 +189,7 @@
 ! input y      
       double precision, intent(in)  :: yt
 ! variable for which return value is desired      
-      character(len=20), intent(in) :: ch
+      character(len=*), intent(in)  :: ch
 
 !! local variables
 ! vortex center coordinates
@@ -246,7 +246,7 @@
         p_g_return = pr
 
 ! return desired value
-        select case(ch)
+        select case(trim(ch))
         case('u_g')
           gresho_ic = u_g_return
         case('v_g')
