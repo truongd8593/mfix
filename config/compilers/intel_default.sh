@@ -94,7 +94,7 @@ case $OPT in
 
   3)echo "Setting flags for high optimization."
     AR=xiar
-    FORT_FLAGS="${omp} ${mpi} -FR -fast ${common} ${dbg}"
+    FORT_FLAGS="${omp} ${mpi} -FR -fast -no-ipo ${common} ${dbg}"
     FORT_FLAGS3="${common} -fast ${dbg}"
     LINK_FLAGS="${omp} ${mkl} ${dbg}";;
   *)echo "Unsupported optimization level."
