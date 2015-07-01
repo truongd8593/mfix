@@ -1309,9 +1309,9 @@
       DO LL = 1, MAX_PIP
 
          IF(PC .GT. PIP) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          pc = pc+1
-         IF(PEA(LL,4)) CYCLE
+         IF(IS_GHOST(LL)) CYCLE
 
          WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
               (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)

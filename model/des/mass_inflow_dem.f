@@ -39,7 +39,7 @@
 
             DO LS= 1,PINC(IJK)
                NP = PIC(IJK)%p(LS)
-               IF(PEA(NP,3)) CYCLE
+               IF(IS_EXITING(NP)) CYCLE
                SELECT CASE (BC_PLANE(BCV))
                CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -49,7 +49,7 @@
                CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
                END SELECT
 ! The particle is still inside the domain
-               IF(DIST > DES_RADIUS(NP)) PEA(NP,2) = .FALSE.
+               IF(DIST > DES_RADIUS(NP)) CALL SET_NORMAL(NP)
             ENDDO
          ENDDO
 
@@ -82,7 +82,7 @@
 
 ! Find the first free space in the particle existance array.
             NP_LP: DO NP = LS, MAX_PIP
-               IF(.NOT.PEA(NP,1)) THEN
+               IF(IS_NONEXISTENT(NP)) THEN
                   LS = NP
                   EXIT NP_LP
                ENDIF
@@ -296,9 +296,8 @@
 ! Shift the phase index by SMAX to refernece global variables.
       BC_M = lM + SMAX
 
-! Set the PEA Flags:
-      PEA(lNP,1:2) = .TRUE.  ! The particle exists and is entering
-      PEA(lNP,3:4) = .FALSE. ! It is not exiting nor a ghost particle
+! The particle exists and is entering, not exiting nor a ghost particle
+      CALL SET_ENTERING(lNP)
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)

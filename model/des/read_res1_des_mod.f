@@ -469,8 +469,7 @@
       use compar, only: numPEs
 
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PEA
-      use discretelement, only: PIP
+      use discretelement, only: PIP, SET_NORMAL
       use geometry, only: NO_K
 
       implicit none
@@ -526,7 +525,7 @@
          lBuf = (LC1-1)*lDIMN+1
          DES_POS_NEW(1:lDIMN,LC1) = dProcBuf(lBuf:lBuf+lDIMN-1)
          lBuf = lBuf + lDIMN
-         PEA(LC1,1) = .TRUE.
+         CALL SET_NORMAL(LC1)
       ENDDO
 
       IF(allocated(dRootBuf)) deallocate(dRootBuf)
@@ -535,7 +534,6 @@
 
       RETURN
       END SUBROUTINE SCATTER_PAR_POS
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: READ_PAR_COL                                             !
@@ -630,7 +628,7 @@
 
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
-      use discretelement, only: PIP, PEA
+      use discretelement, only: PIP, IS_GHOST
       use discretelement, only: NEIGH_MAX, NEIGH_NUM
 
 !      use mpi_utility, only: BCAST
@@ -672,7 +670,7 @@
 
          lGLOBAL_OWNER = 0
          DO LC1=1, PIP
-            IF(.NOT.PEA(LC1,4)) &
+            IF(.NOT.IS_GHOST(LC1)) &
                lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
          ENDDO
 
@@ -786,7 +784,6 @@
       use discretelement, only: NEIGHBORS
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
-      use discretelement, only: PEA
 
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_MAX

@@ -82,7 +82,7 @@
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
 !$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd,crossp)  &
 !$omp shared(max_pip,focus_particle,debug_des,no_neighboring_facet_des,&
-!$omp    pea,pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,&
+!$omp    pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,    &
 !$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
 !$omp    hert_kwn,hert_kwt,kn_w,kt_w,des_coll_model_enum,mew_w,tow,    &
 !$omp    des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face, &
@@ -95,11 +95,11 @@
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
 ! skipping non-existent particles or ghost particles
-         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
 
 ! make sure the particle is not classified as a new 'entering' particle
 ! or is already marked as a potential exiting particle
-         IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
+         IF( IS_ENTERING(LL) .OR. IS_EXITING(LL)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
          IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL)))  cycle

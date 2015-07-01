@@ -309,9 +309,9 @@
          pc = 1
          do l = 1,max_pip
             if(pc.gt.pip) exit
-            if(.not.pea(l,1)) cycle
+            if(is_nonexistent(l)) cycle
             pc = pc+1
-            if(pea(l,4)) cycle
+            if(is_ghost(l)) cycle
             if(DO_K) then
                write (des_data, '(8(2x,es12.5))')&
                   (des_pos_new(k,l),k=1,wDIMN),(des_vel_new(k,l),k=1,wDIMN), &

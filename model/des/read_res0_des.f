@@ -25,9 +25,10 @@
       implicit none
 
       INTEGER :: LC1, LC2
-      INTEGER :: lDIMN, lNEXT_REC
+      INTEGER :: lDIMN, lNEXT_REC, II
 
       DOUBLE PRECISION :: VERSION
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
       lDIMN = merge(2,3,NO_K)
 
@@ -42,9 +43,22 @@
 
       CALL READ_RES_pARRAY(lNEXT_REC, iGLOBAL_ID)
 
-      DO LC1 = 2, 4
-         CALL READ_RES_pARRAY(lNEXT_REC, PEA(:,LC1))
-      ENDDO
+      allocate(tmp(MAX_PIP))
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) CALL SET_ENTERING(ii)
+      enddo
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) CALL SET_EXITING(ii)
+      enddo
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) CALL SET_GHOST(ii)
+      enddo
 
       DO LC1 = 1, lDIMN
          CALL READ_RES_pARRAY(lNEXT_REC, DES_VEL_NEW(LC1,:))

@@ -52,9 +52,9 @@
          PC = 1
          DO LC = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC,1)) CYCLE
+            IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(PEA(LC,4)) CYCLE
+            IF(IS_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") real(DATA(LC))
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -114,9 +114,9 @@
          PC = 1
          DO LC1 = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             PC = PC+1
-            IF(PEA(LC1,4)) CYCLE
+            IF(IS_GHOST(LC1)) CYCLE
             DO LC2=LB, UB
                WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC1,LC2))
             ENDDO
@@ -180,9 +180,9 @@
          PC = 1
          DO LC = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC,1)) CYCLE
+            IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(PEA(LC,4)) CYCLE
+            IF(IS_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") DATA(LC)
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -1573,7 +1573,7 @@
       USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
       USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
       USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
-      USE discretelement, only: MAX_PIP,PIP,PEA,DES_POS_NEW,IGHOST_CNT
+      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW,IGHOST_CNT
 
       IMPLICIT NONE
 
@@ -1644,9 +1644,9 @@
       PC = 1
       DO LC1 = 1, MAX_PIP
          IF(PC > PIP) EXIT
-         IF(.NOT.PEA(LC1,1)) CYCLE
+         IF(IS_NONEXISTENT(LC1)) CYCLE
          PC = PC+1
-         IF(PEA(LC1,4)) CYCLE
+         IF(IS_GHOST(LC1)) CYCLE
 
          SELECT CASE(SELECT_PARTICLE_BY)
             CASE('C')  ! Particle center must be inside vtk region

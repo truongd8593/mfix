@@ -746,8 +746,7 @@
          dg_pijkprv(:)= dg_pijk(:)
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
-
+            if(is_nonexistent(lcurpar)) cycle
 
             lparcount = lparcount + 1
             li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
@@ -764,7 +763,7 @@
       else
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
+            if(is_nonexistent(lcurpar)) cycle
             lparcount = lparcount + 1
             lijk = dg_pijk(lcurpar)
             lpic(lijk) = lpic(lijk) + 1
@@ -799,20 +798,19 @@
 
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
-         if(.not.pea(lcurpar,1)) cycle
+         if(is_nonexistent(lcurpar)) cycle
          lparcount = lparcount + 1
          lijk = dg_pijk(lcurpar)
          dg_pic(lijk)%p(lindx(lijk)) = lcurpar
          lindx(lijk) = lindx(lijk) +  1
       enddo
-
 #else
 
-!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,pea,dg_pijk,dg_pic,lindx)
+!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,dg_pijk,dg_pic,lindx)
 !$omp do
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) cycle
-         if(.not.pea(lcurpar,1)) cycle
+         if(is_nonexistent(lcurpar)) cycle
          lijk = dg_pijk(lcurpar)
 
          !$omp atomic capture
@@ -882,7 +880,7 @@
 !$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, lSIZE2, int_tmp) &
-!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
 !$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 
 !$      PAIR_NUM_SMP = 0
@@ -903,9 +901,9 @@
             endif
 !$  endif
 
-         if (.not. pea(lcurpar,1)) cycle
-         if (pea(lcurpar,2)) cycle
-         if (pea(lcurpar,4)) cycle
+         if (is_nonexistent(lcurpar)) cycle
+         if (is_entering(lcurpar)) cycle
+         if (is_ghost(lcurpar)) cycle
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
@@ -961,7 +959,7 @@
 ! Only skip real particles otherwise collisions with ghost, entering,
 ! and exiting particles are missed.
                if (lneigh <= lcurpar) then
-                  if(.not.any(pea(lneigh,2:4))) cycle
+                  if(is_normal(lneigh)) cycle
                endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
@@ -969,7 +967,7 @@
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
+               if (.not.is_nonexistent(lcurpar) .and. .not.is_ghost(lcurpar) .and. .not.is_nonexistent(lneigh)) THEN
 !$  if (.true.) then
 !!!!! SMP version
 

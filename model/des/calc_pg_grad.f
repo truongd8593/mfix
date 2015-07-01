@@ -23,8 +23,6 @@
       use particle_filter, only: FILTER_WEIGHT
       use particle_filter, only: DES_INTERP_ON
 
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Particle volume.
       use discretelement, only: PVOL
 ! Gas pressure force by fluid cell
@@ -34,6 +32,7 @@
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 
+      use discretelement, only: IS_NORMAL
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -71,10 +70,9 @@
 
 !$omp  parallel do default(none) &
 !$omp              private(NP,lPF,lc,ijk,weight) &
-!$omp              shared(MAX_PIP,PEA,DES_INTERP_ON,LP_BND,p_force,drag_fc,filter_cell,filter_weight,pijk,pvol)
+!$omp              shared(MAX_PIP,DES_INTERP_ON,LP_BND,p_force,drag_fc,filter_cell,filter_weight,pijk,pvol)
          DO NP=1,MAX_PIP
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(any(PEA(NP,2:3))) CYCLE
+            IF(.NOT.IS_NORMAL(NP)) CYCLE
 
             IF(DES_INTERP_ON) THEN
                lPF = ZERO

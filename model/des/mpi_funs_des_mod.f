@@ -230,7 +230,6 @@
       SUBROUTINE DESMPI_CLEANUP
 
       use discretelement, only: DIMN
-      use discretelement, only: PEA
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
@@ -247,7 +246,7 @@
 
       use des_rxns, only: DES_X_s
 
-      use discretelement, only: iGHOST_UPDATED
+      use discretelement, only: iGHOST_UPDATED, SET_NONEXISTENT
       use desmpi, only: iRECVINDICES
       use desmpi, only: iEXCHFLAG
 
@@ -270,7 +269,7 @@
                if(ighost_updated(lcurpar)) cycle
                pip = pip - 1
                ighost_cnt = ighost_cnt-1
-               pea(lcurpar,1:4) = .false.
+               call set_nonexistent(lcurpar)
                fc(:,lcurpar) = 0.0
                des_pos_new(:,lcurpar)=0
                pijk(lcurpar,:) = -10

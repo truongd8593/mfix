@@ -71,8 +71,6 @@
       use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -94,6 +92,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
+      use discretelement, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent
 
       IMPLICIT NONE
 
@@ -108,6 +107,7 @@
       integer :: lbuf,lindx,llocpar,lnewcnt,lpicloc
       logical,dimension(:),allocatable :: lfound
       integer,dimension(:),allocatable :: lnewspot,lnewpic
+      logical :: tmp
 !......................................................................!
 
 ! unpack the particles:
@@ -156,7 +156,8 @@
 ! 8) Rotational Velocity
             call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
 ! 9) Exiting particle flag
-            call unpack_dbuf(lbuf,pea(llocpar,3),pface)
+            call unpack_dbuf(lbuf,tmp,pface)
+            if (tmp) call set_exiting(llocpar)
 ! 10) Temperature
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
@@ -205,14 +206,10 @@
 !  3) DES grid IJK - Previous
             call unpack_dbuf(lbuf,lprvijk,pface)
 ! Locate the first open space in the particle array.
-            do while(pea(ispot,1))
+            do while(.not.is_nonexistent(ispot))
                ispot = ispot + 1
             enddo
 ! Set the flags for the ghost particle and store the local variables.
-            pea(ispot,1) = .true.
-            pea(ispot,2) = .false.
-            pea(ispot,3) = .false.
-            pea(ispot,4) = .true.
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk
             dg_pijkprv(ispot) = lprvijk
@@ -227,7 +224,8 @@
 !  8) Rotational velocity
             call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
 !  9) Exiting particle flag
-            call unpack_dbuf(lbuf,pea(ispot,3),pface)
+            call unpack_dbuf(lbuf,tmp,pface)
+            if (tmp) CALL SET_EXITING(ispot)
 ! 10) Temperature.
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
@@ -320,8 +318,6 @@
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
       use discretelement, only: OMOI
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -351,6 +347,7 @@
 !---------------------------------------------------------------------//
       use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
+      use discretelement, only: IS_NORMAL, SET_ENTERING, SET_EXITING, SET_NORMAL, IS_NONEXISTENT
 
       implicit none
 
@@ -370,7 +367,7 @@
       integer :: cc,ii,kk,num_neighborlists_sent,nn
 
       integer :: pair_match
-      logical :: do_add_pair
+      logical :: do_add_pair, tmp
 !......................................................................!
 
 ! loop through particles and locate them and make changes
@@ -394,7 +391,7 @@
 ! first available array position and store the global ID. Increment
 ! the PIP counter to include the new particle.
          IF(MPPIC) THEN
-            DO WHILE(PEA(ISPOT,1))
+            DO WHILE(.NOT.IS_NONEXISTENT(ISPOT))
                ISPOT = ISPOT + 1
             ENDDO
             lLOCPAR = iSPOT
@@ -423,8 +420,7 @@
          'Proc: ', I9,/3x,'Global Particle ID: ',I12,/1x,72('*'))
 
 ! convert the local particle from ghost to existing and update its position
-         pea(llocpar,1) = .TRUE.
-         pea(llocpar,4) = .FALSE.
+         call set_normal(llocpar)
          dg_pijk(llocpar) = lparijk
          dg_pijkprv(llocpar) = lprvijk
 ! 4) Radius
@@ -432,9 +428,11 @@
 ! 5-9) Fluid cell I,J,K,IJK, and solids phase index
          call unpack_dbuf(lbuf,pijk(llocpar,:),pface)
 ! 10) Entering particle flag.
-         call unpack_dbuf(lbuf,pea(llocpar,2),pface)
+         call unpack_dbuf(lbuf,tmp,pface)
+         if (tmp) CALL SET_ENTERING(llocpar)
 ! 11) Exiting particle flag.
-         call unpack_dbuf(lbuf,pea(llocpar,3),pface)
+         call unpack_dbuf(lbuf,tmp,pface)
+         if (tmp) CALL SET_EXITING(llocpar)
 ! 12) Density
          call unpack_dbuf(lbuf,ro_sol(llocpar),pface)
 ! 13) Volume

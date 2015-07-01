@@ -32,8 +32,6 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle velocity
@@ -63,6 +61,8 @@
 ! Function to deterine if a cell contains fluid.
       use functions, only: FLUID_AT
 
+      use discretelement, only: is_normal
+
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Double precision values.
@@ -71,7 +71,6 @@
 ! Lock/Unlock the temp arrays to prevent double usage.
       use tmp_array, only: LOCK_TMP_ARRAY
       use tmp_array, only: UNLOCK_TMP_ARRAY
-
 
       IMPLICIT NONE
 
@@ -88,7 +87,6 @@
 ! Loop bound for filter
       INTEGER :: LP_BND
 
-
 ! Set flag for Model A momentum equation.
       MODEL_A = .NOT.MODEL_B
 ! Loop bounds for interpolation.
@@ -102,8 +100,7 @@
 
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
-         IF(any(PEA(NP,2:4))) CYCLE
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -204,8 +201,6 @@
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
 ! Drag force on each particle
@@ -234,6 +229,7 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
+      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_EXITING
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -273,13 +269,13 @@
          CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
       ENDIF
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
       DO NP=1,MAX_PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
 
 ! The drag force is not calculated on entering or exiting particles
 ! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(any(PEA(NP,2:3))) CYCLE
+        IF(IS_ENTERING(NP) .OR. IS_EXITING(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO

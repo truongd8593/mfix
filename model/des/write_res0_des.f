@@ -29,10 +29,10 @@
 !-----------------------------------------------
       INTEGER :: LC1
       INTEGER :: lNEXT_REC
-      INTEGER :: lDIMN
+      INTEGER :: lDIMN, II
 
       DOUBLE PRECISION :: VERSION
-
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
 ! Set the version of the DES RES file.
       VERSION = 1.1
@@ -52,9 +52,22 @@
 
       CALL WRITE_RES_pARRAY(lNEXT_REC, iGLOBAL_ID)
 
-      DO LC1 = 2, 4
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PEA(:,LC1))
-      ENDDO
+      allocate(tmp(size(PEA,1)))
+
+      do ii=1, size(PEA,1) 
+         tmp(ii) = IS_ENTERING(ii)
+      enddo
+      CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
+
+      do ii=1, size(PEA,1) 
+         tmp(ii) = IS_EXITING(ii)
+      enddo
+      CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
+
+      do ii=1, size(PEA,1) 
+         tmp(ii) = IS_GHOST(ii)
+      enddo
+      CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
 
       DO LC1 = 1, lDIMN
          CALL WRITE_RES_pARRAY(lNEXT_REC, DES_VEL_NEW(LC1,:))

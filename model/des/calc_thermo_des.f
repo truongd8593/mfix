@@ -76,8 +76,7 @@
             NP = PIC(IJK)%p(lNP)
 
 ! Skip indices that do not represent particles
-            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
-            IF(any(PEA(NP,2:4))) CYCLE lNP_LP
+            IF(.NOT.IS_NORMAL(NP)) CYCLE lNP_LP
 
 ! Reset the debug flag
             FOCUS = .FALSE.

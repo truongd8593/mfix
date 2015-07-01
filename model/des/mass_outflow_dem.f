@@ -50,8 +50,8 @@
 
                NP = PIC(IJK)%p(LP)
 
-               IF(.NOT.PEA(NP,1)) CYCLE
-               IF(PEA(NP,4)) CYCLE
+               IF(IS_NONEXISTENT(NP)) CYCLE
+               IF(IS_GHOST(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -64,7 +64,7 @@
 
 ! The particle is still inside the domain
                IF(DIST > DES_RADIUS(NP)) THEN
-                  PEA(NP,3) = .FALSE.
+                  CALL SET_NORMAL(NP)
 
 ! Check if the particle is crossing over the outlet plane.
                ELSEIF(DIST > ZERO) THEN
@@ -79,8 +79,7 @@
                      IF(DES_VEL_NEW(IDX,NP)*SGN > 0.0d0) THEN
                         DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
 ! Set the flags for an exiting particle.
-                        PEA(NP,2) = .TRUE.
-                        PEA(NP,3) = .TRUE.
+                        CALL SET_EXITING(NP)
                      ENDIF
 
 ! The user specified velocity is applied to the exiting particle. This
@@ -92,8 +91,7 @@
                      DES_VEL_NEW(2,NP) = BC_V_s(BCV,M)
                      DES_VEL_NEW(3,NP) = BC_W_s(BCV,M)
 ! Set the flags for an exiting particle.
-                     PEA(NP,2) = .TRUE.
-                     PEA(NP,3) = .TRUE.
+                     CALL SET_EXITING(NP)
                   ENDIF
 
 ! Ladies and gentlemen, the particle has left the building.
@@ -111,9 +109,6 @@
 
       RETURN
       END SUBROUTINE MASS_OUTFLOW_DEM
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -141,7 +136,6 @@
 
       IMPLICIT NONE
 
-
       INTEGER, INTENT(IN) :: NP
 
 !-----------------------------------------------
@@ -149,7 +143,7 @@
 !-----------------------------------------------
 
       iGLOBAL_ID(NP) = -1
-      PEA(NP,:) = .FALSE.
+      CALL SET_NONEXISTENT(NP)
 
       DES_POS_NEW(:,NP) = ZERO
       DES_VEL_NEW(:,NP) = ZERO

@@ -19,7 +19,7 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
       use discretelement, only: DRAG_FC, FC, MAX_PIP
-      use discretelement, only: PEA
+      use discretelement, only: IS_NORMAL
 
       IMPLICIT NONE
 
@@ -30,9 +30,9 @@
 
          IF(DES_CONTINUUM_COUPLED) THEN
 !$omp parallel do default(none) private(II) &
-!$omp shared(FC, DRAG_FC, MAX_PIP, PEA)
+!$omp shared(FC, DRAG_FC, MAX_PIP)
             DO II = 1, MAX_PIP
-               IF(PEA(II,1) .AND. .NOT.any(PEA(II,2:))) &
+               IF(IS_NORMAL(II)) &
                   FC(:,II) = FC(:,II) + DRAG_FC(:,II)
             ENDDO
 !$omp end parallel do

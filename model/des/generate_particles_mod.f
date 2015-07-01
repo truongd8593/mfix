@@ -150,7 +150,7 @@ CONTAINS
 ! Number of particles to read from input file.
       USE discretelement, only: PARTICLES
 
-      USE discretelement, only: PEA, DO_OLD, OMEGA_OLD, OMEGA_NEW, PIJK
+      USE discretelement, only: DO_OLD, OMEGA_OLD, OMEGA_NEW, PIJK
 
 ! Constant: 3.14159...
 
@@ -181,6 +181,7 @@ CONTAINS
 ! to access random number generator subroutines
       USE randomno
       USE mpi_utility
+      USE discretelement, only: SET_NORMAL
 
       USE error_manager
 
@@ -491,7 +492,7 @@ CONTAINS
                            des_pos_old(:, count_part) = des_pos_new(:, count_part)
                         ENDIF
 
-                        PEA(count_part,1) = .TRUE.
+                        CALL SET_NORMAL(count_part)
 
                         IF(SOLIDS_MODEL(phase).eq.'PIC') then
                            DES_STAT_WT(count_part) = part%STATWT
@@ -1078,7 +1079,7 @@ CONTAINS
                des_pos_old(:, count_part) = des_pos_new(:, count_part)
             ENDIF
 
-            PEA(count_part,1) = .TRUE.
+            CALL SET_NORMAL(count_part)
 
             IF(SOLIDS_MODEL(phase).eq.'PIC') then
                DES_STAT_WT(count_part) = part%STATWT

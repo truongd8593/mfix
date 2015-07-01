@@ -22,9 +22,10 @@
       use des_thermo, only: DES_T_s_NEW
 
       use discretelement, only: MAX_PIP
-      use discretelement, only: PEA
       use discretelement, only: PINC, PIC
       use discretelement, only: PIJK
+
+      use discretelement, only: IS_NONEXISTENT, IS_GHOST
 
       USE des_rxns, only: DES_X_s
 
@@ -101,9 +102,9 @@
 ! is specified with EPg = 1.
       DO NP = 1, MAX_PIP
 ! skipping non-existent particles
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
 ! skipping ghost particles
-         IF(PEA(NP,4)) CYCLE
+         IF(IS_GHOST(NP)) CYCLE
 
          M = PIJK(NP,5)
 

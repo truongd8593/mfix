@@ -103,9 +103,8 @@
 
       use desmpi, only: iDisPls
 
-      use discretelement, only: PEA
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
 
       use machine, only: OPEN_N1
 
@@ -177,7 +176,7 @@
             IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
                part = part + 1
             ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+            IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
                cPROCCNT = cPROCCNT +1
             ENDIF
 
@@ -388,8 +387,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: PEA
-      use discretelement, only: iGLOBAL_ID
+      use discretelement, only: iGLOBAL_ID, IS_NONEXISTENT
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)
@@ -415,14 +413,14 @@
          IF(lLOC2GLB) THEN
             DO LC2 = 1, MAX_PIP
                IF(LC1 > PIP) EXIT
-               IF(.NOT. PEA(LC1,1)) CYCLE
+               IF(IS_NONEXISTENT(LC1)) CYCLE
                iProcBuf(LC1) = iGLOBAL_ID(INPUT_I(LC2))
                LC1 = LC1 + 1
             ENDDO
          ELSE
             DO LC2 = 1, MAX_PIP
                IF(LC1 > PIP) EXIT
-               IF(.NOT. PEA(LC1,1)) CYCLE
+               IF(IS_NONEXISTENT(LC1)) CYCLE
                iProcBuf(LC1) = INPUT_I(LC2)
                LC1 = LC1 + 1
             ENDDO
@@ -450,9 +448,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE WRITE_RES_PARRAY_1D(lNEXT_REC, INPUT_D)
 
-      use discretelement, only: MAX_PIP, PIP
+      use discretelement, only: MAX_PIP, PIP, IS_NONEXISTENT
       use desmpi, only: iProcBuf
-      use discretelement, only: PEA
 
       IMPLICIT NONE
 
@@ -474,7 +471,7 @@
          LC1 = 1
          DO LC2 = 1, MAX_PIP
             IF(LC1 > PIP) EXIT
-            IF(.NOT. PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             dProcBuf(LC1) = INPUT_D(LC2)
             LC1 = LC1 + 1
          ENDDO
@@ -500,8 +497,7 @@
       SUBROUTINE WRITE_RES_PARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: PEA
+      use discretelement, only: MAX_PIP, PIP, IS_NONEXISTENT
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -520,7 +516,7 @@
          LC1 = 1
          DO LC2 = 1, MAX_PIP
             IF(LC1 > PIP) EXIT
-            IF(.NOT. PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             iProcBuf(LC1) = merge(1,0,INPUT_L(LC2))
             LC1 = LC1 + 1
          ENDDO
@@ -545,8 +541,7 @@
       SUBROUTINE WRITE_RES_cARRAY_1I(lNEXT_REC, INPUT_I, pLOC2GLB)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -569,29 +564,21 @@
 
       LC2 = 1
       part = 1
-      IF(lLOC2GLB) THEN
-         DO LC1 = 1, NEIGH_NUM
-            IF (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
-               part = part + 1
-            ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+
+      DO LC1 = 1, NEIGH_NUM
+         IF (0 .eq. NEIGHBORS(LC1)) EXIT
+         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+            part = part + 1
+         ENDIF
+         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
+            IF(lLOC2GLB) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
-               LC2 = LC2 + 1
-            ENDIF
-         ENDDO
-      ELSE
-         DO LC1 = 1, NEIGH_NUM
-            IF (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
-               part = part + 1
-            ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+            ELSE
                iProcBuf(LC2) = INPUT_I(LC1)
-               LC2 = LC2 + 1
             ENDIF
-         ENDDO
-      ENDIF
+            LC2 = LC2 + 1
+         ENDIF
+      ENDDO
 
       IF(bDIST_IO) THEN
          CALL OUT_BIN_512i(RDES_UNIT, iProcBuf, cPROCCNT, lNEXT_REC)
@@ -617,8 +604,7 @@
 
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
-      use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
@@ -640,7 +626,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -670,8 +656,7 @@
       SUBROUTINE WRITE_RES_cARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: PEA
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -694,7 +679,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF

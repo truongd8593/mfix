@@ -69,8 +69,6 @@
       use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -94,13 +92,12 @@
 ! Cell number of ghost particles
       use desmpi, only: iSENDINDICES
 
-
 ! Global Constants:
 !---------------------------------------------------------------------//
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-
+      use discretelement, only: is_exiting, is_ghost
 
       IMPLICIT NONE
 
@@ -125,7 +122,7 @@
 
 ! Do not send particle data for a ghost particle whose owner has not yet
 ! updated the particle's data on this processor.
-            if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar)) cycle
+            if(is_ghost(lcurpar) .and. .not.ighost_updated(lcurpar)) cycle
 
 ! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
@@ -147,7 +144,7 @@
 ! 8) Rotational Velocity
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
 ! 9) Exiting particle flag
-            call pack_dbuf(lbuf,merge(1,0,pea(lcurpar,3)),pface)
+            call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar)),pface)
 ! 10) Temperature
             IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
@@ -223,8 +220,6 @@
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
       use discretelement, only: OMOI
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -256,7 +251,7 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement, only: DG_PIC
+      use discretelement, only: DG_PIC, IS_GHOST, IS_ENTERING, IS_EXITING, IS_NONEXISTENT, SET_NORMAL, SET_GHOST, SET_NONEXISTENT
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 
@@ -298,7 +293,7 @@
          do lpicloc = 1,dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
 
-            if (pea(lcurpar,4)) cycle ! if ghost particle then cycle
+            if (is_ghost(lcurpar)) cycle ! if ghost particle then cycle
 
             going_to_send(lcurpar) = .true.
             lbuf = lparcnt*iParticlePacketSize + ibufoffset
@@ -328,9 +323,9 @@
 ! 9) Particle solids phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 10) Entering particle flag.
-            call pack_dbuf(lbuf, pea(lcurpar,2), pface)
+            call pack_dbuf(lbuf, is_entering(lcurpar), pface)
 ! 11) Exiting particle flag.
-            call pack_dbuf(lbuf, pea(lcurpar,3), pface)
+            call pack_dbuf(lbuf, is_exiting(lcurpar), pface)
 ! 12) Density
             call pack_dbuf(lbuf,ro_sol(lcurpar),pface)
 ! 13) Volume
@@ -389,13 +384,13 @@
             IF (MPPIC) THEN
 ! 32) Statistical weight
                call pack_dbuf(lbuf,des_stat_wt(lcurpar),pface)
-               pea(lcurpar,1:4) = .false.
+               call set_nonexistent(lcurpar)
                pip = pip - 1
 
 ! DEM particles are converted to ghost particles. This action does not
 ! change the number of particles.
             ELSE
-               pea(lcurpar,4) = .true.
+               call set_ghost(lcurpar)
                ighost_cnt = ighost_cnt + 1
             END IF
 
@@ -427,8 +422,8 @@
 ! Do not send pairing data if the pair no longer exists or if the
 ! particle is exiting as it may be locatable during unpacking.
           lneigh = neighbors(lcurpar)
-          if(.not.PEA(lneigh,1)) cycle
-          if(PEA(lneigh,3)) cycle
+          if(is_nonexistent(lneigh)) cycle
+          if(is_exiting(lneigh)) cycle
 
 ! 34) Global ID of particle being packed.
           call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)

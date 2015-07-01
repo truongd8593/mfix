@@ -492,7 +492,7 @@
          ro_sol(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
          des_pos_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
          des_vel_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
-         pea(lcurpar,1) = .true.
+         call set_normal(lcurpar)
       enddo
       deallocate (dprocbuf,drootbuf)
 

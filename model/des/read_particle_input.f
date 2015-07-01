@@ -74,7 +74,6 @@
 
  1100 FORMAT('Error 1100: FATAL - DEM particle input file not found!')
 
-
 ! Read the file
 !----------------------------------------------------------------->>>
 ! In distributed IO the first line of the file will be number of
@@ -82,12 +81,11 @@
       IF (bdist_io) then
          read(lunit,*) pip
          DO lcurpar = 1,pip
-            pea(lcurpar,1) = .true.
+            call set_normal(lcurpar)
             read (lunit,*) (des_pos_new(k,lcurpar),k=1,RDMN),&
                des_radius(lcurpar), ro_sol(lcurpar),&
                (des_vel_new(k,lcurpar),k=1,RDMN)
          ENDDO
-
 
 ! Serial IO (not bDIST_IO)
       ELSE
@@ -143,7 +141,6 @@
 !-----------------------------------------------------------------<<<
 
       IF(bDIST_IO .OR. myPE == PE_IO) CLOSE(lUNIT)
-
 
       CALL FINL_ERR_MSG()
 

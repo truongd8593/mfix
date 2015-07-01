@@ -55,16 +55,16 @@
 ! Adams-Bashforth defaults to Euler for the first time step.
       IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
          DO L =1, MAX_PIP
-            IF(.NOT.PEA(L,1)) CYCLE  ! Only real particles
-            IF(PEA(L,2)) CYCLE       ! Only non-entering
-            IF(PEA(L,4)) CYCLE       ! Skip ghost particles
+            IF(IS_NONEXISTENT(L)) CYCLE  ! Only real particles
+            IF(IS_ENTERING(L)) CYCLE       ! Only non-entering
+            IF(IS_GHOST(L)) CYCLE       ! Skip ghost particles
             DES_ACC_OLD(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
             ROT_ACC_OLD(:,L) = TOW(:,L)
          ENDDO
       ENDIF
 
 !$omp parallel do if(max_pip .ge. 10000) default(none)                    &
-!$omp shared(MAX_PIP,pea,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,          &
+!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,              &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
@@ -74,14 +74,14 @@
 
       DO L = 1, MAX_PIP
 ! only process particles that exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 ! skip ghost particles
-         IF(PEA(L,4)) CYCLE
+         IF(IS_GHOST(L)) CYCLE
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -254,9 +254,9 @@
          DELETE_PART = .false.
 ! pradeep skip ghost particles
          if(pc.gt.pip) exit
-         if(.not.pea(l,1)) cycle
+         if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(pea(l,4)) cycle
+         if(is_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 
@@ -269,7 +269,7 @@
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -401,7 +401,7 @@
          FC(:,L) = ZERO
 
          IF(DELETE_PART) THEN
-            PEA(L,1) = .false.
+            CALL SET_NONEXISTENT(l)
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
          IF (DES_LOC_DEBUG) WRITE(*,1001)
@@ -563,13 +563,13 @@
          DELETE_PART = .false.
 ! pradeep skip ghost particles
          if(pc.gt.pip) exit
-         if(.not.pea(l,1)) cycle
+         if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(pea(l,4)) cycle
+         if(is_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -723,7 +723,7 @@
          FC(:,L) = ZERO
 
          IF(DELETE_PART) THEN
-            PEA(L,1) = .false.
+            CALL SET_NONEXISTENT(L)
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
          IF (DES_LOC_DEBUG) WRITE(*,1001)
@@ -846,7 +846,7 @@
       write(filename,'("debug",I3.3)') lfcount
       open (unit=100,file=filename)
       do lp = pstart,pend
-         if (pea(lp,1) .and. .not.pea(lp,4)) then
+         if (is_normal(lp) .or. is_entering(lp) .or. is_exiting(lp)) then
             lijk = pijk(lp,4)
             write(100,*)"positon =",lijk,pijk(lp,1),pijk(lp,2), &
                pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
@@ -904,7 +904,7 @@
          '"ep_g"', '"FCX"' ,'"FCY"', '"TOW"'
       write(100,'(A,F14.7,A)') 'zone T = "' , s_time , '"'
       do lp = pstart,pend
-         if (pea(lp,1)) then
+         if (.not.is_nonexistent(lp)) then
             lijk = pijk(lp,4)
             write(100,*)lijk,des_pos_new(1,lp),des_pos_new(2,lp), &
                des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&

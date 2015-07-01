@@ -82,6 +82,7 @@ CONTAINS
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
       ALLOCATE( PEA (MAX_PIP, 4) )
+      ALLOCATE( PARTICLE_STATE (MAX_PIP) )
       ALLOCATE (iglobal_id(max_pip))
 
 ! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
@@ -522,9 +523,6 @@ CONTAINS
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE PARTICLE_GROW(new_max_pip)
 
-!      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
-!      use param1
-
         USE des_rxns
         USE des_thermo
         USE mfix_pic
@@ -550,6 +548,7 @@ CONTAINS
            IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
            call logical_grow2_reverse(PEA,MAX_PIP)
+           call integer_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)

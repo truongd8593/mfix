@@ -15,8 +15,6 @@
 
 ! Particle positions
       use discretelement, only: DES_POS_NEW
-! Flags that classify particles
-      use discretelement, only: PEA
 ! The number of particles on the current process.
       use discretelement, only: PIP, MAX_PIP
 ! The I/J/K, IJK, and phase index of each particle
@@ -44,6 +42,8 @@
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
+      use discretelement, only: IS_NONEXISTENT, IS_GHOST
+
       IMPLICIT NONE
 
 
@@ -70,7 +70,7 @@
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 
          I = PIJK(L,1)
          IF(I <= ISTART3 .OR. I >= IEND3) THEN
@@ -148,7 +148,7 @@
          PIJK(L,4) = IJK
 
 ! Increment the number of particles in cell IJK
-         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
 
       ENDDO
 !!$omp end parallel
@@ -185,11 +185,11 @@
 ! exiting loop if reached max number of particles in processor
          IF(PC.GT.PIP) exit
 ! skipping indices with no particles (non-existent particles)
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 ! incrementing particle account when particle exists
          PC = PC+1
 ! skipping ghost particles
-         IF(PEA(L,4)) CYCLE
+         IF(IS_GHOST(L)) CYCLE
          IJK = PIJK(L,4)
          POS = PARTICLE_COUNT(IJK)
          PIC(IJK)%P(POS) = L
@@ -218,9 +218,9 @@
 
       USE physprop, only: SMAX
 
-      use discretelement, only: PEA, PIJK, PINC
+      use discretelement, only: PIJK, PINC
       USE discretelement, only: DES_POS_NEW
-      USE discretelement, only: MAX_PIP
+      USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST
       USE discretelement, only: XE, YN, ZT
       use mpi_funs_des, only: des_par_exchange
 
@@ -263,7 +263,7 @@
 ! ---------------------------------------------------------------->>>
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 
 ! Use a brute force technique to determine the particle locations in
 ! the Eulerian fluid grid.
@@ -290,7 +290,7 @@
          PIJK(L,4) = IJK
 
 ! Enumerate the number of 'real' particles in the ghost cell.
-         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
 
 ! Calling exchange particles - this will exchange particle crossing

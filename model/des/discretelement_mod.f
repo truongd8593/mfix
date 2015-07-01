@@ -64,6 +64,18 @@
 ! PEA(n,4) : for ghost particles
       LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (PARTICLES,4)
 
+      INTEGER, DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
+
+      INTEGER, PARAMETER :: nonexistent=0
+      INTEGER, PARAMETER :: normal=1
+      INTEGER, PARAMETER :: entering=2
+      INTEGER, PARAMETER :: exiting=3
+      INTEGER, PARAMETER :: ghost=4
+      INTEGER, PARAMETER :: entering_ghost=5
+      INTEGER, PARAMETER :: exiting_ghost=6
+
+      private :: nonexistent, normal, entering, exiting, ghost, entering_ghost, exiting_ghost
+
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
 ! max_pip - maximum allocated particles in processor
@@ -627,5 +639,97 @@
       DES_CROSSPRDCT(3) = XX(1)*YY(2) - XX(2)*YY(1)
 
       END FUNCTION DES_CROSSPRDCT
+
+      LOGICAL FUNCTION IS_NONEXISTENT(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_NONEXISTENT = (PARTICLE_STATE(PP)==NONEXISTENT)
+        IF (IS_NONEXISTENT.eqv.PEA(PP,1)) stop 111
+      END FUNCTION IS_NONEXISTENT
+
+      LOGICAL FUNCTION IS_NORMAL(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_NORMAL = (PARTICLE_STATE(PP)==NORMAL)
+        IF (IS_NORMAL.neqv.PEA(PP,1)) stop 222
+      END FUNCTION IS_NORMAL
+
+      LOGICAL FUNCTION IS_ENTERING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_ENTERING = (PARTICLE_STATE(PP)==ENTERING) .or. (PARTICLE_STATE(PP)==ENTERING_GHOST)
+        IF (IS_ENTERING.neqv.(PEA(PP,2).and.PEA(PP,1))) then
+           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
+           print *,"PEA(PP,1)=",PEA(PP,1)
+           print *,"PEA(PP,2)=",PEA(PP,2)
+           print *,"pp=",pp
+           stop 333
+        endif
+      END FUNCTION IS_ENTERING
+
+      LOGICAL FUNCTION IS_EXITING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_EXITING = (PARTICLE_STATE(PP)==EXITING) .or. (PARTICLE_STATE(PP)==EXITING_GHOST)
+        IF (IS_EXITING.neqv.PEA(PP,3)) stop 444
+      END FUNCTION IS_EXITING
+
+      LOGICAL FUNCTION IS_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_GHOST = (PARTICLE_STATE(PP)==GHOST) .or. (PARTICLE_STATE(PP)==ENTERING_GHOST) .or. (PARTICLE_STATE(PP)==EXITING_GHOST)
+        IF (IS_GHOST.neqv.(PEA(PP,4).and.PEA(PP,1))) then
+           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
+           print *,"PEA(PP,1)=",PEA(PP,1)
+           print *,"PEA(PP,4)=",PEA(PP,4)
+           print *,"pp=",pp
+           stop 555
+        endif
+      END FUNCTION IS_GHOST
+
+      SUBROUTINE SET_NONEXISTENT(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=NONEXISTENT
+        PEA(PP,1) = .false.
+      END SUBROUTINE SET_NONEXISTENT
+
+      SUBROUTINE SET_NORMAL(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=NORMAL
+        PEA(PP,1) = .TRUE.
+        PEA(PP,2) = .FALSE.
+        PEA(PP,3) = .FALSE.
+        PEA(PP,4) = .FALSE.
+      END SUBROUTINE SET_NORMAL
+
+      SUBROUTINE SET_ENTERING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IF (IS_GHOST(PP)) THEN
+           PARTICLE_STATE(PP)=ENTERING_GHOST
+        ELSE
+           PARTICLE_STATE(PP)=ENTERING
+        ENDIF
+        PEA(PP,1) = .TRUE.
+        PEA(PP,2) = .true.
+      END SUBROUTINE SET_ENTERING
+
+      SUBROUTINE SET_EXITING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IF (IS_GHOST(PP)) THEN
+           PARTICLE_STATE(PP)=EXITING_GHOST
+        ELSE
+           PARTICLE_STATE(PP)=EXITING
+        ENDIF
+        PEA(PP,1) = .TRUE.
+        PEA(PP,3) = .true.
+      END SUBROUTINE SET_EXITING
+
+      SUBROUTINE SET_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        IF (IS_ENTERING(PP)) THEN
+           PARTICLE_STATE(PP)=ENTERING_GHOST
+        ELSEIF (IS_EXITING(PP)) THEN
+           PARTICLE_STATE(PP)=EXITING_GHOST
+        ELSE
+           PARTICLE_STATE(PP)=GHOST
+        ENDIF
+        PEA(PP,1) = .TRUE.
+        PEA(PP,4) = .true.
+      END SUBROUTINE SET_GHOST
 
       END MODULE DISCRETELEMENT

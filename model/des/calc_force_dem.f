@@ -93,13 +93,13 @@
 !$omp    des_coll_model_enum,kn,kt,pv_neighbor,pft_neighbor,pfn_neighbor,pijk,     &
 !$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,         &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy, pea,              &
+!$omp    hamaker_constant,asperities,surface_energy,              &
 !$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
 
       DO LL = 1, MAX_PIP
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          pos = DES_POS_NEW(:,LL)
          rad = DES_RADIUS(LL)
 
@@ -109,7 +109,7 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
-            IF(.NOT.PEA(I, 1)) CYCLE
+            IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
             DIST(:) = DES_POS_NEW(:,I) - POS(:)
@@ -137,7 +137,7 @@
 
 ! just for post-processing mag. of cohesive forces on each particle
                   PostCohesive(LL) = PostCohesive(LL)
-                  if(GRAV_MAG > ZERO .AND. PEA(LL,1)) THEN
+                  if(GRAV_MAG > ZERO .AND. IS_NORMAL(LL)) THEN
                      FORCE_COH = SQRT(dot_product(FC_TMP(:),FC_TMP(:))) / (PMASS(LL)*GRAV_MAG)
 
                      !$omp atomic

@@ -60,10 +60,10 @@
       PC = 0
       DO LL = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          PC = PC + 1
 ! skipping ghost particles
-         IF(PEA(LL,4)) CYCLE
+         IF(IS_GHOST(LL)) CYCLE
 
          I = PIJK(LL,1)
          J = PIJK(LL,2)
@@ -115,9 +115,9 @@
 ! potential energy
       PC = 0
       DO LL = 1, MAX_PIP
-         IF(PEA(LL,1)) PC = PC + 1
 ! skipping ghost particles and particles that don't exist
-         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
+         IF(.NOT.(IS_ENTERING(LL) .OR. IS_EXITING(LL))) PC = PC + 1
 
          SQR_VEL = ZERO
          SQR_ROT_VEL = ZERO
@@ -157,9 +157,10 @@
       GLOBAL_GRAN_TEMP(:)  = ZERO
       PC = 0
       DO LL = 1, MAX_PIP
-         IF(PEA(LL,1)) PC = PC + 1
+
 ! skipping ghost particles and particles that don't exist
-         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
+         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
+         IF(.NOT.(IS_ENTERING(LL) .OR. IS_EXITING(LL))) PC = PC + 1
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
             0.5d0*PMASS(LL)*(DES_VEL_NEW(:,LL)-DES_VEL_AVG(:))**2
@@ -257,9 +258,9 @@
 
       PC = 0
       DO L = 1, MAX_PIP
-         IF(PEA(L,1)) PC = PC + 1
 ! skipping ghost particles and particles that don't exist
-         IF(.NOT.PEA(L,1) .OR. PEA(L,4)) CYCLE
+         IF(IS_NONEXISTENT(L) .OR. IS_GHOST(L)) CYCLE
+         IF(.NOT.(IS_ENTERING(L) .OR. IS_EXITING(L))) PC = PC + 1
          M = PIJK(L,5)
          hpart = DES_POS_NEW(2,L)
          tmp_num(M) = tmp_num(M) + hpart
