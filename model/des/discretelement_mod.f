@@ -667,7 +667,13 @@
       LOGICAL FUNCTION IS_EXITING(PP)
         INTEGER, INTENT(IN) :: PP
         IS_EXITING = (PARTICLE_STATE(PP)==EXITING) .or. (PARTICLE_STATE(PP)==EXITING_GHOST)
-        IF (IS_EXITING.neqv.PEA(PP,3)) stop 444
+        IF (IS_EXITING.neqv.(PEA(PP,3).and.PEA(PP,1))) then
+           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
+           print *,"PEA(PP,1)=",PEA(PP,1)
+           print *,"PEA(PP,3)=",PEA(PP,3)
+           print *,"pp=",pp
+           stop 444
+        endif
       END FUNCTION IS_EXITING
 
       LOGICAL FUNCTION IS_GHOST(PP)
