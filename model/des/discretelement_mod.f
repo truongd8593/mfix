@@ -163,8 +163,6 @@
 ! End Output/debug controls
 !-----------------------------------------------------------------<<<
 
-
-
 ! DES - Continuum
       LOGICAL DISCRETE_ELEMENT
       LOGICAL DES_CONTINUUM_COUPLED
@@ -649,7 +647,15 @@
       LOGICAL FUNCTION IS_NORMAL(PP)
         INTEGER, INTENT(IN) :: PP
         IS_NORMAL = (PARTICLE_STATE(PP)==NORMAL)
-        IF (IS_NORMAL.neqv.PEA(PP,1)) stop 222
+        IF (IS_NORMAL.neqv.(PEA(PP,1).and..not.(PEA(PP,2)).and..not.(PEA(PP,3)).and..not.(PEA(PP,4)))) then
+           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
+           print *,"PEA(PP,1)=",PEA(PP,1)
+           print *,"PEA(PP,2)=",PEA(PP,2)
+           print *,"PEA(PP,3)=",PEA(PP,3)
+           print *,"PEA(PP,4)=",PEA(PP,4)
+           print *,"pp=",pp
+           stop 222
+        endif
       END FUNCTION IS_NORMAL
 
       LOGICAL FUNCTION IS_ENTERING(PP)
@@ -682,6 +688,8 @@
         IF (IS_GHOST.neqv.(PEA(PP,4).and.PEA(PP,1))) then
            print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
            print *,"PEA(PP,1)=",PEA(PP,1)
+           print *,"PEA(PP,2)=",PEA(PP,2)
+           print *,"PEA(PP,3)=",PEA(PP,3)
            print *,"PEA(PP,4)=",PEA(PP,4)
            print *,"pp=",pp
            stop 555
@@ -692,6 +700,9 @@
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NONEXISTENT
         PEA(PP,1) = .false.
+        PEA(PP,2) = .FALSE.
+        PEA(PP,3) = .FALSE.
+        PEA(PP,4) = .FALSE.
       END SUBROUTINE SET_NONEXISTENT
 
       SUBROUTINE SET_NORMAL(PP)
