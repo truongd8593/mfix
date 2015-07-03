@@ -722,7 +722,9 @@
            PARTICLE_STATE(PP)=ENTERING
         ENDIF
         PEA(PP,1) = .TRUE.
-        PEA(PP,2) = .true.
+        PEA(PP,2) = .TRUE.
+        PEA(PP,3) = .FALSE.
+
       END SUBROUTINE SET_ENTERING
 
       SUBROUTINE SET_EXITING(PP)
@@ -733,7 +735,9 @@
            PARTICLE_STATE(PP)=EXITING
         ENDIF
         PEA(PP,1) = .TRUE.
-        PEA(PP,3) = .true.
+        PEA(PP,2) = .FALSE.
+        PEA(PP,3) = .TRUE.
+
       END SUBROUTINE SET_EXITING
 
       SUBROUTINE SET_GHOST(PP)
