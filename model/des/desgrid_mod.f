@@ -958,9 +958,8 @@
 
 ! Only skip real particles otherwise collisions with ghost, entering,
 ! and exiting particles are missed.
-               if (lneigh <= lcurpar) then
-                  if(is_normal(lneigh)) cycle
-               endif
+               if (lneigh .eq. lcurpar) cycle
+               if (lneigh < lcurpar .and.is_normal(lneigh)) cycle
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
