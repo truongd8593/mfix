@@ -38,31 +38,30 @@
 ! Generally for inlet/outlet related routines but also employed in
 ! tracking for parallelization
 
-! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true.
-! It is used with the inlet/outlet to skip indices that do not represent
-! particles in the system or indices that represent particles that have
-! exited the system.
+! Dynamic particle states:
 
-! PEA(n,2) : This column identifies a particle as 'new' if true.
+! NONEXISTENT: This state is used with the inlet/outlet to skip
+! indices that do not represent particles in the system or indices
+! that represent particles that have exited the system.
+
+! ENTERING: This state identifies a particle as 'new' if true.
 ! Particles with a classification of 'new' do not react when in contact
 ! with a wall or another particle, however existing particles do collide
 ! and interact with 'new' particles. The classification allows new
 ! particles to push particles already in the system out of the way when
 ! entering to prevent overlap.  This flag is also used when the center
 ! of a particle crosses a dem outlet (i.e. an exiting particle; see
-! PEA(n,3)) so that the particle will maintain its present trajectory
+! EXITING) so that the particle will maintain its present trajectory
 ! until it has fully exited the system
 
-! PEA(n,3) : This column identifies a particle as 'exiting' if true.
+! EXITING: This state identifies a particle as 'exiting' if true.
 ! If a particle initiates contact with a wall surface designated as a
 ! des outlet, this flag is set to true. With this classification the
 ! location of the particle is checked to assess if the particle has
 ! fully exited the system.  At this point, the particle is removed
 ! from the list.
 
-! PEA(n,4) : for ghost particles
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (PARTICLES,4)
+! GHOST, ENTERING_GHOST, EXITING_GHOST: for ghost particles
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
 
@@ -641,77 +640,36 @@
       LOGICAL FUNCTION IS_NONEXISTENT(PP)
         INTEGER, INTENT(IN) :: PP
         IS_NONEXISTENT = (PARTICLE_STATE(PP)==NONEXISTENT)
-        IF (IS_NONEXISTENT.eqv.PEA(PP,1)) stop 111
       END FUNCTION IS_NONEXISTENT
 
       LOGICAL FUNCTION IS_NORMAL(PP)
         INTEGER, INTENT(IN) :: PP
         IS_NORMAL = (PARTICLE_STATE(PP)==NORMAL)
-        IF (IS_NORMAL.neqv.(PEA(PP,1).and..not.(PEA(PP,2)).and..not.(PEA(PP,3)).and..not.(PEA(PP,4)))) then
-           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
-           print *,"PEA(PP,1)=",PEA(PP,1)
-           print *,"PEA(PP,2)=",PEA(PP,2)
-           print *,"PEA(PP,3)=",PEA(PP,3)
-           print *,"PEA(PP,4)=",PEA(PP,4)
-           print *,"pp=",pp
-           stop 222
-        endif
       END FUNCTION IS_NORMAL
 
       LOGICAL FUNCTION IS_ENTERING(PP)
         INTEGER, INTENT(IN) :: PP
         IS_ENTERING = (PARTICLE_STATE(PP)==ENTERING) .or. (PARTICLE_STATE(PP)==ENTERING_GHOST)
-        IF (IS_ENTERING.neqv.(PEA(PP,2).and.PEA(PP,1))) then
-           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
-           print *,"PEA(PP,1)=",PEA(PP,1)
-           print *,"PEA(PP,2)=",PEA(PP,2)
-           print *,"pp=",pp
-           stop 333
-        endif
       END FUNCTION IS_ENTERING
 
       LOGICAL FUNCTION IS_EXITING(PP)
         INTEGER, INTENT(IN) :: PP
         IS_EXITING = (PARTICLE_STATE(PP)==EXITING) .or. (PARTICLE_STATE(PP)==EXITING_GHOST)
-        IF (IS_EXITING.neqv.(PEA(PP,3).and.PEA(PP,1))) then
-           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
-           print *,"PEA(PP,1)=",PEA(PP,1)
-           print *,"PEA(PP,3)=",PEA(PP,3)
-           print *,"pp=",pp
-           stop 444
-        endif
       END FUNCTION IS_EXITING
 
       LOGICAL FUNCTION IS_GHOST(PP)
         INTEGER, INTENT(IN) :: PP
         IS_GHOST = (PARTICLE_STATE(PP)==GHOST) .or. (PARTICLE_STATE(PP)==ENTERING_GHOST) .or. (PARTICLE_STATE(PP)==EXITING_GHOST)
-        IF (IS_GHOST.neqv.(PEA(PP,4).and.PEA(PP,1))) then
-           print *,"PARTICLE_STATE=",PARTICLE_STATE(PP)
-           print *,"PEA(PP,1)=",PEA(PP,1)
-           print *,"PEA(PP,2)=",PEA(PP,2)
-           print *,"PEA(PP,3)=",PEA(PP,3)
-           print *,"PEA(PP,4)=",PEA(PP,4)
-           print *,"pp=",pp
-           stop 555
-        endif
       END FUNCTION IS_GHOST
 
       SUBROUTINE SET_NONEXISTENT(PP)
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NONEXISTENT
-        PEA(PP,1) = .false.
-        PEA(PP,2) = .FALSE.
-        PEA(PP,3) = .FALSE.
-        PEA(PP,4) = .FALSE.
       END SUBROUTINE SET_NONEXISTENT
 
       SUBROUTINE SET_NORMAL(PP)
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NORMAL
-        PEA(PP,1) = .TRUE.
-        PEA(PP,2) = .FALSE.
-        PEA(PP,3) = .FALSE.
-        PEA(PP,4) = .FALSE.
       END SUBROUTINE SET_NORMAL
 
       SUBROUTINE SET_ENTERING(PP)
@@ -721,10 +679,6 @@
         ELSE
            PARTICLE_STATE(PP)=ENTERING
         ENDIF
-        PEA(PP,1) = .TRUE.
-        PEA(PP,2) = .TRUE.
-        PEA(PP,3) = .FALSE.
-
       END SUBROUTINE SET_ENTERING
 
       SUBROUTINE SET_EXITING(PP)
@@ -734,10 +688,6 @@
         ELSE
            PARTICLE_STATE(PP)=EXITING
         ENDIF
-        PEA(PP,1) = .TRUE.
-        PEA(PP,2) = .FALSE.
-        PEA(PP,3) = .TRUE.
-
       END SUBROUTINE SET_EXITING
 
       SUBROUTINE SET_GHOST(PP)
@@ -749,8 +699,6 @@
         ELSE
            PARTICLE_STATE(PP)=GHOST
         ENDIF
-        PEA(PP,1) = .TRUE.
-        PEA(PP,4) = .true.
       END SUBROUTINE SET_GHOST
 
       END MODULE DISCRETELEMENT

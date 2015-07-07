@@ -101,8 +101,8 @@
          write(201,"(/3x,'Global',3x,'Local',11x,'Position')")
          write(201,"(5x,'ID',6x,'ID',7x,'X',9x,'Y',9x,'Z')")
          do lc1 = 1, max_pip
-            if(.not.pea(lc1,1)) cycle
-            if(pea(lc1,4)) cycle
+            if(is_nonexistent(lc1)) cycle
+            if(is_ghost(lc1)) cycle
             write(201,"(3x,I6,2x,I6,3(2x,F8.4))") iglobal_id(lc1),     &
                lc1, des_pos_new(1:3,lc1)
          end do

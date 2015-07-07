@@ -81,7 +81,6 @@ CONTAINS
 !-----------------------------------------------
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
-      ALLOCATE( PEA (MAX_PIP, 4) )
       ALLOCATE( PARTICLE_STATE (MAX_PIP) )
       ALLOCATE (iglobal_id(max_pip))
 
@@ -547,7 +546,6 @@ CONTAINS
            call real_grow2(OMEGA_NEW,MAX_PIP)
            IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
-           call logical_grow2_reverse(PEA,MAX_PIP)
            call integer_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)

@@ -52,19 +52,19 @@
 
       CALL WRITE_RES_pARRAY(lNEXT_REC, iGLOBAL_ID)
 
-      allocate(tmp(size(PEA,1)))
+      allocate(tmp(size(PARTICLE_STATE,1)))
 
-      do ii=1, size(PEA,1) 
+      do ii=1, size(PARTICLE_STATE,1)
          tmp(ii) = IS_ENTERING(ii)
       enddo
       CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
 
-      do ii=1, size(PEA,1) 
+      do ii=1, size(PARTICLE_STATE,1)
          tmp(ii) = IS_EXITING(ii)
       enddo
       CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
 
-      do ii=1, size(PEA,1) 
+      do ii=1, size(PARTICLE_STATE,1)
          tmp(ii) = IS_GHOST(ii)
       enddo
       CALL WRITE_RES_pARRAY(lNEXT_REC, tmp)
