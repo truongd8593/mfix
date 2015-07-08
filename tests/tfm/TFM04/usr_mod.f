@@ -25,11 +25,11 @@
         logical                               :: tecplot_output=.true.
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
-! format (BLOCK format):&
-        logical                               :: tec_output_block = .false.
+! format (BLOCK format)
+        logical                               :: tec_output_block = .true.
 
 ! set .true. for writing out the centerline velocity profiles:
-!        logical                               :: uv_profile = .true.
+        logical                               :: error_summary = .true.
 
 ! x, y, z coordinates of the top-right corner of a cell.
 ! used to find the node locations in the mesh  
@@ -37,4 +37,9 @@
         double precision, allocatable         :: ytr(:)
         double precision, allocatable         :: ztr(:)     
 
+! exact solution variables  
+        double precision, allocatable         :: p_g_ex(:)
+        double precision, allocatable         :: u_g_ex(:)
+        double precision, allocatable         :: v_g_ex(:)    
+        
       END MODULE usr

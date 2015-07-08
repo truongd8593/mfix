@@ -35,6 +35,7 @@
       Use param, only   : dimension_3
       Use param1, only  : half
       use fldvar, only  : p_g, u_g, v_g
+      use usr, only     : p_g_ex, u_g_ex, v_g_ex
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -61,10 +62,14 @@
 !  Insert user-defined code here
 !
 
+
 ! allocate variables defined in usr_mod.f
         allocate(xtr(dimension_3))
         allocate(ytr(dimension_3))
         allocate(ztr(dimension_3))
+        allocate(p_g_ex(dimension_3))
+        allocate(u_g_ex(dimension_3))
+        allocate(v_g_ex(dimension_3))
 
        
         call generate_grid_locations
@@ -79,16 +84,19 @@
         xt = xtr(ijk)
         yt = ytr(ijk) - dy(j)*half
         u_g(ijk) = gresho_ic(xt,yt,'u_g')
+        u_g_ex(ijk) = u_g(ijk)
 
 ! v_g
         xt = xtr(ijk) - dx(i)*half
         yt = ytr(ijk)
         v_g(ijk) = gresho_ic(xt,yt,'v_g')
+        v_g_ex(ijk) = v_g(ijk)
 
 ! p_g
         xt = xtr(ijk) - dx(i)*half
         yt = ytr(ijk) - dy(j)*half
         p_g(ijk) = gresho_ic(xt,yt,'p_g')
+        p_g_ex(ijk) = p_g(ijk)
          
       END DO
 

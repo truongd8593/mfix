@@ -30,9 +30,9 @@
   Run_type      = 'new'
 
   Time          = 0.0
-  DT            = 0.1
+  DT            = 0.01
   Tstop         = 3.0
-!  DT_Fac        = 1.0
+  DT_Fac        = 1.0
 
   Energy_eq     = .F.
   Species_eq(0) = .F.
@@ -54,7 +54,7 @@
 
 !  Leq_tol       = 9*1.0d-2
 
-  Discretize    = 9*2
+!  Discretize    = 9*2
 
 !  Norm_g        = 0
 
