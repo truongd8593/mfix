@@ -92,7 +92,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use discretelement, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent
+      use discretelement, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent, set_normal, set_ghost
 
       IMPLICIT NONE
 
@@ -210,6 +210,8 @@
                ispot = ispot + 1
             enddo
 ! Set the flags for the ghost particle and store the local variables.
+            call set_normal(ispot)
+            call set_ghost(ispot)
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk
             dg_pijkprv(ispot) = lprvijk

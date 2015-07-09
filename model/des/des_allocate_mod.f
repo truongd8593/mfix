@@ -521,7 +521,7 @@ CONTAINS
            call real_grow2(DES_VEL_NEW,MAX_PIP)
            call real_grow2(OMEGA_NEW,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
-           call integer_grow(PARTICLE_STATE,MAX_PIP)
+           call byte_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)
@@ -596,6 +596,21 @@ CONTAINS
       RETURN
 
       END SUBROUTINE PARTICLE_GROW
+
+      SUBROUTINE BYTE_GROW(byte_array,new_size)
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN) :: new_size
+        INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: byte_array
+        INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: byte_tmp
+        INTEGER lSIZE
+
+        lSIZE = size(byte_array,1)
+        allocate(byte_tmp(new_size))
+        byte_tmp(1:lSIZE) = byte_array(1:lSIZE)
+        call move_alloc(byte_tmp,byte_array)
+
+      END SUBROUTINE BYTE_GROW
 
       SUBROUTINE INTEGER_GROW(integer_array,new_size)
         IMPLICIT NONE
