@@ -25,7 +25,7 @@
         subroutine debug_init(myPE)
         integer, intent(in) :: myPE
 
-        character(LEN=80) :: filename
+        character(LEN=255) :: filename
 
         write(filename,'("debug",f6.3)') dble(myPE)/dble(1000)
         print*,'filename ', filename

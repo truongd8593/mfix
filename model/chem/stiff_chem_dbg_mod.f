@@ -315,7 +315,7 @@
 
       DOUBLE PRECISION :: ddt_lVARS(loD)
 
-      CHARACTER(LEN=32) :: lFile
+      CHARACTER(LEN=255) :: lFile
 
       LOGICAL :: lExist
 

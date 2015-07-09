@@ -192,7 +192,7 @@
 ! File unit.
       INTEGER, PARAMETER :: FUNIT = 167
 ! Full path to Burcat and Ruscic database
-      CHARACTER(len=256) :: FILENAME
+      CHARACTER(len=255) :: FILENAME
       CHARACTER(len=128) :: INPUT
 ! Loop counters
       INTEGER :: SRC, M

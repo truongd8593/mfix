@@ -28,7 +28,7 @@
 ! local variables
       CHARACTER(len=4) :: EXT
 ! run_name + extension
-      CHARACTER(len=64) :: FILE_NAME
+      CHARACTER(len=255) :: FILE_NAME
 ! Loop counter
       INTEGER :: LC
 ! index to first blank character in run_name
@@ -293,8 +293,8 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Log file name.
-      CHARACTER(len=64) :: LOGFILE
-      CHARACTER(len=64) :: FILE_NAME
+      CHARACTER(len=255) :: LOGFILE
+      CHARACTER(len=255) :: FILE_NAME
 ! Flag for LOG files that are already open.
       LOGICAL :: DO_NOTHING
 ! Index of first blank character in RUN_NAME

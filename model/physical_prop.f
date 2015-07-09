@@ -531,7 +531,7 @@
       LOGICAL, intent(inout) :: tHeader
 
       LOGICAL :: lExists
-      CHARACTER(LEN=32) :: lFile
+      CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
 
@@ -625,7 +625,7 @@
       INTEGER :: N
 ! Local file values.
       LOGICAL :: lExists
-      CHARACTER(LEN=32) :: lFile
+      CHARACTER(LEN=255) :: lFile
       INTEGER, parameter :: lUnit = 4868
       LOGICAL, save :: fHeader = .TRUE.
 

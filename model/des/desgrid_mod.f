@@ -1052,7 +1052,7 @@
 ! Local variables
 !-----------------------------------------------
       integer lproc,liproc,ljproc,lkproc
-      character (30) filename
+      character (255) filename
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype

@@ -102,7 +102,7 @@
 !-----------------------------------------------
 ! local varaiables
 !-----------------------------------------------
-      character (30) filename
+      character (255) filename
       integer lcurpar,lpacketsize,lface,lparcnt,lbuf,lindx,ltordimn
       integer lneighcnt,lneighindx
       integer lsize

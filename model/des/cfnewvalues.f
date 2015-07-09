@@ -835,7 +835,7 @@
 !-----------------------------------------------
       integer lp,lijk
       integer, save :: lfcount = 0 ,lfreq =0
-      character(30) :: filename
+      character(255) :: filename
 !-----------------------------------------------
       if (present(pfreq)) then
          lfreq = lfreq+1
@@ -888,7 +888,7 @@
 !-----------------------------------------------
       integer lp,lijk
       integer, save :: lfcount = 0 ,lfreq =0
-      character(30) :: filename
+      character(255) :: filename
 !-----------------------------------------------
 
       if (present(pfreq)) then

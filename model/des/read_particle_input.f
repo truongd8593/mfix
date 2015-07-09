@@ -32,7 +32,7 @@
 ! local unit
       INTEGER, PARAMETER :: lunit=10
 ! local filename
-      character(30) lfilename
+      character(255) lfilename
 ! IO Status:
       INTEGER :: IOS
 ! Flag to indicate if file exists.

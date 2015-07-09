@@ -93,8 +93,8 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Log file name.
-      CHARACTER(len=64) :: LOGFILE
-      CHARACTER(len=64) :: FILE_NAME
+      CHARACTER(len=255) :: LOGFILE
+      CHARACTER(len=255) :: FILE_NAME
 ! First non-blank character in run_name.
       INTEGER :: NB
 ! Integer error flag

@@ -1256,7 +1256,7 @@
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
-      character(LEN=100) :: filename
+      character(LEN=255) :: filename
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')

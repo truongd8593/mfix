@@ -857,7 +857,7 @@
 ! Generic loop counters
       INTEGER lc1, lc2, lc3, lc4
 
-      character(LEN=30) :: filename
+      character(LEN=255) :: filename
 
 ! Local process data:
 !----------------------->>
@@ -1197,7 +1197,7 @@
 ! Generic write buffers.
       CHARACTER(len=120) wbuff, wbuff2
 ! String for generating filenames.
-      CHARACTER(LEN=30) :: filename
+      CHARACTER(LEN=255) :: filename
 
 ! Generic cluster pointer.
       Type(cType), pointer :: cThis
