@@ -337,7 +337,7 @@
 ! Particle neighbor (neighborhood) arrays:
       use discretelement, only: NEIGHBORS
 ! Neighbor collision history information
-      use discretelement, only: PV_NEIGHBOR, PFN_NEIGHBOR, PFT_NEIGHBOR
+      use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
 ! The ID of the current process
@@ -347,7 +347,8 @@
 !---------------------------------------------------------------------//
       use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
-      use discretelement, only: IS_NORMAL, SET_ENTERING, SET_EXITING, SET_NORMAL, IS_NONEXISTENT
+      use discretelement, only: IS_NORMAL, IS_NONEXISTENT
+      use discretelement, only: SET_ENTERING, SET_EXITING, SET_NORMAL
 
       implicit none
 
@@ -527,11 +528,7 @@
 ! the pair data may already exist. Check before adding it.
 ! Create a new neighbor pair if it was not matched to an exiting pair.
           cc = add_pair(llocpar,lneigh)
-! 38) Flag indicating enduring contact for the pair.
-         call unpack_dbuf(lbuf,pv_neighbor(cc),pface)
-! 39) Normal collision history.
-         call unpack_dbuf(lbuf,pfn_neighbor(:,cc),pface)
-! 40) Tangential collision history.
+! 38) Tangential collision history.
          call unpack_dbuf(lbuf,pft_neighbor(:,cc),pface)
       enddo
 

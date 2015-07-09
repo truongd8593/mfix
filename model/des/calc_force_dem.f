@@ -69,7 +69,6 @@
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 
-      DOUBLE PRECISION :: DTSOLID_TMP
       DOUBLE PRECISION :: FNMD, FTMD
 
 !-----------------------------------------------
@@ -86,14 +85,14 @@
 !$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
 !$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fts1,fts2,pft_tmp,fn,ft,dtsolid_tmp,overlap_t,       &
+!$omp    etat_des,fts1,fts2,pft_tmp,fn,ft,overlap_t,                   &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,NORMAL,ftmd,fnmd, &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
-!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,neigh_max,    &
-!$omp    des_coll_model_enum,kn,kt,pv_neighbor,pft_neighbor,pfn_neighbor,pijk,     &
-!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,         &
+!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
+!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,neigh_max,        &
+!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy,              &
+!$omp    hamaker_constant,asperities,surface_energy,                   &
 !$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
@@ -161,7 +160,6 @@
 
             IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
                PFT_NEIGHBOR(:,CC) = 0.0
-               PFN_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
 
@@ -174,10 +172,9 @@
             DIST_MAG = SQRT(DIST_MAG)
             NORMAL(:)= DIST(:)/DIST_MAG
 
-! Overlap calculation changed from history based to current position
+! Calcuate the normal overlap
             OVERLAP_N = R_LM-DIST_MAG
-
-            IF (report_excess_overlap) call print_excess_overlap
+            IF(REPORT_EXCESS_OVERLAP) CALL PRINT_EXCESS_OVERLAP
 
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
@@ -208,13 +205,8 @@
             FN(:) =  -(KN_DES * OVERLAP_N * NORMAL(:) + &
                ETAN_DES * V_REL_TRANS_NORM * NORMAL(:))
 
-            IF(V_REL_TRANS_NORM > ZERO) THEN
-               DTSOLID_TMP = min(DTSOLID, OVERLAP_N/V_REL_TRANS_NORM)
-            ELSE
-               DTSOLID_TMP = DTSOLID
-            ENDIF
-
-            OVERLAP_T(:) = DTSOLID_TMP*VREL_T(:) + PFT_NEIGHBOR(:,CC)
+! Calcuate the tangential overlap
+            OVERLAP_T(:) = DTSOLID*VREL_T(:) + PFT_NEIGHBOR(:,CC)
             OVERLAP_T(:) = OVERLAP_T(:) - &
                DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
 

@@ -235,7 +235,7 @@
 ! Particle pair (neighborhood) arrays:
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 ! Pair collision history information
-      use discretelement, only: PV_NEIGHBOR, PFN_NEIGHBOR, PFT_NEIGHBOR
+      use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
 ! The ID of the current process
@@ -428,19 +428,15 @@
 ! 34) Global ID of particle being packed.
           call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
 ! 35) DES grid IJK of cell receiving the particle.
-          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,    &
                ineighproc(pface)),pface)
 ! 36) Global ID of neighbor particle.
           call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
 ! 37) DES grid IJK of cell containing the neighbor particle.
-          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,     &
                ineighproc(pface)),pface)
-! 38) Flag indicating induring contact for the pair.
-          call pack_dbuf(lbuf,PV_NEIGHBOR(CC),pface)
-! 39) Normal collision history.
-          call pack_dbuf(lbuf,PFN_NEIGHBOR(:,CC),pface)
-! 40) Tangential collision history.
-          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface)
+! 38) Tangential collision history.
+          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface) 
 ! Increment the number of pairs being sent.
           num_neighborlists_to_send = num_neighborlists_to_send + 1
        enddo

@@ -65,9 +65,6 @@
 ! extended plane detects an overlap
       INTEGER, Parameter :: MAX_FACET_CONTS = 200
 
-      DOUBLE PRECISION :: DTSOLID_TMP
-
-
       DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
       INTEGER :: MAX_NF, axis
       DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX
@@ -85,7 +82,7 @@
 !$omp    pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,    &
 !$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
 !$omp    hert_kwn,hert_kwt,kn_w,kt_w,des_coll_model_enum,mew_w,tow,    &
-!$omp    des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face, &
+!$omp    des_etan_wall,des_etat_wall,dtsolid,fc,norm_face,             &
 !$omp    wall_collision_facet_id,wall_collision_PFT,use_cohesion,      &
 !$omp    van_der_waals,wall_hamaker_constant,wall_vdw_outer_cutoff,    &
 !$omp    wall_vdw_inner_cutoff,asperities,surface_energy)
@@ -282,13 +279,7 @@
                ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:))
 
 ! Calculate the tangential displacement.
-            IF(V_REL_TRANS_NORM > ZERO) THEN
-               DTSOLID_TMP = min(DTSOLID, OVERLAP_N/V_REL_TRANS_NORM)
-            ELSE
-               DTSOLID_TMP = DTSOLID
-            ENDIF
-
-            OVERLAP_T(:) = DTSOLID_TMP*VREL_T(:) + GET_COLLISION(LL,   &
+            OVERLAP_T(:) = DTSOLID*VREL_T(:) + GET_COLLISION(LL,       &
                NF, WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
 
             OVERLAP_T(:) = OVERLAP_T(:) -                              &
@@ -483,8 +474,8 @@
       DOUBLE PRECISION, DIMENSION(DIMN) :: VRELTRANS
 
 ! Total relative velocity + rotational contribution
-      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + &
-         DES_CROSSPRDCT(OMEGA_NEW(:,LL)*DIST, NORM)
+      V_ROT = DIST*OMEGA_NEW(:,LL)
+      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + DES_CROSSPRDCT(V_ROT, NORM)
 
 ! magnitude of normal component of relative velocity (scalar)
       VRN = DOT_PRODUCT(VRELTRANS,NORM)

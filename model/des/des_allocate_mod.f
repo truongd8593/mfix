@@ -148,12 +148,8 @@ CONTAINS
       Allocate(  NEIGHBORS (NEIGH_MAX) )
       NEIGHBORS(:) = 0
       Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
-      Allocate(  PV_NEIGHBOR (NEIGH_MAX) )
-      Allocate(  PV_NEIGHBOR_OLD (NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR (3,NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR_OLD (3,NEIGH_MAX) )
-      Allocate(  PFN_NEIGHBOR (3,NEIGH_MAX) )
-      Allocate(  PFN_NEIGHBOR_OLD (3,NEIGH_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -466,7 +462,6 @@ CONTAINS
 
         INTEGER :: lSIZE1
         INTEGER, DIMENSION(:), ALLOCATABLE :: neigh_tmp
-        LOGICAL, DIMENSION(:), ALLOCATABLE :: pv_tmp
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: pf_tmp
 
         lSIZE1 = size(neighbors,1)
@@ -481,16 +476,6 @@ CONTAINS
         neigh_tmp(lSIZE1+1:) = 0
         call move_alloc(neigh_tmp,neighbors_old)
 
-        allocate(pv_tmp(new_neigh_max))
-        pv_tmp(1:lSIZE1) = pv_neighbor(1:lSIZE1)
-        pv_tmp(lSIZE1+1:) = .false.
-        call move_alloc(pv_tmp,pv_neighbor)
-
-        allocate(pv_tmp(new_neigh_max))
-        pv_tmp(1:lSIZE1) = pv_neighbor_old(1:lSIZE1)
-        pv_tmp(lSIZE1+1:) = .false.
-        call move_alloc(pv_tmp,pv_neighbor_old)
-
         allocate(pf_tmp(3,new_neigh_max))
         pf_tmp(:,1:lSIZE1) = pft_neighbor(:,1:lSIZE1)
         pf_tmp(:,lSIZE1+1:) = 0
@@ -501,15 +486,6 @@ CONTAINS
         pf_tmp(:,lSIZE1+1:) = 0
         call move_alloc(pf_tmp,pft_neighbor_old)
 
-        allocate(pf_tmp(3,new_neigh_max))
-        pf_tmp(:,1:lSIZE1) = pfn_neighbor(:,1:lSIZE1)
-        pf_tmp(:,lSIZE1+1:) = 0
-        call move_alloc(pf_tmp,pfn_neighbor)
-
-        allocate(pf_tmp(3,new_neigh_max))
-        pf_tmp(:,1:lSIZE1) = pfn_neighbor_old(:,1:lSIZE1)
-        pf_tmp(:,lSIZE1+1:) = 0
-        call move_alloc(pf_tmp,pfn_neighbor_old)
 
       END SUBROUTINE NEIGHBOR_GROW
 
@@ -544,7 +520,6 @@ CONTAINS
            call real_grow2(DES_POS_NEW,MAX_PIP)
            call real_grow2(DES_VEL_NEW,MAX_PIP)
            call real_grow2(OMEGA_NEW,MAX_PIP)
-           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
            call integer_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
@@ -561,6 +536,8 @@ CONTAINS
 
            call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
            call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)
+
+           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
 
            IF(FILTER_SIZE > 0) THEN
               call integer_grow2(FILTER_CELL,MAX_PIP)

@@ -157,7 +157,11 @@
       IF(DES_USR_VAR_SIZE > 0) &
          CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 
+      IF(PARTICLE_ORIENTATION) &
+         CALL VTP_WRITE_DATA('Orientation', ORIENTATION)
+
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
+
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
 
