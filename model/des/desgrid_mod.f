@@ -1010,10 +1010,10 @@
 !$                else
 !!    find the last particle with neighbors (and initialize neighbor_index)
 !$                    diff = 0
-!$                    do while (NEIGHBOR_INDEX(lcurpar-diff) .eq. 0 .and. diff .lt. lcurpar-1)
+!$                    do while (NEIGHBOR_INDEX(lcurpar-diff) .eq. 0 .and. diff .lt. lcurpar)
 !$                         diff = diff + 1
 !$                    enddo
-!$                    if (diff .eq. lcurpar-1) then
+!$                    if (diff .eq. lcurpar) then
 !$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = 1
 !$                    else
 !$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = NEIGHBOR_INDEX(lcurpar-diff)
