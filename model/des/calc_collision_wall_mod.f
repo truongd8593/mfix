@@ -46,7 +46,6 @@
 
       DOUBLE PRECISION V_REL_TRANS_NORM, DISTSQ, RADSQ, CLOSEST_PT(DIMN)
 ! local normal and tangential forces
-      DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
       DOUBLE PRECISION NORMAL(DIMN), VREL_T(DIMN), DIST(DIMN), DISTMOD
       DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T
 
@@ -55,10 +54,13 @@
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
       INTEGER :: PHASELL
 
-      DOUBLE PRECISION :: CROSSP(DIMN)
+      DOUBLE PRECISION :: CROSSP(DIMN), TANGENT(DIMN)
       DOUBLE PRECISION :: FTMD, FNMD
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
+
+      double precision :: MAG_OVERLAP_T
+
 
       double precision :: line_t
 ! flag to tell if the orthogonal projection of sphere center to
@@ -72,8 +74,9 @@
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
-!$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,       &
-!$omp    list_of_cells,cell_id,radsq,particle_max,particle_min,        &
+
+!$omp parallel default(none) private(LL,ijk,count_fac,MAG_OVERLAP_T,   &
+!$omp    list_of_cells,cell_id,radsq,particle_max,particle_min,tangent,&
 !$omp    axis,nf,closest_pt,dist,r_lm,distapart,force_coh,distsq,      &
 !$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
@@ -110,9 +113,6 @@
 
             WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(:, LL)
          ENDIF
-
-         FTS1(:) = ZERO
-         FTS2(:) = ZERO
 
 ! Check particle LL for wall contacts
 
@@ -281,26 +281,28 @@
 ! Calculate the tangential displacement.
             OVERLAP_T(:) = DTSOLID*VREL_T(:) + GET_COLLISION(LL,       &
                NF, WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
-
-            OVERLAP_T(:) = OVERLAP_T(:) -                              &
-               DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
-
-! Calculate the tangential collision force.
-            FTS1(:) = -KT_DES_W * OVERLAP_T(:)
-            FTS2(:) = -ETAT_DES_W * VREL_T(:)
-            FTAN(:) =  FTS1(:) + FTS2(:)
+            MAG_OVERLAP_T = sqrt(DOT_PRODUCT(OVERLAP_T, OVERLAP_T))
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
-            FTMD = DOT_PRODUCT(FTAN, FTAN)
-            FNMD = DOT_PRODUCT(FNORM,FNORM)
-            IF(FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
-               IF(.NOT.ALL(VREL_T == ZERO)) THEN
-                  FTAN(:) = -MEW_W*OVERLAP_T*SQRT(FNMD/                &
-                     dot_product(OVERLAP_T,OVERLAP_T))
-                  OVERLAP_T(:) = (FTS2 - FTAN)/KT_DES_W
+            IF(MAG_OVERLAP_T > 0.0) THEN
+! Tangential froce from spring.
+               FTMD = KT_DES_W*MAG_OVERLAP_T
+! Max force before the on set of frictional slip.
+               FNMD = MEW_W*sqrt(DOT_PRODUCT(FNORM,FNORM))
+! Direction of tangential force.
+               TANGENT = OVERLAP_T/MAG_OVERLAP_T
+               IF(FTMD < FNMD) THEN
+                  FTAN = -FTMD * TANGENT
+               ELSE
+                  FTAN = -FNMD * TANGENT
+                  OVERLAP_T = (FNMD/KT_DES_W) * TANGENT
                ENDIF
+            ELSE
+               FTAN = 0.0
             ENDIF
+! Add in the tangential dashpot damping force
+            FTAN = FTAN - ETAT_DES_W*VREL_T(:)
 
 ! Save the tangential displacement.
             CALL UPDATE_COLLISION(OVERLAP_T, LL, NF,                   &

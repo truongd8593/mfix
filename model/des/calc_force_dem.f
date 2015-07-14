@@ -47,7 +47,6 @@
       DOUBLE PRECISION :: VREL_T(3)
 ! normal and tangential forces
       DOUBLE PRECISION :: FN(3), FT(3)
-      DOUBLE PRECISION :: FTS1(3), FTS2(3)
 ! temporary storage of tangential DISPLACEMENT
       DOUBLE PRECISION :: PFT_TMP(3)
 ! temporary storage of force
@@ -69,7 +68,7 @@
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 
-      DOUBLE PRECISION :: FNMD, FTMD
+      DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
 !-----------------------------------------------
 
@@ -79,13 +78,14 @@
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
 
+
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
 !$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
 !$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fts1,fts2,pft_tmp,fn,ft,overlap_t,                   &
+!$omp    etat_des,pft_tmp,fn,ft,overlap_t,tangent,mag_overlap_t,       &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,NORMAL,ftmd,fnmd, &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
 !$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
@@ -207,27 +207,31 @@
 
 ! Calcuate the tangential overlap
             OVERLAP_T(:) = DTSOLID*VREL_T(:) + PFT_NEIGHBOR(:,CC)
-            OVERLAP_T(:) = OVERLAP_T(:) - &
-               DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
+            MAG_OVERLAP_T = sqrt(dot_product(OVERLAP_T,OVERLAP_T))
 
-! Calculate the tangential contact force
-            FTS1(:) = -KT_DES * OVERLAP_T(:)
-            FTS2(:) = -ETAT_DES * VREL_T(:)
-            FT(:) = FTS1(:) + FTS2(:)
-
-! Check for Coulombs friction law and limit the maximum value of the
-! tangential force on a particle in contact with another particle/wall
-            FTMD = dot_product(FT,FT)
-            FNMD = dot_product(FN,FN)
-            IF(FTMD.GT.(MEW*MEW*FNMD)) THEN
-               IF(.NOT.ALL(VREL_T == ZERO)) THEN
-                  FT(:) = -MEW*OVERLAP_T*SQRT(FNMD/           &
-                     dot_product(OVERLAP_T,OVERLAP_T))
-                  OVERLAP_T(:) = (FTS2 - FT)/KT_DES
+! Calculate the tangential contact force.
+            IF(MAG_OVERLAP_T > 0.0) THEN
+! Tangential froce from spring.
+               FTMD = KT_DES*MAG_OVERLAP_T
+! Max force before the on set of frictional slip.
+               FNMD = MEW*sqrt(dot_product(FN,FN))
+! Direction of tangential force.
+               TANGENT = OVERLAP_T/MAG_OVERLAP_T
+! Frictional slip
+               IF(FTMD > FNMD) THEN
+                  FT = -FNMD * TANGENT
+                  OVERLAP_T = (FNMD/KT_DES) * TANGENT
+               ELSE
+                  FT = -FTMD * TANGENT
                ENDIF
+            ELSE
+               FT = 0.0
             ENDIF
 
-! Save tangential displacement history with Coulomb's law correction
+! Add in the tangential dashpot damping force
+            FT = FT - ETAT_DES * VREL_T(:)
+
+! Save tangential displacement history
             PFT_NEIGHBOR(:,CC) = OVERLAP_T(:)
 
 ! calculate the distance from the particles' centers to the contact point,
