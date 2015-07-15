@@ -1197,8 +1197,8 @@
 !
       END_AVERAGE = .FALSE.
       TIME_OLD = -1.
+      NT = 0
       IF(TIME_AVERAGE) THEN
-        NT = 0
         DO K = K1, K2
            DO J = J1, J2
               DO I = I1, I2
