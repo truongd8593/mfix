@@ -24,11 +24,11 @@ obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 mfix_SOURCES = $(src_overrides)
 mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
@@ -42,7 +42,7 @@ build:
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix
+	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
@@ -145,11 +145,8 @@ endif
 
 POST_SCRIPT=AUTOTEST/post.script.NEW
 
-run: mfix
-	./mfix
-	touch run
-
-test: postmfix run
+test: postmfix mfix$(EXEEXT)
+	./mfix$(EXEEXT)
 	rm -f POST*.dat
 	if [ -e $(POST_SCRIPT) ]; then \
 	    ./postmfix < $(POST_SCRIPT); \

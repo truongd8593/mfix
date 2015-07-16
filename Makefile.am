@@ -28,7 +28,7 @@ export NETCDF_INCLUDE
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
@@ -38,7 +38,7 @@ $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 #           mfix executable                                    #
 #                                                              #
 ################################################################
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
@@ -806,5 +806,5 @@ cases := $(shell find . -name mfix.dat)
 allcases:
 	for case in $(cases); do \
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
-	  $(MAKE) -C $$(dirname $$case) mfix || exit; \
+	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done
