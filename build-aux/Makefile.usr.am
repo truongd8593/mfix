@@ -85,7 +85,7 @@ $(eval -include $(src_overrides:%.f=%.d) )
 @make_endif@
 
 CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
-DISTCLEANFILES = Makefile
+DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 
 ################################################################
 #                                                              #
