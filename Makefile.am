@@ -52,7 +52,7 @@ libmfix_a_SOURCES =
 #                                                              #
 ################################################################
 
-bin_PROGRAMS += postmfix
+bin_PROGRAMS += postmfix$(EXEEXT)
 
 postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
