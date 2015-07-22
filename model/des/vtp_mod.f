@@ -562,7 +562,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_VTP_FILE(LCV)
+      SUBROUTINE WRITE_VTP_FILE(LCV,MODE)
 
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED, FRAME
       USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
@@ -570,6 +570,7 @@
       USE vtk, only: VTK_PART_ANGULAR_VEL,VTK_PART_ORIENTATION
       USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
       USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
+      USE vtk, only: VTK_DBG_FILE
       USE output, only: FULL_LOG
 
 
@@ -588,19 +589,23 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
       VTK_REGION = LCV
 ! There is nothing to write if we are not in a defined vtk region
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
 
       IF(VTK_DATA(LCV)/='P') RETURN
+      IF(MODE==0.AND.(VTK_DBG_FILE(LCV))) RETURN
+      IF(MODE==1.AND.(.NOT.VTK_DBG_FILE(LCV))) RETURN
 
       CALL SETUP_VTK_REGION_PARTICLES
 
-      CALL OPEN_VTP_FILE_BIN
+      CALL OPEN_VTP_FILE_BIN(MODE)
 
 ! Only open pvd file when there are particles in vtk region
-      IF(GLOBAL_CNT>0) CALL OPEN_PVD_FILE
+      IF(GLOBAL_CNT>0.AND.MODE==0) CALL OPEN_PVD_FILE
 
 ! First pass write the data header.
 ! Second pass writes the data (appended binary format).
@@ -645,10 +650,10 @@
       ENDDO ! PASS LOOP, EITHER HEADER OR DATA
 
 
-      CALL CLOSE_VTP_FILE_BIN
+      CALL CLOSE_VTP_FILE_BIN(MODE)
 
 ! Only update pvd file when there are particles in vtk region
-      IF(GLOBAL_CNT>0)CALL UPDATE_AND_CLOSE_PVD_FILE
+      IF(GLOBAL_CNT>0.AND.MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
@@ -683,7 +688,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE OPEN_VTP_FILE_BIN
+  SUBROUTINE OPEN_VTP_FILE_BIN(MODE)
 
       USE run, only: TIME
       USE output, only: FULL_LOG
@@ -695,6 +700,8 @@
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS, NEED_TO_WRITE_VTP
       INTEGER :: ISTAT,BUFF1,BUFF2,L
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
 
 
       IF(BDIST_IO) THEN
@@ -731,7 +738,7 @@
 ! For distributed I/O, define the file name for each processor that owns particles
       IF (BDIST_IO) THEN
          IF (LOCAL_CNT>0) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
             ELSE
                WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
@@ -739,7 +746,7 @@
          ENDIF
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -812,7 +819,7 @@
 
       IF (myPE == PE_IO.AND.BDIST_IO.AND.GLOBAL_CNT>0) THEN
 
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
             WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -1486,7 +1493,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE CLOSE_VTP_FILE_BIN
+  SUBROUTINE CLOSE_VTP_FILE_BIN(MODE)
 
       USE vtk, only: BUFFER,VTU_UNIT,END_REC,NUMBER_OF_VTK_CELLS,PVTU_UNIT,TIME_DEPENDENT_FILENAME
       USE vtk, only: VTK_REGION,VTK_FILEBASE,FRAME
@@ -1497,6 +1504,8 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_PART_CNT
       INTEGER :: IERR
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
 
 
       IF((myPE == PE_IO.AND.(.NOT.BDIST_IO)).OR.(BDIST_IO.AND.LOCAL_CNT>0)) THEN
@@ -1522,7 +1531,7 @@
 
             DO N = 0,NumPEs-1
                IF(ALL_PART_CNT(N)>0) THEN
-                  IF(TIME_DEPENDENT_FILENAME) THEN
+                  IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                      WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
                   ELSE
                      WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N

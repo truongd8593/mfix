@@ -88,6 +88,10 @@ use param, only: DIMENSION_N_S
 ! Time interval at which vtk files are saved
       DOUBLE PRECISION :: VTK_DT(DIMENSION_VTK)
 
+! Flag to distiguish between regular file (VTK_DBG_FILE=.FALSE., default value)
+!                        and debug file (VTK_DBG_FILE=.TRUE.)
+      LOGICAL :: VTK_DBG_FILE(DIMENSION_VTK)
+
 ! Current vtk time
       DOUBLE PRECISION :: VTK_TIME(DIMENSION_VTK)
 

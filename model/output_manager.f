@@ -144,12 +144,13 @@
       CALL FLUSH_NOTIFY_USER
 
 ! Write vtk file, if needed
+! Only regular (not debug) files are written (second argument is zero)
       IF(WRITE_VTK_FILES) THEN
          DO LC = 1, DIMENSION_VTK
             IF(CHECK_TIME(VTK_TIME(LC))) THEN
                VTK_TIME(LC) = NEXT_TIME(VTK_DT(LC))
-               CALL WRITE_VTU_FILE(LC)
-               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC)
+               CALL WRITE_VTU_FILE(LC,0)
+               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,0)
             ENDIF
          ENDDO
       ENDIF
@@ -441,6 +442,7 @@
       ENDDO
 
 ! Initialize VTK_TIME
+
       IF(WRITE_VTK_FILES) THEN
          DO LC = 1, DIMENSION_VTK
             VTK_TIME(LC) = UNDEFINED
