@@ -15,55 +15,41 @@ cd $CASE_DIR
 
 cd $CASE_DIR
 
+# remove old result files
+rm -f error_summary.dat
+rm -f solution_tec_block.dat
+
 # Run case
 echo "******** Running simulation..."
 #mpirun -np 1 $CASE_DIR/mfix.exe nodesi=1 nodesj=1 nodesk=1 
 $CASE_DIR/mfix.exe Discretize=9*0
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_0.dat
-mv error_summary.dat error_summary_0.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*3
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_3.dat
-mv error_summary.dat error_summary_3.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*2
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_2.dat
-mv error_summary.dat error_summary_2.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*5
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_5.dat
-mv error_summary.dat error_summary_5.dat
+rm -f TFM04.*
 
 #$CASE_DIR/mfix.exe Discretize=9*4
-#rm -r TFM04.*
-#mv solution_tec_block.dat solution_tec_block_4.dat
-#mv error_summary.dat error_summary_4.dat
+#rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*7
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_7.dat
-mv error_summary.dat error_summary_7.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*6
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_6.dat
-mv error_summary.dat error_summary_6.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*8
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_8.dat
-mv error_summary.dat error_summary_8.dat
+rm -f TFM04.*
 
 $CASE_DIR/mfix.exe Discretize=9*9
-rm -r TFM04.*
-mv solution_tec_block.dat solution_tec_block_9.dat
-mv error_summary.dat error_summary_9.dat
+rm -f TFM04.*
 
-#rm $CASE_DIR/mfix.exe
+rm $CASE_DIR/mfix.exe
 
 echo "******** Done."
 

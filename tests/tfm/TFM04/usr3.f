@@ -89,6 +89,7 @@
                               error_summary
       use param1, only      : half, zero
       use mpi_utility, only : gather
+      use run, only         : discretize
       IMPLICIT NONE
 
 ! indices
@@ -132,8 +133,13 @@
                                           ! Og = Vorticity    
 
 ! temporary gradients
-        double precision              :: DV_DX, DU_DY            
+        double precision              :: DV_DX, DU_DY      
 
+        character(len=12), dimension(0:9) :: DISCR_NAME
+
+        data DISCR_NAME/'FOUP', 'FOUP', 'Superbee', 'Smart', &
+          'Ultra-Quick', &
+          'QUICKEST', 'Muscl', 'VanLeer', 'Minmod', 'Central'/
 
 ! allocate variables as ijkmax3 size 1D arrays
         allocate(arr_Pg(ijkmax3))
@@ -242,11 +248,11 @@
           if(tec_output_block) then
 
             open(unit=newunit(ftcc), file="solution_tec_block.dat", &
-                                      status='unknown')
+                  position='append', status='unknown')
 
             write(ftcc,"(11a)") 'variables = "x""y""z"&
                 &"Pg""Ug""Vg""Og""Pgex""Ugex""Vgex""Ogex"'
-            write(ftcc,*) 'zone T="',0,'" '
+            write(ftcc,*) 'zone T="',DISCR_NAME(DISCRETIZE(1)),'" '
             write(ftcc,*) 'I=',IMAX1,' J=',JMAX1,' K=',KMAX1
 
             write(ftcc,*) 'DATAPACKING=BLOCK'
@@ -333,10 +339,12 @@
           if(error_summary) then
 
             open(unit=newunit(fes), &
-             file="error_summary.dat", status='unknown')
-
-            write(fes,"(3a)") 'variables = "TKE""TKEex""TKEerrPerc"&
-                              "PgErrL1"'
+             file="error_summary.dat", status='unknown', & 
+             position='append')
+!            write(fes,"(4a)") 'variables = "TKE""TKEex""TKEerrPerc"&
+!                              "PgErrL1"'
+!            write(ftcc,*) 'zone T="',DISCRETIZE(1),'" '
+!            write(ftcc,*) 'I=',1
 
             TKE = zero
             TKEex = zero
@@ -346,19 +354,19 @@
             do j=jmin1,jmax1
             do i=imin1,imax1
               TKE = TKE + &
-                    half*sqrt(Ug_tmp(i,j,k)**2+Vg_tmp(i,j,k)**2)
+                    half*(Ug_tmp(i,j,k)**2+Vg_tmp(i,j,k)**2)
               TKEex = TKEex + &
-                      half*sqrt(Ug_ex_tmp(i,j,k)**2+Vg_ex_tmp(i,j,k)**2)
+                      half*(Ug_ex_tmp(i,j,k)**2+Vg_ex_tmp(i,j,k)**2)
               PgErrL1 = PgErrL1 + abs((Pg_tmp(i,j,k)-Pg_ex_tmp(i,j,k))/&
                                   Pg_ex_tmp(i,j,k))*100.0d0
             end do
             end do
             end do
 
-!            PgErrL1 = PgErrL1/float(imax*jmax)
+            PgErrL1 = PgErrL1/float(imax*jmax)
 
-            write(fes,*) TKE, TKEex, abs(TKE-TKEex)/TKEex*100.0d0, &
-                          PgErrL1
+            write(fes,*) DISCR_NAME(DISCRETIZE(1)), TKE, TKEex, &
+                        abs(TKE-TKEex)/TKEex*100.0d0, PgErrL1
 
             close(fes)
 

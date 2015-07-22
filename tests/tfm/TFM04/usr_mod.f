@@ -26,9 +26,10 @@
 
 ! set .true. for writing out tecplot data in a traditional cell-centered
 ! format (BLOCK format)
-        logical                               :: tec_output_block = .true.
+        logical                               :: tec_output_block = .false.
 
-! set .true. for writing out the centerline velocity profiles:
+! set .true. for writing out the summary of error between numerical and
+! exact solution
         logical                               :: error_summary = .true.
 
 ! x, y, z coordinates of the top-right corner of a cell.
