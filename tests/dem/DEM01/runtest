@@ -2,7 +2,8 @@
 
 module load gnu/4.6.4
 
-../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
+../../../configure_mfix  FC=gfortran FCFLAGS="-O0 -g"
+make
 
 #rm POST_*.dat &> /dev/null
 
@@ -10,7 +11,7 @@ RUN_NAME="DEM01"
 
 DES_IM=EULER
 for DES_IM in EULER ADAMS_BASHFORTH; do
-  DES_KN=10000 
+  DES_KN=10000
   for DES_ETA in 0.9 0.8 0.7 0.6; do
     rm -f ${RUN_NAME}* &> /dev/null
     time -p ./mfix.exe DES_INTG_METHOD=\"${DES_IM}\" \
