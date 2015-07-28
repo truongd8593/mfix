@@ -11,7 +11,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      subroutine cooling_rate(s,mi,ni,n,m,Ti,T,chi,sigmai,alpha,rhoi,xvec)
+      subroutine cooling_rate(s,mi,ni,n,m,chi,sigmai,alpha,rhoi,xvec)
       Implicit NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -159,8 +159,6 @@
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
-      double precision :: pi
-      parameter (pi=3.14159265458979323846d0)
       double precision :: one
       parameter (one=1.d0)
       double precision :: zero
@@ -276,7 +274,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  subroutine name: ludcmp(a,n,np,indx,d, calledFrom)
+!  subroutine name: ludcmp(a,n,indx,d, calledFrom)
 !  Purpose: Replaces matrix a (n,n) by the LU decomposition of a rowwise
 !           permutation of itself. Used in combination with lubksb.
 !
@@ -285,7 +283,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 !
-      subroutine ludcmp(a,n,np,indx,d,calledFrom)
+      subroutine ludcmp(a,n,indx,d,calledFrom)
       USE compar
 
       implicit none
@@ -294,7 +292,6 @@
 !-----------------------------------------------
       integer, intent(in) :: n
       double precision, intent(inout) :: a(n,n)
-      integer :: np
       integer, intent(out) :: indx(n)
       double precision, intent(out) :: d
       CHARACTER(len=*), intent(in) :: calledFrom
@@ -371,7 +368,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
-!  subroutine name: lubksb (a,n,np,indx,b)
+!  subroutine name: lubksb (a,n,indx,b)
 !  Purpose: solves the set of n linear equations A(n,n).X(n) = B(n).
 !
 !
@@ -380,7 +377,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      subroutine lubksb (a,n,np,indx,b)
+      subroutine lubksb (a,n,indx,b)
 
       implicit none
 !-----------------------------------------------
@@ -388,7 +385,6 @@
 !-----------------------------------------------
       integer, intent(in) :: n
       double precision, intent(in) :: a(n,n)
-      integer :: np
       integer, intent(in) :: indx(n)
       double precision, intent(inout) :: b(n)
 !-----------------------------------------------

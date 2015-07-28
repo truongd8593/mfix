@@ -49,8 +49,6 @@
       INTEGER :: ICLASS
 ! Array of sum of increments to make the class determination faster.
       INTEGER :: DENOTE_CLASS(MAX_CLASS)
-! Error Flag
-      INTEGER :: IER
 ! Flags for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
 !......................................................................!
@@ -350,16 +348,14 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER          I, J, K, IJK, NEW_IJK,L,N
+      INTEGER          I, J, K, IJK, NEW_IJK,N
 !
 !                      Index for the solids phase.
       INTEGER          M
 
       LOGICAL,DIMENSION(DIMENSION_3) :: ANY_CUT_TREATMENT, ANY_STANDARD_CELL
 
-      LOGICAL :: ANY_GLOBAL_GHOST_CELL,ANY_BLOCKED_CELL,NEED_TO_SKIP_CELL
-
-      CHARACTER(LEN=1) :: L2P(100)
+      LOGICAL :: ANY_GLOBAL_GHOST_CELL,NEED_TO_SKIP_CELL
 
       INTEGER,DIMENSION(DIMENSION_3) :: IM_COPY,IP_COPY,JM_COPY,JP_COPY,KM_COPY,KP_COPY
       INTEGER,DIMENSION(DIMENSION_3) :: WEST_COPY,EAST_COPY,SOUTH_COPY,NORTH_COPY,BOTTOM_COPY,TOP_COPY
@@ -367,15 +363,7 @@
       INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: TEMP_IJK_ARRAY_OF
       INTEGER, ALLOCATABLE, DIMENSION(:)     :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
 
-        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
-
-      INTEGER :: ISIZE, IREMAIN,JSIZE, JREMAIN,KSIZE, KREMAIN
-
       INTEGER, ALLOCATABLE, DIMENSION(:) :: BACKGROUND_IJKEND3_ALL,NCPP_UNIFORM_ALL
-
-      INTEGER :: J_OFFSET
 
       INTEGER :: iproc,IERR
 
@@ -390,20 +378,9 @@
                                         new_xrecv1, new_recvijk1 , new_recvproc1, new_recvtag1, &
                                         new_xrecv2, new_recvijk2 , new_recvproc2, new_recvtag2
 
-      integer :: layer,request, source, tag, datatype
-
-      integer :: lidebug
-
-      integer :: ii, kk, ntotal, icount,ipos, ilayer,ijk2, jproc, src,dest, ierror, comm
-
-      DOUBLE PRECISION :: LIP,P,MAXSPEEDUP
+      integer :: comm
 
       DOUBLE PRECISION, DIMENSION(0:NumPEs-1) :: DIFF_NCPP
-
-      INTEGER :: IJK_FILE_UNIT
-      CHARACTER(LEN=255) :: IJK_FILE_NAME
-      CHARACTER(LEN=6)  :: CHAR_MyPE
-
 
       INTEGER :: IJKW,IJKE,IJKS,IJKN,IJKB,IJKT
       INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
@@ -417,9 +394,6 @@
       INTEGER                 DENOTE_CLASS(MAX_CLASS)
 
    INTEGER :: I_SIZE,J_SIZE,K_SIZE
-
-   INTEGER :: clock_start,clock_end,clock_rate
-   DOUBLE PRECISION :: elapsed_time,dummysum
 
 !======================================================================
 !   Loop through useful cells and save their index
@@ -946,8 +920,6 @@
 !      WRITE(*,100),'ON MyPE = ', MyPE, ' , &
 !                    THE NUMBER OF ACTIVE CELLS WENT FROM ',BACKGROUND_IJKEND3, ' TO ', IJKEND3 , &
 !                    ' (', DBLE(IJKEND3-BACKGROUND_IJKEND3)/DBLE(BACKGROUND_IJKEND3)*100.0D0, ' % DIFFERENCE)'
-
-100   FORMAT(1X,A,I6,A,I8,A,I8,A,F6.1,A)
 
 !      print*,'From set increment: MyPE,NCCP_UNIFORM=',MyPE,NCPP_UNIFORM
 
@@ -1900,11 +1872,6 @@
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: New number of classes = ', ICLASS
 
-
-
-
-999 CONTINUE
-
     CALL WRITE_IJK_VALUES
 
 !      IJKEND3 = BACKGROUND_IJKEND3  ! for debugging purpose, will need to be removed
@@ -1962,13 +1929,7 @@
       ENDIF
 
 1000  FORMAT(1x,A)
-1010  FORMAT(1x,A,I10,I10)
-1020  FORMAT(1X,3(I10))
-1030  FORMAT(1X,A,2(F10.1))
-1040  FORMAT(F10.1)
-1050  FORMAT(1X,3(A))
 1060  FORMAT(1X,6(I10,1X),F8.1)
-1065  FORMAT(1X,4(I10,1X),F8.1)
 1070  FORMAT(1X,A,I8,A,I8)
 1080  FORMAT(1X,A,F8.1)
 !
@@ -2141,7 +2102,7 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER ::IJK, NEW_IJK
+      INTEGER ::IJK
 !
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
 
@@ -2200,7 +2161,7 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER ::IJK, NEW_IJK
+      INTEGER ::IJK
 !
       INTEGER, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
       INTEGER :: DEFAULT_VALUE
@@ -2261,7 +2222,7 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER ::IJK, NEW_IJK
+      INTEGER ::IJK
 !
       LOGICAL, DIMENSION(DIMENSION_3) :: ARRAY, BUFFER
       LOGICAL :: DEFAULT_VALUE
@@ -2323,8 +2284,8 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER ::IJK, NEW_IJK
-!
+      INTEGER ::IJK
+
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: ARRAY_1, ARRAY_2
 
 !======================================================================
@@ -2380,8 +2341,6 @@
 !
 
       INTEGER, DIMENSION(DIMENSION_3,15) ::TEMP_CONNECTIVITY
-
-      INTEGER :: DEFAULT_VALUE
 
 !======================================================================
 !
@@ -2624,75 +2583,12 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER          I, J, K, IJK, NEW_IJK,L,N
-!
-!                      Index for the solids phase.
-      INTEGER          M
-
-      LOGICAL,DIMENSION(DIMENSION_3) :: ANY_CUT_TREATMENT, ANY_STANDARD_CELL
-
-      LOGICAL :: ANY_GLOBAL_GHOST_CELL,ANY_BLOCKED_CELL,NEED_TO_SKIP_CELL
-
-      CHARACTER(LEN=1) :: L2P(100)
-
-      INTEGER,DIMENSION(DIMENSION_3) :: IM_COPY,IP_COPY,JM_COPY,JP_COPY,KM_COPY,KP_COPY
-      INTEGER,DIMENSION(DIMENSION_3) :: WEST_COPY,EAST_COPY,SOUTH_COPY,NORTH_COPY,BOTTOM_COPY,TOP_COPY
+      INTEGER          I, J, K, IJK
 
       INTEGER, ALLOCATABLE, DIMENSION(:,:,:) :: TEMP_IJK_ARRAY_OF
-      INTEGER, ALLOCATABLE, DIMENSION(:)     :: TEMP_I_OF,TEMP_J_OF,TEMP_K_OF
-
-        INTEGER, DIMENSION(0:NODESI-1) :: ISIZE_OLD
-        INTEGER, DIMENSION(0:NODESJ-1) :: JSIZE_OLD
-        INTEGER, DIMENSION(0:NODESK-1) :: KSIZE_OLD
-
-      INTEGER :: ISIZE, IREMAIN,JSIZE, JREMAIN,KSIZE, KREMAIN
-
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: BACKGROUND_IJKEND3_ALL
-
-      INTEGER :: J_OFFSET
-
-      INTEGER :: iproc,IERR
-
-      INTEGER :: I1,I2,J1,J2,K1,K2,jj,sendsize,send_pos,recvsize,recv_pos,n_total, IC
-      INTEGER :: placeholder, new_nsend1, new_nsend2,new_nrecv1,new_nrecv2
-      INTEGER :: nj1,nj2
-
-      INTEGER, DIMENSION(26) :: new_send_size, new_recv_size
-
-      integer, pointer, dimension(:) :: new_xsend1, new_sendijk1 , new_sendproc1, new_sendtag1, &
-                                        new_xsend2, new_sendijk2 , new_sendproc2, new_sendtag2, &
-                                        new_xrecv1, new_recvijk1 , new_recvproc1, new_recvtag1, &
-                                        new_xrecv2, new_recvijk2 , new_recvproc2, new_recvtag2
-
-      integer :: layer,request, source, tag, datatype
-
-      integer :: lidebug
-
-      integer :: ii, kk, ntotal, icount,ipos, ilayer,ijk2, jproc, src,dest, ierror, comm
-
-      DOUBLE PRECISION :: LIP,P,MAXSPEEDUP
-
-      DOUBLE PRECISION, DIMENSION(0:NumPEs-1) :: DIFF_NCPP
-
       INTEGER :: IJK_FILE_UNIT
       CHARACTER(LEN=255) :: IJK_FILE_NAME
       CHARACTER(LEN=6)  :: CHAR_MyPE
-
-
-      INTEGER :: IJKW,IJKE,IJKS,IJKN,IJKB,IJKT
-      INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKM,IJKP
-
-!                             Array index denoting a cell class, it is a
-!                             column of the array STORE_INCREMENTS
-      INTEGER                 ICLASS
-!
-!                             Array of sum of increments to make the class
-!                             determination faster.
-      INTEGER                 DENOTE_CLASS(MAX_CLASS)
-
-
-   INTEGER :: clock_start,clock_end,clock_rate
-   DOUBLE PRECISION :: elapsed_time,dummysum
 
       allocate(TEMP_IJK_ARRAY_OF(ISTART3-1:IEND3+1,JSTART3-1:JEND3+1,KSTART3-1:KEND3+1))
       TEMP_IJK_ARRAY_OF = IJK_ARRAY_OF

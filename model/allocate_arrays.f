@@ -431,16 +431,11 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Domain decomposition and dimensions
-      use geometry, only: DX, XLENGTH, oDX, oDX_E
-      use geometry, only: DY, YLENGTH, oDZ, oDZ_T
-      use geometry, only: DZ, ZLENGTH, oDY, oDY_N
-      use geometry, only: X, X_E, oX, oX_E, XMIN, cyl_X, cyl_X_E
+      use geometry, only: oDX, oDX_E
+      use geometry, only: oDZ, oDZ_T
+      use geometry, only: oDY, oDY_N
+      use geometry, only: X, X_E, oX, oX_E, cyl_X, cyl_X_E
       use geometry, only: Z, Z_T
-! Domain indices.
-      use geometry, only: IJKMAX3
-      use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3
-      use geometry, only: DO_J, JMIN1, JMAX1, JMAX2, JMAX3, JMIN3
-      use geometry, only: DO_K, KMIN1, KMAX1, KMAX2, KMAX3, KMIN3
 ! Averaging factors.
       use geometry, only: FX_E, FX_E_bar, FX, FX_bar
       use geometry, only: FY_N, FY_N_bar
@@ -454,41 +449,19 @@
       use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
       use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
       use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
-! Cyclic domain flags.
-      use geometry, only: CYCLIC
-      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
-      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
-      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
-! Flag for cylindrical coordinates.
-      use geometry, only: CYLINDRICAL
 ! Axis decomposition
       USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
       USE param, only: DIMENSION_3, DIMENSION_4
-      USE param, only: DIMENSION_3G, DIMENSION_3L, DIMENSION_3P
-! MPI-Domain decompoint and rank flags.
-      use compar, only: NODESI, NODESJ, NODESK, myPE
-! Rank specific decompositions.
-      use compar, only: IJKSIZE3_ALL
-      USE compar, only: iStart3, iEnd3, iStart4, iEnd4
-      USE compar, only: jStart3, jEnd3, jStart4, jEnd4
-      USE compar, only: kStart3, kEnd3, kStart4, kEnd4
-! Flag for specificed constant mass flux.
-      use bc, only: Flux_g
+      USE param, only: DIMENSION_3L, DIMENSION_3P
 ! Flag for POST_MFIX
       use cdist, only: bDoing_postmfix
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: ZERO, HALF, ONE, UNDEFINED
 
 ! Module procedures
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
 
-
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//

@@ -11,7 +11,7 @@
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      subroutine mass_mobility(s,mi,ni,rho,zeta0,theta,nu,DF)
+      subroutine mass_mobility(s,mi,ni,rho,zeta0,nu,DF)
       Implicit NONE
 
       integer s, indx(s)
