@@ -7,7 +7,6 @@
       use mpi_comm_des
       use error_manager
 
-
       IMPLICIT NONE
 
       INTEGER, PRIVATE :: GLOBAL_CNT
@@ -27,9 +26,7 @@
          MODULE PROCEDURE VTP_WRITE_I1
       END INTERFACE
 
-
       CONTAINS
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: VTP_WRITE_DP1                                            !
@@ -83,7 +80,6 @@
  1002 FORMAT('</DataArray>')
 
       END SUBROUTINE VTP_WRITE_DP1
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: VTP_WRITE_DP2                                            !
@@ -395,7 +391,6 @@
 
 !-----------------------------------------------
 
-
       CALL INIT_ERR_MSG('VTP_MOD --> ADD_VTP_TO_PVD')
 
 ! Initialize the error flag.
@@ -686,8 +681,8 @@
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS, NEED_TO_WRITE_VTP
       INTEGER :: ISTAT,BUFF1,BUFF2,L
-      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
-                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       IF(BDIST_IO) THEN
@@ -1471,8 +1466,8 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_PART_CNT
       INTEGER :: IERR
-      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
-                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       IF((myPE == PE_IO.AND.(.NOT.BDIST_IO)).OR.(BDIST_IO.AND.LOCAL_CNT>0)) THEN
