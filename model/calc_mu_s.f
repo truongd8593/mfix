@@ -103,11 +103,11 @@
 ! General initializations
 !---------------------------------------------------------------------
 ! Zero out various quantities
-      CALL INIT0_MU_S(M, IER)
+      CALL INIT0_MU_S(M)
 
 ! Calculate quantities that are functions of velocity only and may be
 ! needed for subsequent calculations by various model options
-      CALL INIT1_MU_S(M, IER)
+      CALL INIT1_MU_S(M)
 
 
 ! Viscous-flow stress tensor

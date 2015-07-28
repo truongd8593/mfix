@@ -49,13 +49,13 @@
 
              IF(DEF_COR)THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_S
-                CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (M, B_M)
 
              ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR U_S
                 IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP
-                   CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 ELSE
                    CALL STORE_A_U_S1 (A_M(1,-3,M), M)
                 ENDIF

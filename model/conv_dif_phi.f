@@ -60,7 +60,7 @@
          CALL CONV_DIF_PHI0(PHI, DIF, UF, VF, WF, &
             Flux_E, Flux_N, Flux_T, M, A_M)
          IF (DISC > 1) CALL CONV_DIF_PHI_DC(PHI, DISC, UF, VF, WF,&
-                         Flux_E, Flux_N, Flux_T, M, B_M, IER)
+                         Flux_E, Flux_N, Flux_T, M, B_M)
       ELSE
 
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE THE SCALAR TRANSPORT EQN.

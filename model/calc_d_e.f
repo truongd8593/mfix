@@ -580,7 +580,7 @@
 
 !$omp parallel default(none) &
 !$omp          private(ijk,area_face,i,ijke,epsa,lm,sum_vxf_ss,tmpdp,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
-!$omp          shared(ijkstart3,ijkend3,d_e,mmax,cartesian_grid,ayz,i_of,ep_g,vxf_gs,vxf_ss,momentum_x_eq,am0,model_b,p_scale)
+!$omp          shared(ijkstart3,ijkend3,d_e,mmax,cartesian_grid,ayz,i_of,vxf_gs,vxf_ss,momentum_x_eq,am0,model_b,p_scale)
 !$omp do
       DO IJK = IJKSTART3, IJKEND3
          IF (IP_AT_E(IJK) .OR. MFLOW_AT_E(IJK) .OR. MODEL_B) THEN

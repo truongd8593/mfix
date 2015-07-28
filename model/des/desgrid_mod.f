@@ -858,7 +858,7 @@
       double precision :: lcur_off
       integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff
+!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff, mm, lSIZE2
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
@@ -870,8 +870,8 @@
       lkoffset = dimn-2
 
 !$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
-!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
-!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, lSIZE2, int_tmp) &
+!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
+!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
 !$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
 !$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 

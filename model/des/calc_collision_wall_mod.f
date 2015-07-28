@@ -78,7 +78,7 @@
 !$omp    axis,nf,closest_pt,dist,r_lm,distapart,force_coh,distsq,      &
 !$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
-!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd,crossp)  &
+!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd)         &
 !$omp shared(max_pip,focus_particle,debug_des,no_neighboring_facet_des,&
 !$omp    pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,    &
 !$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
