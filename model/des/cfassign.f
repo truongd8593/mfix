@@ -26,7 +26,6 @@
       USE constant, only : GRAVITY_X, GRAVITY_Y, GRAVITY_Z
       USE discretelement
       USE mfix_pic
-      use geometry, only: DO_K
       use error_manager
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
@@ -78,7 +77,6 @@
 ! Modules
 !-----------------------------------------------
       USE param1
-      USE constant, only: Pi
       USE discretelement, only: des_mmax, dtsolid
       USE discretelement, only: DES_RO_s, DES_D_P0
       USE physprop, only: MU_g0
@@ -140,7 +138,6 @@
 ! Modules
 !-----------------------------------------------
       USE param1
-      USE constant, only: Pi
       USE discretelement
       use error_manager
       IMPLICIT NONE

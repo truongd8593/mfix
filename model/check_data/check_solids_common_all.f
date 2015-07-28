@@ -157,10 +157,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Flag: Solve energy equations
-      use run, only: ENERGY_EQ
-! Flag: Solve species equations
-      use run, only: SPECIES_EQ
 ! User specifed drag type, as string and enum
       use run, only: DRAG_TYPE
       use run, only: DRAG_TYPE_ENUM
@@ -180,8 +176,6 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Parameter constants.
-      use param1, only: UNDEFINED, UNDEFINED_I, UNDEFINED_C
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -261,8 +255,6 @@
       USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
-! Initial turbulence length scale
-      use constant, only: L_SCALE0
 ! Specularity coefficient for particle-wall collisions
       use constant, only: PHIP
 ! Flag: Use cartesian grid model
@@ -607,7 +599,7 @@
 ! Maximum number of gas phase species.
       USE param, only: DIM_N_s
 ! Constants.
-      USE param1, only: UNDEFINED_I, UNDEFINED, ZERO
+      USE param1, only: UNDEFINED_I, UNDEFINED
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//

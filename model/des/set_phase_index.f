@@ -13,7 +13,7 @@
       USE physprop, only: SMAX
 
       use discretelement, only: PIJK
-      USE discretelement, only: DES_POS_NEW, DES_RADIUS, RO_SOL
+      USE discretelement, only: DES_RADIUS, RO_SOL
       USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
       USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST
       use mpi_funs_des, only: des_par_exchange

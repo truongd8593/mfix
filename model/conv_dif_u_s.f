@@ -414,7 +414,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_U_S0(A_U_S, M, IER)
+      SUBROUTINE STORE_A_U_S0(A_U_S, M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -437,8 +437,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -576,10 +574,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3

@@ -16,9 +16,9 @@
 ! Domain bounds (max/min).
       use discretelement, only: EX2, TY2, NZ2, WX1, BY1, SZ1
 ! Fluid grid cell dimensions and mesh size
-      USE geometry, only: DX, IMIN3, IMIN2, IMAX2
-      USE geometry, only: DY, JMIN3, JMIN2, JMAX2
-      USE geometry, only: DZ, KMIN3, KMIN2, KMAX2
+      USE geometry, only: DX, IMIN2, IMAX2
+      USE geometry, only: DY, JMIN2, JMAX2
+      USE geometry, only: DZ, KMIN2, KMAX2
 ! Number of particles in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
 

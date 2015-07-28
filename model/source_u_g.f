@@ -53,7 +53,7 @@
 
       USE mms, only: use_mms, mms_u_g_src
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, half, small_number
+      USE param1, only: zero, one, half
       USE physprop, only: mmax, smax
       USE physprop, only: mu_g, cv
       USE run, only: momentum_x_eq

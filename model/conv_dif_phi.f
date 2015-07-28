@@ -359,7 +359,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CONV_DIF_PHI_DC(PHI, DISC, UF, VF, WF, &
-         Flux_E, Flux_N, Flux_T, M, B_M, IER)
+         Flux_E, Flux_N, Flux_T, M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -376,12 +376,10 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3, dimension_m
       USE param1, only: zero, one
 
-      USE run, only: discretize, fpfoi
+      USE run, only: fpfoi
       USE sendrecv3, only: send_recv3
 
       USE tmp_array, only: tmp4
@@ -411,8 +409,6 @@
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! Indices
@@ -632,8 +628,6 @@
       USE param1, only: one
 
       USE matrix, only: e, w, n, s, t, b
-
-      USE run, only: discretize
 
       USE xsi, only: calc_xsi
       USE xsi_array, only: xsi_e, xsi_n, xsi_t

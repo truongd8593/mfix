@@ -687,7 +687,7 @@
            do j = 1,ny
               do k = 1,nz
                  ijk = ijk + 1
-                 rarr(i,j,k) = darr(ijk)
+                 rarr(i,j,k) = real(darr(ijk))
               end do
            end do
         end do

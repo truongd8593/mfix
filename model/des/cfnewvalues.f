@@ -199,10 +199,10 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER L, M, IDIM
-      INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+      INTEGER I, J, K, IJK, IJK_OLD
 
       DOUBLE PRECISION DD(3), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
+                       DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
       DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
 ! index to track accounted for particles
@@ -212,19 +212,16 @@
       LOGICAL DES_LOC_DEBUG
 
 ! maximum distance particles can move in MPPIC
-      DOUBLE PRECISION MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
+      DOUBLE PRECISION UPRIMEMOD
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX)
-      DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT
 
-      DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
-
 
       double precision  sig_u, mean_u
       double precision, allocatable, dimension(:,:) ::  rand_vel
@@ -448,15 +445,7 @@
 
 
       ENDIF
- 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
  1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')
-
- 1002 FORMAT(/1X,70('*')//&
-         ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
-         ' during a',/10X, 'single solids time step, which is ',&
-         ' greater than',/10X,'its radius: ', ES17.9)
- 1003 FORMAT(1X,70('*')/)
 
 2001  FORMAT(/1X,70('*'),//,10X,  &
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
@@ -471,10 +460,6 @@
 
  2002 FORMAT(/10x, &
       & 'DTSOLID CAN BE INCREASED TO', g17.8)
-
- 2003 FORMAT(/10x, &
-      & 'DTSOLID REMAINS UNCHANGED AT = ', g17.8)
-
 
       RETURN
       END SUBROUTINE CFNEWVALUES_MPPIC_SNIDER
@@ -773,16 +758,7 @@
       WRITE(UNIT_LOG, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
       WRITE(*, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
 
-
- 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
  1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')
-
- 1002 FORMAT(/1X,70('*')//&
-         ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
-         ' during a',/10X, 'single solids time step, which is ',&
-         ' greater than',/10X,'its radius: ', ES17.9)
- 1003 FORMAT(1X,70('*')/)
 
 2001  FORMAT(/1X,70('*'),//,10X,  &
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
@@ -797,10 +773,6 @@
 
  2002 FORMAT(/10x, &
       & 'DTSOLID CAN BE INCREASED TO', g17.8)
-
- 2003 FORMAT(/10x, &
-      & 'DTSOLID REMAINS UNCHANGED AT = ', g17.8)
-
 
       RETURN
       END SUBROUTINE CFNEWVALUES_MPPIC

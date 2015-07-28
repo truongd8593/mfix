@@ -21,7 +21,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, half, one
+      USE param1, only: zero
       USE physprop, only: smax, mmax
       USE fldvar, only: ep_s
       USE visc_s, only: epmu_s
@@ -136,7 +136,6 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: zero, half, one
       USE fldvar, only: u_s, v_s, w_s
       USE visc_s, only: epmu_s, eplambda_s
       USE visc_s, only: trd_s
@@ -248,7 +247,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: zero, half, one
+      USE param1, only: zero, half
       USE fldvar, only: u_s, v_s, w_s
       USE visc_s, only: epmu_s, eplambda_s
       USE visc_s, only: trd_s

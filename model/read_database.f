@@ -183,10 +183,6 @@
          'file (if any) is below a line',/'that starts with THERMO ',  &
          'DATA.',2/'Database location:', /A)
 
- 1020 FORMAT('Message 1020: This routine was entered with an invalid ',&
-         'model argument.',/' Acceptable values are TFM and DEM.',/    &
-         ' Passed Argument: MODEL = ',A)
-
       END SUBROUTINE READ_DATABASE
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -197,7 +193,7 @@
 !  Author: J. Musser                                  Date: 02-Oct-12  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE0(Ier)
+      SUBROUTINE READ_DATABASE0()
 
       USE param
       USE param1
@@ -211,8 +207,6 @@
 
       IMPLICIT NONE
 
-! Error message returned from Read_Therm and sent to calling routine
-      INTEGER IER
 ! Loop indices for mass phase and species
       INTEGER M, N
 ! Loop counter for continuum and discrete species

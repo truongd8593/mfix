@@ -84,7 +84,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use funits,   only : DMP_LOG
       use output,   only : FULL_LOG
       use param1,   only : zero
       use run,      only : TIME
@@ -359,7 +358,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
 
-      use fldvar, only : ROP_s, RO_s, EP_S
+      use fldvar, only : EP_S
       use physprop, only : MMAX
       use run, only : SPECIES_EQ
 

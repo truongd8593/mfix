@@ -6,7 +6,7 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE DIF_PHI_DES(M, DIF, A_M, B_M, IER)
+      SUBROUTINE DIF_PHI_DES(M, DIF, A_M, B_M)
 
 !-----------------------------------------------
 !   M o d u l e s
@@ -37,8 +37,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 
       DOUBLE PRECISION, INTENT(IN) :: DIF(DIMENSION_3)
-
-      INTEGER :: IER
 
 ! Fluid Cell indices
       INTEGER :: I, J, K, IJK

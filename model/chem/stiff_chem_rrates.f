@@ -55,12 +55,9 @@
 ! Specific heats
       use physprop, only: C_ps
 
-
-
       use rxns, only: REACTION
       use rxns, only: NO_OF_RXNS
 
-      use run, only: SPECIES_EQ
       use run, only: UNITS
 
       use stiff_chem, only: ODE_DIMN_all
@@ -116,10 +113,6 @@
       DOUBLE PRECISION :: lHORs(DIMENSION_M)
 ! Rate of interphase enthalpy transfer due to mass transfer.
       DOUBLE PRECISION :: RxH(0:DIMENSION_M, 0:DIMENSION_M)
-
-! Error Flag. Used to supress checks in mapODEtoMFIX.
-      INTEGER :: iErr
-
 
 ! Net rate of change of gas phase material.
       DOUBLE PRECISION :: sumlRg

@@ -1,5 +1,5 @@
 
-      SUBROUTINE Source_population_eq(x,y,dydx)
+      SUBROUTINE Source_population_eq(y,dydx)
 
       use param1, only: zero, small_number
       USE constant
@@ -10,7 +10,7 @@
 
       IMPLICIT NONE
 
-      double precision x,y(*),dydx(*)
+      double precision y(*),dydx(*)
       double precision K_v
       double precision m1,m2, dav,theta,c11
       double precision epstotal

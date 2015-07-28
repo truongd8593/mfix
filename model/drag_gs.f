@@ -395,7 +395,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE constant, only : drag_c1, drag_d1, c
+      USE constant, only : drag_c1, drag_d1
       USE drag
       USE param
       USE param1
@@ -423,10 +423,10 @@
 !     PARAMETER (a1 = 1500.)  !for G_s = 147 kg/m^2.s
 !     a1 depends upon solids flux.  It has been represented by C(1)
 !     defined in the data file.
-      DOUBLE PRECISION, PARAMETER :: A2 = 0.005D0
-      DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0
-      DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0
-      DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0
+!     DOUBLE PRECISION, PARAMETER :: A2 = 0.005D0
+!     DOUBLE PRECISION, PARAMETER :: A3 = 90.0D0
+!     DOUBLE PRECISION, PARAMETER :: RE_C = 5.D0
+!     DOUBLE PRECISION, PARAMETER :: EP_C = 0.92D0
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

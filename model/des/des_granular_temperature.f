@@ -56,7 +56,7 @@
 !----------------------------------------------------------------->>>
 ! The following calculations are performed on the 'fluid' grid
       TEMP(:,:) = ZERO
-      NP_PHASE(:,:) = ZERO
+      NP_PHASE(:,:) = 0
       PC = 0
       DO LL = 1, MAX_PIP
 ! skipping particles that do not exist

@@ -54,8 +54,6 @@
       use mfix_pic, only: MPPIC
 ! Flag to use implicit drag for MPPIC
       use mfix_pic, only: MPPIC_PDRAG_IMPLICIT
-! Fluid grid loop bounds.
-      use compar, only: IJKStart3, IJKEnd3
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 ! Function to deterine if a cell contains fluid.

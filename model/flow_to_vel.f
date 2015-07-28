@@ -24,8 +24,6 @@
       use param, only: DIM_M
       use param1, only: UNDEFINED
       use geometry, only: NO_I, NO_J, NO_K
-      use physprop, only: SMAX
-      use discretelement, only: DES_MMAX
       use bc, only: BC_MASSFLOW_G
       use bc, only: BC_VOLFLOW_G
       use bc, only: BC_MASSFLOW_S

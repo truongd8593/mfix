@@ -35,13 +35,13 @@
 
       IF (DEF_COR) THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_G
-         CALL STORE_A_V_G0 (A_M, IER)
-         IF (DISCRETIZE(4) > 1) CALL STORE_A_V_GDC(B_M(1,0), IER)
+         CALL STORE_A_V_G0 (A_M)
+         IF (DISCRETIZE(4) > 1) CALL STORE_A_V_GDC(B_M(1,0))
 
       ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE V_G
          IF (DISCRETIZE(4) == 0) THEN               ! 0 & 1 => FOUP
-            CALL STORE_A_V_G0(A_M, IER)
+            CALL STORE_A_V_G0(A_M)
          ELSE
             CALL STORE_A_V_G1(A_M)
          ENDIF
@@ -416,7 +416,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_V_G0(A_V_G, IER)
+      SUBROUTINE STORE_A_V_G0(A_V_G)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -438,8 +438,6 @@
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_V_g
       DOUBLE PRECISION, INTENT(INOUT) :: A_V_g(DIMENSION_3, -3:3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -556,7 +554,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_V_GDC(B_M, IER)
+      SUBROUTINE STORE_A_V_GDC(B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -575,10 +573,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3
@@ -597,8 +593,6 @@
 !---------------------------------------------------------------------//
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

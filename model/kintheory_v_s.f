@@ -8,7 +8,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_KTMOMSOURCE_V_S(IER)
+      SUBROUTINE CALC_KTMOMSOURCE_V_S()
 
 !-----------------------------------------------
 ! Modules
@@ -27,11 +27,6 @@
       USE kintheory, only: ktmom_v_s
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -72,7 +67,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param1, only: half, zero
+      USE param1, only: zero
       USE constant, only: pi
 
 ! trace of D_s at i, j, k

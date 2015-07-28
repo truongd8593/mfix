@@ -486,7 +486,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_V_S_BC(A_M, B_M, M, IER)
+      SUBROUTINE SOURCE_V_S_BC(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -522,8 +522,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------

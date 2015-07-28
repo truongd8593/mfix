@@ -168,7 +168,7 @@
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
-      use discretelement, only: DES_RADIUS, PVOL
+      use discretelement, only: DES_RADIUS
 ! Total forces acting on particle
       use discretelement, only: SDRAG_AM, SDRAG_BM, F_SDS
 ! Number of continuum solids phases

@@ -83,7 +83,6 @@
 
       use compar, only: numPEs
       use machine, only: OPEN_N1
-      use geometry, only: NO_K
 
       use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -310,7 +309,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE MAP_pARRAY_TO_PROC(lPAR_CNT)
 
-      use discretelement, only: PIP, MAX_PIP
+      use discretelement, only: PIP
       use discretelement, only: XE, YN, ZT
       use geometry, only: IMIN1, IMAX1
       use geometry, only: JMIN1, JMAX1
@@ -334,8 +333,6 @@
       INTEGER :: LC1, lPROC
 ! Error flag.
       INTEGER :: IER(0:numPEs-1)
-! Local scatter count.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
 ! The X/Y/Z bounds of the physical space "owned" by each process.
       DOUBLE PRECISION :: lxmin(0:NUMPEs-1), lxmax(0:NUMPEs-1)
       DOUBLE PRECISION :: lymin(0:NUMPEs-1), lymax(0:NUMPEs-1)
@@ -479,10 +476,7 @@
 ! Dimensionality flag.
       INTEGER :: lDIMN
 ! Loop counters.
-      INTEGER :: LC1, lPROC, lBuf, IER
-! Scatter counts.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
-
+      INTEGER :: LC1, lPROC, lBuf
 
       lDIMN = merge(2,3,NO_K)
 
@@ -640,7 +634,7 @@
       INTEGER, INTENT(OUT) :: lCOL_CNT(0:numPEs-1)
 
 ! Loop counters.
-      INTEGER :: LC1, LC2, lPROC, lBUF
+      INTEGER :: LC1, LC2
 ! Error flag.
       INTEGER :: IER
 ! Max global id.
@@ -780,8 +774,6 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE GLOBAL_TO_LOC_COL
 
-      use compar, only: numPEs
-      use discretelement, only: NEIGHBORS
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
 
@@ -863,8 +855,8 @@
  !          ENDIF
  !       ENDDO LP1
 
- 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
-         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
+! 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
+!         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
 
       CALL GLOBAL_ALL_SUM(UNMATCHED)
       IF(UNMATCHED /= 0) THEN
@@ -1093,9 +1085,8 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(OUT) :: OUTPUT_I(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1, lc2
+      INTEGER :: LC1
 
       INTEGER :: lPROC
 
@@ -1229,7 +1220,6 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(OUT) :: OUTPUT_L(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
       INTEGER :: LC1
 
@@ -1441,7 +1431,6 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(OUT) :: OUTPUT_L(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
       INTEGER :: LC1
 

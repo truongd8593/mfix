@@ -70,7 +70,7 @@
 !            minROPs = BASE_ROs(M)*DIL_EP_s
             minROPs = BASE_ROs(M)*(DIL_FACTOR_VSD*DIL_EP_s)
 ! Debug/Development option.
-            IF(dbgMode) CALL CHECK_SET_ROs(M)
+            IF(dbgMode) CALL CHECK_SET_ROs()
 
 ! Calculate Ro_s in all fluid and flow boundary cells.
             DO IJK = ijkStart3, ijkEnd3
@@ -108,10 +108,8 @@
 !           problematic IC/BC specifications. This is included mainly  !
 !           for development efforts.                                   !
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE CHECK_SET_ROs(lM)
+      SUBROUTINE CHECK_SET_ROs()
 
-! File unit for LOG
-      use funits, only: UNIT_LOG
 ! Flag for who writes
       use funits, only: DMP_LOG
 ! Solids species mass fractions.
@@ -126,9 +124,6 @@
       use toleranc
 
       implicit none
-
-! Index of solids phase.
-      INTEGER, INTENT(IN) :: lM
 
 ! Sum of solids phase mass fractions.
       DOUBLE PRECISION :: SUM_Xs
@@ -218,10 +213,6 @@
 
 
       RETURN
-
- 1000 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1000:',     &
-         ' Error 1000: One or more errors were detected. Please see',  &
-         ' setROs.log',/' for specifics.',1x,70('*')/)
 
  1100 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1100:',     &
          ' One or more fluid cells contain invalid species mass',/     &

@@ -125,7 +125,7 @@
          IF((ENERGY_EQ .AND. C_Ps0(M) == UNDEFINED) .OR.               &
             SPECIES_EQ(M)) THEN
             IF(.NOT.COMPARE(sum(DES_X_s(NP,1:NMAX(M))),ONE)) THEN
-               WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
+               WRITE(ERR_MSG, 2001) trim(iVal(NP)), trim(iVal(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF

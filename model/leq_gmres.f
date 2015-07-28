@@ -150,8 +150,6 @@
 !-----------------------------------------------
       INTEGER JDEBUG
       PARAMETER(JDEBUG=0)
-      DOUBLE PRECISION TOLTRIG
-      PARAMETER(TOLTRIG=1.0D-4)
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE WRITE_AB_M(A_M, B_M, IJKMAX2A, M, IER)    ! pnicol
+      SUBROUTINE WRITE_AB_M(A_M, B_M, M)    ! pnicol
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !

@@ -56,7 +56,6 @@
       USE qmom_kinetic_equation
       USE residual
       USE run
-      USE rxns, only : USE_RRATES, NO_OF_RXNS
       USE scalars
       USE time_cpu
       USE toleranc
@@ -99,11 +98,8 @@
 ! average velocity
       DOUBLE PRECISION :: Vavg
       DOUBLE PRECISION :: errorpercent(0:MMAX)
-      LOGICAL :: ABORT_IER
       CHARACTER(LEN=4) :: TUNIT
 
-! Flag indicating which error message to print when run diverges.
-      INTEGER :: lErrMsg
 ! Error Message
       CHARACTER(LEN=32) :: lMsg
 
@@ -112,7 +108,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-      DOUBLE PRECISION :: WALL_TIME
 
 !-----------------------------------------------
 ! Include statement functions
@@ -221,7 +216,7 @@
 
 ! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Diffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0) CALL SCALAR_PROP()
@@ -241,7 +236,7 @@
 
 ! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Calculate chemical reactions.
       CALL CALC_RRATE(IER)
@@ -284,7 +279,7 @@
             IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
 
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
-            IF (IER_MANAGER(IER)) goto 1000
+            IF (IER_MANAGER()) goto 1000
 
          ENDIF  ! endif (mmax >0)
 
@@ -311,7 +306,7 @@
 
 ! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Update wall velocities:
 ! modified by sof to force wall functions so even when NSW or FSW are
@@ -330,20 +325,20 @@
 ! Solve energy equations
       IF (ENERGY_EQ) THEN
          CALL SOLVE_ENERGY_EQ (IER)
-         IF (IER_MANAGER(IER)) goto 1000
+         IF (IER_MANAGER()) goto 1000
       ENDIF
 
 ! Solve granular energy equation
       IF (GRANULAR_ENERGY) THEN
          IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
             CALL SOLVE_GRANULAR_ENERGY (IER)
-            IF (IER_MANAGER(IER)) goto 1000
+            IF (IER_MANAGER()) goto 1000
          ENDIF
       ENDIF
 
 ! Solve species mass balance equations.
       CALL SOLVE_SPECIES_EQ (IER)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
@@ -520,9 +515,6 @@
       ENDIF ! continue iterate
 ! ----------------------------------------------------------------<<<
 
-
-
-
       CALL GET_SMASS (SMASS)
       IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
       CALL START_LOG
@@ -534,14 +526,11 @@
       IER = 1
       RETURN
 
-
  5050 FORMAT(5X,'Average ',A,G12.5)
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
  5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, 'MbErr%=', G11.4)
  5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
       I3,'MbErr%=', G11.4, ': ',A,' :-(')
- 6000 FORMAT(1X,A)
-
 
       contains
 
@@ -560,9 +549,7 @@
 ! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
 !                                                                      !
 !----------------------------------------------------------------------!
-      LOGICAL FUNCTION IER_MANAGER(lErr)
-
-      INTEGER, intent(in) :: lErr
+      LOGICAL FUNCTION IER_MANAGER()
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
@@ -713,7 +700,6 @@
       DOUBLE PRECISION, SAVE  :: mdot_n, mdot_nm1, delp_n, delp_nm1, err
       DOUBLE PRECISION        :: mdot_0, delp_xyz
 
-      CHARACTER, SAVE :: Direction
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------

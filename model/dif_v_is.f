@@ -7,7 +7,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE DIF_V_IS(DIF, A_M, M, IER)
+      SUBROUTINE DIF_V_IS(DIF, A_M, M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -36,8 +36,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Solids phase
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

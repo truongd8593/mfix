@@ -96,7 +96,7 @@
       use compar, only: numPEs
       use mpi_utility, only: GLOBAL_SUM
 
-      use desmpi, only: iProcBuf, dProcBuf
+      use desmpi, only: iProcBuf
       use desmpi, only: iRootBuf, dRootBuf
 
       use desmpi, only: iGath_SendCnt
@@ -106,14 +106,12 @@
       use discretelement, only: PIP, iGHOST_CNT
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
 
-      use machine, only: OPEN_N1
-
       CHARACTER(len=*), INTENT(IN)  :: BASE
       DOUBLE PRECISION, INTENT(IN) :: lVERSION
       INTEGER, INTENT(OUT) :: lNEXT_REC
 
 ! Number of real particles on local rank
-      INTEGER :: lParCnt, lPROC
+      INTEGER :: lPROC
 ! Total number of real particles.
       INTEGER :: lGHOST_CNT
 ! Local gather counts for send/recv
@@ -449,7 +447,6 @@
       SUBROUTINE WRITE_RES_PARRAY_1D(lNEXT_REC, INPUT_D)
 
       use discretelement, only: MAX_PIP, PIP, IS_NONEXISTENT
-      use desmpi, only: iProcBuf
 
       IMPLICIT NONE
 

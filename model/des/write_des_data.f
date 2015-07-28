@@ -264,7 +264,7 @@
 
 ! Variables related to gathering info at PE_IO
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
-      real,dimension(:,:), allocatable :: ltemp_array
+      double precision, dimension(:,:), allocatable :: ltemp_array
 
       INTEGER :: wDIMN
 

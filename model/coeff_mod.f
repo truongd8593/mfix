@@ -45,13 +45,9 @@
       use param1, only: UNDEFINED
 ! Kinetic theory model.
       USE run, only: kt_type_enum
-      USE run, only: lun_1984
-      USE run, only: simonin_1996
-      USE run, only: ahmadi_1995
       USE run, only: gd_1999
       USE run, only: gtsh_2012
       USE run, only: ia_2005
-      USE run, only: ghd_2007
 ! Run-time flag for invoking DQMOM
       use run, only: CALL_DQMOM
 ! Real number of solids phases (GHD theory)
@@ -79,7 +75,7 @@
 ! Specified number of solids phases.
       use physprop, only: MMAX
 ! Specified constant viscosity.
-      use physprop, only: MU_g0, Mu_s0
+      use physprop, only: MU_g0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
 ! UDF flags for physical properties

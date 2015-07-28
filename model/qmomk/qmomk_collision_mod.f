@@ -786,7 +786,7 @@ CONTAINS
   DOUBLE PRECISION FUNCTION RADIAL_G0(ALPHA)
 
     USE param1, only: small_number, large_number
-    USE constant, only: Pi, EP_STAR
+    USE constant, only: EP_STAR
 
     IMPLICIT NONE
 

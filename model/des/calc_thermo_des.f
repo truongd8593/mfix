@@ -12,9 +12,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_THERMO_DES
 
-      use physprop, only: SMAX
-      use physprop, only: K_s0
-
       USE compar
       USE des_rxns
       USE des_thermo

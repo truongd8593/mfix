@@ -564,7 +564,7 @@
       USE matrix, only: e, w, n, s, t, b
       USE param, only: dimension_3
       USE param1, only: zero
-      USE visc_g, only: mu_gt, df_gv
+      USE visc_g, only: df_gv
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -580,10 +580,6 @@
 !---------------------------------------------------------------------//
 ! indices
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! average void fraction
-      DOUBLE PRECISION :: EPGA
-! average viscosity
-      DOUBLE PRECISION :: MUGA
 ! source terms
       DOUBLE PRECISION :: SSX, SSY, SSZ
 !---------------------------------------------------------------------//

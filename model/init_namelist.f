@@ -53,16 +53,11 @@
 ! Local variables
 !-----------------------------------------------
 ! loop counters
-      INTEGER :: LC, LCM, M, N
-! Coefficient of restitution (old symbol)
-      DOUBLE PRECISION :: E
-
+      INTEGER :: LC
 
 !#####################################################################!
 !                             Run Control                             !
 !#####################################################################!
-
-
 
 !<keyword category="Run Control" required="true">
 !  <description> Name used to create output files. The name should

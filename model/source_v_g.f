@@ -18,7 +18,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_V_G(A_M, B_M, IER)
+      SUBROUTINE SOURCE_V_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -46,13 +46,13 @@
       USE ghdtheory, only: joiy
 
       USE indices, only: i_of, j_of, k_of
-      USE indices, only: ip1, im1, jm1, kp1
+      USE indices, only: ip1, im1, kp1
       USE is, only: is_pc
       USE matrix, only: e, w, s, n, t, b
 
       USE mms, only: use_mms, mms_v_g_src
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, half, small_number
+      USE param1, only: zero, one, half
       USE physprop, only: mmax, smax
       USE physprop, only: mu_g, cv
       USE run, only: momentum_y_eq
@@ -77,8 +77,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -941,7 +939,7 @@
       use constant
       use geometry
       use indices
-      use param1, only: one, small_number
+      use param1, only: small_number
       use physprop
       use ps
       use run

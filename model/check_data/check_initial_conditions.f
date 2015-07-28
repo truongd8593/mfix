@@ -15,8 +15,6 @@
 !---------------------------------------------------------------------//
 ! Flag: IC geometry was detected.
       use ic, only: IC_DEFINED
-! Flag: IC type.
-      use ic, only: IC_TYPE
 ! Flag: DEM solids present.
       use run, only: DEM_SOLIDS
 ! Flag: New run or a restart.
@@ -972,23 +970,23 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Gas phase volume fraction, pressure, temperature, species.
-      use ic, only: IC_EP_g, IC_P_g, IC_T_g, IC_X_g
+      use ic, only: IC_EP_g, IC_T_g, IC_X_g
 ! Gas phase velocity components.
       use ic, only: IC_U_g, IC_V_g, IC_W_g
 ! Radiation model parameters.
-      use ic, only: IC_GAMA_RG, IC_T_RG
+      use ic, only: IC_T_RG
 ! K-Epsilon model parameters.
       use ic, only: IC_K_TURB_G, IC_E_TURB_G
 ! IC for user-defined scalar equation.
       use ic, only: IC_SCALAR
 ! Solids volume fraction, bulk density
-      use ic, only: IC_EP_s, IC_ROP_s
+      use ic, only: IC_ROP_s
 ! Solids velocity components.
       use ic, only: IC_U_s, IC_V_s, IC_W_s
 ! Solids temperature, mass fractions, granular energy
-      use ic, only: IC_T_s, IC_X_s, IC_THETA_M
+      use ic, only: IC_T_s, IC_X_s
 ! Radiation model parameters.
-      use ic, only: IC_GAMA_RS, IC_T_RS
+      use ic, only: IC_T_RS
 ! IC Type: UNDEFINED or PATCH.
       use ic, only: IC_TYPE
 

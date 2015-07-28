@@ -20,9 +20,9 @@
 ! VTK
       use vtk
       USE run, only: RUN_NAME
-      USE physprop, only: MMAX,NMAX
+      USE physprop, only: MMAX
       USE scalars, only :NSCALAR
-      USE mpi_utility, only: myPE, PE_IO,XLENGTH,YLENGTH,ZLENGTH
+      USE mpi_utility, only: XLENGTH,YLENGTH,ZLENGTH
       USE DISCRETELEMENT, only:DISCRETE_ELEMENT
       USE DISCRETELEMENT, only: PARTICLE_ORIENTATION
       USE cutcell, only: USE_STL
