@@ -302,16 +302,16 @@
 
       DO IJK = IJKSTART3, IJKEND3
          IF(L1D(IJK)) THEN
-            I1D(IJK) = ONE
+            I1D(IJK) = 1
          ELSE
-            I1D(IJK) = ZERO
+            I1D(IJK) = 0
          ENDIF
       ENDDO
 
       call send_recv(I1D,NLAYERS)
 
       DO IJK = IJKSTART3, IJKEND3
-         IF(I1D(IJK)==ONE) THEN
+         IF(I1D(IJK)==1) THEN
             L1D(IJK) = .TRUE.
          ELSE
             L1D(IJK) = .FALSE.

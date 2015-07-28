@@ -8,12 +8,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM
 
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: MAX_RADIUS
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -259,8 +253,6 @@
       USE discretelement, only: DES_COLL_MODEL_ENUM
       USE discretelement, only: LSD
       USE discretelement, only: HERTZIAN
-! Number of discrete solids phases
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
 ! Particle and wall friction coeff.
       USE discretelement, only: MEW, MEW_W
 ! Parameter constatns.

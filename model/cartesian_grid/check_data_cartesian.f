@@ -37,7 +37,6 @@
       USE polygon
       USE dashboard
       USE stl
-      USE rxns, only:nRR
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -939,14 +938,8 @@
          ENDIF
       ENDIF
 
-
-
-20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
       END SUBROUTINE CHECK_DATA_CARTESIAN
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -4753,12 +4746,9 @@
 
       INTEGER :: N,NOIMPROVEMENT
 
-      INTEGER,PARAMETER :: PROC_SIZE_MIN = 5  ! Minimum number of cells in one direction for a processor
-
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
-        INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
-
+      INTEGER, DIMENSION(0:numPEs-1) :: NCPP,NCPP_WITH_GHOST,L_SIZE,BEST_L_SIZE,BEST_NCPP,BEST_NCPP_WITH_GHOST
 
       DOUBLE PRECISION :: LIP,BEST_LIP
 

@@ -436,7 +436,7 @@
 
          CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-         IF(Sx /= ZERO) THEN
+         IF(abs(Sx) > ZERO) THEN
             dudx =  (U_S(IJK,M) - U_S(IMJK,M))/Sx
             dudy =  ZERO
             dudz =  ZERO
@@ -491,7 +491,7 @@
 
          CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-         IF(Sy /= ZERO) THEN
+         IF(abs(Sy) > ZERO) THEN
             dvdx =  ZERO
             dvdy =  (V_S(IJK,M) - V_S(IJMK,M))/Sy
             dvdz =  ZERO
@@ -554,7 +554,7 @@
 
             CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-            IF(Sz /= ZERO) THEN
+            IF(abs(Sz) > ZERO) THEN
                dwdx =  ZERO
                dwdy =  ZERO
                dwdz =  (W_S(IJK,M) - W_S(IJKM,M))/Sz

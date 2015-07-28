@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER)
+      SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT)
 
 !-----------------------------------------------
 ! Modules
@@ -47,8 +47,6 @@
       DOUBLE PRECISION, INTENT(IN) :: errorpercent
 ! value tells whether to iterate (1) or not (0).
       INTEGER, INTENT(INOUT) :: MUSTIT
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

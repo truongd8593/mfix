@@ -51,21 +51,19 @@
 
       LOGICAL :: DES_LOC_DEBUG
       INTEGER :: COUNT_FAC, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
+      LIST_OF_CELLS(27), CELL_ID, cell_count
       INTEGER :: PHASELL
 
-      DOUBLE PRECISION :: CROSSP(DIMN), TANGENT(DIMN)
+      DOUBLE PRECISION :: TANGENT(DIMN)
       DOUBLE PRECISION :: FTMD, FNMD
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
 
       double precision :: MAG_OVERLAP_T
 
-
       double precision :: line_t
 ! flag to tell if the orthogonal projection of sphere center to
 ! extended plane detects an overlap
-      INTEGER, Parameter :: MAX_FACET_CONTS = 200
 
       DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
       INTEGER :: MAX_NF, axis
@@ -383,7 +381,7 @@
       INTEGER, INTENT(IN) :: LLL,FACET_ID
       INTEGER, INTENT(IN) :: WALL_COLLISION_FACET_ID(:,:)
       DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
-      INTEGER :: CC, FREE_INDEX
+      INTEGER :: CC
 
       do cc = 1, COLLISION_ARRAY_MAX
          if (facet_id == wall_collision_facet_id(cc,LLL)) then

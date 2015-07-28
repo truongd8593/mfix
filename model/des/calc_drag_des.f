@@ -13,7 +13,6 @@
       use discretelement, only: DES_CONTINUUM_HYBRID
 
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
-      use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
 
       use discretelement, only: DES_EXPLICITLY_COUPLED

@@ -67,9 +67,6 @@
 !                      indices
       INTEGER          IJK, M, N ,IJKW,IJKS,IJKB
 !
-!                      Dummy variable for gas pressure
-      DOUBLE PRECISION PJ
-!
 !----------------------------------------------
 
       INTEGER, DIMENSION(8) :: ACCEPTABLE_DEFAULT_WALL=-1

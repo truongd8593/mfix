@@ -398,8 +398,6 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and size of solids phase arrays.
       use param, only: DIMENSION_3, DIMENSION_M
-! Size of MxM upper triangular matrix.
-      use param1, only: DIMENSION_LM
 ! Double precision parameters.
       use param1, only: ZERO, SMALL_NUMBER, ONE
 
@@ -496,7 +494,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Volume fractions of gas and solids phases.
-     use fldvar, only: EP_G, EP_s
+     use fldvar, only: EP_s
 ! Number of solids phases.
      use physprop, only: MMAX
 ! Flag: Solve the Z-Momentum Equations

@@ -203,7 +203,6 @@
          lODE_DIMN, lAtps, lIncpt)
 
       use compar, only: myPE
-      use compar, only: PE_IO
 
       implicit none
 

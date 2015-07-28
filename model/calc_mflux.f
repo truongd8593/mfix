@@ -172,7 +172,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_MFLUX_AM(U, V, W, ROP_E, ROP_N, ROP_T, &
                              ROPa_E, ROPa_N, ROPa_T, Flux_E, &
-                             Flux_N, Flux_T, M_AM, IER)
+                             Flux_N, Flux_T, M_AM)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -207,8 +207,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: Flux_T(DIMENSION_3)
 ! phase index for phase of added_mass
       INTEGER, INTENT(IN) :: M_AM
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

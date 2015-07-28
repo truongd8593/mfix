@@ -32,7 +32,6 @@
       USE progress_bar
       USE dashboard
       Use stl
-      USE rxns, only: nRR
 
       IMPLICIT NONE
 !-----------------------------------------------

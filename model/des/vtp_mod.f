@@ -385,9 +385,6 @@
 ! formatted file name
       CHARACTER(LEN=64) :: FNAME_PVD = ''
 
-! formatted solids time
-      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
-
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
 ! IO Status flag
@@ -573,18 +570,8 @@
       USE vtk, only: VTK_DBG_FILE
       USE output, only: FULL_LOG
 
-
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,M,N,R,IJK,LCV
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
-
-      INTEGER :: SPECIES_COUNTER,LT
-
-      CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
-      CHARACTER (LEN=64) :: VAR_NAME
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
+      INTEGER :: L,N,LCV
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -669,7 +656,6 @@
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTP_FILE
@@ -881,17 +867,11 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,L
-      INTEGER :: OFFSET
-
-      INTEGER :: CELL_TYPE
-
       REAL(c_float) :: float
       INTEGER(c_int) :: int
 
-      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
-      INTEGER ::     nbytes_vector, nbytes_scalar
-      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
+      INTEGER ::     nbytes_vector
+      INTEGER ::     offset_xyz
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -904,8 +884,6 @@
       INTEGER :: PC, LC1, LC2
 
 ! Loop through all particles and kee a list of particles belonging to a VTK region
-
-
 
 ! Since the data is appended (i.e., written after all tags), the
 ! offset, in number of bytes must be specified.  The offset includes
@@ -1134,20 +1112,13 @@
 
             deallocate (ltemp_array)
 
-
          ENDIF
 
-
       ENDIF
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
 
       RETURN
 
       END SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1171,21 +1142,18 @@
       USE output, only: FULL_LOG
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,LC1,PC
+      INTEGER :: I,LC1,PC
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, INTENT(in) :: VAR(:)
-      DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
       REAL(c_float) :: float
 
-      INTEGER ::     nbytes_vector, nbytes_scalar
+      INTEGER :: nbytes_scalar
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1330,7 +1298,6 @@
       USE output, only: FULL_LOG
 
       IMPLICIT NONE
-      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, INTENT(in) :: VAR(:,:)
@@ -1495,7 +1462,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CLOSE_VTP_FILE_BIN(MODE)
 
-      USE vtk, only: BUFFER,VTU_UNIT,END_REC,NUMBER_OF_VTK_CELLS,PVTU_UNIT,TIME_DEPENDENT_FILENAME
+      USE vtk, only: BUFFER,VTU_UNIT,END_REC,PVTU_UNIT,TIME_DEPENDENT_FILENAME
       USE vtk, only: VTK_REGION,VTK_FILEBASE,FRAME
 
       IMPLICIT NONE
@@ -1582,33 +1549,23 @@
       USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
       USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
       USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
-      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW,IGHOST_CNT
+      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,I_E,I_W,J_N,J_S,K_T,K_B
       INTEGER :: PC,LC1
-      INTEGER :: NXS,NYS,NZS,NS,I_TMP,J_TMP,K_TMP
+      INTEGER :: NXS,NYS,NZS,NS
       INTEGER :: X_SLICE(DIM_I),Y_SLICE(DIM_J),Z_SLICE(DIM_K)
       DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
       DOUBLE PRECISION :: XP,YP,ZP,XP1,YP1,ZP1,XP2,YP2,ZP2,R
 
-      DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE,SLICE_TOL
+      DOUBLE PRECISION :: SLICE_TOL
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
-
-
-      INTEGER :: NumberOfPoints
 
 ! Variables related to gather
       integer lgathercnts(0:numpes-1), lproc
 
-! check whether an error occurs in opening a file
-      INTEGER :: IOS
-! Integer error flag.
-      INTEGER :: IER
-
       CHARACTER(LEN=1) :: SELECT_PARTICLE_BY
-
 
 ! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
@@ -1812,21 +1769,8 @@
          idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
       ENDDO
 
-
-            ! print*,'MAX_PIP=',MAX_PIP
-            ! print*,'GHOST=', iGHOST_CNT
-            ! print*,'active=', PIP - iGHOST_CNT
-            ! print*,'LOCAL_CNT=', LOCAL_CNT
-            ! print*,'GLOBAL_CNT=', GLOBAL_CNT
-
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION_PARTICLES
-
 
       END MODULE VTP

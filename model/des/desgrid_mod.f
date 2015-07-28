@@ -85,7 +85,7 @@
 !  I, J, K indicies.                                                   !
 !......................................................................!
       integer function procijk(fi,fj,fk)
-      use compar, only: nodesi, nodesj, nodesk
+      use compar, only: nodesi, nodesj
       implicit none
       integer fi,fj,fk
       procijk =fi+fj*nodesi+fk*nodesi*nodesj
@@ -440,19 +440,11 @@
       use discretelement, only: DESGRIDSEARCH_KMAX
 ! Domain size specifed by the user.
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
-! Maximum particle size.
-      use discretelement, only: MAX_RADIUS
-
       use discretelement, only: dg_pic
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: UNDEFINED_I
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
-
 
       implicit none
 !-----------------------------------------------
@@ -864,7 +856,7 @@
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
-      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,lSIZE2,lcurpar_index,lijk2
+      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
 !$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP

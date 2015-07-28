@@ -111,7 +111,7 @@
       LOGICAL :: CLIP_X,CLIP_Y,CLIP_Z,CLIP_FLAG
       LOGICAL :: PIECE_X,PIECE_Y,PIECE_Z,PIECE_FLAG
 
-      DOUBLE PRECISION :: YR1,YR2,RR1,RR2,THETA_R1,THETA_R2
+      DOUBLE PRECISION :: YR1,YR2,RR1,RR2
       DOUBLE PRECISION :: YRR1,YRR2,RC1,RC2,YC1,YC2
 
 
@@ -718,8 +718,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE BUILD_C_QUADRIC_MATRIX(lambda1,lambda2,lambda3,C_QUADRIC)
 
-      USE param1, only: one, zero
-      USE constant, only: pi
+      USE param1, only: zero
 
       IMPLICIT NONE
 
@@ -736,8 +735,6 @@
       RETURN
 
       END SUBROUTINE BUILD_C_QUADRIC_MATRIX
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

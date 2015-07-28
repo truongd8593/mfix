@@ -17,7 +17,6 @@
       use discretelement, only: DISCRETE_ELEMENT
       use vtp, only: write_vtp_file
       use vtk, only: DIMENSION_VTK
-      use vtk, only: VTK_TIME, VTK_DT
 
       IMPLICIT NONE
       INTEGER :: LC
@@ -358,11 +357,9 @@
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTU_FILE
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -3058,16 +3055,9 @@
 
        ENDIF
 
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE CLEAN_GEOMETRY
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -3283,11 +3273,6 @@
 
       ENDIF
 
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION
-

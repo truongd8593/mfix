@@ -23,7 +23,7 @@
       use geometry, only: x_e, x
       use physprop, only: smax
       use fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
-      use fldvar, only: rop_g, ro_g, ep_g
+      use fldvar, only: rop_g, ep_g
       use fldvar, only: rop_s, ep_s
       use functions, only: im_of, ip_of, jm_of, jp_of, km_of, kp_of
       use functions, only: fluid_at
