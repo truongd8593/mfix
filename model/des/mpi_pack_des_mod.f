@@ -251,7 +251,7 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement, only: DG_PIC, IS_GHOST, IS_ENTERING, IS_EXITING, IS_NONEXISTENT, SET_NORMAL, SET_GHOST, SET_NONEXISTENT
+      use discretelement, only: DG_PIC, IS_GHOST, IS_ENTERING, IS_EXITING, IS_NONEXISTENT, SET_NORMAL, SET_GHOST, SET_NONEXISTENT, SET_ENTERING_GHOST, SET_EXITING_GHOST
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 
