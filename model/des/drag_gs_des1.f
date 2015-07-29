@@ -128,7 +128,6 @@
             lPF = P_FORCE(:,IJK)
          ENDIF
 
-
 ! For explict coupling, use the drag coefficient calculated for the
 ! gas phase drag calculations.
          IF(DES_EXPLICITLY_COUPLED) THEN
@@ -164,8 +163,6 @@
 
       RETURN
       END SUBROUTINE DRAG_GS_DES1
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -227,7 +224,7 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
-      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_EXITING
+      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -248,7 +245,6 @@
       DOUBLE PRECISION :: lFORCE
 ! Drag sources for fluid (intermediate calculation)
       DOUBLE PRECISION :: lDRAG_BM(3)
-
 
 ! Initialize fluid cell values.
       F_GDS = ZERO
@@ -273,7 +269,7 @@
 
 ! The drag force is not calculated on entering or exiting particles
 ! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(IS_ENTERING(NP) .OR. IS_EXITING(NP)) CYCLE
+        IF(IS_ENTERING(NP) .OR. IS_EXITING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -337,7 +333,6 @@
 
       RETURN
       END SUBROUTINE DRAG_GS_GAS1
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -429,7 +424,5 @@
          ENDIF
       ENDDO
 
-
       RETURN
       END SUBROUTINE CALC_CELL_CENTER_GAS_VEL
-

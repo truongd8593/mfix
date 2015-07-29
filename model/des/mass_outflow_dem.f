@@ -51,7 +51,7 @@
                NP = PIC(IJK)%p(LP)
 
                IF(IS_NONEXISTENT(NP)) CYCLE
-               IF(IS_GHOST(NP)) CYCLE
+               IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)

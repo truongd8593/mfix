@@ -86,7 +86,7 @@
       use discretelement, only: DO_NSEARCH
       use discretelement, only: iGHOST_CNT
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: is_ghost, is_nonexistent, is_normal
+      use discretelement, only: is_ghost, is_nonexistent, is_normal, is_entering_ghost, is_exiting_ghost
 
       use geometry, only: NO_K
       use compar, only: myPE
@@ -182,7 +182,7 @@
              xpos = des_pos_new(1,lcurpar)
              ypos = des_pos_new(2,lcurpar)
              li=iofpos(xpos);lj=jofpos(ypos)
-             write(44,*)is_ghost(lcurpar),xpos,ypos,li,lj,dg_funijk(li,lj,1)
+             write(44,*)(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
       case (5)
          ltordimn = merge(1,3,NO_K)
@@ -273,7 +273,7 @@
             if(lparcnt.gt.pip) exit
             if(is_nonexistent(lcurpar)) cycle
             lparcnt = lparcnt+1
-            if(is_ghost(lcurpar)) cycle
+            if(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
             write(44,*) "position new ", des_pos_new(:,lcurpar)
          end do

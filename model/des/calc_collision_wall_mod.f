@@ -93,11 +93,9 @@
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
 ! skipping non-existent particles or ghost particles
-         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
-
 ! make sure the particle is not classified as a new 'entering' particle
 ! or is already marked as a potential exiting particle
-         IF( IS_ENTERING(LL) .OR. IS_EXITING(LL)) CYCLE
+         IF(.NOT.IS_NORMAL(LL)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
          IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL)))  cycle

@@ -893,9 +893,7 @@
             endif
 !$  endif
 
-         if (is_nonexistent(lcurpar)) cycle
-         if (is_entering(lcurpar)) cycle
-         if (is_ghost(lcurpar)) cycle
+         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar)) cycle
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
@@ -958,7 +956,7 @@
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if (.not.is_nonexistent(lcurpar) .and. .not.is_ghost(lcurpar) .and. .not.is_nonexistent(lneigh)) THEN
+               if (.not.is_nonexistent(lcurpar) .and. .not.is_ghost(lcurpar) .and. .not.is_entering_ghost(lcurpar) .and. .not.is_exiting_ghost(lcurpar) .and. .not.is_nonexistent(lneigh)) THEN
 !$  if (.true.) then
 !!!!! SMP version
 

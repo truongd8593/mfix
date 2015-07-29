@@ -55,9 +55,9 @@
 ! Adams-Bashforth defaults to Euler for the first time step.
       IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
          DO L =1, MAX_PIP
-            IF(IS_NONEXISTENT(L)) CYCLE  ! Only real particles
-            IF(IS_ENTERING(L)) CYCLE       ! Only non-entering
-            IF(IS_GHOST(L)) CYCLE       ! Skip ghost particles
+            IF(IS_NONEXISTENT(L)) CYCLE                       ! Only real particles
+            IF(IS_ENTERING(L).or.IS_ENTERING_GHOST(L)) CYCLE  ! Only non-entering
+            IF(IS_GHOST(L)) CYCLE                             ! Skip ghost particles
             DES_ACC_OLD(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
             ROT_ACC_OLD(:,L) = TOW(:,L)
          ENDDO
@@ -76,12 +76,12 @@
 ! only process particles that exist
          IF(IS_NONEXISTENT(L)) CYCLE
 ! skip ghost particles
-         IF(IS_GHOST(L)) CYCLE
+         IF(IS_GHOST(L).or.IS_ENTERING_GHOST(L).or.IS_EXITING_GHOST(L)) CYCLE
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.IS_ENTERING(L))THEN
+         IF(.NOT.IS_ENTERING(L) .AND. .NOT.IS_ENTERING_GHOST(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -253,7 +253,7 @@
          if(pc.gt.pip) exit
          if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(is_ghost(l)) cycle
+         if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 
@@ -266,7 +266,7 @@
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.IS_ENTERING(L))THEN
+         IF(.NOT.IS_ENTERING(L) .AND. .NOT.IS_ENTERING_GHOST(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -550,7 +550,7 @@
          if(pc.gt.pip) exit
          if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(is_ghost(l)) cycle
+         if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 

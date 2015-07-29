@@ -46,7 +46,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 
-      use discretelement, only: is_ghost, is_nonexistent
+      use discretelement
 
       IMPLICIT NONE
 
@@ -101,7 +101,7 @@
             NP = PIC(IJK)%P(NINDX)
 ! skipping indices that do not represent particles and ghost particles
             IF(IS_NONEXISTENT(NP)) CYCLE
-            IF(IS_GHOST(NP)) CYCLE
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Diameter of particle (not a phase diameter).
             lDP = 2.0d0*DES_RADIUS(NP)
@@ -197,7 +197,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 
-      use discretelement, only: IS_NONEXISTENT, IS_GHOST
+      use discretelement
 
       IMPLICIT NONE
 
@@ -249,7 +249,7 @@
             NP = PIC(IJK)%P(NINDX)
 ! skipping indices that do not represent particles and ghost particles
             IF(IS_NONEXISTENT(NP)) CYCLE
-            IF(IS_GHOST(NP)) CYCLE
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Diameter of particle (not a phase diameter).
             lDP = 2.0d0*DES_RADIUS(NP)
@@ -416,7 +416,7 @@
 ! Number of continuum solids phases
       use physprop, only: MMAX
 
-      use discretelement, only: is_nonexistent, is_ghost
+      use discretelement
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -442,7 +442,7 @@
       DO NINDX = 1,PINC(IJK)
          NP = PIC(IJK)%P(NINDX)
          IF(IS_NONEXISTENT(NP)) CYCLE
-         IF(IS_GHOST(NP)) CYCLE
+         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
          lEPSoDP = lEPSoDP + PVOL(NP)/DES_RADIUS(NP)
       ENDDO
 ! Convert radius to diameter and divide by cell volume.
@@ -455,4 +455,3 @@
 
       RETURN
       END SUBROUTINE CALC_EPSoDP
-

@@ -70,7 +70,6 @@
           DOUBLE PRECISION :: D_FORCE(3)
           DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 
-
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
 ! Calculate the gas solids drag coefficient using the particle
 ! velocity and the fluid velocity interpolated to particle
@@ -153,7 +152,7 @@
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
             if(is_nonexistent(np)) cycle
-            if(is_ghost(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
@@ -190,11 +189,8 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel do
 
-
       RETURN
       END SUBROUTINE DRAG_GS_DES0
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -367,7 +363,7 @@
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
             if(is_nonexistent(np)) cycle
-            if(is_ghost(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
 !

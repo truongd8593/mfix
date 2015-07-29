@@ -1,4 +1,3 @@
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  SUBROUTINE Name: DES_SET_IC                                         !
@@ -13,7 +12,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_IC_DEM
 
-
       use run, only: ENERGY_EQ, SPECIES_EQ
       use run, only: RUN_TYPE
 
@@ -25,7 +23,7 @@
       use discretelement, only: PINC, PIC
       use discretelement, only: PIJK
 
-      use discretelement, only: IS_NONEXISTENT, IS_GHOST
+      use discretelement, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
       USE des_rxns, only: DES_X_s
 
@@ -104,6 +102,7 @@
 ! skipping non-existent particles
          IF(IS_NONEXISTENT(NP)) CYCLE
 ! skipping ghost particles
+         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
          IF(IS_GHOST(NP)) CYCLE
 
          M = PIJK(NP,5)

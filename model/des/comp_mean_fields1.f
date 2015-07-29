@@ -61,7 +61,7 @@
 !$omp    FILTER_CELL,DES_VEL_NEW)
 !$omp do
       do NP=1,MAX_PIP
-         IF(.NOT.IS_NORMAL(NP)) CYCLE
+         IF(.NOT.IS_NORMAL(NP) .and. .NOT.IS_GHOST(NP)) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)

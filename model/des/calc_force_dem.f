@@ -136,9 +136,8 @@
 
 ! just for post-processing mag. of cohesive forces on each particle
                   PostCohesive(LL) = PostCohesive(LL)
-                  if(GRAV_MAG > ZERO .AND. IS_NORMAL(LL)) THEN
+                  if(GRAV_MAG > ZERO .AND. (.NOT.IS_NONEXISTENT(LL))) THEN
                      FORCE_COH = SQRT(dot_product(FC_TMP(:),FC_TMP(:))) / (PMASS(LL)*GRAV_MAG)
-
                      !$omp atomic
                      PostCohesive(LL) = PostCohesive(LL) + FORCE_COH
                   ENDIF

@@ -1311,7 +1311,7 @@
          IF(PC .GT. PIP) EXIT
          IF(IS_NONEXISTENT(LL)) CYCLE
          pc = pc+1
-         IF(IS_GHOST(LL)) CYCLE
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
               (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
@@ -1322,8 +1322,3 @@
       !read(*,*) finish
       !if(finish) STOp
       END SUBROUTINE WRITE_MPPIC_VEL_S
-
-
-
-
-

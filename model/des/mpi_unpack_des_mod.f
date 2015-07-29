@@ -18,9 +18,7 @@
          module procedure unpack_l0  ! logical scalars
       end interface unpack_dbuf
 
-
       CONTAINS
-
 
 !----------------------------------------------------------------------!
 !  Subroutine: DESMPI_UNPACK_GHOSTPAR                                  !
@@ -29,7 +27,6 @@
 ! Purpose: Unpacks ghost particle from the recv buffer.                !
 !----------------------------------------------------------------------!
       SUBROUTINE DESMPI_UNPACK_GHOSTPAR(pface)
-
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -257,7 +254,6 @@
       deallocate (lfound,lnewspot,lnewpic)
 
       end subroutine desmpi_unpack_ghostpar
-
 
 !----------------------------------------------------------------------!
 !  Subroutine: DESMPI_UNPACK_PARCROSS                                  !
@@ -645,7 +641,6 @@
       RETURN
       END FUNCTION EXTEN_LOCATE_PAR
 
-
 !----------------------------------------------------------------------!
 ! Unpack subroutine for single real variables                          !
 !----------------------------------------------------------------------!
@@ -679,7 +674,6 @@
 
       return
       end subroutine unpack_db1
-
 
 !----------------------------------------------------------------------!
 ! Unpack subroutine for single integer variables                       !
@@ -729,6 +723,5 @@
 
       return
       end subroutine unpack_l0
-
 
       end module mpi_unpack_des

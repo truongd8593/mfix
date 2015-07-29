@@ -45,7 +45,7 @@
       IF(PC.GT.PIP) EXIT
          IF(IS_NONEXISTENT(L)) CYCLE
          PC = PC+1
-         IF(IS_GHOST(L)) CYCLE
+         IF(IS_GHOST(L) .or. IS_ENTERING_GHOST(L) .or. IS_EXITING_GHOST(L)) CYCLE
 
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/&
             (ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)
