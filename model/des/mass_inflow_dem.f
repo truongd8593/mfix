@@ -297,7 +297,11 @@
       BC_M = lM + SMAX
 
 ! The particle exists and is entering, not exiting nor a ghost particle
-      CALL SET_ENTERING(lNP)
+      IF (IS_GHOST(lNP)) THEN
+         CALL SET_ENTERING_GHOST(lNP)
+      ELSE
+         CALL SET_ENTERING(lNP)
+      ENDIF
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)

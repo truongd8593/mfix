@@ -57,7 +57,15 @@
 
       CALL READ_RES_pARRAY(lNEXT_REC, tmp)
       do ii=1, MAX_PIP
-         if (tmp(ii)) CALL SET_GHOST(ii)
+         if (tmp(ii)) then
+            if (IS_ENTERING(ii)) then
+               CALL SET_ENTERING_GHOST(ii)
+            elseif (IS_EXITING(ii)) then
+               CALL SET_EXITING_GHOST(ii)
+            else
+               CALL SET_GHOST(ii)
+            endif
+         endif
       enddo
 
       DO LC1 = 1, lDIMN
