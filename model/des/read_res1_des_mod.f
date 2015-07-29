@@ -258,12 +258,12 @@
          RETURN
       ENDIF
 
-      allocate( dPAR_POS(lDIMN, pIN_COUNT))
+      allocate( dPAR_POS(pIN_COUNT, lDIMN))
 
 ! Only the IO proccess reads positions.
       IF(myPE == PE_IO) THEN
          DO LC1=1, merge(2,3,NO_K)
-            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(LC1,:),                &
+            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(:,LC1),                &
                pIN_COUNT, lNEXT_REC)
          ENDDO
       ENDIF
