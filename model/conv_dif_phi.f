@@ -19,7 +19,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE CONV_DIF_PHI(PHI, DIF, DISC, UF, VF, WF, &
-                              Flux_E, Flux_N, Flux_T, M, A_M, B_M, IER)
+                              Flux_E, Flux_N, Flux_T, M, A_M, B_M)
 
 
 ! Modules
@@ -50,8 +50,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(OUT) :: IER
 !---------------------------------------------------------------------//
 
 
