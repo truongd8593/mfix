@@ -997,12 +997,10 @@
 !$omp ordered
 !$        do MM = 1, PAIR_NUM_SMP
 !$            lcurpar = PAIRS_SMP(1,MM)
-
-      do while (dd .lt. lcurpar)
-         dd = dd + 1
-         NEIGHBOR_INDEX(dd) = NEIGHBOR_INDEX(dd-1)
-      enddo
-
+!$            do while (dd .lt. lcurpar)
+!$                dd = dd + 1
+!$                NEIGHBOR_INDEX(dd) = NEIGHBOR_INDEX(dd-1)
+!$            enddo
 !$            cc = add_pair(lcurpar, PAIRS_SMP(2,MM))
 !$        enddo
 !$omp end ordered
