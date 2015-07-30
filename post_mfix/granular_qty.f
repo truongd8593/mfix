@@ -28,6 +28,7 @@
       USE funits
       USE geometry
       USE indices
+      USE machine
       USE param
       USE param1
       USE physprop
@@ -75,7 +76,7 @@
       IF (CALC_GT) THEN
         IF (.NOT.DO_XFORMS) CALL GET_FILE_NAME(TEMP_FILE2)
         OPEN (UNIT=70,FILE=TEMP_FILE2,STATUS='NEW',RECL=128,&
-            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=1000)
+            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=1000,convert='big_endian')
 !
         VERSION = 'SP1 = 01.00'
         WRITE (70,REC=1) VERSION
@@ -94,7 +95,7 @@
       IF (CALC_GV) THEN
         IF (.NOT.DO_XFORMS) CALL GET_FILE_NAME(TEMP_FILE)
         OPEN (UNIT=71,FILE=TEMP_FILE,STATUS='NEW',RECL=128,&
-            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=1000)
+            ACCESS='DIRECT',FORM='UNFORMATTED',ERR=1000,convert='big_endian')
 !
         VERSION = 'SP1 = 01.00'
         WRITE (71,REC=1) VERSION

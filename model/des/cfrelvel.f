@@ -21,7 +21,6 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
-      USE param1, only: ZERO
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -76,74 +75,3 @@
 
       RETURN
       END SUBROUTINE CFRELVEL
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: CFRELVEL_WALL
-!  Purpose: Calculate the normal and tangential components of the
-!           relative velocity between a particle and wall contact
-!
-!  Comments: this subroutine is the same as above but it used for
-!            particle-wall contact rather than particle-particle
-!            contact. so the wall velocity is passed to this routine
-!            rather than index of a contacting particle
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-      SUBROUTINE CFRELVEL_WALL(L,WALL_VEL,VRN,VSLIP,NORM,DIST_LI)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
-      USE param1, only: ZERO
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! indices of particle
-      INTEGER, INTENT(IN) :: L
-! wall velocity
-      DOUBLE PRECISION, INTENT(IN) :: WALL_VEL(3)
-! distance between particle centers
-      DOUBLE PRECISION, INTENT(IN) :: DIST_LI
-! unit normal vector along the line of contact pointing from
-! particle L to wall
-      DOUBLE PRECISION, INTENT(IN) :: NORM(3)
-! slip velocity at point of contact
-      DOUBLE PRECISION, INTENT(INOUT) :: VSLIP(3)
-! normal component of relative contact velocity (scalar)
-      DOUBLE PRECISION, INTENT(INOUT) :: VRN
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! translational relative velocity
-      DOUBLE PRECISION :: VRELTRANS(3)
-! rotational velocity at point of contact
-      DOUBLE PRECISION :: V_ROT(3), OMEGA_SUM(3)
-! distance from the contact point to the particle centers
-      DOUBLE PRECISION :: DIST_CL
-!-----------------------------------------------
-
-! translational relative velocity
-         VRELTRANS(:) = DES_VEL_NEW(:,L) - WALL_VEL(:)
-
-! calculate the distance from the particle center to the wall
-         DIST_CL = DIST_LI - DES_RADIUS(L)
-         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL
-
-! calculate the rotational relative velocity
-      V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)
-
-! total relative velocity
-      VRELTRANS(:) =  VRELTRANS(:) + V_ROT(:)
-
-! normal component of relative velocity (scalar)
-      VRN = DOT_PRODUCT(VRELTRANS,NORM)
-
-! slip velocity of the contact point
-! Equation (8) in Tsuji et al. 1992
-      VSLIP(:) =  VRELTRANS(:) - VRN*NORM(:)
-
-      RETURN
-      END SUBROUTINE CFRELVEL_WALL

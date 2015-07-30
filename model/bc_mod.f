@@ -155,13 +155,6 @@
 
       LOGICAL          BC_PO_APPLY_TO_DES (DIMENSION_BC)
 
-!                      FLAG to specify if this MI BC plane will be
-!                      seen as a wall by discrete phase (default behavior)
-!                      or allow the particles to go through the inflow plane
-
-      LOGICAL          BC_MI_AS_WALL_FOR_DES (DIMENSION_BC)
-
-!
 !                      Gas volumetric flow rate through the boundary
       DOUBLE PRECISION BC_VOLFLOW_g (DIMENSION_BC)
 !

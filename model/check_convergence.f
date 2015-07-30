@@ -16,7 +16,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT, IER)
+      SUBROUTINE CHECK_CONVERGENCE(NIT, errorpercent, MUSTIT)
 
 !-----------------------------------------------
 ! Modules
@@ -47,8 +47,6 @@
       DOUBLE PRECISION, INTENT(IN) :: errorpercent
 ! value tells whether to iterate (1) or not (0).
       INTEGER, INTENT(INOUT) :: MUSTIT
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
@@ -165,28 +163,38 @@
          IF(K_EPSILON) RESID_GRP(KE_GRP) = RESID(RESID_ke,0)
       ENDIF
 
+! Flag set in interactive mode to bypass time-step advancement.
+      IF(INTERACTIVE_NITS /= UNDEFINED_I) THEN
+         MUSTIT = 1
+         RETURN
+      ENDIF
 
-! detect whether the run is stalled :  every 5 iterations check whether
-! the total residual has decreased
-      IF (DETECT_STALL) THEN
-         IF (MOD(NIT,5) == 0) THEN
-            IF (NIT > 10) THEN
-               IF (SUM5_RESID <= SUM) THEN
-                  MUSTIT = 2                     !stalled
+! Every 5 iterations detect whether the run is stalled by checking
+! that the total residual has decreased.
+      IF(DETECT_STALL .AND. MOD(NIT,5) == 0) THEN
+         IF(NIT > 10) THEN
+            IF(SUM5_RESID <= SUM) THEN
+! The run is stalled. Reduce the time step.
+               IF(.NOT.PERSISTENT_MODE) THEN
+                  MUSTIT = 2
+                  RETURN
+! Forces the max number of iterations for DT=DT_MIN
+               ELSEIF(DT > DT_MIN) THEN
+                  MUSTIT = 1
                   RETURN
                ENDIF
             ENDIF
-            SUM5_RESID = SUM
          ENDIF
+         SUM5_RESID = SUM
       ENDIF
 
-! total residual
+! Require at least two iterations.
       IF(NIT == 1) THEN
          MUSTIT = 1
          RETURN
       ENDIF
 
-
+! total residual
       IF(SUM<=TOL_RESID .AND. SUM_T<=TOL_RESID_T .AND. &
          RESID(RESID_sc,0)<=TOL_RESID_Scalar .AND. SUM_X<=TOL_RESID_X &
         .AND. RESID(RESID_ke,0)<=TOL_RESID_K_Epsilon &

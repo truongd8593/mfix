@@ -994,9 +994,9 @@
 !         IF (L3.EQ.0) THEN
 !            IF (APPEND_MODE) THEN
 !               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN', &
-!                             POSITION='APPEND')
+!                             POSITION='APPEND',CONVERT='BIG_ENDIAN')
 !            ELSE
-!               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN')
+!               OPEN (UNIT=40,FILE=TEMP_FILE,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
 !            END IF
 !            FILE_NAME(1:1) = 'A'
 !         ELSE
@@ -1027,7 +1027,7 @@
                   READ(*,*)IANS
                   IF(IANS .NE. 1)GOTO 70
                ENDIF
-               OPEN (UNIT=40,FILE=FILE_NAME,STATUS='UNKNOWN')
+               OPEN (UNIT=40,FILE=FILE_NAME,STATUS='UNKNOWN',CONVERT='BIG_ENDIAN')
             ENDIF
          ENDIF
       ENDIF
@@ -1197,8 +1197,8 @@
 !
       END_AVERAGE = .FALSE.
       TIME_OLD = -1.
+      NT = 0
       IF(TIME_AVERAGE) THEN
-        NT = 0
         DO K = K1, K2
            DO J = J1, J2
               DO I = I1, I2
@@ -1786,7 +1786,7 @@
        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append')
+             open (unit=40,file=file_name,position='append',convert='big_endian')
           end if
           GOTO 10
        END IF
@@ -1799,7 +1799,7 @@
        ELSE
           IF (FILE_NAME(1:1) .NE. '*') then
              close (40)
-             open (unit=40,file=file_name,position='append')
+             open (unit=40,file=file_name,position='append',convert='big_endian')
           end if
           GOTO 10
        END IF

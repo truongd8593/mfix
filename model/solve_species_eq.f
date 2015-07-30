@@ -118,7 +118,7 @@
 
 ! looping over species
          DO LN = 1, NMAX(0)
-            CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
+            CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
 !!$omp    parallel do private(IJK, APO)
             DO IJK = ijkstart3, ijkend3
                IF (FLUID_AT(IJK)) THEN
@@ -155,18 +155,18 @@
 
 ! Add point sources.
             IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_G(1,LN), &
-               PS_X_G(:,LN), PS_MASSFLOW_G, 0, A_M, B_M, IER)
+               PS_X_G(:,LN), PS_MASSFLOW_G, 0, A_M, B_M)
 
             CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, &
                NUM_RESID(RESID_X+(LN-1),0), &
                DEN_RESID(RESID_X+(LN-1),0), RESID(RESID_X+(LN-1),0), &
                MAX_RESID(RESID_X+(LN-1),0), IJK_RESID(RESID_X+(LN-1),0), &
-               ZERO_X_GS, IER)
+               ZERO_X_GS)
 
-            CALL UNDER_RELAX_S (X_G(1,LN), A_M, B_M, 0, UR_FAC(7), IER)
+            CALL UNDER_RELAX_S (X_G(1,LN), A_M, B_M, 0, UR_FAC(7))
 
             CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),0), LEQ_IT(7), &
-               LEQ_METHOD(7), LEQI, LEQM, IER)
+               LEQ_METHOD(7), LEQI, LEQM)
 
 ! solve the phi equation
             CALL SOLVE_LIN_EQ ('X_g', 7, X_G(1,LN), A_M, B_M, 0, &
@@ -175,7 +175,7 @@
 ! Check for linear solver divergence.
                IF(ier == -2) Err_l(myPE) = 130
 
-            CALL BOUND_X (X_G(1,LN), IJKMAX2, IER)
+            CALL BOUND_X (X_G(1,LN), IJKMAX2)
 
          ENDDO    ! end do loop (ln = 1, nmax(0)
          IF(chi_scheme) call unset_chi()
@@ -198,7 +198,7 @@
             ENDIF ! for chi_scheme
 
             DO LN = 1, NMAX(M)
-               CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+               CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
 !!$omp    parallel do private(IJK, APO)
                DO IJK = ijkstart3, ijkend3
@@ -235,15 +235,15 @@
 
 ! Add point sources.
                IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_S(1,M,LN), &
-                  PS_X_S(:,M,LN), PS_MASSFLOW_S(:,M), M, A_M, B_M, IER)
+                  PS_X_S(:,M,LN), PS_MASSFLOW_S(:,M), M, A_M, B_M)
 
                CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, &
                   NUM_RESID(RESID_X+(LN-1),M), &
                   DEN_RESID(RESID_X+(LN-1),M), RESID(RESID_X+(LN-1),&
                   M), MAX_RESID(RESID_X+(LN-1),M), IJK_RESID(RESID_X+(LN-1),M), &
-                  ZERO_X_GS, IER)
+                  ZERO_X_GS)
 
-               CALL UNDER_RELAX_S (X_S(1,M,LN), A_M, B_M, M, UR_FAC(7), IER)
+               CALL UNDER_RELAX_S (X_S(1,M,LN), A_M, B_M, M, UR_FAC(7))
 
 !               call check_ab_m(a_m, b_m, m, .false., ier)
 !               write(*,*) resid(resid_x+(LN-1), m), &
@@ -255,7 +255,7 @@
 !                  1, DO_K, ier)
 
                CALL ADJUST_LEQ (RESID(RESID_X+(LN-1),M), LEQ_IT(7), &
-                  LEQ_METHOD(7), LEQI, LEQM, IER)
+                  LEQ_METHOD(7), LEQI, LEQM)
 
                CALL SOLVE_LIN_EQ ('X_s', 7, X_S(1,M,LN), A_M, B_M, M,&
                   LEQI, LEQM, LEQ_SWEEP(7), LEQ_TOL(7), LEQ_PC(7), IER)
@@ -263,7 +263,7 @@
 ! Check for linear solver divergence.
                IF(ier == -2) Err_l(myPE) = 131
 
-               CALL BOUND_X (X_S(1,M,LN), IJKMAX2, IER)
+               CALL BOUND_X (X_S(1,M,LN), IJKMAX2)
 !               call out_array(X_s(1,m,LN), 'X_s')
 
             END DO

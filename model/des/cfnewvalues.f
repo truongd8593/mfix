@@ -55,16 +55,16 @@
 ! Adams-Bashforth defaults to Euler for the first time step.
       IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
          DO L =1, MAX_PIP
-            IF(.NOT.PEA(L,1)) CYCLE  ! Only real particles
-            IF(PEA(L,2)) CYCLE       ! Only non-entering
-            IF(PEA(L,4)) CYCLE       ! Skip ghost particles
+            IF(IS_NONEXISTENT(L)) CYCLE                       ! Only real particles
+            IF(IS_ENTERING(L).or.IS_ENTERING_GHOST(L)) CYCLE  ! Only non-entering
+            IF(IS_GHOST(L)) CYCLE                             ! Skip ghost particles
             DES_ACC_OLD(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
             ROT_ACC_OLD(:,L) = TOW(:,L)
          ENDDO
       ENDIF
 
 !$omp parallel do if(max_pip .ge. 10000) default(none)                    &
-!$omp shared(MAX_PIP,pea,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,          &
+!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,              &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
@@ -74,14 +74,14 @@
 
       DO L = 1, MAX_PIP
 ! only process particles that exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 ! skip ghost particles
-         IF(PEA(L,4)) CYCLE
+         IF(IS_GHOST(L).or.IS_ENTERING_GHOST(L).or.IS_EXITING_GHOST(L)) CYCLE
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L) .AND. .NOT.IS_ENTERING_GHOST(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -199,10 +199,10 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER L, M, IDIM
-      INTEGER I, J, K, IJK, IJK_OLD, IJK2, IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+      INTEGER I, J, K, IJK, IJK_OLD
 
       DOUBLE PRECISION DD(3), DIST, &
-                       NEIGHBOR_SEARCH_DIST, DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
+                       DP_BAR, COEFF_EN, MEANVEL(3), D_GRIDUNITS(3)
 
       DOUBLE PRECISION DELUP(3), UPRIMETAU(3), UPRIMETAU_INT(3), MEAN_FREE_PATH, PS_FORCE(3)
 ! index to track accounted for particles
@@ -212,19 +212,16 @@
       LOGICAL DES_LOC_DEBUG
 
 ! maximum distance particles can move in MPPIC
-      DOUBLE PRECISION MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
+      DOUBLE PRECISION UPRIMEMOD
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, MEANUS(3, MMAX)
-      DOUBLE PRECISION :: DPS_DXE, DPS_DXW, DPS_DYN, DPS_DYS, DPS_DZT, DPS_DZB
+      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
       INTEGER :: PIP_DEL_COUNT
 
-      DOUBLE PRECISION MEANUS_e(3, MMAX), MEANUS_w(3, MMAX),MEANUS_n(3, MMAX),MEANUS_s(3, MMAX),MEANUS_t(3, MMAX), MEANUS_b(3, MMAX)
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
-
 
       double precision  sig_u, mean_u
       double precision, allocatable, dimension(:,:) ::  rand_vel
@@ -254,9 +251,9 @@
          DELETE_PART = .false.
 ! pradeep skip ghost particles
          if(pc.gt.pip) exit
-         if(.not.pea(l,1)) cycle
+         if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(pea(l,4)) cycle
+         if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 
@@ -269,7 +266,7 @@
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L) .AND. .NOT.IS_ENTERING_GHOST(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -401,7 +398,7 @@
          FC(:,L) = ZERO
 
          IF(DELETE_PART) THEN
-            PEA(L,1) = .false.
+            CALL SET_NONEXISTENT(l)
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
          IF (DES_LOC_DEBUG) WRITE(*,1001)
@@ -448,15 +445,7 @@
 
 
       ENDIF
- 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
  1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')
-
- 1002 FORMAT(/1X,70('*')//&
-         ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
-         ' during a',/10X, 'single solids time step, which is ',&
-         ' greater than',/10X,'its radius: ', ES17.9)
- 1003 FORMAT(1X,70('*')/)
 
 2001  FORMAT(/1X,70('*'),//,10X,  &
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
@@ -471,10 +460,6 @@
 
  2002 FORMAT(/10x, &
       & 'DTSOLID CAN BE INCREASED TO', g17.8)
-
- 2003 FORMAT(/10x, &
-      & 'DTSOLID REMAINS UNCHANGED AT = ', g17.8)
-
 
       RETURN
       END SUBROUTINE CFNEWVALUES_MPPIC_SNIDER
@@ -563,13 +548,13 @@
          DELETE_PART = .false.
 ! pradeep skip ghost particles
          if(pc.gt.pip) exit
-         if(.not.pea(l,1)) cycle
+         if(is_nonexistent(l)) cycle
          pc = pc+1
-         if(pea(l,4)) cycle
+         if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
 
          DES_LOC_DEBUG = .FALSE.
 
-         IF(.NOT.PEA(L,2))THEN
+         IF(.NOT.IS_ENTERING(L))THEN
             FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
          ELSE
             FC(:,L) = ZERO
@@ -723,7 +708,7 @@
          FC(:,L) = ZERO
 
          IF(DELETE_PART) THEN
-            PEA(L,1) = .false.
+            CALL SET_NONEXISTENT(L)
             PIP_DEL_COUNT = PIP_DEL_COUNT + 1
          ENDIF
          IF (DES_LOC_DEBUG) WRITE(*,1001)
@@ -773,16 +758,7 @@
       WRITE(UNIT_LOG, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
       WRITE(*, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
 
-
- 1000 FORMAT(3X,'---------- FROM CFNEWVALUES ---------->')
  1001 FORMAT(3X,'<---------- END CFNEWVALUES ----------')
-
- 1002 FORMAT(/1X,70('*')//&
-         ' From: CFNEWVALUES -',/&
-         ' Message: Particle ',I10, ' moved a distance ', ES17.9, &
-         ' during a',/10X, 'single solids time step, which is ',&
-         ' greater than',/10X,'its radius: ', ES17.9)
- 1003 FORMAT(1X,70('*')/)
 
 2001  FORMAT(/1X,70('*'),//,10X,  &
            & 'MOVEMENT UNDESIRED IN CFNEWVALUES: PARTICLE', i5, /,10X, &
@@ -797,10 +773,6 @@
 
  2002 FORMAT(/10x, &
       & 'DTSOLID CAN BE INCREASED TO', g17.8)
-
- 2003 FORMAT(/10x, &
-      & 'DTSOLID REMAINS UNCHANGED AT = ', g17.8)
-
 
       RETURN
       END SUBROUTINE CFNEWVALUES_MPPIC
@@ -835,7 +807,7 @@
 !-----------------------------------------------
       integer lp,lijk
       integer, save :: lfcount = 0 ,lfreq =0
-      character(30) :: filename
+      character(255) :: filename
 !-----------------------------------------------
       if (present(pfreq)) then
          lfreq = lfreq+1
@@ -846,7 +818,7 @@
       write(filename,'("debug",I3.3)') lfcount
       open (unit=100,file=filename)
       do lp = pstart,pend
-         if (pea(lp,1) .and. .not.pea(lp,4)) then
+         if (is_normal(lp) .or. is_entering(lp) .or. is_exiting(lp)) then
             lijk = pijk(lp,4)
             write(100,*)"positon =",lijk,pijk(lp,1),pijk(lp,2), &
                pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
@@ -888,7 +860,7 @@
 !-----------------------------------------------
       integer lp,lijk
       integer, save :: lfcount = 0 ,lfreq =0
-      character(30) :: filename
+      character(255) :: filename
 !-----------------------------------------------
 
       if (present(pfreq)) then
@@ -904,7 +876,7 @@
          '"ep_g"', '"FCX"' ,'"FCY"', '"TOW"'
       write(100,'(A,F14.7,A)') 'zone T = "' , s_time , '"'
       do lp = pstart,pend
-         if (pea(lp,1)) then
+         if (.not.is_nonexistent(lp)) then
             lijk = pijk(lp,4)
             write(100,*)lijk,des_pos_new(1,lp),des_pos_new(2,lp), &
                des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&

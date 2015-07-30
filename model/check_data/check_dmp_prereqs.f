@@ -42,7 +42,7 @@
 ! Local Parameters:
 !---------------------------------------------------------------------//
 ! The minimum number of computational cell layers required.
-      INTEGER, PARAMETER :: DMP_MIN = 4
+      INTEGER, PARAMETER :: DMP_MIN = 3
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_DMP_PREREQS")

@@ -24,12 +24,11 @@
       use param, only: DIM_M
       use param1, only: UNDEFINED
       use geometry, only: NO_I, NO_J, NO_K
-      use physprop, only: SMAX
-      use discretelement, only: DES_MMAX
       use bc, only: BC_MASSFLOW_G
       use bc, only: BC_VOLFLOW_G
       use bc, only: BC_MASSFLOW_S
       use bc, only: BC_VOLFLOW_S
+      use run, only: REINITIALIZING
 
       use error_manager
       use toleranc
@@ -74,13 +73,14 @@
 
       DO M=1,M_TOT
          IF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
-            CALL SOLIDS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV, M, SKIP(M))
+            CALL SOLIDS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK,BCV,M,SKIP(M))
 ! Set the conversion flag.
             CONVERTED = .TRUE.
          ENDIF
       ENDDO
 
-      IF(CONVERTED .AND. (NO_I .OR. NO_J .OR. NO_K)) THEN
+      IF(CONVERTED .AND. .NOT.REINITIALIZING .AND. &
+         (NO_I.OR.NO_J.OR.NO_K)) THEN
          WRITE(ERR_MSG, 1100)
          CALL FLUSH_ERR_MSG
       ENDIF
@@ -119,6 +119,7 @@
       use param, only: DIMENSION_BC
       use param1, only: UNDEFINED
       use param1, only: ZERO
+      use physprop, only: CALC_MW
       use physprop, only: MW_AVG, MW_g
       use physprop, only: NMAX
       use physprop, only: RO_g0
@@ -133,8 +134,6 @@
       DOUBLE PRECISION :: VOLFLOW
 ! Average molecular weight
       DOUBLE PRECISION :: MW
-
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW
 
       CALL INIT_ERR_MSG("GAS_MASSFLOW_TO_VOLFLOW")
 
@@ -678,10 +677,6 @@
       INTEGER :: INERT
 ! Solids density at BC plane
       DOUBLE PRECISION :: BC_ROs
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: CALC_MW
 !-----------------------------------------------
 
 ! When both flow rates and velocities are specified, a consistency check is done

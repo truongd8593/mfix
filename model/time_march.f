@@ -51,7 +51,9 @@
       USE vshear
       USE vtk
       USE vtp
-      USE mpi_utility
+      use output, only: RES_DT, NLOG
+      use interactive, only: INTERACT, INIT_INTERACTIVE_MODE
+      use adjust_dt
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -75,32 +77,44 @@
 ! AEOLUS : stop trigger mechanism to terminate MFIX normally before
 ! batch queue terminates
       DOUBLE PRECISION :: CPU_STOP
-      LOGICAL :: eofBATCHQ
+
+! Flag to save results and cleanly exit.
+      LOGICAL :: EXIT_SIGNAL = .FALSE.
+! Flag to cleanly exit without saving results.
+      LOGICAL :: ABORT_SIGNAL = .FALSE.
+
+! C Function
+      INTERFACE
+         SUBROUTINE CHECK_SOCKETS() BIND ( C )
+           use, INTRINSIC :: iso_c_binding
+         END SUBROUTINE CHECK_SOCKETS
+      END INTERFACE
 
 !-----------------------------------------------
 ! External functions
 !-----------------------------------------------
 ! use function vavg_v_g to catch NaN's
-      DOUBLE PRECISION :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
+      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
 
-      LOGICAL , EXTERNAL :: ADJUST_DT
 !-----------------------------------------------
 
       IF(AUTOMATIC_RESTART) RETURN
-
 
       FINISH  = .FALSE.
       NCHECK  = NSTEP
       DNCHECK = 1
       CPU_IO  = ZERO
       NIT_TOTAL = 0
-      eofBATCHQ = .FALSE.
-
 
       CALL INIT_OUTPUT_VARS
 
+      write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
+
+      IF(INTERACTIVE_MODE) CALL INIT_INTERACTIVE_MODE
+
+
 ! Parse residual strings
-      CALL PARSE_RESID_STRING (IER)
+      CALL PARSE_RESID_STRING ()
 
 ! Call user-defined subroutine to set constants, check data, etc.
       IF (CALL_USR) CALL USR0
@@ -111,27 +125,25 @@
       CALL INIT_COEFF(IER)
 
       DO M=1, MMAX
-         CALL ZERO_ARRAY (F_gs(1,M), IER)
+         CALL ZERO_ARRAY (F_gs(1,M))
       ENDDO
 
 ! Remove undefined values at wall cells for scalars
-      CALL UNDEF_2_0 (ROP_G, IER)
+      CALL UNDEF_2_0 (ROP_G)
       DO M = 1, MMAX
-         CALL UNDEF_2_0 (ROP_S(1,M), IER)
+         CALL UNDEF_2_0 (ROP_S(1,M))
       ENDDO
 
 ! Initialize d's and e's to zero
       DO M = 0, MMAX
-         CALL ZERO_ARRAY (D_E(1,M), IER)
-         CALL ZERO_ARRAY (D_N(1,M), IER)
-         CALL ZERO_ARRAY (D_T(1,M), IER)
+         CALL ZERO_ARRAY (D_E(1,M))
+         CALL ZERO_ARRAY (D_N(1,M))
+         CALL ZERO_ARRAY (D_T(1,M))
       ENDDO
-      CALL ZERO_ARRAY (E_E, IER)
-      CALL ZERO_ARRAY (E_N, IER)
-      CALL ZERO_ARRAY (E_T, IER)
+      CALL ZERO_ARRAY (E_E)
+      CALL ZERO_ARRAY (E_N)
+      CALL ZERO_ARRAY (E_T)
 
-! Initialize adjust_ur
-      dummy = ADJUST_DT(100, 0)
 
 ! calculate shear velocities if periodic shear BCs are used
       IF(SHEAR) CALL CAL_D(V_sh)
@@ -145,7 +157,7 @@
 ! Mark the phase whose continuity will be solved and used to correct
 ! void/volume fraction in calc_vol_fr (see subroutine for details)
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
-          DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
+          DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
 ! uncoupled discrete element simulations do not need to be within
 ! the two fluid model time-loop
@@ -168,9 +180,18 @@
 ! The TIME loop begins here.............................................
  100  CONTINUE
 
-! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-! queue terminates
-      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END
+
+#ifdef socket
+      IF(INTERACTIVE_MODE) THEN
+         write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
+         CALL CHECK_SOCKETS()
+         CALL INTERACT(EXIT_SIGNAL, ABORT_SIGNAL)
+         IF(ABORT_SIGNAL) RETURN
+      ENDIF
+#endif
+
+! Terminate MFIX normally before batch queue terminates.
+      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
 
       IF (CALL_USR) CALL USR1
 
@@ -194,7 +215,7 @@
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1
 
-      CALL OUTPUT_MANAGER(eofBATCHQ, FINISH)
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
 
       IF (DT == UNDEFINED) THEN
          IF (FINISH) THEN
@@ -204,7 +225,7 @@
          ENDIF
 
 ! Mechanism to terminate MFIX normally before batch queue terminates.
-      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. eofBATCHQ) THEN
+      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. EXIT_SIGNAL) THEN
          IF(SOLVER_STATISTICS) &
             CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
          RETURN
@@ -224,7 +245,7 @@
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
          CALL CALC_KTMOMSOURCE_U_S (IER)
          CALL CALC_KTMOMSOURCE_V_S (IER)
-         CALL CALC_KTMOMSOURCE_W_S (IER)
+         CALL CALC_KTMOMSOURCE_W_S ()
       ENDIF
 
 ! Check rates and sums of mass fractions every NLOG time steps
@@ -256,6 +277,7 @@
 
 ! Advance the solution in time by iteratively solving the equations
  150  CALL ITERATE (IER, NIT)
+
       IF(AUTOMATIC_RESTART) RETURN
 
 ! Just to Check for NaN's, Uncomment the following lines and also lines
@@ -265,24 +287,33 @@
 !      X_vavg = VAVG_W_G ()
 !      IF(AUTOMATIC_RESTART) RETURN
 
-      DO WHILE (ADJUST_DT(IER,NIT))
+      DO WHILE (ADJUSTDT(IER,NIT))
          CALL ITERATE (IER, NIT)
       ENDDO
 
+! A single to interupt the time step was sent for interactive mode.
+      IF(INTERUPT) GOTO 100
 
-      IF(DT.LT.DT_MIN) THEN
-         IF(TIME.LE.RES_DT .AND. AUTO_RESTART) THEN
-            WRITE(ERR_MSG,1000)
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            AUTO_RESTART = .FALSE.
-         ENDIF
+      IF(DT < DT_MIN) THEN
+         AUTO_RESTART = .FALSE.
+         IF(AUTO_RESTART) THEN
+            IF(TIME <= RES_DT) THEN
 
  1000 FORMAT('Automatic restart not possible as Total Time < RES_DT')
 
-         IF(AUTO_RESTART) THEN
-            AUTOMATIC_RESTART = .TRUE.
+               WRITE(ERR_MSG,1000)
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               AUTOMATIC_RESTART = .TRUE.
+            ENDIF
             RETURN
+
          ELSE
+
+ 1100 FORMAT('DT < DT_MIN.  Recovery not possible!')
+
+            WRITE(ERR_MSG,1100)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
             IF(WRITE_DASHBOARD) THEN
                RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
                CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
@@ -291,11 +322,12 @@
          ENDIF
       ENDIF
 
+
 ! Stiff Chemistry Solver.
       IF(STIFF_CHEMISTRY) THEN
          CALL STIFF_CHEM_SOLVER(DT, IER)
          IF(IER /= 0) THEN
-            dummy = ADJUST_DT(IER, NIT)
+            dummy = ADJUSTDT(IER, NIT)
             GOTO 150
          ENDIF
       ENDIF
@@ -304,7 +336,7 @@
 ! Edit the routine and specify a reporting interval to activate it.
       CALL CHECK_MASS_BALANCE (1)
 
-! Othe solids model implementations
+! Other solids model implementations
       IF (DEM_SOLIDS) CALL DES_TIME_MARCH
       IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
       IF (QMOMK) CALL QMOMK_TIME_MARCH
@@ -321,12 +353,12 @@
       ENDIF
 
       IF (DT /= UNDEFINED) THEN
-         IF(use_DT_prev) THEN
+         IF(USE_DT_PREV) THEN
             TIME = TIME + DT_PREV
          ELSE
             TIME = TIME + DT
          ENDIF
-         use_DT_prev = .FALSE.
+         USE_DT_PREV = .FALSE.
          NSTEP = NSTEP + 1
       ENDIF
 
@@ -340,74 +372,6 @@
       GOTO 100
 
       IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
-
-      contains
-
-!----------------------------------------------------------------------!
-!                                                                      !
-!  Subroutine: CHECK_BATCH_QUEUE_END                                   !
-!  Author: A.Gel                                      Date:            !
-!                                                                      !
-!  Purpose:                                                            !
-!                                                                      !
-!----------------------------------------------------------------------!
-      SUBROUTINE CHECK_BATCH_QUEUE_END
-
-      use time_cpu, only: WALL_START
-
-      use error_manager
-
-! Logical flags for hault cases.
-      LOGICAL :: USER_HAULT, WALL_HAULT
-! Elapsed wall time, and fancy formatted buffer/batch queue times.
-      DOUBLE PRECISION :: WALL_STOP, FANCY_BUFF, FANCY_BATCH
-! Time units for formatted output.
-      CHARACTER(LEN=4) :: WT_UNIT, BF_UNIT, BC_UNIT
-! External function
-      DOUBLE PRECISION :: WALL_TIME
-
-! Calculate the current elapsed wall time.
-      WALL_STOP = WALL_TIME()
-      WALL_STOP = WALL_STOP - WALL_START
-
-! Set flags for wall time exceeded or user specified hault.
-      WALL_HAULT = ((WALL_STOP+TERM_BUFFER) >= BATCH_WALLCLOCK)
-      INQUIRE(file="MFIX.STOP", exist=USER_HAULT)
-
-! Report that the max user wall time was reached and exit.
-      IF(WALL_HAULT) THEN
-         CALL GET_TUNIT(WALL_STOP,WT_UNIT)
-         FANCY_BUFF = TERM_BUFFER
-         CALL GET_TUNIT(FANCY_BUFF, BF_UNIT)
-         FANCY_BATCH = BATCH_WALLCLOCK
-         CALL GET_TUNIT(FANCY_BATCH, BC_UNIT)
-         WRITE(ERR_MSG, 1100) WALL_STOP, WT_UNIT, FANCY_BUFF, BF_UNIT, &
-            FANCY_BATCH, BC_UNIT
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-      ENDIF
-
- 1100 FORMAT(2/,15('='),' REQUESTED CPU TIME LIMIT REACHED ',('='),/   &
-         'Batch Wall Time:',3X,F9.2,1X,A,/'Elapsed Wall Time: ',F9.2,  &
-         1X,A,/'Term Buffer:',7X,F9.2,A,/15('='),' REQUESTED CPU ',    &
-         'TIME LIMIT REACHED ',('='))
-
-! Report that the hault signal was detected.
-      IF(USER_HAULT) THEN
-         WRITE(ERR_MSG, 1200)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-      ENDIF
-
- 1200 FORMAT(2/,19('='),' MFIX STOP SIGNAL DETECTED ',19('='),/'MFIX.',&
-         'STOP file detected in run directory. Terminating MFIX.',/    &
-         'Please DO NOT FORGET to erase the MFIX.STOP file before ',   &
-         'restarting',/19('='),'MFIX STOP SIGNAL DETECTED ',19('='))
-
-! This routine was restructured so all MPI ranks to the same action. As
-! a result, broadcasting the BATCHQ flag may not be needed.
-      eofBATCHQ = (WALL_HAULT .OR. USER_HAULT)
-      call bcast (eofBATCHQ,PE_IO)
-
-      END SUBROUTINE CHECK_BATCH_QUEUE_END
 
       END SUBROUTINE TIME_MARCH
 

@@ -36,7 +36,7 @@ CONTAINS
       CHARACTER(LEN=132) :: PATH
       CHARACTER(LEN=18) :: SPECIES
       integer funit, IER
-      CHARACTER(len=142) FILENAME
+      CHARACTER(len=255) FILENAME
       LOGICAL LocalCopy
 
       SPECIES = 'CH4'
@@ -45,10 +45,10 @@ CONTAINS
 
       INQUIRE(FILE=TRIM(THERM),EXIST=LocalCopy)
       IF(LocalCopy)Then
-        OPEN(UNIT=funit,FILE=TRIM(THERM))
+        OPEN(CONVERT='BIG_ENDIAN',UNIT=funit,FILE=TRIM(THERM))
       ELSE
         FILENAME = './BURCAT.THR'
-        OPEN(UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
+        OPEN(CONVERT='BIG_ENDIAN',UNIT=funit,FILE=TRIM(FILENAME), ERR=500)
       ENDIF
 
  !      Call Read_Therm(PATH, 'N2', Thigh, Tlow, Tcom, Ahigh, Alow, Hf298oR)

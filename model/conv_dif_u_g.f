@@ -18,7 +18,7 @@
       USE run, only: momentum_x_eq
       USE run, only: discretize
       USE run, only: def_cor
-      USE visc_g, only: mu_gt
+      USE visc_g, only: epmu_gt
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -37,19 +37,19 @@
 
       IF(DEF_COR)THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_G
-         CALL STORE_A_U_G0(A_M(1,-3,0), IER)
+         CALL STORE_A_U_G0(A_M)
          IF (DISCRETIZE(3) > 1) CALL STORE_A_U_GDC(B_M(1,0))
 
       ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR U_G
          IF (DISCRETIZE(3) == 0) THEN               ! 0 & 1 => FOUP
-            CALL STORE_A_U_G0(A_M(1,-3,0), IER)
+            CALL STORE_A_U_G0(A_M)
          ELSE
-            CALL STORE_A_U_G1(A_M(1,-3,0))
+            CALL STORE_A_U_G1(A_M)
          ENDIF
       ENDIF
 
-      CALL DIF_U_IS(MU_GT, A_M, 0, IER)
+      CALL DIF_U_IS(EPMU_GT, A_M, 0)
 
       RETURN
       END SUBROUTINE CONV_DIF_U_G
@@ -265,7 +265,7 @@
       USE cutcell, only: cut_u_treatment_at
       USE cutcell, only: oneodx_e_u, oneody_n_u, oneodz_t_u
 
-      USE fldvar, only: ep_g
+      USE fldvar, only: epg_jfac
 
       USE functions, only: wall_at
       USE functions, only: east_of, north_of, top_of
@@ -284,8 +284,7 @@
 
       USE matrix, only: e, w, s, n, t, b
       USE param1, only: zero
-      USE run, only: jackson
-      USE visc_g, only: mu_gt, DF_GU
+      USE visc_g, only: epmu_gt, DF_GU
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -349,18 +348,18 @@
       ENDIF
 
 ! East face (i+1, j, k)
-      D_FE = MU_GT(IJKE)*C_AE*AYZ_U(IJK)
+      D_FE = EPMU_GT(IJKE)*C_AE*AYZ_U(IJK)
 ! West face (i, j, k)
-      D_FW = MU_GT(IJKC)*C_AW*AYZ_U(IMJK)
+      D_FW = EPMU_GT(IJKC)*C_AW*AYZ_U(IMJK)
 
 
 ! North face (i+1/2, j+1/2, k)
-      D_FN = AVG_X_H(AVG_Y_H(MU_GT(IJKC),MU_GT(IJKN),J),&
-                     AVG_Y_H(MU_GT(IJKE),MU_GT(IJKNE),J),I)*&
+      D_FN = AVG_X_H(AVG_Y_H(EPMU_GT(IJKC),EPMU_GT(IJKN),J),&
+                     AVG_Y_H(EPMU_GT(IJKE),EPMU_GT(IJKNE),J),I)*&
              C_AN*AXZ_U(IJK)
 ! South face (i+1/2, j-1/2, k)
-      D_FS = AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJKC),JM),&
-                     AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)*&
+      D_FS = AVG_X_H(AVG_Y_H(EPMU_GT(IJKS),EPMU_GT(IJKC),JM),&
+                     AVG_Y_H(EPMU_GT(IJKSE),EPMU_GT(IJKE),JM),I)*&
              C_AS*AXZ_U(IJMK)
 
       D_FT = ZERO
@@ -372,12 +371,12 @@
          IJKBE = EAST_OF(IJKB)
 
 ! Top face (i+1/2, j, k+1/2)
-         D_FT = AVG_X_H(AVG_Z_H(MU_GT(IJKC),MU_GT(IJKT),K),&
-                        AVG_Z_H(MU_GT(IJKE),MU_GT(IJKTE),K),I)*&
+         D_FT = AVG_X_H(AVG_Z_H(EPMU_GT(IJKC),EPMU_GT(IJKT),K),&
+                        AVG_Z_H(EPMU_GT(IJKE),EPMU_GT(IJKTE),K),I)*&
                 OX_E(I)*C_AT*AXY_U(IJK)
 ! Bottom face (i+1/2, j, k-1/2)
-         D_FB = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJKC),KM),&
-                        AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)*&
+         D_FB = AVG_X_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJKC),KM),&
+                        AVG_Z_H(EPMU_GT(IJKBE),EPMU_GT(IJKE),KM),I)*&
                 OX_E(I)*C_AB*AXY_U(IJKM)
       ENDIF
 
@@ -388,15 +387,16 @@
       DF_GU(IJK,T) = D_FT
       DF_GU(IJK,B) = D_FB
 
-      IF (JACKSON) THEN
-         EPGA = AVG_X(EP_G(IJKC), EP_G(IJKE), I)
-         D_FE = EPGA*D_FE
-         D_FW = EPGA*D_FW
-         D_FN = EPGA*D_FN
-         D_FS = EPGA*D_FS
-         D_FT = EPGA*D_FT
-         D_FB = EPGA*D_FB
-      ENDIF
+! if jackson, implement jackson style governing equations: multiply by
+! the void fraction otherwise multiply by 1
+      EPGA = AVG_X(EPG_jfac(IJKC), EPG_jfac(IJKE), I)
+      D_FE = EPGA*D_FE
+      D_FW = EPGA*D_FW
+      D_FN = EPGA*D_FN
+      D_FS = EPGA*D_FS
+      D_FT = EPGA*D_FT
+      D_FB = EPGA*D_FB
+
       RETURN
       END SUBROUTINE GET_UCELL_GDIFF_TERMS
 
@@ -418,7 +418,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_U_G0(A_U_G, IER)
+      SUBROUTINE STORE_A_U_G0(A_U_G)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -430,7 +430,7 @@
 
       USE geometry, only: do_k
 
-      USE param, only: dimension_3
+      USE param, only: dimension_3, dimension_m
       USE param1, only: zero
       USE matrix, only: e, w, n, s, t, b
       IMPLICIT NONE
@@ -438,9 +438,7 @@
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_U_g
-      DOUBLE PRECISION, INTENT(INOUT) :: A_U_g(DIMENSION_3, -3:3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
+      DOUBLE PRECISION, INTENT(INOUT) :: A_U_g(DIMENSION_3, -3:3, 0:DIMENSION_M)
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -478,36 +476,36 @@
 
 ! East face (i+1, j, k)
             IF (Flux_e >= ZERO) THEN
-               A_U_G(IJK,E) = D_Fe
-               A_U_G(IPJK,W) = D_Fe + Flux_e
+               A_U_G(IJK,E,0) = D_Fe
+               A_U_G(IPJK,W,0) = D_Fe + Flux_e
             ELSE
-               A_U_G(IJK,E) = D_Fe - Flux_e
-               A_U_G(IPJK,W) = D_Fe
+               A_U_G(IJK,E,0) = D_Fe - Flux_e
+               A_U_G(IPJK,W,0) = D_Fe
             ENDIF
 ! West face (i, j, k)
             IF (.NOT.FLOW_AT_E(IMJK)) THEN
                IF (Flux_w >= ZERO) THEN
-                  A_U_G(IJK,W) = D_Fw + Flux_w
+                  A_U_G(IJK,W,0) = D_Fw + Flux_w
                ELSE
-                  A_U_G(IJK,W) = D_Fw
+                  A_U_G(IJK,W,0) = D_Fw
                ENDIF
             ENDIF
 
 
 ! North face (i+1/2, j+1/2, k)
             IF (Flux_n >= ZERO) THEN
-               A_U_G(IJK,N) = D_Fn
-               A_U_G(IJPK,S) = D_Fn + Flux_n
+               A_U_G(IJK,N,0) = D_Fn
+               A_U_G(IJPK,S,0) = D_Fn + Flux_n
             ELSE
-               A_U_G(IJK,N) = D_Fn - Flux_n
-               A_U_G(IJPK,S) = D_Fn
+               A_U_G(IJK,N,0) = D_Fn - Flux_n
+               A_U_G(IJPK,S,0) = D_Fn
             ENDIF
 ! South face (i+1/2, j-1/2, k)
             IF (.NOT.FLOW_AT_E(IJMK)) THEN
                IF (Flux_s >= ZERO) THEN
-                  A_U_G(IJK,S) = D_Fs + Flux_s
+                  A_U_G(IJK,S,0) = D_Fs + Flux_s
                ELSE
-                  A_U_G(IJK,S) = D_Fs
+                  A_U_G(IJK,S,0) = D_Fs
                ENDIF
             ENDIF
 
@@ -518,18 +516,18 @@
 
 ! Top face (i+1/2, j, k+1/2)
                IF (Flux_t >= ZERO) THEN
-                  A_U_G(IJK,T) = D_Ft
-                  A_U_G(IJKP,B) = D_Ft + Flux_t
+                  A_U_G(IJK,T,0) = D_Ft
+                  A_U_G(IJKP,B,0) = D_Ft + Flux_t
                ELSE
-                  A_U_G(IJK,T) = D_Ft - Flux_t
-                  A_U_G(IJKP,B) = D_Ft
+                  A_U_G(IJK,T,0) = D_Ft - Flux_t
+                  A_U_G(IJKP,B,0) = D_Ft
                ENDIF
 ! Bottom face (i+1/2, j, k-1/2)
                IF (.NOT.FLOW_AT_E(IJKM)) THEN
                   IF (Flux_b >= ZERO) THEN
-                     A_U_G(IJK,B) = D_Fb + Flux_b
+                     A_U_G(IJK,B,0) = D_Fb + Flux_b
                   ELSE
-                     A_U_G(IJK,B) = D_Fb
+                     A_U_G(IJK,B,0) = D_Fb
                   ENDIF
                ENDIF
             ENDIF   ! end if (do_k)
@@ -577,10 +575,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3
@@ -830,7 +826,7 @@
 
       USE geometry, only: do_k
 
-      USE param, only: dimension_3
+      USE param, only: dimension_3, dimension_m
       USE param1, only: one
 
       USE matrix, only: e, w, n, s, t, b
@@ -848,7 +844,7 @@
 ! Dummy arguments
 !---------------------------------------------------------------------//
 ! Septadiagonal matrix A_U_g
-      DOUBLE PRECISION, INTENT(INOUT) :: A_U_g(DIMENSION_3, -3:3)
+      DOUBLE PRECISION, INTENT(INOUT) :: A_U_g(DIMENSION_3, -3:3, 0:DIMENSION_M)
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -902,20 +898,20 @@
             IJMK = JM_OF(IJK)
 
 ! East face (i+1, j, k)
-            A_U_G(IJK,E) = D_Fe - XSI_E(IJK) * Flux_e
-            A_U_G(IPJK,W) = D_Fe + (ONE - XSI_E(IJK)) * Flux_e
+            A_U_G(IJK,E,0) = D_Fe - XSI_E(IJK) * Flux_e
+            A_U_G(IPJK,W,0) = D_Fe + (ONE - XSI_E(IJK)) * Flux_e
 ! West face (i, j, k)
             IF (.NOT.FLOW_AT_E(IMJK)) THEN
-               A_U_G(IJK,W) = D_Fw + (ONE - XSI_E(IMJK)) * Flux_w
+               A_U_G(IJK,W,0) = D_Fw + (ONE - XSI_E(IMJK)) * Flux_w
             ENDIF
 
 
 ! North face (i+1/2, j+1/2, k)
-            A_U_G(IJK,N) = D_Fn - XSI_N(IJK) * Flux_n
-            A_U_G(IJPK,S) = D_Fn + (ONE - XSI_N(IJK)) * Flux_n
+            A_U_G(IJK,N,0) = D_Fn - XSI_N(IJK) * Flux_n
+            A_U_G(IJPK,S,0) = D_Fn + (ONE - XSI_N(IJK)) * Flux_n
 ! South face (i+1/2, j-1/2, k)
             IF (.NOT.FLOW_AT_E(IJMK)) THEN
-               A_U_G(IJK,S) = D_Fs + (ONE - XSI_N(IJMK)) * Flux_s
+               A_U_G(IJK,S,0) = D_Fs + (ONE - XSI_N(IJMK)) * Flux_s
             ENDIF
 
 
@@ -923,11 +919,11 @@
             IF (DO_K) THEN
                IJKP = KP_OF(IJK)
                IJKM = KM_OF(IJK)
-               A_U_G(IJK,T) = D_Ft - XSI_T(IJK) * Flux_t
-               A_U_G(IJKP,B) = D_Ft + (ONE - XSI_T(IJK)) * Flux_t
+               A_U_G(IJK,T,0) = D_Ft - XSI_T(IJK) * Flux_t
+               A_U_G(IJKP,B,0) = D_Ft + (ONE - XSI_T(IJK)) * Flux_t
 ! Bottom face (i+1/2, j, k-1/2)
                IF (.NOT.FLOW_AT_E(IJKM)) THEN
-                  A_U_G(IJK,B) = D_Fb + (ONE - XSI_T(IJKM)) * Flux_b
+                  A_U_G(IJK,B,0) = D_Fb + (ONE - XSI_T(IJKM)) * Flux_b
                ENDIF
             ENDIF   ! end if (do_k)
 

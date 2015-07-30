@@ -11,10 +11,9 @@
 
 ! Modules
 ! --------------------------------------------------------------------//
-      use bc, only: bc_ep_g, bc_rop_s, bc_ep_s
+      use bc, only: bc_ep_g, bc_rop_s
       use param1, only: one, undefined, zero
       use physprop, only: ro_s0
-      use discretelement, only: discrete_element
       use run, only: solids_model
       use toleranc, only: compare
       use error_manager
@@ -38,9 +37,9 @@
 
 ! if bc_ep_g is defined at the outflow boundary, then the sum of ep_g
 ! and ep_s at the boundary may not equal one given the code in the
-! subroutine set_outflow (see code for details). 
+! subroutine set_outflow (see code for details).
 ! therefore if bc_ep_g and/or bc_rop_s are defined, perform possible
-! data consistency checks and, when appropriate, provide the user with 
+! data consistency checks and, when appropriate, provide the user with
 ! a warning about their chosen settings.
 
       IF (BC_EP_G(BCV) /= UNDEFINED) THEN
@@ -48,8 +47,9 @@
          SUM_EP = BC_EP_G(BCV)
          DO M = 1, M_TOT
 
-            IF(SOLIDS_MODEL(M) /= 'TFM' .AND. FLAG_WARNING) THEN 
+            IF(SOLIDS_MODEL(M) /= 'TFM' .AND. FLAG_WARNING) THEN
                WRITE(ERR_MSG, 1101) trim(iVar('BC_EP_g',BCV))
+               CALL FLUSH_ERR_MSG
                FLAG_WARNING = .FALSE.
             ENDIF
 
@@ -64,8 +64,8 @@
                ELSE
 ! bc_ep_g is defined but some bc_rop_s(m) are undefined.
 ! in this case, ep_p in the outflow boundary will be based on the user
-! defined value of bc_ep_g, while rop_s would become based on the 
-! value in the adjacent fluid cell. consequently, no check ensures 
+! defined value of bc_ep_g, while rop_s would become based on the
+! value in the adjacent fluid cell. consequently, no check ensures
 ! the result is consistent with a requirement for ep_g+ep_s=1.
                   WRITE(ERR_MSG, 1102) trim(iVar('BC_EP_g',BCV))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -73,7 +73,7 @@
          A,' is defined.')
                ENDIF
             ENDIF  ! end if(bc_rop_s(bcv,m) == undefined)
-               
+
 ! by this point bc_rop_s should either be defined or mfix exited
 ! therefore we can check that sum of void fraction and solids volume
 ! fractions
@@ -92,8 +92,9 @@
          SUM_EP = ZERO
          DO M = 1, M_TOT
             IF(BC_ROP_S(BCV,M) /= UNDEFINED) THEN
-               IF(SOLIDS_MODEL(M) /= 'TFM') THEN 
+               IF(SOLIDS_MODEL(M) /= 'TFM') THEN
                   WRITE(ERR_MSG, 1101) trim(iVar('BC_ROP_s',BCV,M))
+                  CALL FLUSH_ERR_MSG
                ENDIF
                SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
             ENDIF
@@ -114,7 +115,7 @@
 
  1101 FORMAT('Warning 1101: ',A,' should not be specified for ', &
          'outflow BCs',/'with DEM/PIC runs except for a mass outflow ',&
-         'boundary with specified ',/ 'flow rate(s). In this case ',& 
+         'boundary with specified ',/ 'flow rate(s). In this case ',&
          'volume fraction data is used for ',/ 'conversion to ',&
          'velocity(s). However, the solids volume fraction data ',/&
          'is effectively disregarded and it is the solids velocity ',&
@@ -123,7 +124,7 @@
  1103 FORMAT('Error 1103: Illegal boundary condition region: ',I3,'. ',&
          'Sum of volume',/'fractions does NOT equal ONE. (SUM = ',A,   &
          ')',/'Please correct the mfix.dat file.')
- 
+
       END SUBROUTINE CHECK_BC_OUTFLOW
 
 
@@ -139,7 +140,6 @@
 
 ! Modules
 ! --------------------------------------------------------------------//
-      USE param, only: DIM_M
       USE param1, only: UNDEFINED
       USE param1, only: ZERO
       use physprop, only: RO_g0
@@ -203,7 +203,7 @@
       use bc, only: bc_plane
       use bc, only: bc_dt_0, bc_massflow_g, bc_volflow_g
       use bc, only: bc_massflow_s, bc_volflow_s
-      use bc, only: bc_ep_g, bc_rop_s 
+      use bc, only: bc_ep_g, bc_rop_s
       use bc, only: bc_p_g, bc_t_g
       use bc, only: bc_u_g, bc_v_g, bc_w_g
       use physprop, only: ro_g0
@@ -211,7 +211,7 @@
       use error_manager
       IMPLICIT NONE
 
-! Dummy arguments 
+! Dummy arguments
 ! --------------------------------------------------------------------//
 ! loop/variable indices
       INTEGER, intent(in) :: BCV
@@ -238,7 +238,7 @@
          'BC_MASSFLOW_G and/or BC_VOLFLOW_G are DEFINED but ',&
          A,' is not ',/'Please correct the mfix.dat file.')
       ENDIF
-      
+
       DO M = 1, M_TOT
          IF(BC_MASSFLOW_S(BCV,M) /= UNDEFINED .OR. &
             BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
@@ -256,10 +256,10 @@
  1103 FORMAT('Error 1103: Invalid mass outflow boundary condition: ', /&
          'BC_MASSFLOW_S and/or BC_VOLFLOW_S are DEFINED but ',&
          A,' is not ',/'Please correct the mfix.dat file.')
- 
+
          ENDIF
       ENDDO
-        
+
 ! This check probably needs changed.
       IF(RO_G0 == UNDEFINED .AND. (BC_P_G(BCV) == UNDEFINED .OR.       &
          BC_T_G(BCV) == UNDEFINED) .AND.BC_MASSFLOW_G(BCV) /= ZERO) THEN

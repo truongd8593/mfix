@@ -49,19 +49,19 @@
 
              IF(DEF_COR)THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_S
-                CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (M, B_M)
 
              ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR U_S
                 IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP
-                   CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 ELSE
                    CALL STORE_A_U_S1 (A_M(1,-3,M), M)
                 ENDIF
              ENDIF
 
-            CALL DIF_U_IS (MU_S(1,M), A_M, M, IER)
+            CALL DIF_U_IS (MU_S(1,M), A_M, M)
           ENDIF
         ENDIF
       ENDDO
@@ -414,7 +414,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_U_S0(A_U_S, M, IER)
+      SUBROUTINE STORE_A_U_S0(A_U_S, M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -437,8 +437,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -576,10 +574,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3

@@ -99,7 +99,7 @@
          IF(PRESENT) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*)'Reading gridmap from grimap.dat...'
-               OPEN(UNIT=777, FILE='gridmap.dat', STATUS='OLD')
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=777, FILE='gridmap.dat', STATUS='OLD')
 
                READ (777, *) NODESI,NODESJ,NODESK
                DO IPROC = 0,NODESI-1
@@ -176,7 +176,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Loop indicies
-      integer :: iproc, ijk, ii, jj, kk, idebug
+      integer :: iproc, ii, jj, kk
 ! Local flags for cyclic boundarys
       LOGICAL :: CYC_XL, CYC_YL, CYC_ZL
 ! Communicator (MPI_COMM_WORLD)

@@ -3,6 +3,9 @@ F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
 LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
+.f.$(OBJEXT):
+	$(F77COMPILE) -c -o $@ $<
+
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 MODDIR=$(top_builddir)/model
@@ -17,21 +20,32 @@ AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_LDFLAGS =
 
 src_overrides := $(sort $(wildcard *.f) $(wildcard **/*.f))
+obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
-.DEFAULT_GOAL := mfix
+SUFFIXES = .d
+
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 mfix_SOURCES = $(src_overrides)
-mfix_LDADD = $(builddir)/read_database.$(OBJEXT)
+mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
+build:
+	$(LN_S) $(top_builddir) $@
+
+.PHONY: $(LIBMFIX) TAGS
+
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix
+	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
+
+clean-local:
+	-$(MAKE) -C $(top_builddir) clean
 
 $(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
 $(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
@@ -45,7 +59,7 @@ $(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
 $(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
-species.inc:
+species.inc: mfix.dat
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
 
 #########################################################################
@@ -56,18 +70,33 @@ species.inc:
 #
 #########################################################################
 
-usrmodule.deps: $(src_overrides)
+.f.d:
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 	@SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/update-usrdeps $@
-	@for main_mod in $(${GREP} -o -E "\S+\.${MODEXT}" $@); do \
-	    echo "${main_mod}: ${LIBMFIX}" >> $@; \
+	@for main_mod in `${GREP} -o -E "\S+\.${FC_MODEXT}" $@`; do \
+	    echo "$${main_mod}: ${LIBMFIX}" >> $@; \
 	done;
 	@$(GREP) -i -l 'INCLUDE.*species.inc' /dev/null $^| $(SED) 's/$$/:\ species.inc/g' >> $@
 
-$(eval -include usrmodule.deps)
-CLEANFILES += usrmodule.deps species.inc
+@make_ifnotclean@
+$(eval -include $(src_overrides:%.f=%.d) )
+@make_endif@
+
+CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
+DISTCLEANFILES = Makefile postmfix$(EXEEXT)
+
+################################################################
+#                                                              #
+#      convenience target for postmfix                         #
+#                                                              #
+################################################################
+
+postmfix$(EXEEXT): $(LIBMFIX)
+	$(MAKE) -C $(top_builddir) $@
+	rm -f $@
+	$(LN_S) $(top_builddir)/$@ $@
 
 ################################################################
 #                                                              #
@@ -102,6 +131,29 @@ if USE_NETCDF
 AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
 mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
 endif
+
+################################################################
+#      Socket server
+################################################################
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
+endif
+
+################################################################
+#      run this case
+################################################################
+
+POST_SCRIPT=AUTOTEST/post.script.NEW
+
+test: postmfix$(EXEEXT) mfix$(EXEEXT)
+	./mfix$(EXEEXT)
+	rm -f POST*.dat
+	if [ -e $(POST_SCRIPT) ]; then \
+	    ./postmfix$(EXEEXT) < $(POST_SCRIPT); \
+	    for test_post_file in AUTOTEST/POST*.dat; do \
+	        numdiff -a 0.000001 -r 0.05 $$test_post_file $$( basename $$test_post_file ) || echo "file $$test_post_file does not match"; \
+	    done; \
+	fi
 
 ################################################################
 #                                                              #

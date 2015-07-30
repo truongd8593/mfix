@@ -24,29 +24,30 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
-      USE physprop
-      USE run
-      USE ic
-      USE is
       USE bc
-      USE constant
-      USE funits
-      USE output
-      USE scales
-      USE scalars
-      USE rxns
-      USE ur_facs
-      USE leqsol
-      USE toleranc
       USE cdist
       USE compar
+      USE constant
+      USE funits
+      USE geometry
+      USE ic
+      USE in_binary_512i
+      USE is
+      USE leqsol
+      USE machine
       USE mpi_utility      ! for gather
+      USE output
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      USE scales
       USE sendrecv         ! for filling the boundary information
       USE stiff_chem
-      USE in_binary_512i
+      USE toleranc
+      USE ur_facs
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -56,7 +57,7 @@
       integer, allocatable :: arr2(:)
       integer :: work_around(100)
 ! loop counters
-      INTEGER :: LC, L, N, M, IDX
+      INTEGER :: LC, L, N, IDX
 ! Pointer to the next record
       INTEGER :: NEXT_RECA
 ! file version id

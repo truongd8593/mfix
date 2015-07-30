@@ -20,8 +20,6 @@
       use physprop, only: SMAX
 ! Total number of discrete solids.
       use discretelement, only: DES_MMAX
-! Type of run: NEW/RESTART
-      use run, only: RUN_TYPE
 ! Flag: BC dimensions or Type is specified
       use bc, only: BC_DEFINED
 ! Use specified BC type

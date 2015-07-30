@@ -14,7 +14,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_ROP_S(A_M, B_M, M, IER)
+      SUBROUTINE CONV_ROP_S(A_M, B_M, M)
 
 !-----------------------------------------------
 ! Modules
@@ -34,8 +34,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding

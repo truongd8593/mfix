@@ -24,6 +24,10 @@
       use physprop, only: X_S0
 ! Index of inert solids phase species.
       use physprop, only: INERT_SPECIES
+! Inert solids phase species mass fraction in dilute region.
+      use physprop, only: DIL_INERT_X_VSD
+! Factor to define dilute region where DIL_INERT_X_VSD is used
+      use physprop, only: DIL_FACTOR_VSD
 ! Run-time flag for variable soilds density
       use run, only: SOLVE_ROs
 ! Constant solids density.
@@ -63,9 +67,10 @@
 ! Set the index of the intert phase.
             IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-            minROPs = BASE_ROs(M)*DIL_EP_s
+!            minROPs = BASE_ROs(M)*DIL_EP_s
+            minROPs = BASE_ROs(M)*(DIL_FACTOR_VSD*DIL_EP_s)
 ! Debug/Development option.
-            IF(dbgMode) CALL CHECK_SET_ROs(M)
+            IF(dbgMode) CALL CHECK_SET_ROs()
 
 ! Calculate Ro_s in all fluid and flow boundary cells.
             DO IJK = ijkStart3, ijkEnd3
@@ -74,7 +79,9 @@
                   RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),         &
                      X_s(IJK,M,IIS))
                ELSE
-                  RO_s(IJK,M) = BASE_ROs(M)
+!                  RO_s(IJK,M) = BASE_ROs(M)
+                  RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),            &
+                     DIL_INERT_X_VSD(M))
                ENDIF
             ENDDO
          ELSE
@@ -101,10 +108,8 @@
 !           problematic IC/BC specifications. This is included mainly  !
 !           for development efforts.                                   !
 !``````````````````````````````````````````````````````````````````````!
-      SUBROUTINE CHECK_SET_ROs(lM)
+      SUBROUTINE CHECK_SET_ROs()
 
-! File unit for LOG
-      use funits, only: UNIT_LOG
 ! Flag for who writes
       use funits, only: DMP_LOG
 ! Solids species mass fractions.
@@ -119,9 +124,6 @@
       use toleranc
 
       implicit none
-
-! Index of solids phase.
-      INTEGER, INTENT(IN) :: lM
 
 ! Sum of solids phase mass fractions.
       DOUBLE PRECISION :: SUM_Xs
@@ -164,9 +166,9 @@
          ENDIF
          inquire(file=trim(lFName),exist=lExists)
          IF(lExists) THEN
-            OPEN(unit=lUnit,file=trim(lFName),status='replace')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='replace')
          ELSE
-            OPEN(unit=lUnit,file=trim(lFName),status='new')
+            OPEN(CONVERT='BIG_ENDIAN',unit=lUnit,file=trim(lFName),status='new')
          ENDIF
       ENDIF
 
@@ -211,10 +213,6 @@
 
 
       RETURN
-
- 1000 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1000:',     &
-         ' Error 1000: One or more errors were detected. Please see',  &
-         ' setROs.log',/' for specifics.',1x,70('*')/)
 
  1100 FORMAT(//1X,70('*')/' From: CHECK_SET_ROs',/,' Error 1100:',     &
          ' One or more fluid cells contain invalid species mass',/     &

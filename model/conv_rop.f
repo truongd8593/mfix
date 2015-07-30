@@ -8,7 +8,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CONV_ROP(IER)
+      SUBROUTINE CONV_ROP()
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -20,12 +20,8 @@
       USE run, only: discretize
       IMPLICIT NONE
 
-! Dummy arguments
 !---------------------------------------------------------------------//
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
-
-! Local variables 
+! Local variables
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER :: M
@@ -33,22 +29,22 @@
 
       IF (DISCRETIZE(1) == 0) THEN               ! 0 & 1 => first order upwinding
          CALL CONV_ROP0 (ROP_g, U_g, V_g, W_g, &
-                         ROP_gE, ROP_gN, ROP_gT, IER)
+                         ROP_gE, ROP_gN, ROP_gT)
       ELSE
          CALL CONV_ROP1 (DISCRETIZE(1), ROP_g, U_g, V_g, W_g, &
-                         ROP_gE, ROP_gN, ROP_gT, IER)
+                         ROP_gE, ROP_gN, ROP_gT)
       ENDIF
 
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
          DO M = 1, MMAX
             CALL CONV_ROP0 (ROP_s(1,M), U_s(1,M), V_s(1,M), W_s(1,M), &
-                            ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M), IER)
+                            ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M))
         ENDDO
       ELSE
          DO M = 1, MMAX
             CALL CONV_ROP1 (DISCRETIZE(2), ROP_s(1,M), &
                             U_s(1,M), V_s(1,M), W_s(1,M), &
-                            ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M), IER)
+                            ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M))
          ENDDO
       ENDIF
 
@@ -66,7 +62,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CONV_ROP0(ROP, U, V, W, ROP_E, ROP_N, ROP_T, IER)
+      SUBROUTINE CONV_ROP0(ROP, U, V, W, ROP_E, ROP_N, ROP_T)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -92,8 +88,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: ROP_E(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: ROP_N(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: ROP_T(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -191,7 +185,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CONV_ROP1(DISC, ROP, U, V, W, ROP_E, ROP_N, ROP_T, IER)
+      SUBROUTINE CONV_ROP1(DISC, ROP, U, V, W, ROP_E, ROP_N, ROP_T)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -222,8 +216,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: ROP_E(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: ROP_N(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: ROP_T(DIMENSION_3)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !
 ! Local variables
 !---------------------------------------------------------------------//

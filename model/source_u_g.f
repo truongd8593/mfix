@@ -31,7 +31,7 @@
 
       USE drag, only: f_gs, beta_ij
       USE fldvar, only: p_g, ro_g, rop_g, rop_go, rop_s
-      USE fldvar, only: ep_g, ep_s
+      USE fldvar, only: ep_g, ep_s, epg_jfac
       USE fldvar, only: u_g, w_g, u_go, u_s, v_s, w_s, u_so
 
       USE fun_avg, only: avg_x, avg_z, avg_y
@@ -53,20 +53,19 @@
 
       USE mms, only: use_mms, mms_u_g_src
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, half, small_number
+      USE param1, only: zero, one, half
       USE physprop, only: mmax, smax
       USE physprop, only: mu_g, cv
       USE run, only: momentum_x_eq
       USE run, only: model_b, added_mass, m_am
       USE run, only: kt_type_enum, drag_type_enum
       USE run, only: ghd_2007, hys
-      USE run, only: jackson
       USE run, only: odt
       USE rxns, only: sum_r_g
       USE scales, only: p_scale
       USE tau_g, only: tau_u_g
       USE toleranc, only: dil_ep_s
-      USE visc_g, only: mu_gt
+      USE visc_g, only: epmu_gt
       USE cutcell, only: cartesian_grid, cut_u_treatment_at
       USE cutcell, only: blocked_u_cell_at
       USE cutcell, only: a_upg_e, a_upg_w
@@ -93,7 +92,7 @@
 ! Pressure at east cell
       DOUBLE PRECISION :: PgE
 ! Average volume fraction
-      DOUBLE PRECISION :: EPGA
+      DOUBLE PRECISION :: EPGA, EPGAJ
 ! Average density
       DOUBLE PRECISION :: ROPGA, ROGA
 ! Average viscosity
@@ -112,7 +111,7 @@
       DOUBLE PRECISION :: ROP_MA, U_se, Usw, Vsw, Vse, Usn,&
                           Uss, Wsb, Wst, Wse, Usb, Ust
       DOUBLE PRECISION :: F_vir
-! jackson terms: local stress tensor quantity
+! local stress tensor quantity
       DOUBLE PRECISION :: ltau_u_g
 !---------------------------------------------------------------------//
 
@@ -124,8 +123,8 @@
 
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKE, IJKM, IPJK, IMJK, IPJKM,          &
-!$omp          IJMK, IPJMK, IJPK, IJKP, EPGA, PGE, SDP, ROPGA,       &
-!$omp           ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,          &
+!$omp          IJMK, IPJMK, IJPK, IJKP, EPGA, PGE, SDP, EPGAJ,       &
+!$omp           ROPGA, ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf,   &
 !$omp           U_se, Usw, Vsw, Vse, Usn, Uss, Wsb, Wst, Wse,        &
 !$omp           Usb, Ust, F_vir, WGE, Vcf, VTZA, MUGTA,              &
 !$omp           Ghd_drag, L, MM, avgRop, HYS_drag, avgDrag,          &
@@ -145,6 +144,8 @@
          IJKP = KP_OF(IJK)
 
          EPGA = AVG_X(EP_G(IJK),EP_G(IJKE),I)
+! if jackson then avg ep_g otherwise 1
+         EPGAJ = AVG_X(EPG_jfac(IJK),EPG_jfac(IJKE),I)
 
 ! Impermeable internal surface
          IF (IP_AT_E(IJK)) THEN
@@ -335,17 +336,17 @@
 ! virtual mass contribution
                IF(Added_Mass) VCF = VCF + Cv*ROP_MA*WGE**2*OX_E(I)
 
+! if ishii, then viscosity is multiplied by void fraction otherwise by 1
 ! part of -tau_zz/x xdxdydz =>
 !         -(2mu/x)*(u/x) xdxdydz =>
 ! delta(-2.mu.u/x^2)V |p : at i+1/2, j, k
-               MUGTA = AVG_X(MU_GT(IJK),MU_GT(IJKE),I)
-               VTZA = 2.d0*MUGTA*OX_E(I)*OX_E(I)
-               IF (JACKSON) VTZA = epga*VTZA
+               MUGTA = AVG_X(EPMU_GT(IJK),EPMU_GT(IJKE),I)
+               VTZA = 2.d0*EPGAJ*MUGTA*OX_E(I)*OX_E(I)
             ENDIF
 
-! jackson form of governing equations is ep_g del dot (tau_g)
-            ltau_u_g = tau_u_g(ijk)
-            IF (JACKSON) ltau_u_g = epga*(ltau_u_g)
+! if jackson, implement jackson form of governing equations (ep_g dot
+! del tau_g): multiply by void fraction otherwise by 1
+            ltau_u_g = epgaJ*tau_u_g(ijk)
 
 ! Collect the terms
             A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
@@ -369,7 +370,7 @@
 ! modifications for bc
       CALL SOURCE_U_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_U_G

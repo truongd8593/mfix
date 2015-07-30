@@ -384,7 +384,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       DOUBLE PRECISION FUNCTION UNIV_LIMITER_OF (PHI_TEMP, PHI_D,&
                         PHI_C, PHI_U)
-      
+
       USE param1, only: zero
       USE run, only: c_fac
       IMPLICIT NONE

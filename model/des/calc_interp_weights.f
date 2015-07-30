@@ -27,10 +27,11 @@
       SUBROUTINE CALC_INTERP_WEIGHTS1
 
       use discretelement, only: MAX_RADIUS
-      use discretelement, only: PEA, MAX_PIP
+      use discretelement, only: MAX_PIP
       use discretelement, only: PIJK
       use discretelement, only: DES_POS_NEW
       use discretelement, only: XE, YN, ZT
+      use discretelement, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
       use geometry, only: DO_K
@@ -57,13 +58,12 @@
 
 !$omp parallel default(none) private(L, WEIGHT_I, WEIGHT_J, WEIGHT_K,  &
 !$omp    KM, KP, IDX, IJK, I, J, K, WEIGHT, IJKT)                      &
-!$omp shared(MAX_PIP, PEA, PIJK, DES_POS_NEW, XE, YN, ZT, DO_K,        &
+!$omp shared(MAX_PIP, PIJK, DES_POS_NEW, XE, YN, ZT, DO_K,        &
 !$omp    FILTER_CELL, FILTER_WEIGHT)
 !$omp do
       DO L = 1, MAX_PIP
 
-         IF(.NOT.PEA(L,1)) CYCLE
-         IF(any(PEA(L,2:3))) CYCLE
+         IF(IS_NONEXISTENT(L).or.IS_ENTERING(L).or.IS_EXITING(L).or.IS_ENTERING_GHOST(L).or.IS_EXITING_GHOST(L)) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)

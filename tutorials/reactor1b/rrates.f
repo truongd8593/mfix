@@ -28,21 +28,22 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar        !//d
+      USE constant
+      USE energy
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine
+      USE parallel
       USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE rxns
-      USE energy
-      USE geometry
-      USE run
-      USE indices
       USE physprop
-      USE constant
-      USE funits
-      USE compar        !//d
+      USE run
+      USE rxns
       USE sendrecv      !// 400
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

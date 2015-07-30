@@ -28,7 +28,7 @@
 !!$omp private(ll)                    &
 !!$omp schedule (guided,50)
       DO LL = 1, MAX_PIP
-         IF(.NOT.PEA(LL,1) .or. pea(ll,4)) CYCLE
+         IF(IS_NONEXISTENT(LL) .or. IS_GHOST(ll)) CYCLE
 
          DES_POS_OLD(:,LL)  = DES_POS_NEW(:,LL)
          DES_VEL_OLD(:,LL)  = DES_VEL_NEW(:,LL)

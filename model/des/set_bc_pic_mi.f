@@ -61,22 +61,22 @@
          BCV = PIC_BCMI_MAP(BCV_I)
 
          PIC_BCMI_OFFSET (BCV_I,:) = 1
-         PIC_BCMI_NORMDIR(BCV_I,:) = ZERO
+         PIC_BCMI_NORMDIR(BCV_I,:) = 0
 
          SELECT CASE(BC_PLANE(BCV))
-         CASE('E'); PIC_BCMI_NORMDIR(BCV_I,1) =  ONE
+         CASE('E'); PIC_BCMI_NORMDIR(BCV_I,1) = 1
          CASE('W')
-            PIC_BCMI_NORMDIR(BCV_I,1) = -ONE
+            PIC_BCMI_NORMDIR(BCV_I,1) = -1
             PIC_BCMI_OFFSET (BCV_I,1) = 0
 
-         CASE('N'); PIC_BCMI_NORMDIR(BCV_I,2) =  ONE
+         CASE('N'); PIC_BCMI_NORMDIR(BCV_I,2) = 1
          CASE('S')
-            PIC_BCMI_NORMDIR(BCV_I,2) = -ONE
+            PIC_BCMI_NORMDIR(BCV_I,2) = -1
             PIC_BCMI_OFFSET (BCV_I,2) = 0
 
-         CASE('T'); PIC_BCMI_NORMDIR(BCV_I,3) =  ONE
+         CASE('T'); PIC_BCMI_NORMDIR(BCV_I,3) = 1
          CASE('B')
-            PIC_BCMI_NORMDIR(BCV_I,3) = -ONE
+            PIC_BCMI_NORMDIR(BCV_I,3) = -1
             PIC_BCMI_OFFSET (BCV_I,3) =  0
          END SELECT
 

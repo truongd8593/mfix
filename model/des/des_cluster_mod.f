@@ -122,7 +122,6 @@
          module procedure getClusterParticleData_2i
          module procedure getClusterParticleData_1d
          module procedure getClusterParticleData_2d
-         module procedure getClusterParticleData_1l
       end interface
 
       interface getClusterFieldData
@@ -858,7 +857,7 @@
 ! Generic loop counters
       INTEGER lc1, lc2, lc3, lc4
 
-      character(LEN=30) :: filename
+      character(LEN=255) :: filename
 
 ! Local process data:
 !----------------------->>
@@ -872,8 +871,8 @@
       INTEGER, dimension(:) :: cCnt(0:numPEs-1)
 ! Global IDs of particles in clusters (array)
       INTEGER, dimension(:), allocatable :: gpIDs
-! PEA entries for particles in clusters. (array)
-      LOGICAL, dimension(:), allocatable :: gpPEA
+! IS_GHOST entries for particles in clusters. (array)
+      LOGICAL, dimension(:), allocatable :: gpGhost
 
 ! Root process data:
 !----------------------->>
@@ -893,8 +892,8 @@
 
 ! Global IDs of particles in clusters (array)
       INTEGER, dimension(:), allocatable :: gpIDs_all
-! PEA entries for particles in clusters. (array)
-      LOGICAL, dimension(:), allocatable :: gpPEA_all
+! Ghost entries for particles in clusters. (array)
+      LOGICAL, dimension(:), allocatable :: gpGhost_all
 
       INTEGER, dimension(:,:), allocatable :: mergeMap
       LOGICAL merging
@@ -909,7 +908,7 @@
       if(dbg_level >= 2) then
          filename=''
          write(filename,"('dbg_check_',I2.2,'.txt')")myPE
-         open(unit=202, file=filename, &
+         open(convert='big_endian',unit=202, file=filename, &
             status='replace', position='append')
          write(202,"(3x,'check A')")
       endif
@@ -1008,8 +1007,8 @@
       endif
 
 
-! Transfer particle existance array (PEA):
-      call getClusterParticleData(PEA(:,4), gpPEA_all, gpPEA)
+! Transfer particle ghost array:
+      call getClusterGhostData(gpGhost_all, gpGhost)
       if(dbg_level >= 2) then
          call dbg_print_clusters(7)
          write(202,"(5x,'check 7')")
@@ -1114,7 +1113,7 @@
                lp_lc22: do lc2=1, cCnt_sum
                   if(mergeMap(lc1,lc2) == 0) cycle lp_lc22
                   lp_lc42: do lc4=1+gp_dsp(lc2),gp_dsp(lc2)+pCnt_all(lc2)
-                     if(gpPEA_all(lc4)) cycle lp_lc42
+                     if(gpGhost_all(lc4)) cycle lp_lc42
                      call addParticle(this, lc4, gpIDs_all(lc4))
                   enddo lp_lc42
                enddo lp_lc22
@@ -1134,7 +1133,7 @@
             clusters(clusterCount_all)%size = 0
             this => clusters(clusterCount_all); this%size = 0
             do lc1=1, pCnt_all(1)
-               if(gpPEA_all(lc1)) write(*,"(3x, &
+               if(gpGhost_all(lc1)) write(*,"(3x, &
                   &'Error: Ghost particle detected: ',I7)") lc1
                call addParticle(this, lc1, gpIDs_all(lc1))
             enddo
@@ -1161,11 +1160,11 @@
 
       if(allocated(pCnt))      deallocate(pCnt)
       if(allocated(gpIDs))     deallocate(gpIDs)
-      if(allocated(gpPEA))     deallocate(gpPEA)
+      if(allocated(gpGhost))     deallocate(gpGhost)
 
       if(allocated(pCnt_all))  deallocate(pCnt_all)
       if(allocated(gpIDs_all)) deallocate(gpIDs_all)
-      if(allocated(gpPEA_all)) deallocate(gpPEA_all)
+      if(allocated(gpGhost_all)) deallocate(gpGhost_all)
 
       if(allocated(gp_dsp))    deallocate(gp_dsp)
 
@@ -1198,7 +1197,7 @@
 ! Generic write buffers.
       CHARACTER(len=120) wbuff, wbuff2
 ! String for generating filenames.
-      CHARACTER(LEN=30) :: filename
+      CHARACTER(LEN=255) :: filename
 
 ! Generic cluster pointer.
       Type(cType), pointer :: cThis
@@ -1236,7 +1235,7 @@
 
          filename = ''
          write(filename,"('dbg_pCnt_',I2.2,'.txt')") myPE
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(//3x,'Time:',F18.6)")Time
          write(201,"(3x,'Number of Clusters: ',I4)") cCnt(myPE)
 
@@ -1268,7 +1267,7 @@
       CASE (3); if(myPE /= clusterPE) return
 
          filename = 'dbg_pCnt_dsp.txt'
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          write(201,"(3x,'cCnt_sum: ',I4)") cCnt_sum
          do lc1 =0, numPEs-1
@@ -1361,7 +1360,7 @@
 !``````````````````````````````````````````````````````````````````````!
       CASE (7); if(myPE /= clusterPE) return
 
-         open(unit=201, file='dbg_gpIDs.txt', status='replace')
+         open(convert='big_endian',unit=201, file='dbg_gpIDs.txt', status='replace')
          do lc1=1,size(gpIDs_all)
             write(201,"(5x,' Global particle ID: ',I8)") gpIDs_all(lc1)
          enddo
@@ -1385,7 +1384,7 @@
 
          filename = ''
          write(filename,"('dbg_mergeMap_',A,I2.2,'.txt')") trim(lmsg)
-         open(unit=201, file=filename, status='replace')
+         open(convert='big_endian',unit=201, file=filename, status='replace')
 
          write(201,"(/3x,'Time:',F18.6)")Time
 
@@ -1430,11 +1429,11 @@
       CASE (9) ! All processes
 
          filename = ''
-         write(filename,"('dbg_PEA_',I2.2,'.txt')") myPE
-         open(unit=201, file=filename, status='replace')
+         write(filename,"('dbg_isghost_',I2.2,'.txt')") myPE
+         open(convert='big_endian',unit=201, file=filename, status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          do lc1 =1, send_cnt
-            write(201,"(5x,'PEA(',I8,'): ',L2)")lc1, gpPEA(lc1)
+            write(201,"(5x,'IS_GHOST(',I8,'): ',L2)")lc1, gpGhost(lc1)
          enddo
          close(201)
 
@@ -1448,10 +1447,10 @@
 !``````````````````````````````````````````````````````````````````````!
       CASE (10); if(myPE /= clusterPE) return
 
-         open(unit=201, file='dbg_PEA_all.txt', status='replace')
+         open(convert='big_endian',unit=201, file='dbg_isghost_all.txt', status='replace')
          write(201,"(/3x,'Time:',F18.6)")Time
          do lc1 =1, recv_sum
-            write(201,"(5x,'PEA(',I8,'): ',L2)")lc1, gpPEA_all(lc1)
+            write(201,"(5x,'IS_GHOST(',I8,'): ',L2)")lc1, gpGhost_all(lc1)
          enddo
          close(201)
 
@@ -1472,7 +1471,7 @@
          do lc1 = 1, cCnt_all(proc)
          lc2 = lc2 + 1
          do lc3 = 1, pCnt_all(lc2)
-            if(gpPEA_all(gp_dsp(lc2) + lc3)) then
+            if(gpGhost_all(gp_dsp(lc2) + lc3)) then
                write(*,"(3x,'Particle ',I8,' in cluster ',I6, &
                   &' is a ghost on process ',I2,'.')")        &
                   gpIDs_all(gp_dsp(lc2) + lc3), lc2, proc
@@ -1504,7 +1503,7 @@
             do lc1=1, clusterCount_all
                filename = ''
                write(filename,"('dbg_cluster_',I3.3,'.txt')")lc1
-               open(unit=201, file=filename, status='replace')
+               open(convert='big_endian',unit=201, file=filename, status='replace')
                write(201,"(3x,'Time:',F10.6)") Time
 
                cThis => clusters(lc1)
@@ -2034,12 +2033,10 @@
 !                                                                      !
 !  Author: J.Musser                                   Date:  Dec-12    !
 !......................................................................!
-      SUBROUTINE getClusterParticleData_1l(lData, lrbuff, lOut)
+      SUBROUTINE getClusterGhostData(lrbuff, lOut)
 
       implicit none
 
-! Data on local process being sent to clusterPE.
-      logical, intent(in) :: lData(:)
 ! Data from local processes received by clusterPE.
       logical, allocatable, intent(inout) :: lrbuff(:)
 ! Data on local process in cluster-array format.
@@ -2091,7 +2088,7 @@
                lc3 = lc3 + 1
                CALL GetNextParticle(cluster, particle)
 ! Convert logical to integer.
-               if(lData(particle%ID)) lsbuff_i(lc3) = 1
+               if(IS_GHOST(particle%ID)) lsbuff_i(lc3) = 1
             enddo
          enddo
       endif
@@ -2120,8 +2117,7 @@
       nullify(particle)
 
       return
-      END SUBROUTINE getClusterParticleData_1l
-
+    END SUBROUTINE getClusterGhostData
 
 !......................................................................!
 !  Module name: getClusterFieldData_1d                                 !

@@ -22,20 +22,21 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE compar
+      USE constant
+      USE discretelement
+      USE drag
       USE fldvar
+      USE functions
       USE geometry
       USE indices
+      USE machine, only: start_log, end_log
+      USE param
+      USE param1
       USE physprop
       USE run
-      USE constant
-      USE compar
-      USE drag
       USE sendrecv
-      USE discretelement
       USE ur_facs
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------

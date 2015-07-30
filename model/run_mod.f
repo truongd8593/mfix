@@ -13,7 +13,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      Use param, only: dim_M, dim_eqs
+      use param, only: dim_M, dim_eqs
+      use param1, only: UNDEFINED_I
+      USE, INTRINSIC :: ISO_C_BINDING
 !---------------------------------------------------------------------//
 
 
@@ -36,9 +38,6 @@
 ! counter to keep track of how many auto_retart were performed
       INTEGER :: ITER_RESTART
 
-! computer node name/id
-      CHARACTER(LEN=64) :: ID_NODE
-
 ! version.release of software
       CHARACTER(LEN=10) :: ID_VERSION
 
@@ -49,7 +48,7 @@
       DOUBLE PRECISION :: TSTOP
 
 ! Time step.
-      DOUBLE PRECISION :: DT
+      REAL(C_DOUBLE), bind(C, name="simulation_time") :: DT
 
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
@@ -68,14 +67,6 @@
 !  (species mass fractions)
       LOGICAL :: Chi_scheme
 
-! RUN ID info
-      INTEGER :: ID_MONTH
-      INTEGER :: ID_DAY
-      INTEGER :: ID_YEAR
-      INTEGER :: ID_HOUR
-      INTEGER :: ID_MINUTE
-      INTEGER :: ID_SECOND
-
 ! If .TRUE. solve X momentum equations
       LOGICAL :: MOMENTUM_X_EQ(0:DIM_M)
 
@@ -87,6 +78,8 @@
 
 ! IF .TRUE. use Jackson form momentum equations
       LOGICAL :: JACKSON
+! IF .TRUE. use Ishii form momentum equations
+      LOGICAL :: ISHII
 
 ! If .TRUE. use Model-B momentum equations
       LOGICAL :: Model_B
@@ -123,6 +116,12 @@
 
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
+
+! If .TRUE. call user-defined physical properties routines
+      LOGICAL :: USR_ROg, USR_ROs, USR_CPg, USR_CPs
+
+! If .TRUE. force time-step when NIT=MAX_NIT and DT=DT_MIN
+      LOGICAL :: PERSISTENT_MODE
 
 ! If .TRUE. solve population balance  equations
       LOGICAL :: Call_DQMOM
@@ -259,18 +258,26 @@
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
 
+! If. .TRUE. code will respond during runtime
+      LOGICAL :: INTERACTIVE_MODE
+
+! Number of interactive iterations.
+      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
+
+! If .TRUE. code will halt at call to interact
+      LOGICAL :: INTERUPT = .FALSE.
+
+! If .TRUE. code will automatically restart for DT < DT_MIN
+      LOGICAL :: REINITIALIZING = .FALSE.
+
+! Time-step failure rate:
+! 1) Number of failed time steps
+! 2) Observation window
+      INTEGER :: TIMESTEP_FAIL_RATE(2)
+
 ! parameters for dynamically adjusting time step
 ! +1 -> increase dt; -1 decrease dt
-      INTEGER :: DT_dir
-
-! number of steps since last adjustment
-      INTEGER :: STEPS_tot
-
-! number of iterations since last adjustment
-      INTEGER :: NIT_tot
-
-! iterations per second for last dt
-      DOUBLE PRECISION :: NITos
+      INTEGER :: DT_dir = -1
 
 ! Maximum Time step.
       DOUBLE PRECISION :: DT_MAX
@@ -303,9 +310,6 @@
       LOGICAL :: REPORT_NEG_DENSITY
 
        common /run_dp/ time      !for Linux
-
-! Flag to invoke the variable solids density model.
-!      LOGICAL          SOLID_RO_V
 
 
 ! Flags indicating variable solids density.

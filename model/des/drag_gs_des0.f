@@ -70,7 +70,6 @@
           DOUBLE PRECISION :: D_FORCE(3)
           DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
 
-
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
 ! Calculate the gas solids drag coefficient using the particle
 ! velocity and the fluid velocity interpolated to particle
@@ -88,7 +87,7 @@
 
 !$omp parallel do default(none)                                         &
 !$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,  &
-!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new, &
+!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,des_pos_new,  &
 !$omp        des_vel_new, mppic, mppic_pdrag_implicit,p_force,          &
 !$omp        u_g,v_g,w_g,model_b,pvol,fc,f_gp,ep_g)                     &
 !$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
@@ -152,8 +151,8 @@
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
-            if(.not.pea(np,1)) cycle
-            if(pea(np,4)) cycle
+            if(is_nonexistent(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
@@ -190,11 +189,8 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel do
 
-
       RETURN
       END SUBROUTINE DRAG_GS_DES0
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -366,8 +362,8 @@
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
-            if(.not.pea(np,1)) cycle
-            if(pea(np,4)) cycle
+            if(is_nonexistent(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
 !

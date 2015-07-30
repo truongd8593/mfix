@@ -12,8 +12,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Flags for classifying particles
-      use discretelement, only: PEA
 ! Max number of particles in process
       use discretelement, only: MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
@@ -21,6 +19,7 @@
 ! Run time flag indicating DEM or PIC solids.
       use run, only: DEM_SOLIDS, PIC_SOLIDS
 
+      use discretelement, only: IS_NORMAL
       use mpi_utility
       use error_manager
 
@@ -33,7 +32,6 @@
 ! Integer error flag.
       INTEGER :: IER
 
-
 ! Initialize local variables.
       IER = 0
 
@@ -44,7 +42,7 @@
 !!$omp do reduction(+:IER) schedule (guided,50)
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
+         IF(.NOT.IS_NORMAL(L)) CYCLE
 
 ! assigning local aliases for particle i, j, k fluid grid indices
          I = PIJK(L,1)
@@ -80,8 +78,6 @@
 !---------------------------------------------------------------------//
 ! The global ID of a particle.
       use discretelement, only: iGlobal_ID
-! Flags for classifying particles
-      use discretelement, only: PEA
 ! Max number of particles in process
       use discretelement, only: MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
@@ -89,6 +85,7 @@
 ! Particle positions and velocities
       use discretelement, only: DES_POS_NEW, DES_VEL_NEW
 
+      use discretelement, only: IS_NORMAL
       use mpi_utility
       USE error_manager
 
@@ -112,7 +109,7 @@
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
+         IF(.NOT.IS_NORMAL(L)) CYCLE
 
 ! assigning local aliases for particle i, j, k fluid grid indices
          I = PIJK(L,1)
@@ -181,8 +178,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Flags for classifying particles
-      use discretelement, only: PEA
 ! The (max) number of particles in process
       use discretelement, only: PIP, MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
@@ -198,6 +193,7 @@
 ! Flag: identifies a fluid cell as a cut cell.
       use cutcell, only: CUT_CELL_AT
 
+      use discretelement, only: IS_NORMAL, SET_NONEXISTENT
       use mpi_utility
       use error_manager
       use functions
@@ -232,7 +228,7 @@
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1) .OR. any(PEA(L,2:4))) CYCLE
+         IF(.NOT.IS_NORMAL(L)) CYCLE
 
 ! Assigning local aliases for particle position
 
@@ -263,7 +259,7 @@
             ELSE
 
                lDELETED = lDELETED + 1
-               PEA(L,1) = .FALSE.
+               CALL SET_NONEXISTENT(L)
                PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN
@@ -293,7 +289,7 @@
             ELSE
 
                lDELETED = lDELETED + 1
-               PEA(L,1) = .FALSE.
+               CALL SET_NONEXISTENT(L)
                PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN
@@ -322,7 +318,7 @@
             ELSE
 
                lDELETED = lDELETED + 1
-               PEA(L,1) = .FALSE.
+               CALL SET_NONEXISTENT(L)
                PINC(IJK) = PINC(IJK) - 1
 
                IF(lDEBUG) THEN

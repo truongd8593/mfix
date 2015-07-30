@@ -11,19 +11,9 @@
 !                    des_par_exchange; when do_nsearch is true ghost particles of the
 !                    system will be updated, which will be later used to generate
 !                    neighbour list.
-
+!
 ! Contains following subroutines:
-!    des_par_exchange
-!    desmpi_sendrecv_wait, desmpi_gatherv, desmpi_scatterv
-!    desmpi_check_sendrecvbuf,
-!    desmpi_pack_ghostpar, desmpi_unpack_ghostpar, desmpi_cleanup,
-!    desmpi_pack_parcross, desmpi_unpack_parcross,
-!    des_addnodevalues, des_addnodevalues2,
-!    des_gather_d,l,i
-
-!    des_restart_neigh, redim_par, des_dbgmpi
-! Contains following functions:
-!    locate_par, exten_locate_par
+!    des_addnodevalues, des_addnodevalues2, des_addnodevalues_mean_fields
 !------------------------------------------------------------------------
       module mpi_node_des
 

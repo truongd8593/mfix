@@ -39,10 +39,6 @@
 !
       DOUBLE PRECISION MW
 !
-!     Function subroutines
-!
-      DOUBLE PRECISION CALC_MW
-!
         IF(RO_g0 .EQ. UNDEFINED .AND. .NOT.WALL_AT(L)) THEN
           IF(MW_AVG .EQ. UNDEFINED) THEN
             MW = CALC_MW(X_g, DIMENSION_3, L, NMAX(0), MW_g)

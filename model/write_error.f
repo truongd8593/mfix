@@ -23,9 +23,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE funits
+      USE machine, only: start_log, end_log
       USE param
       USE param1
-      USE funits
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

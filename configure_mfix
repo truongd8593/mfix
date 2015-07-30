@@ -1,21 +1,36 @@
 #!/bin/bash -e
 #
-#  Wrapper script for calling configure in MFIX_HOME and copying Makefile.usr into $PWD
+#  Wrapper script for running autoreconf (if necessary), running configure, and copying Makefile.usr to $PWD/Makefile
 #
+
+for target in mfix postmfix libmfix.a Makefile; do
+    [ -d ${target} ] && echo "ERROR:  A directory exists named:  ${target}"
+    [ -d ${target} ] && echo "ERROR:  "
+    [ -d ${target} ] && echo "ERROR:  Run configure_mfix from a directory containing only mfix.dat and any required custom source files (*usr*.f)."
+    [ -d ${target} ] && exit -1
+done
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd)
 MFIX_HOME=$(cd $(dirname $0); pwd)
-BUILD_DIR=${MFIX_HOME}/build
 
 cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
+args=("${@/--dmp/--enable-dmp}")
+args=("${args[@]/--smp/--enable-smp}")
 
-cd ${BUILD_DIR}
-${MFIX_HOME}/configure "$@" || exit
-
-MAKEFILE=${RUN_DIR}/Makefile
-MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
-if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
-    cp ${MAKEFILE_USR} ${MAKEFILE}
+if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
+    # building in MFIX_HOME, no need to copy Makefile.usr
+    ${MFIX_HOME}/configure "${args[@]}" || exit $?
+else
+    args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
+    BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
+    mkdir -p ${BUILD_DIR}
+    cd ${BUILD_DIR}
+    ${MFIX_HOME}/configure "${args[@]}" || exit $?
+    MAKEFILE=${RUN_DIR}/Makefile
+    MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
+    if [ -f ${MAKEFILE_USR} ]; then
+	cp ${MAKEFILE_USR} ${MAKEFILE}
+    fi
 fi

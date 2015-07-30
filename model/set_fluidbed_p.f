@@ -47,6 +47,7 @@
       USE geometry
       USE ic
       USE indices
+      USE machine, only: start_log, end_log
       USE mpi_utility
       USE param
       USE param1

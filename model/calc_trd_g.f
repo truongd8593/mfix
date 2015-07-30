@@ -166,7 +166,7 @@
 
                   CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-                  IF(Sx /= ZERO) THEN
+                  IF(abs(Sx) > ZERO) THEN
                      dudx =  (U_G(IJK) - U_G(IMJK))/Sx
                      IF(NOC_TRDG) dudx = dudx - ((Ui-UW_g)/(Sx*DEL_H)*(Sy*Ny+Sz*Nz))
                   ELSE
@@ -194,7 +194,7 @@
 
                   CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-                  IF(Sy /= ZERO) THEN
+                  IF(abs(Sy) > ZERO) THEN
                      dvdy =  (V_G(IJK) - V_G(IJMK))/Sy
                      IF(NOC_TRDG) dvdy = dvdy - ((Vi-VW_g)/(Sy*DEL_H)*(Sx*Nx+Sz*Nz))
                   ELSE
@@ -237,7 +237,7 @@
 
                      CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-                     IF(Sz /= ZERO) THEN
+                     IF(abs(Sz) > ZERO) THEN
                         dwdz =  (W_G(IJK) - W_G(IJKM))/Sz
                         IF(NOC_TRDG) dwdz = dwdz - ((Wi-WW_g)/(Sz*DEL_H)*(Sx*Nx+Sy*Ny))
                      ELSE
@@ -435,7 +435,7 @@
 
          CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-         IF(Sx /= ZERO) THEN
+         IF(abs(Sx) > ZERO) THEN
             dudx =  (U_G(IJK) - U_G(IMJK))/Sx
             dudy =  ZERO
             dudz =  ZERO
@@ -495,7 +495,7 @@
 
 
 
-         IF(Sy /= ZERO) THEN
+         IF(abs(Sy) > ZERO) THEN
             dvdx =  ZERO
             dvdy =  (V_G(IJK) - V_G(IJMK))/Sy
             dvdz =  ZERO
@@ -559,7 +559,7 @@
 
             CALL GET_DEL_H(IJK,'SCALAR',Xi,Yi,Zi,Del_H,Nx,Ny,Nz)
 
-            IF(Sz /= ZERO) THEN
+            IF(abs(Sz) > ZERO) THEN
                dwdx =  ZERO
                dwdy =  ZERO
                dwdz =  (W_G(IJK) - W_G(IJKM))/Sz

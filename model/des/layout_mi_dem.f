@@ -513,7 +513,7 @@
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
-      INTEGER IJK, I, J, K
+      INTEGER I, J, K
 ! Local MESH indices
       INTEGER H, W
 ! Temp variable for double precision
@@ -873,7 +873,7 @@
       use compar, only: myPE
       use geometry, only: IMAX, JMAX, KMAX
       use geometry, only: DX, DY, DZ
-      use geometry, only: XMIN, DO_K
+      use geometry, only: XMIN
 
       use funits, only: DMP_LOG
 
@@ -907,7 +907,7 @@
 ! Loop counters.
       INTEGER LL, LC
 ! Indices for mapping to fluid grid.
-      INTEGER IJK, I, J, K
+      INTEGER I, J, K
 ! Local MESH indices
       INTEGER H, W
 ! Temp variable for double precision
@@ -1238,8 +1238,6 @@
       use compar
       use geometry
       use indices
-
-      use funits, only: DMP_LOG
 
 ! Module procedures
 !---------------------------------------------------------------------//

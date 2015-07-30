@@ -10,8 +10,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! File unit of log file.
-      use funits, only: UNIT_LOG
 ! Dimension of IJK arrays.
       use param, only: DIMENSION_3
 ! Double precision zero.
@@ -156,7 +154,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
       INTEGER :: LRN, LRS
-      INTEGER :: M, N_VAR
+      INTEGER :: M
 
       LOGICAL :: LIMIT_MAX_STEPS
 

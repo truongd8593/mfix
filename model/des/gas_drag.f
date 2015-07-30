@@ -16,16 +16,12 @@
       use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Flag: TFM and DEM solids exist.
-      use discretelement, only: DES_CONTINUUM_HYBRID
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
 ! Volume of X-momentum cell
       use geometry, only: VOL_U
-! Gas velococity component
-      use fldvar, only: U_GO
 ! Flag to calculate Z direction
       use geometry, only: DO_K
 
@@ -33,8 +29,6 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
-! Double precision small number
-      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
@@ -161,16 +155,12 @@
       use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Flag: TFM and DEM solids exist.
-      use discretelement, only: DES_CONTINUUM_HYBRID
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
 ! Volume of Y-momentum cell
       use geometry, only: VOL_V
-! Gas velococity component
-      use fldvar, only: V_GO
 ! Flag to calculate Z direction
       use geometry, only: DO_K
 
@@ -178,8 +168,6 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
-! Double precision small number
-      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK
@@ -305,25 +293,17 @@
       use particle_filter, only: DES_INTERP_SCHEME_ENUM, DES_INTERP_GARG
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
-! Flag: TFM and DEM solids exist.
-      use discretelement, only: DES_CONTINUUM_HYBRID
 ! Coefficient at cell corners added to the gas momentum A matix.
       use discretelement, only: DRAG_AM, F_GDS
 ! Coefficient at cell corners added to gas momentum B vector.
       use discretelement, only: DRAG_BM
 ! Volume of Z-momentum cell
       use geometry, only: VOL_W
-! Flag to calculate Z direction
-      use geometry, only: DO_K
-! Gas velococity component
-      use fldvar, only: W_GO
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and solids phase..
       use param, only: DIMENSION_3, DIMENSION_M
-! Double precision small number
-      use param1, only: SMALL_NUMBER
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! The I, J, and K values that comprise an IJK

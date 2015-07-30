@@ -157,10 +157,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Flag: Solve energy equations
-      use run, only: ENERGY_EQ
-! Flag: Solve species equations
-      use run, only: SPECIES_EQ
 ! User specifed drag type, as string and enum
       use run, only: DRAG_TYPE
       use run, only: DRAG_TYPE_ENUM
@@ -180,8 +176,6 @@
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-! Parameter constants.
-      use param1, only: UNDEFINED, UNDEFINED_I, UNDEFINED_C
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -261,8 +255,6 @@
       USE run, only: UNDEFINED_SUBGRID_TYPE, IGCI, MILIOLI
 ! Flag: Include wall effect term
       USE run, only: SUBGRID_WALL
-! Initial turbulence length scale
-      use constant, only: L_SCALE0
 ! Specularity coefficient for particle-wall collisions
       use constant, only: PHIP
 ! Flag: Use cartesian grid model
@@ -409,7 +401,8 @@
       use run, only: ENERGY_EQ
 ! Flag: Solve species equations
       use run, only: SPECIES_EQ
-
+! FLag: Reinitializing the code
+      use run, only: REINITIALIZING
 ! Flag: Database for phase X was read for species Y
       use rxns, only: rDatabase
 ! Solids phase species database names.
@@ -488,7 +481,7 @@
 ! Flag that the energy equations are solved and specified solids phase
 ! specific heat is undefined.
          EEQ_CPS = (ENERGY_EQ .AND. C_PS0(M) == UNDEFINED)
-         IF(EEQ_CPS)THEN
+         IF(EEQ_CPS .AND. .NOT.REINITIALIZING)THEN
             WRITE(ERR_MSG,2000)
             CALL FLUSH_ERR_MSG
          ENDIF
@@ -506,7 +499,7 @@
             ENDIF
          ENDDO
 
-         IF(SEQ_MWs) THEN
+         IF(SEQ_MWs .AND. .NOT.REINITIALIZING) THEN
             WRITE(ERR_MSG, 2001) M
             CALL FLUSH_ERR_MSG
          ENDIF
@@ -520,10 +513,12 @@
 ! Initialize flag indicating the database was read for a species.
          rDatabase(M,:) = .FALSE.
 
-         IF(EEQ_CPS .OR. SEQ_MWs) THEN
+         IF(EEQ_CPS .OR. SEQ_MWs)THEN
 
-            WRITE(ERR_MSG, 3000) M
-            CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+            IF(.NOT.REINITIALIZING) THEN
+               WRITE(ERR_MSG, 3000) M
+               CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
+            ENDIF
 
  3000 FORMAT('Message 3000: Searching thermochemical databases for ',  &
          'solids phase',I3,/'species data.',/'  ')
@@ -539,8 +534,10 @@
                      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                   ENDIF
 ! Update the log files.
-                  WRITE(ERR_MSG, 3001) N, trim(SPECIES_s(M,N))
-                  CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+                  IF(.NOT.REINITIALIZING) THEN
+                     WRITE(ERR_MSG, 3001) N, trim(SPECIES_s(M,N))
+                     CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+                  ENDIF
                   3001 FORMAT(/2x,'>',I3,': Species: ',A)
 
                   CALL READ_DATABASE(M, N, SPECIES_s(M,N), MW_S(M,N))
@@ -548,7 +545,7 @@
                   rDatabase(M,N) = .TRUE.
                ENDIF
             ENDDO ! Loop over species
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
+            IF(.NOT.REINITIALIZING) CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
          ENDIF
 
 ! Verify that no additional species information was given.
@@ -602,7 +599,7 @@
 ! Maximum number of gas phase species.
       USE param, only: DIM_N_s
 ! Constants.
-      USE param1, only: UNDEFINED_I, UNDEFINED, ZERO
+      USE param1, only: UNDEFINED_I, UNDEFINED
 
 ! Global Module procedures:
 !---------------------------------------------------------------------//
@@ -714,6 +711,8 @@
       use physprop, only: X_s0
 ! Index of inert solids species
       use physprop, only: INERT_SPECIES
+! Inert species mass fraction in dilute region
+      use physprop, only: DIL_INERT_X_VSD
 ! Number of solids phase species.
       use physprop, only: NMAX
 
@@ -802,6 +801,14 @@
                   trim(iVal(INERT_SPECIES(M)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
+            IF(DIL_INERT_X_VSD(M)<=ZERO) THEN
+               WRITE(ERR_MSG,1103) M, DIL_INERT_X_VSD(M)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ELSEIF(DIL_INERT_X_VSD(M)>ONE) THEN
+               WRITE(ERR_MSG,1104) M, DIL_INERT_X_VSD(M)
+               print*,'M,DIL_INERT_X_VSD(M)=',M,DIL_INERT_X_VSD(M)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
             DO N=1, NMAX(M)
 ! Check RO_Xs0
                IF(RO_Xs0(M,N) == UNDEFINED) THEN
@@ -844,6 +851,16 @@
  1102 FORMAT('Error 1102: Invalid baseline inert species mass',/       &
          'fraction. The inert species mass fraction must be greater ',  &
          'than zero.',/' Phase ',I2,' Inert Species: ',I3,' X_s0 = 0.0')
+
+ 1103 FORMAT('Error 1103: Invalid dilute region inert species mass',/   &
+         'fraction. The inert species mass fraction must be greater ',  &
+         'than zero.',/' Phase ',I2,/ &
+         ' Please check the value of DIL_INERT_X_VSD:',G14.4)
+
+ 1104 FORMAT('Error 1104: Invalid dilute region inert species mass',/   &
+         'fraction. The inert species mass fraction must be less ',  &
+         'than or equal to one.',/' Phase ',I2,/ &
+         ' Please check the value of DIL_INERT_X_VSD:',G14.4)
 
 ! All of the information for variable solids density has been verified
 ! as of this point. Calculate and store the baseline density.

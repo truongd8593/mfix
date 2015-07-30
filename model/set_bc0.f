@@ -372,12 +372,11 @@
       use mms, only: mms_p_g, mms_t_g, mms_ep_g
       use mms, only: mms_theta_m, mms_t_s, mms_rop_s
 
-      use param1, only: undefined, zero
+      use param1, only: zero
       use physprop, only: smax, mmax, nmax
       use run, only: k_epsilon, kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale
-      use toleranc, only: tmin
 
       use indices, only: im1, jm1, km1
       use functions, only: is_on_mype_plus2layers
@@ -705,7 +704,7 @@
 ! index of neighboring fluid cell
       INTEGER :: FIJK
 ! local indices
-      INTEGER :: N, M
+      INTEGER :: M
 !--------------------------------------------------------------------//
 
       DO K = BC_K_B(BCV), BC_K_T(BCV)
@@ -778,7 +777,6 @@
 ! Specified constant gas density.
       use physprop, only: RO_G0
 
-      use geometry, only: CYCLIC
       use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
       use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
       use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
@@ -790,12 +788,8 @@
 
       use funits, only: DMP_LOG
 
-      use bc, only: BC_I_w, BC_I_e
-      use bc, only: BC_J_s, BC_J_n
-      use bc, only: BC_K_b, BC_K_t
       use bc, only: BC_DEFINED
       use bc, only: BC_TYPE
-      use bc, only: BC_PLANE
 
 ! MFIX Runtime parameters:
       use param, only: DIMENSION_BC
@@ -819,7 +813,6 @@
       LOGICAL :: dFlag
       INTEGER :: iErr
 
-      EXTERNAL JKI_MAP, IKJ_MAP, KIJ_MAP
 !--------------------------------------------------------------------//
 
       dFlag = (DMP_LOG .AND. setDBG)
@@ -887,7 +880,7 @@
 ! this case to maximize search region for 2D problems.
       IF(l3 == UNDEFINED_I) THEN
          Map = 'KIJ_MAP'
-         l3 = merge((KMAX1 - KMIN1)/2 + 1, KMIN1, do_K)
+         l3 = merge(max((KMAX1-KMIN1)/2+1,2), KMIN1, do_K)
          l2 = IMIN1;  u2 = IMAX1
          l1 = JMIN1;  u1 = JMAX1
          lMsg='Center of domain'
@@ -903,16 +896,7 @@
       ENDIF
 
 ! Invoke the search routine.
-      SELECT CASE (Map)
-      CASE ('JKI_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, JKI_MAP, dFlag, iErr)
-      CASE ('IKJ_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, IKJ_MAP, dFlag, iErr)
-      CASE ('KIJ_MAP')
-         CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, KIJ_MAP, dFlag, iErr)
-      CASE DEFAULT
-         iErr = 1001
-      END SELECT
+      CALL IJK_Pg_SEARCH(l3, l2, u2, l1, u1, MAP, dFlag, iErr)
 
       IF(iErr == 0) RETURN
 
@@ -962,9 +946,7 @@
 
  9999 FORMAT(/' Fatal Error --> Invoking MFIX_EXIT',/1x,70('*'),2/)
 
-
       END SUBROUTINE SET_IJK_P_G
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -990,13 +972,12 @@
       INTEGER, INTENT(IN)  :: ll3
       INTEGER, INTENT(IN)  :: ll2, lu2
       INTEGER, INTENT(IN)  :: ll1, lu1
-      LOGICAL, intent(in) :: ldFlag
+      LOGICAL, INTENT(IN) :: ldFlag
       INTEGER, INTENT(OUT)  :: iErr
+      CHARACTER(len=*), INTENT(IN) :: lMAP
 
 ! Local variables
 !--------------------------------------------------------------------//
-      EXTERNAL lMAP
-
       INTEGER :: lc2, lS2, lE2
       INTEGER :: lc1, lS1, lE1
       INTEGER :: I, J, K, IJK
@@ -1039,7 +1020,16 @@
          lp2: do lc2 = lS2, lE2
          lp1: do lc1 = lS1, lE1
 ! Map the loop counters to I/J/K indices.
-            CALL lMAP(lc1, lc2, ll3, I, J, K)
+            SELECT CASE (lMap)
+            CASE ('JKI_MAP')
+               I=lc1; J=ll3; K=lc2
+            CASE ('IKJ_MAP')
+               I=ll3; J=lc1; K=lc2
+            CASE ('KIJ_MAP')
+               I=lc2; J=lc1; K=ll3
+            CASE DEFAULT
+               iErr = 1001
+            END SELECT
 
 ! Only the rank that owns this I/J/K proceeds.
             if(.NOT.IS_ON_myPE_owns(I,J,K)) cycle
@@ -1142,46 +1132,3 @@
       IERR = 0
       RETURN
       END SUBROUTINE IJK_Pg_SEARCH
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Author: J. Musser                                  Date: 09-Oct-13  !
-!  Reviewer:                                          Date:            !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE JKI_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in1; lJ=in3; lK=in2; return
-      return
-      END SUBROUTINE JKI_MAP
-
-
-      SUBROUTINE IKJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in3; lJ=in1; lK=in2; return
-      return
-      END SUBROUTINE IKJ_MAP
-
-
-      SUBROUTINE KIJ_MAP(in1, in2, in3, lI, lJ, lK)
-      implicit none
-! Dummy arguments
-!--------------------------------------------------------------------//
-      INTEGER, intent(in) :: in1, in2, in3
-      INTEGER, intent(out) :: lI, lJ, lK
-
-      lI=in2; lJ=in1; lK=in3; return
-      return
-      END SUBROUTINE KIJ_MAP

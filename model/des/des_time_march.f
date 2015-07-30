@@ -30,6 +30,7 @@
       use discretelement
       use error_manager
       use functions
+      use machine
       use mpi_utility
       use sendrecv
 
@@ -51,7 +52,7 @@
       DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
 
 ! Numbers to calculate wall time spent in DEM calculations.
-      DOUBLE PRECISION :: WALL_TIME, TMP_WALL
+      DOUBLE PRECISION :: TMP_WALL
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
@@ -80,7 +81,7 @@
       CALL GLOBAL_ALL_SUM(NP)
 
       WRITE(ERR_MSG, 1000) trim(iVal(factor)), trim(iVAL(NP))
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
 
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
 
@@ -213,7 +214,7 @@
          ELSE
             WRITE(ERR_MSG, 9000) '+Inf'
          ENDIF
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
 
  9000 FORMAT('    NITs/SEC = ',A)
 

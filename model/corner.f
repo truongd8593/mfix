@@ -26,16 +26,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE corner
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE machine, only: start_log, end_log
+      USE matrix
       USE param
       USE param1
-      USE geometry
       USE physprop
-      USE indices
-      USE matrix
-      USE corner
-      USE funits
-      USE compar
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

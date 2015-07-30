@@ -29,7 +29,7 @@
       USE discretelement
       USE des_rxns
       USE read_thermochemical, only: read_therm, calc_ICpoR, THERM
-
+      use run, only: REINITIALIZING
       use error_manager
 
       IMPLICIT NONE
@@ -85,13 +85,13 @@
          FILE = FILE + 1
 ! Check for thermochemical data in the mfix.dat file.
          IF(FILE == 1) THEN
-           OPEN(UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
+           OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT, FILE='mfix.dat', STATUS='OLD', IOSTAT= IOS)
            IF(IOS /= 0) CYCLE DB_LP
            DB=''; WRITE(DB,1000) 'mfix.dat'
 ! Read thermochemical data from the BURCAT.THR database in the local
 ! run directory.
          ELSEIF(FILE == 2) THEN
-            OPEN(UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=TRIM(THERM), STATUS='OLD', IOSTAT= IOS)
             IF(IOS /= 0) CYCLE DB_LP
             DB=''; WRITE(DB,1000) TRIM(THERM)
           ELSE
@@ -139,12 +139,14 @@
 
          ErrorFlag = .TRUE.
          IF(IER == 0) THEN
-            WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            IF(.NOT.REINITIALIZING)THEN
+               WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Found!'
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
             if(testCP) CALL writeCp(lM, lN, lName, lMW)
             ErrorFlag = .FALSE.
             EXIT DB_LP
-        ELSE
+        ELSEIF(.NOT.REINITIALIZING) THEN
             WRITE(ERR_MSG,1001) trim(adjustl(DB)), 'Not found.'
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
         ENDIF
@@ -181,10 +183,6 @@
          'file (if any) is below a line',/'that starts with THERMO ',  &
          'DATA.',2/'Database location:', /A)
 
- 1020 FORMAT('Message 1020: This routine was entered with an invalid ',&
-         'model argument.',/' Acceptable values are TFM and DEM.',/    &
-         ' Passed Argument: MODEL = ',A)
-
       END SUBROUTINE READ_DATABASE
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -195,7 +193,7 @@
 !  Author: J. Musser                                  Date: 02-Oct-12  C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE READ_DATABASE0(Ier)
+      SUBROUTINE READ_DATABASE0()
 
       USE param
       USE param1
@@ -209,8 +207,6 @@
 
       IMPLICIT NONE
 
-! Error message returned from Read_Therm and sent to calling routine
-      INTEGER IER
 ! Loop indices for mass phase and species
       INTEGER M, N
 ! Loop counter for continuum and discrete species

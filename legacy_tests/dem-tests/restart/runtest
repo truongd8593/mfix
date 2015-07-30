@@ -1,14 +1,10 @@
 #!/bin/bash -lex
 
-module load gnu/4.6.4
-
-../../../model/make_mfix --serial --debug --compiler=gcc_default.sh --opt=O0 -j
-
 rm -f DEM_RESTART* POST_posvel.dat
-time -p ./mfix.exe TSTOP=1.0 RUN_TYPE=\'NEW\'
+time -p ./mfix TSTOP=1.0 RUN_TYPE=\'NEW\'
 diff -q POST_posvel.dat AUTOTEST/POST_posvel.dat
 
 rm -f DEM_RESTART* POST_posvel.dat
-time -p ./mfix.exe TSTOP=0.33549 RUN_TYPE=\'NEW\'
-time -p ./mfix.exe TSTOP=1.0 RUN_TYPE=\'RESTART_1\'
+time -p ./mfix TSTOP=0.33549 RUN_TYPE=\'NEW\'
+time -p ./mfix TSTOP=1.0 RUN_TYPE=\'RESTART_1\'
 diff -q POST_posvel.dat AUTOTEST/POST_posvel.dat

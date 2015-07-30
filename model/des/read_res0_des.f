@@ -25,9 +25,10 @@
       implicit none
 
       INTEGER :: LC1, LC2
-      INTEGER :: lDIMN, lNEXT_REC
+      INTEGER :: lDIMN, lNEXT_REC, II
 
       DOUBLE PRECISION :: VERSION
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
       lDIMN = merge(2,3,NO_K)
 
@@ -42,9 +43,30 @@
 
       CALL READ_RES_pARRAY(lNEXT_REC, iGLOBAL_ID)
 
-      DO LC1 = 2, 4
-         CALL READ_RES_pARRAY(lNEXT_REC, PEA(:,LC1))
-      ENDDO
+      allocate(tmp(MAX_PIP))
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) CALL SET_ENTERING(ii)
+      enddo
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) CALL SET_EXITING(ii)
+      enddo
+
+      CALL READ_RES_pARRAY(lNEXT_REC, tmp)
+      do ii=1, MAX_PIP
+         if (tmp(ii)) then
+            if (IS_ENTERING(ii)) then
+               CALL SET_ENTERING_GHOST(ii)
+            elseif (IS_EXITING(ii)) then
+               CALL SET_EXITING_GHOST(ii)
+            else
+               CALL SET_GHOST(ii)
+            endif
+         endif
+      enddo
 
       DO LC1 = 1, lDIMN
          CALL READ_RES_pARRAY(lNEXT_REC, DES_VEL_NEW(LC1,:))
@@ -79,9 +101,7 @@
 ! Collision/neighbor data is read and used to setup cARRAY reads.
       CALL READ_PAR_COL(lNEXT_REC)
 
-      CALL READ_RES_cARRAY(lNEXT_REC, PV_NEIGHBOR(:))
       DO LC1=1, lDIMN
-         CALL READ_RES_cARRAY(lNEXT_REC, PFN_NEIGHBOR(LC1,:))
          CALL READ_RES_cARRAY(lNEXT_REC, PFT_NEIGHBOR(LC1,:))
       ENDDO
 

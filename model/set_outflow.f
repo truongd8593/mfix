@@ -36,12 +36,11 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use bc, only: bc_type, bc_plane
+      use bc, only: bc_type
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
       use bc, only: bc_i_w, bc_i_e
 
-      use run, only: kt_type_enum, ghd_2007
       use fldvar, only: rop_g, rop_s
       use fldvar, only: u_g, v_g, w_g
       use fldvar, only: u_s, v_s, w_s
@@ -97,8 +96,8 @@
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! Set the boundary cell value of the normal component of velocity
-! according to the value in the adjacent fluid cell. Note the value 
-! of the boundary velocity is a scaled version of the value of the 
+! according to the value in the adjacent fluid cell. Note the value
+! of the boundary velocity is a scaled version of the value of the
 ! adjacent fluid velocity based on the concentration ratio of the fluid
 ! cell to the boundary cell.
 ! - For the gas phase, this ratio is most likely 1 except for
@@ -419,12 +418,11 @@
       use run, only: kt_type_enum, ghd_2007
       use physprop, only: smax, mmax
       use fldvar, only: rop_g, ro_g, ep_g
-      use fldvar, only: rop_s, ro_s, ep_s
+      use fldvar, only: rop_s, ep_s
       use discretelement, only: discrete_element, des_mmax
       use discretelement, only: des_rop_s, des_ro_s
 ! Global parameters
 !---------------------------------------------------------------------//
-      use constant, only: pi
       use param, only: dimension_m
       use param1, only: undefined, zero, one
       IMPLICIT NONE
@@ -450,7 +448,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! indices
-      INTEGER :: M, mm
+      INTEGER :: M
 ! solids volume fraction
       DOUBLE PRECISION :: EPs
 ! sum of solids phases volume fractions
@@ -603,7 +601,6 @@
 
 ! Global variables
 !---------------------------------------------------------------------//
-      use bc, only: bc_type
       use bc, only: bc_t_g, bc_x_g
       use bc, only: bc_scalar, bc_k_turb_g, bc_e_turb_g
       use bc, only: bc_t_s, bc_x_s, bc_theta_m

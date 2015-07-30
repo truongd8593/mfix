@@ -104,11 +104,11 @@
 !
 !     OPEN geometry.msh ASCII FILE
 !
-      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910)
+      OPEN(UNIT=333, FILE='geometry.msh', STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
 
       IF(MyPE == PE_IO) WRITE(*,2000)'MSH file opened. Starting reading data...'
 
-      OPEN(UNIT=444, FILE='checkgeometry.stl')
+      OPEN(UNIT=444, FILE='checkgeometry.stl',CONVERT='BIG_ENDIAN')
       write(444,*)'solid vcg'
 
       CALL SKIP(333,3)
@@ -512,7 +512,7 @@
 
       CLOSE(333)
 
-      OPEN(UNIT=444, FILE='msgeometry.stl')
+      OPEN(UNIT=444, FILE='msgeometry.stl',CONVERT='BIG_ENDIAN')
 
          DO ZONE = 1,N_FACE_ZONES
             IF(BC_ASSIGNED(ZONE)) THEN
@@ -585,11 +585,13 @@
 
 
       SUBROUTINE SKIP(FILE_UNIT,N_SKIP)
-      INTEGER ::FILE_UNIT,I
-      DO I = 1,N_SKIP
-         READ(FILE_UNIT,*)
-      END DO
-      RETURN
+        IMPLICIT NONE
+        INTEGER, INTENT(IN) ::FILE_UNIT,N_SKIP
+        INTEGER :: I
+        DO I = 1,N_SKIP
+           READ(FILE_UNIT,*)
+        END DO
+        RETURN
       END SUBROUTINE SKIP
 
       SUBROUTINE TEXT_HEX2INT(STRING,INT)
@@ -684,7 +686,7 @@
       DOUBLE PRECISION ::n1,n2,n3,NORM
       DOUBLE PRECISION ::ABSTRANS
       CHARACTER(LEN=32) ::TEST_CHAR,BUFF_CHAR
-      CHARACTER(LEN=32) ::geometryfile(0:DIMENSION_BC)
+      CHARACTER(LEN=255) ::geometryfile(0:DIMENSION_BC)
 
       INTEGER :: BCV,NUMBER_OF_GEOMETRY_FILES,NUMBER_OF_BC_PATCHES
       INTEGER :: BC_PATCH(0:DIMENSION_BC),L2,NF1,NF2
@@ -815,7 +817,7 @@
 !
 !     OPEN geometry.stl ASCII FILE
 !
-         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910)
+         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
 
          IF(MyPE == PE_IO) WRITE(*,2000)'STL file opened. Starting reading data...'
 
@@ -1005,7 +1007,7 @@
       IF(mype.eq.pe_io.and..false.) then
          WRITE(fname,'(A,"_FACETS_READ", ".stl")') &
          TRIM(RUN_NAME)
-         open(stl_unit, file = fname, form='formatted')
+         open(stl_unit, file = fname, form='formatted',convert='big_endian')
          write(stl_unit,*)'solid vcg'
 
 

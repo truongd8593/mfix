@@ -72,7 +72,7 @@
          IJK = FUNIJK_IO(1,1,K)
 !
          WRITE (UNIT_OUT, 1100) MESSAGE, K
-         CALL OUT_ARRAY_KC (ARRAY1C(IJK), K)
+         CALL OUT_ARRAY_KC (ARRAY1C(IJK))
       END DO
  1100 FORMAT(/,1X,A,' at K = ',I4,/)
 !

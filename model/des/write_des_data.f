@@ -65,8 +65,6 @@
       END SUBROUTINE WRITE_DES_DATA
 !-----------------------------------------------
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: WRITE_DES_VTP                                           !
@@ -110,7 +108,7 @@
 
       IMPLICIT NONE
 
-
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_DIAMETER !(PARTICLES)
       CHARACTER(len=10) :: lNoP
       CHARACTER(len=24) :: sTIMEc
       INTEGER :: N
@@ -120,7 +118,6 @@
 ! This routine opens the VTP file and calculates send/recv information.
 ! It returns back the number of points as a string.
       CALL VTP_OPEN_FILE(lNoP)
-
 
 ! Standard VTP header information:
 !----------------------------------------------------------------------/
@@ -134,26 +131,32 @@
          &NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" &
          &NumberOfPolys="0">')
 
-
 ! Points are the particle identified by position:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('<Points>')
       CALL VTP_WRITE_DATA('Position', DES_POS_NEW)
       CALL VTP_WRITE_ELEMENT('</Points>')
 
-
 ! PointData are individual particle properties:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('<PointData Scalars="Diameter" &
          &Vectors="Velocity">')
 
-      CALL VTP_WRITE_DATA('Diameter', 2.0d0*DES_RADIUS)
+      ALLOCATE(DES_DIAMETER(SIZE(DES_RADIUS)))
+      DES_DIAMETER(:) = 2.0d0*DES_RADIUS(:)
+      CALL VTP_WRITE_DATA('Diameter', DES_DIAMETER)
+      DEALLOCATE(DES_DIAMETER)
+
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
 
       IF(DES_USR_VAR_SIZE > 0) &
          CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 
+      IF(PARTICLE_ORIENTATION) &
+         CALL VTP_WRITE_DATA('Orientation', ORIENTATION)
+
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
+
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
 
@@ -176,7 +179,6 @@
       CALL VTP_WRITE_ELEMENT('<Strips></Strips>')
       CALL VTP_WRITE_ELEMENT('<Polys></Polys>')
 
-
 ! Close all the opened tags:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('</Piece>')
@@ -188,11 +190,8 @@
 ! Add the new VTP file to the PVD file for time association.
       CALL ADD_VTP_TO_PVD
 
-
       RETURN
       END SUBROUTINE WRITE_DES_VTP
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
@@ -256,7 +255,7 @@
 
 ! Variables related to gathering info at PE_IO
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
-      real,dimension(:,:), allocatable :: ltemp_array
+      double precision, dimension(:,:), allocatable :: ltemp_array
 
       INTEGER :: wDIMN
 
@@ -273,17 +272,17 @@
          write(fname_data,'(A,"_DES_DATA",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
          write(fname_extra,'(A,"_DES_EXTRA",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
          write(fname_eps,'(A,"_DES_EPS",I4.4,"_",I4.4,".dat")') trim(run_name),tecplot_findex,mype
-         open(unit=des_data,file=fname_data,status='new',err=999)
-         open(unit=des_ex,file=fname_extra,status='new',err=999)
-         open(unit=des_eps,file=fname_eps,status='new',err=999)
+         open(convert='big_endian',unit=des_data,file=fname_data,status='new',err=999)
+         open(convert='big_endian',unit=des_ex,file=fname_extra,status='new',err=999)
+         open(convert='big_endian',unit=des_eps,file=fname_eps,status='new',err=999)
       else
          if(mype.eq.pe_io) then
             write(fname_data,'(A,"_DES_DATA_",I4.4,".dat")') trim(run_name),tecplot_findex
             write(fname_extra,'(A,"_DES_EXTRA_",I4.4,".dat")') trim(run_name),tecplot_findex
             write(fname_eps,'(A,"_DES_EPS_",I4.4,".dat")') trim(run_name),tecplot_findex
-            open(unit=des_data,file=fname_data,status='new',err=999)
-            open(unit=des_ex,file=fname_extra,status='new',err=999)
-            open(unit=des_eps,file=fname_eps,status='new',err=999)
+            open(convert='big_endian',unit=des_data,file=fname_data,status='new',err=999)
+            open(convert='big_endian',unit=des_ex,file=fname_extra,status='new',err=999)
+            open(convert='big_endian',unit=des_eps,file=fname_eps,status='new',err=999)
          end if
       end if
       tecplot_findex = tecplot_findex + 1
@@ -305,9 +304,9 @@
          pc = 1
          do l = 1,max_pip
             if(pc.gt.pip) exit
-            if(.not.pea(l,1)) cycle
+            if(is_nonexistent(l)) cycle
             pc = pc+1
-            if(pea(l,4)) cycle
+            if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
             if(DO_K) then
                write (des_data, '(8(2x,es12.5))')&
                   (des_pos_new(k,l),k=1,wDIMN),(des_vel_new(k,l),k=1,wDIMN), &
@@ -434,7 +433,6 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-
 ! after tmin start storing bed height. after enough measurements
 ! have been taken (i.e. tcount > 20) start to calculate a running
 ! average bed height and running rms bed height for solids phase 1 only
@@ -469,7 +467,7 @@
 ! If the file does not exist, then create it with the necessary
 ! header information.
          IF (.NOT.F_EXISTS) THEN
-            OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,&
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,&
                FORM="formatted",STATUS="new")
          ELSE
 ! To prevent overwriting existing files accidently, exit if the file
@@ -480,13 +478,13 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
             ENDIF
          ENDIF
          FIRST_PASS = .FALSE.
       ELSE
 ! Open the file and mark for appending
-         OPEN(UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
       ENDIF
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
@@ -503,8 +501,6 @@
 
       END SUBROUTINE WRITE_DES_BEDHEIGHT
 !-----------------------------------------------
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
@@ -556,12 +552,12 @@
          IF (.NOT.F_EXISTS) THEN
 ! If the file does not exist, then create it with the necessary
 ! header information.
-            OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='NEW')
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='NEW')
          ELSE
             IF(RUN_TYPE .EQ. 'NEW') THEN
 ! If the run is new and the GT file already exists replace it with a
 ! new file.
-!               OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
+!               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='REPLACE')
 ! Prevent overwriting an existing file by exiting if the file exists
 ! and this is a NEW run.
                WRITE(*,1001) FNAME_GT
@@ -569,13 +565,13 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(UNIT=GT_UNIT, FILE=FNAME_GT, POSITION='APPEND')
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT, FILE=FNAME_GT, POSITION='APPEND')
             ENDIF
          ENDIF
          FIRST_PASS =  .FALSE.
       ELSE
 ! Open file and mark for appending
-         OPEN(UNIT=GT_UNIT,FILE=FNAME_GT,POSITION='APPEND')
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,POSITION='APPEND')
       ENDIF   ! endif (first_pass)
 
       WRITE(GT_UNIT,*) ''

@@ -429,7 +429,7 @@
                   ENDDO
                ENDDO
             ENDIF   ! end if/else (bc_type)
-! end setting of p_inflow or mass_inflow boundary conditions 
+! end setting of p_inflow or mass_inflow boundary conditions
 ! ----------------------------------------------------------------<<<
 
          ENDIF   ! end if (bc_defined)

@@ -16,7 +16,6 @@
       USE constant, only: to_SI
       USE constant, only: k_scale
       USE run, only: LAM_HYS, UNITS
-      USE funits, only: dmp_log, unit_log
       USE error_manager, only: err_msg, init_err_msg, finl_err_msg
       USE error_manager, only: flush_err_msg
 

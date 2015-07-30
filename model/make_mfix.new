@@ -112,27 +112,16 @@ if test ${AUTOCOMPILE} -ne 1; then
 
 fi # End of Autocompile <= 1
 
-# Reaction preprocessor.
-if test ${REQ_RXNS} = 1; then
-  . ${MFIX_CONFIG}/rxn_preproc.sh
-fi
-
 if [[ -n $USE_MIC ]]; then
     EXEC_FILE=${EXEC_FILE}.mic
-fi
-
-if test ${CLEAN_OBJS} -eq 1; then
-  /bin/rm -rf ${DPO}
-  mkdir ${DPO}
 fi
 
 ARGS=
 [[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
 [[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
 
-[[ ${COMP_FILE} =~ "gcc_default.sh" ]]   && FC="gfortran"
-[[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="ifort"
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "gcc_default.sh" ]] && FC="mpif90"
+FC=${FORTRAN_CMD}
+
 [[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
 
 [[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
@@ -142,52 +131,23 @@ ARGS=
 
 [[ ${USE_DEBUG} -eq 1 ]] && FCFLAGS="${FCFLAGS} -g"
 
-[[ ${USE_MIC} -eq 1 ]] && LDFLAGS="${LDFLAGS} -mmic"
+[[ ${USE_MIC} -eq 1 ]] && LDFLAGS="-mmic"
 [[ ${USE_MIC} -eq 1 ]] && FCFLAGS="${FCFLAGS} -mmic"
 [[ ${USE_MIC} -eq 1 ]] && ARGS="${ARGS} --host x86_64-intelmic"
 
 [[ ${USE_NETCDF} -eq 1 ]] && FCFLAGS="${FCFLAGS} -DNETCDF"
 
-# Construct the makefile
-cd ${MFIX_HOME}
-[ -f configure ] || autoreconf -i
-cd ${DPO}
-${MFIX_HOME}/configure ${ARGS} FC="${FC}" FFLAGS="${FCFLAGS}" FCFLAGS="${FCFLAGS}" LDFLAGS="${LDFLAGS}" || exit
+CMD="$MFIX_HOME/configure_mfix ${ARGS} FC=${FC} FCFLAGS=\"${FCFLAGS}\""
 
-MAKEFILE=${RUN_DIR}/Makefile
-MAKEFILE_USR=${DPO}/build-aux/Makefile.usr
-if [ -f ${MAKEFILE_USR} ] && [ ${PWD} != ${RUN_DIR} ]; then
-    cp ${MAKEFILE_USR} ${MAKEFILE}
-fi
+[[ -n ${LDFLAGS} ]] && CMD="${CMD} LDFLAGS=\"${LDFLAGS}\""
 
-# Run Make
-echo "Please wait..."
-cd ${RUN_DIR}
-make ${MAKE_ARGS} -f ${MAKEFILE} mfix
-result=$?
+echo
+echo "********************************************************"
+echo "make_mfix is deprecated."
+echo "Now use the equivalent autotools command to build MFIX:"
+echo 
+echo "${CMD} && make ${MAKE_ARGS}"
+echo
+echo "********************************************************"
 
-if test $result = 0; then
-  if test ${USE_DMP} -eq 1; then
-    echo
-    echo "**********************************************"
-    echo " Compilation successful: ${EXEC_FILE} created"
-    echo " To run MFIX type (or equivalent): "
-    echo "   mpirun -np<# processors> ${EXEC_FILE}"
-    echo "**********************************************"
-    echo
-  else
-    echo
-    echo "**********************************************"
-    echo " Compilation successful: ${EXEC_FILE} created"
-    echo " To run MFIX type: ./${EXEC_FILE}"
-    echo "**********************************************"
-    echo
-  fi
-else
-  echo
-  echo
-  echo "*** File ${EXEC_FILE} NOT created."
-  echo
-fi
-
-exit $result
+exit -1

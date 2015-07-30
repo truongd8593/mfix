@@ -56,13 +56,12 @@
 ! Calculate the gas phase forces acting on each particle.
 !$omp parallel default(none)                                           &
 !$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT)                      &
-!$omp shared(MAX_PIP, PEA, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC,     &
+!$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC,          &
 !$omp    FILTER_WEIGHT, SOLVOLINC,DES_U_S, DES_V_S, DES_W_S, DO_K,     &
 !$omp    FILTER_CELL,DES_VEL_NEW)
 !$omp do
       do NP=1,MAX_PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
-         IF(any(PEA(NP,2:3))) CYCLE
+         IF(.NOT.IS_NORMAL(NP) .and. .NOT.IS_GHOST(NP)) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)

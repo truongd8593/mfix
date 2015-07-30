@@ -15,7 +15,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE VF_GS_Y(VXF_GS, IER)
+      SUBROUTINE VF_GS_Y(VXF_GS)
 
 !-----------------------------------------------
 ! Modules
@@ -31,15 +31,8 @@
       USE fun_avg
       USE functions
 
-      use run, only: SOLIDS_MODEL
-
-      use run, only: DEM_SOLIDS, PIC_SOLIDS
       IMPLICIT NONE
 !-----------------------------------------------
-! Dummy Arguments
-!-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Volume x Drag
       DOUBLE PRECISION, INTENT(OUT) :: VxF_gs(DIMENSION_3, DIMENSION_M)
 !-----------------------------------------------

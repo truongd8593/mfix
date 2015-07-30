@@ -398,8 +398,6 @@
 !---------------------------------------------------------------------//
 ! Size of IJK arrays and size of solids phase arrays.
       use param, only: DIMENSION_3, DIMENSION_M
-! Size of MxM upper triangular matrix.
-      use param1, only: DIMENSION_LM
 ! Double precision parameters.
       use param1, only: ZERO, SMALL_NUMBER, ONE
 
@@ -496,7 +494,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Volume fractions of gas and solids phases.
-     use fldvar, only: EP_G, EP_s
+     use fldvar, only: EP_s
 ! Number of solids phases.
      use physprop, only: MMAX
 ! Flag: Solve the Z-Momentum Equations
@@ -571,7 +569,7 @@
 
 !$omp parallel default(none) &
 !$omp          private(ijk,area_face,k,ijkt,epsa,lm,sum_vxf_ss,tmpdp,den_msol_lsol,num_msol_lsol,sum_vxf_ss_wt_m,lpl) &
-!$omp          shared(ijkstart3,ijkend3,d_t,mmax,cartesian_grid,axy,k_of,ep_g,vxf_gs,vxf_ss,momentum_z_eq,am0,model_b,p_scale)
+!$omp          shared(ijkstart3,ijkend3,d_t,mmax,cartesian_grid,axy,k_of,vxf_gs,vxf_ss,momentum_z_eq,am0,model_b,p_scale)
 !$omp do
       DO IJK = ijkstart3, ijkend3
          IF (IP_AT_T(IJK) .OR. MFLOW_AT_T(IJK) .OR. MODEL_B) THEN

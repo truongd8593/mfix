@@ -21,8 +21,9 @@
       USE fldvar, only: ro_s, d_p
       use fldvar, only: p_s
 
-      USE visc_g, only: mu_gt, lambda_gt, recalc_visc_g
-      USE visc_s, only: mu_s, lambda_s, lambda_s_c
+      USE visc_g, only: mu_gt, epmu_gt, lambda_gt, eplambda_gt
+      USE visc_g, only: recalc_visc_g
+      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s, lambda_s_c
       USE visc_s, only: ep_star_array
       USE visc_s, only: ep_g_blend_start, ep_g_blend_end
 
@@ -72,7 +73,9 @@
       RO_g = ZERO
       MU_g = ZERO
       MU_gt = ZERO
+      EPMU_GT = ZERO
       LAMBDA_GT = ZERO
+      EPLAMBDA_GT = ZERO
       K_g = ZERO
       C_PG = ZERO
       MW_MIX_G = zero
@@ -82,11 +85,13 @@
       RO_S = ZERO
       D_P = zero     ! this is done in init_fvars
       MU_s = ZERO
+      EPMU_s = ZERO
       LAMBDA_s_c = ZERO
       LAMBDA_s = ZERO
+      EPLAMBDA_s = ZERO
 ! not defining p_s in flow cells can become a problem for certain
 ! cases as gradients in P_s are used (e.g., when a PO is west of a
-! MI...?). Simply assigning it a zero value may not be the best 
+! MI...?). Simply assigning it a zero value may not be the best
 ! approach but it is currently used....
       P_S = ZERO
       K_s = ZERO
@@ -144,7 +149,9 @@
             IF (MU_G0 /= UNDEFINED) THEN
                MU_G(IJK) = MU_G0
                MU_GT(IJK) = MU_G0
+               EPMU_GT(IJK) = MU_G0
                LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
+               EPLAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
             ENDIF
             IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
             IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
@@ -154,7 +161,9 @@
             IF (MU_G0 /= UNDEFINED) THEN
                MU_G(IJK) = MU_G0
                MU_GT(IJK) = MU_G0
+               EPMU_GT(IJK) = MU_G0
                LAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
+               EPLAMBDA_GT(IJK) = -(2.0d0/3.0d0)*MU_G0
             ENDIF
             IF (K_G0 /= UNDEFINED) K_G(IJK) = K_G0
             IF (DIF_G0 /= UNDEFINED) DIF_G(IJK,:NMAX(0)) = DIF_G0
@@ -173,10 +182,12 @@
             ENDIF
 
             IF (FLUID_AT(IJK)) THEN
-! Strictly fluid cells: FLAG = 1 
+! Strictly fluid cells: FLAG = 1
                IF (MU_S0(M) /= UNDEFINED) THEN
                   MU_S(IJK,M) = MU_S0(M)
+                  EPMU_S(IJK,M) = MU_S0(M)
                   LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+                  EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
                IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
@@ -185,7 +196,9 @@
             IF (USE_MMS) THEN
                IF (MU_S0(M) /= UNDEFINED) THEN
                   MU_S(IJK,M) = MU_S0(M)
+                  EPMU_S(IJK,M) = MU_S0(M)
                   LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+                  EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
                IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0

@@ -13,9 +13,10 @@
   ENERGY_EQ = .FALSE.    ! do not solve energy equations
   SPECIES_EQ = .FALSE.  .FALSE.
 
-   TIME = 0.0   TSTOP = 1.0E-2  DT = 1.0E-4
+   TIME = 0.0
+   TSTOP = 1.0E-2
+   DT = 1.0E-4
    DT_MAX = 0.1E-2
-#   TIME = 0.0    TSTOP = 1.0E-5  DT = 1.0E-5
   
 
 #

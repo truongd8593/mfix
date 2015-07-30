@@ -24,15 +24,15 @@ if test ${REQ_COMP} = 1; then
       echo "=============================================================="
       echo " $exec_label Compilation directives for following compilers:"
       echo "=============================================================="
-      echo "  [1] GCC (gfortran) version 4.3 and above "
+      echo "  [1] GCC (gfortran) version 4.4 and above "
       echo "  [2] Portland Group (pgf90) version 11.7 and above"
       echo "  [3] Intel (ifort) version 11.1 and above "
 
       if test $EXPERT = 1; then
         echo
         echo " <--- @NETL  -------------------------------------->"
-        echo " [10] SBEUC :: Intel (ifort) version 13.1"
-        echo " [11] SBEUC :: GCC (gofrtran) version 4.6"
+        echo " [10] SBEUC :: Intel (ifort) version 14.0"
+        echo " [11] SBEUC :: GCC (gfrtran) version 4.9"
         echo
         echo " <--- @OLCF  -------------------------------------->"
         echo " [20] Cray XT4 :: Portland Group (pgf90)"

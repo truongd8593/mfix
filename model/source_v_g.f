@@ -18,7 +18,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_V_G(A_M, B_M, IER)
+      SUBROUTINE SOURCE_V_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -29,7 +29,7 @@
 
       USE drag, only: f_gs, beta_ij
       USE fldvar, only: p_g, ro_g, rop_g, rop_go, rop_s
-      USE fldvar, only: ep_g, ep_s
+      USE fldvar, only: ep_g, ep_s, epg_jfac
       USE fldvar, only: v_g, v_go, u_s, v_s, w_s, v_so
 
       USE fun_avg, only: avg_x, avg_z, avg_y
@@ -46,20 +46,19 @@
       USE ghdtheory, only: joiy
 
       USE indices, only: i_of, j_of, k_of
-      USE indices, only: ip1, im1, jm1, kp1
+      USE indices, only: ip1, im1, kp1
       USE is, only: is_pc
       USE matrix, only: e, w, s, n, t, b
 
       USE mms, only: use_mms, mms_v_g_src
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, half, small_number
+      USE param1, only: zero, one, half
       USE physprop, only: mmax, smax
       USE physprop, only: mu_g, cv
       USE run, only: momentum_y_eq
       USE run, only: model_b, added_mass, m_am
       USE run, only: kt_type_enum, drag_type_enum
       USE run, only: ghd_2007, hys
-      USE run, only: jackson
       USE run, only: odt
       USE run, only: v_sh, shear
       USE rxns, only: sum_r_g
@@ -67,7 +66,6 @@
       USE vshear, only: vsh
       USE tau_g, only: tau_v_g
       USE toleranc, only: dil_ep_s
-      USE visc_g, only: mu_gt
       USE cutcell, only: cartesian_grid, cut_v_treatment_at
       USE cutcell, only: blocked_v_cell_at
       USE cutcell, only: a_vpg_n, a_vpg_s
@@ -79,8 +77,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -94,7 +90,7 @@
 ! Pressure at north cell
       DOUBLE PRECISION :: PgN
 ! Average volume fraction
-      DOUBLE PRECISION :: EPGA
+      DOUBLE PRECISION :: EPGA, EPGAJ
 ! Average density
       DOUBLE PRECISION :: ROPGA, ROGA
 ! Average viscosity
@@ -126,8 +122,8 @@
 
 !$omp  parallel do default(shared)                                   &
 !$omp  private(I, J, K, IJK, IJKN, IMJK, IPJK, IJMK, IJPK, IMJPK,    &
-!$omp          IJKM, IJPKM, IJKP, EPGA, PGN, SDP, ROPGA, ROGA,       &
-!$omp          ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,          &
+!$omp          IJKM, IJPKM, IJKP, EPGA, EPGAJ, PGN, SDP, ROPGA,      &
+!$omp          ROGA, ROP_MA, V0, ISV, MUGA, Vpm, Vmt, Vbf, L, MM,    &
 !$omp          Vsn, Vss, U_se, Usw, Vse, Vsw, Wst, Wsb, Vst,         &
 !$omp          Vsb, F_vir, Ghd_drag, avgRop, avgDrag, HYS_drag,      &
 !$omp          VSH_n, VSH_s, VSH_e, VSH_w, VSH_p, Source_conv, SRT,  &
@@ -147,6 +143,8 @@
          IJKP = KP_OF(IJK)
 
          EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
+! if jackson avg ep_g otherwise 1
+         EPGAJ = AVG_Y(EPG_jfac(IJK),EPG_jfac(IJKN),J)
 
 ! Impermeable internal surface
          IF (IP_AT_N(IJK)) THEN
@@ -320,10 +318,9 @@
                   ENDDO
                ENDDO
             ENDIF
-
-! jackson form of governing equations is ep_g del dot (tau_g)
-            ltau_v_g = tau_v_g(ijk)
-            IF (JACKSON) ltau_v_g = epga*(ltau_v_g)
+! if jackson, implement jackson form of governing equations (ep_g dot
+! del tau_g): multiply by void fraction otherwise by 1
+            ltau_v_g = epgaj*tau_v_g(ijk)
 
 
 ! loezos: Shear Source terms from convective mom. flux
@@ -358,11 +355,11 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G(A_M, B_M)
 ! modifications for bc
       CALL SOURCE_V_G_BC(A_M, B_M)
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_V_G_BC(A_M, B_M)
 
       RETURN
       END SUBROUTINE SOURCE_V_G
@@ -942,7 +939,7 @@
       use constant
       use geometry
       use indices
-      use param1, only: one, small_number
+      use param1, only: small_number
       use physprop
       use ps
       use run

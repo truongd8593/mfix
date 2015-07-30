@@ -19,7 +19,7 @@
 ! Indicates that reaction rates are to be calculated.
       LOGICAL :: RRATE
 ! Indicates if the legacy reaction rates file (rrates.f) is used.
-     LOGICAL USE_RRATES
+      LOGICAL :: USE_RRATES
 
 ! Rate of production of gas species
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: R_gp

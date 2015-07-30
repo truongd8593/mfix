@@ -110,7 +110,11 @@
 !      REL_ERR = (ABS(Tp - DES_T_S_NEW(1))/ABS(Tp))*100
 
 ! Write the data to a file.
-      WRITE(TP_UNIT,"(9(3X,F12.5))")lTime,des_pos_new(1,1),des_pos_new(2,1),des_vel_new(1,1),des_vel_new(2,1),des_pos_new(1,2),des_pos_new(2,2),des_vel_new(1,2),des_vel_new(2,2)
+      WRITE(TP_UNIT,"(9(3X,F12.5))")lTime, &
+           des_pos_new(1,1),des_pos_new(2,1), &
+           des_vel_new(1,1),des_vel_new(2,1), &
+           des_pos_new(1,2),des_pos_new(2,2), &
+           des_vel_new(1,2),des_vel_new(2,2)
       CLOSE(TP_UNIT)
 
       END SUBROUTINE WRITE_DES_Tp

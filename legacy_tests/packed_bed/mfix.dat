@@ -9,7 +9,9 @@
   DESCRIPTION = 'Steady packed bed'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  =0.0  TSTOP = 1.    DT = 1.0e-4  
+  TIME  =0.0
+  TSTOP = 1.
+  DT = 1.0e-4  
   ENERGY_EQ = .FALSE.
   SPECIES_EQ = .FALSE.    .FALSE.
   MOMENTUM_X_EQ = .FALSE.    .FALSE.

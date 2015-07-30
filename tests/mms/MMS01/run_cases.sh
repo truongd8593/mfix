@@ -32,7 +32,7 @@ cd $CASE_DIR
 
 # remove these files if exists:
 echo "******** Removing old files..."
-rm de_norms_collected.dat
+rm -f de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."

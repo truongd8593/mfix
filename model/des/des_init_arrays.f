@@ -98,6 +98,7 @@
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: LB, UB
+      INTEGER :: II
 
       IGLOBAL_ID(LB:UB) = 0
 
@@ -119,7 +120,9 @@
       ENDIF
 
 ! Particle state flag
-      PEA(LB:UB,:) = .FALSE.
+      DO II = LB, UB
+         call set_nonexistent(II)
+      ENDDO
       NEIGHBOR_INDEX(:) = 0
 
 ! DES grid bin information

@@ -34,12 +34,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_TAU_V_G(lTAU_V_G, lctau_v_g)
 
-
 ! Modules
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE parallel
       USE constant
       USE physprop
       USE fldvar
@@ -72,9 +70,9 @@
       INTEGER :: IJPK, IJMK, IMJK, IJKM
       INTEGER :: IMJPK, IJPKM
 ! Average volume fraction
-      DOUBLE PRECISION EPGA
+      DOUBLE PRECISION :: EPGA
 ! Source terms (Surface)
-      DOUBLE PRECISION Sbv, Ssx, Ssy, Ssz
+      DOUBLE PRECISION :: Sbv, Ssx, Ssy, Ssz
 !---------------------------------------------------------------------//
 
       IF((.NOT.CARTESIAN_GRID).OR.(CG_SAFE_MODE(4)==1)) THEN
@@ -87,7 +85,7 @@
 !$omp          EPGA, SBV, SSX, SSY, SSZ)                               &
 !$omp  shared(ijkstart3, ijkend3, i_of, j_of, k_of, im1, jp1, km1,     &
 !$omp         do_k, ltau_v_g, lctau_v_g,                               &
-!$omp         ep_g, lambda_gt, trd_g, mu_gt, mu_g, u_g, v_g, w_g,      &
+!$omp         ep_g, lambda_gt, trd_g, epmu_gt, mu_g, u_g, v_g, w_g,      &
 !$omp         ayz_v, axz_v, axz, axy_v,                                &
 !$omp         ody_n, ody)
          DO IJK = IJKSTART3, IJKEND3
@@ -130,29 +128,29 @@
 ! part of 1/x d/dx(x.tau_xy) xdxdydz =>
 !         1/x d/dx (x.mu.du/dy) xdxdydz =>
 ! delta (x.mu.du/dy)Ayz |E-W : at (i+1/2 - i-1/2, j+1/2, k)
-               SSX = AVG_Y_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),&
-                             AVG_X_H(MU_GT(IJKN),MU_GT(IJKNE),I),J)*&
+               SSX = AVG_Y_H(AVG_X_H(EPMU_GT(IJK),EPMU_GT(IJKE),I),&
+                             AVG_X_H(EPMU_GT(IJKN),EPMU_GT(IJKNE),I),J)*&
                      (U_G(IJPK)-U_G(IJK))*ODY_N(J)*AYZ_V(IJK) - &
-                     AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),&
-                             AVG_X_H(MU_GT(IJKNW),MU_GT(IJKN),IM),J)*&
+                     AVG_Y_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJK),IM),&
+                             AVG_X_H(EPMU_GT(IJKNW),EPMU_GT(IJKN),IM),J)*&
                      (U_G(IMJPK)-U_G(IMJK))*ODY_N(J)*AYZ_V(IMJK)
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.dv/dy) xdxdydz =>
 ! delta (mu.dv/dx)Axz |N-S : at (i, j+1 - j-1, k)
-               SSY = MU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*ODY(JP)*&
+               SSY = EPMU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*ODY(JP)*&
                         AXZ_V(IJK) - &
-                     MU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*ODY(J)*&
+                     EPMU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*ODY(J)*&
                         AXZ_V(IJMK)
 
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu.dw/dy) xdxdydz =>
 ! delta (mu.dw/dx)Axy |T-B : at (i, j+1/2, k+1/2 - k-1/2)
-               SSZ = AVG_Y_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                             AVG_Z_H(MU_GT(IJKN),MU_GT(IJKTN),K),J)*&
+               SSZ = AVG_Y_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                             AVG_Z_H(EPMU_GT(IJKN),EPMU_GT(IJKTN),K),J)*&
                      (W_G(IJPK)-W_G(IJK))*ODY_N(J)*AXY_V(IJK) - &
-                     AVG_Y_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                             AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)*&
+                     AVG_Y_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                             AVG_Z_H(EPMU_GT(IJKBN),EPMU_GT(IJKN),KM),J)*&
                      (W_G(IJPKM)-W_G(IJKM))*ODY_N(J)*AXY_V(IJKM)
 
 ! Add the terms
@@ -166,6 +164,8 @@
                lctau_v_g(IJK) = ZERO
             ENDIF   ! end if (.NOT. IP_AT_N(IJK) .AND. EPGA>DIL_EP_S)
          ENDDO   ! end do ijk
+!$omp end parallel do
+
       ELSE
 ! cartesian grid case
          CALL CALC_CG_TAU_V_G(lTAU_V_G, lctau_v_g)
@@ -193,7 +193,6 @@
 !---------------------------------------------------------------------//
       USE param
       USE param1
-      USE parallel
       USE constant
       USE physprop
       USE fldvar
@@ -263,7 +262,7 @@
 !$omp          cut_tau_vg, mu_gt_cut, ssz_cut, ssx_cut)                &
 !$omp  shared(ijkstart3, ijkend3, i_of, j_of, k_of, do_k,              &
 !$omp         im1, jm1, jp1, km1, ltau_v_g, lctau_v_g,                 &
-!$omp         mu_gt, ep_g, lambda_gt, trd_g, v_g, w_g, u_g,            &
+!$omp         epmu_gt, ep_g, lambda_gt, trd_g, v_g, w_g, u_g,          &
 !$omp         ayz_v, axz_v, axz, axy_v, vol,                           &
 !$omp         bc_type, bc_v_id, bc_hw_g, bc_uw_g, bc_vw_g, bc_ww_g,    &
 !$omp         x_u, y_u, z_u, x_v, y_v, z_v, x_w, y_w, z_w,             &
@@ -305,24 +304,24 @@
 
 ! shear stress terms
             IF(.NOT.CUT_V_CELL_AT(IJK)) THEN
-               SSX = AVG_Y_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),&
-                             AVG_X_H(MU_GT(IJKN),MU_GT(IJKNE),I),J)*&
+               SSX = AVG_Y_H(AVG_X_H(EPMU_GT(IJK),EPMU_GT(IJKE),I),&
+                             AVG_X_H(EPMU_GT(IJKN),EPMU_GT(IJKNE),I),J)*&
                      (U_G(IJPK)-U_G(IJK))*ONEoDY_N_U(IJK)*AYZ_V(IJK) - &
-                     AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),&
-                             AVG_X_H(MU_GT(IJKNW),MU_GT(IJKN),IM),J)*&
+                     AVG_Y_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJK),IM),&
+                             AVG_X_H(EPMU_GT(IJKNW),EPMU_GT(IJKN),IM),J)*&
                      (U_G(IMJPK)-U_G(IMJK))*ONEoDY_N_U(IMJK)*AYZ_V(IMJK)
 
-               SSY = MU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*&
+               SSY = EPMU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*&
                         ONEoDY_N_V(IJK)*AXZ_V(IJK) - &
-                     MU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*&
+                     EPMU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*&
                         ONEoDY_N_V(IJMK)*AXZ_V(IJMK)
 
                IF(DO_K) THEN
-                  SSZ = AVG_Y_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                                AVG_Z_H(MU_GT(IJKN),MU_GT(IJKTN),K),J)*&
+                  SSZ = AVG_Y_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                                AVG_Z_H(EPMU_GT(IJKN),EPMU_GT(IJKTN),K),J)*&
                         (W_G(IJPK)-W_G(IJK))*ONEoDY_N_W(IJK)*AXY_V(IJK) - &
-                        AVG_Y_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                                AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)*&
+                        AVG_Y_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                                AVG_Z_H(EPMU_GT(IJKBN),EPMU_GT(IJKN),KM),J)*&
                         (W_G(IJPKM)-W_G(IJKM))*ONEoDY_N_W(IJKM)*AXY_V(IJKM)
                ELSE
                   SSZ = ZERO
@@ -376,8 +375,8 @@
 
 
                IF(CUT_TAU_VG) THEN
-                  MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + &
-                               VOL(IJPK)*MU_GT(IJKN))/&
+                  MU_GT_CUT = (VOL(IJK)*EPMU_GT(IJK) + &
+                               VOL(IJPK)*EPMU_GT(IJKN))/&
                               (VOL(IJK) + VOL(IJPK))
                ELSE
                   MU_GT_CUT = ZERO
@@ -438,20 +437,20 @@
                   SSX_CUT =  ZERO
                ENDIF
 
-               SSX = AVG_Y_H(AVG_X_H(MU_GT(IJK),MU_GT(IJKE),I),&
-                             AVG_X_H(MU_GT(IJKN),MU_GT(IJKNE),I),J)*&
+               SSX = AVG_Y_H(AVG_X_H(EPMU_GT(IJK),EPMU_GT(IJKE),I),&
+                             AVG_X_H(EPMU_GT(IJKN),EPMU_GT(IJKNE),I),J)*&
                      dudy_at_E*AYZ_V(IJK) - &
-                     AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJK),IM),&
-                             AVG_X_H(MU_GT(IJKNW),MU_GT(IJKN),IM),J)*&
+                     AVG_Y_H(AVG_X_H(EPMU_GT(IJKW),EPMU_GT(IJK),IM),&
+                             AVG_X_H(EPMU_GT(IJKNW),EPMU_GT(IJKN),IM),J)*&
                      dudy_at_W*AYZ_V(IMJK) + SSX_CUT
 
 ! SSY:
                CALL GET_DEL_H(IJK, 'V_MOMENTUM', X_V(IJK), Y_V(IJK), &
                   Z_V(IJK), Del_H, Nx, Ny, Nz)
 
-               SSY = MU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*&
+               SSY = EPMU_GT(IJKN)*(V_G(IJPK)-V_G(IJK))*&
                         ONEoDY_N_V(IJK)*AXZ_V(IJK) - &
-                     MU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*&
+                     EPMU_GT(IJK)*(V_G(IJK)-V_G(IJMK))*&
                         ONEoDY_N_V(IJMK)*AXZ_V(IJMK) - &
                      MU_GT_CUT * (V_g(IJK) - VW_g) / DEL_H * &
                         (Ny**2) * Area_V_CUT(IJK)
@@ -514,11 +513,11 @@
                      SSZ_CUT =  ZERO
                   ENDIF
 
-                  SSZ = AVG_Y_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                                AVG_Z_H(MU_GT(IJKN),MU_GT(IJKTN),K),J)*&
+                  SSZ = AVG_Y_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                                AVG_Z_H(EPMU_GT(IJKN),EPMU_GT(IJKTN),K),J)*&
                            dwdy_at_T*AXY_V(IJK) - &
-                        AVG_Y_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                                AVG_Z_H(MU_GT(IJKBN),MU_GT(IJKN),KM),J)*&
+                        AVG_Y_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                                AVG_Z_H(EPMU_GT(IJKBN),EPMU_GT(IJKN),KM),J)*&
                            dwdy_at_B*AXY_V(IJKM) + SSZ_CUT
                ELSE
                   SSZ = ZERO
@@ -556,6 +555,7 @@
 !---------------------------------------------------------------------//
       USE fldvar, only: v_g
 
+      USE functions, only: flow_at_n
       USE functions, only: im_of, jm_of, km_of
       USE functions, only: ip_of, jp_of, kp_of
 
@@ -564,7 +564,7 @@
       USE matrix, only: e, w, n, s, t, b
       USE param, only: dimension_3
       USE param1, only: zero
-      USE visc_g, only: mu_gt, df_gv
+      USE visc_g, only: df_gv
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -580,10 +580,6 @@
 !---------------------------------------------------------------------//
 ! indices
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! average void fraction
-      DOUBLE PRECISION :: EPGA
-! average viscosity
-      DOUBLE PRECISION :: MUGA
 ! source terms
       DOUBLE PRECISION :: SSX, SSY, SSZ
 !---------------------------------------------------------------------//
@@ -595,27 +591,31 @@
       IJMK = JM_OF(IJK)
       IJKM = KM_OF(IJK)
 
-! convection terms
+! convection terms: see conv_dif_v_g
+      SSX = ZERO
+      SSY = ZERO
+      SSZ = ZERO
+      IF (FLOW_AT_N(IJK)) THEN
 ! part of 1/x d/dx (x.tau_xx) xdxdydz =>
 !         1/x d/dx (x.mu.dv/dx) xdxdydz =>
 ! delta (mu.dv/dx.Ayz) |E-W : at (i+1/2 - i-1/2), j+1/2, k
-      SSX = DF_GV(IJK,E)*(V_G(IPJK) - V_G(IJK)) - &
-            DF_GV(IJK,W)*(V_G(IJK) - V_G(IJKM))
+         SSX = DF_GV(IJK,E)*(V_G(IPJK) - V_G(IJK)) - &
+               DF_GV(IJK,W)*(V_G(IJK) - V_G(IJKM))
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.dv/dy) xdxdydz =>
 ! delta (mu.dv/dy.Axz) |N-S : at (i, j+1 - j-1, k)
-      SSY = DF_GV(IJK,N)*(V_G(IJPK)-V_G(IJK)) - &
-            DF_GV(IJK,S)*(V_G(IJK)-V_G(IJMK))
+         SSY = DF_GV(IJK,N)*(V_G(IJPK)-V_G(IJK)) - &
+               DF_GV(IJK,S)*(V_G(IJK)-V_G(IJMK))
 
-      SSZ = ZERO
-      IF (DO_K) THEN
+         IF (DO_K) THEN
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu/x.dv/dz) xdxdydz =>
 ! delta (mu/x.dv/dz.Axy) |T-B : at (i, j+1/2, k+1/2 - k-1/2)
-         SSZ = DF_GV(IJK,T)*(V_G(IJKP)-V_G(IJK)) - &
-               DF_GV(IJK,B)*(V_G(IJK)-V_G(IJKM))
-      ENDIF
+            SSZ = DF_GV(IJK,T)*(V_G(IJKP)-V_G(IJK)) - &
+                  DF_GV(IJK,B)*(V_G(IJK)-V_G(IJKM))
+         ENDIF
+      ENDIF   ! end if flow_at_n
 
 ! Add the terms
       lctau_v_g(IJK) = (lTAU_v_G(IJK) + SSX + SSY + SSZ)

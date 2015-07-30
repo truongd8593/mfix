@@ -107,7 +107,7 @@
 
           M = Phase4Scalar(N)
 
-          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
           IF(M == 0) THEN
 
@@ -142,10 +142,10 @@
                          BC_C_Scalar(1,N), M, A_M, B_M, IER)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,N), M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,N), M, A_M, B_M)
 !
             CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
-               mres1, ires1, ZERO, IER)
+               mres1, ires1, ZERO)
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
                NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
                DEN_RESID(RESID_sc,0) = DEN_RESID(RESID_sc,0)+den_res
@@ -154,7 +154,7 @@
                  IJK_RESID(RESID_sc,0) = ires1
                endif
 !
-            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9), IER)
+            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -165,7 +165,7 @@
 !          ier)
 !
             CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
-               LEQI, LEQM, IER)
+               LEQI, LEQM)
 !
             write(Vname, '(A,I2)')'Scalar',N
             CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
@@ -209,10 +209,10 @@
                          BC_C_Scalar(1,N), M, A_M, B_M, IER)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,N), M, A_M, B_M, IER)
+            CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,N), M, A_M, B_M)
 !
             CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
-               mres1, ires1, ZERO, IER)
+               mres1, ires1, ZERO)
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
                NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
                DEN_RESID(RESID_sc,0) = DEN_RESID(RESID_sc,0)+den_res
@@ -221,7 +221,7 @@
                  IJK_RESID(RESID_sc,0) = ires1
                endif
 !
-            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9), IER)
+            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -231,7 +231,7 @@
 !          ier)
 !
             CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
-               LEQI, LEQM, IER)
+               LEQI, LEQM)
 !
             write(Vname, '(A,I2)')'Scalar',N
             CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &

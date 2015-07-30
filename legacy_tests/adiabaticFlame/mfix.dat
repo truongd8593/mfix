@@ -20,7 +20,9 @@
   DESCRIPTION = 'Adiabatic flame temperature'
   RUN_TYPE = 'new'
   UNITS = 'cgs'
-  TIME  =0.0  TSTOP = 100.0    DT = 1.0e-3  
+  TIME  =0.0
+  TSTOP = 100.0
+  DT = 1.0e-3  
   ENERGY_EQ = .True.
   SPECIES_EQ = .True.    .False.
   MOMENTUM_X_EQ = .FALSE.    .FALSE.

@@ -12,10 +12,10 @@
 
       USE physprop, only: SMAX
 
-      use discretelement, only: PEA, PIJK
-      USE discretelement, only: DES_POS_NEW, DES_RADIUS, RO_SOL
+      use discretelement, only: PIJK
+      USE discretelement, only: DES_RADIUS, RO_SOL
       USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
-      USE discretelement, only: MAX_PIP
+      USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use mpi_funs_des, only: des_par_exchange
 
       USE run, only: RUN_TYPE
@@ -50,8 +50,8 @@
 ! solids phase index of particle.
 ! ---------------------------------------------------------------->>>
       DO L = 1, MAX_PIP
-         IF(.NOT.PEA(L,1)) CYCLE
-         IF(PEA(L,4)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
 
 ! Determining the solids phase of each particle by matching the diameter
 ! and density to those specified in the data file.
@@ -85,8 +85,8 @@
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1)) CYCLE
-         IF(PEA(L,4)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
 
 ! Flag as an error if no match is found.
          IF(PIJK(L,5).EQ.0) THEN

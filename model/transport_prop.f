@@ -36,6 +36,7 @@
 ! Kinetic theory model.
       use run, only: KT_TYPE_enum
       use run, only: ia_2005, gd_1999, gtsh_2012
+      use kintheory, only: CALC_IA_ENERGY_DISSIPATION_SS, CALC_GD_99_ENERGY_DISSIPATION_SS, CALC_GTSH_ENERGY_DISSIPATION_SS
 
       implicit none
 
@@ -50,7 +51,7 @@
       INTEGER :: M ! Solids phase
 
 
-      IF (VISC(0)) CALL CALC_MU_G (IER)    ! Fluid viscosity
+      IF (VISC(0)) CALL CALC_MU_G()    ! Fluid viscosity
       IF (COND(0)) CALL CALC_K_G()     ! Fluid conductivity
       IF (DIFF(0)) CALL CALC_DIF_G()   ! Fluid diffusivity
 

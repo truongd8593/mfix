@@ -10,6 +10,7 @@
       USE calc_collision_wall
       USE compar
       USE cutcell
+      USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE des_rxns
       USE des_stl_functions
       USE des_thermo
@@ -26,21 +27,19 @@
       use mfix_pic, only:  MPPIC
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use constant, only: PI
+      use stl_preproc_des, only: add_facet
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, IJK, PC, SM_CELL
+      INTEGER :: I, J, K, L, IJK
       INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
-      INTEGER :: lface, lcurpar, lpip_all(0:numpes-1), lglobal_id  , lparcnt
+      INTEGER :: lcurpar, lpip_all(0:numpes-1), lglobal_id
       INTEGER :: CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
-      INTEGER :: FACTOR
-
 ! MPPIC related quantities
-      DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
 
 ! Check interpolation input.
@@ -168,10 +167,9 @@
 
 ! Set the initial particle data.
       IF(RUN_TYPE == 'NEW') THEN
-
          IF(PARTICLES /= 0) THEN
             IF(GENER_PART_CONFIG) THEN
-               CALL COPY_PARTICLE_CONFIG_FROMLISTS
+               CALL GENERATE_PARTICLE_CONFIG
             ELSE
                CALL READ_PAR_INPUT
             ENDIF
@@ -237,8 +235,8 @@
 ! have been identified
       DO L = 1, MAX_PIP
 ! Skip 'empty' locations when populating the particle property arrays.
-         IF(.NOT.PEA(L,1)) CYCLE
-         IF(PEA(L,4)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
          PVOL(L) = (4.0D0/3.0D0)*PI*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L)
          OMOI(L) = 2.5D0/(PMASS(L)*DES_RADIUS(L)**2) !ONE OVER MOI

@@ -22,7 +22,7 @@
 !  > part of 1/x d/dx(x.tau_xx) xdxdydz =>                             C
 !            1/x d/dx (x.mu.du/dx) xdxdydz =>                          C
 !    delta (mu du/dx)Ayz |E-W                                          C
-!  > part of d/dy (tau_xy) xdxdydz =>                                   C
+!  > part of d/dy (tau_xy) xdxdydz =>                                  C
 !           d/dy (mu.dv/dx) xdxdydz =>                                 C
 !    delta (mu.dv/dx)Axz |N-S                                          C
 !  > part of 1/x d/dz (tau_xz) xdxdydz =>                              C
@@ -53,8 +53,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
-      USE param1, only: zero, half, one
-      USE parallel
+      USE param1, only: zero, half
       USE constant
       USE physprop
       USE fldvar
@@ -109,9 +108,9 @@
 !$omp          DWOXDZ, VTZB)                                           &
 !$omp  shared(ijkstart3, ijkend3, i_of, j_of, k_of, ip1, jm1, km1,     &
 !$omp         do_k, cylindrical, ltau_u_g, lctau_u_g,                  &
-!$omp         ep_g, mu_gt, lambda_gt, trd_g, u_g, v_g, w_g,            &
+!$omp         ep_g, epmu_gt, lambda_gt, trd_g, u_g, v_g, w_g,          &
 !$omp         axy_u, axz_u, ayz, ayz_u, vol_u,                         &
-!$omp         ox_e, odx_e, ox, odx, odz)
+!$omp         ox_e, odx_e, ox, odx, odz, eplambda_gt)
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
             IJKE = EAST_OF(IJK)
@@ -146,35 +145,35 @@
 ! combines 1/x d/dx (x.lambda.trcD) xdxdydz - (lambda/x.trcD) xdxdydz =>
 !              d/dx (lambda.trcD) xdxdydz
 ! delta (lambda.trcD)Ap |E-W : at (i+1 - i-1), j, k
-               SBV = (LAMBDA_GT(IJKE)*TRD_G(IJKE)-&
-                      LAMBDA_GT(IJK)*TRD_G(IJK))*AYZ(IJK)
+               SBV = (EPLAMBDA_GT(IJKE)*TRD_G(IJKE)-&
+                      EPLAMBDA_GT(IJK)*TRD_G(IJK))*AYZ(IJK)
 
 ! shear stress terms at i+1/2, j, k
 ! part of 1/x d/dx(x.tau_xx) xdxdydz =>
 !         1/x d/dx (x.mu.du/dx) xdxdydz =>
 ! delta (mu du/dx)Ayz |E-W : at (i+1 - i-1), j, k
-               SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ODX(IP)*&
+               SSX = EPMU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*ODX(IP)*&
                         AYZ_U(IJK) - &
-                     MU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*&
+                     EPMU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*ODX(I)*&
                         AYZ_U(IMJK)
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.dv/dx) xdxdydz =>
 ! delta (mu.dv/dx)Axz |N-S : at i+1/2, (j+1/2 - j-1/2), k
-               SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),&
-                             AVG_Y_H(MU_GT(IJKE),MU_GT(IJKNE),J),I)*&
+               SSY = AVG_X_H(AVG_Y_H(EPMU_GT(IJK),EPMU_GT(IJKN),J),&
+                             AVG_Y_H(EPMU_GT(IJKE),EPMU_GT(IJKNE),J),I)*&
                         (V_G(IPJK)-V_G(IJK))*ODX_E(I)*AXZ_U(IJK) - &
-                     AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),&
-                             AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)*&
+                     AVG_X_H(AVG_Y_H(EPMU_GT(IJKS),EPMU_GT(IJK),JM),&
+                             AVG_Y_H(EPMU_GT(IJKSE),EPMU_GT(IJKE),JM),I)*&
                         (V_G(IPJMK)-V_G(IJMK))*ODX_E(I)*AXZ_U(IJMK)
 
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu.dw/dx) xdxdydz =>
 ! delta (mu.dw/dx)Axy |T-B : at i+1/2, j, (k+1/2 - k-1/2)
-               MU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                                AVG_Z_H(MU_GT(IJKE),MU_GT(IJKTE),K),I)
-               MU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                                AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)
+               MU_GTE = AVG_X_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                                AVG_Z_H(EPMU_GT(IJKE),EPMU_GT(IJKTE),K),I)
+               MU_GBE = AVG_X_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                                AVG_Z_H(EPMU_GT(IJKBE),EPMU_GT(IJKE),KM),I)
                SSZ = MU_GTE*(W_G(IPJK)-W_G(IJK))*ODX_E(I)*&
                         AXY_U(IJK) - &
                      MU_GBE*(W_G(IPJKM)-W_G(IJKM))*ODX_E(I)*&
@@ -195,7 +194,7 @@
 ! part of -tau_zz/x xdxdydz =>
 !         -(2.mu/x).(1/x).dw/dz xdxdydz
 ! delta (2.mu/x.1/x.dw/dz)Vp |p : at i+1/2, j, k
-                  MUGA = AVG_X(MU_GT(IJK),MU_GT(IJKE),I)
+                  MUGA = AVG_X(EPMU_GT(IJK),EPMU_GT(IJKE),I)
                   DWOXDZ = HALF*((W_G(IJK)-W_G(IJKM))*OX(I)*ODZ(K)+&
                                  (W_G(IPJK)-W_G(IPJKM))*OX(IP)*ODZ(K))
                   VTZB = -2.d0*MUGA*OX_E(I)*DWOXDZ
@@ -243,8 +242,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
-      USE param1, only: zero, half, one
-      USE parallel
+      USE param1, only: zero, half
       USE constant
       USE physprop
       USE fldvar
@@ -311,13 +309,13 @@
 !$omp          mu_gt_cut, cut_tau_ug, ssy_cut, ssz_cut)                &
 !$omp  shared(ijkstart3, ijkend3, i_of, j_of, k_of,  ip1, jm1, km1,    &
 !$omp         do_k, ltau_u_g, lctau_u_g,                               &
-!$omp         ep_g, mu_gt, lambda_gt, trd_g, u_g, v_g, w_g,            &
+!$omp         ep_g, epmu_gt, lambda_gt, trd_g, u_g, v_g, w_g,          &
 !$omp         axy_u, axz_u, ayz, ayz_u, vol,                           &
 !$omp         bc_type, bc_u_id, bc_uw_g, bc_vw_g, bc_ww_g, bc_hw_g,    &
 !$omp         oneodx_e_u, oneodx_e_v, oneodx_e_w,                      &
 !$omp         x_u, y_u, z_u, x_v, y_v, z_v, x_w, y_w, z_w,             &
 !$omp         wall_v_at, wall_w_at, area_u_cut, cut_u_cell_at,         &
-!$omp         blocked_v_cell_at, blocked_w_cell_at)
+!$omp         blocked_v_cell_at, blocked_w_cell_at, eplambda_gt)
 
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK)
@@ -348,28 +346,28 @@
 
 
 ! bulk viscosity term
-            SBV = (LAMBDA_GT(IJKE)*TRD_G(IJKE)) * AYZ_U(IJK) - &
-                  (LAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK)
+            SBV = (EPLAMBDA_GT(IJKE)*TRD_G(IJKE)) * AYZ_U(IJK) - &
+                  (EPLAMBDA_GT(IJK) *TRD_G(IJK) ) * AYZ_U(IMJK)
 
 ! shear stress terms
             IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
-               SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*&
+               SSX = EPMU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*&
                         ONEoDX_E_U(IJK)*AYZ_U(IJK) - &
-                     MU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*&
+                     EPMU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*&
                         ONEoDX_E_U(IMJK)*AYZ_U(IMJK)
 
-               SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),&
-                             AVG_Y_H(MU_GT(IJKE),MU_GT(IJKNE),J),I)*&
+               SSY = AVG_X_H(AVG_Y_H(EPMU_GT(IJK),EPMU_GT(IJKN),J),&
+                             AVG_Y_H(EPMU_GT(IJKE),EPMU_GT(IJKNE),J),I)*&
                      (V_G(IPJK)-V_G(IJK))*ONEoDX_E_V(IJK)*AXZ_U(IJK) - &
-                     AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),&
-                             AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)*&
+                     AVG_X_H(AVG_Y_H(EPMU_GT(IJKS),EPMU_GT(IJK),JM),&
+                             AVG_Y_H(EPMU_GT(IJKSE),EPMU_GT(IJKE),JM),I)*&
                      (V_G(IPJMK)-V_G(IJMK))*ONEoDX_E_V(IJMK)*AXZ_U(IJMK)
 
                IF(DO_K) THEN
-                  MU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                                   AVG_Z_H(MU_GT(IJKE),MU_GT(IJKTE),K),I)
-                  MU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                                   AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)
+                  MU_GTE = AVG_X_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                                     AVG_Z_H(EPMU_GT(IJKE),EPMU_GT(IJKTE),K),I)
+                  MU_GBE = AVG_X_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                                   AVG_Z_H(EPMU_GT(IJKBE),EPMU_GT(IJKE),KM),I)
                   SSZ = MU_GTE*(W_G(IPJK)-W_G(IJK))*&
                            ONEoDX_E_W(IJK)*AXY_U(IJK) - &
                         MU_GBE*(W_G(IPJKM)-W_G(IJKM))*&
@@ -425,8 +423,8 @@
                END SELECT
 
                IF(CUT_TAU_UG) THEN
-                  MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + &
-                               VOL(IPJK)*MU_GT(IJKE))/&
+                  MU_GT_CUT = (VOL(IJK)*EPMU_GT(IJK) + &
+                               VOL(IPJK)*EPMU_GT(IJKE))/&
                               (VOL(IJK) + VOL(IPJK))
                ELSE
                   MU_GT_CUT = ZERO
@@ -436,9 +434,9 @@
                CALL GET_DEL_H(IJK,'U_MOMENTUM', X_U(IJK), &
                   Y_U(IJK), Z_U(IJK), Del_H, Nx, Ny, Nz)
 
-               SSX = MU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*&
+               SSX = EPMU_GT(IJKE)*(U_G(IPJK)-U_G(IJK))*&
                         ONEoDX_E_U(IJK)*AYZ_U(IJK) - &
-                     MU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*&
+                     EPMU_GT(IJK)*(U_G(IJK)-U_G(IMJK))*&
                         ONEoDX_E_U(IMJK)*AYZ_U(IMJK) - &
                      MU_GT_CUT * (U_g(IJK) - UW_g) / DEL_H * &
                         (Nx**2) * Area_U_CUT(IJK)
@@ -498,11 +496,11 @@
                   SSY_CUT =  ZERO
                ENDIF
 
-               SSY = AVG_X_H(AVG_Y_H(MU_GT(IJK),MU_GT(IJKN),J),&
-                             AVG_Y_H(MU_GT(IJKE),MU_GT(IJKNE),J),I)*&
+               SSY = AVG_X_H(AVG_Y_H(EPMU_GT(IJK),EPMU_GT(IJKN),J),&
+                             AVG_Y_H(EPMU_GT(IJKE),EPMU_GT(IJKNE),J),I)*&
                         dvdx_at_N*AXZ_U(IJK) - &
-                     AVG_X_H(AVG_Y_H(MU_GT(IJKS),MU_GT(IJK),JM),&
-                             AVG_Y_H(MU_GT(IJKSE),MU_GT(IJKE),JM),I)*&
+                     AVG_X_H(AVG_Y_H(EPMU_GT(IJKS),EPMU_GT(IJK),JM),&
+                             AVG_Y_H(EPMU_GT(IJKSE),EPMU_GT(IJKE),JM),I)*&
                         dvdx_at_S*AXZ_U(IJMK) + SSY_CUT
 
 ! SSZ:
@@ -562,10 +560,10 @@
                      SSZ_CUT =  ZERO
                   ENDIF
 
-                  MU_GTE = AVG_X_H(AVG_Z_H(MU_GT(IJK),MU_GT(IJKT),K),&
-                                   AVG_Z_H(MU_GT(IJKE),MU_GT(IJKTE),K),I)
-                  MU_GBE = AVG_X_H(AVG_Z_H(MU_GT(IJKB),MU_GT(IJK),KM),&
-                                   AVG_Z_H(MU_GT(IJKBE),MU_GT(IJKE),KM),I)
+                  MU_GTE = AVG_X_H(AVG_Z_H(EPMU_GT(IJK),EPMU_GT(IJKT),K),&
+                                   AVG_Z_H(EPMU_GT(IJKE),EPMU_GT(IJKTE),K),I)
+                  MU_GBE = AVG_X_H(AVG_Z_H(EPMU_GT(IJKB),EPMU_GT(IJK),KM),&
+                                   AVG_Z_H(EPMU_GT(IJKBE),EPMU_GT(IJKE),KM),I)
                   SSZ = MU_GTE*dwdx_at_T*AXY_U(IJK) - &
                         MU_GBE*dwdx_at_B*AXY_U(IJKM)  + SSZ_CUT
                ELSE
@@ -604,7 +602,7 @@
 !---------------------------------------------------------------------//
       USE fldvar, only: u_g
 
-      USE functions, only: east_of
+      USE functions, only: east_of, flow_at_e
       USE functions, only: im_of, jm_of, km_of
       USE functions, only: ip_of, jp_of, kp_of
 
@@ -633,8 +631,6 @@
 ! indices
       INTEGER :: I, IJKE
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! average void fraction
-      DOUBLE PRECISION :: EPGA
 ! average viscosity
       DOUBLE PRECISION :: MUGA
 ! source terms
@@ -662,27 +658,31 @@
          VTZA = 2.d0*MUGA*OX_E(I)*OX_E(I)*VOL_U(IJK)*U_G(IJK)
       ENDIF
 
-! convection terms
+! convection terms: see conv_dif_u_g
+      SSX = ZERO
+      SSY = ZERO
+      SSZ = ZERO
+      IF (FLOW_AT_E(IJK)) THEN
 ! part of 1/x d/dx (x.tau_xx) xdxdydz =>
 !         1/x d/dx (x.mu.du/dx) xdxdydz =>
 ! delta (mu.du/dx.Ayz) |E-W : at (i+1 - i-1), j, k
-      SSX = DF_GU(IJK,E)*(U_G(IPJK) - U_G(IJK)) - &
-            DF_GU(IJK,W)*(U_G(IJK) - U_G(IJKM))
+         SSX = DF_GU(IJK,E)*(U_G(IPJK) - U_G(IJK)) - &
+               DF_GU(IJK,W)*(U_G(IJK) - U_G(IJKM))
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.du/dy) xdxdydz =>
 ! delta (mu.du/dy.Axz) |N-S : at (i+1/2, j+1/2 - j-1/2, k)
-      SSY = DF_GU(IJK,N)*(U_G(IJPK)-U_G(IJK)) - &
-            DF_GU(IJK,S)*(U_G(IJK)-U_G(IJMK))
+         SSY = DF_GU(IJK,N)*(U_G(IJPK)-U_G(IJK)) - &
+               DF_GU(IJK,S)*(U_G(IJK)-U_G(IJMK))
 
-      SSZ = ZERO
-      IF (DO_K) THEN
+         IF (DO_K) THEN
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu/x.du/dz) xdxdydz =>
 ! delta (mu/x.du/dz.Axy) |T-B : at (i+1/2, j, k+1/2 - k-1/2)
-         SSZ = DF_GU(IJK,T)*(U_G(IJKP)-U_G(IJK)) - &
-               DF_GU(IJK,B)*(U_G(IJK)-U_G(IJKM))
-      ENDIF
+            SSZ = DF_GU(IJK,T)*(U_G(IJKP)-U_G(IJK)) - &
+                  DF_GU(IJK,B)*(U_G(IJK)-U_G(IJKM))
+         ENDIF
+      ENDIF   ! end if flow_at_e
 
 ! Add the terms
       lctau_u_g(IJK) = (lTAU_U_G(IJK) + SSX + SSY + SSZ + VTZA)

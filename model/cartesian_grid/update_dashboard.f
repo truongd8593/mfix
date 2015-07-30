@@ -27,14 +27,15 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE compar
-      USE parallel
-      USE sendrecv
-      USE run
-      USE leqsol
-      USE time_cpu
-      Use residual
       USE dashboard
+      USE leqsol
+      USE machine
+      USE parallel
+      USE run
+      USE sendrecv
+      USE time_cpu
       USE vtk
+      Use residual
 
       IMPLICIT NONE
 
@@ -90,7 +91,7 @@
 
 
 
-      OPEN(UNIT     =  111           , &
+      OPEN(CONVERT='BIG_ENDIAN',UNIT     =  111           , &
            FILE     = 'DASHBOARD.TXT', &
            FORM     = 'FORMATTED'    , &
            ACCESS   = 'SEQUENTIAL'   , &
@@ -98,7 +99,7 @@
            ACTION   = 'WRITE')
 
 
-!      OPEN(UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
+!      OPEN(CONVERT='BIG_ENDIAN',UNIT=111,FILE='DASHBOARD.TXT',STATUS='REPLACE')
       WRITE(111,30) '  _____________________________________________________________________________ '
       WRITE(111,30) ' |                                                                             |'
       WRITE(111,30) ' |                                MFIX DASHBOARD                               |'
@@ -150,7 +151,6 @@
       WRITE(111,60)'  Last updated at: ',ID_HOUR,ID_MINUTE,ID_SECOND,' on: ',ID_MONTH,ID_DAY,ID_YEAR
 10    FORMAT(A,A,T80,A)
 15    FORMAT(A, F6.1, 1X, A,T80,A)
-20    FORMAT(A, F9.3, 1X, A,T80,A)
 25    FORMAT(A,I6,T80,A)
 30    FORMAT(A)
 40    FORMAT(' |',A,'|',3(E9.2,'|'))

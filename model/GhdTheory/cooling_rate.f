@@ -159,8 +159,6 @@
 !-----------------------------------------------
 ! Local parameters
 !-----------------------------------------------
-      double precision :: pi
-      parameter (pi=3.14159265458979323846d0)
       double precision :: one
       parameter (one=1.d0)
       double precision :: zero

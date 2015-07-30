@@ -28,7 +28,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_W_S(A_M, B_M, IER)
+      SUBROUTINE SOURCE_W_S(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -71,8 +71,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -444,16 +442,16 @@
                      IM = IM1(I)
                      IPJK = IP_OF(IJK)
 
-                     CTE = HALF*AVG_Z_H(AVG_X_H(MU_S(IJK,M),MU_S(IJKE,M),I),&
-                        AVG_X_H(MU_S(IJKT,M),MU_S(IJKTE,M),I),K)*OX_E(I)*&
-                        AYZ_W(IJK)
-                     CTW = HALF*AVG_Z_H(AVG_X_H(MU_S(IJKW,M),MU_S(IJK,M),IM),&
-                        AVG_X_H(MU_S(IJKTW,M),MU_S(IJKT,M),IM),K)*DY(J)*&
-                        (HALF*(DZ(K)+DZ(KP1(K))))
+                     CTE = HALF*AVG_Z_H(AVG_X_H(EPMU_S(IJK,M),EPMU_S(IJKE,M),I),&
+                                        AVG_X_H(EPMU_S(IJKT,M),EPMU_S(IJKTE,M),I),K)*&
+                           OX_E(I)*AYZ_W(IJK)
+                     CTW = HALF*AVG_Z_H(AVG_X_H(EPMU_S(IJKW,M),EPMU_S(IJK,M),IM),&
+                                        AVG_X_H(EPMU_S(IJKTW,M),EPMU_S(IJKT,M),IM),K)*&
+                           DY(J)*(HALF*(DZ(K)+DZ(KP1(K))))
                         !same as oX_E(IM)*AYZ_W(IMJK), but avoids singularity
 
 ! (mu/x)*(dw/dx) part of tau_xz/x
-                     MUOX = AVG_Z(MU_S(IJK,M),MU_S(IJKT,M),K)*OX(I)
+                     MUOX = AVG_Z(EPMU_S(IJK,M),EPMU_S(IJKT,M),K)*OX(I)
                      CPE = MUOX* HALF*MUOX*ODX_E(I)*VOL_W(IJK)
                      CPW = MUOX* HALF*MUOX*ODX_E(IM)*VOL_W(IJK)
 
@@ -493,10 +491,10 @@
 
 
 ! modifications for cartesian grid implementation
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S(A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_W_S_BC (A_M, B_M, M)
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S_BC(A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_W_S_BC(A_M, B_M, M)
 
           ENDIF   ! end if (momentum_z_eq)
         ENDIF   ! end if for ghd theory

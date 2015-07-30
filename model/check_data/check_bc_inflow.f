@@ -8,18 +8,18 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_INFLOW(M_TOT, SKIP, BCV)
 
-! Modules 
+! Modules
 !---------------------------------------------------------------------//
       use bc, only: bc_x_g, bc_x_s
       use bc, only: bc_t_g, bc_t_s, bc_theta_m
       use bc, only: bc_k_turb_g, bc_e_turb_g
       use bc, only: bc_scalar
       use param, only: dim_m
-      use param1, only: undefined, one, zero 
+      use param1, only: undefined, one, zero
       use physprop, only: inert_species
       use physprop, only: mu_g0
       use physprop, only: mw_avg, nmax
-      use physprop, only: ro_g0, x_s0
+      use physprop, only: ro_g0
       use run, only: energy_eq, granular_energy, k_epsilon
       use run, only: solids_model, solve_ros, species_eq
       use scalars, only: nscalar
@@ -238,14 +238,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_BC_MASS_INFLOW(M_TOT, SKIP, BCV)
 
-! Modules 
+! Modules
 !---------------------------------------------------------------------//
       use bc, only: bc_ep_g, bc_p_g
       use bc, only: bc_rop_s, bc_ep_s, bc_x_s
       use bc, only: bc_massflow_g
       use eos, only: eoss
       use param, only: dim_m
-      use param1, only: undefined, one, zero 
+      use param1, only: undefined, one, zero
       use physprop, only: ro_g0, ro_s0
       use physprop, only: inert_species, x_s0, base_ros
       use run, only: solve_ros
@@ -336,7 +336,7 @@
 ! Set the solids density for the BC region.
          IF(.NOT.SOLVE_ROs(M)) THEN
             BC_ROs(M) = RO_s0(M)
-         ELSE  
+         ELSE
 ! presence of non-zero inert species is checked by bc_inflow
             INERT = INERT_SPECIES(M)
             BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),&
@@ -419,7 +419,7 @@
       use bc, only: bc_u_s, bc_v_s, bc_w_s
       use geometry, only: no_i, no_j, no_k
       use param, only: dim_m
-      use param1, only: undefined, one, zero 
+      use param1, only: undefined, zero
       use physprop, only: ro_g0
       use error_manager
       IMPLICIT NONE

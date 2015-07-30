@@ -65,16 +65,16 @@
 ! solve_continuity when M>1
 
 ! initializing
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
 
 ! forming the matrix equation
          CALL CONV_ROP_G (A_M, B_M, IER)
-         CALL SOURCE_ROP_G (A_M, B_M, IER)
+         CALL SOURCE_ROP_G (A_M, B_M)
 
 ! calculating the residual
          CALL CALC_RESID_C (ROP_G, A_M, B_M, 0, NUM_RESID(RESID_RO,0), &
             DEN_RESID(RESID_RO,0), RESID(RESID_RO,0), MAX_RESID(&
-            RESID_RO,0), IJK_RESID(RESID_RO,0), IER)
+            RESID_RO,0), IJK_RESID(RESID_RO,0))
 
 !         call check_ab_m(a_m, b_m, 0, .true., ier)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -95,17 +95,17 @@
 ! solve solids phase M continuity equation.
 
 ! initializing
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
 ! forming the matrix equation
          CALL CONV_ROP_S (A_M, B_M, M, IER)
-         CALL SOURCE_ROP_S (A_M, B_M, M, IER)
-         IF(POINT_SOURCE) CALL POINT_SOURCE_ROP_S (B_M, M, IER)
+         CALL SOURCE_ROP_S (A_M, B_M, M)
+         IF(POINT_SOURCE) CALL POINT_SOURCE_ROP_S (B_M, M)
 
          CALL CALC_RESID_C (ROP_S(1,M), A_M, B_M, M, &
             NUM_RESID(RESID_RO,M), DEN_RESID(RESID_RO,M), &
             RESID(RESID_RO,M), MAX_RESID(RESID_RO,M), &
-            IJK_RESID(RESID_RO,M), IER)
+            IJK_RESID(RESID_RO,M))
          RESS = RESID(RESID_RO,M)
 
 !          call check_ab_m(a_m, b_m, m, .true., ier)

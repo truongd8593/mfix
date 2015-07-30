@@ -146,7 +146,7 @@
       SUBROUTINE CHECK_ODE_DATA(lnD, lNEQ, loD, VARS, lUNLIMITED,     &
          lState, lErr)
 
-      use param1,   only : ZERO, SMALL_NUMBER, ONE
+      use param1,   only : ZERO
       use physprop, only : NMAX, MMAX
       use toleranc, only : TMax, TMin
 
@@ -292,9 +292,7 @@
       SUBROUTINE WRITE_ODE_LOG(lErr, lnD, lNEQ, loD, lVARS)
 
       use compar,   only : myPE
-      use param1,   only : SMALL_NUMBER
       use run,      only : TIME
-      use rxns,     only : NO_OF_RXNS
       use physprop, only : MMAX
 
       use indices
@@ -315,7 +313,7 @@
 
       DOUBLE PRECISION :: ddt_lVARS(loD)
 
-      CHARACTER(LEN=32) :: lFile
+      CHARACTER(LEN=255) :: lFile
 
       LOGICAL :: lExist
 
@@ -325,9 +323,9 @@
 
       inquire(file=lFile,exist=lExist)
       if(lExist) then
-         open(OEL_Unit,file=trim(adjustl(lFile)), position='append')
+         open(OEL_Unit,file=trim(adjustl(lFile)), position='append',convert='big_endian')
       else
-         open(OEL_Unit,file=trim(adjustl(lFile)), status='new')
+         open(OEL_Unit,file=trim(adjustl(lFile)), status='new',convert='big_endian')
       endif
 
 

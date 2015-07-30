@@ -20,9 +20,9 @@
 ! VTK
       use vtk
       USE run, only: RUN_NAME
-      USE physprop, only: MMAX,NMAX
+      USE physprop, only: MMAX
       USE scalars, only :NSCALAR
-      USE mpi_utility, only: myPE, PE_IO,XLENGTH,YLENGTH,ZLENGTH
+      USE mpi_utility, only: XLENGTH,YLENGTH,ZLENGTH
       USE DISCRETELEMENT, only:DISCRETE_ELEMENT
       USE DISCRETELEMENT, only: PARTICLE_ORIENTATION
       USE cutcell, only: USE_STL
@@ -103,25 +103,24 @@
 ! Check VTK regions
 
       IF(FRAME(1)<-1) THEN
-         IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF FRAME =', FRAME
-            WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= -1.'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-         ENDIF
-         CALL MFIX_EXIT(MYPE)
+         WRITE(ERR_MSG, 2000) trim(iVAL(FRAME(1)))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
+
+ 2000 FORMAT('Error 2000: Invalid value for FRAME = ',A'. Acceptable ',&
+         'values',/'are integers >= -1. Please correct mfix.dat and',/ &
+         'try again.')
 
       IF(VTK_DT(1)<ZERO) THEN
-         IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: NEGATIVE VALUE OF VTK_DT =', VTK_DT(1)
-            WRITE(*,*)'ACCEPTABLE VALUES ARE POSITIVE NUMBERS (E.G. 0.1).'
-            WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
-         ENDIF
-         CALL MFIX_EXIT(MYPE)
+          WRITE(ERR_MSG,2001) trim(iVal(VTK_DT(1)))
+         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
-      N_VTK_REGIONS = 0
+ 2001 FORMAT('Error 2001: Invalid value for VTK_DT = ',A'. Acceptable',&
+         ' values',/'are positive numbers (e.g., 0.1).  Please ',      &
+         'correct mfix.dat and',/'try again.')
 
+      N_VTK_REGIONS = 0
       DO L = 1, DIMENSION_VTK
          VTK_DEFINED(L) = .FALSE.
          IF (VTK_X_W(L) /= -UNDEFINED)   VTK_DEFINED(L) = .TRUE.
@@ -132,9 +131,7 @@
          IF (VTK_Z_T(L) /=  UNDEFINED)   VTK_DEFINED(L) = .TRUE.
 
          IF(.NOT.VTK_DEFINED(L)) CYCLE
-
          N_VTK_REGIONS =  N_VTK_REGIONS + 1
-
       ENDDO   ! end loop over (l = 1,dimension_vtk)
 
 ! There must be at least one VTK region defined
@@ -201,7 +198,6 @@
                         VTK_X_s(L,M,:) = .TRUE.
                     !END DO
                   END DO
-
 
                CASE (8)
                   DO M = 1,MMAX
@@ -304,27 +300,29 @@
                CASE (UNDEFINED_I) ! do nothing
 
                CASE DEFAULT
-
-                  WRITE(*,*) ' Unknown VTK variable flag ',L,':',VTK_VAR(L)
-                  WRITE(*,*) ' Available flags are : '
-                  WRITE(*,*) ' 1 : Void fraction (EP_g)'
-                  WRITE(*,*) ' 2 : Gas pressure, solids pressure (P_g, P_star)'
-                  WRITE(*,*) ' 3 : Gas velocity (U_g, V_g, W_g)'
-                  WRITE(*,*) ' 4 : Solids velocity (U_s, V_s, W_s)'
-                  WRITE(*,*) ' 5 : Solids density (ROP_s)'
-                  WRITE(*,*) ' 6 : Gas and solids temperature (T_g, T_s1, T_s2)'
-                  WRITE(*,*) ' 7 : Gas and solids mass fractions (X_g, X-s)'
-                  WRITE(*,*) ' 8 : Granular temperature (G)'
-                  write(*,*) ' 9 : User defined scalars'
-                  write(*,*) '10 : Reaction Rates'
-                  write(*,*) '11 : Turbulence quantities (k and ε)'
-                  write(*,*) '12 : Gas Vorticity magnitude and Lambda_2 (VORTICITY, LAMBDA_2)'
-                  write(*,*) '100: Processor assigned to scalar cell (Partition)'
-                  write(*,*) '101: Boundary condition flag for scalar cell (BC_ID)'
-                  write(*,*) 'MFiX will exit now.'
-                  CALL MFIX_EXIT(myPE)
-
+                  WRITE(ERR_MSG,2100) trim(iVal(L)),                   &
+                     trim(iVal(VTK_VAR(L)))
+                  CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             END SELECT
+
+ 2100 FORMAT(' Error 2100: Unknown VTK variable flag ',A,':',A,       /&
+         'Available flags are:',                                      /&
+         '  1 : Void fraction (EP_g)',                                /&
+         '  2 : Gas pressure, solids pressure (P_g, P_star)',         /&
+         '  3 : Gas velocity (U_g, V_g, W_g)',                        /&
+         '  4 : Solids velocity (U_s, V_s, W_s)',                     /&
+         '  5 : Solids density (ROP_s)',                              /&
+         '  6 : Gas and solids temperature (T_g, T_s1, T_s2)',        /&
+         '  7 : Gas and solids mass fractions (X_g, X-s)',            /&
+         '  8 : Granular temperature (G)',                            /&
+         '  9 : User defined scalars',                                /&
+         ' 10 : Reaction Rates',                                      /&
+         ' 11 : Turbulence quantities (k and ε)',                     /&
+         ' 12 : Gas Vorticity magn and Lambda_2(VORTICITY,LAMBDA_2)', /&
+         '100: Processor assigned to scalar cell (Partition)',        /&
+         '101: Boundary condition flag for scalar cell (BC_ID)',      /&
+         'Please correct the mfix.dat file.')
+
 
          ENDDO
 

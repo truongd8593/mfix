@@ -42,6 +42,14 @@
 ! calculating the variable solids phase density.
       INTEGER :: INERT_SPECIES(DIM_M)
 
+! Inert solids phase species mass fraction in dilute region.  This is needed for
+! calculating the variable solids phase density.
+      DOUBLE PRECISION :: DIL_INERT_X_VSD(DIM_M)
+
+! Factor to define dilute region for special treatment of
+! the variable solids phase density.
+      DOUBLE PRECISION :: DIL_FACTOR_VSD
+
 ! Particle shape factor
       DOUBLE PRECISION :: SHAPE_FACTOR(DIM_M)
 
@@ -143,5 +151,170 @@
 ! Reference values.
       DOUBLE PRECISION ICpoR_l(0:DIM_M, DIM_N)
       DOUBLE PRECISION ICpoR_h(0:DIM_M, DIM_N)
+
+CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CALC_MW (X_g, DIM, L, NMAX, MW_g)                      C
+!  Purpose: Calculate average molecular weight of gas                  C
+!                                                                      C
+!  Author: M. Syamlal                                 Date: 19-OCT-92  C
+!  Reviewer: P. Nicoletti                             Date: 11-DEC-92  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:None                                           C
+!  Variables modified:None                                             C
+!                                                                      C
+!  Local variables: SUM, N                                             C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!
+      DOUBLE PRECISION FUNCTION CALC_MW (X_G, DIM, L, NMAX, MW_G)
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE toleranc
+      IMPLICIT NONE
+!-----------------------------------------------
+!   D u m m y   A r g u m e n t s
+!-----------------------------------------------
+!
+!                      Mass fraction array's Ist dimension
+      INTEGER          DIM
+!
+!
+!                      Max of X_g array 2nd index and MW_g array index
+      INTEGER          NMAX
+!
+!                      Mass fraction array
+!
+      DOUBLE PRECISION X_g(DIM, NMAX)
+!
+!                      Moleculare weight array
+!
+      DOUBLE PRECISION MW_g(NMAX)
+!
+!                      Mass fraction array Ist index
+      INTEGER          L
+!
+!  Local variable
+!
+!                      local sum
+      DOUBLE PRECISION SUM
+!
+!                      local index
+      INTEGER          N
+!-----------------------------------------------
+!
+      SUM = ZERO
+      DO N = 1, NMAX
+         SUM = SUM + X_G(L,N)/MW_G(N)
+      END DO
+      CALC_MW = ONE/MAX(SUM,OMW_MAX)
+!
+      RETURN
+      END FUNCTION CALC_MW
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  FUNCTION: blend_function                                            C
+!  Purpose: To calculate blending function                             C
+!                                                                      C
+!  Author: S. Pannala                                 Date: 28-FEB-06  C
+!  Reviewer:                                          Date:            C
+!  Modified:                                          Date: 24-OCT-06  C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      DOUBLE PRECISION FUNCTION blend_function(IJK)
+
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE compar
+      USE constant
+      USE fldvar
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
+      USE param
+      USE param1
+      USE run
+      USE toleranc
+      USE visc_s
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! IJK index
+      INTEGER, INTENT(IN) :: IJK
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! Logical to see whether this is the first entry to this routine
+      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
+! Blend Factor
+      Double Precision:: blend, blend_right
+! Scale Factor
+      Double Precision, Save:: scale
+! Midpoint
+      Double Precision, Save:: ep_mid_point
+!-----------------------------------------------
+
+! Tan hyperbolic blending of stresses
+      IF(TANH_BLEND) THEN
+         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk).AND. EP_g(IJK) .GT. ep_g_blend_start(ijk)) THEN
+            ep_mid_point = (ep_g_blend_end(IJK)+ep_g_blend_start(IJK))/2.0d0
+            blend = tanh(2.0d0*pi*(ep_g(IJK)-ep_mid_point)/ &
+            (ep_g_blend_end(IJK)-ep_g_blend_start(IJK)))
+            blend = (blend+1.0d0)/2.0d0
+         ELSEIF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
+            blend = 1.0d0
+         ELSEIF(EP_g(IJK) .LE. ep_g_blend_start(ijk)) THEN
+            blend = 0.0d0
+         ENDIF
+
+! Truncated and Scaled Sigmoidal blending of stresses
+      ELSEIF(SIGM_BLEND) THEN
+         IF(FIRST_PASS) THEN
+            blend_right =  1.0d0/(1+0.01d0**((ep_g_blend_end(IJK)-ep_star_array(IJK))&
+            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+            blend_right = (blend_right+1.0d0)/2.0d0
+            scale = 1.0d0/blend_right
+            write(*,*) 'Blending value at end and scaling factor', blend_right, scale
+            FIRST_PASS = .FALSE.
+         ENDIF
+         IF(EP_g(IJK) .LT. ep_g_blend_end(ijk)) THEN
+            blend =  scale/(1+0.01d0**((ep_g(IJK)-ep_star_array(IJK))&
+            /(ep_g_blend_end(IJK)-ep_g_blend_start(IJK))))
+         ELSEIF(EP_g(IJK) .GE. ep_g_blend_end(ijk)) THEN
+            blend = 1.0d0
+         ENDIF
+
+      ENDIF
+
+      blend_function = blend
+
+      RETURN
+      END FUNCTION blend_function
 
       END MODULE physprop

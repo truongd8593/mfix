@@ -12,6 +12,11 @@
 
 ! Void fraction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EP_g
+! Store the void/volume fraction or value of 1 depending on setting of
+! governing equations
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  epg_jfac
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  epg_ifac
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  eps_ifac
 
 ! Previous-time-step value of Void fraction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  EP_go
@@ -135,7 +140,7 @@
 ! Solids pressure that maintains EP_g >= EP_star
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_star
 
-! Previous-time-step value of Solids pressure that maintains 
+! Previous-time-step value of Solids pressure that maintains
 ! EP_g >= EP_star
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  P_staro
 

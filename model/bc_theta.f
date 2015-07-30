@@ -747,15 +747,16 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE constant
+      USE fldvar
+      USE kintheory
       USE param
       USE param1
       USE physprop
       USE run
-      USE constant
-      USE fldvar
       USE toleranc
-      USE bc
-      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -845,7 +846,6 @@
 !-----------------------------------------------
 ! variable specularity coefficient
       DOUBLE PRECISION :: PHIP_JJ
-      DOUBLE PRECISION :: S_star
 !-----------------------------------------------
 
       IF(TH(M) .LE. ZERO)THEN

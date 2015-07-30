@@ -150,7 +150,7 @@
                                 R,Rtilde, P,Phat, Svec, Shat, Tvec,V
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: alpha,beta,omega,rho
       DOUBLE PRECISION :: TxS, TxT, oam,RtildexV,                   &
-                      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN, pnorm
+                      RtildexR, aijmax, Rnorm=0, Rnorm0, Snorm, TOLMIN
       LOGICAL :: isconverged
       INTEGER :: i, j, k, iter
 !AIKE PFUPGRADE 091409 Modified ijk to ijk2 to avoid compilation error since PF upgrade
@@ -895,9 +895,6 @@
       INTEGER          I,  J, K, IJK2
 
       integer :: im1jk,ip1jk, ijm1k,ijp1k, ijkm1,ijkp1
-      logical, parameter :: use_send_recv = .true.
-      logical, parameter :: need_distribute_Avar = .true.
-      logical, parameter :: use_funijk = .false.
 
       if (do_k) then
 

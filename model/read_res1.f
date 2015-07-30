@@ -224,7 +224,6 @@
       ENDIF
 !------------------------------------------------------------------------
 !
- 999  continue
 
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       deallocate( array1 )
@@ -240,6 +239,9 @@
 
       IF (DT_FAC == ONE) DT = DT_SAVE
 !
+
+!     We may no longer need PATCH_AFTER_RESTART
+!     CALL PATCH_AFTER_RESTART
 
       RETURN
       END SUBROUTINE READ_RES1
@@ -613,7 +615,6 @@
 
         ! Close the file. This frees up any internal netCDF resources
         ! associated with the file, and flushes any buffers.
- 1234   continue
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
         if (myPE .eq. PE_IO) then
            call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
@@ -626,3 +627,175 @@
         return
 
       end subroutine read_res1_netcdf
+
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: PATCH_AFTER_RESTART                                    C
+!  Purpose: Patch new fluid cells after a restart                      C
+!           This could occur when restarting with a different          C
+!           grid partition when the RESTART file was generated         C
+!           prior to the Dec. 4th 2014 bug fix.                        C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 14-APR-15  C
+!                                                                      C
+!  Revision Number:                                                    C
+!  Purpose:                                                            C
+!  Author:                                            Date: dd-mmm-yy  C
+!  Reviewer:                                          Date: dd-mmm-yy  C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE PATCH_AFTER_RESTART
+!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
+!...Switches: -xf
+!
+!-----------------------------------------------
+!   M o d u l e s
+!-----------------------------------------------
+      USE param
+      USE param1
+      USE fldvar
+      USE geometry
+      USE physprop
+      USE run
+      USE rxns
+      USE scalars
+      USE funits
+      USE energy
+      USE compar
+      USE cdist
+      USE mpi_utility
+      USE sendrecv
+      USE cutcell
+      use functions
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! indices
+      INTEGER :: I,J,K, IJK, IJKNB
+      INTEGER :: M,N
+      INTEGER :: NB
+      INTEGER, DIMENSION(6) :: NBCELL
+      LOGICAL :: NB_FOUND
+
+
+!-----------------------------------------------
+
+      DO IJK = ijkstart3, ijkend3
+
+         IF (FLUID_AT(IJK).AND.EP_G(IJK)==UNDEFINED) THEN
+
+! Detects new fluid cells that used to be blocked cells with undefined
+! values. When a fluid cell has undefined void fraction, this means all
+! variables need to be patched. Typically, this will be a fairly small
+! cut cell that was flagged as BLOCKED cell with a different partition.
+! If a valid fluid cell is found next to this undefined cell, all field
+! variables will be copied over. If no valid fluid cell is found, the
+! code will continue and will likely stop during the check_data_30
+! (zero species mass fractions will yield a zero specific heat).
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+
+            NBCELL(1) = IM_OF(IJK)
+            NBCELL(2) = JM_OF(IJK)
+            NBCELL(3) = KM_OF(IJK)
+            NBCELL(4) = IP_OF(IJK)
+            NBCELL(5) = JP_OF(IJK)
+            NBCELL(6) = KP_OF(IJK)
+
+            NB_FOUND = .FALSE.
+
+            DO NB = 1,6
+
+               IJKNB = NBCELL(NB)
+
+               IF(FLUID_AT(IJKNB).AND.EP_G(IJKNB)/=UNDEFINED) THEN
+                  NB_FOUND = .TRUE.
+                  WRITE (*, 1010) MyPE, I,J,K
+
+                  EP_G(IJK)   = EP_G(IJKNB)
+                  P_G(IJK)    = P_G(IJKNB)
+                  P_STAR(IJK) = P_STAR(IJKNB)
+                  RO_G(IJK)   = RO_G(IJKNB)
+                  ROP_G(IJK)  = ROP_G(IJKNB)
+                  T_G(IJK)    = T_G(IJKNB)
+
+                  T_s(IJK,1:MMAX) = T_s(IJKNB,1:MMAX)
+
+                  U_s(IJK,1:MMAX) = U_s(IJKNB,1:MMAX)
+                  V_s(IJK,1:MMAX) = V_s(IJKNB,1:MMAX)
+                  W_s(IJK,1:MMAX) = W_s(IJKNB,1:MMAX)
+
+                  X_g(IJK,1:NMAX(0)) = X_g(IJKNB,1:NMAX(0))
+
+                  U_G(IJK) = U_G(IJKNB)
+                  V_G(IJK) = V_G(IJKNB)
+                  W_G(IJK) = W_G(IJKNB)
+
+                  ROP_S(IJK,1:MMAX) = ROP_S(IJKNB,1:MMAX)
+
+                  IF(ANY(SOLVE_ROs)) RO_S(IJK,1:MMAX) = RO_S(IJKNB,1:MMAX)
+
+
+                  THETA_M(IJK,1:MMAX) = THETA_M(IJKNB,1:MMAX)
+
+                  DO M = 1,MMAX
+                     DO N = 1, NMAX(M)
+                        X_S(IJK,M,N)= X_S(IJKNB,M,N)
+                     ENDDO
+                  ENDDO
+
+
+                  DO N = 1, NScalar
+                     Scalar(IJK,N) = Scalar(IJKNB,N)
+                  END DO
+
+                  GAMA_RG(IJK) = GAMA_RG(IJKNB)
+                  T_RG(IJK)    = T_RG(IJKNB)
+
+                  GAMA_RS(IJK,1:MMAX) = GAMA_RS(IJKNB,1:MMAX)
+                  T_RS(IJK,1:MMAX)    = T_RS(IJKNB,1:MMAX)
+
+
+                  DO N = 1, nRR
+                     ReactionRates(IJK,N) = ReactionRates(IJKNB,N)
+                  END DO
+
+                  IF (K_Epsilon) THEN
+                     K_Turb_G(IJK) = K_Turb_G(IJKNB)
+                     E_Turb_G(IJK) = E_Turb_G(IJKNB)
+                  ENDIF
+
+                  EXIT ! Exit as soon as first valid neighbor cell is found
+               ENDIF  ! NB is a fluid cell
+
+            ENDDO ! NB Loop
+
+            IF(.NOT.NB_FOUND) WRITE (*, 1020) MyPE, I,J,K   ! NO FLUID CELL AMONG NEIGBHORS
+
+         ENDIF ! New fuid cell
+
+      ENDDO ! IJK loop
+
+1010  FORMAT(1X,'PATCHING NEW FLUID CELL UPON RESTART: MyPE,I,J,K =' ,I6,I6,I6,I6)
+1020  FORMAT(1X,'UNABLE TO PATCH NEW FLUID CELL UPON RESTART: MyPE,I,J,K =' ,I6,I6,I6,I6)
+      END SUBROUTINE PATCH_AFTER_RESTART

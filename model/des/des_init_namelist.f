@@ -120,7 +120,7 @@
       DES_OUTPUT_TYPE = "PARAVIEW"
 !</keyword>
 
-!<keyword category="Output Control" required="false" 
+!<keyword category="Output Control" required="false"
 !  dem="true" pic="true">
 !  <description>
 !    Runtime flag to generate debugging information. Additional data for
@@ -265,13 +265,13 @@
 !  <description>
 !    Specify the scheme used to map data to/from a particle's position
 !    and the Eulerian grid. This keyword is required when
-!    DES_INTERP_MEAN_FIELDS and/or DES_INTERP_ON are specified. A 
+!    DES_INTERP_MEAN_FIELDS and/or DES_INTERP_ON are specified. A
 !    graphical representation of the schemes is shown below.
 !  </description>
 !  <valid value="NONE" note="Do not use interpolation."/>
 !  <valid value="GARG_2012" note="Interpolate to/from a particle's
 !    position using the corners (nodes) of the fluid cells. This was
-!    the default behavior prior to the 2015-1 Release. 
+!    the default behavior prior to the 2015-1 Release.
 !    See Garg et al. (2012) Documentation of the open-souce MFIX-DEM
 !    software for gas-solids flows."/>
 !  <valid value="SQUARE_DPVM" note="Divided Particle Volume Method:
@@ -285,9 +285,9 @@
 !  <description>
 !    The length used in interpolating data to/from a particle's position
 !    and the Eulerian grid. The interpolation width is only applicable
-!    to the DPVM_SQUARE and DPVM_GAUSS interpolation schemes as the 
-!    GARG_2012 scheme's interpolation width is determined by the 
-!    Eulerian grid dimensions. 
+!    to the DPVM_SQUARE and DPVM_GAUSS interpolation schemes as the
+!    GARG_2012 scheme's interpolation width is determined by the
+!    Eulerian grid dimensions.
 !    o The interpolation half-width cannot exceed the minimum cell
 !      dimension because interpolation is restricted to the 27-cell
 !      neighborhood surrounding a particle (9-cell neighborhood in 2D).
@@ -318,12 +318,12 @@
 !  <description>
 !    Enables/Disables interpolation of particle data (e.g., solids
 !    volume and drag force) from a particle's position to the
-!    Eulerian grid.            
+!    Eulerian grid.
 !  </description>
-!  <valid value=".FALSE." note="Assign particle data to the fluid 
+!  <valid value=".FALSE." note="Assign particle data to the fluid
 !    grid cell containing the particle's center."/>
 !  <valid value=".TRUE." note="Interpolate particle data from the
-!    particle's position to the 27-cell neighborhood surrounding 
+!    particle's position to the 27-cell neighborhood surrounding
 !    the particle."/>
       DES_INTERP_MEAN_FIELDS = .FALSE.
 !</keyword>
@@ -334,7 +334,7 @@
 !    The length scale used to smooth dispersed phase averaged fields by
 !    solving a diffusion equation. This approach is typically used when
 !    particle sizes near or exceed the size of the Eulerian grid cell sizes.
-!    o  Mean filed diffusion is disabled if DES_DIFFUSE_WIDTH is not specified. 
+!    o  Mean filed diffusion is disabled if DES_DIFFUSE_WIDTH is not specified.
 !    o  Mean filed diffusion cannot be used with the GARG_2012
 !       interpolation scheme.
 !    o  It is recommend that mean field diffusion be used in conjunction
@@ -350,17 +350,17 @@
 !<keyword category="Discrete Element Simulation" required="false" dem="true">
 !  <description>
 !    Enable/Disable explicit coupling of DEM solids and the fluid. This
-!    algorithm is presently limited to hydrodynamic simulations. 
+!    algorithm is presently limited to hydrodynamic simulations.
 !  </description>
-!  <valid value=".FALSE." note="The fluid and particles calculate 
+!  <valid value=".FALSE." note="The fluid and particles calculate
 !    interphase forces at their respective time scales. The fluid phase
 !    calculates the interphase coupling forces once per fluid time step.
 !    Similarly, DEM particles calculate the interface coupling forces at
 !    each solids time-step. The DEM must also bin particles to the fluid
 !    grid and recalculate the fluid volume fraction every time-step."/>
-!  <valid value=".TRUE." note="Interphase forces are calculated during 
-!    the fluid time step and stored for each particle. The interphase 
-!    forces are then distributed among the solids time-steps. This 
+!  <valid value=".TRUE." note="Interphase forces are calculated during
+!    the fluid time step and stored for each particle. The interphase
+!    forces are then distributed among the solids time-steps. This
 !    approach can substantially reduce the computational overhead for
 !    coupled simulations."/>
       DES_EXPLICITLY_COUPLED = .FALSE.
@@ -378,7 +378,7 @@
 !    gas-solid is started.
 !  </description>
 !  <range min="0" max="+Inf" />
-      NFACTOR = 10
+      NFACTOR = 0
 !</keyword>
 
 !<keyword category="Discrete Element Model" required="false">
@@ -749,6 +749,13 @@
 !</keyword>
 
 
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Flag to turn on/off optimizing the list of facets at each des grid cell
+!  </description>
+!  <dependent keyword="USE_STL" value=".TRUE."/>
+      MINIMIZE_DES_FACET_LIST =.TRUE.
+!</keyword>
 
 !#####################################################################!
 !                          Particle In Cell                           !

@@ -19,9 +19,13 @@
 ! offset for periodic boundaries
       double precision, dimension(:,:), allocatable :: dcycl_offset
 
+      type array
+         double precision, dimension(:), allocatable :: facebuf
+      end type array
+
 ! following variables used for sendrecv ghost particles and particle exchange
-      double precision, dimension(:,:), allocatable :: dsendbuf
-      double precision, dimension(:,:), allocatable :: drecvbuf
+      type(array), dimension(:), allocatable :: dsendbuf
+      type(array), dimension(:), allocatable :: drecvbuf
 
       integer,dimension(:),allocatable:: isendcnt
       integer,dimension(:),allocatable:: isendreq
@@ -75,7 +79,6 @@
       subroutine des_dbgmpi(ptype)
 
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PEA
       use discretelement, only: iGLOBAL_ID
 
       use discretelement, only: S_TIME
@@ -83,6 +86,7 @@
       use discretelement, only: DO_NSEARCH
       use discretelement, only: iGHOST_CNT
       use discretelement, only: MAX_PIP, PIP
+      use discretelement, only: is_ghost, is_nonexistent, is_normal, is_entering_ghost, is_exiting_ghost
 
       use geometry, only: NO_K
       use compar, only: myPE
@@ -98,7 +102,7 @@
 !-----------------------------------------------
 ! local varaiables
 !-----------------------------------------------
-      character (30) filename
+      character (255) filename
       integer lcurpar,lpacketsize,lface,lparcnt,lbuf,lindx,ltordimn
       integer lneighcnt,lneighindx
       integer lsize
@@ -107,7 +111,7 @@
 !-----------------------------------------------
 
       write(filename,'("dbg_desmpi",I4.4,".dat")') mype
-      open(44,file=filename)
+      open(44,file=filename,convert='big_endian')
       select case(ptype)
       case (1)
          write(44,*)&
@@ -124,7 +128,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(1,lface)
+            lparcnt = dsendbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -136,7 +140,7 @@
                 "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(dsendbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -145,7 +149,7 @@
          lpacketsize = 2*dimn + ltordimn+ 5
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = drecvbuf(1,lface)
+            lparcnt = drecvbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -157,7 +161,7 @@
                  "-----------------------------------------------------"
                do lcurpar = 1,lparcnt
                   lbuf = (lcurpar-1) * lpacketsize + ibufoffset
-                  write(44,*) lcurpar,(drecvbuf(lindx,lface),lindx=lbuf,lbuf+lpacketsize-1)
+                  write(44,*) lcurpar,(drecvbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lpacketsize-1)
                end do
             end if
          end do
@@ -173,19 +177,19 @@
           lparcount = 1
           do lcurpar=1,max_pip
              if (lparcount.gt.pip) exit
-             if (.not.pea(lcurpar,1))cycle
+             if (is_nonexistent(lcurpar))cycle
              lparcount=lparcount + 1
              xpos = des_pos_new(1,lcurpar)
              ypos = des_pos_new(2,lcurpar)
              li=iofpos(xpos);lj=jofpos(ypos)
-             write(44,*)pea(lcurpar,4),xpos,ypos,li,lj,dg_funijk(li,lj,1)
+             write(44,*)(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
       case (5)
          ltordimn = merge(1,3,NO_K)
          lpacketsize = 9*dimn + ltordimn*4 + 13
          do lface =1,dimn*2
             if (.not.iexchflag(lface))cycle
-            lparcnt = dsendbuf(1,lface)
+            lparcnt = dsendbuf(1+mod(lface,2))%facebuf(1)
             if (lparcnt .gt. 0) then
                write(44,*) &
                 "------------------------------------------------------"
@@ -197,51 +201,51 @@
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 8
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "phase density vol mass omoi pos_old"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 5+dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "pos_new     vel_old   vel_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 3*dimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "omega_old     omega_new"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = ltordimn*2
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "acc_old     rot_acc_old   fc "
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
                   write(44,*) "fn ft tow"
                   write(44,*) &
                  "-----------------------------------------------------"
                   lsize = 2*dimn + ltordimn
-                  write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                  write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                   lbuf = lbuf + lsize
 
 ! print neighbour information
-                  lneighcnt =dsendbuf(lbuf,lface);lbuf = lbuf + 1
+                  lneighcnt =dsendbuf(1+mod(lface,2))%facebuf(lbuf);lbuf = lbuf + 1
                   write(44,*) "total neighbour=",lneighcnt
                   write(44,*) "neighbou",lneighcnt
                   do lneighindx = 1, lneighcnt
                      lsize = 3
-                     write(44,'(5(2x,f8.4))') (dsendbuf(lindx,lface),lindx=lbuf,lbuf+lsize-1)
+                     write(44,'(5(2x,f8.4))') (dsendbuf(1+mod(lface,2))%facebuf(lindx),lindx=lbuf,lbuf+lsize-1)
                      lbuf = lbuf + lsize
                   enddo
                enddo
@@ -262,14 +266,14 @@
          write(44,*) "-----------------------------------------------"
       case (7)
          write(44,*) "-----------------------------------------------"
-         write(44,*) "pip and max_pip" , pip, max_pip,pea(1,1)
+         write(44,*) "pip and max_pip" , pip, max_pip,.not.is_nonexistent(1)
          write(44,*) s_time
          lparcnt = 1
          do lcurpar =1,max_pip
             if(lparcnt.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
+            if(is_nonexistent(lcurpar)) cycle
             lparcnt = lparcnt+1
-            if(pea(lcurpar,4)) cycle
+            if(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
             write(44,*) "position new ", des_pos_new(:,lcurpar)
          end do

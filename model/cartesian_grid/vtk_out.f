@@ -1,5 +1,35 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
+!  Module name: WRITE_DBG_VTU_AND_VTP_FILES                            C
+!  Purpose: Writes the cell and particle data in VTK format            C
+!           for debug regions only.                                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 22-Jul-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE WRITE_DBG_VTU_AND_VTP_FILES
+
+      use discretelement, only: DISCRETE_ELEMENT
+      use vtp, only: write_vtp_file
+      use vtk, only: DIMENSION_VTK
+
+      IMPLICIT NONE
+      INTEGER :: LC
+
+      DO LC = 1, DIMENSION_VTK
+         CALL WRITE_VTU_FILE(LC,1)
+         IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,1)
+      ENDDO
+
+      END SUBROUTINE WRITE_DBG_VTU_AND_VTP_FILES
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
 !  Module name: WRITE_VTU_FILE                                         C
 !  Purpose: Writes the cell data grid in VTK format (Unstructured VTU) C
 !           Binary format                                              C
@@ -12,7 +42,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE WRITE_VTU_FILE(LCV)
+  SUBROUTINE WRITE_VTU_FILE(LCV,MODE)
 
       USE compar
       USE constant
@@ -59,11 +89,15 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
 
       ! There is nothing to write if we are not in adefined vtk region
       VTK_REGION = LCV
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
       IF(VTK_DATA(LCV)/='C') RETURN
+      IF(MODE==0.AND.(VTK_DBG_FILE(LCV))) RETURN
+      IF(MODE==1.AND.(.NOT.VTK_DBG_FILE(LCV))) RETURN
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
@@ -94,9 +128,9 @@
 
       CALL SETUP_VTK_REGION
 
-      CALL OPEN_VTU_FILE_BIN
+      CALL OPEN_VTU_FILE_BIN(MODE)
 
-      CALL OPEN_PVD_FILE
+      IF(MODE==0) CALL OPEN_PVD_FILE
 
       CALL CLEAN_GEOMETRY
 
@@ -306,14 +340,14 @@
       ENDDO ! PASS LOOP, EITHER HEADER OR DATA
 
 
-      CALL CLOSE_VTU_FILE_BIN
-      CALL UPDATE_AND_CLOSE_PVD_FILE
+      CALL CLOSE_VTU_FILE_BIN(MODE)
+      IF(MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
-         OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+         OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
          DO L = 1, DIMENSION_VTK
             IF(VTK_DEFINED(L)) WRITE(VTU_FRAME_UNIT,*) L,FRAME(L)
          ENDDO
@@ -323,11 +357,9 @@
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTU_FILE
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -343,7 +375,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE OPEN_VTU_FILE_BIN
+  SUBROUTINE OPEN_VTU_FILE_BIN(MODE)
 
       USE compar
       USE constant
@@ -367,6 +399,8 @@
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT,BUFF1,BUFF2,L
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
 
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
@@ -377,7 +411,7 @@
       IF(TIME_DEPENDENT_FILENAME) THEN
          INQUIRE(FILE=VTU_FRAME_FILENAME,EXIST=VTU_FRAME_FILE_EXISTS)
          IF(VTU_FRAME_FILE_EXISTS) THEN
-            OPEN(UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
+            OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_FRAME_UNIT, FILE = TRIM(VTU_FRAME_FILENAME))
             DO L = 1, DIMENSION_VTK
                IF(VTK_DEFINED(L)) THEN
                   READ(VTU_FRAME_UNIT,*)BUFF1,BUFF2
@@ -400,14 +434,14 @@
 
 
 ! For distributed I/O, define the file name for each processor
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
          ELSE
             WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
          ENDIF
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -429,12 +463,12 @@
       ENDIF
 
 ! Open File
-!      OPEN(UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
+!      OPEN(CONVERT='BIG_ENDIAN',UNIT = VTU_UNIT, FILE = TRIM(VTU_FILENAME),FORM='BINARY',IOSTAT=ISTAT)
 
 
       IF(NUMBER_OF_VTK_CELLS>0) THEN
 
-         OPEN(UNIT     = VTU_UNIT,           &
+         OPEN(CONVERT='BIG_ENDIAN',UNIT     = VTU_UNIT,           &
               FILE     = TRIM(VTU_FILENAME), &
               FORM     = 'UNFORMATTED',      &  ! works with gfortran 4.3.4 and ifort 10.1 but may not be supported by all compilers
                                                 ! use 'BINARY' if 'UNFORMATTED' is not supported
@@ -479,7 +513,7 @@
 
       IF (myPE == PE_IO.AND.BDIST_IO) THEN
 
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
             WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -487,7 +521,7 @@
 
          IF(TRIM(VTU_DIR)/='.') PVTU_FILENAME='./'//TRIM(VTU_DIR)//'/'//PVTU_FILENAME
 
-         OPEN(UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
+         OPEN(CONVERT='BIG_ENDIAN',UNIT = PVTU_UNIT, FILE = TRIM(PVTU_FILENAME))
 
          WRITE(PVTU_UNIT,100) '<?xml version="1.0"?>'
          WRITE(PVTU_UNIT,110) '<!-- Time =',TIME,' sec. -->'
@@ -1194,7 +1228,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE CLOSE_VTU_FILE_BIN
+  SUBROUTINE CLOSE_VTU_FILE_BIN(MODE)
 
       USE compar
       Use run
@@ -1208,6 +1242,9 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_VTK_CELL_COUNT
       INTEGER :: IERR
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+
 
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
@@ -1233,7 +1270,7 @@
 
          DO N = 0,NumPEs-1
             IF(ALL_VTK_CELL_COUNT(N)>0) THEN
-               IF(TIME_DEPENDENT_FILENAME) THEN
+               IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                   WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
                ELSE
                   WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N
@@ -1315,7 +1352,7 @@
          IF(RUN_TYPE == 'NEW'.OR.RUN_TYPE=='RESTART_2')THEN
             ! For a new or RESTART_2 run, the pvd file should not exist, and is created with appropriate header
             IF (.NOT.PVD_EXISTS) THEN
-               OPEN(UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
+               OPEN(CONVERT='BIG_ENDIAN',UNIT = PVD_UNIT, FILE = TRIM(PVD_FILENAME))
                WRITE(PVD_UNIT,100) '<?xml version="1.0"?>'
                WRITE(PVD_UNIT,100) '<VTKFile type="Collection" version="0.1" byte_order="LittleEndian">'
                WRITE(PVD_UNIT,100) '<Collection>'
@@ -1335,7 +1372,7 @@
                CALL MFIX_EXIT(myPE)
             ELSE
            ! If it already exists, go to the bottom of the file and prepare to append data (remove last two lines)
-               OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
                BACKSPACE(PVD_UNIT)
                BACKSPACE(PVD_UNIT)
                PVD_FILE_INITIALIZED(VTK_REGION)=.TRUE.
@@ -1344,7 +1381,7 @@
       ELSE
          ! When properly initialized, open the file and go to the
          ! bottom of the file and prepare to append data (remove last two lines)
-         OPEN(UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE = TRIM(PVD_FILENAME),POSITION="APPEND",STATUS='OLD')
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
       ENDIF
@@ -1390,7 +1427,7 @@
 
       IMPLICIT NONE
 
-      CHARACTER (LEN=32)  :: FILENAME
+      CHARACTER (LEN=255)  :: FILENAME
       CHARACTER (LEN=5)   :: EXT
 
       IF (myPE /= PE_IO) RETURN
@@ -1500,7 +1537,7 @@
 
       LOGICAL :: CLIP_FLAG
 
-      CHARACTER (LEN=32) :: FILENAME
+      CHARACTER (LEN=255) :: FILENAME
 
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER, IERROR
@@ -1612,7 +1649,7 @@
 
       FILENAME= TRIM(RUN_NAME) // '_boundary.vtk'
       FILENAME = TRIM(FILENAME)
-      OPEN(UNIT = 123, FILE = FILENAME)
+      OPEN(CONVERT='BIG_ENDIAN',UNIT = 123, FILE = FILENAME)
       WRITE(123,1001)'# vtk DataFile Version 2.0'
       WRITE(123,1001)'3D CUT-CELL SURFACE'
       WRITE(123,1001)'ASCII'
@@ -3018,16 +3055,9 @@
 
        ENDIF
 
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE CLEAN_GEOMETRY
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -3243,11 +3273,6 @@
 
       ENDIF
 
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION
-

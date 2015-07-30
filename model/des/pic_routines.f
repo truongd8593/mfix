@@ -31,39 +31,18 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      INTEGER IJK, I, J, K
-      INTEGER NN, FACTOR, NP, BCV_I, LL, PC, TIME_LOOP_COUNT
+      INTEGER NN, FACTOR, TIME_LOOP_COUNT
 
 ! Local variables to keep track of time when dem restart and des
 ! write data need to be written when des_continuum_coupled is F
       DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
 
-! Temporary variables when des_continuum_coupled is T to track
-! changes in solid time step
-      DOUBLE PRECISION TMP_DTS, DTSOLID_TMP
-      CHARACTER(LEN=5) :: FILENAME
-
-
-! Logical to see whether this is the first entry to this routine
-      LOGICAL,SAVE:: FIRST_PASS = .TRUE.
-
-! temp
-      DOUBLE PRECISION xpos,ypos, zpos, NORM_CF(3), DIST
-
-
-      DOUBLE PRECISION :: DES_KE_VEC(DIMN)
-
 ! time till which the PIC loop will be run
       double precision :: TEND_PIC_LOOP
 ! number of PIC time steps
       Integer :: PIC_ITERS
-! Identifies that the indicated particle is of interest for debugging
-      LOGICAL FOCUS
 ! Global number of parcels.
       INTEGER :: gPIP
-
-
-
 
       CALL INIT_ERR_MSG("PIC_TIME_MARCH")
 
@@ -242,11 +221,8 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! local variable used for debugging
-      LOGICAL :: FOCUS
 ! general i, j, k indices
-      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
-                 IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK
+      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
@@ -325,11 +301,8 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! local variable used for debugging
-      LOGICAL :: FOCUS
 ! general i, j, k indices
-      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,&
-                 IPJPK, IPJKP, IJPKP, IPJPKP, II, JJ, KK
+      INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
@@ -424,19 +397,11 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER M, IDIM
-      INTEGER I, J, K, IJK, IJK_C
+      INTEGER IJK, IJK_C
 
-      DOUBLE PRECISION D(DIMN), DIST,  DP_BAR, COEFF_EN, COEFF_EN2
+      DOUBLE PRECISION COEFF_EN, COEFF_EN2
 
-      DOUBLE PRECISION DELUP(DIMN), UPRIMETAU(DIMN), UPRIMETAU_INT(DIMN), PS_FORCE(DIMN), VEL_ORIG(DIMN)
-! index to track accounted for particles
-      INTEGER PC , epg_min_loc(1)
-
-! Logical for local debug warnings
-      LOGICAL DES_LOC_DEBUG
-
-! maximum distance particles can move in MPPIC
-      DOUBLE PRECISION MAXDIST_PIC, UPRIMEMOD, UPRIMEMODNEW, signvel
+      DOUBLE PRECISION DELUP(DIMN), PS_FORCE(DIMN), VEL_ORIG(DIMN)
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
@@ -653,10 +618,10 @@
       implicit none
 
       ! general i, j, k indices
-      INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM, IDIM, M
+      INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IDIM, M
 
       ! temporary variables used to calculate pressure at scalar cell edge
-      DOUBLE PRECISION TEMP1, TEMP2, avg_factor, VOL_TOT_VEC(3), VOL_TOT_SCAL
+      DOUBLE PRECISION avg_factor, VOL_TOT_VEC(3), VOL_TOT_SCAL
 
       integer :: korder, iw,ie,js,jn,kb,ktp, onew, pcell(3), cur_ijk, NP, nindx
 
@@ -1033,13 +998,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Error index
-      INTEGER :: IER
-! Boundary condition
-      INTEGER ::  L
 ! Indices
-      INTEGER :: I, J, K, IM, I1, I2, J1, J2, K1, K2, IJK,&
-                 JM, KM, IJKW, IMJK, IPJK, IP, IJK_WALL
+      INTEGER :: I1, J1, K1, IJK,&
+                 IJK_WALL
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1112,13 +1073,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Error index
-      INTEGER          IER
-! Boundary condition
-      INTEGER          L
 ! Indices
-      INTEGER          I,  J, K, JM, I1, I2, J1, J2, K1, K2, IJK,&
-                       IM, KM, IJKS, IJMK, IJPK, IJK_WALL
+      INTEGER          I1, J1, K1, IJK,&
+                       IJK_WALL
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1189,13 +1146,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Error index
-      INTEGER :: IER
-! Boundary condition
-      INTEGER :: L
 ! Indices
-      INTEGER :: I, J, K, KM, I1, I2, J1, J2, K1, K2, IJK,&
-                 IM, JM, IJKB, IJKM, IJKP, IJK_WALL
+      INTEGER :: I1, J1, K1, IJK,&
+                 IJK_WALL
 !-----------------------------------------------
 
 ! Set the default boundary conditions
@@ -1245,7 +1198,7 @@
 !                                                                      !
 !  Purpose:                                                            !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE WRITE_NODEDATA(bufin, funit)
+      SUBROUTINE WRITE_NODEDATA(funit)
       USE param
       USE param1
       USE parallel
@@ -1261,7 +1214,6 @@
 
       IMPLICIT NONE
       integer, intent(in) :: funit
-      double precision, dimension(:), intent(in)  :: bufin
 
       integer :: ijk, i, j,k
 
@@ -1304,11 +1256,10 @@
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
-      character(LEN=100) :: filename
-      logical finish
+      character(LEN=255) :: filename
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
+      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
       IF(DIMN.eq.2) then
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
               ' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
@@ -1347,7 +1298,7 @@
       return
 
       WRITE(FILENAME,'(A,"_",I5.5,".DAT")') TRIM(RUN_NAME)//'_PS_FORCE_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown')
+      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
 
       IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
            ' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
@@ -1358,9 +1309,9 @@
       DO LL = 1, MAX_PIP
 
          IF(PC .GT. PIP) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          pc = pc+1
-         IF(PEA(LL,4)) CYCLE
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
               (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
@@ -1371,8 +1322,3 @@
       !read(*,*) finish
       !if(finish) STOp
       END SUBROUTINE WRITE_MPPIC_VEL_S
-
-
-
-
-

@@ -12,16 +12,14 @@
 !  Notes: see mark_phase_4_cor for more details                        C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 5-JUL-96   C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_VOL_FR(P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
 
-!-----------------------------------------------
+
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE parallel
@@ -42,9 +40,9 @@
       USE functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy Arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Solids pressure
       DOUBLE PRECISION, INTENT(IN) :: P_star(DIMENSION_3)
 ! Gas density
@@ -57,9 +55,9 @@
       DOUBLE PRECISION, INTENT(INOUT) :: ROP_s(DIMENSION_3, DIMENSION_M)
 ! error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! volume of particle type M for GHD theory
       DOUBLE PRECISION :: VOL_M
 ! volume fraction of close-packed region
@@ -90,8 +88,15 @@
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
 
-!-----------------------------------------------
+      LOGICAL, PARAMETER :: REPORT_NEG_VOLFRAC = .TRUE.
 
+! Flag to write log header
+      LOGICAL :: wHeader
+!---------------------------------------------------------------------//
+
+
+! Initialize:
+      wHeader = .TRUE.
 ! Initialize error flag.
       Err_l = 0
 
@@ -198,7 +203,10 @@
                EP_G(IJK) = ONE - SUMVF
 
 ! Set error flag for negative volume fraction.
-               IF (EP_G(IJK) < ZERO) Err_l(myPE) = 110
+               IF (EP_G(IJK) < ZERO) THEN
+                  Err_l(myPE) = 110
+                  IF(REPORT_NEG_VOLFRAC) CALL EPgErr_LOG(IJK, wHeader)
+               ENDIF
 
                ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
             ELSE
@@ -221,4 +229,203 @@
       RETURN
       END SUBROUTINE CALC_VOL_FR
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SET_EP_FACTORS                                          C
+!  Purpose: Set multiplication factors to ep_g to control the form     C
+!  of the governing equations                                          C
+!                                                                      C
+!  References:                                                         C
+!  Anderson and Jackson, A fluid mechanical description of fluidized   C
+!     beds, Ind. Eng. Chem. Fundam., 6(4) 1967, 527-539.               C
+!  Ishii, Thermo-fluid dynamic theory of two-phase flow, des Etudes    C
+!     et Recherches D'Electricite de France, Eyrolles, Paris, France   C
+!     1975.                                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SET_EP_FACTORS
 
+! Modules
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use fldvar, only: ep_g, ep_s
+      use fldvar, only: epg_ifac, eps_ifac, epg_jfac
+      use param1, only: one, undefined
+      use physprop, only: mmax, mu_s0
+      use run, only: jackson, ishii
+      IMPLICIT NONE
+! Local variables
+!---------------------------------------------------------------------//
+! indices
+      INTEGER :: ijk, m
+!---------------------------------------------------------------------//
+      epg_jfac(:) = one
+      epg_ifac(:) = one
+      eps_ifac(:,:) = one
+
+      if (jackson) then
+         do ijk = ijkstart3, ijkend3
+            epg_jfac(ijk) = ep_g(ijk)
+         enddo
+      endif
+      if (ishii) then
+         do ijk = ijkstart3, ijkend3
+            epg_ifac(ijk) = ep_g(ijk)
+            do m = 1, mmax
+! This seems more appropriate for non-granular systems
+! So currently only incorporate this for 'constant' viscosity cases
+               IF (mu_s0(m) /= undefined) THEN
+                  eps_ifac(ijk,m) = ep_s(ijk,m)
+               ENDIF
+            enddo
+         enddo
+      endif
+
+      RETURN
+      END SUBROUTINE SET_EP_FACTORS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: EPgErr_LOG                                              !
+!  Purpose: Record information about the location and conditions that  !
+!           resulted in a negative gas phase volume fraction.          !
+!                                                                      !
+!  Author: J. Musser                                  Date: 16-APR-15  !
+!  Reviewer:                                          Date:            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE EPgErr_LOG(IJK, tHeader)
+
+! Simulation time
+      use run, only: TIME
+! Gas phase pressure.
+      use fldvar, only: EP_g, EP_s, ROP_s, RO_s, U_s, V_s, W_s
+      use cutcell
+
+      use physprop, only: SMAX
+      use compar
+      use indices
+      use functions
+      use error_manager
+
+
+      IMPLICIT NONE
+
+      INTEGER, intent(in) :: IJK
+      LOGICAL, intent(inout) :: tHeader
+
+      LOGICAL :: lExists
+      CHARACTER(LEN=255) :: lFile
+      INTEGER, parameter :: lUnit = 4868
+      LOGICAL, save :: fHeader = .TRUE.
+
+      INTEGER :: M
+
+      lFile = '';
+      if(numPEs > 1) then
+         write(lFile,"('EPgErr_',I4.4,'.log')") myPE
+      else
+         write(lFile,"('EPgErr.log')")
+      endif
+      inquire(file=trim(lFile),exist=lExists)
+      if(lExists) then
+         open(lUnit,file=trim(adjustl(lFile)),                         &
+            status='old', position='append')
+      else
+         open(lUnit,file=trim(adjustl(lFile)), status='new')
+      endif
+
+      if(fHeader) then
+         write(lUnit,1000)
+         fHeader = .FALSE.
+      endif
+
+      if(tHeader) then
+         write(lUnit,"(/2x,'Simulation time: ',g12.5)") TIME
+         tHeader = .FALSE.
+      endif
+
+      write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
+      write(lUnit,"(6x,A,1X,g12.5)",ADVANCE='NO') 'EP_g:', EP_g(IJK)
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('EP_s',M)), EP_s(IJK,M)
+      ENDDO
+      write(lUnit,"(' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('RO_s',M)), RO_s(IJK,M)
+      ENDDO
+      write(lUnit,"(' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('ROPs',M)), ROP_s(IJK,M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('U_se',M)), U_s(IJK,M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('V_sn',M)), V_s(IJK,M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('W_st',M)), W_s(IJK,M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('U_sw',M)), U_s(WEST_OF(IJK),M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('V_ss',M)), V_s(SOUTH_OF(IJK),M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+      write(lUnit,"(24x)", ADVANCE='NO')
+      DO M=1,SMAX
+         write(lUnit,"(2x,A,1X,g12.5)", ADVANCE='NO') &
+            trim(iVar('W_sb',M)), W_s(BOTTOM_OF(IJK),M)
+      ENDDO
+      write(lUnit,"(24x,' ')")
+
+
+      if(CARTESIAN_GRID) then
+         write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)
+         write(lUnit,"(6x,A,1X,L1)") 'Small Cell:', SMALL_CELL_AT(IJK)
+         write(lUnit,"(6x,'Coordinates (E/N/T): ',1X,3(2x, g17.8))") &
+            xg_e(I_OF(IJK)), yg_n(J_of(ijk)), zg_t(k_of(ijk))
+      endif
+
+      close(lUnit)
+
+      RETURN
+
+ 1000 FORMAT('One or more cells have reported a negative gas volume ', &
+         'fraction (EP_g).',/)
+
+ 1001 FORMAT(/4X,'IJK: ',I8,7X,'I: ',I4,'  J: ',I4,'  K: ',I4)
+
+      END SUBROUTINE EPgErr_LOG

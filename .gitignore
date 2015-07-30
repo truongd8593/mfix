@@ -1,6 +1,7 @@
 *.0f
 *.0inc
 *.a
+*.d
 *.deps
 *.exe
 *.mic

@@ -161,8 +161,9 @@
       SUBROUTINE checkSpeciesInc(lNg, SA_g, lMMx, lNs, SA_s,           &
          lNRxn,  lRNames, lNRxn_DES, lRNames_DES)
 
-      USE error_manager
-      USE toleranc
+      use run, only: REINITIALIZING
+      use error_manager
+      use toleranc
       USE utilities, ONLY: blank_line, seek_comment
 
       IMPLICIT NONE
@@ -191,7 +192,7 @@
 ! File unit.
       INTEGER, PARAMETER :: FUNIT = 167
 ! Full path to Burcat and Ruscic database
-      CHARACTER(len=256) :: FILENAME
+      CHARACTER(len=255) :: FILENAME
       CHARACTER(len=128) :: INPUT
 ! Loop counters
       INTEGER :: SRC, M
@@ -215,17 +216,21 @@
 
 ! Check the local run directory.
          CASE(1); FILENAME = 'species.inc'
-            OPEN(UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=FUNIT,FILE=trim(FILENAME),STATUS='OLD',IOSTAT=IOS)
             IF(IOS /= 0) CYCLE SRC_LP
-            WRITE(ERR_MSG, 1000)'species.inc'
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            IF(.NOT.REINITIALIZING)THEN
+               WRITE(ERR_MSG, 1000)'species.inc'
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
 
  1000 FORMAT(/2X,'Verifying reaction aliases in ',A)
 
 ! No species.inc file was located.
          CASE DEFAULT
-            WRITE(ERR_MSG, 1004)
-            CALL FLUSH_ERR_MSG
+            IF(.NOT.REINITIALIZING)THEN
+               WRITE(ERR_MSG, 1004)
+               CALL FLUSH_ERR_MSG
+            ENDIF
             EXIT SRC_LP
          END SELECT
 
@@ -548,6 +553,7 @@
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
       SUBROUTINE WRITE_RS0(LINE, UFLAG)
 
+      use run, only: REINITIALIZING
       use error_manager
 
       IMPLICIT NONE
@@ -558,8 +564,10 @@
       CALL INIT_ERR_MSG("WRITE_RXN_SUMMARY --> WRITE_RS0")
 
       IF(UFLAG == -1)THEN
-         WRITE(ERR_MSG,*) LINE
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+         IF(.NOT.REINITIALIZING) THEN
+            WRITE(ERR_MSG,*) LINE
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+         ENDIF
       ELSE
          WRITE(UFLAG,*) LINE
       ENDIF

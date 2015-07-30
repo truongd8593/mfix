@@ -67,10 +67,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!
-!                      Error index
-      INTEGER          IER
-!
 !                      Indices
       INTEGER          I, J, K, IJK, IJKT, IMJK, IJKP, IMJKP,&
                        IJKE, IJKW, IJKTE, IM, IPJK

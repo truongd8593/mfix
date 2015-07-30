@@ -61,7 +61,6 @@
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
       use bc, only: bc_i_w, bc_i_e
-      use bc, only: bc_u_g, bc_v_g, bc_w_g
       use bc, only: bc_jet_g
       use bc, only: bc_time
       use bc, only: bc_jet_gh, bc_dt_h
@@ -90,8 +89,6 @@
       INTEGER :: I, J, K, IJK
 ! IJK index for setting velocity bc
       INTEGER :: IJK2
-! Solids phase index
-      INTEGER :: M
 !---------------------------------------------------------------------//
 
       IF (TIME + 0.1d0*DT>=BC_TIME(BCV) .AND. &
@@ -159,6 +156,7 @@
       use funits, only: dmp_log, unit_log
       use param1, only: undefined, zero
       use physprop, only: smax
+      use machine, only: start_log, end_log
       use run, only: time, dt, tstop
       IMPLICIT NONE
 
@@ -222,33 +220,30 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use bc, only: bc_plane
-      use bc, only: bc_k_b, bc_k_t
-      use bc, only: bc_j_s, bc_j_n
+      use bc, only: bc_dt_0, bc_time
       use bc, only: bc_i_w, bc_i_e
+      use bc, only: bc_j_s, bc_j_n
+      use bc, only: bc_k_b, bc_k_t
+      use bc, only: bc_massflow_g, bc_massflow_s
+      use bc, only: bc_mout_g, bc_mout_s
+      use bc, only: bc_out_n
+      use bc, only: bc_plane
       use bc, only: bc_u_g, bc_v_g, bc_w_g
       use bc, only: bc_u_s, bc_v_s, bc_w_s
-
-      use bc, only: bc_massflow_g, bc_massflow_s
       use bc, only: bc_volflow_g, bc_volflow_s
-      use bc, only: bc_dt_0, bc_time
-      use bc, only: bc_out_n
-      use bc, only: bc_mout_g, bc_mout_s
       use bc, only: bc_vout_g, bc_vout_s
-
+      use compar, only: dead_cell_at
       use fldvar, only: u_g, v_g, w_g
       use fldvar, only: u_s, v_s, w_s, rop_s
-
-      use physprop, only: smax, mmax
-      use param1, only: undefined, zero, small_number
-      use run, only: time, dt, tstop
-      use run, only: kt_type_enum, ghd_2007
-
-      use funits, only: dmp_log, unit_log
+      use functions, only: funijk
       use functions, only: im_of, jm_of, km_of
       use functions, only: is_on_mype_plus2layers
-      use functions, only: funijk
-      use compar, only: dead_cell_at
+      use funits, only: dmp_log, unit_log
+      use machine, only: start_log, end_log
+      use param1, only: undefined, zero, small_number
+      use physprop, only: smax, mmax
+      use run, only: kt_type_enum, ghd_2007
+      use run, only: time, dt, tstop
 
       IMPLICIT NONE
 ! Dummy arguments

@@ -38,31 +38,42 @@
 ! Generally for inlet/outlet related routines but also employed in
 ! tracking for parallelization
 
-! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true.
-! It is used with the inlet/outlet to skip indices that do not represent
-! particles in the system or indices that represent particles that have
-! exited the system.
+! Dynamic particle states:
 
-! PEA(n,2) : This column identifies a particle as 'new' if true.
+! NONEXISTENT: This state is used with the inlet/outlet to skip
+! indices that do not represent particles in the system or indices
+! that represent particles that have exited the system.
+
+! ENTERING: This state identifies a particle as 'new' if true.
 ! Particles with a classification of 'new' do not react when in contact
 ! with a wall or another particle, however existing particles do collide
 ! and interact with 'new' particles. The classification allows new
 ! particles to push particles already in the system out of the way when
 ! entering to prevent overlap.  This flag is also used when the center
 ! of a particle crosses a dem outlet (i.e. an exiting particle; see
-! PEA(n,3)) so that the particle will maintain its present trajectory
+! EXITING) so that the particle will maintain its present trajectory
 ! until it has fully exited the system
 
-! PEA(n,3) : This column identifies a particle as 'exiting' if true.
+! EXITING: This state identifies a particle as 'exiting' if true.
 ! If a particle initiates contact with a wall surface designated as a
 ! des outlet, this flag is set to true. With this classification the
 ! location of the particle is checked to assess if the particle has
 ! fully exited the system.  At this point, the particle is removed
 ! from the list.
 
-! PEA(n,4) : for ghost particles
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (PARTICLES,4)
+! GHOST, ENTERING_GHOST, EXITING_GHOST: for ghost particles
+
+      INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
+
+      INTEGER, PARAMETER :: nonexistent=0
+      INTEGER, PARAMETER :: normal=1
+      INTEGER, PARAMETER :: entering=2
+      INTEGER, PARAMETER :: exiting=3
+      INTEGER, PARAMETER :: normal_ghost=4
+      INTEGER, PARAMETER :: entering_ghost=5
+      INTEGER, PARAMETER :: exiting_ghost=6
+
+      private :: nonexistent, normal, entering, exiting, normal_ghost, entering_ghost, exiting_ghost
 
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
@@ -151,8 +162,6 @@
 ! End Output/debug controls
 !-----------------------------------------------------------------<<<
 
-
-
 ! DES - Continuum
       LOGICAL DISCRETE_ELEMENT
       LOGICAL DES_CONTINUUM_COUPLED
@@ -219,12 +228,8 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBOR_INDEX_OLD
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBORS
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBORS_OLD
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_NEIGHBOR
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_NEIGHBOR_OLD
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR_OLD
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_NEIGHBOR
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_NEIGHBOR_OLD
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: NEIGH_NUM,NEIGH_MAX
@@ -547,6 +552,10 @@
       Integer, dimension(:), allocatable :: STL_FACET_TYPE
 
       Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
+
+! Flag to turn on/off optimizing the list of facets at each des grid cell
+
+      LOGICAL :: MINIMIZE_DES_FACET_LIST
 !-----------------------------------------------------------------<<<
 
 
@@ -601,42 +610,97 @@
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!
-!  Subroutine: DES_CROSSPRDCT
-!  Purpose: Calculate the cross product of two vectors that both have
-!           either 2 or 3 elements and return the result in the first
-!           argument
-!
+!                                                                     !
+!  Subroutine: DES_CROSSPRDCT                                         !
+!  Purpose: Calculate the cross product of two 3D vectors.            !
+!                                                                     !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+      FUNCTION DES_CROSSPRDCT(XX,YY)
 
-      FUNCTION DES_CROSSPRDCT (XX,YY)
+      IMPLICIT NONE
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-        USE param
-        USE param1
-        use geometry, only: DO_K
-        IMPLICIT NONE
-!-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
-! sent vectors
+!---------------------------------------------------------------------//
+! Input vectors
       DOUBLE PRECISION, DIMENSION(3), INTENT(IN) :: XX, YY
-! returned result: cross product of vectors
+! Result: cross product of vectors
       DOUBLE PRECISION, DIMENSION(3) :: DES_CROSSPRDCT
-!-----------------------------------------------
+!......................................................................!
 
-      IF(DO_K) THEN
-         DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
-         DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
-      ELSE
-         DES_CROSSPRDCT(1) = ZERO
-         DES_CROSSPRDCT(2) = ZERO
-      ENDIF
-
+      DES_CROSSPRDCT(1) = XX(2)*YY(3) - XX(3)*YY(2)
+      DES_CROSSPRDCT(2) = XX(3)*YY(1) - XX(1)*YY(3)
       DES_CROSSPRDCT(3) = XX(1)*YY(2) - XX(2)*YY(1)
 
-    END FUNCTION DES_CROSSPRDCT
+      END FUNCTION DES_CROSSPRDCT
 
-  END MODULE DISCRETELEMENT
+      LOGICAL FUNCTION IS_NONEXISTENT(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_NONEXISTENT = (PARTICLE_STATE(PP)==NONEXISTENT)
+      END FUNCTION IS_NONEXISTENT
+
+      LOGICAL FUNCTION IS_NORMAL(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_NORMAL = (PARTICLE_STATE(PP)==NORMAL)
+      END FUNCTION IS_NORMAL
+
+      LOGICAL FUNCTION IS_ENTERING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_ENTERING = (PARTICLE_STATE(PP)==ENTERING)
+      END FUNCTION IS_ENTERING
+
+      LOGICAL FUNCTION IS_EXITING(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_EXITING = (PARTICLE_STATE(PP)==EXITING)
+      END FUNCTION IS_EXITING
+
+      LOGICAL FUNCTION IS_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_GHOST = (PARTICLE_STATE(PP)==NORMAL_GHOST)
+      END FUNCTION IS_GHOST
+
+      LOGICAL FUNCTION IS_ENTERING_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_ENTERING_GHOST = (PARTICLE_STATE(PP)==ENTERING_GHOST)
+      END FUNCTION IS_ENTERING_GHOST
+
+      LOGICAL FUNCTION IS_EXITING_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        IS_EXITING_GHOST = (PARTICLE_STATE(PP)==EXITING_GHOST)
+      END FUNCTION IS_EXITING_GHOST
+
+      SUBROUTINE SET_NONEXISTENT(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=NONEXISTENT
+      END SUBROUTINE SET_NONEXISTENT
+
+      SUBROUTINE SET_NORMAL(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=NORMAL
+      END SUBROUTINE SET_NORMAL
+
+      SUBROUTINE SET_ENTERING(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=ENTERING
+      END SUBROUTINE SET_ENTERING
+
+      SUBROUTINE SET_EXITING(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=EXITING
+      END SUBROUTINE SET_EXITING
+
+      SUBROUTINE SET_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=NORMAL_GHOST
+      END SUBROUTINE SET_GHOST
+
+      SUBROUTINE SET_ENTERING_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=ENTERING_GHOST
+      END SUBROUTINE SET_ENTERING_GHOST
+
+      SUBROUTINE SET_EXITING_GHOST(PP)
+        INTEGER, INTENT(IN) :: PP
+        PARTICLE_STATE(PP)=EXITING_GHOST
+      END SUBROUTINE SET_EXITING_GHOST
+
+      END MODULE DISCRETELEMENT

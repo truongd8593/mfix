@@ -31,9 +31,8 @@
       double precision eps
 ! error
       double precision h1,hmin
-      integer nok, nbad,I,J,K
-      double precision YY,XX
-      double precision max1, min1, max_min
+      integer nok, nbad,I,K
+      double precision max1, min1
 
       IF(.NOT.CALL_DQMOM) RETURN
 

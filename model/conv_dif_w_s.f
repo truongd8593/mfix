@@ -12,7 +12,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^CC
-      SUBROUTINE CONV_DIF_W_S(A_M, B_M, IER)
+      SUBROUTINE CONV_DIF_W_S(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -32,8 +32,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -49,19 +47,19 @@
 
              IF (DEF_COR) THEN
 ! USE DEFERRED CORRECTION TO SOLVE W_S
-                CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER)
-                IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (M, B_M, IER)
+                CALL STORE_A_W_S0 (A_M(1,-3,M), M)
+                IF (DISCRETIZE(5) > 1)CALL STORE_A_W_SDC (M, B_M)
 
              ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR W_S
                 IF (DISCRETIZE(5) == 0) THEN         ! 0 & 1 => FOUP
-                   CALL STORE_A_W_S0 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_W_S0 (A_M(1,-3,M), M)
                 ELSE
                    CALL STORE_A_W_S1 (A_M(1,-3,M), M)
                 ENDIF
              ENDIF
 
-            CALL DIF_W_IS (MU_S(1,M), A_M, M, IER)
+            CALL DIF_W_IS (MU_S(1,M), A_M, M)
           ENDIF
         ENDIF
       ENDDO
@@ -405,7 +403,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_W_S0(A_W_S, M, IER)
+      SUBROUTINE STORE_A_W_S0(A_W_S, M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -427,8 +425,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_W_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_W_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -544,7 +540,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_W_SDC(M, B_M, IER)
+      SUBROUTINE STORE_A_W_SDC(M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -561,10 +557,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3
@@ -585,8 +579,6 @@
       INTEGER, INTENT(IN) :: M
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

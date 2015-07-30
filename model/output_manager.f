@@ -7,7 +7,7 @@
 !  was done to simplify the time_march code.                           !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE OUTPUT_MANAGER(BATCHQ_END, FINISHED)
+      SUBROUTINE OUTPUT_MANAGER(EXIT_SIGNAL, FINISHED)
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -17,6 +17,9 @@
       use output, only: OUT_TIME, OUT_DT
       use output, only: USR_TIME, USR_DT
       use vtk, only:    VTK_TIME, VTK_DT
+
+      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
+      use output, only: RES_BACKUPS
 
       use output, only: DISK, DISK_TOT
 
@@ -38,7 +41,7 @@
       use param1, only: UNDEFINED
 
       use vtp, only: write_vtp_file
-
+      use machine, only: wall_time
 
       IMPLICIT NONE
 
@@ -46,7 +49,7 @@
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Flag that the the user specified batch time (plus buffer) is met.
-      LOGICAL, INTENT(IN) :: BATCHQ_END
+      LOGICAL, INTENT(IN) :: EXIT_SIGNAL
 ! Flag that a steady state case is completed.
       LOGICAL, INTENT(IN) :: FINISHED
 
@@ -63,10 +66,6 @@
 ! Wall time at the start of IO operations.
       DOUBLE PRECISION :: WALL_START
 
-! External function:
-!---------------------------------------------------------------------//
-! Returns the current wall time.
-      DOUBLE PRECISION :: WALL_TIME
 !......................................................................!
 
 
@@ -78,8 +77,14 @@
 ! Get the current time before any IO operations begin
       WALL_START = WALL_TIME()
 
+! Create a backup copy of the RES file.
+      IF(TIME+0.1d0*DT>=RES_BACKUP_TIME) THEN
+         RES_BACKUP_TIME = NEXT_TIME(RES_BACKUP_DT)
+         CALL BACKUP_RES
+      ENDIF
+
 ! Write restart file, if needed
-      IF(CHECK_TIME(RES_TIME) .OR. BATCHQ_END) THEN
+      IF(CHECK_TIME(RES_TIME) .OR. EXIT_SIGNAL) THEN
 
          RES_TIME = NEXT_TIME(RES_DT)
          CALL WRITE_RES1
@@ -139,12 +144,13 @@
       CALL FLUSH_NOTIFY_USER
 
 ! Write vtk file, if needed
+! Only regular (not debug) files are written (second argument is zero)
       IF(WRITE_VTK_FILES) THEN
          DO LC = 1, DIMENSION_VTK
             IF(CHECK_TIME(VTK_TIME(LC))) THEN
                VTK_TIME(LC) = NEXT_TIME(VTK_DT(LC))
-               CALL WRITE_VTU_FILE(LC)
-               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC)
+               CALL WRITE_VTU_FILE(LC,0)
+               IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,0)
             ENDIF
          ENDDO
       ENDIF
@@ -167,8 +173,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
-      CHECK_TIME = ((DT == UNDEFINED) .AND. FINISHED) .OR. &
-         (TIME + 0.1d0*DT>=lTIME) .OR. (TIME+0.1d0*DT>=TSTOP)
+      IF(DT == UNDEFINED) THEN
+         CHECK_TIME = FINISHED
+      ELSE
+         CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
+      ENDIF
 
       RETURN
       END FUNCTION CHECK_TIME
@@ -181,8 +190,11 @@
 
       DOUBLE PRECISION, INTENT(IN) :: lWRITE_DT
 
-      IF (DT /= UNDEFINED) &
+      IF (DT /= UNDEFINED) THEN
          NEXT_TIME = (INT((TIME + 0.1d0*DT)/lWRITE_DT)+1)*lWRITE_DT
+      ELSE
+         NEXT_TIME = lWRITE_DT
+      ENDIF
 
       RETURN
       END FUNCTION NEXT_TIME
@@ -272,7 +284,7 @@
       use run, only: NSTEP
 
       use error_manager
-
+      use machine, only: wall_time
 
       DOUBLE PRECISION :: WALL_ELAP, WALL_LEFT, WALL_NOW
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT
@@ -301,8 +313,15 @@
          WALL_LEFT = (WALL_NOW-WALL_START)*(TSTOP-TIME)/               &
             max(TIME-TIME_START,1.0d-6)
          CALL GET_TUNIT(WALL_LEFT, UNIT_LEFT)
-         CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
-         CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+
+         IF (DT /= UNDEFINED) THEN
+            CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
+            CHAR_LEFT = trim(adjustl(CHAR_LEFT))
+         ELSE
+            CHAR_LEFT = '0.0'
+            UNIT_LEFT = 's'
+         ENDIF
+
 ! Notify the user of usage/remaining wall times.
          WRITE(ERR_MSG,2000)                                           &
             'Elapsed:', trim(CHAR_ELAP), trim(UNIT_ELAP),              &
@@ -318,59 +337,59 @@
       END SUBROUTINE FLUSH_NOTIFY_USER
 
       END SUBROUTINE OUTPUT_MANAGER
+
+
 !----------------------------------------------------------------------!
-!                                                                      !
-!                                                                      !
-!                                                                      !
+! Subroutine: INIT_OUTPUT_VARS                                         !
+! Purpose: Initialize variables used for controling ouputs of the      !
+! various files.                                                       !
 !----------------------------------------------------------------------!
       SUBROUTINE INIT_OUTPUT_VARS
 
+      use geometry, only: IJKMAX2
+      use machine, only: wall_time
+      use output, only: DISK, DISK_TOT
+      use output, only: ONEMEG
+      use output, only: OUT_TIME, OUT_DT
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
-      use output, only: OUT_TIME, OUT_DT
       use output, only: USR_TIME, USR_DT
-      use vtk, only:    VTK_TIME, VTK_DT
-
-      use output, only: DISK, DISK_TOT
-
-      use param1, only: N_SPX
+      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
+      use output, only: RES_BACKUPS
       use param, only: DIMENSION_USR
-      use vtk, only: DIMENSION_VTK
-
-
-      use physprop, only: MMAX, NMAX
-      use run, only: RUN_TYPE
-      use run, only: K_EPSILON
-      use param1, only: ZERO
-      use geometry, only: IJKMAX2
-
-      use vtk, only: DIMENSION_VTK
-      use vtk, only: WRITE_VTK_FILES
-      use vtk, only: VTK_TIME, VTK_DT
-
+      use param1, only: N_SPX
       use param1, only: UNDEFINED
+      use param1, only: ZERO
+      use physprop, only: MMAX, NMAX
+      use run, only: K_EPSILON
+      use run, only: RUN_TYPE
       use run, only: TIME, DT
-
+      use rxns, only: nRR
+      use scalars, only: NScalar
       use time_cpu, only: CPU_IO
       use time_cpu, only: TIME_START
       use time_cpu, only: WALL_START
-      use rxns, only: nRR
-      use scalars, only: NScalar
-      use output, only: ONEMEG
+      use vtk, only:    VTK_TIME, VTK_DT
+      use vtk, only: DIMENSION_VTK
+      use vtk, only: DIMENSION_VTK
+      use vtk, only: VTK_TIME, VTK_DT
+      use vtk, only: WRITE_VTK_FILES
+
+      use param1, only:  UNDEFINED_I
+
+      use funits, only: CREATE_DIR
 
       IMPLICIT NONE
 
 ! Disk space needed for one variable and each SPX file
       DOUBLE PRECISION :: DISK_ONE
 
-! External function for geting job wall time
-      DOUBLE PRECISION :: WALL_TIME
-
 ! Loop counter
       INTEGER :: LC
 
 ! Initialize times for writing outputs
-      OUT_TIME = TIME
+      OUT_TIME = merge(TIME, UNDEFINED, OUT_DT /= UNDEFINED)
+
 ! Initialize the amount of time spent on IO
       CPU_IO = 0.0d0
 
@@ -391,6 +410,7 @@
       DISK(11) = merge(2.0*DISK_ONE, ZERO, K_EPSILON)  ! K-Epsilon
 
 
+! Initizle RES and SPX_TIME
       IF (RUN_TYPE == 'NEW') THEN
          RES_TIME = TIME
          SPX_TIME(:N_SPX) = TIME
@@ -403,6 +423,12 @@
          ENDIF
       ENDIF
 
+! Initizle RES_BACKUP_TIME
+      RES_BACKUP_TIME = UNDEFINED
+      IF(RES_BACKUP_DT /= UNDEFINED) RES_BACKUP_TIME =                 &
+         RES_BACKUP_DT * (INT((TIME+0.1d0*DT)/RES_BACKUP_DT)+1)
+
+! Initialize USR_TIME
       DO LC = 1, DIMENSION_USR
          USR_TIME(LC) = UNDEFINED
          IF (USR_DT(LC) /= UNDEFINED) THEN
@@ -416,6 +442,7 @@
       ENDDO
 
 ! Initialize VTK_TIME
+
       IF(WRITE_VTK_FILES) THEN
          DO LC = 1, DIMENSION_VTK
             VTK_TIME(LC) = UNDEFINED
@@ -430,9 +457,132 @@
          ENDDO
       ENDIF
 
+! Create a subdir for RES backup files.
+      IF(RES_BACKUPS /= UNDEFINED_I) CALL CREATE_DIR('BACKUP_RES')
+
+
       WALL_START = WALL_TIME()
       TIME_START = TIME
 
       RETURN
       END SUBROUTINE INIT_OUTPUT_VARS
 
+
+
+!----------------------------------------------------------------------!
+! Subroutine: BACKUP_RES                                               !
+! Purpose: Shift existing RES file backup files by one index, then     !
+! create a copy of the current RES file.                               !
+!----------------------------------------------------------------------!
+      SUBROUTINE BACKUP_RES
+
+      use compar, only: myPE, PE_IO
+      use output, only: RES_BACKUPS
+      use discretelement, only: DISCRETE_ELEMENT
+
+      IMPLICIT NONE
+
+      CHARACTER(len=256) :: FNAME0, FNAME1
+
+      INTEGER :: LC
+
+      IF(myPE /= PE_IO) RETURN
+
+! Shift all the existing backups by one.
+      DO LC=RES_BACKUPS,2,-1
+         CALL SET_FNAME(FNAME0,'.RES', LC-1)
+         CALL SET_FNAME(FNAME1,'.RES', LC)
+         CALL SHIFT_RES(FNAME0, FNAME1, 'mv')
+
+         IF(DISCRETE_ELEMENT) THEN
+            CALL SET_FNAME(FNAME0,'_DES.RES', LC-1)
+            CALL SET_FNAME(FNAME1,'_DES.RES', LC)
+            CALL SHIFT_RES(FNAME0, FNAME1, 'mv')
+         ENDIF
+      ENDDO
+
+! Copy RES to RES1
+      CALL SET_FNAME(FNAME0, '.RES')
+      CALL SET_FNAME(FNAME1, '.RES' ,1)
+      CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
+
+      IF(DISCRETE_ELEMENT) THEN
+         CALL SET_FNAME(FNAME0, '_DES.RES')
+         CALL SET_FNAME(FNAME1, '_DES.RES' ,1)
+         CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
+      ENDIF
+
+
+      RETURN
+
+      contains
+
+!----------------------------------------------------------------------!
+! Subroutine: SHIFT_RES                                                !
+! Purpose: Shift RES(LC-1) to RES(LC)                                  !
+!----------------------------------------------------------------------!
+      SUBROUTINE SHIFT_RES(pFN0, pFN1, ACT)
+
+      implicit none
+
+      CHARACTER(LEN=*), INTENT(IN) :: pFN0, pFN1, ACT
+      CHARACTER(len=1024) :: CMD
+      LOGICAL :: EXISTS
+
+      INQUIRE(FILE=trim(pFN0),EXIST=EXISTS)
+      IF(EXISTS) THEN
+         CMD=''; WRITE(CMD,1000)trim(ACT), trim(pFN0),trim(pFN1)
+         CALL SYSTEM(trim(CMD))
+      ENDIF
+
+ 1000 FORMAT(A,1x,A,1X,A)
+
+      RETURN
+      END SUBROUTINE SHIFT_RES
+
+!----------------------------------------------------------------------!
+! Subroutine: SET_FNAME                                                !
+! Purpose: Set the backup RES file name based on pINDX.                !
+!----------------------------------------------------------------------!
+      SUBROUTINE SET_FNAME(pFNAME, pEXT, pINDX)
+
+      use run, only: RUN_NAME
+
+      implicit none
+
+      CHARACTER(LEN=*), INTENT(OUT) :: pFNAME
+      CHARACTER(LEN=*), INTENT(IN) ::  pEXT
+      INTEGER, INTENT(IN), OPTIONAL :: pINDX
+
+! Set the file format for backup copies
+      pFNAME=''
+      IF(.NOT.PRESENT(pINDX)) THEN
+         WRITE(pFNAME,1000) trim(RUN_NAME),pEXT
+      ELSE
+         IF(RES_BACKUPS < 10) THEN
+            WRITE(pFNAME,1001) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 100) THEN
+            WRITE(pFNAME,1002) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 1000) THEN
+            WRITE(pFNAME,1003) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 10000) THEN
+            WRITE(pFNAME,1004) trim(RUN_NAME), pEXT, pINDX
+         ELSEIF(RES_BACKUPS < 10000) THEN
+            WRITE(pFNAME,1005) trim(RUN_NAME), pEXT, pINDX
+         ELSE
+            WRITE(pFNAME,1006) trim(RUN_NAME), pEXT, pINDX
+         ENDIF
+      ENDIF
+
+ 1000 FORMAT(2A)
+ 1001 FORMAT('BACKUP_RES/',2A,I1.1)
+ 1002 FORMAT('BACKUP_RES/',2A,I2.2)
+ 1003 FORMAT('BACKUP_RES/',2A,I3.3)
+ 1004 FORMAT('BACKUP_RES/',2A,I4.4)
+ 1005 FORMAT('BACKUP_RES/',2A,I5.5)
+ 1006 FORMAT('BACKUP_RES/',2A,I6.6)
+
+      RETURN
+      END SUBROUTINE SET_FNAME
+
+      END SUBROUTINE BACKUP_RES

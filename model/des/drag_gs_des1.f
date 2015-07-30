@@ -32,8 +32,6 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Drag force on each particle
       use discretelement, only: F_GP
 ! Particle velocity
@@ -56,12 +54,12 @@
       use mfix_pic, only: MPPIC
 ! Flag to use implicit drag for MPPIC
       use mfix_pic, only: MPPIC_PDRAG_IMPLICIT
-! Fluid grid loop bounds.
-      use compar, only: IJKStart3, IJKEnd3
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 ! Function to deterine if a cell contains fluid.
       use functions, only: FLUID_AT
+
+      use discretelement, only: is_normal
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -71,7 +69,6 @@
 ! Lock/Unlock the temp arrays to prevent double usage.
       use tmp_array, only: LOCK_TMP_ARRAY
       use tmp_array, only: UNLOCK_TMP_ARRAY
-
 
       IMPLICIT NONE
 
@@ -88,7 +85,6 @@
 ! Loop bound for filter
       INTEGER :: LP_BND
 
-
 ! Set flag for Model A momentum equation.
       MODEL_A = .NOT.MODEL_B
 ! Loop bounds for interpolation.
@@ -102,8 +98,7 @@
 
 ! Calculate the gas phae forces acting on each particle.
       DO NP=1,MAX_PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
-         IF(any(PEA(NP,2:4))) CYCLE
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -132,7 +127,6 @@
             VELFP(3) = WGC(IJK)
             lPF = P_FORCE(:,IJK)
          ENDIF
-
 
 ! For explict coupling, use the drag coefficient calculated for the
 ! gas phase drag calculations.
@@ -170,8 +164,6 @@
       RETURN
       END SUBROUTINE DRAG_GS_DES1
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: DRAG_GS_GAS1                                            !
@@ -204,8 +196,6 @@
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
 ! Drag force on each particle
@@ -234,6 +224,7 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
+      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -255,7 +246,6 @@
 ! Drag sources for fluid (intermediate calculation)
       DOUBLE PRECISION :: lDRAG_BM(3)
 
-
 ! Initialize fluid cell values.
       F_GDS = ZERO
       DRAG_BM = ZERO
@@ -273,13 +263,13 @@
          CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
       ENDIF
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
       DO NP=1,MAX_PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
 
 ! The drag force is not calculated on entering or exiting particles
 ! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(any(PEA(NP,2:3))) CYCLE
+        IF(IS_ENTERING(NP) .OR. IS_EXITING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -343,7 +333,6 @@
 
       RETURN
       END SUBROUTINE DRAG_GS_GAS1
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -435,7 +424,5 @@
          ENDIF
       ENDDO
 
-
       RETURN
       END SUBROUTINE CALC_CELL_CENTER_GAS_VEL
-

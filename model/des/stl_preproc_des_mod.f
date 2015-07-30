@@ -294,6 +294,8 @@
       use desgrid, only: dg_ystart, dg_dyinv
       use desgrid, only: dg_zstart, dg_dzinv
 
+      Use discretelement, only: MINIMIZE_DES_FACET_LIST
+
       Use stl
       use error_manager
 
@@ -332,8 +334,10 @@
       CALL TESTTRIANGLEAABB(VERTEX(:,:,N), NORM_FACE(:,N),             &
          BOX_ORIGIN(:), BOX_EXTENTS(:), SA_EXIST, SEP_AXIS,I,J,K )
 
-! A sparating axis exists so the cell and the triangle do not intersect.
-      IF(SA_EXIST) RETURN
+! A separating axis exists so the cell and the triangle do not intersect.
+! JFD: If MINIMIZE_DES_FACET_LIST is .FALSE. then the facet is still added to the list.
+!      This seems to prevent particle leakage for some des gris setups.
+      IF(SA_EXIST.AND.MINIMIZE_DES_FACET_LIST ) RETURN
 
       CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 
@@ -364,7 +368,7 @@
             TRIM(RUN_NAME), '_I', I, '_J', J, '_K', K
          endif
 
-         open(stl_unit, file = fname, form='formatted')
+         open(stl_unit, file = fname, form='formatted',convert='big_endian')
          write(stl_unit,*)'solid vcg'
 
          DO COUNT  = 1, CURRENT_COUNT
@@ -437,7 +441,7 @@
          WRITE(FN,'("FACETS_DG_GRID_",I5.5,".DAT")') myPE
       ENDIF
 
-      OPEN(1001, file = TRIM(FN), form ='formatted')
+      OPEN(1001, file = TRIM(FN), form ='formatted',CONVERT='BIG_ENDIAN')
 
       DO K=DG_KSTART2, DG_KEND2
       DO J=DG_JSTART2, DG_JEND2
@@ -493,7 +497,7 @@
  2000 FORMAT('Saving STL geometry on DES grid: FACETS_TO_DG.stl',      &
          11x,'Facet Count:',I10,/2x,'DES Grid Facet Count:',I10)
 
-      OPEN(UNIT=444, FILE='FACETS_TO_DG.stl')
+      OPEN(UNIT=444, FILE='FACETS_TO_DG.stl',CONVERT='BIG_ENDIAN')
       write(444,*)'solid vcg'
 
       DO N = 1, N_FACETS_DES
@@ -560,11 +564,11 @@
       ENDIF
 
       IF(COUNT_FACET_TYPE_PO.GE.1) THEN
-         OPEN(UNIT=443, FILE=TRIM(FN_PO))
+         OPEN(UNIT=443, FILE=TRIM(FN_PO),CONVERT='BIG_ENDIAN')
          write(443,*)'solid vcg'
       endif
 
-      OPEN(UNIT=444, FILE=trim(FN))
+      OPEN(UNIT=444, FILE=trim(FN),CONVERT='BIG_ENDIAN')
       write(444,*)'solid vcg'
 
       DO K=DG_KSTART2, DG_KEND2
@@ -585,10 +589,10 @@
             WRITE(FN_PO,'("GEOM_DG_PO",3("_",I3.3),"_",I8.8,".stl")') &
                I,J,K,CELL_ID
 
-            OPEN(UNIT=446, FILE=FN)
+            OPEN(UNIT=446, FILE=FN,CONVERT='BIG_ENDIAN')
             WRITE(446,*)'solid vcg'
 
-            OPEN(UNIT=445, FILE=FN_PO)
+            OPEN(UNIT=445, FILE=FN_PO,CONVERT='BIG_ENDIAN')
             WRITE(445,*)'solid vcg'
          ENDIF
 
@@ -658,6 +662,332 @@
 !      ENDIF
       END Subroutine  DEBUG_write_stl_from_grid_facet
 
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ADD_FACET                                               !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ADD_FACET(CELL_ID, FACET_ID)
+
+      Use discretelement
+      USE stl
+
+      implicit none
+
+      INTEGER, INTENT(IN) :: cell_id, facet_id
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: int_tmp
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: real_tmp
+
+      INTEGER :: lSIZE2, ii
+      DOUBLE PRECISION :: smallest_extent, min_temp, max_temp
+
+      IF(STL_FACET_TYPE(facet_id) /= FACET_TYPE_NORMAL) RETURN
+
+      DO II = 1, CELLNEIGHBOR_FACET_NUM(CELL_ID)
+         IF(FACET_ID .EQ. CELLNEIGHBOR_FACET(CELL_ID)%P(II)) RETURN
+      ENDDO
+
+      CELLNEIGHBOR_FACET_NUM(CELL_ID) = &
+         CELLNEIGHBOR_FACET_NUM(CELL_ID) + 1
+
+      NO_NEIGHBORING_FACET_DES(CELL_ID)  = .FALSE.
+
+      IF(cellneighbor_facet_num(cell_id) > &
+         cellneighbor_facet_max(cell_id)) THEN
+
+         cellneighbor_facet_max(cell_id) = &
+         2*cellneighbor_facet_max(cell_id)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%p)
+         allocate(int_tmp(cellneighbor_facet_max(cell_id)))
+         int_tmp(1:lSIZE2) = cellneighbor_facet(cell_id)%p(1:lSIZE2)
+         call move_alloc(int_tmp,cellneighbor_facet(cell_id)%p)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentdir)
+         allocate(int_tmp(cellneighbor_facet_max(cell_id)))
+         int_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentdir(1:lSIZE2)
+         call move_alloc(int_tmp,cellneighbor_facet(cell_id)%extentdir)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentmin)
+         allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+         real_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentmin(1:lSIZE2)
+         call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmin)
+
+         lSIZE2 = size(cellneighbor_facet(cell_id)%extentmax)
+         allocate(real_tmp(cellneighbor_facet_max(cell_id)))
+         real_tmp(1:lSIZE2) = &
+            cellneighbor_facet(cell_id)%extentmax(1:lSIZE2)
+         call move_alloc(real_tmp,cellneighbor_facet(cell_id)%extentmax)
+
+      ENDIF
+
+      CELLNEIGHBOR_FACET(CELL_ID)%&
+         P(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = FACET_ID
+      SMALLEST_EXTENT = HUGE(0.0)
+
+      DO II=1,3
+         MIN_TEMP = MINVAL(VERTEX(:,II,FACET_ID))
+         MAX_TEMP = MAXVAL(VERTEX(:,II,FACET_ID))
+
+         IF(ABS(MAX_TEMP - MIN_TEMP) < SMALLEST_EXTENT ) THEN
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTDIR(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = II
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTMIN(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = MIN_TEMP
+             CELLNEIGHBOR_FACET(CELL_ID)%&
+                EXTENTMAX(CELLNEIGHBOR_FACET_NUM(CELL_ID)) = MAX_TEMP
+             SMALLEST_EXTENT = ABS(MAX_TEMP - MIN_TEMP)
+         ENDIF
+      ENDDO
+
+      END SUBROUTINE ADD_FACET
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  SUBROUTINE: CHECK_IF_PARTICLE_OVERLAPS_STL                           C
+!                                                                      C
+!  Purpose: This subroutine is special written to check if a particle  C
+!          overlaps any of the STL faces. The routine exits on         C
+!          detecting an overlap. It is called after initial            C
+!          generation of lattice configuration to remove out of domain C
+!          particles                                                   C
+!                                                                      C
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL(POSITION, RADIUS, &
+         OVERLAP_EXISTS)
+
+      USE run
+      USE param1
+      USE discretelement, only: dimn, xe, yn, zt
+      USE geometry
+      USE constant
+      USE cutcell
+      USE indices
+      USE stl
+      USE compar
+      USE des_stl_functions
+      use desgrid
+      USE functions
+      Implicit none
+
+      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN), RADIUS
+      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
+
+      INTEGER I, J, K, IJK, NF
+
+      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
+      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
+      NEIGH_CELLS_NONNAT, &
+      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
+      LOC_MAX_PIP!, focus_particle
+
+
+      OVERLAP_EXISTS = .FALSE.
+
+      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
+      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
+      K_CELL = 1
+      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+
+      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
+      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
+
+      LIST_OF_CELLS(:) = -1
+      NEIGH_CELLS = 0
+      NEIGH_CELLS_NONNAT  = 0
+
+      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+
+      RADSQ = RADIUS*RADIUS
+
+! Add the facets in the cell the particle currently resides in
+      IF (COUNT_FAC.gt.0)   then
+         NEIGH_CELLS = NEIGH_CELLS + 1
+         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
+      ENDIF
+
+      IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
+      IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
+
+      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
+      JMINUS1 =  MAX (J_CELL - 1, DG_JSTART2)
+
+      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
+      KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
+
+      DO K = KMINUS1, KPLUS1
+         DO J = JMINUS1, JPLUS1
+            DO I = IMINUS1, IPLUS1
+
+               IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K)) CYCLE
+
+               IJK = DG_FUNIJK(I,J,K)
+               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+
+               IF(COUNT_FAC.EQ.0) CYCLE
+               distsq = zero
+
+               IF(POSITION(1) > XE(I)) DISTSQ = DISTSQ &
+                  + (POSITION(1)-XE(I))*(POSITION(1)-XE(I))
+
+               IF(POSITION(1) < XE(I) - DX(I)) DISTSQ = DISTSQ &
+               + (XE(I) - DX(I) - POSITION(1))*(XE(I) - DX(I) - POSITION(1))
+
+               IF(POSITION(2) > YN(J)) DISTSQ = DISTSQ &
+               + (POSITION(2)-YN(J))* (POSITION(2)-YN(J))
+
+               IF(POSITION(2) < YN(J) - DY(J)) DISTSQ = DISTSQ &
+               + (YN(J) - DY(J) - POSITION(2))* (YN(J) - DY(J) - POSITION(2))
+
+               IF(POSITION( 3) > ZT(K)) DISTSQ = DISTSQ &
+               + (POSITION(3)-ZT(K))*(POSITION(3)-ZT(K))
+
+               IF(POSITION(3) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
+               + (ZT(K) - DZ(K) - POSITION(3))*(ZT(K) - DZ(K) - POSITION(3))
+               IF (DISTSQ < RADSQ) then
+                  NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
+                  NEIGH_CELLS = NEIGH_CELLS + 1
+                  LIST_OF_CELLS(NEIGH_CELLS) = IJK
+                                !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
+               ENDIF
+            ENDDO
+         ENDDO
+      ENDDO
+
+      CONTACT_FACET_COUNT = 0
+
+      DO CELL_COUNT = 1, NEIGH_CELLS
+         IJK = LIST_OF_CELLS(CELL_COUNT)
+
+         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
+
+            CALL ClosestPtPointTriangle(POSITION(:), VERTEX(:,:,NF), CLOSEST_PT(:))
+
+            DIST(:) = POSITION(:) - CLOSEST_PT(:)
+            DISTSQ = DOT_PRODUCT(DIST, DIST)
+
+            IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists, move on to the next facet
+
+            !Overlap detected
+            !Set overlap_exists to true and exit
+            OVERLAP_EXISTS = .true.
+            RETURN
+
+         ENDDO
+
+      end DO
+
+      RETURN
+
+    END SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE write_this_facet_and_part(FID, PID)
+      USE run
+      USE param1
+      USE discretelement
+      USE geometry
+      USE compar
+      USE constant
+      USE cutcell
+      USE funits
+      USE indices
+      USE physprop
+      USE parallel
+      USE stl
+      USE des_stl_functions
+      Implicit none
+      !facet id and particle id
+      Integer, intent(in) :: fid, pid
+      Integer :: stl_unit, vtp_unit , k
+      CHARACTER(LEN=100) :: stl_fname, vtp_fname
+      real :: temp_array(3)
+
+      stl_unit = 1001
+      vtp_unit = 1002
+
+      WRITE(vtp_fname,'(A,"_OFFENDING_PARTICLE",".vtp")') TRIM(RUN_NAME)
+      WRITE(stl_fname,'(A,"_STL_FACE",".stl")') TRIM(RUN_NAME)
+
+      open(vtp_unit, file = vtp_fname, form='formatted',convert='big_endian')
+      open(stl_unit, file = stl_fname, form='formatted',convert='big_endian')
+
+      write(vtp_unit,"(a)") '<?xml version="1.0"?>'
+      write(vtp_unit,"(a,es24.16,a)") '<!-- time =',s_time,'s -->'
+      write(vtp_unit,"(a,a)") '<VTKFile type="PolyData"',&
+           ' version="0.1" byte_order="LittleEndian">'
+      write(vtp_unit,"(3x,a)") '<PolyData>'
+      write(vtp_unit,"(6x,a,i10.10,a,a)")&
+           '<Piece NumberOfPoints="',1,'" NumberOfVerts="0" ',&
+           'NumberOfLines="0" NumberOfStrips="0" NumberOfPolys="0">'
+      write(vtp_unit,"(9x,a)")&
+           '<PointData Scalars="Diameter" Vectors="Velocity">'
+      write(vtp_unit,"(12x,a)")&
+           '<DataArray type="Float32" Name="Diameter" format="ascii">'
+      write (vtp_unit,"(15x,es13.6)") (2*des_radius(pid))
+      write(vtp_unit,"(12x,a)") '</DataArray>'
+
+      temp_array = zero
+      temp_array(:) = des_vel_new(:,pid)
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Velocity" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)") '</DataArray>','</PointData>'
+      ! skip cell data
+      write(vtp_unit,"(9x,a)") '<CellData></CellData>'
+
+      temp_array = zero
+      temp_array(1:dimn) = des_pos_new(1:dimn, pid)
+      write(vtp_unit,"(9x,a)") '<Points>'
+      write(vtp_unit,"(12x,a,a)") '<DataArray type="Float32" ',&
+           'Name="Position" NumberOfComponents="3" format="ascii">'
+      write (vtp_unit,"(15x,3(es13.6,3x))")&
+           ((temp_array(k)),k=1,3)
+      write(vtp_unit,"(12x,a,/9x,a)")'</DataArray>','</Points>'
+      ! Write tags for data not included (vtp format style)
+      write(vtp_unit,"(9x,a,/9x,a,/9x,a,/9x,a)")'<Verts></Verts>',&
+           '<Lines></Lines>','<Strips></Strips>','<Polys></Polys>'
+      write(vtp_unit,"(6x,a,/3x,a,/a)")&
+           '</Piece>','</PolyData>','</VTKFile>'
+
+      !Now write the facet info
+
+      write(stl_unit,*)'solid vcg'
+
+      write(stl_unit,*) '   facet normal ', NORM_FACE(1:3,FID)
+      write(stl_unit,*) '      outer loop'
+      write(stl_unit,*) '         vertex ', VERTEX(1,1:3,FID)
+      write(stl_unit,*) '         vertex ', VERTEX(2,1:3,FID)
+      write(stl_unit,*) '         vertex ', VERTEX(3,1:3,FID)
+      write(stl_unit,*) '      endloop'
+      write(stl_unit,*) '   endfacet'
+
+      write(stl_unit,*)'endsolid vcg'
+
+      close(vtp_unit, status = 'keep')
+      close(stl_unit, status = 'keep')
+
+      end SUBROUTINE write_this_facet_and_part
 
       END MODULE STL_PREPROC_DES
 

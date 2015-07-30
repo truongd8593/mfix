@@ -32,6 +32,7 @@
       use tmp_array, only: UNLOCK_TMP_ARRAY
 ! Routines to mange messages to user.
       use error_manager
+      use machine, only: wall_time
 
       IMPLICIT NONE
 
@@ -50,8 +51,8 @@
       INTEGER :: LEQM, LEQI
 ! Start, stop and step size of diffusion time march
       DOUBLE PRECISION :: DIF_TIME, DIF_STOP, DIF_DT
-! External function for wall time and wall time at start
-      DOUBLE PRECISION :: WALL_TIME, WALL_START
+! wall time at start
+      DOUBLE PRECISION :: WALL_START
 ! Local flag to print debug messages
       LOGICAL, PARAMETER :: setDBG = .TRUE.
 !......................................................................!
@@ -76,13 +77,13 @@
 ! Integrate the diffusion equation (time, space)
       DO WHILE(DIF_TIME < DIF_STOP)
 ! Initialize the coefficient matrix and force vector
-         CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0, IER)
+         CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
 ! Calculate the coefficients
          CALL DIF_PHI_DES(0, DIF, A_M, B_M, IER)
 ! Apply zero-flux BC at all walls
          CALL DIF_PHI_BC_DES(PHI, 0, A_M, B_M, IER)
 ! Collect the center coefficient and force vector
-         CALL DIF_PHI_SOURCE_DES(PHI, 0, A_M, B_M, DIF_DT, IER)
+         CALL DIF_PHI_SOURCE_DES(PHI, 0, A_M, B_M, DIF_DT)
 ! Set the local method and iterations.
          CALL ADJUST_LEQ(0.0d0, LEQ_IT(10), LEQ_METHOD(10), LEQI, LEQM)
 ! Solve the linear system.

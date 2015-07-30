@@ -84,7 +84,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use funits,   only : DMP_LOG
       use output,   only : FULL_LOG
       use param1,   only : zero
       use run,      only : TIME
@@ -359,7 +358,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_ODE_COEFF(lNEQ, IJK)
 
-      use fldvar, only : ROP_s, RO_s, EP_S
+      use fldvar, only : EP_S
       use physprop, only : MMAX
       use run, only : SPECIES_EQ
 
@@ -458,9 +457,6 @@
       INTEGER :: M    ! Solids phase index
       INTEGER :: N    ! Species index
 
-! Error flag - Unused but needed for call to BOUND_X.
-      INTEGER :: IER
-
       CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)
       CALL send_recv(ROP_G,2)
@@ -468,7 +464,7 @@
 
       DO N=1,NMAX(0)
          CALL send_recv(X_G(:,N),2)
-         CALL BOUND_X (X_G(1,N), IJKMAX2, IER)
+         CALL BOUND_X (X_G(1,N), IJKMAX2)
       ENDDO
 
       DO M = 1, MMAX
@@ -479,7 +475,7 @@
 ! Solids phase species mass fractions.
          DO N=1,NMAX(M)
             CALL send_recv(X_S(:,M,N),2)
-            CALL BOUND_X (X_S(1,M,N), IJKMAX2, IER)
+            CALL BOUND_X (X_S(1,M,N), IJKMAX2)
          ENDDO
       ENDDO
 

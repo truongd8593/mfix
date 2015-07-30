@@ -35,7 +35,7 @@
       integer, optional, intent(in) :: myid
       integer :: dbgout = 75
 
-      open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
+      open(convert='big_endian',unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
       write(dbgout,"(10X,'buffer = ',I6)") buffer
       close(dbgout)
@@ -49,7 +49,7 @@
       integer :: dbgout = 75
       integer :: i
 
-      open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
+      open(convert='big_endian',unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
       do i=1,ncount
         write(dbgout,"(10X,'buf(',I3,')= ',I6)") i,buffer(i)
@@ -64,7 +64,7 @@
       integer, optional, intent(in) :: myid
       integer :: dbgout = 75
 
-      open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
+      open(convert='big_endian',unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
       write(dbgout,"(10X,'buffer = ',E14.6)") buffer
       close(dbgout)
@@ -78,7 +78,7 @@
       integer :: dbgout = 75
       integer :: i
 
-      open(unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
+      open(convert='big_endian',unit=dbgout, FILE='dbg'//fbname//'.dat', STATUS='UNKNOWN')
       write(dbgout,"('(PE ',I3,') :')") myPE
       do i=1,ncount
         write(dbgout,"(10X,'buf(',I3,')= ',E14.6)") i,buffer(i)
@@ -99,7 +99,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
 
-       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
+       OPEN(CONVERT='BIG_ENDIAN',unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG
@@ -128,7 +128,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
 
-       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
+       OPEN(CONVERT='BIG_ENDIAN',unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG
@@ -156,7 +156,7 @@
       integer :: i,j,k
 !      integer, optional, intent(in) :: mroot, idebug
 
-       OPEN(unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
+       OPEN(CONVERT='BIG_ENDIAN',unit=ldbg,file=flagl//fbname//'.LOG',status='UNKNOWN')
        write(ldbg,"('Dumping variable : ',A10)") varname
        DO K = kstart3, kend3                               !//AIKEPARDBG
          write(ldbg,"('K = ',I5)") K                !//AIKEPARDBG

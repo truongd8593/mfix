@@ -7,7 +7,6 @@
 !----------------------------------------------------------------------!
       MODULE MPI_PACK_DES
 
-
       PRIVATE
       PUBLIC :: DESMPI_PACK_PARCROSS, DESMPI_PACK_GHOSTPAR
 
@@ -69,8 +68,6 @@
       use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -94,13 +91,12 @@
 ! Cell number of ghost particles
       use desmpi, only: iSENDINDICES
 
-
 ! Global Constants:
 !---------------------------------------------------------------------//
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-
+      use discretelement
 
       IMPLICIT NONE
 
@@ -125,7 +121,7 @@
 
 ! Do not send particle data for a ghost particle whose owner has not yet
 ! updated the particle's data on this processor.
-            if(pea(lcurpar,4) .and. .not.ighost_updated(lcurpar)) cycle
+            if((is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) .and. .not.ighost_updated(lcurpar)) cycle
 
 ! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
@@ -147,7 +143,7 @@
 ! 8) Rotational Velocity
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
 ! 9) Exiting particle flag
-            call pack_dbuf(lbuf,merge(1,0,pea(lcurpar,3)),pface)
+            call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar).or.is_exiting_ghost(lcurpar)),pface)
 ! 10) Temperature
             IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
@@ -163,11 +159,10 @@
             lpar_cnt = lpar_cnt + 1
          end do
       end do
-      dsendbuf(1,pface)=lpar_cnt
+      dsendbuf(1+mod(pface,2))%facebuf(1)=lpar_cnt
       isendcnt(pface) = lpar_cnt*iGhostPacketSize + ibufoffset
 
       end subroutine desmpi_pack_ghostpar
-
 
 !----------------------------------------------------------------------!
 !  Subroutine: DESMPI_PACK_PARCROSS                                    !
@@ -223,8 +218,6 @@
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
       use discretelement, only: OMOI
-! Flags indicate the state of the particle
-      use discretelement, only: PEA
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -240,7 +233,7 @@
 ! Particle pair (neighborhood) arrays:
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
 ! Pair collision history information
-      use discretelement, only: PV_NEIGHBOR, PFN_NEIGHBOR, PFT_NEIGHBOR
+      use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
 ! The ID of the current process
@@ -256,7 +249,7 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement, only: DG_PIC
+      use discretelement
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 
@@ -298,7 +291,7 @@
          do lpicloc = 1,dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
 
-            if (pea(lcurpar,4)) cycle ! if ghost particle then cycle
+            if (is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle ! if ghost particle then cycle
 
             going_to_send(lcurpar) = .true.
             lbuf = lparcnt*iParticlePacketSize + ibufoffset
@@ -328,9 +321,9 @@
 ! 9) Particle solids phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 10) Entering particle flag.
-            call pack_dbuf(lbuf, pea(lcurpar,2), pface)
+            call pack_dbuf(lbuf, is_entering(lcurpar).or.is_entering_ghost(lcurpar), pface)
 ! 11) Exiting particle flag.
-            call pack_dbuf(lbuf, pea(lcurpar,3), pface)
+            call pack_dbuf(lbuf, is_exiting(lcurpar).or.is_exiting_ghost(lcurpar), pface)
 ! 12) Density
             call pack_dbuf(lbuf,ro_sol(lcurpar),pface)
 ! 13) Volume
@@ -389,13 +382,19 @@
             IF (MPPIC) THEN
 ! 32) Statistical weight
                call pack_dbuf(lbuf,des_stat_wt(lcurpar),pface)
-               pea(lcurpar,1:4) = .false.
+               call set_nonexistent(lcurpar)
                pip = pip - 1
 
 ! DEM particles are converted to ghost particles. This action does not
 ! change the number of particles.
             ELSE
-               pea(lcurpar,4) = .true.
+               if (is_entering(lcurpar)) then
+                  call set_entering_ghost(lcurpar)
+               elseif (is_exiting(lcurpar)) then
+                  call set_exiting_ghost(lcurpar)
+               else
+                  call set_ghost(lcurpar)
+               endif
                ighost_cnt = ighost_cnt + 1
             END IF
 
@@ -427,25 +426,21 @@
 ! Do not send pairing data if the pair no longer exists or if the
 ! particle is exiting as it may be locatable during unpacking.
           lneigh = neighbors(lcurpar)
-          if(.not.PEA(lneigh,1)) cycle
-          if(PEA(lneigh,3)) cycle
+          if(is_nonexistent(lneigh)) cycle
+          if(is_exiting(lneigh)) cycle
 
 ! 34) Global ID of particle being packed.
           call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
 ! 35) DES grid IJK of cell receiving the particle.
-          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,     &
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,    &
                ineighproc(pface)),pface)
 ! 36) Global ID of neighbor particle.
           call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
 ! 37) DES grid IJK of cell containing the neighbor particle.
-          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,      &
+          call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,     &
                ineighproc(pface)),pface)
-! 38) Flag indicating induring contact for the pair.
-          call pack_dbuf(lbuf,PV_NEIGHBOR(CC),pface)
-! 39) Normal collision history.
-          call pack_dbuf(lbuf,PFN_NEIGHBOR(:,CC),pface)
-! 40) Tangential collision history.
-          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface)
+! 38) Tangential collision history.
+          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface) 
 ! Increment the number of pairs being sent.
           num_neighborlists_to_send = num_neighborlists_to_send + 1
        enddo
@@ -457,7 +452,7 @@
 ! 33) Number of pair datasets.
       call pack_dbuf(lbuf,num_neighborlists_to_send,pface)
 
-      dsendbuf(1,pface) = lparcnt
+      dsendbuf(1+mod(pface,2))%facebuf(1) = lparcnt
       isendcnt(pface) = lparcnt*iParticlePacketSize +                  &
          num_neighborlists_to_send*iPairPacketSize + ibufoffset + 3
 
@@ -475,7 +470,7 @@
       integer, intent(in) :: pface
       double precision, intent(in) :: idata
 
-      dsendbuf(lbuf,pface) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = idata
       lbuf = lbuf + 1
 
       return
@@ -494,12 +489,11 @@
 
       lsize = size(idata)
 
-      dsendbuf(lbuf:lbuf+lsize-1,pface) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1) = idata
       lbuf = lbuf + lsize
 
       return
       end subroutine pack_db1
-
 
 !----------------------------------------------------------------------!
 ! Pack subroutine for single integer variables                         !
@@ -510,7 +504,7 @@
       integer, intent(in) :: pface
       integer, intent(in) :: idata
 
-      dsendbuf(lbuf,pface) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = idata
       lbuf = lbuf + 1
 
       return
@@ -529,7 +523,7 @@
 
       lsize = size(idata)
 
-      dsendbuf(lbuf:lbuf+lsize-1,pface) = idata
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf:lbuf+lsize-1) = idata
       lbuf = lbuf + lsize
 
       return
@@ -545,11 +539,10 @@
       integer, intent(in) :: pface
       logical, intent(in) :: ldata
 
-      dsendbuf(lbuf,pface) = merge(1.0, 0.0, ldata)
+      dsendbuf(1+mod(pface,2))%facebuf(lbuf) = merge(1.0, 0.0, ldata)
       lbuf = lbuf + 1
 
       return
       end subroutine pack_l0
-
 
       end module mpi_pack_des

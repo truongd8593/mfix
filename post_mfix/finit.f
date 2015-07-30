@@ -22,19 +22,20 @@
 !
       SUBROUTINE F_INIT
 !
-      Use param
-      Use param1
-      Use run
-      Use post3d
-      Use geometry
-      Use indices
-      Use fldvar
-      Use physprop
-      Use constant
-      Use funits
-      Use parallel_mpi
-      Use gridmap
-      Use cdist
+      USE cdist
+      USE constant
+      USE fldvar
+      USE funits
+      USE geometry
+      USE gridmap
+      USE indices
+      USE machine
+      USE parallel_mpi
+      USE param
+      USE param1
+      USE physprop
+      USE post3d
+      USE run
 !
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -435,7 +436,7 @@
       allocate( r_array(ijkmax2,nArrays) )
 
       open (unit=10,file=fname_scav,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
       read(unit=10,rec=3) next_rec
 
@@ -451,7 +452,7 @@
            write (fname_dist(nb+9:nb+9),'(a1)') ext(L:L)
 
            open(unit=20,file=fname_dist,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
            read (20,rec=3) last_r
 
@@ -547,13 +548,13 @@
          fname = 'p_info_xxxxx.txt'
          write (fname(8:12),'(i5.5)') L-1
 
-         open (unit=10,file=fname,status='old',err=100)
+         open (unit=10,file=fname,status='old',err=100,convert='big_endian')
          goto 101
  100     continue
          fname = 'p_info_xxxx.txt'
          write (fname(8:11),'(i4.4)') L-1
 
-         open (unit=10,file=fname,status='old')
+         open (unit=10,file=fname,status='old',convert='big_endian')
 
  101     continue
          read (10,*)
@@ -630,13 +631,13 @@
          write (fname_scav(NB+8:NB+8),'(a1)') ext(L:L)
 
          open (unit=10,file=fname_scav,status='unknown',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
          fname_dist = run_name(1:NB-1) // '_00000.SPx'
          write (fname_dist(nb+9:nb+9),'(a1)') ext(L:L)
 
          open(unit=20,file=fname_dist,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
          read(20,rec=1)  pbuffer
          write(10,rec=1) pbuffer
@@ -693,10 +694,10 @@
 
 
       open (unit=10,file=fname_scav(1:nb+8),status='unknown',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
       open(unit=20,file=fname_dist,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
 !      open(unit=11,file='deb.txt',status='unknown')
 
@@ -722,7 +723,7 @@
          call set_res_name(run_name,nb,L,fname)
 
          open(unit=21,file=fname,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
 
          read(21,rec=3) cr(L)
 
@@ -763,7 +764,7 @@
             call set_res_name(run_name,nb,N,fname)
 
             open(unit=20,file=fname,status='old',recl=512, &
-                         access='direct',form='unformatted')
+                         access='direct',form='unformatted',convert='big_endian')
             call in_bin_512(20,d_tmp,n_cells(N),cr(N))
             close (unit=20)
 

@@ -8,11 +8,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_FILTER_DES
 
-! Runtime Flag: Utilize cutcell geometry.
-      use cutcell, only: CARTESIAN_GRID
 ! Runtime Flag: Invoke gas/solids coupled simulation.
-      use discretelement, only: DES_CONTINUUM_COUPLED
-
       use geometry, only: DX, IMIN1, IMAX1
       use geometry, only: DY, JMIN1, JMAX1
       use geometry, only: DZ, KMIN1, KMAX1, DO_K
@@ -34,7 +30,7 @@
 
       use desgrid, only: DG_DXinv, DG_DYinv, DG_DZinv
 
-      use param1, only: ONE, UNDEFINED, UNDEFINED_C
+      use param1, only: ONE, UNDEFINED
 
       use sendrecvnode, only: DES_SETNODEINDICES
       use mpi_utility, only: GLOBAL_ALL_MIN
@@ -81,12 +77,6 @@
          'GRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, and DESGRIDSEARH_KMAX ',&
          'in the',/'mfix.dat file.')
 
-! Shrink the filter just a little if it matches exactly to ensure that
-! interpolation remains within the 27 cell bounds.
-         ELSEIF(0.5d0*DES_INTERP_WIDTH == DXYZ_MIN .OR.                &
-            0.5d0*DES_INTERP_WIDTH == DG_DXYZ_MIN) THEN
-
-            FILTER_WIDTH_INTERP = 0.499d0*DXYZ_MIN
          ELSE
             FILTER_WIDTH_INTERP = 0.500d0*DES_INTERP_WIDTH
          ENDIF

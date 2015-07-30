@@ -12,7 +12,7 @@ FC_MODEXT=mod
 
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
-CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) mfixmodule.deps
+CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
@@ -26,36 +26,35 @@ NETCDF_INCLUDE=@NETCDF_INCLUDE@
 export NETCDF_LIB
 export NETCDF_INCLUDE
 
-SUBDIRS = post_mfix
+SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
-$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
-	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+$(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
+	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #
-#      main exectuables:  mfix                                 #
+#           mfix executable                                    #
 #                                                              #
 ################################################################
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-#  ODEPACK.F is not included in libmfix because it is excluded from
-#  mfixmodule.deps
 mfix_SOURCES = model/ODEPACK.F
 libmfix_a_SOURCES =
 
 ################################################################
 #                                                              #
-#      convenience target for postmfix                         #
+#           postmfix executable                                #
 #                                                              #
 ################################################################
 
-postmfix:
-	$(MAKE) -C $(top_srcdir)/post_mfix postmfix
+bin_PROGRAMS += postmfix$(EXEEXT)
+
+postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
 ################################################################
 #                                                              #
@@ -64,7 +63,7 @@ postmfix:
 #                                                              #
 ################################################################
 
-EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools post_mfix
+EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
 EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 
 ################################################################
@@ -74,14 +73,19 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 #                                                              #
 ################################################################
 
-mfixmodule.deps: $(libmfix_a_SOURCES)
+.f.d:
+	@$(MKDIR_P) $(@D)
 	SRCDIR="$(srcdir)" OBJEXT="$(OBJEXT)" MODEXT="$(FC_MODEXT)" MODDIR="$(MODDIR)" \
 	SED="$(SED)" GREP="$(GREP)" $(SHELL) $(top_srcdir)/build-aux/fortran-depcomp $^ > $@
 
 # Use generated module dependency rules
-$(eval -include mfixmodule.deps)
 
-DISTCLEANFILES = mfixmodule.deps build-aux/Makefile.usr
+@make_ifnotclean@
+$(eval -include $(libmfix_src:%.f=%.d) )
+$(eval -include $(postmfix_SOURCES:%.f=%.d) )
+@make_endif@
+
+DISTCLEANFILES = build-aux/Makefile.usr
 
 ################################################################
 #      TAU support
@@ -97,6 +101,15 @@ export TAU_MAKEFILE
 if USE_NETCDF
 AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
 mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
+endif
+
+################################################################
+#      Socket server
+################################################################
+if USE_SOCKET
+AM_FCFLAGS += -Dsocket
+libmfix_a_SOURCES += model/handle_command.f
+libmfix_a_SOURCES += model/socket.c
 endif
 
 ################################################################
@@ -132,13 +145,39 @@ AM_LDFLAGS += -DMPI
 endif
 
 ################################################################
-#      libmfix_a_SOURCES                                          #
+#      libmfix_a_SOURCES                                       #
 #                                                              #
 #      The majority of source files for mfix and postmfix      #
 #      are listed here.                                        #
 ################################################################
 
 libmfix_a_SOURCES += \
+	model/include/boundary_conditions.inc \
+	model/include/cartesian_grid_namelist.inc \
+	model/include/chem_equations.inc \
+	model/include/desnamelist.inc \
+	model/include/dmp_batch_control.inc \
+	model/include/gas_phase.inc \
+	model/include/geometry.inc \
+	model/include/initial_conditions.inc \
+	model/include/internal_surfaces.inc \
+	model/include/legacy.inc \
+	model/include/netcdf.inc \
+	model/include/numerical_params.inc \
+	model/include/output_control.inc \
+	model/include/physical_params.inc \
+	model/include/point_sources.inc \
+	model/include/qmomknamelist.inc \
+	model/include/run_control.inc \
+	model/include/solids_phase.inc \
+	model/include/species.inc \
+	model/include/species_indices.inc \
+	model/include/tfm_solids.inc \
+	model/include/usr_hooks.inc \
+	model/include/usrnlst.inc \
+	model/include/xforms.inc
+
+libmfix_src = \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -168,7 +207,7 @@ libmfix_a_SOURCES += \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt.f \
+	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_rop.f \
@@ -202,7 +241,6 @@ libmfix_a_SOURCES += \
 	model/calc_mflux.f \
 	model/calc_mu_g.f \
 	model/calc_mu_s.f \
-	model/calc_mw.f \
 	model/calc_outflow.f \
 	model/calc_p_star.f \
 	model/calc_resid.f \
@@ -250,6 +288,7 @@ libmfix_a_SOURCES += \
 	model/cartesian_grid/write_progress_bar.f \
 	model/cdist_mod.f \
 	model/check_ab_m.f \
+	model/check_bqend.f \
 	model/check_convergence.f \
 	model/check_data/check_axis.f \
 	model/check_data/check_bc_dem.f \
@@ -343,8 +382,6 @@ libmfix_a_SOURCES += \
 	model/des/des_granular_temperature.f \
 	model/des/des_init_arrays.f \
 	model/des/des_init_namelist.f \
-	model/des/des_linked_list_data_mod.f \
-	model/des/des_linked_list_funcs_mod.f \
 	model/des/des_physical_prop.f \
 	model/des/des_reaction_model.f \
 	model/des/des_rrates0.f \
@@ -369,7 +406,7 @@ libmfix_a_SOURCES += \
 	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
 	model/des/gas_drag.f \
-	model/des/generate_particle_config.f \
+	model/des/generate_particles_mod.f \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
@@ -469,23 +506,15 @@ libmfix_a_SOURCES += \
 	model/ic_mod.f \
 	model/in_binary_512_mod.f \
 	model/in_binary_512i_mod.f \
-	model/include/cartesian_grid_namelist.inc \
-	model/include/desnamelist.inc \
-	model/include/namelist.inc \
-	model/include/netcdf.inc \
-	model/include/qmomknamelist.inc \
-	model/include/species.inc \
-	model/include/species_indices.inc \
-	model/include/usrnlst.inc \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
+	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
-	model/kintheory_energy_dissipation_ss.f \
 	model/kintheory_mod.f \
 	model/kintheory_u_s.f \
 	model/kintheory_v_s.f \
@@ -497,9 +526,7 @@ libmfix_a_SOURCES += \
 	model/leq_sor.f \
 	model/leqsol_mod.f \
 	model/line_too_big.f \
-	model/location.f \
 	model/location_check.f \
-	model/machine.f \
 	model/machine_mod.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
@@ -557,8 +584,8 @@ libmfix_a_SOURCES += \
 	model/rdf_mod.f \
 	model/read_database.f \
 	model/read_namelist.f \
-	model/read_res0.f \
 	model/read_res1.f \
+	model/reinitialize.f \
 	model/remove_comment.f \
 	model/reset_new.f \
 	model/residual_mod.f \
@@ -650,6 +677,7 @@ libmfix_a_SOURCES += \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
+	model/usr_physical_prop.f \
 	model/usr_rates.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
@@ -687,10 +715,96 @@ libmfix_a_SOURCES += \
 	model/zero_array.f \
 	model/zero_norm_vel.f
 
-cases := $(shell find -name mfix.dat)
+libmfix_a_SOURCES += $(libmfix_src)
+
+################################################################
+#                                                              #
+#      postmfix                                                #
+#                                                              #
+################################################################
+
+postmfix_SOURCES = \
+	post_mfix/any_more_data.f \
+	post_mfix/calc_cell2.f \
+	post_mfix/calc_corr_01.f \
+	post_mfix/calc_corr_type_1.f \
+	post_mfix/calc_distance.f \
+	post_mfix/calc_dpody.f \
+	post_mfix/calc_ep_g.f \
+	post_mfix/calc_quantities.f \
+	post_mfix/calc_ro_g.f \
+	post_mfix/calc_vol.f \
+	post_mfix/correl_mod.f \
+	post_mfix/deallocate_arrays.f \
+	post_mfix/examine_data.f \
+	post_mfix/f_init_data.f \
+	post_mfix/file_handle.f \
+	post_mfix/finit.f \
+	post_mfix/flow_gx.f \
+	post_mfix/flow_gy.f \
+	post_mfix/flow_gz.f \
+	post_mfix/flow_sx.f \
+	post_mfix/flow_sy.f \
+	post_mfix/flow_sz.f \
+	post_mfix/functions_mod.f \
+	post_mfix/gas_flux.f \
+	post_mfix/get_file_name.f \
+	post_mfix/get_file_status.f \
+	post_mfix/get_index.f \
+	post_mfix/get_location.f \
+	post_mfix/get_mu_s.f \
+	post_mfix/get_same_time.f \
+	post_mfix/get_selection.f \
+	post_mfix/get_substr.f \
+	post_mfix/granular_qty.f \
+	post_mfix/header_main.f \
+	post_mfix/ik_avg.f \
+	post_mfix/ik_avg_out.f \
+	post_mfix/interp_res.f \
+	post_mfix/main_f.f \
+	post_mfix/ornl_corr.f \
+	post_mfix/ornl_corr_c.f \
+	post_mfix/ornl_filt.f \
+	post_mfix/ornl_filt_c.f \
+	post_mfix/ornl_ft.f \
+	post_mfix/ornl_ft_c.f \
+	post_mfix/ornl_header.f \
+	post_mfix/ornl_pca.f \
+	post_mfix/ornl_stats.f \
+	post_mfix/ornl_stats_c.f \
+	post_mfix/ornl_sym.f \
+	post_mfix/ornl_util.f \
+	post_mfix/ornl_zone.f \
+	post_mfix/out_from_res.f \
+	post_mfix/out_from_spx.f \
+	post_mfix/out_spec_time.f \
+	post_mfix/out_time.f \
+	post_mfix/paralleldata_mod.f \
+	post_mfix/post3d_mod.f \
+	post_mfix/post_precision_mod.f \
+	post_mfix/print_out.f \
+	post_mfix/read_res0.f \
+	post_mfix/read_spx0.f \
+	post_mfix/read_spx1.f \
+	post_mfix/res_from_spx.f \
+	post_mfix/seek_time.f \
+	post_mfix/select_spx_rec.f \
+	post_mfix/set_dollar.f \
+	post_mfix/set_read_spx.f \
+	post_mfix/sol_flux.f \
+	post_mfix/strcmp.f \
+	post_mfix/streqs.f \
+	post_mfix/time_avg.f \
+	post_mfix/usr_init_namelist.f \
+	post_mfix/usr_input.f \
+	post_mfix/usr_input_mod.f \
+	post_mfix/usr_post.f \
+	post_mfix/usr_write_out1.f
+
+cases := $(shell find . -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
-	  $(MAKE) -C $$(dirname $$case) mfix || exit; \
+	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done

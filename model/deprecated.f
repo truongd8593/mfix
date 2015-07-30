@@ -12,7 +12,7 @@
 
       use param
       use param1
-      use compar, only: myPE, PE_IO
+      use compar, only: myPE
       use error_manager
 
       IMPLICIT NONE

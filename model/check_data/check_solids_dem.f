@@ -8,17 +8,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM
 
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: FACTOR_RLM
-      use discretelement, only: MAX_RADIUS
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: UNDEFINED
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -38,12 +27,6 @@
       CALL FINL_ERR_MSG
 
       RETURN
-
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-         'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_DEM
 
@@ -270,8 +253,6 @@
       USE discretelement, only: DES_COLL_MODEL_ENUM
       USE discretelement, only: LSD
       USE discretelement, only: HERTZIAN
-! Number of discrete solids phases
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
 ! Particle and wall friction coeff.
       USE discretelement, only: MEW, MEW_W
 ! Parameter constatns.
@@ -332,13 +313,7 @@
  1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
          'Please correct the mfix.dat file.')
 
- 1002 FORMAT('Error 1002: Required input not specified: ',A,/          &
-         'Description:',A,/'Please correct the mfix.dat file.')
-
       END SUBROUTINE CHECK_SOLIDS_DEM_COLLISION
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -360,8 +335,6 @@
 !---------------------------------------------------------------------//
 ! Number of discrete solids phases
       USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
-! Particle and wall friction coeff.
-      USE discretelement, only: MEW, MEW_W
 ! Particle and wall normal and tangential spring constants
       USE discretelement, only: KN, KN_W
       USE discretelement, only: KT, KT_W
@@ -377,12 +350,6 @@
 
 ! Tangential damping factors := ET/EN
       USE discretelement, only: DES_ETAT_FAC, DES_ETAT_W_FAC
-! Particle and wall Young's modulus
-      USE discretelement, only: E_YOUNG, Ew_YOUNG
-! Particle and wall Poisson ratio
-      USE discretelement, only: V_POISSON, Vw_POISSON
-! Shear modulus
-      USE discretelement, only: G_MOD
 
       use constant, only: PI
 
@@ -593,13 +560,7 @@
  1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
          'Please correct the mfix.dat file.')
 
- 1002 FORMAT('Error 1002: Required input not specified: ',A,/          &
-         'Description:',A,/'Please correct the mfix.dat file.')
-
       END SUBROUTINE CHECK_SOLIDS_DEM_COLL_LSD
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -615,7 +576,6 @@
 !   - Silbert et al., Physical Review E, 2001, 64, 051302 1-14 (page 5)!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_COLL_HERTZ
-
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -646,13 +606,12 @@
       use constant, only: PI
 
 ! Parameter constatns.
-      USE param1, only: ZERO, HALF, ONE, UNDEFINED
+      USE param1, only: ZERO, ONE, UNDEFINED
 
 !      USE mpi_utility
       use error_manager
 
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -695,7 +654,6 @@
 
       G_MOD_WALL = 0.5d0*Ew_YOUNG/(1.d0+Vw_POISSON)
 
-      LC = 0
       DO M=1,DES_MMAX
 
          IF(E_YOUNG(M) == UNDEFINED) THEN
@@ -715,7 +673,11 @@
          ENDIF
 ! Calculate the shear modulus for phase M.
          G_MOD(M) = 0.5d0*E_YOUNG(M)/(1.d0+V_POISSON(M))
+      ENDDO
 
+
+      LC = 0
+      DO M=1,DES_MMAX
 ! Calculate the mass of a phase M particle.
          MASS_M = (PI/6.d0)*(DES_D_P0(M)**3)*DES_RO_S(M)
 
@@ -746,7 +708,7 @@
                   iVal(DES_ET_INPUT(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
-            ET = DES_EN_INPUT(LC)
+            ET = DES_ET_INPUT(LC)
 
 
 ! Calculate masses used for collision calculations.
@@ -764,8 +726,9 @@
                 G_MOD(L)*(2.d0 - V_POISSON(M)))
 
 ! Calculate the spring properties and store in symmetric matrix format.
-            HERT_KN(M,L)=( 4.d0/3.d0)*SQRT(R_EFF)*E_EFF
-            HERT_KT(M,L)=(16.d0/3.d0)*SQRT(R_EFF)*G_MOD_EFF
+            HERT_KN(M,L)=(4.d0/3.d0)*SQRT(R_EFF)*E_EFF
+            HERT_KT(M,L)= 8.d0*SQRT(R_EFF)*G_MOD_EFF
+
             HERT_KN(L,M) = HERT_KN(M,L)
             HERT_KT(L,M) = HERT_KT(M,L)
 
@@ -795,8 +758,6 @@
             TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
 
-
-
 ! Particle-Wall Collision Parameters ---------------------------------->
 ! Check particle-wall normal restitution coefficient.
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
@@ -822,7 +783,6 @@
          ENDIF
          ET = DES_ET_WALL_INPUT(M)
 
-
 ! Calculate masses used for collision calculations.
          MASS_EFF = MASS_M
          RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF
@@ -836,15 +796,27 @@
              G_MOD_WALL*(2.d0 - V_POISSON(M)))
 
 ! Calculate the spring properties.
-         HERT_Kwn(M) = ( 4.d0/3.d0)*SQRT(R_EFF)*E_EFF
-         HERT_Kwt(M) = (16.d0/3.d0)*SQRT(R_EFF)*G_MOD_EFF
+         HERT_Kwn(M) = (4.d0/3.d0)*SQRT(R_EFF)*E_EFF
+         HERT_Kwt(M) = 8.0*SQRT(R_EFF)*G_MOD_EFF
 
 ! Calculate the tangential coefficients.
-         DES_ETAN_WALL(M) = 2.d0*SQRT(HERT_Kwn(M)*MASS_EFF)*ABS(LOG(EN))
-         DES_ETAN_WALL(M) = DES_ETAN_WALL(M)/SQRT(PI*PI + (LOG(EN))**2)
-         DES_ETAT_WALL(M) = 2.d0*SQRT(HERT_Kwt(M)*RED_MASS_EFF)*       &
-             ABS(LOG(ET))
-         DES_ETAT_WALL(M) = DES_ETAT_WALL(M)/SQRT(PI*PI + (LOG(ET))**2)
+         IF(EN /= ZERO) THEN
+            DES_ETAN_WALL(M) = 2.d0*SQRT(HERT_Kwn(M)*MASS_EFF)*&
+               ABS(LOG(EN))
+            DES_ETAN_WALL(M) = DES_ETAN_WALL(M)/&
+               SQRT(PI*PI + (LOG(EN))**2)
+         ELSE
+            DES_ETAN_WALL(M) = 2.d0*SQRT(HERT_Kwn(M)*MASS_EFF)
+         ENDIF
+
+         IF(ET /= ZERO) THEN
+            DES_ETAT_WALL(M) = 2.d0*SQRT(HERT_Kwt(M)*RED_MASS_EFF)*    &
+                ABS(LOG(ET))
+            DES_ETAT_WALL(M) = DES_ETAT_WALL(M)/SQRT(PI*PI+(LOG(ET))**2)
+         ELSE
+            DES_ETAT_WALL(M) = 2.d0*SQRT(HERT_Kwt(M)*RED_MASS_EFF)
+         ENDIF
+
 ! Calculate the collision time scale.
          TCOLL_TMP = PI/SQRT(HERT_Kwn(M)/MASS_EFF -                    &
             ((DES_ETAN_WALL(M)/MASS_EFF)**2)/4.d0)

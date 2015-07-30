@@ -32,7 +32,6 @@
       USE progress_bar
       USE dashboard
       Use stl
-      USE rxns, only: nRR
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -107,21 +106,21 @@
 !  <description>Form of the quadric surface equation.</description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-!  <valid value="normal" note="Use normal form, as defined in equation 
+!  <valid value="normal" note="Use normal form, as defined in equation
 !    (1). The LAMDBA\'s and D must be defined"/>
 !  <valid value="plane" note="Plane. Needs to define N_X,N_Y,N_Z
 !    (unit normal vector pointing away from fluid cells)."/>
-!  <valid value="x_cyl_int" note="Cylinder aligned with x-axis, 
+!  <valid value="x_cyl_int" note="Cylinder aligned with x-axis,
 !    internal flow. Needs to define RADIUS(QID)."/>
-!  <valid value="x_cyl_ext" note="Cylinder aligned with x-axis, 
+!  <valid value="x_cyl_ext" note="Cylinder aligned with x-axis,
 !    external flow. Needs to define RADIUS(QID)."/>
-!  <valid value="y_cyl_int" note="Cylinder aligned with y-axis, 
+!  <valid value="y_cyl_int" note="Cylinder aligned with y-axis,
 !    internal flow. Needs to define RADIUS(QID)."/>
-!  <valid value="y_cyl_ext" note="Cylinder aligned with y-axis, 
+!  <valid value="y_cyl_ext" note="Cylinder aligned with y-axis,
 !    external flow. Needs to define RADIUS(QID)."/>
 !  <valid value="z_cyl_int" note="Cylinder aligned with z-axis,
 !    internal flow. Needs to define RADIUS(QID)."/>
-!  <valid value="z_cyl_ext" note="Cylinder aligned with z-axis, 
+!  <valid value="z_cyl_ext" note="Cylinder aligned with z-axis,
 !    external flow. Needs to define RADIUS(QID)."/>
 !  <valid value="x_cone" note="Cone aligned with x-axis, internal flow.
 !    Needs to define HALF_ANGLE(QID)."/>
@@ -147,15 +146,15 @@
 !     capped at both ends by a cylinder at 90 degree angle
 !     to create a U-shaped coil. Needs
 !     UCOIL_R1, UCOIL_R2, UCOIL_Y1, UCOIL_Y2."/>
-!  <valid value="XY_BEND_INT" note="Bend between 
+!  <valid value="XY_BEND_INT" note="Bend between
 !     two cylinders in the XY plane, Needs
 !     BEND_R1,BEND_R2,BEND_THETA1,BEND_THETA2."/>
-!  <valid value="Y_C2C_INT" note="connects two vertical cylinders by a 
+!  <valid value="Y_C2C_INT" note="connects two vertical cylinders by a
 !     conical section. Needs C2C_R1,C2C_R2,C2C_Y1,C2C_Y2."/>
 !  <valid value="REACTOR1" note="Reactor, made of two vertical cylinders,
-!     connected by a conical section.Each cylinder is rounded and closed 
+!     connected by a conical section.Each cylinder is rounded and closed
 !     by a conical cap. Needs REACTOR1_R1,REACTOR1_R2,REACTOR1_Y1,REACTOR1_Y2,
-!     REACTOR1_YR1,REACTOR1_YR2,REACTOR1_RR1,REACTOR1_RR2,      
+!     REACTOR1_YR1,REACTOR1_YR2,REACTOR1_RR1,REACTOR1_RR2,
 !     REACTOR1_THETA1,REACTOR1_THETA2."/>
       quadric_form = 'NORMAL'
 !</keyword>
@@ -171,7 +170,7 @@
 !</keyword>
 
 !<keyword category="Cartesian grid" required="false">
-!  <description> 
+!  <description>
 !    Coefficient LAMBDA_X in equation (1) ('NORMAL' form) or
 !    x-component of normal vector defining plane in equation (5)
 !    ('DEGENERATE' form).
@@ -248,7 +247,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Cone half angle, expressed in degrees (used when 
+!    Cone half angle, expressed in degrees (used when
 !    QUADRIC_FORM = *_CONE)
 !  </description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
@@ -258,7 +257,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Torus Radius 1 (used when QUADRIC_FORM = TORUS_*), 
+!    Torus Radius 1 (used when QUADRIC_FORM = TORUS_*),
 !    R1>R2 for a ring.
 !  </description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
@@ -268,7 +267,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Torus Radius 2 (used when QUADRIC_FORM = TORUS_*), 
+!    Torus Radius 2 (used when QUADRIC_FORM = TORUS_*),
 !    R1>R2 for a ring.
 !  </description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
@@ -469,7 +468,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    X-component of normal vector defining the plane (used when 
+!    X-component of normal vector defining the plane (used when
 !    QUADRIC_FORM = PLANE).
 !  </description>
 !  <arg index="1" id="Quadric ID" min="1" max="DIM_QUADRIC"/>
@@ -605,7 +604,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Flag defining the type of cells that are outside of the zone 
+!    Flag defining the type of cells that are outside of the zone
 !    defined by [CLIP_XMIN; CLIP_XMAX], [CLIP_YMIN; CLIP_YMAX],
 !    [CLIP_ZMIN; CLIP_ZMAX].
 !  </description>
@@ -865,14 +864,14 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Ray propagation order used to determine whether any point is 
+!    Ray propagation order used to determine whether any point is
 !    located inside or outside of the STL surface.
 !  </description>
-!  <valid value="ijk" note="Propagation occurs in the 
+!  <valid value="ijk" note="Propagation occurs in the
 !    I, followed by J, and K directions"/>
-!  <valid value="jki" note="Propagation occurs in the 
+!  <valid value="jki" note="Propagation occurs in the
 !    J, followed by K, and I directions"/>
-!  <valid value="kij" note="Propagation occurs in the 
+!  <valid value="kij" note="Propagation occurs in the
 !    K, followed by I, and J directions"/>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       CAD_PROPAGATE_ORDER = '   '
@@ -926,12 +925,21 @@
 
 !<keyword category="Output Control" required="false">
 !  <description>
-!    Interval (expressed in seconds of simulation time) at which VTK 
+!    Interval (expressed in seconds of simulation time) at which VTK
 !    files are written.
 !  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       VTK_DT     = UNDEFINED
 !</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>When VTK_DBG_FILE is .TRUE., the VTK region file is only written
+!   when the subroutine WRITE_DBG_VTU_AND_VTP_FILES is called, typically in a UDF.
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_DBG_FILE = .FALSE.
+!</keyword>
+
+
 
 !<keyword category="Output Control" required="false">
 !  <description>List of variables written in the VTK files.</description>
@@ -1297,7 +1305,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Prints any warning message encountered during pre-processing 
+!    Prints any warning message encountered during pre-processing
 !    on the screen.
 !  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
@@ -1466,7 +1474,7 @@
 
 !<keyword category="Cartesian grid" required="false">
 !  <description>
-!    Turns on the re-indexing of cells. When true, inactive (dead) 
+!    Turns on the re-indexing of cells. When true, inactive (dead)
 !    cells are removed from computational domain.
 !  </description>
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>

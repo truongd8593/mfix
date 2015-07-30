@@ -61,7 +61,7 @@
       CALL INIT_ERR_MSG("CHECK_NUMERICS")
 
       DO L = 1,DIM_EQS
-         IF(DISCRETIZE(L) > 8 .OR. DISCRETIZE(L) < 0) THEN
+         IF(DISCRETIZE(L) > 9 .OR. DISCRETIZE(L) < 0) THEN
             WRITE(ERR_MSG,2002) trim(ivar('DISCRETIZE',L)),&
                trim(ival(DISCRETIZE(L)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

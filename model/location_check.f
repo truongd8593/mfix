@@ -1,69 +1,62 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: LOCATION_CHECK                                          C
-!  Purpose: check calculated and given cell locations for consistency  C
-!                                                                      C
-!  Author: P. Nicoletti                               Date: 02-DEC-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE LOCATION_CHECK(CELL_SPECIFIED, CELL_CALCULATED, &
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: LOCATION_CHECK                                          !
+!  Author: P. Nicoletti                               Date: 02-DEC-91  !
+!                                                                      !
+!  Purpose: Check calculated and given cell locations for consistency  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE LOCATION_CHECK(CELL_SPECIFIED, CELL_CALCULATED,       &
          COUNTER, MESSAGE)
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE funits
-      USE geometry
+! Global variables:
+!---------------------------------------------------------------------//
+! Runtime flags stating direction is not solved.
+      USE geometry, only: NO_I, NO_J, NO_K
+! Flag for reinitializing a run.
+      use run, only: REINITIALIZING
+
+! Module procedure for error message management.
+      use error_manager
+
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! cell index specified in the input file
-      INTEGER, INTENT(IN) :: CELL_SPECIFIED
-! cell index calculated for location coordinate specified in the
-! data file
+
+! Dummy arguments:
+!---------------------------------------------------------------------//
+! Cell index specified in the input file.
+      INTEGER, INTENT(INOUT) :: CELL_SPECIFIED
+! Cell index calculated for location coordinate.
       INTEGER, INTENT(IN) :: CELL_CALCULATED
-! index for BC or IC
+! Index for BC, IC, or IS
       INTEGER, INTENT(IN) :: COUNTER
-! error message to print out
-      CHARACTER MESSAGE*(*)
-!-----------------------------------------------
+! Error message to print out
+      CHARACTER(len=*) :: MESSAGE
+!......................................................................!
+
+! During a reinitializing, "old" data is in the I/J/K arrays. This check
+! overwrites the old data with the current calculated values.
+      IF(REINITIALIZING) CELL_SPECIFIED = CELL_CALCULATED
+
+! Check that the cell_specified in the data input equals to the cell
+! calculated.
+      IF(CELL_SPECIFIED == CELL_CALCULATED) RETURN
 
 
-! check that the cell_specified in the data input equals to the
-! cell calculated.  If not equal, print error message and stop
+      IF(NO_K .AND. (MESSAGE(6:6)=='b' .OR. MESSAGE(6:6)=='t')) RETURN
+      IF(NO_J .AND. (MESSAGE(6:6)=='s' .OR. MESSAGE(6:6)=='n')) RETURN
+      IF(NO_I .AND. (MESSAGE(6:6)=='w' .OR. MESSAGE(6:6)=='e')) RETURN
 
-      IF (CELL_SPECIFIED == CELL_CALCULATED) RETURN
+      CALL INIT_ERR_MSG('LOCATION_CHECK')
 
-      IF (NO_K) THEN
-         IF (MESSAGE(6:6)=='b' .OR. MESSAGE(6:6)=='t') RETURN
-      ENDIF
-      IF (NO_J) THEN
-         IF (MESSAGE(6:6)=='s' .OR. MESSAGE(6:6)=='n') RETURN
-      ENDIF
-      IF (NO_I) THEN
-         IF (MESSAGE(6:6)=='w' .OR. MESSAGE(6:6)=='e') RETURN
-      ENDIF
+      WRITE(ERR_MSG, 1000) MESSAGE, COUNTER, CELL_SPECIFIED,           &
+         CELL_CALCULATED
+      CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-      CALL ERROR_ROUTINE ('location_check', 'consistency error', 0, 2)
-      IF(DMP_LOG)WRITE (UNIT_LOG, 1000) MESSAGE, COUNTER, &
-         CELL_SPECIFIED, CELL_CALCULATED
-      CALL ERROR_ROUTINE (' ', ' ', 1, 3)
+ 1000 FORMAT('Error 1000: IC, BC, OR IS consistency error for: ',A,/,  &
+      'IC/BC/IS No',5X,'= ',I6,/,'Cell specified',2x,'= ',I6,/,        &
+      'Cell calculated',1x,'= ',I6)
 
- 1000 FORMAT(1X,'IC, BC, or IS error for : ',A,/,1X,'IC/BC/IS No  = ',&
-      I6,/, 1X,'Cell specified  = ',I6,/,1X,'Cell calculated = ',I6)
+      CALL FINL_ERR_MSG()
 
       RETURN
       END SUBROUTINE LOCATION_CHECK

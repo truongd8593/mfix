@@ -578,25 +578,19 @@
       use ps, only: PS_MASSFLOW_S, PS_U_s, PS_V_s, PS_W_s
 ! Solids phase tempture and species mass fractions
       use ps, only: PS_T_s, PS_X_s
-! Flag: Solve energy equations.
-      use run, only: ENERGY_EQ
-! Flag: Solve species equations.
-      use run, only: SPECIES_EQ
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum input array sizes.
       use param, only: DIM_M, DIM_N_g, DIM_N_s
 ! Parameter constants
-      use param1, only: ZERO, ONE, UNDEFINED
+      use param1, only: UNDEFINED
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
 
-
       implicit none
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//

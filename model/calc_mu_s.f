@@ -43,13 +43,15 @@
       USE run, only: blending_stress
 
 ! solids transport coefficients
-      USE visc_s, only: mu_s, mu_s_c, mu_s_v
+      USE visc_s, only: mu_s, epmu_s, mu_s_c, mu_s_v
       USE visc_s, only: mu_s_p, mu_s_f
-      USE visc_s, only: lambda_s, lambda_s_c, lambda_s_v
+      USE visc_s, only: lambda_s, eplambda_s, lambda_s_c, lambda_s_v
       USE visc_s, only: lambda_s_p, lambda_s_f
 ! solids pressure
       USE fldvar, only: p_s, p_s_c, p_s_v
-      USE fldvar, only: p_s_p, p_s_f
+      USE fldvar, only: p_s_f
+! factor of ep_s if ishii otherwise 1
+      USE fldvar, only: eps_ifac
 
 ! some constants
       USE param1, only: one, undefined
@@ -62,6 +64,7 @@
       USE physprop, only: close_packed
 ! number of solids phases
       USE physprop, only: mmax
+      USE physprop, only: blend_function
 ! runtime flag to use qmomk
       USE qmom_kinetic_equation, only: qmomk
 
@@ -84,31 +87,27 @@
       INTEGER :: IJK
 ! blend factor
       DOUBLE PRECISION :: BLEND
-
-! Functions
-!---------------------------------------------------------------------//
-      DOUBLE PRECISION, EXTERNAL :: BLEND_FUNCTION
 !---------------------------------------------------------------------//
 
+      IF (MU_S0(M) /= UNDEFINED) THEN
+          CALL CALC_MU_S0(M)
+! return as none of the subroutines below should be called for 
+! constant viscosity case
+          RETURN
+      ENDIF
 
-! Constant solids viscosity
-!---------------------------------------------------------------------
-! Given none of the quantities after this are needed within a solids
-! viscosity case we should safely be able to remove this statement...
-      IF( MU_s0(M) /= UNDEFINED) RETURN
-
-! GHD Theory is called only for the mixture granular energy, 
+! GHD Theory is called only for the mixture granular energy,
 ! i.e. for m == mmax
       IF (KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) RETURN
 
-! General initializations 
+! General initializations
 !---------------------------------------------------------------------
 ! Zero out various quantities
-      CALL INIT0_MU_S(M, IER)
+      CALL INIT0_MU_S(M)
 
 ! Calculate quantities that are functions of velocity only and may be
-! needed for subsequent calculations by various model options 
-      CALL INIT1_MU_S(M, IER)
+! needed for subsequent calculations by various model options
+      CALL INIT1_MU_S(M)
 
 
 ! Viscous-flow stress tensor
@@ -181,21 +180,90 @@
          DO IJK = ijkstart3, ijkend3
             blend =  blend_function(IJK)
             Mu_s(IJK,M) = (ONE-blend)*Mu_s_p(IJK) &
-                + blend*Mu_s_v(IJK) 
+                + blend*Mu_s_v(IJK)
 ! no point in blending lambda_s_p since it has no value
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
-! no point in blending P_s_p since it is never assigned
-        ENDDO
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
+! is there any point in blending P_s_p since it is never assigned?
+! the only thing it would effectively do is reduce P_s_v by the blend
+! value and therefore P_s.
+         ENDDO
       ELSE
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
          LAMBDA_s(:,M) = Lambda_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
          P_s(:,M) = P_s_v(:) + P_s_f(:)
-
+! if ishii then multiply by void fraction otherwise multiply by 1
+         EPMU_s(:,M) = EPS_IFAC(:,M)*Mu_s(:,M)
+         EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*Lambda_s(:,M)
       ENDIF  ! end if/else (blending_stress)
 
       RETURN
       END SUBROUTINE CALC_MU_s
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_MU_s0                                              C
+!  Purpose: Calculate transport coefficients (viscosity,               C
+!  bulk viscosity) for a non-granular material                         C
+!                                                                      C
+!  Comments: Provide a mechanism for variable viscosity for 'solids'   C
+!  phases that is not based on granular model                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CALC_MU_S0(M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: eps_ifac
+      USE fldvar, only: P_s
+      USE functions, only: fluid_at
+      USE param1, only: zero
+      USE physprop, only: mu_s0
+      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+
+! Local variables
+!---------------------------------------------------------------------//
+! cell index
+      INTEGER :: IJK
+
+!---------------------------------------------------------------------//
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+! 'pressure' of this phase.  At this point this quantity is simply 
+! set to zero.  Care must be taken in considering how MFIX's governing
+! equations have been posed (nominally for gas-solids). In particular,
+! the gradient in gas phase pressure is already present in the 'solids'
+! phase momentum balance (see source_*_s for details).  For a gas-
+! liquid system the quantity P_S could be considered to represent a 
+! capillary pressure type term. 
+            P_s(IJK,M) = ZERO  
+
+! viscosity of water in Poise
+! here is where a user would enter their function
+            MU_S(IJK,M) = MU_S0(M)
+            LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
+! if ishii then multiply by void fraction otherwise multiply by 1
+            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*MU_S(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*LAMBDA_S(IJK,M)
+         ELSE
+            MU_S(IJK,M) = ZERO
+            LAMBDA_S(IJK,M) = ZERO
+            EPMU_S(IJK,M) = ZERO
+            EPLAMBDA_S(IJK,M) = ZERO
+         ENDIF
+      ENDDO
+      RETURN
+      END SUBROUTINE CALC_MU_S0
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -287,7 +355,7 @@
                       + 2.D0*K_3m*trD_s2(IJK,M))
 
 ! Boyle-Massoudi Stress term
-               IF(V_ex .NE. ZERO) THEN                  
+               IF(V_ex .NE. ZERO) THEN
                   K_5m = 0.4 * (ONE + C_e) * G_0(IJK, M,M) * &
                      RO_S(IJK,M) * ( (V_ex * D_p(IJK,M)) / &
                      (ONE - EP_s(IJK,M) * V_ex) )**2
@@ -356,7 +424,7 @@
       USE constant, only: switch
       USE constant, only: alpha
       USE constant, only: pi
-      USE constant, only: C_e, eta
+      USE constant, only: eta
 
       USE drag, only: f_gs
 
@@ -430,7 +498,7 @@
                 /(5.d0*Pi)
 
 ! added Ro_g = 0 for granular flows (no gas). sof Aug-02-2005
-            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN
                Mu_star = Mu_s_v(IJK)
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Mu_star = ZERO
@@ -460,7 +528,7 @@
             Kth=75d0*RO_S(IJK,M)*D_p(IJK,M)*DSQRT(Pi*Theta_m(IJK,M))/&
                 (48d0*Eta*(41d0-33d0*Eta))
 
-            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN 
+            IF(SWITCH == ZERO .OR. RO_G(IJK) == ZERO) THEN
                Kth_star=Kth
             ELSEIF(Theta_m(IJK,M) .LT. SMALL_NUMBER)THEN
                Kth_star = ZERO
@@ -524,13 +592,13 @@
       USE constant, only: C_e, eta
 
       USE drag, only: f_gs
- 
+
       USE fldvar, only: p_s_v
       USE fldvar, only: ROP_s, ro_s, d_p, theta_m
       USE fldvar, only: ep_s
       USE fldvar, only: k_turb_g, e_turb_g
       USE kintheory, only: kt_dga
- 
+
       USE param1, only: zero, half, one, small_number
 
       USE physprop, only: smax
@@ -577,7 +645,7 @@
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
 
-! Define time scales and constants 
+! Define time scales and constants
 
 ! time scale of turbulent eddies
             Tau_1(ijk) = 3.d0/2.d0*C_MU*K_Turb_G(IJK)/&
@@ -595,7 +663,7 @@
             ELSE
                dgA_sl = kt_dga(IJK, L)
                Tau_12_st = RO_S(IJK,M)/DgA_SL
-            ENDIF 
+            ENDIF
 
 
 ! The following is purely an ad-hoc modification so that the underlying
@@ -680,7 +748,7 @@
       USE constant, only: pi
 
       USE drag, only: f_gs
- 
+
       USE fldvar, only: p_s_v
       USE fldvar, only: ep_g, ro_g
       USE fldvar, only: ROP_s, ro_s, d_p, theta_m
@@ -928,7 +996,7 @@
              dChiOdphi = DG_0DNU(EP_SM)
              IF(EP_SM <= DIL_EP_S) &
                 dga_sm = KT_DGA(IJK, M)
- 
+
 
 ! Pressure/Viscosity/Bulk Viscosity
 ! Note: k_boltz = M_PM
@@ -1075,7 +1143,7 @@
 
       USE kintheory, only: EDT_s_ip, xsi_gtsh, a2_gtsh
       USE kintheory, only: kt_rvel
-      USE kintheory, only: epm
+      USE kintheory, only: epm, G_gtsh, S_star, K_phi, R_d
 
       USE param1, only: zero, one, small_number
 
@@ -1111,13 +1179,6 @@
       DOUBLE PRECISION :: dSdphi, R_dphi, Tau_st, dPsidn, MuK
 ! relative velocity
       DOUBLE PRECISION :: RVEL
-! Functions
-!---------------------------------------------------------------------//
-! function gamma: eq. (8.1), S_star and K_phi in GTSH theory
-      DOUBLE PRECISION, EXTERNAL :: G_gtsh
-      DOUBLE PRECISION, EXTERNAL :: S_star
-      DOUBLE PRECISION, EXTERNAL :: K_phi
-      DOUBLE PRECISION, EXTERNAL :: R_d
 !---------------------------------------------------------------------//
 
       DO IJK = ijkstart3, ijkend3
@@ -1305,7 +1366,7 @@
       USE constant, only: switch, switch_ia
       USE constant, only: C_e
       USE constant, only: pi
- 
+
       USE drag, only: f_gs
       USE fldvar, only: RO_g
       USE fldvar, only: ROP_s, RO_s, D_p, theta_m
@@ -1697,14 +1758,14 @@
       USE physprop, only: smax, close_packed
 
       USE constant, only: to_SI
-      USE constant, only: sin2_phi, f_phi
+      USE constant, only: sin2_phi
 
       use run, only: granular_energy
 
       USE visc_s, only: ep_g_blend_end
       USE visc_s, only: mu_s_p, lambda_s_p
       USE visc_s, only: i2_devD_s
-    
+
       USE compar, only: ijkstart3, ijkend3
       USE functions, only: fluid_at
       IMPLICIT NONE
@@ -1736,9 +1797,9 @@
          IF ( FLUID_AT(IJK) ) THEN
 
             IF(EP_g(IJK) .LT. EP_g_blend_end(IJK)) THEN
-! Tardos, PT, (1997), pp. 61-74 explains in his equation (3) that 
+! Tardos, PT, (1997), pp. 61-74 explains in his equation (3) that
 ! solids normal and shear frictional stresses have to be treated
-! consistently. Therefore, add closed_packed check for consistency 
+! consistently. Therefore, add closed_packed check for consistency
 ! with the treatment of the normal frictional force (see for example
 ! source_v_s.f). sof May 24 2005.
                SUM_EPS_CP=0.0
@@ -1775,8 +1836,8 @@
 
                LAMBDA_s_p(IJK) = ZERO
 
-! when solving for the granular energy equation (PDE) setting 
-! theta = 0 is done in solve_granular_energy.f to avoid 
+! when solving for the granular energy equation (PDE) setting
+! theta = 0 is done in solve_granular_energy.f to avoid
 ! convergence problems. (sof)
                IF(.NOT.GRANULAR_ENERGY) THETA_m(IJK, M) = ZERO
             ENDIF
@@ -2460,28 +2521,22 @@
 ! Subroutine: INIT0_MU_S                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      Subroutine init0_mu_s (M, IER)
+      Subroutine init0_mu_s (M)
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: undefined, zero
+      USE param1, only: zero
       USE constant, only: v_ex
-      USE physprop, only: mu_s0
-      USE fldvar, only: P_s, p_s_v, p_s_p, p_s_f
-      USE visc_s, only: mu_s, mu_s_v, mu_s_p, mu_s_f, mu_b_v
-      USE visc_s, only: lambda_s, lambda_s_v, lambda_s_p, lambda_s_f
+      USE fldvar, only: p_s_v, p_s_p, p_s_f
+      USE visc_s, only: mu_s_v, mu_s_p, mu_s_f, mu_b_v
+      USE visc_s, only: lambda_s_v, lambda_s_p, lambda_s_f
       USE visc_s, only: alpha_s
 !---------------------------------------------------------------------//
-      IF (V_EX /= ZERO)  ALPHA_s(:,M) = ZERO
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: M
+!---------------------------------------------------------------------//
 
-!      IF(MU_s0 == UNDEFINED) THEN ! fixes a bug noted by VTech
-! should not need to zero out totals as they should take on no value
-! unless explictly assigned
-! total
-!        Mu_s(:,M)     = ZERO
-!        LAMBDA_s(:,M) = ZERO
-!        P_s(:,M) = ZERO
-!      ENDIF
+      IF (V_EX /= ZERO)  ALPHA_s(:,M) = ZERO
 
 ! viscous contributions
       Mu_s_v(:)     = ZERO
@@ -2517,7 +2572,7 @@
 !    (global)                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      Subroutine init1_mu_s (M, IER)
+      Subroutine init1_mu_s (M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -2538,7 +2593,6 @@
       USE trace, only: trD_s2_ip
 
       USE fldvar, only: u_s, v_s, w_s
-      USE fldvar, only: u_g, v_g, w_g
       USE physprop, only: smax
 
       USE is, only: any_is_defined
@@ -2567,8 +2621,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -2686,7 +2738,7 @@
                V_s_W = AVG_X(                                & !i-1/2, j, k
                    AVG_Y_N((V_s(IMJMK, M) - VSH(IMJMK) + &
                             VSH(IJMK) - SRT*ONE/oDX_E(IM1(I))),&
-                           (V_s(IMJK, M) - VSH(IMJK) + & 
+                           (V_s(IMJK, M) - VSH(IMJK) + &
                             VSH(IJK) - SRT*ONE/oDX_E(IM1(I))) ),&
                    AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM)
             ELSE
