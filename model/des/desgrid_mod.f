@@ -893,7 +893,7 @@
             endif
 !$  endif
 
-         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar)) cycle
+         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
