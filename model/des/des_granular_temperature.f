@@ -63,7 +63,7 @@
          IF(IS_NONEXISTENT(LL)) CYCLE
          PC = PC + 1
 ! skipping ghost particles
-         IF(IS_GHOST(LL)) CYCLE
+         IF(IS_GHOST(LL) .or. IS_ENTERING_GHOST(LL) .or. IS_EXITING_GHOST(LL)) CYCLE
 
          I = PIJK(LL,1)
          J = PIJK(LL,2)
@@ -116,8 +116,9 @@
       PC = 0
       DO LL = 1, MAX_PIP
 ! skipping ghost particles and particles that don't exist
-         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
-         IF(.NOT.(IS_ENTERING(LL) .OR. IS_EXITING(LL))) PC = PC + 1
+         IF(IS_NONEXISTENT(LL)) CYCLE
+         PC = PC + 1
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          SQR_VEL = ZERO
          SQR_ROT_VEL = ZERO
@@ -159,8 +160,9 @@
       DO LL = 1, MAX_PIP
 
 ! skipping ghost particles and particles that don't exist
-         IF(IS_NONEXISTENT(LL) .OR. IS_GHOST(LL)) CYCLE
-         IF(.NOT.(IS_ENTERING(LL) .OR. IS_EXITING(LL))) PC = PC + 1
+         IF(IS_NONEXISTENT(LL)) CYCLE
+         PC = PC + 1
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
             0.5d0*PMASS(LL)*(DES_VEL_NEW(:,LL)-DES_VEL_AVG(:))**2
@@ -181,13 +183,9 @@
       IF(TOT_PAR > 0) GLOBAL_GRAN_TEMP(:) =                            &
          GLOBAL_GRAN_TEMP(:)/DBLE(TOT_PAR)
 
-
-
       RETURN
 
       END SUBROUTINE DES_GRANULAR_TEMPERATURE
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -250,7 +248,6 @@
 ! calculate avg height for each phase
       IF (PIP >0) bed_height(:) = tmp_num(:)/tmp_den(:)
 
-
 ! alternative method to calculating bed height (turned off atm)
       IF(.FALSE.) THEN
       tmp_num(:) = ZERO
@@ -259,8 +256,10 @@
       PC = 0
       DO L = 1, MAX_PIP
 ! skipping ghost particles and particles that don't exist
-         IF(IS_NONEXISTENT(L) .OR. IS_GHOST(L)) CYCLE
-         IF(.NOT.(IS_ENTERING(L) .OR. IS_EXITING(L))) PC = PC + 1
+         IF(IS_NONEXISTENT(L)) CYCLE
+         PC = PC + 1
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
+
          M = PIJK(L,5)
          hpart = DES_POS_NEW(2,L)
          tmp_num(M) = tmp_num(M) + hpart
@@ -274,4 +273,3 @@
       RETURN
 
       END SUBROUTINE CALC_DES_BEDHEIGHT
-

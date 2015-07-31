@@ -51,7 +51,7 @@
                NP = PIC(IJK)%p(LP)
 
                IF(IS_NONEXISTENT(NP)) CYCLE
-               IF(IS_GHOST(NP)) CYCLE
+               IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -79,7 +79,11 @@
                      IF(DES_VEL_NEW(IDX,NP)*SGN > 0.0d0) THEN
                         DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
 ! Set the flags for an exiting particle.
-                        CALL SET_EXITING(NP)
+                        IF (IS_GHOST(NP)) THEN
+                           CALL SET_EXITING_GHOST(NP)
+                        ELSE
+                           CALL SET_EXITING(NP)
+                        ENDIF
                      ENDIF
 
 ! The user specified velocity is applied to the exiting particle. This
@@ -91,7 +95,11 @@
                      DES_VEL_NEW(2,NP) = BC_V_s(BCV,M)
                      DES_VEL_NEW(3,NP) = BC_W_s(BCV,M)
 ! Set the flags for an exiting particle.
-                     CALL SET_EXITING(NP)
+                     IF (IS_GHOST(NP)) THEN
+                        CALL SET_EXITING_GHOST(NP)
+                     ELSE
+                        CALL SET_EXITING(NP)
+                     ENDIF
                   ENDIF
 
 ! Ladies and gentlemen, the particle has left the building.

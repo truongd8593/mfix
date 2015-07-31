@@ -39,7 +39,7 @@
 
             DO LS= 1,PINC(IJK)
                NP = PIC(IJK)%p(LS)
-               IF(IS_EXITING(NP)) CYCLE
+               IF(IS_EXITING(NP) .or. IS_EXITING_GHOST(NP)) CYCLE
                SELECT CASE (BC_PLANE(BCV))
                CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -297,7 +297,11 @@
       BC_M = lM + SMAX
 
 ! The particle exists and is entering, not exiting nor a ghost particle
-      CALL SET_ENTERING(lNP)
+      IF (IS_GHOST(lNP)) THEN
+         CALL SET_ENTERING_GHOST(lNP)
+      ELSE
+         CALL SET_ENTERING(lNP)
+      ENDIF
 
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(:,lNP) = lPOS(:)

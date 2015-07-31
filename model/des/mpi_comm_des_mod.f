@@ -246,13 +246,12 @@
          if (lparcount.gt.pip) exit
          if (is_nonexistent(lcurpar)) cycle
          lparcount = lparcount +1
-         if (is_ghost(lcurpar)) cycle
+         if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lcount = lcount + 1
          dprocbuf(lcount) = parray(lcurpar)
       end do
       call desmpi_gatherv(ptype=2)
       end subroutine des_gather_d
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_l
@@ -280,7 +279,7 @@
          if (lparcount.gt.pip) exit
          if (is_nonexistent(lcurpar)) cycle
          lparcount = lparcount +1
-         if (is_ghost(lcurpar)) cycle
+         if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lcount = lcount + 1
          if(parray(lcurpar)) then
             iprocbuf(lcount) = 1
@@ -291,7 +290,6 @@
       call desmpi_gatherv(ptype=1)
 
       end subroutine des_gather_l
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_i
@@ -330,7 +328,7 @@
             if (lparcount.gt.pip) exit
             if (is_nonexistent(lcurpar)) cycle
             lparcount = lparcount +1
-            if (is_ghost(lcurpar)) cycle
+            if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
             lcount = lcount + 1
             if(parray(lcurpar).gt.0) then
                iprocbuf(lcount) = iglobal_id(parray(lcurpar))
@@ -343,7 +341,7 @@
             if (lparcount.gt.pip) exit
             if (is_nonexistent(lcurpar)) cycle
             lparcount = lparcount +1
-            if (is_ghost(lcurpar)) cycle
+            if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
             lcount = lcount + 1
             iprocbuf(lcount) = parray(lcurpar)
          end do

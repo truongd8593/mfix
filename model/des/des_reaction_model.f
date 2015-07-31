@@ -70,7 +70,7 @@
 ! Skip indices that do not represent particles
             IF(IS_NONEXISTENT(NP)) CYCLE lNP_LP
 ! Skip indices that represent ghost particles
-            IF(IS_GHOST(NP)) CYCLE lNP_LP
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE lNP_LP
 
 ! Set the particle phase index
             M = PIJK(NP,5) + SMAX

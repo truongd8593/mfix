@@ -134,6 +134,3 @@
 
       RETURN
       END SUBROUTINE NSQUARE
-
-
-

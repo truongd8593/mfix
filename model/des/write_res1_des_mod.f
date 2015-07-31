@@ -20,7 +20,6 @@
       PUBLIC :: WRITE_RES_pARRAY
       PUBLIC :: WRITE_RES_cARRAY
 
-
 ! Write scalar and data WITHOUT MPI data collection.
       INTERFACE WRITE_RES_DES
          MODULE PROCEDURE WRITE_RES_DES_0I, WRITE_RES_DES_1I
@@ -42,7 +41,6 @@
          MODULE PROCEDURE WRITE_RES_cARRAY_1L
       END INTERFACE
 
-
       INTEGER, PARAMETER :: RDES_UNIT = 901
 
 ! Send/Recv parameters for Particle arrays:
@@ -56,7 +54,6 @@
       INTEGER :: cSEND
       INTEGER, allocatable :: cGATHER(:)
       INTEGER, allocatable :: cDISPLS(:)
-
 
       CONTAINS
 
@@ -85,7 +82,6 @@
 
       END SUBROUTINE OPEN_RES_DES
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: INIT_WRITE_RES_DES                                       !
 !                                                                      !
@@ -104,7 +100,7 @@
       use desmpi, only: iDisPls
 
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
       DOUBLE PRECISION, INTENT(IN) :: lVERSION
@@ -163,7 +159,6 @@
             pDISPLS(lPROC) = pDISPLS(lPROC-1) + pGATHER(lPROC-1)
          ENDDO
 
-
 ! Setup data for neighbor arrays
          cROOTCNT = 10
 ! Count the number of real neighbors.
@@ -174,7 +169,7 @@
             IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
                part = part + 1
             ENDIF
-            IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
+            IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
                cPROCCNT = cPROCCNT +1
             ENDIF
 
@@ -200,7 +195,6 @@
 
       ENDIF
 
-
 ! Write out the initial data.
       lNEXT_REC = 1
       CALL WRITE_RES_DES(lNEXT_REC, lVERSION)    ! RES file version
@@ -208,10 +202,8 @@
       CALL WRITE_RES_DES(lNEXT_REC, lGHOST_CNT)  ! Number of Ghosts
       CALL WRITE_RES_DES(lNEXT_REC, cROOTCNT)    ! Number of neighbors
 
-
       RETURN
       END SUBROUTINE INIT_WRITE_RES_DES
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: CLOSE_RES_DES                                            !
@@ -236,8 +228,6 @@
       RETURN
       END SUBROUTINE FINL_WRITE_RES_DES
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0I                                         !
 !                                                                      !
@@ -255,7 +245,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0I
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1I                                         !
@@ -278,8 +267,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_DES_1I
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0D                                         !
 !                                                                      !
@@ -297,7 +284,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0D
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1D                                         !
@@ -320,7 +306,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_DES_1D
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0L                                         !
 !                                                                      !
@@ -342,7 +327,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0L
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1L                                         !
@@ -373,8 +357,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_1L
-
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1I                                      !
@@ -437,8 +419,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_PARRAY_1I
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1D                                      !
 !                                                                      !
@@ -484,7 +464,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_PARRAY_1D
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1D                                      !
@@ -538,7 +517,7 @@
       SUBROUTINE WRITE_RES_cARRAY_1I(lNEXT_REC, INPUT_I, pLOC2GLB)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -567,7 +546,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
             IF(lLOC2GLB) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
             ELSE
@@ -601,7 +580,7 @@
 
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
@@ -623,7 +602,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -653,7 +632,7 @@
       SUBROUTINE WRITE_RES_cARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NORMAL
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -676,7 +655,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(IS_NORMAL(part) .AND. IS_NORMAL(NEIGHBORS(LC1))) THEN
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF

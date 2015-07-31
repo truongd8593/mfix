@@ -52,7 +52,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 !---------------------------------------------------------------------//
 
-
 ! DEFERRED CORRECTION IS USED WITH THE SCALAR TRANSPORT EQN.
       IF(DEF_COR)THEN
          CALL CONV_DIF_PHI0(PHI, DIF, UF, VF, WF, &

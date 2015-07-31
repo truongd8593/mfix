@@ -258,12 +258,12 @@
          RETURN
       ENDIF
 
-      allocate( dPAR_POS(lDIMN, pIN_COUNT))
+      allocate( dPAR_POS(pIN_COUNT, lDIMN))
 
 ! Only the IO proccess reads positions.
       IF(myPE == PE_IO) THEN
          DO LC1=1, merge(2,3,NO_K)
-            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(LC1,:),                &
+            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(:,LC1),                &
                pIN_COUNT, lNEXT_REC)
          ENDDO
       ENDIF
@@ -622,7 +622,7 @@
 
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
-      use discretelement, only: PIP, IS_GHOST
+      use discretelement, only: PIP, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use discretelement, only: NEIGH_MAX, NEIGH_NUM
 
 !      use mpi_utility, only: BCAST
@@ -664,7 +664,7 @@
 
          lGLOBAL_OWNER = 0
          DO LC1=1, PIP
-            IF(.NOT.IS_GHOST(LC1)) &
+            IF(.NOT.IS_GHOST(LC1) .AND. .NOT.IS_ENTERING_GHOST(LC1) .AND. .NOT.IS_EXITING_GHOST(LC1)) &
                lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
          ENDDO
 
@@ -1489,6 +1489,5 @@
 
       RETURN
       END SUBROUTINE READ_RES_cARRAY_1L
-
 
       END MODULE READ_RES1_DES

@@ -51,7 +51,7 @@
             IF(PC > PIP) EXIT
             IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(IS_GHOST(LC)) CYCLE
+            IF(IS_GHOST(LC) .OR. IS_ENTERING_GHOST(LC) .OR. IS_EXITING_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") real(DATA(LC))
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -112,7 +112,7 @@
             IF(PC > PIP) EXIT
             IF(IS_NONEXISTENT(LC1)) CYCLE
             PC = PC+1
-            IF(IS_GHOST(LC1)) CYCLE
+            IF(IS_GHOST(LC1) .OR. IS_ENTERING_GHOST(LC1) .OR. IS_EXITING_GHOST(LC1)) CYCLE
             DO LC2=LB, UB
                WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC1,LC2))
             ENDDO
@@ -178,7 +178,7 @@
             IF(PC > PIP) EXIT
             IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(IS_GHOST(LC)) CYCLE
+            IF(IS_GHOST(LC) .OR. IS_ENTERING_GHOST(LC) .OR. IS_EXITING_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") DATA(LC)
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -1607,7 +1607,7 @@
          IF(PC > PIP) EXIT
          IF(IS_NONEXISTENT(LC1)) CYCLE
          PC = PC+1
-         IF(IS_GHOST(LC1)) CYCLE
+         IF(IS_GHOST(LC1) .OR. IS_ENTERING_GHOST(LC1) .OR. IS_EXITING_GHOST(LC1)) CYCLE
 
          SELECT CASE(SELECT_PARTICLE_BY)
             CASE('C')  ! Particle center must be inside vtk region

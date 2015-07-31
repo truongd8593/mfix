@@ -32,16 +32,14 @@
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 
-      use discretelement, only: IS_NORMAL
+      use discretelement, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Double precision values.
       use param1, only: ZERO
 
-
       implicit none
-
 
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
@@ -52,19 +50,16 @@
 ! Loop bound for
       INTEGER :: LP_BND
 
-
       IF(CARTESIAN_GRID) THEN
          CALL CALC_PG_GRAD_CG
       ELSE
          CALL CALC_PG_GRAD_STD
       ENDIF
 
-
       IF(DES_EXPLICITLY_COUPLED .AND. .NOT.MODEL_B) THEN
 
 ! Loop bounds for interpolation.
          LP_BND = merge(27,9,DO_K)
-
 
 ! Calculate the gas phase forces acting on each particle.
 
@@ -72,7 +67,7 @@
 !$omp              private(NP,lPF,lc,ijk,weight) &
 !$omp              shared(MAX_PIP,DES_INTERP_ON,LP_BND,p_force,drag_fc,filter_cell,filter_weight,pijk,pvol)
          DO NP=1,MAX_PIP
-            IF(.NOT.IS_NORMAL(NP)) CYCLE
+            IF(IS_NONEXISTENT(NP).or.IS_ENTERING(NP).or.IS_EXITING(NP).or.IS_ENTERING_GHOST(NP).or.IS_EXITING_GHOST(NP)) CYCLE
 
             IF(DES_INTERP_ON) THEN
                lPF = ZERO

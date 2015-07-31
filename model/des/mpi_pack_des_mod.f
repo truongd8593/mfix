@@ -7,7 +7,6 @@
 !----------------------------------------------------------------------!
       MODULE MPI_PACK_DES
 
-
       PRIVATE
       PUBLIC :: DESMPI_PACK_PARCROSS, DESMPI_PACK_GHOSTPAR
 
@@ -97,7 +96,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use discretelement, only: is_exiting, is_ghost
+      use discretelement
 
       IMPLICIT NONE
 
@@ -122,7 +121,7 @@
 
 ! Do not send particle data for a ghost particle whose owner has not yet
 ! updated the particle's data on this processor.
-            if(is_ghost(lcurpar) .and. .not.ighost_updated(lcurpar)) cycle
+            if((is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) .and. .not.ighost_updated(lcurpar)) cycle
 
 ! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
@@ -144,7 +143,7 @@
 ! 8) Rotational Velocity
             call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
 ! 9) Exiting particle flag
-            call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar)),pface)
+            call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar).or.is_exiting_ghost(lcurpar)),pface)
 ! 10) Temperature
             IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
@@ -164,7 +163,6 @@
       isendcnt(pface) = lpar_cnt*iGhostPacketSize + ibufoffset
 
       end subroutine desmpi_pack_ghostpar
-
 
 !----------------------------------------------------------------------!
 !  Subroutine: DESMPI_PACK_PARCROSS                                    !
@@ -251,7 +249,7 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement, only: DG_PIC, IS_GHOST, IS_ENTERING, IS_EXITING, IS_NONEXISTENT, SET_NORMAL, SET_GHOST, SET_NONEXISTENT
+      use discretelement
       use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 
@@ -293,7 +291,7 @@
          do lpicloc = 1,dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
 
-            if (is_ghost(lcurpar)) cycle ! if ghost particle then cycle
+            if (is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle ! if ghost particle then cycle
 
             going_to_send(lcurpar) = .true.
             lbuf = lparcnt*iParticlePacketSize + ibufoffset
@@ -323,9 +321,9 @@
 ! 9) Particle solids phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 10) Entering particle flag.
-            call pack_dbuf(lbuf, is_entering(lcurpar), pface)
+            call pack_dbuf(lbuf, is_entering(lcurpar).or.is_entering_ghost(lcurpar), pface)
 ! 11) Exiting particle flag.
-            call pack_dbuf(lbuf, is_exiting(lcurpar), pface)
+            call pack_dbuf(lbuf, is_exiting(lcurpar).or.is_exiting_ghost(lcurpar), pface)
 ! 12) Density
             call pack_dbuf(lbuf,ro_sol(lcurpar),pface)
 ! 13) Volume
@@ -390,7 +388,13 @@
 ! DEM particles are converted to ghost particles. This action does not
 ! change the number of particles.
             ELSE
-               call set_ghost(lcurpar)
+               if (is_entering(lcurpar)) then
+                  call set_entering_ghost(lcurpar)
+               elseif (is_exiting(lcurpar)) then
+                  call set_exiting_ghost(lcurpar)
+               else
+                  call set_ghost(lcurpar)
+               endif
                ighost_cnt = ighost_cnt + 1
             END IF
 
@@ -491,7 +495,6 @@
       return
       end subroutine pack_db1
 
-
 !----------------------------------------------------------------------!
 ! Pack subroutine for single integer variables                         !
 !----------------------------------------------------------------------!
@@ -541,6 +544,5 @@
 
       return
       end subroutine pack_l0
-
 
       end module mpi_pack_des

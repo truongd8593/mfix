@@ -29,7 +29,6 @@
       use constant, only: PI
       use stl_preproc_des, only: add_facet
 
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -237,7 +236,7 @@
       DO L = 1, MAX_PIP
 ! Skip 'empty' locations when populating the particle property arrays.
          IF(IS_NONEXISTENT(L)) CYCLE
-         IF(IS_GHOST(L)) CYCLE
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
          PVOL(L) = (4.0D0/3.0D0)*PI*DES_RADIUS(L)**3
          PMASS(L) = PVOL(L)*RO_SOL(L)
          OMOI(L) = 2.5D0/(PMASS(L)*DES_RADIUS(L)**2) !ONE OVER MOI
