@@ -148,7 +148,7 @@
 
 ! calculate standard bc
             CALL BC_PHI (X_G(1,LN), BC_X_G(1,LN), BC_XW_G(1,LN), &
-               BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M, IER)
+               BC_HW_X_G(1,LN), BC_C_X_G(1,LN), 0, A_M, B_M)
 
 ! set the source terms in a and b matrix form
             CALL SOURCE_PHI (S_P, S_C, EP_G, X_G(1,LN), 0, A_M, B_M)
@@ -229,7 +229,7 @@
 
                CALL BC_PHI (X_S(1,M,LN), BC_X_S(1,M,LN), &
                   BC_XW_S(1,M,LN), BC_HW_X_S(1,M,LN), &
-                  BC_C_X_S(1,M,LN), M, A_M, B_M, IER)
+                  BC_C_X_S(1,M,LN), M, A_M, B_M)
 
                CALL SOURCE_PHI (S_P, S_C, EPS, X_S(1,M,LN), M, A_M, B_M)
 

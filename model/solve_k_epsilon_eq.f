@@ -168,7 +168,7 @@
 !
 !
             CALL BC_PHI (K_Turb_G, BC_K_Turb_G, BC_K_Turb_GW, BC_HW_K_Turb_G, &
-                         BC_C_K_Turb_G, M, A_M, B_M, IER)
+                         BC_C_K_Turb_G, M, A_M, B_M)
 !
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, K_Turb_G, M, A_M, B_M)
@@ -250,7 +250,7 @@
 !
 !
             CALL BC_PHI (E_Turb_G, BC_E_Turb_G, BC_E_Turb_GW, BC_HW_E_Turb_G, &
-                         BC_C_E_Turb_G, M, A_M, B_M, IER)
+                         BC_C_E_Turb_G, M, A_M, B_M)
 !
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, E_Turb_G, M, A_M, B_M)

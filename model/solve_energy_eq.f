@@ -170,7 +170,7 @@
          CpxFlux_E, CpxFlux_N, CpxFlux_T, 0, A_M, B_M)
 
 ! calculate standard bc
-      CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M, IER)
+      CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M)
 
 ! set the source terms in a and b matrix equation form
       CALL SOURCE_PHI (S_P, S_C, EP_G, T_G, 0, A_M, B_M)
@@ -233,7 +233,7 @@
 
 ! calculate standard bc
          CALL BC_PHI (T_s(1,M), BC_T_S(1,M), BC_TW_S(1,M), &
-            BC_HW_T_S(1,M), BC_C_T_S(1,M), M, A_M, B_M, IER)
+            BC_HW_T_S(1,M), BC_C_T_S(1,M), M, A_M, B_M)
 
 ! set the source terms in a and b matrix equation form
          CALL SOURCE_PHI (S_P, S_C, EPS, T_S(1,M), M, A_M, B_M)

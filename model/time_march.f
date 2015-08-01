@@ -235,7 +235,7 @@
       CALL CALC_COEFF_ALL (0, IER)
 
 ! Calculate the stress tensor trace and cross terms for all phases.
-      CALL CALC_TRD_AND_TAU(IER)
+      CALL CALC_TRD_AND_TAU()
 
 ! Calculate additional solid phase momentum source terms
 ! that arise from kinetic theory constitutive relations

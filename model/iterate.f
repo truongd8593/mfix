@@ -222,11 +222,11 @@
       IF(NScalar /= 0) CALL SCALAR_PROP()
 
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
-      IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
+      IF(K_Epsilon) CALL K_Epsilon_PROP()
 
 ! Update the stress tensor trace and cross terms each subiteration
 ! for MMS cases.
-      IF(USE_MMS) CALL CALC_TRD_AND_TAU(IER)
+      IF(USE_MMS) CALL CALC_TRD_AND_TAU()
 
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)

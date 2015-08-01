@@ -81,7 +81,7 @@
 ! Calculate the coefficients
          CALL DIF_PHI_DES(0, DIF, A_M, B_M)
 ! Apply zero-flux BC at all walls
-         CALL DIF_PHI_BC_DES(PHI, 0, A_M, B_M, IER)
+         CALL DIF_PHI_BC_DES(PHI, 0, A_M, B_M)
 ! Collect the center coefficient and force vector
          CALL DIF_PHI_SOURCE_DES(PHI, 0, A_M, B_M, DIF_DT)
 ! Set the local method and iterations.

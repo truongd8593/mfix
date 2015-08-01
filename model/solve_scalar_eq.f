@@ -139,7 +139,7 @@
 !
 !
             CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
-                         BC_C_Scalar(1,N), M, A_M, B_M, IER)
+                         BC_C_Scalar(1,N), M, A_M, B_M)
 !
 !
             CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,N), M, A_M, B_M)
@@ -206,7 +206,7 @@
 !
 !
             CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
-                         BC_C_Scalar(1,N), M, A_M, B_M, IER)
+                         BC_C_Scalar(1,N), M, A_M, B_M)
 !
 !
             CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,N), M, A_M, B_M)
