@@ -34,7 +34,7 @@
         Use indices
         Use correl
         Use compar
-        Use functions
+        Use postfunctions
 
       IMPLICIT NONE
 !

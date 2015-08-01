@@ -33,7 +33,7 @@ SUBROUTINE CALC_VOL
   USE physprop
   USE post3d
   USE compar
-  USE functions
+  USE postfunctions
 
   IMPLICIT NONE
   INTEGER  I, J, K, IJK

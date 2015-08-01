@@ -24,7 +24,7 @@
       USE compar
       USE constant
       USE fldvar
-      USE functions
+      USE postfunctions
       USE funits
       USE geometry
       USE indices

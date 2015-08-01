@@ -36,7 +36,7 @@
       Use post3d
       Use physprop
       Use compar
-      Use functions
+      Use postfunctions
 
       IMPLICIT NONE
 !
@@ -157,7 +157,7 @@
       Use post3d
       Use physprop
       Use compar
-      Use functions
+      Use postfunctions
 
       IMPLICIT NONE
       INTEGER MAX_COUNT

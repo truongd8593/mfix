@@ -41,7 +41,7 @@
 !
       Use indices
       Use compar
-      Use functions
+      Use postfunctions
 
       IMPLICIT NONE
 !

@@ -897,7 +897,7 @@ subroutine usr_set_array(nsize,arr,var_no,m,n)
   use compar
   use constant
   use post3d
-  use functions
+  use postfunctions
 
   implicit none
 
@@ -1024,7 +1024,7 @@ subroutine spatial_averaging(value,i1,i2,j1,j2,k1,k2, &
   use indices
   use compar
   use usr_input
-  use functions
+  use postfunctions
 
   implicit none
   !

@@ -31,7 +31,7 @@
       Use physprop
       Use geometry
       Use compar
-      Use functions
+      Use postfunctions
 
       IMPLICIT NONE
 !
