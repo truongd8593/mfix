@@ -20,7 +20,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_U_G(A_M, B_M, IER)
+      SUBROUTINE SOURCE_U_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -77,8 +77,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local Variables
 !---------------------------------------------------------------------//

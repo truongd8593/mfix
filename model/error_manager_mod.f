@@ -186,8 +186,6 @@
 
 ! Rank ID of process
       use compar, only: myPE
-! Rank ID for IO handeling
-      use compar, only: PE_IO
 ! Flag: My rank reports errors.
       use funits, only: DMP_LOG
 ! File unit for LOG messages.
@@ -235,8 +233,6 @@
 
 ! Rank ID of process
       use compar, only: myPE
-! Rank ID for IO handeling
-      use compar, only: PE_IO
 ! Flag: My rank reports errors.
       use funits, only: DMP_LOG
 ! File unit for LOG messages.

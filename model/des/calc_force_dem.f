@@ -17,7 +17,6 @@
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
-      USE physprop, ONLY: K_s0
       USE run
 
       IMPLICIT NONE
@@ -47,8 +46,6 @@
       DOUBLE PRECISION :: VREL_T(3)
 ! normal and tangential forces
       DOUBLE PRECISION :: FN(3), FT(3)
-! temporary storage of tangential DISPLACEMENT
-      DOUBLE PRECISION :: PFT_TMP(3)
 ! temporary storage of force
       DOUBLE PRECISION :: FC_TMP(3)
 ! temporary storage of force for torque
@@ -85,7 +82,7 @@
 !$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
 !$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,pft_tmp,fn,ft,overlap_t,tangent,mag_overlap_t,       &
+!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
 !$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,NORMAL,ftmd,fnmd, &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
 !$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &

@@ -7,12 +7,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_PHYSICAL_PROP_ROg
 
-! Gas phase density (compressible).
-      use fldvar, only: RO_g
-! Gas phase material density.
-      use fldvar, only: ROP_g
-! Gas phase volume fraction.
-      use fldvar, only: EP_g
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! Function to identify wall cells
@@ -69,8 +63,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_PHYSICAL_PROP_ROs
 
-! Solid phase density (variable).
-      use fldvar, only: RO_s
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! Function to identify wall cells
@@ -128,8 +120,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_PHYSICAL_PROP_CPg
 
-! Gas phase specific heat. 
-      use physprop, only: C_PG
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! Function to identify wall cells
@@ -181,8 +171,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR_PHYSICAL_PROP_CPs
 
-! Solids phase specific heat. 
-      use physprop, only: C_PS
 ! Fluid grid loop bounds.
       use compar, only: IJKStart3, IJKEnd3
 ! Function to identify wall cells

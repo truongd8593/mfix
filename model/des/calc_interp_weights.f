@@ -26,7 +26,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_INTERP_WEIGHTS1
 
-      use discretelement, only: MAX_RADIUS
       use discretelement, only: MAX_PIP
       use discretelement, only: PIJK
       use discretelement, only: DES_POS_NEW

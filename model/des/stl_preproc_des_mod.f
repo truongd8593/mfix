@@ -31,7 +31,6 @@
 
       USE cutcell, only: use_stl
 
-      USE discretelement, only: DES_CONVERT_BOX_TO_FACETS
       USE discretelement, only: STL_FACET_TYPE
       USE discretelement, only: FACET_TYPE_NORMAL
       USE discretelement, only: FACET_TYPE_MI
@@ -157,7 +156,7 @@
       Subroutine BIN_FACETS_TO_GRID_DES
 
       USE desgrid
-      USE discretelement, only: dimn, xe, yn, zt
+      USE discretelement, only: dimn
       USE functions
       USE geometry
       USE indices
@@ -535,8 +534,8 @@
       USE indices
       USE compar
       USE discretelement, only: STL_FACET_TYPE, FACET_TYPE_NORMAL, &
-           FACET_TYPE_MI, FACET_TYPE_PO, COUNT_FACET_TYPE_NORMAL, &
-           COUNT_FACET_TYPE_MI, COUNT_FACET_TYPE_PO
+           FACET_TYPE_MI, FACET_TYPE_PO, &
+           COUNT_FACET_TYPE_PO
 
       IMPLICIT NONE
 
@@ -788,9 +787,7 @@
       INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
       NEIGH_CELLS_NONNAT, &
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, PHASELL, LOC_MIN_PIP, &
-      LOC_MAX_PIP!, focus_particle
-
+      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, LOC_MIN_PIP
 
       OVERLAP_EXISTS = .FALSE.
 

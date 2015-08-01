@@ -92,13 +92,6 @@
       use compar, only: numPEs
       use mpi_utility, only: GLOBAL_SUM
 
-      use desmpi, only: iProcBuf
-      use desmpi, only: iRootBuf, dRootBuf
-
-      use desmpi, only: iGath_SendCnt
-
-      use desmpi, only: iDisPls
-
       use discretelement, only: PIP, iGHOST_CNT
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
 

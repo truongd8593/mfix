@@ -190,8 +190,6 @@
       use des_rxns, only: NO_OF_DES_RXNS
       use des_rxns, only: DES_REACTION
 
-      use run, only: REINITIALIZING
-
       use error_manager
 
       IMPLICIT NONE

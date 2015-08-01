@@ -851,14 +851,14 @@
 ! Local variables
 !-----------------------------------------------
       integer lcurpar,lkoffset
-      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt,cc,dd
+      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt,cc
       double precision lsearch_rad,ldistsquared
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
       integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff, mm, lSIZE2
+!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff, mm, lSIZE2, dd
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num

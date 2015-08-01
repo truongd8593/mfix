@@ -65,7 +65,7 @@
             CASE (IA_2005)
                CALL CALC_IA_ENERGY_DISSIPATION_SS(M)
             CASE(GD_1999)
-               CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+               CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M)
             CASE(GTSH_2012)
                CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M)
             END SELECT

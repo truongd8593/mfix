@@ -210,7 +210,6 @@
       SUBROUTINE CHECK_INTERACT_ITER(iMUSTIT)
 
       use run, only: INTERACTIVE_NITS
-      use compar, only: myPE, PE_IO
 
       INTEGER, INTENT(OUT) :: iMUSTIT
       LOGICAL :: INTERACTING

@@ -10,12 +10,9 @@
 
       use des_bc, only: DEM_BCMI, DEM_BCMO
       use fldvar, only: EP_g, ROP_g, ROP_s
-      use mfix_pic, only: MPPIC
-      use output, only: SPX_DT
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
       use run, only: ENERGY_EQ
-      use run, only: RUN_TYPE
       use run, only: ANY_SPECIES_EQ
 
       use output, only: SPX_DT

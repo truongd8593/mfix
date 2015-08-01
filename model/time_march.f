@@ -29,7 +29,7 @@
       USE geometry
       USE indices
       USE leqsol, only: SOLVER_STATISTICS, REPORT_SOLVER_STATS
-      USE output, only: RES_DT, NLOG
+      USE output, only: RES_DT
       USE param
       USE param1
       USE pgcor
@@ -37,7 +37,6 @@
       USE pscor
       USE qmom_kinetic_equation
       USE run
-      USE rxns, only: nRR
       USE scalars
       USE stiff_chem, only : STIFF_CHEMISTRY, STIFF_CHEM_SOLVER
       USE tau_g
@@ -64,7 +63,7 @@
       LOGICAL :: FINISH
 
 ! Loop indices
-      INTEGER :: L, M , I, IJK, N
+      INTEGER :: L, M
 ! Error index
       INTEGER :: IER
 ! Number of iterations
@@ -80,8 +79,6 @@
 
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
-! Flag to cleanly exit without saving results.
-      LOGICAL :: ABORT_SIGNAL = .FALSE.
 
 ! C Function
       INTERFACE

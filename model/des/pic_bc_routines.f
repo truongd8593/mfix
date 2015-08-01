@@ -14,8 +14,6 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
 ! Paricle velocities
       use discretelement, only: DES_VEL_NEW
-! Particle radi
-      use discretelement, only: DES_RADIUS
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP
 ! The number of neighbor facets for each DES grid cell
@@ -810,7 +808,6 @@
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
-      double precision :: velocity(dimn)
       !reference point and direction of the line
       double precision, dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane

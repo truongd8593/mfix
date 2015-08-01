@@ -530,10 +530,6 @@
       use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
 ! User-Input: solids species eq BCs.
       use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
-! Total number of speices in each phase.
-      use physprop, only: NMAX
-! Flag: Solve species equations.
-      use run, only: SPECIES_EQ
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

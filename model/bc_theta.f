@@ -1315,7 +1315,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      use constant, only : e_w, PI, k4phi, phip0
+      use constant, only : PI, k4phi, phip0
       implicit none
 !-----------------------------------------------
 ! Dummy arguments

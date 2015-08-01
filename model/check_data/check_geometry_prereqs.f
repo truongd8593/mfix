@@ -22,7 +22,7 @@
 !      use geometry, only: NO_K
 
       use geometry, only: COORDINATES, CYLINDRICAL
-      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
+      use geometry, only: CYCLIC_X, CYCLIC_X_PD
 !      use geometry, only: COORDINATES
 
 ! Global Parameters:

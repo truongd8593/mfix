@@ -43,7 +43,7 @@
                  II, JJ, KK
       INTEGER :: I1, I2, J1, J2, K1, K2
       INTEGER :: IDIM, IJK2
-      INTEGER :: ICUR, JCUR, KCUR, CUR_IJK
+      INTEGER :: CUR_IJK
 ! indices used for interpolation stencil (unclear why IE, JN, KTP are
 ! needed)
       INTEGER :: IW, IE, JS, JN, KB, KTP
@@ -63,8 +63,6 @@
       INTEGER :: NP, NINDX
 ! Statistical weight of the particle. Equal to one for DEM
       DOUBLE PRECISION :: WTP
-! one over the solids volume fraction
-      DOUBLE PRECISION :: OEPS
 
       DOUBLE PRECISION :: MASS_SOL1, MASS_SOL2
 ! sum of mass_sol1 and mass_sol2 across all processors
@@ -79,7 +77,7 @@
                  COUNT_NODES_INSIDE_MAX
       double precision :: RESID_ROPS(DES_MMAX), &
                           RESID_VEL(3, DES_MMAX)
-      double precision :: NORM_FACTOR, VOL_RATIO
+      double precision :: NORM_FACTOR
 !Handan Liu added on Jan 17 2013
           DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp
           DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
