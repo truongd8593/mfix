@@ -160,10 +160,10 @@
 
             IF(.NOT.ADDED_MASS) THEN
                CALL CONV_DIF_PHI (K_Turb_G, DIF_K_Turb_G, DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M)
             ELSE
                CALL CONV_DIF_PHI (K_Turb_G, DIF_K_Turb_G, DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M)
             ENDIF
 !
 !
@@ -242,10 +242,10 @@
 
             IF(.NOT.ADDED_MASS) THEN
                CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M)
             ELSE
                CALL CONV_DIF_PHI (E_Turb_G, DIF_E_Turb_G, DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M)
             ENDIF
 !
 !

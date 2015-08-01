@@ -167,7 +167,7 @@
 
 ! calculate the convection-diffusion terms
       CALL CONV_DIF_PHI (T_g, K_G, DISCRETIZE(6), U_G, V_G, W_G, &
-         CpxFlux_E, CpxFlux_N, CpxFlux_T, 0, A_M, B_M, IER)
+         CpxFlux_E, CpxFlux_N, CpxFlux_T, 0, A_M, B_M)
 
 ! calculate standard bc
       CALL BC_PHI (T_g, BC_T_G, BC_TW_G, BC_HW_T_G, BC_C_T_G, 0, A_M, B_M, IER)
@@ -229,7 +229,7 @@
 ! calculate the convection-diffusion terms
          CALL CONV_DIF_PHI (T_s(1,M), K_S(1,M), DISCRETIZE(6), &
             U_S(1,M), V_S(1,M), W_S(1,M), CpxFlux_E, CpxFlux_N, &
-            CpxFlux_T, M, A_M, B_M, IER)
+            CpxFlux_T, M, A_M, B_M)
 
 ! calculate standard bc
          CALL BC_PHI (T_s(1,M), BC_T_S(1,M), BC_TW_S(1,M), &

@@ -177,8 +177,8 @@
 
 ! Calculate the face values of densities and mass fluxes for the first
 ! solve_vel_star call.
-      CALL CONV_ROP(IER)
-      CALL CALC_MFLUX (IER)
+      CALL CONV_ROP()
+      CALL CALC_MFLUX ()
       CALL SET_BC1
       CALL SET_EP_FACTORS
 
@@ -295,13 +295,13 @@
       ENDIF
 
 ! Calculate the face values of densities.
-      CALL CONV_ROP(IER)
+      CALL CONV_ROP()
 
       IF (RO_G0 /= ZERO) THEN
 ! Solve fluid pressure correction equation
          CALL SOLVE_PP_G (NORMG, RESG, IER)
 ! Correct pressure, velocities, and density
-         CALL CORRECT_0 (IER)
+         CALL CORRECT_0 ()
       ENDIF
 
 ! Recalculate densities.
@@ -315,7 +315,7 @@
       IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
 
 ! Calculate the face values of mass fluxes
-      CALL CALC_MFLUX (IER)
+      CALL CALC_MFLUX ()
       CALL SET_BC1
       CALL SET_EP_FACTORS
 
@@ -357,7 +357,7 @@
       RESG = RESID(RESID_P,0)
       RESS = RESID(RESID_P,1)
       CALL CALC_RESID_MB(1, errorpercent)
-      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER)
+      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
 
       IF(CYCLIC)THEN
         IF(MUSTIT==0 .OR. NIT >= MAX_NIT) &
@@ -371,7 +371,7 @@
 !-----------------------------------------------------------------
 
 ! Display residuals
-      CALL DISPLAY_RESID (NIT, IER)
+      CALL DISPLAY_RESID (NIT)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN

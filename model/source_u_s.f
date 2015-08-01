@@ -464,7 +464,7 @@
             IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S (A_M, B_M, M)
 ! modifications for bc
             CALL SOURCE_U_S_BC (A_M, B_M, M)
-            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S_BC (A_M, B_M, M, IER)
+            IF(CARTESIAN_GRID) CALL CG_SOURCE_U_S_BC (A_M, B_M, M)
 
           ENDIF   ! end if (momentum_x_eq)
         ENDIF   ! end if for ghd theory
@@ -472,7 +472,6 @@
 
       RETURN
       END SUBROUTINE SOURCE_U_S
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

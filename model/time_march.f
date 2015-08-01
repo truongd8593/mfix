@@ -119,7 +119,7 @@
 ! Call user-defined subroutine to set constants, check data, etc.
       IF (CALL_USR) CALL USR0
 
-      CALL RRATES_INIT(IER)
+      CALL RRATES_INIT()
 
 ! Calculate all the coefficients once before entering the time loop
       CALL INIT_COEFF(IER)
@@ -243,8 +243,8 @@
 ! Calculate additional solid phase momentum source terms
 ! that arise from kinetic theory constitutive relations
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-         CALL CALC_KTMOMSOURCE_U_S (IER)
-         CALL CALC_KTMOMSOURCE_V_S (IER)
+         CALL CALC_KTMOMSOURCE_U_S ()
+         CALL CALC_KTMOMSOURCE_V_S ()
          CALL CALC_KTMOMSOURCE_W_S ()
       ENDIF
 

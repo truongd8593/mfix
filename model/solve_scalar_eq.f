@@ -131,10 +131,10 @@
 
             IF(.NOT.ADDED_MASS) THEN
                CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M)
             ELSE
                CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
-                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M, IER)
+                               U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M)
             ENDIF
 !
 !
@@ -197,11 +197,11 @@
             IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
                CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
                                U_s(1,m), V_s(1,m), W_s(1,m), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, &
-                               A_M, B_M, IER)
+                               A_M, B_M)
             ELSE ! virtual mass term added for M = M_AM ONLY!!!!
                CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
                                U_s(1,m), V_s(1,m), W_s(1,m), Flux_sSE, Flux_sSN, Flux_sST, M, &
-                               A_M, B_M, IER)
+                               A_M, B_M)
             ENDIF
 !
 !

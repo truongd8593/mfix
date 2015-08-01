@@ -393,8 +393,8 @@
             IF (M >= 1) VXF_GS(:,M) = ZERO
          ENDDO
 
-         CALL CONV_DIF_W_G (A_M, B_M, IER)
-         IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M, IER)
+         CALL CONV_DIF_W_G (A_M, B_M)
+         IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M)
 
          CALL SOURCE_W_G (A_M, B_M, IER)
          IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M)

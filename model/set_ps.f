@@ -178,7 +178,7 @@
 
 ! Calculate the average specific heat.
       if(Cp0 == UNDEFINED) then
-         IF(.NOT.database_read) call read_database0(IER)
+         IF(.NOT.database_read) call read_database0()
          CpxMFLOW = ZERO
          do N = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(N) * (GAS_CONST_cal / lMW(N)) * &
