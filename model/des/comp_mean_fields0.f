@@ -110,8 +110,8 @@
 
 !$omp parallel default(shared)                                             &
 !$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, GST_TMP, &
-!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M, ICUR, &
-!$omp    JCUR, KCUR, WEIGHT_FT, VOL_RATIO, I1, I2, J1, J2, K1, K2, IDIM,   &
+!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M,       &
+!$omp    WEIGHT_FT, I1, I2, J1, J2, K1, K2, IDIM,                          &
 !$omp    IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       DO IJK = IJKSTART3,IJKEND3
