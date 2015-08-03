@@ -1,4 +1,4 @@
-#!/bin/csh -ex
+#!/bin/bash -lx
 ## Change into the current working directory
 #$ -cwd
 ##
@@ -14,7 +14,8 @@
 #$ -q dev
 
 # set case directory
-setenv CASE_DIR `pwd`
+#setenv CASE_DIR `pwd`
+export CASE_DIR=`pwd`
 
 # load modules
 module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
@@ -38,19 +39,19 @@ rm -f de_norms_collected.dat
 echo "******** Running mesh_8..."
 $CASE_DIR/mfix.exe imax=8 jmax=8 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
 $CASE_DIR/mfix.exe imax=16 jmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
 mpirun -np 4 $CASE_DIR/mfix.exe imax=32 jmax=32 nodesi=2 nodesj=2 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #mkdir mesh_32
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
 
@@ -58,7 +59,7 @@ rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 echo "******** Running mesh_64..."
 mpirun -np 16 $CASE_DIR/mfix.exe imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #mkdir mesh_64
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_64/
 
@@ -66,19 +67,19 @@ rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 echo "******** Running mesh_128..."
 mpirun -np 32 $CASE_DIR/mfix.exe imax=128 jmax=128 nodesi=8 nodesj=4 nodesk=1 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
 # Evaluate observed orders
 cp ../usr_common/ooa_test.f95 $CASE_DIR
 echo "******** Calculating observed orders..."
 gfortran -o ooa_test ooa_test.f95
 ./ooa_test
-rm $CASE_DIR/{ooa_test,ooa_test.f95,de_norms_collected.dat}
+rm -f $CASE_DIR/{ooa_test,ooa_test.f95,de_norms_collected.dat}
 mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/de_l2.dat
 mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/de_linf.dat
 mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
 mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
 
-rm $CASE_DIR/{usr_mod.f,usr3.f,mfix.exe}
+rm -f $CASE_DIR/{usr_mod.f,usr3.f,mfix.exe}
 
 echo "******** Done."
