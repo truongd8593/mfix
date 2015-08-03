@@ -42,10 +42,6 @@
       use desmpi, only: iBUFOFFSET
 ! Runtime flag for solving the energy equations
       use run, only: ENERGY_EQ
-! Runtime flag for solving species equations
-      use run, only: ANY_SPECIES_EQ
-! Runtime flag for MPPIC solids
-      use mfix_pic, only: MPPIC
 ! Dimenions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
@@ -58,8 +54,6 @@
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
-! Particle species composition
-      use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
 ! Particle radius, volume
@@ -72,17 +66,14 @@
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
       use discretelement, only: DO_OLD
-! Flag to conduct a new neighbor search.
-      use discretelement, only: DO_NSEARCH
 ! Number of particles on the process (max particle array size)
-      use discretelement, only: PIP, MAX_PIP
+      use discretelement, only: PIP
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 
       use des_allocate
-      use compar, only: myPE
 
 ! Global Constants:
 !---------------------------------------------------------------------//
@@ -100,8 +91,8 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      integer :: lcurpar,lparid,lprvijk,lijk,lparijk,lparcnt,ltot_ind
-      integer :: lbuf,lindx,llocpar,lnewcnt,lpicloc
+      integer :: lcurpar,lparid,lprvijk,lparijk,lparcnt,ltot_ind
+      integer :: lbuf,llocpar,lnewcnt,lpicloc
       logical,dimension(:),allocatable :: lfound
       integer,dimension(:),allocatable :: lnewspot,lnewpic
       logical :: tmp
@@ -269,8 +260,6 @@
       use desmpi, only: iParticlePacketSize
 ! Index of last particle added to this process.
       use desmpi, only: iSPOT
-! Flag indicating that the ghost particle was updated
-      use discretelement, only: iGHOST_UPDATED
 ! The MPI receive buffer
       use desmpi, only: dRECVBUF
 ! Buffer offset
@@ -281,8 +270,6 @@
       use run, only: ANY_SPECIES_EQ
 ! Runtime flag for MPPIC solids
       use mfix_pic, only: MPPIC
-! Dimenions of DES grid
-      use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
       use discretelement, only: DG_PIJK, DG_PIJKPRV
 ! The neighbor processor's rank
@@ -307,10 +294,8 @@
       use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
       use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
-! Number of cells used in interpolation
-      use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+      use particle_filter, only: FILTER_WEIGHT
 ! Force arrays acting on the particle
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
@@ -319,10 +304,8 @@
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
       use discretelement, only: DO_OLD
-! Flag to conduct a new neighbor search.
-      use discretelement, only: DO_NSEARCH
 ! Number of particles on the process (max particle array size)
-      use discretelement, only: PIP, MAX_PIP
+      use discretelement, only: PIP
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
 ! Flag indicating the the fluid-particle drag is explictly coupled.
@@ -331,8 +314,6 @@
       use discretelement, only: DRAG_FC
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
-! Particle neighbor (neighborhood) arrays:
-      use discretelement, only: NEIGHBORS
 ! Neighbor collision history information
       use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
@@ -356,16 +337,15 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-      integer :: lijk,lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
-      integer :: lneighindx,lneigh,lcontactindx,lcontactid,lcontact,&
-                 lneighid,lneighijk,lneighprvijk
+      integer :: lcurpar,lparcnt,llocpar,lparid,lparijk,lprvijk
+      integer :: lneigh,lcontactindx,lcontactid,lcontact,&
+                 lneighid,lneighijk
       logical :: lfound
-      integer :: lbuf,ltmpbuf,lcount
-      logical :: lcontactfound,lneighfound
-      integer :: cc,ii,kk,num_neighborlists_sent,nn
+      integer :: lbuf,lcount
+      logical :: lneighfound
+      integer :: cc,kk,num_neighborlists_sent,nn
 
-      integer :: pair_match
-      logical :: do_add_pair, tmp
+      logical :: tmp
 !......................................................................!
 
 ! loop through particles and locate them and make changes

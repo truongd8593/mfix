@@ -26,7 +26,7 @@
 ! Local variables
 !-----------------------------------------------
 
-INTEGER :: cc,dd,ii,jj,iii,jjj,ddd,ll,cc_start,cc_end,cc_start_old,cc_end_old,cc_old
+INTEGER :: cc,ll,cc_start,cc_end,cc_start_old,cc_end_old,cc_old
 LOGICAL :: found
 
 !-----------------------------------------------

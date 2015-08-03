@@ -52,16 +52,12 @@
 ! order of interpolation set in the call to set_interpolation_scheme
 ! unless it is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
-! index of solid phase that particle NP belongs to
-      INTEGER :: M
 ! particle number index, used for looping
       INTEGER :: NP, nindx
 ! constant whose value depends on dimension of system
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
 ! avg_factor=0.250 (in 3D) or =0.50 (in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-! for error messages
-      INTEGER :: IER
 
 !Handan Liu added temporary variables on April 20 2012
           DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp

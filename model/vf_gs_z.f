@@ -31,10 +31,6 @@
       USE fun_avg
       USE functions
 
-      use run, only: SOLIDS_MODEL
-
-      use run, only: DEM_SOLIDS, PIC_SOLIDS
-
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

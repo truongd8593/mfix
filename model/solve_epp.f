@@ -103,7 +103,7 @@
          M = 1
       ENDIF
 
-      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, IER)
+      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax)
 
 ! Add point source contributions.
       IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax)

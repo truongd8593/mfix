@@ -19,7 +19,6 @@
       USE mfix_pic
       USE pic_bc
       USE error_manager
-      USE fldvar, only: P_g
 
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_funs_des, only: DES_PAR_EXCHANGE

@@ -165,10 +165,8 @@
 
       INTEGER :: RAND_I
       INTEGER :: lI, lJ, lK
-      INTEGER :: llI, llJ, llK
 
       DOUBLE PRECISION :: WINDOW
-
 
 !      IF(PARTICLE_PLCMNT(lBCV_I) == 'ORDR')THEN
          VACANCY = DEM_MI(lBCV_I)%VACANCY

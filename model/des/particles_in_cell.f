@@ -13,8 +13,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PARTICLES_IN_CELL
 
-! Particle positions
-      use discretelement, only: DES_POS_NEW
 ! The number of particles on the current process.
       use discretelement, only: PIP, MAX_PIP
 ! The I/J/K, IJK, and phase index of each particle
@@ -211,16 +209,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INIT_PARTICLES_IN_CELL
 
-      USE physprop, only: SMAX
-
       use discretelement, only: PIJK, PINC
       USE discretelement, only: DES_POS_NEW
       USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       USE discretelement, only: XE, YN, ZT
       use mpi_funs_des, only: des_par_exchange
-
-      USE run, only: RUN_TYPE
-      USE run, only: ANY_SPECIES_EQ
 
 ! Number of particles in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
@@ -237,8 +230,6 @@
 !-----------------------------------------------
 ! particle no.
       INTEGER :: L
-! solids phase no.
-      INTEGER :: M
 ! ijk indices
       INTEGER :: I, J, K, IJK
 

@@ -484,7 +484,7 @@
 !  Author: Janine E. Galvin                                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+      SUBROUTINE CALC_GD_99_ENERGY_DISSIPATION_SS(M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -500,8 +500,6 @@
 
 ! Dummy arguments
 !---------------------------------------------------------------------//
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 ! Solids phase index
       INTEGER, INTENT(IN) :: M
 
@@ -611,11 +609,11 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: IJK, I, J, K, IMJK, IJMK, IJKM
+      INTEGER :: IJK
 ! variables
       DOUBLE PRECISION :: D_PM, EP_SM, V_p, N_p, M_p
       DOUBLE PRECISION :: nu0, Chi
-      DOUBLE PRECISION :: UGC, VGC, WGC, USCM, VSCM, WSCM, VREL
+      DOUBLE PRECISION :: VREL
       DOUBLE PRECISION :: Re_m, Re_T
       DOUBLE PRECISION :: zeta_star, mu2_0, mu4_0, mu4_1
       DOUBLE PRECISION :: omega, nu_j, rho_10, rho_11

@@ -40,44 +40,30 @@
       use desmpi, only: iBUFOFFSET
 ! Runtime flag for solving the energy equations
       use run, only: ENERGY_EQ
-! Runtime flag for solving species equations
-      use run, only: ANY_SPECIES_EQ
-! Runtime flag for MPPIC solids
-      use mfix_pic, only: MPPIC
 ! The neighbor processor's rank
       use desmpi, only: iNEIGHPROC
-! Dimenions of DES grid
-      use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use discretelement, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJKPRV
 ! The global ID for each particle
       use discretelement, only: iGLOBAL_ID
 ! Particle positions: current/previous
-      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+      use discretelement, only: DES_POS_NEW
 ! Particle tangential velocities: current/previous
-      use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
+      use discretelement, only: DES_VEL_NEW
 ! Particle rotational velocities: current/previous
-      use discretelement, only: OMEGA_NEW, OMEGA_OLD
-! Particle species composition
-      use des_rxns, only: DES_X_s
+      use discretelement, only: OMEGA_NEW
 ! Particle tempertures. current/previous
-      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+      use des_thermo, only: DES_T_s_NEW
 ! Particle radius, volume
-      use discretelement, only: DES_RADIUS, PVOL
+      use discretelement, only: DES_RADIUS
 ! Number of cells used in interpolation
       use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
-! Flag to send/recv old (previous) values
-      use discretelement, only: DO_OLD
-! Flag to conduct a new neighbor search.
-      use discretelement, only: DO_NSEARCH
 ! Number of particles on the process (max particle array size)
-      use discretelement, only: PIP, MAX_PIP
-! Number of ghost particles on the current process
-      use discretelement, only: iGHOST_CNT
+      use discretelement, only: MAX_PIP
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
 ! Function to convert DES grid IJK to new proc value.
@@ -174,10 +160,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Index of last particle added to this process.
-      use desmpi, only: iSPOT
-! Flag indicating that the ghost particle was updated
-      use discretelement, only: iGHOST_UPDATED
 ! The MPI send buffer
       use desmpi, only: dSENDBUF
 ! Buffer offset
@@ -188,10 +170,8 @@
       use run, only: ANY_SPECIES_EQ
 ! Runtime flag for MPPIC solids
       use mfix_pic, only: MPPIC
-! Dimenions of DES grid
-      use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
-      use discretelement, only: DG_PIJK, DG_PIJKPRV
+      use discretelement, only: DG_PIJKPRV
 ! The neighbor processor's rank
       use desmpi, only: iNEIGHPROC
 ! The statistical weight of each particle.
@@ -222,8 +202,6 @@
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
       use discretelement, only: DO_OLD
-! Flag to conduct a new neighbor search.
-      use discretelement, only: DO_NSEARCH
 ! Number of particles on the process (max particle array size)
       use discretelement, only: PIP, MAX_PIP
 ! Number of ghost particles on the current process
@@ -236,21 +214,16 @@
       use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-! The ID of the current process
-      use compar, only: myPE
 ! Flag indicating the the fluid-particle drag is explictly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Explicit particle drag force
       use discretelement, only: DRAG_FC
-! Number of cells used in interpolation
-      use particle_filter, only: FILTER_SIZE
 ! Cells and weights for interpolation
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+      use particle_filter, only: FILTER_WEIGHT
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
       use discretelement
-      use desmpi, only: iSENDINDICES
       use desmpi, only: irecvindices
 
       use desmpi, only: iParticlePacketSize
@@ -268,7 +241,7 @@
 ! Local variables
 !---------------------------------------------------------------------//
       integer :: li, lj, lk
-      integer :: ltot_ind,lindx,cc,ii
+      integer :: ltot_ind,lindx,cc
       integer :: lneigh,lijk,&
                  lpicloc,lparcnt,lcurpar
       integer :: lbuf,num_neighborlists_to_send

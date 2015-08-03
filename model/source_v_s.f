@@ -28,7 +28,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_V_S(A_M, B_M, IER)
+      SUBROUTINE SOURCE_V_S(A_M, B_M)
 
 !-----------------------------------------------
 ! Modules
@@ -73,8 +73,6 @@
 
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
@@ -458,7 +456,7 @@
 ! modifications for cartesian grid implementation
             IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S(A_M, B_M, M)
 ! modifications for bc
-            CALL SOURCE_V_S_BC (A_M, B_M, M, IER)
+            CALL SOURCE_V_S_BC (A_M, B_M, M)
             IF(CARTESIAN_GRID) CALL CG_SOURCE_V_S_BC(A_M, B_M, M)
 
           ENDIF   ! end if (momentum_y_eq)

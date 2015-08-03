@@ -45,9 +45,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
-!
 !                      Local index
       INTEGER          L
 !
@@ -56,9 +53,6 @@
 !
 !                      cell index
       INTEGER          IJK
-!
-!                      Maximum dimension
-      INTEGER          IJKMAX2A  ! pnicol
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)

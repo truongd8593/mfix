@@ -45,9 +45,6 @@
       RETURN
       END SUBROUTINE REINITIALIZE
 
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  SUBROUTINE: REINITIALIZE0                                           !
@@ -72,13 +69,13 @@
 ! Set the default error flag to ERROR state.
       pIER = 1
 
-      CALL CHECK_RUN_CONTROL(IER)
+      CALL CHECK_RUN_CONTROL()
       IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_NUMERICS(IER)
+      CALL CHECK_NUMERICS()
       IF(REINIT_ERROR()) RETURN
 
-      CALL CHECK_OUTPUT_CONTROL(IER)
+      CALL CHECK_OUTPUT_CONTROL()
       IF(REINIT_ERROR()) RETURN
 
       CALL CHECK_GAS_PHASE
@@ -148,7 +145,7 @@
       IF(REINIT_ERROR()) RETURN
 
 ! Parse residual strings
-      CALL PARSE_RESID_STRING (IER)
+      CALL PARSE_RESID_STRING ()
       IF(REINIT_ERROR()) RETURN
 
       CALL RRATES_INIT(IER)
@@ -192,8 +189,6 @@
       use rxns, only: REACTION
       use des_rxns, only: NO_OF_DES_RXNS
       use des_rxns, only: DES_REACTION
-
-      use run, only: REINITIALIZING
 
       use error_manager
 

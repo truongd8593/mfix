@@ -803,7 +803,7 @@ contains
     integer, optional,   intent(inout) :: chunksize
     integer                            :: MFIX_nf90_create
 
-    integer :: fileSize, chunk
+    integer :: fileSize
 
 #ifdef NETCDF
     MFIX_nf90_create = nf90_create(path, cmode, ncid, initialsize, chunksize)

@@ -29,6 +29,7 @@
 
 ! Write particle array data.
       INTERFACE WRITE_RES_pARRAY
+         MODULE PROCEDURE WRITE_RES_pARRAY_1B
          MODULE PROCEDURE WRITE_RES_pARRAY_1I
          MODULE PROCEDURE WRITE_RES_pARRAY_1D
          MODULE PROCEDURE WRITE_RES_pARRAY_1L
@@ -91,13 +92,6 @@
 
       use compar, only: numPEs
       use mpi_utility, only: GLOBAL_SUM
-
-      use desmpi, only: iProcBuf
-      use desmpi, only: iRootBuf, dRootBuf
-
-      use desmpi, only: iGath_SendCnt
-
-      use desmpi, only: iDisPls
 
       use discretelement, only: PIP, iGHOST_CNT
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
@@ -357,6 +351,72 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_1L
+
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: WRITE_RES_PARRAY_1B                                      !
+!                                                                      !
+! Purpose: Write scalar bytes to RES file.                             !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE WRITE_RES_PARRAY_1B(lNEXT_REC, INPUT_B, pLOC2GLB)
+
+      use desmpi, only: iProcBuf
+      use discretelement, only: MAX_PIP, PIP
+      use discretelement, only: iGLOBAL_ID, IS_NONEXISTENT
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      INTEGER(KIND=1), INTENT(IN) :: INPUT_B(:)
+      LOGICAL, INTENT(IN), OPTIONAL :: pLOC2GLB
+
+      INTEGER, ALLOCATABLE :: INPUT_I(:)
+      LOGICAL :: lLOC2GLB
+! Loop counters
+      INTEGER :: LC1, LC2
+
+      lLOC2GLB = .FALSE.
+      IF(present(pLOC2GLB)) lLOC2GLB = pLOC2GLB
+
+      allocate(iPROCBUF(pPROCCNT))
+      allocate(iROOTBUF(pROOTCNT))
+
+      allocate(input_i(size(input_b)))
+
+      input_i(:) = input_b(:)
+
+      iDISPLS = pDISPLS
+      iGath_SendCnt = pSEND
+      iGatherCnts   = pGATHER
+
+      IF(bDIST_IO) THEN
+         LC1 = 1
+         IF(lLOC2GLB) THEN
+            DO LC2 = 1, MAX_PIP
+               IF(LC1 > PIP) EXIT
+               IF(IS_NONEXISTENT(LC1)) CYCLE
+               iProcBuf(LC1) = iGLOBAL_ID(INPUT_I(LC2))
+               LC1 = LC1 + 1
+            ENDDO
+         ELSE
+            DO LC2 = 1, MAX_PIP
+               IF(LC1 > PIP) EXIT
+               IF(IS_NONEXISTENT(LC1)) CYCLE
+               iProcBuf(LC1) = INPUT_I(LC2)
+               LC1 = LC1 + 1
+            ENDDO
+         ENDIF
+         CALL OUT_BIN_512i(RDES_UNIT, iProcBuf, pROOTCNT, lNEXT_REC)
+
+      ELSE
+         CALL DES_GATHER(INPUT_I, lLOC2GLB)
+         IF(myPE == PE_IO) &
+            CALL OUT_BIN_512i(RDES_UNIT,iROOTBUF, pROOTCNT, lNEXT_REC)
+      ENDIF
+
+      deallocate(iPROCBUF)
+      deallocate(iROOTBUF)
+      deallocate(input_i)
+
+      RETURN
+      END SUBROUTINE WRITE_RES_PARRAY_1B
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1I                                      !

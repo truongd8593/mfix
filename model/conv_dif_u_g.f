@@ -10,7 +10,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CONV_DIF_U_G(A_M, B_M, IER)
+      SUBROUTINE CONV_DIF_U_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -27,13 +27,9 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !---------------------------------------------------------------------//
 
-
       IF (.NOT.MOMENTUM_X_EQ(0)) RETURN
-
 
       IF(DEF_COR)THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_G

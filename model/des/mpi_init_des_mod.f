@@ -43,7 +43,6 @@
 !----------------------------------------------------------------------!
       subroutine desmpi_init
 
-      use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_GARG
 
       use desmpi, only: iGhostPacketSize
@@ -163,7 +162,7 @@
 ! local variables
 !-----------------------------------------------
       integer lijkproc,liproc,ljproc,lkproc
-      integer li,lj,lk,lis,lie,ljs,lje,lks,lke,lcount,lface,litmp,ljtmp,lktmp
+      integer li,lj,lk,lis,lie,ljs,lje,lks,lke,lcount,lface
       integer listart1,liend1,ljstart1,ljend1,lkstart1,lkend1
       integer listart2,liend2,ljstart2,ljend2,lkstart2,lkend2
 !-----------------------------------------------
@@ -394,7 +393,7 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer lcurpar,lproc,lbuf,lpacketsize,lface
+      integer lcurpar,lproc,lbuf,lpacketsize
       integer lproc_parcnt(0:numpes-1),lpar_proc(particles)
 !-----------------------------------------------
 
@@ -535,10 +534,7 @@
 ! local variables
 !-----------------------------------------------
       integer linter,lface
-      integer lparcnt,lcurpar,lneigh,lneighid,lneighindx,lcontact,&
-              lcontactid,lcontactindx
-      integer lcurijk,lcount,ii
-      logical lneighfound,lcontactfound
+      integer ii
 !-----------------------------------------------
 ! set do_nsearch true so that the ghost cell will be updated
       do_nsearch = .true.

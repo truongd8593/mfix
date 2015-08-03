@@ -50,7 +50,7 @@
       USE param, only: DIMENSION_3G, DIMENSION_3L, DIMENSION_3P
 
 ! MPI-Domain decompoint and rank flags.
-      use compar, only: NODESI, NODESJ, NODESK, myPE
+      use compar, only: myPE
 ! Flag for POST_MFIX
       use cdist, only: bDoing_postmfix
 

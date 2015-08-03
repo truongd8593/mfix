@@ -26,7 +26,7 @@
 ! Local variables
 !-----------------------------------------------
 ! indices
-      integer :: i,j,k
+      integer :: k
 ! index of particle
       INTEGER :: lcurpar
 ! local unit
