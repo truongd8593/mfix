@@ -869,10 +869,10 @@
 ! present in the system
       lkoffset = dimn-2
 
-!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,dd,curr_tt,diff, &
+!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
-!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,dd,  &
 !$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 
 !$      PAIR_NUM_SMP = 0
@@ -989,8 +989,10 @@
 
 !$  curr_tt = omp_get_thread_num()+1  ! add one because thread numbering starts at zero
 
+!$omp single
 !$  NEIGHBOR_INDEX(1) = 1
 !$  dd = 1
+!$omp end single
 
 !$omp do ordered schedule(static,1)
 !$    do tt = 1, omp_get_num_threads()
