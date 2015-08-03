@@ -35,7 +35,7 @@
       Use post3d
       Use physprop
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
       INCLUDE 'xforms.inc'

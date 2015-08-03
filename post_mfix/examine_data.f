@@ -234,7 +234,7 @@
       Use scalars
       Use compar
       use post_precision
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
       INTEGER  N_VAR

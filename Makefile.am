@@ -746,7 +746,7 @@ postmfix_SOURCES = \
 	post_mfix/flow_sx.f \
 	post_mfix/flow_sy.f \
 	post_mfix/flow_sz.f \
-	post_mfix/postfunctions_mod.f \
+	post_mfix/functions_mod.f \
 	post_mfix/gas_flux.f \
 	post_mfix/get_file_name.f \
 	post_mfix/get_file_status.f \

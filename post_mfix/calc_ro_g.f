@@ -25,7 +25,7 @@
       USE compar
       USE eos, ONLY: EOSG
       USE fldvar
-      USE postfunctions
+      USE functions
       USE geometry
       USE indices
       USE param

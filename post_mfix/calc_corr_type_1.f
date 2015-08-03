@@ -37,7 +37,7 @@
       Use physprop
       Use correl
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
       INCLUDE 'xforms.inc'

@@ -21,29 +21,26 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE INTERP_RES
+!
+      Use param
+      Use param1
+      Use geometry
+      Use indices
+      Use energy
+      Use physprop
+      Use fldvar
+      Use post3d
+      Use run
+      Use rxns
+      Use scalars
+      Use funits
+      Use compar
+      Use gridmap ! added
+      Use functions
+      use tmp_array        ! 16-jun-2004
 
-        USE param, ONLY: dim_i, dim_j, dim_k, dimension_n_g, dimension_n_s, dimension_m, dimension_3
-        USE param1, ONLY: undefined, one, zero
-        USE geometry, ONLY: dx, dy, dz, xmin, flag
-        USE geometry, ONLY: no_i, no_j, no_k, imax, jmax, kmax, imax2, jmax2, kmax2, ijmax2
-        USE energy, ONLY: gama_rs, gama_rg, t_rs, t_rg
-        USE physprop, ONLY: mmax, nmax, smax
-        USE fldvar, ONLY: theta_m, p_star, rop_g, rop_s, scalar
-        USE fldvar, ONLY: ro_g, t_g, u_g, v_g, w_g, x_g, ep_g, rop_g, e_turb_g, k_turb_g, p_g
-        USE fldvar, ONLY: ro_s, t_s, u_s, v_s, w_s, x_s, ep_s, rop_s
-        USE post3d, ONLY: xdist_sc, ydist_sc, zdist_sc
-        USE post3d, ONLY: xdist_vec, ydist_vec, zdist_vec
-        USE run, ONLY: nstep, run_name, time, k_epsilon
-        USE rxns, ONLY: nrr, reactionrates
-        USE scalars, ONLY: nscalar
-        USE funits, ONLY: unit_res
-        USE compar, ONLY: nodesi, nodesj, nodesk
-        USE gridmap, ONLY: gridmap_init
-        USE error_manager, ONLY: init_error_manager
-        USE postfunctions, ONLY: funijk
-
-        IMPLICIT NONE
-        INCLUDE 'xforms.inc'
+      IMPLICIT NONE
+      INCLUDE 'xforms.inc'
 !
 !  Function subroutines
 !

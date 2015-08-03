@@ -495,7 +495,7 @@
       Use indices
       Use funits
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
 !
@@ -557,7 +557,7 @@
       Use indices
       Use funits
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
 !
@@ -618,7 +618,7 @@
       Use indices
       Use funits
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
 !
@@ -700,7 +700,7 @@
       Use indices
       Use funits
       Use compar
-      Use postfunctions
+      Use functions
 
       IMPLICIT NONE
 !
@@ -1097,7 +1097,7 @@
       use geometry
       use indices
       use compar
-      use postfunctions
+      use functions
 !
       implicit none
 !
@@ -1123,7 +1123,7 @@
       use geometry
       use indices
       use compar
-      use postfunctions
+      use functions
 !
       implicit none
 !
@@ -1150,7 +1150,7 @@
       use geometry
       use indices
       use compar
-      use postfunctions
+      use functions
 !
       implicit none
 !
@@ -1176,7 +1176,7 @@
       use geometry
       use indices
       use compar
-      use postfunctions
+      use functions
 !
       implicit none
 !
@@ -1202,7 +1202,7 @@
       use geometry
       use indices
       use compar
-      use postfunctions
+      use functions
 !
       implicit none
 !

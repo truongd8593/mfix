@@ -29,7 +29,7 @@
       Use physprop
       Use geometry
       Use compar
-      Use postfunctions
+      Use functions
       IMPLICIT NONE
 
       INTEGER I, J, K, IJK, M, IJKP
@@ -74,7 +74,7 @@
       Use physprop
       Use geometry
       Use compar
-      Use postfunctions
+      Use functions
       IMPLICIT NONE
 
       INTEGER I, J, K, IJK, M, IJKP
@@ -119,7 +119,7 @@
       Use physprop
       Use geometry
       Use compar
-      Use postfunctions
+      Use functions
       IMPLICIT NONE
 
       INTEGER IJK, M, IJKP
@@ -164,7 +164,7 @@
       Use physprop
       Use geometry
       Use compar
-      Use postfunctions
+      Use functions
       IMPLICIT NONE
 
       INTEGER I, J, K, IJK, M, N, IJKP

@@ -11,7 +11,7 @@
       use indices
       use compar
       use usr_input
-      use postfunctions
+      use functions
 
       implicit none
 
@@ -95,7 +95,7 @@
       use indices
       use compar
       use usr_input
-      use postfunctions
+      use functions
 
       implicit none
 
@@ -180,7 +180,7 @@
       use indices
       use compar
       use usr_input
-      use postfunctions
+      use functions
 
       implicit none
 
@@ -267,7 +267,7 @@
       use indices
       use compar
       use usr_input
-      use postfunctions
+      use functions
 
       implicit none
 
