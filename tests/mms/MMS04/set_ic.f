@@ -1,18 +1,11 @@
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: SET_IC                                                  C
-!  Purpose: This module sets all the initial conditions.               C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 21-JAN-92  C
-!  Reviewer:M. Syamlal, S. Venkatesan, P. Nicoletti,  Date: 29-JAN-92  C
-!           W. Rogers                                                  C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Modifications for initializing solids pressure             C
-!  Author: M. Syamlal                                 Date: 11-MAY-93  C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: SET_IC                                                  !
+!  Author: M. Syamlal                                 Date: 21-JAN-92  !
+!                                                                      !
+!  Purpose: This module sets all the initial conditions.               !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
       SUBROUTINE SET_IC
 
@@ -37,7 +30,7 @@
       USE solids_pressure
       USE functions
       USE mms, only : calculate_mms, mms_p_g, mms_ep_g, mms_rop_s, &
-                      allocate_mms_vars  !! FLAGMMS
+                      allocate_mms_vars  !! FLAGMMS      
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -77,6 +70,7 @@
 !  Set the initial conditions.
       DO L = 1, DIMENSION_IC
          IF (IC_DEFINED(L)) THEN
+
             EPGX = IC_EP_G(L)
             PGX = IC_P_G(L)
             PSX = IC_P_STAR(L)
@@ -107,12 +101,14 @@
 
                IF (.NOT.WALL_AT(IJK)) THEN
                   IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX
+
                   IF (IC_TYPE(L) == 'PATCH') THEN
                       IF (PGX /= UNDEFINED) P_G(IJK) = SCALE(PGX)
                   ELSE
                      P_G(IJK) = merge(SCALE(PGX), UNDEFINED,           &
                         PGX /= UNDEFINED)
                   ENDIF
+
                   IF (PSX /= UNDEFINED) P_STAR(IJK) = PSX
                   IF (TGX /= UNDEFINED) T_G(IJK) = TGX
                   IF (IC_L_SCALE(L) /= UNDEFINED) L_SCALE(IJK) =       &
@@ -222,16 +218,16 @@
          ENDIF   ! if (ic_defined)
       ENDDO   ! over dimension_ic
 
-!! FLAGMMS: begin
-!! Pressure initialized as exact MMS values  
-      call allocate_mms_vars !! FLAGMMS    
-      CALL CALCULATE_MMS 
-      DO IJK = IJKSTART3, IJKEND3
+! FLAGMMS: begin
+! Pressure initialized as exact MMS values  
+      call allocate_mms_vars
+      call calculate_mms 
+      DO ijk = ijkstart3, ijkend3
         P_G(IJK) = MMS_P_G(IJK)
         EP_G(IJK) = MMS_EP_G(IJK)
         ROP_S(IJK,1) = MMS_ROP_S(IJK)
       END DO
-!! FLAGMMS: end
+! FLAGMMS: end
 
       CALL SEND_RECV(L_SCALE,2)
 

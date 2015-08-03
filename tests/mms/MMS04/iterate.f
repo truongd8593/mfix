@@ -34,34 +34,37 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE cont
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE leqsol
+      USE machine, only: start_log, end_log
+      USE mms, only: USE_MMS
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE funits
-      USE time_cpu
-      USE pscor
-      USE leqsol
-      USE visc_g
       USE pgcor
-      USE cont
-      USE scalars
-      USE compar
-      USE mpi_utility
-      USE discretelement
-      USE residual
-      USE cutcell
-      USE vtk
-      USE dashboard
+      USE physprop
+      USE pscor
       USE qmom_kinetic_equation
-      USE stiff_chem, only : STIFF_CHEMISTRY
-      USE rxns, only : USE_RRATES, NO_OF_RXNS
-      USE mms, only: USE_MMS
+      USE residual
+      USE run
+      USE scalars
+      USE time_cpu
+      USE toleranc
+      USE visc_g
+      USE vtk
+      USE interactive, only: CHECK_INTERACT_ITER
+
+      use error_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -95,11 +98,8 @@
 ! average velocity
       DOUBLE PRECISION :: Vavg
       DOUBLE PRECISION :: errorpercent(0:MMAX)
-      LOGICAL :: ABORT_IER
       CHARACTER(LEN=4) :: TUNIT
 
-! Flag indicating which error message to print when run diverges.
-      INTEGER :: lErrMsg
 ! Error Message
       CHARACTER(LEN=32) :: lMsg
 
@@ -108,7 +108,6 @@
 !-----------------------------------------------
       DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
                                     VAVG_U_S, VAVG_V_S, VAVG_W_S
-      DOUBLE PRECISION :: WALL_TIME
 
 !-----------------------------------------------
 ! Include statement functions
@@ -142,7 +141,7 @@
 
 
 ! Initialize residuals
-      CALL INIT_RESID (IER)
+      CALL INIT_RESID ()
 
 
 ! Initialize the routine for holding gas mass flux constant with cyclic bc
@@ -178,9 +177,10 @@
 
 ! Calculate the face values of densities and mass fluxes for the first
 ! solve_vel_star call.
-      CALL CONV_ROP(IER)
-      CALL CALC_MFLUX (IER)
+      CALL CONV_ROP()
+      CALL CALC_MFLUX ()
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -216,17 +216,17 @@
 
 ! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Diffusion coefficient and source terms for user-defined scalars
-      IF(NScalar /= 0) CALL SCALAR_PROP(IER)
+      IF(NScalar /= 0) CALL SCALAR_PROP()
 
 ! Diffusion coefficient and source terms for K & Epsilon Eq.
-      IF(K_Epsilon) CALL K_Epsilon_PROP(IER)
+      IF(K_Epsilon) CALL K_Epsilon_PROP()
 
 ! Update the stress tensor trace and cross terms each subiteration
 ! for MMS cases.
-      IF(USE_MMS) CALL CALC_TRD_AND_TAU(IER)
+      IF(USE_MMS) CALL CALC_TRD_AND_TAU()
 
 ! Solve starred velocity components
       CALL SOLVE_VEL_STAR(IER)
@@ -236,7 +236,7 @@
 
 ! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Calculate chemical reactions.
       CALL CALC_RRATE(IER)
@@ -248,17 +248,16 @@
          IF (MMAX > 0) THEN
 ! MMS:  Solve gas continuity only.
             IF(USE_MMS) THEN
-! Don't solve continuity for MMS  !! FLAGMMS              
-!               CALL SOLVE_CONTINUITY(0,IER)
-              CONTINUE
+! Don't solve continuity for this case !! FLAGMMS
+               CALL SOLVE_CONTINUITY(0,IER)
 ! Regular, non-MMS cases.
             ELSE
                IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
 ! if second phase (m=1) can overpack (e.g., bubbles) then solve its
 ! continuity equation
-                  CALL CALC_K_CP (K_CP, IER)
+                  CALL CALC_K_CP (K_CP)
                   CALL SOLVE_EPP (NORMS, RESS, IER)
-                  CALL CORRECT_1 (IER)
+                  CALL CORRECT_1 ()
                ELSE
 
 ! If one chooses to revert back to old mark_phase_4_cor wherein the
@@ -281,7 +280,7 @@
             IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
 
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
-            IF (IER_MANAGER(IER)) goto 1000
+            IF (IER_MANAGER()) goto 1000
 
          ENDIF  ! endif (mmax >0)
 
@@ -293,34 +292,35 @@
       IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID) THEN
          IF (MMAX > 0 .AND. .NOT.FRICTION) &
-            CALL CALC_P_STAR (EP_G, P_STAR, IER)
+            CALL CALC_P_STAR (EP_G, P_STAR)
       ENDIF
 
 ! Calculate the face values of densities.
-      CALL CONV_ROP(IER)
+      CALL CONV_ROP()
 
       IF (RO_G0 /= ZERO) THEN
 ! Solve fluid pressure correction equation
 ! Don't solve pressure correction equation for this MMS case
-! FLAGMMS        
+! FLAGMMS
 !         CALL SOLVE_PP_G (NORMG, RESG, IER)
 ! Correct pressure, velocities, and density
-         CALL CORRECT_0 (IER)
+         CALL CORRECT_0 ()
       ENDIF
 
 ! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Update wall velocities:
 ! modified by sof to force wall functions so even when NSW or FSW are
 ! declared, default wall BC will still be treated as NSW and no wall
 ! functions will be used
-      IF(.NOT. K_EPSILON) CALL SET_WALL_BC (IER)
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
 
 ! Calculate the face values of mass fluxes
-      CALL CALC_MFLUX (IER)
+      CALL CALC_MFLUX ()
       CALL SET_BC1
+      CALL SET_EP_FACTORS
 
 ! JFD: modification for cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
@@ -328,20 +328,20 @@
 ! Solve energy equations
       IF (ENERGY_EQ) THEN
          CALL SOLVE_ENERGY_EQ (IER)
-         IF (IER_MANAGER(IER)) goto 1000
+         IF (IER_MANAGER()) goto 1000
       ENDIF
 
 ! Solve granular energy equation
       IF (GRANULAR_ENERGY) THEN
          IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
             CALL SOLVE_GRANULAR_ENERGY (IER)
-            IF (IER_MANAGER(IER)) goto 1000
+            IF (IER_MANAGER()) goto 1000
          ENDIF
       ENDIF
 
 ! Solve species mass balance equations.
       CALL SOLVE_SPECIES_EQ (IER)
-      IF (IER_MANAGER(IER)) goto 1000
+      IF (IER_MANAGER()) goto 1000
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
@@ -360,7 +360,7 @@
       RESG = RESID(RESID_P,0)
       RESS = RESID(RESID_P,1)
       CALL CALC_RESID_MB(1, errorpercent)
-      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT, IER)
+      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
 
       IF(CYCLIC)THEN
         IF(MUSTIT==0 .OR. NIT >= MAX_NIT) &
@@ -374,7 +374,7 @@
 !-----------------------------------------------------------------
 
 ! Display residuals
-      IF (FULL_LOG) CALL DISPLAY_RESID (NIT, IER)
+      CALL DISPLAY_RESID (NIT)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN
@@ -395,20 +395,27 @@
 
             CALL START_LOG
             IF (ENERGY_EQ) THEN
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5000) TIME, DT, NIT, SMASS,&
-                  HLOSS, CPU_NOW
-               IF(FULL_LOG.and.myPE.eq.PE_IO) &
-                  WRITE(*,5000)TIME,DT,NIT,SMASS, HLOSS,CPU_NOW
+               WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ELSE
-               IF(DMP_LOG)WRITE (UNIT_LOG, 5001) TIME, DT, NIT, &
-                  SMASS, CPU_NOW
-               IF (FULL_LOG .and. myPE.eq.PE_IO) &
-                  WRITE (*, 5001) TIME, DT, NIT, SMASS, CPU_NOW
+               WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
+
+ 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
+
+ 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         T84,'CPU=',F8.0,' s')
 
             IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
             IF (FULL_LOG .and. myPE.eq.PE_IO) &
                WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
+
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
+
+
+
             IF (.NOT.FULL_LOG) THEN
                TLEFT = (TSTOP - TIME)*CPUOS
                CALL GET_TUNIT (TLEFT, TUNIT)
@@ -498,14 +505,18 @@
 
 ! not converged (mustit = 1, !=0,2 )
 ! ---------------------------------------------------------------->>>
-      IF (NIT < MAX_NIT) THEN
+      IF(INTERACTIVE_MODE .AND. INTERACTIVE_NITS/=UNDEFINED_I) THEN
+         CALL CHECK_INTERACT_ITER(MUSTIT)
+         IF(MUSTIT == 1) THEN
+            GOTO 50
+         ELSE
+            GOTO 1000
+         ENDIF
+      ELSEIF(NIT < MAX_NIT) THEN
          MUSTIT = 0
          GOTO 50
       ENDIF ! continue iterate
 ! ----------------------------------------------------------------<<<
-
-
-
 
       CALL GET_SMASS (SMASS)
       IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
@@ -518,18 +529,11 @@
       IER = 1
       RETURN
 
-
- 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5,' Hl=',G12.5,&
-         T84,'CPU=',F8.0,' s')
- 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, T84,'CPU=',F8.0,' s')
- 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
  5050 FORMAT(5X,'Average ',A,G12.5)
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
  5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, 'MbErr%=', G11.4)
  5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
       I3,'MbErr%=', G11.4, ': ',A,' :-(')
- 6000 FORMAT(1X,A)
-
 
       contains
 
@@ -548,9 +552,7 @@
 ! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
 !                                                                      !
 !----------------------------------------------------------------------!
-      LOGICAL FUNCTION IER_MANAGER(lErr)
-
-      INTEGER, intent(in) :: lErr
+      LOGICAL FUNCTION IER_MANAGER()
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
@@ -663,8 +665,6 @@
       RETURN
       END SUBROUTINE GET_TUNIT
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic
 !            domain with pressure drop is held constant at a
@@ -679,9 +679,9 @@
 ! Modules
 !-----------------------------------------------
       USE bc
-      USE compar
-      USE constant
       USE geometry
+      USE constant
+      USE compar
       USE run
       USE time_cpu
       USE utilities, ONLY: isNan
@@ -703,7 +703,6 @@
       DOUBLE PRECISION, SAVE  :: mdot_n, mdot_nm1, delp_n, delp_nm1, err
       DOUBLE PRECISION        :: mdot_0, delp_xyz
 
-      CHARACTER, SAVE :: Direction
 !-----------------------------------------------
 ! Functions
 !-----------------------------------------------
