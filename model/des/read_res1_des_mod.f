@@ -33,6 +33,7 @@
       END INTERFACE
 
       INTERFACE READ_RES_pARRAY
+         MODULE PROCEDURE READ_RES_pARRAY_1B
          MODULE PROCEDURE READ_RES_pARRAY_1I
          MODULE PROCEDURE READ_RES_pARRAY_1D
          MODULE PROCEDURE READ_RES_pARRAY_1L
@@ -1064,6 +1065,82 @@
       RETURN
       END SUBROUTINE READ_RES_DES_1L
 
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: READ_RES_DES_1B                                          !
+!                                                                      !
+! Purpose: Write scalar bytes to RES file.                             !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE READ_RES_pARRAY_1B(lNEXT_REC, OUTPUT_B)
+
+      use discretelement, only: PIP
+
+      use desmpi, only: iRootBuf
+      use desmpi, only: iProcBuf
+
+      use compar, only: numPEs
+      USE in_binary_512i
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      INTEGER(KIND=1), INTENT(OUT) :: OUTPUT_B(:)
+
+
+      LOGICAL :: lLOC2GLB
+! Loop counters
+      INTEGER :: LC1, lc2
+
+      INTEGER :: lPROC
+
+      INTEGER, ALLOCATABLE :: OUTPUT_I(:)
+      INTEGER, ALLOCATABLE :: lBUF_I(:)
+      INTEGER, ALLOCATABLE :: lCOUNT(:)
+
+      allocate(iPROCBUF(pPROCCNT))
+      allocate(iROOTBUF(pROOTCNT))
+
+
+      iDISPLS = pDISPLS
+      iScr_RecvCNT = pRECV
+      iScatterCNTS = pSCATTER
+
+      allocate(output_i(size(output_b)))
+      OUTPUT_I(:) = OUTPUT_B(:)
+
+      IF(bDIST_IO) THEN
+         CALL IN_BIN_512i(RDES_UNIT, OUTPUT_I, pIN_COUNT, lNEXT_REC)
+         OUTPUT_B(:) = OUTPUT_I(:)
+      ELSE
+
+         IF(myPE == PE_IO) THEN
+            allocate(lBUF_I(pIN_COUNT))
+            allocate(lCOUNT(0:NUMPEs-1))
+
+            CALL IN_BIN_512i(RDES_UNIT, lBUF_I, pIN_COUNT, lNEXT_REC)
+
+            lCOUNT = 0
+            DO LC1=1, pIN_COUNT
+               lPROC = pRestartMap(LC1)
+               lCOUNT(lPROC) = lCOUNT(lPROC) + 1
+               iRootBuf(iDispls(lPROC) + lCOUNT(lPROC)) = lBUF_I(LC1)
+            ENDDO
+
+            deallocate(lBUF_I)
+            deallocate(lCOUNT)
+         ENDIF
+         CALL DESMPI_SCATTERV(ptype=1)
+         DO LC1=1, PIP
+            OUTPUT_B(LC1) = iProcBuf(LC1)
+         ENDDO
+
+      ENDIF
+
+      deallocate(iPROCBUF)
+      deallocate(iROOTBUF)
+      deallocate(output_i)
+
+      RETURN
+     END SUBROUTINE READ_RES_pARRAY_1B
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: READ_RES_DES_1I                                          !
