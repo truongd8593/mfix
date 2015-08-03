@@ -551,7 +551,6 @@
       USE physprop
       USE indices
       USE funits
-      USE compar
       USE mpi_utility
       USE discretelement
       USE mms

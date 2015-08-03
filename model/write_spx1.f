@@ -830,10 +830,6 @@
         return
         end subroutine write_mesh_netcdf
 
-
-
-
-
         SUBROUTINE write_netcdf(L, unit_add, the_time)
 
         USE param

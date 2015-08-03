@@ -232,7 +232,7 @@
       use discretelement, only: DIMN
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
-      use discretelement, only: OMEGA_NEW, OMEGA_OLD
+      use discretelement, only: OMEGA_NEW
       use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION,INIT_ORIENTATION
       use discretelement, only: FC
       use discretelement, only: DO_OLD

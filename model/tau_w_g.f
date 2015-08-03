@@ -603,7 +603,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE fldvar, only: u_g, w_g
+      USE fldvar, only: w_g
 
       USE functions, only: east_of, west_of, top_of, flow_at_t
       USE functions, only: im_of, jm_of, km_of
@@ -636,8 +636,6 @@
       INTEGER :: I, J, K, IM
       INTEGER :: IJKT, IJKE, IJKW, IJKTE, IJKTW
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! average void fraction
-      DOUBLE PRECISION :: EPGA
 ! average viscosity
       DOUBLE PRECISION :: MUOX
 ! source terms

@@ -68,7 +68,7 @@
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
 
 ! forming the matrix equation
-         CALL CONV_ROP_G (A_M, B_M, IER)
+         CALL CONV_ROP_G (A_M, B_M)
          CALL SOURCE_ROP_G (A_M, B_M)
 
 ! calculating the residual
@@ -98,7 +98,7 @@
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
 ! forming the matrix equation
-         CALL CONV_ROP_S (A_M, B_M, M, IER)
+         CALL CONV_ROP_S (A_M, B_M, M)
          CALL SOURCE_ROP_S (A_M, B_M, M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_ROP_S (B_M, M)
 

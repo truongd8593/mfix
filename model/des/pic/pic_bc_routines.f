@@ -14,8 +14,6 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
 ! Paricle velocities
       use discretelement, only: DES_VEL_NEW
-! Particle radi
-      use discretelement, only: DES_RADIUS
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP
 ! The number of neighbor facets for each DES grid cell

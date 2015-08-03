@@ -206,7 +206,7 @@
 !  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_TRD_AND_TAU(IER)
+      SUBROUTINE CALC_TRD_AND_TAU()
 
       USE run, only: jackson
 ! Stress tensor trace.
@@ -223,11 +223,6 @@
 
       USE param1, only: zero
       implicit none
-
-! Dummy arguments
-!-----------------------------------------------------------------------
-! Error index
-      INTEGER, intent(inout) :: IER
 
 !-----------------------------------------------------------------------
 

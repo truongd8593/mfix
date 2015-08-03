@@ -18,12 +18,9 @@
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
-      use particle_filter, only: DES_INTERP_SCHEME
 
       use particle_filter, only: DES_INTERP_WIDTH
       use particle_filter, only: FILTER_WIDTH_INTERP
-      use particle_filter, only: DES_INTERP_MEAN_FIELDS
-      use particle_filter, only: DES_INTERP_ON
 
       use particle_filter, only: OoFILTER_VOL
       use particle_filter, only: FILTER_WIDTH_INTERPx3

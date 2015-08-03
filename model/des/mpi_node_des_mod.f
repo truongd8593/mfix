@@ -59,8 +59,7 @@
 ! local variables
 !-----------------------------------------------
       integer :: li, lj, lk
-      integer :: lm,ijk,lface,lijkmin,lijkmax
-      integer :: linode,ljnode,lknode,lijknode
+      integer :: lm,lijkmin,lijkmax
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -135,8 +134,7 @@
 ! local variables
 !-----------------------------------------------
       integer :: li, lj, lk
-      integer :: lm,ijk,lface,lijkmin,lijkmax
-      integer :: linode,ljnode,lknode,lijknode
+      integer :: lijkmin,lijkmax
 !-----------------------------------------------
 
 ! fill the temporary buffer
@@ -208,8 +206,7 @@
 ! local variables
 !-----------------------------------------------
       integer :: li, lj, lk
-      integer :: lm,ijk,lface,lijkmin,lijkmax
-      integer :: linode,ljnode,lknode,lijknode
+      integer :: lm,lijkmin,lijkmax
 !-----------------------------------------------
 
 ! fill the temporary buffer

@@ -39,7 +39,7 @@ CONTAINS
 ! Modules
 !-----------------------------------------------
       USE mfix_pic, only: MPPIC
-      USE discretelement, only: particles, pip
+      USE discretelement, only: particles
 
       USE mpi_utility
 
@@ -49,7 +49,6 @@ CONTAINS
 
       IMPLICIT NONE
       INTEGER :: IPE
-      type(particle), pointer :: part => null()
 
       INTEGER :: LORIG_ALL(0:Numpes-1)
       INTEGER :: LDEL_ALL(0:Numpes-1), LREM_ALL(0:Numpes-1)
@@ -122,8 +121,6 @@ CONTAINS
 
 
 ! Global Variables:
-! Runtime Flag: Generate initial particle configuation.
-      USE discretelement, only: GENER_PART_CONFIG
 ! particle radius and density
       USE discretelement, only: DES_RADIUS, RO_Sol
 ! particle position new and old
@@ -140,15 +137,10 @@ CONTAINS
       USE discretelement, only: DES_MMAX
 ! DEM solid phase diameters and densities.
       USE discretelement, only: DES_D_p0, DES_RO_s
-! Computed volume of IC region for seeding
-      USE discretelement, only: VOL_IC_REGION
 ! Number of particles estimated to be seeded, per phase in each IC region
       USE discretelement, only: PART_MPHASE_BYIC
 ! Number of particles actually seeded, per phase in each IC region
       USE discretelement, only: REALPART_MPHASE_BYIC
-
-! Number of particles to read from input file.
-      USE discretelement, only: PARTICLES
 
       USE discretelement, only: DO_OLD, OMEGA_OLD, OMEGA_NEW, PIJK
 
@@ -158,12 +150,8 @@ CONTAINS
       USE constant, only: PI
 ! Flag indicating that the IC region is defined.
       USE ic, only: IC_DEFINED
-! IC Region bulk density (RO_s * EP_s)
-      USE ic, only: IC_ROP_s
 ! IC Region solids volume fraction.
       USE ic, only: IC_EP_S
-! IC Region gas volume fraction.
-      USE ic, only: IC_EP_G
 ! min and max physical co-ordinates of IC regions in each direction
       USE ic, only: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t
 ! initally specified velocity field and granular temperature
@@ -572,7 +560,6 @@ CONTAINS
 !-----------------------------------------------
       USE cutcell, only : CARTESIAN_GRID
       USE discretelement, only: dimn, xe, yn, zt
-      USE discretelement, only: particles, pip
 
       USE discretelement, only:DES_GETINDEXFROMPOS
 ! Number of DES solids phases.
@@ -596,7 +583,6 @@ CONTAINS
 ! Total number of computational particles/parcels
       USE mfix_pic, only: cnp_pic
 
-      USE mfix_pic, only: cnp_array
       USE mfix_pic, only: des_stat_wt
 
 ! Flag indicating that the IC region is defined.
@@ -605,8 +591,6 @@ CONTAINS
       USE ic, only: IC_ROP_s
 ! IC Region gas volume fraction.
       USE ic, only: IC_EP_G
-! IC Region solid volume fraction.
-      USE ic, only: IC_EP_S
 
       USE ic, only: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t
       USE ic, only: IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t

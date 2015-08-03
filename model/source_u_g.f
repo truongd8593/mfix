@@ -20,7 +20,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_U_G(A_M, B_M, IER)
+      SUBROUTINE SOURCE_U_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -77,8 +77,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -366,7 +364,7 @@
 !$omp end parallel do
 
 ! modifications for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M, IER)
+      IF(CARTESIAN_GRID) CALL CG_SOURCE_U_G(A_M, B_M)
 ! modifications for bc
       CALL SOURCE_U_G_BC (A_M, B_M)
 ! modifications for cartesian grid implementation

@@ -19,7 +19,6 @@
       use vtk, only:    VTK_TIME, VTK_DT
 
       use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
-      use output, only: RES_BACKUPS
 
       use output, only: DISK, DISK_TOT
 
