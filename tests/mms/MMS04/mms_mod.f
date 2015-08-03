@@ -628,7 +628,7 @@
           awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + avgz*Pi*vgz*Sin(avgz*Pi*zt) + avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
        4*xt**3*(awgy*Pi*wgy*Cos(awgy*Pi*yt) + awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + &
            avgz*Pi*vgz*Sin(avgz*Pi*zt) + avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt))**2 - &
-       mug*(4*xt*(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt) + avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt) - awgxy**2*Pi**2*wgxy*xt*yt!Z!F*Sin(awgxy*Pi*xt*yt) + &
+       mug*(4*xt*(awgxy*Pi*wgxy*Cos(awgxy*Pi*xt*yt) + avgzx**2*Pi**2*vgzx*xt*zt*Cos(avgzx*Pi*xt*zt) - awgxy**2*Pi**2*wgxy*xt*yt*Sin(awgxy*Pi*xt*yt) + &
              avgzx*Pi*vgzx*Sin(avgzx*Pi*xt*zt)) + 2*(awgy*Pi*wgy*Cos(awgy*Pi*yt) + awgxy*Pi*wgxy*xt*Cos(awgxy*Pi*xt*yt) - avgyz*Pi*vgyz*yt*Cos(avgyz*Pi*yt*zt) + &
              awgyz*Pi*wgyz*zt*Cos(awgyz*Pi*yt*zt) + avgz*Pi*vgz*Sin(avgz*Pi*zt) + avgzx*Pi*vgzx*xt*Sin(avgzx*Pi*xt*zt)) + &
           xt**2*(-(awgxy**3*Pi**3*wgxy*xt*yt**2*Cos(awgxy*Pi*xt*yt)) + 2*avgzx**2*Pi**2*vgzx*zt*Cos(avgzx*Pi*xt*zt) - 2*awgxy**2*Pi**2*wgxy*yt*Sin(awgxy*Pi*xt*yt) - &
