@@ -167,7 +167,8 @@
                ! CALL WRITE_VTP_FILE(L)
             ENDDO
          ENDIF
-         CALL DES_TIME_MARCH
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
          CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
          IF(myPE.EQ.PE_IO) &

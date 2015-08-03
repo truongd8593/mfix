@@ -603,7 +603,7 @@
          ELSEIF(DES_CONTINUUM_COUPLED) THEN
             IF(MPPIC) THEN
                WRITE(ERR_MSG,2002) 'MPPIC solids'
-               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+               CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
             ELSEIF(MPPIC) THEN
                WRITE(ERR_MSG,2002) 'Cartesian grid cut-cells'
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)

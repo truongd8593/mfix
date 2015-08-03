@@ -356,7 +356,6 @@ libmfix_src = \
 	model/deprecated.f \
 	model/des/calc_collision_wall_mod.f \
 	model/des/calc_drag_des.f \
-	model/des/calc_dtpic.f \
 	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
 	model/des/calc_interp_weights.f \
@@ -413,7 +412,6 @@ libmfix_src = \
 	model/des/make_arrays_des.f \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \
-	model/des/mfix_pic_mod.f \
 	model/des/mpi_comm_des_mod.f \
 	model/des/mpi_funs_des_mod.f \
 	model/des/mpi_init_des_mod.f \
@@ -424,9 +422,20 @@ libmfix_src = \
 	model/des/nsquare.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
-	model/des/pic_bc_mod.f \
-	model/des/pic_bc_routines.f \
-	model/des/pic_routines.f \
+	model/des/pic/calc_dtpic.f \
+	model/des/pic/calc_ps_grad_pic.f \
+	model/des/pic/calc_ps_pic.f \
+	model/des/pic/integrate_time_pic.f \
+	model/des/pic/interpolate_pic.f \
+	model/des/pic/mfix_pic_mod.f \
+	model/des/pic/pic_bc_mod.f \
+	model/des/pic/pic_bc_routines.f \
+	model/des/pic/pic_routines.f \
+	model/des/pic/report_stats_pic.f \
+	model/des/pic/set_bc_pic.f \
+	model/des/pic/set_bc_pic_mi.f \
+	model/des/pic/set_bc_pic_mo.f \
+	model/des/pic/time_march_pic.f \
 	model/des/randomno_mod.f \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
@@ -435,9 +444,6 @@ libmfix_src = \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
 	model/des/set_bc_dem_mo.f \
-	model/des/set_bc_pic.f \
-	model/des/set_bc_pic_mi.f \
-	model/des/set_bc_pic_mo.f \
 	model/des/set_filter_des.f \
 	model/des/set_geometry_des.f \
 	model/des/set_ic_dem.f \

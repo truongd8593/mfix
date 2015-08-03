@@ -200,8 +200,6 @@
 
                NP = PIC(IJK)%p(LP)
 
-               IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) cycle
-
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
                CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
@@ -810,7 +808,6 @@
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
-      double precision :: velocity(dimn)
       !reference point and direction of the line
       double precision, dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane
@@ -1014,5 +1011,5 @@
       close(stl_unit, status = 'keep')
       write(*,*) 'wrote a facet and a parcel. now waiting'
       read(*,*)
-    end SUBROUTINE write_this_facet_and_parcel
+      end SUBROUTINE write_this_facet_and_parcel
 
