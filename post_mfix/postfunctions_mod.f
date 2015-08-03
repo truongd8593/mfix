@@ -8,7 +8,7 @@
 ! *  4) FUNIJK_GL is set to FUNIJK_IO                                * !
 ! ******************************************************************** !
 !----------------------------------------------------------------------!
-      MODULE postfunctions
+      MODULE functions
 
       CONTAINS
 
@@ -808,4 +808,4 @@
       ZMAX       = MAX(XXX, ZERO)
       END FUNCTION ZMAX
 
-      END MODULE postfunctions
+      END MODULE functions
