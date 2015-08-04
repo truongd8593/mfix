@@ -249,7 +249,7 @@
 ! MMS:  Solve gas continuity only.
             IF(USE_MMS) THEN
 ! Don't solve continuity for this case !! FLAGMMS
-               CALL SOLVE_CONTINUITY(0,IER)
+!               CALL SOLVE_CONTINUITY(0,IER)
 ! Regular, non-MMS cases.
             ELSE
                IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
