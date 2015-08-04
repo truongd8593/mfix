@@ -1,9 +1,9 @@
 ########################################################################
-# No-slip Wall (NSW) BC Verification                                   #
+# No-slip Wall (FSW) BC Verification                                   #
 # 3D, single-phase, curlbased MMS case                                 #
 # Order verification using manufactured solution                       #
 #                                                                      #
-# Author: Aniruddha Choudhary                           Date: Jul 2015 #
+# Author: Aniruddha Choudhary                           Date: Aug 2015 #
 #                                                                      #
 # Reference: Choudhary, Aniruddha, Roy, Christopher J., Dietiker,      # 
 # Jean-François, Shahnam, Mehrdad and Garg, Rahul. "Code Verification  #
@@ -19,8 +19,8 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'MMS04'
-  Description   = '3D, Single-phase, NSW BC verification'
+  Run_name      = 'MMS05'
+  Description   = '3D, Single-phase, FSW BC verification'
   Units         = 'SI'
   Run_type      = 'new'
 
@@ -35,6 +35,8 @@
 
   Call_usr      = .T.
 
+  Set_corner_cells = .F.
+
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
@@ -45,6 +47,8 @@
   Tol_resid     = 1.0E-10
 
   Discretize    = 9*9
+
+  UR_FAC = 9*0.05
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -86,7 +90,7 @@
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
 
-! West: set as NSW
+! West: set as FSW
 !---------------------------------------------------------------------//
 
   BC_X_w(1)   = 0.0
@@ -96,7 +100,13 @@
   BC_Z_b(1)   = 0.0
   BC_Z_t(1)   = 1.0
 
-  BC_type(1)  = 'NSW'
+  BC_type(1)  = 'FSW'
+
+  BC_EP_g(1)  = 1.0   
+  BC_U_g(1)   = 0.0   
+  BC_V_g(1)   = 5.0     
+  BC_W_g(1)   = 5.0
+  BC_P_g(1)   = 0.0
 
 ! South: set as MI for MMS
 !---------------------------------------------------------------------//
