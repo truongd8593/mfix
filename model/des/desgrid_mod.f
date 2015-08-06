@@ -945,13 +945,17 @@
 ! and exiting particles are missed.
                if (lneigh .eq. lcurpar) cycle
                if (lneigh < lcurpar .and.is_normal(lneigh)) cycle
+               if (is_nonexistent(lneigh)) THEN
+                  lneighcnt = lneighcnt + 1
+                  cycle
+               endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if (.not.is_nonexistent(lcurpar) .and. .not.is_ghost(lcurpar) .and. .not.is_entering_ghost(lcurpar) .and. .not.is_exiting_ghost(lcurpar) .and. .not.is_nonexistent(lneigh)) THEN
+
 !$  if (.true.) then
 !!!!! SMP version
 
@@ -974,7 +978,6 @@
 
       cc = add_pair(lcurpar, lneigh)
 !$  endif
-               endif
             end do
          end do
          end do
