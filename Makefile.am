@@ -157,7 +157,6 @@ libmfix_a_SOURCES += \
 	model/include/chem_equations.inc \
 	model/include/desnamelist.inc \
 	model/include/dmp_batch_control.inc \
-	model/include/functions.inc \
 	model/include/gas_phase.inc \
 	model/include/geometry.inc \
 	model/include/initial_conditions.inc \
@@ -507,6 +506,7 @@ libmfix_src = \
 	model/ic_mod.f \
 	model/in_binary_512_mod.f \
 	model/in_binary_512i_mod.f \
+	model/include/functions.inc \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \
