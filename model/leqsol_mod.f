@@ -107,16 +107,11 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-    USE param
-    USE param1
-    USE matrix
-    USE geometry
-    USE compar
-    USE indices
-    USE sendrecv
-    USE mpi_utility
-    USE cutcell
-    USE functions
+    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs
+    USE cutcell, ONLY: re_indexing
+    USE geometry, ONLY: do_k
+    USE param, ONLY: DIMENSION_3
+    USE sendrecv, ONLY: send_recv
     IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -148,7 +143,6 @@ CONTAINS
           ip1jk = ip_of(ijk)
           ijm1k = jm_of(ijk)
           ijp1k = jp_of(ijk)
-
 
           AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
                + A_m(ijk,-1) * Var(im1jk)   &
@@ -223,6 +217,11 @@ CONTAINS
 
     call send_recv(Avar,nlayers_bicgs)
     RETURN
+
+  CONTAINS
+
+    INCLUDE 'functions.inc'
+
   END SUBROUTINE LEQ_MATVEC
 
 

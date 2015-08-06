@@ -30,14 +30,9 @@
       use discretelement, only: PIJK
       use discretelement, only: DES_POS_NEW
       use discretelement, only: XE, YN, ZT
-      use discretelement, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
       use geometry, only: DO_K
-      use functions, only: FUNIJK
-      use functions, only: FLUID_AT
-      use functions, only: CYCLIC_AT
-      use functions, only: IS_ON_MYPE_PLUS2LAYERS
 
       use param1, only: ZERO, ONE
 
@@ -145,5 +140,7 @@
       ENDIF
 
       END FUNCTION CALC_FILTER_WEIGHTS
+
+      INCLUDE 'functions.inc'
 
       END SUBROUTINE CALC_INTERP_WEIGHTS1

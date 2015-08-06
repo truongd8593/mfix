@@ -41,6 +41,7 @@
       use functions, only: FUNIJK
 
       use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -211,8 +212,9 @@
 
       use discretelement, only: PIJK, PINC
       USE discretelement, only: DES_POS_NEW
-      USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      USE discretelement, only: MAX_PIP
       USE discretelement, only: XE, YN, ZT
+      USE functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use mpi_funs_des, only: des_par_exchange
 
 ! Number of particles in the I/J/K direction

@@ -47,6 +47,7 @@
       use param, only: DIMENSION_M
 
       use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -198,6 +199,7 @@
       use param, only: DIMENSION_M
 
       use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -417,6 +419,7 @@
       use physprop, only: MMAX
 
       use discretelement
+      use functions
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

@@ -14,20 +14,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_U_CUT_CELL
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE bc
-      USE quadric
+      USE bc, ONLY: BC_TYPE
+      USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions
+      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE geometry, ONLY: DO_K, NO_K, ayz, ayz_u, flag_e
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -49,7 +40,6 @@
 10    FORMAT(1X,A)
 
       DELH_U = UNDEFINED
-
 
       Theta_Ue  = HALF
       Theta_Ue_bar = HALF
@@ -402,18 +392,12 @@
          ENDIF
       END DO
 
-
-
       IF(PG_OPTION==0) THEN
          A_UPG_E = AYZ
          A_UPG_W = AYZ
       ENDIF
 
-
-
-
       RETURN
-
 
       END SUBROUTINE GET_3D_ALPHA_U_CUT_CELL
 
@@ -433,20 +417,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_V_CUT_CELL
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE bc
-      USE quadric
+      USE bc, ONLY: BC_TYPE
+      USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions
+      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE geometry, ONLY: DO_K, NO_K, axz, axz_v, flag_n
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -550,7 +525,6 @@
                Theta_V_se(IJK) = HALF
             ENDIF
 
-
 !======================================================================
 !  Get Interpolation factors at North face
 !======================================================================
@@ -563,7 +537,6 @@
                Theta_Vn_bar(IJK) = HALF
             ENDIF
 
-
             IF(DO_K) THEN
 !======================================================================
 !  Get Interpolation factors at Top face
@@ -571,7 +544,6 @@
 
                W_NODE_AT_NT = ((.NOT.BLOCKED_W_CELL_AT(IJPK)).AND.(.NOT.WALL_W_AT(IJPK)))
                W_NODE_AT_ST = ((.NOT.BLOCKED_W_CELL_AT(IJK)).AND.(.NOT.WALL_W_AT(IJK)))
-
 
                IF(W_NODE_AT_ST.AND.W_NODE_AT_NT) THEN
                   Theta_V_nt(IJK) = (Y_V_tc(IJK) - Y_W(IJK)    ) / (Y_W(IJPK) - Y_W(IJK))
@@ -595,7 +567,6 @@
                ENDIF
 
             ENDIF
-
 
             BCV = BC_V_ID(IJK)
             IF(BCV>0) THEN
@@ -712,7 +683,6 @@
                IF(WALL_V_AT(IJK).AND.WALL_V_AT(IJPK)) NOC_V_N(IJK) = ZERO
                IF(J == JEND1) NOC_V_N(IJK) = ZERO
 
-
                IF(DO_K) THEN
 
 !======================================================================
@@ -726,8 +696,6 @@
                      Theta_Vt(IJK) = HALF
                      Theta_Vt_bar(IJK) = HALF
                   ENDIF
-
-
 
 ! Location of the interpolated velocity along Top face
 ! Zt has not moved based on definition of Theta_Ut
@@ -770,7 +738,6 @@
                ENDIF
 
             ENDIF
-
 
 !======================================================================
 !  Get Surfaces used to compute pressure gradient
@@ -833,15 +800,9 @@
          A_VPG_S = AXZ
       ENDIF
 
-
-
-
       RETURN
 
-
-
       END SUBROUTINE GET_3D_ALPHA_V_CUT_CELL
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -859,20 +820,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_3D_ALPHA_W_CUT_CELL
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE bc
-      USE quadric
+      USE bc, ONLY: BC_TYPE
+      USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions
+      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE geometry, ONLY: DO_K, NO_K, axy, axy_w, flag_t
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -935,7 +887,6 @@
             IJPK = FUNIJK(I,JP,K)
             IJKM = FUNIJK(I,J,KM)
             IJKP = FUNIJK(I,J,KP)
-
 
             CALL GET_CELL_NODE_COORDINATES(IJK,'W_MOMENTUM')
 
@@ -1015,7 +966,6 @@
             ELSE
                BCT = ''
             ENDIF
-
 
             IF(BCT =='CG_NSW'.OR.BCT =='CG_PSW') THEN
 
@@ -1140,7 +1090,6 @@
                Yt = Theta_Wt_bar(IJK) * Y_W(IJK) + Theta_Wt(IJK) * Y_W(IJKP)
                Zt = Z_NODE(8)
 
-
                CALL GET_DEL_H(IJK,'W_MOMENTUM',X_W_tc(IJK),Y_W_tc(IJK),Z_W_tc(IJK),DELH_tc,Nx,Ny,Nz)
 
                CALL GET_DEL_H(IJK,'W_MOMENTUM',Xt,Yt,Zt,DELH_t,Nx,Ny,Nz)
@@ -1171,20 +1120,15 @@
 
                NOC_W_T(IJK) = (Sx * Nx + Sy * Ny)/(Sz * DELH_t)
 
-
-
                IF(BLOCKED_W_CELL_AT(IJKP)) NOC_W_T(IJK) = ZERO
                IF(WALL_W_AT(IJK).AND.WALL_W_AT(IJKP)) NOC_W_T(IJK) = ZERO
                IF(K == KEND1) NOC_W_T(IJK) = ZERO
 
-
             ENDIF
-
 
 !======================================================================
 !  Get Surfaces used to compute pressure gradient
 !======================================================================
-
 
             IF (  CUT_W_CELL_AT(IJK)  )  THEN
 
@@ -1213,7 +1157,6 @@
 
                END SELECT
 
-
                IF (BLOCKED_CELL_AT(IJK).OR.BLOCKED_CELL_AT(IJKP)) THEN
                   IF(.NOT.WALL_W_AT(IJK)) THEN
                      WALL_W_AT(IJK) = .TRUE.
@@ -1227,7 +1170,6 @@
                   ENDIF
                ENDIF
 
-
             ELSE
 
                A_WPG_T(IJK) = AXY_W(IJK)
@@ -1238,13 +1180,10 @@
          ENDIF
       END DO
 
-
       IF(PG_OPTION==0) THEN
          A_WPG_T = AXY
          A_WPG_B = AXY
       ENDIF
-
-
 
       RETURN
 

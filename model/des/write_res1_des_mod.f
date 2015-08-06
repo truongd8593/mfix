@@ -94,7 +94,8 @@
       use mpi_utility, only: GLOBAL_SUM
 
       use discretelement, only: PIP, iGHOST_CNT
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use functions, only: is_nonexistent
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
       DOUBLE PRECISION, INTENT(IN) :: lVERSION
@@ -361,7 +362,8 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: iGLOBAL_ID, IS_NONEXISTENT
+      use discretelement, only: iGLOBAL_ID
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER(KIND=1), INTENT(IN) :: INPUT_B(:)
@@ -427,7 +429,8 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: iGLOBAL_ID, IS_NONEXISTENT
+      use discretelement, only: iGLOBAL_ID
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)
@@ -486,7 +489,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE WRITE_RES_PARRAY_1D(lNEXT_REC, INPUT_D)
 
-      use discretelement, only: MAX_PIP, PIP, IS_NONEXISTENT
+      use discretelement, only: MAX_PIP, PIP
+      use functions, only: is_nonexistent
 
       IMPLICIT NONE
 
@@ -533,7 +537,8 @@
       SUBROUTINE WRITE_RES_PARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: MAX_PIP, PIP, IS_NONEXISTENT
+      use discretelement, only: MAX_PIP, PIP
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -577,7 +582,8 @@
       SUBROUTINE WRITE_RES_cARRAY_1I(lNEXT_REC, INPUT_I, pLOC2GLB)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      USE functions, only: is_nonexistent
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -640,7 +646,8 @@
 
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      USE functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
@@ -692,7 +699,8 @@
       SUBROUTINE WRITE_RES_cARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM, IS_NONEXISTENT
+      use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)

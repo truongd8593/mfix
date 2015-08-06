@@ -12,6 +12,7 @@
       use discretelement
       use des_bc
       use bc
+      use functions
 
       use mpi_utility, only: GLOBAL_ALL_OR
 

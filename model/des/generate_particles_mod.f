@@ -169,7 +169,7 @@ CONTAINS
 ! to access random number generator subroutines
       USE randomno
       USE mpi_utility
-      USE discretelement, only: SET_NORMAL
+      USE functions, only: SET_NORMAL
 
       USE error_manager
 

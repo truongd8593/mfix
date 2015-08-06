@@ -246,7 +246,8 @@
 
       use des_rxns, only: DES_X_s
 
-      use discretelement, only: iGHOST_UPDATED, SET_NONEXISTENT
+      use discretelement, only: iGHOST_UPDATED
+      use functions, only: SET_NONEXISTENT
       use desmpi, only: iRECVINDICES
       use desmpi, only: iEXCHFLAG
 

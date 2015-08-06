@@ -15,21 +15,11 @@
   SUBROUTINE GET_CONNECTIVITY(IJK,TYPE_OF_CELL,N_NEW_POINTS,N_NODES,CONNECT,X_NP,Y_NP,Z_NP,TOTAL_NUMBER_OF_INTERSECTIONS,&
              X_intersect,Y_intersect,Z_intersect)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE polygon
-      USE stl
-      USE functions
+      USE cutcell!, ONLY: x_node, y_node, z_node, intersect_x, intersect_y, intersect_z
+      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF, IJKEND3
+      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: I,J,K,IM,JM,KM
@@ -315,8 +305,6 @@
 
       END SUBROUTINE GET_CONNECTIVITY
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_CELL_NODE_COORDINATES                              C
@@ -332,20 +320,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: mype
       USE cutcell
-      USE fldvar
-      USE functions
+      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -502,9 +480,7 @@
 
       RETURN
 
-
       END SUBROUTINE GET_CELL_NODE_COORDINATES
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -521,21 +497,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_GLOBAL_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: MYPE, IJKEND3
       USE cutcell
-      USE fldvar
-      USE vtk
-      USE functions
+      USE functions, ONLY: FUNIJK_GL
+      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE vtk, ONLY: GLOBAL_I_OF, GLOBAL_J_OF, GLOBAL_K_OF
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -688,6 +654,5 @@
       Z_NODE(8) = zt
 
       RETURN
-
 
       END SUBROUTINE GET_GLOBAL_CELL_NODE_COORDINATES

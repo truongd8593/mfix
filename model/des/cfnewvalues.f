@@ -21,16 +21,17 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE constant
+      USE des_bc
+      USE discretelement
+      USE fldvar
+      USE functions
+      USE mfix_pic
+      USE mpi_utility
+      USE parallel
       USE param
       USE param1
-      USE parallel
       USE physprop
-      USE constant
-      USE fldvar
-      USE discretelement
-      USE des_bc
-      USE mpi_utility
-      USE mfix_pic
       use geometry, only: DO_K, NO_K
       IMPLICIT NONE
 !-----------------------------------------------
@@ -795,7 +796,8 @@
 ! Modules
 !-----------------------------------------------
       use discretelement
-      USE fldvar
+      use fldvar
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -830,7 +832,6 @@
       RETURN
       END SUBROUTINE des_dbgpic
 
-
 !------------------------------------------------------------------------
 ! subroutine       : des_dbgtecplot
 ! Author           : Pradeep G.
@@ -847,8 +848,9 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      use discretelement
+      USE discretelement
       USE fldvar
+      USE functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -886,6 +888,3 @@
       close (100)
       RETURN
       END SUBROUTINE DES_DBGTECPLOT
-
-
-

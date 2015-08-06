@@ -59,7 +59,7 @@
 ! Function to deterine if a cell contains fluid.
       use functions, only: FLUID_AT
 
-      use discretelement, only: is_normal
+      use functions, only: is_normal
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -231,7 +231,7 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
-      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
+      use functions, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

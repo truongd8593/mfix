@@ -10,16 +10,15 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement
-      use funits
+      use cdist
       use compar
       use desmpi
-      use cdist
-
+      use error_manager
+      use functions
+      use funits
+      use geometry, only: NO_K
       use mpi_init_des, only: des_scatter_particle
       use mpi_utility
-      use geometry, only: NO_K
-
-      use error_manager
 
       implicit none
 !-----------------------------------------------

@@ -709,14 +709,9 @@
 !------------------------------------------------------------------------
       subroutine desgrid_pic(plocate)
 
-      use param1
-      use funits
-      use geometry
-      use compar
       use discretelement
-      use constant
-      use desmpi_wrapper
-
+      use functions, only: is_nonexistent
+      use geometry, only: no_k
 
       implicit none
 !-----------------------------------------------
@@ -1014,7 +1009,11 @@
 
 !$omp end parallel
 
-      end subroutine desgrid_neigh_build
+    contains
+
+      include 'functions.inc'
+
+    end subroutine desgrid_neigh_build
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbggrid

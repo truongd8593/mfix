@@ -18,7 +18,7 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
       use discretelement, only: DRAG_FC, FC, MAX_PIP
-      use discretelement, only: IS_NORMAL
+      use functions, only: IS_NORMAL
 
       IMPLICIT NONE
 

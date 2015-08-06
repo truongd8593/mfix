@@ -14,32 +14,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_CELL_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
+      USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3, istart1, iend1, jstart1, jend1, kstart1, kend1
+      USE cutcell
+      USE functions, ONLY: funijk, i_of, j_of, k_of, ip_of, jp_of, kp_of, bottom_of, south_of, west_of, fluid_at, is_on_mype_wobnd
+      USE geometry, ONLY: DO_I, DO_J, DO_K, IMIN1, IMAX3, JMIN1, JMAX3, KMIN1, KMAX3, no_k, vol, axy, axz, ayz, dx, dy, dz, flag
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
       USE sendrecv
-      USE quadric
-      USE cutcell
-      Use vtk
-      USE polygon
-      USE stl
-
-      USE physprop
-      USE fldvar
-      USE scalars
-      USE funits
-      USE rxns
-
-      USE cutcell
-      USE quadric
-      USE functions
+      USE vtk, ONLY: GLOBAL_VAR_ALLOCATED, GRID_INFO_PRINTED_ON_SCREEN
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K
@@ -68,7 +50,6 @@
       allocate(Y_OLD_POINT(DIMENSION_MAX_CUT_CELL))
       allocate(Z_OLD_POINT(DIMENSION_MAX_CUT_CELL))
       allocate(SCALAR_NODE_XYZ_TEMP(DIMENSION_3, 3))
-
 
       IF(MyPE == PE_IO) THEN
          WRITE(*,10)'INTERSECTING GEOMETRY WITH SCALAR CELLS...'
@@ -135,7 +116,6 @@
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
 
-
       DO IJK = IJKSTART3, IJKEND3
 
          I = I_OF(IJK)
@@ -143,7 +123,6 @@
          K = K_OF(IJK)
 
          IF(NO_K) THEN   ! 2D case
-
 
             INTERIOR_CELL_AT(IJK) = (     (I >= ISTART1 ).AND.(I <= IEND1 )  &
                                      .AND.(J >= JSTART1 ).AND.(J <= JEND1 ) )
@@ -156,11 +135,9 @@
 
          ENDIF
 
-
       END DO
 
        NUMBER_OF_NODES = 0
-
 
       CALL GET_POTENTIAL_CUT_CELLS
 
@@ -327,11 +304,9 @@
 
             ELSE                                         ! Cut cell
 
-
                CUT_CELL_AT(IJK) = .TRUE.
                BLOCKED_CELL_AT(IJK) = .FALSE.
                STANDARD_CELL_AT(IJK) = .FALSE.
-
 
                DO NODE = N_N1,N_N2
                   IF(F_NODE(NODE) < - TOL_F) THEN
@@ -431,7 +406,6 @@
                                              ! Look east and north in 2D, and also Top in 3D
 
          Diagonal = DSQRT(DX(I_OF(IJK))**2 + DY(J_OF(IJK))**2 + DZ(K_OF(IJK))**2)
-
 
             NB(1) = IP_OF(IJK)
             NB(2) = JP_OF(IJK)
@@ -673,21 +647,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
       USE cutcell
-      USE polygon
-      USE stl
-      USE functions
+      USE geometry, ONLY: no_k, axy_u, ayz_u, vol_u, axz_u
+      USE quadric, ONLY: tol_f
+      USE polygon, ONLY: n_polygon
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -710,7 +674,6 @@
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
       TOL_SNAP = ZERO
-
 
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
@@ -823,7 +786,6 @@
                   VOL_U(IJK) = ZERO
                ENDIF
 
-
                IF(NO_K) THEN
                   NUMBER_OF_U_NODES(IJK) = 4
                   CONNECTIVITY_U(IJK,1) = IJK_OF_NODE(5)
@@ -836,7 +798,6 @@
                      CONNECTIVITY_U(IJK,NODE) = IJK_OF_NODE(NODE)
                   END DO
                ENDIF
-
 
             ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS) THEN
 
@@ -864,14 +825,12 @@
                BLOCKED_U_CELL_AT(IJK) = .FALSE.
                STANDARD_U_CELL_AT(IJK) = .FALSE.
 
-
                DO NODE = N_N1,N_N2
                   IF(F_NODE(NODE) < - TOL_F) THEN
                      NUMBER_OF_U_NODES(IJK) = NUMBER_OF_U_NODES(IJK) + 1
                      CONNECTIVITY_U(IJK,NUMBER_OF_U_NODES(IJK)) = IJK_OF_NODE(NODE)
                   ENDIF
                END DO
-
 
                CALL GET_CUT_CELL_VOLUME_AND_AREAS(IJK,'U_MOMENTUM',NUMBER_OF_U_NODES(IJK),CONNECTIVITY_U,&
                X_NEW_U_POINT,Y_NEW_U_POINT,Z_NEW_U_POINT)
@@ -881,8 +840,6 @@
          ENDIF
 
       END DO
-
-
 
       DO IJK = IJKSTART3, IJKEND3
 
@@ -900,7 +857,6 @@
       ENDDO
 
       RETURN
-
 
       END SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
 
@@ -920,21 +876,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
       USE cutcell
-      USE polygon
-      USE stl
-      USE functions
+      USE geometry, ONLY: no_k, axy_v, axz_v, ayz_v, vol_v
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -956,7 +902,6 @@
       INTERSECT_Y = .FALSE.
       INTERSECT_Z = .FALSE.
       SNAP = .FALSE.
-
 
       IF(.NOT.(USE_STL.OR.USE_MSH)) THEN
          DO IJK = IJKSTART3, IJKEND3
@@ -1060,7 +1005,6 @@
                   Y_V_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_V_tc(IJK) = Z_NODE(8)
 
-
                ELSE
                   BLOCKED_V_CELL_AT(IJK) = .TRUE.           ! Blocked fluid cell
                   STANDARD_V_CELL_AT(IJK) = .FALSE.
@@ -1082,8 +1026,6 @@
                      CONNECTIVITY_V(IJK,NODE) = IJK_OF_NODE(NODE)
                   END DO
                ENDIF
-
-
 
             ELSE IF(TOTAL_NUMBER_OF_INTERSECTIONS > MAX_INTERSECTIONS ) THEN
 
@@ -1118,7 +1060,6 @@
                   ENDIF
                END DO
 
-
                CALL GET_CUT_CELL_VOLUME_AND_AREAS(IJK,'V_MOMENTUM',NUMBER_OF_V_NODES(IJK),CONNECTIVITY_V,&
                X_NEW_V_POINT,Y_NEW_V_POINT,Z_NEW_V_POINT)
 
@@ -1140,12 +1081,9 @@
          DELZ_Vt(IJK) = Z_NODE(8) - Z_V(IJK)
          DELZ_Vb(IJK) = Z_V(IJK) - Z_NODE(1)
 
-
       ENDDO
 
-
       RETURN
-
 
       END SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
 
@@ -1165,21 +1103,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
       USE cutcell
-      USE polygon
-      USE stl
-      USE functions
+      USE geometry, ONLY: axy_w, axz_w, ayz_w, vol_w
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1290,7 +1218,6 @@
                   Y_W_tc(IJK) = HALF * (Y_NODE(6) + Y_NODE(8))
                   Z_W_tc(IJK) = Z_NODE(8)
 
-
                ELSE
                   BLOCKED_W_CELL_AT(IJK) = .TRUE.           ! Blocked fluid cell
                   STANDARD_W_CELL_AT(IJK) = .FALSE.
@@ -1360,13 +1287,9 @@
 
       ENDDO
 
-
-
       RETURN
 
-
       END SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1384,21 +1307,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_3D_CUT_CELL_TREATMENT_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
+      USE compar, only: mype, pe_io, ijkstart3, ijkend3
       USE cutcell
-      Use vtk
-      USE functions
+      USE functions, ONLY: funijk, i_of, j_of, k_of
+      USE geometry, ONLY: do_k
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IM,IP,JM,JP,KM,KP
@@ -1489,9 +1401,7 @@
                                           CUT_W_CELL_AT(IJKM).OR.   &
                                           CUT_W_CELL_AT(IJKP))
 
-
             ENDIF
-
 
          ENDIF
 
@@ -1504,20 +1414,14 @@
 
       END DO
 
-
       IF(CG_SAFE_MODE(1)==1) CUT_TREATMENT_AT   = .FALSE.
       IF(CG_SAFE_MODE(3)==1) CUT_U_TREATMENT_AT = .FALSE.
       IF(CG_SAFE_MODE(4)==1) CUT_V_TREATMENT_AT = .FALSE.
       IF(CG_SAFE_MODE(5)==1) CUT_W_TREATMENT_AT = .FALSE.
 
-
       RETURN
 
-
       END SUBROUTINE SET_3D_CUT_CELL_TREATMENT_FLAGS
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1534,19 +1438,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE SET_GHOST_CELL_FLAGS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: ijkstart3, ijkend3
+      USE compar, ONLY: iend1, iend2, iend3, jstart1, jstart2, jstart3, kstart1, kstart2, kstart3
+      USE compar, only: istart1, istart2, istart3, jend1, jend2, jend3, kend1, kend2, kend3
       USE cutcell
-      USE functions
+      USE functions, ONLY: funijk
+      USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, flag, do_k, flag_e, flag_n, flag_t
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
@@ -1855,19 +1752,15 @@
 
       ENDIF
 
-
       DO IJK = IJKSTART3, IJKEND3
 
          IF(BLOCKED_U_CELL_AT(IJK)) FLAG_E(IJK)=100
          IF(BLOCKED_V_CELL_AT(IJK)) FLAG_N(IJK)=100
          IF(BLOCKED_W_CELL_AT(IJK)) FLAG_T(IJK)=100
 
-
       ENDDO
 
-
       RETURN
-
 
       END SUBROUTINE SET_GHOST_CELL_FLAGS
 
@@ -1887,32 +1780,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_POTENTIAL_CUT_CELLS
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
+      USE compar, only: ijkstart3, ijkend3, mype, pe_io
       USE cutcell
-      Use vtk
-      USE polygon
-      USE stl
-
-      USE physprop
-      USE fldvar
-      USE scalars
-      USE funits
-      USE rxns
-
-      USE cutcell
-      USE quadric
-      USE functions
+      USE functions, only: funijk, i_of, j_of, k_of, bottom_of, south_of, west_of
+      USE geometry, ONLY: dx, dy, dz, do_k, imin3, imax3, jmin3, jmax3, kmin3, kmax3, flag, axy, axz, ayz, vol, no_k
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,II,JJ,KK
@@ -1935,8 +1808,6 @@
          WRITE(*,10)'ESTIMATING POTENTIAL SCALAR CUT CELLS...'
       ENDIF
 10    FORMAT(1X,A)
-
-
 
 !======================================================================
 !  Evaluate f at cell center and store where f>0
@@ -1969,8 +1840,6 @@
           Z_NODE(15) = zc
           CALL EVAL_STL_FCT_AT('SCALAR',IJK,15,fc,CLIP_FLAG,BCID)
 
-
-
           IF(fc>TOL_F) THEN
              POSITIVE_F_AT(IJK)=.TRUE.
           ELSE
@@ -1978,9 +1847,6 @@
           ENDIF
 
        ENDDO
-
-
-
 
       DO IJK = IJKSTART3, IJKEND3
 
@@ -1994,7 +1860,6 @@
             I2 = MIN(I + 2,IMAX3)
             J1 = MAX(J - 2,JMIN3)
             J2 = MIN(J + 2,JMAX3)
-
 
             IF(DO_K) THEN
                K1 = MAX(K - 2,KMIN3)
@@ -2063,7 +1928,6 @@
 
       END DO
 
-
       NUMBER_OF_POTENTIAL_CUT_CELLS = 0
 
       IF(NO_K) THEN
@@ -2107,8 +1971,6 @@
 
          ENDIF
       ENDDO
-
-
 
 !      call SEND_RECEIVE_1D_LOGICAL(SNAP,2)
       IF(MyPE == PE_IO) THEN

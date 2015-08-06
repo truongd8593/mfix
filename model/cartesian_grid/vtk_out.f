@@ -3077,23 +3077,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SETUP_VTK_REGION
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
       USE cdist
-      USE functions
+      USE compar, only: mype, pe_io, ijkend3
+      USE cutcell
+      USE functions, only: i_of, j_of, k_of 
+      USE geometry
+      USE vtk
 
       IMPLICIT NONE
 
@@ -3103,7 +3092,6 @@
       DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
       DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
-
 
 ! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
@@ -3213,7 +3201,6 @@
          END DO
 
       ELSE  ! BDIST_IO
-
 
          IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
 

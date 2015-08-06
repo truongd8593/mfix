@@ -17,6 +17,7 @@
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
+      USE functions
       USE run
 
       IMPLICIT NONE
