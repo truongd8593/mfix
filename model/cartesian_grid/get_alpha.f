@@ -17,8 +17,9 @@
       USE bc, ONLY: BC_TYPE
       USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, ayz, ayz_u, flag_e
+      USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -420,8 +421,9 @@
       USE bc, ONLY: BC_TYPE
       USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, axz, axz_v, flag_n
+      USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -823,8 +825,9 @@
       USE bc, ONLY: BC_TYPE
       USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
-      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, axy, axy_w, flag_t
+      USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt

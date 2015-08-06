@@ -506,7 +506,6 @@ libmfix_src = \
 	model/ic_mod.f \
 	model/in_binary_512_mod.f \
 	model/in_binary_512i_mod.f \
-	model/include/functions.inc \
 	model/indices_mod.f \
 	model/init_ab_m.f \
 	model/init_fvars.f \

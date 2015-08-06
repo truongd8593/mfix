@@ -89,8 +89,8 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
-                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
       ! There is nothing to write if we are not in adefined vtk region
       VTK_REGION = LCV
@@ -399,8 +399,8 @@
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT,BUFF1,BUFF2,L
-      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
-                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
@@ -1242,8 +1242,8 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_VTK_CELL_COUNT
       INTEGER :: IERR
-      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file                        
-                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.) 
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
@@ -3080,8 +3080,8 @@
       USE cdist
       USE compar, only: mype, pe_io, ijkend3
       USE cutcell
-      USE functions, only: i_of, j_of, k_of 
       USE geometry
+      USE indices, only: i_of, j_of, k_of
       USE vtk
 
       IMPLICIT NONE

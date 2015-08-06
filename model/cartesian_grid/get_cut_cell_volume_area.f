@@ -17,8 +17,9 @@
       USE bc, ONLY: bc_type
       USE compar, ONLY: ijkstart3, ijkend3, istart1, jstart1, kstart1, mype
       USE cutcell
-      USE functions, only: funijk, i_of, j_of, k_of
+      USE functions, only: funijk
       USE geometry, ONLY: do_k, no_k, ayz, axz, axy, ayz_u, axy_u, axz_u, ayz_v, axz_v, axy_v, ayz_w, axz_w, axy_w, vol, vol_u, vol_v, vol_w, dx, dy, dz, zlength, flag, flag_n, flag_t
+      USE indices, only: i_of, j_of, k_of
       USE param1, only: zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: n_quadric, tol_f, bc_id_q, dim_quadric

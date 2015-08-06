@@ -16,7 +16,8 @@
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3, istart1, iend1, jstart1, jend1, kstart1, kend1
       USE cutcell
-      USE functions, ONLY: funijk, i_of, j_of, k_of, ip_of, jp_of, kp_of, bottom_of, south_of, west_of, fluid_at, is_on_mype_wobnd
+      USE indices, ONLY: i_of, j_of, k_of
+      USE functions, ONLY: funijk, ip_of, jp_of, kp_of, bottom_of, south_of, west_of, fluid_at, is_on_mype_wobnd
       USE geometry, ONLY: DO_I, DO_J, DO_K, IMIN1, IMAX3, JMIN1, JMAX3, KMIN1, KMAX3, no_k, vol, axy, axz, ayz, dx, dy, dz, flag
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
@@ -1309,8 +1310,9 @@
 
       USE compar, only: mype, pe_io, ijkstart3, ijkend3
       USE cutcell
-      USE functions, ONLY: funijk, i_of, j_of, k_of
+      USE functions, ONLY: funijk
       USE geometry, ONLY: do_k
+      USE indices, ONLY: i_of, j_of, k_of
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,IM,IP,JM,JP,KM,KP
@@ -1782,8 +1784,9 @@
 
       USE compar, only: ijkstart3, ijkend3, mype, pe_io
       USE cutcell
-      USE functions, only: funijk, i_of, j_of, k_of, bottom_of, south_of, west_of
+      USE functions, only: funijk, bottom_of, south_of, west_of
       USE geometry, ONLY: dx, dy, dz, do_k, imin3, imax3, jmin3, jmax3, kmin3, kmax3, flag, axy, axz, ayz, vol, no_k
+      USE indices, only: i_of, j_of, k_of
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
 

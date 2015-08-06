@@ -15,9 +15,11 @@
   SUBROUTINE GET_CONNECTIVITY(IJK,TYPE_OF_CELL,N_NEW_POINTS,N_NODES,CONNECT,X_NP,Y_NP,Z_NP,TOTAL_NUMBER_OF_INTERSECTIONS,&
              X_intersect,Y_intersect,Z_intersect)
 
-      USE cutcell!, ONLY: x_node, y_node, z_node, intersect_x, intersect_y, intersect_z
-      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF, IJKEND3
+      USE compar, ONLY: ijkend3
+      USE cutcell
+      USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE indices, ONLY: I_OF, J_OF, K_OF
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
 
@@ -302,7 +304,6 @@
 
       RETURN
 
-
       END SUBROUTINE GET_CONNECTIVITY
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -322,8 +323,9 @@
 
       USE compar, ONLY: mype
       USE cutcell
-      USE functions, ONLY: FUNIJK, I_OF, J_OF, K_OF
+      USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
