@@ -145,15 +145,18 @@ endif
 
 POST_SCRIPT=AUTOTEST/post.script.NEW
 
-test: postmfix$(EXEEXT) mfix$(EXEEXT)
+POST_dats := $(notdir $(wildcard AUTOTEST/POST*.dat))
+
+run: postmfix$(EXEEXT) mfix$(EXEEXT)
 	./mfix$(EXEEXT)
-	rm -f POST*.dat
-	if [ -e $(POST_SCRIPT) ]; then \
-	    ./postmfix$(EXEEXT) < $(POST_SCRIPT); \
-	    for test_post_file in AUTOTEST/POST*.dat; do \
-	        numdiff -a 0.000001 -r 0.05 $$test_post_file $$( basename $$test_post_file ) || echo "file $$test_post_file does not match"; \
-	    done; \
-	fi
+
+$(POST_dats): $(POST_SCRIPT) run
+	./postmfix$(EXEEXT) < $(POST_SCRIPT)
+
+test: run $(POST_dats)
+	for test_post_file in $(POST_dats); do \
+	    numdiff -a 0.000001 -r 0.05 AUTOTEST/$$test_post_file $$test_post_file || echo "file $$test_post_file does not match"; \
+	done;
 
 ################################################################
 #                                                              #
