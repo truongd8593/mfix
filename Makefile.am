@@ -56,6 +56,8 @@ bin_PROGRAMS += postmfix$(EXEEXT)
 
 postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
 
+postmfix: mfix
+
 ################################################################
 #                                                              #
 #      EXTRA_DIST:  Non-source and non-binary files that       #
