@@ -38,7 +38,7 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS
+.PHONY: $(LIBMFIX) TAGS run test
 
 # top level directory needs to be built first
 $(LIBMFIX):
