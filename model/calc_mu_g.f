@@ -117,6 +117,11 @@
       DOUBLE PRECISION :: W_g_C
 !-----------------------------------------------
 
+! JFD: Calling SET_EP_FACTORS here to make sure EPG_IFAC is defined
+!      when calc_mu_g is called for the firt time.
+!      There may be a better way to do this...
+      CALL SET_EP_FACTORS
+
 ! solids phase index used throughout routine...
 ! may be inappropriate for multiple solids phases
       M = 1 ! for solids phase
