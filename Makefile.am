@@ -12,13 +12,14 @@ FC_MODEXT=mod
 
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
+MODOUTDIR=$(MODDIR)
 CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
 AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
-AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
+AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
 
 NETCDF_LIB=@NETCDF_LIB@
@@ -55,6 +56,12 @@ libmfix_a_SOURCES =
 bin_PROGRAMS += postmfix$(EXEEXT)
 
 postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
+
+# Override $(MODOUTDIR) so post_mfix/functions.mod does not conflict with
+# the model/functions.mod.  Both functions.mod files should be the same, but
+# compiling both functions_mod.f files in  parallel may cause an error
+# if they try to write functions.mod to the same path.
+post_mfix/functions_mod.o : MODOUTDIR = $(top_builddir)/post_mfix
 
 ################################################################
 #                                                              #
