@@ -25,7 +25,6 @@
       USE des_bc
       USE discretelement
       USE fldvar
-      USE functions
       USE mfix_pic
       USE mpi_utility
       USE parallel
@@ -169,6 +168,11 @@
  1003 FORMAT(1X,70('*')/)
 
       RETURN
+
+      contains
+
+        include 'functions.inc'
+
       END SUBROUTINE CFNEWVALUES
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

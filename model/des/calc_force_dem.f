@@ -17,7 +17,6 @@
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
-      USE functions
       USE run
 
       IMPLICIT NONE
@@ -74,8 +73,6 @@
       IF(USE_COHESION) PostCohesive(:) = ZERO
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
-
-
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -275,6 +272,8 @@
       RETURN
 
       contains
+
+        include 'functions.inc'
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
