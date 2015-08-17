@@ -13,7 +13,8 @@ FC_MODEXT=mod
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
 MODOUTDIR=$(MODDIR)
-CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+DISTCLEANFILES = build-aux/Makefile.usr
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
@@ -63,6 +64,8 @@ postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix
 # if they try to write functions.mod to the same path.
 post_mfix/functions_mod.o : MODOUTDIR = $(top_builddir)/post_mfix
 
+CLEANFILES += post_mfix/functions.mod
+
 ################################################################
 #                                                              #
 #      EXTRA_DIST:  Non-source and non-binary files that       #
@@ -91,8 +94,6 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 $(eval -include $(libmfix_src:%.f=%.d) )
 $(eval -include $(postmfix_SOURCES:%.f=%.d) )
 @make_endif@
-
-DISTCLEANFILES = build-aux/Makefile.usr
 
 ################################################################
 #      TAU support
