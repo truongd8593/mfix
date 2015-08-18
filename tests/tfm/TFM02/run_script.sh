@@ -16,9 +16,9 @@ cd $CASE_DIR
 # Run case
 echo "******** Running simulation..."
 $CASE_DIR/mfix.exe > out.log
-rm $CASE_DIR/{TFM02.*,out.log}
-rm $CASE_DIR/de_norms.dat
-rm $CASE_DIR/mfix.exe
+rm -f $CASE_DIR/{TFM02.*,out.log}
+rm -f $CASE_DIR/de_norms.dat
+rm -f $CASE_DIR/mfix.exe
 
 echo "******** Done."
 
