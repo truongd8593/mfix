@@ -177,7 +177,7 @@
 
                 DijQTermE_H = AVG_X_S(DijQTerm, DijQTermE, I)
                 DijQTermE_A = AVG_X(DijQTerm, DijQTermE, I)
-              IF(MIN(ABS(DijQTermE_H),ABS(DijQTermE_A)) .eq. ABS(DijQTermE_H))THEN
+              IF(ABS(DijQTermE_H) .le. ABS(DijQTermE_A))THEN
                 DijQTermE = DijQTermE_H
               ELSE
                 DijQTermE = DijQTermE_A
@@ -185,7 +185,7 @@
 
                 DijQTermW_H = AVG_X_S(DijQTermW, DijQTerm, IM)
                 DijQTermW_A = AVG_X(DijQTermW, DijQTerm, IM)
-              IF(MIN(ABS(DijQTermW_H),ABS(DijQTermW_A)) .eq. ABS(DijQTermW_H))THEN
+              IF(ABS(DijQTermW_H) .le. ABS(DijQTermW_A))THEN
                 DijQTermW = DijQTermW_H
               ELSE
                 DijQTermW = DijQTermW_A
@@ -193,7 +193,7 @@
 
                 DijQTermN_H = AVG_Y_S(DijQTerm, DijQTermN, J)
                 DijQTermN_A = AVG_Y(DijQTerm, DijQTermN, J)
-              IF(MIN(ABS(DijQTermN_H),ABS(DijQTermN_A)) .eq. ABS(DijQTermN_H))THEN
+              IF(ABS(DijQTermN_H) .le. ABS(DijQTermN_A))THEN
                 DijQTermN = DijQTermN_H
               ELSE
                 DijQTermN = DijQTermN_A
@@ -201,7 +201,7 @@
 
                 DijQTermS_H = AVG_Y_S(DijQTermS, DijQTerm, JM)
                 DijQTermS_A = AVG_Y(DijQTermS, DijQTerm, JM)
-              IF(MIN(ABS(DijQTermS_H),ABS(DijQTermS_A)) .eq. ABS(DijQTermS_H))THEN
+              IF(ABS(DijQTermS_H) .le. ABS(DijQTermS_A))THEN
                 DijQTermS = DijQTermS_H
               ELSE
                 DijQTermS = DijQTermS_A
@@ -225,7 +225,7 @@
                  DijQTermT_H = AVG_Z_S(DijQTerm , DijQTermT, K)
                  DijQTermT_A = AVG_Z(DijQTerm , DijQTermT, K)
 
-                 IF(MIN(ABS(DijQTermT_H),ABS(DijQTermT_A)) .eq. ABS(DijQTermT_H))THEN
+                 IF(ABS(DijQTermT_H) .le. ABS(DijQTermT_A))THEN
                    DijQTermT=DijQTermT_H
                  ELSE
                    DijQTermT=DijQTermT_A
@@ -234,7 +234,7 @@
                  DijQTermB_H = AVG_Z_S(DijQTermB, DijQTerm, KM)
                  DijQTermB_A = AVG_Z(DijQTermB, DijQTerm, KM)
 
-                 IF(MIN(ABS(DijQTermB_H),ABS(DijQTermB_A)) .eq. ABS(DijQTermB_H))THEN
+                 IF(ABS(DijQTermB_H) .le. ABS(DijQTermB_A))THEN
                    DijQTermB=DijQTermB_H
                  ELSE
                    DijQTermB=DijQTermB_A
@@ -249,7 +249,7 @@
 
                 LijTermW_H = AVG_X_S(Lij(IJKW,M,L),Lij(IJK,M,L),IM)
                 LijTermW_A = AVG_X(Lij(IJKW,M,L),Lij(IJK,M,L),IM)
-              IF(MIN(ABS(LijTermW_H),ABS(LijTermW_A)) .eq. ABS(LijTermW_H))THEN
+              IF(ABS(LijTermW_H) .le. ABS(LijTermW_A))THEN
                 LijTermW = LijTermW_H
               ELSE
                 LijTermW = LijTermW_A
@@ -258,7 +258,7 @@
                 LijTermE_H = AVG_X_S(Lij(IJK,M,L),Lij(IJKE,M,L),I)
                 LijTermE_A = AVG_X(Lij(IJK,M,L),Lij(IJKE,M,L),I)
 
-              IF(MIN(ABS(LijTermE_H),ABS(LijTermE_A)) .eq. ABS(LijTermE_H))THEN
+              IF(ABS(LijTermE_H) .le. ABS(LijTermE_A))THEN
                 LijTermE = LijTermE_H
               ELSE
                 LijTermE = LijTermE_A
@@ -266,7 +266,7 @@
 
                 LijTermN_H = AVG_Y_S(Lij(IJK,M,L),Lij(IJKN,M,L),J)
                 LijTermN_A = AVG_Y(Lij(IJK,M,L),Lij(IJKN,M,L),J)
-              IF(MIN(ABS(LijTermN_H),ABS(LijTermN_A)) .eq. ABS(LijTermN_H))THEN
+              IF(ABS(LijTermN_H) .le. ABS(LijTermN_A))THEN
                 LijTermN = LijTermN_H
               ELSE
                 LijTermN = LijTermN_A
@@ -274,7 +274,7 @@
 
                 LijTermS_H = AVG_Y_S(Lij(IJKS,M,L),Lij(IJK,M,L),JM)
                 LijTermS_A = AVG_Y(Lij(IJKS,M,L),Lij(IJK,M,L),JM)
-              IF(MIN(ABS(LijTermS_H),ABS(LijTermS_A)) .eq. ABS(LijTermS_H))THEN
+              IF(ABS(LijTermS_H) .le. ABS(LijTermS_A))THEN
                 LijTermS = LijTermS_H
               ELSE
                 LijTermS = LijTermS_A
@@ -290,7 +290,7 @@
 
               LijTermT_H = AVG_Z_S(Lij(IJK,M,L),Lij(IJKT,M,L),K)
               LijTermT_A = AVG_Z(Lij(IJK,M,L),Lij(IJKT,M,L),K)
-              IF(MIN(ABS(LijTermT_H),ABS(LijTermT_A)) .eq. ABS(LijTermT_H))THEN
+              IF(ABS(LijTermT_H) .le. ABS(LijTermT_A))THEN
                 LijTermT = LijTermT_H
               ELSE
                 LijTermT = LijTermT_A
@@ -298,7 +298,7 @@
 
               LijTermB_H = AVG_Z_S(Lij(IJKB,M,L),Lij(IJK,M,L),KM)
               LijTermB_A = AVG_Z(Lij(IJKB,M,L),Lij(IJK,M,L),KM)
-              IF(MIN(ABS(LijTermB_H),ABS(LijTermB_A)) .eq. ABS(LijTermB_H))THEN
+              IF(ABS(LijTermB_H) .le. ABS(LijTermB_A))THEN
                 LijTermB = LijTermB_H
               ELSE
                 LijTermB = LijTermB_A
@@ -336,7 +336,7 @@
           FiDotJoi  = FiDotJoi  + ( JoiXC*FiXC + JoiYC*FiYC + JoiZC*FiZC ) / Mi
 
 
-          IF(SWITCH > ZERO .AND. RO_g0 /= ZERO) THEN ! do nothing for gran. flow
+          IF(SWITCH > ZERO .AND. abs(RO_g0) .gt. ZERO) THEN ! do nothing for gran. flow
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
             VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
             WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))

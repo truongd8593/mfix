@@ -13,10 +13,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PARTICLES_IN_CELL
 
-! Particle positions
-      use discretelement, only: DES_POS_NEW
-! Flags that classify particles
-      use discretelement, only: PEA
 ! The number of particles on the current process.
       use discretelement, only: PIP, MAX_PIP
 ! The I/J/K, IJK, and phase index of each particle
@@ -44,8 +40,10 @@
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
-      IMPLICIT NONE
+      use discretelement
+      use functions
 
+      IMPLICIT NONE
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -59,7 +57,6 @@
       INTEGER:: npic, pos
 !......................................................................!
 
-
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
@@ -70,7 +67,7 @@
 
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 
          I = PIJK(L,1)
          IF(I <= ISTART3 .OR. I >= IEND3) THEN
@@ -91,7 +88,6 @@
                   DIMENSION_I, IMIN2, IMAX2)
             ENDIF
          ENDIF
-
 
          J = PIJK(L,2)
          IF(J <= JSTART3 .OR. J >= JEND3) THEN
@@ -148,7 +144,7 @@
          PIJK(L,4) = IJK
 
 ! Increment the number of particles in cell IJK
-         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
 
       ENDDO
 !!$omp end parallel
@@ -178,18 +174,17 @@
       ENDDO
 !!$omp end parallel do
 
-
       PARTICLE_COUNT(:) = 1
       PC = 1
       DO L = 1, MAX_PIP
 ! exiting loop if reached max number of particles in processor
          IF(PC.GT.PIP) exit
 ! skipping indices with no particles (non-existent particles)
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 ! incrementing particle account when particle exists
          PC = PC+1
 ! skipping ghost particles
-         IF(PEA(L,4)) CYCLE
+         IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
          IJK = PIJK(L,4)
          POS = PARTICLE_COUNT(IJK)
          PIC(IJK)%P(POS) = L
@@ -198,7 +193,6 @@
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -216,16 +210,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INIT_PARTICLES_IN_CELL
 
-      USE physprop, only: SMAX
-
-      use discretelement, only: PEA, PIJK, PINC
+      use discretelement, only: PIJK, PINC
       USE discretelement, only: DES_POS_NEW
       USE discretelement, only: MAX_PIP
       USE discretelement, only: XE, YN, ZT
+      USE functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use mpi_funs_des, only: des_par_exchange
-
-      USE run, only: RUN_TYPE
-      USE run, only: ANY_SPECIES_EQ
 
 ! Number of particles in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
@@ -242,8 +232,6 @@
 !-----------------------------------------------
 ! particle no.
       INTEGER :: L
-! solids phase no.
-      INTEGER :: M
 ! ijk indices
       INTEGER :: I, J, K, IJK
 
@@ -263,7 +251,7 @@
 ! ---------------------------------------------------------------->>>
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 
 ! Use a brute force technique to determine the particle locations in
 ! the Eulerian fluid grid.
@@ -290,7 +278,7 @@
          PIJK(L,4) = IJK
 
 ! Enumerate the number of 'real' particles in the ghost cell.
-         IF(.NOT.PEA(L,4)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
 
 ! Calling exchange particles - this will exchange particle crossing
@@ -302,8 +290,6 @@
 
       RETURN
       END SUBROUTINE INIT_PARTICLES_IN_CELL
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

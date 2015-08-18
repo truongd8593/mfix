@@ -9,7 +9,8 @@
       use discretelement, only: DES_MMAX
       use discretelement, only: DES_VEL_NEW
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PIJK, PIP, PEA
+      use discretelement, only: PIJK, PIP
+      use functions, only: IS_NONEXISTENT
 
       IMPLICIT NONE
 
@@ -28,7 +29,7 @@
          (/35.40d0, 24.27d0, 34.43d0, 13.62d0, 23.52d0/)
 
       DO NP=1, PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
          M =  PIJK(NP,5)
          lUNIT = 750 + M
          WRITE(lUNIT,"(2/,4x,'Run ID: ',I3)") rID(M)
@@ -39,8 +40,6 @@
 
          close(lUNIT)
       ENDDO
-
-
 
       RETURN
       END SUBROUTINE USR3

@@ -16,7 +16,7 @@
       INTEGER, INTENT(IN) :: NIT
 
 ! Print Location of Max_Resid
-      LOGICAL,PARAMETER:: Print_ijk=.FALSE.
+!      LOGICAL,PARAMETER:: Print_ijk=.FALSE.
 
 
       IF(GROUP_RESID) THEN

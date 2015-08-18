@@ -43,7 +43,6 @@
 !  Define local variables here
       DOUBLE PRECISION :: x1,x2,x3
       DOUBLE PRECISION :: f_usr
-      DOUBLE PRECISION, PARAMETER :: eps = 1.0D-9
       INTEGER :: Q
       LOGICAL :: CLIP_FLAG
 !

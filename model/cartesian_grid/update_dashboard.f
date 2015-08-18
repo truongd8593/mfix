@@ -151,7 +151,6 @@
       WRITE(111,60)'  Last updated at: ',ID_HOUR,ID_MINUTE,ID_SECOND,' on: ',ID_MONTH,ID_DAY,ID_YEAR
 10    FORMAT(A,A,T80,A)
 15    FORMAT(A, F6.1, 1X, A,T80,A)
-20    FORMAT(A, F9.3, 1X, A,T80,A)
 25    FORMAT(A,I6,T80,A)
 30    FORMAT(A)
 40    FORMAT(' |',A,'|',3(E9.2,'|'))

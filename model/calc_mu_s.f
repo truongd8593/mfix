@@ -18,7 +18,7 @@
 !           EP_g >= EP_star -->  viscous (pde)                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_MU_s(M, IER)
+      SUBROUTINE CALC_MU_s(M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -49,7 +49,7 @@
       USE visc_s, only: lambda_s_p, lambda_s_f
 ! solids pressure
       USE fldvar, only: p_s, p_s_c, p_s_v
-      USE fldvar, only: p_s_p, p_s_f
+      USE fldvar, only: p_s_f
 ! factor of ep_s if ishii otherwise 1
       USE fldvar, only: eps_ifac
 
@@ -78,8 +78,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -103,11 +101,11 @@
 ! General initializations
 !---------------------------------------------------------------------
 ! Zero out various quantities
-      CALL INIT0_MU_S(M, IER)
+      CALL INIT0_MU_S(M)
 
 ! Calculate quantities that are functions of velocity only and may be
 ! needed for subsequent calculations by various model options
-      CALL INIT1_MU_S(M, IER)
+      CALL INIT1_MU_S(M)
 
 
 ! Viscous-flow stress tensor
@@ -217,10 +215,9 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE constant, only: to_si
       USE compar, only: ijkstart3, ijkend3
       USE fldvar, only: eps_ifac
-      USE fldvar, only: T_s, X_s, P_s
+      USE fldvar, only: P_s
       USE functions, only: fluid_at
       USE param1, only: zero
       USE physprop, only: mu_s0
@@ -425,7 +422,7 @@
       USE constant, only: switch
       USE constant, only: alpha
       USE constant, only: pi
-      USE constant, only: C_e, eta
+      USE constant, only: eta
 
       USE drag, only: f_gs
 
@@ -1759,7 +1756,7 @@
       USE physprop, only: smax, close_packed
 
       USE constant, only: to_SI
-      USE constant, only: sin2_phi, f_phi
+      USE constant, only: sin2_phi
 
       use run, only: granular_energy
 
@@ -2522,20 +2519,19 @@
 ! Subroutine: INIT0_MU_S                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      Subroutine init0_mu_s (M, IER)
+      Subroutine init0_mu_s (M)
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: undefined, zero
+      USE param1, only: zero
       USE constant, only: v_ex
-      USE physprop, only: mu_s0
-      USE fldvar, only: P_s, p_s_v, p_s_p, p_s_f
-      USE visc_s, only: mu_s, mu_s_v, mu_s_p, mu_s_f, mu_b_v
-      USE visc_s, only: lambda_s, lambda_s_v, lambda_s_p, lambda_s_f
+      USE fldvar, only: p_s_v, p_s_p, p_s_f
+      USE visc_s, only: mu_s_v, mu_s_p, mu_s_f, mu_b_v
+      USE visc_s, only: lambda_s_v, lambda_s_p, lambda_s_f
       USE visc_s, only: alpha_s
 !---------------------------------------------------------------------//
       IMPLICIT NONE
-      INTEGER, INTENT(IN) :: M, IER
+      INTEGER, INTENT(IN) :: M
 !---------------------------------------------------------------------//
 
       IF (V_EX /= ZERO)  ALPHA_s(:,M) = ZERO
@@ -2574,7 +2570,7 @@
 !    (global)                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      Subroutine init1_mu_s (M, IER)
+      Subroutine init1_mu_s (M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -2595,7 +2591,6 @@
       USE trace, only: trD_s2_ip
 
       USE fldvar, only: u_s, v_s, w_s
-      USE fldvar, only: u_g, v_g, w_g
       USE physprop, only: smax
 
       USE is, only: any_is_defined
@@ -2624,8 +2619,6 @@
 !---------------------------------------------------------------------//
 ! solids phase index
       INTEGER, INTENT(IN) :: M
-! error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//

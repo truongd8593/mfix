@@ -137,7 +137,7 @@
 ! Gas phase volume fraction.
       use fldvar,   only : EP_g
 ! Species molecular weights
-      use physprop, only : MW_g, MW_s
+      use physprop, only : MW_g
 ! Gas phase mixture molecular weight.
       use physprop, only : MW_MIX_g
 ! Baseline/Unreaced solids density.
@@ -147,7 +147,7 @@
 ! Index of inert solids phase species.
       use physprop, only: INERT_SPECIES
 ! Rank ID and Rank of IO process.
-      use compar,   only : myPE, PE_IO
+      use compar,   only : myPE
 ! Runtime flag for variable solids density.
       use run, only: SOLVE_ROs
 

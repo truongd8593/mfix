@@ -93,8 +93,8 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Log file name.
-      CHARACTER(len=64) :: LOGFILE
-      CHARACTER(len=64) :: FILE_NAME
+      CHARACTER(len=255) :: LOGFILE
+      CHARACTER(len=255) :: FILE_NAME
 ! First non-blank character in run_name.
       INTEGER :: NB
 ! Integer error flag
@@ -186,8 +186,6 @@
 
 ! Rank ID of process
       use compar, only: myPE
-! Rank ID for IO handeling
-      use compar, only: PE_IO
 ! Flag: My rank reports errors.
       use funits, only: DMP_LOG
 ! File unit for LOG messages.
@@ -235,8 +233,6 @@
 
 ! Rank ID of process
       use compar, only: myPE
-! Rank ID for IO handeling
-      use compar, only: PE_IO
 ! Flag: My rank reports errors.
       use funits, only: DMP_LOG
 ! File unit for LOG messages.

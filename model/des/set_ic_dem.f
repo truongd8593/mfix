@@ -1,4 +1,3 @@
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  SUBROUTINE Name: DES_SET_IC                                         !
@@ -13,7 +12,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_IC_DEM
 
-
       use run, only: ENERGY_EQ, SPECIES_EQ
       use run, only: RUN_TYPE
 
@@ -22,9 +20,10 @@
       use des_thermo, only: DES_T_s_NEW
 
       use discretelement, only: MAX_PIP
-      use discretelement, only: PEA
       use discretelement, only: PINC, PIC
       use discretelement, only: PIJK
+
+      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
       USE des_rxns, only: DES_X_s
 
@@ -101,9 +100,10 @@
 ! is specified with EPg = 1.
       DO NP = 1, MAX_PIP
 ! skipping non-existent particles
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
 ! skipping ghost particles
-         IF(PEA(NP,4)) CYCLE
+         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
+         IF(IS_GHOST(NP)) CYCLE
 
          M = PIJK(NP,5)
 
@@ -124,7 +124,7 @@
          IF((ENERGY_EQ .AND. C_Ps0(M) == UNDEFINED) .OR.               &
             SPECIES_EQ(M)) THEN
             IF(.NOT.COMPARE(sum(DES_X_s(NP,1:NMAX(M))),ONE)) THEN
-               WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
+               WRITE(ERR_MSG, 2001) trim(iVal(NP)), trim(iVal(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF

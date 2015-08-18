@@ -29,10 +29,10 @@
 !-----------------------------------------------
       INTEGER :: LC1
       INTEGER :: lNEXT_REC
-      INTEGER :: lDIMN
+      INTEGER :: lDIMN, II
 
       DOUBLE PRECISION :: VERSION
-
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
 ! Set the version of the DES RES file.
       VERSION = 1.1
@@ -52,9 +52,7 @@
 
       CALL WRITE_RES_pARRAY(lNEXT_REC, iGLOBAL_ID)
 
-      DO LC1 = 2, 4
-         CALL WRITE_RES_pARRAY(lNEXT_REC, PEA(:,LC1))
-      ENDDO
+      CALL WRITE_RES_pARRAY(lNEXT_REC, particle_state)
 
       DO LC1 = 1, lDIMN
          CALL WRITE_RES_pARRAY(lNEXT_REC, DES_VEL_NEW(LC1,:))
@@ -88,10 +86,7 @@
       CALL WRITE_RES_cARRAY(lNEXT_REC, NEIGHBORS(:), pLOC2GLB=.TRUE.)
       CALL WRITE_RES_cARRAY(lNEXT_REC, NEIGHBOR_INDEX(:), pLOC2GLB=.TRUE.)
 
-      CALL WRITE_RES_cARRAY(lNEXT_REC, PV_NEIGHBOR(:))
-
       DO LC1=1, lDIMN
-         CALL WRITE_RES_cARRAY(lNEXT_REC,PFN_NEIGHBOR(LC1,:))
          CALL WRITE_RES_cARRAY(lNEXT_REC,PFT_NEIGHBOR(LC1,:))
       ENDDO
 

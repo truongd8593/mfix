@@ -17,7 +17,7 @@
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
-      USE physprop, ONLY: K_s0
+      USE functions
       USE run
 
       IMPLICIT NONE
@@ -47,9 +47,6 @@
       DOUBLE PRECISION :: VREL_T(3)
 ! normal and tangential forces
       DOUBLE PRECISION :: FN(3), FT(3)
-      DOUBLE PRECISION :: FTS1(3), FTS2(3)
-! temporary storage of tangential DISPLACEMENT
-      DOUBLE PRECISION :: PFT_TMP(3)
 ! temporary storage of force
       DOUBLE PRECISION :: FC_TMP(3)
 ! temporary storage of force for torque
@@ -69,8 +66,7 @@
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 
-      DOUBLE PRECISION :: DTSOLID_TMP
-      DOUBLE PRECISION :: FNMD, FTMD
+      DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
 !-----------------------------------------------
 
@@ -80,26 +76,27 @@
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
 
+
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
 !$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
 !$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fts1,fts2,pft_tmp,fn,ft,dtsolid_tmp,overlap_t,       &
-!$omp    eq_radius,distapart,force_coh,k_s0,dist_mag,NORMAL,ftmd,fnmd, &
+!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
+!$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
-!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,neigh_max,    &
-!$omp    des_coll_model_enum,kn,kt,pv_neighbor,pft_neighbor,pfn_neighbor,pijk,     &
-!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,         &
+!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
+!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,neigh_max,        &
+!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy, pea,              &
+!$omp    hamaker_constant,asperities,surface_energy,                   &
 !$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
 
 !$omp do
 
       DO LL = 1, MAX_PIP
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          pos = DES_POS_NEW(:,LL)
          rad = DES_RADIUS(LL)
 
@@ -109,7 +106,7 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
-            IF(.NOT.PEA(I, 1)) CYCLE
+            IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
             DIST(:) = DES_POS_NEW(:,I) - POS(:)
@@ -137,9 +134,8 @@
 
 ! just for post-processing mag. of cohesive forces on each particle
                   PostCohesive(LL) = PostCohesive(LL)
-                  if(GRAV_MAG > ZERO .AND. PEA(LL,1)) THEN
+                  if(GRAV_MAG > ZERO .AND. (.NOT.IS_NONEXISTENT(LL))) THEN
                      FORCE_COH = SQRT(dot_product(FC_TMP(:),FC_TMP(:))) / (PMASS(LL)*GRAV_MAG)
-
                      !$omp atomic
                      PostCohesive(LL) = PostCohesive(LL) + FORCE_COH
                   ENDIF
@@ -161,7 +157,6 @@
 
             IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
                PFT_NEIGHBOR(:,CC) = 0.0
-               PFN_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
 
@@ -174,10 +169,9 @@
             DIST_MAG = SQRT(DIST_MAG)
             NORMAL(:)= DIST(:)/DIST_MAG
 
-! Overlap calculation changed from history based to current position
+! Calcuate the normal overlap
             OVERLAP_N = R_LM-DIST_MAG
-
-            IF (report_excess_overlap) call print_excess_overlap
+            IF(REPORT_EXCESS_OVERLAP) CALL PRINT_EXCESS_OVERLAP
 
 ! Calculate the components of translational relative velocity for a
 ! contacting particle pair and the tangent to the plane of contact
@@ -208,34 +202,33 @@
             FN(:) =  -(KN_DES * OVERLAP_N * NORMAL(:) + &
                ETAN_DES * V_REL_TRANS_NORM * NORMAL(:))
 
-            IF(V_REL_TRANS_NORM > ZERO) THEN
-               DTSOLID_TMP = min(DTSOLID, OVERLAP_N/V_REL_TRANS_NORM)
-            ELSE
-               DTSOLID_TMP = DTSOLID
-            ENDIF
+! Calcuate the tangential overlap
+            OVERLAP_T(:) = DTSOLID*VREL_T(:) + PFT_NEIGHBOR(:,CC)
+            MAG_OVERLAP_T = sqrt(dot_product(OVERLAP_T,OVERLAP_T))
 
-            OVERLAP_T(:) = DTSOLID_TMP*VREL_T(:) + PFT_NEIGHBOR(:,CC)
-            OVERLAP_T(:) = OVERLAP_T(:) - &
-               DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
-
-! Calculate the tangential contact force
-            FTS1(:) = -KT_DES * OVERLAP_T(:)
-            FTS2(:) = -ETAT_DES * VREL_T(:)
-            FT(:) = FTS1(:) + FTS2(:)
-
-! Check for Coulombs friction law and limit the maximum value of the
-! tangential force on a particle in contact with another particle/wall
-            FTMD = dot_product(FT,FT)
-            FNMD = dot_product(FN,FN)
-            IF(FTMD.GT.(MEW*MEW*FNMD)) THEN
-               IF(.NOT.ALL(VREL_T == ZERO)) THEN
-                  FT(:) = -MEW*OVERLAP_T*SQRT(FNMD/           &
-                     dot_product(OVERLAP_T,OVERLAP_T))
-                  OVERLAP_T(:) = (FTS2 - FT)/KT_DES
+! Calculate the tangential contact force.
+            IF(MAG_OVERLAP_T > 0.0) THEN
+! Tangential froce from spring.
+               FTMD = KT_DES*MAG_OVERLAP_T
+! Max force before the on set of frictional slip.
+               FNMD = MEW*sqrt(dot_product(FN,FN))
+! Direction of tangential force.
+               TANGENT = OVERLAP_T/MAG_OVERLAP_T
+! Frictional slip
+               IF(FTMD > FNMD) THEN
+                  FT = -FNMD * TANGENT
+                  OVERLAP_T = (FNMD/KT_DES) * TANGENT
+               ELSE
+                  FT = -FTMD * TANGENT
                ENDIF
+            ELSE
+               FT = 0.0
             ENDIF
 
-! Save tangential displacement history with Coulomb's law correction
+! Add in the tangential dashpot damping force
+            FT = FT - ETAT_DES * VREL_T(:)
+
+! Save tangential displacement history
             PFT_NEIGHBOR(:,CC) = OVERLAP_T(:)
 
 ! calculate the distance from the particles' centers to the contact point,

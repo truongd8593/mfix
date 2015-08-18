@@ -7,7 +7,6 @@
       use mpi_comm_des
       use error_manager
 
-
       IMPLICIT NONE
 
       INTEGER, PRIVATE :: GLOBAL_CNT
@@ -27,9 +26,7 @@
          MODULE PROCEDURE VTP_WRITE_I1
       END INTERFACE
 
-
       CONTAINS
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: VTP_WRITE_DP1                                            !
@@ -52,9 +49,9 @@
          PC = 1
          DO LC = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC,1)) CYCLE
+            IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(PEA(LC,4)) CYCLE
+            IF(IS_GHOST(LC) .OR. IS_ENTERING_GHOST(LC) .OR. IS_EXITING_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") real(DATA(LC))
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -83,7 +80,6 @@
  1002 FORMAT('</DataArray>')
 
       END SUBROUTINE VTP_WRITE_DP1
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: VTP_WRITE_DP2                                            !
@@ -114,9 +110,9 @@
          PC = 1
          DO LC1 = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             PC = PC+1
-            IF(PEA(LC1,4)) CYCLE
+            IF(IS_GHOST(LC1) .OR. IS_ENTERING_GHOST(LC1) .OR. IS_EXITING_GHOST(LC1)) CYCLE
             DO LC2=LB, UB
                WRITE(DES_UNIT,1001,ADVANCE="NO") real(DATA(LC1,LC2))
             ENDDO
@@ -180,9 +176,9 @@
          PC = 1
          DO LC = 1, MAX_PIP
             IF(PC > PIP) EXIT
-            IF(.NOT.PEA(LC,1)) CYCLE
+            IF(IS_NONEXISTENT(LC)) CYCLE
             PC = PC+1
-            IF(PEA(LC,4)) CYCLE
+            IF(IS_GHOST(LC) .OR. IS_ENTERING_GHOST(LC) .OR. IS_EXITING_GHOST(LC)) CYCLE
             WRITE(DES_UNIT, 1001,ADVANCE="NO") DATA(LC)
          ENDDO
          WRITE(DES_UNIT,1002)
@@ -385,9 +381,6 @@
 ! formatted file name
       CHARACTER(LEN=64) :: FNAME_PVD = ''
 
-! formatted solids time
-      CHARACTER(LEN=12) :: S_TIME_CHAR = ''
-
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
 ! IO Status flag
@@ -397,7 +390,6 @@
       integer :: IER
 
 !-----------------------------------------------
-
 
       CALL INIT_ERR_MSG('VTP_MOD --> ADD_VTP_TO_PVD')
 
@@ -562,7 +554,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE WRITE_VTP_FILE(LCV)
+      SUBROUTINE WRITE_VTP_FILE(LCV,MODE)
 
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED, FRAME
       USE vtk, only: VTK_REGION,VTK_DEFINED,VTK_DATA
@@ -570,37 +562,32 @@
       USE vtk, only: VTK_PART_ANGULAR_VEL,VTK_PART_ORIENTATION
       USE vtk, only: VTK_PART_X_S, VTK_PART_COHESION
       USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
+      USE vtk, only: VTK_DBG_FILE
       USE output, only: FULL_LOG
 
-
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,M,N,R,IJK,LCV
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
-
-      INTEGER :: SPECIES_COUNTER,LT
-
-      CHARACTER (LEN=32) :: SUBM,SUBN,SUBR
-      CHARACTER (LEN=64) :: VAR_NAME
-
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  DP_BC_ID, IJK_ARRAY
+      INTEGER :: L,N,LCV
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
       VTK_REGION = LCV
 ! There is nothing to write if we are not in a defined vtk region
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
 
       IF(VTK_DATA(LCV)/='P') RETURN
+      IF(MODE==0.AND.(VTK_DBG_FILE(LCV))) RETURN
+      IF(MODE==1.AND.(.NOT.VTK_DBG_FILE(LCV))) RETURN
 
       CALL SETUP_VTK_REGION_PARTICLES
 
-      CALL OPEN_VTP_FILE_BIN
+      CALL OPEN_VTP_FILE_BIN(MODE)
 
 ! Only open pvd file when there are particles in vtk region
-      IF(GLOBAL_CNT>0) CALL OPEN_PVD_FILE
+      IF(GLOBAL_CNT>0.AND.MODE==0) CALL OPEN_PVD_FILE
 
 ! First pass write the data header.
 ! Second pass writes the data (appended binary format).
@@ -645,10 +632,10 @@
       ENDDO ! PASS LOOP, EITHER HEADER OR DATA
 
 
-      CALL CLOSE_VTP_FILE_BIN
+      CALL CLOSE_VTP_FILE_BIN(MODE)
 
 ! Only update pvd file when there are particles in vtk region
-      IF(GLOBAL_CNT>0)CALL UPDATE_AND_CLOSE_PVD_FILE
+      IF(GLOBAL_CNT>0.AND.MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
@@ -664,7 +651,6 @@
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTP_FILE
@@ -683,18 +669,20 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE OPEN_VTP_FILE_BIN
+  SUBROUTINE OPEN_VTP_FILE_BIN(MODE)
 
       USE run, only: TIME
       USE output, only: FULL_LOG
       USE vtk, only: TIME_DEPENDENT_FILENAME, VTU_FRAME_FILENAME, VTU_FRAME_UNIT
       USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED,  FRAME,  VTK_REGION
-      USE vtk, only: NUMBER_OF_VTK_CELLS, VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
+      USE vtk, only: VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
 
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS, NEED_TO_WRITE_VTP
       INTEGER :: ISTAT,BUFF1,BUFF2,L
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       IF(BDIST_IO) THEN
@@ -731,7 +719,7 @@
 ! For distributed I/O, define the file name for each processor that owns particles
       IF (BDIST_IO) THEN
          IF (LOCAL_CNT>0) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
             ELSE
                WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
@@ -739,7 +727,7 @@
          ENDIF
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -812,7 +800,7 @@
 
       IF (myPE == PE_IO.AND.BDIST_IO.AND.GLOBAL_CNT>0) THEN
 
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
             WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -874,17 +862,11 @@
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,L
-      INTEGER :: OFFSET
-
-      INTEGER :: CELL_TYPE
-
       REAL(c_float) :: float
       INTEGER(c_int) :: int
 
-      INTEGER ::     nbytes_xyz,nbytes_connectivity,nbytes_offset,nbytes_type
-      INTEGER ::     nbytes_vector, nbytes_scalar
-      INTEGER ::     offset_xyz,offset_connectivity,offset_offset,offset_type
+      INTEGER ::     nbytes_vector
+      INTEGER ::     offset_xyz
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
@@ -897,8 +879,6 @@
       INTEGER :: PC, LC1, LC2
 
 ! Loop through all particles and kee a list of particles belonging to a VTK region
-
-
 
 ! Since the data is appended (i.e., written after all tags), the
 ! offset, in number of bytes must be specified.  The offset includes
@@ -1127,20 +1107,13 @@
 
             deallocate (ltemp_array)
 
-
          ENDIF
 
-
       ENDIF
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
 
       RETURN
 
       END SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1164,21 +1137,18 @@
       USE output, only: FULL_LOG
 
       IMPLICIT NONE
-      INTEGER :: I,IJK,LC1,PC
+      INTEGER :: I,LC1,PC
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, INTENT(in) :: VAR(:)
-      DOUBLE PRECISION, ALLOCATABLE :: GLOBAL_VAR(:)
-      DOUBLE PRECISION, DIMENSION(DIMENSION_3) ::  TMP_VAR
 
       REAL(c_float) :: float
 
-      INTEGER ::     nbytes_vector, nbytes_scalar
+      INTEGER :: nbytes_scalar
 
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
-
 
       IF (.NOT.BDIST_IO) THEN
 
@@ -1323,7 +1293,6 @@
       USE output, only: FULL_LOG
 
       IMPLICIT NONE
-      INTEGER :: IJK
 
       CHARACTER (*) :: VAR_NAME
       DOUBLE PRECISION, INTENT(in) :: VAR(:,:)
@@ -1486,9 +1455,9 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE CLOSE_VTP_FILE_BIN
+  SUBROUTINE CLOSE_VTP_FILE_BIN(MODE)
 
-      USE vtk, only: BUFFER,VTU_UNIT,END_REC,NUMBER_OF_VTK_CELLS,PVTU_UNIT,TIME_DEPENDENT_FILENAME
+      USE vtk, only: BUFFER,VTU_UNIT,END_REC,PVTU_UNIT,TIME_DEPENDENT_FILENAME
       USE vtk, only: VTK_REGION,VTK_FILEBASE,FRAME
 
       IMPLICIT NONE
@@ -1497,6 +1466,8 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_PART_CNT
       INTEGER :: IERR
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       IF((myPE == PE_IO.AND.(.NOT.BDIST_IO)).OR.(BDIST_IO.AND.LOCAL_CNT>0)) THEN
@@ -1522,7 +1493,7 @@
 
             DO N = 0,NumPEs-1
                IF(ALL_PART_CNT(N)>0) THEN
-                  IF(TIME_DEPENDENT_FILENAME) THEN
+                  IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                      WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
                   ELSE
                      WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N
@@ -1573,33 +1544,23 @@
       USE vtk, only: VTK_NXS, VTK_NYS, VTK_NZS
       USE vtk, only: VTK_SLICE_TOL, VTK_SELECT_MODE
       USE vtk, only: BELONGS_TO_VTK_SUBDOMAIN
-      USE discretelement, only: MAX_PIP,PIP,PEA,DES_POS_NEW,IGHOST_CNT
+      USE discretelement, only: MAX_PIP,PIP,DES_POS_NEW
 
       IMPLICIT NONE
 
-      INTEGER :: IJK,I,J,K,I_E,I_W,J_N,J_S,K_T,K_B
       INTEGER :: PC,LC1
-      INTEGER :: NXS,NYS,NZS,NS,I_TMP,J_TMP,K_TMP
+      INTEGER :: NXS,NYS,NZS,NS
       INTEGER :: X_SLICE(DIM_I),Y_SLICE(DIM_J),Z_SLICE(DIM_K)
       DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
       DOUBLE PRECISION :: XP,YP,ZP,XP1,YP1,ZP1,XP2,YP2,ZP2,R
 
-      DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE,SLICE_TOL
+      DOUBLE PRECISION :: SLICE_TOL
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
-
-
-      INTEGER :: NumberOfPoints
 
 ! Variables related to gather
       integer lgathercnts(0:numpes-1), lproc
 
-! check whether an error occurs in opening a file
-      INTEGER :: IOS
-! Integer error flag.
-      INTEGER :: IER
-
       CHARACTER(LEN=1) :: SELECT_PARTICLE_BY
-
 
 ! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
@@ -1644,9 +1605,9 @@
       PC = 1
       DO LC1 = 1, MAX_PIP
          IF(PC > PIP) EXIT
-         IF(.NOT.PEA(LC1,1)) CYCLE
+         IF(IS_NONEXISTENT(LC1)) CYCLE
          PC = PC+1
-         IF(PEA(LC1,4)) CYCLE
+         IF(IS_GHOST(LC1) .OR. IS_ENTERING_GHOST(LC1) .OR. IS_EXITING_GHOST(LC1)) CYCLE
 
          SELECT CASE(SELECT_PARTICLE_BY)
             CASE('C')  ! Particle center must be inside vtk region
@@ -1803,21 +1764,8 @@
          idispls(lproc) = idispls(lproc-1) + igathercnts(lproc-1)
       ENDDO
 
-
-            ! print*,'MAX_PIP=',MAX_PIP
-            ! print*,'GHOST=', iGHOST_CNT
-            ! print*,'active=', PIP - iGHOST_CNT
-            ! print*,'LOCAL_CNT=', LOCAL_CNT
-            ! print*,'GLOBAL_CNT=', GLOBAL_CNT
-
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION_PARTICLES
-
 
       END MODULE VTP

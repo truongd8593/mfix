@@ -85,7 +85,7 @@
 !  I, J, K indicies.                                                   !
 !......................................................................!
       integer function procijk(fi,fj,fk)
-      use compar, only: nodesi, nodesj, nodesk
+      use compar, only: nodesi, nodesj
       implicit none
       integer fi,fj,fk
       procijk =fi+fj*nodesi+fk*nodesi*nodesj
@@ -440,19 +440,11 @@
       use discretelement, only: DESGRIDSEARCH_KMAX
 ! Domain size specifed by the user.
       use geometry, only: XLENGTH, YLENGTH, ZLENGTH, NO_K
-! Maximum particle size.
-      use discretelement, only: MAX_RADIUS
-
       use discretelement, only: dg_pic
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: UNDEFINED_I
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
-
 
       implicit none
 !-----------------------------------------------
@@ -717,14 +709,9 @@
 !------------------------------------------------------------------------
       subroutine desgrid_pic(plocate)
 
-      use param1
-      use funits
-      use geometry
-      use compar
       use discretelement
-      use constant
-      use desmpi_wrapper
-
+      use functions, only: is_nonexistent
+      use geometry, only: no_k
 
       implicit none
 !-----------------------------------------------
@@ -746,8 +733,7 @@
          dg_pijkprv(:)= dg_pijk(:)
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
-
+            if(is_nonexistent(lcurpar)) cycle
 
             lparcount = lparcount + 1
             li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
@@ -764,7 +750,7 @@
       else
          do lcurpar = 1,max_pip
             if(lparcount.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
+            if(is_nonexistent(lcurpar)) cycle
             lparcount = lparcount + 1
             lijk = dg_pijk(lcurpar)
             lpic(lijk) = lpic(lijk) + 1
@@ -799,20 +785,19 @@
 
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) exit
-         if(.not.pea(lcurpar,1)) cycle
+         if(is_nonexistent(lcurpar)) cycle
          lparcount = lparcount + 1
          lijk = dg_pijk(lcurpar)
          dg_pic(lijk)%p(lindx(lijk)) = lcurpar
          lindx(lijk) = lindx(lijk) +  1
       enddo
-
 #else
 
-!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,pea,dg_pijk,dg_pic,lindx)
+!$omp parallel default(none) private(lcurpar,lijk,lijk_count) shared(max_pip,pip,lparcount,dg_pijk,dg_pic,lindx)
 !$omp do
       do lcurpar = 1, max_pip
          if(lparcount.gt.pip) cycle
-         if(.not.pea(lcurpar,1)) cycle
+         if(is_nonexistent(lcurpar)) cycle
          lijk = dg_pijk(lcurpar)
 
          !$omp atomic capture
@@ -866,9 +851,9 @@
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
-      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off,mm,lSIZE2,lcurpar_index,lijk2
+      integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
-!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff
+!$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff, mm, lSIZE2, dd
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
@@ -880,9 +865,9 @@
       lkoffset = dimn-2
 
 !$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
-!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,   &
-!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, lSIZE2, int_tmp) &
-!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,pea,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
+!$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
+!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,dd,  &
 !$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 
 !$      PAIR_NUM_SMP = 0
@@ -903,9 +888,7 @@
             endif
 !$  endif
 
-         if (.not. pea(lcurpar,1)) cycle
-         if (pea(lcurpar,2)) cycle
-         if (pea(lcurpar,4)) cycle
+         if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lneighcnt = 0
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
@@ -960,8 +943,11 @@
 
 ! Only skip real particles otherwise collisions with ghost, entering,
 ! and exiting particles are missed.
-               if (lneigh <= lcurpar) then
-                  if(.not.any(pea(lneigh,2:4))) cycle
+               if (lneigh .eq. lcurpar) cycle
+               if (lneigh < lcurpar .and.is_normal(lneigh)) cycle
+               if (is_nonexistent(lneigh)) THEN
+                  lneighcnt = lneighcnt + 1
+                  cycle
                endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
@@ -969,7 +955,7 @@
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if (pea(lcurpar,1) .and. .not.pea(lcurpar,4) .and. pea(lneigh,1)) THEN
+
 !$  if (.true.) then
 !!!!! SMP version
 
@@ -992,7 +978,6 @@
 
       cc = add_pair(lcurpar, lneigh)
 !$  endif
-               endif
             end do
          end do
          end do
@@ -1002,27 +987,20 @@
 
 !$  curr_tt = omp_get_thread_num()+1  ! add one because thread numbering starts at zero
 
+!$omp single
+!$  NEIGHBOR_INDEX(1) = 1
+!$  dd = 1
+!$omp end single
+
 !$omp do ordered schedule(static,1)
 !$    do tt = 1, omp_get_num_threads()
 !$omp ordered
 !$        do MM = 1, PAIR_NUM_SMP
 !$            lcurpar = PAIRS_SMP(1,MM)
-!$            if (NEIGHBOR_INDEX(lcurpar) .eq. 0) then
-!$                if (lcurpar .eq. 1) then
-!$                    NEIGHBOR_INDEX(lcurpar) = 1
-!$                else
-!!    find the last particle with neighbors (and initialize neighbor_index)
-!$                    diff = 0
-!$                    do while (NEIGHBOR_INDEX(lcurpar-diff) .eq. 0 .and. diff .lt. lcurpar-1)
-!$                         diff = diff + 1
-!$                    enddo
-!$                    if (diff .eq. lcurpar-1) then
-!$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = 1
-!$                    else
-!$                        NEIGHBOR_INDEX(lcurpar-diff:lcurpar) = NEIGHBOR_INDEX(lcurpar-diff)
-!$                    endif
-!$                endif
-!$            endif
+!$            do while (dd .lt. lcurpar)
+!$                dd = dd + 1
+!$                NEIGHBOR_INDEX(dd) = NEIGHBOR_INDEX(dd-1)
+!$            enddo
 !$            cc = add_pair(lcurpar, PAIRS_SMP(2,MM))
 !$        enddo
 !$omp end ordered
@@ -1034,7 +1012,11 @@
 
 !$omp end parallel
 
-      end subroutine desgrid_neigh_build
+    contains
+
+      include 'functions.inc'
+
+    end subroutine desgrid_neigh_build
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbggrid
@@ -1055,7 +1037,7 @@
 ! Local variables
 !-----------------------------------------------
       integer lproc,liproc,ljproc,lkproc
-      character (30) filename
+      character (255) filename
 !-----------------------------------------------
 
       write(filename,'("dbg_desgridn",I4.4,".dat")') mype

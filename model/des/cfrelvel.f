@@ -21,7 +21,6 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement, only: DES_VEL_NEW, DES_RADIUS, OMEGA_NEW, DES_CROSSPRDCT
-      USE param1, only: ZERO
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments

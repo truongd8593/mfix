@@ -1,16 +1,18 @@
-#!/bin/bash -lx
+#!/bin/bash -lex
 
 module load autoconf/2.69
 module load gnu/4.6.4
+
+module list
 
 MFIX=${MFIX_HOME-"../../../"}
 
 GCC_DBGFLAGS="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
 ${MFIX}/configure_mfix FC=gfortran FCFLAGS="-O0 $GCC_DBGFLAGS" || exit $?
 make clean
-make -j || exit $?
+make || exit $?
 
-rm POST_*.dat &> /dev/null
+rm -f POST_*.dat &> /dev/null
 
 RUN_NAME="DEM05"
 

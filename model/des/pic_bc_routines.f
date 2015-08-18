@@ -14,10 +14,6 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
 ! Paricle velocities
       use discretelement, only: DES_VEL_NEW
-! Particle radi
-      use discretelement, only: DES_RADIUS
-! Flag indicating state of particle
-      use discretelement, only: PEA
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP
 ! The number of neighbor facets for each DES grid cell
@@ -40,6 +36,7 @@
       use param1, only: ZERO, ONE, UNDEFINED
 ! DES array dimensionality (3)
       use discretelement, only: DIMN
+      use functions, only: IS_NONEXISTENT
 
 ! Module Procedures:
 !---------------------------------------------------------------------//
@@ -77,7 +74,7 @@
       DO LL = 1, MAX_PIP
 
 ! Skip non-existent particles
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
          IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) CYCLE
@@ -165,12 +162,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PIC_MO_BC
 
-      use discretelement
-      use pic_bc
-      use bc
       USE error_manager
       USE mpi_utility
-
+      use bc
+      use discretelement
+      use functions
+      use pic_bc
 
       implicit none
 
@@ -201,7 +198,7 @@
 
                NP = PIC(IJK)%p(LP)
 
-               IF(PEA(NP,4)) CYCLE
+               IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) cycle
 
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -280,7 +277,7 @@
 
       INTEGER, INTENT(IN) :: NP
 
-      PEA(NP,:) = .FALSE.
+      CALL SET_NORMAL(NP)
 
       DES_POS_OLD(:,NP) = ZERO
       DES_POS_NEW(:,NP) = ZERO
@@ -492,8 +489,7 @@
 
                         PIP = PIP+1
                         PIP_ADD_COUNT = PIP_ADD_COUNT + 1
-                        PEA(NEW_SPOT, 1) = .true.
-                        PEA(NEW_SPOT, 2:4) = .false.
+                        CALL SET_NORMAL(NEW_SPOT)
                         ! add to the list
                         ALLOCATE(temp_spotlist)
                         temp_spotlist%spot = new_spot
@@ -502,10 +498,9 @@
                         nullify(temp_spotlist)
 
                      ELSE
-                        PEA(NEW_SPOT, 1) = .false.
+                        CALL SET_NONEXISTENT(NEW_SPOT)
                         LAST_EMPTY_SPOT = NEW_SPOT - 1
                      ENDIF
-
 
                      !WRITE(*,'(A,2(2x,i5), 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') &
                      !   'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
@@ -572,7 +567,8 @@
       USE funits
       USE mpi_utility
       USE error_manager
-      USE discretelement, only: max_pip, pea
+      USE discretelement, only: max_pip
+      USE functions, only: is_nonexistent
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -598,7 +594,7 @@
 
       DO LL = LAST_INDEX+1, MAX_PIP
 
-         if(.NOT.PEA(LL,1)) THEN
+         if(IS_NONEXISTENT(LL)) THEN
             EMPTY_SPOT = LL
             LAST_INDEX = LL
             SPOT_FOUND = .true.
@@ -624,9 +620,6 @@
 
       CALL FINL_ERR_MSG
       END SUBROUTINE PIC_FIND_EMPTY_SPOT
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -792,18 +785,12 @@
       SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL(POSITION, &
       OVERLAP_EXISTS)
 
-      USE constant
-      USE cutcell
       USE des_stl_functions
       USE desgrid
       USE discretelement, only: dimn
-      USE functions
-      USE geometry
-      USE indices
-      USE mpi_utility
-      USE param1
-      USE run
+      USE geometry, only: do_k
       USE stl
+
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
@@ -816,7 +803,6 @@
       LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
       IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
 
-      double precision :: velocity(dimn)
       !reference point and direction of the line
       double precision, dimension(dimn) :: ref_line,  dir_line
       !reference point and normal of the plane

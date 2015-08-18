@@ -168,11 +168,11 @@
 ! calculate the convection-diffusion terms
             CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8), &
                U_S(1,M), V_S(1,M), W_S(1,M), &
-               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M)
 
 ! calculate standard bc
             CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), &
-               BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M, IER)
+               BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M)
 
 ! override bc settings if Johnson-Jackson bcs are specified
             CALL BC_THETA (M, A_M, B_M)
@@ -278,11 +278,11 @@
 ! calculate the convection-diffusion terms
             CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
                U_S(1,M), V_S(1,M), W_S(1,M), &
-               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+               CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M)
 
 ! calculate standard bc
             CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M),&
-               BC_HW_THETA_M(1,M),BC_C_THETA_M(1,M), M, A_M, B_M, IER)
+               BC_HW_THETA_M(1,M),BC_C_THETA_M(1,M), M, A_M, B_M)
 
 ! override bc settings if Johnson-Jackson bcs are specified
             CALL BC_THETA (M, A_M, B_M)
@@ -399,11 +399,11 @@
 ! calculate the convection-diffusion terms
           CALL CONV_DIF_PHI (THETA_M(1,M), KTH_S(1,M), DISCRETIZE(8),&
             U_S(1,M), V_S(1,M), W_S(1,M), &
-            CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M, IER)
+            CpxFlux_E, CpxFlux_N, CpxFlux_T, M, A_M, B_M)
 
 ! calculate standard bc
           CALL BC_PHI (THETA_M(1,M), BC_THETA_M(1,M), BC_THETAW_M(1,M), &
-            BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M, IER)
+            BC_HW_THETA_M(1,M), BC_C_THETA_M(1,M), M, A_M, B_M)
 
 ! override bc settings if Johnson-Jackson bcs are specified
           CALL BC_THETA (M, A_M, B_M)

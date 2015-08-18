@@ -11,11 +11,12 @@
 
       SUBROUTINE NSQUARE
 
-      USE discretelement
-      USE des_bc
-      Use des_thermo
+      use discretelement
+      use des_bc
+      use des_thermo
       use des_allocate
-      Use geometry, only: DO_K, xlength, ylength, zlength
+      use geometry, only: DO_K, xlength, ylength, zlength
+      use functions
 
       IMPLICIT NONE
 
@@ -43,13 +44,13 @@
          if (L .gt. 1) NEIGHBOR_INDEX(L) = NEIGHBOR_INDEX(L-1)
 
          IF(PC .GE. PIP ) EXIT
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
 
          PNPC = PIP - PC
          DO LL = L+1, MAX_PIP
 
             IF(PNPC .LE. 0) EXIT
-            IF(.NOT.PEA(LL,1)) CYCLE
+            IF(IS_NONEXISTENT(LL)) CYCLE
 
             R_LM = DES_RADIUS(L) + DES_RADIUS(LL)
             R_LM = FACTOR_RLM*R_LM
@@ -134,6 +135,3 @@
 
       RETURN
       END SUBROUTINE NSQUARE
-
-
-

@@ -20,45 +20,23 @@
       USE discretelement, only: DIMN
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
-! DEM solid phase diameters and densities.
-      USE discretelement, only: DES_D_p0, DES_RO_s
-! Number of particles seeded per phase
-      USE discretelement, only: PART_MPHASE
-! Number of particles seeded, per phase in each IC region
-      USE discretelement, only: PART_MPHASE_BYIC
-! Number of particles to read from input file.
-      USE discretelement, only: PARTICLES
 
-! Implied total number of physical particles
-      USE mfix_pic, only: rnp_pic
-! Total number of computational particles/parcels
-      USE mfix_pic, only: cnp_pic
-
-      USE mfix_pic, only: cnp_array
 ! Flag indicating that the IC region is defined.
       USE ic, only: IC_DEFINED
-! IC Region bulk density (RO_s * EP_s)
-      USE ic, only: IC_ROP_s
 ! IC Region gas volume fraction.
       USE ic, only: IC_EP_G
 ! IC Region solid volume fraction.
       USE ic, only: IC_EP_S
 
-      USE ic, only: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t
-      USE ic, only: IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t
-
-      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE
+      USE param1, only: ZERO, ONE
 
 ! MPPIC specific IC region specification.
       USE ic, only: IC_PIC_CONST_NPC, IC_PIC_CONST_STATWT
 ! Maximum number of IC regions and solids phases
-      USE param, only: DIMENSION_IC, DIM_M
+      USE param, only: DIMENSION_IC
 
 ! direction wise spans of the domain and grid spacing in each direction
-      Use geometry, only: xlength, ylength, zlength, dx, dy, dz
-
-! Constant: 3.14159...
-      USE constant, only: PI
+      Use geometry, only: zlength, dz
 
       USE mpi_utility
       USE functions

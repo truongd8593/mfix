@@ -7,7 +7,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_MFLUX(IER)
+      SUBROUTINE CALC_MFLUX()
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -22,11 +22,6 @@
       USE physprop, only: mmax
       USE run, only: added_mass, m_am
       IMPLICIT NONE
-
-! Dummy arguments
-!---------------------------------------------------------------------//
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -47,7 +42,7 @@
 ! New fluxes are defined for gas based on added mass
          CALL CALC_MFLUX_AM (U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, &
                            ROP_sE(1,M_AM), ROP_sN(1,M_AM), ROP_sT(1,M_AM), &
-                           Flux_gE, Flux_gN, Flux_gT, M_AM, IER)
+                           Flux_gE, Flux_gN, Flux_gT, M_AM)
 
          CALL CALC_MFLUX0 (U_g, V_g, W_g, ROP_gE, ROP_gN, ROP_gT, &
                            Flux_gSE, Flux_gSN, Flux_gST)
@@ -58,7 +53,7 @@
                              ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M), &
                              ROP_gE, ROP_gN, ROP_gT, &
                              Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M),&
-                             M_AM, IER)
+                             M_AM)
               CALL CALC_MFLUX0 (U_s(1,M), V_s(1,M), W_s(1,M), &
                              ROP_sE(1,M), ROP_sN(1,M), ROP_sT(1,M), &
                              Flux_sSE, Flux_sSN, Flux_sST)
@@ -72,7 +67,6 @@
 
       RETURN
       END SUBROUTINE CALC_MFLUX
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -117,7 +111,6 @@
       INTEGER :: IJK, IMJK, IJMK, IJKM
 !---------------------------------------------------------------------//
 
-
 !$omp  parallel do default(none) private( IJK, IMJK, IJMK, IJKM) &
 !$omp              shared(ijkstart3, ijkend3, flux_e, flux_n, flux_t,&
 !$omp                     rop_e, rop_n, rop_t, axz, axy, ayz, u, v, w, do_k)
@@ -135,14 +128,12 @@
                Flux_E(IMJK) = ROP_E(IMJK)*AYZ(IMJK)*U(IMJK)
             ENDIF
 
-
 ! North face (i, j+1/2, k)
             Flux_N(IJK) = ROP_N(IJK)*AXZ(IJK)*V(IJK)
 ! South face (i, j-1/2, k)
             IF (.NOT.FLUID_AT(IJMK)) THEN
               Flux_N(IJMK) = ROP_N(IJMK)*AXZ(IJMK)*V(IJMK)
             ENDIF
-
 
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)
@@ -159,7 +150,6 @@
       RETURN
       END SUBROUTINE CALC_MFLUX0
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !                                                                      C
@@ -172,7 +162,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_MFLUX_AM(U, V, W, ROP_E, ROP_N, ROP_T, &
                              ROPa_E, ROPa_N, ROPa_T, Flux_E, &
-                             Flux_N, Flux_T, M_AM, IER)
+                             Flux_N, Flux_T, M_AM)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -207,8 +197,6 @@
       DOUBLE PRECISION, INTENT(OUT) :: Flux_T(DIMENSION_3)
 ! phase index for phase of added_mass
       INTEGER, INTENT(IN) :: M_AM
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -236,7 +224,6 @@
                               AYZ(IMJK)*U(IMJK)
             ENDIF
 
-
 ! North face (i, j+1/2, k)
             Flux_N(IJK) = ROP_N(IJK)*&
                           (ONE + Cv*ROPa_N(IJK)/RO_S(IJK,M_AM))*&
@@ -247,7 +234,6 @@
                              (ONE + Cv*ROPa_N(IJMK)/RO_S(IJK,M_AM))*&
                              AXZ(IJMK)*V(IJMK)
             ENDIF
-
 
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)

@@ -361,9 +361,7 @@
 ! Local variables:
 !---------------------------------------------------------------------//
       INTEGER :: I, J, K, IJK, L
-      INTEGER :: M, N
-! Integer error flag.
-      INTEGER :: IER
+      INTEGER :: M
 
       INTEGER :: COUNT(0:DIMENSION_M, 9)
       INTEGER :: MIN_LOC(0:DIMENSION_M)
@@ -553,7 +551,6 @@
       USE physprop
       USE indices
       USE funits
-      USE compar
       USE mpi_utility
       USE discretelement
       USE mms
@@ -573,9 +570,7 @@
 !
 ! Loop counters:
       INTEGER :: I, J, K, IJK
-      INTEGER :: M, N, L, LM
-! Integer errror  flag
-      INTEGER :: IER
+      INTEGER :: M, L, LM
 ! Temp variable for summations.
       DOUBLE PRECISION :: lSUM
 

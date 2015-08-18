@@ -19,7 +19,6 @@
       USE mfix_pic
       USE pic_bc
       USE error_manager
-      USE fldvar, only: P_g
 
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_funs_des, only: DES_PAR_EXCHANGE
@@ -1256,7 +1255,7 @@
       implicit none
       integer :: i, j, k, ijk, fluid_ind, LL, PC, IDIM
       double precision :: zcor
-      character(LEN=100) :: filename
+      character(LEN=255) :: filename
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
       OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
@@ -1309,9 +1308,9 @@
       DO LL = 1, MAX_PIP
 
          IF(PC .GT. PIP) EXIT
-         IF(.NOT.PEA(LL,1)) CYCLE
+         IF(IS_NONEXISTENT(LL)) CYCLE
          pc = pc+1
-         IF(PEA(LL,4)) CYCLE
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
               (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
@@ -1322,8 +1321,3 @@
       !read(*,*) finish
       !if(finish) STOp
       END SUBROUTINE WRITE_MPPIC_VEL_S
-
-
-
-
-

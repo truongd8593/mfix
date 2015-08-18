@@ -61,7 +61,6 @@
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
       use bc, only: bc_i_w, bc_i_e
-      use bc, only: bc_u_g, bc_v_g, bc_w_g
       use bc, only: bc_jet_g
       use bc, only: bc_time
       use bc, only: bc_jet_gh, bc_dt_h
@@ -90,8 +89,6 @@
       INTEGER :: I, J, K, IJK
 ! IJK index for setting velocity bc
       INTEGER :: IJK2
-! Solids phase index
-      INTEGER :: M
 !---------------------------------------------------------------------//
 
       IF (TIME + 0.1d0*DT>=BC_TIME(BCV) .AND. &

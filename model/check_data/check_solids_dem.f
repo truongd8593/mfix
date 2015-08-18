@@ -8,17 +8,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM
 
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! Runtime Flag: Calculate clusters during a DEM simulation
-      use discretelement, only: FACTOR_RLM
-      use discretelement, only: MAX_RADIUS
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: UNDEFINED
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -38,12 +27,6 @@
       CALL FINL_ERR_MSG
 
       RETURN
-
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-         'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
 
       END SUBROUTINE CHECK_SOLIDS_DEM
 
@@ -270,8 +253,6 @@
       USE discretelement, only: DES_COLL_MODEL_ENUM
       USE discretelement, only: LSD
       USE discretelement, only: HERTZIAN
-! Number of discrete solids phases
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
 ! Particle and wall friction coeff.
       USE discretelement, only: MEW, MEW_W
 ! Parameter constatns.
@@ -332,13 +313,7 @@
  1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
          'Please correct the mfix.dat file.')
 
- 1002 FORMAT('Error 1002: Required input not specified: ',A,/          &
-         'Description:',A,/'Please correct the mfix.dat file.')
-
       END SUBROUTINE CHECK_SOLIDS_DEM_COLLISION
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -360,8 +335,6 @@
 !---------------------------------------------------------------------//
 ! Number of discrete solids phases
       USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
-! Particle and wall friction coeff.
-      USE discretelement, only: MEW, MEW_W
 ! Particle and wall normal and tangential spring constants
       USE discretelement, only: KN, KN_W
       USE discretelement, only: KT, KT_W
@@ -377,12 +350,6 @@
 
 ! Tangential damping factors := ET/EN
       USE discretelement, only: DES_ETAT_FAC, DES_ETAT_W_FAC
-! Particle and wall Young's modulus
-      USE discretelement, only: E_YOUNG, Ew_YOUNG
-! Particle and wall Poisson ratio
-      USE discretelement, only: V_POISSON, Vw_POISSON
-! Shear modulus
-      USE discretelement, only: G_MOD
 
       use constant, only: PI
 
@@ -593,13 +560,7 @@
  1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
          'Please correct the mfix.dat file.')
 
- 1002 FORMAT('Error 1002: Required input not specified: ',A,/          &
-         'Description:',A,/'Please correct the mfix.dat file.')
-
       END SUBROUTINE CHECK_SOLIDS_DEM_COLL_LSD
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -615,7 +576,6 @@
 !   - Silbert et al., Physical Review E, 2001, 64, 051302 1-14 (page 5)!
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_COLL_HERTZ
-
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -646,13 +606,12 @@
       use constant, only: PI
 
 ! Parameter constatns.
-      USE param1, only: ZERO, HALF, ONE, UNDEFINED
+      USE param1, only: ZERO, ONE, UNDEFINED
 
 !      USE mpi_utility
       use error_manager
 
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//

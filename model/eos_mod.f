@@ -91,7 +91,6 @@
 !---------------------------------------------------------------------/
       use param1, only: ONE
       use param1, only: ZERO
-      use param1, only: UNDEFINED
       use param1, only: SMALL_NUMBER
 
       implicit none

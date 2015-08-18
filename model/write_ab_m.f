@@ -18,7 +18,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE WRITE_AB_M(A_M, B_M, IJKMAX2A, M, IER)    ! pnicol
+      SUBROUTINE WRITE_AB_M(A_M, B_M, M)    ! pnicol
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -45,9 +45,6 @@
 !   D u m m y   A r g u m e n t s
 !-----------------------------------------------
 !
-!                      Error index
-      INTEGER          IER
-!
 !                      Local index
       INTEGER          L
 !
@@ -56,9 +53,6 @@
 !
 !                      cell index
       INTEGER          IJK
-!
-!                      Maximum dimension
-      INTEGER          IJKMAX2A  ! pnicol
 !
 !                      Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)

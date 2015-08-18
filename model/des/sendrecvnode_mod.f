@@ -280,7 +280,7 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      character (30) filename
+      character (255) filename
       integer ijk
       integer lcount,lcount2,lstart,lend
 !-----------------------------------------------

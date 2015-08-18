@@ -10,29 +10,28 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement
-      use funits
+      use cdist
       use compar
       use desmpi
-      use cdist
-
+      use error_manager
+      use functions
+      use funits
+      use geometry, only: NO_K
       use mpi_init_des, only: des_scatter_particle
       use mpi_utility
-      use geometry, only: NO_K
-
-      use error_manager
 
       implicit none
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
 ! indices
-      integer :: i,j,k
+      integer :: k
 ! index of particle
       INTEGER :: lcurpar
 ! local unit
       INTEGER, PARAMETER :: lunit=10
 ! local filename
-      character(30) lfilename
+      character(255) lfilename
 ! IO Status:
       INTEGER :: IOS
 ! Flag to indicate if file exists.
@@ -74,7 +73,6 @@
 
  1100 FORMAT('Error 1100: FATAL - DEM particle input file not found!')
 
-
 ! Read the file
 !----------------------------------------------------------------->>>
 ! In distributed IO the first line of the file will be number of
@@ -82,12 +80,11 @@
       IF (bdist_io) then
          read(lunit,*) pip
          DO lcurpar = 1,pip
-            pea(lcurpar,1) = .true.
+            call set_normal(lcurpar)
             read (lunit,*) (des_pos_new(k,lcurpar),k=1,RDMN),&
                des_radius(lcurpar), ro_sol(lcurpar),&
                (des_vel_new(k,lcurpar),k=1,RDMN)
          ENDDO
-
 
 ! Serial IO (not bDIST_IO)
       ELSE
@@ -143,7 +140,6 @@
 !-----------------------------------------------------------------<<<
 
       IF(bDIST_IO .OR. myPE == PE_IO) CLOSE(lUNIT)
-
 
       CALL FINL_ERR_MSG()
 

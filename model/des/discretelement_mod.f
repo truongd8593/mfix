@@ -38,31 +38,40 @@
 ! Generally for inlet/outlet related routines but also employed in
 ! tracking for parallelization
 
-! Dynamic particle count elements:
-! PEA(n,1) : This column identifies particle as 'existing' if true.
-! It is used with the inlet/outlet to skip indices that do not represent
-! particles in the system or indices that represent particles that have
-! exited the system.
+! Dynamic particle states:
 
-! PEA(n,2) : This column identifies a particle as 'new' if true.
+! NONEXISTENT: This state is used with the inlet/outlet to skip
+! indices that do not represent particles in the system or indices
+! that represent particles that have exited the system.
+
+! ENTERING: This state identifies a particle as 'new' if true.
 ! Particles with a classification of 'new' do not react when in contact
 ! with a wall or another particle, however existing particles do collide
 ! and interact with 'new' particles. The classification allows new
 ! particles to push particles already in the system out of the way when
 ! entering to prevent overlap.  This flag is also used when the center
 ! of a particle crosses a dem outlet (i.e. an exiting particle; see
-! PEA(n,3)) so that the particle will maintain its present trajectory
+! EXITING) so that the particle will maintain its present trajectory
 ! until it has fully exited the system
 
-! PEA(n,3) : This column identifies a particle as 'exiting' if true.
+! EXITING: This state identifies a particle as 'exiting' if true.
 ! If a particle initiates contact with a wall surface designated as a
 ! des outlet, this flag is set to true. With this classification the
 ! location of the particle is checked to assess if the particle has
 ! fully exited the system.  At this point, the particle is removed
 ! from the list.
 
-! PEA(n,4) : for ghost particles
-      LOGICAL, DIMENSION(:,:), ALLOCATABLE :: PEA ! (PARTICLES,4)
+! GHOST, ENTERING_GHOST, EXITING_GHOST: for ghost particles
+
+      INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
+
+      INTEGER, PARAMETER :: nonexistent=0
+      INTEGER, PARAMETER :: normal_particle=1
+      INTEGER, PARAMETER :: entering_particle=2
+      INTEGER, PARAMETER :: exiting_particle=3
+      INTEGER, PARAMETER :: normal_ghost=4
+      INTEGER, PARAMETER :: entering_ghost=5
+      INTEGER, PARAMETER :: exiting_ghost=6
 
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
@@ -151,8 +160,6 @@
 ! End Output/debug controls
 !-----------------------------------------------------------------<<<
 
-
-
 ! DES - Continuum
       LOGICAL DISCRETE_ELEMENT
       LOGICAL DES_CONTINUUM_COUPLED
@@ -219,12 +226,8 @@
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBOR_INDEX_OLD
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBORS
       INTEGER, DIMENSION(:), ALLOCATABLE :: NEIGHBORS_OLD
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_NEIGHBOR
-      LOGICAL, DIMENSION(:), ALLOCATABLE :: PV_NEIGHBOR_OLD
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR_OLD
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_NEIGHBOR
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFN_NEIGHBOR_OLD
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: NEIGH_NUM,NEIGH_MAX

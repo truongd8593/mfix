@@ -1,5 +1,35 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
+!  Module name: WRITE_DBG_VTU_AND_VTP_FILES                            C
+!  Purpose: Writes the cell and particle data in VTK format            C
+!           for debug regions only.                                    C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 22-Jul-15  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE WRITE_DBG_VTU_AND_VTP_FILES
+
+      use discretelement, only: DISCRETE_ELEMENT
+      use vtp, only: write_vtp_file
+      use vtk, only: DIMENSION_VTK
+
+      IMPLICIT NONE
+      INTEGER :: LC
+
+      DO LC = 1, DIMENSION_VTK
+         CALL WRITE_VTU_FILE(LC,1)
+         IF(DISCRETE_ELEMENT) CALL WRITE_VTP_FILE(LC,1)
+      ENDDO
+
+      END SUBROUTINE WRITE_DBG_VTU_AND_VTP_FILES
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
 !  Module name: WRITE_VTU_FILE                                         C
 !  Purpose: Writes the cell data grid in VTK format (Unstructured VTU) C
 !           Binary format                                              C
@@ -12,7 +42,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE WRITE_VTU_FILE(LCV)
+  SUBROUTINE WRITE_VTU_FILE(LCV,MODE)
 
       USE compar
       USE constant
@@ -59,11 +89,15 @@
       INTEGER :: PASS
       INTEGER :: WRITE_HEADER = 1
       INTEGER :: WRITE_DATA   = 2
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
       ! There is nothing to write if we are not in adefined vtk region
       VTK_REGION = LCV
       IF(.NOT.VTK_DEFINED(VTK_REGION)) RETURN
       IF(VTK_DATA(LCV)/='C') RETURN
+      IF(MODE==0.AND.(VTK_DBG_FILE(LCV))) RETURN
+      IF(MODE==1.AND.(.NOT.VTK_DBG_FILE(LCV))) RETURN
 
 !     Location of U-momentum cells for original (uncut grid)
       IF (DO_I) THEN
@@ -94,9 +128,9 @@
 
       CALL SETUP_VTK_REGION
 
-      CALL OPEN_VTU_FILE_BIN
+      CALL OPEN_VTU_FILE_BIN(MODE)
 
-      CALL OPEN_PVD_FILE
+      IF(MODE==0) CALL OPEN_PVD_FILE
 
       CALL CLEAN_GEOMETRY
 
@@ -306,8 +340,8 @@
       ENDDO ! PASS LOOP, EITHER HEADER OR DATA
 
 
-      CALL CLOSE_VTU_FILE_BIN
-      CALL UPDATE_AND_CLOSE_PVD_FILE
+      CALL CLOSE_VTU_FILE_BIN(MODE)
+      IF(MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
 
@@ -323,11 +357,9 @@
      IF (FULL_LOG.AND.myPE == PE_IO) WRITE(*,20)' DONE.'
 
 20    FORMAT(A,1X/)
-30    FORMAT(1X,A)
       RETURN
 
       END SUBROUTINE WRITE_VTU_FILE
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -343,7 +375,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE OPEN_VTU_FILE_BIN
+  SUBROUTINE OPEN_VTU_FILE_BIN(MODE)
 
       USE compar
       USE constant
@@ -367,6 +399,8 @@
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
       INTEGER :: ISTAT,BUFF1,BUFF2,L
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
 
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
@@ -400,14 +434,14 @@
 
 
 ! For distributed I/O, define the file name for each processor
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(VTU_FILENAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),MYPE
          ELSE
             WRITE(VTU_FILENAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),MYPE
          ENDIF
       ELSE
          IF(MYPE.EQ.PE_IO) THEN
-            IF(TIME_DEPENDENT_FILENAME) THEN
+            IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                WRITE(VTU_FILENAME,30) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
             ELSE
                WRITE(VTU_FILENAME,35) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -479,7 +513,7 @@
 
       IF (myPE == PE_IO.AND.BDIST_IO) THEN
 
-         IF(TIME_DEPENDENT_FILENAME) THEN
+         IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
             WRITE(PVTU_FILENAME,40) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION)
          ELSE
             WRITE(PVTU_FILENAME,45) TRIM(VTK_FILEBASE(VTK_REGION))
@@ -1194,7 +1228,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE CLOSE_VTU_FILE_BIN
+  SUBROUTINE CLOSE_VTU_FILE_BIN(MODE)
 
       USE compar
       Use run
@@ -1208,6 +1242,9 @@
       CHARACTER (LEN=32)  :: VTU_NAME
       INTEGER, DIMENSION(0:numPEs-1) :: ALL_VTK_CELL_COUNT
       INTEGER :: IERR
+      INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
+                        ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
+
 
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
 
@@ -1233,7 +1270,7 @@
 
          DO N = 0,NumPEs-1
             IF(ALL_VTK_CELL_COUNT(N)>0) THEN
-               IF(TIME_DEPENDENT_FILENAME) THEN
+               IF(TIME_DEPENDENT_FILENAME.AND.MODE==0) THEN
                   WRITE(VTU_NAME,20) TRIM(VTK_FILEBASE(VTK_REGION)),FRAME(VTK_REGION),N
                ELSE
                   WRITE(VTU_NAME,25) TRIM(VTK_FILEBASE(VTK_REGION)),N
@@ -1390,7 +1427,7 @@
 
       IMPLICIT NONE
 
-      CHARACTER (LEN=32)  :: FILENAME
+      CHARACTER (LEN=255)  :: FILENAME
       CHARACTER (LEN=5)   :: EXT
 
       IF (myPE /= PE_IO) RETURN
@@ -1500,7 +1537,7 @@
 
       LOGICAL :: CLIP_FLAG
 
-      CHARACTER (LEN=32) :: FILENAME
+      CHARACTER (LEN=255) :: FILENAME
 
       LOGICAL :: CORNER_POINT
       INTEGER :: NODE_OF_CORNER, IERROR
@@ -3018,16 +3055,9 @@
 
        ENDIF
 
-
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE CLEAN_GEOMETRY
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -3047,23 +3077,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SETUP_VTK_REGION
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
       USE cdist
-      USE functions
+      USE compar, only: mype, pe_io, ijkend3
+      USE cutcell
+      USE geometry
+      USE indices, only: i_of, j_of, k_of
+      USE vtk
 
       IMPLICIT NONE
 
@@ -3073,7 +3092,6 @@
       DOUBLE PRECISION :: XE,XW,YS,YN,ZB,ZT
       DOUBLE PRECISION :: XSLICE,YSLICE,ZSLICE
       LOGICAL :: KEEP_XDIR,KEEP_YDIR,KEEP_ZDIR
-
 
 ! Get VTK region bounds
       XE = VTK_X_E(VTK_REGION)
@@ -3184,7 +3202,6 @@
 
       ELSE  ! BDIST_IO
 
-
          IF(ALLOCATED(BELONGS_TO_VTK_SUBDOMAIN)) DEALLOCATE(BELONGS_TO_VTK_SUBDOMAIN)
 
          ALLOCATE (BELONGS_TO_VTK_SUBDOMAIN(ijkend3))
@@ -3243,11 +3260,6 @@
 
       ENDIF
 
-
-100   FORMAT(A,I12,A,I12,A)
-110   FORMAT(A)
-
       RETURN
 
       END SUBROUTINE SETUP_VTK_REGION
-

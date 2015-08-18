@@ -46,27 +46,24 @@
 
       DOUBLE PRECISION V_REL_TRANS_NORM, DISTSQ, RADSQ, CLOSEST_PT(DIMN)
 ! local normal and tangential forces
-      DOUBLE PRECISION FTS1(DIMN), FTS2(DIMN)
       DOUBLE PRECISION NORMAL(DIMN), VREL_T(DIMN), DIST(DIMN), DISTMOD
       DOUBLE PRECISION, DIMENSION(DIMN) :: FTAN, FNORM, OVERLAP_T
 
       LOGICAL :: DES_LOC_DEBUG
       INTEGER :: COUNT_FAC, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count
+      LIST_OF_CELLS(27), CELL_ID, cell_count
       INTEGER :: PHASELL
 
-      DOUBLE PRECISION :: CROSSP(DIMN)
+      DOUBLE PRECISION :: TANGENT(DIMN)
       DOUBLE PRECISION :: FTMD, FNMD
 ! local values used spring constants and damping coefficients
       DOUBLE PRECISION ETAN_DES_W, ETAT_DES_W, KN_DES_W, KT_DES_W
 
+      double precision :: MAG_OVERLAP_T
+
       double precision :: line_t
 ! flag to tell if the orthogonal projection of sphere center to
 ! extended plane detects an overlap
-      INTEGER, Parameter :: MAX_FACET_CONTS = 200
-
-      DOUBLE PRECISION :: DTSOLID_TMP
-
 
       DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
       INTEGER :: MAX_NF, axis
@@ -75,17 +72,18 @@
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
 
-!$omp parallel default(none) private(LL,ijk,count_fac,fts1,fts2,       &
-!$omp    list_of_cells,cell_id,radsq,particle_max,particle_min,        &
+
+!$omp parallel default(none) private(LL,ijk,count_fac,MAG_OVERLAP_T,   &
+!$omp    list_of_cells,cell_id,radsq,particle_max,particle_min,tangent,&
 !$omp    axis,nf,closest_pt,dist,r_lm,distapart,force_coh,distsq,      &
 !$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
-!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd,crossp)  &
+!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd)         &
 !$omp shared(max_pip,focus_particle,debug_des,no_neighboring_facet_des,&
-!$omp    pea,pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,&
+!$omp    pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,    &
 !$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
 !$omp    hert_kwn,hert_kwt,kn_w,kt_w,des_coll_model_enum,mew_w,tow,    &
-!$omp    des_etan_wall,des_etat_wall,dtsolid,dtsolid_tmp,fc,norm_face, &
+!$omp    des_etan_wall,des_etat_wall,dtsolid,fc,norm_face,             &
 !$omp    wall_collision_facet_id,wall_collision_PFT,use_cohesion,      &
 !$omp    van_der_waals,wall_hamaker_constant,wall_vdw_outer_cutoff,    &
 !$omp    wall_vdw_inner_cutoff,asperities,surface_energy)
@@ -95,11 +93,9 @@
          IF(LL.EQ.FOCUS_PARTICLE) DEBUG_DES = .TRUE.
 
 ! skipping non-existent particles or ghost particles
-         IF(.NOT.PEA(LL,1) .OR. PEA(LL,4)) CYCLE
-
 ! make sure the particle is not classified as a new 'entering' particle
 ! or is already marked as a potential exiting particle
-         IF( PEA(LL,2) .OR. PEA(LL,3)) CYCLE
+         IF(.NOT.IS_NORMAL(LL)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
          IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL)))  cycle
@@ -113,9 +109,6 @@
 
             WRITE(*,'(A, 3(2x, g17.8))') 'POS = ', DES_POS_NEW(:, LL)
          ENDIF
-
-         FTS1(:) = ZERO
-         FTS2(:) = ZERO
 
 ! Check particle LL for wall contacts
 
@@ -282,34 +275,30 @@
                ETAN_DES_W * V_REL_TRANS_NORM * NORMAL(:))
 
 ! Calculate the tangential displacement.
-            IF(V_REL_TRANS_NORM > ZERO) THEN
-               DTSOLID_TMP = min(DTSOLID, OVERLAP_N/V_REL_TRANS_NORM)
-            ELSE
-               DTSOLID_TMP = DTSOLID
-            ENDIF
-
-            OVERLAP_T(:) = DTSOLID_TMP*VREL_T(:) + GET_COLLISION(LL,   &
+            OVERLAP_T(:) = DTSOLID*VREL_T(:) + GET_COLLISION(LL,       &
                NF, WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
-
-            OVERLAP_T(:) = OVERLAP_T(:) -                              &
-               DOT_PRODUCT(OVERLAP_T,NORMAL)*NORMAL(:)
-
-! Calculate the tangential collision force.
-            FTS1(:) = -KT_DES_W * OVERLAP_T(:)
-            FTS2(:) = -ETAT_DES_W * VREL_T(:)
-            FTAN(:) =  FTS1(:) + FTS2(:)
+            MAG_OVERLAP_T = sqrt(DOT_PRODUCT(OVERLAP_T, OVERLAP_T))
 
 ! Check for Coulombs friction law and limit the maximum value of the
 ! tangential force on a particle in contact with a wall.
-            FTMD = DOT_PRODUCT(FTAN, FTAN)
-            FNMD = DOT_PRODUCT(FNORM,FNORM)
-            IF(FTMD.GT.(MEW_W*MEW_W*FNMD)) THEN
-               IF(.NOT.ALL(VREL_T == ZERO)) THEN
-                  FTAN(:) = -MEW_W*OVERLAP_T*SQRT(FNMD/                &
-                     dot_product(OVERLAP_T,OVERLAP_T))
-                  OVERLAP_T(:) = (FTS2 - FTAN)/KT_DES_W
+            IF(MAG_OVERLAP_T > 0.0) THEN
+! Tangential froce from spring.
+               FTMD = KT_DES_W*MAG_OVERLAP_T
+! Max force before the on set of frictional slip.
+               FNMD = MEW_W*sqrt(DOT_PRODUCT(FNORM,FNORM))
+! Direction of tangential force.
+               TANGENT = OVERLAP_T/MAG_OVERLAP_T
+               IF(FTMD < FNMD) THEN
+                  FTAN = -FTMD * TANGENT
+               ELSE
+                  FTAN = -FNMD * TANGENT
+                  OVERLAP_T = (FNMD/KT_DES_W) * TANGENT
                ENDIF
+            ELSE
+               FTAN = 0.0
             ENDIF
+! Add in the tangential dashpot damping force
+            FTAN = FTAN - ETAT_DES_W*VREL_T(:)
 
 ! Save the tangential displacement.
             CALL UPDATE_COLLISION(OVERLAP_T, LL, NF,                   &
@@ -390,7 +379,7 @@
       INTEGER, INTENT(IN) :: LLL,FACET_ID
       INTEGER, INTENT(IN) :: WALL_COLLISION_FACET_ID(:,:)
       DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
-      INTEGER :: CC, FREE_INDEX
+      INTEGER :: CC
 
       do cc = 1, COLLISION_ARRAY_MAX
          if (facet_id == wall_collision_facet_id(cc,LLL)) then
@@ -483,8 +472,8 @@
       DOUBLE PRECISION, DIMENSION(DIMN) :: VRELTRANS
 
 ! Total relative velocity + rotational contribution
-      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + &
-         DES_CROSSPRDCT(OMEGA_NEW(:,LL)*DIST, NORM)
+      V_ROT = DIST*OMEGA_NEW(:,LL)
+      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + DES_CROSSPRDCT(V_ROT, NORM)
 
 ! magnitude of normal component of relative velocity (scalar)
       VRN = DOT_PRODUCT(VRELTRANS,NORM)

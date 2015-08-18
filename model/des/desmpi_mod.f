@@ -79,7 +79,6 @@
       subroutine des_dbgmpi(ptype)
 
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PEA
       use discretelement, only: iGLOBAL_ID
 
       use discretelement, only: S_TIME
@@ -87,6 +86,7 @@
       use discretelement, only: DO_NSEARCH
       use discretelement, only: iGHOST_CNT
       use discretelement, only: MAX_PIP, PIP
+      use functions, only: is_ghost, is_nonexistent, is_normal, is_entering_ghost, is_exiting_ghost
 
       use geometry, only: NO_K
       use compar, only: myPE
@@ -102,7 +102,7 @@
 !-----------------------------------------------
 ! local varaiables
 !-----------------------------------------------
-      character (30) filename
+      character (255) filename
       integer lcurpar,lpacketsize,lface,lparcnt,lbuf,lindx,ltordimn
       integer lneighcnt,lneighindx
       integer lsize
@@ -177,12 +177,12 @@
           lparcount = 1
           do lcurpar=1,max_pip
              if (lparcount.gt.pip) exit
-             if (.not.pea(lcurpar,1))cycle
+             if (is_nonexistent(lcurpar))cycle
              lparcount=lparcount + 1
              xpos = des_pos_new(1,lcurpar)
              ypos = des_pos_new(2,lcurpar)
              li=iofpos(xpos);lj=jofpos(ypos)
-             write(44,*)pea(lcurpar,4),xpos,ypos,li,lj,dg_funijk(li,lj,1)
+             write(44,*)(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
       case (5)
          ltordimn = merge(1,3,NO_K)
@@ -266,14 +266,14 @@
          write(44,*) "-----------------------------------------------"
       case (7)
          write(44,*) "-----------------------------------------------"
-         write(44,*) "pip and max_pip" , pip, max_pip,pea(1,1)
+         write(44,*) "pip and max_pip" , pip, max_pip,.not.is_nonexistent(1)
          write(44,*) s_time
          lparcnt = 1
          do lcurpar =1,max_pip
             if(lparcnt.gt.pip) exit
-            if(.not.pea(lcurpar,1)) cycle
+            if(is_nonexistent(lcurpar)) cycle
             lparcnt = lparcnt+1
-            if(pea(lcurpar,4)) cycle
+            if(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
             write(44,*) "position new ", des_pos_new(:,lcurpar)
          end do

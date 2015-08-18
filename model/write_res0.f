@@ -57,7 +57,7 @@
       integer, allocatable :: arr2(:)
       integer :: work_around(100)
 ! loop counters
-      INTEGER :: LC, L, N, M, IDX
+      INTEGER :: LC, L, N, IDX
 ! Pointer to the next record
       INTEGER :: NEXT_RECA
 ! file version id

@@ -26,7 +26,7 @@
 ! Local variables
 !-----------------------------------------------
 
-INTEGER :: cc,dd,ii,jj,iii,jjj,ddd,ll,cc_start,cc_end,cc_start_old,cc_end_old,cc_old
+INTEGER :: cc,ll,cc_start,cc_end,cc_start_old,cc_end_old,cc_old
 LOGICAL :: found
 
 !-----------------------------------------------
@@ -35,12 +35,9 @@ LOGICAL :: found
       neighbor_index_old(:) = neighbor_index(:)
 
 !$omp parallel do default(none) private(cc) &
-!$omp             shared(neighbors,neighbors_old,pv_neighbor,pv_neighbor_old, &
-!$omp                    pfn_neighbor,pfn_neighbor_old,pft_neighbor,pft_neighbor_old)
+!$omp shared(neighbors, neighbors_old, pft_neighbor, pft_neighbor_old)
       do cc=1, size(neighbors)
          neighbors_old(cc) = neighbors(cc)
-         pv_neighbor_old(cc) = pv_neighbor(cc)
-         pfn_neighbor_old(:,cc) = pfn_neighbor(:,cc)
          pft_neighbor_old(:,cc) = pft_neighbor(:,cc)
       enddo
 !$omp end parallel do
@@ -53,10 +50,10 @@ LOGICAL :: found
           CALL DESGRID_NEIGH_BUILD
       ENDIF
 
-!$omp parallel do default(none) private(cc,ll,found,cc_start,cc_end,cc_start_old,cc_end_old) &
-!$omp          shared(max_pip,neighbors,neighbor_index,neighbor_index_old,neighbors_old,     &
-!$omp                 pv_neighbor,pfn_neighbor,pft_neighbor,pfn_neighbor_old,pft_neighbor_old,pv_neighbor_old,neigh_max)
-
+!$omp parallel do default(none)                                         &
+!$omp private(cc,ll,found,cc_start,cc_end,cc_start_old,cc_end_old)      &
+!$omp shared(max_pip,neighbors,neighbor_index,neighbor_index_old,       &
+!$omp    neighbors_old, pft_neighbor,pft_neighbor_old,neigh_max)
       do ll = 1, max_pip
 
          CC_START = 1
@@ -71,20 +68,13 @@ LOGICAL :: found
             found = .false.
             DO CC_OLD = CC_START_OLD, CC_END_OLD-1
                if (neighbors(cc) .eq. neighbors_old(cc_old)) then
-                  pv_neighbor(cc) = pv_neighbor_old(cc_old)
-                  pfn_neighbor(:,cc) = pfn_neighbor_old(:,cc_old)
                   pft_neighbor(:,cc) = pft_neighbor_old(:,cc_old)
                   found = .true.
                   exit
                endif
             enddo
 
-            if (.not. found) then
-               pv_neighbor(cc) = .false.
-               pfn_neighbor(:,cc) = 0.0
-               pft_neighbor(:,cc) = 0.0
-            endif
-
+            if (.not.found) pft_neighbor(:,cc) = 0.0
          enddo
       enddo
 !$omp end parallel do

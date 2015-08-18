@@ -7,23 +7,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DTPIC
 
-      USE param1
-      USE funits
-      USE run
       USE compar
-      USE discretelement
       USE cutcell
-      use desmpi
-      use mpi_utility
-      USE geometry
       USE des_rxns
-      USE des_thermo
       USE des_stl_functions
-
+      USE des_thermo
+      USE discretelement
+      USE functions
+      USE funits
+      USE geometry
+      USE param1
+      USE run
+      use desmpi
+      use error_manager
       use mfix_pic, only: CFL_PIC, DTPIC_CFL, DTPIC_TAUP
       use mfix_pic, only: DTPIC_MAX
-
-      use error_manager
+      use mpi_utility
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -43,9 +42,9 @@
       PC = 1
       DO L = 1, MAX_PIP
       IF(PC.GT.PIP) EXIT
-         IF(.NOT.PEA(L,1)) CYCLE
+         IF(IS_NONEXISTENT(L)) CYCLE
          PC = PC+1
-         IF(PEA(L,4)) CYCLE
+         IF(IS_GHOST(L) .or. IS_ENTERING_GHOST(L) .or. IS_EXITING_GHOST(L)) CYCLE
 
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(L,1)))/&
             (ABS(DES_VEL_NEW(1,L))+SMALL_NUMBER)

@@ -105,14 +105,12 @@
       DOUBLE PRECISION :: DT_tmp
 ! loop counter
       INTEGER :: L
-! Error index
-      INTEGER :: IER
 ! DISTIO variable for specifying the mfix version
       CHARACTER(LEN=512) :: version
 ! environment variable
-      CHARACTER(LEN=512) :: omp_num_threads
-      INTEGER :: length
-      INTEGER :: status
+!$      CHARACTER(LEN=512) :: omp_num_threads
+!$      INTEGER :: length
+!$      INTEGER :: status
 
 !$      INTEGER num_threads, threads_specified, omp_id
 !$      INTEGER omp_get_num_threads

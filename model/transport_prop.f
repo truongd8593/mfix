@@ -65,7 +65,7 @@
             CASE (IA_2005)
                CALL CALC_IA_ENERGY_DISSIPATION_SS(M)
             CASE(GD_1999)
-               CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M, IER)
+               CALL CALC_GD_99_ENERGY_DISSIPATION_SS(M)
             CASE(GTSH_2012)
                CALL CALC_GTSH_ENERGY_DISSIPATION_SS(M)
             END SELECT
@@ -73,7 +73,7 @@
 ! these were moved after gran_diss since some quantities above are
 ! needed in the subsequent gtsh calculations
          IF (COND(M)) CALL CALC_K_S (M)   ! Solids conductivity
-         IF (VISC(M)) CALL CALC_MU_S (M, IER)  ! Solids viscosity
+         IF (VISC(M)) CALL CALC_MU_S (M)  ! Solids viscosity
          IF (DIFF(M)) CALL CALC_DIF_S (M) ! Solids diffusivity
       ENDDO
 

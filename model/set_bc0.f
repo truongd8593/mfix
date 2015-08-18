@@ -372,12 +372,11 @@
       use mms, only: mms_p_g, mms_t_g, mms_ep_g
       use mms, only: mms_theta_m, mms_t_s, mms_rop_s
 
-      use param1, only: undefined, zero
+      use param1, only: zero
       use physprop, only: smax, mmax, nmax
       use run, only: k_epsilon, kt_type_enum, ghd_2007
       use scalars, only: nscalar
       use scales, only: scale
-      use toleranc, only: tmin
 
       use indices, only: im1, jm1, km1
       use functions, only: is_on_mype_plus2layers
@@ -705,7 +704,7 @@
 ! index of neighboring fluid cell
       INTEGER :: FIJK
 ! local indices
-      INTEGER :: N, M
+      INTEGER :: M
 !--------------------------------------------------------------------//
 
       DO K = BC_K_B(BCV), BC_K_T(BCV)
@@ -778,7 +777,6 @@
 ! Specified constant gas density.
       use physprop, only: RO_G0
 
-      use geometry, only: CYCLIC
       use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
       use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
       use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
@@ -790,12 +788,8 @@
 
       use funits, only: DMP_LOG
 
-      use bc, only: BC_I_w, BC_I_e
-      use bc, only: BC_J_s, BC_J_n
-      use bc, only: BC_K_b, BC_K_t
       use bc, only: BC_DEFINED
       use bc, only: BC_TYPE
-      use bc, only: BC_PLANE
 
 ! MFIX Runtime parameters:
       use param, only: DIMENSION_BC

@@ -12,12 +12,11 @@
 !---------------------------------------------------------------------//
 ! Domain decomposition and dimensions
       use geometry, only: DX, XLENGTH, oDX, oDX_E
-      use geometry, only: DY, YLENGTH, oDZ, oDZ_T
+      use geometry, only: DY, oDZ, oDZ_T
       use geometry, only: DZ, ZLENGTH, oDY, oDY_N
       use geometry, only: X, X_E, oX, oX_E, XMIN
       use geometry, only: Z, Z_T
 ! Domain indices.
-      use geometry, only: IJKMAX3
       use geometry, only: DO_I, IMIN1, IMAX1, IMAX2, IMAX3, IMIN3, IMAX
       use geometry, only: DO_J, JMIN1, JMAX1, JMAX2, JMAX3, JMIN3
       use geometry, only: DO_K, KMIN1, KMAX1, KMAX2, KMAX3, KMIN3
@@ -25,15 +24,6 @@
       use geometry, only: FX_E, FX_E_bar, FX, FX_bar
       use geometry, only: FY_N, FY_N_bar
       use geometry, only: FZ_T, FZ_T_bar
-! Domain flags.
-      use geometry, only: ICBC_FLAG
-      use geometry, only: FLAG, FLAG3
-      use geometry, only: FLAG_E, FLAG_N, FLAG_T
-! Domain volumes and areas.
-      use geometry, only: VOL, AYZ, AXZ, AXY          ! Scalar grid
-      use geometry, only: VOL_U, AYZ_U, AXZ_U, AXY_U  ! X-Momentum
-      use geometry, only: VOL_V, AYZ_V, AXZ_V, AXY_V  ! Y-Momentum
-      use geometry, only: VOL_W, AYZ_W, AXZ_W, AXY_W  ! Z-Momentum
 ! Cyclic domain flags.
       use geometry, only: CYCLIC
       use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
@@ -44,21 +34,10 @@
 ! For cylindrical_2d simulations
       use geometry, only: CYLINDRICAL_2D, I_CYL_NUM, I_CYL_TRANSITION
       use geometry, only: cyl_X, cyl_X_E
-! Axis decomposition
-      USE param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-      USE param, only: DIMENSION_3, DIMENSION_4
-      USE param, only: DIMENSION_3G, DIMENSION_3L, DIMENSION_3P
 ! MPI-Domain decompoint and rank flags.
-      use compar, only: NODESI, NODESJ, NODESK, myPE
-! Rank specific decompositions.
-      use compar, only: IJKSIZE3_ALL
-      USE compar, only: iStart3, iEnd3, iStart4, iEnd4
-      USE compar, only: jStart3, jEnd3, jStart4, jEnd4
-      USE compar, only: kStart3, kEnd3, kStart4, kEnd4
+      use compar, only: NODESI, NODESJ, NODESK
 ! Flag for specificed constant mass flux.
       use bc, only: Flux_g
-! Flag for POST_MFIX
-      use cdist, only: bDoing_postmfix
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -82,8 +61,6 @@
       DOUBLE PRECISION :: DY_N
 ! Z-direction dimension of W-momentum cell
       DOUBLE PRECISION :: DZ_T
-! Error Flag
-      INTEGER :: IER
 ! Local variables for cylindrical_2d simulation
       integer i_cyl_min, i_cyl_max
       double precision l_ver, l_ab, rrr, ddy

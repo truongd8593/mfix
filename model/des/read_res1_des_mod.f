@@ -33,6 +33,7 @@
       END INTERFACE
 
       INTERFACE READ_RES_pARRAY
+         MODULE PROCEDURE READ_RES_pARRAY_1B
          MODULE PROCEDURE READ_RES_pARRAY_1I
          MODULE PROCEDURE READ_RES_pARRAY_1D
          MODULE PROCEDURE READ_RES_pARRAY_1L
@@ -83,7 +84,6 @@
 
       use compar, only: numPEs
       use machine, only: OPEN_N1
-      use geometry, only: NO_K
 
       use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -259,12 +259,12 @@
          RETURN
       ENDIF
 
-      allocate( dPAR_POS(lDIMN, pIN_COUNT))
+      allocate( dPAR_POS(pIN_COUNT, lDIMN))
 
 ! Only the IO proccess reads positions.
       IF(myPE == PE_IO) THEN
          DO LC1=1, merge(2,3,NO_K)
-            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(LC1,:),                &
+            CALL IN_BIN_512(RDES_UNIT, dPAR_POS(:,LC1),                &
                pIN_COUNT, lNEXT_REC)
          ENDDO
       ENDIF
@@ -310,7 +310,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE MAP_pARRAY_TO_PROC(lPAR_CNT)
 
-      use discretelement, only: PIP, MAX_PIP
+      use discretelement, only: PIP
       use discretelement, only: XE, YN, ZT
       use geometry, only: IMIN1, IMAX1
       use geometry, only: JMIN1, JMAX1
@@ -334,8 +334,6 @@
       INTEGER :: LC1, lPROC
 ! Error flag.
       INTEGER :: IER(0:numPEs-1)
-! Local scatter count.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
 ! The X/Y/Z bounds of the physical space "owned" by each process.
       DOUBLE PRECISION :: lxmin(0:NUMPEs-1), lxmax(0:NUMPEs-1)
       DOUBLE PRECISION :: lymin(0:NUMPEs-1), lymax(0:NUMPEs-1)
@@ -382,17 +380,17 @@
       IF(myPE == PE_IO) THEN
          DO LC1 = 1, pIN_COUNT
             DO lPROC=0, NUMPEs-1
-               IF(dPAR_POS(1,LC1) >= lxmin(lproc) .AND. &
-                  dPAR_POS(1,LC1) <  lxmax(lproc) .AND. &
-                  dPAR_POS(2,LC1) >= lymin(lproc) .AND. &
-                  dPAR_POS(2,LC1) <  lymax(lproc)) THEN
+               IF(dPAR_POS(LC1,1) >= lxmin(lproc) .AND. &
+                  dPAR_POS(LC1,1) <  lxmax(lproc) .AND. &
+                  dPAR_POS(LC1,2) >= lymin(lproc) .AND. &
+                  dPAR_POS(LC1,2) <  lymax(lproc)) THEN
                   IF(NO_K)THEN
                      lPAR_CNT(lPROC) = lPAR_CNT(lPROC) + 1
                      pRestartMap(LC1) = lproc
                      EXIT
                   ELSE
-                     IF(dPAR_POS(3,LC1) >= lzmin(lproc) .AND. &
-                        dPAR_POS(3,LC1) <  lzmax(lproc)) THEN
+                     IF(dPAR_POS(LC1,3) >= lzmin(lproc) .AND. &
+                        dPAR_POS(LC1,3) <  lzmax(lproc)) THEN
                         lPAR_CNT(lPROC) = lPAR_CNT(lPROC) + 1
                         pRestartMap(LC1) = lproc
                         EXIT
@@ -405,10 +403,10 @@
                WRITE(ERR_MSG,1000) trim(iVal(LC1))
                CALL FLUSH_ERR_MSG(FOOTER=.FALSE.)
                IF(NO_K) THEN
-                  WRITE(ERR_MSG,1001) dPAR_POS(1:2,LC1)
+                  WRITE(ERR_MSG,1001) dPAR_POS(LC1,1:2)
                   CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
                ELSE
-                  WRITE(ERR_MSG,1002) dPAR_POS(1:3,LC1)
+                  WRITE(ERR_MSG,1002) dPAR_POS(LC1,1:3)
                   CALL FLUSH_ERR_MSG(HEADER=.FALSE.)
                ENDIF
             ENDIF
@@ -469,8 +467,8 @@
       use compar, only: numPEs
 
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PEA
       use discretelement, only: PIP
+      use functions, only: SET_NORMAL
       use geometry, only: NO_K
 
       implicit none
@@ -480,10 +478,7 @@
 ! Dimensionality flag.
       INTEGER :: lDIMN
 ! Loop counters.
-      INTEGER :: LC1, lPROC, lBuf, IER
-! Scatter counts.
-      INTEGER :: lScatterCNTS(0:NUMPEs-1)
-
+      INTEGER :: LC1, lPROC, lBuf
 
       lDIMN = merge(2,3,NO_K)
 
@@ -514,7 +509,7 @@
          DO LC1 = 1,pIN_COUNT
             lPROC = pRestartMap(LC1)
             lbuf = iDispls(lProc) + lPAR_CNT(lProc)*lDIMN+1
-            dRootBuf(lBuf:lBuf+lDIMN-1) = dPAR_POS(1:lDIMN,LC1)
+            dRootBuf(lBuf:lBuf+lDIMN-1) = dPAR_POS(LC1,1:lDIMN)
             lBuf = lBuf + lDIMN
             lPAR_CNT(lProc) = lPAR_CNT(lProc) + 1
          ENDDO
@@ -526,7 +521,7 @@
          lBuf = (LC1-1)*lDIMN+1
          DES_POS_NEW(1:lDIMN,LC1) = dProcBuf(lBuf:lBuf+lDIMN-1)
          lBuf = lBuf + lDIMN
-         PEA(LC1,1) = .TRUE.
+         CALL SET_NORMAL(LC1)
       ENDDO
 
       IF(allocated(dRootBuf)) deallocate(dRootBuf)
@@ -535,7 +530,6 @@
 
       RETURN
       END SUBROUTINE SCATTER_PAR_POS
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: READ_PAR_COL                                             !
@@ -630,10 +624,10 @@
 
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
-      use discretelement, only: PIP, PEA
+      use discretelement, only: PIP
       use discretelement, only: NEIGH_MAX, NEIGH_NUM
+      use functions, only: IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
-!      use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_MAX
 
@@ -642,7 +636,7 @@
       INTEGER, INTENT(OUT) :: lCOL_CNT(0:numPEs-1)
 
 ! Loop counters.
-      INTEGER :: LC1, LC2, lPROC, lBUF
+      INTEGER :: LC1, LC2
 ! Error flag.
       INTEGER :: IER
 ! Max global id.
@@ -672,7 +666,7 @@
 
          lGLOBAL_OWNER = 0
          DO LC1=1, PIP
-            IF(.NOT.PEA(LC1,4)) &
+            IF(.NOT.IS_GHOST(LC1) .AND. .NOT.IS_ENTERING_GHOST(LC1) .AND. .NOT.IS_EXITING_GHOST(LC1)) &
                lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
          ENDDO
 
@@ -782,11 +776,8 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE GLOBAL_TO_LOC_COL
 
-      use compar, only: numPEs
-      use discretelement, only: NEIGHBORS
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
-      use discretelement, only: PEA
 
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_MAX
@@ -866,8 +857,8 @@
  !          ENDIF
  !       ENDDO LP1
 
- 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
-         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
+! 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
+!         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
 
       CALL GLOBAL_ALL_SUM(UNMATCHED)
       IF(UNMATCHED /= 0) THEN
@@ -1075,6 +1066,82 @@
       RETURN
       END SUBROUTINE READ_RES_DES_1L
 
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: READ_RES_DES_1B                                          !
+!                                                                      !
+! Purpose: Write scalar bytes to RES file.                             !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE READ_RES_pARRAY_1B(lNEXT_REC, OUTPUT_B)
+
+      use discretelement, only: PIP
+
+      use desmpi, only: iRootBuf
+      use desmpi, only: iProcBuf
+
+      use compar, only: numPEs
+      USE in_binary_512i
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      INTEGER(KIND=1), INTENT(OUT) :: OUTPUT_B(:)
+
+
+      LOGICAL :: lLOC2GLB
+! Loop counters
+      INTEGER :: LC1, lc2
+
+      INTEGER :: lPROC
+
+      INTEGER, ALLOCATABLE :: OUTPUT_I(:)
+      INTEGER, ALLOCATABLE :: lBUF_I(:)
+      INTEGER, ALLOCATABLE :: lCOUNT(:)
+
+      allocate(iPROCBUF(pPROCCNT))
+      allocate(iROOTBUF(pROOTCNT))
+
+
+      iDISPLS = pDISPLS
+      iScr_RecvCNT = pRECV
+      iScatterCNTS = pSCATTER
+
+      allocate(output_i(size(output_b)))
+      OUTPUT_I(:) = OUTPUT_B(:)
+
+      IF(bDIST_IO) THEN
+         CALL IN_BIN_512i(RDES_UNIT, OUTPUT_I, pIN_COUNT, lNEXT_REC)
+         OUTPUT_B(:) = OUTPUT_I(:)
+      ELSE
+
+         IF(myPE == PE_IO) THEN
+            allocate(lBUF_I(pIN_COUNT))
+            allocate(lCOUNT(0:NUMPEs-1))
+
+            CALL IN_BIN_512i(RDES_UNIT, lBUF_I, pIN_COUNT, lNEXT_REC)
+
+            lCOUNT = 0
+            DO LC1=1, pIN_COUNT
+               lPROC = pRestartMap(LC1)
+               lCOUNT(lPROC) = lCOUNT(lPROC) + 1
+               iRootBuf(iDispls(lPROC) + lCOUNT(lPROC)) = lBUF_I(LC1)
+            ENDDO
+
+            deallocate(lBUF_I)
+            deallocate(lCOUNT)
+         ENDIF
+         CALL DESMPI_SCATTERV(ptype=1)
+         DO LC1=1, PIP
+            OUTPUT_B(LC1) = iProcBuf(LC1)
+         ENDDO
+
+      ENDIF
+
+      deallocate(iPROCBUF)
+      deallocate(iROOTBUF)
+      deallocate(output_i)
+
+      RETURN
+     END SUBROUTINE READ_RES_pARRAY_1B
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: READ_RES_DES_1I                                          !
@@ -1096,9 +1163,8 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(OUT) :: OUTPUT_I(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1, lc2
+      INTEGER :: LC1
 
       INTEGER :: lPROC
 
@@ -1232,7 +1298,6 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(OUT) :: OUTPUT_L(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
       INTEGER :: LC1
 
@@ -1444,7 +1509,6 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(OUT) :: OUTPUT_L(:)
 
-      LOGICAL :: lLOC2GLB
 ! Loop counters
       INTEGER :: LC1
 
@@ -1503,6 +1567,5 @@
 
       RETURN
       END SUBROUTINE READ_RES_cARRAY_1L
-
 
       END MODULE READ_RES1_DES

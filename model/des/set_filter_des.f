@@ -8,11 +8,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_FILTER_DES
 
-! Runtime Flag: Utilize cutcell geometry.
-      use cutcell, only: CARTESIAN_GRID
 ! Runtime Flag: Invoke gas/solids coupled simulation.
-      use discretelement, only: DES_CONTINUUM_COUPLED
-
       use geometry, only: DX, IMIN1, IMAX1
       use geometry, only: DY, JMIN1, JMAX1
       use geometry, only: DZ, KMIN1, KMAX1, DO_K
@@ -22,19 +18,16 @@
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
-      use particle_filter, only: DES_INTERP_SCHEME
 
       use particle_filter, only: DES_INTERP_WIDTH
       use particle_filter, only: FILTER_WIDTH_INTERP
-      use particle_filter, only: DES_INTERP_MEAN_FIELDS
-      use particle_filter, only: DES_INTERP_ON
 
       use particle_filter, only: OoFILTER_VOL
       use particle_filter, only: FILTER_WIDTH_INTERPx3
 
       use desgrid, only: DG_DXinv, DG_DYinv, DG_DZinv
 
-      use param1, only: ONE, UNDEFINED, UNDEFINED_C
+      use param1, only: ONE, UNDEFINED
 
       use sendrecvnode, only: DES_SETNODEINDICES
       use mpi_utility, only: GLOBAL_ALL_MIN

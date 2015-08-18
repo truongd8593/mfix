@@ -32,7 +32,6 @@
       USE progress_bar
       USE dashboard
       Use stl
-      USE rxns, only: nRR
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -932,6 +931,15 @@
 !  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
       VTK_DT     = UNDEFINED
 !</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>When VTK_DBG_FILE is .TRUE., the VTK region file is only written
+!   when the subroutine WRITE_DBG_VTU_AND_VTP_FILES is called, typically in a UDF.
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_DBG_FILE = .FALSE.
+!</keyword>
+
+
 
 !<keyword category="Output Control" required="false">
 !  <description>List of variables written in the VTK files.</description>

@@ -136,15 +136,15 @@
 
 ! calculate the convection-diffusion terms for the gas and solids phase
 ! u-momentum equations
-      CALL CONV_DIF_U_G (A_M, B_M, IER)
-      IF(DO_SOLIDS) CALL CONV_DIF_U_S (A_M, B_M, IER)
+      CALL CONV_DIF_U_G (A_M, B_M)
+      IF(DO_SOLIDS) CALL CONV_DIF_U_S (A_M, B_M)
 
 ! calculate the source terms for the gas and solids phase u-momentum
 ! equations
-      CALL SOURCE_U_G (A_M, B_M, IER)
+      CALL SOURCE_U_G (A_M, B_M)
       IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M)
       IF(DO_SOLIDS) THEN
-         CALL SOURCE_U_S (A_M, B_M, IER)
+         CALL SOURCE_U_S (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M)
       ENDIF
 
@@ -268,16 +268,16 @@
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(DO_SOLIDS) CALL CONV_DIF_V_S (A_M, B_M, IER)
 
-      CALL SOURCE_V_G (A_M, B_M, IER)
+      CALL SOURCE_V_G (A_M, B_M)
       IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M)
 
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(DO_SOLIDS) THEN
-         CALL SOURCE_V_S (A_M, B_M, IER)
+         CALL SOURCE_V_S (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M)
       END IF
 
-      CALL VF_GS_Y (VXF_GS, IER)
+      CALL VF_GS_Y (VXF_GS)
       IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS)
       ENDIF
@@ -393,14 +393,14 @@
             IF (M >= 1) VXF_GS(:,M) = ZERO
          ENDDO
 
-         CALL CONV_DIF_W_G (A_M, B_M, IER)
-         IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M, IER)
+         CALL CONV_DIF_W_G (A_M, B_M)
+         IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M)
 
-         CALL SOURCE_W_G (A_M, B_M, IER)
+         CALL SOURCE_W_G (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
          IF(DO_SOLIDS) THEN
-            CALL SOURCE_W_S (A_M, B_M, IER)
+            CALL SOURCE_W_S (A_M, B_M)
             IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M)
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)

@@ -67,9 +67,9 @@
          lNP_LP: DO lNP = 1, PINC(IJK)
             NP = PIC(IJK)%p(lNP)
 ! Skip indices that do not represent particles
-            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+            IF(IS_NONEXISTENT(NP)) CYCLE lNP_LP
 ! Skip indices that represent ghost particles
-            IF(PEA(NP,4)) CYCLE lNP_LP
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE lNP_LP
 ! Advance particle position, velocity
             IF (INTG_EULER) THEN
 
@@ -175,9 +175,9 @@
          lNP_LP: DO lNP = 1, PINC(IJK)
             NP = PIC(IJK)%p(lNP)
 ! Skip indices that do not represent particles
-            IF(.NOT.PEA(NP,1)) CYCLE lNP_LP
+            IF(IS_NONEXISTENT(NP)) CYCLE lNP_LP
 ! Skip indices that represent ghost particles
-            IF(PEA(NP,4)) CYCLE lNP_LP
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE lNP_LP
 ! Update the sum of particle temperatures in fluid cell IJK.
             SUM_T_s = SUM_T_s + DES_T_s_NEW(NP)
          ENDDO lNP_LP ! End loop over all particles

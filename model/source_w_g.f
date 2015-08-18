@@ -20,7 +20,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE SOURCE_W_G(A_M, B_M, IER)
+      SUBROUTINE SOURCE_W_G(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -41,7 +41,7 @@
       USE functions, only: ip_of, jp_of, kp_of, im_of, jm_of, km_of
       USE functions, only: east_of, west_of, top_of, bottom_of
       USE functions, only: zmax
-      USE geometry, only: kmax1, cyclic_z_pd, cylindrical, do_k
+      USE geometry, only: kmax1, cyclic_z_pd, cylindrical
       USE geometry, only: vol, vol_w
       USE geometry, only: axy, ayz, axz, ayz_w
       USE geometry, only: ox, ox_e, dy, dz, odx_e
@@ -55,7 +55,7 @@
 
       USE mms, only: use_mms, mms_w_g_src
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, one, half, small_number
+      USE param1, only: zero, one, half
       USE physprop, only: mmax, smax
       USE physprop, only: mu_g, cv
       USE run, only: momentum_z_eq
@@ -79,8 +79,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -1060,7 +1058,7 @@
       use constant
       use geometry
       use indices
-      use param1, only: one, small_number, zero
+      use param1, only: small_number, zero
       use physprop
       use ps
       use run

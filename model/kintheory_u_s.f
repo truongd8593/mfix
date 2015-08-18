@@ -8,7 +8,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CALC_KTMOMSOURCE_U_S(IER)
+      SUBROUTINE CALC_KTMOMSOURCE_U_S()
 
 !-----------------------------------------------
 ! Modules
@@ -27,11 +27,6 @@
       USE kintheory, only: ktmom_u_s
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------

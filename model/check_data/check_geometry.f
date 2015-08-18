@@ -13,7 +13,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Domain partitions in various directions.
-      use geometry, only: DX, XLENGTH, XMIN
+      use geometry, only: DX, XLENGTH
       use geometry, only: DY, YLENGTH
       use geometry, only: DZ, ZLENGTH
 
@@ -21,24 +21,14 @@
       use geometry, only: NO_J, JMIN1, JMAX, JMAX1, JMAX3
       use geometry, only: NO_K, KMIN1, KMAX, KMAX1, KMAX3
 
-      use bc, only: Flux_g
-
 ! Runtime flag specifying 2D simulations
 !      use geometry, only: NO_K
 
-      use geometry, only: COORDINATES, CYLINDRICAL
-      use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
-      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
-      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
+      use geometry, only: CYLINDRICAL
+      use geometry, only: CYCLIC_X, CYCLIC_X_PD
+      use geometry, only: CYCLIC_Y, CYCLIC_Y_PD
+      use geometry, only: CYCLIC_Z, CYCLIC_Z_PD
 !      use geometry, only: COORDINATES
-
-      use cutcell, only: PARTIAL_CHECK_03
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: ONE, ZERO, UNDEFINED_I, UNDEFINED
-
-      use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//

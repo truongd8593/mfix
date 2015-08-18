@@ -53,7 +53,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
-      USE param1, only: zero, half, one
+      USE param1, only: zero, half
       USE constant
       USE physprop
       USE fldvar
@@ -242,7 +242,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE param, only: dimension_3
-      USE param1, only: zero, half, one
+      USE param1, only: zero, half
       USE constant
       USE physprop
       USE fldvar
@@ -631,8 +631,6 @@
 ! indices
       INTEGER :: I, IJKE
       INTEGER :: IPJK, IJPK, IJKP, IMJK, IJMK, IJKM
-! average void fraction
-      DOUBLE PRECISION :: EPGA
 ! average viscosity
       DOUBLE PRECISION :: MUGA
 ! source terms

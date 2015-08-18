@@ -11,16 +11,12 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Runtime Flag: Invoke gas/solids coupled simulation.
-      USE discretelement, only: DES_CONTINUUM_COUPLED
 ! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only: GENER_PART_CONFIG
 ! Runtime Flag: Invoke MPPIC model.
       USE mfix_pic, only: MPPIC
 ! Runtime Flag: Store DES_*_OLD arrays.
       USE discretelement, only: DO_OLD
-! Runtime Flag: Invoke TFM/DEM hybrid model.
-      USE discretelement, only: DES_CONTINUUM_HYBRID
 ! Runtime Flag: Solve energy equations
       USE run, only: ENERGY_EQ
 ! Runtime Flag: One or more species equations are solved.
@@ -243,7 +239,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-      use run, only: ENERGY_EQ
       use run, only: UNITS
 
       use discretelement, only: DES_MMAX
@@ -270,7 +265,6 @@
 ! Enumerated interpolation scheme for faster access
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
-      use particle_filter, only: DES_INTERP_GARG
 ! Flag to explicitly couple source terms and DES
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
@@ -393,7 +387,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-      use run, only: ANY_SPECIES_EQ
       use stiff_chem, only: STIFF_CHEMISTRY
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! User input for DES interpolation scheme.
@@ -401,7 +394,6 @@
 ! Enumerated interpolation scheme for faster access
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
-      use particle_filter, only: DES_INTERP_GARG
 
       use error_manager
 
@@ -466,19 +458,15 @@
 ! Modules
 !-----------------------------------------------
       USE geometry, only: COORDINATES
-      USE geometry, only: DO_I, DO_J, DO_K
-      USE geometry, only: NO_I, NO_J, NO_K
+      USE geometry, only: NO_I, NO_J
       USE geometry, only: ZLENGTH
 ! Flag: Use DES E-L model
-      use discretelement, only: DISCRETE_ELEMENT
       USE discretelement, only: DES_CONTINUUM_COUPLED
       USE discretelement, only: MAX_RADIUS
 ! Flag: Use Cartesian grid cut-cell implementation
       USE cutcell, only: CARTESIAN_GRID
 ! Flag: Use STL representation in CG
       USE cutcell, only: USE_STL
-
-      use param1, only: UNDEFINED_I
 
       use error_manager
 
@@ -546,14 +534,7 @@
 
       RETURN
 
- 1000 FORMAT('Error 1000: Required input not specified: ',A,/'Please ',&
-         'correct the mfix.dat file.')
-
- 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/   &
-         'Please correct the mfix.dat file.')
-
       END SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -565,8 +546,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_INTERP
 
-! Runtime Flag: Utilize cutcell geometry.
-      use cutcell, only: CARTESIAN_GRID
 ! Runtime Flag: Invoke gas/solids coupled simulation.
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Runtime Flag: Invoke MPPIC model.
@@ -594,14 +573,11 @@
 ! Runtime FLag: 3D simulation
       use geometry, only: DO_K
 
-      use param1, only: UNDEFINED, UNDEFINED_C
+      use param1, only: UNDEFINED
 
       use error_manager
 
       IMPLICIT NONE
-
-      DOUBLE PRECISION :: DXYZ_MIN
-
 
 !......................................................................!
 

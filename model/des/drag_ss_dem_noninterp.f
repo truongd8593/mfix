@@ -14,8 +14,6 @@
 !---------------------------------------------------------------------//
 ! The count and a list of particles in IJK
       use discretelement, only: PINC, PIC
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
@@ -48,6 +46,8 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 
+      use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -78,7 +78,7 @@
 ! Calculate the solid-solid drag for each particle.
 !---------------------------------------------------------------------//
 !!$omp parallel do schedule(guided, 50) default(none)              &
-!!$omp shared(IJKSTART3, IJKEND3, PINC, PEA, PIC, DES_VEL_NEW,     &
+!!$omp shared(IJKSTART3, IJKEND3, PINC, PIC, DES_VEL_NEW,          &
 !!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
 !!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
 !!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
@@ -101,8 +101,8 @@
          DO NINDX = 1,PINC(IJK)
             NP = PIC(IJK)%P(NINDX)
 ! skipping indices that do not represent particles and ghost particles
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(PEA(NP,4)) CYCLE
+            IF(IS_NONEXISTENT(NP)) CYCLE
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Diameter of particle (not a phase diameter).
             lDP = 2.0d0*DES_RADIUS(NP)
@@ -166,12 +166,10 @@
 !---------------------------------------------------------------------//
 ! The count and a list of particles in IJK
       use discretelement, only: PINC, PIC
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
-      use discretelement, only: DES_RADIUS, PVOL
+      use discretelement, only: DES_RADIUS
 ! Total forces acting on particle
       use discretelement, only: SDRAG_AM, SDRAG_BM, F_SDS
 ! Number of continuum solids phases
@@ -199,6 +197,9 @@
       use param1, only: ZERO, ONE
 ! Array sizes for solids
       use param, only: DIMENSION_M
+
+      use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -249,8 +250,8 @@
          DO NINDX = 1,PINC(IJK)
             NP = PIC(IJK)%P(NINDX)
 ! skipping indices that do not represent particles and ghost particles
-            IF(.NOT.PEA(NP,1)) CYCLE
-            IF(PEA(NP,4)) CYCLE
+            IF(IS_NONEXISTENT(NP)) CYCLE
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Diameter of particle (not a phase diameter).
             lDP = 2.0d0*DES_RADIUS(NP)
@@ -406,8 +407,6 @@
 !---------------------------------------------------------------------//
 ! The count and a list of particles in IJK
       use discretelement, only: PINC, PIC
-! Flags indicating the state of particle
-      use discretelement, only: PEA
 ! Particle volume and radius
       use discretelement, only: PVOL, DES_RADIUS
 ! Volume of scalar cell
@@ -419,6 +418,8 @@
 ! Number of continuum solids phases
       use physprop, only: MMAX
 
+      use discretelement
+      use functions
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -443,8 +444,8 @@
       lEPSoDP = ZERO
       DO NINDX = 1,PINC(IJK)
          NP = PIC(IJK)%P(NINDX)
-         IF(.NOT.PEA(NP,1)) CYCLE
-         IF(PEA(NP,4)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
+         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
          lEPSoDP = lEPSoDP + PVOL(NP)/DES_RADIUS(NP)
       ENDDO
 ! Convert radius to diameter and divide by cell volume.
@@ -457,4 +458,3 @@
 
       RETURN
       END SUBROUTINE CALC_EPSoDP
-

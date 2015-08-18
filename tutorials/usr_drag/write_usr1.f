@@ -26,7 +26,8 @@
       use discretelement, only: DES_MMAX
       use discretelement, only: DES_VEL_NEW
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PIJK, PIP, PEA
+      use discretelement, only: PIJK, PIP
+      use functions, only: IS_NONEXISTENT
 
       IMPLICIT NONE
 
@@ -38,7 +39,7 @@
       IF( L /= 1) RETURN
 
       DO NP=1, PIP
-         IF(.NOT.PEA(NP,1)) CYCLE
+         IF(is_nonexistent(NP)) CYCLE
          lUNIT = 750 + PIJK(NP,5)
          WRITE(lUNIT,1100) TIME, DES_POS_NEW(2,NP),                    &
             sqrt(DOT_PRODUCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))

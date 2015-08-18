@@ -11,10 +11,9 @@
 
 ! Modules
 ! --------------------------------------------------------------------//
-      use bc, only: bc_ep_g, bc_rop_s, bc_ep_s
+      use bc, only: bc_ep_g, bc_rop_s
       use param1, only: one, undefined, zero
       use physprop, only: ro_s0
-      use discretelement, only: discrete_element
       use run, only: solids_model
       use toleranc, only: compare
       use error_manager
@@ -141,7 +140,6 @@
 
 ! Modules
 ! --------------------------------------------------------------------//
-      USE param, only: DIM_M
       USE param1, only: UNDEFINED
       USE param1, only: ZERO
       use physprop, only: RO_g0

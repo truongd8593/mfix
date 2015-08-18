@@ -65,8 +65,6 @@
       END SUBROUTINE WRITE_DES_DATA
 !-----------------------------------------------
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: WRITE_DES_VTP                                           !
@@ -121,7 +119,6 @@
 ! It returns back the number of points as a string.
       CALL VTP_OPEN_FILE(lNoP)
 
-
 ! Standard VTP header information:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('<?xml version="1.0"?>')
@@ -134,13 +131,11 @@
          &NumberOfVerts="0" NumberOfLines="0" NumberOfStrips="0" &
          &NumberOfPolys="0">')
 
-
 ! Points are the particle identified by position:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('<Points>')
       CALL VTP_WRITE_DATA('Position', DES_POS_NEW)
       CALL VTP_WRITE_ELEMENT('</Points>')
-
 
 ! PointData are individual particle properties:
 !----------------------------------------------------------------------/
@@ -157,7 +152,11 @@
       IF(DES_USR_VAR_SIZE > 0) &
          CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 
+      IF(PARTICLE_ORIENTATION) &
+         CALL VTP_WRITE_DATA('Orientation', ORIENTATION)
+
 !      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
+
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
 
@@ -180,7 +179,6 @@
       CALL VTP_WRITE_ELEMENT('<Strips></Strips>')
       CALL VTP_WRITE_ELEMENT('<Polys></Polys>')
 
-
 ! Close all the opened tags:
 !----------------------------------------------------------------------/
       CALL VTP_WRITE_ELEMENT('</Piece>')
@@ -192,11 +190,8 @@
 ! Add the new VTP file to the PVD file for time association.
       CALL ADD_VTP_TO_PVD
 
-
       RETURN
       END SUBROUTINE WRITE_DES_VTP
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
@@ -260,7 +255,7 @@
 
 ! Variables related to gathering info at PE_IO
       integer llocalcnt,lglocnt,lgathercnts(0:numpes-1),lproc,ltotvar,lcount
-      real,dimension(:,:), allocatable :: ltemp_array
+      double precision, dimension(:,:), allocatable :: ltemp_array
 
       INTEGER :: wDIMN
 
@@ -309,9 +304,9 @@
          pc = 1
          do l = 1,max_pip
             if(pc.gt.pip) exit
-            if(.not.pea(l,1)) cycle
+            if(is_nonexistent(l)) cycle
             pc = pc+1
-            if(pea(l,4)) cycle
+            if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
             if(DO_K) then
                write (des_data, '(8(2x,es12.5))')&
                   (des_pos_new(k,l),k=1,wDIMN),(des_vel_new(k,l),k=1,wDIMN), &
@@ -438,7 +433,6 @@
 !-----------------------------------------------
 !-----------------------------------------------
 
-
 ! after tmin start storing bed height. after enough measurements
 ! have been taken (i.e. tcount > 20) start to calculate a running
 ! average bed height and running rms bed height for solids phase 1 only
@@ -507,8 +501,6 @@
 
       END SUBROUTINE WRITE_DES_BEDHEIGHT
 !-----------------------------------------------
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !

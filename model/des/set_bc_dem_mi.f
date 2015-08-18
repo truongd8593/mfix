@@ -36,7 +36,6 @@
 !-----------------------------------------------
       INTEGER BCV_I      ! BC loop counter
       INTEGER M, MM           ! Mass phase loop counter
-      INTEGER HOLD, I         ! Dummy values
       INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
       INTEGER PHASE_CNT        ! Number of solid phases at bc
       INTEGER PHASE_LIST(DIM_M) ! List of phases used in current bc
@@ -62,7 +61,7 @@
 
 ! Minimum/maximum solids velocity at inlet.  Also used in the iterative
 ! steps as the starting and ending velocities
-      DOUBLE PRECISION  MIN_VEL, MAX_VEL
+      DOUBLE PRECISION  MAX_VEL
 
       DOUBLE PRECISION  MINIPV, MAXIPV
 

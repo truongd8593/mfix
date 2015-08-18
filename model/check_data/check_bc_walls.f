@@ -13,12 +13,6 @@
 !---------------------------------------------------------------------//
 ! Flag: Identifies solids model (TFM,DEM,PIC)
       use run, only: SOLIDS_MODEL
-! Flag: Solve granular energy PDE
-      use run, only: GRANULAR_ENERGY
-! Flag: Use Jenkins small friction BC
-      use run, only: JENKINS
-! Flag: Use revised phihp for JJ BC.
-      use bc, only: BC_JJ_PS
 ! User-input: solids kinetic-theory model.
       use run, only: KT_TYPE_ENUM, GHD_2007
 
@@ -26,8 +20,6 @@
 !---------------------------------------------------------------------//
 ! Maximum number of solids phases
       use param, only: DIM_M
-! Parameter constant.
-      use param1, only: UNDEFINED_I
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -532,29 +524,19 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! User-input: type of BC
-      use bc, only: BC_TYPE
 ! User-Input: solids velocity at wall BCs.
       use bc, only: BC_UW_s, BC_VW_s, BC_WW_s
 ! User-Input: solids energy eq BCs.
       use bc, only: BC_HW_T_s, BC_TW_s, BC_C_T_s
 ! User-Input: solids species eq BCs.
       use bc, only: BC_HW_X_s, BC_XW_s, BC_C_X_s
-! Total number of solids phases
-      use physprop, only: MMAX
-! Total number of speices in each phase.
-      use physprop, only: NMAX
-! Flag: Solve energy equations.
-      use run, only: ENERGY_EQ
-! Flag: Solve species equations.
-      use run, only: SPECIES_EQ
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Maximum number of possible species.
       use param, only: DIM_N_S
 ! Parameter constants.
-      use param1, only: ZERO, UNDEFINED
+      use param1, only: UNDEFINED
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//

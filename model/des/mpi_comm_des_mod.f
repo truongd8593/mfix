@@ -244,15 +244,14 @@
       lcount = 0
       do lcurpar = 1, max_pip
          if (lparcount.gt.pip) exit
-         if (.not. pea(lcurpar,1)) cycle
+         if (is_nonexistent(lcurpar)) cycle
          lparcount = lparcount +1
-         if (pea(lcurpar,4)) cycle
+         if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lcount = lcount + 1
          dprocbuf(lcount) = parray(lcurpar)
       end do
       call desmpi_gatherv(ptype=2)
       end subroutine des_gather_d
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_l
@@ -278,9 +277,9 @@
       lcount = 0
       do lcurpar = 1, max_pip
          if (lparcount.gt.pip) exit
-         if (.not. pea(lcurpar,1)) cycle
+         if (is_nonexistent(lcurpar)) cycle
          lparcount = lparcount +1
-         if (pea(lcurpar,4)) cycle
+         if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
          lcount = lcount + 1
          if(parray(lcurpar)) then
             iprocbuf(lcount) = 1
@@ -291,7 +290,6 @@
       call desmpi_gatherv(ptype=1)
 
       end subroutine des_gather_l
-
 
 !------------------------------------------------------------------------
 ! Subroutine       : des_gather_i
@@ -328,9 +326,9 @@
       if (lloc2glb) then
          do lcurpar = 1, max_pip
             if (lparcount.gt.pip) exit
-            if (.not. pea(lcurpar,1)) cycle
+            if (is_nonexistent(lcurpar)) cycle
             lparcount = lparcount +1
-            if (pea(lcurpar,4)) cycle
+            if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
             lcount = lcount + 1
             if(parray(lcurpar).gt.0) then
                iprocbuf(lcount) = iglobal_id(parray(lcurpar))
@@ -341,9 +339,9 @@
       else
          do lcurpar = 1, max_pip
             if (lparcount.gt.pip) exit
-            if (.not. pea(lcurpar,1)) cycle
+            if (is_nonexistent(lcurpar)) cycle
             lparcount = lparcount +1
-            if (pea(lcurpar,4)) cycle
+            if(is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
             lcount = lcount + 1
             iprocbuf(lcount) = parray(lcurpar)
          end do

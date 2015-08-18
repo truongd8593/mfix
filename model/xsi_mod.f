@@ -89,8 +89,6 @@
       DOUBLE PRECISION :: cf
 ! cell widths for QUICKEST
       DOUBLE PRECISION :: oDXc, oDXuc, oDYc, oDYuc, oDZc, oDZuc
-! Error message
-      CHARACTER(LEN=80)     LINE(1)
 !---------------------------------------------------------------------//
 
       IF (SHEAR) THEN

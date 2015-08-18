@@ -11,7 +11,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CONV_DIF_U_S(A_M, B_M, IER)
+      SUBROUTINE CONV_DIF_U_S(A_M, B_M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -31,8 +31,6 @@
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local Variables
 !---------------------------------------------------------------------//
@@ -49,13 +47,13 @@
 
              IF(DEF_COR)THEN
 ! USE DEFERRED CORRECTION TO SOLVE U_S
-                CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 IF (DISCRETIZE(3) > 1) CALL STORE_A_U_SDC (M, B_M)
 
              ELSE
 ! DO NOT USE DEFERRED CORRECTION TO SOLVE FOR U_S
                 IF (DISCRETIZE(3) == 0) THEN         ! 0 & 1 => FOUP
-                   CALL STORE_A_U_S0 (A_M(1,-3,M), M, IER)
+                   CALL STORE_A_U_S0 (A_M(1,-3,M), M)
                 ELSE
                    CALL STORE_A_U_S1 (A_M(1,-3,M), M)
                 ENDIF
@@ -414,7 +412,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE STORE_A_U_S0(A_U_S, M, IER)
+      SUBROUTINE STORE_A_U_S0(A_U_S, M)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -437,8 +435,6 @@
       INTEGER, INTENT(IN) :: M
 ! Septadiagonal matrix A_U_s
       DOUBLE PRECISION, INTENT(INOUT) :: A_U_s(DIMENSION_3, -3:3, M:M)
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -576,10 +572,8 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE matrix, only: e, w, n, s, t, b
-
       USE param, only: dimension_3, dimension_m
-      USE param1, only: zero, half
+      USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3

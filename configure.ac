@@ -30,7 +30,7 @@ AX_CHECK_COMPILE_FLAG([-assume byterecl], [
                         FCFLAGS="$FCFLAGS -assume byterecl"])
 
 AC_CONFIG_SRCDIR([model/mfix.f])
-AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
 AC_ARG_ENABLE([mkl],
 [  --enable-mkl    Turn on Math Kernel Library support],
@@ -77,6 +77,7 @@ AM_CONDITIONAL([MPI], [test x$dmp = xtrue])
 
 AC_FC_SRCEXT(f)
 AC_FC_FREEFORM()
+AC_FC_LINE_LENGTH([unlimited])
 AC_FC_IMPLICIT_NONE
 
 AC_FC_MODULE_FLAG

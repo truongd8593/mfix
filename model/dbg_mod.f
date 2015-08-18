@@ -82,8 +82,6 @@
       INTEGER, parameter :: dbgUnit = 9659
 
 ! File structure information: (optional)
-! Variable named used to create file name.
-      CHARACTER(len=64) :: fVar
 ! Pass count if dumping at multiple locations or during iterations.
       INTEGER :: fPass
 ! Flag to append to previous output.

@@ -687,7 +687,7 @@
            do j = 1,ny
               do k = 1,nz
                  ijk = ijk + 1
-                 rarr(i,j,k) = darr(ijk)
+                 rarr(i,j,k) = real(darr(ijk))
               end do
            end do
         end do
@@ -829,10 +829,6 @@
 
         return
         end subroutine write_mesh_netcdf
-
-
-
-
 
         SUBROUTINE write_netcdf(L, unit_add, the_time)
 

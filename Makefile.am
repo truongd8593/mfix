@@ -12,13 +12,15 @@ FC_MODEXT=mod
 
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
-CLEANFILES=$(MODDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+MODOUTDIR=$(MODDIR)
+CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+DISTCLEANFILES = build-aux/Makefile.usr
 
 # Fortran preprocessor is used (-cpp)
 AM_FCFLAGS = -cpp
 AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
-AM_FCFLAGS += $(FC_MODOUT)$(MODDIR)
+AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
 
 NETCDF_LIB=@NETCDF_LIB@
@@ -28,7 +30,7 @@ export NETCDF_INCLUDE
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
@@ -38,7 +40,7 @@ $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
 #           mfix executable                                    #
 #                                                              #
 ################################################################
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
@@ -52,9 +54,17 @@ libmfix_a_SOURCES =
 #                                                              #
 ################################################################
 
-bin_PROGRAMS += postmfix
+bin_PROGRAMS += postmfix$(EXEEXT)
 
 postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
+
+# Override $(MODOUTDIR) so post_mfix/functions.mod does not conflict with
+# the model/functions.mod.  Both functions.mod files should be the same, but
+# compiling both functions_mod.f files in  parallel may cause an error
+# if they try to write functions.mod to the same path.
+post_mfix/functions_mod.o : MODOUTDIR = $(top_builddir)/post_mfix
+
+CLEANFILES += post_mfix/functions.mod
 
 ################################################################
 #                                                              #
@@ -84,8 +94,6 @@ EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
 $(eval -include $(libmfix_src:%.f=%.d) )
 $(eval -include $(postmfix_SOURCES:%.f=%.d) )
 @make_endif@
-
-DISTCLEANFILES = build-aux/Makefile.usr
 
 ################################################################
 #      TAU support
@@ -157,6 +165,7 @@ libmfix_a_SOURCES += \
 	model/include/chem_equations.inc \
 	model/include/desnamelist.inc \
 	model/include/dmp_batch_control.inc \
+	model/include/functions.inc \
 	model/include/gas_phase.inc \
 	model/include/geometry.inc \
 	model/include/initial_conditions.inc \
@@ -746,6 +755,7 @@ postmfix_SOURCES = \
 	post_mfix/flow_sx.f \
 	post_mfix/flow_sy.f \
 	post_mfix/flow_sz.f \
+	post_mfix/functions_mod.f \
 	post_mfix/gas_flux.f \
 	post_mfix/get_file_name.f \
 	post_mfix/get_file_status.f \
@@ -805,5 +815,5 @@ cases := $(shell find . -name mfix.dat)
 allcases:
 	for case in $(cases); do \
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
-	  $(MAKE) -C $$(dirname $$case) mfix || exit; \
+	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done

@@ -36,7 +36,7 @@ CONTAINS
       CHARACTER(LEN=132) :: PATH
       CHARACTER(LEN=18) :: SPECIES
       integer funit, IER
-      CHARACTER(len=142) FILENAME
+      CHARACTER(len=255) FILENAME
       LOGICAL LocalCopy
 
       SPECIES = 'CH4'

@@ -81,7 +81,7 @@ CONTAINS
 !-----------------------------------------------
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
-      ALLOCATE( PEA (MAX_PIP, 4) )
+      ALLOCATE( PARTICLE_STATE (MAX_PIP) )
       ALLOCATE (iglobal_id(max_pip))
 
 ! R.Garg: Allocate necessary arrays for PIC mass inlet/outlet BCs
@@ -148,12 +148,8 @@ CONTAINS
       Allocate(  NEIGHBORS (NEIGH_MAX) )
       NEIGHBORS(:) = 0
       Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
-      Allocate(  PV_NEIGHBOR (NEIGH_MAX) )
-      Allocate(  PV_NEIGHBOR_OLD (NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR (3,NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR_OLD (3,NEIGH_MAX) )
-      Allocate(  PFN_NEIGHBOR (3,NEIGH_MAX) )
-      Allocate(  PFN_NEIGHBOR_OLD (3,NEIGH_MAX) )
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -466,7 +462,6 @@ CONTAINS
 
         INTEGER :: lSIZE1
         INTEGER, DIMENSION(:), ALLOCATABLE :: neigh_tmp
-        LOGICAL, DIMENSION(:), ALLOCATABLE :: pv_tmp
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: pf_tmp
 
         lSIZE1 = size(neighbors,1)
@@ -481,16 +476,6 @@ CONTAINS
         neigh_tmp(lSIZE1+1:) = 0
         call move_alloc(neigh_tmp,neighbors_old)
 
-        allocate(pv_tmp(new_neigh_max))
-        pv_tmp(1:lSIZE1) = pv_neighbor(1:lSIZE1)
-        pv_tmp(lSIZE1+1:) = .false.
-        call move_alloc(pv_tmp,pv_neighbor)
-
-        allocate(pv_tmp(new_neigh_max))
-        pv_tmp(1:lSIZE1) = pv_neighbor_old(1:lSIZE1)
-        pv_tmp(lSIZE1+1:) = .false.
-        call move_alloc(pv_tmp,pv_neighbor_old)
-
         allocate(pf_tmp(3,new_neigh_max))
         pf_tmp(:,1:lSIZE1) = pft_neighbor(:,1:lSIZE1)
         pf_tmp(:,lSIZE1+1:) = 0
@@ -501,15 +486,6 @@ CONTAINS
         pf_tmp(:,lSIZE1+1:) = 0
         call move_alloc(pf_tmp,pft_neighbor_old)
 
-        allocate(pf_tmp(3,new_neigh_max))
-        pf_tmp(:,1:lSIZE1) = pfn_neighbor(:,1:lSIZE1)
-        pf_tmp(:,lSIZE1+1:) = 0
-        call move_alloc(pf_tmp,pfn_neighbor)
-
-        allocate(pf_tmp(3,new_neigh_max))
-        pf_tmp(:,1:lSIZE1) = pfn_neighbor_old(:,1:lSIZE1)
-        pf_tmp(:,lSIZE1+1:) = 0
-        call move_alloc(pf_tmp,pfn_neighbor_old)
 
       END SUBROUTINE NEIGHBOR_GROW
 
@@ -521,9 +497,6 @@ CONTAINS
 ! assumption to the previous array size is made as needed for restarts.!
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE PARTICLE_GROW(new_max_pip)
-
-!      use discretelement, only: pea, wall_collision_facet_id, wall_collision_pft, MAX_PIP, PIP
-!      use param1
 
         USE des_rxns
         USE des_thermo
@@ -547,9 +520,8 @@ CONTAINS
            call real_grow2(DES_POS_NEW,MAX_PIP)
            call real_grow2(DES_VEL_NEW,MAX_PIP)
            call real_grow2(OMEGA_NEW,MAX_PIP)
-           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
-           call logical_grow2_reverse(PEA,MAX_PIP)
+           call byte_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)
@@ -564,6 +536,8 @@ CONTAINS
 
            call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
            call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)
+
+           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
 
            IF(FILTER_SIZE > 0) THEN
               call integer_grow2(FILTER_CELL,MAX_PIP)
@@ -622,6 +596,21 @@ CONTAINS
       RETURN
 
       END SUBROUTINE PARTICLE_GROW
+
+      SUBROUTINE BYTE_GROW(byte_array,new_size)
+        IMPLICIT NONE
+
+        INTEGER, INTENT(IN) :: new_size
+        INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: byte_array
+        INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: byte_tmp
+        INTEGER lSIZE
+
+        lSIZE = size(byte_array,1)
+        allocate(byte_tmp(new_size))
+        byte_tmp(1:lSIZE) = byte_array(1:lSIZE)
+        call move_alloc(byte_tmp,byte_array)
+
+      END SUBROUTINE BYTE_GROW
 
       SUBROUTINE INTEGER_GROW(integer_array,new_size)
         IMPLICIT NONE

@@ -20,8 +20,6 @@
 !                      Dummy indices for I, J, K
       INTEGER          pLI, pLJ, pLK
 
-!                      Dummy indices for MINS AND MAXS
-      INTEGER          LIMIN
 !-----------------------------------------------
 
       BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, pLI) ),&

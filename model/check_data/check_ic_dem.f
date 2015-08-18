@@ -18,13 +18,12 @@
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
 ! DEM solid phase diameters and densities.
-      USE discretelement, only: DES_D_p0, DES_RO_s
+      USE discretelement, only: DES_D_p0
 
       USE discretelement, only: DES_CONTINUUM_HYBRID
 
-      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE
 ! direction wise spans of the domain and grid spacing in each direction
-      Use geometry, only: xlength, ylength, zlength, dx, dy, dz
+      Use geometry, only: zlength
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       use error_manager
@@ -87,14 +86,6 @@
       ' See MFIX readme', /,  &
       ' Please correct the data file.')
 
-
-
-
-
- 2018 FORMAT( 'End of Message' )
-
-
       CALL FINL_ERR_MSG
 
       END SUBROUTINE CHECK_IC_DEM
-

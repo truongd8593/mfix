@@ -24,11 +24,11 @@ obj_overrides := $(patsubst %.f,%.o,$(src_overrides))
 
 SUFFIXES = .d
 
-.DEFAULT_GOAL := mfix
+.DEFAULT_GOAL := mfix$(EXEEXT)
 
 LIBMFIX = $(top_builddir)/libmfix.a
 
-bin_PROGRAMS = mfix
+bin_PROGRAMS = mfix$(EXEEXT)
 mfix_SOURCES = $(src_overrides)
 mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
@@ -38,11 +38,11 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS
+.PHONY: $(LIBMFIX) TAGS run test
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix
+	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
@@ -85,7 +85,7 @@ $(eval -include $(src_overrides:%.f=%.d) )
 @make_endif@
 
 CLEANFILES += usrmodule.deps species.inc $(src_overrides:%.f=%.d)
-DISTCLEANFILES = Makefile
+DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 
 ################################################################
 #                                                              #
@@ -93,10 +93,10 @@ DISTCLEANFILES = Makefile
 #                                                              #
 ################################################################
 
-postmfix: $(LIBMFIX)
-	$(MAKE) -C $(top_builddir) postmfix
+postmfix$(EXEEXT): $(LIBMFIX)
+	$(MAKE) -C $(top_builddir) $@
 	rm -f $@
-	$(LN_S) $(top_builddir)/postmfix $@
+	$(LN_S) $(top_builddir)/$@ $@
 
 ################################################################
 #                                                              #
@@ -145,18 +145,16 @@ endif
 
 POST_SCRIPT=AUTOTEST/post.script.NEW
 
-run: mfix
-	./mfix
-	touch run
+POST_dats := $(notdir $(wildcard AUTOTEST/POST*.dat))
 
-test: postmfix run
-	rm -f POST*.dat
-	if [ -e $(POST_SCRIPT) ]; then \
-	    ./postmfix < $(POST_SCRIPT); \
-	    for test_post_file in AUTOTEST/POST*.dat; do \
-	        numdiff -a 0.000001 -r 0.05 $$test_post_file $$( basename $$test_post_file ) || echo "file $$test_post_file does not match"; \
-	    done; \
-	fi
+run: postmfix$(EXEEXT) mfix$(EXEEXT)
+	./mfix$(EXEEXT)
+	if [ -e $(POST_SCRIPT) ]; then OMP_NUM_THREADS=1 ./postmfix$(EXEEXT) < $(POST_SCRIPT); fi
+
+test: run
+	for test_post_file in $(POST_dats); do \
+	    numdiff -a 0.000001 -r 0.05 AUTOTEST/$$test_post_file $$test_post_file || echo "file $$test_post_file does not match"; \
+	done
 
 ################################################################
 #                                                              #

@@ -52,16 +52,12 @@
 ! order of interpolation set in the call to set_interpolation_scheme
 ! unless it is re/set later through the call to set_interpolation_stencil
       INTEGER :: ONEW
-! index of solid phase that particle NP belongs to
-      INTEGER :: M
 ! particle number index, used for looping
       INTEGER :: NP, nindx
 ! constant whose value depends on dimension of system
 ! avg_factor=0.125 (in 3D) or =0.25 (in 2D)
 ! avg_factor=0.250 (in 3D) or =0.50 (in 2D)
       DOUBLE PRECISION :: AVG_FACTOR
-! for error messages
-      INTEGER :: IER
 
 !Handan Liu added temporary variables on April 20 2012
           DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp,vst_tmp
@@ -69,7 +65,6 @@
           DOUBLE PRECISION :: velfp(3), desposnew(3)
           DOUBLE PRECISION :: D_FORCE(3)
           DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
-
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
 ! Calculate the gas solids drag coefficient using the particle
@@ -88,7 +83,7 @@
 
 !$omp parallel do default(none)                                         &
 !$omp shared(ijkstart3,ijkend3,pinc,i_of,j_of,k_of,no_k,interp_scheme,  &
-!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,pea,des_pos_new, &
+!$omp        funijk_map_c,xe,yn,dz,zt,avg_factor,do_k,pic,des_pos_new,  &
 !$omp        des_vel_new, mppic, mppic_pdrag_implicit,p_force,          &
 !$omp        u_g,v_g,w_g,model_b,pvol,fc,f_gp,ep_g)                     &
 !$omp private(ijk, i, j, k, pcell, iw, ie, js, jn, kb, ktp,             &
@@ -152,8 +147,8 @@
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
-            if(.not.pea(np,1)) cycle
-            if(pea(np,4)) cycle
+            if(is_nonexistent(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
 
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
@@ -190,11 +185,8 @@
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !$omp end parallel do
 
-
       RETURN
       END SUBROUTINE DRAG_GS_DES0
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -366,8 +358,8 @@
          DO nindx = 1,PINC(IJK)
             NP = PIC(ijk)%p(nindx)
 ! skipping indices that do not represent particles and ghost particles
-            if(.not.pea(np,1)) cycle
-            if(pea(np,4)) cycle
+            if(is_nonexistent(np)) cycle
+            if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
             desposnew(:) = des_pos_new(:,np)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
 !

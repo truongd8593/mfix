@@ -224,7 +224,6 @@
       ENDIF
 !------------------------------------------------------------------------
 !
- 999  continue
 
 !      call MPI_barrier(MPI_COMM_WORLD,mpierr)
       deallocate( array1 )
@@ -241,7 +240,8 @@
       IF (DT_FAC == ONE) DT = DT_SAVE
 !
 
-      CALL PATCH_AFTER_RESTART
+!     We may no longer need PATCH_AFTER_RESTART
+!     CALL PATCH_AFTER_RESTART
 
       RETURN
       END SUBROUTINE READ_RES1
@@ -615,7 +615,6 @@
 
         ! Close the file. This frees up any internal netCDF resources
         ! associated with the file, and flushes any buffers.
- 1234   continue
 !        call MPI_barrier(MPI_COMM_WORLD,mpierr)
         if (myPE .eq. PE_IO) then
            call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
@@ -692,8 +691,6 @@
 !-----------------------------------------------
 ! indices
       INTEGER :: I,J,K, IJK, IJKNB
-      INTEGER :: IMJK, IJMK, IJKM
-      INTEGER :: IPJK, IJPK, IJKP
       INTEGER :: M,N
       INTEGER :: NB
       INTEGER, DIMENSION(6) :: NBCELL

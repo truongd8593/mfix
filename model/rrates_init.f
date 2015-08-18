@@ -13,7 +13,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE RRATES_INIT(IER)
+      SUBROUTINE RRATES_INIT()
 
 ! Global Variables:
 !---------------------------------------------------------------------//
@@ -25,11 +25,6 @@
       use stiff_chem, only : STIFF_CHEMISTRY
 
       implicit none
-
-! Passed Variables:
-!----------------------------------------------------------------------!
-! Error index
-      INTEGER, intent(INOUT) :: IER
 
 ! Local Variables:
 !----------------------------------------------------------------------!

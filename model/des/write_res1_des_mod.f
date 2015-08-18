@@ -20,7 +20,6 @@
       PUBLIC :: WRITE_RES_pARRAY
       PUBLIC :: WRITE_RES_cARRAY
 
-
 ! Write scalar and data WITHOUT MPI data collection.
       INTERFACE WRITE_RES_DES
          MODULE PROCEDURE WRITE_RES_DES_0I, WRITE_RES_DES_1I
@@ -30,6 +29,7 @@
 
 ! Write particle array data.
       INTERFACE WRITE_RES_pARRAY
+         MODULE PROCEDURE WRITE_RES_pARRAY_1B
          MODULE PROCEDURE WRITE_RES_pARRAY_1I
          MODULE PROCEDURE WRITE_RES_pARRAY_1D
          MODULE PROCEDURE WRITE_RES_pARRAY_1L
@@ -41,7 +41,6 @@
          MODULE PROCEDURE WRITE_RES_cARRAY_1D
          MODULE PROCEDURE WRITE_RES_cARRAY_1L
       END INTERFACE
-
 
       INTEGER, PARAMETER :: RDES_UNIT = 901
 
@@ -56,7 +55,6 @@
       INTEGER :: cSEND
       INTEGER, allocatable :: cGATHER(:)
       INTEGER, allocatable :: cDISPLS(:)
-
 
       CONTAINS
 
@@ -85,7 +83,6 @@
 
       END SUBROUTINE OPEN_RES_DES
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: INIT_WRITE_RES_DES                                       !
 !                                                                      !
@@ -96,25 +93,16 @@
       use compar, only: numPEs
       use mpi_utility, only: GLOBAL_SUM
 
-      use desmpi, only: iProcBuf, dProcBuf
-      use desmpi, only: iRootBuf, dRootBuf
-
-      use desmpi, only: iGath_SendCnt
-
-      use desmpi, only: iDisPls
-
-      use discretelement, only: PEA
       use discretelement, only: PIP, iGHOST_CNT
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
-
-      use machine, only: OPEN_N1
+      use functions, only: is_nonexistent
 
       CHARACTER(len=*), INTENT(IN)  :: BASE
       DOUBLE PRECISION, INTENT(IN) :: lVERSION
       INTEGER, INTENT(OUT) :: lNEXT_REC
 
 ! Number of real particles on local rank
-      INTEGER :: lParCnt, lPROC
+      INTEGER :: lPROC
 ! Total number of real particles.
       INTEGER :: lGHOST_CNT
 ! Local gather counts for send/recv
@@ -166,7 +154,6 @@
             pDISPLS(lPROC) = pDISPLS(lPROC-1) + pGATHER(lPROC-1)
          ENDDO
 
-
 ! Setup data for neighbor arrays
          cROOTCNT = 10
 ! Count the number of real neighbors.
@@ -177,7 +164,7 @@
             IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
                part = part + 1
             ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+            IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
                cPROCCNT = cPROCCNT +1
             ENDIF
 
@@ -203,7 +190,6 @@
 
       ENDIF
 
-
 ! Write out the initial data.
       lNEXT_REC = 1
       CALL WRITE_RES_DES(lNEXT_REC, lVERSION)    ! RES file version
@@ -211,10 +197,8 @@
       CALL WRITE_RES_DES(lNEXT_REC, lGHOST_CNT)  ! Number of Ghosts
       CALL WRITE_RES_DES(lNEXT_REC, cROOTCNT)    ! Number of neighbors
 
-
       RETURN
       END SUBROUTINE INIT_WRITE_RES_DES
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: CLOSE_RES_DES                                            !
@@ -239,8 +223,6 @@
       RETURN
       END SUBROUTINE FINL_WRITE_RES_DES
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0I                                         !
 !                                                                      !
@@ -258,7 +240,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0I
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1I                                         !
@@ -281,8 +262,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_DES_1I
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0D                                         !
 !                                                                      !
@@ -300,7 +279,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0D
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1D                                         !
@@ -323,7 +301,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_DES_1D
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_0L                                         !
 !                                                                      !
@@ -345,7 +322,6 @@
 
       RETURN
       END SUBROUTINE WRITE_RES_DES_0L
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_DES_1L                                         !
@@ -377,7 +353,72 @@
       RETURN
       END SUBROUTINE WRITE_RES_DES_1L
 
+!``````````````````````````````````````````````````````````````````````!
+! Subroutine: WRITE_RES_PARRAY_1B                                      !
+!                                                                      !
+! Purpose: Write scalar bytes to RES file.                             !
+!``````````````````````````````````````````````````````````````````````!
+      SUBROUTINE WRITE_RES_PARRAY_1B(lNEXT_REC, INPUT_B, pLOC2GLB)
 
+      use desmpi, only: iProcBuf
+      use discretelement, only: MAX_PIP, PIP
+      use discretelement, only: iGLOBAL_ID
+      use functions, only: is_nonexistent
+
+      INTEGER, INTENT(INOUT) :: lNEXT_REC
+      INTEGER(KIND=1), INTENT(IN) :: INPUT_B(:)
+      LOGICAL, INTENT(IN), OPTIONAL :: pLOC2GLB
+
+      INTEGER, ALLOCATABLE :: INPUT_I(:)
+      LOGICAL :: lLOC2GLB
+! Loop counters
+      INTEGER :: LC1, LC2
+
+      lLOC2GLB = .FALSE.
+      IF(present(pLOC2GLB)) lLOC2GLB = pLOC2GLB
+
+      allocate(iPROCBUF(pPROCCNT))
+      allocate(iROOTBUF(pROOTCNT))
+
+      allocate(input_i(size(input_b)))
+
+      input_i(:) = input_b(:)
+
+      iDISPLS = pDISPLS
+      iGath_SendCnt = pSEND
+      iGatherCnts   = pGATHER
+
+      IF(bDIST_IO) THEN
+         LC1 = 1
+         IF(lLOC2GLB) THEN
+            DO LC2 = 1, MAX_PIP
+               IF(LC1 > PIP) EXIT
+               IF(IS_NONEXISTENT(LC1)) CYCLE
+               iProcBuf(LC1) = iGLOBAL_ID(INPUT_I(LC2))
+               LC1 = LC1 + 1
+            ENDDO
+         ELSE
+            DO LC2 = 1, MAX_PIP
+               IF(LC1 > PIP) EXIT
+               IF(IS_NONEXISTENT(LC1)) CYCLE
+               iProcBuf(LC1) = INPUT_I(LC2)
+               LC1 = LC1 + 1
+            ENDDO
+         ENDIF
+         CALL OUT_BIN_512i(RDES_UNIT, iProcBuf, pROOTCNT, lNEXT_REC)
+
+      ELSE
+         CALL DES_GATHER(INPUT_I, lLOC2GLB)
+         IF(myPE == PE_IO) &
+            CALL OUT_BIN_512i(RDES_UNIT,iROOTBUF, pROOTCNT, lNEXT_REC)
+      ENDIF
+
+      deallocate(iPROCBUF)
+      deallocate(iROOTBUF)
+      deallocate(input_i)
+
+      RETURN
+      END SUBROUTINE WRITE_RES_PARRAY_1B
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1I                                      !
@@ -388,8 +429,8 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: PEA
       use discretelement, only: iGLOBAL_ID
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER, INTENT(IN) :: INPUT_I(:)
@@ -415,14 +456,14 @@
          IF(lLOC2GLB) THEN
             DO LC2 = 1, MAX_PIP
                IF(LC1 > PIP) EXIT
-               IF(.NOT. PEA(LC1,1)) CYCLE
+               IF(IS_NONEXISTENT(LC1)) CYCLE
                iProcBuf(LC1) = iGLOBAL_ID(INPUT_I(LC2))
                LC1 = LC1 + 1
             ENDDO
          ELSE
             DO LC2 = 1, MAX_PIP
                IF(LC1 > PIP) EXIT
-               IF(.NOT. PEA(LC1,1)) CYCLE
+               IF(IS_NONEXISTENT(LC1)) CYCLE
                iProcBuf(LC1) = INPUT_I(LC2)
                LC1 = LC1 + 1
             ENDDO
@@ -441,8 +482,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_PARRAY_1I
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1D                                      !
 !                                                                      !
@@ -451,8 +490,7 @@
       SUBROUTINE WRITE_RES_PARRAY_1D(lNEXT_REC, INPUT_D)
 
       use discretelement, only: MAX_PIP, PIP
-      use desmpi, only: iProcBuf
-      use discretelement, only: PEA
+      use functions, only: is_nonexistent
 
       IMPLICIT NONE
 
@@ -474,7 +512,7 @@
          LC1 = 1
          DO LC2 = 1, MAX_PIP
             IF(LC1 > PIP) EXIT
-            IF(.NOT. PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             dProcBuf(LC1) = INPUT_D(LC2)
             LC1 = LC1 + 1
          ENDDO
@@ -491,7 +529,6 @@
       RETURN
       END SUBROUTINE WRITE_RES_PARRAY_1D
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: WRITE_RES_PARRAY_1D                                      !
 !                                                                      !
@@ -501,7 +538,7 @@
 
       use desmpi, only: iProcBuf
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: PEA
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -520,7 +557,7 @@
          LC1 = 1
          DO LC2 = 1, MAX_PIP
             IF(LC1 > PIP) EXIT
-            IF(.NOT. PEA(LC1,1)) CYCLE
+            IF(IS_NONEXISTENT(LC1)) CYCLE
             iProcBuf(LC1) = merge(1,0,INPUT_L(LC2))
             LC1 = LC1 + 1
          ENDDO
@@ -545,8 +582,8 @@
       SUBROUTINE WRITE_RES_cARRAY_1I(lNEXT_REC, INPUT_I, pLOC2GLB)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: PEA
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      USE functions, only: is_nonexistent
       use discretelement, only: iGlobal_ID
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
@@ -569,29 +606,21 @@
 
       LC2 = 1
       part = 1
-      IF(lLOC2GLB) THEN
-         DO LC1 = 1, NEIGH_NUM
-            IF (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
-               part = part + 1
-            ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+
+      DO LC1 = 1, NEIGH_NUM
+         IF (0 .eq. NEIGHBORS(LC1)) EXIT
+         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+            part = part + 1
+         ENDIF
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
+            IF(lLOC2GLB) THEN
                iProcBuf(LC2) = iGLOBAL_ID(INPUT_I(LC1))
-               LC2 = LC2 + 1
-            ENDIF
-         ENDDO
-      ELSE
-         DO LC1 = 1, NEIGH_NUM
-            IF (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
-               part = part + 1
-            ENDIF
-            IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+            ELSE
                iProcBuf(LC2) = INPUT_I(LC1)
-               LC2 = LC2 + 1
             ENDIF
-         ENDDO
-      ENDIF
+            LC2 = LC2 + 1
+         ENDIF
+      ENDDO
 
       IF(bDIST_IO) THEN
          CALL OUT_BIN_512i(RDES_UNIT, iProcBuf, cPROCCNT, lNEXT_REC)
@@ -617,8 +646,8 @@
 
       use desmpi, only: dPROCBUF ! Local process buffer
       use desmpi, only: dROOTBUF ! Root process buffer
-      use discretelement, only: PEA
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      USE functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       DOUBLE PRECISION, INTENT(IN) :: INPUT_D(:)
@@ -640,7 +669,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
             dProcBuf(LC2) = INPUT_D(LC1)
             LC2 = LC2 + 1
          ENDIF
@@ -670,8 +699,8 @@
       SUBROUTINE WRITE_RES_cARRAY_1L(lNEXT_REC, INPUT_L)
 
       use desmpi, only: iProcBuf
-      use discretelement, only: PEA
       use discretelement, only: NEIGHBORS, NEIGHBOR_INDEX, NEIGH_NUM
+      use functions, only: is_nonexistent
 
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       LOGICAL, INTENT(IN) :: INPUT_L(:)
@@ -694,7 +723,7 @@
          IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
             part = part + 1
          ENDIF
-         IF(PEA(part,1) .AND. PEA(NEIGHBORS(LC1),1)) THEN
+         IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
             iProcBuf(LC2) = merge(1,0,INPUT_L(LC1))
             LC2 = LC2 + 1
          ENDIF
