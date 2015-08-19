@@ -31,6 +31,9 @@
 
   Energy_eq     = .F.
 
+  Momentum_x_eq(0)  = .F.
+  Momentum_y_eq(0)  = .F.
+
   Gravity       = 0.0
 
   Call_usr      = .T.
@@ -51,7 +54,7 @@
 
   Discretize    = 9*2
 
-!  Norm_g        = 0.0
+  Norm_g        = 0.0
 
 ! Under relaxation factors
 ! Defaults:
@@ -79,8 +82,10 @@
 # GAS-PHASE SECTION
 
   NMAX_g        = 2
-  SPECIES_g(1) = 'AIR'
-  SPECIES_g(2) = 'H2O'
+  SPECIES_g(1)  = 'AIR'
+  SPECIES_g(2)  = 'H2O'
+
+!  DIF_g0        = 2.4E-10
 
 !  MW_g(1) = 28.97
 !  MW_g(2) = 18.02
@@ -119,27 +124,49 @@
 
 ! West
 
-  BC_X_w(1)   = 0.0
-  BC_X_e(1)   = 0.0
-  BC_Y_s(1)   = 0.0
-  BC_Y_n(1)   = 0.2
-
-  BC_Type(1)  = 'FSW'
-
-  BC_XW_g(1,1) = 0.1  ! Air
-  BC_XW_g(1,2) = 0.9  ! H2O
+!  BC_X_w(1)   = 0.0
+!  BC_X_e(1)   = 0.0
+!  BC_Y_s(1)   = 0.0
+!  BC_Y_n(1)   = 0.2
+!
+!  BC_Type(1)  = 'FSW'
+!
+!  BC_XW_g(1,1) = 0.1  ! Air
+!  BC_XW_g(1,2) = 0.9  ! H2O
 
 ! East
 
-  BC_X_w(2)   = 0.5
-  BC_X_e(2)   = 0.5
-  BC_Y_s(2)   = 0.0
-  BC_Y_n(2)   = 0.2
+!  BC_X_w(2)   = 0.5
+!  BC_X_e(2)   = 0.5
+!  BC_Y_s(2)   = 0.0
+!  BC_Y_n(2)   = 0.2
+!
+!  BC_Type(2)  = 'FSW'
+!
+!  BC_XW_g(2,1) = 0.9  ! Air
+!  BC_XW_g(2,2) = 0.1  ! H2O
 
-  BC_Type(2)  = 'FSW'
+! Point Source: West boundary
+!---------------------------------------------------------------------//
+  PS_X_w(1)          =    0.0   ! (m)
+  PS_X_e(1)          =    0.0   ! (m)
 
-  BC_XW_g(2,1) = 0.9  ! Air
-  BC_XW_g(2,2) = 0.1  ! H2O
+  PS_Y_s(1)          =    0.0   ! (m)
+  PS_Y_n(1)          =    0.2   ! (m)
+
+  PS_X_g(1,1)        =    0.1   ! Air
+  PS_X_g(1,2)        =    0.9   ! H2O
+
+! Point Source: East boundary
+!---------------------------------------------------------------------//
+  PS_X_w(2)          =    0.5   ! (m)
+  PS_X_e(2)          =    0.5   ! (m)
+
+  PS_Y_s(2)          =    0.0   ! (m)
+  PS_Y_n(2)          =    0.2   ! (m)
+
+  PS_X_g(2,1)        =    0.9   ! Air
+  PS_X_g(2,2)        =    0.1   ! H2O
 
 ! South and North: Free-slip wall
 !---------------------------------------------------------------------//
