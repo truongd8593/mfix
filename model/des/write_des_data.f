@@ -149,6 +149,8 @@
 
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
 
+      CALL VTP_WRITE_DATA('ID', iGLOBAL_ID)
+
       IF(DES_USR_VAR_SIZE > 0) &
          CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR)
 

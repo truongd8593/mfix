@@ -20,7 +20,10 @@
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Flag: Store _OLD arrays
       use discretelement, only: DO_OLD
-
+! Flag: Call user defined subroutines
+      use run, only: CALL_USR
+! Flag: Explicitly coupled gas-solids drag
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -47,14 +50,22 @@
 
       IF(DES_CONTINUUM_COUPLED) THEN
          TEND_PIC_LOOP = TIME+DT
+         DTSOLID = min(DTPIC_MAX, DT)
       ELSE
          TEND_PIC_LOOP = TSTOP
          DTSOLID = DT
       ENDIF
       PIC_ITERS = 0
 
+
+      IF(CALL_USR) CALL USR0_DES
+
 ! Compute the gas-phase pressure gradient
-      IF(DES_CONTINUUM_COUPLED) CALL CALC_PG_GRAD
+      IF(DES_CONTINUUM_COUPLED) THEN
+         IF(DES_EXPLICITLY_COUPLED) CALL DRAG_GS_DES1
+         CALL CALC_PG_GRAD
+      ENDIF
+
 
 ! If the current time in the discrete loop exceeds the current time in
 ! the continuum simulation, exit the lagrangian loop
@@ -72,17 +83,6 @@
          IF(S_TIME + DTSOLID > TEND_PIC_LOOP) &
             DTSOLID = TEND_PIC_LOOP - S_TIME
 
-! Exchange particle crossing processor boundaries
-         CALL DES_PAR_EXCHANGE
-! Bin particles to the fluid grid
-         CALL PARTICLES_IN_CELL
-! Calculate mean fields
-         CALL COMP_MEAN_FIELDS
-
-! This was moved from particles in cell and the passed variables should
-! be added to particles in cell or made global.
-         CALL REPORT_STATS_PIC
-
 ! Calculate the solids pressure
          CALL CALC_PS_PIC
          CALL CALC_PS_GRAD_PIC
@@ -98,6 +98,22 @@
 ! The same routine also applies the mass inflow/outflow BCs as well
          CALL PIC_APPLY_WALLBC_STL
 
+! Exchange particle crossing processor boundaries
+         CALL DES_PAR_EXCHANGE
+
+         IF(S_TIME + DTSOLID < TEND_PIC_LOOP .OR. &
+            .NOT.DES_EXPLICITLY_COUPLED ) THEN
+! Bin particles to the fluid grid
+            CALL PARTICLES_IN_CELL
+! Calculate interpolation weights
+            CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields
+            CALL COMP_MEAN_FIELDS
+         ENDIF
+
+! This was moved from particles in cell and the passed variables should
+! be added to particles in cell or made global.
+         CALL REPORT_STATS_PIC
 ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
 

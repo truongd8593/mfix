@@ -52,12 +52,11 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: NP, LC
-      INTEGER :: M, IDIM
       INTEGER I, J, K, IJK
 
       DOUBLE PRECISION :: DP_BAR, ENp1, SLIPVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION DELUP(3), UPRIMETAU(3), MFP
+      DOUBLE PRECISION :: DELUP(3), UPRIMETAU(3)
 ! index to track accounted for particles
       INTEGER PC
 
@@ -76,38 +75,37 @@
 
       DOUBLE PRECISION :: DIST(3), DIST_MAG, VEL(3)
 
-      DOUBLE PRECISION :: VELOLD1(3), POSOLD(3)
-      DOUBLE PRECISION :: VELOLD2(3)
-      DOUBLE PRECISION :: VELOLD3(3)
-      DOUBLE PRECISION :: VELOLD4(3)
-      DOUBLE PRECISION :: VELOLD5(3)
-      DOUBLE PRECISION :: VELOLD6(3)
+      logical :: WARN
+
+      DOUBLE PRECISION :: EPg_MFP, MFP
 
 !-----------------------------------------------
+
+
+      WARN= .FALSE.
 
       PC = 1
       DTPIC_CFL = LARGE_NUMBER
 
-      if(NO_K) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
-      if(DO_K) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
+      THREEINTOSQRT2 = merge(3.0d0, 2.0d0, DO_K)*sqrt(2.0d0)
 
-      THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
-      DES_VEL_MAX(:) = ZERO
       PIP_DEL_COUNT = 0
 
       DES_LOC_DEBUG = .FALSE.
 
       ENp1 = MPPIC_COEFF_EN1 + 1.0d0
 
+      EPg_MFP = 0.95d0*EP_STAR
+
       DO NP = 1, MAX_PIP
          DELETE_PART = .FALSE.
+
 
 ! pradeep skip ghost particles
          IF(PC.GT.PIP) EXIT
          IF(IS_NONEXISTENT(NP)) CYCLE
 
          PC = PC+1
-
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
@@ -128,12 +126,9 @@
          IF(.NOT.DES_CONTINUUM_COUPLED) DP_BAR = ZERO
          IF(.NOT.MPPIC_PDRAG_IMPLICIT) DP_BAR = ZERO
 
-         M = PIJK(NP,5)
          IJK = PIJK(NP,4)
 
-!         IF(ep_g(IJK) < ep_star) then
-!            write(*,*) 'Close pack: ',NP
-!         endif
+         IF(EP_G(IJK) < 0.975*EP_STAR) WARN = .TRUE.
 
 ! Numerically integrated particle velocity without particle normal
 ! stress force :: Snider (Eq 38)
@@ -146,7 +141,11 @@
             ((1.0-EP_G(IJK))*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
 
 ! Slip velocity between parcel and bulk solids
-         SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
+!         SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
+!         SLIPVEL = - VEL
+         SLIPVEL(1) = DES_U_S(IJK,1) - VEL(1)
+         SLIPVEL(2) = DES_V_S(IJK,1) - VEL(2)
+         SLIPVEL(3) = DES_W_S(IJK,1) - VEL(3)
 
 ! Calculate particle velocity from particle normal stress.
          DO LC = 1, merge(2,3,NO_K)
@@ -161,49 +160,42 @@
             ENDIF
          ENDDO
 
+
+
 ! Total particle velocity is the sum of the particle velocity from
 ! normal stress and velocity from all other foces :: Sinder (Eq 37)
          DES_VEL_NEW(:,NP) = VEL + UPRIMETAU
 
 ! Total distance traveled over the current time step
          DIST(:) = DES_VEL_NEW(:,NP)*DTSOLID
-         DIST_MAG = dot_product(DIST, DIST)
 
-! Calculate the mean free path :: Snider (43)
-         MFP = DES_RADIUS(NP)/(THREEINTOSQRT2*(ONE-EP_G(IJK)))
-
-! Limit parcel movement to mean free path if needed.
-         IF(MFP**2 < DIST_MAG) THEN
-
-
-
-
-!      if(mfp*2.0 < sqrt(dist_mag)) then
-!      write(*,3000) NP, MFP, sqrt(dist_mag), &
-!         DES_VEL_NEW(:,NP), DIST/DTSOLID
-!
-! 3000 FORMAT(2/,3x,'Limiting movement: ',I8,/&
-!                5x,'Mean Free Path: ',f15.6,/&
-!                5x,'DIST_MAG:       ',f15.6,/&
-!                5x,'Velocity: ',3(2x,f15.4),/&
-!                5x,'Dist/DT:  ',3(2x,f15.4))
-!      endif
-
-            DIST = MFP*DIST/sqrt(DIST_MAG)
-            DES_VEL_NEW(:,NP) = DIST/DTSOLID
+! Limit parcel movement in close pack regions to the mean free path. 
+         IF(EP_G(IJK) < EPg_MFP) THEN
+! Total distance traveled given current velocity.
+            DIST_MAG = dot_product(DIST, DIST)
+! Mean free path based on volume fraction :: Snider (43)
+            MFP = DES_RADIUS(NP)/(THREEINTOSQRT2*(ONE-EP_G(IJK)))
+! Impose the distance limit and calculate the corresponding velocity.
+            IF(MFP**2 < DIST_MAG) THEN
+               DIST = MFP*DIST/sqrt(DIST_MAG)
+               DES_VEL_NEW(:,NP) = DIST/DTSOLID
+            ENDIF
          ENDIF
 
 ! Update the parcel position.
          DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:)
 
+
 ! Bin the particle position to the fuild grid.
-         CALL PIC_FIND_NEW_CELL(NP)
+!         CALL PIC_FIND_NEW_CELL(NP)
 
 
          D_GRIDUNITS(1) = ABS(DIST(1))/DX(PIJK(NP,1))
          D_GRIDUNITS(2) = ABS(DIST(2))/DY(PIJK(NP,2))
          D_GRIDUNITS(3) = 1.d0
          IF(DO_K) D_GRIDUNITS(3) = ABS(DIST(3))/DZ(PIJK(NP,3))
+
+
 
          DTPIC_TMPX = (CFL_PIC*DX(PIJK(NP,1)))/(ABS(DES_VEL_NEW(1,NP))+SMALL_NUMBER)
          DTPIC_TMPY = (CFL_PIC*DY(PIJK(NP,2)))/(ABS(DES_VEL_NEW(2,NP))+SMALL_NUMBER)
@@ -218,17 +210,17 @@
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
 
-                  write(*,1200)NP,  VELOLD1, VELOLD2, VELOLD3, VELOLD4,&
-                     POSOLD,  DES_POS_NEW(:,NP), &
-                     DIST, sqrt(DIST_MAG), sqrt(MFP) 
+!                  write(*,1200)NP,  VELOLD1, VELOLD2, VELOLD3, VELOLD4,&
+!                     POSOLD,  DES_POS_NEW(:,NP), &
+!                     DIST, sqrt(DIST_MAG), sqrt(MFP) 
 
- 1200 FORMAT(2/,2x,70('*')/2x,'Undesired parcel movement: ',I8,&
-         /5x,'VEL1: ',3(3x,f12.4),/5x,'VEL2: ',3(3x,f9.3), &
-         /5x,'VEL3: ',3(3x,f12.4),/5x,'VEL4: ',3(3x,f9.3), & 
-         /5x,'POLD: ',3(3x,f12.4),/5x,'PNEW: ',3(3x,f9.3), & 
-         /5x,'DD:   ',3(3x,f12.4),&
-         /5x,'D_MAG:',1(3x,f12.4),& 
-         /5x,'MFP:  ',1(3x,f12.4)) 
+! 1200 FORMAT(2/,2x,70('*')/2x,'Undesired parcel movement: ',I8,&
+!         /5x,'VEL1: ',3(3x,f12.4),/5x,'VEL2: ',3(3x,f9.3), &
+!         /5x,'VEL3: ',3(3x,f12.4),/5x,'VEL4: ',3(3x,f9.3), & 
+!         /5x,'POLD: ',3(3x,f12.4),/5x,'PNEW: ',3(3x,f9.3), & 
+!         /5x,'DD:   ',3(3x,f12.4),&
+!         /5x,'D_MAG:',1(3x,f12.4),& 
+!         /5x,'MFP:  ',1(3x,f12.4)) 
         
                ENDIF
             END IF
@@ -244,6 +236,11 @@
          ENDIF
          IF (DES_LOC_DEBUG) WRITE(*,1001)
       ENDDO
+
+
+
+
+
 
 
       CALL global_all_max(DTPIC_CFL)
@@ -279,6 +276,10 @@
 
 
       ENDIF
+
+!      IF(WARN) WRITE(*,"(2/'Overpacked!',2/)")
+
+
  1001 FORMAT(3X,'<---------- END INTEGRATE_TIME_PIC ----------')
 
 2001  FORMAT(/1X,70('*'),//,10X,  &
@@ -391,7 +392,6 @@
       if(NO_K) THREEINTOSQRT2 = 2.D0*SQRT(2.D0)
       if(DO_K) THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
       THREEINTOSQRT2 = 3.D0*SQRT(2.D0)
-      DES_VEL_MAX(:) = ZERO
       PIP_DEL_COUNT = 0
 
       !EPG_MIN2 = MINVAL(EP_G(:))
@@ -588,13 +588,15 @@
       IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN
          IF(PRINT_DES_SCREEN) THEN
             WRITE(*,'(/,2x,A,2x,i10,/,A)') &
-                 'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), &
-                 'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
+            'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ',&
+             SUM(LPIP_DEL_COUNT_ALL(:)), &
+            'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
          ENDIF
 
          WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
-              'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), &
-              'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
+            'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC=',&
+            SUM(LPIP_DEL_COUNT_ALL(:)), &
+            'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
          !DO IPROC = 0, NUMPES-1
          !   WRITE(UNIT_LOG, '(/,A,i4,2x,A,2x,i5)') &
          !     'PARTICLES OUTSIDE DOMAIN (PIC)  ON PROC:', IPROC,' EQUAL TO', LPIP_DEL_COUNT_ALL(IPROC)
@@ -617,8 +619,11 @@
         !IF(mype.eq.pe_IO) WRITE(*,2003) DTSOLID
       END IF
 
-      WRITE(UNIT_LOG, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
-      WRITE(*, '(10x,A,2x,3(g17.8))') 'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
+      WRITE(UNIT_LOG, '(10x,A,2x,3(g17.8))')&
+         'DTPIC MINS IN EACH DIRECTION = ', DTPIC_MIN_X, &
+         DTPIC_MIN_Y, DTPIC_MIN_Z
+      WRITE(*, '(10x,A,2x,3(g17.8))')'DTPIC MINS IN EACH DIRECTION = ',&
+        DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
 
  1001 FORMAT(3X,'<---------- END INTEGRATE_TIME_PIC ----------')
 
@@ -748,6 +753,3 @@
       close (100)
       RETURN
       END SUBROUTINE DES_DBGTECPLOT
-
-
-

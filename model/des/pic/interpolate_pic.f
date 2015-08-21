@@ -6,8 +6,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INTERPOLATE_PIC
 
-      CALL INTERPOLATE_PIC_NONE
-      !CALL INTERPOLATE_PIC_GARG
+      !CALL INTERPOLATE_PIC_NONE
+      CALL INTERPOLATE_PIC_GARG
 
 
       RETURN
@@ -34,13 +34,16 @@
       USE bc
       USE compar
       USE sendrecv
-      USE discretelement
       USE constant
-      USE cutcell
       USE interpolation
       USE mfix_pic
       USE fun_avg
       USE functions
+
+!      USE discretelement, only: Us => DES_U_S
+!      USE discretelement, only: Vs => DES_V_S
+!      USE discretelement, only: Ws => DES_W_S
+!      USE discretelement, only: AVGVEL => AVGSOLVEL_P
 
       implicit none
 
@@ -49,19 +52,34 @@
 
       integer :: IJK, NP
 
-
-
-
-      DO NP=1,MAX_PIP
-
-         IJK = PIJK(NP,4)
-
-         PS_GRAD(NP,:) = PS_FORCE_PIC(IJK,:)
-
-         AVGSOLVEL_P(1,NP) = DES_U_s(IJK,1)
-         AVGSOLVEL_P(2,NP) = DES_V_s(IJK,1)
-         AVGSOLVEL_P(3,NP) = DES_W_s(IJK,1)
-      ENDDO
+!! Loop bounds for interpolation.
+!      LP_BND = merge(27,9,DO_K)
+!
+!
+!      DO NP=1,MAX_PIP
+!         IF(DES_INTERP_ON) THEN
+!            AVGVEL(:,NP) = 0.0
+!            PS_GRAD(NP,:) = 0.0
+!            DO LC=1,LP_BND
+!               IJK = FILTER_CELL(LC,NP)
+!               WEIGHT = FILTER_WEIGHT(LC,NP)
+!! Gas phase velocity.
+!               AVGVEL(1,NP) = AVGVEL(1,NP) + Us(IJK,1)*WEIGHT
+!               AVGVEL(2,NP) = AVGVEL(2,NP) + Vs(IJK,1)*WEIGHT
+!               AVGVEL(3,NP) = AVGVEL(3,NP) + Ws(IJK,1)*WEIGHT
+!! Particle normal stress.
+!               PS_GRAD(NP,:) = PS_GRAD(NP,:) + PS_FORCE_PIC(IJK,:)*WEIGHT
+!            ENDDO
+!         ELSE
+!            IJK = PIJK(NP,4)
+!! Gas phase velocity.
+!            AVGSOLVEL_P(1,NP) = DES_U_S(IJK,1)
+!            AVGSOLVEL_P(2,NP) = DES_V_S(IJK,1)
+!            AVGSOLVEL_P(3,NP) = DES_W_S(IJK,1)
+!! Particle normal stress.
+!            PS_GRAD(NP,:) = PS_FORCE_PIC(IJK,:)
+!         ENDIF
+!      ENDDO
 
 
       RETURN

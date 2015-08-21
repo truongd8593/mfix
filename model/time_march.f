@@ -156,23 +156,6 @@
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
-! uncoupled discrete element simulations do not need to be within
-! the two fluid model time-loop
-      IF(DISCRETE_ELEMENT.AND.(.NOT.DES_CONTINUUM_COUPLED))  THEN
-         IF(WRITE_VTK_FILES) THEN
-            DO L = 1, DIMENSION_VTK
-               ! CALL WRITE_VTP_FILE(L)
-            ENDDO
-         ENDIF
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
-         CALL CPU_TIME(CPU_STOP)
-         CPU_STOP = CPU_STOP - CPU00
-         IF(myPE.EQ.PE_IO) &
-            write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
-         CALL PARALLEL_FIN
-         STOP
-      ENDIF
 
 
 ! The TIME loop begins here.............................................
@@ -212,6 +195,12 @@
 
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1
+
+! Uncoupled discrete element simulations
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+      ENDIF
 
       CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
 

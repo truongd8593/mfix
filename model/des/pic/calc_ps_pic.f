@@ -18,8 +18,6 @@
 !---------------------------------------------------------------------//
       use sendrecv, only: SEND_RECV
 
-       use rxns
-
       IMPLICIT NONE
 
 !......................................................................!
@@ -32,8 +30,6 @@
       ENDIF
 
       CALL SEND_RECV(PIC_P_S,1)
-
-      ReactionRates(:,1) = PIC_P_S(:,1)
 
       RETURN
       END SUBROUTINE CALC_PS_PIC
@@ -69,33 +65,62 @@
       use compar, only: IJKSTART3, IJKEND3
 ! Double precision parameters
       use param1, only: ONE
-
+! Flag to solve 3D
+      use geometry, only: DO_K
 
 ! Module procedures:
 !---------------------------------------------------------------------//
       use functions, only: FLUID_AT
+      use functions, only: WEST_OF, EAST_OF
+      use functions, only: SOUTH_OF, NORTH_OF
+      use functions, only: BOTTOM_OF, TOP_OF
 
       IMPLICIT NONE
 
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counter
-      INTEGER :: IJK
+      INTEGER :: IJK, lIJK
 ! Volume fraction of cell, modified for wall cells.
       DOUBLE PRECISION :: lEPg
 ! Volume fraction assigned to wall cells to prevent parcels from leaving
 ! the domain.
-      DOUBLE PRECISION, PARAMETER :: WALL_EPg = 0.1d0
+      DOUBLE PRECISION :: WALL_EPg
 
       double precision :: epg_min, ps_max
 !......................................................................!
 
-      epg_min = 1.0
-      ps_max = -1.0
+
+      EPG_MIN = 1.0
+      PS_MAX = -1.0
+
 
       DO IJK = IJKSTART3, IJKEND3
-! Set a high value for the volume fraction in wall cells.
-         lEPG = merge(EP_G(IJK), WALL_EPg, FLUID_AT(IJK))
+
+         IF(FLUID_AT(IJK)) THEN
+            lEPg = EP_G(IJK)
+         ELSE
+! Set the volume fraction in the wall to close pack.
+            lEPg = EP_STAR
+ 
+! Use the lowest value across all adjacent fluid cells. This is to keep
+! cells below close pack from pushing parcels through the walls.
+            lIJK = EAST_OF(IJK)
+            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+            lIJK = WEST_OF(IJK)
+            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+            lIJK = NORTH_OF(IJK)
+            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+            lIJK = SOUTH_OF(IJK)
+            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+            IF(DO_K) THEN
+               lIJK = TOP_OF(IJK)
+               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+               lIJK = BOTTOM_OF(IJK)
+               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+            ENDIF
+         ENDIF
+
 ! Particle stress :: Snider (Eq 33)
          PIC_P_S(IJK,1) = PSFAC_FRIC_PIC *((ONE - lEPg)**FRIC_EXP_PIC)/&
             MAX(lEPg - EP_STAR, FRIC_NON_SING_FAC*lEPg)
