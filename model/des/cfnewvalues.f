@@ -21,16 +21,16 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE constant
+      USE des_bc
+      USE discretelement
+      USE fldvar
+      USE mfix_pic
+      USE mpi_utility
+      USE parallel
       USE param
       USE param1
-      USE parallel
       USE physprop
-      USE constant
-      USE fldvar
-      USE discretelement
-      USE des_bc
-      USE mpi_utility
-      USE mfix_pic
       use geometry, only: DO_K, NO_K
       IMPLICIT NONE
 !-----------------------------------------------
@@ -159,4 +159,9 @@
  1003 FORMAT(1X,70('*')/)
 
       RETURN
+
+      contains
+
+      include 'functions.inc'
+
       END SUBROUTINE CFNEWVALUES

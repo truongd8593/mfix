@@ -370,8 +370,15 @@
       ENDDO IJK_LP
 
 ! The database calculation always returns cal/g.K thus the following
-! conversion is needed if using SI units. ** Vector operation
-      IF(UNITS == 'SI') C_PG = 4.183925d3 * C_PG  !in J/kg K
+! conversion is needed if using SI units.
+! Only convert useful part of the array. When the array is re-indexed,
+! elements past IJKEND3 are UNDEFINED and would keep growing if 
+! multiplied, leading to overflow.
+      IF(UNITS == 'SI') THEN
+         DO IJK = IJKSTART3, IJKEND3
+           C_PG(IJK) = 4.183925d3 * C_PG(IJK)
+         ENDDO
+      ENDIF
 
 ! Increment the error to 900+ to invoke fatal exit.
       IF(gCP_Err /= 0) Err_l(myPE) = 800 + gCP_Err
@@ -450,9 +457,18 @@
       ENDDO M_LP
 
 ! The database calculation always returns cal/g.K thus the following
-! conversion is needed if using SI units. ** Vector operation
-      IF(UNITS == 'SI') C_PS = 4.183925d3 * C_PS  !in J/kg K
+! conversion is needed if using SI units.
+! Only convert useful part of the array. When the array is re-indexed,
+! elements past IJKEND3 are UNDEFINED and would keep growing if 
+! multiplied, leading to overflow.
 
+      IF(UNITS == 'SI') THEN
+         DO M=1, MMAX
+            DO IJK = IJKSTART3, IJKEND3
+              C_PS(IJK,M) = 4.183925d3 * C_PS(IJK,M)
+            ENDDO
+         ENDDO
+      ENDIF
       END SUBROUTINE PHYSICAL_PROP_CPs
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC

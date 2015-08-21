@@ -82,7 +82,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use discretelement
+      use functions, only: is_ghost, is_entering_ghost, is_exiting_ghost, is_exiting
 
       IMPLICIT NONE
 

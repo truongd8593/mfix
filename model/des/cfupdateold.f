@@ -14,7 +14,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE discretelement
+      USE discretelement, only: max_pip, des_pos_old, des_pos_new, des_vel_old, des_vel_new, omega_old, omega_new
+      USE functions, ONLY: IS_NONEXISTENT, IS_GHOST
       USE run
       IMPLICIT NONE
 !-----------------------------------------------

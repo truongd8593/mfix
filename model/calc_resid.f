@@ -19,8 +19,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE param, ONLY: DIMENSION_3, DIMENSION_M
+      USE param1, ONLY: ZERO, ONE, UNDEFINED
       USE matrix
       USE parallel
       USE geometry
@@ -28,7 +28,6 @@
       USE compar
       USE mpi_utility
       USE run
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -172,8 +171,12 @@
       ENDIF
 
       RETURN
-      END SUBROUTINE CALC_RESID_C
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_C
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -209,7 +212,6 @@
       USE fldvar
       USE physprop
       USE toleranc
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -363,8 +365,12 @@
       ENDIF
 
       RETURN
-      END SUBROUTINE CALC_RESID_S
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_S
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -399,7 +405,6 @@
       USE compar
       USE mpi_utility
       USE run
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -524,8 +529,12 @@
       ENDIF   ! end if/else debug_resid branch
 
       RETURN
-      END SUBROUTINE CALC_RESID_PP
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_PP
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -560,7 +569,6 @@
       USE residual
       USE rxns
       USE mflux
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -697,8 +705,12 @@
       ENDIF   ! end if/else (init==0)
 
       RETURN
-      END SUBROUTINE CALC_RESID_MB
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_MB
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -730,7 +742,6 @@
       USE physprop
       USE toleranc
       USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -898,8 +909,12 @@
       ENDIF
 
       RETURN
-      END SUBROUTINE CALC_RESID_U
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_U
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -931,7 +946,6 @@
       USE physprop
       USE toleranc
       USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1098,8 +1112,12 @@
       ENDIF
 
       RETURN
-      END SUBROUTINE CALC_RESID_V
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_RESID_V
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1135,7 +1153,6 @@
       USE physprop
       USE toleranc
       USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -1303,6 +1320,9 @@
       ENDIF
 
       RETURN
+
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
       END SUBROUTINE CALC_RESID_W
-
-

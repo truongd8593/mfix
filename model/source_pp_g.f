@@ -21,32 +21,25 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
+SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE bc
-      USE compar
-      USE constant
-      USE cutcell
+      USE bc, ONLY: SMALL_NUMBER, ONE, ZERO, UNDEFINED, IJK_P_G, DIMENSION_3, DIMENSION_M
+      USE compar, ONLY: IJKSTART3, IJKEND3
+      USE cutcell, ONLY: CARTESIAN_GRID, A_UPG_E, A_VPG_N, A_WPG_T
       USE eos, ONLY: DROODP_G
-      USE fldvar
-      USE functions
-      USE geometry
-      USE indices
-      USE matrix
-      USE parallel
-      USE param
-      USE param1
-      USE pgcor
-      USE physprop
-      USE quadric
-      USE run
-      USE rxns
-      USE ur_facs
-      USE vshear
-      Use xsi_array
+      USE fldvar, ONLY: U_G, V_G, W_G, U_S, V_S, W_S, ROP_G, ROP_S, ROP_GO, ROP_SO, RO_G, P_G, EP_G
+      USE geometry, ONLY: VOL
+      USE matrix, ONLY: E, W, N, S, T, B
+      USE pgcor, ONLY: D_E, D_N, D_T
+      USE physprop, ONLY: CLOSE_PACKED, MMAX, RO_G0
+      USE run, ONLY: SHEAR, ODT, UNDEFINED_I
+      USE rxns, ONLY: SUM_R_G, SUM_R_S
+      USE ur_facs, ONLY: UR_FAC
+      USE vshear, ONLY: VSH
+      USE xsi_array, ONLY: LOCK_XSI_ARRAY, UNLOCK_XSI_ARRAY
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -303,4 +296,9 @@
       call unlock_xsi_array
 
       RETURN
-      END SUBROUTINE SOURCE_PP_G
+
+CONTAINS
+
+      INCLUDE 'functions.inc'
+
+END SUBROUTINE SOURCE_PP_G

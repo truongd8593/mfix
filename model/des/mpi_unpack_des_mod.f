@@ -80,7 +80,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use discretelement, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent, set_normal, set_ghost
+      use functions, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent, set_normal, set_ghost
 
       IMPLICIT NONE
 
@@ -325,8 +325,8 @@
 !---------------------------------------------------------------------//
       use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
-      use discretelement, only: IS_NORMAL, IS_NONEXISTENT
-      use discretelement, only: SET_ENTERING, SET_EXITING, SET_NORMAL
+      use functions, only: IS_NORMAL, IS_NONEXISTENT
+      use functions, only: SET_ENTERING, SET_EXITING, SET_NORMAL
 
       implicit none
 

@@ -709,14 +709,8 @@
 !------------------------------------------------------------------------
       subroutine desgrid_pic(plocate)
 
-      use param1
-      use funits
-      use geometry
-      use compar
       use discretelement
-      use constant
-      use desmpi_wrapper
-
+      use geometry, only: no_k
 
       implicit none
 !-----------------------------------------------
@@ -824,7 +818,11 @@
 !      write(100,*)lpic
 !      close(100)
 
-      end subroutine desgrid_pic
+    contains
+
+      include 'functions.inc'
+
+    end subroutine desgrid_pic
 
 !------------------------------------------------------------------------
 ! subroutine       : desgrid_neigh_build ()
@@ -869,10 +867,10 @@
 ! present in the system
       lkoffset = dimn-2
 
-!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,dd,curr_tt,diff, &
+!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
-!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,   &
+!$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,dd,  &
 !$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
 
 !$      PAIR_NUM_SMP = 0
@@ -950,13 +948,17 @@
 ! and exiting particles are missed.
                if (lneigh .eq. lcurpar) cycle
                if (lneigh < lcurpar .and.is_normal(lneigh)) cycle
+               if (is_nonexistent(lneigh)) THEN
+                  lneighcnt = lneighcnt + 1
+                  cycle
+               endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
                ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                lneighcnt = lneighcnt + 1
-               if (.not.is_nonexistent(lcurpar) .and. .not.is_ghost(lcurpar) .and. .not.is_entering_ghost(lcurpar) .and. .not.is_exiting_ghost(lcurpar) .and. .not.is_nonexistent(lneigh)) THEN
+
 !$  if (.true.) then
 !!!!! SMP version
 
@@ -979,7 +981,6 @@
 
       cc = add_pair(lcurpar, lneigh)
 !$  endif
-               endif
             end do
          end do
          end do
@@ -989,8 +990,10 @@
 
 !$  curr_tt = omp_get_thread_num()+1  ! add one because thread numbering starts at zero
 
+!$omp single
 !$  NEIGHBOR_INDEX(1) = 1
 !$  dd = 1
+!$omp end single
 
 !$omp do ordered schedule(static,1)
 !$    do tt = 1, omp_get_num_threads()
@@ -1012,7 +1015,11 @@
 
 !$omp end parallel
 
-      end subroutine desgrid_neigh_build
+    contains
+
+      include 'functions.inc'
+
+    end subroutine desgrid_neigh_build
 
 !------------------------------------------------------------------------
 ! subroutine       : des_dbggrid

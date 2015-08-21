@@ -38,7 +38,7 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS
+.PHONY: $(LIBMFIX) TAGS run test
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -145,15 +145,16 @@ endif
 
 POST_SCRIPT=AUTOTEST/post.script.NEW
 
-test: postmfix$(EXEEXT) mfix$(EXEEXT)
+POST_dats := $(notdir $(wildcard AUTOTEST/POST*.dat))
+
+run: postmfix$(EXEEXT) mfix$(EXEEXT)
 	./mfix$(EXEEXT)
-	rm -f POST*.dat
-	if [ -e $(POST_SCRIPT) ]; then \
-	    ./postmfix$(EXEEXT) < $(POST_SCRIPT); \
-	    for test_post_file in AUTOTEST/POST*.dat; do \
-	        numdiff -a 0.000001 -r 0.05 $$test_post_file $$( basename $$test_post_file ) || echo "file $$test_post_file does not match"; \
-	    done; \
-	fi
+	if [ -e $(POST_SCRIPT) ]; then OMP_NUM_THREADS=1 ./postmfix$(EXEEXT) < $(POST_SCRIPT); fi
+
+test: run
+	for test_post_file in $(POST_dats); do \
+	    numdiff -a 0.000001 -r 0.05 AUTOTEST/$$test_post_file $$test_post_file || echo "file $$test_post_file does not match"; \
+	done
 
 ################################################################
 #                                                              #

@@ -1,33 +1,45 @@
-!----------------------------------------------------------------------!
-! ******************************************************************** !
-! *  There are minor differences between this file and the file of   * !
-! *  the same name in the model directory:                           * !
-! *  1) FUNIJK_IO is calcluated differently                          * !
-! *  2) FUNIJK is set to FUNIJK_IO                                   * !
-! *  3) FUNIJK_0 is set to FUNIJK_IO                                 * !
-! *  4) FUNIJK_GL is set to FUNIJK_IO                                * !
-! ******************************************************************** !
-!----------------------------------------------------------------------!
-      MODULE functions
+! This file is included by functions_mod.f
 
-      CONTAINS
+! These function are are defined in this file so it can be included by
+! individual subprograms in order to inline the (short) functions
+! defined in this file.
 
+! All functions that may benefits from inlining should be defined in this file.
+
+! For code that is not performance-critical, do:
+
+! SUBROUTINE subname
+! USE functions
+! ...
+! END SUBROUTINE subname
+
+! For code that is performance-critical, do:
+
+! SUBROUTINE subname
+! ...
+! CONTAINS
+! INCLUDE 'functions.inc'
+! END SUBROUTINE subname
+
+!---------------------------------------------------------------------//
+! Functions for generating the LOCAL 3-D array index IJK from the
+! 1-D indices I, J, and K.
 !//FUNIJK is moved to compar for debugging purposes - Sreekanth-10/26/99
 !     FUNIJK (LI, LJ, LK) = c0 + LI + (LJ-jstart3_all(myPE))*c1 + (LK-kstart3_all(myPE))* c2
 !      funijk(li,lj,lk) = lj + c0 + li*c1 + lk*c2
-      INTEGER FUNCTION funijk_0(li,lj,lk)
-      USE compar
-      IMPLICIT NONE
-      INTEGER, INTENT(IN) :: LI, LJ, LK
-      funijk_0 = funijk_io(li,lj,lk)
-      END FUNCTION funijk_0
-
       INTEGER FUNCTION funijk(li,lj,lk)
       USE compar
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
-      funijk = funijk_io(li,lj,lk)
+      funijk = IJK_ARRAY_OF(li,lj,lk)
       END FUNCTION funijk
+
+      INTEGER FUNCTION funijk_0(li,lj,lk)
+      USE compar
+      IMPLICIT NONE
+      INTEGER, INTENT(IN) :: LI, LJ, LK
+      funijk_0 = lj + c0 + li*c1 + lk*c2
+      END FUNCTION funijk_0
 
 ! Function for generating the LOCAL 3-D array index IJK from the
 ! the 1-D indices I, J, K and IPROC.
@@ -45,20 +57,27 @@
          (iend3_all(LIPROC)-istart3_all(LIPROC)+1)
       END FUNCTION FUNIJK_PROC
 
+! Function for generating the GLOBAL 3-D array index IJK from the
+! 1-D indices I, J, and K.
+!     FUNIJK_GL (LI, LJ, LK) = 1 + (LI - imin3) + (LJ-jmin3)*(imax3-imin3+1) &
+!     + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
       INTEGER FUNCTION FUNIJK_GL (LI, LJ, LK)
       USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
-      FUNIJK_GL = FUNIJK_IO(LI, LJ, LK)
+      FUNIJK_GL = 1 + (LJ - jmin3) + (LI-imin3)*(jmax3-jmin3+1) &
+         + (LK-kmin3)*(jmax3-jmin3+1)*(imax3-imin3+1)
       END FUNCTION FUNIJK_GL
 
-      INTEGER FUNCTION FUNIJK_IO(LI, LJ, LK)
+! Function for generating the 3-D array index IJK from the 1-D indices
+! I, J, and K in IO format
+      INTEGER FUNCTION FUNIJK_IO (LI, LJ, LK)
       USE geometry
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: LI, LJ, LK
-      FUNIJK_IO = LI + (LJ-1)*IMAX2 + (LK-1)*IJMAX2
+      FUNIJK_IO = 1 + (LI - imin2) + (LJ-jmin2)*(imax2-imin2+1) &
+         + (LK-kmin2)*(jmax2-jmin2+1)*(imax2-imin2+1)
       END FUNCTION FUNIJK_IO
-
 
 !----------------------------------------------------------------------!
 !  Function: IS_ON_myPE_OWNS                                           !
@@ -85,7 +104,6 @@
       RETURN
       END FUNCTION IS_ON_MYPE_OWNS
 
-
 !----------------------------------------------------------------------!
 !  Function: IS_ON_myPE_WOBND                                          !
 !                                                                      !
@@ -109,8 +127,7 @@
       IS_ON_MYPE_WOBND = &
          LI >= ISTART1 .AND. LI <= IEND1 .AND. &
          LJ >= JSTART1 .AND. LJ <= JEND1 .AND. &
-         LK >= KSTART1 .AND. LK <= KEND1   !.AND. &
-!        (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+         LK >= KSTART1 .AND. LK <= KEND1
 
       RETURN
       END FUNCTION IS_ON_myPE_wobnd
@@ -139,7 +156,6 @@
       RETURN
       END FUNCTION IS_ON_myPE_plus1layer
 
-
 !----------------------------------------------------------------------!
 !  Function: IS_ON_myPE_Plus2Layer                                     !
 !                                                                      !
@@ -159,8 +175,7 @@
       IS_ON_MYPE_PLUS2LAYERS = &
          LI >= ISTART3 .AND. LI <= IEND3 .AND. &
          LJ >= JSTART3 .AND. LJ <= JEND3 .AND. &
-         LK >= KSTART3 .AND. LK <= KEND3  !.AND. &
-!        (.NOT.DEAD_CELL_AT(LI,LJ,LK))
+         LK >= KSTART3 .AND. LK <= KEND3
 
       RETURN
       END FUNCTION IS_ON_myPE_plus2layers
@@ -891,5 +906,3 @@
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=EXITING_GHOST
       END SUBROUTINE SET_EXITING_GHOST
-
-      END MODULE functions

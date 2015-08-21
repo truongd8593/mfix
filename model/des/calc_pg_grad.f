@@ -32,7 +32,7 @@
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 
-      use discretelement, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      use functions, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//

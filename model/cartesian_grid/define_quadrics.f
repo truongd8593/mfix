@@ -53,12 +53,9 @@
       ! Activate Quadric
       QUADRIC_ID = N_QUADRIC
 
-
       RETURN
 
-
       END SUBROUTINE DEFINE_QUADRICS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -84,16 +81,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
         SUBROUTINE GET_F_QUADRIC(x1,x2,x3,Q_ID,f,CLIP_FLAG)
 
-      USE parallel
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-
-      USE quadric
-
       USE constant, only: pi
-
+      USE quadric
+      USE sendrecv, only: mype
 
       IMPLICIT NONE
 
