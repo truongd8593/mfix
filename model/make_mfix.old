@@ -9,9 +9,9 @@
 input=$@
 
 MFIX_VERSION="2015-1"
-EXEC_FILE=mfix.exe
+EXEC_FILE="mfix.exe"
 MAKEFILE="Makefile"
-DPO_BASE="build"
+DPO_BASE=".."
 DPO="OBJ"
 OBJ_EXT="o"
 FORTRAN_EXT="f"
@@ -24,12 +24,11 @@ MFIX_POST=
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd) #$(pwd | sed 's/ /\\ /g')
-MFIX_SRC=$(cd $(dirname $0); pwd)
-MFIX_HOME=$(dirname ${MFIX_SRC})
-MFIX_CONFIG=${MFIX_HOME}/config
+MFIX_SRC=$(echo $0 | sed 's/\/make_mfix.old//')
+MFIX_CONFIG=${MFIX_SRC}/../config
 
-DPO_BASE=${MFIX_HOME}/${DPO_BASE}
-mkdir -p ${DPO_BASE} || exit
+# symlink BURCAT.THR into RUN_DIR
+ln -sf ${MFIX_SRC}/thermochemical/BURCAT.THR ${RUN_DIR}/BURCAT.THR
 
 # This sets absolute paths.
 . ${MFIX_CONFIG}/sys_info.sh
@@ -58,6 +57,7 @@ AUTOCOMPILE=0
 CLEAN_OBJS=0
 
 # Set based upon user input.
+AR=ar
 COMP_FILE=
 FORT_FLAGS=
 FORT_FLAGS2=
@@ -112,42 +112,56 @@ if test ${AUTOCOMPILE} -ne 1; then
 
 fi # End of Autocompile <= 1
 
+# Reaction preprocessor.
+if test ${REQ_RXNS} = 1; then
+  . ${MFIX_CONFIG}/rxn_preproc.sh
+fi
+
 if [[ -n $USE_MIC ]]; then
     EXEC_FILE=${EXEC_FILE}.mic
 fi
 
-ARGS=
-[[ ${USE_SMP} -eq 1 ]] && ARGS="${ARGS} --enable-smp"
-[[ ${USE_DMP} -eq 1 ]] && ARGS="${ARGS} --enable-dmp"
+# Update source code if needed.
+. ${MFIX_CONFIG}/swap_build.sh
 
-FC=${FORTRAN_CMD}
+# Clean out old object files.
+if test ${CLEAN_OBJS} -eq 1; then
+  /bin/rm -rf ${DPO}
+  mkdir ${DPO}
+fi
 
-[[ ${USE_DMP} -eq 1 ]] && [[ ${COMP_FILE} =~ "intel_default.sh" ]] && FC="mpiifort"
+# Construct the makefile
+if test ${AUTOCOMPILE} -ne 1; then
+  . ${MFIX_CONFIG}/build_Makefile.sh
+fi
 
-[[ ${OPT} -eq 0 ]] && FCFLAGS="-O0"
-[[ ${OPT} -eq 1 ]] && FCFLAGS="-O1"
-[[ ${OPT} -eq 2 ]] && FCFLAGS="-O2"
-[[ ${OPT} -eq 3 ]] && FCFLAGS="-O3"
+echo "make -j -f ${MAKEFILE} ${EXEC_FILE}"
+make ${MAKE_ARGS} -f ${MAKEFILE} ${EXEC_FILE}
+result=$?
 
-[[ ${USE_DEBUG} -eq 1 ]] && FCFLAGS="${FCFLAGS} -g"
+if test $result = 0; then
+  /bin/cp -f ${EXEC_FILE} "${RUN_DIR}"
+  if test ${USE_DMP} -eq 1; then
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: ${EXEC_FILE} created"
+    echo " To run MFIX type (or equivalent): "
+    echo "   mpirun -np<# processors> ${EXEC_FILE}"
+    echo "**********************************************"
+    echo
+  else
+    echo
+    echo "**********************************************"
+    echo " Compilation successful: ${EXEC_FILE} created"
+    echo " To run MFIX type: ./${EXEC_FILE}"
+    echo "**********************************************"
+    echo
+  fi
+else
+  echo
+  echo
+  echo "*** File ${EXEC_FILE} NOT created."
+  echo
+fi
 
-[[ ${USE_MIC} -eq 1 ]] && LDFLAGS="-mmic"
-[[ ${USE_MIC} -eq 1 ]] && FCFLAGS="${FCFLAGS} -mmic"
-[[ ${USE_MIC} -eq 1 ]] && ARGS="${ARGS} --host x86_64-intelmic"
-
-[[ ${USE_NETCDF} -eq 1 ]] && FCFLAGS="${FCFLAGS} -DNETCDF"
-
-CMD="$MFIX_HOME/configure_mfix ${ARGS} FC=${FC} FCFLAGS=\"${FCFLAGS}\""
-
-[[ -n ${LDFLAGS} ]] && CMD="${CMD} LDFLAGS=\"${LDFLAGS}\""
-
-echo
-echo "********************************************************"
-echo "make_mfix is deprecated."
-echo "Now use the equivalent autotools command to build MFIX:"
-echo 
-echo "${CMD} && make ${MAKE_ARGS}"
-echo
-echo "********************************************************"
-
-exit -1
+exit $result
