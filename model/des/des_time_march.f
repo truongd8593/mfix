@@ -140,11 +140,13 @@
 
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
+
+         IF ((numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
+            CALL DES_PAR_EXCHANGE
+         ENDIF
+
          IF(DO_NSEARCH) THEN
-            CALL DES_PAR_EXCHANGE
             CALL NEIGHBOUR
-         ELSEIF ((numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
-            CALL DES_PAR_EXCHANGE
          ENDIF
 
 ! Explicitly coupled simulations do not need to rebin particles to
