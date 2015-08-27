@@ -6,25 +6,24 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PIC_TIME_MARCH
 
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE funits
-      USE discretelement
       USE constant
-      USE sendrecv
-      USE des_bc
       USE cutcell
-      USE mfix_pic
-      USE pic_bc
+      USE des_bc
+      USE desgrid, only: desgrid_pic
+      USE discretelement
       USE error_manager
-
-      use mpi_utility, only: GLOBAL_ALL_SUM
-      use mpi_funs_des, only: DES_PAR_EXCHANGE
-
       USE fun_avg
       USE functions
+      USE funits
+      USE mfix_pic
+      USE output
+      USE param
+      USE param1
+      USE pic_bc
+      USE run
+      USE sendrecv
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use mpi_utility, only: GLOBAL_ALL_SUM
 
       IMPLICIT NONE
 
@@ -97,6 +96,8 @@
       'TIME + DT', /5x,'DTSOLID ORIG         = ', g17.8, /5x,          &
       'DTSOLID ACTUAL       = ', g17.8)
 
+! Bin the particles to the DES grid.
+         CALL DESGRID_PIC(.TRUE.)
 ! exchange particle crossing boundaries
          CALL DES_PAR_EXCHANGE
 

@@ -225,6 +225,7 @@
 
       USE error_manager
       USE functions
+      USE desgrid, only: desgrid_pic
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -240,6 +241,8 @@
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
+! Bin the particles to the DES grid.
+      CALL DESGRID_PIC(.TRUE.)
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
       CALL DES_PAR_EXCHANGE
@@ -281,6 +284,8 @@
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
 
+! Bin the particles to the DES grid.
+      CALL DESGRID_PIC(.TRUE.)
 ! Calling exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
 ! unclear why this needs to be called again.

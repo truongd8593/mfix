@@ -7,21 +7,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INIT_SETTLING_DEM
 
-!      USE param1
-!      USE funits
-      USE run
-!      USE compar
+      USE desgrid, ONLY: desgrid_pic
       USE discretelement
-!      USE cutcell
-!      use desmpi
-!      use mpi_utility
-!      USE geometry
-!      USE des_rxns
-!      USE des_thermo
-!      USE des_stl_functions
-
-      use mpi_funs_des, only: DES_PAR_EXCHANGE
-      use error_manager
+      USE error_manager
+      USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
+      USE run
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -63,6 +53,8 @@
          CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
          DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
+! Bin the particles to the DES grid.
+         CALL DESGRID_PIC(.TRUE.)
 ! exchange particle crossing boundaries and updates ghost particles
          CALL DES_PAR_EXCHANGE
 ! find particles on grid
