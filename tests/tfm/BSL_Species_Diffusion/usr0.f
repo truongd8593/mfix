@@ -33,6 +33,9 @@
       Use usr, only     : xtr, ytr, ztr
       Use usr, only     : de_x_g_1, de_x_g_2
       Use param, only   : dimension_3
+
+      use ps, only: PS_MASSFLOW_G
+
       IMPLICIT NONE
 !-----------------------------------------------
 !
@@ -47,6 +50,10 @@
 !
 !  Insert user-defined code here
 !
+
+      write(*,*) 'Forcing a negative mass flow'
+      PS_MASSFLOW_G(2) = -PS_MASSFLOW_G(1)
+
 
 ! allocate variables defined in usr_mod.f
         allocate(x_g_1_ex(dimension_3))

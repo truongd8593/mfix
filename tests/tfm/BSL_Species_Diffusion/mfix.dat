@@ -31,8 +31,8 @@
 
   Energy_eq     = .F.
 
-  Momentum_x_eq(0)  = .F.
-  Momentum_y_eq(0)  = .F.
+  Momentum_x_eq(0)  = .T.
+  Momentum_y_eq(0)  = .T.
 
   Gravity       = 0.0
 
@@ -41,28 +41,27 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  Max_nit       = 2000
+  Max_nit       = 5000
 
   Tol_resid_X   = 1.0E-8
 
-  Leq_pc        = 9*'DIAG'
+  leq_method = 9*3
+  Leq_pc        = 9*'NONE'
+  Leq_tol       = 9*1.0d-3
 
-!  Leq_sweep     = 9*'ISIS'
-
-!  Leq_tol       = 9*1.0d-2
-
-  Discretize    = 9*2
-
-  Norm_g        = 0.0
+  Norm_g        = 1.0
 
 ! Under relaxation factors
 ! Defaults:
 !      [UR_FAC(1,6,9)=0.8]
 !      [UR_FAC(2,3,4,5,8)=0.5]
 !      [UR_FAC(7)=1]
-!  ur_fac(1) = 0.25    ! pressure
-!  ur_fac(3) = 0.15    ! u-mtm
+
+  ur_fac(1) = 0.15    ! pressure
+  ur_fac(3) = 0.15    ! u-mtm
 !  ur_fac(4) = 0.15    ! v-mtm
+
+  ur_fac(7) = 0.95    ! v-mtm
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -85,6 +84,8 @@
   SPECIES_g(2)  = 'H2O'
 
   DIF_g0        = 2.4E-5
+
+  RO_g0 = 1.0
 
 !  MW_g(1) = 28.97
 !  MW_g(2) = 18.02
@@ -112,8 +113,8 @@
   IC_U_g(1)   = 0.0       ! (m/s)
   IC_V_g(1)   = 0.0       ! (m/s)
 
-  IC_X_g(1,1) = 0.5       ! Air
-  IC_X_g(1,2) = 0.5       ! H2O
+  IC_X_g(1,1) = 1.0       ! Air
+  IC_X_g(1,2) = 0.0       ! H2O
 
 #_______________________________________________________________________
 # BOUNDARY CONDITIONS SECTION
@@ -130,21 +131,9 @@
 
   BC_Type(1)  = 'FSW'
 
-!  BC_EP_g(1)  = 1.0
-!  BC_T_g(1)   = 300.0
-!  BC_P_g(1)   = 101325.0
-!  
-!  BC_X_g(1,1) = 0.1
-!  BC_X_g(1,2) = 0.9
-!
-!  BC_U_g(1)   = 0.0
-!  BC_V_g(1)   = 0.0
+  BC_XW_g(1,1) = 0.1  ! Air  10
+  BC_XW_g(1,2) = 0.9  ! H2O  90
 
-  BC_XW_g(1,1) = 0.1  ! Air
-  BC_XW_g(1,2) = 0.9  ! H2O
-
-!  BC_HW_X_g(1,2)  = 0.0
-!  BC_C_X_g(1,2)   = 0.43944492 ! d(X_g)/dn at x=0 for H2O
 
 ! East
 
@@ -155,44 +144,37 @@
 
   BC_Type(2)  = 'FSW'
 
-!  BC_EP_g(2)  = 1.0
-!  BC_T_g(2)   = 300.0
-!  BC_P_g(2)   = 101325.0
-!
-!  BC_X_g(2,1) = 0.9
-!  BC_X_g(2,2) = 0.1
-!
-!  BC_U_g(2)   = 0.0
-!  BC_V_g(2)   = 0.0
-
   BC_XW_g(2,1) = 0.9  ! Air
   BC_XW_g(2,2) = 0.1  ! H2O
 
-!  BC_HW_X_g(2,1)  = 0.0
-!  BC_C_X_g(2,1)   = 3.9550042 ! d(X_g)/dn at x=L for Air
 
 
 ! Point Source: West boundary
 !---------------------------------------------------------------------//
-!  PS_X_w(1)          =    0.0   ! (m)
-!  PS_X_e(1)          =    0.0   ! (m)
-!
-!  PS_Y_s(1)          =    0.0   ! (m)
-!  PS_Y_n(1)          =    0.2   ! (m)
-!
-!  PS_X_g(1,1)        =    0.1   ! Air
-!  PS_X_g(1,2)        =    0.9   ! H2O
+  PS_X_w(1)          =    0.003  ! (m)
+  PS_X_e(1)          =    0.003  ! (m)
+  PS_Y_s(1)          =    0.0   ! (m)
+  PS_Y_n(1)          =    0.2   ! (m)
+
+  PS_MASSFLOW_G(1)   =    1.0d-4
+
+  PS_X_g(1,1)        =    0.0   ! Air
+  PS_X_g(1,2)        =    1.0   ! H2O
 
 ! Point Source: East boundary
 !---------------------------------------------------------------------//
-!  PS_X_w(2)          =    0.5   ! (m)
-!  PS_X_e(2)          =    0.5   ! (m)
-!
-!  PS_Y_s(2)          =    0.0   ! (m)
-!  PS_Y_n(2)          =    0.2   ! (m)
-!
-!  PS_X_g(2,1)        =    0.9   ! Air
-!  PS_X_g(2,2)        =    0.1   ! H2O
+  PS_X_w(2)          =    0.498  ! (m)
+  PS_X_e(2)          =    0.498  ! (m)
+  PS_Y_s(2)          =    0.0    ! (m)
+  PS_Y_n(2)          =    0.2    ! (m)
+
+  PS_MASSFLOW_G(2)   =    0.01
+
+  PS_X_g(2,1)        =    0.0   ! Air
+  PS_X_g(2,2)        =    1.0   ! H2O
+
+
+
 
 ! South and North: Free-slip wall
 !---------------------------------------------------------------------//
@@ -234,7 +216,7 @@
   Full_log    = .T.
   Spx_dt      = 9*0.1
 
-  Resid_string  = 'P0' 'U0' 'V0' 'X001' 'X002'
+  Resid_string  = 'P0' 'U0' 'X001' 'X002'
 
 #_______________________________________________________________________
 # DMP SETUP
