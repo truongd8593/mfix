@@ -167,8 +167,6 @@ CONTAINS
 
     ELSE
 
-       if (do_k) then
-
           Allocate( already_visited(DIMENSION_3))
           already_visited(:) = .false.
 
@@ -178,8 +176,15 @@ CONTAINS
           core_sj = jstart+2
           core_ej = jend-2
 
-          core_sk = kstart+2
-          core_ek = kend-2
+          if (do_k) then
+             core_sk = kstart+2
+             core_ek = kend-2
+          else
+             core_sk = 1
+             core_ek = 1
+             kstart = 1
+             kend = 1
+          endif
 
           class = cell_class(funijk(core_si,core_sj,core_sk))
 
@@ -240,14 +245,17 @@ endif
 
                      class = cell_class(ijk)
 
-                   AVar(ijk) =  A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))   &
+                   AVar(ijk) = &
                         + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
                         + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
                         + A_m(ijk, 0) * Var(ijk)     &
                         + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
-                        + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))   &
-                        + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                        + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
 
+                   if (do_k) then
+                      AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
+                      AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                   endif
                 enddo
              enddo
           enddo
@@ -263,26 +271,6 @@ endif
                  enddo
               enddo
            enddo
-
-       else
-          k = 1
-!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
-          do i = istart,iend
-             do j = jstart,jend
-                IJK = funijk(i,j,k)
-                im1jk = im_of(ijk)
-                ip1jk = ip_of(ijk)
-                ijm1k = jm_of(ijk)
-                ijp1k = jp_of(ijk)
-                AVar(ijk) =  A_m(ijk,-2) * Var(ijm1k)   &
-                     + A_m(ijk,-1) * Var(im1jk)   &
-                     + A_m(ijk, 0) * Var(ijk)     &
-                     + A_m(ijk, 1) * Var(ip1jk)   &
-                     + A_m(ijk, 2) * Var(ijp1k)
-             enddo
-          enddo
-
-       endif
 
     ENDIF ! RE_INDEXING
 
