@@ -169,10 +169,6 @@ CONTAINS
     ELSE
 
        if (do_k) then
-!$omp    parallel  do &
-!$omp&   private(     &
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
 
           Allocate( already_visited(DIMENSION_3))
           already_visited(:) = .false.
@@ -188,6 +184,8 @@ CONTAINS
 
           class = cell_class(funijk(core_si,core_sj,core_sk))
 
+!$omp    parallel  do &
+!$omp&   private(ijk,i,j,k) collapse (3)
           do k = core_sk,core_ek
              do i = core_si,core_ei
                 do j = core_sj,core_ej
@@ -201,7 +199,6 @@ CONTAINS
 
                    if (already_visited(ijk)) stop 222
                    already_visited(ijk) = .true.
-
 
    if (class.ne.cell_class(ijk)) then
       print *, mype,"NOT ALL CELLS IN SAME CLASS    kij = ",k,i,j,ijk,cell_class(ijk)
@@ -220,6 +217,8 @@ CONTAINS
              enddo
           enddo
 
+!$omp    parallel  do &
+!$omp&   private(ijk,i,j,k,class) collapse (3)
           do k = kstart,kend
              do i = istart,iend
                 do j = jstart,jend
