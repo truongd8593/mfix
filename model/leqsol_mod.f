@@ -107,13 +107,12 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs
-    USE cutcell, ONLY: re_indexing
+    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2, mype
+    USE cutcell, ONLY: re_indexing, CARTESIAN_GRID
     USE geometry, ONLY: do_k
+    USE indices
     USE param, ONLY: DIMENSION_3
     USE sendrecv, ONLY: send_recv
-    USE indices
-    USE compar
     IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -184,6 +183,7 @@ CONTAINS
 
           class = cell_class(funijk(core_si,core_sj,core_sk))
 
+if (.not.CARTESIAN_GRID) then
 !$omp    parallel  do &
 !$omp&   private(ijk,i,j,k) collapse (3)
           do k = core_sk,core_ek
@@ -216,13 +216,14 @@ CONTAINS
                 enddo
              enddo
           enddo
+endif
 
 !$omp    parallel  do &
 !$omp&   private(ijk,i,j,k,class) collapse (3)
           do k = kstart,kend
              do i = istart,iend
                 do j = jstart,jend
-                   if (core_si<=i .and. core_sj<=j .and. core_sk<=k .and. i<=core_ei .and. j<=core_ej .and. k<=core_ek) cycle
+                   if (.not.CARTESIAN_GRID .and. core_si<=i .and. core_sj<=j .and. core_sk<=k .and. i<=core_ei .and. j<=core_ej .and. k<=core_ek) cycle
 
                    IJK = funijk(i,j,k)
                    if (ijk.ne. (j + c0 + i*c1 + k*c2)) then
