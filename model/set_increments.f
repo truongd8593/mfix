@@ -13,24 +13,23 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_INCREMENTS
 
+      USE compar
+      USE cutcell, ONLY: RE_INDEXING, CARTESIAN_GRID
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE indices
-      USE geometry
-      USE compar
       USE physprop
-      USE fldvar
-      USE funits
-      USE functions
 
 ! Module procedures
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use error_manager
 
-
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -51,8 +50,9 @@
       INTEGER :: DENOTE_CLASS(MAX_CLASS)
 ! Flags for using the 'real' I/J/K value (not cyclic.)
       LOGICAL :: SHIFT
+! Used for checking iteration over core cells
+      LOGICAL, ALLOCATABLE, DIMENSION(:) :: ALREADY_VISITED
 !......................................................................!
-
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("SET_INCREMENTS")
@@ -68,9 +68,7 @@
       KP1(:) = UNDEFINED_I
       KM1(:) = UNDEFINED_I
 
-
       DO I = ISTART3, IEND3
-
          SHIFT = .NOT.(I==IMIN3 .OR. I==IMIN2 .OR. &
                        I==IMAX3 .OR. I==IMAX2)
 
@@ -82,7 +80,6 @@
             IP1(I) = MIN(IEND3,   I + 1)
          ENDIF
       ENDDO
-
 
       DO J = JSTART3, JEND3
 
@@ -128,9 +125,7 @@
       ENDDO
       ENDDO
 
-
       ICLASS = 0
-
 
 ! Loop over all cells (minus the ghost layers)
       DO K = KSTART3, KEND3
@@ -152,7 +147,6 @@
  1200 FORMAT('Error 1200: The number of classes has exceeded the ',    &
          'maximum: ',A,/'Increase the MAX_CLASS parameter in param1',  &
          '_mod.f and recompile.')
-
 
          INCREMENT_FOR_N(ICLASS)  = IJKN - IJK
          INCREMENT_FOR_S(ICLASS)  = IJKS - IJK
@@ -230,6 +224,83 @@
       ENDDO
       ENDDO
 
+      USE_CORECELL_LOOP = .not.CARTESIAN_GRID
+
+      if (USE_CORECELL_LOOP) then
+         Allocate( already_visited(DIMENSION_3))
+         already_visited(:) = .false.
+
+         core_istart = istart+2
+         core_iend = iend-2
+
+         core_jstart = jstart+2
+         core_jend = jend-2
+
+         if (do_k) then
+            core_kstart = kstart+2
+            core_kend = kend-2
+         else
+            core_kstart = 1
+            core_kend = 1
+            kstart = 1
+            kend = 1
+         endif
+
+         iclass = cell_class(funijk(core_istart,core_jstart,core_kstart))
+
+         outer: do k = core_kstart,core_kend
+            do i = core_istart,core_iend
+               do j = core_jstart,core_jend
+                  IJK = funijk(i,j,k)
+                  ! this shouldn't happen, but we might as well check
+                  if (ijk.ne. (j + c0 + i*c1 + k*c2)) then
+                     USE_CORECELL_LOOP = .false.
+                     exit outer
+                  endif
+
+                  ijk = (j + c0 + i*c1 + k*c2)
+
+                  if (already_visited(ijk)) then
+                     USE_CORECELL_LOOP = .false.
+                     exit outer
+                  endif
+                  already_visited(ijk) = .true.
+
+                  if (iclass.ne.cell_class(ijk)) then
+                     USE_CORECELL_LOOP = .false.
+                     exit outer
+                  endif
+               enddo
+            enddo
+         enddo outer
+
+         outer2: do k = kstart,kend
+            do i = istart,iend
+               do j = jstart,jend
+                  if (.not.CARTESIAN_GRID .and. core_istart<=i .and. core_jstart<=j .and. core_kstart<=k .and. i<=core_iend .and. j<=core_jend .and. k<=core_kend) cycle
+                  if (already_visited(funijk(i,j,k))) then
+                     USE_CORECELL_LOOP = .false.
+                     exit outer2
+                  endif
+                  already_visited(funijk(i,j,k)) = .true.
+               enddo
+            enddo
+         enddo outer2
+
+         outer3: do k = kstart,kend
+            do i = istart,iend
+               do j = jstart,jend
+                  if (.not.already_visited(funijk(i,j,k))) then
+                     USE_CORECELL_LOOP = .false.
+                     exit outer3
+                  endif
+               enddo
+            enddo
+         enddo outer3
+
+         deallocate(already_visited)
+
+      endif
 
       IF(.NOT.INCREMENT_ARRAYS_ALLOCATED) THEN
          allocate(WEST_ARRAY_OF(ijkstart3:ijkend3))
@@ -265,14 +336,10 @@
          KP_ARRAY_OF(ijk) = KP_OF_0(IJK)
       ENDDO
 
-
-!      print*,'from set_increment:iclass=',iclass
-
-
       CALL FINL_ERR_MSG
 
       RETURN
-!
+
       END SUBROUTINE SET_INCREMENTS
 
 

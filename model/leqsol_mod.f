@@ -109,7 +109,7 @@ CONTAINS
 !-----------------------------------------------
     USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2, mype
     USE cutcell, ONLY: re_indexing, CARTESIAN_GRID
-    USE geometry, ONLY: do_k
+    USE geometry, ONLY: do_k, use_corecell_loop
     USE indices
     USE param, ONLY: DIMENSION_3
     USE sendrecv, ONLY: send_recv
@@ -135,7 +135,6 @@ CONTAINS
     INTEGER :: I, J, K, IJK
     integer :: im1jk, ip1jk, ijm1k, ijp1k, ijkm1, ijkp1
     integer :: class, core_si, core_sj, core_sk, core_ei, core_ej, core_ek
-    logical, allocatable, dimension(:) :: already_visited
 !-----------------------------------------------
 
     IF(RE_INDEXING) THEN
@@ -167,9 +166,6 @@ CONTAINS
 
     ELSE
 
-          Allocate( already_visited(DIMENSION_3))
-          already_visited(:) = .false.
-
           core_si = istart+2
           core_ei = iend-2
 
@@ -188,62 +184,34 @@ CONTAINS
 
           class = cell_class(funijk(core_si,core_sj,core_sk))
 
-if (.not.CARTESIAN_GRID) then
+          if (USE_CORECELL_LOOP) then
 !$omp    parallel  do &
 !$omp&   private(ijk,i,j,k) collapse (3)
-          do k = core_sk,core_ek
-             do i = core_si,core_ei
-                do j = core_sj,core_ej
-                   IJK = funijk(i,j,k)
-                   if (ijk.ne. (j + c0 + i*c1 + k*c2)) then
-                      print *, mype,"FUNIJK!=FUNIJK_0 at ",k,i,j,ijk,class
-                      stop 111
-                   endif
+             do k = core_sk,core_ek
+                do i = core_si,core_ei
+                   do j = core_sj,core_ej
+                      ijk = (j + c0 + i*c1 + k*c2)
 
-                   ijk = (j + c0 + i*c1 + k*c2)
-
-                   if (already_visited(ijk)) stop 222
-                   already_visited(ijk) = .true.
-
-   if (class.ne.cell_class(ijk)) then
-      print *, mype,"NOT ALL CELLS IN SAME CLASS    kij = ",k,i,j,ijk,cell_class(ijk)
-      stop 333
-   endif
-
-                   AVar(ijk) =  A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))   &
-                        + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
-                        + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
-                        + A_m(ijk, 0) * Var(ijk)     &
-                        + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
-                        + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))   &
-                        + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
-
+                      AVar(ijk) =  A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))   &
+                           + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
+                           + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
+                           + A_m(ijk, 0) * Var(ijk)     &
+                           + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
+                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))   &
+                           + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                   enddo
                 enddo
              enddo
-          enddo
-endif
+          endif
 
 !$omp    parallel  do &
 !$omp&   private(ijk,i,j,k,class) collapse (3)
           do k = kstart,kend
              do i = istart,iend
                 do j = jstart,jend
-                   if (.not.CARTESIAN_GRID .and. core_si<=i .and. core_sj<=j .and. core_sk<=k .and. i<=core_ei .and. j<=core_ej .and. k<=core_ek) cycle
-
-                   IJK = funijk(i,j,k)
-                   if (ijk.ne. (j + c0 + i*c1 + k*c2)) then
-                      print *, mype,"FUNIJK!=FUNIJK_0 at ",k,i,j,ijk,class
-                      stop 555
-                   endif
+                   if (USE_CORECELL_LOOP .and. core_si<=i .and. core_sj<=j .and. core_sk<=k .and. i<=core_ei .and. j<=core_ej .and. k<=core_ek) cycle
                    ijk = (j + c0 + i*c1 + k*c2)
-
-                     if (already_visited(ijk)) then
-                        print *, mype,"TRIED TO UPDATE CELL TWICE kij = ",k,i,j,ijk,class
-                        stop 666
-                     endif
-                     already_visited(ijk) = .true.
-
-                     class = cell_class(ijk)
+                   class = cell_class(ijk)
 
                    AVar(ijk) = &
                         + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
@@ -260,21 +228,9 @@ endif
              enddo
           enddo
 
-           do k = kstart,kend
-              do i = istart,iend
-                 do j = jstart,jend
-                    IJK = funijk(i,j,k)
-                    if (.not.already_visited(ijk)) then
-                       print *, mype,"FAILED TO UPDATE CELL: ",i,j,k,ijk,class
-                       stop 777
-                    endif
-                 enddo
-              enddo
-           enddo
+       ENDIF ! RE_INDEXING
 
-    ENDIF ! RE_INDEXING
-
-    call send_recv(Avar,nlayers_bicgs)
+       call send_recv(Avar,nlayers_bicgs)
     RETURN
 
   CONTAINS
