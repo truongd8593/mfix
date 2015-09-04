@@ -109,7 +109,7 @@ CONTAINS
 !-----------------------------------------------
     USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2, mype
     USE cutcell, ONLY: re_indexing, CARTESIAN_GRID
-    USE geometry, ONLY: do_k, use_corecell_loop
+    USE geometry, ONLY: do_k, use_corecell_loop, CORE_ISTART, CORE_IEND, CORE_JSTART, CORE_JEND, CORE_KSTART, CORE_KEND
     USE indices
     USE param, ONLY: DIMENSION_3
     USE sendrecv, ONLY: send_recv
@@ -134,7 +134,8 @@ CONTAINS
 ! Variable
     INTEGER :: I, J, K, IJK
     integer :: im1jk, ip1jk, ijm1k, ijp1k, ijkm1, ijkp1
-    integer :: class, core_si, core_sj, core_sk, core_ei, core_ej, core_ek
+    integer :: class, interval
+    integer :: j_start(2), j_end(2)
 !-----------------------------------------------
 
     IF(RE_INDEXING) THEN
@@ -166,39 +167,43 @@ CONTAINS
 
     ELSE
 
-          core_si = istart+2
-          core_ei = iend-2
+          core_istart = istart+2
+          core_iend = iend-2
 
-          core_sj = jstart+2
-          core_ej = jend-2
+          core_jstart = jstart+2
+          core_jend = jend-2
 
           if (do_k) then
-             core_sk = kstart+2
-             core_ek = kend-2
+             core_kstart = kstart+2
+             core_kend = kend-2
           else
-             core_sk = 1
-             core_ek = 1
+             core_kstart = 1
+             core_kend = 1
              kstart = 1
              kend = 1
           endif
 
-          class = cell_class(funijk(core_si,core_sj,core_sk))
+          class = cell_class(funijk(core_istart,core_jstart,core_kstart))
 
           if (USE_CORECELL_LOOP) then
 !$omp    parallel  do &
 !$omp&   private(ijk,i,j,k) collapse (3)
-             do k = core_sk,core_ek
-                do i = core_si,core_ei
-                   do j = core_sj,core_ej
+             do k = core_kstart,core_kend
+                do i = core_istart,core_iend
+                   do j = core_jstart,core_jend
                       ijk = (j + c0 + i*c1 + k*c2)
 
-                      AVar(ijk) =  A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))   &
+                      AVar(ijk) = &
                            + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
                            + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
                            + A_m(ijk, 0) * Var(ijk)     &
                            + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
-                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))   &
-                           + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
+
+                      if (do_k) then
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                      endif
                    enddo
                 enddo
              enddo
@@ -208,22 +213,34 @@ CONTAINS
 !$omp&   private(ijk,i,j,k,class) collapse (3)
           do k = kstart,kend
              do i = istart,iend
-                do j = jstart,jend
-                   if (USE_CORECELL_LOOP .and. core_si<=i .and. core_sj<=j .and. core_sk<=k .and. i<=core_ei .and. j<=core_ej .and. k<=core_ek) cycle
-                   ijk = (j + c0 + i*c1 + k*c2)
-                   class = cell_class(ijk)
+                if  (USE_CORECELL_LOOP .and. core_istart<=i .and. core_kstart<=k .and. i<=core_iend .and. k<=core_kend) then
+                   j_start(1) = jstart
+                   j_end(1) = core_jstart-1
+                   j_start(2) = core_jend+1
+                   j_end(2) = jend
+                else
+                   j_start(1) = jstart
+                   j_end(1) = jend
+                   j_start(2) = 0 ! no iterations
+                   j_end(2) = -1  ! no iterations
+                endif
+                do interval=1,2
+                   do j = j_start(interval),j_end(interval)
+                      ijk = (j + c0 + i*c1 + k*c2)
+                      class = cell_class(ijk)
 
-                   AVar(ijk) = &
-                        + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
-                        + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
-                        + A_m(ijk, 0) * Var(ijk)     &
-                        + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
-                        + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
+                      AVar(ijk) = &
+                           + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
+                           + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
+                           + A_m(ijk, 0) * Var(ijk)     &
+                           + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
+                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
 
-                   if (do_k) then
-                      AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
-                      AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
-                   endif
+                      if (do_k) then
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                      endif
+                   enddo
                 enddo
              enddo
           enddo
