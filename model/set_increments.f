@@ -52,6 +52,7 @@
       LOGICAL :: SHIFT
 ! Used for checking iteration over core cells
       LOGICAL, ALLOCATABLE, DIMENSION(:) :: ALREADY_VISITED
+      INTEGER :: interval, j_start(2), j_end(2)
 !......................................................................!
 
 ! Initialize the error manager.
@@ -246,10 +247,9 @@
             kend = 1
          endif
 
-         iclass = cell_class(funijk(core_istart,core_jstart,core_kstart))
-
-         outer: do k = core_kstart,core_kend
-            do i = core_istart,core_iend
+         outer: do k = kstart,kend
+            do i = istart,iend
+               iclass = cell_class(funijk(i,core_jstart,k))
                do j = core_jstart,core_jend
                   IJK = funijk(i,j,k)
                   ! this shouldn't happen, but we might as well check
@@ -274,15 +274,28 @@
             enddo
          enddo outer
 
+         if  (USE_CORECELL_LOOP) then
+            j_start(1) = jstart
+            j_end(1) = core_jstart-1
+            j_start(2) = core_jend+1
+            j_end(2) = jend
+         else
+            j_start(1) = jstart
+            j_end(1) = jend
+            j_start(2) = 0 ! no iterations
+            j_end(2) = -1  ! no iterations
+         endif
+
          outer2: do k = kstart,kend
             do i = istart,iend
-               do j = jstart,jend
-                  if (.not.CARTESIAN_GRID .and. core_istart<=i .and. core_jstart<=j .and. core_kstart<=k .and. i<=core_iend .and. j<=core_jend .and. k<=core_kend) cycle
-                  if (already_visited(funijk(i,j,k))) then
-                     USE_CORECELL_LOOP = .false.
-                     exit outer2
-                  endif
-                  already_visited(funijk(i,j,k)) = .true.
+               do interval=1,2
+                  do j = j_start(interval),j_end(interval)
+                     if (already_visited(funijk(i,j,k))) then
+                        USE_CORECELL_LOOP = .false.
+                        exit outer2
+                     endif
+                     already_visited(funijk(i,j,k)) = .true.
+                  enddo
                enddo
             enddo
          enddo outer2
