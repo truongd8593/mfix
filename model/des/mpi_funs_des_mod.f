@@ -39,8 +39,7 @@
 !----------------------------------------------------------------------!
       subroutine des_par_exchange()
 
-      use discretelement, only: DO_NSEARCH
-
+      use discretelement, only: DO_NSEARCH, DES_PERIODIC_WALLS
 
       use mfix_pic, only: MPPIC
       use desmpi, only: iEXCHFLAG
@@ -63,6 +62,7 @@
 
       use desgrid, only: desgrid_pic
       use desmpi_wrapper, only: des_mpi_barrier
+      use compar, only: numpes
 
       implicit none
 
@@ -75,8 +75,7 @@
 
 !......................................................................!
 
-! Bin the particles to the DES grid.
-      call desgrid_pic(plocate=.true.)
+      IF (.not.((numPEs>1) .OR. DES_PERIODIC_WALLS)) RETURN
 
 ! Check that the send/recv buffer is sufficient every 100 calls to
 ! avoid the related global communications.

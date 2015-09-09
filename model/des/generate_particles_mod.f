@@ -300,7 +300,8 @@ CONTAINS
 
             VEL_MEAN(1) = IC_U_S(ICV, M)
             VEL_MEAN(2) = IC_V_S(ICV, M)
-            IF(DO_K) VEL_MEAN(3) = IC_W_S(ICV, M)
+            VEL_MEAN(3) = merge(IC_W_S(ICV, M), 0.0d0, DO_K)
+
             !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3
             !assuming equal energy in each direction
             !Variance uprime  = IC_Theta
@@ -329,6 +330,11 @@ CONTAINS
                        vel_mean(idim),vel_sig(idim))
                ENDIF
             ENDDO
+
+            IF(NO_K) THEN
+               pvel_temp(:,3) = 0.0d0
+               vel_sig(3) = 0.0d0
+            ENDIF
 
             SEED_X = 1
             SEED_Y = 1
@@ -410,7 +416,7 @@ CONTAINS
                      PART%DENS = DES_RO_S(M)
                      PART%POSITION(1) = XP
                      PART%POSITION(2) = YP
-                     IF(DO_K) PART%POSITION(3) = ZP
+                     PART%POSITION(3) = merge(ZP, 0.0d0, DO_K)
                      PART%VELOCITY(1:DIMN) = PVEL_TEMP(PCOUNT_BYIC_BYPHASE(ICV,M),1:DIMN)
 
                      do idim = 1, dimn
@@ -520,7 +526,7 @@ CONTAINS
             WRITE(ERR_MSG,'(//, 70("-"),/5x, A, I5,/5x,A, I15, /5x, A, I15)') &
                  'For Phase M:              ', M,  &
                  '# of particles estimated      :',  PART_MPHASE_BYIC(ICV, M), &
-                 '# of particles acutally seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
+                 '# of particles actually seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
 
             CALL FLUSH_ERR_MSG(header = .false. ,footer = .false.)
          END DO
@@ -709,13 +715,15 @@ CONTAINS
             VEL_SIG = ZERO
             VEL_MEAN(1) = IC_U_S(ICV, M)
             VEL_MEAN(2) = IC_V_S(ICV, M)
-            IF(DO_K) VEL_MEAN(3) = IC_W_S(ICV, M)
+            VEL_MEAN(3) = merge(IC_W_S(ICV, M), 0.0d0, DO_K)
             !granular temp is defined as (Variance uprime + Variance vprime + Variance wprime)/3
             !assuming equal energy in each direction
             !Variance uprime  = IC_Theta
             !Stdev (or sigma) = sqrt(Variance)
 
             VEL_SIG(:) = sqrt(IC_Theta_M(ICV, M))
+
+            IF(NO_K) VEL_SIG(3) = 0.0d0
 
             write(ERR_MSG,2022) &
                  vel_mean(:), IC_theta_m(ICV, M), vel_sig(:)
@@ -910,6 +918,8 @@ CONTAINS
                   DENS  =  DES_RO_S(M)
                   VELOCITY(1:DIMN) = PVEL_TEMP(IPCOUNT,1:DIMN)
 
+                  IF(NO_K) VELOCITY(3) = 0.0d0
+
                   CALL GEN_AND_ADD_TO_PART_LIST(PART_LIST_BYIC, M, POSITION(1:DIMN), &
                        VELOCITY(1:DIMN), RAD, DENS, STAT_WT)
                   PART_LIST_BYIC%cell(1) = I
@@ -927,7 +937,7 @@ CONTAINS
 
 
             WRITE(ERR_MSG, '(10x, A, I15, /, 10x, A, ES15.7)') &
-                 '# of computational particles or parcels acutally seeded = ', PART_MPHASE_BYIC(ICV, M), &
+                 '# of computational particles or parcels actually seeded = ', PART_MPHASE_BYIC(ICV, M), &
                  '# of implied real particles for above parcel count          = ', REALPART_MPHASE_BYIC(ICV, M)
 
             CALL FLUSH_ERR_MSG(header = .false., FOOTER = .false.)

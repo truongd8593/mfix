@@ -241,5 +241,12 @@
 ! Cell volume - W cell
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VOL_W
 
+! Indicates whether to use loop over "core" cells (with same
+! CELL_CLASS) in LEQSOL_MOD for vectorization/performance
+      LOGICAL :: USE_CORECELL_LOOP
+
+      INTEGER :: CORE_ISTART, CORE_IEND
+      INTEGER :: CORE_JSTART, CORE_JEND
+      INTEGER :: CORE_KSTART, CORE_KEND
 
       END MODULE geometry

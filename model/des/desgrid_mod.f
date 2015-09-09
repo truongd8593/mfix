@@ -710,7 +710,6 @@
       subroutine desgrid_pic(plocate)
 
       use discretelement
-      use functions, only: is_nonexistent
       use geometry, only: no_k
 
       implicit none
@@ -819,7 +818,11 @@
 !      write(100,*)lpic
 !      close(100)
 
-      end subroutine desgrid_pic
+    contains
+
+      include 'functions.inc'
+
+    end subroutine desgrid_pic
 
 !------------------------------------------------------------------------
 ! subroutine       : desgrid_neigh_build ()
