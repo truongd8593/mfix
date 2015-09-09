@@ -9,7 +9,7 @@ module load gnu/4.6.4 openmpi/1.5.5_gnu4.6
 # compile MFIX in ./src/
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+../../../model/make_mfix.old --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 
 cd $CASE_DIR
 
