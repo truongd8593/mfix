@@ -19,7 +19,7 @@ cd $CASE_DIR
 
 # Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 echo "******** Running mesh_32..."
-mpirun -np 8 ./mfix imax=32 jmax=32 nodesi=4 nodesj=2 nodesk=1 > out.log
+./mfix imax=32 jmax=32 > out.log
 rm -f $CASE_DIR/{TFM01.*,out.log}
 #rm -f $CASE_DIR/de_norms.dat
 
