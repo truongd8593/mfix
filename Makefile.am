@@ -165,6 +165,7 @@ libmfix_a_SOURCES += \
 	model/include/chem_equations.inc \
 	model/include/desnamelist.inc \
 	model/include/dmp_batch_control.inc \
+	model/include/fun_avg.inc \
 	model/include/functions.inc \
 	model/include/gas_phase.inc \
 	model/include/geometry.inc \
