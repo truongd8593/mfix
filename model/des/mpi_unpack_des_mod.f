@@ -80,7 +80,11 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use functions, only: is_exiting, is_normal, set_exiting, set_entering, is_nonexistent, set_normal, set_ghost
+
+      use functions, only: is_nonexistent
+      use functions, only: is_normal,  set_normal
+      use functions, only: is_exiting, set_exiting, set_exiting_ghost
+      use functions, only: set_ghost
 
       IMPLICIT NONE
 
@@ -145,7 +149,7 @@
             call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
 ! 9) Exiting particle flag
             call unpack_dbuf(lbuf,tmp,pface)
-            if (tmp) call set_exiting(llocpar)
+            if (tmp) call set_exiting_ghost(llocpar)
 ! 10) Temperature
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
@@ -214,7 +218,7 @@
             call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
 !  9) Exiting particle flag
             call unpack_dbuf(lbuf,tmp,pface)
-            if (tmp) CALL SET_EXITING(ispot)
+            if (tmp) call set_exiting_ghost(ispot)
 ! 10) Temperature.
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)

@@ -271,8 +271,6 @@
       USE functions, only: west_of, bottom_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE fun_avg, only: avg_x_h, avg_y_h, avg_z_h, avg_y
-
       USE geometry, only: odx_e, ody, odz_t
       USE geometry, only: do_k
       USE geometry, only: ox
@@ -396,8 +394,12 @@
       D_FB = EPGA*D_FB
 
       RETURN
-      END SUBROUTINE GET_VCELL_GDIFF_TERMS
 
+    CONTAINS
+
+      INCLUDE 'fun_avg.inc'
+
+    END SUBROUTINE GET_VCELL_GDIFF_TERMS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

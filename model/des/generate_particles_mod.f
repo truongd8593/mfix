@@ -526,7 +526,7 @@ MODULE GENERATE_PARTICLES
             WRITE(ERR_MSG,'(//, 70("-"),/5x, A, I5,/5x,A, I15, /5x, A, I15)') &
                  'For Phase M:              ', M,  &
                  '# of particles estimated      :',  PART_MPHASE_BYIC(ICV, M), &
-                 '# of particles acutally seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
+                 '# of particles actually seeded:', INT(REALPART_MPHASE_BYIC(ICV, M))
 
             CALL FLUSH_ERR_MSG(header = .false. ,footer = .false.)
          END DO
@@ -1285,7 +1285,7 @@ MODULE GENERATE_PARTICLES
 
 
             WRITE(ERR_MSG, '(10x, A, I15, /, 10x, A, ES15.7)') &
-                 '# of computational particles or parcels acutally seeded = ', PART_MPHASE_BYIC(ICV, M), &
+                 '# of computational particles or parcels actually seeded = ', PART_MPHASE_BYIC(ICV, M), &
                  '# of implied real particles for above parcel count          = ', REALPART_MPHASE_BYIC(ICV, M)
 
             CALL FLUSH_ERR_MSG(header = .false., FOOTER = .false.)
