@@ -59,5 +59,8 @@
 ! Logicals to print seeding and deletion of particles based on user needs
       LOGICAL :: PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS
 
+! Mininum velocity for parcles at rest of offset gravitational forces
+      DOUBLE PRECISION :: minVEL(3), minVEL_MAG, OoMinVEL_MAG
+
       END MODULE PIC_BC
 

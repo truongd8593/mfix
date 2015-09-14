@@ -212,6 +212,8 @@
 ! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
 
+
+      use cutcell
       use error_manager
       use functions
       use mpi_utility
@@ -228,20 +230,27 @@
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! particle no.
-      INTEGER :: L, I, J, K, IJK
+      INTEGER :: I, J, K, IJK
 ! Integer error flag.
       INTEGER :: IER
 ! Local parameter to print verbose messages about particles.
       LOGICAL, PARAMETER :: lDEBUG = .FALSE.
 
+      DOUBLE PRECISION :: oPOS(3)
 !.......................................................................
 
       CALL INIT_ERR_MSG("RECOVER_PARCEL")
       IF(lDEBUG) CALL OPEN_PE_LOG(IER)
 
+
+      oPOS = DES_POS_NEW(:,NP)
+
+! Reflect the parcle.
+      DES_VEL_NEW(:,NP) = -DES_VEL_NEW(:,NP)
+
 ! Move the particle back to the previous position.
-      DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) - &
-         DES_VEL_NEW(1,L) * DTSOLID
+      DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + &
+         DES_VEL_NEW(:,NP) * DTSOLID
 
 ! Rebin the particle to the fluid grid.
       CALL PIC_SEARCH(I,DES_POS_NEW(1,NP),XE,DIMENSION_I,IMIN2,IMAX2)
@@ -260,7 +269,14 @@
 
          PINC(IJK) = PINC(IJK) + 1
       ELSE
+
+         write(*,*) 'Still not cool -->', iGLOBAL_ID(NP)
+
+!         write(*,*) 'POS:',oPOS
+!         call write_des_data
+!         stop 'killer stop'
          CALL DELETE_PARTICLE(NP)
+
       ENDIF
 
 

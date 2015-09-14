@@ -14,6 +14,8 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
 ! Paricle velocities
       use discretelement, only: DES_VEL_NEW
+! Particle radius
+      use discretelement, only: DES_RADIUS
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP
 ! The number of neighbor facets for each DES grid cell
@@ -21,7 +23,7 @@
 ! Facet informatin binned to the DES grid
       use discretelement, only: cellneighbor_facet
 ! Map from particle to DES grid cell.
-      use discretelement, only: DG_PIJK
+      use discretelement, only: DG_PIJK, DTSOLID
 ! Flag indicating that the index cell contains no STLs
       use stl, only: NO_NEIGHBORING_FACET_DES
 ! STL Vertices
@@ -30,18 +32,23 @@
       use stl, only: NORM_FACE
 ! The number of mass inflow/outflow BCs
       use pic_bc, only: PIC_BCMI, PIC_BCMO
+! Minimum velocity to offset gravitational forces
+      use pic_bc, only: minVEL, minVEL_MAG, OoMinVEL_MAG
+! Solids time step size
+      use discretelement, only: DTSOLID
+! Gravitational force vector
+      use discretelement, only: GRAV
+
+      use discretelement, only: MAX_RADIUS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
-      use param1, only: ZERO, ONE, UNDEFINED
-! DES array dimensionality (3)
-      use discretelement, only: DIMN
+      use param1, only: ZERO, SMALL_NUMBER, ONE, UNDEFINED
       use functions, only: IS_NONEXISTENT
 
 ! Module Procedures:
 !---------------------------------------------------------------------//
-      use des_stl_functions, only: intersectLnPlane
-      use des_stl_functions, only: checkPTonTriangle
+      use des_stl_functions
 
       use error_manager
 
@@ -50,94 +57,75 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counters.
-      INTEGER NF, LL
-! Loop counter for SLTs in curring DES grid cell
-      INTEGER :: CELL_COUNT
-! reference point and direction of the line
-      DOUBLE PRECISION, DIMENSION(DIMN) :: REF_LINE,  DIR_LINE
-! reference point and normal of the plane
-      DOUBLE PRECISION, DIMENSION(DIMN) :: REF_PLANE, NORM_PLANE
+      INTEGER NF, NP, LC1, LC2
+! STL normal vector
+      DOUBLE PRECISION :: NORM_PLANE(3)
 ! line is parameterized as p = p_ref + t * dir_line, t is line_param
       DOUBLE PRECISION :: LINE_T
-! logical for determining if a point is on the triangle or not
-      LOGICAL :: ONTRIANGLE
-! The line and plane intersection point
-      DOUBLE PRECISION, DIMENSION(DIMN) :: POINT_ONPLANE
-! Old and new position of the parcel
 
 ! distance parcel travelled out of domain along the facet normal
-      DOUBLE PRECISION :: dist_from_facet
-      DOUBLE PRECISION :: veldotnorm
+      DOUBLE PRECISION :: DIST(3)
+
+      INTEGER :: AXIS
+      DOUBLE PRECISION :: PARTICLE_MIN(3), PARTICLE_MAX(3)
+
+      DOUBLE PRECISION :: DT_RBND, RADSQ, OFFSET
 
       CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
 
-      DO LL = 1, MAX_PIP
+! Minimum velocity needed to offset gravity.
+      minVEL = -DTSOLID*GRAV(:)
+      minVEL_MAG = dot_product(minVEL,minVEL)
+      OoMinVEL_MAG = 1.0d0/minVEL_MAG
+
+      DT_RBND = 1.01d0*DTSOLID
+
+      OFFSET = 2.0*MAX_RADIUS
+
+      DO NP = 1, MAX_PIP
 
 ! Skip non-existent particles
-         IF(IS_NONEXISTENT(LL)) CYCLE
+         IF(IS_NONEXISTENT(NP)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) CYCLE
+         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(NP))) CYCLE
+
+         RADSQ = DES_RADIUS(NP)*DES_RADIUS(NP)
 
 ! Loop through the STLs associated with the DES grid cell.
-         CELLLOOP: DO CELL_COUNT=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(LL))
+         CELLLOOP: DO LC1=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(NP))
 
 ! Get the index of the neighbor facet
-            NF = CELLNEIGHBOR_FACET(DG_PIJK(LL))%P(CELL_COUNT)
-
-! Set to -UNDEFINED, because non zero values imply intersection.
-! with the plane.
-            LINE_T  = -UNDEFINED
-
-            ONTRIANGLE = .FALSE.
-
-! Parametrize a line as p = p_0 + t (p_1 - p_0) and intersect with the
-! triangular plane. If 0<t<1, then this ray connect old and new
-! positions intersects with the facet.
-            REF_LINE(1:DIMN) = DES_POS_OLD(:,LL)
-            DIR_LINE(1:DIMN) = DES_POS_NEW(:,LL) - DES_POS_OLD(:,LL)
+            NF = CELLNEIGHBOR_FACET(DG_PIJK(NP))%P(LC1)
 
             NORM_PLANE = NORM_FACE(:,NF)
-            REF_PLANE  = VERTEX(1,:,NF)
 
-            VELDOTNORM = DOT_PRODUCT(NORM_PLANE, DES_VEL_NEW(:,LL))
+            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0)      &
+               CYCLE CELLLOOP
 
-! If the normal velocity of parcel is in the same direction as facet
-! normal, then the parcel could not have crossed this facet.
-            IF(VELDOTNORM.GT.0.d0) CYCLE
+            CALL INTERSECTLNPLANE(DES_POS_NEW(:,NP), DES_VEL_NEW(:,NP),&
+                VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
 
-            CALL INTERSECTLNPLANE(REF_LINE, DIR_LINE, REF_PLANE,       &
-                 NORM_PLANE, LINE_T)
+            IF(abs(LINE_T) <= DT_RBND) THEN
 
-! line_t = one implies that the particle is sitting on the stl face.
-            IF(LINE_T.GE.ZERO.AND.LINE_T.LT.ONE) THEN
+! Avoid direct collisions with STLs that are not next to the parcel
+               DO LC2=1,3
+                  IF(CELLNEIGHBOR_FACET(DG_PIJK(NP))%extentMIN(LC1) >  &
+                     DES_POS_NEW(LC2,NP)+OFFSET) CYCLE CELLLOOP
+                  IF(CELLNEIGHBOR_FACET(DG_PIJK(NP))%extentMAX(LC1) <  &
+                     DES_POS_NEW(LC2,NP)-OFFSET) CYCLE CELLLOOP
+               ENDDO
 
-               POINT_ONPLANE = REF_LINE + LINE_T*DIR_LINE
+! Correct the position of particles found too close to the STL.
+               DIST = LINE_T*DES_VEL_NEW(:,NP)
+               IF(dot_product(DIST,DIST) <= RADSQ .OR. LINE_T <= ZERO) &
+                  DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:) +    &
+                  DES_RADIUS(NP)*NORM_PLANE
 
-! Check through barycentric coordinates to determine if the orthogonal
-! projection lies on the facet or not. If it does, then this point is
-! deemed to be on the non-fluid side of the facet.
-               CALL CHECKPTONTRIANGLE(POINT_ONPLANE(:), VERTEX(:,:,NF),&
-                  ONTRIANGLE)
-
-               IF(ONTRIANGLE) THEN
-
-                  DIST_FROM_FACET = ABS(DOT_PRODUCT(DES_POS_NEW(:,LL) -&
-                     POINT_ONPLANE(:), NORM_PLANE(:)))
-
-                  DES_POS_NEW(:,LL) = POINT_ONPLANE +                  &
-                     DIST_FROM_FACET*NORM_PLANE
-
-! In the reflect routine, it is assumed that the normal points into the
-! system which is consitent with the definition of normal for facets.
-                  CALL PIC_REFLECT_PART(LL, NORM_PLANE(:))
-
-                  EXIT CELLLOOP
-               ENDIF
+               CALL PIC_REFLECT_PART(NP, NORM_PLANE(:))
             ENDIF
 
-         END DO CELLLOOP
-
+         ENDDO CELLLOOP
       END DO
 
 ! Seed new parcels entering the system.
@@ -150,6 +138,96 @@
       END SUBROUTINE PIC_APPLY_WALLBC_STL
 
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: PIC_REFLECT_PARTICLE                                  C
+!  Purpose:                                                            C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE PIC_REFLECT_PART(LL, WALL_NORM)
+
+      USE discretelement, only : dimn, DES_VEL_NEW
+      USE mfix_pic, only : MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL
+
+! Minimum velocity to offset gravitational forces
+      use pic_bc, only: minVEL, minVEL_MAG, OoMinVEL_MAG
+
+
+      use param1, only: SMALL_NUMBER
+
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      INTEGER, INTENT(IN) :: LL
+      DOUBLE PRECISION, INTENT(IN) ::  WALL_NORM(DIMN)
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      !magnitude of pre-collisional normal and tangential velocity components
+      DOUBLE PRECISION :: VEL_NORMMAG_APP
+
+      !pre collisional normal and tangential velocity components in vector format
+      !APP ==> approach
+      DOUBLE PRECISION :: VEL_NORM_APP(DIMN), VEL_TANG_APP(DIMN)
+
+
+      !post collisional normal and tangential velocity components in vector format
+      !SEP ==> separation
+      DOUBLE PRECISION :: VEL_NORM_SEP(DIMN), VEL_TANG_SEP(DIMN)
+
+      DOUBLE PRECISION :: COEFF_REST_EN, COEFF_REST_ET
+
+! Minimum particle velocity with respect to gravity. This ensures that
+! walls "push back" to offset gravitational forces.
+      DOUBLE PRECISION :: projGRAV(3)
+
+      INTEGER :: LC
+ 
+!-----------------------------------------------
+
+
+
+
+
+      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(:), DES_VEL_NEW(:,LL))
+
+! Currently assuming that wall is at rest. Needs improvement for moving wall
+
+      VEL_NORM_APP(:) = VEL_NORMMAG_APP*WALL_NORM(:)
+      VEL_TANG_APP(:) = DES_VEL_NEW(:,LL) - VEL_NORM_APP(:)
+
+
+!post collisional velocities
+
+      COEFF_REST_EN = MPPIC_COEFF_EN_WALL
+      COEFF_REST_ET = MPPIC_COEFF_ET_WALL
+
+      VEL_NORM_SEP(:) = -COEFF_REST_EN*VEL_NORM_APP(:)
+      VEL_TANG_SEP(:) =  COEFF_REST_ET*VEL_TANG_APP(:)
+
+      DES_VEL_NEW(:,LL) = VEL_NORM_SEP(:) + VEL_TANG_SEP(:)
+
+      IF(dot_product(WALL_NORM, minVEL) > 0.0d0)THEN
+
+! Projection of rebound velocity onto mininum velocity.
+         projGRAV = dot_product(minVEL, DES_VEL_NEW(:,LL))*OoMinVEL_MAG
+         projGRAV = minVEL*projGRAV
+
+         IF(dot_product(projGRAV, projGRAV) < minVEL_MAG) THEN
+            DO LC=1,3
+               IF(minVEL(LC) > SMALL_NUMBER) THEN
+                  DES_VEL_NEW(LC,LL)=max(DES_VEL_NEW(LC,LL),minVEL(LC))
+               ELSEIF(minVEL(LC) < -SMALL_NUMBER) THEN
+                  DES_VEL_NEW(LC,LL)=min(DES_VEL_NEW(LC,LL),minVEL(LC))
+               ENDIF
+            ENDDO
+
+         ENDIF
+      ENDIF
+
+      RETURN
+      END SUBROUTINE PIC_REFLECT_PART
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -619,68 +697,6 @@
       CALL FINL_ERR_MSG
       END SUBROUTINE PIC_FIND_EMPTY_SPOT
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: PIC_REFLECT_PARTICLE                                  C
-!  Purpose:                                                            C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE PIC_REFLECT_PART(LL, WALL_NORM)
-
-      USE discretelement, only : dimn, DES_VEL_NEW
-      USE mfix_pic, only : MPPIC_COEFF_EN_WALL, &
-      & MPPIC_COEFF_ET_WALL
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-      INTEGER, INTENT(IN) :: LL
-      DOUBLE PRECISION, INTENT(IN) ::  WALL_NORM(DIMN)
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-      !magnitude of pre-collisional normal and tangential velocity components
-      DOUBLE PRECISION :: VEL_NORMMAG_APP
-
-      !pre collisional normal and tangential velocity components in vector format
-      !APP ==> approach
-      DOUBLE PRECISION :: VEL_NORM_APP(DIMN), VEL_TANG_APP(DIMN)
-
-
-      !post collisional normal and tangential velocity components in vector format
-      !SEP ==> separation
-      DOUBLE PRECISION :: VEL_NORM_SEP(DIMN), VEL_TANG_SEP(DIMN)
-
-      DOUBLE PRECISION :: COEFF_REST_EN, COEFF_REST_ET
-!-----------------------------------------------
-
-
-      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(1:DIMN), DES_VEL_NEW(:, LL))
-
-
-!currently assuming that wall is at rest. Needs improvement for moving wall
-
-      VEL_NORM_APP(1:DIMN) = VEL_NORMMAG_APP*WALL_NORM(1:DIMN)
-
-      VEL_TANG_APP(:) = DES_VEL_NEW(:, LL) - VEL_NORM_APP(1:DIMN)
-
-
-
-!post collisional velocities
-
-      !COEFF_REST_EN = REAL_EN_WALL(PIJK(LL,5))
-      COEFF_REST_EN = MPPIC_COEFF_EN_WALL
-      COEFF_REST_ET = MPPIC_COEFF_ET_WALL
-
-      !if(ep_g(PIJK(LL,4)).lt.0.42) coeff_rest_en = 1.05
-      VEL_NORM_SEP(1:DIMN) = -COEFF_REST_EN*VEL_NORM_APP(1:DIMN)
-
-      VEL_TANG_SEP(1:DIMN) =  COEFF_REST_ET*VEL_TANG_APP(1:DIMN)
-
-      DES_VEL_NEW(:, LL) = VEL_NORM_SEP(1:DIMN) + VEL_TANG_SEP(1:DIMN)
-
-      END SUBROUTINE PIC_REFLECT_PART
 
 
 
@@ -780,142 +796,70 @@
 !          particles                                                   C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL(POSITION, &
-      OVERLAP_EXISTS)
+      SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL(POS, OVERLAP_EXISTS)
+
+      USE discretelement, only: MAX_RADIUS
+      USE geometry, only: do_k
 
       USE des_stl_functions
       USE desgrid
-      USE discretelement, only: dimn
-      USE geometry, only: do_k
       USE stl
 
       Implicit none
 
-      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)
+      DOUBLE PRECISION, INTENT(IN) :: POS(3)
       LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
 
-      INTEGER I, J, K, IJK, NF, FOCUS_PARTICLE
+      INTEGER I, J, K, IJK, NF, LC
 
-      INTEGER :: COUNT_FAC, COUNT, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
+! line is parameterized as p = p_ref + t * dir_line, t is line_param
+      DOUBLE PRECISION :: LINE_T
+      DOUBLE PRECISION :: DIST(3), RADSQ
 
-      !reference point and direction of the line
-      double precision, dimension(dimn) :: ref_line,  dir_line
-      !reference point and normal of the plane
-      double precision, dimension(dimn) :: ref_plane, norm_plane
-      !line is parameterized as p = p_ref + t * dir_line, t is line_param
-      double precision :: line_t
-      !logical for determining if a point is on the triangle or not
-      logical :: ontriangle
-      !The line and plane intersection point
-      double precision, dimension(dimn) :: point_onplane
 
-      FOCUS_PARTICLE = -1
+      K = 1
+      IF(DO_K) K = min(DG_KEND2,max(DG_KSTART2,KOFPOS(POS(3))))
+      J = min(DG_JEND2,max(DG_JSTART2,JOFPOS(POS(2))))
+      I = min(DG_IEND2,max(DG_ISTART2,IOFPOS(POS(1))))
 
-      OVERLAP_EXISTS = .false.
+      IJK = DG_FUNIJK(I,J,K)
+      IF (NO_NEIGHBORING_FACET_DES(IJK)) RETURN
 
-      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
-      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
-      K_CELL = 1
-      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+      OVERLAP_EXISTS = .TRUE.
 
-      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
-      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
+! Pad the max radius to keep parcels sufficiently away from walls.
+      RADSQ = (1.1d0*MAX_RADIUS)**2
 
-      LIST_OF_CELLS(:) = -1
-      NEIGH_CELLS = 0
-      NEIGH_CELLS_NONNAT  = 0
+! Parametrize a line as p = p_0 + t normal and intersect with the
+! triangular plane.
 
-      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+! If t>0, then point is on the non-fluid side of the plane, if the
+! plane normal is assumed to point toward the fluid side.
+      DO LC = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+         NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(LC)
 
-      IF (COUNT_FAC.gt.0)   then
-         !first add the facets in the cell the particle currently resides in
-         NEIGH_CELLS = NEIGH_CELLS + 1
-         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
-      ENDIF
+         CALL INTERSECTLNPLANE(POS, NORM_FACE(:,NF), &
+            VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
 
-      IPLUS1  =  MIN( I_CELL + 1, DG_IEND2)
-      IMINUS1 =  MAX( I_CELL - 1, DG_ISTART2)
+! Orthogonal projection puts the point outside of the domain or less than
+! one particle radius to the facet.
+         DIST = LINE_T*NORM_FACE(:,NF)
+         IF(LINE_T > ZERO .OR. dot_product(DIST,DIST) <= RADSQ) RETURN
 
-      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
-      JMINUS1 =  MAX( J_CELL - 1, DG_JSTART2)
-
-      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
-      KMINUS1 =  MAX( K_CELL - 1, DG_KSTART2)
-
-      DO K = KMINUS1, KPLUS1
-         DO J = JMINUS1, JPLUS1
-            DO I = IMINUS1, IPLUS1
-               IJK = DG_FUNIJK(I,J,K)
-               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-               IF(COUNT_FAC.EQ.0) CYCLE
-               NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-               NEIGH_CELLS = NEIGH_CELLS + 1
-               LIST_OF_CELLS(NEIGH_CELLS) = IJK
-               !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
-            ENDDO
-         ENDDO
       ENDDO
 
-
-      DO CELL_COUNT = 1, NEIGH_CELLS
-         IJK = LIST_OF_CELLS(CELL_COUNT)
-
-         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-            line_t  = -Undefined
-            !-undefined, because non zero values will imply intersection
-            !with the plane
-            ontriangle = .false.
-
-            !parametrize a line as p = p_0 + t normal
-            !and intersect with the triangular plane.
-            !if t>0, then point is on the
-            !non-fluid side of the plane, if the plane normal
-            !is assumed to point toward the fluid side
-            ref_line(1:dimn) = position(1:dimn)
-            dir_line(1:dimn) = NORM_FACE(1:dimn,NF)
-            !Since this is for checking static config, line's direction
-            !is the same as plane's normal. For moving particles,
-            !the line's normal will be along the point joining new
-            !and old positions.
-
-            norm_plane(1:dimn) = NORM_FACE(1:dimn,NF)
-            ref_plane(1:dimn)  = VERTEX(1, 1:dimn,NF)
-            CALL intersectLnPlane(ref_line, dir_line, ref_plane, &
-            norm_plane, line_t)
-            if(line_t.gt.zero) then
-               !this implies by orthogonal projection
-               !that the point is on non-fluid side of the
-               !facet
-               point_onplane(1:dimn) = ref_line(1:dimn) + &
-               line_t*dir_line(1:dimn)
-!Now check through barycentric coordinates if
-!this orthogonal projection lies on the facet or not
-!If it does, then this point is deemed to be on the
-!non-fluid side of the facet
-               CALL checkPTonTriangle(point_onplane(1:dimn), &
-               VERTEX(:,:,NF), ontriangle)
-
-               if(ontriangle) then
-                  OVERLAP_EXISTS = .true.
-                  !velocity = zero
-                  !write(*,*) 'over lap detected', line_t
-                  !call write_this_facet_and_parcel(NF, position, velocity)
-                  RETURN
-               endif
-            endif
-
-         ENDDO
-
-      end DO
+      OVERLAP_EXISTS = .FALSE.
 
       RETURN
-
       END SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL
 
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!----------------------------------------------------------------------!
       SUBROUTINE write_this_facet_and_parcel(FID, position, velocity)
       USE run
       USE param1

@@ -389,26 +389,38 @@
 
       USE discretelement, only: dimn
       USE param1, only: zero
-      IMPLICIT NONE
-      !reference point and direction of the line
-      double precision, intent(in), dimension(dimn) :: ref_line,  dir_line
-      !reference point and normal of the plane
-      double precision, intent(in), dimension(dimn) :: ref_plane, norm_plane
 
-      !line is parameterized as p = p_ref + t * dir_line, t is line_param
+      IMPLICIT NONE
+
+! Reference point and direction of the line
+      DOUBLE PRECISION, INTENT(IN) :: REF_LINE(3),  DIR_LINE(3)
+! reference point and normal of the plane
+      DOUBLE PRECISION, INTENT(IN) :: REF_PLANE(3), NORM_PLANE(3)
+
+! line is parameterized as p = p_ref + t * dir_line, t is line_param
       double precision, intent(out) :: line_param
 
       !local vars
       double precision :: denom
 
       denom = DOT_PRODUCT(dir_line, norm_plane)
+
       if(denom*denom.gt.zero) then
-         line_param = DOT_PRODUCT(ref_plane(:) - ref_line(:), norm_plane(:))
+         line_param = DOT_PRODUCT(ref_plane-ref_line, norm_plane)
          line_param = line_param/denom
       endif
+
       return
       end subroutine intersectLnPlane
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: set_facet_type_normal                                   !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine set_facet_type_normal(facet_type)
         USE discretelement, only: Facet_type_normal
         Implicit none
@@ -416,6 +428,14 @@
         facet_type = FACET_type_NORMAL
       end subroutine set_facet_type_normal
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: set_facet_type_po                                       !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine set_facet_type_po(facet_type)
         USE discretelement, only: Facet_type_po
         Implicit none
@@ -423,6 +443,14 @@
         facet_type = FACET_type_PO
       end subroutine set_facet_type_po
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: set_facet_type_mi                                       !
+!  Author: Rahul Garg                                 Date: 24-Oct-13  !
+!                                                                      !
+!  Purpose:                                                            !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       subroutine set_facet_type_mi(facet_type)
         USE discretelement, only: Facet_type_mi
         Implicit none

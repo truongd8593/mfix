@@ -67,6 +67,7 @@
       use param1, only: ONE
 ! Flag to solve 3D
       use geometry, only: DO_K
+      use geometry, only: VOL, DX, DY, DZ
 
 ! Module procedures:
 !---------------------------------------------------------------------//
@@ -74,6 +75,9 @@
       use functions, only: WEST_OF, EAST_OF
       use functions, only: SOUTH_OF, NORTH_OF
       use functions, only: BOTTOM_OF, TOP_OF
+      use functions, only: I_OF, J_OF, K_OF
+
+      use cutcell, only: CUT_CELL_AT
 
       IMPLICIT NONE
 
@@ -83,9 +87,9 @@
       INTEGER :: IJK, lIJK
 ! Volume fraction of cell, modified for wall cells.
       DOUBLE PRECISION :: lEPg
-! Volume fraction assigned to wall cells to prevent parcels from leaving
-! the domain.
-      DOUBLE PRECISION :: WALL_EPg
+
+      DOUBLE PRECISION :: lVOL
+
 
       double precision :: epg_min, ps_max
 !......................................................................!
@@ -93,7 +97,6 @@
 
       EPG_MIN = 1.0
       PS_MAX = -1.0
-
 
       DO IJK = IJKSTART3, IJKEND3
 
@@ -132,8 +135,9 @@
 
       ENDDO
 
-      write(*,"(/3x,'Epg Min: ',f15.4,/3x,'Ps  Max: ',f15.4)") &
-         epg_min, ps_max
+
+!     write(*,"(/3x,'Epg Min: ',f15.4,/3x,'Ps  Max: ',f15.4)") &
+!        epg_min, ps_max
 
       RETURN
       END SUBROUTINE CALC_PS_PIC_SNIDER

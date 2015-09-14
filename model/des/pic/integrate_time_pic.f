@@ -48,58 +48,52 @@
       USE functions
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
-      INTEGER :: NP, LC
-      INTEGER I, J, K, IJK
+!---------------------------------------------------------------------//
+! Loop counters
+      INTEGER :: NP, LC, PC
+! Index of fluid cell containing parcel centroid
+      INTEGER :: IJK
+! Drag coefficient divided by parcel mass
+      DOUBLE PRECISION :: DP_BAR
+! Restitution coefficient plus one
+      DOUBLE PRECISION :: ENp1
+! Integrated particle velocity without particle normal stress
+      DOUBLE PRECISION :: VEL(3)
+! Estimated parcel velocity from normal particle stress
+      DOUBLE PRECISION :: DELUP(3)
+! Actual parcel velocity from particle normal stress.
+      DOUBLE PRECISION :: UPRIMETAU(3)
+! Slip velocity between parcel and bulk solids
+      DOUBLE PRECISION :: SLIPVEL(3)
+! Distance traveled by the parcel (and magnitude)
+      DOUBLE PRECISION :: DIST(3), DIST_MAG
+! Max velocity magnitude of all parcels
+      DOUBLE PRECISION :: MAX_VEL
+! Mininum fluid cell dimenstion
+      DOUBLE PRECISION :: DXYZ_MIN
+! Three times the square root of two.
+      DOUBLE PRECISION :: l3SQT2
+! Volume fraction used to limit parcel movement in close pack regions.
+      DOUBLE PRECISION :: EPg_MFP
+! Mean free path of parcels based on volume fraction.
+      DOUBLE PRECISION :: MFP
+!......................................................................!
 
-      DOUBLE PRECISION :: DP_BAR, ENp1, SLIPVEL(3), D_GRIDUNITS(3)
 
-      DOUBLE PRECISION :: DELUP(3), UPRIMETAU(3)
-! index to track accounted for particles
-      INTEGER PC
+! Volume fraction used to limit parcel movement in close pack regions.
+      EPg_MFP = 0.95d0*EP_STAR
+! Initialize max parcel velocity
+      MAX_VEL = -UNDEFINED
+! Restitution coefficient plus one.
+      ENp1 = MPPIC_COEFF_EN1 + 1.0d0
+! Three times the square root of two.
+      l3SQT2 = merge(3.0d0, 2.0d0, DO_K)*sqrt(2.0d0)
 
-! Logical for local debug warnings
-      LOGICAL DES_LOC_DEBUG
-
-! dt's in each direction  based on cfl_pic for the mppic case
-
-      DOUBLE PRECISION :: THREEINTOSQRT2
-      DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ
-
-      LOGICAL :: DELETE_PART
-      INTEGER :: PIP_DEL_COUNT
-
-      INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1)
-
-      DOUBLE PRECISION :: DIST(3), DIST_MAG, VEL(3)
-
-      logical :: WARN
-
-      DOUBLE PRECISION :: EPg_MFP, MFP
-
-!-----------------------------------------------
-
-
-      WARN= .FALSE.
 
       PC = 1
-      DTPIC_CFL = LARGE_NUMBER
-
-      THREEINTOSQRT2 = merge(3.0d0, 2.0d0, DO_K)*sqrt(2.0d0)
-
-      PIP_DEL_COUNT = 0
-
-      DES_LOC_DEBUG = .FALSE.
-
-      ENp1 = MPPIC_COEFF_EN1 + 1.0d0
-
-      EPg_MFP = 0.95d0*EP_STAR
-
       DO NP = 1, MAX_PIP
-         DELETE_PART = .FALSE.
-
 
 ! pradeep skip ghost particles
          IF(PC.GT.PIP) EXIT
@@ -121,14 +115,10 @@
 ! D_p = Beta/(EP_S*RHOP)
 ! F_gp in drag_fgs.f  = Beta*PVOL/EP_S
 ! Therefore, D_p = F_gp/(PVOL*RHOP) = F_gp/PMASS
-         DP_BAR = F_gp(NP)/(PMASS(NP))
-
-         IF(.NOT.DES_CONTINUUM_COUPLED) DP_BAR = ZERO
-         IF(.NOT.MPPIC_PDRAG_IMPLICIT) DP_BAR = ZERO
+         IF(DES_CONTINUUM_COUPLED .AND. MPPIC_PDRAG_IMPLICIT)&
+            DP_BAR = F_gp(NP)/PMASS(NP)
 
          IJK = PIJK(NP,4)
-
-         IF(EP_G(IJK) < 0.975*EP_STAR) WARN = .TRUE.
 
 ! Numerically integrated particle velocity without particle normal
 ! stress force :: Snider (Eq 38)
@@ -141,14 +131,14 @@
             ((1.0-EP_G(IJK))*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
 
 ! Slip velocity between parcel and bulk solids
-!         SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
-!         SLIPVEL = - VEL
-         SLIPVEL(1) = DES_U_S(IJK,1) - VEL(1)
-         SLIPVEL(2) = DES_V_S(IJK,1) - VEL(2)
-         SLIPVEL(3) = DES_W_S(IJK,1) - VEL(3)
+!         SLIPVEL(1) = DES_U_S(IJK,1)! - VEL(1)
+!         SLIPVEL(2) = DES_V_S(IJK,1)! - VEL(2)
+!         SLIPVEL(3) = DES_W_S(IJK,1)! - VEL(3)
+         SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
 
 ! Calculate particle velocity from particle normal stress.
          DO LC = 1, merge(2,3,NO_K)
+
 ! Snider (40)
             IF(PS_GRAD(NP,LC) <= ZERO) THEN
                UPRIMETAU(LC) = min(DELUP(LC), ENp1*SLIPVEL(LC))
@@ -159,8 +149,6 @@
                UPRIMETAU(LC) = min(UPRIMETAU(LC), ZERO)
             ENDIF
          ENDDO
-
-
 
 ! Total particle velocity is the sum of the particle velocity from
 ! normal stress and velocity from all other foces :: Sinder (Eq 37)
@@ -174,7 +162,7 @@
 ! Total distance traveled given current velocity.
             DIST_MAG = dot_product(DIST, DIST)
 ! Mean free path based on volume fraction :: Snider (43)
-            MFP = DES_RADIUS(NP)/(THREEINTOSQRT2*(ONE-EP_G(IJK)))
+            MFP = DES_RADIUS(NP)/(l3SQT2*(ONE-EP_G(IJK)))
 ! Impose the distance limit and calculate the corresponding velocity.
             IF(MFP**2 < DIST_MAG) THEN
                DIST = MFP*DIST/sqrt(DIST_MAG)
@@ -185,116 +173,23 @@
 ! Update the parcel position.
          DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:)
 
-
-! Bin the particle position to the fuild grid.
-!         CALL PIC_FIND_NEW_CELL(NP)
-
-
-         D_GRIDUNITS(1) = ABS(DIST(1))/DX(PIJK(NP,1))
-         D_GRIDUNITS(2) = ABS(DIST(2))/DY(PIJK(NP,2))
-         D_GRIDUNITS(3) = 1.d0
-         IF(DO_K) D_GRIDUNITS(3) = ABS(DIST(3))/DZ(PIJK(NP,3))
-
-
-
-         DTPIC_TMPX = (CFL_PIC*DX(PIJK(NP,1)))/(ABS(DES_VEL_NEW(1,NP))+SMALL_NUMBER)
-         DTPIC_TMPY = (CFL_PIC*DY(PIJK(NP,2)))/(ABS(DES_VEL_NEW(2,NP))+SMALL_NUMBER)
-         DTPIC_TMPZ = LARGE_NUMBER
-         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(NP,3)))/(ABS(DES_VEL_NEW(3,NP))+SMALL_NUMBER)
-
-
-! Check if the particle has moved a distance greater than or equal to grid spacing
-! if so, then exit
-         DO LC = 1, merge(2,3,NO_K)
-            IF(D_GRIDUNITS(LC).GT.ONE) THEN
-               IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
-
-
-!                  write(*,1200)NP,  VELOLD1, VELOLD2, VELOLD3, VELOLD4,&
-!                     POSOLD,  DES_POS_NEW(:,NP), &
-!                     DIST, sqrt(DIST_MAG), sqrt(MFP) 
-
-! 1200 FORMAT(2/,2x,70('*')/2x,'Undesired parcel movement: ',I8,&
-!         /5x,'VEL1: ',3(3x,f12.4),/5x,'VEL2: ',3(3x,f9.3), &
-!         /5x,'VEL3: ',3(3x,f12.4),/5x,'VEL4: ',3(3x,f9.3), & 
-!         /5x,'POLD: ',3(3x,f12.4),/5x,'PNEW: ',3(3x,f9.3), & 
-!         /5x,'DD:   ',3(3x,f12.4),&
-!         /5x,'D_MAG:',1(3x,f12.4),& 
-!         /5x,'MFP:  ',1(3x,f12.4)) 
-        
-               ENDIF
-            END IF
-
-         END DO
-
-         IF(.not.DELETE_PART) DTPIC_CFL = MIN(DTPIC_CFL, DTPIC_TMPX, DTPIC_TMPY, DTPIC_TMPZ)
          FC(:,NP) = ZERO
 
-         IF(DELETE_PART) THEN
-            CALL SET_NONEXISTENT(NP)
-            PIP_DEL_COUNT = PIP_DEL_COUNT + 1
-         ENDIF
-         IF (DES_LOC_DEBUG) WRITE(*,1001)
+! Determine the maximum distance traveled by any single parcel.
+         DIST_MAG = dot_product(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)) 
+         MAX_VEL = max(MAX_VEL, DIST_MAG)
+
       ENDDO
 
+! Get the minimum fluid cell dimension
+      DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
+      IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
 
-
-
-
-
-
+! Calculate the maximum time step to prevent a parcel from moving more
+! than a fluid cell in one time step.  The global_all_max could get
+! expensive in large MPI applications.
+      DTPIC_CFL = CFL_PIC*DXYZ_MIN/(MAX_VEL+SMALL_NUMBER)
       CALL global_all_max(DTPIC_CFL)
-      PIP = PIP - PIP_DEL_COUNT
-
-      LPIP_DEL_COUNT_ALL(:) = 0
-      LPIP_DEL_COUNT_ALL(mype) = PIP_DEL_COUNT
-      CALL GLOBAL_ALL_SUM(LPIP_DEL_COUNT_ALL)
-      IF((DMP_LOG).AND.SUM(LPIP_DEL_COUNT_ALL(:)).GT.0) THEN
-         IF(PRINT_DES_SCREEN) THEN
-            WRITE(*,'(/,2x,A,2x,i10,/,A)') &
-               'TOTAL NUMBER OF PARTS STEPPING MORE THAN ONE GRID SPACE = ', SUM(LPIP_DEL_COUNT_ALL(:)), &
-                    'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
-            ENDIF
-
-            WRITE(UNIT_LOG,'(/,2x,A,2x,i10,/,A)') &
-                 'TOTAL NUMBER OF PARTS  STEPPING MORE THAN ONE GRID SPACEC= ', SUM(LPIP_DEL_COUNT_ALL(:)), &
-                 'THIS SHOULD NOT HAPPEN FREQUENTLY: MONITOR THIS MESSAGE'
-
-         DTPIC_MAX = MIN(DTPIC_CFL, DTPIC_TAUP)
-
-         IF(DTSOLID.GT.DTPIC_MAX) THEN
-            !IF(DMP_LOG) WRITE(UNIT_LOG, 2001) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2004) DTSOLID
-         ELSEIF(DTSOLID.LT.DTPIC_MAX) THEN
-
-            !IF(DMP_LOG) WRITE(UNIT_LOG, 2002) DTSOLID
-            IF(myPE.eq.pe_IO) WRITE(*, 2002) DTPIC_MAX
-         ELSE
-            !WRITE(*,'(A40,2x,g17.8)') 'DT
-            !IF(mype.eq.pe_IO) WRITE(*,2003) DTSOLID
-         END IF
-
-
-      ENDIF
-
-!      IF(WARN) WRITE(*,"(2/'Overpacked!',2/)")
-
-
- 1001 FORMAT(3X,'<---------- END INTEGRATE_TIME_PIC ----------')
-
-2001  FORMAT(/1X,70('*'),//,10X,  &
-           & 'MOVEMENT UNDESIRED IN INTEGRATE_TIME_PIC: PARTICLE', i5, /,10X, &
-           & ' MOVED MORE THAN A GRID SPACING IN ONE TIME STEP', /,10X, &
-           & 'MOVEMENT IN GRID UNITS = ', 3(2x, g17.8),/,10X,  &
-           & 'TERMINAL ERROR: NOT STOPPING, BUT DELETING THE PARTICLE', &
-           & /1X,70('*'), /10X, &
-           & 'DES_VEL_NEW = ',  3(2x, g17.8))
-
- 2004 FORMAT(/10x, &
-      & 'DTSOLID SHUD BE REDUCED TO', g17.8)
-
- 2002 FORMAT(/10x, &
-      & 'DTSOLID CAN BE INCREASED TO', g17.8)
 
       RETURN
       END SUBROUTINE INTEGRATE_TIME_PIC_SNIDER
@@ -663,6 +558,8 @@
 !-----------------------------------------------
       use discretelement
       USE fldvar
+
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
@@ -716,6 +613,7 @@
 !-----------------------------------------------
       use discretelement
       USE fldvar
+      use functions
       implicit none
 !-----------------------------------------------
 ! Dummy arguments
