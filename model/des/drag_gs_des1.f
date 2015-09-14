@@ -105,6 +105,8 @@
 !$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.IS_NORMAL(NP)) CYCLE
+! Avoid drag calculations in cells without fluid (cut-cell)
+         IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
