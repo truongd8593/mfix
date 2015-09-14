@@ -26,7 +26,7 @@ mpirun -np 4 mfix \
   nodesi=2 nodesj=2 nodesk=1 #> out.log
 mv u_profile.dat u_profile_Re100_S.dat
 mv v_profile.dat v_profile_Re100_S.dat
-rm {TFM03.*,out.log}
+rm -f {TFM03.*,out.log}
 
 mpirun -np 4 mfix \
   mu_g0=0.0025 \
@@ -35,7 +35,7 @@ mpirun -np 4 mfix \
   nodesi=2 nodesj=2 nodesk=1 #> out.log
 mv u_profile.dat u_profile_Re400_S.dat
 mv v_profile.dat v_profile_Re400_S.dat
-rm {TFM03.*,out.log}
+rm -f {TFM03.*,out.log}
 
 # Re=1000 case on a fine mesh.
 # Not for regular testing. Takes a long time to converge.
@@ -48,7 +48,7 @@ rm {TFM03.*,out.log}
 #  nodesi=8 nodesj=8 nodesk=1 #> out.log
 #mv u_profile.dat u_profile_Re1000_S.dat
 #mv v_profile.dat v_profile_Re1000_S.dat
-#rm {TFM03.*,out.log}
+#rm -f {TFM03.*,out.log}
 
 rm mfix
 
