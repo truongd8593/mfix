@@ -24,6 +24,8 @@ if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
     ${MFIX_HOME}/configure "${args[@]}" || exit $?
 else
     args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
+    trunc_args_dir_name=$( echo ${args_dir_name} | cut -c 1-250 )
+    [ ${args_dir_name} != ${trunc_args_dir_name} ] && rm -rf ${BUILD_DIR}
     BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
     mkdir -p ${BUILD_DIR}
     cd ${BUILD_DIR}
