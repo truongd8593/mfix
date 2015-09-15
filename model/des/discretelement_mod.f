@@ -604,6 +604,7 @@
 
 ! variable to clean the ghost cells
       logical,dimension(:),allocatable :: ighost_updated
+      integer :: max_isize
 
       CONTAINS
 

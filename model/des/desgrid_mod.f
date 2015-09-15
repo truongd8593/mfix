@@ -726,6 +726,7 @@
 !-----------------------------------------------
 
 ! locate the particles including ghost cells
+      max_isize = 0
       lparcount = 1
       lpic(:) = 0
       if (plocate) then
@@ -771,9 +772,9 @@
             allocate(dg_pic(lijk)%p(2*lcurpic))
          end if
          dg_pic(lijk)%isize = lcurpic
+         max_isize = max(max_isize,dg_pic(lijk)%isize)
       end do
 !!$omp end parallel do
-
 
 ! assign the particle info in pic array
       lindx(:) = 1
@@ -849,12 +850,13 @@
 ! Local variables
 !-----------------------------------------------
       integer lcurpar,lkoffset
-      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,lneighcnt,cc
+      integer lijk,lic,ljc,lkc,li,lj,lk,ltotpic,lpicloc,lneigh,cc
       double precision lsearch_rad,ldistsquared
       double precision :: ldistvec(3)
       double precision :: lcurpar_pos(3)
       double precision :: lcur_off
       integer il_off,iu_off,jl_off,ju_off,kl_off,ku_off
+      integer, dimension(:), allocatable :: tmp_neigh
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: int_tmp
 !$    INTEGER :: PAIR_NUM_SMP,PAIR_MAX_SMP, tt, curr_tt, diff, mm, lSIZE2, dd
 !$    INTEGER, DIMENSION(:,:), ALLOCATABLE :: PAIRS_SMP
@@ -867,7 +869,9 @@
 ! present in the system
       lkoffset = dimn-2
 
-!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,lneighcnt,cc,curr_tt,diff, &
+      allocate(tmp_neigh(max_isize))
+
+!$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,cc,curr_tt,diff, &
 !$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
 !$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,dd,  &
@@ -892,7 +896,6 @@
 !$  endif
 
          if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
-         lneighcnt = 0
          lijk = dg_pijk(lcurpar)
          lic = dg_iof_lo(lijk)
          ljc = dg_jof_lo(lijk)
@@ -944,21 +947,27 @@
             do lpicloc = 1,ltotpic
                lneigh = dg_pic(lijk)%p(lpicloc)
 
+               tmp_neigh(lpicloc) = 0
 ! Only skip real particles otherwise collisions with ghost, entering,
 ! and exiting particles are missed.
                if (lneigh .eq. lcurpar) cycle
                if (lneigh < lcurpar .and.is_normal(lneigh)) cycle
                if (is_nonexistent(lneigh)) THEN
-                  lneighcnt = lneighcnt + 1
                   cycle
                endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
-               ldistvec = lcurpar_pos(:)-des_pos_new(:,lneigh)
+               ldistvec(1) = lcurpar_pos(1)-des_pos_new(1,lneigh)
+               ldistvec(2) = lcurpar_pos(2)-des_pos_new(2,lneigh)
+               ldistvec(3) = lcurpar_pos(3)-des_pos_new(3,lneigh)
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
-               lneighcnt = lneighcnt + 1
+               tmp_neigh(lpicloc) = lneigh
+            end do
 
+            do lpicloc = 1,ltotpic
+               lneigh = tmp_neigh(lpicloc)
+               if (lneigh .ne. 0) then
 !$  if (.true.) then
 !!!!! SMP version
 
@@ -978,9 +987,9 @@
 
 !$  else
 !!!!! Serial version
-
-      cc = add_pair(lcurpar, lneigh)
+                  cc = add_pair(lcurpar, lneigh)
 !$  endif
+               endif
             end do
          end do
          end do
@@ -1014,6 +1023,8 @@
 !$    deallocate( PAIRS_SMP )
 
 !$omp end parallel
+
+      deallocate(tmp_neigh)
 
     contains
 
