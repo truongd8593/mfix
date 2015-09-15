@@ -869,13 +869,13 @@
 ! present in the system
       lkoffset = dimn-2
 
-      allocate(tmp_neigh(max_isize))
-
 !$omp parallel default(none) private(lcurpar,lijk,lic,ljc,lkc,cc,curr_tt,diff, &
-!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,   &
+!$omp    il_off,iu_off,jl_off,ju_off,kl_off,ku_off,lcurpar_pos,lcur_off,lSIZE2,tmp_neigh,   &
 !$omp    ltotpic, lneigh,lsearch_rad,ldistvec,ldistsquared, pair_num_smp, pair_max_smp, pairs_smp, int_tmp) &
 !$omp    shared(max_pip,neighbors,neighbor_index,neigh_max,dg_pijk,NO_K,des_pos_new,dg_pic, factor_RLM,dd,  &
-!$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2)
+!$omp           des_radius, dg_xstart,dg_ystart,dg_zstart,dg_dxinv,dg_dyinv,dg_dzinv,dg_ijkstart2,dg_ijkend2, max_isize)
+
+      allocate(tmp_neigh(max_isize))
 
 !$      PAIR_NUM_SMP = 0
 !$      PAIR_MAX_SMP = 1024
@@ -1022,9 +1022,9 @@
 
 !$    deallocate( PAIRS_SMP )
 
-!$omp end parallel
-
       deallocate(tmp_neigh)
+
+!$omp end parallel
 
     contains
 
