@@ -247,6 +247,8 @@
 
 ! do_nsearch should be set before calling particle in cell
       DO_NSEARCH =.TRUE.
+! Bin the particles to the DES grid.
+      CALL DESGRID_PIC(PLOCATE=.TRUE.)
       CALL DES_PAR_EXCHANGE
       CALL PARTICLES_IN_CELL
 

@@ -107,16 +107,12 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-    USE param
-    USE param1
-    USE matrix
-    USE geometry
-    USE compar
+    USE compar, ONLY: istart, iend, jstart, jend, kstart, kend, IJKSTART3, IJKEND3, nlayers_bicgs, c0, c1, c2, mype
+    USE cutcell, ONLY: re_indexing, CARTESIAN_GRID
+    USE geometry, ONLY: do_k, use_corecell_loop, CORE_ISTART, CORE_IEND, CORE_JSTART, CORE_JEND, CORE_KSTART, CORE_KEND
     USE indices
-    USE sendrecv
-    USE mpi_utility
-    USE cutcell
-    USE functions
+    USE param, ONLY: DIMENSION_3
+    USE sendrecv, ONLY: send_recv
     IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -138,6 +134,8 @@ CONTAINS
 ! Variable
     INTEGER :: I, J, K, IJK
     integer :: im1jk, ip1jk, ijm1k, ijp1k, ijkm1, ijkp1
+    integer :: class, interval
+    integer :: j_start(2), j_end(2)
 !-----------------------------------------------
 
     IF(RE_INDEXING) THEN
@@ -148,7 +146,6 @@ CONTAINS
           ip1jk = ip_of(ijk)
           ijm1k = jm_of(ijk)
           ijp1k = jp_of(ijk)
-
 
           AVar(ijk) =      A_m(ijk,-2) * Var(ijm1k)   &
                + A_m(ijk,-1) * Var(im1jk)   &
@@ -168,61 +165,105 @@ CONTAINS
 
        enddo
 
-
     ELSE
 
+          core_istart = istart+2
+          core_iend = iend-2
 
+          core_jstart = jstart+2
+          core_jend = jend-2
 
-       if (do_k) then
-!$omp    parallel  do &
-!$omp&   private(     &
-!$omp&           ijk,i,j,k, &
-!$omp&           im1jk,ip1jk,ijm1k,ijp1k,ijkm1,ijkp1) collapse (3)
+          if (do_k) then
+             core_kstart = kstart+2
+             core_kend = kend-2
+          else
+             core_kstart = 1
+             core_kend = 1
+             kstart = 1
+             kend = 1
+          endif
+
+          if (USE_CORECELL_LOOP) then
+
+          class = cell_class(funijk(core_istart,core_jstart,core_kstart))
+
+!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop,class) &
+!$omp&   private(ijk,i,j,k) collapse (3)
+             do k = core_kstart,core_kend
+                do i = core_istart,core_iend
+                   do j = core_jstart,core_jend
+                      ijk = (j + c0 + i*c1 + k*c2)
+
+                      AVar(ijk) = &
+                           + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
+                           + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
+                           + A_m(ijk, 0) * Var(ijk)     &
+                           + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
+                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
+
+                      if (do_k) then
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                      endif
+                   enddo
+                enddo
+             enddo
+          endif
+
+          j_start(1) = jstart
+          j_end(1) = jend
+          j_start(2) = 0 ! no iterations
+          j_end(2) = -1  ! no iterations
+
+!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
+!$omp&   private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2)
           do k = kstart,kend
              do i = istart,iend
-                do j = jstart,jend
-                   IJK = funijk(i,j,k)
-                   im1jk = im_of(ijk)
-                   ip1jk = ip_of(ijk)
-                   ijm1k = jm_of(ijk)
-                   ijp1k = jp_of(ijk)
-                   ijkm1 = km_of(ijk)
-                   ijkp1 = kp_of(ijk)
-                   AVar(ijk) =  A_m(ijk,-3) * Var(ijkm1)   &
-                        + A_m(ijk,-2) * Var(ijm1k)   &
-                        + A_m(ijk,-1) * Var(im1jk)   &
-                        + A_m(ijk, 0) * Var(ijk)     &
-                        + A_m(ijk, 1) * Var(ip1jk)   &
-                        + A_m(ijk, 2) * Var(ijp1k)   &
-                        + A_m(ijk, 3) * Var(ijkp1)
+
+                if  (USE_CORECELL_LOOP) then
+                   if (core_istart<= i .and. i <= core_iend .and. core_kstart <= k .and. k<=core_kend) then
+                      j_start(1) = jstart
+                      j_end(1) = core_jstart-1
+                      j_start(2) = core_jend+1
+                      j_end(2) = jend
+                   else
+                      j_start(1) = jstart
+                      j_end(1) = jend
+                      j_start(2) = 0 ! no iterations
+                      j_end(2) = -1  ! no iterations
+                   endif
+                endif
+
+                do interval=1,2
+                   do j = j_start(interval),j_end(interval)
+                      ijk = (j + c0 + i*c1 + k*c2)
+                      class = cell_class(ijk)
+
+                      AVar(ijk) = &
+                           + A_m(ijk,-2) * Var(ijk+INCREMENT_FOR_MP(3,class))   &
+                           + A_m(ijk,-1) * Var(ijk+INCREMENT_FOR_MP(1,class))   &
+                           + A_m(ijk, 0) * Var(ijk)     &
+                           + A_m(ijk, 1) * Var(ijk+INCREMENT_FOR_MP(2,class))   &
+                           + A_m(ijk, 2) * Var(ijk+INCREMENT_FOR_MP(4,class))
+
+                      if (do_k) then
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk,-3) * Var(ijk+INCREMENT_FOR_MP(5,class))
+                         AVar(ijk) =  AVar(ijk) + A_m(ijk, 3) * Var(ijk+INCREMENT_FOR_MP(6,class))
+                      endif
+                   enddo
                 enddo
              enddo
           enddo
 
-       else
-          k = 1
-!$omp parallel do private(i,j,ijk,im1jk,ip1jk,ijm1k,ijp1k) collapse (2)
-          do i = istart,iend
-             do j = jstart,jend
-                IJK = funijk(i,j,k)
-                im1jk = im_of(ijk)
-                ip1jk = ip_of(ijk)
-                ijm1k = jm_of(ijk)
-                ijp1k = jp_of(ijk)
-                AVar(ijk) =  A_m(ijk,-2) * Var(ijm1k)   &
-                     + A_m(ijk,-1) * Var(im1jk)   &
-                     + A_m(ijk, 0) * Var(ijk)     &
-                     + A_m(ijk, 1) * Var(ip1jk)   &
-                     + A_m(ijk, 2) * Var(ijp1k)
-             enddo
-          enddo
+       ENDIF ! RE_INDEXING
 
-       endif
-
-    ENDIF ! RE_INDEXING
-
-    call send_recv(Avar,nlayers_bicgs)
+       call send_recv(Avar,nlayers_bicgs)
     RETURN
+
+  CONTAINS
+
+    INCLUDE 'functions.inc'
+
   END SUBROUTINE LEQ_MATVEC
 
 

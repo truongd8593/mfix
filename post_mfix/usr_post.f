@@ -25,18 +25,17 @@
 
 !     subroutine for getting average species mass fractions excluding bubbles
       SUBROUTINE USR_POST
-!
-!
-      Use param
-      Use param1
+
+      Use compar
       Use fldvar
-      Use run
+      Use functions
       Use geometry
       Use indices
-      Use post3d
+      Use param
+      Use param1
       Use physprop
-      Use compar
-      Use functions
+      Use post3d
+      Use run
 
       IMPLICIT NONE
 !
@@ -138,7 +137,7 @@
       CLOSE (UNIT=40)
 !
       RETURN
-      END
+    END SUBROUTINE USR_POST
 !
 !  The following routines are not active.  To make a routine active replace the
 !  above routine with the desired routine and change its name to USR_POST
@@ -146,18 +145,12 @@
 
 !     subroutine for cluster size statistics
       SUBROUTINE USR_POST1
-!
-!
-      Use param
-      Use param1
-      Use fldvar
-      Use run
-      Use geometry
-      Use indices
-      Use post3d
-      Use physprop
-      Use compar
-      Use functions
+
+      Use fldvar, only: d_p, ep_g, u_s, v_s, w_s, u_g, v_g, w_g
+      Use functions, only: fluid_at
+      Use geometry, ONLY: ijkmax2
+      Use param1, only: n_spx, one, zero
+      Use physprop, only: mu_g0, ro_g0
 
       IMPLICIT NONE
       INTEGER MAX_COUNT
@@ -267,4 +260,4 @@
       CLOSE (UNIT=40)
 !
       RETURN
-      END
+ END SUBROUTINE USR_POST1

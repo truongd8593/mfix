@@ -10,6 +10,9 @@ for target in mfix postmfix libmfix.a Makefile; do
     [ -d ${target} ] && exit -1
 done
 
+# config.log is always in BUILD_DIR, but only want it in RUN_DIR if configure fails
+rm -f config.log
+
 # Set some of the folder paths.
 RUN_DIR=$(pwd)
 MFIX_HOME=$(cd $(dirname $0); pwd)
@@ -24,10 +27,20 @@ if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
     ${MFIX_HOME}/configure "${args[@]}" || exit $?
 else
     args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
+    trunc_args_dir_name=$( echo ${args_dir_name} | cut -c 1-250 )
+    [ ${args_dir_name} != ${trunc_args_dir_name} ] && rm -rf ${BUILD_DIR}
     BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
     mkdir -p ${BUILD_DIR}
     cd ${BUILD_DIR}
-    ${MFIX_HOME}/configure "${args[@]}" || exit $?
+    set +e
+    ${MFIX_HOME}/configure "${args[@]}"
+    exit_code=$?
+    set -e
+    if [[ $exit_code != 0 ]]; then
+	cd ${RUN_DIR}
+	ln -sf ${BUILD_DIR}/config.log
+	exit $exit_code
+    fi
     MAKEFILE=${RUN_DIR}/Makefile
     MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
     if [ -f ${MAKEFILE_USR} ]; then

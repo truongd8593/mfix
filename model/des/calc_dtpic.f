@@ -7,23 +7,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DTPIC
 
-      USE param1
-      USE funits
-      USE run
       USE compar
-      USE discretelement
       USE cutcell
-      use desmpi
-      use mpi_utility
-      USE geometry
       USE des_rxns
-      USE des_thermo
       USE des_stl_functions
-
+      USE des_thermo
+      USE discretelement
+      USE functions
+      USE funits
+      USE geometry
+      USE param1
+      USE run
+      use desmpi
+      use error_manager
       use mfix_pic, only: CFL_PIC, DTPIC_CFL, DTPIC_TAUP
       use mfix_pic, only: DTPIC_MAX
-
-      use error_manager
+      use mpi_utility
 
       IMPLICIT NONE
 !-----------------------------------------------

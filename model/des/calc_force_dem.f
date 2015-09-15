@@ -74,8 +74,6 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
-
-
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
@@ -274,6 +272,8 @@
       RETURN
 
       contains
+
+        include 'functions.inc'
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

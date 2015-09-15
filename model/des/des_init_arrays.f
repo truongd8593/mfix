@@ -79,19 +79,18 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      use discretelement
+      use des_rxns
+      use des_thermo
       use desgrid
       use desmpi
-      use des_thermo
-      use des_rxns
-
-      use run, only: ENERGY_EQ
-      use run, only: ANY_SPECIES_EQ
-
-      use particle_filter, only: FILTER_SIZE
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-      use mfix_pic, only: MPPIC, DES_STAT_WT, PS_GRAD
+      use discretelement
+      use functions
       use mfix_pic, only: AVGSOLVEL_P, EPG_P
+      use mfix_pic, only: MPPIC, DES_STAT_WT, PS_GRAD
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+      use particle_filter, only: FILTER_SIZE
+      use run, only: ANY_SPECIES_EQ
+      use run, only: ENERGY_EQ
 
       IMPLICIT NONE
 

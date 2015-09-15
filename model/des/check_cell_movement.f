@@ -19,7 +19,7 @@
 ! Run time flag indicating DEM or PIC solids.
       use run, only: DEM_SOLIDS, PIC_SOLIDS
 
-      use discretelement, only: IS_NORMAL
+      use functions, only: IS_NORMAL
       use mpi_utility
       use error_manager
 
@@ -85,7 +85,7 @@
 ! Particle positions and velocities
       use discretelement, only: DES_POS_NEW, DES_VEL_NEW
 
-      use discretelement, only: IS_NORMAL
+      use functions, only: IS_NORMAL
       use mpi_utility
       USE error_manager
 
@@ -193,7 +193,7 @@
 ! Flag: identifies a fluid cell as a cut cell.
       use cutcell, only: CUT_CELL_AT
 
-      use discretelement, only: IS_NORMAL, SET_NONEXISTENT
+      use functions, only: IS_NORMAL, SET_NONEXISTENT
       use mpi_utility
       use error_manager
       use functions

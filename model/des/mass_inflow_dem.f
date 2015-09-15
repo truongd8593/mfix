@@ -13,6 +13,7 @@
       use des_allocate
       use des_bc
       use discretelement
+      use functions
 
       use mpi_utility, only: BCAST
 

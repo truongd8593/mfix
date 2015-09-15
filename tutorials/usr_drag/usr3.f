@@ -9,7 +9,8 @@
       use discretelement, only: DES_MMAX
       use discretelement, only: DES_VEL_NEW
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PIJK, PIP, IS_NONEXISTENT
+      use discretelement, only: PIJK, PIP
+      use functions, only: IS_NONEXISTENT
 
       IMPLICIT NONE
 

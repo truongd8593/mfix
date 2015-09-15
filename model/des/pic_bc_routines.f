@@ -36,7 +36,7 @@
       use param1, only: ZERO, ONE, UNDEFINED
 ! DES array dimensionality (3)
       use discretelement, only: DIMN
-      use discretelement, only: IS_NONEXISTENT
+      use functions, only: IS_NONEXISTENT
 
 ! Module Procedures:
 !---------------------------------------------------------------------//
@@ -162,12 +162,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE PIC_MO_BC
 
-      use discretelement
-      use pic_bc
-      use bc
       USE error_manager
       USE mpi_utility
-
+      use bc
+      use discretelement
+      use functions
+      use pic_bc
 
       implicit none
 
@@ -567,7 +567,8 @@
       USE funits
       USE mpi_utility
       USE error_manager
-      USE discretelement, only: max_pip, is_nonexistent
+      USE discretelement, only: max_pip
+      USE functions, only: is_nonexistent
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -784,18 +785,12 @@
       SUBROUTINE CHECK_IF_PARCEL_OVERLAPS_STL(POSITION, &
       OVERLAP_EXISTS)
 
-      USE constant
-      USE cutcell
       USE des_stl_functions
       USE desgrid
       USE discretelement, only: dimn
-      USE functions
-      USE geometry
-      USE indices
-      USE mpi_utility
-      USE param1
-      USE run
+      USE geometry, only: do_k
       USE stl
+
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN)

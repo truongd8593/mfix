@@ -14,22 +14,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CUT_CELL_VOLUME_AND_AREAS(IJK,TYPE_OF_CELL,N_NODES,CONNECT,X_NP,Y_NP,Z_NP)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE bc, ONLY: bc_type
+      USE compar, ONLY: ijkstart3, ijkend3, istart1, jstart1, kstart1, mype
       USE cutcell
-      USE polygon
-      USE stl
-      USE bc
-      USE functions
+      USE functions, only: funijk
+      USE geometry, ONLY: do_k, no_k, ayz, axz, axy, ayz_u, axy_u, axz_u, ayz_v, axz_v, axy_v, ayz_w, axz_w, axy_w, vol, vol_u, vol_v, vol_w, dx, dy, dz, zlength, flag, flag_n, flag_t
+      USE indices, only: i_of, j_of, k_of
+      USE param1, only: zero
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: n_quadric, tol_f, bc_id_q, dim_quadric
+      USE stl, ONLY: n_facet_at, list_facet_at, bc_id_stl_face
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -98,11 +92,9 @@
       N_SOUTH_FACE_NODES = 0
       N_BOTTOM_FACE_NODES = 0
 
-
       X_MEAN = ZERO
       Y_MEAN = ZERO
       Z_MEAN = ZERO
-
 
       IF(NO_K) THEN
          N_N1 = 5
@@ -111,7 +103,6 @@
          N_N1 = 1
          N_N2 = 8
       ENDIF
-
 
       DO L = 1, N_NODES
          IF(CONNECT(IJK,L)>IJKEND3) THEN   ! One of the new point
@@ -158,9 +149,6 @@
          Y_MEAN = Y_MEAN + Y_COPY
          Z_MEAN = Z_MEAN + Z_COPY
 
-
-
-
          IF(CORNER_POINT) THEN
             Q_ID = 1
             CALL EVAL_F('QUADRIC',X_COPY,Y_COPY,Z_COPY,Q_ID,F_COPY,CLIP_FLAG)
@@ -172,8 +160,6 @@
          ELSE
             F_COPY = ZERO
          ENDIF
-
-
 
          IF (DABS(F_COPY) < TOL_F ) THEN ! belongs to cut face
             N_CUT_FACE_NODES = N_CUT_FACE_NODES + 1
@@ -417,7 +403,6 @@
             AXY(IJK) = AREA_TOP
             Area_CUT(IJK) = CUT_AREA
 
-
 ! Compute normal and store cut face info (normal vector and reference point)
             NORMAL_S(IJK,1) = AREA_EAST  - AREA_WEST
             NORMAL_S(IJK,2) = AREA_NORTH - AREA_SOUTH
@@ -477,7 +462,6 @@
                AXY(IJK) = ZERO
                VOL(IJK) = ZERO
 
-
             ELSEIF(VOL(IJK) < TOL_SMALL_CELL * DX(I)*DY(J)*DZ(K) ) THEN
                SMALL_CELL_AT(IJK) = .TRUE.
                NUMBER_OF_SMALL_CELLS = NUMBER_OF_SMALL_CELLS + 1
@@ -512,7 +496,6 @@
                Y_W(IJK) = CENTROID_TOP(2)
                Z_W(IJK) = CENTROID_TOP(3)
             ENDIF
-
 
             IF(N_QUADRIC>0) THEN
                F_CUT_FACE = UNDEFINED
@@ -603,7 +586,6 @@
 
          CASE('U_MOMENTUM')
 
-
             IF(I>ISTART1) AREA_WEST   = AYZ_U(IMJK)
             IF(J>JSTART1) AREA_SOUTH  = AXZ_U(IJMK)
             IF(K>KSTART1) AREA_BOTTOM = AXY_U(IJKM)
@@ -642,7 +624,6 @@
                NORMAL_U(IJK,3) = ZERO
             ENDIF
 
-
             NORM = sqrt(NORMAL_U(IJK,1)**2 + NORMAL_U(IJK,2)**2 + NORMAL_U(IJK,3)**2)
 
             IF(NORM==ZERO) NORM = UNDEFINED
@@ -651,10 +632,8 @@
 
             REFP_U(IJK,:)   = CENTROID_CUT(:)
 
-
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
-
 
             IF(NO_K) THEN
                VOL_U(IJK) = AXY_U(IJK) * ZLENGTH
@@ -755,9 +734,6 @@
                ENDDO
             ENDIF
 
-
-
-
          CASE('V_MOMENTUM')
 
             IF(I>ISTART1) AREA_WEST   = AYZ_V(IMJK)
@@ -806,11 +782,8 @@
 
             REFP_V(IJK,:)   = CENTROID_CUT(:)
 
-
             CALL GET_DEL_H(IJK,TYPE_OF_CELL,X_MEAN,Y_MEAN,Z_MEAN,Del_H,Nx,Ny,Nz)
             IF(DEL_H == UNDEFINED) DEL_H = ZERO
-
-
 
             IF(NO_K) THEN
                VOL_V(IJK) = AXY_V(IJK) * ZLENGTH
@@ -829,7 +802,6 @@
                VOL_V(IJK) = VOLUME / 3.0D0
             ENDIF
 
-
             IF(IERROR==1) print*,'V_VEL IERROR',IJK
             IF(IERROR==1) AXZ(IJK) = ZERO
 
@@ -841,7 +813,6 @@
                Y_V(IJK) = CENTROID_CUT(2)
                Z_V(IJK) = CENTROID_CUT(3)
             ENDIF
-
 
             IF(N_QUADRIC>0) THEN
                F_CUT_FACE = UNDEFINED
@@ -910,7 +881,6 @@
                   ENDDO
                ENDDO
             ENDIF
-
 
          CASE('W_MOMENTUM')
             IF(I>ISTART1) AREA_WEST   = AYZ_W(IMJK)
@@ -1087,18 +1057,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_POLYGON_AREA_AND_CENTROID(NP,COORD,AREA,CENTROID,IERROR)
 
-      USE compar
-      USE constant
+      USE compar, only: mype
       USE cutcell
-      USE geometry
-      USE indices
-      USE parallel
-      USE param
-      USE param1
-      USE quadric
-      USE run
-      USE sendrecv
-      USE toleranc
+      USE geometry, ONLY: no_k, zlength
+      USE quadric, ONLY: cross_product
 
       IMPLICIT NONE
 
@@ -1145,7 +1107,6 @@
       NP = NEW_NP
       ENDIF
 
-
       IF( NP < 2 ) THEN
          AREA = ZERO
          CENTROID = UNDEFINED
@@ -1176,7 +1137,6 @@
          WRITE(*,*)'MFiX will exit now.'
          CALL MFIX_EXIT(myPE)
       ENDIF
-
 
 ! The following instructions are only executed if 3 <= NP < 6
 
@@ -1249,18 +1209,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE REORDER_POLYGON(NP,COORD,NORMAL,IERROR)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE compar, ONLY: mype
       USE cutcell
+      USE quadric, only: cross_product
 
       IMPLICIT NONE
       INTEGER :: I,K,N,NP,NC,NEW_NP
@@ -1507,21 +1458,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_G(IJK,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE bc, ONLY: bc_type, bc_hw_g, bc_vw_g, bc_uw_g, bc_ww_g
+      USE compar, ONLY: mype
       USE cutcell
-      USE polygon
-      USE bc
-      USE functions
+      USE param1, only: one, zero
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1655,8 +1595,6 @@
 
             ENDIF
 
-
-
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_INTERPOLATION_TERMS_G'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
@@ -1689,21 +1627,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_S(IJK,M,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
+      USE bc, ONLY: bc_type, bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s
+      USE compar, ONLY: mype
       USE cutcell
-      USE polygon
-      USE bc
-      USE functions
+      USE param1, ONLY: one, zero
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1837,8 +1764,6 @@
 
             ENDIF
 
-
-
          CASE DEFAULT
             WRITE(*,*)'SUBROUTINE: GET_INTERPOLATION_TERMS_S'
             WRITE(*,*)'UNKNOWN TYPE OF CELL:',TYPE_OF_CELL
@@ -1852,8 +1777,3 @@
       RETURN
 
       END SUBROUTINE GET_INTERPOLATION_TERMS_S
-
-
-
-
-

@@ -41,6 +41,7 @@
       use functions, only: FUNIJK
 
       use discretelement
+      use functions
 
       IMPLICIT NONE
 
@@ -211,8 +212,9 @@
 
       use discretelement, only: PIJK, PINC
       USE discretelement, only: DES_POS_NEW
-      USE discretelement, only: MAX_PIP, IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      USE discretelement, only: MAX_PIP
       USE discretelement, only: XE, YN, ZT
+      USE functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
       use mpi_funs_des, only: des_par_exchange
 
 ! Number of particles in the I/J/K direction
@@ -223,6 +225,7 @@
 
       USE error_manager
       USE functions
+      USE desgrid, only: desgrid_pic
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -238,6 +241,8 @@
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
+! Bin the particles to the DES grid.
+      CALL DESGRID_PIC(.TRUE.)
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
       CALL DES_PAR_EXCHANGE
@@ -279,6 +284,8 @@
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
 
+! Bin the particles to the DES grid.
+      CALL DESGRID_PIC(.TRUE.)
 ! Calling exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
 ! unclear why this needs to be called again.

@@ -59,7 +59,7 @@
 ! Function to deterine if a cell contains fluid.
       use functions, only: FLUID_AT
 
-      use discretelement, only: is_normal
+      use functions, only: is_normal
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -96,9 +96,17 @@
 ! Calculate the cell center gas velocities.
       CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
+
+!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,lpf,d_force)    &
+!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight, &
+!$omp          ep_g,pijk,des_vel_new,f_gp,mppic,ugc,vgc,wgc,p_force,          &
+!$omp          des_explicitly_coupled,drag_fc,mppic_pdrag_implicit,fc,model_a,pvol)
+!$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.IS_NORMAL(NP)) CYCLE
+! Avoid drag calculations in cells without fluid (cut-cell)
+         IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -157,6 +165,7 @@
          ENDIF
 
       ENDDO
+!$omp end parallel
 
 ! Unlock the temp arrays.
       CALL UNLOCK_TMP_ARRAY
@@ -224,7 +233,7 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
-      use discretelement, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
+      use functions, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -264,6 +273,11 @@
       ENDIF
 
 ! Calculate the gas phase forces acting on each particle.
+
+!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,ldrag_bm,lforce) &
+!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight,  &
+!$omp          ep_g,pijk,des_vel_new,f_gp,vol,des_stat_wt,mppic,drag_bm,f_gds,ugc,vgc,wgc)
+!$omp do
       DO NP=1,MAX_PIP
          IF(IS_NONEXISTENT(NP)) CYCLE
 
@@ -311,18 +325,32 @@
                IJK = FILTER_CELL(LC,NP)
                WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
 
-               DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
+               !$omp atomic
+               DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
+               !$omp atomic
+               DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
+               !$omp atomic
+               DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
+               !$omp atomic
                F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
             ENDDO
          ELSE
             IJK = PIJK(NP,4)
             WEIGHT = ONE/VOL(IJK)
 
-            DRAG_BM(IJK,:) = DRAG_BM(IJK,:) + lDRAG_BM*WEIGHT
+            !$omp atomic
+            DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
+            !$omp atomic
+            DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
+            !$omp atomic
+            DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
+
+            !$omp atomic
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
          ENDIF
 
       ENDDO
+!$omp end parallel
 
 ! Unlock the temp arrays.
       CALL UNLOCK_TMP_ARRAY

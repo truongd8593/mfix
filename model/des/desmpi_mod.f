@@ -86,7 +86,7 @@
       use discretelement, only: DO_NSEARCH
       use discretelement, only: iGHOST_CNT
       use discretelement, only: MAX_PIP, PIP
-      use discretelement, only: is_ghost, is_nonexistent, is_normal, is_entering_ghost, is_exiting_ghost
+      use functions, only: is_ghost, is_nonexistent, is_normal, is_entering_ghost, is_exiting_ghost
 
       use geometry, only: NO_K
       use compar, only: myPE

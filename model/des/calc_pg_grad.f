@@ -32,7 +32,11 @@
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
 
-      use discretelement, only: IS_NONEXISTENT, IS_NORMAL, IS_ENTERING, IS_EXITING, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      use functions, only: FLUID_AT
+
+      use functions, only: IS_NONEXISTENT
+      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
+      use functions, only: IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -64,10 +68,16 @@
 ! Calculate the gas phase forces acting on each particle.
 
 !$omp  parallel do default(none) &
-!$omp              private(NP,lPF,lc,ijk,weight) &
-!$omp              shared(MAX_PIP,DES_INTERP_ON,LP_BND,p_force,drag_fc,filter_cell,filter_weight,pijk,pvol)
+!$omp  private(NP,lPF,lc,ijk,weight) &
+!$omp  shared(MAX_PIP,DES_INTERP_ON,LP_BND,p_force,drag_fc, &
+!$omp     filter_cell,filter_weight,pijk,pvol)
          DO NP=1,MAX_PIP
-            IF(IS_NONEXISTENT(NP).or.IS_ENTERING(NP).or.IS_EXITING(NP).or.IS_ENTERING_GHOST(NP).or.IS_EXITING_GHOST(NP)) CYCLE
+
+            IF(IS_NONEXISTENT(NP) .or.                              &
+               IS_ENTERING(NP) .or. IS_ENTERING_GHOST(NP) .or.      &
+               IS_EXITING(NP)  .or. IS_EXITING_GHOST(NP)) CYCLE
+
+            IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
             IF(DES_INTERP_ON) THEN
                lPF = ZERO

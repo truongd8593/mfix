@@ -9,26 +9,23 @@
       SUBROUTINE DES_TIME_MARCH
 
       use des_bc, only: DEM_BCMI, DEM_BCMO
+      use des_thermo, only: DES_ENERGY_SOURCE
+      use desgrid, only: desgrid_pic
+      use discretelement
+      use error_manager
       use fldvar, only: EP_g, ROP_g, ROP_s
+      use fldvar, only: EP_g, ROP_g, ROP_s
+      use functions
+      use machine
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use mpi_utility
+      use output, only: SPX_DT
+      use run, only: ANY_SPECIES_EQ
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
       use run, only: ENERGY_EQ
-      use run, only: ANY_SPECIES_EQ
-
-      use output, only: SPX_DT
-      USE fldvar, only: EP_g, ROP_g, ROP_s
-      use des_thermo, only: DES_ENERGY_SOURCE
-      use run, only: TIME, TSTOP, DT
-
-      use mpi_funs_des, only: DES_PAR_EXCHANGE
-
       use run, only: NSTEP
-
-      use discretelement
-      use error_manager
-      use functions
-      use machine
-      use mpi_utility
+      use run, only: TIME, TSTOP, DT
       use sendrecv
 
       IMPLICIT NONE
@@ -140,11 +137,13 @@
 
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
+         IF (DO_NSEARCH .OR. (numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
+            CALL DESGRID_PIC(.TRUE.)
+            CALL DES_PAR_EXCHANGE
+         ENDIF
+
          IF(DO_NSEARCH) THEN
-            CALL DES_PAR_EXCHANGE
             CALL NEIGHBOUR
-         ELSEIF ((numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
-            CALL DES_PAR_EXCHANGE
          ENDIF
 
 ! Explicitly coupled simulations do not need to rebin particles to

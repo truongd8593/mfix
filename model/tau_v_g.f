@@ -49,7 +49,6 @@
       USE is
       USE sendrecv
       USE compar
-      USE fun_avg
       USE functions
       USE cutcell
       IMPLICIT NONE
@@ -174,8 +173,12 @@
       call send_recv(ltau_v_g,2)
       call send_recv(lctau_v_g,2)
       RETURN
-      END SUBROUTINE CALC_TAU_V_G
 
+    CONTAINS
+
+      INCLUDE 'fun_avg.inc'
+
+    END SUBROUTINE CALC_TAU_V_G
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

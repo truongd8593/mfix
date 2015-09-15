@@ -467,7 +467,8 @@
       use compar, only: numPEs
 
       use discretelement, only: DES_POS_NEW
-      use discretelement, only: PIP, SET_NORMAL
+      use discretelement, only: PIP
+      use functions, only: SET_NORMAL
       use geometry, only: NO_K
 
       implicit none
@@ -623,10 +624,10 @@
 
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
-      use discretelement, only: PIP, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+      use discretelement, only: PIP
       use discretelement, only: NEIGH_MAX, NEIGH_NUM
+      use functions, only: IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
-!      use mpi_utility, only: BCAST
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_utility, only: GLOBAL_ALL_MAX
 
