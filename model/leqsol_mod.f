@@ -216,7 +216,7 @@ CONTAINS
           j_end(2) = -1  ! no iterations
 
 !$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
-!$omp&   private(ijk,i,j,k,class,interval,j_start,j_end) collapse (2)
+!$omp&   private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2)
           do k = kstart,kend
              do i = istart,iend
 
