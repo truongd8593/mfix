@@ -53,6 +53,9 @@
       use compar, only: myPE
 ! Global communication function to sum to all ranks.
       use mpi_utility, only: GLOBAL_ALL_SUM
+! Flag for PIC simulation
+      use mfix_pic, only: MPPIC
+      use constant, only: EP_STAR
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -67,7 +70,9 @@
 ! Loop indices
       INTEGER :: IJK, M, LC
 ! Total solids volume fraction
-      DOUBLE PRECISION SUM_EPS
+      DOUBLE PRECISION :: SUM_EPS
+! Packed
+      DOUBLE PRECISION :: PACKED_EPS
 ! Integer Error Flag
       INTEGER :: IER
 !......................................................................!
@@ -75,12 +80,14 @@
 ! Initialize error flag.
       IER = 0
 
+      PACKED_EPS = merge(ONE-0.9d0*EP_STAR, ONE, MPPIC)
+
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//
 !$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
 !$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, SMAX,&
-!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID) &
-!$omp private(IJK, SUM_EPs, M)
+!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID, &
+!$omp    MPPIC, PACKED_EPS) private(IJK, SUM_EPs, M)
       DO IJK = IJKSTART3, IJKEND3
 ! Skip wall cells.
          IF(.NOT.FLUID_AT(IJK)) CYCLE
@@ -97,8 +104,14 @@
                SUM_EPS = SUM_EPS + EP_S(IJK,M)
             ENDDO
          ENDIF
-! Calculate the gas phase volume fraction and bulk density.
-         EP_G(IJK) = ONE - SUM_EPS
+
+! Calculate the gas phase volume fraction.
+         IF(MPPIC) THEN
+            EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)
+         ELSE
+            EP_G(IJK) = ONE - SUM_EPS
+         ENDIF
+! Calculate the gas phase bulk density.
          ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 ! Flag an error if gas volume fraction is unphysical.
          IF(DES_CONTINUUM_COUPLED) THEN

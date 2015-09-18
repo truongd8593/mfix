@@ -64,7 +64,7 @@
 ! Domain bounds
       use compar, only: IJKSTART3, IJKEND3
 ! Double precision parameters
-      use param1, only: ONE
+      use param1, only: ZERO, ONE
 ! Flag to solve 3D
       use geometry, only: DO_K
       use geometry, only: VOL, DX, DY, DZ
@@ -87,24 +87,16 @@
       INTEGER :: IJK, lIJK
 ! Volume fraction of cell, modified for wall cells.
       DOUBLE PRECISION :: lEPg
-
-      DOUBLE PRECISION :: lVOL
-
-
-      double precision :: epg_min, ps_max
 !......................................................................!
-
-
-      EPG_MIN = 1.0
-      PS_MAX = -1.0
 
       DO IJK = IJKSTART3, IJKEND3
 
          IF(FLUID_AT(IJK)) THEN
             lEPg = EP_G(IJK)
          ELSE
+
 ! Set the volume fraction in the wall to close pack.
-            lEPg = EP_STAR
+            lEPg = ONE !EP_STAR
  
 ! Use the lowest value across all adjacent fluid cells. This is to keep
 ! cells below close pack from pushing parcels through the walls.
@@ -127,17 +119,9 @@
 ! Particle stress :: Snider (Eq 33)
          PIC_P_S(IJK,1) = PSFAC_FRIC_PIC *((ONE - lEPg)**FRIC_EXP_PIC)/&
             MAX(lEPg - EP_STAR, FRIC_NON_SING_FAC*lEPg)
-
-         if(fluid_at(ijk)) then
-            epg_min = min(epg_min, ep_g(ijk))
-            ps_max = max(ps_max, PIC_P_S(IJK,1))
-         endif
-
       ENDDO
 
 
-!     write(*,"(/3x,'Epg Min: ',f15.4,/3x,'Ps  Max: ',f15.4)") &
-!        epg_min, ps_max
 
       RETURN
       END SUBROUTINE CALC_PS_PIC_SNIDER

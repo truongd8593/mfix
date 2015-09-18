@@ -29,6 +29,7 @@
 !---------------------------------------------------------------------//
       use mpi_utility, only: GLOBAL_ALL_SUM
       use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use desgrid, only: DESGRID_PIC
 
       use error_manager
 
@@ -99,6 +100,7 @@
          CALL PIC_APPLY_WALLBC_STL
 
 ! Exchange particle crossing processor boundaries
+         CALL DESGRID_PIC(.TRUE.)
          CALL DES_PAR_EXCHANGE
 
          IF(S_TIME + DTSOLID < TEND_PIC_LOOP .OR. &

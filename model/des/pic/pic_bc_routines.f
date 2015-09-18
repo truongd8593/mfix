@@ -39,7 +39,7 @@
 ! Gravitational force vector
       use discretelement, only: GRAV
 
-      use discretelement, only: MAX_RADIUS
+      use discretelement, only: MAX_RADIUS, S_TIME
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -64,14 +64,10 @@
       DOUBLE PRECISION :: LINE_T
 
 ! distance parcel travelled out of domain along the facet normal
-      DOUBLE PRECISION :: DIST(3)
+      DOUBLE PRECISION :: DIST(3), tPOS(3)
 
-      INTEGER :: AXIS
-      DOUBLE PRECISION :: PARTICLE_MIN(3), PARTICLE_MAX(3)
-
-      DOUBLE PRECISION :: DT_RBND, RADSQ, OFFSET
-
-      CALL INIT_ERR_MSG("PIC_APPLY_WALLBC_STL")
+      DOUBLE PRECISION :: DT_RBND, RADSQ
+!......................................................................!
 
 ! Minimum velocity needed to offset gravity.
       minVEL = -DTSOLID*GRAV(:)
@@ -79,8 +75,6 @@
       OoMinVEL_MAG = 1.0d0/minVEL_MAG
 
       DT_RBND = 1.01d0*DTSOLID
-
-      OFFSET = 2.0*MAX_RADIUS
 
       DO NP = 1, MAX_PIP
 
@@ -93,54 +87,89 @@
          RADSQ = DES_RADIUS(NP)*DES_RADIUS(NP)
 
 ! Loop through the STLs associated with the DES grid cell.
-         CELLLOOP: DO LC1=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(NP))
+         LC1_LP: DO LC1=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(NP))
 
 ! Get the index of the neighbor facet
             NF = CELLNEIGHBOR_FACET(DG_PIJK(NP))%P(LC1)
 
             NORM_PLANE = NORM_FACE(:,NF)
 
-            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0)      &
-               CYCLE CELLLOOP
+!            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0) & 
+!               CYCLE LC1_LP
 
             CALL INTERSECTLNPLANE(DES_POS_NEW(:,NP), DES_VEL_NEW(:,NP),&
                 VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
 
             IF(abs(LINE_T) <= DT_RBND) THEN
 
-! Avoid direct collisions with STLs that are not next to the parcel
-               DO LC2=1,3
-                  IF(CELLNEIGHBOR_FACET(DG_PIJK(NP))%extentMIN(LC1) >  &
-                     DES_POS_NEW(LC2,NP)+OFFSET) CYCLE CELLLOOP
-                  IF(CELLNEIGHBOR_FACET(DG_PIJK(NP))%extentMAX(LC1) <  &
-                     DES_POS_NEW(LC2,NP)-OFFSET) CYCLE CELLLOOP
-               ENDDO
+! Project the parcel onto the facet.
+               DIST = LINE_T*DES_VEL_NEW(:,NP)
+               tPOS = DES_POS_NEW(:,NP) + DIST
+                
+! Avoid collisions with STLs that are not next to the parcel
+               IF(HIT_FACET(VERTEX(:,:,NF), tPOS)) THEN
 
 ! Correct the position of particles found too close to the STL.
-               DIST = LINE_T*DES_VEL_NEW(:,NP)
-               IF(dot_product(DIST,DIST) <= RADSQ .OR. LINE_T <= ZERO) &
-                  DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:) +    &
-                  DES_RADIUS(NP)*NORM_PLANE
+                  IF(dot_product(DIST,DIST) <= RADSQ .OR. &
+                     LINE_T <= ZERO) THEN
+                     DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:) + &
+                        DES_RADIUS(NP)*NORM_PLANE
+                  ENDIF
 
-               CALL PIC_REFLECT_PART(NP, NORM_PLANE(:))
+! Reflect the parcel.
+                  CALL PIC_REFLECT_PART(NP, NORM_PLANE(:))
+               ENDIF
             ENDIF
 
-         ENDDO CELLLOOP
+         ENDDO LC1_LP
       END DO
 
 ! Seed new parcels entering the system.
       IF(PIC_BCMI > 0) CALL PIC_MI_BC
       IF(PIC_BCMO > 0) CALL PIC_MO_BC
 
-      CALL FINL_ERR_MSG
+      RETURN
+
+      contains
+
+
+!......................................................................!
+      LOGICAL FUNCTION HIT_FACET(VERTS, POINT)
+
+      DOUBLE PRECISION, INTENT(IN) :: VERTS(3,3)
+      DOUBLE PRECISION, INTENT(IN) :: POINT(3)
+
+      DOUBLE PRECISION :: V0(3), V1(3), V2(3)
+      DOUBLE PRECISION :: d00, d01, d02, d11, d12
+
+      DOUBLE PRECISION :: OoDEN, u, v
+
+      V0 = VERTS(3,:) - VERTS(1,:)
+      V1 = VERTS(2,:) - VERTS(1,:)
+      V2 = POINT - VERTS(1,:)
+
+      d00 = dot_product(V0,V0)
+      d01 = dot_product(V0,V1)
+      d02 = dot_product(V0,V2)
+
+      d11 = dot_product(V1,V1)
+      d12 = dot_product(V1,V2)
+
+      OoDEN = 1.0d0/(d00*d11 - d01*d01)
+      u = (d11*d02 - d01*d12)*OoDEN
+      v = (d00*d12 - d01*d02)*OoDEN
+
+      HIT_FACET = ((u>=0.0d0) .AND. (v>=0.0d0) .AND. (u+v < 1.0d0))
 
       RETURN
+      END FUNCTION HIT_FACET 
+
       END SUBROUTINE PIC_APPLY_WALLBC_STL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: PIC_REFLECT_PARTICLE                                  C
+!  Subroutine: PIC_REFLECT_PARTICLE                                    C
 !  Purpose:                                                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
@@ -228,6 +257,47 @@
 
       RETURN
       END SUBROUTINE PIC_REFLECT_PART
+
+
+!
+      SUBROUTINE OUT_THIS_STL(LC)
+
+      Use usr
+
+! STL Vertices
+      use stl, only: VERTEX
+! STL Facet normals
+      use stl, only: NORM_FACE
+
+
+      IMPLICIT NONE
+!-----------------------------------------------
+      integer, INTENT(IN) :: lc
+
+      logical :: lExists
+      character(len=8) :: IDX
+
+
+      write(idx,"(I8.8)") LC
+      inquire(file='geo_'//idx//'.stl', EXIST=lExists)
+
+      IF(lExists) RETURN
+
+      open(unit=555, file='geo_'//idx//'.stl', status='UNKNOWN')
+      write(555,*) 'solid vcg'
+      write(555,*) '   facet normal ', NORM_FACE(:,LC)
+      write(555,*) '      outer loop'
+      write(555,*) '         vertex ', VERTEX(1,1:3,LC)
+      write(555,*) '         vertex ', VERTEX(2,1:3,LC)
+      write(555,*) '         vertex ', VERTEX(3,1:3,LC)
+      write(555,*) '      endloop'
+      write(555,*) '   endfacet'
+      close(555)
+
+      RETURN
+      END SUBROUTINE OUT_THIS_STL
+
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

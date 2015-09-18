@@ -55,8 +55,7 @@
 
             IF((I > IEND1 .OR. I < ISTART1) .OR. &
                (J > JEND1 .OR. J < JSTART1) .OR. &
-               (K > KEND1 .OR. K < KSTART1) .OR. &
-               (.NOT.FLUID_AT(IJK))) THEN
+               (K > KEND1 .OR. K < KSTART1)) THEN
 
 ! This particle cannot say in the current cell.
                PINC(IJK) = PINC(IJK) - 1
@@ -241,7 +240,6 @@
 
       CALL INIT_ERR_MSG("RECOVER_PARCEL")
       IF(lDEBUG) CALL OPEN_PE_LOG(IER)
-
 
       oPOS = DES_POS_NEW(:,NP)
 
