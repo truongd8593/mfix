@@ -161,7 +161,7 @@
          part = 1
          DO LC1 = 1, NEIGH_NUM
             IF (0 .eq. NEIGHBORS(LC1)) EXIT
-            IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+            IF (LC1.eq.NEIGHBOR_INDEX(1,part)) THEN
                part = part + 1
             ENDIF
             IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
@@ -609,7 +609,7 @@
 
       DO LC1 = 1, NEIGH_NUM
          IF (0 .eq. NEIGHBORS(LC1)) EXIT
-         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+         IF (LC1.eq.NEIGHBOR_INDEX(1,part)) THEN
             part = part + 1
          ENDIF
          IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
@@ -666,7 +666,7 @@
       part = 1
       DO LC1 = 1, NEIGH_NUM
          IF (0 .eq. NEIGHBORS(LC1)) EXIT
-         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+         IF (LC1.eq.NEIGHBOR_INDEX(1,part)) THEN
             part = part + 1
          ENDIF
          IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN
@@ -720,7 +720,7 @@
       part = 1
       DO LC1 = 1, NEIGH_NUM
          IF (0 .eq. NEIGHBORS(LC1)) EXIT
-         IF (LC1.eq.NEIGHBOR_INDEX(part)) THEN
+         IF (LC1.eq.NEIGHBOR_INDEX(1,part)) THEN
             part = part + 1
          ENDIF
          IF(.NOT.IS_NONEXISTENT(part) .AND. .NOT.IS_NONEXISTENT(NEIGHBORS(LC1))) THEN

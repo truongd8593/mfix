@@ -32,7 +32,7 @@ LOGICAL :: found
 !-----------------------------------------------
 ! Reset PPOS and NEIGHBOURS back to initialized values
       PPOS(:,:) = DES_POS_NEW(:,:)
-      neighbor_index_old(:) = neighbor_index(:)
+      neighbor_index_old(:,:) = neighbor_index(:,:)
 
 !$omp parallel do default(none) private(cc) &
 !$omp shared(neighbors, neighbors_old, pft_neighbor, pft_neighbor_old)
@@ -42,7 +42,7 @@ LOGICAL :: found
       enddo
 !$omp end parallel do
 
-      NEIGHBOR_INDEX(:) = 0
+      NEIGHBOR_INDEX(:,:) = 0
 
       IF (DES_NEIGHBOR_SEARCH.EQ.1) THEN
          CALL NSQUARE
@@ -57,12 +57,12 @@ LOGICAL :: found
       do ll = 1, max_pip
 
          CC_START = 1
-         IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
-         CC_END   = NEIGHBOR_INDEX(LL)
+         IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(1,LL)
+         CC_END   = NEIGHBOR_INDEX(2,LL)
 
          CC_START_OLD = 1
-         IF (LL.gt.1) CC_START_OLD = NEIGHBOR_INDEX_OLD(LL-1)
-         CC_END_OLD   = NEIGHBOR_INDEX_OLD(LL)
+         IF (LL.gt.1) CC_START_OLD = NEIGHBOR_INDEX_OLD(1,LL)
+         CC_END_OLD   = NEIGHBOR_INDEX_OLD(2,LL)
 
          DO CC = CC_START, CC_END-1
             found = .false.

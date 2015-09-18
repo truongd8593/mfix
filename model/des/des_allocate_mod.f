@@ -143,8 +143,8 @@ CONTAINS
 
       NEIGH_MAX = MAX_PIP
 
-      Allocate(  NEIGHBOR_INDEX (MAX_PIP) )
-      Allocate(  NEIGHBOR_INDEX_OLD (MAX_PIP) )
+      Allocate(  NEIGHBOR_INDEX (2,MAX_PIP) )
+      Allocate(  NEIGHBOR_INDEX_OLD (2,MAX_PIP) )
       Allocate(  NEIGHBORS (NEIGH_MAX) )
       NEIGHBORS(:) = 0
       Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
@@ -429,22 +429,20 @@ CONTAINS
 ! Purpose: Adds a neighbor pair to the pairs array.                    !
 !                                                                      !
 !``````````````````````````````````````````````````````````````````````!
-      DOUBLE PRECISION FUNCTION add_pair(ii,jj)
+      SUBROUTINE add_pair(ii,jj)
       USE discretelement
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
 
-      if (NEIGHBOR_INDEX(ii) > NEIGH_MAX) then
+      if (NEIGHBOR_INDEX(1,ii) + NEIGHBOR_INDEX(2,ii) > NEIGH_MAX) then
          NEIGH_MAX = 2*NEIGH_MAX
          CALL NEIGHBOR_GROW(NEIGH_MAX)
       endif
 
-      NEIGHBORS(NEIGHBOR_INDEX(ii)) = jj
-      NEIGHBOR_INDEX(ii) = NEIGHBOR_INDEX(ii) + 1
-      add_pair = NEIGHBOR_INDEX(ii)
-
+      NEIGHBORS(NEIGHBOR_INDEX(1,ii) + NEIGHBOR_INDEX(2,ii)) = jj
+      NEIGHBOR_INDEX(2,ii) = NEIGHBOR_INDEX(2,ii) + 1
       RETURN
-      END FUNCTION add_pair
+      END SUBROUTINE add_pair
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: NEIGHBOR_GROW                                            !
@@ -534,8 +532,8 @@ CONTAINS
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
            call real_grow2(DRAG_FC,MAX_PIP)
 
-           call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
-           call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)
+           call integer_grow2(NEIGHBOR_INDEX,MAX_PIP)
+           call integer_grow2(NEIGHBOR_INDEX_OLD,MAX_PIP)
 
            IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
 

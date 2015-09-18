@@ -202,6 +202,8 @@
                ispot = ispot + 1
             enddo
 ! Set the flags for the ghost particle and store the local variables.
+                  print *,"NEED TO SWAP: ", lcurpar
+                  stop 5555
             call set_ghost(ispot)
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk
@@ -508,7 +510,7 @@
 ! If the neighbor particle is a 'real' particle on this processor, then
 ! the pair data may already exist. Check before adding it.
 ! Create a new neighbor pair if it was not matched to an exiting pair.
-          cc = add_pair(llocpar,lneigh)
+          call add_pair(llocpar,lneigh)
 ! 38) Tangential collision history.
          call unpack_dbuf(lbuf,pft_neighbor(:,cc),pface)
       enddo

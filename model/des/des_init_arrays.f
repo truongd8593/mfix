@@ -120,7 +120,8 @@
       DO II = LB, UB
          call set_nonexistent(II)
       ENDDO
-      NEIGHBOR_INDEX(:) = 0
+      LAST_NORMAL = UB
+      NEIGHBOR_INDEX(2,:) = 0
 
 ! DES grid bin information
       DG_PIJK(LB:UB) = -1

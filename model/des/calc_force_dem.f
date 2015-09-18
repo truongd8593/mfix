@@ -26,7 +26,7 @@
 ! percent of particle radius when excess overlap will be flagged
       DOUBLE PRECISION, PARAMETER :: flag_overlap = 0.20d0
 ! particle no. indices
-      INTEGER :: I, LL, cc, CC_START, CC_END
+      INTEGER :: I, LL, cc
 ! the overlap occuring between particle-particle or particle-wall
 ! collision in the normal direction
       DOUBLE PRECISION :: OVERLAP_N, OVERLAP_T(3)
@@ -77,7 +77,7 @@
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
-!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
+!$omp parallel default(none) private(pos,rad,cc,ll,i,  &
 !$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
@@ -93,16 +93,24 @@
 !$omp do
 
       DO LL = 1, MAX_PIP
-         IF(IS_NONEXISTENT(LL)) CYCLE
+         IF (LL<=LAST_NORMAL .and. .not. IS_NORMAL(LL)) THEN
+            print *," should be normal ll=",ll,last_normal,particle_state(ll)
+            stop 1111
+         ENDIF
+         IF (LAST_NORMAL<LL .and. .not. IS_GHOST(LL)) THEN
+            print *," should be ghost ll=",ll,last_normal,particle_state(ll)
+            stop 2222
+         ENDIF
+         IF (IS_NONEXISTENT(LL)) THEN
+            print *,"PARTICLE IS NONEXISTENT"
+            stop 3333
+         ENDIF
          pos = DES_POS_NEW(:,LL)
          rad = DES_RADIUS(LL)
 
-         CC_START = 1
-         IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
-         CC_END   = NEIGHBOR_INDEX(LL)
-
-         DO CC = CC_START, CC_END-1
+         DO CC = NEIGHBOR_INDEX(1,LL), NEIGHBOR_INDEX(2,LL)
             I  = NEIGHBORS(CC)
+         print *,"NEIGH check ",I
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)

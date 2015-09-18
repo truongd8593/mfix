@@ -366,6 +366,8 @@
                elseif (is_exiting(lcurpar)) then
                   call set_exiting_ghost(lcurpar)
                else
+                  print *,"NEED TO SWAP: ", lcurpar
+                  stop 4444
                   call set_ghost(lcurpar)
                endif
                ighost_cnt = ighost_cnt + 1
@@ -389,7 +391,7 @@
        do cc = 1, NEIGH_NUM
           IF (0 .eq. NEIGHBORS(cc)) EXIT
 
-          IF (cc.eq.NEIGHBOR_INDEX(lcurpar)) THEN
+          IF (cc.eq.NEIGHBOR_INDEX(2,lcurpar)) THEN
              lcurpar = lcurpar + 1
           ENDIF
 

@@ -886,13 +886,12 @@
       do lcurpar =1,max_pip
 
 !$  if (.false.) then
-            if (NEIGHBOR_INDEX(lcurpar) .eq. 0) then
-                if (lcurpar .eq. 1) then
-                    NEIGHBOR_INDEX(lcurpar) = 1
-                else
-                    NEIGHBOR_INDEX(lcurpar) = NEIGHBOR_INDEX(lcurpar-1)
-                endif
-            endif
+         if (lcurpar .eq. 1) then
+            NEIGHBOR_INDEX(1,lcurpar) = 1
+         else
+            NEIGHBOR_INDEX(1,lcurpar) = NEIGHBOR_INDEX(1,lcurpar-1) + NEIGHBOR_INDEX(2,lcurpar-1)
+         endif
+         NEIGHBOR_INDEX(2,lcurpar) = 0
 !$  endif
 
          if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
@@ -987,7 +986,7 @@
 
 !$  else
 !!!!! Serial version
-                  cc = add_pair(lcurpar, lneigh)
+                  CALL add_pair(lcurpar, lneigh)
 !$  endif
                endif
             end do
@@ -1000,7 +999,8 @@
 !$  curr_tt = omp_get_thread_num()+1  ! add one because thread numbering starts at zero
 
 !$omp single
-!$  NEIGHBOR_INDEX(1) = 1
+!$  NEIGHBOR_INDEX(1,1) = 1
+!$  NEIGHBOR_INDEX(2,1) = 0
 !$  dd = 1
 !$omp end single
 
@@ -1011,9 +1011,10 @@
 !$            lcurpar = PAIRS_SMP(1,MM)
 !$            do while (dd .lt. lcurpar)
 !$                dd = dd + 1
-!$                NEIGHBOR_INDEX(dd) = NEIGHBOR_INDEX(dd-1)
+!$                NEIGHBOR_INDEX(1,dd) = NEIGHBOR_INDEX(1,dd-1) + NEIGHBOR_INDEX(2,dd-1)
+!$                NEIGHBOR_INDEX(2,dd) = 0
 !$            enddo
-!$            cc = add_pair(lcurpar, PAIRS_SMP(2,MM))
+!$            CALL add_pair(lcurpar, PAIRS_SMP(2,MM))
 !$        enddo
 !$omp end ordered
 

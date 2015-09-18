@@ -40,8 +40,8 @@
       PC=1
       DO L=1, MAX_PIP
 
-         NEIGHBOR_INDEX(L) = 1
-         if (L .gt. 1) NEIGHBOR_INDEX(L) = NEIGHBOR_INDEX(L-1)
+         NEIGHBOR_INDEX(1,L) = 1
+         if (L .gt. 1) NEIGHBOR_INDEX(1,L) = NEIGHBOR_INDEX(2,L)
 
          IF(PC .GE. PIP ) EXIT
          IF(IS_NONEXISTENT(L)) CYCLE
@@ -125,7 +125,7 @@
 ! ------------------------------
 
             IF (DIST < R_LM**2) THEN
-               cc = add_pair(L, LL)
+               CALL add_pair(L, LL)
             ENDIF
             PNPC = PNPC - 1
          ENDDO   ! end loop over LL
