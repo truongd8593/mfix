@@ -19,7 +19,7 @@
 !  Local variables: None                                               C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE TRANSPORT_PROP(IER)
+      SUBROUTINE TRANSPORT_PROP()
 
 ! Global Variables:
 !----------------------------------------------------------------------
@@ -39,11 +39,6 @@
       use kintheory, only: CALC_IA_ENERGY_DISSIPATION_SS, CALC_GD_99_ENERGY_DISSIPATION_SS, CALC_GTSH_ENERGY_DISSIPATION_SS
 
       implicit none
-
-! Dummy arguments
-!-----------------------------------------------------------------------
-!  Error index
-      INTEGER, intent(inout) :: IER
 
 ! Local variables
 !-----------------------------------------------------------------------

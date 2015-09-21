@@ -162,7 +162,7 @@
          ELSEIF (DT > DT_MIN) THEN
 
             IF(.NOT.INTERUPT) THEN
-               WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G11.5,' :-)')") DT
+               WRITE(ERR_MSG,"(3X,'Recovered: Dt=',G12.5,' :-)')") DT
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDIF
 

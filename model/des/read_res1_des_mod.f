@@ -1086,10 +1086,8 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER(KIND=1), INTENT(OUT) :: OUTPUT_B(:)
 
-
-      LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1, lc2
+      INTEGER :: LC1
 
       INTEGER :: lPROC
 

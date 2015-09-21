@@ -14,7 +14,7 @@
       SUBROUTINE SET_INCREMENTS
 
       USE compar
-      USE cutcell, ONLY: RE_INDEXING, CARTESIAN_GRID
+      USE cutcell, ONLY: CARTESIAN_GRID
       USE fldvar
       USE functions
       USE funits
