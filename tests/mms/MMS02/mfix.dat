@@ -1,8 +1,8 @@
 ########################################################################
-# 3D, two-phase, curlbased MMS case, variable volume fraction          #
+# 3D, two-phase, curlbased MMS case                                    #
 # Order verification using manufactured solution                       #
 #                                                                      #
-# Author: Aniruddha Choudhary                           Date: Mar 2015 #
+# Author: Aniruddha Choudhary                           Date: Feb 2015 #
 #                                                                      #
 # Reference: Choudhary, Aniruddha, Roy, Christopher J., Dietiker,      # 
 # Jean-François, Shahnam, Mehrdad and Garg, Rahul. "Code Verification  #
@@ -18,7 +18,7 @@
 #_______________________________________________________________________
 # RUN CONTROL SECTION
 
-  Run_name      = 'MMS3DVEPG'
+  Run_name      = 'MMS02'
   Description   = '3D Two-phase MMS Case'
   Units         = 'SI'
   Run_type      = 'new'
@@ -49,7 +49,7 @@
 
   Discretize    = 9*9
 
-  UR_fac(6)     = 0.01     ! energy equations 
+  UR_fac(6)     = 0.1     ! energy equations 
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -95,8 +95,6 @@
   C_ps0(1)          = 2.0
 
   ep_star           = 0.4
-
-!  close_packed      = .F.
 
 #_______________________________________________________________________
 # INITIAL CONDITIONS SECTION

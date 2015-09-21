@@ -184,11 +184,13 @@ CONTAINS
           endif
 
           if (USE_CORECELL_LOOP) then
-!$omp    parallel  do &
-!$omp&   private(ijk,i,j,k,class) collapse (2)
-             do k = kstart,kend
-                do i = istart,iend
-                   class = cell_class(funijk(i,core_jstart,k))
+
+          class = cell_class(funijk(core_istart,core_jstart,core_kstart))
+
+!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop,class) &
+!$omp&   private(ijk,i,j,k) collapse (3)
+             do k = core_kstart,core_kend
+                do i = core_istart,core_iend
                    do j = core_jstart,core_jend
                       ijk = (j + c0 + i*c1 + k*c2)
 
@@ -208,22 +210,30 @@ CONTAINS
              enddo
           endif
 
-          if  (USE_CORECELL_LOOP) then
-             j_start(1) = jstart
-             j_end(1) = core_jstart-1
-             j_start(2) = core_jend+1
-             j_end(2) = jend
-          else
-             j_start(1) = jstart
-             j_end(1) = jend
-             j_start(2) = 0 ! no iterations
-             j_end(2) = -1  ! no iterations
-          endif
+          j_start(1) = jstart
+          j_end(1) = jend
+          j_start(2) = 0 ! no iterations
+          j_end(2) = -1  ! no iterations
 
-!$omp    parallel  do &
-!$omp&   private(ijk,i,j,k,class) collapse (2)
+!$omp    parallel do default(none) shared(c0,c1,c2,avar,a_m,var,do_k,increment_for_mp,istart,jstart,kstart,iend,jend,kend,cell_class,core_istart,core_jstart,core_kstart,core_iend,core_jend,core_kend,use_corecell_loop) &
+!$omp&   private(ijk,i,j,k,class,interval) firstprivate(j_start,j_end) collapse (2)
           do k = kstart,kend
              do i = istart,iend
+
+                if  (USE_CORECELL_LOOP) then
+                   if (core_istart<= i .and. i <= core_iend .and. core_kstart <= k .and. k<=core_kend) then
+                      j_start(1) = jstart
+                      j_end(1) = core_jstart-1
+                      j_start(2) = core_jend+1
+                      j_end(2) = jend
+                   else
+                      j_start(1) = jstart
+                      j_end(1) = jend
+                      j_start(2) = 0 ! no iterations
+                      j_end(2) = -1  ! no iterations
+                   endif
+                endif
+
                 do interval=1,2
                    do j = j_start(interval),j_end(interval)
                       ijk = (j + c0 + i*c1 + k*c2)
