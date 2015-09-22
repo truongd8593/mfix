@@ -103,7 +103,7 @@
             IF(BC_TYPE(L)=='CG_PO') THEN
 
                P_STAR(IJK) = ZERO
-               P_G(IJK) = SCALE(BC_P_G(L))
+               P_G(IJK) = SCALE_PRESSURE(BC_P_G(L))
    !
                IF (BC_EP_G(L) /= UNDEFINED) EP_G(IJK) = BC_EP_G(L)
                IF (BC_T_G(L) /= UNDEFINED) then
@@ -146,7 +146,7 @@
                P_STAR(IJK) = ZERO
    !
                EP_G(IJK) = BC_EP_G(L)
-               P_G(IJK) = SCALE(BC_P_G(L))
+               P_G(IJK) = SCALE_PRESSURE(BC_P_G(L))
                T_G(IJK) = BC_T_G(L)
 
                IF (NMAX(0) > 0) THEN
