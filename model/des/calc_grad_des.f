@@ -95,10 +95,11 @@
                (AVG_X(PHI(IJK),PHI(IPJK),I) -  PHI(IJK))
          ELSEIF(I == IMAX1) THEN
             DEL_PHI(1,IJK) = 2.0d0*oDX(I) *                            &
-               (AVG_X(PHI(IMJK), PHI(IJK), I-1) - PHI(IJK))
+               (PHI(IJK) - AVG_X(PHI(IMJK), PHI(IJK), I-1))
          ELSE
             DEL_PHI(1,IJK) = ZERO
          ENDIF
+
 
          J = J_OF(IJK)
          IJMK = JM_OF(IJK)
@@ -112,11 +113,10 @@
                (AVG_Y(PHI(IJK),PHI(IJPK),J) - PHI(IJK))
          ELSEIF(J == JMAX1) THEN
             DEL_PHI(2,IJK) = 2.0d0*oDY(J) *                            &
-               (AVG_Y(PHI(IJMK),PHI(IJK),J-1) - PHI(IJK))
+               (PHI(IJK)- AVG_Y(PHI(IJMK),PHI(IJK),J-1))
          ELSE
             DEL_PHI(2,IJK) = ZERO 
          ENDIF
-
 
          IF(DO_K) THEN
 
@@ -132,7 +132,7 @@
                   (AVG_Z(PHI(IJK),PHI(IJKP),K) - PHI(IJK))
             ELSEIF(K == KMAX1) THEN
                DEL_PHI(3,IJK) = 2.0d0*oDZ(K) *                         &
-                  (AVG_Z(PHI(IJKM),PHI(IJK),K-1) - PHI(IJK))
+                  (PHI(IJK) - AVG_Z(PHI(IJKM),PHI(IJK),K-1))
             ENDIF
          ENDIF
       ENDDO
