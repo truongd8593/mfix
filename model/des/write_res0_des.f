@@ -29,10 +29,9 @@
 !-----------------------------------------------
       INTEGER :: LC1
       INTEGER :: lNEXT_REC
-      INTEGER :: lDIMN, II
+      INTEGER :: lDIMN
 
       DOUBLE PRECISION :: VERSION
-      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
 ! Set the version of the DES RES file.
       VERSION = 1.1

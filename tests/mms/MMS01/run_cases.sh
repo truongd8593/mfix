@@ -32,9 +32,9 @@ cp ../usr_common/usr3.f ./usr3.f
 # compile MFIX
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g"
-make
-#../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0"
+make -j
+#../../../model/make_mfix.old --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 #../../../model/make_mfix.old --dmp --opt=O0 --compiler=gcc --exe=mfix.exe -j
 
 # remove these files if exists:
@@ -43,23 +43,23 @@ rm -f de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
-./mfix imax=8 jmax=8 > out.log
+./mfix imax=8 jmax=8 #> out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
-# Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
-echo "******** Running mesh_16..."
-./mfix imax=16 jmax=16 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
-
-# Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
-echo "******** Running mesh_32..."
-mpirun -np 4 mfix imax=32 jmax=32 nodesi=2 nodesj=2 nodesk=1 > out.log
-cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
-#mkdir mesh_32
-#mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
+## Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
+#echo "******** Running mesh_16..."
+#./mfix imax=16 jmax=16 > out.log
+#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+#rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+#
+## Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
+#echo "******** Running mesh_32..."
+#mpirun -np 4 mfix imax=32 jmax=32 nodesi=2 nodesj=2 nodesk=1 > out.log
+#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+#rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
+##mkdir mesh_32
+##mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
 
 #### Commented out following two grid levels to make continuous testing
 #### less expensive.
@@ -78,16 +78,16 @@ rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 #rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
-# Evaluate observed orders
-cp ../usr_common/ooa_test.f95 $CASE_DIR
-echo "******** Calculating observed orders..."
-gfortran -o ooa_test ooa_test.f95
-./ooa_test
-rm -f $CASE_DIR/{ooa_test,ooa_test.f95,de_norms_collected.dat}
-#mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/de_l2.dat
-#mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/de_linf.dat
-#mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
-#mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
+## Evaluate observed orders
+#cp ../usr_common/ooa_test.f95 $CASE_DIR
+#echo "******** Calculating observed orders..."
+#gfortran -o ooa_test ooa_test.f95
+#./ooa_test
+#rm -f $CASE_DIR/{ooa_test,ooa_test.f95,de_norms_collected.dat}
+##mv $CASE_DIR/de_l2.dat $CASE_DIR/AUTOTEST/de_l2.dat
+##mv $CASE_DIR/de_linf.dat $CASE_DIR/AUTOTEST/de_linf.dat
+##mv $CASE_DIR/ooa_l2.dat $CASE_DIR/AUTOTEST/ooa_l2.dat
+##mv $CASE_DIR/ooa_linf.dat $CASE_DIR/AUTOTEST/ooa_linf.dat
 
 rm -f $CASE_DIR/{usr_mod.f,usr3.f,mfix}
 

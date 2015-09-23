@@ -219,7 +219,7 @@
       use physprop, only: smax, mmax, nmax
       use run, only: k_epsilon, kt_type_enum, ghd_2007
       use scalars, only: nscalar
-      use scales, only: scale
+      use scales, only: scale_pressure
       use toleranc, only: tmin
 
       use functions, only: is_on_mype_plus2layers
@@ -249,7 +249,7 @@
          IJK = BOUND_FUNIJK(I,J,K)
 
          P_STAR(IJK) = ZERO
-         P_G(IJK) = SCALE(BC_P_G(BCV))
+         P_G(IJK) = SCALE_PRESSURE(BC_P_G(BCV))
          IF (BC_EP_G(BCV) /= UNDEFINED) EP_G(IJK) = BC_EP_G(BCV)
 
          T_G(IJK)= merge(BC_T_G(BCV), TMIN,&
@@ -306,7 +306,7 @@
 
 ! Set MMS BCs when PO boundary condition is used.
          IF (USE_MMS) THEN
-            P_G(IJK) = SCALE(MMS_P_G(IJK))
+            P_G(IJK) = SCALE_PRESSURE(MMS_P_G(IJK))
             EP_G(IJK) = MMS_EP_G(IJK)
             T_G(IJK) = MMS_T_G(IJK)
 
@@ -376,7 +376,7 @@
       use physprop, only: smax, mmax, nmax
       use run, only: k_epsilon, kt_type_enum, ghd_2007
       use scalars, only: nscalar
-      use scales, only: scale
+      use scales, only: scale_pressure
 
       use indices, only: im1, jm1, km1
       use functions, only: is_on_mype_plus2layers
@@ -409,7 +409,7 @@
          IJK = BOUND_FUNIJK(I,J,K)
 
          P_STAR(IJK) = ZERO
-         P_G(IJK) = SCALE(BC_P_G(BCV))
+         P_G(IJK) = SCALE_PRESSURE(BC_P_G(BCV))
          EP_G(IJK) = BC_EP_G(BCV)
          T_G(IJK) = BC_T_G(BCV)
 
@@ -515,7 +515,7 @@
 
 ! Set MMS BCs when MI boundary condition is used.
          IF (USE_MMS) THEN
-            P_G(IJK) = SCALE(MMS_P_G(IJK))
+            P_G(IJK) = SCALE_PRESSURE(MMS_P_G(IJK))
             EP_G(IJK) = MMS_EP_G(IJK)
             T_G(IJK) = MMS_T_G(IJK)
 

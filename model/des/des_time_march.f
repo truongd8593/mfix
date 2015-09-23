@@ -19,7 +19,6 @@
       use machine
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
-      use output, only: SPX_DT
       use run, only: ANY_SPECIES_EQ
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
