@@ -231,7 +231,7 @@
       MEANVEL(2) = DES_V_S(IJK,M)
       IF(DO_K) MEANVEL(3) = DES_W_S(IJK,M)
 
-      PS_FORCE(:) = PS_GRAD(L, :)
+      PS_FORCE(:) = PS_GRAD(:,L)
       !IF(ABS(PS_FORCE(2)).GT.ZERO)  WRITE(*,*) 'PS_FORCE = ', PS_FORCE
       DELUP(:) = -PS_FORCE(:)
 
@@ -696,12 +696,12 @@
                   ZCOR = ZT(K)
                   WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
                      1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), DES_U_S(IJK,1), &
-                     DES_V_S(IJK,1) !, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2)
+                     DES_V_S(IJK,1) !, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK)
                ELSE
                   ZCOR = ZT(K-1) + DZ(K)
                   WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
                      1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), PIC_W_S(IJK,1), DES_U_S(IJK,1), &
-                    DES_V_S(IJK,1), DES_W_S(IJK,1)!, PS_FORCE_PIC(IJK,1), PS_FORCE_PIC(IJK,2),  PS_FORCE_PIC(IJK,3)
+                    DES_V_S(IJK,1), DES_W_S(IJK,1)!, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
                ENDIF
             ENDDO
          ENDDO
@@ -727,7 +727,7 @@
          IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
-              (PS_GRAD(LL, IDIM) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
+              (PS_GRAD(IDIM,LL) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
       ENDDO
       close(1000, status='keep')
 

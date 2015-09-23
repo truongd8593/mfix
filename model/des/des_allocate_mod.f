@@ -211,11 +211,11 @@ CONTAINS
 
 ! MP-PIC related
       IF(MPPIC) THEN
-         Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
+         Allocate(PS_FORCE_PIC(3, DIMENSION_3))
          ALLOCATE(DES_STAT_WT(MAX_PIP))
          ALLOCATE(DES_VEL_MAX(DIMN))
-         ALLOCATE(PS_GRAD(MAX_PIP, DIMN))
-         ALLOCATE(AVGSOLVEL_P(DIMN, MAX_PIP))
+         ALLOCATE(PS_GRAD(3,MAX_PIP))
+         ALLOCATE(AVGSOLVEL_P(3, MAX_PIP))
          ALLOCATE(EPG_P(MAX_PIP))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
@@ -546,7 +546,7 @@ CONTAINS
 
            IF(MPPIC) THEN
               call real_grow(DES_STAT_WT,MAX_PIP)
-              call real_grow2_reverse(PS_GRAD,MAX_PIP)
+              call real_grow2(PS_GRAD,MAX_PIP)
               call real_grow2(AVGSOLVEL_P,MAX_PIP)
               call real_grow(EPG_P,MAX_PIP)
            ENDIF

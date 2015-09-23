@@ -257,6 +257,9 @@
          CALL INIT_SETTLING_DEM
       ENDIF
 
+      IF(RUN_TYPE /= 'RESTART_1' .AND. PRINT_DES_DATA) &
+         CALL WRITE_DES_DATA
+
 ! Calculate interpolation weights
       CALL CALC_INTERP_WEIGHTS
 ! Calculate mean fields using either interpolation or cell averaging.

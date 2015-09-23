@@ -24,6 +24,8 @@
       use run, only: CALL_USR
 ! Flag: Explicitly coupled gas-solids drag
       use discretelement, only: DES_EXPLICITLY_COUPLED
+! Number of mass outflows/inflows
+      use pic_bc, only: PIC_BCMO, PIC_BCMI
 
 ! Module procedures
 !---------------------------------------------------------------------//
@@ -95,9 +97,14 @@
 
          CALL INTEGRATE_TIME_PIC 
 
-! Impose the wall-particle boundary condition for pic case
-! The same routine also applies the mass inflow/outflow BCs as well
-         CALL PIC_APPLY_WALLBC_STL
+!         CALL WRITE_PARTICLE(6010)
+
+! Apply mass outflow/inflow boundary conditions
+         IF(PIC_BCMO > 0) CALL MASS_OUTFLOW_PIC
+         IF(PIC_BCMI > 0) CALL MASS_INFLOW_PIC
+
+! Impose the wall-particle boundary condition
+         CALL APPLY_WALL_BC_PIC
 
 ! Exchange particle crossing processor boundaries
          CALL DESGRID_PIC(.TRUE.)
@@ -163,3 +170,85 @@
 ! 2001 FORMAT(/5x,'TIME',13X,'= ',g17.8,/5x,'DTSOLID CURRENT  = ',g17.8,&
 !         /5x,'DTPIC_CFL',8X,'= ', g17.8,/5x,'DTPIC TAUP',7x,'= ',g17.8,&
 !         /5x,'DT FLOW',10X,'= ', g17.8)
+
+
+
+
+      SUBROUTINE WRITE_PARTICLE(NP)
+
+      Use usr
+      use compar
+      use discretelement
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NP
+
+      INTEGER, SAVE :: CALLS = 0
+      CHARACTER(len=128) :: FNAME
+
+      FNAME=''; WRITE(FNAME, 2000) NP, myPE, CALLS
+ 2000 FORMAT('DBG/DBG_',I9.9,'_',I4.4,'_',I5.5,'.vtp')
+
+      OPEN(UNIT=555, FILE=trim(FNAME), STATUS='UNKNOWN')
+
+      write(*,"('Saving: ',A,' at ',F15.8)") trim(FNAME), S_TIME
+
+
+      WRITE(555, 3000)
+ 3000 FORMAT('<?xml version="1.0"?>')
+
+      WRITE(555, 3001)
+ 3001 FORMAT('<VTKFile type="PolyData" ' &
+         'version="0.1" byte_order="LittleEndian">')
+
+      WRITE(555,"('<PolyData>')")
+
+      WRITE(555, 3002)
+ 3002 FORMAT('<Piece NumberOfPoints="1" ',         &
+         'NumberOfVerts="0" NumberOfLines="0" ', &
+         'NumberOfStrips="0" ',                    &
+         'NumberOfPolys="0">')
+
+      WRITE(555,"('<Points>')")
+
+ 3003 FORMAT('<DataArray type="Float32" Name="Position" ', &
+         'NumberOfComponents="3" format="ascii">')
+      WRITE(555, 3003)
+      WRITE(555,"(3(3x,F15.8))") DES_POS_NEW(:,NP)
+      WRITE(555,"('</DataArray>')")
+
+      WRITE(555,"('</Points>')")
+
+ 3004 FORMAT('<PointData Scalars="Diameter" Vectors="Velocity">')
+      WRITE(555, 3004)
+
+ 3005 FORMAT('<DataArray type="Float32" ', &
+         'Name="Diameter" format="ascii">')
+      WRITE(555, 3005)
+      WRITE(555,"(3x,F15.8)") DES_RADIUS(NP)*2.0d0
+      WRITE(555,"('</DataArray>')")
+
+ 3006 FORMAT('<DataArray type="Float32" Name="Velocity" ',&
+         'NumberOfComponents="3" format="ascii">')
+      WRITE(555, 3006)
+      WRITE(555,"(3(3x,F15.8))") DES_VEL_NEW(:,NP)
+      WRITE(555,"('</DataArray>')")
+
+      WRITE(555,"('</PointData>')")
+      WRITE(555,"('<CellData></CellData>')")
+      WRITE(555,"('<Verts></Verts>')")
+      WRITE(555,"('<Lines></Lines>')")
+      WRITE(555,"('<Strips></Strips>')")
+      WRITE(555,"('<Polys></Polys>')")
+      WRITE(555,"('</Piece>')")
+      WRITE(555,"('</PolyData>')")
+      WRITE(555,"('</VTKFile>')")
+
+      close(555)
+
+      CALLS = CALLS+1
+
+      RETURN
+      END SUBROUTINE WRITE_PARTICLE
+

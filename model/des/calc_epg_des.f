@@ -106,11 +106,11 @@
          ENDIF
 
 ! Calculate the gas phase volume fraction.
-         IF(MPPIC) THEN
-            EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)
-         ELSE
+          IF(MPPIC) THEN
+             EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)
+          ELSE
             EP_G(IJK) = ONE - SUM_EPS
-         ENDIF
+          ENDIF
 ! Calculate the gas phase bulk density.
          ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 ! Flag an error if gas volume fraction is unphysical.

@@ -53,8 +53,6 @@
 !---------------------------------------------------------------------//
 ! Loop counters
       INTEGER :: NP, LC, PC
-! Index of fluid cell containing parcel centroid
-      INTEGER :: IJK
 ! Drag coefficient divided by parcel mass
       DOUBLE PRECISION :: DP_BAR
 ! Restitution coefficient plus one
@@ -79,23 +77,37 @@
       DOUBLE PRECISION :: EPg_MFP
 ! Mean free path of parcels based on volume fraction.
       DOUBLE PRECISION :: MFP
+! SOlids volume fraction at the parcel
+      DOUBLE PRECISION :: EPs
+! One over DTSOLID
+      DOUBLE PRECISION :: OoDTSOLID
+! Loop bound
+      INTEGER :: LC_BND, IJK
+
+
+      INTEGER :: branch(4)
+
 !......................................................................!
 
-
 ! Volume fraction used to limit parcel movement in close pack regions.
-      EPg_MFP = 0.95d0*EP_STAR
+      EPg_MFP = 0.85d0*EP_STAR
 ! Initialize max parcel velocity
       MAX_VEL = -UNDEFINED
 ! Restitution coefficient plus one.
       ENp1 = MPPIC_COEFF_EN1 + 1.0d0
 ! Three times the square root of two.
       l3SQT2 = merge(3.0d0, 2.0d0, DO_K)*sqrt(2.0d0)
+! Dimenion loop bound
+      LC_BND = merge(2,3,NO_K)
+! Over over DTSOLID
+      OoDTSOLID = 1.0d0/DTSOLID
 
+
+      branch = 0
 
       PC = 1
       DO NP = 1, MAX_PIP
 
-! pradeep skip ghost particles
          IF(PC.GT.PIP) EXIT
          IF(IS_NONEXISTENT(NP)) CYCLE
 
@@ -118,7 +130,8 @@
          IF(DES_CONTINUUM_COUPLED .AND. MPPIC_PDRAG_IMPLICIT)&
             DP_BAR = F_gp(NP)/PMASS(NP)
 
-         IJK = PIJK(NP,4)
+! Solids volume fraction
+         EPs = max(ONE-EP_G(PIJK(NP,4)), 1.0d-4)
 
 ! Numerically integrated particle velocity without particle normal
 ! stress force :: Snider (Eq 38)
@@ -127,51 +140,99 @@
 
 ! Estimated discrete particle velocity from continuum particle
 ! normal stress graident :: Snider (Eq 39)
-         DELUP(:) = -(DTSOLID*PS_GRAD(NP,:)) / &
-            ((1.0-EP_G(IJK))*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
+         DELUP(:) = -(DTSOLID*PS_GRAD(:,NP)) / &
+            (EPs*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
 
 ! Slip velocity between parcel and bulk solids
-!         SLIPVEL(1) = DES_U_S(IJK,1)! - VEL(1)
-!         SLIPVEL(2) = DES_V_S(IJK,1)! - VEL(2)
-!         SLIPVEL(3) = DES_W_S(IJK,1)! - VEL(3)
-         SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
+         IJK = PIJK(NP,4)
+
+         IF(.FALSE.) THEN
+            SLIPVEL = -VEL
+
+         ELSEIF(.TRUE.) THEN
+
+            SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
+
+
+
+         ELSEIF(.FALSE.) THEN
+
+            SLIPVEL(1) = DES_U_s(PIJK(NP,4),1) - VEL(1)
+            SLIPVEL(2) = DES_V_s(PIJK(NP,4),1) - VEL(2)
+            SLIPVEL(3) = DES_W_s(PIJK(NP,4),1) - VEL(3)
+
+
+         ELSE
+            SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
+         ENDIF
 
 ! Calculate particle velocity from particle normal stress.
-         DO LC = 1, merge(2,3,NO_K)
-
+         DO LC = 1, LC_BND
 ! Snider (40)
-            IF(PS_GRAD(NP,LC) <= ZERO) THEN
+            IF(PS_GRAD(LC,NP) <= ZERO) THEN
                UPRIMETAU(LC) = min(DELUP(LC), ENp1*SLIPVEL(LC))
                UPRIMETAU(LC) = max(UPRIMETAU(LC), ZERO)
-            ELSE
+
+              IF(LC ==2 ) THEN
+                  IF(DELUP(LC) <  ENp1*SLIPVEL(LC)) THEN
+                     branch(1) = branch(1) + 1
+                  ELSE
+                     branch(2) = branch(2) + 1
+                  ENDIF
+                  IF(UPRIMETAU(LC) > ZERO) THEN
+                     branch(3) = branch(3) + 1
+                  ELSE
+                     branch(4) = branch(4) + 1
+                  ENDIF
+               ENDIF
+
 ! Snider (41)
+            ELSE
                UPRIMETAU(LC) = max(DELUP(LC), ENp1*SLIPVEL(LC))
                UPRIMETAU(LC) = min(UPRIMETAU(LC), ZERO)
+
+              IF(LC ==2 ) THEN
+                  IF(DELUP(LC) >  ENp1*SLIPVEL(LC)) THEN
+                     branch(1) = branch(1) + 1
+                  ELSE
+                     branch(2) = branch(2) + 1
+                  ENDIF
+                  IF(UPRIMETAU(LC) < ZERO) THEN
+                     branch(3) = branch(3) + 1
+                  ELSE
+                     branch(4) = branch(4) + 1
+                  ENDIF
+
+
+               ENDIF
+
+
             ENDIF
          ENDDO
 
 ! Total particle velocity is the sum of the particle velocity from
 ! normal stress and velocity from all other foces :: Sinder (Eq 37)
          DES_VEL_NEW(:,NP) = VEL + UPRIMETAU
-
 ! Total distance traveled over the current time step
          DIST(:) = DES_VEL_NEW(:,NP)*DTSOLID
 
 ! Limit parcel movement in close pack regions to the mean free path. 
-         IF(EP_G(IJK) < EPg_MFP) THEN
+         IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) < ZERO) THEN
+            IF(EP_G(PIJK(NP,4)) < EPg_MFP) THEN
 ! Total distance traveled given current velocity.
-            DIST_MAG = dot_product(DIST, DIST)
+               DIST_MAG = dot_product(DIST, DIST)
 ! Mean free path based on volume fraction :: Snider (43)
-            MFP = DES_RADIUS(NP)/(l3SQT2*(ONE-EP_G(IJK)))
+               MFP = DES_RADIUS(NP)/(l3SQT2*EPs)
 ! Impose the distance limit and calculate the corresponding velocity.
-            IF(MFP**2 < DIST_MAG) THEN
-               DIST = MFP*DIST/sqrt(DIST_MAG)
-               DES_VEL_NEW(:,NP) = DIST/DTSOLID
+               IF(MFP**2 < DIST_MAG) THEN
+                  DIST = MFP*DIST/sqrt(DIST_MAG)
+                  DES_VEL_NEW(:,NP) = DIST/DTSOLID
+               ENDIF
             ENDIF
          ENDIF
 
 ! Update the parcel position.
-         DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:)
+         DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST
 
          FC(:,NP) = ZERO
 
@@ -184,6 +245,9 @@
 ! Get the minimum fluid cell dimension
       DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
       IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
+
+
+      write(*,"(4(3x,I6))") branch
 
 ! Calculate the maximum time step to prevent a parcel from moving more
 ! than a fluid cell in one time step.  The global_all_max could get

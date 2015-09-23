@@ -172,7 +172,7 @@
 
 ! The Garg model uses a coloring function approach. 
       DO IJK = IJKSTART3, IJKEND3
-         PS_FORCE_PIC(IJK,:) = ZERO
+         PS_FORCE_PIC(:,IJK) = ZERO
          IF(FLUID_AT(IJK)) THEN
             IF(EP_G(IJK) < EP_STAR) THEN
                PIC_P_S(IJK,1) = (ONE - EP_G(IJK))

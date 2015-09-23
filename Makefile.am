@@ -433,14 +433,16 @@ libmfix_src = \
 	model/des/nsquare.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
+	model/des/pic/apply_wall_bc_pic.f \
 	model/des/pic/calc_dtpic.f \
 	model/des/pic/calc_ps_grad_pic.f \
 	model/des/pic/calc_ps_pic.f \
 	model/des/pic/integrate_time_pic.f \
 	model/des/pic/interpolate_pic.f \
+	model/des/pic/mass_inflow_pic.f \
+	model/des/pic/mass_outflow_pic.f \
 	model/des/pic/mfix_pic_mod.f \
 	model/des/pic/pic_bc_mod.f \
-	model/des/pic/pic_bc_routines.f \
 	model/des/pic/pic_routines.f \
 	model/des/pic/report_stats_pic.f \
 	model/des/pic/set_bc_pic.f \

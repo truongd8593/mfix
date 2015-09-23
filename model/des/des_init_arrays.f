@@ -156,7 +156,7 @@
 ! MPPIC variables
       IF(MPPIC) THEN
          DES_STAT_WT(LB:UB) = ZERO
-         PS_GRAD(LB:UB,:) = ZERO
+         PS_GRAD(:,LB:UB) = ZERO
          AVGSOLVEL_P(:,LB:UB) = ZERO
          EPG_P(LB:UB) = ZERO
       ENDIF

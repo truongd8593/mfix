@@ -28,23 +28,19 @@
       IF(PARTICLES == 0) RETURN
 ! Skip this routine if not a new run.
       IF(RUN_TYPE /= 'NEW') RETURN
-! Skip if not coupled.
-      IF(.NOT.DES_CONTINUUM_COUPLED) THEN
-         IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
-         RETURN
-      ENDIF
 
-! Skip if using cohesion. (Why?)
-      IF(USE_COHESION) RETURN
+! Skip if not coupled.
+      IF(.NOT.DES_CONTINUUM_COUPLED) RETURN
+
+! Write the initial configuration before settling
+      IF(PRINT_DES_DATA .AND. NFACTOR>0) CALL WRITE_DES_DATA
 
       WRITE(ERR_MSG, 1100) trim(iVal(NFACTOR))
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
  1100 FORMAT('Beginning DEM settling period: ',A,' steps.')
 
-
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
-
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces
@@ -75,7 +71,7 @@
 ! particles may have 'settled' according to above.  In the granular
 ! case, the initial state won't be written until after the particles
 ! have moved without this call.
-      IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
+!      IF(PRINT_DES_DATA) CALL WRITE_DES_DATA
 
       RETURN
       END SUBROUTINE INIT_SETTLING_DEM
