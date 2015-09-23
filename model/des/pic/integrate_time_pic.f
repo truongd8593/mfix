@@ -84,9 +84,6 @@
 ! Loop bound
       INTEGER :: LC_BND, IJK
 
-
-      INTEGER :: branch(4)
-
 !......................................................................!
 
 ! Volume fraction used to limit parcel movement in close pack regions.
@@ -102,8 +99,6 @@
 ! Over over DTSOLID
       OoDTSOLID = 1.0d0/DTSOLID
 
-
-      branch = 0
 
       PC = 1
       DO NP = 1, MAX_PIP
@@ -144,8 +139,6 @@
             (EPs*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
 
 ! Slip velocity between parcel and bulk solids
-         IJK = PIJK(NP,4)
-
          IF(.FALSE.) THEN
             SLIPVEL = -VEL
 
@@ -172,41 +165,10 @@
             IF(PS_GRAD(LC,NP) <= ZERO) THEN
                UPRIMETAU(LC) = min(DELUP(LC), ENp1*SLIPVEL(LC))
                UPRIMETAU(LC) = max(UPRIMETAU(LC), ZERO)
-
-              IF(LC ==2 ) THEN
-                  IF(DELUP(LC) <  ENp1*SLIPVEL(LC)) THEN
-                     branch(1) = branch(1) + 1
-                  ELSE
-                     branch(2) = branch(2) + 1
-                  ENDIF
-                  IF(UPRIMETAU(LC) > ZERO) THEN
-                     branch(3) = branch(3) + 1
-                  ELSE
-                     branch(4) = branch(4) + 1
-                  ENDIF
-               ENDIF
-
 ! Snider (41)
             ELSE
                UPRIMETAU(LC) = max(DELUP(LC), ENp1*SLIPVEL(LC))
                UPRIMETAU(LC) = min(UPRIMETAU(LC), ZERO)
-
-              IF(LC ==2 ) THEN
-                  IF(DELUP(LC) >  ENp1*SLIPVEL(LC)) THEN
-                     branch(1) = branch(1) + 1
-                  ELSE
-                     branch(2) = branch(2) + 1
-                  ENDIF
-                  IF(UPRIMETAU(LC) < ZERO) THEN
-                     branch(3) = branch(3) + 1
-                  ELSE
-                     branch(4) = branch(4) + 1
-                  ENDIF
-
-
-               ENDIF
-
-
             ENDIF
          ENDDO
 
@@ -217,7 +179,7 @@
          DIST(:) = DES_VEL_NEW(:,NP)*DTSOLID
 
 ! Limit parcel movement in close pack regions to the mean free path. 
-         IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) < ZERO) THEN
+!         IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) < ZERO) THEN
             IF(EP_G(PIJK(NP,4)) < EPg_MFP) THEN
 ! Total distance traveled given current velocity.
                DIST_MAG = dot_product(DIST, DIST)
@@ -229,7 +191,7 @@
                   DES_VEL_NEW(:,NP) = DIST/DTSOLID
                ENDIF
             ENDIF
-         ENDIF
+!         ENDIF
 
 ! Update the parcel position.
          DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST
@@ -246,8 +208,6 @@
       DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
       IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
 
-
-      write(*,"(4(3x,I6))") branch
 
 ! Calculate the maximum time step to prevent a parcel from moving more
 ! than a fluid cell in one time step.  The global_all_max could get

@@ -64,7 +64,7 @@
 ! Domain bounds
       use compar, only: IJKSTART3, IJKEND3
 ! Double precision parameters
-      use param1, only: ZERO, ONE
+      use param1, only: ONE
 ! Flag to solve 3D
       use geometry, only: DO_K
       use geometry, only: VOL, DX, DY, DZ
@@ -96,7 +96,7 @@
          ELSE
 
 ! Set the volume fraction in the wall to close pack.
-            lEPg = ONE !EP_STAR
+            lEPg = EP_STAR
  
 ! Use the lowest value across all adjacent fluid cells. This is to keep
 ! cells below close pack from pushing parcels through the walls.
