@@ -4,6 +4,41 @@ MODULE utilities
 
 CONTAINS
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  function: isNaN                                                     !
+!  Purpose: check whether argument is NAN                              !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+      LOGICAL FUNCTION isNan(x)
+
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+      double precision x
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+      CHARACTER(LEN=80) :: notnumber
+!-----------------------------------------------
+
+      isNan = .False.
+      WRITE(notnumber,*) x
+! To check for NaN's in x, see if x (a real number) contain a letter "N"
+! "n" or symbol "?", in which case it is a NaN (Not a Number)
+
+      IF(INDEX(notnumber,'?') > 0 .OR.     &
+         INDEX(notnumber,'n') > 0 .OR.     &
+         INDEX(notnumber,'N') > 0 ) THEN
+        isNan = .TRUE.
+         RETURN
+      ENDIF
+
+      RETURN
+      END FUNCTION isNan
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  function: MAX_VEL_INLET                                             C
