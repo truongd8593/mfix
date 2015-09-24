@@ -20,7 +20,7 @@ export CASE_DIR=`pwd`
 
 # load modules
 module load autoconf/2.69
-module load gnu/4.6.4 
+module load gnu/4.6.4
 module load openmpi/1.5.5_gnu4.6
 
 #module load intel/2013.5.192 intelmpi/4.1.1.036
@@ -32,7 +32,7 @@ cp ../usr_common/usr3.f ./usr3.f
 # compile MFIX
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0"
+../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all"
 make -j
 #../../../model/make_mfix.old --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 #../../../model/make_mfix.old --dmp --opt=O0 --compiler=gcc --exe=mfix.exe -j
