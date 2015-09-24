@@ -12,7 +12,7 @@
       MODULE mms
 
 ! By default the MMS functions are unavailable.
-      LOGICAL, parameter :: USE_MMS = .TRUE.
+      LOGICAL :: USE_MMS = .TRUE.
 
 !! Method of Manufactured Solutions (MMS) and Tecplot variables :
 
