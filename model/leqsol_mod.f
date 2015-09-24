@@ -347,7 +347,7 @@ CONTAINS
        do k = kstart3,kend3
           do i = istart3,iend3
              do j = jstart3,jend3
-                IJK = funijk(i,j,k)
+                IJK = (J + C0 + I*C1 + K*C2)
                 VAR(IJK) = B_M(IJK)
              enddo
           enddo
@@ -918,8 +918,7 @@ CONTAINS
       ENDIF
 
       DO J=NSTART, NEND
-         IJK = FUNIJK(I,J,K)
-         Var(IJK) = BB(J)
+         Var(J + C0 + I*C1 + K*C2) = BB(J)
       ENDDO
 
       RETURN
