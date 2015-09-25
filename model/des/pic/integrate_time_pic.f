@@ -58,7 +58,7 @@
 ! Restitution coefficient plus one
       DOUBLE PRECISION :: ENp1
 ! Integrated particle velocity without particle normal stress
-      DOUBLE PRECISION :: VEL(3)
+      DOUBLE PRECISION :: VEL(3), VEL_MAG
 ! Estimated parcel velocity from normal particle stress
       DOUBLE PRECISION :: DELUP(3)
 ! Actual parcel velocity from particle normal stress.
@@ -77,12 +77,12 @@
       DOUBLE PRECISION :: EPg_MFP
 ! Mean free path of parcels based on volume fraction.
       DOUBLE PRECISION :: MFP
-! SOlids volume fraction at the parcel
+! Solids volume fraction at the parcel
       DOUBLE PRECISION :: EPs
-! One over DTSOLID
-      DOUBLE PRECISION :: OoDTSOLID
 ! Loop bound
       INTEGER :: LC_BND, IJK
+! Gravity normal and magnitude
+      DOUBLE PRECISION :: GRAV_NORM(3)
 
 !......................................................................!
 
@@ -96,9 +96,9 @@
       l3SQT2 = merge(3.0d0, 2.0d0, DO_K)*sqrt(2.0d0)
 ! Dimenion loop bound
       LC_BND = merge(2,3,NO_K)
-! Over over DTSOLID
-      OoDTSOLID = 1.0d0/DTSOLID
 
+! Calculate the normal of gravity
+      IF(GRAV_MAG > SMALL_NUMBER) GRAV_NORM = GRAV/GRAV_MAG
 
       PC = 1
       DO NP = 1, MAX_PIP
@@ -138,26 +138,9 @@
          DELUP(:) = -(DTSOLID*PS_GRAD(:,NP)) / &
             (EPs*RO_S0(1)*(1.d0+DP_BAR*DTSOLID))
 
-! Slip velocity between parcel and bulk solids
-         IF(.FALSE.) THEN
-            SLIPVEL = -VEL
-
-         ELSEIF(.TRUE.) THEN
-
-            SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
-
-
-
-         ELSEIF(.FALSE.) THEN
-
-            SLIPVEL(1) = DES_U_s(PIJK(NP,4),1) - VEL(1)
-            SLIPVEL(2) = DES_V_s(PIJK(NP,4),1) - VEL(2)
-            SLIPVEL(3) = DES_W_s(PIJK(NP,4),1) - VEL(3)
-
-
-         ELSE
-            SLIPVEL = AVGSOLVEL_P(:,NP) - VEL
-         ENDIF
+! Slip velocity between parcel and average solids velocity adjusted
+! for gravity driven flows.
+         SLIPVEL = AVG_VEL_wGRAV(NP) - VEL
 
 ! Calculate particle velocity from particle normal stress.
          DO LC = 1, LC_BND
@@ -179,23 +162,24 @@
          DIST(:) = DES_VEL_NEW(:,NP)*DTSOLID
 
 ! Limit parcel movement in close pack regions to the mean free path. 
-!         IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) < ZERO) THEN
-            IF(EP_G(PIJK(NP,4)) < EPg_MFP) THEN
+         IF(EPG_P(NP) < EPg_MFP) THEN
+            IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) > ZERO) THEN
 ! Total distance traveled given current velocity.
                DIST_MAG = dot_product(DIST, DIST)
 ! Mean free path based on volume fraction :: Snider (43)
-               MFP = DES_RADIUS(NP)/(l3SQT2*EPs)
+               MFP = 3.7d0*DES_RADIUS(NP)/(l3SQT2*EPs)
 ! Impose the distance limit and calculate the corresponding velocity.
                IF(MFP**2 < DIST_MAG) THEN
                   DIST = MFP*DIST/sqrt(DIST_MAG)
                   DES_VEL_NEW(:,NP) = DIST/DTSOLID
                ENDIF
             ENDIF
-!         ENDIF
+         ENDIF
+
 
 ! Update the parcel position.
          DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST
-
+! Clear out the force array.
          FC(:,NP) = ZERO
 
 ! Determine the maximum distance traveled by any single parcel.
@@ -208,7 +192,6 @@
       DXYZ_MIN = min(minval(DX(IMIN1:IMAX1)),minval(DY(JMIN1:JMAX1)))
       IF(DO_K) DXYZ_MIN = min(DXYZ_MIN,minval(DZ(KMIN1:KMAX1)))
 
-
 ! Calculate the maximum time step to prevent a parcel from moving more
 ! than a fluid cell in one time step.  The global_all_max could get
 ! expensive in large MPI applications.
@@ -216,6 +199,49 @@
       CALL global_all_max(DTPIC_CFL)
 
       RETURN
+      contains
+
+
+!......................................................................!
+!                                                                      !
+! Function: AVG_SOLIDS_vGRAV                                           !
+! Author: J.Musser                                                     !
+!                                                                      !
+! Purpose: Return the average solids velocity around the parcel with   !
+! a correction for gravity dominated flows.                            !
+!                                                                      !
+! Notes: The average solids velocity is reduced by 3/4 when it is      !
+! moving within 5 degrees of parall of the direction of gravity. This  !
+! is helps prevent overpacking while solids are settling. The value is !
+! blended from AVG to 0.75AVG from 0.1 to 0.0 radians.                 !
+!                                                                      !
+!''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
+      FUNCTION AVG_VEL_wGRAV(lNP) RESULT(aVEL)
+
+      IMPLICIT NONE
+
+! Particle index
+      INTEGER, INTENT(IN) :: lNP
+! Average solids velocity modified for gravity
+      DOUBLE PRECISION :: aVEL(3)
+! Temp double precision variables.
+      DOUBLE PRECISION :: tDP1, tDP2
+
+      aVEL = AVGSOLVEL_P(:,lNP)
+
+! Reduce the avreage solids velocity for gravity driven flows.
+      IF(GRAV_MAG > SMALL_NUMBER) THEN
+         tDP1 = dot_product(GRAV_NORM, aVEL)
+         IF(tDP1 > ZERO) THEN
+            tDP2 = dot_product(aVEL, aVEL)
+            IF(tDP1**2 > 0.99*tDP2) aVEL = &
+               (50.75d0-50.0d0*tDP1/sqrt(tDP2))*aVEL
+         ENDIF
+      ENDIF
+
+      RETURN
+      END FUNCTION AVG_VEL_wGRAV
+
       END SUBROUTINE INTEGRATE_TIME_PIC_SNIDER
 
 

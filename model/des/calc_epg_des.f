@@ -80,7 +80,11 @@
 ! Initialize error flag.
       IER = 0
 
-      PACKED_EPS = merge(ONE-0.9d0*EP_STAR, ONE, MPPIC)
+! Set a max solids volume fraction for MPPIC. The value is arbitrarily
+! larger than EP_STAR. However, the value should be large enough so
+! that it is rarely used. This was added as a crude work around for
+! poor initial conditions that start cells overpacked.
+      PACKED_EPS = merge(0.9d0, ONE, MPPIC)
 
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//
@@ -106,11 +110,8 @@
          ENDIF
 
 ! Calculate the gas phase volume fraction.
-          IF(MPPIC) THEN
-             EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)
-          ELSE
-            EP_G(IJK) = ONE - SUM_EPS
-          ENDIF
+         EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)
+
 ! Calculate the gas phase bulk density.
          ROP_G(IJK) = RO_G(IJK) * EP_G(IJK)
 ! Flag an error if gas volume fraction is unphysical.

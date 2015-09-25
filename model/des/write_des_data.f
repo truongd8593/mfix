@@ -108,7 +108,7 @@
 
       IMPLICIT NONE
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_DIAMETER !(PARTICLES)
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP_PAR
       CHARACTER(len=10) :: lNoP
       CHARACTER(len=24) :: sTIMEc
       INTEGER :: N
@@ -139,13 +139,13 @@
 
 ! PointData are individual particle properties:
 !----------------------------------------------------------------------/
+      ALLOCATE(TMP_PAR(SIZE(DES_RADIUS)))
       CALL VTP_WRITE_ELEMENT('<PointData Scalars="Diameter" &
          &Vectors="Velocity">')
 
-      ALLOCATE(DES_DIAMETER(SIZE(DES_RADIUS)))
-      DES_DIAMETER(:) = 2.0d0*DES_RADIUS(:)
-      CALL VTP_WRITE_DATA('Diameter', DES_DIAMETER)
-      DEALLOCATE(DES_DIAMETER)
+
+      CALL GET_DIAMETER(TMP_PAR)
+      CALL VTP_WRITE_DATA('Diameter', TMP_PAR)
 
       CALL VTP_WRITE_DATA('Velocity', DES_VEL_NEW)
 
@@ -157,7 +157,10 @@
       IF(PARTICLE_ORIENTATION) &
          CALL VTP_WRITE_DATA('Orientation', ORIENTATION)
 
-!      IF(MPPIC) CALL VTP_WRITE_DATA('Statwt', DES_STAT_WT)
+      IF(MPPIC) THEN
+         TMP_PAR = 1.0d0 - EPG_P
+         CALL VTP_WRITE_DATA('EPs', TMP_PAR)
+      ENDIF
 
       IF(ENERGY_EQ) &
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
@@ -172,6 +175,7 @@
          CALL VTP_WRITE_DATA('CohesiveForce', PostCohesive)
 
       CALL VTP_WRITE_ELEMENT('</PointData>')
+      DEALLOCATE(TMP_PAR)
 
 ! Open/Close the unused VTP tags.
 !----------------------------------------------------------------------/
@@ -193,6 +197,36 @@
       CALL ADD_VTP_TO_PVD
 
       RETURN
+
+      contains
+
+!......................................................................!
+! Purpose: Return the diamerter of DES particles.                      !
+!......................................................................!
+      SUBROUTINE GET_DIAMETER(OUT_VAR)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(OUT) :: OUT_VAR(:)
+      INTEGER :: LC
+
+! Return the effective diamter of the parcle.
+      IF(MPPIC) THEN
+         DO LC=1,size(OUT_VAR)
+            IF(DES_STAT_WT(LC) > ZERO) THEN
+               OUT_VAR(LC) = 2.0d0*DES_RADIUS(LC)*&
+                  (DES_STAT_WT(LC)**(1/3))
+            ELSE
+               OUT_VAR(LC) = 2.0d0*DES_RADIUS(LC)
+            ENDIF
+         ENDDO
+      ELSE
+         OUT_VAR = 2.0d0*DES_RADIUS
+      ENDIF
+
+      RETURN
+      END SUBROUTINE GET_DIAMETER
+
       END SUBROUTINE WRITE_DES_VTP
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
