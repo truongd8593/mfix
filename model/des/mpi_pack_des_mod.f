@@ -214,7 +214,7 @@
       use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-! Flag indicating the the fluid-particle drag is explictly coupled.
+! Flag indicating the the fluid-particle drag is explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Explicit particle drag force
       use discretelement, only: DRAG_FC
@@ -322,7 +322,7 @@
 ! 22) Species composition
             IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
-! 23) Explict drag force
+! 23) Explicit drag force
             IF(DES_EXPLICITLY_COUPLED) &
                call pack_dbuf(lbuf, drag_fc(:,lcurpar),pface)
 ! 24) User defined variable

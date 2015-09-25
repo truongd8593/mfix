@@ -124,7 +124,7 @@
 
       CASE DEFAULT
 
-! calculate the average paricle diameter and particle ratio
+! calculate the average particle diameter and particle ratio
          tSUM = ZERO
          DO lM = 1,DES_MMAX
             IF(PHIS > ZERO) THEN

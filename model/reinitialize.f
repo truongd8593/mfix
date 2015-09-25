@@ -198,7 +198,7 @@
 
 ! Reaction Names: Allocate/Initialize
       IF(allocated( RXN_NAME )) deallocate(RXN_NAME)
-! Chemcial Equations: Allocate/Initialize
+! Chemical Equations: Allocate/Initialize
       IF(allocated( RXN_CHEM_EQ )) deallocate(RXN_CHEM_EQ)
 ! User defined heat of reaction: Allocate/Initialize
       IF(allocated( usrDH ))deallocate(usrDH)
@@ -221,7 +221,7 @@
 
 ! Reaction Names: Allocate/Initialize
       IF(allocated( DES_RXN_NAME )) deallocate(DES_RXN_NAME)
-! Chemcial Equations: Allocate/Initialize
+! Chemical Equations: Allocate/Initialize
       IF(allocated( DES_RXN_CHEM_EQ )) deallocate(DES_RXN_CHEM_EQ)
 ! User defined heat of reaction: Allocate/Initialize
       IF(allocated( DES_usrDH )) deallocate( DES_usrDH)

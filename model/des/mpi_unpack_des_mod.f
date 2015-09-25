@@ -42,7 +42,7 @@
       use desmpi, only: iBUFOFFSET
 ! Runtime flag for solving the energy equations
       use run, only: ENERGY_EQ
-! Dimenions of DES grid
+! Dimensions of DES grid
       use desgrid, only: DG_IJKSIZE2
 ! DES grid cell containing each particle: current/previous
       use discretelement, only: DG_PIJK, DG_PIJKPRV
@@ -312,9 +312,9 @@
       use discretelement, only: PIP
 ! Number of ghost particles on the current process
       use discretelement, only: iGHOST_CNT
-! Flag indicating the the fluid-particle drag is explictly coupled.
+! Flag indicating the the fluid-particle drag is explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
-! Explict fluid-particle drag force
+! Explicit fluid-particle drag force
       use discretelement, only: DRAG_FC
 ! User-defined variables for each particle.
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
@@ -439,7 +439,7 @@
 ! 22) Species composition
          IF(ANY_SPECIES_EQ) &
             call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
-! 23) Explict drag force
+! 23) Explicit drag force
          IF(DES_EXPLICITLY_COUPLED) &
             call unpack_dbuf(lbuf,drag_fc(:,llocpar),pface)
 ! 24) User defined variable

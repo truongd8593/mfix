@@ -716,7 +716,7 @@
 ! X,Y,Z coordinates
             WRITE(VTU_UNIT) nbytes_xyz, (GLOBAL_COORDS_OF_POINTS(1:3,L), L = 1,NUMBER_OF_POINTS)
 
-! Conectivity
+! Connectivity
             WRITE(VTU_UNIT) nbytes_connectivity
 
             DO IJK = 1,IJKMAX3
@@ -849,7 +849,7 @@
 ! X,Y,Z coordinates
             WRITE(VTU_UNIT) nbytes_xyz, (COORDS_OF_POINTS(L,1:3), L = 1,NUMBER_OF_POINTS)
 
-! Conectivity
+! Connectivity
             WRITE(VTU_UNIT) nbytes_connectivity
 
             DO IJK = 1,IJKEND3

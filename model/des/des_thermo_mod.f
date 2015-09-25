@@ -68,7 +68,7 @@
       LOGICAL :: CALC_COND_DES(DIM_M)
       LOGICAL :: CALC_RADT_DES(DIM_M)
 
-! Fluid/Paricle coupling
+! Fluid/Particle coupling
 !---------------------------------------------------------------------//
 ! Source term for TFM gas phase energy equation.
       DOUBLE PRECISION, ALLOCATABLE :: DES_ENERGY_SOURCE(:)

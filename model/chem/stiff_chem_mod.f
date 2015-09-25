@@ -34,7 +34,7 @@
       INTEGER :: ODE_ITOL
 ! Relative error tolerance paramter.
       DOUBLE PRECISION, DIMENSION(1) :: ODE_RTOL
-! Absolue error tolerance parameter. (Dimension (ODE_DIMN))
+! Absolute error tolerance parameter. (Dimension (ODE_DIMN))
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: ODE_ATOL
 ! Declared length of RWORK.
       INTEGER :: ODE_LRW
@@ -125,7 +125,7 @@
       INTEGER :: lITOL
 ! Relative error tolerance paramter.
       DOUBLE PRECISION :: lRTOL(1)
-! Absolue error tolerance parameter. (Dimension (ODE_DIMN))
+! Absolute error tolerance parameter. (Dimension (ODE_DIMN))
       DOUBLE PRECISION :: lATOL(ODE_DIMN_all)
 ! Index specifying the ODEPACK task.
       INTEGER :: lITASK

@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_U_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for U-Momentun cell               C
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for U-Momentum cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -132,7 +132,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_V_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for V-Momentun cell               C
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for V-Momentum cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
@@ -267,7 +267,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_ODXYZ_W_CUT_CELL                                   C
-!  Purpose: Set 1/dx, 1/dy, and 1/dz for W-Momentun cell               C
+!  Purpose: Set 1/dx, 1/dy, and 1/dz for W-Momentum cell               C
 !           (only when cartesian grid is used)                         C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C

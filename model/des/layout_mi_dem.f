@@ -144,7 +144,7 @@
       INTEGER :: OCCUPANTS
 ! Offset and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
-! The origin and dimenion of MI cells. (STL intersection tests)
+! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
 ! Separating axis test dummy variable
       INTEGER :: SEP_AXIS
@@ -538,7 +538,7 @@
       INTEGER :: OCCUPANTS
 ! Offset and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
-! The origin and dimenion of MI cells. (STL intersection tests)
+! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
 ! Separating axis test dummy variable
       INTEGER :: SEP_AXIS
@@ -932,7 +932,7 @@
       INTEGER :: OCCUPANTS
 ! Offset and and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
-! The origin and dimenion of MI cells. (STL intersection tests)
+! The origin and dimension of MI cells. (STL intersection tests)
       DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
 ! Separating axis test dummy variable
       INTEGER :: SEP_AXIS

@@ -445,7 +445,7 @@
 ! the coefficient add to gas momentum B matrix
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
 
-! Explictly calculated fluid-particle drag force.
+! Explicitly calculated fluid-particle drag force.
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
 
 ! An intermediate array used in calculation of mean solids velocity

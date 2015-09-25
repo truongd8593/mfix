@@ -338,7 +338,7 @@
 !    o  Mean filed diffusion cannot be used with the GARG_2012
 !       interpolation scheme.
 !    o  It is recommend that mean field diffusion be used in conjunction
-!       with DES_EXPLICTLY_COUPLED to minimize the computational cost of
+!       with DES_EXPLICITLY_COUPLED to minimize the computational cost of
 !       diffusing field data.
 !    o  The DES diffusion equation is listed as equation type 10 in the
 !       Numerical Parameters section.

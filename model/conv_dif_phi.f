@@ -775,7 +775,7 @@
       INTEGER :: I1, I2, J1, J2, K1, K2
       INTEGER :: I, J, K, IJK
       INTEGER :: IJKE, IJKN, IJKT, IPJK, IJPK, IJKP
-! Difusion parameter
+! Diffusion parameter
       DOUBLE PRECISION :: D_f
 !---------------------------------------------------------------------//
 

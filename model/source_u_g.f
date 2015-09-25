@@ -447,7 +447,7 @@
 ! Set the default boundary conditions
 ! The NS default setting is the where bc_type='dummy' or any default
 ! (i.e., bc_type=undefined) wall boundary regions are handled. Note that
-! the east and west zy planes do not have to be explictly addressed for
+! the east and west zy planes do not have to be explicitly addressed for
 ! the u-momentum equation. In this direction the velocities are defined
 ! at the wall (due staggered grid). They are defined as zero for a
 ! no penetration condition (see zero_norm_vel subroutine and code under

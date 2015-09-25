@@ -110,7 +110,7 @@ CONTAINS
       DOUBLE PRECISION Thigh, Tlow, Tcom, MW
 
 
-!     Assoiciate a simple species name with that in BURCAT.THR file
+!     Associate a simple species name with that in BURCAT.THR file
       INTEGER, PARAMETER :: Max = 3
       CHARACTER(LEN=18), DIMENSION(2,Max) :: SPECIES_ALIAS
       SPECIES_ALIAS = RESHAPE ( (/ &

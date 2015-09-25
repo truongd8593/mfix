@@ -117,7 +117,7 @@
 
 
 !*******************************************************************
-! Caculation of diffusivities using the dilute mixture approximation for
+! Calculation of diffusivities using the dilute mixture approximation for
 ! multicomponent diffusion - Curtiss-Hirschfelder, Wilke & Blanc
 ! Valid if the mass fraction of the carrier species > 0.9
 

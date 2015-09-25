@@ -109,7 +109,7 @@
       DOUBLE PRECISION :: rRs(DIMENSION_M, DIMENSION_N_s)
 ! Heat of reaction assigned to the solids phase for a reaction.
       DOUBLE PRECISION :: rHORs(DIMENSION_M)
-! Cummulative heat of reaction assinged to the solids phase.
+! Cummulative heat of reaction assigned to the solids phase.
       DOUBLE PRECISION :: lHORs(DIMENSION_M)
 ! Rate of interphase enthalpy transfer due to mass transfer.
       DOUBLE PRECISION :: RxH(0:DIMENSION_M, 0:DIMENSION_M)
