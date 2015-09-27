@@ -645,6 +645,7 @@ libmfix_src = \
 	model/solve_scalar_eq.f \
 	model/solve_species_eq.f \
 	model/solve_vel_star.f \
+	model/des/sort.f \
 	model/source_granular_energy.f \
 	model/source_phi.f \
 	model/source_pp_g.f \

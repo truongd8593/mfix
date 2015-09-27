@@ -202,8 +202,6 @@
                ispot = ispot + 1
             enddo
 ! Set the flags for the ghost particle and store the local variables.
-                  print *,"NEED TO SWAP: ", lcurpar
-                  stop 5555
             call set_ghost(ispot)
             iglobal_id(ispot)  = lparid
             dg_pijk(ispot) = lparijk

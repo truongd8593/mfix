@@ -71,7 +71,7 @@
 !---------------------------------------------------------------------//
   MMAX = 1
 
-  PARTICLES = 2400             ! Number of partiles.
+  PARTICLES = 2400             ! Number of particles.
 
 ! Particle-particle:
   KN =   1.0d6                 ! Normal collision spring constant

@@ -93,24 +93,12 @@
 !$omp do
 
       DO LL = 1, MAX_PIP
-         IF (LL<=LAST_NORMAL .and. .not. IS_NORMAL(LL)) THEN
-            print *," should be normal ll=",ll,last_normal,particle_state(ll)
-            stop 1111
-         ENDIF
-         IF (LAST_NORMAL<LL .and. .not. IS_GHOST(LL)) THEN
-            print *," should be ghost ll=",ll,last_normal,particle_state(ll)
-            stop 2222
-         ENDIF
-         IF (IS_NONEXISTENT(LL)) THEN
-            print *,"PARTICLE IS NONEXISTENT"
-            stop 3333
-         ENDIF
          pos = DES_POS_NEW(:,LL)
          rad = DES_RADIUS(LL)
 
-         DO CC = NEIGHBOR_INDEX(1,LL), NEIGHBOR_INDEX(2,LL)
+         DO CC = NEIGHBOR_INDEX(1,LL), NEIGHBOR_INDEX(2,LL)-1
             I  = NEIGHBORS(CC)
-         print *,"NEIGH check ",I
+
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)

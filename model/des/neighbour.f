@@ -58,11 +58,11 @@ LOGICAL :: found
 
          CC_START = 1
          IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(1,LL)
-         CC_END   = NEIGHBOR_INDEX(2,LL)
+         CC_END   = NEIGHBOR_INDEX(2,LL)-1
 
          CC_START_OLD = 1
          IF (LL.gt.1) CC_START_OLD = NEIGHBOR_INDEX_OLD(1,LL)
-         CC_END_OLD   = NEIGHBOR_INDEX_OLD(2,LL)
+         CC_END_OLD   = NEIGHBOR_INDEX_OLD(2,LL)-1
 
          DO CC = CC_START, CC_END-1
             found = .false.

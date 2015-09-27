@@ -132,8 +132,6 @@ CONTAINS
 ! allocate variables related to ghost particles
       allocate(ighost_updated(max_pip))
 
-
-
       Allocate(  wall_collision_facet_id (COLLISION_ARRAY_MAX, MAX_PIP) )
       wall_collision_facet_id(:,:) = -1
       Allocate(  wall_collision_PFT (DIMN, COLLISION_ARRAY_MAX, MAX_PIP) )
@@ -229,7 +227,6 @@ CONTAINS
          PIC_W_s = zero
          PIC_P_s = zero
       ENDIF
-
 
 ! Granular temperature in a computational fluid cell
       Allocate(DES_THETA (DIMENSION_3, DES_MMAX) )
@@ -434,13 +431,14 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
 
-      if (NEIGHBOR_INDEX(1,ii) + NEIGHBOR_INDEX(2,ii) > NEIGH_MAX) then
+      if (NEIGHBOR_INDEX(2,ii) > NEIGH_MAX) then
          NEIGH_MAX = 2*NEIGH_MAX
          CALL NEIGHBOR_GROW(NEIGH_MAX)
       endif
 
-      NEIGHBORS(NEIGHBOR_INDEX(1,ii) + NEIGHBOR_INDEX(2,ii)) = jj
+      NEIGHBORS(NEIGHBOR_INDEX(2,ii)) = jj
       NEIGHBOR_INDEX(2,ii) = NEIGHBOR_INDEX(2,ii) + 1
+
       RETURN
       END SUBROUTINE add_pair
 
@@ -483,7 +481,6 @@ CONTAINS
         pf_tmp(:,1:lSIZE1) = pft_neighbor_old(:,1:lSIZE1)
         pf_tmp(:,lSIZE1+1:) = 0
         call move_alloc(pf_tmp,pft_neighbor_old)
-
 
       END SUBROUTINE NEIGHBOR_GROW
 
@@ -752,19 +749,19 @@ CONTAINS
 
       END SUBROUTINE REAL_GROW3
 
-      SUBROUTINE LOGICAL_GROW2_REVERSE(real_array,new_size)
+      SUBROUTINE LOGICAL_GROW2_REVERSE(logical_array,new_size)
         IMPLICIT NONE
 
         INTEGER, INTENT(IN) :: new_size
-        LOGICAL, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: real_array
-        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: real_tmp
+        LOGICAL, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: logical_array
+        LOGICAL, DIMENSION(:,:), ALLOCATABLE :: logical_tmp
         INTEGER lSIZE, lSIZE2
 
-        lSIZE = size(real_array,1)
-        lSIZE2 = size(real_array,2)
-        allocate(real_tmp(new_size,lSIZE2))
-        real_tmp(1:lSIZE,:) = real_array(1:lSIZE,:)
-        call move_alloc(real_tmp,real_array)
+        lSIZE = size(logical_array,1)
+        lSIZE2 = size(logical_array,2)
+        allocate(logical_tmp(new_size,lSIZE2))
+        logical_tmp(1:lSIZE,:) = logical_array(1:lSIZE,:)
+        call move_alloc(logical_tmp,logical_array)
 
       END SUBROUTINE LOGICAL_GROW2_REVERSE
 

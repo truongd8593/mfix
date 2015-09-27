@@ -888,10 +888,11 @@
 !$  if (.false.) then
          if (lcurpar .eq. 1) then
             NEIGHBOR_INDEX(1,lcurpar) = 1
+            NEIGHBOR_INDEX(2,lcurpar) = 1
          else
-            NEIGHBOR_INDEX(1,lcurpar) = NEIGHBOR_INDEX(1,lcurpar-1) + NEIGHBOR_INDEX(2,lcurpar-1)
+            NEIGHBOR_INDEX(1,lcurpar) = NEIGHBOR_INDEX(2,lcurpar-1)
+            NEIGHBOR_INDEX(2,lcurpar) = NEIGHBOR_INDEX(2,lcurpar-1)
          endif
-         NEIGHBOR_INDEX(2,lcurpar) = 0
 !$  endif
 
          if (is_nonexistent(lcurpar) .or.is_entering(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle
@@ -1000,7 +1001,7 @@
 
 !$omp single
 !$  NEIGHBOR_INDEX(1,1) = 1
-!$  NEIGHBOR_INDEX(2,1) = 0
+!$  NEIGHBOR_INDEX(2,1) = 1
 !$  dd = 1
 !$omp end single
 
@@ -1011,8 +1012,8 @@
 !$            lcurpar = PAIRS_SMP(1,MM)
 !$            do while (dd .lt. lcurpar)
 !$                dd = dd + 1
-!$                NEIGHBOR_INDEX(1,dd) = NEIGHBOR_INDEX(1,dd-1) + NEIGHBOR_INDEX(2,dd-1)
-!$                NEIGHBOR_INDEX(2,dd) = 0
+!$                NEIGHBOR_INDEX(1,dd) = NEIGHBOR_INDEX(2,dd-1)
+!$                NEIGHBOR_INDEX(2,dd) = NEIGHBOR_INDEX(2,dd-1)
 !$            enddo
 !$            CALL add_pair(lcurpar, PAIRS_SMP(2,MM))
 !$        enddo

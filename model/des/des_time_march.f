@@ -27,6 +27,7 @@
       use run, only: NSTEP
       use run, only: TIME, TSTOP, DT
       use sendrecv
+      use sort
 
       IMPLICIT NONE
 !------------------------------------------------
@@ -143,6 +144,7 @@
          ENDIF
 
          IF(DO_NSEARCH) THEN
+            CALL SORT_PARTICLES(1,size(PARTICLE_STATE))
             CALL NEIGHBOUR
          ENDIF
 
