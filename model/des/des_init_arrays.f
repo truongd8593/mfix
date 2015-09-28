@@ -120,7 +120,6 @@
       DO II = LB, UB
          call set_nonexistent(II)
       ENDDO
-      LAST_NORMAL = UB
       NEIGHBOR_INDEX(2,:) = 0
 
 ! DES grid bin information

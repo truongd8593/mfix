@@ -145,6 +145,7 @@
 
          IF(DO_NSEARCH) THEN
             CALL SORT_PARTICLES(1,size(PARTICLE_STATE))
+            CALL FIND_STATE_BOUNDS
             CALL NEIGHBOUR
          ENDIF
 

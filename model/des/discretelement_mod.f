@@ -65,13 +65,17 @@
 
       INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
 
-      INTEGER, PARAMETER :: nonexistent=0
       INTEGER, PARAMETER :: normal_particle=1
       INTEGER, PARAMETER :: entering_particle=2
       INTEGER, PARAMETER :: exiting_particle=3
       INTEGER, PARAMETER :: normal_ghost=4
       INTEGER, PARAMETER :: entering_ghost=5
       INTEGER, PARAMETER :: exiting_ghost=6
+      INTEGER, PARAMETER :: nonexistent=7
+
+      ! STATE_BOUNDS(1,1) is the index of the first particle in state 1
+      ! STATE_BOUNDS(2,1) is the index of the last particle in state 1, etc.
+      INTEGER :: STATE_BOUNDS(2,7)
 
 ! PARALLEL PROCESSING: explanation of variables in parallel architecture
 ! pip - particles in each processor (includes the ghost particles)
@@ -231,8 +235,6 @@
 
       INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: NEIGH_NUM,NEIGH_MAX
-
-      INTEGER :: LAST_NORMAL
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation

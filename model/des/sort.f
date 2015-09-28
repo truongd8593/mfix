@@ -6,10 +6,26 @@
 module sort
 
   implicit none
-  public :: SORT_PARTICLES
+  public :: SORT_PARTICLES, FIND_STATE_BOUNDS
   private :: Partition, Swap
 
 contains
+
+  subroutine FIND_STATE_BOUNDS
+    USE discretelement
+    implicit none
+    integer :: state, ii
+    state = 1
+    do ii=1, MAX_PIP
+       if (state .eq. PARTICLE_STATE(ii)) then
+          STATE_BOUNDS(2,state) = ii
+       else
+          state = state + 1
+          STATE_BOUNDS(1,state) = ii
+          STATE_BOUNDS(2,state) = ii
+       endif
+    end do
+  end subroutine FIND_STATE_BOUNDS
 
   recursive subroutine SORT_PARTICLES(first,last)
     use discretelement
