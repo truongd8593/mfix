@@ -747,22 +747,19 @@
 
       END SUBROUTINE ADD_FACET
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  SUBROUTINE: CHECK_IF_PARTICLE_OVERLAPS_STL                           C
-!                                                                      C
-!  Purpose: This subroutine is special written to check if a particle  C
-!          overlaps any of the STL faces. The routine exits on         C
-!          detecting an overlap. It is called after initial            C
-!          generation of lattice configuration to remove out of domain C
-!          particles                                                   C
-!                                                                      C
-!  Authors: Rahul Garg                               Date: 21-Mar-2014 C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL(POSITION, RADIUS, &
-         OVERLAP_EXISTS)
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  SUBROUTINE: CHECK_IF_PARTICLE_OVERLAPS_STL                          !
+!  Authors: Rahul Garg                               Date: 21-Mar-2014 !
+!                                                                      !
+!  Purpose: This subroutine is special written to check if a particle  !
+!          overlaps any of the STL faces. The routine exits on         !
+!          detecting an overlap. It is called after initial            !
+!          generation of lattice configuration to remove out of domain !
+!          particles                                                   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL(POS, fI, fJ, fK, REMOVE)
 
       USE run
       USE param1
@@ -776,118 +773,63 @@
       USE des_stl_functions
       use desgrid
       USE functions
+
       Implicit none
 
-      DOUBLE PRECISION, INTENT(IN) :: POSITION(DIMN), RADIUS
-      LOGICAL, INTENT(OUT) :: OVERLAP_EXISTS
+      DOUBLE PRECISION, INTENT(IN) :: POS(DIMN)
+      INTEGER, INTENT(IN) :: fI, fJ, fK
+      LOGICAL, INTENT(OUT) :: REMOVE
 
-      INTEGER I, J, K, IJK, NF
+! Integers mapping the fluid cell corners to DES Grid indices.
+      INTEGER :: I1, I2, J1, J2, K1, K2
 
-      DOUBLE PRECISION :: RADSQ, DISTSQ, DIST(DIMN), CLOSEST_PT(DIMN)
-      INTEGER :: COUNT_FAC, COUNT, contact_facet_count, NEIGH_CELLS, &
-      NEIGH_CELLS_NONNAT, &
-      LIST_OF_CELLS(27), CELL_ID, I_CELL, J_CELL, K_CELL, cell_count , &
-      IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1, LOC_MIN_PIP
+      INTEGER I, J, K, IJK, NF, LC
 
-      OVERLAP_EXISTS = .FALSE.
+      DOUBLE PRECISION :: LINE_T
+      DOUBLE PRECISION :: RADSQ, DIST(3)
 
-      I_CELL = MIN(DG_IEND2,MAX(DG_ISTART2,IOFPOS(POSITION(1))))
-      J_CELL = MIN(DG_JEND2,MAX(DG_JSTART2,JOFPOS(POSITION(2))))
-      K_CELL = 1
-      IF(DO_K) K_CELL =MIN(DG_KEND2,MAX(DG_KSTART2,KOFPOS(POSITION(3))))
+      REMOVE = .TRUE.
 
-      CELL_ID = DG_FUNIJK(I_CELL, J_CELL, K_CELL)
-      IF (NO_NEIGHBORING_FACET_DES(CELL_ID)) RETURN
+      I1 = IofPOS(XE(fI-1))
+      I2 = IofPOS(XE( fI ))
 
-      LIST_OF_CELLS(:) = -1
-      NEIGH_CELLS = 0
-      NEIGH_CELLS_NONNAT  = 0
+      J1 = JofPOS(YN(fJ-1))
+      J2 = JofPOS(YN( fJ ))
 
-      COUNT_FAC = LIST_FACET_AT_DES(CELL_ID)%COUNT_FACETS
+      K1 = KofPOS(ZT(fK-1))
+      K2 = KofPOS(ZT( fK ))
 
-      RADSQ = RADIUS*RADIUS
+      RADSQ = (1.05d0*MAX_RADIUS)**2
 
-! Add the facets in the cell the particle currently resides in
-      IF (COUNT_FAC.gt.0)   then
-         NEIGH_CELLS = NEIGH_CELLS + 1
-         LIST_OF_CELLS(NEIGH_CELLS) = CELL_ID
-      ENDIF
+      DO K = K1, K2
+      DO J = J1, J2
+      DO I = I1, I2
 
-      IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
-      IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
+         IF(.NOT.DG_is_ON_myPE_plus1layers(I,J,K)) CYCLE
 
-      JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
-      JMINUS1 =  MAX (J_CELL - 1, DG_JSTART2)
+         IJK = DG_FUNIJK(I,J,K)
 
-      KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
-      KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
+! The point is on the non-fluid side of the plane if t>0
+         DO LC = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(LC)
 
-      DO K = KMINUS1, KPLUS1
-         DO J = JMINUS1, JPLUS1
-            DO I = IMINUS1, IPLUS1
+            CALL INTERSECTLNPLANE(POS, NORM_FACE(:,NF), &
+               VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
 
-               IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K)) CYCLE
+! Orthogonal projection puts the point outside of the domain or less than
+! one particle radius to the facet.
+            DIST = LINE_T*NORM_FACE(:,NF)
+            IF(LINE_T > ZERO .OR. dot_product(DIST,DIST)<=RADSQ) RETURN
 
-               IJK = DG_FUNIJK(I,J,K)
-               COUNT_FAC = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-
-               IF(COUNT_FAC.EQ.0) CYCLE
-               distsq = zero
-
-               IF(POSITION(1) > XE(I)) DISTSQ = DISTSQ &
-                  + (POSITION(1)-XE(I))*(POSITION(1)-XE(I))
-
-               IF(POSITION(1) < XE(I) - DX(I)) DISTSQ = DISTSQ &
-               + (XE(I) - DX(I) - POSITION(1))*(XE(I) - DX(I) - POSITION(1))
-
-               IF(POSITION(2) > YN(J)) DISTSQ = DISTSQ &
-               + (POSITION(2)-YN(J))* (POSITION(2)-YN(J))
-
-               IF(POSITION(2) < YN(J) - DY(J)) DISTSQ = DISTSQ &
-               + (YN(J) - DY(J) - POSITION(2))* (YN(J) - DY(J) - POSITION(2))
-
-               IF(POSITION( 3) > ZT(K)) DISTSQ = DISTSQ &
-               + (POSITION(3)-ZT(K))*(POSITION(3)-ZT(K))
-
-               IF(POSITION(3) < ZT(K) - DZ(K)) DISTSQ = DISTSQ &
-               + (ZT(K) - DZ(K) - POSITION(3))*(ZT(K) - DZ(K) - POSITION(3))
-               IF (DISTSQ < RADSQ) then
-                  NEIGH_CELLS_NONNAT = NEIGH_CELLS_NONNAT + 1
-                  NEIGH_CELLS = NEIGH_CELLS + 1
-                  LIST_OF_CELLS(NEIGH_CELLS) = IJK
-                                !WRITE(*,'(A10, 4(2x,i5))') 'WCELL  = ', IJK, I,J,K
-               ENDIF
-            ENDDO
          ENDDO
       ENDDO
+      ENDDO
+      ENDDO
 
-      CONTACT_FACET_COUNT = 0
-
-      DO CELL_COUNT = 1, NEIGH_CELLS
-         IJK = LIST_OF_CELLS(CELL_COUNT)
-
-         DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-            NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-
-            CALL ClosestPtPointTriangle(POSITION(:), VERTEX(:,:,NF), CLOSEST_PT(:))
-
-            DIST(:) = POSITION(:) - CLOSEST_PT(:)
-            DISTSQ = DOT_PRODUCT(DIST, DIST)
-
-            IF(DISTSQ .GE. RADSQ) CYCLE !No overlap exists, move on to the next facet
-
-            !Overlap detected
-            !Set overlap_exists to true and exit
-            OVERLAP_EXISTS = .true.
-            RETURN
-
-         ENDDO
-
-      end DO
+      REMOVE = .FALSE.
 
       RETURN
-
-    END SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL
+      END SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
