@@ -31,10 +31,6 @@
 !---------------------------------------------------------------------//
       INTEGER NN, FACTOR, TIME_LOOP_COUNT
 
-! Local variables to keep track of time when dem restart and des
-! write data need to be written when des_continuum_coupled is F
-      DOUBLE PRECISION DES_RES_TIME, DES_SPX_TIME
-
 ! time till which the PIC loop will be run
       double precision :: TEND_PIC_LOOP
 ! number of PIC time steps
@@ -132,36 +128,10 @@
          IF(.NOT.DES_CONTINUUM_COUPLED) THEN
 ! Keep track of TIME for DEM simulations
             TIME = S_TIME
-
-! Write data using des_spx_time and des_res_time; note the time will
-! reflect current position of particles
-            IF(PRINT_DES_DATA) THEN
-               IF ( (S_TIME+0.1d0*DTSOLID >= DES_SPX_TIME) .OR. &
-                    (S_TIME+0.1d0*DTSOLID >= TSTOP)) then
-                  DES_SPX_TIME = &
-                     ( INT((S_TIME+0.1d0*DTSOLID)/DES_SPX_DT) &
-                     + 1 )*DES_SPX_DT
-                  CALL WRITE_DES_DATA
-                  IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
-                     'DES data file written at time =', S_TIME
-               ENDIF
-            ENDIF
-
-            IF ( (S_TIME+0.1d0*DTSOLID >= DES_RES_TIME) .OR. &
-                 (S_TIME+0.1d0*DTSOLID >= TSTOP) .OR. &
-                 (NN == FACTOR) ) THEN
-               DES_RES_TIME = &
-                  ( INT((S_TIME+0.1d0*DTSOLID)/DES_RES_DT) &
-                  + 1 )*DES_RES_DT
-                  CALL WRITE_RES0_DES
-! Write RES1 here since it won't be called in time_march.  This will
-! also keep track of TIME
-               CALL WRITE_RES1
-               IF(DMP_LOG) WRITE(UNIT_LOG,'(3X,A,1X,ES15.5)') &
-               'DES.RES and .RES files written at time =', S_TIME
-            ENDIF
+            NSTEP = NSTEP + 1
+! Call the output manager to write RES and SPx data.
+            CALL OUTPUT_MANAGER(.FALSE., .FALSE.)
          ENDIF  ! end if (.not.des_continuum_coupled)
-
 
 
 

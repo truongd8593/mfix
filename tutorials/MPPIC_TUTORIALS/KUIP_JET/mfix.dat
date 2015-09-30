@@ -192,9 +192,6 @@
 
   PRINT_DES_DATA = .t.		
 
-! For performing gas-solids coupled simulations. 
-  DES_CONTINUUM_COUPLED = .TRUE.
-
 ! Flag to choose if the drag force on parcels (and as well
 ! as on the Eulerian grid) is obtained by interpolation or not.
   DES_INTERP_ON = .f.

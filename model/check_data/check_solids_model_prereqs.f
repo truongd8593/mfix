@@ -36,6 +36,8 @@
       use discretelement, only: DES_MMAX
 ! Number of phases specified by the user.
       use physprop, only: MMAX, SMAX
+! User specified constant gas density
+      use physprop, only: RO_g0
 ! Print E-L data.
       use discretelement, only: PRINT_DES_DATA
 ! Kinetic theory model for TFM solids.
@@ -168,7 +170,8 @@
       MPPIC = PIC_SOLIDS
 ! Set the Hybird flag.
       DES_CONTINUUM_HYBRID = (DEM_SOLIDS .AND. TFM_SOLIDS)
-
+! Set flag for coupled simulations
+      DES_CONTINUUM_COUPLED = .NOT.(RO_g0 == 0.0d0)
 
       IF(DES_CONTINUUM_HYBRID) CALL HYBRID_HACK
 

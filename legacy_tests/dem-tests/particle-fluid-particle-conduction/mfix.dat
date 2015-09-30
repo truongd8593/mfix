@@ -38,7 +38,6 @@
 ! The solids time step is forced to C(1).
   C(1) = 1.0d-4   C_NAME(1) = 'Forced DTSOLID'
 
-  DES_CONTINUUM_COUPLED = .F.
   DES_INTERP_ON = .F.
 
 
@@ -68,7 +67,7 @@
 
 ! GAS SECTION
 !---------------------------------------------------------------------//
-  RO_g0 = 1.3E-3       ! (g/cm^3)
+  RO_g0 = 0.0          ! (g/cm^3)
   MU_g0 = 1.8E-4       !
 
   K_g0 =  1.239E-4     ! (cal/(sec.cm.K))
@@ -164,8 +163,6 @@
   RESID_STRING = 'P0'
 
   PRINT_DES_DATA = .F.
-  DES_SPX_DT = 1.0d3
-  DES_RES_DT = 1.0d3
 
 
 #_______________________________________________________________________

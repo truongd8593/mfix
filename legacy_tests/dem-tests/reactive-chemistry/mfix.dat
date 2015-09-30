@@ -34,7 +34,6 @@
 
   DRAG_TYPE = 'WEN_YU'
 
-  DES_CONTINUUM_COUPLED = .T.
   DES_INTERP_ON = .T.
   DES_INTERP_SCHEME = 'GARG_2012'
 
@@ -235,8 +234,6 @@
   GROUP_RESID = .T.
 
   PRINT_DES_DATA = .F.
-  DES_SPX_DT = 1.0d3
-  DES_RES_DT = 1.0d3
 
   USR_TYPE(1) = 'ASCII'
   USR_VAR(1) =  'Particle mass data'

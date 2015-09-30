@@ -86,33 +86,6 @@
 !</keyword>
 
 !<keyword category="Output Control" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    The frequency at which particle data is written. This only applies
-!    to pure granular simulations. For coupled simulation, the output
-!    frequency is controlled by SPX_DT(1).
-!  </description>
-!  <dependent keyword="PRINT_DES_DATA" value=".True."/>
-!  <dependent keyword="DES_CONTINUUM_COUPLED" value=".False."/>
-!  <conflict keyword="DES_CONTINUUM_COUPLED" value=".True."/>
-!  <conflict keyword="MPPIC" value=".True."/>
-      DES_SPX_DT = LARGE_NUMBER
-!</keyword>
-
-!<keyword category="Output Control" required="false"
-!  dem="true" pic="true">
-!  <description>
-!    The frequency at which _DES.RES file is written. This only applies
-!    to pure granular simulations as the restart frequency is governed
-!    by RES_DT for coupled simulations.
-!  </description>
-!  <dependent keyword="DES_CONTINUUM_COUPLED" value=".False."/>
-!  <conflict keyword="DES_CONTINUUM_COUPLED" value=".True."/>
-!  <conflict keyword="MPPIC" value=".True."/>
-      DES_RES_DT = LARGE_NUMBER
-!</keyword>
-
-!<keyword category="Output Control" required="false"
 !   dem="true" pic="true">
 !  <description> The output file format for DES data.</description>
 !  <valid value="PARAVIEW" note="ParaView formatted files (.vtp)"/>

@@ -43,8 +43,6 @@
 ! Drag model
   DRAG_TYPE = 'GIDASPOW'
 
-
-  DES_CONTINUUM_COUPLED  = .T.  ! Coupled gas/solid model
   DES_INTERP_ON  = .T.          ! interpolate for drag force
   DES_INTERP_MEAN_FIELDS = .T.  ! interpolate mean fields (volume frac)
   DES_INTERP_SCHEME = 'GARG_2012'
@@ -234,7 +232,6 @@
 
 ! Interval at which restart (.RES) file is updated.
   RES_DT =      1.0d-2
-  DES_RES_DT =  1.0d-2
 
   FULL_LOG  = .TRUE.
   NLOG  = 25

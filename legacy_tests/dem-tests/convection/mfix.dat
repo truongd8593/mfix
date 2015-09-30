@@ -36,7 +36,6 @@
 
   CALL_USR = .T.
 
-  DES_CONTINUUM_COUPLED = .T.
   DES_INTERP_ON = .T.
   DES_INTERP_SCHEME = 'GARG_2012'
 
@@ -195,8 +194,6 @@
   RESID_STRING = 'P0'
 
   PRINT_DES_DATA = .F.
-  DES_SPX_DT = 1.0d3
-  DES_RES_DT = 1.0d3
 
 
 #_______________________________________________________________________
