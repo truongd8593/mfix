@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(mfix, 2015.1, develop@mfix.netl.doe.gov)
+AC_INIT(mfix, 2015.2, develop@mfix.netl.doe.gov)
 
 m4_include([build-aux/ax_check_compile_flag.m4])
 

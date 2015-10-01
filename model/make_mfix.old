@@ -8,7 +8,7 @@
 
 input=$@
 
-MFIX_VERSION="2015-1"
+MFIX_VERSION="2015-2"
 EXEC_FILE="mfix.exe"
 MAKEFILE="Makefile"
 DPO_BASE=".."
