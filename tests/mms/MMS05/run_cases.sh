@@ -35,7 +35,7 @@ cp ../nonuniform_grids_3d/mesh_*.dat .
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
 ../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all"
-make
+make -j
 
 #../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 #../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
