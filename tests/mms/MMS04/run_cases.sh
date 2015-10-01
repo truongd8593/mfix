@@ -59,16 +59,16 @@ rm -f $CASE_DIR/solution_*.dat
 #mkdir $CASE_DIR/mesh_8
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_8/
 
-## Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
-#echo "******** Running mesh_16..."
-#cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
-#./mfix imax=16 jmax=16 kmax=16 > out.log
-#cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
-#rm -f $CASE_DIR/{MMS04.*,de_norms.dat,out.log}
-#rm -f $CASE_DIR/solution_*.dat
-##mkdir $CASE_DIR/mesh_16
-##mv $CASE_DIR/solution_* $CASE_DIR/mesh_16/
-#
+# Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
+echo "******** Running mesh_16..."
+cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
+./mfix imax=16 jmax=16 kmax=16 > out.log
+cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
+rm -f $CASE_DIR/{MMS04.*,de_norms.dat,out.log}
+rm -f $CASE_DIR/solution_*.dat
+#mkdir $CASE_DIR/mesh_16
+#mv $CASE_DIR/solution_* $CASE_DIR/mesh_16/
+
 ## Run mesh_32 (i.e., 32x32 for 2D, 32x32x32 for 3D)
 #echo "******** Running mesh_32..."
 #cat $CASE_DIR/mfix_backup.dat mesh_32.dat > mfix.dat
