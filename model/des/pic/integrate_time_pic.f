@@ -83,11 +83,10 @@
       INTEGER :: LC_BND, IJK
 ! Gravity normal and magnitude
       DOUBLE PRECISION :: GRAV_NORM(3)
-
 !......................................................................!
 
 ! Volume fraction used to limit parcel movement in close pack regions.
-      EPg_MFP = 0.85d0*EP_STAR
+      EPg_MFP = 0.95d0*EP_STAR
 ! Initialize max parcel velocity
       MAX_VEL = -UNDEFINED
 ! Restitution coefficient plus one.
@@ -126,7 +125,8 @@
             DP_BAR = F_gp(NP)/PMASS(NP)
 
 ! Solids volume fraction
-         EPs = max(ONE-EP_G(PIJK(NP,4)), 1.0d-4)
+!         EPs = max(ONE-EP_G(PIJK(NP,4)), 1.0d-4)
+         EPs = max(ONE-EPG_P(NP), 1.0d-4)
 
 ! Numerically integrated particle velocity without particle normal
 ! stress force :: Snider (Eq 38)
@@ -140,7 +140,7 @@
 
 ! Slip velocity between parcel and average solids velocity adjusted
 ! for gravity driven flows.
-         SLIPVEL = AVG_VEL_wGRAV(NP) - VEL
+            SLIPVEL = AVG_VEL_wGRAV(NP,VEL) - VEL
 
 ! Calculate particle velocity from particle normal stress.
          DO LC = 1, LC_BND
@@ -210,18 +210,20 @@
 ! Purpose: Return the average solids velocity around the parcel with   !
 ! a correction for gravity dominated flows.                            !
 !                                                                      !
-! Notes: The average solids velocity is reduced by 3/4 when it is      !
+! Notes: The average solids velocity is reduced by 1/2 when it is      !
 ! moving within 5 degrees of parall of the direction of gravity. This  !
 ! is helps prevent overpacking while solids are settling. The value is !
-! blended from AVG to 0.75AVG from 0.1 to 0.0 radians.                 !
+! blended from AVG to 0.5AVG from 0.1 to 0.0 radians.                  !
 !                                                                      !
 !''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''!
-      FUNCTION AVG_VEL_wGRAV(lNP) RESULT(aVEL)
+      FUNCTION AVG_VEL_wGRAV(lNP,lVEL) RESULT(aVEL)
 
       IMPLICIT NONE
 
 ! Particle index
       INTEGER, INTENT(IN) :: lNP
+! Intermediate parcel velocity
+      DOUBLE PRECISION, INTENT(IN) :: lVEL(3)
 ! Average solids velocity modified for gravity
       DOUBLE PRECISION :: aVEL(3)
 ! Temp double precision variables.
@@ -231,11 +233,18 @@
 
 ! Reduce the avreage solids velocity for gravity driven flows.
       IF(GRAV_MAG > SMALL_NUMBER) THEN
-         tDP1 = dot_product(GRAV_NORM, aVEL)
+         tDP1 = dot_product(GRAV_NORM,aVEL)
          IF(tDP1 > ZERO) THEN
-            tDP2 = dot_product(aVEL, aVEL)
-            IF(tDP1**2 > 0.99*tDP2) aVEL = &
-               (50.75d0-50.0d0*tDP1/sqrt(tDP2))*aVEL
+            IF(dot_product(aVEL,lVEL) > ZERO) THEN
+               tDP2 = dot_product(aVEL, aVEL)
+               IF(tDP1**2 > 0.99*tDP2) aVEL = &
+                  (50.75d0- 50.0d0*tDP1/sqrt(tDP2))*aVEL   ! 3/4
+
+!               IF(tDP1**2 > 0.99*tDP2) aVEL = aVEL * &
+!                  (100.50d0-100.0d0*tDP1/sqrt(tDP2))*aVEL  ! 1/2
+
+!               IF(tDP1**2 > 0.99*tDP2) aVEL = 0.75d0* aVEL
+            ENDIF
          ENDIF
       ENDIF
 

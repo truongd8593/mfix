@@ -140,9 +140,9 @@
 ! PointData are individual particle properties:
 !----------------------------------------------------------------------/
       ALLOCATE(TMP_PAR(SIZE(DES_RADIUS)))
+
       CALL VTP_WRITE_ELEMENT('<PointData Scalars="Diameter" &
          &Vectors="Velocity">')
-
 
       CALL GET_DIAMETER(TMP_PAR)
       CALL VTP_WRITE_DATA('Diameter', TMP_PAR)
@@ -215,7 +215,7 @@
          DO LC=1,size(OUT_VAR)
             IF(DES_STAT_WT(LC) > ZERO) THEN
                OUT_VAR(LC) = 2.0d0*DES_RADIUS(LC)*&
-                  (DES_STAT_WT(LC)**(1/3))
+                  (DES_STAT_WT(LC)**(1./3.))
             ELSE
                OUT_VAR(LC) = 2.0d0*DES_RADIUS(LC)
             ENDIF

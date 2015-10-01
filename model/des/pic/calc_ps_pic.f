@@ -100,20 +100,20 @@
  
 ! Use the lowest value across all adjacent fluid cells. This is to keep
 ! cells below close pack from pushing parcels through the walls.
-            lIJK = EAST_OF(IJK)
-            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-            lIJK = WEST_OF(IJK)
-            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-            lIJK = NORTH_OF(IJK)
-            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-            lIJK = SOUTH_OF(IJK)
-            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-            IF(DO_K) THEN
-               lIJK = TOP_OF(IJK)
-               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-               lIJK = BOTTOM_OF(IJK)
-               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
-            ENDIF
+!            lIJK = EAST_OF(IJK)
+!            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!!            lIJK = WEST_OF(IJK)
+!            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!            lIJK = NORTH_OF(IJK)
+!            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!!            lIJK = SOUTH_OF(IJK)
+!            IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!            IF(DO_K) THEN
+!               lIJK = TOP_OF(IJK)
+!               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!               lIJK = BOTTOM_OF(IJK)
+!               IF(FLUID_AT(lIJK))  lEPg = min(lEPg, EP_G(lIJK))
+!            ENDIF
          ENDIF
 
 ! Particle stress :: Snider (Eq 33)
