@@ -45,7 +45,8 @@ bin_PROGRAMS = mfix$(EXEEXT)
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-mfix_SOURCES = model/ODEPACK.F
+# mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
+mfix_SOURCES = model/mfix.f model/ODEPACK.F
 libmfix_a_SOURCES =
 
 ################################################################
