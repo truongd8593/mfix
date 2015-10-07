@@ -29,7 +29,7 @@ SUFFIXES = .d
 LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix$(EXEEXT)
-mfix_SOURCES = $(src_overrides)
+mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
 mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
@@ -47,6 +47,7 @@ $(LIBMFIX):
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
 
+$(top_srcdir)/model/mfix.f:  $(LIBMFIX)
 $(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
 $(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
 $(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
