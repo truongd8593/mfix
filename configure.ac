@@ -5,6 +5,7 @@ AC_PREREQ([2.69])
 AC_INIT(mfix, 2015.2, develop@mfix.netl.doe.gov)
 
 m4_include([build-aux/ax_check_compile_flag.m4])
+m4_include([build-aux/ax_prog_fc_mpi.m4])
 
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([])
@@ -17,6 +18,21 @@ AC_MSG_NOTICE([])
 AC_MSG_NOTICE([==============================================================])
 
 AC_LANG(Fortran)
+
+AC_ARG_ENABLE([dmp],
+[  --enable-dmp    Turn on MPI support],
+[case "${enableval}" in
+  yes) dmp=true ;;
+  no)  dmp=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-dmp]) ;;
+esac],[dmp=false])
+
+AX_PROG_FC_MPI([test x"$dmp" = xtrue],[use_mpi=yes],[
+       use_mpi=no
+       if test x"$dmp" = xtrue; then
+         AC_MSG_FAILURE([DMP support requested, but no MPI compiler found.  Specify an MPI compiler as a configure_mfix option, such as FC=mpifort or FC=mpif90])
+       fi
+     ])
 
 # Checks for programs.
 AC_PROG_GREP
@@ -66,13 +82,6 @@ AC_ARG_ENABLE([smp],
 esac],[smp=false])
 AM_CONDITIONAL([OPENMP], [test x$smp = xtrue])
 
-AC_ARG_ENABLE([dmp],
-[  --enable-dmp    Turn on MPI support],
-[case "${enableval}" in
-  yes) dmp=true ;;
-  no)  dmp=false ;;
-  *) AC_MSG_ERROR([bad value ${enableval} for --enable-dmp]) ;;
-esac],[dmp=false])
 AM_CONDITIONAL([MPI], [test x$dmp = xtrue])
 
 AC_FC_SRCEXT(f)
