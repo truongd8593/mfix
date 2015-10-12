@@ -30,8 +30,9 @@ LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix$(EXEEXT)
 mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
-mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
-mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
+mfix_LDADD = $(obj_overrides)
+mfix_LDADD = $(builddir)/.build/read_database.$(OBJEXT)
+mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
@@ -48,16 +49,18 @@ clean-local:
 	-$(MAKE) -C $(top_builddir) clean
 
 $(top_srcdir)/model/mfix.f:  $(LIBMFIX)
-$(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
-$(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX)
 $(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
-$(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+	@mkdir -p .build
 	$(FCCOMPILE) -c -o $@ $<
 
 # read_database needs rebuilt to use the correct path to BURCAT.THR
-$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+	@mkdir -p .build
 	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
