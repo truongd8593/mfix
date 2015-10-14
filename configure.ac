@@ -86,6 +86,7 @@ AM_CONDITIONAL([OPENMP], [test x$smp = xtrue])
 
 AM_CONDITIONAL([MPI], [test x$dmp = xtrue])
 
+AC_FC_PP_DEFINE
 AC_FC_PP_SRCEXT(f)
 AC_FC_FREEFORM()
 AC_FC_LINE_LENGTH([unlimited])
