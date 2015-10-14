@@ -1,3 +1,6 @@
+# Automake defaults to F77LINK.  Using FC to link will work whether FC is an MPI or non-MPI compiler.
+F77LD = $(FC)
+
 PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
 
@@ -11,12 +14,8 @@ FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 MODDIR=$(top_builddir)/model
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -cpp
-
-# Current directory comes first, and takes precedence over model/include/ and model/
-AM_FCFLAGS += $(FC_MODINC).
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+# Current directory takes precedence over model/include/ and model/
+AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_LDFLAGS =
 
@@ -34,7 +33,6 @@ mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
 mfix_LDADD = $(obj_overrides)
 mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
-mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
 build:
@@ -52,7 +50,6 @@ clean-local:
 $(top_srcdir)/model/mfix.f:  $(LIBMFIX)
 $(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
 $(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX)
-$(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
 $(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
