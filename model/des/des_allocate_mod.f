@@ -81,6 +81,7 @@ CONTAINS
 !-----------------------------------------------
 ! Dynamic particle info including another index for parallel
 ! processing for ghost
+      ALLOCATE( orig_index (MAX_PIP) )
       ALLOCATE( PARTICLE_STATE (MAX_PIP) )
       ALLOCATE (iglobal_id(max_pip))
 
@@ -516,7 +517,9 @@ CONTAINS
            call real_grow2(DES_VEL_NEW,MAX_PIP)
            call real_grow2(OMEGA_NEW,MAX_PIP)
            call real_grow2(PPOS,MAX_PIP)
-           call byte_grow(PARTICLE_STATE,MAX_PIP)
+           !call byte_grow(PARTICLE_STATE,MAX_PIP)
+           call integer_grow(PARTICLE_STATE,MAX_PIP)
+           call integer_grow(orig_index,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)

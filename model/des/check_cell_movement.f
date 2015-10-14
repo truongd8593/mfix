@@ -13,7 +13,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Max number of particles in process
-      use discretelement, only: MAX_PIP
+      use discretelement
 ! The I/J/K/IJK indicies of the fluid cell
       use discretelement, only: PIJK
 ! Run time flag indicating DEM or PIC solids.
@@ -52,6 +52,14 @@
          IF(I > IEND1 .OR. I < ISTART1) IER = 1
          IF(J > JEND1 .OR. J < JSTART1) IER = 1
          IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
+
+      IF(IER .ne. 0) THEN
+         print *,"ijk=",i,j,k
+         print *,"L = ",l,particle_state(L)
+         print *,"mype=",mype
+         stop 884492
+      ENDIF
+
       ENDDO
 !!$omp end parallel
 

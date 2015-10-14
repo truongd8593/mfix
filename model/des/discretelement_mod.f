@@ -63,7 +63,8 @@
 
 ! GHOST, ENTERING_GHOST, EXITING_GHOST: for ghost particles
 
-      INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
+      !INTEGER(KIND=1), DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
+      INTEGER, DIMENSION(:), ALLOCATABLE :: PARTICLE_STATE ! (PARTICLES)
 
       INTEGER, PARAMETER :: normal_particle=1
       INTEGER, PARAMETER :: entering_particle=2
@@ -218,6 +219,8 @@
 ! nsquare search method.  increases the effective radius of a particle
 ! for detecting particle contacts
       DOUBLE PRECISION FACTOR_RLM
+
+      INTEGER, DIMENSION(:), ALLOCATABLE :: ORIG_INDEX
 
 ! Stores number of neighbors based on neighbor search
       INTEGER, DIMENSION(:,:), ALLOCATABLE :: NEIGHBOR_INDEX

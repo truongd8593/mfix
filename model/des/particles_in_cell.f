@@ -54,7 +54,7 @@
 ! ijk indices
       INTEGER I, J, K, IJK
 ! variables that count/store the number of particles in i, j, k cell
-      INTEGER:: npic, pos
+      INTEGER:: npic, pos, ier
 !......................................................................!
 
 ! following quantities are reset every call to particles_in_cell
@@ -142,6 +142,24 @@
          PIJK(L,2) = J
          PIJK(L,3) = K
          PIJK(L,4) = IJK
+
+
+ier = 0
+         IF(I > IEND1 .OR. I < ISTART1) IER = 1
+         IF(J > JEND1 .OR. J < JSTART1) IER = 1
+         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
+
+      IF(is_normal(L) .and. IER .ne. 0) THEN
+         print *,"III=",istart1,i,iend1
+         print *,"JJJ=",jstart1,j,jend1
+         print *,"KKK=",kstart1,k,kend1
+
+         print *,"L = ",l,particle_state(L)
+         print *,"mype=",mype
+         stop 77777
+      ENDIF
+
+
 
 ! Increment the number of particles in cell IJK
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
