@@ -1,10 +1,11 @@
-F77 = $(FC)
-F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
 
-.f.$(OBJEXT):
+.F.o:
 	$(F77COMPILE) -c -o $@ $<
+
+.f.o:
+	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
@@ -56,12 +57,12 @@ $(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
 $(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
 	@mkdir -p .build
-	$(FCCOMPILE) -c -o $@ $<
+	$(PPFCCOMPILE) -c -o $@ $<
 
 # read_database needs rebuilt to use the correct path to BURCAT.THR
 $(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
 	@mkdir -p .build
-	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
@@ -116,8 +117,8 @@ AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI
-AM_FCFLAGS += -DMPI
-AM_LDFLAGS += -DMPI
+AM_FCFLAGS += $(FC_DEFINE)MPI
+AM_LDFLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################
@@ -140,7 +141,7 @@ endif
 #      Socket server
 ################################################################
 if USE_SOCKET
-AM_FCFLAGS += -Dsocket
+AM_FCFLAGS += $(FC_DEFINE)socket
 endif
 
 ################################################################

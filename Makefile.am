@@ -4,9 +4,14 @@
 #                                                              #
 ################################################################
 
-F77 = $(FC)
-F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
+
+.F.o:
+	$(F77COMPILE) -c -o $@ $<
+
+.f.o:
+	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
 
@@ -16,9 +21,7 @@ MODOUTDIR=$(MODDIR)
 CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 DISTCLEANFILES = build-aux/Makefile.usr
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -cpp
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
@@ -33,7 +36,7 @@ SUFFIXES = .d
 .DEFAULT_GOAL := mfix$(EXEEXT)
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
-	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #
@@ -117,7 +120,7 @@ endif
 #      Socket server
 ################################################################
 if USE_SOCKET
-AM_FCFLAGS += -Dsocket
+AM_FCFLAGS += $(FC_DEFINE)socket
 libmfix_a_SOURCES += model/handle_command.f
 libmfix_a_SOURCES += model/socket.c
 endif
@@ -150,8 +153,8 @@ AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI
-AM_FCFLAGS += -DMPI
-AM_LDFLAGS += -DMPI
+AM_FCFLAGS += $(FC_DEFINE)MPI
+AM_LDFLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################
