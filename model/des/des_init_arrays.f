@@ -5,7 +5,7 @@
 !                                                                         !
 !  Purpose: Initialize arrays at the start of the simulation. Note that   !
 !  arrays based on the number of particles (MAX_PIP) should be added to   !
-!  the DES_INIT_PARTICE_ARRAYS as they need to be reinitialized after     !
+!  the DES_INIT_PARTICLE_ARRAYS as they need to be reinitialized after    !
 !  particle arrays are grown (see PARTICLE_GROW).                         !
 !                                                                         !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -142,7 +142,7 @@
       IF(DES_USR_VAR_SIZE > 0) &
          DES_USR_VAR(:,LB:UB) = ZERO
 
-! Paritcle center drag coefficient and explit drag force
+! Particle center drag coefficient and explicit drag force
       F_GP(LB:UB) = ZERO
       DRAG_FC(:,LB:UB) = ZERO
 

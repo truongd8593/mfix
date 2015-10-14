@@ -36,7 +36,6 @@
 
   GRAVITY = 980.665D0    ! [980.665d0 in set_constants]
 
-  DES_CONTINUUM_COUPLED = .T.
   DES_INTERP_ON = .T.
   DES_INTERP_SCHEME = 'GARG_2012'
 
@@ -203,9 +202,6 @@
 
   FULL_LOG = .TRUE.      ! display residuals on screen
   GROUP_RESID = .T.      ! group residuals
-
-  RES_DT     = 0.1       ! interval to update .RES
-  DES_RES_DT = 0.1
 
   NLOG = 25              ! interval to update .LOG
 

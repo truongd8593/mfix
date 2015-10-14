@@ -156,7 +156,7 @@
          ' Error 1002: Input format error in reaction construct.',     &
          ' Opening and',/' closing braces were found on the same line',&
          ' along with the',/' keyword ',A,'.',/' Single line',         &
-         ' constructs can only contain a chemcial equation.',//        &
+         ' constructs can only contain a chemical equation.',//        &
          ' INPUT: ',A,//                                               &
          ' Example 1: RXN_NAME { chem_eq = "A + B --> AB" }',//        &
          ' Example 2: RXN_NAME {',/14X,'chem_eq = "A + B --> AB"',/14X,&
@@ -166,7 +166,7 @@
          ' Error 1003: Input format error in reaction construct.',     &
          ' Opening and',/' closing braces were found on the same line',&
          ' and chem_eq was NOT found.',/' Single line constructs can', &
-         ' only contain a chemcial equation.',//' INPUT: ',A,//        &
+         ' only contain a chemical equation.',//' INPUT: ',A,//        &
          ' Example 1: RXN_NAME { chem_eq = "A + B --> AB" }',//        &
          ' Example 2: RXN_NAME {',/14X,'chem_eq = "A + B --> AB"',/14X,&
          'DH = 2.5d4',/14X,'fracDH(0) = 1.0',/12X,'}')
@@ -673,7 +673,7 @@
          POS = 1
       ENDIF
 
-! Search for quote marks bounding the chemcial equation.
+! Search for quote marks bounding the chemical equation.
       ldP = POS + INDEX(IN(POS:),'"')  ! double quote "
       lsP = POS + INDEX(IN(POS:),"'")  ! single quote '
 
@@ -696,11 +696,11 @@
          ELSE
             IF(isFracDH(IN)) THEN
               WRITE(*, 1002) 'Keyword fracDH was found inside',        &
-                 ' the chemcial equation!', trim(adjustl(IN))
+                 ' the chemical equation!', trim(adjustl(IN))
               WRITE(*, 1000)
             ELSEIF(isDH(IN)) THEN
               WRITE(*, 1002) 'Keyword DH was found inside',            &
-                 ' the chemcial equation!', trim(adjustl(IN))
+                 ' the chemical equation!', trim(adjustl(IN))
               WRITE(*, 1000)
             ELSE
               WRITE(*, 1002) 'Unbalanced or missing parentheses', '',  &
@@ -760,7 +760,7 @@
          'fracDH(0) = 1.0',/12X,'}')
 
  1002 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &
-         ' Error 1002: Chemcial equation continuation input error.',   &
+         ' Error 1002: Chemical equation continuation input error.',   &
          //'  > ',2A//' INPUT: ',A)
 
  1003 FORMAT(//1X,70('*')/' From: PARSE_RXN --> getChemEq',/           &

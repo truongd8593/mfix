@@ -35,8 +35,7 @@
   MOMENTUM_Y_EQ(0:2) = .F. .F. .F.
   MOMENTUM_Z_EQ(0:2) = .F. .F. .F.
 
-! Granular flow in vacuum without gravity 
-  DES_CONTINUUM_COUPLED = .F.
+! No gravity 
   GRAVITY = 0.0
 
 ! Invoke UDFs

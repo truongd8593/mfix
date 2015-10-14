@@ -826,7 +826,7 @@
       USE compar, ONLY: iend1, jend1, kend1, IJKSTART3, IJKEND3, mype, pe_io
       USE cutcell
       USE functions, ONLY: FUNIJK
-      USE geometry, ONLY: DO_K, NO_K, axy, axy_w, flag_t
+      USE geometry, ONLY: axy, axy_w, flag_t
       USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE

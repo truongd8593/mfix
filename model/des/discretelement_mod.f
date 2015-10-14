@@ -139,12 +139,6 @@
 ! logic that controls if des run time messages are printed on screen or not
       LOGICAL PRINT_DES_SCREEN
 
-! Usr specified time interval that controls frequency of writing DEM
-! output and restart for pure granular flow; otherwise (when coupled)
-! the frequency of writing output and restart is controlled by the
-! value of spx_dt(1) and res_dt
-      DOUBLE PRECISION DES_SPX_DT, DES_RES_DT
-
 ! This specifies the file type used for outputting DES data
 ! options are :
 !    TECPLOT - data is written in Tecplot format
@@ -449,7 +443,7 @@
 ! the coefficient add to gas momentum B matrix
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_BM
 
-! Explictly calculated fluid-particle drag force.
+! Explicitly calculated fluid-particle drag force.
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DRAG_FC
 
 ! An intermediate array used in calculation of mean solids velocity

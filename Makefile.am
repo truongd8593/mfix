@@ -73,8 +73,9 @@ CLEANFILES += post_mfix/functions.mod
 #                                                              #
 ################################################################
 
-EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
-EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
+EXTRA_DIST =  Bug_Fixes CHANGES DISCLAIMER NOTICE benchmarks build-aux config configure_mfix doc
+EXTRA_DIST += legacy_tests mfix_user_guide.pdf readme regression_tests tests tools tutorials visualization_tools
+
 
 ################################################################
 #                                                              #
@@ -369,6 +370,7 @@ libmfix_src = \
 	model/des/calc_dtpic.f \
 	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
+	model/des/calc_grad_des.f \
 	model/des/calc_interp_weights.f \
 	model/des/calc_pg_grad.f \
 	model/des/calc_rrate_des.f \

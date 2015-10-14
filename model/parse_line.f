@@ -293,7 +293,7 @@
       IF(Allocated( RXN_NAME )) GoTo 100
       Allocate( RXN_NAME( DIMENSION_RXN ))
       RXN_NAME(:) = ''
-! Chemcial Equations: Allocate/Initialize
+! Chemical Equations: Allocate/Initialize
       IF(Allocated( RXN_CHEM_EQ )) GoTo 100
       Allocate( RXN_CHEM_EQ( DIMENSION_RXN ))
       RXN_CHEM_EQ(:) = ''
@@ -326,7 +326,7 @@
          ' A data file',/' can only contain one reaction block',       &
          ' [@(RXNS)...@(END)].'/)
 
- 1000 FORMAT(' Please refer to the Readme file for chemcial equation', &
+ 1000 FORMAT(' Please refer to the Readme file for chemical equation', &
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
       END SUBROUTINE INIT_PARSE_RXN
@@ -357,7 +357,7 @@
       IF(Allocated( DES_RXN_NAME )) GoTo 100
       Allocate( DES_RXN_NAME( DIMENSION_RXN ))
       DES_RXN_NAME(:) = ''
-! Chemcial Equations: Allocate/Initialize
+! Chemical Equations: Allocate/Initialize
       IF(Allocated( DES_RXN_CHEM_EQ )) GoTo 100
       Allocate( DES_RXN_CHEM_EQ( DIMENSION_RXN ))
       DES_RXN_CHEM_EQ(:) = ''
@@ -390,7 +390,7 @@
          ' located! A data',/' file can only contain one reaction',    &
          ' block [@(DES_RXNS)...@(END)].'/)
 
- 1000 FORMAT(' Please refer to the Readme file for chemcial equation', &
+ 1000 FORMAT(' Please refer to the Readme file for chemical equation', &
          ' input formats',/' and correct the data file.',/1X,70('*')/)
 
       END SUBROUTINE INIT_PARSE_DES_RXN

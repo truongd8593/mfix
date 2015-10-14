@@ -23,14 +23,14 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
       USE constant, only: gas_const
-      USE scales, only: unscale
+      USE scales, only: unscale_pressure
       IMPLICIT NONE
 
 ! Dummy arguments
 !---------------------------------------------------------------------//
       DOUBLE PRECISION, INTENT(IN) :: MW, PG, TG
 
-      EOSG = UNSCALE(PG)*MW/(GAS_CONST*TG)
+      EOSG = UNSCALE_PRESSURE(PG)*MW/(GAS_CONST*TG)
       RETURN
       END FUNCTION EOSG
 

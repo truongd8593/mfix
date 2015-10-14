@@ -40,8 +40,6 @@
 
   CALL_USR = .T.
 
-  DES_CONTINUUM_COUPLED = .F.
-
 
 #_______________________________________________________________________
 # GEOMETRY SECTION

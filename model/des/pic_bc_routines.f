@@ -12,7 +12,7 @@
 !---------------------------------------------------------------------//
 ! Particle postions: Current/Previous
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
-! Paricle velocities
+! Particle velocities
       use discretelement, only: DES_VEL_NEW
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP

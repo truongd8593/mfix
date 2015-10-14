@@ -78,7 +78,7 @@
 !     Everything that does not depend on the velocity of the ith particle
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DELTAV
 !
-!     Everything that does not depned on the velocity of the ith paritcle
+!     Everything that does not depned on the velocity of the ith particle
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DELTAW
 
 !     Everything that does not depend on the velocity of ith particle

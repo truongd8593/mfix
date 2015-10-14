@@ -6,7 +6,7 @@
 for target in mfix postmfix libmfix.a Makefile; do
     [ -d ${target} ] && echo "ERROR:  A directory exists named:  ${target}"
     [ -d ${target} ] && echo "ERROR:  "
-    [ -d ${target} ] && echo "ERROR:  Run configure_mfix from a directory containing only mfix.dat and any required custom source files (*usr*.f)."
+    [ -d ${target} ] && echo "ERROR:  configure_mfix must be run in a directory containing only mfix.dat (and optional *usr*.f files)"
     [ -d ${target} ] && exit -1
 done
 
@@ -26,11 +26,14 @@ if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
     # building in MFIX_HOME, no need to copy Makefile.usr
     ${MFIX_HOME}/configure "${args[@]}" || exit $?
 else
+    # Create BUILD_DIR
     args_dir_name=$( echo ${args[@]} | tr -c '[[:alnum:]].-' '_' )
     trunc_args_dir_name=$( echo ${args_dir_name} | cut -c 1-250 )
-    [ ${args_dir_name} != ${trunc_args_dir_name} ] && rm -rf ${BUILD_DIR}
     BUILD_DIR=${MFIX_HOME}/build/${args_dir_name}
+    [ ${args_dir_name} != ${trunc_args_dir_name} ] && rm -rf ${BUILD_DIR}
     mkdir -p ${BUILD_DIR}
+
+    # configure in BUILD_DIR
     cd ${BUILD_DIR}
     set +e
     ${MFIX_HOME}/configure "${args[@]}"
@@ -41,6 +44,8 @@ else
 	ln -sf ${BUILD_DIR}/config.log
 	exit $exit_code
     fi
+
+    # copy Makefile to RUN_DIR
     MAKEFILE=${RUN_DIR}/Makefile
     MAKEFILE_USR=${BUILD_DIR}/build-aux/Makefile.usr
     if [ -f ${MAKEFILE_USR} ]; then

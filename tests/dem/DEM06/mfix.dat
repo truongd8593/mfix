@@ -44,8 +44,6 @@
 
   DRAG_TYPE = 'USER_DRAG'
 
-  DES_CONTINUUM_COUPLED = .T.
-
 #_______________________________________________________________________
 # NUMERICAL SECTION
 

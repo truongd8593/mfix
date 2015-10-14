@@ -121,7 +121,7 @@ if [ ! -f "mfix.dat" ]; then
   echo "  *********************************************************************"
   echo "  * Error: usr_rates.f located and mfix.dat is missing!               *"
   echo "  * ----------------------------------------------------------------- *"
-  echo "  * User defined file for chemcial reactions/phase changes was found  *"
+  echo "  * User defined file for chemical reactions/phase changes was found  *"
   echo "  * in the compile directory however, no mfix.dat file was found.     *"
   echo "  * Pre-processing  of the mfix.dat is required for reacting flows.   *"
   echo "  *********************************************************************"

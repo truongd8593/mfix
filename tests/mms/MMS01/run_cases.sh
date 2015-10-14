@@ -20,7 +20,7 @@ export CASE_DIR=`pwd`
 
 # load modules
 module load autoconf/2.69
-module load gnu/4.6.4 
+module load gnu/4.6.4
 module load openmpi/1.5.5_gnu4.6
 
 #module load intel/2013.5.192 intelmpi/4.1.1.036
@@ -32,9 +32,9 @@ cp ../usr_common/usr3.f ./usr3.f
 # compile MFIX
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g"
-make
-#../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
+../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all"
+make -j
+#../../../model/make_mfix.old --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
 #../../../model/make_mfix.old --dmp --opt=O0 --compiler=gcc --exe=mfix.exe -j
 
 # remove these files if exists:
@@ -43,7 +43,7 @@ rm -f de_norms_collected.dat
 
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
-./mfix imax=8 jmax=8 > out.log
+./mfix imax=8 jmax=8 #> out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 
@@ -61,10 +61,10 @@ rm -f $CASE_DIR/{MMS2D.*,de_norms.dat,out.log}
 #mkdir mesh_32
 #mv $CASE_DIR/solution_* $CASE_DIR/mesh_32/
 
-#### Commented out following two grid levels to make continuous testing
-#### less expensive.
+### Commented out following two grid levels to make continuous testing
+### less expensive.
 
-## Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
+# Run mesh_64 (i.e., 64x64 for 2D, 64x64x64 for 3D)
 #echo "******** Running mesh_64..."
 #mpirun -np 16 mfix imax=64 jmax=64 nodesi=4 nodesj=4 nodesk=1 > out.log
 #cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat

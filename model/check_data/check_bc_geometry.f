@@ -219,7 +219,7 @@
       use geometry, only: NO_K, ZLENGTH, DZ, KMAX, KMAX2
 ! Flag: Reinitializing field conditions.
       use run, only: REINITIALIZING
-! Fucntion to compare two values
+! Function to compare two values
       use toleranc, only: COMPARE
 
 ! Global Parameters:

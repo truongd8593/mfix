@@ -136,8 +136,7 @@
 #_______________________________________________________________________
 # OUTPUT CONROL SECTION
 
-  RES_DT = 1.0d3     ! Restart (.RES) file write frequency
-  DES_RES_DT = 0.1   ! Restart of DES cases
+  RES_DT = 0.1       ! Restart (.RES) file write frequency
 
   NLOG = 25          ! time steps between updates to (.LOG) file
   FULL_LOG = .T.     ! display residuals on screen
@@ -146,11 +145,9 @@
 
 ! Interval at which .SPX files are written
   SPX_DT(1:9) = 9*1.0d3
+  SPX_DT(1) = 0.1 ! Volume fraction/Particle data
 
 ! Flag to write DES VTP files
   PRINT_DES_DATA = .T.
-
-! Time interval to print DEM output for pure DEM
-  DES_SPX_DT = 0.1
 
   USR_DT(1) = 0.05  ! User specified output

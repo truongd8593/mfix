@@ -20,7 +20,7 @@
 !  respective momentum bc routines). The primary addition here is      C
 !  that the tangential components of a bc cell are set to that of      C
 !  the adjacent fluid cell. Note the tangential components are not     C
-!  explictly handled in the momentum _BC_ routines; instead their      C
+!  explicitly handled in the momentum _BC_ routines; instead their     C
 !  values are based on solution of the momentum equation which is      C
 !  replaced here                                                       C
 !                                                                      C

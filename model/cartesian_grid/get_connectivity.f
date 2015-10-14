@@ -18,7 +18,7 @@
       USE compar, ONLY: ijkend3
       USE cutcell
       USE functions, ONLY: FUNIJK
-      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE geometry, ONLY: DO_K, NO_K
       USE indices, ONLY: I_OF, J_OF, K_OF
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
@@ -324,7 +324,7 @@
       USE compar, ONLY: mype
       USE cutcell
       USE functions, ONLY: FUNIJK
-      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE geometry, ONLY: NO_K, dx, dy, dz
       USE indices, ONLY: I_OF, J_OF, K_OF
 
       IMPLICIT NONE
@@ -499,10 +499,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_GLOBAL_CELL_NODE_COORDINATES(IJK,TYPE_OF_CELL)
 
-      USE compar, ONLY: MYPE, IJKEND3
+      USE compar, ONLY: MYPE
       USE cutcell
       USE functions, ONLY: FUNIJK_GL
-      USE geometry, ONLY: DO_K, NO_K, dx, dy, dz
+      USE geometry, ONLY: NO_K, dx, dy, dz
       USE vtk, ONLY: GLOBAL_I_OF, GLOBAL_J_OF, GLOBAL_K_OF
 
       IMPLICIT NONE

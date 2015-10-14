@@ -27,11 +27,10 @@
   SPECIES_EQ = .FALSE.    .FALSE.
 
 ! Solve momentum equations?  [.TRUE.] 
-! (do not solve either gas or solids)
-!                    Gas      Sld 1
-  MOMENTUM_X_EQ  = .FALSE.   .FALSE.
-  MOMENTUM_Y_EQ  = .F.       .FALSE.
-  MOMENTUM_Z_EQ  = .F.       .FALSE.
+!                     Gas   Sld 1
+  MOMENTUM_X_EQ(0:1) = .F.   .F.
+  MOMENTUM_Y_EQ(0:1) = .F.   .F.
+  MOMENTUM_Z_EQ(0:1) = .F.   .F.
 
 ! the gas-solid drag model.  ['SYAM_OBRIEN']
   DRAG_TYPE = 'WEN_YU'     ! not used since single phase  
@@ -83,14 +82,9 @@
 !*********************************************************************
 ! Gas Phase
 !*********************************************************************
-  MU_g0 = 0.00018     ! constant viscosity (poise)
+  RO_g0 = 0.0       ! constant gas density (granular flow)
+  MU_g0 = 0.00018   ! constant viscosity (poise)
 
-! the molecular weight or density must be specified (or species names).
-! if density is specified then the molecular weight will be ignored.
-! specifying molecular weight allows for compressibility but requires
-! setting the pressure and temperature in IC and BC regions
-#  RO_g0 = 0.0     ! constant gas density
-  MW_AVG = 29.0     ! average molecular weight of air (g/g-mol)
 
 ! the reference pressure is used to adjust input/output values of 
 ! pressure to a gauge value.
@@ -153,8 +147,6 @@
 !*********************************************************************
 ! Discrete Element Model (DEM) 
 !*********************************************************************
-  DES_CONTINUUM_COUPLED = .FALSE.    ! couple gas and solids flow 
-                                     ! together [.FALSE.]
   PARTICLES = 3     ! total number of initial particles
                              ! arbitrary factor [1.2]
   NFACTOR = 0     ! length of dem settling period in no. of loops   [10]
@@ -208,11 +200,6 @@
 #  RADIUS_RATIO = 1.01
 #  WALL_RADIUS_RATIO = 1.01
 
-! DES Output Control  --------------------
-  PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
-  DES_RES_DT = 0.001
-  DES_SPX_DT = 0.001    ! interval to write *.vtp files in pure DEM 
-                          ! simulation otherwise follows spx_dt(1)
 
 
 !*********************************************************************
@@ -222,7 +209,7 @@
 
 ! Interval (s) to update .SPX files 
 ! spx_dt(1) also controls dem output frequency for coupled cases
-  SPX_DT(1)  =  1.0E-2   ! Void fraction (EP_g)
+  SPX_DT(1)  =  1.0E-3   ! Void fraction (EP_g)
   SPX_DT(2)  =  100      ! Gas and solids pressure (P_g, P_star)
   SPX_DT(3)  =  100      ! Gas velocity (U_g, V_g, W_g)
   SPX_DT(4)  =  1.0E+2   ! Solids velocity (U_s, V_s, W_s)
@@ -236,6 +223,7 @@
 ! on the screen and in the .LOG file. [.FALSE.]
 #  FULL_LOG  = .TRUE.
 
+  PRINT_DES_DATA = .T.    ! write DEM data as *.vtp files
 
 !*********************************************************************
 ! Parallelization Controls

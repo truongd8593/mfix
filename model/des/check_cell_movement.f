@@ -193,7 +193,6 @@
 ! Flag: identifies a fluid cell as a cut cell.
       use cutcell, only: CUT_CELL_AT
 
-      use functions, only: IS_NORMAL, SET_NONEXISTENT
       use mpi_utility
       use error_manager
       use functions

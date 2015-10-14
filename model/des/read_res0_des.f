@@ -25,10 +25,9 @@
       implicit none
 
       INTEGER :: LC1, LC2
-      INTEGER :: lDIMN, lNEXT_REC, II
+      INTEGER :: lDIMN, lNEXT_REC
 
       DOUBLE PRECISION :: VERSION
-      LOGICAL, ALLOCATABLE, DIMENSION(:) :: tmp
 
       lDIMN = merge(2,3,NO_K)
 

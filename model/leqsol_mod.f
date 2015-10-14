@@ -347,7 +347,7 @@ CONTAINS
        do k = kstart3,kend3
           do i = istart3,iend3
              do j = jstart3,jend3
-                IJK = funijk(i,j,k)
+                IJK = (J + C0 + I*C1 + K*C2)
                 VAR(IJK) = B_M(IJK)
              enddo
           enddo
@@ -885,7 +885,7 @@ CONTAINS
 !-----------------------------------------------
       DOUBLE PRECISION, DIMENSION(JSTART:JEND) :: CC, DD, EE, BB
       INTEGER :: NSTART, NEND, INFO
-      INTEGER :: IJK, J, IM1JK, IP1JK, IJKM1, IJKP1
+      INTEGER :: IJK, J, CLASS
 !-----------------------------------------------
 
       NEND = JEND
@@ -894,18 +894,15 @@ CONTAINS
 !!$omp parallel do private(j,ijk,im1jk,ip1jk,ijkm1,ijkp1)
       DO J=NSTART, NEND
 !         IJK = FUNIJK(IMAP_C(I),JMAP_C(J),KMAP_C(K))
-         IJK = FUNIJK(I,J,K)
-         IM1JK = IM_OF(IJK)
-         IP1JK = IP_OF(IJK)
-         IJKM1 = KM_OF(IJK)
-         IJKP1 = KP_OF(IJK)
+         IJK = (J + C0 + I*C1 + K*C2)
+         CLASS = CELL_CLASS(IJK)
          DD(J) = A_M(IJK,  0)
          CC(J) = A_M(IJK, -2)
          EE(J) = A_M(IJK,  2)
-         BB(J) = B_M(IJK) -  A_M(IJK,-1) * Var( IM1JK ) &
-                          -  A_M(IJK, 1) * Var( IP1JK ) &
-                          -  A_M(IJK,-3) * Var( IJKM1 ) &
-                          -  A_M(IJK, 3) * Var( IJKP1 )
+         BB(J) = B_M(IJK) -  A_M(IJK,-1) * Var( IJK+INCREMENT_FOR_MP(1,class) ) &
+                          -  A_M(IJK, 1) * Var( IJK+INCREMENT_FOR_MP(2,class) ) &
+                          -  A_M(IJK,-3) * Var( IJK+INCREMENT_FOR_MP(5,class) ) &
+                          -  A_M(IJK, 3) * Var( IJK+INCREMENT_FOR_MP(6,class) )
       ENDDO
 
       CC(NSTART) = ZERO
@@ -921,8 +918,7 @@ CONTAINS
       ENDIF
 
       DO J=NSTART, NEND
-         IJK = FUNIJK(I,J,K)
-         Var(IJK) = BB(J)
+         Var(J + C0 + I*C1 + K*C2) = BB(J)
       ENDDO
 
       RETURN

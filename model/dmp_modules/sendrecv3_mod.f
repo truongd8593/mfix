@@ -2673,9 +2673,9 @@ contains
     integer, intent(in), optional :: ilayer,idebug
 
     integer :: lidebug, layer
+#ifdef MPI
     integer :: j
 
-#ifdef MPI
     lidebug = 0
     if (present(idebug)) then
        lidebug = idebug
@@ -2702,9 +2702,10 @@ contains
     integer, intent(in), optional :: ilayer,idebug
 
     integer :: lidebug, layer
-    integer :: j,k
 
 #ifdef MPI
+    integer :: j,k
+
     lidebug = 0
     if (present(idebug)) then
        lidebug = idebug

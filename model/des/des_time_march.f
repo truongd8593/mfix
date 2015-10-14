@@ -19,7 +19,6 @@
       use machine
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
-      use output, only: SPX_DT
       use run, only: ANY_SPECIES_EQ
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
@@ -152,7 +151,8 @@
 ! Explicitly coupled simulations do not need to rebin particles to
 ! the fluid grid every time step. However, this implies that the
 ! fluid cell information and interpolation weights become stale.
-         IF(.NOT.DES_EXPLICITLY_COUPLED) THEN
+         IF(DES_CONTINUUM_COUPLED .AND. &
+            .NOT.DES_EXPLICITLY_COUPLED) THEN
 ! Bin particles to fluid grid.
             CALL PARTICLES_IN_CELL
 ! Calculate interpolation weights

@@ -99,7 +99,7 @@
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K)
-                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ)
+                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE_PRESSURE(PJ)
                ENDDO
             ENDDO
          ENDDO
@@ -116,7 +116,7 @@
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K)
-                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ)
+                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE_PRESSURE(PJ)
                ENDDO
             ENDDO
          ENDDO
@@ -133,7 +133,7 @@
                   IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                   IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                   IJK = FUNIJK(I,J,K)
-                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE(PJ)
+                  IF (FLUID_AT(IJK)) P_G(IJK) = SCALE_PRESSURE(PJ)
                ENDDO
             ENDDO
          ENDDO
@@ -224,7 +224,7 @@
                IF(.NOT.IS_ON_MYPE_OWNS(I,J,K)) CYCLE
                IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                IJK = FUNIJK(I,J,K)
-               IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE(PJ)
+               IF(FLUID_AT(IJK).AND.P_G(IJK)==UNDEFINED)P_G(IJK)=SCALE_PRESSURE(PJ)
             ENDDO    ! end do (i=imin1,imax1)
          ENDDO   ! end do (k = kmin1,kmax1)
       ENDDO   ! end do (j=jmax2,jimn1, -1)

@@ -12,7 +12,7 @@
       MODULE mms
 
 ! By default the MMS functions are unavailable.
-      LOGICAL, parameter :: USE_MMS = .FALSE.
+      LOGICAL :: USE_MMS = .FALSE.
 
 !! Method of Manufactured Solutions (MMS) and Tecplot variables :
 
@@ -187,10 +187,8 @@
         deallocate(ytr)
         deallocate(ztr)
 
-
       RETURN
       END SUBROUTINE DEALLOCATE_MMS_VARS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -204,11 +202,8 @@
 
       IMPLICIT NONE
 
-
       RETURN
       END SUBROUTINE CALCULATE_MMS
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -222,10 +217,7 @@
 
       IMPLICIT NONE
 
-
       RETURN
       End SUBROUTINE CALCULATE_MMS_SOURCE
-
-
 
       END MODULE mms

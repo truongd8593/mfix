@@ -44,7 +44,7 @@
       INTEGER :: IJMK, JM, IJKS, IJPK, IJKN
       INTEGER :: IJKM, KM, IJKB, IJKP, IJKT
 !
-! Difusion parameter
+! Diffusion parameter
       DOUBLE PRECISION :: D_f
 
 

@@ -132,7 +132,7 @@
          IF(N_USR_DEF > 0) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: BOTH QUADRIC(S) AND USER-DEFINED ',&
-                  'FUNTION DEFINED.'
+                  'FUNCTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
             CALL MFIX_EXIT(MYPE)
@@ -169,7 +169,7 @@
          IF((N_POLYGON > 0).AND.(N_USR_DEF > 0)) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,*) 'ERROR: POLYGON(S) AND USER-DEFINED ',&
-                  'FUNTION DEFINED.'
+                  'FUNCTION DEFINED.'
                WRITE(*,*) 'MFIX HANDLES ONLY ONE TYPE OF SURFACE.'
             ENDIF
             CALL MFIX_EXIT(MYPE)
@@ -853,7 +853,7 @@
 
       IF(PG_OPTION <0 .OR. PG_OPTION>2) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: INALID VALUE OF PG_OPTION =', PG_OPTION
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF PG_OPTION =', PG_OPTION
             WRITE(*,*)'ACCEPTABLE VALUES ARE 0,1,AND 2.'
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
@@ -889,7 +889,7 @@
 
       IF(F_DASHBOARD<1) THEN
          IF(MyPE == PE_IO) THEN
-            WRITE(*,*)'INPUT ERROR: INALID VALUE OF F_DASHBOARD =', F_DASHBOARD
+            WRITE(*,*)'INPUT ERROR: INVALID VALUE OF F_DASHBOARD =', F_DASHBOARD
             WRITE(*,*)'ACCEPTABLE VALUES ARE INTEGERS >= 1.'
             WRITE(*,*)'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
          ENDIF
@@ -4133,7 +4133,7 @@
 
 ! Gather NUC onto the head node
 ! rcount is the size for each processor
-! disp is the cummulative sum for each processor
+! disp is the cumulative sum for each processor
 
          CALL allgather_1i (IEND1-ISTART1+1,rcount,IERR)
 
@@ -4185,7 +4185,7 @@
 
 ! Gather NUC onto the head node
 ! rcount is the size for each processor
-! disp is the cummulative sum for each processor
+! disp is the cumulative sum for each processor
 
          CALL allgather_1i (JEND1-JSTART1+1,rcount,IERR)
 
@@ -4237,7 +4237,7 @@
 
 ! Gather NUC onto the head node
 ! rcount is the size for each processor
-! disp is the cummulative sum for each processor
+! disp is the cumulative sum for each processor
 
          CALL allgather_1i (KEND1-KSTART1+1,rcount,IERR)
 

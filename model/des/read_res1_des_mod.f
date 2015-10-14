@@ -413,7 +413,7 @@
          ENDDO  ! Loop over particles
       ENDIF
 
- 1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
+ 1000 FORMAT('Error 1000: Unable to locate particle inside domain:',/&
          3x,'Particle Number:',A)
  1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
  1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
@@ -1086,10 +1086,8 @@
       INTEGER, INTENT(INOUT) :: lNEXT_REC
       INTEGER(KIND=1), INTENT(OUT) :: OUTPUT_B(:)
 
-
-      LOGICAL :: lLOC2GLB
 ! Loop counters
-      INTEGER :: LC1, lc2
+      INTEGER :: LC1
 
       INTEGER :: lPROC
 
