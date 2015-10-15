@@ -681,7 +681,7 @@
       USE compar
       USE run
       USE time_cpu
-      USE utilities, ONLY: isNan
+      USE utilities, ONLY: mfix_isnan
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -740,7 +740,7 @@
         mdot_n = VAVG_Flux_W_G()
       ENDIF
 
-      IF (isNan(mdot_n) .OR. isNan(delp_n)) THEN
+      IF (mfix_isnan(mdot_n) .OR. mfix_isnan(delp_n)) THEN
          IF (myPE.eq.PE_IO) write(*,*) mdot_n, delp_n, &
             ' NaN being caught in GoalSeekMassFlux '
          AUTOMATIC_RESTART = .TRUE.

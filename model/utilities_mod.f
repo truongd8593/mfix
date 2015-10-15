@@ -6,12 +6,12 @@ CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  function: isNaN                                                     !
+!  function: mfix_isnan                                                !
 !  Purpose: check whether argument is NAN                              !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-      LOGICAL FUNCTION isNan(x)
+      LOGICAL FUNCTION mfix_isnan(x)
 
 !-----------------------------------------------
 ! Dummy arguments
@@ -23,7 +23,7 @@ CONTAINS
       CHARACTER(LEN=80) :: notnumber
 !-----------------------------------------------
 
-      isNan = .False.
+      mfix_isnan = .False.
       WRITE(notnumber,*) x
 ! To check for NaN's in x, see if x (a real number) contain a letter "N"
 ! "n" or symbol "?", in which case it is a NaN (Not a Number)
@@ -31,13 +31,12 @@ CONTAINS
       IF(INDEX(notnumber,'?') > 0 .OR.     &
          INDEX(notnumber,'n') > 0 .OR.     &
          INDEX(notnumber,'N') > 0 ) THEN
-        isNan = .TRUE.
+        mfix_isnan = .TRUE.
          RETURN
       ENDIF
 
       RETURN
-      END FUNCTION isNan
-
+    END FUNCTION mfix_isnan
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
