@@ -4,6 +4,9 @@
 #                                                              #
 ################################################################
 
+# Automake defaults to F77LINK.  Using FC to link will work whether FC is an MPI or non-MPI compiler.
+F77LD = $(FC)
+
 PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
 
@@ -49,8 +52,8 @@ mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
 # mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
-mfix_SOURCES = model/mfix.f model/ODEPACK.F
-libmfix_a_SOURCES =
+mfix_SOURCES = model/mfix.f
+libmfix_a_SOURCES = model/ODEPACK.F
 
 ################################################################
 #                                                              #
@@ -60,7 +63,7 @@ libmfix_a_SOURCES =
 
 bin_PROGRAMS += postmfix$(EXEEXT)
 
-postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
+postmfix_LDADD = $(top_builddir)/libmfix.a
 
 # Override $(MODOUTDIR) so post_mfix/functions.mod does not conflict with
 # the model/functions.mod.  Both functions.mod files should be the same, but
