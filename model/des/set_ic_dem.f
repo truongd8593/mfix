@@ -23,8 +23,6 @@
       use discretelement, only: PINC, PIC
       use discretelement, only: PIJK
 
-      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
-
       USE des_rxns, only: DES_X_s
 
       use param1, only: undefined, zero

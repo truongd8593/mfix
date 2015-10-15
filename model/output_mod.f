@@ -91,7 +91,5 @@
 ! Extension for the user-defined output file.
       CHARACTER(LEN=16) :: USR_EXT (DIMENSION_USR)
 
-      contains
-
 
       END MODULE output

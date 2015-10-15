@@ -40,8 +40,8 @@
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
-      use discretelement
-      use functions
+      use discretelement, only: DES_POS_NEW
+      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
       IMPLICIT NONE
 
@@ -224,7 +224,6 @@
       use sendrecv
 
       USE error_manager
-      USE functions
       USE desgrid, only: desgrid_pic
 
       IMPLICIT NONE

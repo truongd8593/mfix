@@ -223,7 +223,6 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement
       use desmpi, only: irecvindices
 
       use desmpi, only: iParticlePacketSize

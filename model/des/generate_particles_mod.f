@@ -121,18 +121,24 @@
 ! to access random number generator subroutines
       use randomno
       use mpi_utility
-      use functions, only: SET_NORMAL
+      use functions, only: SET_NORMAL, FUNIJK, FLUID_AT
 
       use error_manager
 
 ! direction wise spans of the domain and grid spacing in each direction
       use geometry, only: xlength, ylength, zlength
 
-      use functions
       use cutcell, only : CARTESIAN_GRID, CUT_CELL_AT
       use STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVERLAPS_STL
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
+
+      use discretelement, only: MAX_RADIUS
+
+      use discretelement, only: XE, YN, ZT
+
+      use param, only: DIM_M, DIMENSION_I, DIMENSION_J, DIMENSION_K
+      use functions, only: IS_ON_MYPE_WOBND
 
       IMPLICIT NONE
 
@@ -773,8 +779,6 @@
 
 ! DEM solid phase diameters and densities.
       use discretelement, only: DES_D_p0, DES_RO_s
-
-      use discretelement
 
 ! Implied total number of physical particles
       use mfix_pic, only: rnp_pic
