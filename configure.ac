@@ -114,5 +114,8 @@ AC_OUTPUT
 
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([Now run "make" to build mfix with:])
+AC_MSG_NOTICE([FC=$FC])
 AC_MSG_NOTICE([FCFLAGS=$FCFLAGS])
+AC_MSG_NOTICE([F77=$F77])
+AC_MSG_NOTICE([FFLAGS=$FFLAGS])
 AC_MSG_NOTICE([==============================================================])
