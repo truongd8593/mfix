@@ -107,86 +107,6 @@ contains
     integer, intent(in) :: ii, jj
     integer :: ier, i, j, k, l, pi, nn
 
-ier = 0
-    l = ii
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
-
-      IF(is_normal(L) .and. IER .ne. 0) THEN
-         print *,"III=",istart1,i,iend1
-         print *,"JJJ=",jstart1,j,jend1
-         print *,"KKK=",kstart1,k,kend1
-
-         print *,"L = ",l,particle_state(L)
-         print *,"mype=",mype
-         stop 444666
-      ENDIF
-
-ier = 0
-    l = jj
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
-
-      IF(is_normal(L) .and. IER .ne. 0) THEN
-         print *,"III=",istart1,i,iend1
-         print *,"JJJ=",jstart1,j,jend1
-         print *,"KKK=",kstart1,k,kend1
-
-         print *,"L = ",l,particle_state(L)
-         print *,"mype=",mype
-         stop 666444
-      ENDIF
-
-    if (PIJK(ii,4)>0) then
-    do pi = 1, PINC(PIJK(ii,4))
-       if (ii .eq. PIC(PIJK(ii,4))%p(pi)) then
-          PIC(PIJK(ii,4))%p(pi) = jj
-          !if (ii.eq.1) print *,"PUTTING ",jj," IN ",PIJK(ii,4)
-          exit
-       endif
-    end do
- end if
-
-    if (PIJK(jj,4)>0) then
-    do pi = 1, PINC(PIJK(jj,4))
-       if (jj .eq. PIC(PIJK(jj,4))%p(pi)) then
-          PIC(PIJK(jj,4))%p(pi) = ii
-          !if (jj.eq.1) print *,"PUTTING ",ii," IN ",PIJK(jj,4)
-          exit
-       endif
-    end do
- end if
-
-    if (dg_pijk(ii)>0) then
-    do pi = 1, dg_pic(dg_pijk(ii))%isize
-       if (ii .eq. dg_pic(dg_pijk(ii))%p(pi)) then
-          dg_pic(dg_pijk(ii))%p(pi) = jj
-          !if (ii.eq.1) print *,"putting ",jj," in ",dg_pijk(ii)
-          exit
-       endif
-    end do
- end if
-
-    if (dg_pijk(jj)>0) then
-    do pi = 1, dg_pic(dg_pijk(jj))%isize
-       if (jj .eq. dg_pic(dg_pijk(jj))%p(pi)) then
-          dg_pic(dg_pijk(jj))%p(pi) = ii
-          !if (jj.eq.1) print *,"putting ",ii," in ",dg_pijk(jj)
-          exit
-       endif
-    end do
- end if
-
     call real_swap(des_radius)
     call real_swap(RO_Sol)
     call real_swap(PVOL)
@@ -270,47 +190,6 @@ ier = 0
 
     IF(DES_USR_VAR_SIZE > 0) &
          call real_swap2(DES_USR_VAR)
-
-ier = 0
-    l = ii
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
-
-      IF(is_normal(L) .and. IER .ne. 0) THEN
-         print *,"III=",istart1,i,iend1
-         print *,"JJJ=",jstart1,j,jend1
-         print *,"KKK=",kstart1,k,kend1
-
-         print *,"ii,jj = ",ii,jj,particle_state(ii),particle_state(jj)
-         print *,"mype=",mype
-         print *,"do_k=",do_k
-         stop 262626
-      ENDIF
-
-ier = 0
-    l = jj
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
-
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
-
-      IF(is_normal(L) .and. IER .ne. 0) THEN
-         print *,"III=",istart1,i,iend1
-         print *,"JJJ=",jstart1,j,jend1
-         print *,"KKK=",kstart1,k,kend1
-
-         print *,"ii,jj = ",ii,jj,particle_state(ii),particle_state(jj)
-         print *,"mype=",mype
-         stop 1717171
-      ENDIF
 
   contains
 
