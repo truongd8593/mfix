@@ -86,7 +86,6 @@
 ! blend factor
       DOUBLE PRECISION :: BLEND
 !---------------------------------------------------------------------//
-
       IF (MU_S0(M) /= UNDEFINED) THEN
           CALL CALC_MU_S0(M)
 ! return as none of the subroutines below should be called for 
@@ -222,6 +221,7 @@
       USE param1, only: zero
       USE physprop, only: mu_s0
       USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
+      USE mms, only   : use_mms
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -236,7 +236,9 @@
 
 !---------------------------------------------------------------------//
       DO IJK = ijkstart3, ijkend3
-         IF (FLUID_AT(IJK)) THEN
+! MMS tests require physical properties to be defined at all cells
+! (including ghost cells)
+         IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
 ! 'pressure' of this phase.  At this point this quantity is simply 
 ! set to zero.  Care must be taken in considering how MFIX's governing
 ! equations have been posed (nominally for gas-solids). In particular,
