@@ -744,10 +744,10 @@
       ENDIF
 
  2000 FORMAT('Error 2000: Physical properties detected in flow cells.',&
-         2/3X,'I',6x,'J',6x'K',5x,'Value',8x,A,2x,'Bound',5x,'Variable')
+         2/3X,'I',6x,'J',6x,'K',5x,'Value',8x,A,2x,'Bound',5x,'Variable')
 
  3000 FORMAT('Error 3000: Unphysical field variables detected.',&
-         2/3X,'I',6x,'J',6x'K',5x,'Value',8x,A,2x,'Bound',5x,'Variable')
+         2/3X,'I',6x,'J',6x,'K',5x,'Value',8x,A,2x,'Bound',5x,'Variable')
 
       WRITE(ERR_MSG,9000) pI, pJ, pK, VAL, RELATION, BND, trim(VAR_FULL)
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
