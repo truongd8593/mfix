@@ -786,7 +786,7 @@
 
 !<keyword category="Particle In Cell" required="false">
 !  <description> Turn on the implicit treatment for interphase drag force.
-! Valid only for MPPIC model..
+! Valid only for MPPIC model.
 !</description>
 !  <dependent keyword="MPPIC" value=".TRUE."/>
       MPPIC_PDRAG_IMPLICIT = .false.
