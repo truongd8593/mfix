@@ -100,6 +100,7 @@
 ! on this value
       Integer :: imax_global_id
 
+      LOGICAL :: sorted
 
 ! If gener_part_config is true, then the particle_input.dat file does
 ! not need to be supplied nor does the total number of particles as

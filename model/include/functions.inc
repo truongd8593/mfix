@@ -866,43 +866,50 @@
       END FUNCTION IS_EXITING_GHOST
 
       SUBROUTINE SET_NONEXISTENT(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, NONEXISTENT
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NONEXISTENT
+        sorted = .false.
       END SUBROUTINE SET_NONEXISTENT
 
       SUBROUTINE SET_NORMAL(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, NORMAL_PARTICLE
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NORMAL_PARTICLE
+        sorted = .false.
       END SUBROUTINE SET_NORMAL
 
       SUBROUTINE SET_ENTERING(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, ENTERING_PARTICLE
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=ENTERING_PARTICLE
+        sorted = .false.
       END SUBROUTINE SET_ENTERING
 
       SUBROUTINE SET_EXITING(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, EXITING_PARTICLE
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=EXITING_PARTICLE
+        sorted = .false.
       END SUBROUTINE SET_EXITING
 
       SUBROUTINE SET_GHOST(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, NORMAL_GHOST
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=NORMAL_GHOST
+        sorted = .false.
       END SUBROUTINE SET_GHOST
 
       SUBROUTINE SET_ENTERING_GHOST(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, ENTERING_GHOST
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=ENTERING_GHOST
+        sorted = .false.
       END SUBROUTINE SET_ENTERING_GHOST
 
       SUBROUTINE SET_EXITING_GHOST(PP)
-        USE discretelement, ONLY: PARTICLE_STATE, EXITING_GHOST
+        USE discretelement
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=EXITING_GHOST
+        sorted = .false.
       END SUBROUTINE SET_EXITING_GHOST

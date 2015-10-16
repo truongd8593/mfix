@@ -117,6 +117,11 @@
             ENDIF
          ENDIF
 
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 323
+         endif
+
 ! Calculate forces acting on particles (collisions, drag, etc).
          CALL CALC_FORCE_DEM
 ! Calculate or distribute fluid-particle drag force.
@@ -157,7 +162,8 @@
             enddo
 
             CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.false.)
-            CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.true.)
+            sorted = .true.
+            !CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.true.)
 
             CALL FIND_STATE_BOUNDS
             CALL NEIGHBOUR
