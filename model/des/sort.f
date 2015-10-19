@@ -40,6 +40,9 @@ contains
        call SORT_PARTICLES(first,iq-1,revert)
        call SORT_PARTICLES(iq,last,revert)
     endif
+
+    sorted = .true.
+
   end subroutine SORT_PARTICLES
 
   subroutine Partition(marker, first, last, revert)
@@ -105,7 +108,30 @@ contains
     implicit none
 
     integer, intent(in) :: ii, jj
-    integer :: ier, i, j, k, l, pi, nn
+    integer :: ier, i, j, k, l, pi, nn, cc, lijk
+    logical :: misss
+
+    do cc=NEIGHBOR_INDEX(1,II), NEIGHBOR_INDEX(2,II)-1
+       if (II.eq.neighbors(cc)) then
+          print *,"beforecrash FAIL FOR II ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do cc=NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)-1
+       if (JJ.eq.neighbors(cc)) then
+          print *,"beforecrash FAIL FOR JJ ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
 
     call real_swap(des_radius)
     call real_swap(RO_Sol)
@@ -131,13 +157,111 @@ contains
     call real_swap3(WALL_COLLISION_PFT)
     call real_swap2(DRAG_FC)
 
-    do nn=1, neigh_num
-       if (neighbors(nn).eq.ii) neighbors(nn) = jj
-       if (neighbors(nn).eq.jj) neighbors(nn) = ii
+    do cc=NEIGHBOR_INDEX(1,II), NEIGHBOR_INDEX(2,II)-1
+       if (II.eq.neighbors(cc)) then
+          print *,"AAAAAAAA FAIL FOR II ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do cc=NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)-1
+       if (JJ.eq.neighbors(cc)) then
+          print *,"AAAAAAAA FAIL FOR JJ ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
     enddo
 
     call integer_swap2(NEIGHBOR_INDEX)
     call integer_swap2(NEIGHBOR_INDEX_OLD)
+
+    do cc=NEIGHBOR_INDEX(1,II), NEIGHBOR_INDEX(2,II)-1
+       if (II.eq.neighbors(cc)) then
+          print *,"CCCCCCCC FAIL FOR II ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do cc=NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)-1
+       if (JJ.eq.neighbors(cc)) then
+          print *,"CCCCCCCC FAIL FOR JJ ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do nn=1, neigh_num
+       if (neighbors(nn).eq.ii) then
+         neighbors(nn) = jj
+       else if (neighbors(nn).eq.jj) then
+          neighbors(nn) = ii
+       endif
+    enddo
+
+
+    misss = .true.
+
+    lijk = dg_pijk(ii)
+    do nn = 1,dg_pic(lijk)%isize
+       print *,"DOES ",ii, " EQUAL ",dg_pic(lijk)%p(nn)
+       if (ii.eq. dg_pic(lijk)%p(nn)) then
+          dg_pic(lijk)%p(nn) = jj
+          misss = .false.
+       endif
+    enddo
+
+    if (misss) then
+       print *,"ii = ",ii
+       stop 133331
+    endif
+    misss = .true.
+
+    lijk = dg_pijk(jj)
+    do nn = 1,dg_pic(lijk)%isize
+       print *,"DOES ",jj, " EQUAL ",dg_pic(lijk)%p(nn)
+       if (jj.eq. dg_pic(lijk)%p(nn)) then
+          dg_pic(lijk)%p(nn) = ii
+          misss = .false.
+       endif
+    enddo
+
+    if (misss) stop 133332
+
+    do cc=NEIGHBOR_INDEX(1,II), NEIGHBOR_INDEX(2,II)-1
+       if (II.eq.neighbors(cc)) then
+          print *,"BBBBBBBB FAIL FOR II ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do cc=NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)-1
+       if (JJ.eq.neighbors(cc)) then
+          print *,"BBBBBBBB FAIL FOR JJ ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
 
     IF(PARTICLE_ORIENTATION) call real_swap2(ORIENTATION)
 
@@ -190,6 +314,30 @@ contains
 
     IF(DES_USR_VAR_SIZE > 0) &
          call real_swap2(DES_USR_VAR)
+
+
+    do cc=NEIGHBOR_INDEX(1,II), NEIGHBOR_INDEX(2,II)-1
+       if (II.eq.neighbors(cc)) then
+          print *,"aftercrash FAIL FOR II ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
+    do cc=NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)-1
+       if (JJ.eq.neighbors(cc)) then
+          print *,"aftercrash FAIL FOR JJ ",CC
+          print *,"local: ",ii,jj
+          print *,"global: ",iglobal_id(ii),iglobal_id(jj)
+          print *,"ii neigh_index: ",NEIGHBOR_INDEX(1,ii), NEIGHBOR_INDEX(2,ii)
+          print *,"jj neigh_index: ",NEIGHBOR_INDEX(1,JJ), NEIGHBOR_INDEX(2,JJ)
+          stop 222
+       endif
+    enddo
+
 
   contains
 

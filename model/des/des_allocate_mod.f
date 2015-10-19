@@ -440,6 +440,8 @@ CONTAINS
       NEIGHBORS(NEIGHBOR_INDEX(2,ii)) = jj
       NEIGHBOR_INDEX(2,ii) = NEIGHBOR_INDEX(2,ii) + 1
 
+      NEIGH_NUM = NEIGHBOR_INDEX(2,ii)
+
       RETURN
       END SUBROUTINE add_pair
 

@@ -154,12 +154,10 @@ ier = 0
          print *,"JJJ=",jstart1,j,jend1
          print *,"KKK=",kstart1,k,kend1
 
-         print *,"L = ",l,particle_state(L)
+         print *,"L = ",l,particle_state(L),iglobal_id(l)
          print *,"mype=",mype
          stop 77777
       ENDIF
-
-
 
 ! Increment the number of particles in cell IJK
          IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1

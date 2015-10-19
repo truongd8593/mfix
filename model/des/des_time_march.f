@@ -46,7 +46,7 @@
       INTEGER :: NN
 
 ! loop counter index for any initial particle settling incoupled cases
-      INTEGER :: FACTOR,ii
+      INTEGER :: FACTOR,ii,jj
       INTEGER, dimension(:), allocatable :: tmp_int
 
 ! Temporary variables when des_continuum_coupled is T to track
@@ -55,6 +55,8 @@
 
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
+
+      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
@@ -99,6 +101,15 @@
          CALL CALC_PG_GRAD
       ENDIF
 
+      IF(FIRST_PASS) THEN
+         CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.false.)
+         FIRST_PASS = .false.
+      ENDIF
+
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 100100100
+         endif
 
 ! Main DEM time loop
 !----------------------------------------------------------------->>>
@@ -121,6 +132,13 @@
             print *,"NOT SORTED?!?!"
             stop 323
          endif
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  BEFORE_CALC_FD neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  BEFORE_CALC_FD ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+enddo
+endif
 
 ! Calculate forces acting on particles (collisions, drag, etc).
          CALL CALC_FORCE_DEM
@@ -148,26 +166,93 @@
          IF(DEM_BCMI > 0) CALL MASS_INFLOW_DEM
          IF(DEM_BCMO > 0) CALL MASS_OUTFLOW_DEM(DO_NSEARCH)
 
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 345543111
+         endif
+
 ! Call exchange particles - this will exchange particle crossing
 ! boundaries as well as updates ghost particles information
          IF (DO_NSEARCH .OR. (numPEs>1) .OR. DES_PERIODIC_WALLS) THEN
             CALL DESGRID_PIC(.TRUE.)
-            CALL DES_PAR_EXCHANGE
-         ENDIF
 
-         IF(DO_NSEARCH) THEN
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 77661
+         endif
+
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  BEFORE_PAR_EX neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  BEFORE_PAR_EX ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+enddo
+endif
+
+
+
+            CALL DES_PAR_EXCHANGE
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  AFTER_PAR_EX neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  AFTER_PAR_EX ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+enddo
+endif
 
             do ii=1,max_pip
                orig_index(ii) = ii
             enddo
 
+!            sorted = .true.
             CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.false.)
-            sorted = .true.
             !CALL SORT_PARTICLES(1,size(PARTICLE_STATE),.true.)
 
-            CALL FIND_STATE_BOUNDS
-            CALL NEIGHBOUR
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  AFTER_SORT neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  AFTER_SORT ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+      enddo
+   endif
+
          ENDIF
+
+         IF(DO_NSEARCH) THEN
+
+            CALL FIND_STATE_BOUNDS
+
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 21212
+         endif
+
+            CALL NEIGHBOUR
+
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 1111
+         endif
+
+         ENDIF
+
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 88888
+         endif
+
+if (.false.) then
+
+do jj=1, max_pip
+if (1317.eq.iglobal_id(jj)) then
+!if (.false. .and. mype.eq.1) then
+         print *,mype,":  AFTER_NEIGH neighbors of 208(",iglobal_id(jj),") are:"
+do ii=NEIGHBOR_INDEX(1,jj), NEIGHBOR_INDEX(2,jj)-1
+         print *,mype,":  AFTER_NEIGH ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+      enddo
+   endif
+enddo
+endif
 
 ! Explicitly coupled simulations do not need to rebin particles to
 ! the fluid grid every time step. However, this implies that the
@@ -182,6 +267,18 @@
             CALL COMP_MEAN_FIELDS
          ENDIF
 
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 555
+         endif
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  AFTER_COMP neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  AFTER_COMP ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+      enddo
+   endif
+
 ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID
 
@@ -195,6 +292,18 @@
          ENDIF  ! end if (.not.des_continuum_coupled)
 
          IF(CALL_USR) CALL USR2_DES
+
+         if (.not.sorted) then
+            print *,"NOT SORTED?!?!"
+            stop 2828
+         endif
+
+if (.false. .and. mype.eq.1) then
+         print *,mype,":  END_LOOP neighbors of 208(",iglobal_id(208),") are:"
+do ii=NEIGHBOR_INDEX(1,208), NEIGHBOR_INDEX(2,208)-1
+         print *,mype,":  END_LOOP ",neighbors(ii),"(",iglobal_id(neighbors(ii)),")"
+      enddo
+   endif
 
       ENDDO ! end do NN = 1, FACTOR
 
