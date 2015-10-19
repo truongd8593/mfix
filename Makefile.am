@@ -4,6 +4,9 @@
 #                                                              #
 ################################################################
 
+# Automake defaults to F77LINK.  Using FC to link will work whether FC is an MPI or non-MPI compiler.
+F77LD = $(FC)
+
 PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
 
