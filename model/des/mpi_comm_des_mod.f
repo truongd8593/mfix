@@ -73,10 +73,17 @@
         ldebug = pdebug
       endif
 
+
+
 !direct copy in case of single processor
       lrecvface = pface+mod(pface,2)-mod(pface+1,2)
+
+
+
+
       if (ineighproc(pface).eq.mype) then
-         drecvbuf(1+mod(lrecvface,2))%facebuf(1:isendcnt(pface))= dsendbuf(1+mod(pface,2))%facebuf(1:isendcnt(pface))
+         drecvbuf(1+mod(lrecvface,2))%facebuf(1:isendcnt(pface)) = &
+            dsendbuf(1+mod(pface,2))%facebuf(1:isendcnt(pface))
       else
          ltag = message_tag(ineighproc(pface),mype,pface)
          call des_mpi_irecv(drecvbuf(1+mod(pface,2))%facebuf(:),imaxbuf, &
@@ -87,6 +94,7 @@
          call des_mpi_isend(dsendbuf(1+mod(pface,2))%facebuf(:),isendcnt(pface), &
                         ineighproc(pface),ltag,isendreq(pface),lerr)
          call mpi_check( name //':mpi_isend ', lerr )
+
       end if
       return
 

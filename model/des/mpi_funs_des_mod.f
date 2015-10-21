@@ -105,7 +105,8 @@
          end do
 ! update pic this is required for particles crossing corner cells
          do lface = linter*2-1,linter*2
-            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
+            if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0 .or. &
+               drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                call desgrid_pic(plocate=.false.)
                exit
             end if
@@ -140,7 +141,8 @@
 
 ! Rebin particles to the DES grid as ghost particles may be moved.
             do lface = linter*2-1,linter*2
-               if(dsendbuf(1+mod(lface,2))%facebuf(1).gt.0.or.drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
+               if(dsendbuf(1+mod(lface,2))%facebuf(1) .gt.0.or.&
+                  drecvbuf(1+mod(lface,2))%facebuf(1).gt.0) then
                   call desgrid_pic(plocate=.false.)
                   exit
                end if
@@ -173,31 +175,31 @@
       use desmpi, only: iBUFOFFSET
       use desmpi, only: dSENDBUF, dRECVBUF
       use desmpi, only: iSENDINDICES
+      use desmpi, only: iGhostPacketSize
 
       use mpi_utility, only: global_all_max
-
+      use error_manager
       implicit none
 
 ! Local variables:
 !---------------------------------------------------------------------//
 ! Loop counters
       INTEGER :: lface, lindx, lijk
-! Approximate size of a DEM ghost particle's data.
-      INTEGER :: lpacketsize
 ! Particle count in send/recv region on current face
       INTEGER :: lparcnt
 ! Max particle count in send/recv region over all proc faces.
       INTEGER :: lmaxcnt
 ! Total number of DES grid cells on lface in send/recv
       INTEGER :: ltot_ind
+! Previous Buffer
+      INTEGER :: pBUF
 ! Growth factor when resizing send/recv buffers.
       REAL :: lfactor = 1.5
-
+      DOUBLE PRECISION, PARAMETER :: ONEMBo8 = 131072.0
 !......................................................................!
 
       lmaxcnt = 0
-      lpacketsize = 2*dimn + 3 + 5
-      do lface = 1,2*dimn
+      do lface = 1,6
          ltot_ind = isendindices(1,lface)
          lparcnt = 0
          do lindx = 2,ltot_ind+1
@@ -208,14 +210,23 @@
       enddo
 
       call global_all_max(lmaxcnt)
-      if (imaxbuf .lt. lmaxcnt*lpacketsize+ibufoffset) then
-         imaxbuf = lmaxcnt*lpacketsize*lfactor
+      if (imaxbuf .lt. lmaxcnt*iGhostPacketSize+ibufoffset) then
+         pbuf = imaxbuf
+         imaxbuf = lmaxcnt*iGhostPacketSize*lfactor
          do lface = 1,2*dimn
             if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) then
                deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
             endif
-            allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
+            allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),&
+               drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
          end do
+
+         WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, &
+            100.0d0+100.0d0*dble(iMAXBUF-pbuf)/dble(pbuf)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+ 1000 FORMAT(/'Resizeing DES MPI buffers: ',F7.1,' MB  (+',F5.1'%)')
+
       endif
 
       END SUBROUTINE DESMPI_CHECK_SENDRECVBUF
