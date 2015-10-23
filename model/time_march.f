@@ -164,10 +164,7 @@
          CALL DES_TIME_MARCH
          CALL CPU_TIME(CPU_STOP)
          CPU_STOP = CPU_STOP - CPU00
-         IF(myPE.EQ.PE_IO) &
-            write(*,"('Elapsed CPU time = ',E15.6,' sec')") CPU_STOP
-         CALL PARALLEL_FIN
-         STOP
+         RETURN
       ENDIF
 
 

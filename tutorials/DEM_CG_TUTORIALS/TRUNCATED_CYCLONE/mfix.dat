@@ -172,7 +172,7 @@
 
   PRINT_DES_DATA = .T.
 
-  NLOG = 25           ! interval to update .LOG
+  NLOG = 2500         ! interval to update .LOG
 
   WRITE_DASHBOARD = .F.
   WRITE_VTK_FILES  = .T.

@@ -47,12 +47,13 @@
 
          DO LC=DEM_BCMO_IJKSTART(BCV_I), DEM_BCMO_IJKEND(BCV_I)
             IJK = DEM_BCMO_IJK(LC)
-            DO LP= 1,PINC(IJK)
+            DO LP= 1,DG_PIC(IJK)%ISIZE
 
-               NP = PIC(IJK)%p(LP)
+               NP = DG_PIC(IJK)%P(LP)
 
                IF(IS_NONEXISTENT(NP)) CYCLE
-               IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
+               IF(IS_ANY_GHOST(NP)) CYCLE
+               IF(IS_ENTERING(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
                CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
@@ -176,6 +177,8 @@
       TOW(:,NP) = ZERO
 
       PPOS(:,NP) = ZERO
+
+      WALL_COLLISION_FACET_ID(:,NP) = -1
 
       PIP = PIP - 1
 

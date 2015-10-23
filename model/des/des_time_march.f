@@ -141,9 +141,7 @@
             CALL DES_PAR_EXCHANGE
          ENDIF
 
-         IF(DO_NSEARCH) THEN
-            CALL NEIGHBOUR
-         ENDIF
+         IF(DO_NSEARCH) CALL NEIGHBOUR
 
 ! Explicitly coupled simulations do not need to rebin particles to
 ! the fluid grid every time step. However, this implies that the
