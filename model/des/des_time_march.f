@@ -73,10 +73,15 @@
       NP = PIP - IGHOST_CNT
       CALL GLOBAL_ALL_SUM(NP)
 
-      WRITE(ERR_MSG, 1000) trim(iVal(factor)), trim(iVAL(NP))
-      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
-
+      IF(DES_CONTINUUM_COUPLED) THEN
+         WRITE(ERR_MSG, 1000) trim(iVal(factor)), trim(iVAL(NP))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      ELSE
+         WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(factor))
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+      ENDIF
  1000 FORMAT(/'DEM NITs: ',A,3x,'Total PIP: ', A)
+ 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'DEM NITs: ',A)
 
       IF(CALL_USR) CALL USR0_DES
 

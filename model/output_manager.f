@@ -280,8 +280,10 @@
 
       use output, only: NLOG
 
-      use run, only: NSTEP
+      use run, only: TIME, NSTEP
 
+      use discretelement, only: DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED
+      use discretelement, only: DTSOLID
       use error_manager
       use machine, only: wall_time
 
@@ -289,6 +291,7 @@
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT
       CHARACTER(LEN=4) :: UNIT_ELAP, UNIT_LEFT
 
+      INTEGER :: TNITS
       LOGICAL :: SCR_LOG
 
       SCR_LOG = (FULL_LOG .and. myPE.eq.PE_IO)
@@ -302,6 +305,14 @@
 
 ! Write the elapsed time and estimated remaining time
       IF(MOD(NSTEP,NLOG) == 0) THEN
+
+         IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+            TNITs = CEILING(real((TSTOP-TIME)/DTSOLID))
+            WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(TNITs))
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+         ENDIF
+ 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'DEM NITs: ',A)
+
          WALL_NOW = WALL_TIME()
 ! Calculate the elapsed wall time.
          WALL_ELAP = WALL_NOW - WALL_START
