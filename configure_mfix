@@ -10,7 +10,8 @@ for target in mfix postmfix libmfix.a Makefile; do
     [ -d ${target} ] && exit -1
 done
 
-# config.log is always in BUILD_DIR, but only want it in RUN_DIR if configure fails
+# config.log is always in BUILD_DIR, but it may have been copied to RUN_DIR if the
+# previous configure command failed.
 rm -f config.log
 
 # Set some of the folder paths.
@@ -40,9 +41,8 @@ else
     exit_code=$?
     set -e
     if [[ $exit_code != 0 ]]; then
-	cd ${RUN_DIR}
-	ln -sf ${BUILD_DIR}/config.log
-	exit $exit_code
+        cp ${BUILD_DIR}/config.log ${RUN_DIR}/
+        exit $exit_code
     fi
 
     # copy Makefile to RUN_DIR

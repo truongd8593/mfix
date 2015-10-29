@@ -29,7 +29,14 @@ SUFFIXES = .d
 LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix$(EXEEXT)
-mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
+mfix_SOURCES = $(src_overrides)
+
+# We need to add mfix.f to mfix_SOURCES because gfortran 4.4 complains about not
+# finding MAIN if mfix.o is only in libmfix.a and not in the link command.
+# However, we can't add model/mfix.f to mfix_SOURCES for Makefile.usr because
+# then mfix.o is in $MFIX_HOME/model. So we copy it under $RUNDDIR.
+mfix_SOURCES += $(builddir)/.build/mfix.f
+
 mfix_LDADD = $(obj_overrides)
 mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
@@ -47,7 +54,10 @@ $(LIBMFIX):
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
 
-$(top_srcdir)/model/mfix.f:  $(LIBMFIX)
+# mfix.f needs to be built under $(builddir)
+$(builddir)/.build/mfix.f:  $(LIBMFIX)
+	cp $(top_srcdir)/model/mfix.f $@
+
 $(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
 $(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX)
 
