@@ -1,14 +1,21 @@
-This file lists bug fixes committed to the 2015-2 Release, starting November, 2015.
+This file lists bug fixes committed to the 2015-2 Release, starting October, 2015.
 
 
 ==================================================================================================
-Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)    
+Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
 ==================================================================================================
-  10/29/2015      | Add missing files     |  Minor   |  model/make_mfix								               
-                  |                       |          |  model/make_mfix.old						               
-                  |                       |          |  model/thermochemical/BURCAT.THR              
-                  |                       |          |  model/thermochemical/intro.pdf               
+  10/29/2015      | Add missing files     |  Minor   |  model/make_mfix
+                  |                       |          |  model/make_mfix.old
+                  |                       |          |  model/thermochemical/BURCAT.THR
+                  |                       |          |  model/thermochemical/intro.pdf
                   |                       |          |  model/thermochemical/readme
-                  |                       |          |                
+==================================================================================================
+  10/29/2015      | copy config.log       |  Minor   |  configure_mfix
+                  | instead of symlinking |          |
+                  | (for cygwin)          |          |
+==================================================================================================
+  10/29/2015      | build mfix.o in a     |  Minor   |  build-aux/Makefile.usr.am
+                  | build directory       |          |
+                  |                       |          |
 ==================================================================================================
 
