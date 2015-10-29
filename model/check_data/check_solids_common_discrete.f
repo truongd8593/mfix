@@ -558,6 +558,7 @@
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: DES_INTERP_LHAT
 ! User specified filter width
       use particle_filter, only: DES_INTERP_WIDTH
 ! Flag: Diffuse DES field variables.
@@ -619,6 +620,9 @@
       CASE ('GAUSS_DPVM')
          DES_INTERP_SCHEME_ENUM = DES_INTERP_GAUSS
 
+      CASE ('LINEAR_HAT')
+         DES_INTERP_SCHEME_ENUM = DES_INTERP_LHAT
+
       CASE DEFAULT
          WRITE(ERR_MSG,2000) trim(adjustl(DES_INTERP_SCHEME))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -679,6 +683,17 @@
  2120 FORMAT('Error 2120: The selected interpolation scheme (',A,') ', &
          'requires',/'a DES_INTERP_WIDTH. Please correct the ',        &
          'input file.')
+
+
+      CASE(DES_INTERP_LHAT)
+
+! Set the size of the interpolation filter.
+         FILTER_SIZE = merge(27, 9, DO_K)
+
+         IF(DES_INTERP_WIDTH /= UNDEFINED) THEN
+            WRITE(ERR_MSG,2100) trim(adjustl(DES_INTERP_SCHEME))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
 
       END SELECT
 
