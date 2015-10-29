@@ -444,6 +444,7 @@
       integer :: lc
       double precision :: vmin(3), vmax(3), v
 
+
       do lc=1,3
          v=vert(lc)
          if(norm(lc) > 0.0d0) then
@@ -455,8 +456,16 @@
          endif
       enddo
 
-      if(dot_product(norm,vmin) > 0.0d0) RETURN
-      planeBoxOverlap=(dot_product(norm,vmax) >= 0.0d0)
+      if(dot_product(norm,vmin) > 0.0d0) then
+         planeBoxOverlap = .false.
+         return
+      elseif(dot_product(norm,vmax) >= 0.0d0) then
+         planeBoxOverlap = .true.
+         return
+      endif
+
+      planeBoxOverlap = .false.
+      return
 
       RETURN
       END FUNCTION planeBoxOverlap
