@@ -271,7 +271,7 @@
       IF(IOS == 0)  RETURN
 
 
-! Physcial parameter keywords
+! Physical parameter keywords
       IF(READ_LOCKED) THEN
          STRING=''; STRING = '&PHYSICAL_PARAM_LOCKED '//&
             trim(adjustl(LINE_STRING(1:LINE_LEN)))//'/'

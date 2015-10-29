@@ -104,11 +104,12 @@
          lmaxlen2 = 1
       end if
 
+
 ! Note: 10 is added for buffer and is required for send and recv indices
       lmaxarea = lmaxlen1*lmaxlen2 + 10
 
-      lmaxghostpar = (max_pip/dg_ijksize2)* lfactor
-      if(lmaxghostpar.lt.100) lmaxghostpar = 100
+! Random value. This gets resized by DESMPI_CHECK_SENDRECVBUF
+      lmaxghostpar = 100
       imaxbuf = lmaxghostpar*lmaxarea*iGhostPacketSize
 
       WRITE(ERR_MSG, 1000) iMAXBUF/ONEMBo8, ONEMBo8/iGhostPacketSize,  &

@@ -227,7 +227,7 @@
          ENDIF
 
  1201 FORMAT('Error 1201: Illogical data returned from setReaction ',  &
-         'for chemcial',/'reaction',1X,A,'.',//' Number of phases ',   &
+         'for chemical',/'reaction',1X,A,'.',//' Number of phases ',   &
          'identified: ',I3,/'Number of species identified: ',I3,//,    &
          'Please check the mfix.dat file.')
 

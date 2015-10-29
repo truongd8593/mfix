@@ -36,7 +36,6 @@
 
   GRAVITY = 980.665D0    ! [980.665d0 in set_constants]
 
-  DES_CONTINUUM_COUPLED = .T.
   DES_INTERP_ON = .T.
   DES_INTERP_SCHEME = 'GARG_2012'
 
@@ -201,13 +200,7 @@
 #_______________________________________________________________________
 # OUTPUT CONTROL SECTION
 
-  FULL_LOG = .TRUE.      ! display residuals on screen
-  GROUP_RESID = .T.      ! group residuals
-
-  RES_DT     = 0.1       ! interval to update .RES
-  DES_RES_DT = 0.1
-
-  NLOG = 25              ! interval to update .LOG
+  RES_DT = 0.05    ! Restart
 
   SPX_DT(1)  =   0.05    ! Void fraction (EP_g)
   SPX_DT(2)  =   0.1     ! Gas and solids pressure (P_g, P_star)
@@ -221,6 +214,10 @@
 
   PRINT_DES_DATA = .T.
 
+  FULL_LOG = .TRUE.      ! display residuals on screen
+  GROUP_RESID = .T.      ! group residuals
+
+  NLOG = 25              ! interval to update .LOG
 
 #_______________________________________________________________________
 # DMP SETUP

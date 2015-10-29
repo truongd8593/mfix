@@ -321,7 +321,7 @@
       SUBROUTINE SET_DEM_BCMI_IJK
 
       use bc, only: BC_PLANE
-      use bc, only: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t
+      use bc, only: BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t
 
       use des_bc, only: DEM_BCMI, DEM_BCMI_MAP, DEM_BCMI_IJK
       use des_bc, only: DEM_BCMI_IJKSTART, DEM_BCMI_IJKEND
@@ -330,7 +330,13 @@
 
       use mpi_utility
       use error_manager
-      use functions
+      use desgrid, only: dg_IMIN1, dg_IMAX1
+      use desgrid, only: dg_JMIN1, dg_JMAX1
+      use desgrid, only: dg_KMIN1, dg_KMAX1
+
+      use desgrid, only: DG_FUNIJK
+      use desgrid, only: IofPOS, JofPOS, KofPOS
+      use desgrid, only: dg_is_ON_myPE_plus1layers
 
       IMPLICIT NONE
 
@@ -368,16 +374,22 @@
          if(dFlag) WRITE(*,"(/2x,'Adding cells for BCV: ',I3)") BCV
          SELECT CASE (BC_PLANE(BCV))
          CASE('N','S')
-            BND1 = min(BC_I_e(BCV)+1,IMAX1) - max(BC_I_w(BCV)-1,IMIN1)
-            BND2 = min(BC_K_t(BCV)+1,KMAX1) - max(BC_K_b(BCV)-1,KMIN1)
+            BND1 = min(IofPOS(BC_X_e(BCV))+1,dg_IMAX1) - &
+               max(IofPOS(BC_X_w(BCV))-1,dg_IMIN1)
+            BND2 = min(KofPOS(BC_Z_t(BCV))+1,dg_KMAX1) - &
+               max(KofPOS(BC_Z_b(BCV))-1,dg_KMIN1)
 
          CASE('E','W')
-            BND1 = min(BC_J_n(BCV)+1,JMAX1) - max(BC_J_s(BCV)-1,JMIN1)
-            BND2 = min(BC_K_t(BCV)+1,KMAX1) - max(BC_K_b(BCV)-1,KMIN1)
+            BND1 = min(JofPOS(BC_Y_n(BCV))+1,dg_JMAX1) - &
+               max(JofPOS(BC_Y_s(BCV))-1,dg_JMIN1)
+            BND2 = min(KofPOS(BC_Z_t(BCV))+1,dg_KMAX1) - &
+               max(KofPOS(BC_Z_b(BCV))-1,dg_KMIN1)
 
          CASE('T','B')
-            BND1 = min(BC_I_e(BCV)+1,IMAX1) - max(BC_I_w(BCV)-1,IMIN1)
-            BND2 = min(BC_J_n(BCV)+1,JMAX1) - max(BC_J_s(BCV)-1,JMIN1)
+            BND1 = min(IofPOS(BC_X_e(BCV))+1,dg_IMAX1) - &
+               max(IofPOS(BC_X_w(BCV))-1,dg_IMIN1)
+            BND2 = min(JofPOS(BC_Y_n(BCV))+1,dg_JMAX1) - &
+               max(JofPOS(BC_Y_s(BCV))-1,dg_JMIN1)
          END SELECT
 
          MAX_CELLS = MAX_CELLS + (BND1 + 1)*(BND2 + 1)
@@ -402,19 +414,34 @@
 
          if(dFlag) write(*,"(/2x,'Searching for fluid cells:',I3)") BCV
 
-         I_w = max(BC_I_w(BCV)-1,IMIN1); I_e = min(BC_I_e(BCV)+1,IMAX1)
-         J_s = max(BC_J_s(BCV)-1,JMIN1); J_n = min(BC_J_n(BCV)+1,JMAX1)
-         K_b = max(BC_K_b(BCV)-1,KMIN1); K_t = min(BC_K_t(BCV)+1,KMAX1)
+         I_w = max(IofPOS(BC_X_w(BCV))-1,dg_IMIN1)
+         I_e = min(IofPOS(BC_X_e(BCV))+1,dg_IMAX1)
+         J_s = max(JofPOS(BC_Y_s(BCV))-1,dg_JMIN1)
+         J_n = min(JofPOS(BC_Y_n(BCV))+1,dg_JMAX1)
+         K_b = max(KofPOS(BC_Z_b(BCV))-1,dg_KMIN1)
+         K_t = min(KofPOS(BC_Z_t(BCV))+1,dg_KMAX1)
 
 ! Depending on the flow plane, the 'common' index needs set to reference
 ! the fluid cell.
          SELECT CASE (BC_PLANE(BCV))
-         CASE('N'); J_s = BC_J_s(BCV)+1;   J_n = BC_J_n(BCV)+1
-         CASE('S'); J_s = BC_J_s(BCV)-1;   J_n = BC_J_n(BCV)-1
-         CASE('E'); I_w = BC_I_w(BCV)+1;   I_e = BC_I_e(BCV)+1
-         CASE('W'); I_w = BC_I_w(BCV)-1;   I_e = BC_I_e(BCV)-1
-         CASE('T'); K_b = BC_K_b(BCV)+1;   K_t = BC_K_t(BCV)+1
-         CASE('B'); K_b = BC_K_b(BCV)-1;   K_t = BC_K_t(BCV)-1
+         CASE('N')
+            J_s = JofPOS(BC_Y_s(BCV))+1
+            J_n = JofPOS(BC_Y_n(BCV))+1
+         CASE('S')
+            J_s = JofPOS(BC_Y_s(BCV))-1
+            J_n = JofPOS(BC_Y_n(BCV))-1
+         CASE('E')
+            I_w = IofPOS(BC_X_w(BCV))+1
+            I_e = IofPOS(BC_X_e(BCV))+1
+         CASE('W')
+            I_w = IofPOS(BC_X_w(BCV))-1
+            I_e = IofPOS(BC_X_e(BCV))-1
+         CASE('T')
+            K_b = KofPOS(BC_Z_b(BCV))+1
+            K_t = KofPOS(BC_Z_t(BCV))+1
+         CASE('B')
+            K_b = KofPOS(BC_Z_b(BCV))-1
+            K_t = KofPOS(BC_Z_t(BCV))-1
          END SELECT
 
          if(dFlag) then
@@ -429,10 +456,9 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-            IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            IF(DEAD_CELL_AT(I,J,K)) CYCLE
+            IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K))CYCLE
 
-            IJK = FUNIJK(I,J,K)
+            IJK = DG_FUNIJK(I,J,K)
             LOC_DEM_BCMI_IJK(LC) = IJK
             LC = LC+1
          ENDDO

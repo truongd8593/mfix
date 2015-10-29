@@ -403,8 +403,8 @@
       N = N / NORM
 
       V(1) = X_MEAN - COORD_CUT_FACE_NODES(1,1)
-      V(2) = Y_MEAN - COORD_CUT_FACE_NODES(1,2)
-      V(3) = Z_MEAN - COORD_CUT_FACE_NODES(1,3)
+      V(2) = Y_MEAN - COORD_CUT_FACE_NODES(2,1)
+      V(3) = Z_MEAN - COORD_CUT_FACE_NODES(3,1)
 
       IF (DOT_PRODUCT(N,V) < ZERO) N = - N
 

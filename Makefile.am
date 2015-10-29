@@ -4,9 +4,17 @@
 #                                                              #
 ################################################################
 
-F77 = $(FC)
-F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
+# Automake defaults to F77LINK.  Using FC to link will work whether FC is an MPI or non-MPI compiler.
+F77LD = $(FC)
+
+PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
+
+.F.o:
+	$(F77COMPILE) -c -o $@ $<
+
+.f.o:
+	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
 
@@ -16,9 +24,7 @@ MODOUTDIR=$(MODDIR)
 CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 DISTCLEANFILES = build-aux/Makefile.usr
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -cpp
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
@@ -33,7 +39,7 @@ SUFFIXES = .d
 .DEFAULT_GOAL := mfix$(EXEEXT)
 
 $(builddir)/read_database.$(OBJEXT): $(srcdir)/model/read_database.f
-	$(FCCOMPILE) -DBURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 ################################################################
 #                                                              #
@@ -45,8 +51,9 @@ bin_PROGRAMS = mfix$(EXEEXT)
 mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
-mfix_SOURCES = model/ODEPACK.F
-libmfix_a_SOURCES =
+# mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
+mfix_SOURCES = model/mfix.f
+libmfix_a_SOURCES = model/ODEPACK.F
 
 ################################################################
 #                                                              #
@@ -56,7 +63,7 @@ libmfix_a_SOURCES =
 
 bin_PROGRAMS += postmfix$(EXEEXT)
 
-postmfix_LDADD = $(top_builddir)/model/ODEPACK.$(OBJEXT) $(top_builddir)/libmfix.a
+postmfix_LDADD = $(top_builddir)/libmfix.a
 
 # Override $(MODOUTDIR) so post_mfix/functions.mod does not conflict with
 # the model/functions.mod.  Both functions.mod files should be the same, but
@@ -73,8 +80,9 @@ CLEANFILES += post_mfix/functions.mod
 #                                                              #
 ################################################################
 
-EXTRA_DIST =  build-aux config doc regression_tests tests tools tutorials visualization_tools
-EXTRA_DIST += CHANGES mfix_user_guide.pdf readme
+EXTRA_DIST =  Bug_Fixes CHANGES DISCLAIMER NOTICE benchmarks build-aux config configure_mfix doc
+EXTRA_DIST += legacy_tests mfix_user_guide.pdf readme regression_tests tests tools tutorials visualization_tools
+
 
 ################################################################
 #                                                              #
@@ -115,7 +123,7 @@ endif
 #      Socket server
 ################################################################
 if USE_SOCKET
-AM_FCFLAGS += -Dsocket
+AM_FCFLAGS += $(FC_DEFINE)socket
 libmfix_a_SOURCES += model/handle_command.f
 libmfix_a_SOURCES += model/socket.c
 endif
@@ -148,8 +156,8 @@ AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI
-AM_FCFLAGS += -DMPI
-AM_LDFLAGS += -DMPI
+AM_FCFLAGS += $(FC_DEFINE)MPI
+AM_LDFLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################

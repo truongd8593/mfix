@@ -46,6 +46,7 @@
       USE scalars
       use discretelement, only: PRINT_DES_DATA
       use discretelement, only: DISCRETE_ELEMENT
+      use discretelement, only: DES_CONTINUUM_COUPLED
       use discretelement, only: PARTICLES, NFACTOR
 
 !//       USE tmp_array
@@ -113,6 +114,20 @@
             WRITE (uspx + L, REC=NEXT_REC) REAL(TIME), NSTEP
             NEXT_REC = NEXT_REC + 1
          end if
+
+! Explicitly coupled simulations do not need to rebin particles to
+! the fluid grid every time step. However, this implies that the
+! fluid cell information and interpolation weights become stale.
+         IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+! Bin particles to fluid grid.
+            CALL PARTICLES_IN_CELL
+! Calculate interpolation weights
+            CALL CALC_INTERP_WEIGHTS
+! Calculate mean fields (EPg).
+            CALL COMP_MEAN_FIELDS
+         ENDIF
+
+
          if (bDist_IO) then
             IF(RE_INDEXING) THEN
                CALL UNSHIFT_DP_ARRAY(EP_g,TMP_VAR)

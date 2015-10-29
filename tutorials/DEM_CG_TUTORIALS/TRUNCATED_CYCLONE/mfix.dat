@@ -19,12 +19,14 @@
   TSTOP = 0.05
   DT    = 1.0d-3
 
-  ENERGY_EQ =  .F.
-  SPECIES_EQ = .F.    .F.
+  ENERGY_EQ = .F.
 
-  DES_CONTINUUM_COUPLED = .F.
+  SPECIES_EQ(0:1) = .F.    .F.
 
-!  GRAVITY_Y = -490.0
+  MOMENTUM_X_EQ(0:1) = .F.  .F.
+  MOMENTUM_Y_EQ(0:1) = .F.  .F.
+  MOMENTUM_Z_EQ(0:1) = .F.  .F.
+
 
 #_______________________________________________________________________
 # GEOMETRY SECTION
@@ -68,7 +70,7 @@
 
 ! Gas Section
 !---------------------------------------------------------------------//
-  RO_g0 =   1.2d-3
+  RO_g0 =   0.0
   MU_g0 =   1.8d-4
 
 
@@ -166,13 +168,11 @@
 
   RES_DT = 0.1        ! interval to update .RES
   SPX_DT = 9*100.
+  SPX_DT(1) = 1.0d-2  ! Volume fraction(EPg) and Particle data (vtp)
 
   PRINT_DES_DATA = .T.
 
-  DES_RES_DT = 0.1
-  DES_SPX_DT = 0.001
-
-  NLOG = 25           ! interval to update .LOG
+  NLOG = 2500         ! interval to update .LOG
 
   WRITE_DASHBOARD = .F.
   WRITE_VTK_FILES  = .T.

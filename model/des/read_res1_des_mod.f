@@ -110,8 +110,9 @@
       IF(bDIST_IO) THEN
 
          WRITE(lFNAME,'(A,I4.4,A)') BASE//'_DES_',myPE,'.RES'
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME, FORM='UNFORMATTED',         &
-            STATUS='UNKNOWN', ACCESS='DIRECT', RECL=OPEN_N1)
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME,        &
+            FORM='UNFORMATTED', STATUS='UNKNOWN', ACCESS='DIRECT',     &
+            RECL=OPEN_N1)
 
          READ(RDES_UNIT, REC=1) lVERSION
          READ(RDES_UNIT, REC=2) pIN_COUNT
@@ -137,8 +138,9 @@
 
          IF(myPE == PE_IO) THEN
             WRITE(lFNAME,'(A,A)') BASE//'_DES.RES'
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME, FORM='UNFORMATTED',      &
-               STATUS='UNKNOWN', ACCESS='DIRECT', RECL=OPEN_N1)
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=RDES_UNIT, FILE=lFNAME,     &
+               FORM='UNFORMATTED', STATUS='UNKNOWN', ACCESS='DIRECT',  &
+               RECL=OPEN_N1)
 
             READ(RDES_UNIT, REC=1) pIN_COUNT
 
@@ -413,7 +415,7 @@
          ENDDO  ! Loop over particles
       ENDIF
 
- 1000 FORMAT('Error 1000: Unable to locat paritcle inside domain:',/&
+ 1000 FORMAT('Error 1000: Unable to locate particle inside domain:',/&
          3x,'Particle Number:',A)
  1001 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5)
  1002 FORMAT(3x,'X POS: ',g12.5,/3x,'Y POS: ',g12.5,/3x,'Z POS: ',g12.5)
@@ -666,7 +668,8 @@
 
          lGLOBAL_OWNER = 0
          DO LC1=1, PIP
-            IF(.NOT.IS_GHOST(LC1) .AND. .NOT.IS_ENTERING_GHOST(LC1) .AND. .NOT.IS_EXITING_GHOST(LC1)) &
+            IF(.NOT.IS_GHOST(LC1) .AND. .NOT.IS_ENTERING_GHOST(LC1) &
+               .AND. .NOT.IS_EXITING_GHOST(LC1)) &
                lGLOBAL_OWNER(iGLOBAL_ID(LC1)) = myPE + 1
          ENDDO
 
@@ -730,7 +733,7 @@
                iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1100 FORMAT('Error 1100: Unable to locate process neighbor owner:',/      &
+ 1100 FORMAT('Error 1100: Unable to locate process neighbor owner:',/  &
          3x,'Neighbor Number:',A,/3x,'Particles: ',A,' and ',A)
 
          ELSEIF(cRestartMap(LC1) > numPEs) THEN
@@ -740,7 +743,7 @@
               iPAR_COL(1,LC1))), trim(iVal(iPAR_COL(2,LC1)))
              CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
- 1101 FORMAT('Error 1101: More than one process neighbor owner:',/         &
+ 1101 FORMAT('Error 1101: More than one process neighbor owner:',/     &
          3x,'Neighbor Number:',A,/3x,'Particles: ',A,' and ',A)
 
 ! Shift the rank ID to the correct value.
@@ -834,28 +837,28 @@
       UNMATCHED = 0
 
 ! FIXME Fix Restart
- !      LP1: DO LC1 = 1, cIN_COUNT
- !          IF(cRestartMap(LC1) == myPE) THEN
- !             LC2 = LC2 + 1
- !             NEIGHBORS(LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
- !             NEIGHBORS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
- ! ! Verify that the local indices are valid. If they do not match it is
- ! ! likely because one of the neighbor was removed via an outlet at the time
- ! ! the RES file was written but the ghost data wasn't updated.
- !             IF(NEIGHBORS(1,LC2) == 0 .OR. NEIGHBORS(2,LC2) == 0) THEN
- !                UNMATCHED = UNMATCHED + 1
- !                IF(dFLAG) THEN
- !                   WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), NEIGHBORS(1,LC2),   &
- !                      iPAR_COL(2,LC1), NEIGHBORS(2,LC2)
- !                   CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
- !                ENDIF
- !                DO WHILE(PEA(LC3,1))
- !                   LC3 = LC3 + 1
- !                ENDDO
- !                NEIGHBORS(2,LC2) = LC3
- !             ENDIF
- !          ENDIF
- !       ENDDO LP1
+!      LP1: DO LC1 = 1, cIN_COUNT
+!          IF(cRestartMap(LC1) == myPE) THEN
+!             LC2 = LC2 + 1
+!             NEIGHBORS(LC2) = iLOCAL_ID(iPAR_COL(1,LC1))
+!             NEIGHBORS(2,LC2) = iLOCAL_ID(iPAR_COL(2,LC1))
+! ! Verify that the local indices are valid. If they do not match it is
+! ! likely because one of the neighbor was removed via an outlet at the time
+! ! the RES file was written but the ghost data wasn't updated.
+!             IF(NEIGHBORS(1,LC2) == 0 .OR. NEIGHBORS(2,LC2) == 0) THEN
+!                UNMATCHED = UNMATCHED + 1
+!                IF(dFLAG) THEN
+!                   WRITE(ERR_MSG,1100) iPAR_COL(1,LC1), NEIGHBORS(1,LC2),   &
+!                      iPAR_COL(2,LC1), NEIGHBORS(2,LC2)
+!                   CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
+!                ENDIF
+!                DO WHILE(PEA(LC3,1))
+!                   LC3 = LC3 + 1
+!                ENDDO
+!                NEIGHBORS(2,LC2) = LC3
+!             ENDIF
+!          ENDIF
+!       ENDDO LP1
 
 ! 1100 FORMAT('Error 1100: Particle neighbor local indices are invalid.',/  &
 !         5x,'Global-ID    Local-ID',/' 1:  ',2(3x,I9),/' 2:  ',2(3x,I9))
@@ -1139,7 +1142,7 @@
       deallocate(output_i)
 
       RETURN
-     END SUBROUTINE READ_RES_pARRAY_1B
+      END SUBROUTINE READ_RES_pARRAY_1B
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: READ_RES_DES_1I                                          !

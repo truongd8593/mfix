@@ -171,7 +171,7 @@ CONTAINS
       ALLOCATE(F_gp(MAX_PIP ))
       F_gp(1:MAX_PIP)  = ZERO
 
-! Explict drag force acting on a particle.
+! Explicit drag force acting on a particle.
       Allocate(DRAG_FC (DIMN,MAX_PIP) )
 
 ! force due to gas-pressure gradient

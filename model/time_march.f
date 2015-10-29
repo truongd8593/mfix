@@ -105,10 +105,7 @@
 
       CALL INIT_OUTPUT_VARS
 
-      write(*,*) "INTERACTIVE_MODE: ",INTERACTIVE_MODE
-
       IF(INTERACTIVE_MODE) CALL INIT_INTERACTIVE_MODE
-
 
 ! Parse residual strings
       CALL PARSE_RESID_STRING ()
@@ -155,7 +152,6 @@
 ! void/volume fraction in calc_vol_fr (see subroutine for details)
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
-
 
 
 ! The TIME loop begins here.............................................

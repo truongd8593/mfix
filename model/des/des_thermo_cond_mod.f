@@ -217,7 +217,7 @@ CONTAINS
 !          be for the quadrature routine to converge.                  !
 !......................................................................!
       DOUBLE PRECISION FUNCTION F(R)
-
+        USE utilities
       IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: R
@@ -225,7 +225,7 @@ CONTAINS
       F = (2.0d0*Pi*R)/MAX((CENTER_DIST - SQRT(MAX_RAD**2-R**2) - &
          SQRT(MIN_RAD**2-R**2)), DES_MIN_COND_DIST)
 
-      IF( isnan(F))PRINT*,'F IS NAN'
+      IF( mfix_isnan(F))PRINT*,'F IS NAN'
 
       END FUNCTION F
 

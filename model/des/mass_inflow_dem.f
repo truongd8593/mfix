@@ -38,8 +38,8 @@
          DO LC=DEM_BCMI_IJKSTART(BCV_I), DEM_BCMI_IJKEND(BCV_I)
            IJK = DEM_BCMI_IJK(LC)
 
-            DO LS= 1,PINC(IJK)
-               NP = PIC(IJK)%p(LS)
+            DO LS= 1,DG_PIC(IJK)%ISIZE
+               NP = DG_PIC(IJK)%P(LS)
                IF(IS_EXITING(NP) .or. IS_EXITING_GHOST(NP)) CYCLE
                SELECT CASE (BC_PLANE(BCV))
                CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))

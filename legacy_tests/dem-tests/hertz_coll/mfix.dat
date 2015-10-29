@@ -37,7 +37,6 @@
   MOMENTUM_Z_EQ(0:1) = .F. .F.
 
 ! Granular flow in vacuum without gravity 
-  DES_CONTINUUM_COUPLED = .F.
   GRAVITY = 0.0
 
 ! Invoke UDFs
@@ -132,19 +131,18 @@
 #_______________________________________________________________________
 # OUTPUT CONROL SECTION
 
-  RES_DT = 1.0d3  ! interval to update restart (.RES) file
+  RES_DT = 1.0    ! interval to update restart (.RES) file
 
   NLOG = 25       ! time steps between updates to (.LOG) file
   FULL_LOG = .T.  ! display residuals on screen
 
 ! Interval at which .SPX files are written
   SPX_DT(1:9) = 9*1.0d3
+  SPX_DT(1) = 5.0d-4  ! Volume fraction/Particle data
 
   RESID_STRING = 'P0'
 
   PRINT_DES_DATA = .TRUE.
-  DES_SPX_DT = 0.0005
-  DES_RES_DT = 1.0
 
 #_______________________________________________________________________
 # DMP SETUP

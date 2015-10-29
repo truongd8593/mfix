@@ -39,7 +39,7 @@
       USE param1
       USE physprop
       USE run
-      USE utilities, ONLY: isNan
+      USE utilities, ONLY: mfix_isnan
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -81,7 +81,7 @@
       VAVG_V_G = SUM_V_G/SUM_VOL
 !
 ! uncomment the following lines to enable trapping NaN's.
-!      IF(isNan(VAVG_V_G) ) THEN
+!      IF(mfix_isnan(VAVG_V_G) ) THEN
 !        write(*,*) VAVG_V_G,  ' NaN being caught in VAVG_V_G.f '
 !        AUTOMATIC_RESTART = .TRUE.
 !      ENDIF

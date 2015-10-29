@@ -229,6 +229,8 @@
 
       ENDDO
 
+
+! JM: I don't think this is needed.
       DO K = DG_KSTART1, DG_KEND1
       DO J = DG_JSTART1, DG_JEND1
       DO I = DG_ISTART1, DG_IEND1
@@ -265,148 +267,370 @@
       RETURN
       END SUBROUTINE BIN_FACETS_TO_GRID_DES
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: ADD_FACET_for_des                                      C
-!  Purpose: Add facet to list in IJK scalar cell for the               C
-!           discrete modules.                                          C
-!                                                                      C
-!  Author: Rahul Garg                              Date: 24-Oct-13     C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number #                                  Date: ##-###-##  C
-!  Author: #                                                           C
-!  Purpose: #                                                          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ADD_FACET_FOR_DES                                       !
+!  Author: Rahul Garg                                  Date: 24-Oct-13 !
+!                                                                      !
+!  Purpose: Add facets to DES grid cells.                              !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE ADD_FACET_FOR_DES(I,J,K,IJK,N)
 
       USE param1, only: zero, one
-      use geometry, only: DO_K, ZLENGTH
+      use geometry, only: DO_K
 
-      use run, only: RUN_NAME
+      use desgrid, only: dg_dxinv
+      use desgrid, only: dg_dyinv
+      use desgrid, only: dg_dzinv
 
-      use compar, only: myPE
-      use compar, only: NODESi, NODESj, NODESk
-
-      use desgrid, only: dg_xstart, dg_dxinv
-      use desgrid, only: dg_ystart, dg_dyinv
-      use desgrid, only: dg_zstart, dg_dzinv
-
-      Use discretelement, only: MINIMIZE_DES_FACET_LIST
+      Use discretelement, only: MAX_RADIUS
 
       Use stl
       use error_manager
 
       IMPLICIT NONE
 
+! DES grid index and facet index
       INTEGER, INTENT(IN) :: I,J,K,IJK, N
-      !LOCAL VARIABLES
 
-      INTEGER ::  CURRENT_COUNT, COUNT
+! Center of DES grid cell and half size. Note that a buffer is added to
+! the half size to make the cell appear a little larger. This ensures
+! that paricles near the edge 'see' STLs that are nearby but do not
+! directly intersect the DES grid cell contain the particle center.
+      DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
+! Flag: STL intersects the DES grid cell
+      LOGICAL :: OVERLAP
+! DES grid cell dimensions
+      DOUBLE PRECISION :: lDX, lDY, lDZ
+! Buffer to ensure all particle-STL collisions are captured.
+      DOUBLE PRECISION :: BUFFER
+! Legacy variable - should be removed
+      INTEGER ::  CURRENT_COUNT
 
-      double precision ::   box_origin(3), box_extents(3)
-      Logical :: sa_exist
-      integer :: sep_axis
 
-      CHARACTER(LEN=100) :: FNAME
-      integer :: stl_unit, fid
+      BUFFER = 1.1d0*MAX_RADIUS
 
-      stl_unit = 1001
+      lDX = ONE/DG_DXINV
+      lDY = ONE/DG_DYINV
+      lDZ = ONE/DG_DZINV
 
-      BOX_ORIGIN(1) = DG_XSTART + (I-DG_ISTART1)/DG_DXINV
-      BOX_EXTENTS(1) = 1.0/DG_DXINV
+      CENTER(1) = (dble(I-2)+HALF)*lDX
+      HALFSIZE(1) = HALF*lDX + BUFFER
 
-      BOX_ORIGIN(2) = DG_YSTART + (J-DG_JSTART1)/DG_DYINV
-      BOX_EXTENTS(2) = 1.0/DG_DYINV
+      CENTER(2) = (dble(J-2)+HALF)*lDY
+      HALFSIZE(2) = HALF*lDY + BUFFER
 
       IF(DO_K)THEN
-         BOX_ORIGIN(3) = DG_ZSTART + (K-DG_KSTART1)/DG_DZINV
-         BOX_EXTENTS(3) = 1.0/DG_DZINV
+         CENTER(3) = (dble(K-2)+HALF)*lDZ
+         HALFSIZE(3) = HALF*lDZ + BUFFER
       ELSE
-         BOX_ORIGIN(3) = 0.0D0
-         BOX_EXTENTS(3) = ZLENGTH
+         CENTER(3) = HALF*lDZ
+         HALFSIZE(3) = HALF*lDZ
       ENDIF
 
-! Use the separating axis test to determine if the cell and facet cannot
-! intersect one another.
-      CALL TESTTRIANGLEAABB(VERTEX(:,:,N), NORM_FACE(:,N),             &
-         BOX_ORIGIN(:), BOX_EXTENTS(:), SA_EXIST, SEP_AXIS,I,J,K )
+      CALL TRI_BOX_OVERLAP(CENTER, HALFSIZE, VERTEX(:,:,N), OVERLAP)
 
-! A separating axis exists so the cell and the triangle do not intersect.
-! JFD: If MINIMIZE_DES_FACET_LIST is .FALSE. then the facet is still added to the list.
-!      This seems to prevent particle leakage for some des gris setups.
-      IF(SA_EXIST.AND.MINIMIZE_DES_FACET_LIST ) RETURN
+      IF(OVERLAP) THEN
 
-      CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
+         CALL ADD_FACET(IJK, N)
+         CURRENT_COUNT = LIST_FACET_AT_DES(IJK)%COUNT_FACETS
 
-      IF(CURRENT_COUNT .LT. MAX_FACETS_PER_CELL_DES) THEN
+! These variables are not really needed. They are currently used
+! by the PIC model and should be moved to the new forms used by
+! the DEM wall collision routine.
+         IF(CURRENT_COUNT .LT. MAX_FACETS_PER_CELL_DES) THEN
+            LIST_FACET_AT_DES(IJK)%COUNT_FACETS = CURRENT_COUNT+1
+            LIST_FACET_AT_DES(IJK)%FACET_LIST(CURRENT_COUNT+1) = N
+         ELSE
 
-         LIST_FACET_AT_DES(IJK)%COUNT_FACETS = CURRENT_COUNT+1
-         LIST_FACET_AT_DES(IJK)%FACET_LIST(CURRENT_COUNT+1) = N
-
-      ELSE
-         CALL INIT_ERR_MSG("des_stl_functions_mod::add_facets_for_des")
-
-         WRITE(err_msg, 200) MAX_FACETS_PER_CELL_DES, IJK, &
-            I, J, K, mype, .FALSE.
-         CALL flush_err_msg(footer = .false.)
-
-
-         write(err_msg, *) "current_list for this cell is"
-         CALL flush_err_msg(header = .false., footer = .false.)
-
-
-         IF(nodesI*nodesJ*nodesK.gt.1) then
-
-            WRITE(fname,'(A,"_TROUBLE_CELL",A, I5.5, 3(A,I5.5), ".stl")') &
-            TRIM(RUN_NAME), '_pid', mype, '_I', I, '_J', J, '_K', K
-         else
-
-            WRITE(fname,'(A,"_TROUBLE_CELL", 3(A,I5.5), ".stl")') &
-            TRIM(RUN_NAME), '_I', I, '_J', J, '_K', K
-         endif
-
-         open(stl_unit, file = fname, form='formatted',convert='big_endian')
-         write(stl_unit,*)'solid vcg'
-
-         DO COUNT  = 1, CURRENT_COUNT
-
-             !write(*, '(/,I10)') LIST_FACET_AT(IJK)%FACET_LIST(COUNT)
-            FID = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-            write(err_msg, '(I10)') FID
-
-            CALL flush_err_msg(header = .false., footer = .false.)
-
-
-             write(stl_unit,*) '   facet normal ', NORM_FACE(1:3,FID)
-             write(stl_unit,*) '      outer loop'
-             write(stl_unit,*) '         vertex ', VERTEX(1,1:3,FID)
-             write(stl_unit,*) '         vertex ', VERTEX(2,1:3,FID)
-             write(stl_unit,*) '         vertex ', VERTEX(3,1:3,FID)
-             write(stl_unit,*) '      endloop'
-             write(stl_unit,*) '   endfacet'
-
-          ENDDO
-
-          write(stl_unit,*)'endsolid vcg'
-          close(stl_unit, status = 'keep')
-
-
-          write(err_msg, *) 'Stopping'
-          CALL flush_err_msg(header = .false., abort = .true.)
+         ENDIF
       ENDIF
 
-
-
- 200  FORMAT('ERROR MESSAGE FROM CUT_CELL_PREPROCESSING', /10x,        &
-         'INCREASE MAX_FACETS_PER_CELL_DES from the current value of', &
-         I3, /10x,'Happening for cell IJK, I, J, K = ', 4(2x, i5),/10X,&
-         'mype, Is on myPe? ', I6, L2, /10X,'see the file ',&
-         'TROUBLE_CELL for all the current facets in this cell')
-
+      RETURN
       END SUBROUTINE ADD_FACET_FOR_DES
 
+
+!......................................................................!
+! Subroutine TRI_BOX_OVERLAP                                           !
+! Author: J.Musser                                   Date: 10-22-2015  !
+!                                                                      !
+! Purpose: Determine if a box (DES grid cell) intersects the triangle  !
+!    (SLT). Note that the DES grid size is slightly increased to       !
+!    capture STLs near the boarder of the cell. Otherwise, some        !
+!    collisions could ve over looked.                                  !
+!                                                                      !
+! Author: Tomas Akenine-Moller                   Accessed: 10-22-2015  !
+! REF: http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/    !
+!         code/tribox2.txt                                             !
+!......................................................................!
+      SUBROUTINE TRI_BOX_OVERLAP(pCENTER, pHALFSIZE, pVERTS, pOVERLAP)
+
+      IMPLICIT NONE
+
+      DOUBLE PRECISION, INTENT(IN) :: pCENTER(3), pHALFSIZE(3)
+      DOUBLE PRECISION, INTENT(IN) :: pVERTS(3,3)
+      LOGICAL, INTENT(OUT) :: pOVERLAP
+
+      DOUBLE PRECISION :: v0(3), v1(3), v2(3)
+      DOUBLE PRECISION :: fex, fey, fez
+      DOUBLE PRECISION :: normal(3), e0(3), e1(3), e2(3)
+
+      pOVERLAP = .FALSE.
+
+      v0 = pVERTS(1,:) - pCENTER
+      v1 = pVERTS(2,:) - pCENTER
+      v2 = pVERTS(3,:) - pCENTER
+
+      e0 = v1-v0
+      e1 = v2-v1
+      e2 = v0-v2
+
+      fex = abs(e0(1))
+      fey = abs(e0(2))
+      fez = abs(e0(3))
+
+      if(ATEST_X01(e0(3),e0(2),fez,fey)) return
+      if(ATEST_Y02(e0(3),e0(1),fez,fex)) return
+      if(ATEST_Z12(e0(2),e0(1),fey,fex)) return
+
+      fex = abs(e1(1))
+      fey = abs(e1(2))
+      fez = abs(e1(3))
+
+      if(ATEST_X01(e1(3),e1(2),fez,fey)) return
+      if(ATEST_Y02(e1(3),e1(1),fez,fex)) return
+      if(ATEST_Z0 (e1(2),e1(1),fey,fex)) return
+
+      fex = abs(e2(1))
+      fey = abs(e2(2))
+      fez = abs(e2(3))
+
+      if(ATEST_X2 (e2(3),e2(2),fez,fey)) return
+      if(ATEST_Y1 (e2(3),e2(1),fez,fex)) return
+      if(ATEST_Z12(e2(2),e2(1),fey,fex)) return
+
+      if(findMin(v0(1),v1(1),v2(1)) > phalfsize(1) .OR. &
+         findMax(v0(1),v1(1),v2(1)) <-phalfsize(1)) return
+
+      if(findMin(v0(2),v1(2),v2(2)) > phalfsize(2) .OR. &
+         findMax(v0(2),v1(2),v2(2)) <-phalfsize(2)) return
+
+      if(findMin(v0(3),v1(3),v2(3)) > phalfsize(3) .OR. &
+         findMax(v0(3),v1(3),v2(3)) <-phalfsize(3)) return
+
+
+      normal(1) = e0(2)*e1(3)-e0(3)*e1(2)
+      normal(2) = e0(3)*e1(1)-e0(1)*e1(3)
+      normal(3) = e0(1)*e1(2)-e0(2)*e1(1)
+
+      if(.NOT.planeBoxOverlap(normal,v0,phalfsize)) return
+
+      pOVERLAP = .TRUE.
+
+      RETURN
+
+      CONTAINS
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION planeBoxOverlap(norm, vert, maxbox)
+
+      double precision :: norm(3), vert(3), maxbox(3)
+
+      integer :: lc
+      double precision :: vmin(3), vmax(3), v
+
+
+      do lc=1,3
+         v=vert(lc)
+         if(norm(lc) > 0.0d0) then
+            vmin(lc) = -maxbox(lc) - v
+            vmax(lc) =  maxbox(lc) - v
+         else
+            vmin(lc) = maxbox(lc) - v
+            vmax(lc) =-maxbox(lc) - v
+         endif
+      enddo
+
+      if(dot_product(norm,vmin) > 0.0d0) then
+         planeBoxOverlap = .false.
+         return
+      elseif(dot_product(norm,vmax) >= 0.0d0) then
+         planeBoxOverlap = .true.
+         return
+      endif
+
+      planeBoxOverlap = .false.
+      return
+
+      RETURN
+      END FUNCTION planeBoxOverlap
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      DOUBLE PRECISION FUNCTION findMin(x0,x1,x2)
+
+      double precision :: x0,x1,x2
+
+      findMin = x0
+
+      if(x1<findMin) findMin=x1
+      if(x2<findMin) findMin=x2
+
+      RETURN
+      END FUNCTION findMin
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      DOUBLE PRECISION FUNCTION findMax(x0,x1,x2)
+
+      double precision :: x0,x1,x2
+
+      findMax = x0
+
+      if(x1>findMax) findMax=x1
+      if(x2>findMax) findMax=x2
+
+      RETURN
+      END FUNCTION findMax
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_X01(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p0, p2, rad
+
+      p0 = a*v0(2) - b*v0(3)
+      p2 = a*v2(2) - b*v2(3)
+
+      if(p0<p2) then; lMIN=p0; lMAX=p2
+      else; lMIN=p2; lMAX=p0; endif
+
+      rad=fa*phalfsize(2) + fb*phalfsize(3)
+      ATEST_X01=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_X01
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_X2(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p0, p1, rad
+
+      p0 = a*v0(2) - b*v0(3)
+      p1 = a*v1(2) - b*v1(3)
+
+      if(p0<p1) then; lMIN=p0; lMAX=p1
+      else; lMIN=p1; lMAX=p0; endif
+
+      rad=fa*phalfsize(2) + fb*phalfsize(3)
+      ATEST_X2=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_X2
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_Y02(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p0, p2, rad
+
+      p0 = -a*v0(1) + b*v0(3)
+      p2 = -a*v2(1) + b*v2(3)
+
+      if(p0<p2) then; lMIN=p0; lMAX=p2
+      else; lMIN=p2; lMAX=p0; endif
+
+      rad=fa*phalfsize(1) + fb*phalfsize(3)
+      ATEST_Y02=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_Y02
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_Y1(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p0, p1, rad
+
+      p0 = -a*v0(1) + b*v0(3)
+      p1 = -a*v1(1) + b*v1(3)
+
+      if(p0<p1) then; lMIN=p0; lMAX=p1
+      else; lMIN=p1; lMAX=p0; endif
+
+      rad=fa*phalfsize(1) + fb*phalfsize(3)
+      ATEST_Y1=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_Y1
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_Z12(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p1, p2, rad
+
+      p1 = a*v1(1) - b*v1(2)
+      p2 = a*v2(1) - b*v2(2)
+
+      if(p2<p1) then; lMIN=p2; lMAX=p1
+      else; lMIN=p1; lMAX=p2; endif
+
+      rad=fa*phalfsize(1) + fb*phalfsize(2)
+      ATEST_Z12=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_Z12
+
+!``````````````````````````````````````````````````````````````````````!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!``````````````````````````````````````````````````````````````````````!
+      LOGICAL FUNCTION ATEST_Z0(a,b,fa,fb)
+
+      double precision :: a, b, fa, fb
+      double precision :: lMin, lMax, p0, p1, rad
+
+      p0 = a*v0(1) - b*v0(2)
+      p1 = a*v1(1) - b*v1(2)
+
+      if(p0<p1) then; lMIN=p0; lMAX=p1
+      else; lMIN=p1; lMAX=p0; endif
+
+      rad=fa*phalfsize(1) + fb*phalfsize(2)
+      ATEST_Z0=(lmin>rad .OR. lmax<-rad)
+
+      END FUNCTION ATEST_Z0
+
+      END SUBROUTINE TRI_BOX_OVERLAP
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -773,6 +997,7 @@
       USE des_stl_functions
       use desgrid
       USE functions
+
       Implicit none
 
       DOUBLE PRECISION, INTENT(IN) :: POS(DIMN)
@@ -926,6 +1151,101 @@
       close(stl_unit, status = 'keep')
 
       end SUBROUTINE write_this_facet_and_part
+
+
+
+
+
+
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE write_stls_this_dg(dg)
+
+      Use usr
+
+! STL Vertices
+      use stl, only: VERTEX
+! STL Facet normals
+      use stl, only: NORM_FACE
+
+      use discretelement, only: CELLNEIGHBOR_FACET
+      use discretelement, only: CELLNEIGHBOR_FACET_NUM
+
+      IMPLICIT NONE
+!-----------------------------------------------
+      integer, intent(in) :: dg
+      integer :: lc, nf
+
+      logical :: EXISTS
+      character(len=6) :: IDX
+
+      write(idx,"(I6.6)") dg
+      open(unit=555, file='dg_'//idx//'.stl', status='UNKNOWN')
+
+      write(555,*) 'solid vcg'
+      DO lc=1, cellneighbor_facet_num(dg)
+
+         NF = cellneighbor_facet(dg)%p(lc)
+
+         write(555,*) '   facet normal ', NORM_FACE(:,NF)
+         write(555,*) '      outer loop'
+         write(555,*) '         vertex ', VERTEX(1,1:3,NF)
+         write(555,*) '         vertex ', VERTEX(2,1:3,NF)
+         write(555,*) '         vertex ', VERTEX(3,1:3,NF)
+         write(555,*) '      endloop'
+         write(555,*) '   endfacet'
+      enddo
+      close(555)
+
+      RETURN
+      END SUBROUTINE write_stls_this_dg
+
+
+!----------------------------------------------------------------------!
+!                                                                      !
+!                                                                      !
+!                                                                      !
+!----------------------------------------------------------------------!
+      SUBROUTINE write_this_stl(lc)
+
+
+! STL Vertices
+      use stl, only: VERTEX
+! STL Facet normals
+      use stl, only: NORM_FACE
+      use compar, only: myPE
+
+      IMPLICIT NONE
+!-----------------------------------------------
+      integer, intent(in) :: lc
+
+      logical :: EXISTS
+      character(len=4) :: IDX
+      character(len=4) :: IPE
+
+
+      write(idx,"(I4.4)") LC
+      write(ipe,"(I4.4)") myPE
+      open(unit=555, file='geo_'//idx//'_'//IPE//'.stl',&
+         status='UNKNOWN')
+      write(555,*) 'solid vcg'
+      write(555,*) '   facet normal ', NORM_FACE(:,LC)
+      write(555,*) '      outer loop'
+      write(555,*) '         vertex ', VERTEX(1,1:3,LC)
+      write(555,*) '         vertex ', VERTEX(2,1:3,LC)
+      write(555,*) '         vertex ', VERTEX(3,1:3,LC)
+      write(555,*) '      endloop'
+      write(555,*) '   endfacet'
+      close(555)
+
+
+      RETURN
+      END SUBROUTINE write_this_stl
 
       END MODULE STL_PREPROC_DES
 

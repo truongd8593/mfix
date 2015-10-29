@@ -1,21 +1,21 @@
-F77 = $(FC)
-F77COMPILE = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-FCCOMPILE  = $(FC) $(AM_FCFLAGS) $(FCFLAGS)
-LINK = $(FC) $(AM_FCFLAGS) $(FCFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+# Automake defaults to F77LINK.  Using FC to link will work whether FC is an MPI or non-MPI compiler.
+F77LD = $(FC)
 
-.f.$(OBJEXT):
+PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(FPPFLAGS) $(AM_FCFLAGS) $(FCFLAGS) $(FCFLAGS_f)
+
+.F.o:
 	$(F77COMPILE) -c -o $@ $<
+
+.f.o:
+	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
 CLEANFILES=*.$(FC_MODEXT)
 MODDIR=$(top_builddir)/model
 
-# Fortran preprocessor is used (-cpp)
-AM_FCFLAGS = -cpp
-
-# Current directory comes first, and takes precedence over model/include/ and model/
-AM_FCFLAGS += $(FC_MODINC).
-AM_FCFLAGS += $(FC_MODINC)$(top_srcdir)/model/include
+# Current directory takes precedence over model/include/ and model/
+AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_LDFLAGS =
 
@@ -29,10 +29,10 @@ SUFFIXES = .d
 LIBMFIX = $(top_builddir)/libmfix.a
 
 bin_PROGRAMS = mfix$(EXEEXT)
-mfix_SOURCES = $(src_overrides)
-mfix_LDADD = $(obj_overrides) $(builddir)/read_database.$(OBJEXT)
-mfix_LDADD += $(builddir)/read_namelist.$(OBJEXT)
-mfix_LDADD += $(top_builddir)/model/ODEPACK.$(OBJEXT)
+mfix_SOURCES = $(top_srcdir)/model/mfix.f $(src_overrides)
+mfix_LDADD = $(obj_overrides)
+mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
+mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
 build:
@@ -47,17 +47,19 @@ $(LIBMFIX):
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
 
-$(builddir)/read_database.$(OBJEXT):  $(LIBMFIX)
-$(builddir)/read_namelist.$(OBJEXT):  $(LIBMFIX)
-$(top_builddir)/model/ODEPACK.$(OBJEXT):  $(LIBMFIX)
+$(top_srcdir)/model/mfix.f:  $(LIBMFIX)
+$(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX)
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
-$(builddir)/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
-	$(FCCOMPILE) -c -o $@ $<
+$(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
+	@mkdir -p .build
+	$(PPFCCOMPILE) -c -o $@ $<
 
 # read_database needs rebuilt to use the correct path to BURCAT.THR
-$(builddir)/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
-	$(FCCOMPILE) -DBURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
+$(builddir)/.build/read_database.$(OBJEXT): $(top_srcdir)/model/read_database.f
+	@mkdir -p .build
+	$(PPFCCOMPILE) $(FC_DEFINE)BURCAT_THR="'$(top_srcdir)/model/thermochemical/BURCAT.THR'" -c -o $@ $<
 
 species.inc: mfix.dat
 	RUN_DIR=. $(top_srcdir)/config/rxn_preproc.sh
@@ -112,8 +114,8 @@ AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
 if MPI
-AM_FCFLAGS += -DMPI
-AM_LDFLAGS += -DMPI
+AM_FCFLAGS += $(FC_DEFINE)MPI
+AM_LDFLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################
@@ -136,7 +138,7 @@ endif
 #      Socket server
 ################################################################
 if USE_SOCKET
-AM_FCFLAGS += -Dsocket
+AM_FCFLAGS += $(FC_DEFINE)socket
 endif
 
 ################################################################

@@ -1,7 +1,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_U_MASTER_CELLS                                     C
-!  Purpose: Identify master cells for wall U-Moemntum cells            C
+!  Purpose: Identify master cells for wall U-Momentum cells            C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -156,7 +156,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_V_MASTER_CELLS                                     C
-!  Purpose: Identify master cells for wall V-Moemntum cells            C
+!  Purpose: Identify master cells for wall V-Momentum cells            C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C
@@ -299,7 +299,7 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_W_MASTER_CELLS                                     C
-!  Purpose: Identify master cells for wall W-Moemntum cells            C
+!  Purpose: Identify master cells for wall W-Momentum cells            C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 21-Feb-08  C
 !  Reviewer:                                          Date:            C

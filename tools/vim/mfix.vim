@@ -172,7 +172,6 @@ syn keyword mfixKeyword DES_COLL_MODEL
 syn keyword mfixKeyword DES_COND_EQ
 syn keyword mfixKeyword DES_COND_EQ_PFP
 syn keyword mfixKeyword DES_COND_EQ_PP
-syn keyword mfixKeyword DES_CONTINUUM_COUPLED
 syn keyword mfixKeyword DES_CONTINUUM_HYBRID
 syn keyword mfixKeyword DES_CONV_CORR
 syn keyword mfixKeyword DES_CONV_EQ
@@ -222,11 +221,9 @@ syn keyword mfixKeyword DES_PERIODIC_WALLS_X
 syn keyword mfixKeyword DES_PERIODIC_WALLS_Y
 syn keyword mfixKeyword DES_PERIODIC_WALLS_Z
 syn keyword mfixKeyword DES_RADI_EQ
-syn keyword mfixKeyword DES_RES_DT
 syn keyword mfixKeyword DES_RO_S
 syn keyword mfixKeyword DES_SPECIES_EQ
 syn keyword mfixKeyword DES_SPECIES_NAME
-syn keyword mfixKeyword DES_SPX_DT
 syn keyword mfixKeyword DETECT_STALL
 syn keyword mfixKeyword DIF_G0
 syn keyword mfixKeyword DIF_S0

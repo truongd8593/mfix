@@ -149,18 +149,6 @@
             IF(K_CELL == DG_KMAX1) CALL ADD_FACET(CELL_ID,TOP_FACEID)
          ENDIF
 
-         DO KK = KMINUS1, KPLUS1
-         DO JJ = JMINUS1, JPLUS1
-         DO II = IMINUS1, IPLUS1
-            IJK = DG_FUNIJK(II,JJ,KK)
-
-            DO COUNT = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-               NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(COUNT)
-               CALL ADD_FACET(CELL_ID,NF)
-            ENDDO
-         ENDDO
-         ENDDO
-         ENDDO
       ENDDO
       ENDDO
       ENDDO

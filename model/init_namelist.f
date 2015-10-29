@@ -261,9 +261,9 @@
 !  </description>
 !  <dependent keyword="MU_GMAX" value="DEFINED"/>
 !  <conflict keyword="L_SCALE0" value="DEFINED"/>
-!  <valid value=".TRUE."  note="Enable the K-epsilon turbulent model
+!  <valid value=".TRUE."  note="Enable the K-epsilon turbulence model
 !    (for single-phase flow) using standard wall functions."/>
-!  <valid value=".FALSE." note="Do not use K-epsilon turbulent model"/>
+!  <valid value=".FALSE." note="Do not use K-epsilon turbulence model"/>
       K_EPSILON = .FALSE.
 !</keyword>
 
@@ -673,9 +673,9 @@
 !<keyword category="Numerical Parameters" required="false">
 !  <description>
 !    Under relaxation factors.
-!    o 0.8 for equation types 1,6,9
+!    o 0.8 for equation types 1,9
 !    o 0.5 for equation types 2,3,4,5,8
-!    o 1.0 for equation types 7
+!    o 1.0 for equation types 6,7,10
 !  </description>
 !  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
       UR_FAC(1)  = 0.8D0     ! pressure
@@ -761,6 +761,8 @@
 !    o Set C_FAC between 0 and 1 when using this scheme.
 !  </description>
 !  <dependent keyword="C_FAC" value="DEFINED"/>
+!  <valid value=".FALSE." note="Do not use fourth order interpolation."/>
+!  <valid value=".TRUE."  note="Use fourth order interpolation."/>
       FPFOI = .FALSE.
 !</keyword>
 
@@ -783,9 +785,10 @@
 !      (first order accurate in time)."/>
 !  <valid value=".TRUE."
 !    note="Two-step implicit Runge-Kutta method based temporal
-!      discretization scheme employed (second order accurate in time
-!      excluding the pressure terms and restart time step which are
-!      first order accurate)."/>
+!      discretization scheme employed. This method should be second
+!      order accurate in time excluding pressure terms and restart
+!      time step which are first order accurate. However, recent testing
+!      shows that second order accuracy in time is not observed."/>
       CN_ON = .FALSE.
 !</keyword>
 
@@ -2866,6 +2869,7 @@
 !<keyword category="Point Source" required="false">
 !  <description>Gas phase incoming species n mass fraction.</description>
 !  <arg index="1" id="PS" min="1" max="DIMENSION_PS"/>
+!  <arg index="2" id="Species" min="1" max="DIM_N_G"/>
          PS_X_G(LC,:DIM_N_g) = UNDEFINED
 !</keyword>
 

@@ -147,8 +147,6 @@
 !*********************************************************************
 ! Discrete Element Model (DEM) 
 !*********************************************************************
-  DES_CONTINUUM_COUPLED = .TRUE.     ! couple gas and solids flow 
-                                     ! together [.FALSE.]
   DES_INTERP_ON = .FALSE.     ! interpolate for gas-solids drag force
                               ! [.FALSE.]
   PARTICLES = 4000     ! total number of initial particles

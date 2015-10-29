@@ -857,7 +857,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_GEOMETRY_IN_VTP_BIN(PASS)
 
-      USE, INTRINSIC :: iso_c_binding
       USE vtk, only: NUMBER_OF_POINTS,BUFFER, VTU_UNIT,END_REC,VTU_OFFSET,BELONGS_TO_VTK_SUBDOMAIN
 
       IMPLICIT NONE
@@ -884,7 +883,7 @@
 ! offset, in number of bytes must be specified.  The offset includes
 ! the size of the data for each field, plus the size of the integer
 ! that stores the number of bytes.  this is why the offset of a field
-! equals the offset of the previous field plus c_sizeof(int) plus the
+! equals the offset of the previous field plus sizeof(int) plus the
 ! number of bytes of the field.
 
 ! Next, the actual data is written for the geometry (PASS=WRITE_DATA)
@@ -897,7 +896,7 @@
          NUMBER_OF_POINTS = GLOBAL_CNT
 
 ! Number of bytes of position field (vector,3 components)
-         nbytes_vector       = NUMBER_OF_POINTS * 3 * c_sizeof(float)
+         nbytes_vector       = NUMBER_OF_POINTS * 3 * sizeof(float)
 
 ! Offset of each field
          offset_xyz = 0
@@ -923,7 +922,7 @@
                WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! calculate offset for next field
-               VTU_offset = offset_xyz + c_sizeof(int) + nbytes_vector
+               VTU_offset = offset_xyz + sizeof(int) + nbytes_vector
 
             ENDIF
 
@@ -1018,7 +1017,7 @@
          NUMBER_OF_POINTS = LOCAL_CNT
 
 ! Number of bytes of position field (vector,3 components)
-         nbytes_vector       = NUMBER_OF_POINTS * 3 * c_sizeof(float)
+         nbytes_vector       = NUMBER_OF_POINTS * 3 * sizeof(float)
 
 ! Offset of each field
          offset_xyz = 0
@@ -1043,7 +1042,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! calculate offset for next field
-            VTU_offset = offset_xyz + c_sizeof(int) + nbytes_vector
+            VTU_offset = offset_xyz + sizeof(int) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1131,7 +1130,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_SCALAR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
-      USE, INTRINSIC :: iso_c_binding
       USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,PVTU_UNIT
       USE vtk, only: END_REC,BELONGS_TO_VTK_SUBDOMAIN
       USE output, only: FULL_LOG
@@ -1153,7 +1151,7 @@
       IF (.NOT.BDIST_IO) THEN
 
 ! Number of bytes for each scalar field
-         nbytes_scalar = GLOBAL_CNT * c_sizeof(float)
+         nbytes_scalar = GLOBAL_CNT * sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 
@@ -1168,7 +1166,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1208,7 +1206,7 @@
       ELSEIF(BDIST_IO.AND.LOCAL_CNT>0) THEN
 
 ! Number of bytes for each scalar field
-         nbytes_scalar = LOCAL_CNT * c_sizeof(float)
+         nbytes_scalar = LOCAL_CNT * sizeof(float)
 
 ! Remove possible white space with underscore
          DO I = 1,LEN_TRIM(VAR_NAME)
@@ -1223,7 +1221,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_scalar
+            VTU_offset = VTU_offset + sizeof(float) + nbytes_scalar
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1287,7 +1285,6 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_VECTOR_IN_VTP_BIN(VAR_NAME,VAR,PASS)
 
-      USE, INTRINSIC :: iso_c_binding
       USE vtk, only: BUFFER,VTU_OFFSET,VTU_UNIT,PVTU_UNIT
       USE vtk, only: END_REC,BELONGS_TO_VTK_SUBDOMAIN
       USE output, only: FULL_LOG
@@ -1314,7 +1311,7 @@
       IF (.NOT.BDIST_IO) THEN
 
 ! Number of bytes for each vector field
-         nbytes_vector = GLOBAL_CNT * 3 * c_sizeof(float)
+         nbytes_vector = GLOBAL_CNT * 3 * sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 ! For each vector, write a tag, with corresponding offset
@@ -1324,7 +1321,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN
@@ -1377,7 +1374,7 @@
       ELSEIF(BDIST_IO.AND.LOCAL_CNT>0) THEN
 
 ! Number of bytes for each vector field
-         nbytes_vector = LOCAL_CNT * 3 * c_sizeof(float)
+         nbytes_vector = LOCAL_CNT * 3 * sizeof(float)
 
          IF(PASS==WRITE_HEADER) THEN
 ! For each vector, write a tag, with corresponding offset
@@ -1387,7 +1384,7 @@
             WRITE(VTU_UNIT)TRIM(BUFFER)//END_REC
 
 ! Prepare the offset for the next field
-            VTU_offset = VTU_offset + c_sizeof(float) + nbytes_vector
+            VTU_offset = VTU_offset + sizeof(float) + nbytes_vector
 
 
          ELSEIF(PASS==WRITE_DATA) THEN

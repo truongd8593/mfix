@@ -330,7 +330,7 @@
          IJK = FUNIJK(I,J,K)
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
-         IF(CARTESIAN_GRID .AND. CUT_CELL_AT(IJK)) THEN
+         IF(CARTESIAN_GRID) THEN
             CALL CHECK_IF_PARTICLE_OVERLAPS_STL(POS, I, J, K, SKIP)
             IF(SKIP) CYCLE
          ENDIF
@@ -729,7 +729,7 @@
             CYCLE
          ENDIF
 
-         IF(CARTESIAN_GRID .AND. CUT_CELL_AT(IJK)) THEN
+         IF(CARTESIAN_GRID) THEN
             CALL CHECK_IF_PARCEL_OVERLAPS_STL(POS, SKIP)
             IF(SKIP) CYCLE
          ENDIF
@@ -933,7 +933,7 @@
 
             POS(:) = IC_START + DOML*randPOS(LC,:)
 
-            IF(CARTESIAN_GRID .AND. CUT_CELL_AT(IJK)) THEN
+            IF(CARTESIAN_GRID) THEN
                CALL CHECK_IF_PARCEL_OVERLAPS_STL(POS, SKIP)
                IF(SKIP) CYCLE
             ENDIF

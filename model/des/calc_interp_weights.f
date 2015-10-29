@@ -37,6 +37,8 @@
       use geometry, only: DO_K
 
       use param1, only: ZERO, ONE
+! compar is needed by functions.inc
+      use compar
 
       IMPLICIT NONE
 

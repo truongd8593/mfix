@@ -20,6 +20,7 @@
       use discretelement, only: DES_RADIUS, PVOL
 ! Total forces acting on particle
       use discretelement, only: FC
+      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 ! Number of continuum solids phases
       use physprop, only: MMAX
 ! Diameter of continuum solids phases
@@ -45,9 +46,6 @@
       use param1, only: ZERO, ONE
 ! Array sizes for solids
       use param, only: DIMENSION_M
-
-      use discretelement
-      use functions
 
       IMPLICIT NONE
 
@@ -198,8 +196,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 
-      use discretelement
-      use functions
+      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
       IMPLICIT NONE
 
@@ -418,7 +415,6 @@
 ! Number of continuum solids phases
       use physprop, only: MMAX
 
-      use discretelement
       use functions
 
 ! Global Parameters:

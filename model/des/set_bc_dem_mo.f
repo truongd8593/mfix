@@ -11,7 +11,7 @@
       SUBROUTINE SET_BC_DEM_MO
 
       use bc, only: BC_PLANE
-      use bc, only: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t
+      use bc, only: BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t
 
       use des_bc, only: DEM_BCMO, DEM_BCMO_MAP, DEM_BCMO_IJK
       use des_bc, only: DEM_BCMO_IJKSTART, DEM_BCMO_IJKEND
@@ -21,6 +21,10 @@
       use mpi_utility
       use error_manager
       use functions
+
+      use desgrid, only: DG_FUNIJK
+      use desgrid, only: IofPOS, JofPOS, KofPOS
+      use desgrid, only: dg_is_ON_myPE_plus1layers
 
       IMPLICIT NONE
 
@@ -64,16 +68,16 @@
          if(dFlag) WRITE(*,"(/2x,'Adding cells for BCV: ',I3)") BCV
          SELECT CASE (BC_PLANE(BCV))
          CASE('N','S')
-            BND1 = BC_I_e(BCV) - BC_I_w(BCV)
-            BND2 = BC_K_t(BCV) - BC_K_b(BCV)
+            BND1 = IofPOS(BC_X_e(BCV)) - IofPOS(BC_X_w(BCV))
+            BND2 = KofPOS(BC_Z_t(BCV)) - KofPOS(BC_Z_b(BCV))
 
          CASE('E','W')
-            BND1 = BC_J_n(BCV) - BC_J_s(BCV)
-            BND2 = BC_K_t(BCV) - BC_K_b(BCV)
+            BND1 = JofPOS(BC_Y_n(BCV)) - JofPOS(BC_Y_s(BCV))
+            BND2 = KofPOS(BC_Z_t(BCV)) - KofPOS(BC_Z_b(BCV))
 
          CASE('T','B')
-            BND1 = BC_I_e(BCV) - BC_I_w(BCV)
-            BND2 = BC_J_n(BCV) - BC_J_s(BCV)
+            BND1 = IofPOS(BC_X_e(BCV)) - IofPOS(BC_X_w(BCV))
+            BND2 = JofPOS(BC_Y_n(BCV)) - JofPOS(BC_Y_s(BCV))
          END SELECT
 
          MAX_CELLS = MAX_CELLS +                                      &
@@ -99,9 +103,9 @@
 
          if(dFlag) write(*,"(/2x,'Searching for fluid cells:',I3)") BCV
 
-         I_w = BC_I_w(BCV); I_e = BC_I_e(BCV)
-         J_s = BC_J_s(BCV); J_n = BC_J_n(BCV)
-         K_b = BC_K_b(BCV); K_t = BC_K_t(BCV)
+         I_w = IofPOS(BC_X_w(BCV)); I_e = IofPOS(BC_X_e(BCV))
+         J_s = JofPOS(BC_Y_s(BCV)); J_n = JofPOS(BC_Y_n(BCV))
+         K_b = KofPOS(BC_Z_b(BCV)); K_t = KofPOS(BC_Z_t(BCV))
 
 ! Depending on the flow plane, the 'common' index needs shifted to
 ! reference the fluid cell.
@@ -126,10 +130,9 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-            IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            IF(DEAD_CELL_AT(I,J,K)) CYCLE
+            IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K))CYCLE
 
-            IJK = FUNIJK(I,J,K)
+            IJK = DG_FUNIJK(I,J,K)
             LOC_DEM_BCMO_IJK(LC) = IJK
             LC = LC+1
          ENDDO
@@ -138,13 +141,13 @@
 
          if(dFlag) write(*,"(/2x,'Adding boundary cells:',I3)") BCV
 
-         I_w = BC_I_w(BCV)-1; I_e = BC_I_e(BCV)+1
-         J_s = BC_J_s(BCV)-1; J_n = BC_J_n(BCV)+1
+         I_w = IofPOS(BC_X_w(BCV))-1; I_e = IofPOS(BC_X_e(BCV))+1
+         J_s = JofPOS(BC_Y_s(BCV))-1; J_n = JofPOS(BC_Y_n(BCV))+1
 
          IF(DO_K) THEN
-            K_b = BC_K_b(BCV)-1; K_t = BC_K_t(BCV)+1
+            K_b = KofPOS(BC_Z_b(BCV))-1; K_t = KofPOS(BC_Z_t(BCV))+1
          ELSE
-            K_b = BC_K_b(BCV);   K_t = BC_K_t(BCV)
+            K_b = KofPOS(BC_Z_b(BCV));   K_t = KofPOS(BC_Z_t(BCV))
          ENDIF
 
 ! Depending on the flow plane, the 'common' index needs shifted to
@@ -167,10 +170,9 @@
          DO J = J_s, J_n
          DO I = I_w, I_e
 ! Skip cells that this rank does not own or are considered dead.
-            IF(.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-            IF(DEAD_CELL_AT(I,J,K)) CYCLE
+            IF(.NOT.dg_is_ON_myPE_plus1layers(I,J,K))CYCLE
 
-            IJK = FUNIJK(I,J,K)
+            IJK = DG_FUNIJK(I,J,K)
             LOC_DEM_BCMO_IJK(LC) = IJK
             LC = LC+1
          ENDDO

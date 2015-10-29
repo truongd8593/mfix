@@ -1445,10 +1445,19 @@
       USE compar, only: istart1, istart2, istart3, jend1, jend2, jend3, kend1, kend2, kend3
       USE cutcell
       USE functions, ONLY: funijk
+      USE functions, ONLY: WEST_OF, EAST_OF, SOUTH_OF, NORTH_OF, BOTTOM_OF, TOP_OF
+      USE functions, ONLY: IM_OF, IP_OF, JM_OF, JP_OF, KM_OF, KP_OF
       USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, flag, do_k, flag_e, flag_n, flag_t
+
+      USE indices, ONLY: i_of, j_of, k_of
+
+      USE bc, only:BC_TYPE
+      USE sendrecv
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
+      INTEGER :: IM,IP,JM,JP,KM,KP
+      INTEGER :: BCID
       INTEGER :: IPJK,IMJK,IJPK,IJMK,IJKP,IJKM
 
 !     EAST BOUNDARY
@@ -1762,6 +1771,63 @@
 
       ENDDO
 
+!     BLOCKED CELLS WERE ASSIGNED THE FLAG 100 DURING PRE_PROCESSING
+!     THIS IS INCORRECT FOR FREEE-SLIP AND PARTIAL-SLIP
+!     THE FLAG IS OVERWRITTEN HERE TO ACCOUNT FOR NSW,FSW AND PSW BCs
+
+      DO IJK = IJKSTART3, IJKEND3
+
+         IF(FLAG(IJK)==100) THEN
+
+            IMJK   = IM_OF(IJK)
+            IJMK   = JM_OF(IJK)
+            IJKM   = KM_OF(IJK)
+
+            IPJK   = IP_OF(IJK)
+            IJPK   = JP_OF(IJK)
+            IJKP   = KP_OF(IJK)
+
+            IF(CUT_CELL_AT(IMJK)) THEN
+               BCID=BC_ID(IMJK)
+               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ELSEIF(CUT_CELL_AT(IPJK)) THEN
+               BCID=BC_ID(IPJK)
+               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ELSEIF(CUT_CELL_AT(IJMK)) THEN
+               BCID=BC_ID(IJMK)
+               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ELSEIF(CUT_CELL_AT(IJPK)) THEN
+               BCID=BC_ID(IJPK)
+               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ELSEIF(CUT_CELL_AT(IJKM)) THEN
+               BCID=BC_ID(IJKM)
+               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ELSEIF(CUT_CELL_AT(IJKP)) THEN
+               BCID=BC_ID(IJKP)
+               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='NSW') FLAG(IJK) = 100
+               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='FSW') FLAG(IJK) = 101
+               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='PSW') FLAG(IJK) = 102
+
+            ENDIF
+         ENDIF 
+      ENDDO
+
+      call send_recv(FLAG,2)
       RETURN
 
       END SUBROUTINE SET_GHOST_CELL_FLAGS

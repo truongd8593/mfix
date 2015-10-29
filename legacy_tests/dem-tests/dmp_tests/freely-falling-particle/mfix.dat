@@ -40,8 +40,6 @@
 
   CALL_USR = .T.
 
-  DES_CONTINUUM_COUPLED = .F.
-
 #_______________________________________________________________________
 # NUMERICAL SECTION 
 
@@ -141,7 +139,7 @@
 #_______________________________________________________________________
 # OUTPUT CONROL SECTION
 
-  RES_DT = 1.0d3  ! interval to update restart (.RES) file
+  RES_DT = 1.0    ! interval to update restart (.RES) file
 
   NLOG = 25       ! time steps between updates to (.LOG) file
   FULL_LOG = .T.  ! display residuals on screen
@@ -151,9 +149,7 @@
 
   RESID_STRING = 'P0'
 
-  PRINT_DES_DATA = .T.
-  DES_SPX_DT = 0.20
-  DES_RES_DT = 1.0
+  PRINT_DES_DATA = .F.
 
 
 #_______________________________________________________________________

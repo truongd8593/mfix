@@ -32,7 +32,6 @@
 
   CALL_USR = .T.
 
-  DES_CONTINUUM_COUPLED = .F.
   DES_INTERP_ON = .F.
 
   GRAVITY = 0.0
@@ -68,7 +67,7 @@
 ! GAS SECTION
 !---------------------------------------------------------------------//
 
-  RO_g0 = 1.1854E-3  ! g/cm^3
+  RO_g0 = 0.0        ! g/cm^3
   MU_g0 = 1.8603E-4  ! g/(cm.s)
   K_g0  = 1.2396E-4  ! cal/(s.g.K)
   C_Pg0 = 2.3878E-1  ! cal/(g.K)
@@ -156,8 +155,6 @@
   RESID_STRING = 'P0'
 
   PRINT_DES_DATA = .F.
-  DES_SPX_DT = 1.0d-2
-  DES_RES_DT = 1.0d3
 
 
 #_______________________________________________________________________

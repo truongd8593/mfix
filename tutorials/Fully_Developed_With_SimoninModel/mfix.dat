@@ -62,7 +62,7 @@
 !*********************************************************************
 ! Numerical Parameters
 !*********************************************************************
-  MAX_NIT = 50          ! maximum number of iterations [500]
+  MAX_NIT = 75          ! maximum number of iterations [500]
 
   TOL_RESID = 1E-4      ! max. continuity+momentum residual at 
                         ! convergence [1E-3]
@@ -269,7 +269,7 @@
 
 ! Display the residuals on the screen and messages about convergence
 ! on the screen and in the .LOG file.  [.FALSE.]
-#  FULL_LOG = .TRUE.
+  FULL_LOG = .TRUE.
 
 ! Interval in number of time steps at which .LOG file is written.  [25]
   NLOG = 25

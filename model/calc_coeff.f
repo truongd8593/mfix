@@ -102,7 +102,7 @@
       INTEGER, intent(inout) :: IER
 ! Level to calculate physical properties.
 ! 0) Only density
-! 1) Eveything but density
+! 1) Everything but density
 ! 2) All physical properties
       INTEGER, intent(in) :: pLevel
 !-----------------------------------------------------------------------

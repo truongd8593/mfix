@@ -103,9 +103,9 @@
                   IF (EPGX /= UNDEFINED) EP_G(IJK) = EPGX
 
                   IF (IC_TYPE(L) == 'PATCH') THEN
-                      IF (PGX /= UNDEFINED) P_G(IJK) = SCALE(PGX)
+                      IF (PGX /= UNDEFINED) P_G(IJK) = SCALE_PRESSURE(PGX)
                   ELSE
-                     P_G(IJK) = merge(SCALE(PGX), UNDEFINED,           &
+                     P_G(IJK) = merge(SCALE_PRESSURE(PGX), UNDEFINED,           &
                         PGX /= UNDEFINED)
                   ENDIF
 

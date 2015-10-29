@@ -180,7 +180,7 @@
                phis = phis + EPs_loc(L)
             ENDDO
 
-! calculate the average paricle diameter and particle ratio
+! calculate the average particle diameter and particle ratio
             DPA = ZERO
             tmp_sum = ZERO
             tmp_fac = ZERO

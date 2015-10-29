@@ -82,7 +82,8 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-      use functions, only: is_ghost, is_entering_ghost, is_exiting_ghost, is_exiting
+      use functions, only: is_exiting
+      use functions, only: is_ghost, is_entering_ghost, is_exiting_ghost
 
       IMPLICIT NONE
 
@@ -107,7 +108,10 @@
 
 ! Do not send particle data for a ghost particle whose owner has not yet
 ! updated the particle's data on this processor.
-            if((is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) .and. .not.ighost_updated(lcurpar)) cycle
+            if((is_ghost(lcurpar) .or. &
+                is_entering_ghost(lcurpar) .or. &
+                is_exiting_ghost(lcurpar)) .and. &
+                .not.ighost_updated(lcurpar)) cycle
 
 ! 1) Global ID
             call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
@@ -214,7 +218,7 @@
       use discretelement, only: PFT_NEIGHBOR
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
-! Flag indicating the the fluid-particle drag is explictly coupled.
+! Flag indicating the the fluid-particle drag is explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Explicit particle drag force
       use discretelement, only: DRAG_FC
@@ -223,7 +227,6 @@
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
-      use discretelement
       use desmpi, only: irecvindices
 
       use desmpi, only: iParticlePacketSize
@@ -264,7 +267,10 @@
          do lpicloc = 1,dg_pic(lijk)%isize
             lcurpar = dg_pic(lijk)%p(lpicloc)
 
-            if (is_ghost(lcurpar) .or. is_entering_ghost(lcurpar) .or. is_exiting_ghost(lcurpar)) cycle ! if ghost particle then cycle
+! if ghost particle then cycle
+            if(is_ghost(lcurpar) .or. &
+               is_entering_ghost(lcurpar) .or. &
+               is_exiting_ghost(lcurpar)) cycle
 
             going_to_send(lcurpar) = .true.
             lbuf = lparcnt*iParticlePacketSize + ibufoffset
@@ -322,7 +328,7 @@
 ! 22) Species composition
             IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
-! 23) Explict drag force
+! 23) Explicit drag force
             IF(DES_EXPLICITLY_COUPLED) &
                call pack_dbuf(lbuf, drag_fc(:,lcurpar),pface)
 ! 24) User defined variable

@@ -18,7 +18,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_GS_DES1
 
-! Flag: The fluid and discrete solids are explictly coupled.
+! Flag: The fluid and discrete solids are explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Gas phase volume fraction
       use fldvar, only: EP_G
@@ -139,7 +139,7 @@
             DRAG_FC(:,NP) = 0.0d0
             F_GP(NP) = 0.0d0
 
-! For explict coupling, use the drag coefficient calculated for the
+! For explicit coupling, use the drag coefficient calculated for the
 ! gas phase drag calculations.
          ELSEIF(DES_EXPLICITLY_COUPLED) THEN
             DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
@@ -193,7 +193,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_GS_GAS1
 
-! Flag: The fluid and discrete solids are explictly coupled.
+! Flag: The fluid and discrete solids are explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Gas phase volume fraction
       use fldvar, only: EP_G
