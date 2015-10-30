@@ -56,6 +56,7 @@ clean-local:
 
 # mfix.f needs to be built under $(builddir)
 $(builddir)/.build/mfix.f:  $(LIBMFIX)
+	@mkdir -p .build
 	cp $(top_srcdir)/model/mfix.f $@
 
 $(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
