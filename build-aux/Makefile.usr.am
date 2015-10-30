@@ -159,6 +159,9 @@ POST_SCRIPT=AUTOTEST/post.script.NEW
 
 POST_dats := $(notdir $(wildcard AUTOTEST/POST*.dat))
 
+run_t0: postmfix$(EXEEXT) mfix$(EXEEXT)
+	OMP_NUM_THREADS=1 ./mfix$(EXEEXT) TSTOP=0 NODESI=1 NODESJ=1 NODESK=1
+
 run: postmfix$(EXEEXT) mfix$(EXEEXT)
 	./mfix$(EXEEXT)
 	if [ -e $(POST_SCRIPT) ]; then OMP_NUM_THREADS=1 ./postmfix$(EXEEXT) < $(POST_SCRIPT); fi

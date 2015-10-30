@@ -831,3 +831,5 @@ allcases:
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
 	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done
+
+TESTS = build-aux/test.sh
