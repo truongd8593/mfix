@@ -109,6 +109,9 @@ endif
 '
 AC_SUBST([make_endif])
 AM_SUBST_NOTMAKE([make_endif])
+AC_CONFIG_COMMANDS([cases],
+[cp $ac_srcdir/build-aux/test.sh $ac_builddir/build-aux; for casedir in benchmarks legacy_tests tests tutorials; do [[ "$ac_builddir" != "$ac_srcdir" ]] && cp -r $ac_srcdir/$casedir $ac_builddir; chmod --recursive +w $ac_builddir/$casedir; done ],
+)
 
 AC_OUTPUT
 
