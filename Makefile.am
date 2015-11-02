@@ -23,6 +23,10 @@ MODDIR=$(top_builddir)/model
 MODOUTDIR=$(MODDIR)
 CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 DISTCLEANFILES = build-aux/Makefile.usr
+DISTCLEANFILES += benchmarks
+DISTCLEANFILES += legacy_tests
+DISTCLEANFILES += tests
+DISTCLEANFILES += tutorials
 
 AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
