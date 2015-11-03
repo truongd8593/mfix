@@ -36,7 +36,7 @@
       USE constant
       USE indices
       USE stl
-      USE des_stl_functions
+      USE stl_functions_des
       USE functions
       Implicit none
 
@@ -78,9 +78,9 @@
 !$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
 !$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd)         &
-!$omp shared(max_pip,focus_particle,debug_des,no_neighboring_facet_des,&
-!$omp    pijk,dg_pijk,list_facet_at_des,i_of,j_of,k_of,des_pos_new,    &
-!$omp    des_radius,cellneighbor_facet_num,cellneighbor_facet,vertex,  &
+!$omp shared(max_pip,focus_particle,debug_des,                         &
+!$omp    pijk,dg_pijk,i_of,j_of,k_of,des_pos_new,    &
+!$omp    des_radius,facets_at_dg,vertex,  &
 !$omp    hert_kwn,hert_kwt,kn_w,kt_w,des_coll_model_enum,mew_w,tow,    &
 !$omp    des_etan_wall,des_etat_wall,dtsolid,fc,norm_face,             &
 !$omp    wall_collision_facet_id,wall_collision_PFT,use_cohesion,      &
@@ -99,8 +99,7 @@
          CELL_ID = DG_PIJK(LL)
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
-!        IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(LL))) THEN
-         IF(CELLNEIGHBOR_FACET_NUM(CELL_ID) < 1) THEN
+         IF(facets_at_dg(CELL_ID)%COUNT < 1) THEN
             WALL_COLLISION_FACET_ID(:,LL) = -1
             WALL_COLLISION_PFT(:,:,LL) = 0.0d0
             CYCLE
@@ -112,11 +111,11 @@
          particle_max(:) = des_pos_new(:, LL) + des_radius(LL)
          particle_min(:) = des_pos_new(:, LL) - des_radius(LL)
 
-         DO CELL_COUNT = 1, cellneighbor_facet_num(cell_id)
+         DO CELL_COUNT = 1, facets_at_dg(cell_id)%count
 
-            axis = cellneighbor_facet(cell_id)%extentdir(cell_count)
+            axis = facets_at_dg(cell_id)%dir(cell_count)
 
-            NF = cellneighbor_facet(cell_id)%p(cell_count)
+            NF = facets_at_dg(cell_id)%id(cell_count)
 
 ! Compute particle-particle VDW cohesive short-range forces
             IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -144,13 +143,13 @@
                ENDIF
             ENDIF
 
-            if (cellneighbor_facet(cell_id)%extentmin(cell_count) >    &
+            if (facets_at_dg(cell_id)%min(cell_count) >    &
                particle_max(axis)) then
                call remove_collision(LL, nf, wall_collision_facet_id)
                cycle
             endif
 
-            if (cellneighbor_facet(cell_id)%extentmax(cell_count) <    &
+            if (facets_at_dg(cell_id)%max(cell_count) <    &
                particle_min(axis)) then
                call remove_collision(LL, nf, wall_collision_facet_id)
                cycle
@@ -313,7 +312,10 @@
 !......................................................................!
       FUNCTION GET_COLLISION(LLL,FACET_ID,WALL_COLLISION_FACET_ID,     &
           WALL_COLLISION_PFT)
-      use stl_preproc_des
+
+      use stl_dbg_des, only: write_this_stl
+      use stl_dbg_des, only: write_stls_this_dg
+
       use error_manager
 
       IMPLICIT NONE
@@ -342,9 +344,9 @@
       if(-1 == free_index) then
          dgIJK=DG_PIJK(LLL)
          cc_lp: do cc=1, COLLISION_ARRAY_MAX
-            do lc=1, cellneighbor_facet_num(dgIJK)
+            do lc=1, facets_at_dg(dgIJK)%count
                if(wall_collision_facet_id(cc,LLL) == &
-                  cellneighbor_facet(dgIJK)%p(LC))  cycle cc_lp
+                  facets_at_dg(dgIJK)%id(LC))  cycle cc_lp
             enddo
             free_index = cc
             exit cc_lp

@@ -97,7 +97,7 @@
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
-      use des_stl_functions, only: TestTriangleAABB
+      use stl_functions_des, only: TRI_BOX_OVERLAP
       use functions, only: IS_ON_myPE_OWNS
 
       use error_manager
@@ -145,11 +145,9 @@
 ! Offset and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
-      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
-! Separating axis test dummy variable
-      INTEGER :: SEP_AXIS
+      DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
 ! Indicates that a separating axis exists
-      LOGICAL :: SA_EXIST
+      LOGICAL :: OVERLAP
 ! Debug flag.
       LOGICAL :: dFlag
 !......................................................................!
@@ -275,16 +273,16 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         EXTENTS(2) = 6.0d0*MAX_DIA
-         EXTENTS(1) = WINDOW * 1.10d0
-         EXTENTS(3) = WINDOW * 1.10d0
+         HALFSIZE(2) = 3.0d0*MAX_DIA
+         HALFSIZE(1) = HALF*(WINDOW * 1.10d0)
+         HALFSIZE(3) = HALF*(WINDOW * 1.10d0)
 
          DO H=1,HMAX
          DO W=1,WMAX
 
-            ORIGIN(2) = BC_Y_s(BCV) - 3.0d0*MAX_DIA
-            ORIGIN(1) = MESH_P(W) - WINDOW * 0.05d0
-            ORIGIN(3) = MESH_Q(H) - WINDOW * 0.05d0
+            CENTER(2) = BC_Y_s(BCV)
+            CENTER(1) = MESH_P(W) + HALF*WINDOW
+            CENTER(3) = MESH_Q(H) + HALF*WINDOW
 
             FACET_LP: DO LC=1, N_FACETS_DES
 
@@ -297,10 +295,10 @@
                IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
                IF(BC_Z_t(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP
 
-               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
-                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
+               CALL TRI_BOX_OVERLAP(CENTER, HALFSIZE, &
+                  VERTEX(:,:,LC), OVERLAP)
 
-               IF(.NOT.SA_EXIST) THEN
+               IF(OVERLAP) THEN
                   IF(NORM_FACE(1,LC) >= 0) THEN
                      FULL_MAP(1:W,H) = 0
                   ELSE
@@ -490,7 +488,7 @@
 ! Module procedures
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
-      use des_stl_functions, only: TestTriangleAABB
+      use stl_functions_des, only: TRI_BOX_OVERLAP
       use mpi_utility, only: GLOBAL_ALL_SUM
       use functions, only: IS_ON_myPE_OWNS
 
@@ -539,11 +537,11 @@
 ! Offset and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
-      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
+      DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
 ! Separating axis test dummy variable
       INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
-      LOGICAL :: SA_EXIST
+      LOGICAL :: OVERLAP
 ! Local debug flag.
       LOGICAL :: dFlag
 !......................................................................!
@@ -668,16 +666,16 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         EXTENTS(1) = 6.0d0*MAX_DIA
-         EXTENTS(2) = WINDOW * 1.10d0
-         EXTENTS(3) = WINDOW * 1.10d0
+         HALFSIZE(1) = 3.0d0*MAX_DIA
+         HALFSIZE(2) = HALF*(WINDOW * 1.10d0)
+         HALFSIZE(3) = HALF*(WINDOW * 1.10d0)
 
          DO H=1,HMAX
          DO W=1,WMAX
 
-            ORIGIN(1) = BC_X_w(BCV) - 3.0d0*MAX_DIA
-            ORIGIN(2) = MESH_P(W) - WINDOW * 0.05d0
-            ORIGIN(3) = MESH_Q(H) - WINDOW * 0.05d0
+            CENTER(1) = BC_X_w(BCV)
+            CENTER(2) = MESH_P(W) + HALF*WINDOW
+            CENTER(3) = MESH_Q(H) + HALF*WINDOW
 
             FACET_LP: DO LC=1, N_FACETS_DES
 
@@ -690,10 +688,10 @@
                IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
                IF(BC_Z_t(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP
 
-               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
-                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
+               CALL TRI_BOX_OVERLAP(CENTER, HALFSIZE, &
+                  VERTEX(:,:,LC), OVERLAP)
 
-               IF(.NOT.SA_EXIST) THEN
+               IF(OVERLAP) THEN
                   IF(NORM_FACE(2,LC) >= 0) THEN
                      FULL_MAP(1:W,H) = 0
                   ELSE
@@ -885,7 +883,7 @@
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
-      use des_stl_functions, only: TestTriangleAABB
+      use stl_functions_des, only: TRI_BOX_OVERLAP
       use functions, only: IS_ON_myPE_OWNS
 
       use error_manager
@@ -933,11 +931,11 @@
 ! Offset and and window size.
       DOUBLE PRECISION :: SHIFT, WINDOW
 ! The origin and dimension of MI cells. (STL intersection tests)
-      DOUBLE PRECISION :: ORIGIN(3), EXTENTS(3)
+      DOUBLE PRECISION :: CENTER(3), HALFSIZE(3)
 ! Separating axis test dummy variable
       INTEGER :: SEP_AXIS
 ! Indicates that a separating axis exists
-      LOGICAL :: SA_EXIST
+      LOGICAL :: OVERLAP
 ! Local Debug flag.
       LOGICAL :: dFlag
 
@@ -1044,16 +1042,16 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         EXTENTS(3) = 6.0d0*MAX_DIA
-         EXTENTS(1) = WINDOW * 1.10d0
-         EXTENTS(2) = WINDOW * 1.10d0
+         HALFSIZE(3) = 3.0d0*MAX_DIA
+         HALFSIZE(1) = HALF*(WINDOW * 1.10d0)
+         HALFSIZE(2) = HALF*(WINDOW * 1.10d0)
 
          DO H=1,HMAX
          DO W=1,WMAX
 
-            ORIGIN(3) = BC_Z_b(BCV) - 3.0d0*MAX_DIA
-            ORIGIN(1) = MESH_P(W) - WINDOW * 0.05d0
-            ORIGIN(2) = MESH_Q(H) - WINDOW * 0.05d0
+            CENTER(3) = BC_Z_b(BCV)
+            CENTER(1) = MESH_P(W) + HALF*WINDOW
+            CENTER(2) = MESH_Q(H) + HALF*WINDOW
 
             FACET_LP: DO LC=1, N_FACETS_DES
 
@@ -1066,10 +1064,10 @@
                IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
                IF(BC_Y_n(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
 
-               CALL TESTTRIANGLEAABB(VERTEX(:,:,LC), NORM_FACE(:,LC),  &
-                  ORIGIN(:), EXTENTS(:), SA_EXIST, SEP_AXIS, I, J, K)
+               CALL TRI_BOX_OVERLAP(CENTER, HALFSIZE, &
+                  VERTEX(:,:,LC), OVERLAP)
 
-               IF(.NOT.SA_EXIST) THEN
+               IF(OVERLAP) THEN
                   IF(NORM_FACE(1,LC) >= 0) THEN
                      FULL_MAP(1:W,H) = 0
                   ELSE

@@ -18,14 +18,10 @@
       use discretelement, only: DES_RADIUS
 ! Max number of particles on this process
       use discretelement, only: MAX_PIP
-! The number of neighbor facets for each DES grid cell
-      use discretelement, only: cellneighbor_facet_num
-! Facet informatin binned to the DES grid
-      use discretelement, only: cellneighbor_facet
 ! Map from particle to DES grid cell.
       use discretelement, only: DG_PIJK, DTSOLID
 ! Flag indicating that the index cell contains no STLs
-      use stl, only: NO_NEIGHBORING_FACET_DES
+      use stl, only: FACETS_AT_DG
 ! STL Vertices
       use stl, only: VERTEX
 ! STL Facet normals
@@ -48,7 +44,7 @@
 
 ! Module Procedures:
 !---------------------------------------------------------------------//
-      use des_stl_functions
+      use stl_functions_des
 
       use error_manager
 
@@ -82,19 +78,19 @@
          IF(IS_NONEXISTENT(NP)) CYCLE
 
 ! If no neighboring facet in the surrounding 27 cells, then exit
-         IF (NO_NEIGHBORING_FACET_DES(DG_PIJK(NP))) CYCLE
+         IF(FACETS_AT_DG(DG_PIJK(NP))%COUNT < 1) CYCLE
 
          RADSQ = DES_RADIUS(NP)*DES_RADIUS(NP)
 
 ! Loop through the STLs associated with the DES grid cell.
-         LC1_LP: DO LC1=1, CELLNEIGHBOR_FACET_NUM(DG_PIJK(NP))
+         LC1_LP: DO LC1=1, FACETS_AT_DG(DG_PIJK(NP))%COUNT
 
 ! Get the index of the neighbor facet
-            NF = CELLNEIGHBOR_FACET(DG_PIJK(NP))%P(LC1)
+            NF = FACETS_AT_DG(DG_PIJK(NP))%ID(LC1)
 
             NORM_PLANE = NORM_FACE(:,NF)
 
-!            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0) & 
+!            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0) &
 !               CYCLE LC1_LP
 
             CALL INTERSECTLNPLANE(DES_POS_NEW(:,NP), DES_VEL_NEW(:,NP),&
@@ -105,7 +101,7 @@
 ! Project the parcel onto the facet.
                DIST = LINE_T*DES_VEL_NEW(:,NP)
                tPOS = DES_POS_NEW(:,NP) + DIST
-                
+
 ! Avoid collisions with STLs that are not next to the parcel
                IF(HIT_FACET(VERTEX(:,:,NF), tPOS)) THEN
 
@@ -158,7 +154,7 @@
       HIT_FACET = ((u>=0.0d0) .AND. (v>=0.0d0) .AND. (u+v < 1.0d0))
 
       RETURN
-      END FUNCTION HIT_FACET 
+      END FUNCTION HIT_FACET
 
       END SUBROUTINE APPLY_WALL_BC_PIC
 
@@ -208,7 +204,7 @@
       DOUBLE PRECISION :: projGRAV(3)
 
       INTEGER :: LC
- 
+
 !-----------------------------------------------
 
 
@@ -313,7 +309,7 @@
       USE discretelement, only: MAX_RADIUS
       USE geometry, only: do_k
 
-      USE des_stl_functions
+      USE stl_functions_des
       USE desgrid
       USE stl
 
@@ -335,7 +331,7 @@
       I = min(DG_IEND2,max(DG_ISTART2,IOFPOS(POS(1))))
 
       IJK = DG_FUNIJK(I,J,K)
-      IF (NO_NEIGHBORING_FACET_DES(IJK)) RETURN
+      IF(FACETS_AT_DG(IJK)%COUNT < 1) RETURN
 
       OVERLAP_EXISTS = .TRUE.
 
@@ -347,8 +343,8 @@
 
 ! If t>0, then point is on the non-fluid side of the plane, if the
 ! plane normal is assumed to point toward the fluid side.
-      DO LC = 1, LIST_FACET_AT_DES(IJK)%COUNT_FACETS
-         NF = LIST_FACET_AT_DES(IJK)%FACET_LIST(LC)
+      DO LC = 1, FACETS_AT_DG(IJK)%COUNT
+         NF = FACETS_AT_DG(IJK)%ID(LC)
 
          CALL INTERSECTLNPLANE(POS, NORM_FACE(:,NF), &
             VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
@@ -385,7 +381,7 @@
       USE physprop
       USE parallel
       USE stl
-      USE des_stl_functions
+      USE stl_functions_des
       Implicit none
       !facet id and particle id
       double precision, intent(in), dimension(dimn) :: position, velocity

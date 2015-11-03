@@ -58,25 +58,17 @@
       INTEGER, DIMENSION (:), ALLOCATABLE ::  N_FACET_AT
       INTEGER, DIMENSION (:,:), ALLOCATABLE ::  LIST_FACET_AT
 
+! List of facets intersecting each DES grid cell
+      TYPE FACETS_TO_DG
+         INTEGER :: COUNT
+         INTEGER, ALLOCATABLE :: ID(:)
+         INTEGER, ALLOCATABLE :: DIR(:)
+         DOUBLE PRECISION, ALLOCATABLE :: MIN(:)
+         DOUBLE PRECISION, ALLOCATABLE :: MAX(:)
+      END TYPE FACETS_TO_DG
 
-!RG: Since Lagrangian requires facets that do no intersect at any edge of a cell,
-!a separate facet list is maintained for Lagrangian modules, identfied by _DES
-!appended to the key word
-!     Maximum number of facets per cell
-! Dynamic variable. for each ijk computational fluid cell store the
-! total number of facets and the id's of the facets in that cell
-      INTEGER :: MAX_FACETS_PER_CELL_DES
-! in order to facilitate the parallel processing the PIC is defined
-! as single array IJK
-      TYPE FACETS_TO_CELL
-         INTEGER :: COUNT_FACETS
-         INTEGER, DIMENSION(:), ALLOCATABLE ::  FACET_LIST
-      END TYPE FACETS_TO_CELL
-
-      TYPE (FACETS_TO_CELL), DIMENSION (:), ALLOCATABLE ::  LIST_FACET_AT_DES
+      TYPE (FACETS_TO_DG), ALLOCATABLE ::  FACETS_AT_DG(:)
       CHARACTER(LEN=3) :: CAD_PROPAGATE_ORDER
-
-      Logical, DIMENSION (:), ALLOCATABLE ::  NO_NEIGHBORING_FACET_DES
 
       END MODULE stl
 

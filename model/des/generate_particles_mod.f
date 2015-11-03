@@ -130,7 +130,7 @@
 
       use functions
       use cutcell, only : CARTESIAN_GRID, CUT_CELL_AT
-      use STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVERLAPS_STL
+      use stl_functions_des, only: CHECK_IF_PARTICLE_OVERLAPS_STL
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
@@ -385,7 +385,7 @@
          WRITE(ERR_MSG,1000) ICV, SOLIDS_DATA(0)
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
- 
+
 1000 FORMAT('Error 1000: Invalid IC region volume: IC=',I3,' VOL=',&
          ES15.4,/'Please correct the mfix.dat file.')
 
@@ -483,14 +483,8 @@
       DO M=1, DES_MMAX
          IF(IC_ROP_S(ICV,M) == ZERO) CYCLE
 ! Seed parcels with constant stastical weight.
-         IF(IC_PIC_CONST_STATWT(ICV,M) /= ZERO) THEN
-            CALL GPC_MPPIC_CONST_STATWT(ICV, M, SOLIDS_DATA(0), &
-               SOLIDS_DATA((4*M-3):(4*M)))
-! Seed parcels with a constant number per cell
-         ELSEIF(IC_PIC_CONST_NPC(ICV,M) /= 0) THEN
-            CALL GPC_MPPIC_CONST_NPC(ICV, M, SOLIDS_DATA(0), &
-               SOLIDS_DATA((4*M-3):(4*M)))
-         ENDIF
+         CALL GPC_MPPIC_CONST_NPC(ICV, M, SOLIDS_DATA(0), &
+            SOLIDS_DATA((4*M-3):(4*M)))
       ENDDO
 
 ! Collect the data
@@ -528,248 +522,6 @@
          '|-------|',5(11('-'),'|'))
 
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: GPC_MPPIC_CONST_STATWT                                  !
-!  Author: J.Musser                                 Date:  26-Aug-2015 !
-!                                                                      !
-!  Purpose: generates particle position distribution for MPPIC         !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE GPC_MPPIC_CONST_STATWT(ICV, M, IC_VOL, sDATA)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      use cutcell, only : CARTESIAN_GRID
-
-! IC Region Bounds
-      use ic, only: IC_X_w, IC_X_e
-      use ic, only: IC_Y_s, IC_Y_n
-      use ic, only: IC_Z_b, IC_Z_t
-! IC Region bulk density (RO_s * EP_s)
-      use ic, only: IC_ROP_s
-! IC Region velocity field and granular temperature
-      use ic, only: IC_U_s, IC_V_s, IC_W_s, IC_Theta_M
-! MPPIC specific IC region specification.
-      use ic, only: IC_PIC_CONST_STATWT
-! Flag for Cartesian cut-cell 
-      use cutcell, only : CARTESIAN_GRID
-! DES solid phase diameters and densities.
-      use discretelement, only: DES_D_p0, DES_RO_s
-! Total number of active parcles
-      use discretelement, only: PIP
-! Parcel position and velocity
-      use discretelement, only: DES_POS_NEW, DES_VEL_NEW
-! Parcel radius and density
-      use discretelement, only: DES_RADIUS, RO_SOL
-! Stastical weight of each parcel
-      use mfix_pic, only: DES_STAT_WT
-! Paricle fluid I/J/K/IJK/Phase information
-      use discretelement, only: PIJK
-! The east/north/top location of grid partition
-      use discretelement, only: XE, YN, ZT
-! Fluid grid cell dimensions and mesh size
-      USE geometry, only: IMIN2, IMAX2
-      USE geometry, only: JMIN2, JMAX2
-      USE geometry, only: KMIN2, KMAX2
-      USE geometry, only: DO_K, NO_K, DZ
-
-! The accumulated number of particles in each IJK.
-      use tmp_array, only: EPs => ARRAY1
-      use constant, only: EP_STAR
-      use geometry, only: VOL
-
-
-! Global parameters
-!----------------------------------------------------------------------//
-      use param1, only: ZERO, HALF, ONE
-! Maximum cell partitions in the axial directions
-      use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
-! Maximum number of IC regions and solids phases
-      use param, only: DIMENSION_IC
-! Constant: 3.14159...
-      use constant, only: PI
-
-
-! Module procedures
-!----------------------------------------------------------------------//
-      use functions, only: FUNIJK, FLUID_AT, DEAD_CELL_AT
-      use stl_preproc_des, only: CHECK_IF_PARTICLE_OVERLAPS_STL
-      use cutcell, only: cut_cell_at
-      use randomno, only: UNI_RNO, NOR_RNO
-      use functions, only: SET_NORMAL
-      use functions, only: IS_ON_MYPE_WOBND
-      use des_allocate, only: PARTICLE_GROW
-
-      use error_manager
-
-
-      IMPLICIT NONE
-
-
-! Dummy Arguments
-!----------------------------------------------------------------------//
-! Index of IC region and solids phase
-      INTEGER, INTENT(IN) :: ICV, M
-! Specific volume of IC region (accounts for blocked cells)
-      DOUBLE PRECISION, INTENT(IN) :: IC_VOL
-! Data about solids in the IC region.
-      DOUBLE PRECISION, INTENT(OUT) :: sDATA(4)
-
-! Local variables
-!----------------------------------------------------------------------//
-! Solids phase M volume fraction in IC region
-      DOUBLE PRECISION :: EP_SM
-! Start/End bounds of IC region
-      DOUBLE PRECISION :: IC_START(3), IC_END(3)
-! IC region lenghts and volume
-      DOUBLE PRECISION :: DOML(3), DOM_VOL
-! Number of real particles calculated from volume fracton
-      DOUBLE PRECISION ::  rPARTS
-! Number of computational parcels
-      INTEGER :: cPARTS
-! Calculated statistical weight of parcels
-      DOUBLE PRECISION :: STAT_WT
-! Volume of a parcel and total solids volume
-      DOUBLE PRECISION :: sVOL, sVOL_TOT
-! Parcel position and velocity
-      DOUBLE PRECISION :: POS(3), VEL(3)
-! Arrays for assigning random position and velocities
-      DOUBLE PRECISION, ALLOCATABLE :: randPOS(:,:), randVEL(:,:)
-! Standard deivation of initial velocities
-      DOUBLE PRECISION :: VEL_SIG
-! Flag to skip parcel
-      LOGICAL :: SKIP
-! Counter for seeded parcles.
-      INTEGER :: SEEDED
-! Generic fluid cell indices and loop counters
-      INTEGER :: I, J, K, IJK, LC
-
-      DOUBLE PRECISION :: maxEPs
-
-!......................................................................!
-
-      CALL INIT_ERR_MSG("GENERATE_PARTICLE_CONFIG_MPPIC")
-
-      maxEPs = 1.0d0 - 1.05d0*EP_STAR
-
-! Setup local arrays with IC region bounds.
-      IC_START(1)=IC_X_W(ICV);   IC_END(1)=IC_X_E(ICV)
-      IC_START(2)=IC_Y_S(ICV);   IC_END(2)=IC_Y_N(ICV)
-      IC_START(3)=IC_Z_B(ICV);   IC_END(3)=IC_Z_T(ICV)
-
-      DOML = IC_END-IC_START
-      IF(NO_K) DOML(3)=DZ(1)
-
-! Volume of the IC region
-      DOM_VOL = DOML(1)*DOML(2)*DOML(3)
-! Solids volume fraction in IC region
-      EP_SM = IC_ROP_S(ICV,M)/DES_RO_s(M)
-
-! Total number of real and computational particles
-      rPARTS = 6.d0*EP_SM*DOM_VOL/(PI*(Des_D_P0(M)**3.d0))
-      cPARTS = max(1,int(rPARTS/real(IC_PIC_CONST_STATWT(ICV,M))))
-
-! The 'actual' statistical weight
-      STAT_WT = rPARTS/real(cPARTS)
-
-! Obtain random variations for parcel position 
-      ALLOCATE(randPOS(cPARTS,3))
-
-      DO LC = 1, merge(2,3,NO_K)
-         CALL UNI_RNO(RANDPOS(1:cPARTS,LC))
-      ENDDO
-      IF(NO_K) randPOS(:,3) = 0.0d0
-
-! Obtain initial velocities with random variations
-      ALLOCATE(randVEL(cPARTS,3))
-
-      randVEL(:,1) = IC_U_s(ICV,M)
-      randVEL(:,2) = IC_V_s(ICV,M)
-      randVEL(:,3) = merge(IC_W_s(ICV,M), 0.0d0, DO_K)
-
-      VEL_SIG = sqrt(IC_Theta_M(ICV,M))
-      IF(VEL_SIG /= ZERO) THEN
-         CALL NOR_RNO(randVEL(:,1), IC_U_S(ICV,M), VEL_SIG)
-         CALL NOR_RNO(randVEL(:,2), IC_V_S(ICV,M), VEL_SIG)
-         IF(DO_K) CALL NOR_RNO(randVEL(:,3), IC_W_S(ICV,M), VEL_SIG)
-      ENDIF
-
-! Volume occupied by one parcel
-      sVOL = (Pi/6.0d0)*(DES_D_P0(M)**3.d0)*STAT_WT
-      sVOL_TOT = IC_VOL*EP_SM
-
-      SEEDED = 0
-      DO LC = 1, cPARTS
-
-! Generate the initial parcel position.
-         POS = IC_START + DOML*RANDPOS(LC,:)
-         VEL = 0.0d0
-
-! Bin the parcel to the fuild grid.
-         K=1
-         IF(DO_K) CALL PIC_SEARCH(K, POS(3), ZT, DIMENSION_K, KMIN2, KMAX2)
-         CALL PIC_SEARCH(J, POS(2), YN, DIMENSION_J, JMIN2, JMAX2)
-         CALL PIC_SEARCH(I, POS(1), XE, DIMENSION_I, IMIN2, IMAX2)
-
-! Skip cells that are not part of the local fuild domain.
-         IF(.NOT.IS_ON_MYPE_WOBND(I,J,K)) CYCLE
-         IF(DEAD_CELL_AT(I,J,K)) CYCLE
-
-         IJK = FUNIJK(I, J, K)
-         IF(.NOT.FLUID_AT(IJK)) CYCLE
-
-! Avoid overpacking cells
-         IF(EPs(IJK) + sVOL/VOL(IJK) < maxEPs) THEN
-            EPs(IJK) = EPs(IJK) + sVOL/VOL(IJK)
-         ELSE
-            CYCLE
-         ENDIF
-
-         IF(CARTESIAN_GRID) THEN
-            CALL CHECK_IF_PARCEL_OVERLAPS_STL(POS, SKIP)
-            IF(SKIP) CYCLE
-         ENDIF
-
-         PIP = PIP + 1
-         CALL PARTICLE_GROW(PIP)
-
-         DES_POS_NEW(:,PIP) = POS(:)
-         DES_VEL_NEW(:,PIP) = VEL(:)
-
-         DES_RADIUS(PIP) = DES_D_P0(M)*HALF
-         RO_SOL(PIP) =  DES_RO_S(M)
-
-         PIJK(PIP,1) = I
-         PIJK(PIP,2) = J
-         PIJK(PIP,3) = K
-         PIJK(PIP,4) = IJK
-         PIJK(PIP,5) = M
-
-         DES_STAT_WT(PIP) = STAT_WT
-
-         CALL SET_NORMAL(PIP)
-
-         SEEDED = SEEDED + 1
-
-         IF(sVOL_TOT <= sVOL*dble(SEEDED)) EXIT
-      ENDDO
-
-      sDATA(1) = dble(SEEDED)
-      sDATA(2) = STAT_WT
-      sDATA(3) = EP_SM
-      sDATA(4) = sVOL*dble(SEEDED)
-
-      IF(allocated(randPOS)) deallocate(randPOS)
-      IF(allocated(randPOS)) deallocate(randVEL)
-
-      CALL FINL_ERR_MSG
-
-      RETURN
-      END SUBROUTINE GPC_MPPIC_CONST_STATWT
 
 
 
@@ -813,7 +565,7 @@
 ! initally specified velocity field and granular temperature
       use ic, only: IC_U_s, IC_V_s, IC_W_s, IC_Theta_M
       use ic, only: IC_PIC_CONST_NPC
-
+      use ic, only: IC_PIC_CONST_STATWT
 ! Cut_cell identifier array
       use cutcell, only: cut_cell_at
 
@@ -830,7 +582,6 @@
       use randomno
       use error_manager
       use functions
-!      use STL_PREPROC_DES, only: CHECK_IF_PARTICLE_OVERLAPS_STL
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
@@ -852,7 +603,7 @@
 
 ! Number of real and comp. particles in a cell.
       DOUBLE PRECISION ::  rPARTS
-      INTEGER :: cPARTS
+      INTEGER :: maxPARTS
       DOUBLE PRECISION :: DOML(3), IC_START(3)
 ! Parcel position with random
       DOUBLE PRECISION :: POS(3)
@@ -861,7 +612,8 @@
 ! Flag to not keep parcel.
       LOGICAL :: SKIP
 ! Arrasy for assigning random position and velocities
-      DOUBLE PRECISION, ALLOCATABLE :: randPOS(:,:), randVEL(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
+      DOUBLE PRECISION :: RAND(3)
 ! Statistical weights
       DOUBLE PRECISION :: STAT_WT, SUM_STAT_WT
 ! Volume of a parcel and total solids volume
@@ -874,10 +626,8 @@
 
       CALL INIT_ERR_MSG("GPC_MPPIC_CONST_NPC")
 
-      cPARTS = IC_PIC_CONST_NPC(ICV,M)
-
-      allocate(randPOS(cPARTS,3))
-      allocate(randVEL(cPARTS,3))
+      maxPARTS=25
+      allocate(randVEL(maxPARTS,3))
 
       IC_VEL(1) = IC_U_s(ICV,M)
       IC_VEL(2) = IC_V_s(ICV,M)
@@ -904,22 +654,34 @@
 
          rPARTS = IC_EP_s(ICV,M)*VOL(IJK)/sVOL
 
-         LC_MAX = cPARTS
-         IF(CUT_CELL_AT(IJK)) LC_MAX = &
-            max(1, int(VOL(IJK)*dble(cPARTS)/(DX(I)*DY(J)*DZ(K))))
+! Seed parcels with a constant stastical weight
+         IF(IC_PIC_CONST_STATWT(ICV,M) /= ZERO) THEN
+            STAT_WT = IC_PIC_CONST_STATWT(ICV,M)
+            LC_MAX = int(rPARTS/STAT_WT)
+
+! Seed parcels with a constant number per cell
+         ELSEIF(IC_PIC_CONST_NPC(ICV,M) /= 0) THEN
+            LC_MAX = IC_PIC_CONST_NPC(ICV,M)
+            STAT_WT = rPARTS/dble(LC_MAX)
+            IF(CUT_CELL_AT(IJK)) LC_MAX = max(1,int(VOL(IJK)*dble(&
+               IC_PIC_CONST_NPC(ICV,M))/(DX(I)*DY(J)*DZ(K))))
+         ENDIF
+
+! Increase particle buffer
+         IF(LC_MAX > maxPARTS) THEN
+            maxPARTS = 2*LC_MAX
+            if(allocated(randVEL)) deallocate(randVEL)
+            allocate(randVEL(maxPARTS,3))
+         ENDIF
 
          DO LC=1, merge(2,3,NO_K)
-            CALL UNI_RNO(RANDPOS(1:LC_MAX,LC))
             IF(VEL_SIG > ZERO) THEN
                CALL NOR_RNO(randVEL(1:LC_MAX,LC), IC_VEL(LC), VEL_SIG)
             ELSE
                randVEL(1:LC_MAX,LC) = IC_VEL(LC)
             ENDIF
          ENDDO
-         IF(NO_K) THEN
-            randPOS(1:LC_MAX,3) = 0.0d0
-            randVEL(1:LC_MAX,3) = 0.0d0
-         ENDIF
+         IF(NO_K) randVEL(1:LC_MAX,3) = 0.0d0
 
          IC_START(1) = XE(I-1)
          IC_START(2) = YN(J-1)
@@ -931,36 +693,40 @@
 
          DO LC=1,LC_MAX
 
-            POS(:) = IC_START + DOML*randPOS(LC,:)
+            CALL RANDOM_NUMBER(RAND)
+            POS(:) = IC_START + DOML*RAND
 
             IF(CARTESIAN_GRID) THEN
                CALL CHECK_IF_PARCEL_OVERLAPS_STL(POS, SKIP)
-               IF(SKIP) CYCLE
+               DO WHILE(SKIP)
+                  CALL RANDOM_NUMBER(RAND)
+                  POS(:) = IC_START + DOML*RAND
+                  CALL CHECK_IF_PARCEL_OVERLAPS_STL(POS, SKIP)
+               ENDDO
             ENDIF
 
             PIP = PIP + 1
             CALL PARTICLE_GROW(PIP)
- 
+
             DES_POS_NEW(:,PIP) = POS(:)
             DES_VEL_NEW(:,PIP) = randVEL(LC,:)
- 
+
             DES_RADIUS(PIP) = DES_D_P0(M)*HALF
             RO_SOL(PIP) =  DES_RO_S(M)
- 
+
             PIJK(PIP,1) = I
             PIJK(PIP,2) = J
             PIJK(PIP,3) = K
             PIJK(PIP,4) = IJK
             PIJK(PIP,5) = M
- 
-            STAT_WT = rPARTS/dble(LC_MAX)
+
             SUM_STAT_WT = SUM_STAT_WT + STAT_WT
 
             DES_STAT_WT(PIP) = STAT_WT
             sVOL_TOT = sVOL_TOT + sVOL*STAT_WT
- 
+
             CALL SET_NORMAL(PIP)
- 
+
             SEEDED = SEEDED + 1
 
          ENDDO
@@ -969,8 +735,7 @@
       ENDDO
       ENDDO
 
-      IF(allocated(randPOS)) deallocate(randPOS)
-      IF(allocated(randPOS)) deallocate(randVEL)
+      IF(allocated(randVEL)) deallocate(randVEL)
 
       sDATA(1) = dble(SEEDED)
       sDATA(2) = SUM_STAT_WT/dble(SEEDED)

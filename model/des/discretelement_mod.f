@@ -223,7 +223,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR_OLD
 
-      INTEGER, DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET_NUM, CELLNEIGHBOR_FACET_MAX
       INTEGER :: NEIGH_NUM,NEIGH_MAX
 
 ! Quantities used for reporting: max no. neighbors and max overlap
@@ -383,21 +382,15 @@
 !     particle can collide with at most COLLISION_ARRAY_MAX facets simultaneously
       INTEGER, PARAMETER :: COLLISION_ARRAY_MAX = 8
 
+! (COLLISION_ARRAY_MAX,PARTICLES)
 !     -1 value indicates no collision
-      INTEGER, DIMENSION(:,:), ALLOCATABLE :: wall_collision_facet_id       ! (COLLISION_ARRAY_MAX,PARTICLES)
-      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: wall_collision_PFT ! (DIMN,COLLISION_ARRAY_MAX,PARTICLES)
+      INTEGER, ALLOCATABLE :: wall_collision_facet_id(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: wall_collision_PFT(:,:,:)
 
-      TYPE cnaa1
-         INTEGER, DIMENSION(:), ALLOCATABLE:: p
-         INTEGER, DIMENSION(:), ALLOCATABLE:: extentdir
-         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmin
-         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE:: extentmax
-      END TYPE cnaa1
 ! in order to facilitate the parallel processing the PIC is defined
 ! as single array IJK
       TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
 
-      TYPE(cnaa1), DIMENSION(:), ALLOCATABLE :: CELLNEIGHBOR_FACET
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
@@ -529,21 +522,7 @@
 
 ! MAX velocity of particles in each direction
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DES_VEL_MAX
-                        !(3)
 
-!flag to convert the outside box to facets if stl facet representation is used
-!default is false
-
-      Logical :: des_convert_box_to_facets
-
-      Integer, parameter :: FACET_TYPE_NORMAL = 1, FACET_TYPE_PO = 2 &
-      , FACET_TYPE_MI = 3
-
-      !make this a short integer
-      !array to specify the facet type
-      Integer, dimension(:), allocatable :: STL_FACET_TYPE
-
-      Integer :: count_facet_type_normal, count_facet_type_po, count_facet_type_mi
 
 ! Flag to turn on/off optimizing the list of facets at each des grid cell
 
