@@ -301,7 +301,7 @@
 
             allocate(int_tmp(2*lSIZE)); int_tmp=0
             int_tmp(1:lSIZE) = FACETS_AT_DG(IJK)%DIR(1:lSIZE)
-            call move_alloc(int_tmp, FACETS_AT_DG(IJK)%DIR(1:lSIZE))
+            call move_alloc(int_tmp, FACETS_AT_DG(IJK)%DIR)
 
             allocate(real_tmp(2*lSIZE)); real_tmp=ZERO
             real_tmp(1:lSIZE) = FACETS_AT_DG(IJK)%MIN(1:lSIZE)
