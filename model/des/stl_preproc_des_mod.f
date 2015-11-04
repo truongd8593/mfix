@@ -125,12 +125,6 @@
 ! Maximum and minimum extents of the indexed STL
       DOUBLE PRECISION:: X1,Y1,Z1
       DOUBLE PRECISION:: X2,Y2,Z2
-! DES grid cell sizes
-      DOUBLE PRECISION :: DG_DX, DG_DY, DG_DZ
-
-      DG_DX = ONE/DG_DXINV
-      DG_DY = ONE/DG_DYINV
-      IF(DO_K) DG_DZ = ONE/DG_DZINV
 
 ! Allocate the data storage array.
       ALLOCATE(FACETS_AT_DG(DG_IJKSIZE2))
@@ -147,24 +141,24 @@
 
          I1 = DG_IEND2
          I2 = DG_ISTART2
-         IF(X2>=ZERO .AND. X1<=XLENGTH+TOL_STL) THEN
-            I1 = iofpos(X1)
-            I2 = iofpos(dg_dx+X2)
+         IF(X2>=-TOL_STL .AND. X1<=XLENGTH+TOL_STL) THEN
+            I1 = max(iofpos(X1)-1, dg_istart2)
+            I2 = min(iofpos(X2)+1, dg_iend2)
          ENDIF
 
          J1 = DG_JEND2
          J2 = DG_JSTART2
-         IF(Y2>=ZERO .AND. Y1<=YLENGTH+TOL_STL) THEN
-            J1 = jofpos(Y1)
-            J2 = jofpos(dg_dy+Y2)
+         IF(Y2>=-TOL_STL .AND. Y1<=YLENGTH+TOL_STL) THEN
+            J1 = max(jofpos(Y1)-1, dg_jstart2)
+            J2 = min(jofpos(Y2)+1, dg_jend2)
          ENDIF
 
          K1 = DG_KEND2
          K2 = DG_KSTART2
          IF(DO_K) THEN
-            IF(Z2>=ZERO .AND. Z1<=ZLENGTH+TOL_STL) THEN
-               K1 = kofpos(Z1)
-               K2 = kofpos(dg_dz+Z2)
+            IF(Z2>=-TOL_STL .AND. Z1<=ZLENGTH+TOL_STL) THEN
+               K1 = max(kofpos(Z1)-1, dg_kstart2)
+               K2 = min(kofpos(Z2)+1, dg_kend2)
             ENDIF
          ENDIF
 
@@ -180,7 +174,6 @@
          ENDDO
 
       ENDDO
-
 
       RETURN
       END SUBROUTINE BIN_FACETS_TO_DG
