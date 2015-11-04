@@ -62,75 +62,78 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: STL_DBG_WRITE_INPUT_FACETS                              !
+!  Subroutine: STL_DBG_WRITE_FACETS                                    !
 !  Author: Rahul Garg                                 Date: 24-Oct-13  !
 !                                                                      !
 !  Purpose: Write back out the STL files read from input files.        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE STL_DBG_WRITE_INPUT_FACETS
+      SUBROUTINE STL_DBG_WRITE_FACETS(STL_TYPE)
 
 ! Number of facets 
-      use stl, only: N_FACETS
-! Facet Vertices and normal
-      use stl, only: VERTEX, NORM_FACE
-! Processor rank and rank of IO
-      use compar, only: myPE, PE_IO
-
-      IMPLICIT NONE
-
-      INTEGER :: LC
-
-      IF(myPE /= PE_IO) RETURN
-
-      OPEN(UNIT=444, FILE='INPUT_FACETS.stl')
-
-      WRITE(444,*) 'solid vcg'
-      DO LC = 1, N_FACETS
-         WRITE(444,*) '   facet normal ', NORM_FACE(:,LC)
-         WRITE(444,*) '      outer loop'
-         WRITE(444,*) '         vertex ', VERTEX(1,1:3,LC)
-         WRITE(444,*) '         vertex ', VERTEX(2,1:3,LC)
-         WRITE(444,*) '         vertex ', VERTEX(3,1:3,LC)
-         WRITE(444,*) '      endloop'
-         WRITE(444,*) '   endfacet'
-      ENDDO
-      WRITE(444,*)'endsolid vcg'
-
-      CLOSE(555)
-
-      RETURN
-      END SUBROUTINE STL_DBG_WRITE_INPUT_FACETS
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: STL_DBG_WRITE_AUTO_FACETS                               !
-!  Author: J.Musser                                   Date: 03-Nov-15  !
-!                                                                      !
-!  Purpose: Write out auto-generated facets for BCs, ISs, and default  !
-!  walls.                                                              !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE STL_DBG_WRITE_AUTO_FACETS
-
-! Number of facets (plus) auto generated facets
       use stl, only: N_FACETS, N_FACETS_DES
 ! Facet Vertices and normal
       use stl, only: VERTEX, NORM_FACE
 ! Processor rank and rank of IO
       use compar, only: myPE, PE_IO
+! Start/End position of different STLs
+      use stl, only: STL_START, STL_END
+! All STLS
+      use stl, only: ALL_STL
+! STLs read from geometry files
+      use stl, only: BASE_STL
+! STLs for user specified walls (NSW, PSW, FSW)
+      use stl, only: BCWALLS_STL
+! STLs for impermeable surfaces
+      use stl, only: IMPRMBL_STL
+! STLs for default walls
+      use stl, only: DEFAULT_STL
+
+      use error_manager
 
       IMPLICIT NONE
 
-      INTEGER :: LC
+! Type of STL to output
+      INTEGER, INTENT(IN) :: STL_TYPE
 
-! Raw STL data is common to all ranks.
+      INTEGER :: LC, lSTART, lEND
+      CHARACTER(len=128) :: FNAME
+
       IF(myPE /= PE_IO) RETURN
 
-      OPEN(UNIT=444, FILE='AUTO_FACETS.stl')
+      SELECT CASE(STL_TYPE)
+      CASE(BASE_STL)
+         lSTART = STL_START(BASE_STL) 
+         lEND=STL_END(BASE_STL)
+         FNAME='BASE_FACETS.stl'
+      CASE(BCWALLS_STL)
+         lSTART = STL_START(BCWALLS_STL) 
+         lEND=STL_END(BCWALLS_STL)
+         FNAME='BCWALLS_FACETS.stl'
+      CASE(IMPRMBL_STL)
+         lSTART = STL_START(IMPRMBL_STL) 
+         lEND=STL_END(IMPRMBL_STL)
+         FNAME='IMPRMBL_FACETS.stl'
+      CASE(DEFAULT_STL)
+         lSTART = STL_START(DEFAULT_STL) 
+         lEND=STL_END(DEFAULT_STL)
+         FNAME='DEFAULT_FACETS.stl'
+      CASE(ALL_STL)
+         lSTART = 1
+         lEND=N_FACETS_DES
+         FNAME='ALL_FACETS.stl'
+      END SELECT
+
+      IF(lEND < lSTART) THEN
+         WRITE(ERR_MSG,"('No FACETS to report: ',A)") trim(FNAME)
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+         RETURN
+      ENDIF
+
+      OPEN(UNIT=444, FILE=trim(FNAME))
 
       WRITE(444,*) 'solid vcg'
-      DO LC = N_FACETS+1, N_FACETS_DES
+      DO LC = lSTART, lEND
          WRITE(444,*) '   facet normal ', NORM_FACE(:,LC)
          WRITE(444,*) '      outer loop'
          WRITE(444,*) '         vertex ', VERTEX(1,1:3,LC)
@@ -144,7 +147,8 @@
       CLOSE(555)
 
       RETURN
-      END SUBROUTINE STL_DBG_WRITE_AUTO_FACETS
+      END SUBROUTINE STL_DBG_WRITE_FACETS
+
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -155,7 +159,7 @@
 !  Purpose:                                                            !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE STL_DBG_WRITE_STL_FROM_DG(WRITE_EACH_CELL)
+      SUBROUTINE STL_DBG_WRITE_STL_FROM_DG(WRITE_EACH_CELL,STL_TYPE)
 
 ! DES grid loop bounds
       use desgrid, only: DG_IJKSTART2, DG_IJKEND2
@@ -167,13 +171,29 @@
       use stl, only: NORM_FACE, VERTEX
 ! Processor ID and total proc count
       USE compar, only: myPE, numPEs
+! Start/End position of different STLs
+      use stl, only: STL_START, STL_END
+! STLs read from geometry files
+      use stl, only: BASE_STL
+! STLs for user specified walls (NSW, PSW, FSW)
+      use stl, only: BCWALLS_STL
+! STLs for impermeable surfaces
+      use stl, only: IMPRMBL_STL
+! STLs for default walls
+      use stl, only: DEFAULT_STL
+! All STLs
+      use stl, only: ALL_STL
+! Total number of STLs for DES
+      use stl, only: N_FACETS_DES
 
       IMPLICIT NONE
 
       LOGICAL, INTENT(IN), OPTIONAL :: WRITE_EACH_CELL
+      INTEGER, INTENT(IN), OPTIONAL :: STL_TYPE
 
       INTEGER :: IJK, LC1, LC2
-      CHARACTER(LEN=200) :: FN
+      INTEGER :: lSTART, lEND
+      CHARACTER(LEN=8) :: FID, IDX
       LOGICAL :: EACH_CELL
 
       LOGICAL, ALLOCATABLE :: WRITE_FACET(:)
@@ -185,22 +205,57 @@
       ALLOCATE (WRITE_FACET(DIM_STL))
       WRITE_FACET = .TRUE.
 
-      IF(numPEs == 1) THEN
-         WRITE(FN,'("DG_FACETS.stl")')
+
+      IF(present(STL_TYPE)) THEN
+         SELECT CASE(STL_TYPE)
+         CASE(BASE_STL)
+            lSTART = STL_START(BASE_STL) 
+            lEND=STL_END(BASE_STL)
+            FID='BASE'
+         CASE(BCWALLS_STL)
+            LSTART = STL_START(BCWALLS_STL) 
+            LEND=STL_END(BCWALLS_STL)
+            FID='BCWALLS'
+         CASE(IMPRMBL_STL)
+            LSTART = STL_START(IMPRMBL_STL) 
+            LEND=STL_END(IMPRMBL_STL)
+            FID='IMPRMBL'
+         CASE(DEFAULT_STL)
+            LSTART = STL_START(DEFAULT_STL) 
+            LEND=STL_END(DEFAULT_STL)
+            FID='DEFAULT'
+         CASE(ALL_STL)
+            LSTART = 1
+            LEND=N_FACETS_DES
+            FID='ALL'
+         END SELECT
       ELSE
-         WRITE(FN,'("DG_FACETS_",I5.5,".stl")') MYPE
+         LSTART = 1
+         LEND=N_FACETS_DES
+         FID='ALL'
       ENDIF
 
-      OPEN(UNIT=444, FILE=trim(FN))
+      IF(numPEs == 1) THEN
+         OPEN(UNIT=444,FILE='DG_FACETS_'//trim(FID)//&
+            '.stl', STATUS='UNKNOWN')
+      ELSE
+         WRITE(IDX,"(I8.8)") myPE
+         OPEN(UNIT=444,FILE='DG_FACETS_'//trim(FID)//&
+            '_'//IDX//'.stl', STATUS='UNKNOWN')
+      ENDIF
 
       write(444,*)'solid vcg'
       DO IJK=DG_IJKSTART2,DG_IJKEND2
          IF(FACETS_AT_DG(IJK)%COUNT< 1) CYCLE
 
-         IF(EACH_CELL) CALL WRITE_STLS_THIS_DG(IJK)
+         IF(EACH_CELL) CALL WRITE_STLS_THIS_DG(IJK, STL_TYPE)
 
          DO LC1 = 1, FACETS_AT_DG(IJK)%COUNT
             LC2 = FACETS_AT_DG(IJK)%ID(LC1)
+
+            IF(LC2 < lSTART .OR. LC2 > lEND) &
+               WRITE_FACET(LC2) = .FALSE.
+
             IF(WRITE_FACET(LC2)) THEN
                write(444,*) '   facet normal ', NORM_FACE(:,LC2)
                write(444,*) '      outer loop'
@@ -230,42 +285,98 @@
 !                                                                      !
 !                                                                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE write_stls_this_dg(dg)
+      SUBROUTINE WRITE_STLS_THIS_DG(DG, STL_TYPE)
 
 ! STL Vertices
       use stl, only: VERTEX
 ! STL Facet normals
       use stl, only: NORM_FACE
 ! Facets binned to DES grid
-      use stl, only: facets_at_dg
+      use stl, only: FACETS_AT_DG
+! Start/End position of different STLs
+      use stl, only: STL_START, STL_END
+! STLs read from geometry files
+      use stl, only: BASE_STL
+! STLs for user specified walls (NSW, PSW, FSW)
+      use stl, only: BCWALLS_STL
+! STLs for impermeable surfaces
+      use stl, only: IMPRMBL_STL
+! STLs for default walls
+      use stl, only: DEFAULT_STL
+! All STLs
+      use stl, only: ALL_STL
+! Total number of STLs for DES
+      use stl, only: N_FACETS_DES
 
 
       IMPLICIT NONE
 !-----------------------------------------------
-      integer, intent(in) :: dg
-      integer :: lc, nf
+      INTEGER, INTENT(IN) :: DG
+      INTEGER, INTENT(IN), OPTIONAL :: STL_TYPE
 
-      logical :: EXISTS
-      character(len=6) :: IDX
+      INTEGER :: ID, FACET, lCOUNT
+      INTEGER :: lSTART, lEND
 
-      write(idx,"(I6.6)") dg
-      open(unit=555, file='dg_'//idx//'.stl', status='UNKNOWN')
+      LOGICAL :: EXISTS
+      CHARACTER(LEN=8) :: IDX, FID
+
+      IF(present(STL_TYPE)) THEN
+         SELECT CASE(STL_TYPE)
+         CASE(BASE_STL)
+            lSTART = STL_START(BASE_STL) 
+            lEND=STL_END(BASE_STL)
+            FID='base'
+         CASE(BCWALLS_STL)
+            lSTART = STL_START(BCWALLS_STL) 
+            lEND=STL_END(BCWALLS_STL)
+            FID='bcwalls'
+         CASE(IMPRMBL_STL)
+            lSTART = STL_START(IMPRMBL_STL) 
+            lEND=STL_END(IMPRMBL_STL)
+            FID='imprmbl'
+         CASE(DEFAULT_STL)
+            lSTART = STL_START(DEFAULT_STL) 
+            lEND=STL_END(DEFAULT_STL)
+            FID='default'
+         CASE(ALL_STL)
+            lSTART = 1
+            lEND=N_FACETS_DES
+            FID='all'
+         END SELECT
+      ELSE
+         lSTART = 1
+         lEND=N_FACETS_DES
+         FID='all'
+      ENDIF
+
+      lCOUNT = 0
+      DO FACET=1, FACETS_AT_DG(DG)%COUNT
+         ID = FACETS_AT_DG(DG)%ID(FACET)
+         IF(ID >= lSTART .AND. ID <= lEND) lCOUNT = lCOUNT+1
+      ENDDO
+
+      IF(FACETS_AT_DG(DG)%COUNT < 1) RETURN
+
+      write(idx,"(I8.8)") dg
+      open(unit=555,file='dg_'//idx//'_'//trim(FID)//&
+         '.stl',status='UNKNOWN')
 
       write(555,*) 'solid vcg'
 
-      DO lc=1, facets_at_dg(dg)%count
+      DO FACET=1, FACETS_AT_DG(DG)%COUNT
 
-         NF = facets_at_dg(dg)%id(lc)
+         ID = FACETS_AT_DG(DG)%ID(FACET)
+         IF(ID < lSTART .OR. ID > lEND) CYCLE 
 
-         write(555,*) '   facet normal ', NORM_FACE(:,NF)
+         write(555,*) '   facet normal ', NORM_FACE(:,ID)
          write(555,*) '      outer loop'
-         write(555,*) '         vertex ', VERTEX(1,1:3,NF)
-         write(555,*) '         vertex ', VERTEX(2,1:3,NF)
-         write(555,*) '         vertex ', VERTEX(3,1:3,NF)
+         write(555,*) '         vertex ', VERTEX(1,1:3,ID)
+         write(555,*) '         vertex ', VERTEX(2,1:3,ID)
+         write(555,*) '         vertex ', VERTEX(3,1:3,ID)
          write(555,*) '      endloop'
          write(555,*) '   endfacet'
-      enddo
-      close(555)
+      ENDDO
+      CLOSE(555)
 
       RETURN
       END SUBROUTINE write_stls_this_dg
@@ -296,7 +407,7 @@
 
       write(idx,"(I4.4)") this
       write(ipe,"(I4.4)") myPE
-      open(unit=555, file='geo_'//idx//'_'//IPE//'.stl',&
+      open(unit=555, file='idv_'//idx//'_'//IPE//'.stl',&
          status='UNKNOWN')
       write(555,*) 'solid vcg'
       write(555,*) '   facet normal ', NORM_FACE(:,this)

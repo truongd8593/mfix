@@ -79,6 +79,7 @@
       use des_bc, only: DEM_MI
 
       use stl, only: N_FACETS_DES
+      use stl, only: STL_START, DEFAULT_STL
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
 
@@ -284,7 +285,7 @@
             CENTER(1) = MESH_P(W) + HALF*WINDOW
             CENTER(3) = MESH_Q(H) + HALF*WINDOW
 
-            FACET_LP: DO LC=1, N_FACETS_DES
+            FACET_LP: DO LC=1, STL_START(DEFAULT_STL)-1
 
                IF(BC_Y_s(BCV) > maxval(VERTEX(:,2,LC))) CYCLE FACET_LP
                IF(BC_Y_s(BCV) < minval(VERTEX(:,2,LC))) CYCLE FACET_LP
@@ -470,6 +471,7 @@
 
       use des_bc, only: DEM_MI
 
+      use stl, only: STL_START, DEFAULT_STL
       use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
@@ -677,7 +679,7 @@
             CENTER(2) = MESH_P(W) + HALF*WINDOW
             CENTER(3) = MESH_Q(H) + HALF*WINDOW
 
-            FACET_LP: DO LC=1, N_FACETS_DES
+            FACET_LP: DO LC=1, STL_START(DEFAULT_STL)-1
 
                IF(BC_X_w(BCV) > maxval(VERTEX(:,1,LC))) CYCLE FACET_LP
                IF(BC_X_w(BCV) < minval(VERTEX(:,1,LC))) CYCLE FACET_LP
@@ -865,6 +867,7 @@
 
       use des_bc, only: DEM_MI
 
+      use stl, only: STL_START, DEFAULT_STL
       use stl, only: N_FACETS_DES
       use stl, only: VERTEX, NORM_FACE
       use cutcell, only: USE_STL
@@ -1053,7 +1056,7 @@
             CENTER(1) = MESH_P(W) + HALF*WINDOW
             CENTER(2) = MESH_Q(H) + HALF*WINDOW
 
-            FACET_LP: DO LC=1, N_FACETS_DES
+            FACET_LP: DO LC=1, STL_START(DEFAULT_STL)-1
 
                IF(BC_Z_b(BCV) > maxval(VERTEX(:,3,LC))) CYCLE FACET_LP
                IF(BC_Z_b(BCV) < minval(VERTEX(:,3,LC))) CYCLE FACET_LP

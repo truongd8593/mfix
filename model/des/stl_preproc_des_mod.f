@@ -28,10 +28,18 @@
       use cutcell, only: use_stl
 ! Number of facets from STL files, (plus DES generated)
       use stl, only: N_FACETS, N_FACETS_DES
-! STLs binned to the DES grid
-      use stl, only: FACETS_AT_DG
-! Des grid size
-      use desgrid, only: DG_IJKSIZE2
+! Start/End position of different STLs
+      use stl, only: STL_START, STL_END
+! All STLS
+      use stl, only: ALL_STL
+! STLs read from geometry files
+      use stl, only: BASE_STL
+! STLs for user specified walls (NSW, PSW, FSW)
+      use stl, only: BCWALLS_STL
+! STLs for impermeable surfaces
+      use stl, only: IMPRMBL_STL
+! STLs for default walls
+      use stl, only: DEFAULT_STL
 
       use stl_dbg_des
       use error_manager
@@ -44,6 +52,8 @@
 
 ! Process the STL files
       N_FACETS_DES = merge(N_FACETS, 0, USE_STL)
+! Store the Start/End of the base STLs from geometry files
+      STL_START(BASE_STL)=1;   STL_END(BASE_STL)=N_FACETS_DES
 
 ! Process stair-step geometries
       CALL CONVERT_BC_WALLS_TO_STL
@@ -52,20 +62,19 @@
 ! Process default walls
       CALL CONVERT_DEFAULT_WALLS_TO_STL
 
-! Allocate the data storage array.
-      ALLOCATE(FACETS_AT_DG(DG_IJKSIZE2))
-      FACETS_AT_DG(:)%COUNT = 0
-
 ! Bin the STL to the DES grid.
       CALL BIN_FACETS_TO_DG
 
 ! Some functions for debugging.
-!      CALL STL_DBG_WRITE_INPUT_FACETS
-!      CALL STL_DBG_WRITE_AUTO_FACETS
-!      CALL STL_DBG_WRITE_STL_FROM_DG
+!      CALL STL_DBG_WRITE_FACETS(BASE_STL)
+!      CALL STL_DBG_WRITE_FACETS(BCWALLS_STL)
+!      CALL STL_DBG_WRITE_FACETS(IMPRMBL_STL)
+!      CALL STL_DBG_WRITE_FACETS(DEFAULT_STL)
+!      CALL STL_DBG_WRITE_FACETS(ALL_STL)
+!      CALL STL_DBG_WRITE_STL_FROM_DG(STL_TYPE=BASE_STL)
 
 ! Pre-procssing for the des in order to assign facets to grid cells.
-      WRITE(ERR_MSG,"('Pre-Processing complete.')")
+      WRITE(ERR_MSG,"('DES geometry pre-processing complete.')")
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
       RETURN
@@ -82,17 +91,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine BIN_FACETS_TO_DG
 
-      USE desgrid, only: DG_IEND2, DG_ISTART2
-      USE desgrid, only: DG_JEND2, DG_JSTART2
-      USE desgrid, only: DG_KEND2, DG_KSTART2
-      USE desgrid, only: dg_dxinv, dg_dyinv, dg_dzinv
+      use desgrid, only: DG_IJKSIZE2
+      use desgrid, only: DG_IEND2, DG_ISTART2
+      use desgrid, only: DG_JEND2, DG_JSTART2
+      use desgrid, only: DG_KEND2, DG_KSTART2
+      use desgrid, only: dg_dxinv, dg_dyinv, dg_dzinv
 
-      USE geometry, only: XLENGTH, YLENGTH, ZLENGTH, DO_K
-      Use stl, only: N_FACETS_DES
-      Use stl, only: VERTEX
+      use stl, only: FACETS_AT_DG
 
-      Use stl, only: TOL_STL
-      USE param1, only: ZERO, ONE
+      use geometry, only: XLENGTH, YLENGTH, ZLENGTH, DO_K
+      use stl, only: N_FACETS_DES
+      use stl, only: VERTEX
+
+      use stl, only: TOL_STL
+      use param1, only: ZERO, ONE
 
       use desgrid, only: DG_FUNIJK
       use desgrid, only: IofPOS, JofPOS, KofPOS
@@ -119,6 +131,10 @@
       DG_DX = ONE/DG_DXINV
       DG_DY = ONE/DG_DYINV
       IF(DO_K) DG_DZ = ONE/DG_DZINV
+
+! Allocate the data storage array.
+      ALLOCATE(FACETS_AT_DG(DG_IJKSIZE2))
+      FACETS_AT_DG(:)%COUNT = 0
 
       DO NN = 1,N_FACETS_DES
 
@@ -341,6 +357,8 @@
       use bc, only: BC_I_w, BC_I_e
       use bc, only: BC_J_s, BC_J_n
       use bc, only: BC_K_b, BC_K_t
+      use stl, only: N_FACETS_DES
+      use stl, only: STL_START, STL_END, BCWALLS_STL
 
       use discretelement, only: XE, YN, ZT
 
@@ -354,6 +372,7 @@
 ! Extents of the BC region with respect to the fluid grid.
       DOUBLE PRECISION :: lXw, lXe, lYs, lYn, lZb, lZt
 
+      STL_START(BCWALLS_STL)=N_FACETS_DES+1
 
       DO BCV=1, DIMENSION_BC
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
@@ -369,11 +388,10 @@
             ELSE
                lZb = ZERO; lZt = ZERO
             ENDIF
-
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
-
          ENDIF
       ENDDO
+      STL_END(BCWALLS_STL)=N_FACETS_DES
 
       RETURN
       END SUBROUTINE CONVERT_BC_WALLS_TO_STL
@@ -397,6 +415,8 @@
       use is, only: IS_J_s, IS_J_n
       use is, only: IS_K_b, IS_K_t
 
+      use stl, only: N_FACETS_DES
+      use stl, only: STL_START, STL_END, IMPRMBL_STL
       use discretelement, only: XE, YN, ZT
 
       use param, only: DIMENSION_IS
@@ -411,6 +431,7 @@
 ! Extents of the BC region with respect to the fluid grid.
       DOUBLE PRECISION :: lXw, lXe, lYs, lYn, lZb, lZt
 
+      STL_START(IMPRMBL_STL)=N_FACETS_DES+1
 
       DO ISV=1, DIMENSION_IS
          IF(.NOT.IS_DEFINED(ISV)) CYCLE
@@ -432,6 +453,8 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
+
+      STL_END(IMPRMBL_STL)=N_FACETS_DES
 
  1000 FORMAT("Error 1000: DES simulations do not support the ",/       &
          'specified IS TYPE:',/3x,'IS: ',I3,/3x,'IS_TYPE=',A)
@@ -455,6 +478,7 @@
       USE geometry, only: XLENGTH, YLENGTH, ZLENGTH
       use stl, only: VERTEX, NORM_FACE
       use stl, only: N_FACETS_DES
+      use stl, only: STL_START, STL_END, DEFAULT_STL
 
       use discretelement, only: DES_PERIODIC_WALLS_X
       use discretelement, only: DES_PERIODIC_WALLS_Y
@@ -463,6 +487,8 @@
       USE param1, only: ZERO, ONE
 
       IMPLICIT NONE
+
+      STL_START(DEFAULT_STL)=N_FACETS_DES+1
 
 ! West Face
       IF(.NOT.DES_PERIODIC_WALLS_X)THEN
@@ -511,6 +537,8 @@
          VERTEX(3,:,N_FACETS_DES) = (/ZERO, 2*YLENGTH, ZLENGTH/)
          NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
       ENDIF
+
+      STL_END(DEFAULT_STL)=N_FACETS_DES
 
       RETURN
       END SUBROUTINE CONVERT_DEFAULT_WALLS_TO_STL

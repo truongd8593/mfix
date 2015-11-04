@@ -326,6 +326,10 @@
       DOUBLE PRECISION, INTENT(INOUT) :: WALL_COLLISION_PFT(:,:,:)
       INTEGER :: CC, FREE_INDEX, LC, dgIJK
 
+      INTEGER :: lSIZE1, lSIZE2, lSIZE3
+      INTEGER, ALLOCATABLE :: tmpI2(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: tmpR3(:,:,:)
+
       free_index = -1
 
       do cc = 1, COLLISION_ARRAY_MAX
@@ -353,29 +357,76 @@
          enddo cc_lp
       endif
 
-
+! Last resort... grow the collision array
       if(-1 == free_index) then
-
-         do cc = 1, COLLISION_ARRAY_MAX
-            call write_this_stl(wall_collision_facet_id(cc,LLL))
-         enddo
-         call write_stls_this_dg(dg_pijk(LLL))
-
-         CALL INIT_ERR_MSG("CALC_COLLISION_WALL_MOD: GET_COLLISION")
-         WRITE(ERR_MSG, 1100) LLL, CC
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-      else
-         wall_collision_facet_id(free_index,LLL) = facet_id
-         wall_collision_PFT(:,free_index,LLL) = ZERO
-         get_collision(:) = wall_collision_PFT(:,free_index,LLL)
-         return
+         free_index=COLLISION_ARRAY_MAX+1
+         COLLISION_ARRAY_MAX = 2*COLLISION_ARRAY_MAX
+         CALL GROW_WALL_COLLISION(COLLISION_ARRAY_MAX)
       endif
 
- 1100 FORMAT('Error: COLLISION_ARRAY_MAX too small.'/'Particle: ',I9,/ &
-           'Facet:    ',I9)
+      wall_collision_facet_id(free_index,LLL) = facet_id
+      wall_collision_PFT(:,free_index,LLL) = ZERO
+      get_collision(:) = wall_collision_PFT(:,free_index,LLL)
+      return
 
       END FUNCTION GET_COLLISION
+
+
+!......................................................................!
+!  Subroutine: GROW_WALL_COLLISION                                     !
+!                                                                      !
+!  Purpose: Return the integrated (t0->t) tangential displacement.     !
+!......................................................................!
+      SUBROUTINE GROW_WALL_COLLISION(NEW_SIZE)
+
+      use discretelement
+
+      use stl_dbg_des, only: write_this_stl
+      use stl_dbg_des, only: write_stls_this_dg
+
+      use error_manager
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NEW_SIZE
+      INTEGER :: lSIZE1, lSIZE2, lSIZE3
+      INTEGER, ALLOCATABLE :: tmpI2(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: tmpR3(:,:,:)
+
+      lSIZE1 = size(wall_collision_facet_id,1)
+      lSIZE2 = size(wall_collision_facet_id,2)
+
+      allocate(tmpI2(NEW_SIZE, lSIZE2))
+      tmpI2(1:lSIZE1,:) = WALL_COLLISION_FACET_ID(1:lSIZE1,:)
+      call move_alloc(tmpI2, WALL_COLLISION_FACET_ID)
+      WALL_COLLISION_FACET_ID(lSIZE1+1:NEW_SIZE,:) = -1
+
+      lSIZE1 = size(wall_collision_pft,1)
+      lSIZE2 = size(wall_collision_pft,2)
+      lSIZE3 = size(wall_collision_pft,3)
+
+      allocate(tmpR3(lSIZE1, NEW_SIZE, lSIZE3))
+      tmpR3(:,1:lSIZE2,:) = WALL_COLLISION_PFT(:,1:lSIZE2,:)
+      call move_alloc(tmpR3, WALL_COLLISION_PFT)
+
+      RETURN
+      END SUBROUTINE GROW_WALL_COLLISION
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 !......................................................................!

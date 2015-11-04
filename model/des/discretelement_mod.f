@@ -380,7 +380,7 @@
       END TYPE iap1
 
 !     particle can collide with at most COLLISION_ARRAY_MAX facets simultaneously
-      INTEGER, PARAMETER :: COLLISION_ARRAY_MAX = 8
+      INTEGER :: COLLISION_ARRAY_MAX = 8
 
 ! (COLLISION_ARRAY_MAX,PARTICLES)
 !     -1 value indicates no collision
