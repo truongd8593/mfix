@@ -540,7 +540,7 @@
 ! set do_nsearch true so that the ghost cell will be updated
       do_nsearch = .true.
       call desgrid_pic(plocate=.true.)
-      call desmpi_check_sendrecvbuf
+      call desmpi_check_sendrecvbuf(check_global=.true.)
 
 !call ghost particle exchange in E-W, N-S, T-B order
 

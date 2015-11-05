@@ -79,9 +79,11 @@
 
 ! Check that the send/recv buffer is sufficient every 100 calls to
 ! avoid the related global communications.
-      if (mod(lcheckbuf,100) .eq. 0) then
-         call desmpi_check_sendrecvbuf
+      if (mod(lcheckbuf,100) == 0) then
+         call desmpi_check_sendrecvbuf(check_global=.true.)
          lcheckbuf = 0
+      elseif (mod(lcheckbuf,5) == 0) then
+         call desmpi_check_sendrecvbuf(check_global=.false.)
       end if
       lcheckbuf = lcheckbuf + 1
 
@@ -168,7 +170,7 @@
 ! Purpose: Checks if the sendrecvbuf size is large enough. If the      !
 !    buffers are not sufficent, they are resized.                      !
 !----------------------------------------------------------------------!
-      SUBROUTINE DESMPI_CHECK_SENDRECVBUF
+      SUBROUTINE DESMPI_CHECK_SENDRECVBUF(check_global)
 
       use discretelement, only: DIMN, dg_pic
       use desmpi, only: iMAXBUF
@@ -180,6 +182,8 @@
       use mpi_utility, only: global_all_max
       use error_manager
       implicit none
+
+      logical, intent(in) :: check_global
 
 ! Local variables:
 !---------------------------------------------------------------------//
@@ -194,7 +198,7 @@
 ! Previous Buffer
       INTEGER :: pBUF
 ! Growth factor when resizing send/recv buffers.
-      REAL :: lfactor = 1.5
+      REAL :: lfactor = 0.5
       DOUBLE PRECISION, PARAMETER :: ONEMBo8 = 131072.0
 !......................................................................!
 
@@ -206,16 +210,18 @@
             lijk = isendindices(lindx,lface)
             lparcnt = lparcnt + dg_pic(lijk)%isize
          enddo
-         if(lparcnt.gt.lmaxcnt) lmaxcnt = lparcnt
+         if(lparcnt > lmaxcnt) lmaxcnt = lparcnt
       enddo
 
-      call global_all_max(lmaxcnt)
-      if (imaxbuf .lt. lmaxcnt*iGhostPacketSize+ibufoffset) then
+      if(check_global) call global_all_max(lmaxcnt)
+
+      if (imaxbuf < (1.0+0.5*lfactor)*lmaxcnt*iGhostPacketSize) then
          pbuf = imaxbuf
-         imaxbuf = lmaxcnt*iGhostPacketSize*lfactor
+         imaxbuf = (1.0+lfactor)*lmaxcnt*iGhostPacketSize
          do lface = 1,2*dimn
             if(allocated(dsendbuf(1+mod(lface,2))%facebuf)) then
-               deallocate(dsendbuf(1+mod(lface,2))%facebuf,drecvbuf(1+mod(lface,2))%facebuf)
+               deallocate(dsendbuf(1+mod(lface,2))%&
+                  facebuf,drecvbuf(1+mod(lface,2))%facebuf)
             endif
             allocate(dsendbuf(1+mod(lface,2))%facebuf(imaxbuf),&
                drecvbuf(1+mod(lface,2))%facebuf(imaxbuf))
@@ -243,7 +249,8 @@
       use discretelement, only: DES_POS_NEW, DES_POS_OLD
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
       use discretelement, only: OMEGA_NEW
-      use discretelement, only: PARTICLE_ORIENTATION,ORIENTATION,INIT_ORIENTATION
+      use discretelement, only: PARTICLE_ORIENTATION
+      use discretelement, only: ORIENTATION,INIT_ORIENTATION
       use discretelement, only: FC
       use discretelement, only: DO_OLD
       use discretelement, only: PIP
@@ -291,7 +298,8 @@
                des_vel_new(:,lcurpar)=0
                omega_new(:,lcurpar)=0
 
-               IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,lcurpar) = INIT_ORIENTATION
+               IF(PARTICLE_ORIENTATION) &
+                  ORIENTATION(1:3,lcurpar) = INIT_ORIENTATION
 
                if(ENERGY_EQ) then
                   des_t_s_new(lcurpar)=0
