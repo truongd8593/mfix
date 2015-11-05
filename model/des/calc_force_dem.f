@@ -18,6 +18,8 @@
       USE des_thermo_cond
       USE discretelement
       USE run
+      use pair_manager
+      use sweep_and_prune
 
       IMPLICIT NONE
 
@@ -67,6 +69,9 @@
 
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
+      integer :: pp
+      logical :: ok
+
 !-----------------------------------------------
 
 ! Initialize cohesive forces
@@ -103,6 +108,7 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
+
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
@@ -151,6 +157,45 @@
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
+
+            !print *,"ALLEGEDLY, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm+small_number
+            !print *,"????, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm
+
+            ok = .false.
+            do pp=1,size(pairs,2)
+               if (pairs(ll,pp).eq.i) then
+                  ok = .true.
+                  exit
+               endif
+            enddo
+
+            if (.not.ok) then
+               print *,"SAP DIDNT FIND PAIR: ",ll,i
+               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+
+               print *,"I BOX  ",sap%boxes(ll)%box_id
+               print *,"MIN1 LL is ",sap%boxes(ll)%minendpoint_id(1),sap%x_endpoints(sap%boxes(ll)%minendpoint_id(1))%value
+               print *,"MAX1 LL is ",sap%boxes(ll)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(ll)%maxendpoint_id(1))%value
+               print *,"MIN2 LL is ",sap%boxes(ll)%minendpoint_id(2),sap%y_endpoints(sap%boxes(ll)%minendpoint_id(2))%value
+               print *,"MAX2 LL is ",sap%boxes(ll)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(ll)%maxendpoint_id(2))%value
+
+               print *,"LL BOX  ",sap%boxes(i)%box_id
+               print *,"MIN1 i is ",sap%boxes(i)%minendpoint_id(1),sap%x_endpoints(sap%boxes(i)%minendpoint_id(1))%value
+               print *,"MAX1 i is ",sap%boxes(i)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(i)%maxendpoint_id(1))%value
+               print *,"MIN2 i is ",sap%boxes(i)%minendpoint_id(2),sap%y_endpoints(sap%boxes(i)%minendpoint_id(2))%value
+               print *,"MAX2 i is ",sap%boxes(i)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(i)%maxendpoint_id(2))%value
+
+               do pp=1,size(pairs,2)
+                  print *,"pairs(",ll,pp,")",pairs(ll,pp)," IS NOT ",i
+                  if (pairs(ll,pp).eq.i) then
+                     ok = .true.
+                     exit
+                  endif
+               enddo
+
+               stop __LINE__
+            endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I

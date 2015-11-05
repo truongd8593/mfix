@@ -12,12 +12,16 @@
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
+      use sweep_and_prune
+      use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: FACTOR
+      INTEGER :: FACTOR, nn
+
+      type(aabb_t) :: aabb
 
 !-----------------------------------------------
 ! Include statement functions
@@ -45,6 +49,16 @@
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
 
+      ! initialize SAP
+      do nn=1, MAX_PIP
+         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)
+         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)
+         call add_box(sap,aabb,box_id(nn))
+      enddo
+
+      call sort(sap)
+      call init_pairs
+      call sweep(sap)
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces

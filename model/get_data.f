@@ -34,6 +34,7 @@
       use desgrid, only: DESGRID_INIT
       use mpi_init_des, only: DESMPI_INIT
       use stl_preproc_des, only: DES_STL_PREPROCESSING
+      use sweep_and_prune
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -144,6 +145,9 @@
       CALL ALLOCATE_ARRAYS
       IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
       IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
+
+      call init_sap(sap)
+      Allocate(  box_id(MAX_PIP) )
 
 ! Initialize arrays.
       CALL INIT_FVARS

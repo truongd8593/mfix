@@ -55,6 +55,12 @@ noinst_LIBRARIES = libmfix.a
 mfix_SOURCES = model/mfix.f
 libmfix_a_SOURCES = model/ODEPACK.F
 
+bin_PROGRAMS += sap
+
+sap_SOURCES = model/des/sap.f
+sap_SOURCES += model/des/pair_manager.f
+sap_SOURCES += model/des/test_sap.f
+
 ################################################################
 #                                                              #
 #           postmfix executable                                #
@@ -424,6 +430,8 @@ libmfix_src = \
 	model/des/drag_gs_des0.f \
 	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
+	model/des/sap.f \
+	model/des/pair_manager.f \
 	model/des/gas_drag.f \
 	model/des/generate_particles_mod.f \
 	model/des/init_settling_dem.f \

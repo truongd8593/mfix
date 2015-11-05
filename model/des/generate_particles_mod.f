@@ -133,16 +133,19 @@
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
-      use discretelement, only: MAX_RADIUS
+      use discretelement, only: MAX_RADIUS, box_id
 
       use discretelement, only: XE, YN, ZT
 
       use param, only: DIM_M, DIMENSION_I, DIMENSION_J, DIMENSION_K
       use functions, only: IS_ON_MYPE_WOBND
+      use sweep_and_prune
 
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: ICV
+
+      type(aabb_t) aabb
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -376,6 +379,8 @@
             DES_POS_OLD(:,PIP) = DES_POS_NEW(:,PIP)
             OMEGA_OLD(:,PIP) = ZERO
          ENDIF
+         stop __LINE__
+
 
          SOLIDS_DATA(M) = SOLIDS_DATA(M) + 1.0
 
@@ -725,6 +730,7 @@
 
          DES_POS_NEW(:,PIP) = POS(:)
          DES_VEL_NEW(:,PIP) = VEL(:)
+         stop __LINE__
 
          DES_RADIUS(PIP) = DES_D_P0(M)*HALF
          RO_SOL(PIP) =  DES_RO_S(M)
@@ -927,6 +933,7 @@
  
             DES_POS_NEW(:,PIP) = POS(:)
             DES_VEL_NEW(:,PIP) = randVEL(LC,:)
+            stop __LINE__
  
             DES_RADIUS(PIP) = DES_D_P0(M)*HALF
             RO_SOL(PIP) =  DES_RO_S(M)

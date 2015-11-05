@@ -32,6 +32,9 @@
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
+      use sweep_and_prune
+      use pair_manager
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -40,6 +43,9 @@
       DOUBLE PRECISION :: DD(3), NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
+
+      type(aabb_t) aabb
+
 !-----------------------------------------------
 
       IF(MPPIC) THEN
@@ -108,6 +114,10 @@
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
+         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)
+         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)
+         call update_box(sap,box_id(L),aabb)
+
 ! Update particle orientation - Always first order
 ! When omega is non-zero, compute the rotation angle, and apply the
 ! Rodrigues' rotation formula
@@ -156,6 +166,10 @@
 
       ENDDO
 !$omp end parallel do
+
+      call sort(sap)
+      call init_pairs
+      call sweep(sap)
 
       FIRST_PASS = .FALSE.
 

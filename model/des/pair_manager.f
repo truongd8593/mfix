@@ -1,7 +1,6 @@
 module pair_manager
 
-  !use discretelement, only :: MAX_PIP
-  integer, parameter :: MAX_PIP = 1000
+  use discretelement, only: MAX_PIP
 
   integer, parameter :: MAX_NUM_NEIGH = 30
   integer, dimension(:,:), allocatable :: pairs
@@ -10,13 +9,16 @@ module pair_manager
 
 contains
 
-  subroutine init_pair_iterator
+  subroutine init_pairs
     implicit none
 
     current_row = 1
     current_column = 1
+    if (allocated(pairs)) deallocate(pairs)
+    allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
+    pairs(:,:) = 0
 
-  end subroutine init_pair_iterator
+  end subroutine init_pairs
 
   subroutine get_pair(pair)
     implicit none
@@ -29,9 +31,11 @@ contains
     do while (current_row <= size(pairs,1))
 
        do while (current_column <= MAX_NUM_NEIGH)
+          !print *,"row,col == ",current_row, current_column
           if (pairs(current_row, current_column).ne.0) then
              pair(1) = current_row
              pair(2) = pairs(current_row, current_column)
+             print *,"RETURNING PAIR: ",pair(1),pair(2)
              current_column = current_column + 1
              return
           endif
@@ -43,50 +47,70 @@ contains
 
     enddo
 
+    print *,"RETURNING PAIR: ",pair(1),pair(2)
+
   end subroutine get_pair
 
   subroutine add_pair(ii,jj)
     implicit none
     integer, intent(in) :: ii,jj
-    integer :: nn
+    integer :: nn, tmp, i0, j0
+
+    i0 = min(ii,jj)
+    j0 = max(ii,jj)
+
+    if (ii.eq.jj) then
+       print *,"tried to add pair with same index: ",ii
+       stop __LINE__
+    endif
 
     if (.not. allocated(pairs)) then
        allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
     else if(size(pairs,1) < MAX_PIP) then
+       stop __LINE__
        !integer_grow2_reverse(pairs,MAX_PIP)
     endif
 
     do nn=1, MAX_NUM_NEIGH
-       if (pairs(ii,nn).eq.0) then
-       pairs(ii,nn) = jj
-       return
-    endif
- end do
+       if (pairs(i0,nn).eq.0) then
+          pairs(i0,nn) = j0
+          return
+       endif
+    end do
 
- print *,"particle ",ii," had more than ",MAX_NUM_NEIGH," neighbors."
- stop 1111
+    print *,"particle ",ii," had more than ",MAX_NUM_NEIGH," neighbors."
+    stop 1111
 
-end subroutine add_pair
+  end subroutine add_pair
 
   subroutine del_pair(ii,jj)
     implicit none
     integer, intent(in) :: ii,jj
-    integer :: nn
+    integer :: nn, tmp, i0, j0
+
+    i0 = min(ii,jj)
+    j0 = max(ii,jj)
+
+    if (ii.eq.jj) then
+       print *,"tried to add pair with same index: ",ii
+       stop __LINE__
+    endif
 
     if (.not. allocated(pairs)) then
        allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
     else if(size(pairs,1) < MAX_PIP) then
+       stop __LINE__
        !integer_grow2_reverse(pairs,MAX_PIP)
     endif
 
     do nn=1, MAX_NUM_NEIGH
-       if (pairs(ii,nn).eq.jj) then
-       pairs(ii,nn) = 0
+       if (pairs(i0,nn).eq.j0) then
+       pairs(i0,nn) = 0
        return
        endif
     end do
 
-    print *,"pair ",ii,jj," was not in the pair manager"
+    print *,"pair ",i0,j0," was not in the pair manager"
 
   end subroutine del_pair
 
