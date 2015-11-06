@@ -14,8 +14,7 @@ contains
 
     current_row = 1
     current_column = 1
-    if (allocated(pairs)) deallocate(pairs)
-    allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
+    if (.not.allocated(pairs)) allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
     pairs(:,:) = 0
 
   end subroutine init_pairs
@@ -52,6 +51,7 @@ contains
   end subroutine get_pair
 
   subroutine add_pair(ii,jj)
+    use discretelement
     implicit none
     integer, intent(in) :: ii,jj
     integer :: nn, tmp, i0, j0
@@ -72,14 +72,18 @@ contains
     endif
 
     do nn=1, MAX_NUM_NEIGH
-       if (pairs(i0,nn).eq.0) then
+       if (pairs(i0,nn).eq.0 .or. pairs(i0,nn).eq.j0) then
           pairs(i0,nn) = j0
           return
        endif
     end do
 
-    print *,"particle ",ii," had more than ",MAX_NUM_NEIGH," neighbors."
-    stop 1111
+    print *,"particle ",i0," had more than ",MAX_NUM_NEIGH," neighbors."
+    do nn=1, MAX_NUM_NEIGH
+       print *,"PAIRS(",i0,",",nn,") = ",pairs(i0,nn)
+    end do
+
+    stop __LINE__
 
   end subroutine add_pair
 
@@ -110,7 +114,7 @@ contains
        endif
     end do
 
-    print *,"pair ",i0,j0," was not in the pair manager"
+    !print *,"pair ",i0,j0," was not in the pair manager"
 
   end subroutine del_pair
 

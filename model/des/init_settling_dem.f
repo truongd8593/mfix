@@ -51,14 +51,16 @@
 
       ! initialize SAP
       do nn=1, MAX_PIP
-         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)
-         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)
+         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
+         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
          call add_box(sap,aabb,box_id(nn))
       enddo
 
+      call init_pairs
       call sort(sap)
       call init_pairs
       call sweep(sap)
+      !call sweep(sap)
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces

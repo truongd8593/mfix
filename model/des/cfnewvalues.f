@@ -114,8 +114,8 @@
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
-         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)
-         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)
+         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.001
+         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.001
          call update_box(sap,box_id(L),aabb)
 
 ! Update particle orientation - Always first order
@@ -167,9 +167,9 @@
       ENDDO
 !$omp end parallel do
 
+      !call init_pairs
       call sort(sap)
-      call init_pairs
-      call sweep(sap)
+      !call sweep(sap)
 
       FIRST_PASS = .FALSE.
 

@@ -1,23 +1,25 @@
       program test_sap
 
-      use pair_manager, only: pairs, init_pair_iterator, add_pair,get_pair
-      use sweep_and_prune
+        use discretelement
+        use pair_manager, only: pairs, init_pairs, add_pair,get_pair
+        use sweep_and_prune
 
       implicit none
 
       integer :: nn,mm,box_A,box_B
       integer :: pair(2)
-      type(sap_t) sap
       type(aabb_t) aabb
+
+      MAX_PIP = 10
 
       call init_sap(sap)
 
-      aabb%minendpoint(1) = 10
-      aabb%minendpoint(2) = 10
-      aabb%minendpoint(3) = 10
-      aabb%maxendpoint(1) = 12.5
-      aabb%maxendpoint(2) = 12.5
-      aabb%maxendpoint(3) = 12.5
+      aabb%minendpoint(1) = 5
+      aabb%minendpoint(2) = 5
+      aabb%minendpoint(3) = 5
+      aabb%maxendpoint(1) = 15
+      aabb%maxendpoint(2) = 15
+      aabb%maxendpoint(3) = 15
 
       print *,"after init"
       !call print_boxes(sap)
@@ -27,9 +29,9 @@
       print *,"after add"
       call print_boxes(sap)
 
-      aabb%minendpoint(1) = 12
-      aabb%minendpoint(2) = 12
-      aabb%minendpoint(3) = 12
+      aabb%minendpoint(1) = 10
+      aabb%minendpoint(2) = 10
+      aabb%minendpoint(3) = 10
       aabb%maxendpoint(1) = 17
       aabb%maxendpoint(2) = 17
       aabb%maxendpoint(3) = 17
@@ -39,6 +41,8 @@
       print *,"after second add:"
       call print_boxes(sap)
 
+      call init_pairs
+
       print *,"PRESORT"
       call sort(sap)
       print *,"POSTSORT"
@@ -47,11 +51,10 @@
       call print_boxes(sap)
       call check_boxes(sap)
 
-      call init_pair_iterator
-      call sweep(sap)
-      print *,"after sweep:"
-      call print_boxes(sap)
-      call check_boxes(sap)
+      !call sweep(sap)
+      !print *,"after sweep:"
+      !call print_boxes(sap)
+      !call check_boxes(sap)
 
       call get_pair(pair)
       if (pair(1).ne. 1 .or. pair(2).ne.2) then
@@ -71,9 +74,9 @@
       print *,"after update"
       call print_boxes(sap)
 
+      call init_pairs
       call sort(sap)
-      call init_pair_iterator
-      call sweep(sap)
+      !call sweep(sap)
 
       print *,"after second sweep"
       call print_boxes(sap)

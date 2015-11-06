@@ -170,7 +170,12 @@
             enddo
 
             if (.not.ok) then
+
+               call check_boxes(sap)
+               call print_boxes(sap)
+
                print *,"SAP DIDNT FIND PAIR: ",ll,i
+
                print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
                print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
 

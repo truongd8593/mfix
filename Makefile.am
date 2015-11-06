@@ -57,7 +57,9 @@ libmfix_a_SOURCES = model/ODEPACK.F
 
 bin_PROGRAMS += sap
 
-sap_SOURCES = model/des/sap.f
+sap_SOURCES = model/des/discretelement_mod.f
+sap_SOURCES += model/geometry_mod.f
+sap_SOURCES += model/des/sap.f
 sap_SOURCES += model/des/pair_manager.f
 sap_SOURCES += model/des/test_sap.f
 
