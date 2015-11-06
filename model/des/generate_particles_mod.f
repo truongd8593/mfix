@@ -379,8 +379,6 @@
             DES_POS_OLD(:,PIP) = DES_POS_NEW(:,PIP)
             OMEGA_OLD(:,PIP) = ZERO
          ENDIF
-         stop __LINE__
-
 
          SOLIDS_DATA(M) = SOLIDS_DATA(M) + 1.0
 
@@ -730,7 +728,6 @@
 
          DES_POS_NEW(:,PIP) = POS(:)
          DES_VEL_NEW(:,PIP) = VEL(:)
-         stop __LINE__
 
          DES_RADIUS(PIP) = DES_D_P0(M)*HALF
          RO_SOL(PIP) =  DES_RO_S(M)
@@ -933,7 +930,6 @@
  
             DES_POS_NEW(:,PIP) = POS(:)
             DES_VEL_NEW(:,PIP) = randVEL(LC,:)
-            stop __LINE__
  
             DES_RADIUS(PIP) = DES_D_P0(M)*HALF
             RO_SOL(PIP) =  DES_RO_S(M)

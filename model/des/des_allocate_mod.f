@@ -512,6 +512,7 @@ CONTAINS
         DO WHILE (MAX_PIP < new_max_pip)
            MAX_PIP = MAX_PIP*2
 
+           call integer_grow(box_id,MAX_PIP)
            call real_grow(des_radius,MAX_PIP)
            call real_grow(RO_Sol,MAX_PIP)
            call real_grow(PVOL,MAX_PIP)

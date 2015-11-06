@@ -137,19 +137,19 @@ module sweep_and_prune
       integer, intent(out) :: id
 
       if (this%x_endpoints_len+2 > size(this%x_endpoints)) then
-         call endpoints_GROW(this%x_endpoints,this%x_endpoints_len+2)
+         call endpoints_GROW(this%x_endpoints,2*(this%x_endpoints_len+2))
       endif
 
       if (this%y_endpoints_len+2 > size(this%y_endpoints)) then
-         call endpoints_GROW(this%y_endpoints,this%y_endpoints_len+2)
+         call endpoints_GROW(this%y_endpoints,2*(this%y_endpoints_len+2))
       endif
 
       if (this%z_endpoints_len+2 > size(this%z_endpoints)) then
-         call endpoints_GROW(this%z_endpoints,this%z_endpoints_len+2)
+         call endpoints_GROW(this%z_endpoints,2*(this%z_endpoints_len+2))
       endif
 
       if (this%boxes_len+1 > size(this%boxes)) then
-         call boxes_GROW(this%boxes,this%boxes_len+1)
+         call boxes_GROW(this%boxes,2*(this%boxes_len+1))
       endif
 
       this%boxes_len = this%boxes_len + 1
@@ -415,7 +415,7 @@ module sweep_and_prune
        integer :: tmp_ii, tmp_jj
        type(endpoint_t) :: sweeppoint, swappoint
        real :: sweepval
-       real :: zzz(3), asdf
+       !real :: zzz(3), asdf
 
 ! private void SortAxis(List<SweepPoint> axis)
 !  {
@@ -470,9 +470,9 @@ module sweep_and_prune
 
                !print *,"MAYBE OVERLAPPPP"
 
-               zzz = des_pos_NEW(:,-sweeppoint%box_id)-des_pos_NEW(:,swappoint%box_id)
-               asdf = dot_product(zzz,zzz)
-               asdf = sqrt(asdf)
+               !zzz = des_pos_NEW(:,-sweeppoint%box_id)-des_pos_NEW(:,swappoint%box_id)
+               !asdf = dot_product(zzz,zzz)
+               !asdf = sqrt(asdf)
                !print *,"DIST==",ii,jj,asdf
 
                if (fullcheck(sap,-sweeppoint%box_id,swappoint%box_id,axis)) then
@@ -481,13 +481,13 @@ module sweep_and_prune
                endif
             endif
 
-            zzz = des_pos_NEW(:,abs(sweeppoint%box_id))-des_pos_NEW(:,abs(swappoint%box_id))
-            asdf = dot_product(zzz,zzz)
-            asdf = sqrt(asdf)
+            !zzz = des_pos_NEW(:,abs(sweeppoint%box_id))-des_pos_NEW(:,abs(swappoint%box_id))
+            !asdf = dot_product(zzz,zzz)
+            !asdf = sqrt(asdf)
 
-            if (asdf > 0.5 ) then
+            !if (asdf > 0.5 ) then
                !print *,"SHOULD REMOVE!!!!!!!",ii,jj,asdf
-            endif
+            !endif
 
             if (0 < sweeppoint%box_id .and. swappoint%box_id < 0 ) then
                !print *,"PAIR RMEOVEd"
