@@ -6,8 +6,8 @@ module multi_sweep_and_prune
      type(sap_t), dimension(:), allocatable :: saps
      integer :: saps_len
      real :: minbounds(3), maxbounds(3)
-     real :: one_over_xcell_length, one_over_ycell_length, one_over_zcell_length
-     integer :: x_grid, y_grid, z_grid
+     real :: one_over_cell_length(3)
+     integer :: grid(3)
 
   end type multisap_t
 
@@ -30,22 +30,20 @@ contains
     real, dimension(3), intent(in) :: minbounds, maxbounds
     integer :: ii,jj,kk
 
-    this%x_grid = x_grid
-    this%y_grid = y_grid
-    this%z_grid = z_grid
+    this%grid(1) = x_grid
+    this%grid(2) = y_grid
+    this%grid(3) = z_grid
 
-    allocate(this%saps(0:this%x_grid*this%y_grid*this%z_grid))
+    allocate(this%saps(0:x_grid*y_grid*z_grid))
     do ii=0,x_grid-1
        do jj=0,y_grid-1
           do kk=0,z_grid-1
-             call init_sap(this%saps(ii*this%y_grid*this%z_grid+jj*this%z_grid+kk))
+             call init_sap(this%saps(ii*y_grid*z_grid+jj*z_grid+kk))
           enddo
        enddo
     enddo
 
-    this%one_over_xcell_length = x_grid/(maxbounds(1)-minbounds(1))
-    this%one_over_ycell_length = y_grid/(maxbounds(2)-minbounds(2))
-    this%one_over_zcell_length = z_grid/(maxbounds(2)-minbounds(2))
+    this%one_over_cell_length(:) = this%grid(:)/(maxbounds(:)-minbounds(:))
 
     this%minbounds(:) = minbounds(:)
     this%maxbounds(:) = maxbounds(:)
@@ -57,45 +55,38 @@ contains
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
     integer, intent(out) :: sap_ids(8)
-    integer :: xx,yy,zz,x2,y2,z2
+    integer :: max_grid(3),min_grid(3)
 
     sap_ids(:) = -1
 
     ! bin to grid
-    xx = floor((aabb%minendpoint(1)-this%minbounds(1))*this%one_over_xcell_length)
-    yy = floor((aabb%minendpoint(2)-this%minbounds(2))*this%one_over_ycell_length)
-    zz = floor((aabb%minendpoint(3)-this%minbounds(3))*this%one_over_zcell_length)
+    min_grid(:) = floor((aabb%minendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:))
+    max_grid(:) = floor((aabb%maxendpoint(:)-this%maxbounds(:))*this%one_over_cell_length(:))
 
-    x2 = floor((aabb%maxendpoint(1)-this%minbounds(1))*this%one_over_xcell_length)
-    y2 = floor((aabb%maxendpoint(2)-this%minbounds(2))*this%one_over_ycell_length)
-    z2 = floor((aabb%maxendpoint(3)-this%minbounds(3))*this%one_over_zcell_length)
-
-    call add_to_list(xx*this%y_grid*this%z_grid+yy*this%z_grid+zz)
-    call add_to_list(xx*this%y_grid*this%z_grid+yy*this%z_grid+z2)
-    call add_to_list(xx*this%y_grid*this%z_grid+y2*this%z_grid+zz)
-    call add_to_list(xx*this%y_grid*this%z_grid+y2*this%z_grid+z2)
-    call add_to_list(x2*this%y_grid*this%z_grid+yy*this%z_grid+zz)
-    call add_to_list(x2*this%y_grid*this%z_grid+yy*this%z_grid+z2)
-    call add_to_list(x2*this%y_grid*this%z_grid+y2*this%z_grid+zz)
-    call add_to_list(x2*this%y_grid*this%z_grid+y2*this%z_grid+z2)
+    call add_to_list((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_list((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_list((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_list((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_list((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_list((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_list((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_list((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
 
   contains
 
     subroutine add_to_list(nn)
       integer, intent(in) :: nn
-      integer :: first_blank, mm
+      integer :: mm
 
-      first_blank = -1
       do mm=1, size(sap_ids)
-         if (sap_ids(mm).eq.-1) then
-            first_blank = mm
-         endif
          if (sap_ids(mm).eq.nn) then
             ! already in the list
             return
          endif
+         if (sap_ids(mm).eq.-1) then
+            sap_ids(mm) = nn
+         endif
       enddo
-      sap_ids(first_blank) = nn
 
     end subroutine add_to_list
 
@@ -190,10 +181,10 @@ contains
     type(aabb_t), intent(in) :: aabb
     integer :: ii, jj, kk
 
-    do ii=1,this%x_grid
-       do jj=1,this%y_grid
-          do kk=1,this%z_grid
-             call sort(this%saps(ii*this%y_grid*this%z_grid+jj*this%z_grid+kk))
+    do ii=1,this%grid(1)
+       do jj=1,this%grid(2)
+          do kk=1,this%grid(3)
+             call sort(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))
           enddo
        enddo
     enddo
