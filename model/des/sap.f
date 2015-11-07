@@ -132,8 +132,6 @@ module sweep_and_prune
 
     subroutine add_box(this,aabb,id)
 
-      use des_allocate
-
       implicit none
       type(sap_t), intent(inout) :: this
       type(aabb_t), intent(in) :: aabb
@@ -231,8 +229,7 @@ module sweep_and_prune
     subroutine sweep(this)
 
       use pair_manager, only: add_pair
-      use des_allocate, only: integer_grow
-      !use discretelement
+      use resize, only: integer_grow
       use geometry
 
       implicit none
