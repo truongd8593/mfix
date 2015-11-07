@@ -36,6 +36,9 @@ module sweep_and_prune
   ! the global SAP
   type(sap_t) sap
 
+  public :: add_box, del_box, update_box, sort, sweep
+  private :: partition
+
   contains
 
     subroutine check_boxes(this)
@@ -229,7 +232,7 @@ module sweep_and_prune
 
       use pair_manager, only: add_pair
       use des_allocate, only: integer_grow
-      use discretelement
+      !use discretelement
       use geometry
 
       implicit none
@@ -405,7 +408,7 @@ module sweep_and_prune
 
      subroutine sort_endpoints(endpoints, sap, axis)
        use pair_manager, only: add_pair, del_pair
-       use discretelement
+       !use discretelement
        implicit none
        type(sap_t), intent(inout) :: sap
        integer, intent(in) :: axis
@@ -564,7 +567,7 @@ module sweep_and_prune
 
      end function fullcheck
 
-    recursive subroutine hidesort_endpoints(A, sap, axis)
+    recursive subroutine quicksort_endpoints(A, sap, axis)
       type(sap_t), intent(inout) :: sap
       integer, intent(in) :: axis
       type(endpoint_t), intent(in out), dimension(:) :: A
@@ -574,10 +577,10 @@ module sweep_and_prune
 
       if(size(A) > 1) then
          call Partition(A, iq, sap, axis)
-         call sort_endpoints(A(:iq-1),sap,axis)
-         call sort_endpoints(A(iq:),sap,axis)
+         call quicksort_endpoints(A(:iq-1),sap,axis)
+         call quicksort_endpoints(A(iq:),sap,axis)
       endif
-    end subroutine hidesort_endpoints
+    end subroutine quicksort_endpoints
 
     subroutine Partition(A, marker, sap, axis)
       type(sap_t), intent(inout) :: sap
@@ -662,51 +665,5 @@ module sweep_and_prune
       end do
 
     end subroutine Partition
-
-    subroutine swap_ep(AA, BB, axis)
-      implicit none
-      type(endpoint_t), intent(inout) :: AA,BB
-      integer, intent(in) :: axis
-      type(endpoint_t) :: temp
-      integer :: tmp_ii, tmp_jj
-
-            call print_boxes(sap)
-            call check_boxes(sap)
-
-            !print *,"NOW SWAPPING ENDPOINTS BELONGING TO BOXES:",AA%box_id,BB%box_id
-
-            if (AA%box_id < 0) then
-               tmp_ii = sap%boxes(-AA%box_id)%minendpoint_id(axis)
-            else
-               tmp_ii = sap%boxes(AA%box_id)%maxendpoint_id(axis)
-            endif
-            if (BB%box_id < 0) then
-               tmp_jj = sap%boxes(-BB%box_id)%minendpoint_id(axis)
-            else
-               tmp_jj = sap%boxes(BB%box_id)%maxendpoint_id(axis)
-            endif
-
-            temp = AA
-            AA = BB
-            !print *,"SET ENDPOINT TO VALUE ",AA%value," WHICH BELONG TO BOX ",abs(AA%box_id)
-            BB = temp
-            !print *,"SET ENDPOINT TO VALUE ",BB%value," WHICH BELONG TO BOX ",abs(BB%box_id)
-
-            if (AA%box_id < 0) then
-               !print *,"setting min endpoint of box ",-BB%box_id, " ON AXIS ",axis," TO ",tmp_ii
-               sap%boxes(-AA%box_id)%minendpoint_id(axis) = tmp_ii
-            else
-               !print *,"setting max endpoint of box ",BB%box_id, " ON AXIS ",axis," TO ",tmp_ii
-               sap%boxes(AA%box_id)%maxendpoint_id(axis) = tmp_ii
-            endif
-            if (BB%box_id < 0) then
-               !print *,"setting min endpoint of box ",-BB%box_id, " ON AXIS ",axis," TO ",tmp_jj
-               sap%boxes(-BB%box_id)%minendpoint_id(axis) = tmp_jj
-            else
-               !print *,"setting max endpoint of box ",BB%box_id, " ON AXIS ",axis," TO ",tmp_jj
-               sap%boxes(BB%box_id)%maxendpoint_id(axis) = tmp_jj
-            endif
-
-          end subroutine swap_ep
 
 end module sweep_and_prune

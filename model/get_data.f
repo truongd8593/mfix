@@ -34,7 +34,7 @@
       use desgrid, only: DESGRID_INIT
       use mpi_init_des, only: DESMPI_INIT
       use stl_preproc_des, only: DES_STL_PREPROCESSING
-      use sweep_and_prune
+      use multi_sweep_and_prune
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -43,6 +43,7 @@
 ! shift DX, DY and DZ values
       LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
+      real :: mins(3), maxs(3)
 
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
@@ -146,8 +147,14 @@
       IF(DISCRETE_ELEMENT) CALL DES_ALLOCATE_ARRAYS
       IF(QMOMK) CALL QMOMK_ALLOCATE_ARRAYS
 
-      call init_sap(sap)
-      Allocate(  box_id(MAX_PIP) )
+      mins(1) = 0
+      mins(2) = 0
+      mins(3) = 0
+      maxs(1) = XLENGTH
+      maxs(2) = YLENGTH
+      maxs(3) = ZLENGTH
+      call init_multisap(multisap,12,12,12,mins,maxs)
+      Allocate(  boxhandle(MAX_PIP) )
 
 ! Initialize arrays.
       CALL INIT_FVARS

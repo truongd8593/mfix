@@ -12,7 +12,7 @@
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
-      use sweep_and_prune
+      use multi_sweep_and_prune
       use pair_manager
 
       IMPLICIT NONE
@@ -53,12 +53,13 @@
       do nn=1, MAX_PIP
          aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
-         call add_box(sap,aabb,box_id(nn))
+         call multisap_add(multisap,aabb,boxhandle(nn))
       enddo
 
       call init_pairs
-      call sort(sap)
-      call init_pairs
+      call quicksort_endpoints(sap%x_endpoints(1:sap%x_endpoints_len),sap,1)
+      call quicksort_endpoints(sap%y_endpoints(1:sap%y_endpoints_len),sap,2)
+      call quicksort_endpoints(sap%z_endpoints(1:sap%z_endpoints_len),sap,3)
       call sweep(sap)
       !call sweep(sap)
 

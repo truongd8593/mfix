@@ -32,7 +32,7 @@
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
-      use sweep_and_prune
+      use multi_sweep_and_prune
       use pair_manager
 
       IMPLICIT NONE
@@ -116,7 +116,7 @@
 
          aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.001
-         call update_box(sap,box_id(L),aabb)
+         call multisap_update(multisap,aabb,boxhandle(L))
 
 ! Update particle orientation - Always first order
 ! When omega is non-zero, compute the rotation angle, and apply the

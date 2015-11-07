@@ -432,8 +432,6 @@ libmfix_src = \
 	model/des/drag_gs_des0.f \
 	model/des/drag_gs_des1.f \
 	model/des/drag_ss_dem_noninterp.f \
-	model/des/sap.f \
-	model/des/pair_manager.f \
 	model/des/gas_drag.f \
 	model/des/generate_particles_mod.f \
 	model/des/init_settling_dem.f \
@@ -449,8 +447,10 @@ libmfix_src = \
 	model/des/mpi_node_des_mod.f \
 	model/des/mpi_pack_des_mod.f \
 	model/des/mpi_unpack_des_mod.f \
+	model/des/multisap.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
+	model/des/pair_manager.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
 	model/des/pic_bc_mod.f \
@@ -460,6 +460,7 @@ libmfix_src = \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
+	model/des/sap.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \

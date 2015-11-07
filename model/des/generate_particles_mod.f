@@ -133,7 +133,7 @@
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
-      use discretelement, only: MAX_RADIUS, box_id
+      use discretelement, only: MAX_RADIUS
 
       use discretelement, only: XE, YN, ZT
 
