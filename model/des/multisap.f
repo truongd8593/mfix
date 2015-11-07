@@ -125,7 +125,7 @@ contains
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
-    type(boxhandle_t), intent(out) :: handle
+    type(boxhandle_t), intent(in) :: handle
     integer :: nn
 
     ! remove from each SAP listed for this id
@@ -184,11 +184,10 @@ contains
 
   end subroutine multisap_update
 
-  subroutine multisap_sort(this,aabb,id)
+  subroutine multisap_sort(this,aabb)
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
-    integer, intent(out) :: id
     integer :: ii, jj, kk
 
     do ii=1,this%x_grid
