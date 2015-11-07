@@ -161,15 +161,7 @@
             !print *,"ALLEGEDLY, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm+small_number
             !print *,"????, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm
 
-            ok = .false.
-            do pp=1,size(pairs,2)
-               if (pairs(ll,pp).eq.i) then
-                  ok = .true.
-                  exit
-               endif
-            enddo
-
-            if (.not.ok) then
+            if (is_pair(ll,i)) then
 
                call check_boxes(sap)
                call print_boxes(sap)
@@ -191,13 +183,13 @@
                print *,"MIN2 i is ",sap%boxes(i)%minendpoint_id(2),sap%y_endpoints(sap%boxes(i)%minendpoint_id(2))%value
                print *,"MAX2 i is ",sap%boxes(i)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(i)%maxendpoint_id(2))%value
 
-               do pp=1,size(pairs,2)
-                  print *,"pairs(",ll,pp,")",pairs(ll,pp)," IS NOT ",i
-                  if (pairs(ll,pp).eq.i) then
-                     ok = .true.
-                     exit
-                  endif
-               enddo
+               ! do pp=1,size(pairs,2)
+               !    print *,"pairs(",ll,pp,")",pairs(ll,pp)," IS NOT ",i
+               !    if (pairs(ll,pp).eq.i) then
+               !       ok = .true.
+               !       exit
+               !    endif
+               ! enddo
 
                stop __LINE__
             endif

@@ -2,20 +2,28 @@ module pair_manager
 
   use discretelement, only: MAX_PIP
 
-  integer, parameter :: MAX_NUM_NEIGH = 30
-  integer, dimension(:,:), allocatable :: pairs
+  integer :: current_hash
 
-  integer :: current_row, current_column
+  type pair_t
+     integer(kind=4) :: ii
+     integer(kind=4) :: jj
+  end type pair_t
+
+  type(pair_t), dimension(:), allocatable :: table
+
+  ! if table_size/size(table) >> 50%, time to resize the hashtable
+  integer :: table_size
 
 contains
 
   subroutine init_pairs
     implicit none
 
-    current_row = 1
-    current_column = 1
-    if (.not.allocated(pairs)) allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
-    pairs(:,:) = 0
+    current_hash = 0
+    if (.not.allocated(table)) allocate(table(0:2*MAX_PIP))
+    table(:)%ii = 0
+    table(:)%jj = 0
+    table_size = 0
 
   end subroutine init_pairs
 
@@ -27,94 +35,166 @@ contains
     pair(1) = 0
     pair(2) = 0
 
-    do while (current_row <= size(pairs,1))
-
-       do while (current_column <= MAX_NUM_NEIGH)
-          !print *,"row,col == ",current_row, current_column
-          if (pairs(current_row, current_column).ne.0) then
-             pair(1) = current_row
-             pair(2) = pairs(current_row, current_column)
-             print *,"RETURNING PAIR: ",pair(1),pair(2)
-             current_column = current_column + 1
-             return
-          endif
-          current_column = current_column + 1
-       enddo
-
-       current_row = current_row + 1
-       current_column = 1
-
-    enddo
-
-    print *,"RETURNING PAIR: ",pair(1),pair(2)
-
-  end subroutine get_pair
-
-  subroutine add_pair(ii,jj)
-    use discretelement
-    implicit none
-    integer, intent(in) :: ii,jj
-    integer :: nn, tmp, i0, j0
-
-    i0 = min(ii,jj)
-    j0 = max(ii,jj)
-
-    if (ii.eq.jj) then
-       print *,"tried to add pair with same index: ",ii
-       stop __LINE__
-    endif
-
-    if (.not. allocated(pairs)) then
-       allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
-    else if(size(pairs,1) < MAX_PIP) then
-       stop __LINE__
-       !integer_grow2_reverse(pairs,MAX_PIP)
-    endif
-
-    do nn=1, MAX_NUM_NEIGH
-       if (pairs(i0,nn).eq.0 .or. pairs(i0,nn).eq.j0) then
-          pairs(i0,nn) = j0
+    do while (current_hash < size(table))
+       if (0.ne.table(current_hash)%ii .and. 0.ne.table(current_hash)%jj) then
+          pair(1) = table(current_hash)%ii
+          pair(2) = table(current_hash)%jj
+          current_hash = current_hash + 1
           return
        endif
-    end do
+       current_hash = current_hash + 1
+    enddo
+  end subroutine get_pair
 
-    print *,"particle ",i0," had more than ",MAX_NUM_NEIGH," neighbors."
-    do nn=1, MAX_NUM_NEIGH
-       print *,"PAIRS(",i0,",",nn,") = ",pairs(i0,nn)
-    end do
+  logical function is_pair(ii,jj)
+    implicit none
 
+    integer, intent(in) :: ii,jj
+    integer(kind=8) :: hash, init_hash
+
+    if (ii < 1 .or. jj < 1) then
+       print *,"invalid pair: ",ii,jj
+       stop __LINE__
+    endif
+
+    ! assign ii to hash to convert to 64-bit
+    hash = ii
+    hash = mod(ishft(hash,32)+jj,size(table))
+    init_hash = hash
+
+    if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+       is_pair = .true.
+       return
+    endif
+    if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) then
+       is_pair = .false.
+       return
+    endif
+    hash = mod(hash+1,size(table))
+
+    do while(hash .ne. init_hash)
+       if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+          is_pair = .true.
+          return
+       endif
+       if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) then
+          is_pair = .false.
+          return
+       endif
+       hash = mod(hash+1,size(table))
+    enddo
+
+    print *,"loop in hash addressing, this should not occur"
+    stop __LINE__
+
+  end function is_pair
+
+  recursive subroutine add_pair(i0,j0)
+    use discretelement
+    implicit none
+    integer, intent(in) :: i0,j0
+    integer :: ii, jj, nn, old_size
+    integer(kind=8) :: hash, init_hash
+    type(pair_t), dimension(:), allocatable :: table_tmp
+
+    if (size(table) < 2*table_size ) then
+       old_size = size(table)
+       allocate(table_tmp(0:old_size))
+       table_tmp(0:old_size-1) = table(0:old_size-1)
+       deallocate(table)
+       allocate(table(0:2*old_size))
+       do nn=1, old_size
+          if ( table_tmp(ii)%ii .ne. 0 .and. table_tmp(ii)%jj .ne. 0) then
+             call add_pair(table_tmp(ii)%ii,table_tmp(ii)%jj)
+          endif
+       enddo
+       deallocate(table_tmp)
+    endif
+
+    ii = min(i0,j0)
+    jj = max(i0,j0)
+
+    if (ii < 1 .or. jj < 1) then
+       print *,"invalid pair: ",ii,jj
+       stop __LINE__
+    endif
+
+    ! assign ii to hash to convert to 64-bit
+    hash = ii
+    hash = mod(ishft(hash,32)+jj,size(table))
+    init_hash = hash
+    !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
+
+    if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) then
+       table(hash)%ii = ii
+       table(hash)%ii = jj
+       table_size = table_size + 1
+       return
+    endif
+    hash = mod(hash+1,size(table))
+    !print *,"HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
+    
+    do while(hash .ne. init_hash)
+       if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) then
+          table(hash)%ii = ii
+          table(hash)%ii = jj
+          table_size = table_size + 1
+          return
+       endif
+       hash = mod(hash+1,size(table))
+       !print *,"HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
+    enddo
+
+    print *,"loop in hash addressing, this should not occur.  maybe hash table is full"
     stop __LINE__
 
   end subroutine add_pair
 
-  subroutine del_pair(ii,jj)
+  subroutine del_pair(i0,j0)
+    use discretelement
     implicit none
-    integer, intent(in) :: ii,jj
-    integer :: nn, tmp, i0, j0
+    integer, intent(in) :: i0,j0
+    integer :: ii, jj
+    integer(kind=8) :: hash, init_hash
 
-    i0 = min(ii,jj)
-    j0 = max(ii,jj)
+    ii = min(i0,j0)
+    jj = max(i0,j0)
 
-    if (ii.eq.jj) then
-       print *,"tried to add pair with same index: ",ii
+    if (ii < 1 .or. jj < 1) then
+       print *,"invalid pair: ",ii,jj
        stop __LINE__
     endif
 
-    if (.not. allocated(pairs)) then
-       allocate(pairs(MAX_PIP,MAX_NUM_NEIGH))
-    else if(size(pairs,1) < MAX_PIP) then
-       stop __LINE__
-       !integer_grow2_reverse(pairs,MAX_PIP)
-    endif
+    ! assign ii to hash to convert to 64-bit
+    hash = ii
+    hash = mod(ishft(hash,32)+jj,size(table))
+    init_hash = hash
 
-    do nn=1, MAX_NUM_NEIGH
-       if (pairs(i0,nn).eq.j0) then
-       pairs(i0,nn) = 0
+    if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) return 
+    if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+       ! 0,1 signifies DELETED hash entry
+       table(hash)%ii = 0
+       table(hash)%ii = 1
+       table_size = table_size - 1
        return
-       endif
-    end do
+    endif
+    hash = mod(hash+1,size(table))
 
-    !print *,"pair ",i0,j0," was not in the pair manager"
+    do while(hash .ne. init_hash)
+       if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) return
+       if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+          ! 0,1 signifies DELETED hash entry
+          table(hash)%ii = 0
+          table(hash)%ii = 1
+          table_size = table_size - 1
+          return
+       endif
+       hash = mod(hash+1,size(table))
+
+    enddo
+
+    print *,"loop in hash addressing, this should not occur.  maybe hash table is full"
+    stop __LINE__
 
   end subroutine del_pair
 
