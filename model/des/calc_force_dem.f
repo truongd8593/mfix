@@ -19,7 +19,7 @@
       USE discretelement
       USE run
       use pair_manager
-      use sweep_and_prune
+      use multi_sweep_and_prune
 
       IMPLICIT NONE
 
@@ -70,7 +70,11 @@
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
       integer :: pp
-      logical :: ok
+      type(sap_t) :: sap
+      type(box_t) :: box
+      integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
+      integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
+      integer :: nn
 
 !-----------------------------------------------
 
@@ -78,6 +82,12 @@
       IF(USE_COHESION) PostCohesive(:) = ZERO
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
+
+      do nn=0, size(multisap%saps)-1
+         !print *,"nn = ",nn
+         if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+         if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+      enddo
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -108,6 +118,62 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
+
+            if (.false. .and. ll.eq.46 .and. i.eq.77) then
+               minenx = multisap%saps(boxhandle(ll)%sap_id(1))%boxes(boxhandle(ll)%box_id(1))%minendpoint_id(1)
+               maxenx = multisap%saps(boxhandle(ll)%sap_id(1))%boxes(boxhandle(ll)%box_id(1))%maxendpoint_id(1)
+               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at x endpoints ",minenx," AND ",maxenx,multisap%saps(boxhandle(ll)%sap_id(1))%x_endpoints(minenx),multisap%saps(boxhandle(ll)%sap_id(1))%x_endpoints(maxenx)
+
+               minenx2 = multisap%saps(boxhandle(i)%sap_id(1))%boxes(boxhandle(i)%box_id(1))%minendpoint_id(1)
+               maxenx2 = multisap%saps(boxhandle(i)%sap_id(1))%boxes(boxhandle(i)%box_id(1))%maxendpoint_id(1)
+               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i)," at x endpoints ",minenx2," AND ",maxenx2,multisap%saps(boxhandle(i)%sap_id(1))%x_endpoints(minenx2),multisap%saps(boxhandle(i)%sap_id(1))%x_endpoints(maxenx2)
+
+               mineny = multisap%saps(boxhandle(ll)%sap_id(2))%boxes(boxhandle(ll)%box_id(2))%minendpoint_id(2)
+               maxeny = multisap%saps(boxhandle(ll)%sap_id(2))%boxes(boxhandle(ll)%box_id(2))%maxendpoint_id(2)
+               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at y endpoints ",mineny," AND ",maxeny,multisap%saps(boxhandle(ll)%sap_id(2))%y_endpoints(mineny),multisap%saps(boxhandle(ll)%sap_id(2))%y_endpoints(maxeny)
+
+               mineny2 = multisap%saps(boxhandle(i)%sap_id(2))%boxes(boxhandle(i)%box_id(2))%minendpoint_id(2)
+               maxeny2 = multisap%saps(boxhandle(i)%sap_id(2))%boxes(boxhandle(i)%box_id(2))%maxendpoint_id(2)
+               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i)," at y endpoints ",mineny2," AND ",maxeny2,multisap%saps(boxhandle(i)%sap_id(2))%y_endpoints(mineny2),multisap%saps(boxhandle(i)%sap_id(2))%y_endpoints(maxeny2)
+
+               minenz = multisap%saps(boxhandle(ll)%sap_id(3))%boxes(boxhandle(ll)%box_id(3))%minendpoint_id(3)
+               maxenz = multisap%saps(boxhandle(ll)%sap_id(3))%boxes(boxhandle(ll)%box_id(3))%maxendpoint_id(3)
+               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at z endpoints ",minenz," AND ",maxenz,multisap%saps(boxhandle(ll)%sap_id(3))%z_endpoints(minenz),multisap%saps(boxhandle(ll)%sap_id(3))%z_endpoints(maxenz)
+
+               minenz2 = multisap%saps(boxhandle(i)%sap_id(3))%boxes(boxhandle(i)%box_id(3))%minendpoint_id(3)
+               maxenz2 = multisap%saps(boxhandle(i)%sap_id(3))%boxes(boxhandle(i)%box_id(3))%maxendpoint_id(3)
+               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " at z endpoints ",minenz2," AND ",maxenz2,multisap%saps(boxhandle(i)%sap_id(3))%z_endpoints(minenz2),multisap%saps(boxhandle(i)%sap_id(3))%z_endpoints(maxenz2)
+
+               if (max(minenx,minenx2) < min(maxenx,maxenx2)) then
+                  print *,"X INTERSECTION "
+                  !stop __LINE__
+                  if (max(mineny,mineny2) < min(maxenx,maxeny2)) then
+                     print *,"X AND Y INTERSECTION "
+
+                     print *,"Z INTERSECT? ",max(minenz,minenz2),min(maxenz,maxenz2)
+                     print *,"Z INTERSECT? ",(max(minenz,minenz2) < min(maxenz,maxenz2))
+                     if (.not.is_pair(ll,i)) then
+                        print *,"FAIL"
+                        stop __LINE__
+                     endif
+
+                     stop __LINE__
+                     if (max(minenz,minenz2) < min(maxenx,maxenz2)) then
+                        print *,"INTERSECTION...."
+                        if (.not.is_pair(ll,i)) then
+                           print *,"FAIL"
+                           stop __LINE__
+                        endif
+                        if (.not.is_pair(i,ll)) then
+                           print *,"fail"
+                           stop __LINE__
+                        endif
+                        stop __LINE__
+                     endif
+                  endif
+               endif
+
+            endif
 
             IF(IS_NONEXISTENT(I)) CYCLE
 
@@ -158,38 +224,37 @@
                CYCLE
             ENDIF
 
-            !print *,"ALLEGEDLY, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm+small_number
-            !print *,"????, ",sqrt(DIST_MAG) ," IS LESS THAN OR EQUAL TO",R_lm
-
-            if (is_pair(ll,i)) then
-
-               call check_boxes(sap)
-               call print_boxes(sap)
+            if (.not.is_pair(ll,i)) then
 
                print *,"SAP DIDNT FIND PAIR: ",ll,i
+
+               do nn=1,MAX_SAPS
+
+                  sap = multisap%saps(nn)
+
+                  print *,"nn = ",nn
+                  if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+
+               call print_boxes(sap)
 
                print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
                print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
 
-               print *,"I BOX  ",sap%boxes(ll)%box_id
-               print *,"MIN1 LL is ",sap%boxes(ll)%minendpoint_id(1),sap%x_endpoints(sap%boxes(ll)%minendpoint_id(1))%value
-               print *,"MAX1 LL is ",sap%boxes(ll)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(ll)%maxendpoint_id(1))%value
-               print *,"MIN2 LL is ",sap%boxes(ll)%minendpoint_id(2),sap%y_endpoints(sap%boxes(ll)%minendpoint_id(2))%value
-               print *,"MAX2 LL is ",sap%boxes(ll)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(ll)%maxendpoint_id(2))%value
+               ! box = sap%boxes(boxhandle(ll)%box_id(1))
+               ! print *,"LL BOX  ",box
+               ! print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+               ! print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+               ! print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+               ! print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
 
-               print *,"LL BOX  ",sap%boxes(i)%box_id
-               print *,"MIN1 i is ",sap%boxes(i)%minendpoint_id(1),sap%x_endpoints(sap%boxes(i)%minendpoint_id(1))%value
-               print *,"MAX1 i is ",sap%boxes(i)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(i)%maxendpoint_id(1))%value
-               print *,"MIN2 i is ",sap%boxes(i)%minendpoint_id(2),sap%y_endpoints(sap%boxes(i)%minendpoint_id(2))%value
-               print *,"MAX2 i is ",sap%boxes(i)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(i)%maxendpoint_id(2))%value
+               ! box = sap%boxes(boxhandle(i)%box_id(1))
+               ! print *,"I BOX  ",box
+               ! print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+               ! print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+               ! print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+               ! print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
 
-               ! do pp=1,size(pairs,2)
-               !    print *,"pairs(",ll,pp,")",pairs(ll,pp)," IS NOT ",i
-               !    if (pairs(ll,pp).eq.i) then
-               !       ok = .true.
-               !       exit
-               !    endif
-               ! enddo
+            enddo
 
                stop __LINE__
             endif

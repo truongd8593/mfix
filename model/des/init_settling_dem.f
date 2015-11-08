@@ -13,7 +13,6 @@
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use multi_sweep_and_prune
-      use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -53,17 +52,24 @@
       do nn=1, MAX_PIP
          aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
-         call multisap_add(multisap,aabb,boxhandle(nn))
+         call multisap_add(multisap,aabb,nn,boxhandle(nn))
       enddo
 
-      call init_pairs
-      call quicksort_endpoints(sap%x_endpoints(1:sap%x_endpoints_len),sap,1)
-      call quicksort_endpoints(sap%y_endpoints(1:sap%y_endpoints_len),sap,2)
-      call quicksort_endpoints(sap%z_endpoints(1:sap%z_endpoints_len),sap,3)
-      call sweep(sap)
-      !call sweep(sap)
+      call multisap_quicksort(multisap)
+
+      do nn=0,size(multisap%saps)-1
+         if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+      enddo
+
+      call multisap_sweep(multisap)
+
+      do nn=0,size(multisap%saps)-1
+         if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+         if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+      enddo
 
       DO FACTOR = 1, NFACTOR
+         print *,"FACTOR  =  ",FACTOR
 ! calculate forces
          CALL CALC_FORCE_DEM
 ! update particle position/velocity

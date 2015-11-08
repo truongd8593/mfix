@@ -35,6 +35,7 @@
       use mpi_init_des, only: DESMPI_INIT
       use stl_preproc_des, only: DES_STL_PREPROCESSING
       use multi_sweep_and_prune
+      use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -153,7 +154,8 @@
       maxs(1) = XLENGTH
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
-      call init_multisap(multisap,12,12,12,mins,maxs)
+      call init_pairs
+      call init_multisap(multisap,1,1,1,mins,maxs)
       Allocate(  boxhandle(MAX_PIP) )
 
 ! Initialize arrays.

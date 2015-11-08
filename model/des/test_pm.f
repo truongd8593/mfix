@@ -7,10 +7,14 @@
       integer :: nn,mm
       integer :: pair(2)
 
-      do nn=1 , 100
-         do mm=1 , 20
-      call add_pair(nn,nn*nn)
+      call init_pairs
+
+      do nn=1 , 10000
+         call add_pair(1+abs(nn*nn),1+abs(nn*nn*nn))
       enddo
+
+      do nn=1 , 10000
+         if (.not. is_pair(1+abs(nn*nn),1+abs(nn*nn*nn))) stop __LINE__
       enddo
 
       call del_pair(1,1)
@@ -18,8 +22,6 @@
       call del_pair(9,1)
       call del_pair(10,10)
       call del_pair(10,100)
-
-      call init_pair_iterator
 
       do
          call get_pair(pair)

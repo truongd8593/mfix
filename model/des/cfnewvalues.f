@@ -28,11 +28,13 @@
       USE mfix_pic
       USE mpi_utility
       USE parallel
+      USE run
       USE param
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
       use multi_sweep_and_prune
+      use sweep_and_prune
       use pair_manager
 
       IMPLICIT NONE
@@ -168,7 +170,7 @@
 !$omp end parallel do
 
       !call init_pairs
-      call sort(sap)
+      call multisap_sort(multisap)
       !call sweep(sap)
 
       FIRST_PASS = .FALSE.
