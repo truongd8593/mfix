@@ -155,7 +155,7 @@
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
       call init_pairs
-      call init_multisap(multisap,1,1,1,mins,maxs)
+      call init_multisap(multisap,4,4,4,mins,maxs)
       Allocate(  boxhandle(MAX_PIP) )
 
 ! Initialize arrays.

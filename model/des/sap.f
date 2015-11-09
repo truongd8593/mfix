@@ -17,7 +17,6 @@ module sweep_and_prune
   end type aabb_t
 
   type box_t
-     integer :: box_id
      integer :: maxendpoint_id(3)
      integer :: minendpoint_id(3)
      integer :: particle_id
@@ -60,25 +59,23 @@ module sweep_and_prune
       integer :: ii, nn, ss
 
       do ii=1, this%boxes_len
-         if (abs(this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id) .ne. this%boxes(ii)%box_id) then
-            print *,"this%boxes(",ii,")%box_id = ",this%boxes(ii)%box_id
+         if (abs(this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id) .ne. ii) then
             print *,"this%boxes(",ii,")%minendpoint_id(1)",this%boxes(ii)%minendpoint_id(1)
             print *,"this%x_endpoints(this%boxes(",ii,")%minendpoint_id(1))%box_id",this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id
             check_boxes = .false.
             return
          endif
-         if (abs(this%y_endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. this%boxes(ii)%box_id) stop __LINE__
-         if (abs(this%z_endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. this%boxes(ii)%box_id) stop __LINE__
+         if (abs(this%y_endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) stop __LINE__
+         if (abs(this%z_endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) stop __LINE__
 
-         if (abs(this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. this%boxes(ii)%box_id) then
-            print *,"this%boxes(",ii,")%box_id = ",this%boxes(ii)%box_id
+         if (abs(this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. ii) then
             print *,"this%boxes(",ii,")%maxendpoint_id(1)",this%boxes(ii)%maxendpoint_id(1)
             print *,"this%x_endpoints(this%boxes(",ii,")%maxendpoint_id(1))%box_id",this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id
             check_boxes = .false.
             return
          endif
-         if (abs(this%y_endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. this%boxes(ii)%box_id) stop __LINE__
-         if (abs(this%z_endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. this%boxes(ii)%box_id) stop __LINE__
+         if (abs(this%y_endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) stop __LINE__
+         if (abs(this%z_endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) stop __LINE__
       enddo
 
       check_boxes = .true.
@@ -153,9 +150,9 @@ module sweep_and_prune
       enddo
 
       do ii=1, this%boxes_len 
-         print *,"BOXX ",this%boxes_len,": ",this%boxes(ii)%box_id," exists from ",this%boxes(ii)%minendpoint_id(1)," to ",this%boxes(ii)%maxendpoint_id(1)
-         print *,"BOXY ",this%boxes_len,": ",this%boxes(ii)%box_id," exists from ",this%boxes(ii)%minendpoint_id(2)," to ",this%boxes(ii)%maxendpoint_id(2)
-         print *,"BOXZ ",this%boxes_len,": ",this%boxes(ii)%box_id," exists from ",this%boxes(ii)%minendpoint_id(3)," to ",this%boxes(ii)%maxendpoint_id(3)
+         print *,"BOXX ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(1)," to ",this%boxes(ii)%maxendpoint_id(1)
+         print *,"BOXY ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(2)," to ",this%boxes(ii)%maxendpoint_id(2)
+         print *,"BOXZ ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(3)," to ",this%boxes(ii)%maxendpoint_id(3)
       enddo
 
     end subroutine print_boxes
@@ -239,7 +236,6 @@ module sweep_and_prune
       this%y_endpoints_len = this%y_endpoints_len + 2
       this%z_endpoints_len = this%z_endpoints_len + 2
 
-      this%boxes(id)%box_id = id
       this%boxes(id)%particle_id = particle_id
       this%boxes(id)%maxendpoint_id(1) = this%x_endpoints_len
       this%boxes(id)%maxendpoint_id(2) = this%y_endpoints_len
@@ -262,7 +258,7 @@ module sweep_and_prune
       this%z_endpoints(this%z_endpoints_len)%box_id = id
       this%z_endpoints(this%z_endpoints_len)%value = aabb%maxendpoint(3)
 
-      !if (.not. check_boxes(this)) stop __LINE__
+      if (.not. check_boxes(this)) stop __LINE__
 
     end subroutine add_box
 

@@ -50,8 +50,8 @@
 
       ! initialize SAP
       do nn=1, MAX_PIP
-         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
-         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
+         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.01
+         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.01
          call multisap_add(multisap,aabb,nn,boxhandle(nn))
       enddo
 

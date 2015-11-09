@@ -116,8 +116,8 @@
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
-         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.001
-         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.001
+         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.1
+         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.1
          call multisap_update(multisap,aabb,boxhandle(L))
 
 ! Update particle orientation - Always first order

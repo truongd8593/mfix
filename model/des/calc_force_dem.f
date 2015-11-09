@@ -74,7 +74,8 @@
       type(box_t) :: box
       integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
       integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
-      integer :: nn
+      integer :: nn, mm, box_id, box_id2
+      logical :: found
 
 !-----------------------------------------------
 
@@ -172,36 +173,51 @@
 
                print *,"SAP DIDNT FIND PAIR: ",ll,i
 
-               do nn=1,MAX_SAPS
+               do mm=1,size(boxhandle(ll)%list)
+                  if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
+                  print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
+                  box_id = boxhandle(ll)%list(mm)%box_id
 
-                  sap = multisap%saps(nn)
+                  found = .false.
+                  do nn=1,size(boxhandle(i)%list)
+                     if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
+                        print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+                        box_id2 = boxhandle(i)%list(nn)%box_id
+                        found = .true.
+                     endif
+                     enddo
 
-                  print *,"nn = ",nn
-                  if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+                     if (.not.found) cycle
 
-               call print_boxes(sap)
+                     print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
 
-               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+                     sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
 
-               ! box = sap%boxes(boxhandle(ll)%box_id(1))
-               ! print *,"LL BOX  ",box
-               ! print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-               ! print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-               ! print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-               ! print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+                     if (.not.check_boxes(sap)) stop __LINE__
 
-               ! box = sap%boxes(boxhandle(i)%box_id(1))
-               ! print *,"I BOX  ",box
-               ! print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-               ! print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-               ! print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-               ! print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+                     !call print_boxes(sap)
 
-            enddo
+                     print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+                     print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
 
-               stop __LINE__
-            endif
+                     box = sap%boxes(box_id)
+                     print *,"LL BOX  ",box
+                     print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+                     print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+                     print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+                     print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+
+                     box = sap%boxes(box_id2)
+                     print *,"I BOX  ",box
+                     print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+                     print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+                     print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+                     print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+
+                  enddo
+
+                  stop __LINE__
+               endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I
