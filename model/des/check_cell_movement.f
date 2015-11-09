@@ -16,8 +16,12 @@
       use discretelement, only: MAX_PIP
 ! The I/J/K/IJK indicies of the fluid cell
       use discretelement, only: PIJK
+! Number of particles in fluid cells
+      use discretelement, only: PINC
 ! Run time flag indicating DEM or PIC solids.
       use run, only: DEM_SOLIDS, PIC_SOLIDS
+! Flag for fluid cells
+      use functions, only: FLUID_AT
 
       use functions, only: IS_NORMAL
       use mpi_utility
@@ -28,9 +32,11 @@
 ! Local Variables:
 !----------------------------------------------------------------------!
 ! Loop indicies:
-      INTEGER :: L, I, J, K
+      INTEGER :: L, I, J, K, IJK
 ! Integer error flag.
       INTEGER :: IER
+! Flag to remove rogue DEM particles
+      LOGICAL, PARAMETER :: REMOVE_ROGUE_PARTICLES = .FALSE.
 
 ! Initialize local variables.
       IER = 0
@@ -38,28 +44,44 @@
 ! Set an error flag if any errors are found. Preform a global collection
 ! to sync error flags. If needed, reort errors.
 !.......................................................................
-!!$omp parallel default(shared) private(L, I, J, K, IJK)
-!!$omp do reduction(+:IER) schedule (guided,50)
       DO L = 1, MAX_PIP
 ! skipping particles that do not exist
-         IF(.NOT.IS_NORMAL(L)) CYCLE
+         IF(IS_NORMAL(L)) THEN
 
-! assigning local aliases for particle i, j, k fluid grid indices
-         I = PIJK(L,1)
-         J = PIJK(L,2)
-         K = PIJK(L,3)
+            I = PIJK(L,1)
+            J = PIJK(L,2)
+            K = PIJK(L,3)
+            IJK = PIJK(L,4)
 
-         IF(I > IEND1 .OR. I < ISTART1) IER = 1
-         IF(J > JEND1 .OR. J < JSTART1) IER = 1
-         IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) IER = 1
+            IF((I > IEND1 .OR. I < ISTART1) .OR. &
+               (J > JEND1 .OR. J < JSTART1) .OR. &
+               (K > KEND1 .OR. K < KSTART1)) THEN
+
+! This particle cannot say in the current cell.
+               PINC(IJK) = PINC(IJK) - 1
+! PIC parcels can be relocated.
+               IF(PIC_SOLIDS) THEN
+                  CALL RECOVER_PARCEL(L)
+! DEM particles can be removed.
+               ELSEIF(REMOVE_ROGUE_PARTICLES) THEN
+                  CALL DELETE_PARTICLE(L)
+! Otherwise, this is a fatal error.
+               ELSE
+                  IER = 1
+               ENDIF
+
+            ENDIF
+         ENDIF
       ENDDO
-!!$omp end parallel
 
-      CALL GLOBAL_ALL_SUM(IER)
-      IF(IER == 0) RETURN
+      IF(DEM_SOLIDS) THEN
+         IF(REMOVE_ROGUE_PARTICLES) RETURN
+         CALL GLOBAL_ALL_SUM(IER)
+         IF(IER > 0) CALL CHECK_CELL_MOVEMENT_DEM
+!     ELSE
+!        CALL CHECK_CELL_MOVEMENT_PIC
+      ENDIF
 
-      IF(DEM_SOLIDS) CALL CHECK_CELL_MOVEMENT_DEM
-      IF(PIC_SOLIDS) CALL CHECK_CELL_MOVEMENT_PIC
 
       RETURN
       END SUBROUTINE CHECK_CELL_MOVEMENT
@@ -135,7 +157,7 @@
          ENDIF
       ENDDO
 
- 1101 FORMAT('Particle ',A,' moved into cell with ',A,' index ',A,/ &
+ 1101 FORMAT('Particle ',A,' moved into cell with ',A,' index ',A,/    &
          3x,A,'-Position: ',g11.4,6x,A,'-Velocity:',g11.4,/' ')
 
       WRITE(ERR_MSG, 1102)
@@ -149,6 +171,128 @@
 
       END SUBROUTINE CHECK_CELL_MOVEMENT_DEM
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: RECOVER_PARCEL                                          !
+!                                                                      !
+!  Purpose: Try to recover the parcel. First move it back to its       !
+!  previous position, then do a full search to bin the parcel in a     !
+!  fluid cell. Delete the parcel if it still is located outside of a   !
+!  fluid cell.                                                         !
+!                                                                      !
+!  Possible Future Work:                                               !
+!                                                                      !
+!  1. Redistribute particle's weight among other particles in the      !
+!     domain to conserve mass.                                         !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE RECOVER_PARCEL(NP)
+
+! Global Variables:
+!---------------------------------------------------------------------//
+! The (max) number of particles in process
+      use discretelement, only: PIP, MAX_PIP
+! The I/J/K/IJK indicies of the fluid cell
+      use discretelement, only: PIJK
+! The number of particles in cell IJK
+      use discretelement, only: PINC
+! Particle position and velocity
+      use discretelement, only: DES_POS_NEW, DES_VEL_NEW
+! The East/North/Top face loctions of fluid cells
+      use discretelement, only: XE, YN, ZT
+! Particle velocities
+      use discretelement, only: DTSOLID
+! Fluid grid cell dimensions and mesh size
+      USE geometry, only: IMIN2, IMAX2
+      USE geometry, only: JMIN2, JMAX2
+      USE geometry, only: KMIN2, KMAX2
+! The East/North/Top face location of a given I/J/K index.
+      use discretelement, only: XE, YN, ZT
+! Fixed array sizes in the I/J/K direction
+      use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+
+
+      use cutcell
+      use error_manager
+      use functions
+      use mpi_utility
+
+      IMPLICIT NONE
+
+
+! Dummy Arguments
+!----------------------------------------------------------------------!
+! Parcel ID
+      INTEGER, INTENT(IN) :: NP
+
+
+! Local Variables:
+!----------------------------------------------------------------------!
+! particle no.
+      INTEGER :: I, J, K, IJK
+! Integer error flag.
+      INTEGER :: IER
+! Local parameter to print verbose messages about particles.
+      LOGICAL, PARAMETER :: lDEBUG = .FALSE.
+
+      DOUBLE PRECISION :: oPOS(3)
+!.......................................................................
+
+      CALL INIT_ERR_MSG("RECOVER_PARCEL")
+      IF(lDEBUG) CALL OPEN_PE_LOG(IER)
+
+      oPOS = DES_POS_NEW(:,NP)
+
+! Reflect the parcle.
+      DES_VEL_NEW(:,NP) = -DES_VEL_NEW(:,NP)
+
+! Move the particle back to the previous position.
+      DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + &
+         DES_VEL_NEW(:,NP) * DTSOLID
+
+! Rebin the particle to the fluid grid.
+      CALL PIC_SEARCH(I,DES_POS_NEW(1,NP),XE,DIMENSION_I,IMIN2,IMAX2)
+      CALL PIC_SEARCH(J,DES_POS_NEW(2,NP),YN,DIMENSION_J,JMIN2,JMAX2)
+      CALL PIC_SEARCH(K,DES_POS_NEW(3,NP),ZT,DIMENSION_K,KMIN2,KMAX2)
+
+! Calculate the fluid cell index.
+      IJK = FUNIJK(I,J,K)
+      IF(FLUID_AT(IJK)) THEN
+
+! Assign PIJK(L,1:4)
+         PIJK(NP,1) = I
+         PIJK(NP,2) = J
+         PIJK(NP,3) = K
+         PIJK(NP,4) = IJK
+
+         PINC(IJK) = PINC(IJK) + 1
+      ELSE
+
+         write(*,*) 'Still not cool -->', iGLOBAL_ID(NP)
+
+!         write(*,*) 'POS:',oPOS
+!         call write_des_data
+!         stop 'killer stop'
+         CALL DELETE_PARTICLE(NP)
+
+      ENDIF
+
+
+ 1100 FORMAT('Warninge 1100: Particle ',A,' was recovered from a ',    &
+         'ghost cell.',2/2x,'Moved into cell with ',A1,' index: ',A,   &
+         /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
+         /2x,A1,'-Velocity:',g11.4)
+
+ 1110 FORMAT('Warninge 1110: Particle ',A,' was deleted from a ',      &
+         'ghost cell.',2/2x,'Moved into cell with ',A1,' index: ',A,   &
+         /2x,A1,'-Position OLD:',g11.4,/2x,A1,'-Position NEW:',g11.4,  &
+         /2X,A1,'-Velocity:',g11.4,/2x,'Fluid Cell: ',A,/2x,           &
+         'Cut cell? ',L1,/2x,'Fluid at? ',L1)
+
+      CALL FINL_ERR_MSG
+
+      RETURN
+      END SUBROUTINE RECOVER_PARCEL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -229,8 +373,6 @@
 ! skipping particles that do not exist
          IF(.NOT.IS_NORMAL(L)) CYCLE
 
-! Assigning local aliases for particle position
-
 ! assigning local aliases for particle i, j, k fluid grid indices
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -241,7 +383,7 @@
 
 ! in MPPIC a particle can lie on the surface of the wall as only the
 ! centers are tracked.
-         IF (I.GT.IEND1 .OR. I.LT.ISTART1) THEN
+         IF (I > IEND1 .OR. I < ISTART1) THEN
 
             lPOS = DES_POS_NEW(1,L)
             IF(I.EQ.IEND1+1 .AND. &
@@ -363,100 +505,3 @@
 
       RETURN
       END SUBROUTINE CHECK_CELL_MOVEMENT_PIC
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!                                                                      !
-!  Subroutine: REPORT_PIC_STATS                                        !
-!                                                                      !
-!  Purpose: Output stats about PIC simulation.                         !
-!                                                                      !
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REPORT_PIC_STATS
-
-! Global Variables:
-!---------------------------------------------------------------------//
-! Flag to report minimum EP_G
-      use mfix_pic, only: PIC_REPORT_MIN_EPG
-! Gas phase volume fraction
-      use fldvar, only: EP_G
-! Location of cell faces (East, North, Top)
-      use discretelement, only: XE, YN, ZT
-
-      use param1, only: large_number
-      use mpi_utility
-      USE error_manager
-      USE functions
-
-      IMPLICIT NONE
-
-! Local Variables:
-!----------------------------------------------------------------------!
-! Loop counters
-      INTEGER I, J, K, IJK, IPROC
-
-      INTEGER :: EPg_MIN_loc(0:numpes-1, 4), EPg_MIN_loc2(1)
-      DOUBLE PRECISION :: EPg_MIN(0:numpes-1), EPg_min2
-
-!-----------------------------------------------
-
-      CALL INIT_ERR_MSG("REPORT_PIC_STATS")
-
-
-      IF(PIC_REPORT_MIN_EPG) THEN
-
-         EPG_MIN(:) = 0
-         EPG_MIN(mype) = LARGE_NUMBER
-
-         EPG_MIN_LOC(:,:) = 0
-         EPG_MIN_LOC(mype,:) = -1
-
-         DO K = KSTART1, KEND1
-            DO J = JSTART1, JEND1
-               DO I = ISTART1, IEND1
-                  IJK = funijk(I,J,K)
-
-                  IF(EP_G(IJK) < EPG_MIN(mype)) THEN
-                     EPG_MIN_LOC(mype,1) = I
-                     EPG_MIN_LOC(mype,2) = J
-                     EPG_MIN_LOC(mype,3) = K
-                     EPG_MIN_LOC(mype,4) = IJK
-                     EPG_MIN(mype) = EP_G(IJK)
-                  ENDIF
-               ENDDO
-            ENDDO
-         ENDDO
-
-         call GLOBAL_ALL_SUM(EPg_MIN)
-         CALL GLOBAL_ALL_SUM(EPg_MIN_loc)
-
-         epg_min2     = MINVAL(epg_min(0:numpes-1))
-         epg_min_loc2 = MINLOC(epg_min(0:numpes-1)) - 1
-         !-1, since minloc goes from 1:size of the array.
-         !If not corrected by -1, then the proc id will be off by 1
-
-         iproc = epg_min_loc2(1)
-
-         I     = epg_min_loc(iproc, 1)
-         J     = epg_min_loc(iproc, 2)
-         K     = epg_min_loc(iproc, 3)
-         IJK   = epg_min_loc(iproc, 4)
-         WRITE(ERR_MSG,1014) EPG_MIN2, Iproc, I, J, K, IJK, &
-            XE(I) - 0.5*DX(I), YN(J)-0.5*DY(J), ZT(K) - 0.5*DZ(K)
-
- 1014       FORMAT( /, &
-            &      5x,'EPGMIN                    = ', 2x,g17.8,/ &
-            &      5x,'EPGMIN PROC RANK          = ', 2x, I10, / &
-            &      5x,'EPGMIN (I, J, K, IJK)     = ', 3(2x,i5),2x,i10,/ &
-            &      5x,'XMID, YMID, ZMID FOR CELL = ', 3(2x,g17.8))
-
-            call flush_err_msg(header = .false., footer = .false.)
-
-      ENDIF
-
-      CALL FINL_ERR_MSG
-
-      RETURN
-      END SUBROUTINE REPORT_PIC_STATS
-
-

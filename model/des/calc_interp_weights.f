@@ -9,17 +9,19 @@
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: DES_INTERP_LHAT
 
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
       CASE(DES_INTERP_DPVM);  CALL CALC_INTERP_WEIGHTS1
       CASE(DES_INTERP_GAUSS); CALL CALC_INTERP_WEIGHTS1
+      CASE(DES_INTERP_LHAT);  CALL CALC_INTERP_WEIGHTS2
       END SELECT
 
       RETURN
       END SUBROUTINE CALC_INTERP_WEIGHTS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Subroutine: CALC_INTERP_WEIGHTS0                                    !
+!  Subroutine: CALC_INTERP_WEIGHTS1                                    !
 !                                                                      !
 !  Purpose: Calculate weights used for interpolation.                  !
 !                                                                      !
@@ -59,7 +61,9 @@
 !$omp do
       DO L = 1, MAX_PIP
 
-         IF(IS_NONEXISTENT(L).or.IS_ENTERING(L).or.IS_EXITING(L).or.IS_ENTERING_GHOST(L).or.IS_EXITING_GHOST(L)) CYCLE
+         IF(IS_NONEXISTENT(L) .OR.                        &
+            IS_ENTERING(L) .OR. IS_ENTERING_GHOST(L) .OR. &
+            IS_EXITING(L) .OR. IS_EXITING_GHOST(L)) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -146,3 +150,132 @@
       INCLUDE 'functions.inc'
 
       END SUBROUTINE CALC_INTERP_WEIGHTS1
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: CALC_INTERP_WEIGHTS2                                    !
+!                                                                      !
+!  Purpose: Calculate weights used for interpolation.                  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE CALC_INTERP_WEIGHTS2
+
+      use discretelement, only: MAX_PIP
+      use discretelement, only: PIJK
+      use discretelement, only: DES_POS_NEW
+      use discretelement, only: XE, YN, ZT
+      use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_WEIGHT
+      use geometry, only: DX, DY, DZ
+      use geometry, only: oDX_E, oDY_N, oDZ_T, DO_K
+
+      use param1, only: ZERO, HALF, ONE
+
+      use compar, only: FUNIJK_MAP_C
+
+
+      IMPLICIT NONE
+
+      INTEGER :: L, IDX
+      INTEGER :: IJK, IJKt
+
+      INTEGER :: I, J, K
+      INTEGER :: IC, JC, KC
+      INTEGER :: Km, Kp
+
+      INTEGER :: lIJK
+
+      DOUBLE PRECISION :: XC, YC, ZC
+      DOUBLE PRECISION :: WEIGHT
+      DOUBLE PRECISION :: WEIGHT_I(-1:1)
+      DOUBLE PRECISION :: WEIGHT_J(-1:1)
+      DOUBLE PRECISION :: WEIGHT_K(-1:1)
+
+
+      DO L = 1, MAX_PIP
+
+         IF(IS_NONEXISTENT(L) .OR.                        &
+            IS_ENTERING(L) .OR. IS_ENTERING_GHOST(L) .OR. &
+            IS_EXITING(L) .OR. IS_EXITING_GHOST(L)) CYCLE
+
+         I = PIJK(L,1)
+         J = PIJK(L,2)
+         K = PIJK(L,3)
+
+! Tentative weights for I indices to the West and East.
+         XC = XE(I-1) + HALF*DX(I)
+         IF(DES_POS_NEW(1,L) < XE(I-1)+HALF*DX(I)) THEN
+            WEIGHT_I(-1) = (XC - DES_POS_NEW(1,L))*oDX_E(I-1)
+            WEIGHT_I( 0) = ONE - WEIGHT_I(-1)
+            WEIGHT_I( 1) = ZERO
+         ELSE
+            WEIGHT_I( 1) = (DES_POS_NEW(1,L) - XC)*oDX_E(I)
+            WEIGHT_I( 0) = ONE - WEIGHT_I(1)
+            WEIGHT_I(-1) = ZERO
+         ENDIF
+
+! Tentative weights for J indices to the South and North.
+         YC = YN(J-1) + HALF*DY(J)
+         IF(DES_POS_NEW(2,L) < YN(J-1)+HALF*DY(J)) THEN
+            WEIGHT_J(-1) = (YC - DES_POS_NEW(2,L))*oDY_N(J-1)
+            WEIGHT_J( 0) = ONE - WEIGHT_J(-1)
+            WEIGHT_J( 1) = ZERO
+         ELSE
+            WEIGHT_J( 1) = (DES_POS_NEW(2,L) - YC)*oDY_N(J)
+            WEIGHT_J( 0) = ONE - WEIGHT_J(1)
+            WEIGHT_J(-1) = ZERO
+         ENDIF
+
+! Tentative weights for K indices to the Top and Bottom.
+         IF(DO_K) THEN
+            Km=-1;  Kp=1
+            ZC = ZT(K-1) + HALF*DZ(K)
+            IF(DES_POS_NEW(3,L) < ZT(K-1)+HALF*DZ(K)) THEN
+               WEIGHT_K(-1) = (ZC - DES_POS_NEW(3,L))*oDZ_T(K-1)
+               WEIGHT_K( 0) = ONE - WEIGHT_K(-1)
+               WEIGHT_K( 1) = ZERO
+            ELSE
+               WEIGHT_K( 1) = (DES_POS_NEW(3,L) - ZC)*oDZ_T(K)
+               WEIGHT_K( 0) = ONE - WEIGHT_K(1)
+               WEIGHT_K(-1) = ZERO
+            ENDIF
+         ELSE
+            Km= 0; Kp=0
+            WEIGHT_K( 0) = ONE
+         ENDIF
+
+! Set the default fluid cell index and loop counter.
+         IJK = PIJK(L,4)
+         IDX=0
+
+! Calculate weights for ghost particles. Only store weights that the
+! current process owns.
+         DO KC=Km,Kp
+         DO IC=-1,+1
+         DO JC=-1,+1
+            IDX=IDX+1
+            WEIGHT = WEIGHT_I(IC)*WEIGHT_J(JC)*WEIGHT_K(KC)
+            IF(IS_ON_MYPE_PLUS2LAYERS(I+IC,J+JC,K+KC)) THEN
+               IJKt = FUNIJK_MAP_C(I+IC,J+JC,K+KC)
+               IF(FLUID_AT(IJKt)) THEN
+                  FILTER_CELL(IDX,L) = IJKt
+                  FILTER_WEIGHT(IDX,L) = WEIGHT
+               ELSE
+                  FILTER_CELL(IDX,L) = IJK
+                  FILTER_WEIGHT(IDX,L) = WEIGHT
+               ENDIF
+            ELSE
+               FILTER_CELL(IDX,L) = IJK
+               FILTER_WEIGHT(IDX,L) = ZERO
+            ENDIF
+         ENDDO
+         ENDDO
+         ENDDO
+
+      ENDDO
+
+      CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CALC_INTERP_WEIGHTS2

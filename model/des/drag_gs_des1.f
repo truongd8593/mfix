@@ -105,8 +105,6 @@
 !$omp do
       DO NP=1,MAX_PIP
          IF(.NOT.IS_NORMAL(NP)) CYCLE
-! Avoid drag calculations in cells without fluid (cut-cell)
-         IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -136,10 +134,14 @@
             lPF = P_FORCE(:,IJK)
          ENDIF
 
+! Avoid drag calculations in cells without fluid (cut-cell)
+         IF(.NOT.FLUID_AT(PIJK(NP,4))) THEN
+            DRAG_FC(:,NP) = 0.0d0
+            F_GP(NP) = 0.0d0
+
 ! For explicit coupling, use the drag coefficient calculated for the
 ! gas phase drag calculations.
-         IF(DES_EXPLICITLY_COUPLED) THEN
-
+         ELSEIF(DES_EXPLICITLY_COUPLED) THEN
             DRAG_FC(:,NP) = F_GP(NP)*(VELFP - DES_VEL_NEW(:,NP))
 
          ELSE
@@ -159,7 +161,6 @@
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
             FC(:,NP) = FC(:,NP) + D_FORCE(:)
-
             IF(MODEL_A) FC(:,NP) = FC(:,NP) + lPF*PVOL(NP)
 
          ENDIF
@@ -233,7 +234,10 @@
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
 
-      use functions, only: IS_NONEXISTENT, IS_ENTERING, IS_ENTERING_GHOST, IS_EXITING, IS_EXITING_GHOST
+      use functions, only: FLUID_AT
+      use functions, only: IS_NONEXISTENT
+      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
+      use functions, only: IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -279,11 +283,14 @@
 !$omp          ep_g,pijk,des_vel_new,f_gp,vol,des_stat_wt,mppic,drag_bm,f_gds,ugc,vgc,wgc)
 !$omp do
       DO NP=1,MAX_PIP
+
          IF(IS_NONEXISTENT(NP)) CYCLE
+         IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
 ! The drag force is not calculated on entering or exiting particles
 ! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(IS_ENTERING(NP) .OR. IS_EXITING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
+        IF(IS_ENTERING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. &
+           IS_EXITING(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO

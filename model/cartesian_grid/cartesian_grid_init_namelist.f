@@ -761,15 +761,6 @@
 !</keyword>
 
 !<keyword category="Cartesian grid" required="false">
-!  <description>
-!    Maximum number of STL facets per cell for des data arrays.
-!  </description>
-!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
-      MAX_FACETS_PER_CELL_DES  = 24
-!</keyword>
-
-
-!<keyword category="Cartesian grid" required="false">
 !  <description>Defines value of F_STL outside of the STL geometry. a
 !  value of 1.0 means the domain outside of the STL geometry is
 !  excluded from computation, i.e., an internal flow is

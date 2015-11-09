@@ -70,6 +70,9 @@
 
 !fldvar
       Deallocate(  EP_g  )
+      Deallocate(  epg_jfac  )
+      Deallocate(  epg_ifac  )
+      Deallocate(  eps_ifac  )
       Deallocate(  EP_go  )
       Deallocate(  P_g  )
       Deallocate(  P_go  )
@@ -255,6 +258,12 @@
       Deallocate(  TAU_U_g )
       Deallocate(  TAU_V_g )
       Deallocate(  TAU_W_g )
+      Deallocate(  DF_gu )
+      Deallocate(  DF_gv )
+      Deallocate(  DF_gw )
+      Deallocate(  CTAU_U_G )
+      Deallocate(  CTAU_V_G )
+      Deallocate(  CTAU_W_G )
 
 !tau_s
       Deallocate(  TAU_U_s )
@@ -283,13 +292,17 @@
 !visc_g
       Deallocate(  trD_g )
       Deallocate(  MU_gt  )
+      Deallocate(  EPMU_gt  )
       Deallocate(  LAMBDA_gt  )
+      Deallocate(  EPLAMBDA_gt  )
       Deallocate(  L_scale  )
 
 !visc_s
       Deallocate(  trD_s )
       Deallocate(  MU_s  )
+      Deallocate(  EPMU_s  )
       Deallocate(  LAMBDA_s  )
+      Deallocate(  EPLAMBDA_s  )
       Deallocate(  ALPHA_s  )
       Deallocate(  MU_s_c  )
       Deallocate(  LAMBDA_s_c  )

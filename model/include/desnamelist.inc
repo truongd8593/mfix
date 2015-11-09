@@ -52,10 +52,5 @@
          MPPIC_GRAV_TREATMENT, MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL, &
          PIC_REPORT_SEEDING_STATS, PIC_REPORT_DELETION_STATS, PIC_REPORT_MIN_EPG, &
 
-
-! flag to convert des outside box to facets needed if outside box not part of stl geom
-
-         des_convert_box_to_facets, &
-
 ! Flag to turn on/off optimizing the list of facets at each des grid cell
          MINIMIZE_DES_FACET_LIST

@@ -144,7 +144,8 @@
          PIJK(L,4) = IJK
 
 ! Increment the number of particles in cell IJK
-         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. &
+            .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
 
       ENDDO
 !!$omp end parallel

@@ -48,6 +48,7 @@ CONTAINS
       use particle_filter, only: DES_INTERP_GARG
       use particle_filter, only: DES_INTERP_DPVM
       use particle_filter, only: DES_INTERP_GAUSS
+      use particle_filter, only: DES_INTERP_LHAT
       use particle_filter, only: FILTER_SIZE
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
@@ -188,7 +189,7 @@ CONTAINS
       ALLOCATE(VXF_GDS(DIMENSION_3))
 
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
-      CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
+      CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS, DES_INTERP_LHAT)
          ALLOCATE(FILTER_CELL(FILTER_SIZE, MAX_PIP))
          ALLOCATE(FILTER_WEIGHT(FILTER_SIZE, MAX_PIP))
       CASE(DES_INTERP_GARG)
@@ -211,11 +212,11 @@ CONTAINS
 
 ! MP-PIC related
       IF(MPPIC) THEN
-         Allocate(PS_FORCE_PIC(DIMENSION_3, DIMN))
+         Allocate(PS_FORCE_PIC(3, DIMENSION_3))
          ALLOCATE(DES_STAT_WT(MAX_PIP))
          ALLOCATE(DES_VEL_MAX(DIMN))
-         ALLOCATE(PS_GRAD(MAX_PIP, DIMN))
-         ALLOCATE(AVGSOLVEL_P(DIMN, MAX_PIP))
+         ALLOCATE(PS_GRAD(3,MAX_PIP))
+         ALLOCATE(AVGSOLVEL_P(3, MAX_PIP))
          ALLOCATE(EPG_P(MAX_PIP))
 
          Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
@@ -549,7 +550,7 @@ CONTAINS
 
            IF(MPPIC) THEN
               call real_grow(DES_STAT_WT,MAX_PIP)
-              call real_grow2_reverse(PS_GRAD,MAX_PIP)
+              call real_grow2(PS_GRAD,MAX_PIP)
               call real_grow2(AVGSOLVEL_P,MAX_PIP)
               call real_grow(EPG_P,MAX_PIP)
            ENDIF

@@ -23,6 +23,10 @@ MODDIR=$(top_builddir)/model
 MODOUTDIR=$(MODDIR)
 CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
 DISTCLEANFILES = build-aux/Makefile.usr
+DISTCLEANFILES += benchmarks
+DISTCLEANFILES += legacy_tests
+DISTCLEANFILES += tests
+DISTCLEANFILES += tutorials
 
 AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
@@ -106,7 +110,11 @@ CLEANFILES += post_mfix/functions.mod
 
 EXTRA_DIST =  Bug_Fixes CHANGES DISCLAIMER NOTICE benchmarks build-aux config configure_mfix doc
 EXTRA_DIST += legacy_tests mfix_user_guide.pdf readme regression_tests tests tools tutorials visualization_tools
-
+EXTRA_DIST += model/make_mfix
+EXTRA_DIST += model/make_mfix.old
+EXTRA_DIST += model/thermochemical/BURCAT.THR
+EXTRA_DIST += model/thermochemical/intro.pdf
+EXTRA_DIST += model/thermochemical/readme
 
 ################################################################
 #                                                              #
@@ -398,7 +406,6 @@ libmfix_src = \
 	model/deprecated.f \
 	model/des/calc_collision_wall_mod.f \
 	model/des/calc_drag_des.f \
-	model/des/calc_dtpic.f \
 	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
 	model/des/calc_grad_des.f \
@@ -429,7 +436,6 @@ libmfix_src = \
 	model/des/des_reaction_model.f \
 	model/des/des_rrates0.f \
 	model/des/des_rxns_mod.f \
-	model/des/des_stl_functions_mod.f \
 	model/des/des_thermo_cond_mod.f \
 	model/des/des_thermo_conv.f \
 	model/des/des_thermo_mod.f \
@@ -456,7 +462,6 @@ libmfix_src = \
 	model/des/make_arrays_des.f \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \
-	model/des/mfix_pic_mod.f \
 	model/des/mpi_comm_des_mod.f \
 	model/des/mpi_funs_des_mod.f \
 	model/des/mpi_init_des_mod.f \
@@ -469,9 +474,22 @@ libmfix_src = \
 	model/des/pair_manager.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
-	model/des/pic_bc_mod.f \
-	model/des/pic_bc_routines.f \
-	model/des/pic_routines.f \
+	model/des/pic/apply_wall_bc_pic.f \
+	model/des/pic/calc_dtpic.f \
+	model/des/pic/calc_ps_grad_pic.f \
+	model/des/pic/calc_ps_pic.f \
+	model/des/pic/integrate_time_pic.f \
+	model/des/pic/interpolate_pic.f \
+	model/des/pic/mass_inflow_pic.f \
+	model/des/pic/mass_outflow_pic.f \
+	model/des/pic/mfix_pic_mod.f \
+	model/des/pic/pic_bc_mod.f \
+	model/des/pic/pic_routines.f \
+	model/des/pic/report_stats_pic.f \
+	model/des/pic/set_bc_pic.f \
+	model/des/pic/set_bc_pic_mi.f \
+	model/des/pic/set_bc_pic_mo.f \
+	model/des/pic/time_march_pic.f \
 	model/des/randomno_mod.f \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
@@ -482,14 +500,13 @@ libmfix_src = \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
 	model/des/set_bc_dem_mo.f \
-	model/des/set_bc_pic.f \
-	model/des/set_bc_pic_mi.f \
-	model/des/set_bc_pic_mo.f \
 	model/des/set_filter_des.f \
 	model/des/set_geometry_des.f \
 	model/des/set_ic_dem.f \
 	model/des/set_phase_index.f \
 	model/des/solid_drag.f \
+	model/des/stl_dbg_des_mod.f \
+	model/des/stl_functions_des_mod.f \
 	model/des/stl_preproc_des_mod.f \
 	model/des/usr0_des.f \
 	model/des/usr1_des.f \
@@ -855,3 +872,5 @@ allcases:
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
 	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done
+
+TESTS = build-aux/test.sh

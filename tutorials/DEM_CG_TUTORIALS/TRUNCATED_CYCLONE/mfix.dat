@@ -15,7 +15,7 @@
   RUN_TYPE = 'NEW'
   UNITS    = 'CGS'
 
-  TIME  = 0.0
+  TIME  = 0.00
   TSTOP = 0.05
   DT    = 1.0d-3
 
@@ -47,7 +47,6 @@
   TY_STL = 0.3
   TZ_STL = 0.5
 
-  MAX_FACETS_PER_CELL_DES=30
   OUT_STL_VALUE = -1.0
 
   STL_BC_ID = 5
@@ -172,7 +171,7 @@
 
   PRINT_DES_DATA = .T.
 
-  NLOG = 25           ! interval to update .LOG
+  NLOG = 2500         ! interval to update .LOG
 
   WRITE_DASHBOARD = .F.
   WRITE_VTK_FILES  = .T.

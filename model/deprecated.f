@@ -72,8 +72,9 @@
       LOGICAL :: DISCRETE_ELEMENT, MPPIC, DES_CONTINUUM_HYBRID
 
       DOUBLE PRECISION :: PARTICLES_FACTOR, DES_RES_DT, DES_SPX_DT
-      INTEGER :: MAX_PIS
-      LOGICAL :: USE_STL_DES, DES_CONTINUUM_COUPLED
+      INTEGER :: MAX_PIS, MAX_FACETS_PER_CELL_DES
+      LOGICAL :: USE_STL_DES, DES_CONTINUUM_COUPLED, &
+         DES_CONVERT_BOX_TO_FACETS
 
 
 ! 2014-1 Deprecated list:
@@ -102,10 +103,15 @@
       NAMELIST / DEP_2015_1 / MAX_PIS, PARTICLES_FACTOR, USE_STL_DES,  &
          DISCRETE_ELEMENT, MPPIC, DES_CONTINUUM_HYBRID
 
-! 2015-1 Deprecated list:
+! 2015-2 Deprecated list:
 !-----------------------------------------------------------------------
       NAMELIST / DEP_2015_2 / DES_CONTINUUM_COUPLED, DES_RES_DT,       &
          DES_SPX_DT
+
+! 2016-1 Deprecated list:
+!-----------------------------------------------------------------------
+      NAMELIST / DEP_2016_1 / MAX_FACETS_PER_CELL_DES,                 &
+          DES_CONVERT_BOX_TO_FACETS
 
 ! 2014-1 Release Deprecated keywords.
       STRING=''; STRING = '&DEP_2014_1 '//trim(adjustl(INPUT))//'/'

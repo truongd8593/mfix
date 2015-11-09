@@ -146,14 +146,11 @@
          end if
 
 
-! remove this redundant call here to write_des_data in case of new
-! coupled runs that contain at least a particle and involve some initial
-! settling of the system.
-! the call made in des_time_march is a better call for capturing the
-! initial state of such a des continuum coupled system
-         IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA .AND. &
-            .NOT.(TRIM(RUN_TYPE)=='NEW' .AND. PARTICLES /=0 .AND. &
-                  NFACTOR >0 .AND. TIME == ZERO)) THEN
+! The call made in make_arrays captures the initial state of the system
+! as the input and RES files for DES runs are read afte the the first
+! call to this routine.
+         IF(DISCRETE_ELEMENT.AND.PRINT_DES_DATA) THEN
+            IF(TIME /= ZERO .OR. TRIM(RUN_TYPE)=='RESTART_1') &
                CALL WRITE_DES_DATA
          ENDIF
 

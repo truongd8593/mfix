@@ -10,7 +10,7 @@
       USE compar
       USE cutcell
       USE des_rxns
-      USE des_stl_functions
+      USE stl_functions_des
       USE des_thermo
       USE discretelement
       USE functions

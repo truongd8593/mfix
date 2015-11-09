@@ -12,7 +12,7 @@
       USE cutcell
       USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE des_rxns
-      USE des_stl_functions
+      USE stl_functions_des
       USE des_thermo
       USE desgrid
       USE discretelement
@@ -78,80 +78,7 @@
          ENDDO
       ENDDO
 
-      VERTEX(1,:,WEST_FACEID) = (/zero, zero, zero/)
-      VERTEX(2,:,WEST_FACEID) = (/zero, 2*YLENGTH, zero/)
-      VERTEX(3,:,WEST_FACEID) = (/zero, zero, 2*ZLENGTH/)
 
-      VERTEX(1,:,EAST_FACEID) = (/XLENGTH, zero, zero/)
-      VERTEX(2,:,EAST_FACEID) = (/XLENGTH, 2*YLENGTH, zero/)
-      VERTEX(3,:,EAST_FACEID) = (/XLENGTH, zero, 2*ZLENGTH/)
-
-      VERTEX(1,:,SOUTH_FACEID) = (/zero, zero, zero/)
-      VERTEX(2,:,SOUTH_FACEID) = (/2*XLENGTH, zero, zero/)
-      VERTEX(3,:,SOUTH_FACEID) = (/zero, zero, 2*ZLENGTH/)
-
-      VERTEX(1,:,NORTH_FACEID) = (/zero, YLENGTH, zero/)
-      VERTEX(2,:,NORTH_FACEID) = (/2*XLENGTH, YLENGTH, zero/)
-      VERTEX(3,:,NORTH_FACEID) = (/zero, YLENGTH, 2*ZLENGTH/)
-
-      VERTEX(1,:,BOTTOM_FACEID) = (/zero, zero, zero/)
-      VERTEX(2,:,BOTTOM_FACEID) = (/2*XLENGTH, zero, zero/)
-      VERTEX(3,:,BOTTOM_FACEID) = (/zero, 2*YLENGTH, zero/)
-
-      VERTEX(1,:,TOP_FACEID) = (/zero, zero, ZLENGTH/)
-      VERTEX(2,:,TOP_FACEID) = (/2*XLENGTH, zero, ZLENGTH/)
-      VERTEX(3,:,TOP_FACEID) = (/zero, 2*YLENGTH, ZLENGTH/)
-
-
-      NORM_FACE(:,WEST_FACEID) = (/one, zero, zero/)
-      NORM_FACE(:,EAST_FACEID) = (/-one, zero, zero/)
-      NORM_FACE(:,SOUTH_FACEID) = (/zero, one, zero/)
-      NORM_FACE(:,NORTH_FACEID) = (/zero, -one, zero/)
-      NORM_FACE(:,BOTTOM_FACEID) = (/zero, zero, one/)
-      NORM_FACE(:,TOP_FACEID) = (/zero, zero, -one/)
-
-
-      STL_FACET_TYPE(WEST_FACEID) = FACET_TYPE_NORMAL
-      STL_FACET_TYPE(EAST_FACEID) = FACET_TYPE_NORMAL
-      STL_FACET_TYPE(NORTH_FACEID) = FACET_TYPE_NORMAL
-      STL_FACET_TYPE(SOUTH_FACEID) = FACET_TYPE_NORMAL
-      STL_FACET_TYPE(TOP_FACEID) = FACET_TYPE_NORMAL
-      STL_FACET_TYPE(BOTTOM_FACEID) = FACET_TYPE_NORMAL
-
-! initialize CELLNEIGHBOR_FACET array
-      DO K_CELL = DG_KSTART2, DG_KEND2
-      DO J_CELL = DG_JSTART2, DG_JEND2
-      DO I_CELL = DG_ISTART2, DG_IEND2
-
-         IPLUS1  =  MIN (I_CELL + 1, DG_IEND2)
-         IMINUS1 =  MAX (I_CELL - 1, DG_ISTART2)
-
-         JPLUS1  =  MIN (J_CELL + 1, DG_JEND2)
-         JMINUS1 =  MAX (J_CELL - 1, DG_JSTART2)
-
-         KPLUS1  =  MIN (K_CELL + 1, DG_KEND2)
-         KMINUS1 =  MAX (K_CELL - 1, DG_KSTART2)
-
-         CELL_ID = DG_FUNIJK(I_CELL,J_CELL,K_CELL)
-
-         IF(.NOT.DES_PERIODIC_WALLS_X)THEN
-            IF(I_CELL == DG_IMIN1) CALL ADD_FACET(CELL_ID,WEST_FACEID)
-            IF(I_CELL == DG_IMAX1) CALL ADD_FACET(CELL_ID,EAST_FACEID)
-         ENDIF
-
-         IF(.NOT.DES_PERIODIC_WALLS_Y)THEN
-            IF(J_CELL == DG_JMIN1) CALL ADD_FACET(CELL_ID,SOUTH_FACEID)
-            IF(J_CELL == DG_JMAX1) CALL ADD_FACET(CELL_ID,NORTH_FACEID)
-         ENDIF
-
-         IF (DO_K .AND. .NOT.DES_PERIODIC_WALLS_Z)THEN
-            IF(K_CELL == DG_KMIN1) CALL ADD_FACET(CELL_ID,BOTTOM_FACEID)
-            IF(K_CELL == DG_KMAX1) CALL ADD_FACET(CELL_ID,TOP_FACEID)
-         ENDIF
-
-      ENDDO
-      ENDDO
-      ENDDO
 
 ! Set the initial particle data.
       IF(RUN_TYPE == 'NEW') THEN
@@ -244,6 +171,9 @@
          CALL NEIGHBOUR
          CALL INIT_SETTLING_DEM
       ENDIF
+
+      IF(RUN_TYPE /= 'RESTART_1' .AND. PRINT_DES_DATA) &
+         CALL WRITE_DES_DATA
 
 ! Calculate interpolation weights
       CALL CALC_INTERP_WEIGHTS

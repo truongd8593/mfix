@@ -130,9 +130,9 @@
          70('*'),2/)
 
       ELSE
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', IOSTAT=IOS)
+         OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', IOSTAT=IOS)
          IF(IOS /= 0) THEN
-            IF(myPE == PE_IO) WRITE (*,1100)
+            IF(myPE == PE_IO) WRITE (*,1001)
             CALL MFIX_EXIT(myPE)
          ENDIF
 
