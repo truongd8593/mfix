@@ -30,17 +30,22 @@ module sweep_and_prune
      integer :: x_endpoints_len
      integer :: y_endpoints_len
      integer :: z_endpoints_len
+     integer :: id
      type(box_t), dimension(:), allocatable :: boxes
      integer :: boxes_len
   end type sap_t
 
-  integer, parameter :: MAX_SAPS = 8
   type boxhandle_t
-     integer :: sap_id(MAX_SAPS)
-     integer :: box_id(MAX_SAPS)
+     integer :: sap_id
+     integer :: box_id
   end type boxhandle_t
 
-  type(boxhandle_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
+  integer, parameter :: MAX_SAPS = 8 ! maybe 4 for 2d, eventually
+  type boxhandlelist_t
+     type(boxhandle_t) :: list(MAX_SAPS)
+  end type boxhandlelist_t
+
+  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
   public :: add_box, del_box, update_box, sort, sweep
   private :: partition
@@ -53,21 +58,6 @@ module sweep_and_prune
       implicit none
       type(sap_t), intent(inout) :: this
       integer :: ii, nn, ss
-
-      do ss=1, MAX_SAPS
-         if (maxval(abs(des_pos_new(:,46)-des_pos_new(:,77))) < 0.4) then
-            ! print *,ss,"WE SHOULD HAVE PAIIR HERE....",(maxval(abs(des_pos_new(:,46)-des_pos_new(:,77))))
-            ! print *,ss,"DEBUG!  NOW CHECKING: 46 AT ",des_pos_new(:,46)
-            ! print *,ss,"DEBUG!  NOW CHECKING: 77 AT ",des_pos_new(:,77)
-
-            ! print *,ss," IS PAIR?",is_pair(46,77)
-            ! print *,ss," IS PAIR?",is_pair(77,46)
-            if (.not.is_pair(46,77)) then
-               check_boxes = .false.
-               return
-            endif
-         endif
-      enddo
 
       do ii=1, this%boxes_len
          if (abs(this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id) .ne. this%boxes(ii)%box_id) then
@@ -331,36 +321,11 @@ module sweep_and_prune
       integer :: ii
 
       ! sort end points
-      !print *,"SORTING FROM ",1, " TO ",this%x_endpoints_len
-
-      !print *,"????? ",this%x_endpoints(this%x_endpoints_len),this%y_endpoints(this%x_endpoints_len),this%z_endpoints(this%x_endpoints_len)
-      !print *,"????? ",this%x_endpoints(this%x_endpoints_len)%box_id,this%y_endpoints(this%x_endpoints_len)%box_id,this%z_endpoints(this%x_endpoints_len)%box_id
-      !print *,"????? ",this%boxes(this%x_endpoints(this%x_endpoints_len)%box_id),this%boxes(this%y_endpoints(this%x_endpoints_len)%box_id),this%boxes(this%z_endpoints(this%x_endpoints_len)%box_id)
-
       call sort_endpoints(this%x_endpoints(1:this%x_endpoints_len),this,1)
       call sort_endpoints(this%y_endpoints(1:this%y_endpoints_len),this,2)
       call sort_endpoints(this%z_endpoints(1:this%z_endpoints_len),this,3)
 
     end subroutine sort
-
-    logical function inarray(aa,bb,array)
-      implicit none
-      integer, intent(in) :: aa,bb
-      type(boxhandle_t), intent(in) :: array
-      integer :: ii
-
-      if (size(array%sap_id) .ne. size(array%box_id)) then
-         stop __LINE__
-      endif
-
-      do ii=1,size(array%sap_id)
-         if (aa.eq.array%sap_id(ii) .and. bb.eq.array%box_id(ii)) then
-            inarray = .false.
-            return
-         endif
-      enddo
-      inarray = .false.
-    end function inarray
 
     subroutine sweep(this,ss)
 
@@ -375,7 +340,6 @@ module sweep_and_prune
 
       ! active list of box id's
       integer :: ii,aa,minmax,ai
-      logical :: debug
 
       type active_t
          integer, dimension(:), allocatable :: list
@@ -396,36 +360,9 @@ module sweep_and_prune
          if ( minmax < 0) then
             ! add pairs for new box x ( active pairs )
 
-            debug = .false.
-            if (this%boxes(abs(minmax))%particle_id.eq.46) then
-               print *,ss,"DEBUG!  NOW CHECKING: 46 WHICH HAS RADIUS ",des_radius(46)," AND ACTIVE LENGTH ",active_get_length(active)
-               ! print *,"MIN1 46 is ",sap%boxes(46)%minendpoint_id(1),sap%x_endpoints(sap%boxes(46)%minendpoint_id(1))%value
-               ! print *,"MAX1 46 is ",sap%boxes(46)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(46)%maxendpoint_id(1))%value
-               ! print *,"MIN2 46 is ",sap%boxes(46)%minendpoint_id(2),sap%y_endpoints(sap%boxes(46)%minendpoint_id(2))%value
-               ! print *,"MAX2 46 is ",sap%boxes(46)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(46)%maxendpoint_id(2))%value
-               debug = .true.
-            endif
-
-            if (this%boxes(abs(minmax))%particle_id.eq.77) then
-               print *,ss,"DEBUG!  NOW CHECKING: 77 WHICH HAS RADIUS ",des_radius(77)," AND ACTIVE LENGTH ",active_get_length(active)
-               ! print *,"MIN1 77 is ",sap%boxes(77)%minendpoint_id(1),sap%x_endpoints(sap%boxes(77)%minendpoint_id(1))%value
-               ! print *,"MAX1 77 is ",sap%boxes(77)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(77)%maxendpoint_id(1))%value
-               ! print *,"MIN2 77 is ",sap%boxes(77)%minendpoint_id(2),sap%y_endpoints(sap%boxes(77)%minendpoint_id(2))%value
-               ! print *,"MAX2 77 is ",sap%boxes(77)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(77)%maxendpoint_id(2))%value
-               debug = .true.
-            endif
-
             do ai=1, active_get_length(active)
                aa = active_get(active,ai)
                ! compare other two axes
-
-               if (debug) then
-                     print *,"....NOW CHECKING BOX: ",aa," WHICH HAS radius ",des_radius(aa)
-                     ! print *,"MIN1 aa is ",sap%boxes(aa)%minendpoint_id(1),sap%x_endpoints(sap%boxes(aa)%minendpoint_id(1))%value
-                     ! print *,"MAX1 aa is ",sap%boxes(aa)%maxendpoint_id(1),sap%x_endpoints(sap%boxes(aa)%maxendpoint_id(1))%value
-                     ! print *,"MIN2 aa is ",sap%boxes(aa)%minendpoint_id(2),sap%y_endpoints(sap%boxes(aa)%minendpoint_id(2))%value
-                     ! print *,"MAX2 aa is ",sap%boxes(aa)%maxendpoint_id(2),sap%y_endpoints(sap%boxes(aa)%maxendpoint_id(2))%value
-               endif
 
                if (max(this%boxes(aa)%minendpoint_id(2),this%boxes(-minmax)%minendpoint_id(2)) <= min(this%boxes(-minmax)%maxendpoint_id(2),this%boxes(aa)%maxendpoint_id(2)) .and. &
                     (NO_K .or. max(this%boxes(aa)%minendpoint_id(3),this%boxes(-minmax)%minendpoint_id(3)) <= min(this%boxes(-minmax)%maxendpoint_id(3),this%boxes(aa)%maxendpoint_id(3)))) then
@@ -638,11 +575,9 @@ module sweep_and_prune
              sap%boxes(sweeppoint%box_id)%maxendpoint_id(axis) = jj+1
           endif
 
-          if (.not. check_boxes(sap)) stop __LINE__
-
           !print *,"DONE SORTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ",ii,jj
           !call print_boxes(sap)
-          if (.not. check_boxes(sap)) stop __LINE__
+          !if (.not. check_boxes(sap)) stop __LINE__
 
        enddo
 

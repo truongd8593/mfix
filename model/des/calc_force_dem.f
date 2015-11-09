@@ -119,62 +119,6 @@
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
 
-            if (.false. .and. ll.eq.46 .and. i.eq.77) then
-               minenx = multisap%saps(boxhandle(ll)%sap_id(1))%boxes(boxhandle(ll)%box_id(1))%minendpoint_id(1)
-               maxenx = multisap%saps(boxhandle(ll)%sap_id(1))%boxes(boxhandle(ll)%box_id(1))%maxendpoint_id(1)
-               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at x endpoints ",minenx," AND ",maxenx,multisap%saps(boxhandle(ll)%sap_id(1))%x_endpoints(minenx),multisap%saps(boxhandle(ll)%sap_id(1))%x_endpoints(maxenx)
-
-               minenx2 = multisap%saps(boxhandle(i)%sap_id(1))%boxes(boxhandle(i)%box_id(1))%minendpoint_id(1)
-               maxenx2 = multisap%saps(boxhandle(i)%sap_id(1))%boxes(boxhandle(i)%box_id(1))%maxendpoint_id(1)
-               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i)," at x endpoints ",minenx2," AND ",maxenx2,multisap%saps(boxhandle(i)%sap_id(1))%x_endpoints(minenx2),multisap%saps(boxhandle(i)%sap_id(1))%x_endpoints(maxenx2)
-
-               mineny = multisap%saps(boxhandle(ll)%sap_id(2))%boxes(boxhandle(ll)%box_id(2))%minendpoint_id(2)
-               maxeny = multisap%saps(boxhandle(ll)%sap_id(2))%boxes(boxhandle(ll)%box_id(2))%maxendpoint_id(2)
-               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at y endpoints ",mineny," AND ",maxeny,multisap%saps(boxhandle(ll)%sap_id(2))%y_endpoints(mineny),multisap%saps(boxhandle(ll)%sap_id(2))%y_endpoints(maxeny)
-
-               mineny2 = multisap%saps(boxhandle(i)%sap_id(2))%boxes(boxhandle(i)%box_id(2))%minendpoint_id(2)
-               maxeny2 = multisap%saps(boxhandle(i)%sap_id(2))%boxes(boxhandle(i)%box_id(2))%maxendpoint_id(2)
-               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i)," at y endpoints ",mineny2," AND ",maxeny2,multisap%saps(boxhandle(i)%sap_id(2))%y_endpoints(mineny2),multisap%saps(boxhandle(i)%sap_id(2))%y_endpoints(maxeny2)
-
-               minenz = multisap%saps(boxhandle(ll)%sap_id(3))%boxes(boxhandle(ll)%box_id(3))%minendpoint_id(3)
-               maxenz = multisap%saps(boxhandle(ll)%sap_id(3))%boxes(boxhandle(ll)%box_id(3))%maxendpoint_id(3)
-               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll)," at z endpoints ",minenz," AND ",maxenz,multisap%saps(boxhandle(ll)%sap_id(3))%z_endpoints(minenz),multisap%saps(boxhandle(ll)%sap_id(3))%z_endpoints(maxenz)
-
-               minenz2 = multisap%saps(boxhandle(i)%sap_id(3))%boxes(boxhandle(i)%box_id(3))%minendpoint_id(3)
-               maxenz2 = multisap%saps(boxhandle(i)%sap_id(3))%boxes(boxhandle(i)%box_id(3))%maxendpoint_id(3)
-               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " at z endpoints ",minenz2," AND ",maxenz2,multisap%saps(boxhandle(i)%sap_id(3))%z_endpoints(minenz2),multisap%saps(boxhandle(i)%sap_id(3))%z_endpoints(maxenz2)
-
-               if (max(minenx,minenx2) < min(maxenx,maxenx2)) then
-                  print *,"X INTERSECTION "
-                  !stop __LINE__
-                  if (max(mineny,mineny2) < min(maxenx,maxeny2)) then
-                     print *,"X AND Y INTERSECTION "
-
-                     print *,"Z INTERSECT? ",max(minenz,minenz2),min(maxenz,maxenz2)
-                     print *,"Z INTERSECT? ",(max(minenz,minenz2) < min(maxenz,maxenz2))
-                     if (.not.is_pair(ll,i)) then
-                        print *,"FAIL"
-                        stop __LINE__
-                     endif
-
-                     stop __LINE__
-                     if (max(minenz,minenz2) < min(maxenx,maxenz2)) then
-                        print *,"INTERSECTION...."
-                        if (.not.is_pair(ll,i)) then
-                           print *,"FAIL"
-                           stop __LINE__
-                        endif
-                        if (.not.is_pair(i,ll)) then
-                           print *,"fail"
-                           stop __LINE__
-                        endif
-                        stop __LINE__
-                     endif
-                  endif
-               endif
-
-            endif
-
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)

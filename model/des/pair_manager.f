@@ -155,14 +155,6 @@ contains
        stop __LINE__
     endif
 
-    do nn=0, size(table)-1
-       if ( table(nn)%ii < 0 .or. table(nn)%jj < 0) then
-          !print *,"LOOKING AT ",nn," FOR table_temp_size:",size(table)
-          !print *,table(nn)%ii,table(nn)%jj
-          stop __LINE__
-       endif
-    enddo
-
     if (size(table) < 2*table_size ) then
        old_size = size(table)
        allocate(table_tmp(0:old_size-1))
@@ -172,15 +164,6 @@ contains
           stop __LINE__
        endif
        table_tmp(0:old_size-1) = table(0:old_size-1)
-
-       do nn=0, size(table_tmp)-1
-
-          if ( table_tmp(nn)%ii < 0 .or. table_tmp(nn)%jj < 0) then
-             !print *,"LOOKING AT ",nn," FOR table_temp_size:",size(table_tmp)
-             !print *,table_tmp(nn)%ii,table_tmp(nn)%jj
-             stop __LINE__
-          endif
-       enddo
 
        deallocate(table)
        allocate(table(0:2*old_size))
@@ -210,6 +193,9 @@ contains
     init_hash = hash
     !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
+    if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+       return
+    endif
     if (table(hash)%ii .eq. 0 .or. table(hash)%jj .eq. 0) then
        table(hash)%ii = ii
        table(hash)%jj = jj
@@ -222,11 +208,14 @@ contains
     !print *,"HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
     do while(hash .ne. init_hash)
+       if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
+          return
+       endif
        if (table(hash)%ii .eq. 0 .or. table(hash)%jj .eq. 0) then
           table(hash)%ii = ii
           table(hash)%jj = jj
           table_size = table_size + 1
-          !print *,"BLANK/DELETED SPACE...ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+          print *,"BLANK/DELETED SPACE...ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           if(.not. check_table()) stop __LINE__
           return
        endif
