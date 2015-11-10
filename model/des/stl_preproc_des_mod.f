@@ -125,12 +125,6 @@
 ! Maximum and minimum extents of the indexed STL
       DOUBLE PRECISION:: X1,Y1,Z1
       DOUBLE PRECISION:: X2,Y2,Z2
-! DES grid cell sizes
-      DOUBLE PRECISION :: DG_DX, DG_DY, DG_DZ
-
-      DG_DX = ONE/DG_DXINV
-      DG_DY = ONE/DG_DYINV
-      IF(DO_K) DG_DZ = ONE/DG_DZINV
 
 ! Allocate the data storage array.
       ALLOCATE(FACETS_AT_DG(DG_IJKSIZE2))
@@ -147,24 +141,24 @@
 
          I1 = DG_IEND2
          I2 = DG_ISTART2
-         IF(X2>=ZERO .AND. X1<=XLENGTH+TOL_STL) THEN
-            I1 = iofpos(X1)
-            I2 = iofpos(dg_dx+X2)
+         IF(X2>=-TOL_STL .AND. X1<=XLENGTH+TOL_STL) THEN
+            I1 = max(iofpos(X1)-1, dg_istart2)
+            I2 = min(iofpos(X2)+1, dg_iend2)
          ENDIF
 
          J1 = DG_JEND2
          J2 = DG_JSTART2
-         IF(Y2>=ZERO .AND. Y1<=YLENGTH+TOL_STL) THEN
-            J1 = jofpos(Y1)
-            J2 = jofpos(dg_dy+Y2)
+         IF(Y2>=-TOL_STL .AND. Y1<=YLENGTH+TOL_STL) THEN
+            J1 = max(jofpos(Y1)-1, dg_jstart2)
+            J2 = min(jofpos(Y2)+1, dg_jend2)
          ENDIF
 
          K1 = DG_KEND2
          K2 = DG_KSTART2
          IF(DO_K) THEN
-            IF(Z2>=ZERO .AND. Z1<=ZLENGTH+TOL_STL) THEN
-               K1 = kofpos(Z1)
-               K2 = kofpos(dg_dz+Z2)
+            IF(Z2>=-TOL_STL .AND. Z1<=ZLENGTH+TOL_STL) THEN
+               K1 = max(kofpos(Z1)-1, dg_kstart2)
+               K2 = min(kofpos(Z2)+1, dg_kend2)
             ENDIF
          ENDIF
 
@@ -180,7 +174,6 @@
          ENDDO
 
       ENDDO
-
 
       RETURN
       END SUBROUTINE BIN_FACETS_TO_DG
@@ -351,12 +344,13 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       Subroutine CONVERT_BC_WALLS_TO_STL
 
-      use geometry, only: DO_K
+      use geometry, only: ZLENGTH, DO_K
 
       use bc, only: BC_DEFINED, BC_TYPE
       use bc, only: BC_I_w, BC_I_e
       use bc, only: BC_J_s, BC_J_n
       use bc, only: BC_K_b, BC_K_t
+
       use stl, only: N_FACETS_DES
       use stl, only: STL_START, STL_END, BCWALLS_STL
 
@@ -382,11 +376,11 @@
             trim(BC_TYPE(BCV)) == 'PAR_SLIP_WALL') THEN
 
             lXw = XE(BC_I_w(BCV)-1); lXe = XE(BC_I_e(BCV))
-            lYs = YN(BC_J_s(BCV)-1); lYs = YN(BC_J_n(BCV))
+            lYs = YN(BC_J_s(BCV)-1); lYn = YN(BC_J_n(BCV))
             IF(DO_K) THEN
                lZb = ZT(BC_K_b(BCV)-1); lZt = ZT(BC_K_t(BCV))
             ELSE
-               lZb = ZERO; lZt = ZERO
+               lZb = ZERO; lZt = ZLENGTH
             ENDIF
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
          ENDIF
@@ -408,7 +402,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CONVERT_IMPERMEABLE_IS_TO_STL
 
-      use geometry, only: DO_K
+      use geometry, only: DO_K, ZLENGTH
 
       use is, only: IS_DEFINED, IS_TYPE
       use is, only: IS_I_w, IS_I_e
@@ -439,11 +433,11 @@
          IF(trim(IS_TYPE(ISV)) == 'IMPERMEABLE') THEN
 
             lXw = XE(IS_I_w(ISV)-1); lXe = XE(IS_I_e(ISV))
-            lYs = YN(IS_J_s(ISV)-1); lYs = YN(IS_J_n(ISV))
+            lYs = YN(IS_J_s(ISV)-1); lYn = YN(IS_J_n(ISV))
             IF(DO_K) THEN
                lZb = ZT(IS_K_b(ISV)-1); lZt = ZT(IS_K_t(ISV))
             ELSE
-               lZb = ZERO; lZt = ZERO
+               lZb = ZERO; lZt = ZLENGTH
             ENDIF
 
             CALL GENERATE_STL_BOX(lXw, lXe, lYs, lYn, lZb, lZt)
@@ -569,58 +563,66 @@
       IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: pXw, pXe, pYs, pYn, pZb, pZt
-! West Face
-      N_FACETS_DES = N_FACETS_DES+1
-      VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
-      VERTEX(2,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-      VERTEX(3,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
-      NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
 
+! West Face
       N_FACETS_DES = N_FACETS_DES+1
       VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
       VERTEX(2,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
       VERTEX(3,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
-      NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
-
-! East Face
-      N_FACETS_DES = N_FACETS_DES+1
-      VERTEX(3,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
-      VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-      VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
       NORM_FACE(:,N_FACETS_DES) = (/-ONE, ZERO, ZERO/)
 
+      IF(DO_K)THEN
+         N_FACETS_DES = N_FACETS_DES+1
+         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
+         NORM_FACE(:,N_FACETS_DES) = (/-ONE, ZERO, ZERO/)
+      ENDIF
+
+! East Face
       N_FACETS_DES = N_FACETS_DES+1
       VERTEX(3,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
       VERTEX(2,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
       VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
-      NORM_FACE(:,N_FACETS_DES) = (/-ONE, ZERO, ZERO/)
+      NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
+
+      IF(DO_K) THEN
+         N_FACETS_DES = N_FACETS_DES+1
+         VERTEX(3,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
+         NORM_FACE(:,N_FACETS_DES) = (/ONE, ZERO, ZERO/)
+      ENDIF
 
 ! South Face
       N_FACETS_DES = N_FACETS_DES+1
       VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
       VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
       VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
-      NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
+      NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
 
-      N_FACETS_DES = N_FACETS_DES+1
-      VERTEX(1,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
-      VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-      VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-      NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
+      IF(DO_K) THEN
+         N_FACETS_DES = N_FACETS_DES+1
+         VERTEX(1,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
+         VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
+      ENDIF
 
 ! North Face
       N_FACETS_DES = N_FACETS_DES+1
-      VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-      VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-      VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZt/)
-      NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
+      VERTEX(3,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
+      VERTEX(2,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
+      VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZt/)
+      NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
 
-      N_FACETS_DES = N_FACETS_DES+1
-      VERTEX(3,:,N_FACETS_DES) = (/pXe, pYs, pZt/)
-      VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
-      VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-      NORM_FACE(:,N_FACETS_DES) = (/ZERO, -ONE, ZERO/)
-
+      IF(DO_K) THEN
+         N_FACETS_DES = N_FACETS_DES+1
+         VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZt/)
+         VERTEX(2,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
+         VERTEX(1,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ONE, ZERO/)
+      ENDIF
 
 ! Bottom Face
       IF(DO_K)THEN
@@ -628,26 +630,26 @@
          VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
          VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
-         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
 
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
          VERTEX(2,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
          VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
 
 ! Top Face
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(3,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
          VERTEX(2,:,N_FACETS_DES) = (/pXe, pYs, pZb/)
          VERTEX(1,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
-         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
 
          N_FACETS_DES = N_FACETS_DES+1
          VERTEX(3,:,N_FACETS_DES) = (/pXe, pYn, pZb/)
          VERTEX(2,:,N_FACETS_DES) = (/pXw, pYn, pZb/)
          VERTEX(1,:,N_FACETS_DES) = (/pXw, pYs, pZb/)
-         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, -ONE/)
+         NORM_FACE(:,N_FACETS_DES) = (/ZERO, ZERO, ONE/)
       ENDIF
 
       RETURN

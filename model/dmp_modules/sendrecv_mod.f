@@ -1175,22 +1175,6 @@ contains
          request, count, source,dest, tag, ierror
     integer :: ijk, jj, j1, j2, ii
 
-    !       interface
-    !
-    !       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
-    !                        comm, request, ierror )
-    !       double precision buffer(*)
-    !       integer count,datatype,dest,tag,comm,request,ierror
-    !       end subroutine MPI_ISEND
-    !
-    !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-    !                       comm, request, ierror )
-    !       double precision buffer(*)
-    !       integer count,datatype,source,tag,comm,request,ierror
-    !       end subroutine MPI_IRECV
-    !
-    !       end interface
-
     !-----------------------------------------------
     lidebug = 0
 
@@ -1420,22 +1404,6 @@ contains
          request, count, source, dest, tag, ierror
     integer :: ijk, jj, j1, j2, ii
 
-    !       interface
-    !
-    !       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
-    !                        comm, request, ierror )
-    !       integer buffer(*)
-    !       integer count,datatype,dest,tag,comm,request,ierror
-    !       end subroutine MPI_ISEND
-    !
-    !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-    !                       comm, request, ierror )
-    !       integer buffer(*)
-    !       integer count,datatype,source,tag,comm,request,ierror
-    !       end subroutine MPI_IRECV
-    !
-    !       end interface
-
     !-----------------------------------------------
 
     lidebug = 0
@@ -1614,22 +1582,6 @@ contains
     integer :: ijk, jj, j1, j2, ii
     integer :: ic, clen, jpos
 
-    !       interface
-    !
-    !       subroutine MPI_ISEND( buffer, count, datatype, dest, tag, &
-    !                        comm, request, ierror )
-    !       character(len=*) buffer(*)
-    !       integer count,datatype,dest,tag,comm,request,ierror
-    !       end subroutine MPI_ISEND
-    !
-    !        subroutine MPI_IRECV( buffer, count, datatype, source, tag, &
-    !                       comm, request, ierror )
-    !       character(len=*) buffer(*)
-    !       integer count,datatype,source,tag,comm,request,ierror
-    !       end subroutine MPI_IRECV
-    !
-    !       end interface
-
     !-----------------------------------------------
 
     lidebug = 0
@@ -1807,28 +1759,6 @@ contains
 
 #ifdef MPI
     !-----------------------------------------------
-    interface
-       subroutine MPI_WAITANY(count, array_of_requests, jindex, &
-            status, ierror)
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer jindex
-         integer status(MPI_STATUS_SIZE)
-         integer ierror
-       end subroutine MPI_WAITANY
-
-       subroutine MPI_WAITALL( count, array_of_requests,  &
-            array_of_status, ierror )
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer array_of_status( MPI_STATUS_SIZE,*)
-         integer ierror
-       end subroutine MPI_WAITALL
-    end interface
-
-    !-----------------------------------------------
     ! Local variables
     !-----------------------------------------------
     character(len=80), parameter :: name = 'sendrecv_end_1d'
@@ -1948,28 +1878,6 @@ contains
 
 #ifdef MPI
     !-----------------------------------------------
-    interface
-       subroutine MPI_WAITANY(count, array_of_requests, jindex, &
-            status, ierror)
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer jindex
-         integer status(MPI_STATUS_SIZE)
-         integer ierror
-       end subroutine MPI_WAITANY
-
-       subroutine MPI_WAITALL( count, array_of_requests,  &
-            array_of_status, ierror )
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer array_of_status( MPI_STATUS_SIZE,*)
-         integer ierror
-       end subroutine MPI_WAITALL
-    end interface
-
-    !-----------------------------------------------
     ! Local variables
     !-----------------------------------------------
     character(len=80), parameter :: name = 'sendrecv_end_1c'
@@ -2088,27 +1996,6 @@ contains
     !-----------------------------------------------
 
 #ifdef MPI
-    interface
-       subroutine MPI_WAITANY(count, array_of_requests, jindex, &
-            status, ierror)
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer jindex
-         integer status(MPI_STATUS_SIZE)
-         integer ierror
-       end subroutine MPI_WAITANY
-
-       subroutine MPI_WAITALL( count, array_of_requests,  &
-            array_of_status, ierror )
-         use mpi, only: MPI_STATUS_SIZE
-         integer count
-         integer array_of_requests(*)
-         integer array_of_status( MPI_STATUS_SIZE,*)
-         integer ierror
-       end subroutine MPI_WAITALL
-    end interface
-
     !-----------------------------------------------
     ! Local variables
     !-----------------------------------------------

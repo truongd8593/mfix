@@ -47,8 +47,13 @@
 
       ! initialize SAP
       do nn=1, MAX_PIP
-         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.01
-         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.01
+         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
+         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
+         print *,""
+         print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
+         print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
+         print *,"DES_POS_NEW(:,nn) = ",DES_POS_NEW(:,nn)
+         print *,""
          call multisap_add(multisap,aabb,nn,boxhandle(nn))
       enddo
 
@@ -68,11 +73,29 @@
       DO FACTOR = 1, NFACTOR
          print *,"FACTOR  =  ",FACTOR
 ! calculate forces
+
+         do nn=0,size(multisap%saps)-1
+            if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+            if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+         enddo
+
          CALL CALC_FORCE_DEM
 ! update particle position/velocity
+
+         do nn=0,size(multisap%saps)-1
+            if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+            if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+         enddo
+
          CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
          DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
+
+         do nn=0,size(multisap%saps)-1
+            if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+            if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+         enddo
+
 ! Bin the particles to the DES grid.
          CALL DESGRID_PIC(.TRUE.)
 ! exchange particle crossing boundaries and updates ghost particles

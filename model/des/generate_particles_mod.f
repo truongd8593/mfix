@@ -123,30 +123,27 @@
       use mpi_utility
       use functions, only: SET_NORMAL
 
-      use error_manager
+      use desgrid, only: dg_xstart, dg_ystart, dg_zstart
+      use desgrid, only: dg_xend, dg_yend, dg_zend
 
 ! direction wise spans of the domain and grid spacing in each direction
       use geometry, only: xlength, ylength, zlength
 
-      use functions
-      use cutcell, only : CARTESIAN_GRID, CUT_CELL_AT
+      use cutcell, only : CARTESIAN_GRID
       use stl_functions_des, only: CHECK_IF_PARTICLE_OVERLAPS_STL
       use run, only: solids_model
       use des_allocate, only: PARTICLE_GROW
 
-      use discretelement, only: MAX_RADIUS
+      use desgrid, only: IofPOS, JofPOS, KofPOS
+      use desgrid, only: dg_is_ON_myPE_OWNs
+      use toleranc, only: compare
 
-      use discretelement, only: XE, YN, ZT
-
-      use param, only: DIM_M, DIMENSION_I, DIMENSION_J, DIMENSION_K
-      use functions, only: IS_ON_MYPE_WOBND
-      use sweep_and_prune
+      use functions
+      use error_manager
 
       IMPLICIT NONE
 
       INTEGER, INTENT(IN) :: ICV
-
-      type(aabb_t) aabb
 
 ! Local variables
 !---------------------------------------------------------------------//
@@ -184,6 +181,9 @@
       LOGICAL :: VEL_FLUCT
       DOUBLE PRECISION :: VEL_SIG
       DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
+
+      logical :: report = .true.
+      logical :: found
 
 !......................................................................!
 
@@ -290,13 +290,26 @@
       yINIT = IC_START(2)+HALF*lDY
       zINIT = IC_START(3)+HALF*lDZ
 
-
       M=1
       pCOUNT = 0
       tCOUNT = 0
-      JJ_LP: DO  JJ=1, SEED_Y
-      KK_LP: DO  KK=1, SEED_Z
-      II_LP: DO  II=1, SEED_X
+
+      JJ_LP: DO JJ=1, SEED_Y
+         POS(2) = YINIT + (JJ-1)*lDY
+         IF(compare(POS(2),dg_ystart) .OR. compare(POS(2),dg_yend))    &
+            POS(2) = POS(2) + SMALL_NUMBER
+
+      KK_LP: DO KK=1, SEED_Z
+         POS(3) = ZINIT + (KK-1)*lDZ
+         IF(DO_K) THEN
+            IF(compare(POS(3),dg_zstart) .OR. compare(POS(3),dg_zend)) &
+               POS(3) = POS(3) + SMALL_NUMBER
+         ENDIF
+
+      II_LP: DO II=1, SEED_X
+         POS(1) = xINIT + (II-1)*lDX
+         IF(compare(POS(1),dg_xstart) .OR. compare(POS(1),dg_xend))    &
+            POS(1) = POS(1) + SMALL_NUMBER
 
 ! Exit if all particles were seeded.
          IF(tCOUNT > int(tPARTS)) THEN
@@ -322,10 +335,9 @@
          pCOUNT(M) = pCOUNT(M) + 1
          tCOUNT = tCOUNT + 1
 
-! Position the particle
-         POS(1) = xINIT + (II-1)*lDX
-         POS(2) = YINIT + (JJ-1)*lDY
-         POS(3) = ZINIT + (KK-1)*lDZ
+! Keep only particles that belong to this process.
+         IF(.NOT.dg_is_ON_myPE_OWNs(IofPOS(POS(1)), &
+            JofPOS(POS(2)),KofPOS(POS(3)))) CYCLE
 
 ! Bin the parcel to the fuild grid.
          K=1
@@ -333,10 +345,10 @@
          CALL PIC_SEARCH(J, POS(2), YN, DIMENSION_J, JMIN2, JMAX2)
          CALL PIC_SEARCH(I, POS(1), XE, DIMENSION_I, IMIN2, IMAX2)
 
-! Skip cells that are not part of the local fuild domain.
-         IF(.NOT.IS_ON_MYPE_WOBND(I,J,K)) CYCLE
+! Skip cells that return invalid IJKs.
          IF(DEAD_CELL_AT(I,J,K)) CYCLE
 
+! Skip cells that are not part of the local fuild domain.
          IJK = FUNIJK(I,J,K)
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 

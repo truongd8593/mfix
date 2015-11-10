@@ -211,7 +211,7 @@
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
-            IF(DISTSQ .GE. RADSQ) THEN !No overlap exists
+            IF(DISTSQ .GE. RADSQ - SMALL_NUMBER) THEN !No overlap exists
                call remove_collision(LL,nf,wall_collision_facet_id)
                CYCLE
             ENDIF

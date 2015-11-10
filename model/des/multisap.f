@@ -156,6 +156,7 @@ contains
     ! remove from each SAP listed for this id
     do nn=1, size(handlelist%list)
        if (handlelist%list(nn)%sap_id >= 0) then
+          print *,"DELETED FROM SAP......",handlelist%list(nn)%sap_id
           call del_box(this%saps(handlelist%list(nn)%sap_id),handlelist%list(nn)%box_id)
        endif
     enddo
@@ -163,6 +164,7 @@ contains
   end subroutine multisap_del
 
   subroutine multisap_update(this,aabb,handlelist)
+    use discretelement
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
@@ -170,9 +172,15 @@ contains
     integer :: particle_id
     integer, DIMENSION(MAX_SAPS) :: new_sap_ids
     logical :: found
-    integer :: mm,nn,first_blank
+    integer :: mm,nn,first_blank, ii, box_id
+    real ::  asdf,diff
 
-    particle_id = this%saps(handlelist%list(1)%sap_id)%boxes(handlelist%list(1)%box_id)%particle_id
+    particle_id = -1
+    do nn=1, size(handlelist%list)
+       if (handlelist%list(nn)%sap_id < 0) cycle
+       particle_id = this%saps(handlelist%list(nn)%sap_id)%boxes(handlelist%list(nn)%box_id)%particle_id
+    enddo
+    if (particle_id < 0 ) stop __LINE__
 
     call multisap_raster(this,aabb,new_sap_ids,-1)
 
@@ -186,12 +194,76 @@ contains
 
           if (handlelist%list(mm)%sap_id .eq. new_sap_ids(nn)) then
              ! update existing SAPs
+
+             box_id = handlelist%list(mm)%box_id
+
+              ! if (particle_id.eq.43) then
+              !    print *,"PREUPDATE  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1))%value, &
+              !         this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1))%value, &
+              !         "boxid=",box_id," endpoint_ids =",this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1),this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1)
+              ! endif
+
+              ! asdf = 0.1
+              ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value)
+              ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+              !    print *,"  min xdiff ======== ",diff
+              !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
+              !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
+              !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
+              !    stop __LINE__
+              ! endif
+
+              ! asdf = 0.1
+              ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value)
+              ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+              !    print *,"  max xdiff ======== ",diff
+              !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
+              !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
+              !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
+              !    stop __LINE__
+              ! endif
+
+
              call update_box(this%saps(new_sap_ids(nn)),handlelist%list(mm)%box_id,aabb)
+
+             ! if (particle_id.eq.43) then
+             !    print *,"POSTUPDATE  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1))%value, &
+             !         this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1))%value, &
+             !         "boxid=",box_id," endpoint_ids =",this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1),this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1)
+             ! endif
+
+             ii = handlelist%list(mm)%box_id
+              asdf = 0.1
+              diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value)
+              if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+                 print *,"  min xdiff ======== ",diff
+                 print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
+                 print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
+                 print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
+                 stop __LINE__
+              endif
+
+              asdf = 0.1
+              diff = (DES_POS_NEW(1,particle_id)+DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value)
+              if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+                 print *,"  max xdiff ======== ",diff
+                 print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
+                 print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
+                 print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
+                 stop __LINE__
+              endif
+
+
+
              found = .true.
              exit
           endif
        enddo
        if (.not.found) then
+          !if (particle_id.eq.43) then
+             !print *,"ADDDDDDD  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(handlelist%list(mm)%box_id)%maxendpoint_id(1))%value
+          !endif
+
           ! add SAPs yet not listed for this id
           call add_box(this%saps(new_sap_ids(nn)),aabb,particle_id,handlelist%list(first_blank)%box_id)
           handlelist%list(first_blank)%sap_id = new_sap_ids(nn)
@@ -213,31 +285,15 @@ contains
 
        if (.not.found) then
           ! remove SAP not found in handle%sap_id
+          if (particle_id.eq.43) then
+             print *,"DELETED FROM SAP......",handlelist%list(mm)%sap_id
+          endif
           call del_box(this%saps(handlelist%list(mm)%sap_id),handlelist%list(mm)%box_id)
           handlelist%list(mm)%sap_id = -1
        endif
     enddo
 
   end subroutine multisap_update
-
-  ! logical function inarray(aa,bb,array)
-  !   implicit none
-  !   integer, intent(in) :: aa,bb
-  !   type(boxhandle_t), intent(in) :: array
-  !   integer :: ii
-
-  !   if (size(array%sap_id) .ne. size(array%box_id)) then
-  !      stop __LINE__
-  !   endif
-
-  !   do ii=1,size(array%sap_id)
-  !      if (aa.eq.array%sap_id(ii) .and. bb.eq.array%box_id(ii)) then
-  !         inarray = .false.
-  !         return
-  !      endif
-  !   enddo
-  !   inarray = .false.
-  ! end function inarray
 
   subroutine multisap_sort(this)
     USE discretelement
@@ -251,9 +307,10 @@ contains
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              !print *,"NOW GOING TO SORT SAP::",ii,jj,kk,":::   ",ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             !if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
+             if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
              call sort(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))
-             !if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
+             if (.not.check_sort(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
+             if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
           enddo
        enddo
     enddo
@@ -264,7 +321,9 @@ contains
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk
-    integer :: sap_id
+    integer :: sap_id, boxcount
+
+    boxcount = 0
 
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
@@ -272,12 +331,15 @@ contains
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
              print *,"NOW GOING DO QUICKSORT THE THING:::::   ",sap_id
              call do_quicksort(this,this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))
-
+             boxcount = boxcount + this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk)%boxes_len
              !if (.not.check_boxes(multisap%saps(sap_id))) stop __LINE__
              if (.not.check_sort(multisap%saps(sap_id))) stop __LINE__
           enddo
        enddo
     enddo
+
+    print *,"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx TOTAL BOXES::::::::::::",boxcount
+
   end subroutine multisap_quicksort
 
   subroutine do_quicksort(this,sap)

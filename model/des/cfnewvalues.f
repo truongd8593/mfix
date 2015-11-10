@@ -34,14 +34,13 @@
       USE physprop
       use geometry, only: DO_K, NO_K
       use multi_sweep_and_prune
-      use sweep_and_prune
       use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: L
+      INTEGER :: L,nnn
       DOUBLE PRECISION :: DD(3), NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
@@ -107,8 +106,15 @@
             ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
          ENDIF
 
-         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.1
-         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.1
+         aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.001
+         aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.001
+
+         ! if (L.eq.23) then
+         !    print *,"UPDATING 23 "
+         !    print *,"aabb%minendpoint(:) ==== ",aabb%minendpoint(:)
+         !    print *,"aabb%maxendpoint(:) ==== ",aabb%maxendpoint(:)
+         ! endif
+
          call multisap_update(multisap,aabb,boxhandle(L))
 
 ! Update particle orientation - Always first order
@@ -160,12 +166,23 @@
       ENDDO
 !$omp end parallel do
 
-      !call init_pairs
+      ! do nnn=0, size(multisap%saps)-1
+      !    !print *,"nnn = ",nnn
+      !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
+      !    !if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
+      ! enddo
+
+      ! !call init_pairs
       call multisap_sort(multisap)
-      !call sweep(sap)
+      ! !call sweep(sap)
+
+      ! do nnn=0, size(multisap%saps)-1
+      !    !print *,"nnn = ",nnn
+      !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
+      !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
+      ! enddo
 
       FIRST_PASS = .FALSE.
-
 
  1002 FORMAT(/1X,70('*')//&
          ' From: CFNEWVALUES -',/&

@@ -71,7 +71,7 @@
 
       integer :: pp
       type(sap_t) :: sap
-      type(box_t) :: box
+      type(box_t) :: box, box2
       integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
       integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
       integer :: nn, mm, box_id, box_id2
@@ -84,11 +84,14 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
-      do nn=0, size(multisap%saps)-1
-         !print *,"nn = ",nn
-         if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
-         if (.not.check_sort(multisap%saps(nn))) stop __LINE__
-      enddo
+      ! do nn=0, size(multisap%saps)-1
+      !    !print *,"nn = ",nn
+      !    if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
+      !    if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+      ! enddo
+
+!print *,"CALC_FORCE_DEM =================================================================================="
+
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -119,6 +122,62 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
+
+            ! if (.false. .and. ll.eq.105 .and. i.eq.106) then
+            !    do mm=1,size(boxhandle(ll)%list)
+            !       if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
+            !       print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
+            !       box_id = boxhandle(ll)%list(mm)%box_id
+
+            !       found = .false.
+            !       do nn=1,size(boxhandle(i)%list)
+            !          if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
+            !             print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+            !             box_id2 = boxhandle(i)%list(nn)%box_id
+            !             found = .true.
+            !          endif
+            !          enddo
+
+            !          if (.not.found) cycle
+
+            !          print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
+
+            !          sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
+
+            !          if (.not.check_boxes(sap)) stop __LINE__
+
+            !          !call print_boxes(sap)
+
+            !          print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+            !          print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+
+            !          box = sap%boxes(box_id)
+            !          print *,"LL BOX  ",box
+            !          print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+            !          print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+            !          print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+            !          print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+
+            !          box2 = sap%boxes(box_id2)
+            !          print *,"I BOX  ",box
+            !          print *,"MIN1 i is ",box2%minendpoint_id(1),sap%x_endpoints(box2%minendpoint_id(1))%value
+            !          print *,"MAX1 i is ",box2%maxendpoint_id(1),sap%x_endpoints(box2%maxendpoint_id(1))%value
+            !          print *,"MIN2 i is ",box2%minendpoint_id(2),sap%y_endpoints(box2%minendpoint_id(2))%value
+            !          print *,"MAX2 i is ",box2%maxendpoint_id(2),sap%y_endpoints(box2%maxendpoint_id(2))%value
+
+            !          if (max(sap%x_endpoints(box%minendpoint_id(1))%value,sap%x_endpoints(box2%minendpoint_id(1))%value) < min(sap%x_endpoints(box%maxendpoint_id(1))%value,sap%x_endpoints(box2%maxendpoint_id(1))%value)) then
+            !             print *,"X OVERLAP"
+            !             print *,"X MAX OF MINS: ",max(sap%x_endpoints(box%minendpoint_id(1))%value,sap%x_endpoints(box%minendpoint_id(1))%value)
+            !             print *,"Y MIN OF MAXS: ",min(sap%x_endpoints(box%maxendpoint_id(1))%value,sap%x_endpoints(box%maxendpoint_id(1))%value)
+            !             if (max(sap%x_endpoints(box%minendpoint_id(2))%value,sap%x_endpoints(box2%minendpoint_id(2))%value) < min(sap%x_endpoints(box%maxendpoint_id(2))%value,sap%x_endpoints(box2%maxendpoint_id(2))%value)) then
+            !                print *,"Y OVERLAP"
+            !                if (.not.is_pair(ll,i)) then
+            !                   stop __LINE__
+            !                endif
+            !             endif
+            !          endif
+            !    enddo
+            ! endif
 
             IF(IS_NONEXISTENT(I)) CYCLE
 
@@ -164,7 +223,7 @@
                ENDIF
             ENDIF
 
-            IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
+            IF(DIST_MAG > (R_LM - SMALL_NUMBER)**2) THEN
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
@@ -199,6 +258,10 @@
 
                      print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
                      print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+
+                     print *,""
+                     print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
+                     print *,""
 
                      box = sap%boxes(box_id)
                      print *,"LL BOX  ",box
