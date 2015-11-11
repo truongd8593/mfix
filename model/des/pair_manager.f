@@ -112,11 +112,11 @@ contains
     do
        if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
           is_pair = (table(hash)%count > 0)
-          if (ii.eq.105 .and. 106.eq.jj) print *,"FOUND PAIR:",ii,jj,"   AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+          if (ii.eq.324 .and. 325.eq.jj) print *,"FOUND PAIR:",ii,jj," WITH COUNT",table(hash)%count,"   AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           return
        endif
        if (table(hash)%ii .eq. 0 .and. table(hash)%jj .eq. 0) then
-          if (ii.eq.105 .and. 106.eq.jj) print *,"DID NOT FIND PAIR:",ii,jj,"   AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+          if (ii.eq.324 .and. 325.eq.jj) print *,"DID NOT FIND PAIR:",ii,jj," WITH COUNT",table(hash)%count,"   AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           is_pair = .false.
           return
        endif
@@ -170,7 +170,7 @@ contains
     ii = min(i0,j0)
     jj = max(i0,j0)
 
-      if (ii.eq. 105 .and. jj.eq.106) then
+      if (ii.eq. 324 .and. jj.eq.325) then
          print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   ADDING ",ii,jj
       endif
 
@@ -188,7 +188,7 @@ contains
     do
        if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
           table(hash)%count = table(hash)%count + 1
-          if (ii.eq.105 .and. 106.eq.jj) print *,"INCREMENT PAIR:",ii,jj," COUNT ===",table(hash)%count,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+          if (ii.eq.324 .and. 325.eq.jj) print *,"INCREMENT PAIR:",ii,jj," COUNT ===",table(hash)%count,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           return
        endif
        if (table(hash)%ii .eq. 0 .or. table(hash)%jj .eq. 0) then
@@ -196,7 +196,7 @@ contains
           table(hash)%jj = jj
           table(hash)%count = 1
           table_size = table_size + 1
-          if (ii.eq.105 .and. 106.eq.jj) print *,"ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+          if (ii.eq.324 .and. 325.eq.jj) print *,"ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           if(.not. check_table()) stop __LINE__
           return
        endif
@@ -220,7 +220,7 @@ contains
     ii = min(i0,j0)
     jj = max(i0,j0)
 
-      if (ii.eq. 105 .and. jj.eq.106) then
+      if (ii.eq. 324 .and. jj.eq.325) then
          print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   DELETING ",ii,jj
       endif
 
@@ -242,13 +242,13 @@ contains
        if (table(hash)%ii .eq. ii .and. table(hash)%jj .eq. jj) then
           if (table(hash)%count > 1 ) then
              table(hash)%count = table(hash)%count - 1
-             if (ii.eq.105 .and. 106.eq.jj) print *,"DECREMENT PAIR:",ii,jj," COUNT ===",table(hash)%count,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+             if (ii.eq.324 .and. 325.eq.jj) print *,"DECREMENT PAIR:",ii,jj," COUNT ===",table(hash)%count,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           else
              ! 0,1 signifies DELETED hash entry
              table(hash)%ii = 0
              table(hash)%jj = 1
              table_size = table_size - 1
-             if (ii.eq.105 .and. 106.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
+             if (ii.eq.324 .and. 325.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",table_size,"/",size(table)
           endif
           if(.not. check_table()) stop __LINE__
           return
