@@ -92,7 +92,7 @@ contains
   logical function is_pair(i0,j0)
     implicit none
     integer, intent(in) :: i0, j0
-    integer :: ii, jj
+    integer :: ii, jj, probe_count
     integer(kind=8) :: hash, init_hash
 
     ii = min(i0,j0)
@@ -104,7 +104,9 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = mod(ii+jj*jj,size(table))
+    probe_count = 1
+    hash = mod(ii+jj*jj+probe_count*probe_count,size(table))
+    if (hash < 0) hash = hash+size(table)
     init_hash = hash
     !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
@@ -119,7 +121,9 @@ contains
           is_pair = .false.
           return
        endif
-       hash = mod(hash+1,size(table))
+       probe_count = probe_count + 1
+       hash = mod(hash+probe_count*probe_count,size(table))
+       if (hash < 0) hash = hash+size(table)
        !print *,"HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
        if (hash .eq. init_hash) exit
     enddo
@@ -133,7 +137,7 @@ contains
     use discretelement
     implicit none
     integer, intent(in) :: i0,j0
-    integer :: ii, jj, nn, old_size, cc
+    integer :: ii, jj, nn, old_size, cc, probe_count
     integer(kind=8) :: hash, init_hash
     type(pair_t), dimension(:), allocatable :: table_tmp
 
@@ -179,7 +183,9 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = mod(ii+jj*jj,size(table))
+    probe_count = 1
+    hash = mod(ii+jj*jj+probe_count*probe_count,size(table))
+    if (hash < 0) hash = hash+size(table)
     init_hash = hash
     !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
@@ -198,7 +204,9 @@ contains
           if(.not. check_table()) stop __LINE__
           return
        endif
-       hash = mod(hash+1,size(table))
+       probe_count = probe_count + 1
+       hash = mod(hash+probe_count*probe_count,size(table))
+       if (hash < 0) hash = hash+size(table)
        !!print *,"HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
        if (hash .eq. init_hash) exit
     enddo
@@ -212,7 +220,7 @@ contains
     use discretelement
     implicit none
     integer, intent(in) :: i0,j0
-    integer :: ii, jj
+    integer :: ii, jj, probe_count
     integer(kind=8) :: hash, init_hash
 
     ii = min(i0,j0)
@@ -228,7 +236,9 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = mod(ii+jj*jj,size(table))
+    probe_count = 1
+    hash = mod(ii+jj*jj+probe_count*probe_count,size(table))
+    if (hash < 0) hash = hash+size(table)
     init_hash = hash
 
     do
@@ -250,7 +260,9 @@ contains
           if(.not. check_table()) stop __LINE__
           return
        endif
-       hash = mod(hash+1,size(table))
+       probe_count = probe_count + 1
+       hash = mod(hash+probe_count*probe_count,size(table))
+       if (hash < 0) hash = hash+size(table)
        if (hash .eq. init_hash) exit
     enddo
 

@@ -49,11 +49,14 @@
       do nn=1, MAX_PIP
          aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
-         print *,""
-         print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
-         print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
-         print *,"DES_POS_NEW(:,nn) = ",DES_POS_NEW(:,nn)
-         print *,""
+
+         if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
+         ! print *,""
+         ! print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
+         ! print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
+         ! print *,"DES_POS_NEW(:,nn) = ",DES_POS_NEW(:,nn)
+         ! print *,""
+
          call multisap_add(multisap,aabb,nn,boxhandle(nn))
       enddo
 

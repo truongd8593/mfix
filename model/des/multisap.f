@@ -379,7 +379,7 @@ contains
              print *,"NOW GOING TO sweep THE THING:::::   ",ss
              call sweep(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk),ss)
 
-             if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) stop __LINE__
+             !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) stop __LINE__
 
           enddo
        enddo
