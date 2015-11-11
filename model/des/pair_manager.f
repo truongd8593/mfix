@@ -19,7 +19,7 @@ contains
     implicit none
 
     current_hash = 0
-    if (.not.allocated(table)) allocate(table(0:1000))
+    if (.not.allocated(table)) allocate(table(0:999978))
     table(:)%ii = 0
     table(:)%jj = 0
     table_size = 0
@@ -104,8 +104,7 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = ii
-    hash = mod(ishft(hash,32)+jj,size(table))
+    hash = mod(ii+jj*jj,size(table))
     init_hash = hash
     !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
@@ -180,8 +179,7 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = ii
-    hash = mod(ishft(hash,32)+jj,size(table))
+    hash = mod(ii+jj*jj,size(table))
     init_hash = hash
     !print *,"INIT HASH IS =",hash," TABLE IS ",table_size,"/",size(table)
 
@@ -230,8 +228,7 @@ contains
     endif
 
     ! assign ii to hash to convert to 64-bit
-    hash = ii
-    hash = mod(ishft(hash,32)+jj,size(table))
+    hash = mod(ii+jj*jj,size(table))
     init_hash = hash
 
     do
