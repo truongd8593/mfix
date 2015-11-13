@@ -18,8 +18,9 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      use pair_manager
+      ! use pair_manager
       use multi_sweep_and_prune
+      use, intrinsic ::  iso_c_binding
 
       IMPLICIT NONE
 
@@ -76,6 +77,13 @@
       integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
       integer :: nn, mm, box_id, box_id2
       logical :: found
+
+      interface
+         logical function ht_is_pair(ii,jj) bind ( c )
+           use, intrinsic ::  iso_c_binding
+           integer ( c_int ), value :: ii,jj
+         end function ht_is_pair
+      end interface
 
 !-----------------------------------------------
 
@@ -228,7 +236,7 @@
                CYCLE
             ENDIF
 
-            if (.not.is_pair(ll,i)) then
+            if (.not.ht_is_pair(ll,i)) then
 
                print *,"SAP DIDNT FIND PAIR: ",ll,i
 

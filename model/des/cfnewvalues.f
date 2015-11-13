@@ -34,7 +34,7 @@
       USE physprop
       use geometry, only: DO_K, NO_K
       use multi_sweep_and_prune
-      use pair_manager
+      ! use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------

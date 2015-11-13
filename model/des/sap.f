@@ -55,11 +55,23 @@ module sweep_and_prune
   public :: add_box, del_box, update_box, sort, sweep
   private :: partition
 
+  interface
+     subroutine ht_add_pair(ii,jj) bind ( c )
+       use, intrinsic ::  iso_c_binding
+       integer ( c_int ), value :: ii,jj
+     end subroutine ht_add_pair
+
+     subroutine ht_del_pair(ii,jj) bind ( c )
+       use, intrinsic ::  iso_c_binding
+       integer ( c_int ), value :: ii,jj
+     end subroutine ht_del_pair
+  end interface
+
   contains
 
     logical function check_boxes(this)
       use discretelement
-      use pair_manager
+      ! use pair_manager
       use geometry
       implicit none
       type(sap_t), intent(inout) :: this
@@ -428,15 +440,15 @@ endif
 
     end subroutine sort
 
-    subroutine sweep(this,ss)
+    subroutine sweep(this,sap_id)
 
-      use pair_manager, only: add_pair
+      ! use pair_manager, only: add_pair
       use geometry
       use discretelement
 
       implicit none
       type(sap_t), intent(inout) :: this
-      integer, intent(in) :: ss
+      integer, intent(in) :: sap_id
 
       ! active list of box id's
       integer :: ii,aa,minmax,ai
@@ -448,6 +460,10 @@ endif
       call active_init(active)
 
       do ii=1, this%x_endpoints_len
+
+         if (0.eq.mod(ii,1000)) then
+            print *,"ii = ",ii, " OF ",this%x_endpoints_len
+         endif
 
          minmax = this%x_endpoints(ii)%box_id
 
@@ -461,9 +477,9 @@ endif
                if (max(this%boxes(aa)%minendpoint_id(2),this%boxes(-minmax)%minendpoint_id(2)) <= min(this%boxes(-minmax)%maxendpoint_id(2),this%boxes(aa)%maxendpoint_id(2)) .and. &
                     (NO_K .or. max(this%boxes(aa)%minendpoint_id(3),this%boxes(-minmax)%minendpoint_id(3)) <= min(this%boxes(-minmax)%maxendpoint_id(3),this%boxes(aa)%maxendpoint_id(3)))) then
                   !print *,"SAP_ID=",this%id,"FOUND PAIR! ADDING...",this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id
-                  call add_pair(this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id)
+                  call ht_add_pair(this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id)
                endif
-            enddo
+           enddo
 
             ! add new box to active pair list
             call active_add(active,-minmax)
@@ -568,7 +584,7 @@ endif
       end function active_get_length
 
      subroutine sort_endpoints(endpoints, sap, axis)
-       use pair_manager, only: add_pair, del_pair
+       ! use pair_manager, only: add_pair, del_pair
        !use discretelement
        implicit none
        type(sap_t), intent(inout) :: sap
@@ -642,7 +658,7 @@ endif
                      print *,"SAP_ID=",sap%id," ADDING TO SAP:::::::::::::::::::",sap%id,ii,jj
                   endif
 
-                  call add_pair(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id)
+                  call ht_add_pair(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id)
                else
                   !print *,"SAP_ID=",sap%id,"NOPE, FAILED FULLAXISCHECK"
                endif
@@ -663,7 +679,7 @@ endif
                      print *,"SAP_ID=",sap%id," DELETING FROM SAP:::::::::::::::::::",sap%id,ii,jj
                   endif
 
-                  call del_pair(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id)
+                  call ht_del_pair(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id)
                   endif
             endif
 

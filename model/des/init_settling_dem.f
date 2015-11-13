@@ -13,6 +13,7 @@
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use multi_sweep_and_prune
+      use functions, only: is_nonexistent
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -47,10 +48,16 @@
 
       ! initialize SAP
       do nn=1, MAX_PIP
+         if(is_nonexistent(nn)) cycle
          aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
 
-         if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
+         if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(:) > 0.5 ) ) then
+            print *,"BAD RAD...grid too fine, need to have radius=",des_radius(nn),"  less than ",0.5/multisap%one_over_cell_length(:)
+            stop __LINE__
+         endif
+
+         ! if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
          ! print *,""
          ! print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
          ! print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)

@@ -22,7 +22,7 @@ contains
     type(multisap_t), intent(inout) :: this
     integer, intent(in) :: x_grid,y_grid, z_grid2
     real, dimension(3), intent(in) :: minbounds, maxbounds
-    integer :: ii,jj,kk, z_grid
+    integer :: ii,jj,kk, z_grid, sap_id
 
 
     if (NO_K) then
@@ -39,8 +39,9 @@ contains
     do ii=0,x_grid-1
        do jj=0,y_grid-1
           do kk=0,z_grid-1
-             call init_sap(this%saps(ii*y_grid*z_grid+jj*z_grid+kk))
-             this%saps(ii*y_grid*z_grid+jj*z_grid+kk)%id = (ii*y_grid*z_grid+jj*z_grid+kk)
+             sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
+             call init_sap(this%saps(sap_id))
+             this%saps(sap_id)%id = sap_id
           enddo
        enddo
     enddo
@@ -126,6 +127,7 @@ contains
   end subroutine multisap_raster
 
   subroutine multisap_add(this,aabb,particle_id,handlelist)
+    use discretelement
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
@@ -135,6 +137,8 @@ contains
     integer :: nn,id
 
     call multisap_raster(this,aabb,sap_ids,particle_id)
+
+    ! print *,"RASTERED ",DES_POS_NEW(:,particle_id)," TO ", sap_ids
 
     ! add to each individual SAP
     do nn=1, size(sap_ids)
@@ -299,7 +303,7 @@ contains
     USE discretelement
     implicit none
     type(multisap_t), intent(inout) :: this
-    integer :: ii, jj, kk
+    integer :: ii, jj, kk, sap_id
     type(sap_t) :: sap
     type(box_t) :: box
 
@@ -307,10 +311,11 @@ contains
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              !print *,"NOW GOING TO SORT SAP::",ii,jj,kk,":::   ",ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
-             call sort(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))
-             if (.not.check_sort(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
-             if (.not. check_boxes(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))) stop __LINE__
+             sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
+             if (.not. check_boxes(this%saps(sap_id))) stop __LINE__
+             call sort(this%saps(sap_id))
+             if (.not.check_sort(this%saps(sap_id))) stop __LINE__
+             if (.not. check_boxes(this%saps(sap_id))) stop __LINE__
           enddo
        enddo
     enddo
@@ -328,10 +333,10 @@ contains
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
-             sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             print *,"NOW GOING DO QUICKSORT THE THING:::::   ",sap_id
-             call do_quicksort(this,this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk))
-             boxcount = boxcount + this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk)%boxes_len
+             sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
+             ! print *,"NOW GOING TO QUICKSORT THE THING:::::   ",sap_id,this%saps(sap_id)%boxes_len
+             call do_quicksort(this,this%saps(sap_id))
+             boxcount = boxcount + this%saps(sap_id)%boxes_len
              !if (.not.check_boxes(multisap%saps(sap_id))) stop __LINE__
              if (.not.check_sort(multisap%saps(sap_id))) stop __LINE__
           enddo
@@ -364,20 +369,20 @@ contains
 
   subroutine multisap_sweep(this)
     USE discretelement
-    use pair_manager
+    ! use pair_manager
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk
-    integer :: ll, i, ss
+    integer :: ll, i, sap_id
     integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
     integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
 
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
-             ss = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             print *,"NOW GOING TO sweep THE THING:::::   ",ss
-             call sweep(this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk),ss)
+             sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
+             ! print *,"NOW GOING TO sweep THE THING:::::   ",sap_id
+             call sweep(this%saps(sap_id),sap_id)
 
              !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) stop __LINE__
 

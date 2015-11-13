@@ -35,7 +35,7 @@
       use mpi_init_des, only: DESMPI_INIT
       use stl_preproc_des, only: DES_STL_PREPROCESSING
       use multi_sweep_and_prune
-      use pair_manager
+      ! use pair_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -45,6 +45,13 @@
       LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
       real :: mins(3), maxs(3)
+
+      ! interface
+      !    subroutine init_pairs(ii,jj) bind ( c )
+      !      use, intrinsic ::  iso_c_binding
+      !      integer ( c_int ), value :: ii,jj
+      !    end subroutine add_pair
+      ! end interface
 
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
@@ -154,7 +161,7 @@
       maxs(1) = XLENGTH
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
-      call init_pairs
+      ! call init_pairs
       call init_multisap(multisap,40,40,40,mins,maxs)
       Allocate(  boxhandle(MAX_PIP) )
 
