@@ -317,6 +317,8 @@ contains
 
     call init_pairs(this%hashtable)
 
+!$omp parallel default(none) private(ii,jj,kk,sap_id,pair) shared(this)
+!$omp do collapse(3)
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
@@ -326,8 +328,16 @@ contains
              call sort(this%saps(sap_id))
              if (.not.check_sort(this%saps(sap_id))) stop __LINE__
              if (.not. check_boxes(this%saps(sap_id))) stop __LINE__
+          enddo
+       enddo
+    enddo
+!$omp end parallel
 
-             call reset_pairs(this%hashtable)
+    do ii=0,this%grid(1)-1
+       do jj=0,this%grid(2)-1
+          do kk=0,this%grid(3)-1
+             sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
+             call reset_pairs(this%saps(sap_id)%hashtable)
              do
                 call get_pair(this%saps(sap_id)%hashtable,pair)
 
@@ -339,8 +349,6 @@ contains
                 if (pair(1).eq.0 .and. pair(2).eq.0) exit
                 call add_pair(this%hashtable,pair(1),pair(2))
              enddo
-             ! call reset_pairs(this%hashtable)
-
           enddo
        enddo
     enddo

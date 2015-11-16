@@ -1,7 +1,5 @@
 module pair_manager
 
-  integer :: current_hash
-
   type pair_t
      integer(kind=4) :: ii
      integer(kind=4) :: jj
@@ -12,6 +10,7 @@ module pair_manager
 
      ! if table_size/size(table) > 50%, time to resize the hashtable
      integer :: table_size
+     integer :: current_hash
   end type hashtable_t
 
 contains
@@ -20,7 +19,7 @@ contains
     implicit none
     type(hashtable_t), intent(inout) :: this
 
-    current_hash = 0
+    this%current_hash = 0
     if (.not.allocated(this%table)) allocate(this%table(0:10006))
     this%table(:)%ii = 0
     this%table(:)%jj = 0
@@ -32,7 +31,7 @@ contains
     implicit none
     type(hashtable_t), intent(inout) :: this
 
-    current_hash = 0
+    this%current_hash = 0
 
   end subroutine reset_pairs
 
@@ -89,20 +88,20 @@ endif
 
    subroutine get_pair(this,pair)
      implicit none
-     type(hashtable_t), intent(in) :: this
+     type(hashtable_t), intent(inout) :: this
      integer, intent(out) :: pair(2)
 
      pair(1) = 0
      pair(2) = 0
 
-     do while (current_hash < size(this%table))
-        if (0.ne.this%table(current_hash)%ii .and. 0.ne.this%table(current_hash)%jj) then
-           pair(1) = this%table(current_hash)%ii
-           pair(2) = this%table(current_hash)%jj
-           current_hash = current_hash + 1
+     do while (this%current_hash < size(this%table))
+        if (0.ne.this%table(this%current_hash)%ii .and. 0.ne.this%table(this%current_hash)%jj) then
+           pair(1) = this%table(this%current_hash)%ii
+           pair(2) = this%table(this%current_hash)%jj
+           this%current_hash = this%current_hash + 1
            return
         endif
-        current_hash = current_hash + 1
+        this%current_hash = this%current_hash + 1
      enddo
    end subroutine get_pair
 
