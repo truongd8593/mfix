@@ -58,7 +58,6 @@
       maxs(3) = ZLENGTH
       rad = 20*maxval(des_radius)
       call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
-      Allocate(  boxhandle(MAX_PIP) )
 
       ! initialize SAP
       do nn=1, MAX_PIP

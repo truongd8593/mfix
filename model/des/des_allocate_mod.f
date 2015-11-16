@@ -52,6 +52,7 @@ CONTAINS
       use particle_filter, only: FILTER_SIZE
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
+      use multi_sweep_and_prune
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -151,7 +152,7 @@ CONTAINS
       Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR (3,NEIGH_MAX) )
       Allocate(  PFT_NEIGHBOR_OLD (3,NEIGH_MAX) )
-
+      Allocate(  boxhandle(MAX_PIP) )
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
       ALLOCATE(PIC(DIMENSION_3))

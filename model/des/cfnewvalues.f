@@ -66,8 +66,8 @@
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
-!$omp       particle_orientation, orientation) &
-!$omp private(l,dd,neighbor_search_dist,rot_angle,omega_mag,omega_unit)   &
+!$omp       particle_orientation, orientation, boxhandle,multisap) &
+!$omp private(l,dd,neighbor_search_dist,rot_angle,omega_mag,omega_unit,aabb)   &
 !$omp reduction(.or.:do_nsearch) schedule (auto)
 
       DO L = 1, MAX_PIP
@@ -108,12 +108,6 @@
 
          aabb%minendpoint(:) = DES_POS_NEW(:,L)-DES_RADIUS(L)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,L)+DES_RADIUS(L)+0.001
-
-         ! if (L.eq.23) then
-         !    print *,"UPDATING 23 "
-         !    print *,"aabb%minendpoint(:) ==== ",aabb%minendpoint(:)
-         !    print *,"aabb%maxendpoint(:) ==== ",aabb%maxendpoint(:)
-         ! endif
 
          call multisap_update(multisap,aabb,boxhandle(L))
 
