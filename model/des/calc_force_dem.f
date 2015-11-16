@@ -18,9 +18,8 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      ! use pair_manager
+      use pair_manager
       use multi_sweep_and_prune
-      use, intrinsic ::  iso_c_binding
 
       IMPLICIT NONE
 
@@ -71,19 +70,11 @@
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
       integer :: pp
-      type(sap_t) :: sap
       type(box_t) :: box, box2
       integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
       integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
       integer :: nn, mm, box_id, box_id2
       logical :: found
-
-      interface
-         logical function ht_is_pair(ii,jj) bind ( c )
-           use, intrinsic ::  iso_c_binding
-           integer ( c_int ), value :: ii,jj
-         end function ht_is_pair
-      end interface
 
 !-----------------------------------------------
 
@@ -236,9 +227,18 @@
                CYCLE
             ENDIF
 
-            if (.not.ht_is_pair(ll,i)) then
+            if (.not.is_pair(multisap%hashtable,ll,i)) then
 
                print *,"SAP DIDNT FIND PAIR: ",ll,i
+               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+
+               print *,""
+               print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
+               print *,""
+
+               print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
+               print *,"IIIIIIIII ",boxhandle(i)%list(:)
 
                do mm=1,size(boxhandle(ll)%list)
                   if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
@@ -258,32 +258,25 @@
 
                      print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
 
-                     sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
+                     ! sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
 
-                     if (.not.check_boxes(sap)) stop __LINE__
+                     ! if (.not.check_boxes(sap)) stop __LINE__
 
                      !call print_boxes(sap)
 
-                     print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-                     print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+                     ! box = sap%boxes(box_id)
+                     ! print *,"LL BOX  ",box
+                     ! print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+                     ! print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+                     ! print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+                     ! print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
 
-                     print *,""
-                     print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
-                     print *,""
-
-                     box = sap%boxes(box_id)
-                     print *,"LL BOX  ",box
-                     print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-                     print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-                     print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-                     print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
-
-                     box = sap%boxes(box_id2)
-                     print *,"I BOX  ",box
-                     print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-                     print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-                     print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-                     print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
+                     ! box = sap%boxes(box_id2)
+                     ! print *,"I BOX  ",box
+                     ! print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
+                     ! print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
+                     ! print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
+                     ! print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
 
                   enddo
 

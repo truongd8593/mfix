@@ -41,7 +41,6 @@ mfix_LDADD = $(obj_overrides)
 mfix_LDADD += $(builddir)/.build/read_database.$(OBJEXT)
 mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
-mfix_LDADD += $(top_builddir)/model/des/pair_manager.o
 
 build:
 	$(LN_S) $(top_builddir) $@

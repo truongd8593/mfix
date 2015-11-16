@@ -503,7 +503,7 @@ CONTAINS
         USE des_thermo
         USE discretelement
         USE mfix_pic
-        USE multi_sweep_and_prune
+        USE multi_sweep_and_prune, ONLY: boxhandle_grow
         USE particle_filter
         USE resize
         USE run

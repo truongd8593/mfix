@@ -1,5 +1,7 @@
 module sweep_and_prune
 
+  use pair_manager
+
   ! endpoint data structure should be 64 bits in size
   type endpoint_t
      ! owner of the endpoint
@@ -38,6 +40,7 @@ module sweep_and_prune
      type(box_t), dimension(:), allocatable :: boxes
      integer :: boxes_len
      type(active_t) :: deleted_boxes
+     type(hashtable_t) :: hashtable
   end type sap_t
 
   type boxhandle_t
@@ -47,31 +50,18 @@ module sweep_and_prune
 
   integer, parameter :: MAX_SAPS = 8 ! maybe 4 for 2d, eventually
   type boxhandlelist_t
+     integer :: particle_id
      type(boxhandle_t) :: list(MAX_SAPS)
   end type boxhandlelist_t
-
-  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
   public :: add_box, del_box, update_box, sort, sweep
   private :: partition
 
-  interface
-     subroutine ht_add_pair(ii,jj) bind ( c )
-       use, intrinsic ::  iso_c_binding
-       integer ( c_int ), value :: ii,jj
-     end subroutine ht_add_pair
-
-     subroutine ht_del_pair(ii,jj) bind ( c )
-       use, intrinsic ::  iso_c_binding
-       integer ( c_int ), value :: ii,jj
-     end subroutine ht_del_pair
-  end interface
-
   contains
 
     logical function check_boxes(this)
-      use discretelement
-      ! use pair_manager
+      ! use discretelement
+      use pair_manager
       use geometry
       implicit none
       type(sap_t), intent(inout) :: this
@@ -107,48 +97,49 @@ module sweep_and_prune
 if (.true.) then
       particle_id = this%boxes(ii)%particle_id
 
-      asdf = 0.1
-      diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value)
-      if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-         print *,"SAP_ID=",this%id,"  min xdiff ======== ",diff
-         print *,"SAP_ID=",this%id,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-         print *,"SAP_ID=",this%id,"DES_RADIUS = ",DES_RADIUS(particle_id)
-         print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%minendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value
-         check_boxes = .false.
-         return
-      endif
+      ! asdf = 0.1
+      ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value)
+      ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+      !    print *,"SAP_ID=",this%id,"  min xdiff ======== ",diff
+      !    print *,"SAP_ID=",this%id,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
+      !    print *,"SAP_ID=",this%id,"DES_RADIUS = ",DES_RADIUS(particle_id)
+      !    print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%minendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value
+      !    check_boxes = .false.
+      !    return
+      ! endif
 
-      diff = (DES_POS_NEW(1,particle_id)+DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value)
-      if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-         print *,"SAP_ID=",this%id,"SAP_ID::  ",this%id,"  max xdiff ======== ",diff
-         print *,"SAP_ID=",this%id,"DES_POS_NEW(1,",particle_id,") = ",DES_POS_NEW(1,particle_id)
-         print *,"SAP_ID=",this%id,"DES_RADIUS(",particle_id,") = ",DES_RADIUS(particle_id)
-         print *,"SAP_ID=",this%id,"this%boxes%maxendpoint_id(1) = ",this%boxes(ii)%maxendpoint_id(1)
-         print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%maxendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
-         print *,"SAP_ID=",this%id,"this%x_endpoints(",this%boxes(ii)%maxendpoint_id(1),")%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
-         check_boxes = .false.
-         return
-      endif
+      ! diff = (DES_POS_NEW(1,particle_id)+DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value)
+      ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+      !    print *,"SAP_ID=",this%id,"SAP_ID::  ",this%id,"  max xdiff ======== ",diff
+      !    print *,"SAP_ID=",this%id,"DES_POS_NEW(1,",particle_id,") = ",DES_POS_NEW(1,particle_id)
+      !    print *,"SAP_ID=",this%id,"DES_RADIUS(",particle_id,") = ",DES_RADIUS(particle_id)
+      !    print *,"SAP_ID=",this%id,"this%boxes%maxendpoint_id(1) = ",this%boxes(ii)%maxendpoint_id(1)
+      !    print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%maxendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
+      !    print *,"SAP_ID=",this%id,"this%x_endpoints(",this%boxes(ii)%maxendpoint_id(1),")%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
+      !    check_boxes = .false.
+      !    return
+      ! endif
 
-      diff = (DES_POS_NEW(2,particle_id)-DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value)
-      if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-         print *,"SAP_ID=",this%id,"  min ydiff ======== ",diff
-         print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
-         print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
-         print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%minendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value
-         check_boxes = .false.
-         return
-      endif
+      ! diff = (DES_POS_NEW(2,particle_id)-DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value)
+      ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+      !    print *,"SAP_ID=",this%id,"  min ydiff ======== ",diff
+      !    print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
+      !    print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
+      !    print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%minendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value
+      !    check_boxes = .false.
+      !    return
+      ! endif
 
-      diff = (DES_POS_NEW(2,particle_id)+DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value)
-      if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-         print *,"SAP_ID=",this%id,"  max ydiff ======== ",diff
-         print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
-         print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
-         print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%maxendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value
-         check_boxes = .false.
-         return
-      endif
+      ! diff = (DES_POS_NEW(2,particle_id)+DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value)
+      ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
+      !    print *,"SAP_ID=",this%id,"  max ydiff ======== ",diff
+      !    print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
+      !    print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
+      !    print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%maxendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value
+      !    check_boxes = .false.
+      !    return
+      ! endif
+
 endif
    enddo
 
@@ -234,14 +225,16 @@ endif
 
     end subroutine print_boxes
 
-    subroutine init_sap(this)
+    subroutine init_sap(this,id)
       implicit none
       type(sap_t), intent(inout) :: this
+      integer, intent(in) :: id
 
       this%x_endpoints_len = 0
       this%y_endpoints_len = 0
       this%z_endpoints_len = 0
       this%boxes_len = 0
+      this%id = id
 
       allocate (this%x_endpoints(10))
       allocate (this%y_endpoints(10))
@@ -250,6 +243,7 @@ endif
 
       call active_init(this%deleted_boxes)
 
+      call init_pairs(this%hashtable)
 
     end subroutine init_sap
 
@@ -284,7 +278,6 @@ endif
     END SUBROUTINE endpoints_GROW
 
     subroutine add_box(this,aabb,particle_id,id)
-      use discretelement
 
       implicit none
       type(sap_t), intent(inout) :: this
@@ -426,7 +419,7 @@ endif
       do
          if (ii .le. 0) exit
          if (this%x_endpoints(ii)%value .ne. HUGE(0.0)) exit
-         print *,"SAPID: ",this%id, " endpoint_id= ",ii," IS HUGE",this%x_endpoints(ii)%box_id
+         ! print *,"SAPID: ",this%id, " endpoint_id= ",ii," IS HUGE",this%x_endpoints(ii)%box_id
 !     mark corresponding box as deleted
          this%boxes(abs(this%x_endpoints(ii)%box_id))%minendpoint_id(:) = 0
          this%boxes(abs(this%x_endpoints(ii)%box_id))%maxendpoint_id(:) = 0
@@ -442,9 +435,8 @@ endif
 
     subroutine sweep(this,sap_id)
 
-      ! use pair_manager, only: add_pair
+      use pair_manager, only: add_pair
       use geometry
-      use discretelement
 
       implicit none
       type(sap_t), intent(inout) :: this
@@ -461,10 +453,6 @@ endif
 
       do ii=1, this%x_endpoints_len
 
-         if (0.eq.mod(ii,1000)) then
-            print *,"ii = ",ii, " OF ",this%x_endpoints_len
-         endif
-
          minmax = this%x_endpoints(ii)%box_id
 
          if ( minmax < 0) then
@@ -476,10 +464,10 @@ endif
 
                if (max(this%boxes(aa)%minendpoint_id(2),this%boxes(-minmax)%minendpoint_id(2)) <= min(this%boxes(-minmax)%maxendpoint_id(2),this%boxes(aa)%maxendpoint_id(2)) .and. &
                     (NO_K .or. max(this%boxes(aa)%minendpoint_id(3),this%boxes(-minmax)%minendpoint_id(3)) <= min(this%boxes(-minmax)%maxendpoint_id(3),this%boxes(aa)%maxendpoint_id(3)))) then
-                  !print *,"SAP_ID=",this%id,"FOUND PAIR! ADDING...",this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id
-                  call ht_add_pair(this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id)
+                  if (this%boxes(-minmax)%particle_id.eq.114 .and. 115.eq.this%boxes(aa)%particle_id) print *,"SAP_ID=",this%id,"FOUND PAIR! ADDING...",this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id
+                  call add_pair(this%hashtable,this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id)
                endif
-           enddo
+            enddo
 
             ! add new box to active pair list
             call active_add(active,-minmax)
@@ -584,7 +572,7 @@ endif
       end function active_get_length
 
      subroutine sort_endpoints(endpoints, sap, axis)
-       ! use pair_manager, only: add_pair, del_pair
+       use pair_manager, only: add_pair, del_pair
        !use discretelement
        implicit none
        type(sap_t), intent(inout) :: sap
@@ -654,11 +642,11 @@ endif
                if (fullcheck(sap,-sweeppoint%box_id,swappoint%box_id,axis)) then
                   !print *,"SAP_ID=",sap%id,"PAIR FOUND",sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id
 
-                  if (105.eq. min(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id) .and. 106.eq.max(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id))then
+                  if (114.eq. min(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id) .and. 115.eq.max(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id))then
                      print *,"SAP_ID=",sap%id," ADDING TO SAP:::::::::::::::::::",sap%id,ii,jj
                   endif
 
-                  call ht_add_pair(sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id)
+                  call add_pair(sap%hashtable,sap%boxes(-sweeppoint%box_id)%particle_id,sap%boxes(swappoint%box_id)%particle_id)
                else
                   !print *,"SAP_ID=",sap%id,"NOPE, FAILED FULLAXISCHECK"
                endif
@@ -675,11 +663,12 @@ endif
 
                if (fullcheck(sap,sweeppoint%box_id,-swappoint%box_id,axis)) then
 
-                  if (105.eq. min(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id) .and. 106.eq.max(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id))then
-                     print *,"SAP_ID=",sap%id," DELETING FROM SAP:::::::::::::::::::",sap%id,ii,jj
+                  if (114.eq. min(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id) .and. 115.eq.max(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id))then
+                     print *,"SAP_ID=",sap%id," DELETING FROM SAP:::::::::::::::::::",sap%id,ii,jj,sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id,sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id
+                     print *,""
                   endif
 
-                  call ht_del_pair(sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id)
+                  call del_pair(sap%hashtable,sap%boxes(sweeppoint%box_id)%particle_id,sap%boxes(-swappoint%box_id)%particle_id)
                   endif
             endif
 

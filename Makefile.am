@@ -56,32 +56,40 @@ mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
 # mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
-mfix_SOURCES = model/mfix.f 	model/des/pair_manager.cpp
+mfix_SOURCES = model/mfix.f
 libmfix_a_SOURCES = model/ODEPACK.F
 
-# bin_PROGRAMS += pm
+bin_PROGRAMS += pm ms
 
-# pm_SOURCES = model/des/pair_manager.f
-# pm_SOURCES += model/des/discretelement_mod.f
-# pm_SOURCES += model/des/test_pm.f
+ms_SOURCES = model/des/pair_manager.f
+ms_SOURCES += model/geometry_mod.f
+ms_SOURCES += model/des/discretelement_mod.f
+ms_SOURCES += model/des/multisap.f
+ms_SOURCES += model/des/resize.f
+ms_SOURCES += model/des/sap.f
+ms_SOURCES += model/des/test_ms.f
 
-# bin_PROGRAMS += sap
+pm_SOURCES = model/des/pair_manager.f
+pm_SOURCES += model/des/discretelement_mod.f
+pm_SOURCES += model/des/test_pm.f
 
-# sap_SOURCES = model/des/discretelement_mod.f
-# sap_SOURCES += model/geometry_mod.f
-# sap_SOURCES += model/des/sap.f
-# sap_SOURCES += model/des/pair_manager.f
-# sap_SOURCES += model/des/test_sap.f
+bin_PROGRAMS += sap
 
-# bin_PROGRAMS += multisap
+sap_SOURCES = model/des/discretelement_mod.f
+sap_SOURCES += model/geometry_mod.f
+sap_SOURCES += model/des/sap.f
+sap_SOURCES += model/des/pair_manager.f
+sap_SOURCES += model/des/test_sap.f
 
-# multisap_SOURCES = model/des/discretelement_mod.f
-# multisap_SOURCES += model/des/multisap.f
-# multisap_SOURCES += model/des/pair_manager.f
-# multisap_SOURCES += model/des/resize.f
-# multisap_SOURCES += model/des/sap.f
-# multisap_SOURCES += model/des/test_multisap.f
-# multisap_SOURCES += model/geometry_mod.f
+bin_PROGRAMS += multisap
+
+multisap_SOURCES = model/des/discretelement_mod.f
+multisap_SOURCES += model/des/multisap.f
+multisap_SOURCES += model/des/pair_manager.f
+multisap_SOURCES += model/des/resize.f
+multisap_SOURCES += model/des/sap.f
+multisap_SOURCES += model/des/test_multisap.f
+multisap_SOURCES += model/geometry_mod.f
 
 ################################################################
 #                                                              #
@@ -471,6 +479,7 @@ libmfix_src = \
 	model/des/multisap.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
+	model/des/pair_manager.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
 	model/des/pic/apply_wall_bc_pic.f \

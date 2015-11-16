@@ -12,8 +12,10 @@
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
-      use multi_sweep_and_prune
       use functions, only: is_nonexistent
+      use multi_sweep_and_prune
+      use pair_manager
+      use geometry
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -22,6 +24,8 @@
       INTEGER :: FACTOR, nn
 
       type(aabb_t) :: aabb
+
+      real :: mins(3), maxs(3), rad
 
 !-----------------------------------------------
 ! Include statement functions
@@ -46,23 +50,27 @@
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
 
+      mins(1) = 0
+      mins(2) = 0
+      mins(3) = 0
+      maxs(1) = XLENGTH
+      maxs(2) = YLENGTH
+      maxs(3) = ZLENGTH
+      rad = 20*maxval(des_radius)
+      call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
+      Allocate(  boxhandle(MAX_PIP) )
+
       ! initialize SAP
       do nn=1, MAX_PIP
          if(is_nonexistent(nn)) cycle
          aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
 
-         if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(:) > 0.5 ) ) then
-            print *,"BAD RAD...grid too fine, need to have radius=",des_radius(nn),"  less than ",0.5/multisap%one_over_cell_length(:)
+         if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
+         if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
+            print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
             stop __LINE__
          endif
-
-         ! if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
-         ! print *,""
-         ! print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
-         ! print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
-         ! print *,"DES_POS_NEW(:,nn) = ",DES_POS_NEW(:,nn)
-         ! print *,""
 
          call multisap_add(multisap,aabb,nn,boxhandle(nn))
       enddo
@@ -132,4 +140,3 @@
 
       RETURN
       END SUBROUTINE INIT_SETTLING_DEM
-
