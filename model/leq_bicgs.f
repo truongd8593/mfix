@@ -539,19 +539,13 @@
 
 ! compute new guess for Var
 ! --------------------------------
-         if (use_doloop) then
-!$omp parallel do default(shared) private(ijk)
-            do ijk=ijkstart3,ijkend3
-               Var(ijk) = Var(ijk) +  &
-                  alpha(i)*Phat(ijk) + omega(i)*Shat(ijk)
-                  R(ijk) = Svec(ijk) - omega(i)*Tvec(ijk)
-            enddo
-         else
-            Var(:) = Var(:) +  &
-               alpha(i)*Phat(:) + omega(i)*Shat(:)
-               R(:) = Svec(:) - omega(i)*Tvec(:)
-         endif
-
+!$omp parallel default(shared)
+!$omp sections
+            Var(:) = Var(:) + alpha(i)*Phat(:) + omega(i)*Shat(:)
+!$omp section
+            R(:) = Svec(:) - omega(i)*Tvec(:)
+!$omp end sections
+!$omp end parallel
 
 ! --------------------------------
          if(.not.minimize_dotproducts.or.(mod(iter,icheck_bicgs).eq.0)) then
