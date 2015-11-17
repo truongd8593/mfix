@@ -97,18 +97,21 @@
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
 !$omp sections
+            FC(1,:) = merge(FC(1,:)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
             DES_VEL_NEW(1,:) = DES_VEL_OLD(1,:) + 0.5d0*( 3.d0*FC(1,:)-DES_ACC_OLD(1,:) )*DTSOLID
             DES_POS_NEW(1,:) = DES_POS_OLD(1,:) + 0.5d0*( DES_VEL_OLD(1,:)+DES_VEL_NEW(1,:) )*DTSOLID
             DES_ACC_OLD(1,:) = FC(1,:)
             FC(1,:) = ZERO
 
             !$omp section
+            FC(2,:) = merge(FC(2,:)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
             DES_VEL_NEW(2,:) = DES_VEL_OLD(2,:) + 0.5d0*( 3.d0*FC(2,:)-DES_ACC_OLD(2,:) )*DTSOLID
             DES_POS_NEW(2,:) = DES_POS_OLD(2,:) + 0.5d0*( DES_VEL_OLD(2,:)+DES_VEL_NEW(2,:) )*DTSOLID
             DES_ACC_OLD(2,:) = FC(2,:)
             FC(2,:) = ZERO
 
             !$omp section
+            FC(3,:) = merge(FC(3,:)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
             DES_VEL_NEW(3,:) = DES_VEL_OLD(3,:) + 0.5d0*( 3.d0*FC(3,:)-DES_ACC_OLD(3,:) )*DTSOLID
             DES_POS_NEW(3,:) = DES_POS_OLD(3,:) + 0.5d0*( DES_VEL_OLD(3,:)+DES_VEL_NEW(3,:) )*DTSOLID
             DES_ACC_OLD(3,:) = FC(3,:)
