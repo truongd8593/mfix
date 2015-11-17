@@ -557,11 +557,11 @@ CONTAINS
            ENDIF
 
            IF (DO_OLD) THEN
-              call real_grow2(DES_POS_OLD,MAX_PIP)
-              call real_grow2(DES_VEL_OLD,MAX_PIP)
-              call real_grow2(DES_ACC_OLD,MAX_PIP)
-              call real_grow2(OMEGA_OLD,MAX_PIP)
-              call real_grow2(ROT_ACC_OLD,MAX_PIP)
+              call real_grow2_reverse(DES_POS_OLD,MAX_PIP)
+              call real_grow2_reverse(DES_VEL_OLD,MAX_PIP)
+              call real_grow2_reverse(DES_ACC_OLD,MAX_PIP)
+              call real_grow2_reverse(OMEGA_OLD,MAX_PIP)
+              call real_grow2_reverse(ROT_ACC_OLD,MAX_PIP)
            ENDIF
 
            IF(ENERGY_EQ)THEN
