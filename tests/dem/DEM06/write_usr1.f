@@ -74,8 +74,8 @@
       OPEN(UNIT=lUNIT, FILE='POST_POS.dat',                            &
          POSITION="APPEND", STATUS='OLD')
 ! Write the results to file.
-      WRITE(lUNIT,1000) lTime, RK4_POS(2), DES_POS_NEW(2,1),           &
-         ABS_ERR(RK4_POS(2), DES_POS_NEW(2,1))
+      WRITE(lUNIT,1000) lTime, RK4_POS(2), DES_POS_NEW(1,2),           &
+         ABS_ERR(RK4_POS(2), DES_POS_NEW(1,2))
 ! Close the output file.
       CLOSE(lUNIT)
 
@@ -84,8 +84,8 @@
       OPEN(UNIT=lUNIT, FILE='POST_VEL.dat',                            &
          POSITION="APPEND", STATUS='OLD')
 ! Write the results to file.
-      WRITE(lUNIT,1000) lTime, RK4_VEL(2), DES_VEL_NEW(2,1),           &
-         ABS_ERR(RK4_VEL(2), DES_VEL_NEW(2,1))
+      WRITE(lUNIT,1000) lTime, RK4_VEL(2), DES_VEL_NEW(1,2),           &
+         ABS_ERR(RK4_VEL(2), DES_VEL_NEW(1,2))
 ! Close the output file.
       CLOSE(lUNIT)
 

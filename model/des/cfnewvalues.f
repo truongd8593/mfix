@@ -48,8 +48,8 @@
             IF(IS_NONEXISTENT(L)) CYCLE                       ! Only real particles
             IF(IS_ENTERING(L).or.IS_ENTERING_GHOST(L)) CYCLE  ! Only non-entering
             IF(IS_GHOST(L)) CYCLE                             ! Skip ghost particles
-            DES_ACC_OLD(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
-            ROT_ACC_OLD(:,L) = TOW(:,L)
+            DES_ACC_OLD(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
+            ROT_ACC_OLD(:,L) = TOW(L,:)
          ENDDO
       ENDIF
 
@@ -69,68 +69,68 @@
         IF (INTG_EULER) THEN
 ! first-order method
 !$omp sections
-           DES_VEL_NEW(1,:) = DES_VEL_NEW(1,:) + DTSOLID*merge(FC(1,:)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_POS_NEW(1,:) = DES_POS_NEW(1,:) + DES_VEL_NEW(1,:)*DTSOLID
-            FC(1,:) = ZERO
+           DES_VEL_NEW(:,1) = DES_VEL_NEW(:,1) + DTSOLID*merge(FC(:,1)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(:,1) = DES_POS_NEW(:,1) + DES_VEL_NEW(:,1)*DTSOLID
+            FC(:,1) = ZERO
 
 !$omp section
-            DES_VEL_NEW(2,:) = DES_VEL_NEW(2,:) + DTSOLID*merge(FC(2,:)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_POS_NEW(2,:) = DES_POS_NEW(2,:) + DES_VEL_NEW(2,:)*DTSOLID
-            FC(2,:) = ZERO
+            DES_VEL_NEW(:,2) = DES_VEL_NEW(:,2) + DTSOLID*merge(FC(:,2)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(:,2) = DES_POS_NEW(:,2) + DES_VEL_NEW(:,2)*DTSOLID
+            FC(:,2) = ZERO
 
 !$omp section
-            DES_VEL_NEW(3,:) = DES_VEL_NEW(3,:) + DTSOLID*merge(FC(3,:)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_POS_NEW(3,:) = DES_POS_NEW(3,:) + DES_VEL_NEW(3,:)*DTSOLID
-            FC(3,:) = ZERO
+            DES_VEL_NEW(:,3) = DES_VEL_NEW(:,3) + DTSOLID*merge(FC(:,3)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(:,3) = DES_POS_NEW(:,3) + DES_VEL_NEW(:,3)*DTSOLID
+            FC(:,3) = ZERO
 
 !$omp section
-            OMEGA_NEW(1,:)   = OMEGA_NEW(1,:) + TOW(1,:)*OMOI(:)*DTSOLID
-            TOW(1,:) = ZERO
+            OMEGA_NEW(:,1)   = OMEGA_NEW(:,1) + TOW(:,1)*OMOI(:)*DTSOLID
+            TOW(:,1) = ZERO
 !$omp section
-            OMEGA_NEW(2,:)   = OMEGA_NEW(2,:) + TOW(2,:)*OMOI(:)*DTSOLID
-            TOW(2,:) = ZERO
+            OMEGA_NEW(:,2)   = OMEGA_NEW(:,2) + TOW(:,2)*OMOI(:)*DTSOLID
+            TOW(:,2) = ZERO
 !$omp section
-            OMEGA_NEW(3,:)   = OMEGA_NEW(3,:) + TOW(3,:)*OMOI(:)*DTSOLID
-            TOW(3,:) = ZERO
+            OMEGA_NEW(:,3)   = OMEGA_NEW(:,3) + TOW(:,3)*OMOI(:)*DTSOLID
+            TOW(:,3) = ZERO
 !$omp end sections
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
 !$omp sections
-            FC(1,:) = merge(FC(1,:)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_VEL_NEW(1,:) = DES_VEL_OLD(1,:) + 0.5d0*( 3.d0*FC(1,:)-DES_ACC_OLD(1,:) )*DTSOLID
-            DES_POS_NEW(1,:) = DES_POS_OLD(1,:) + 0.5d0*( DES_VEL_OLD(1,:)+DES_VEL_NEW(1,:) )*DTSOLID
-            DES_ACC_OLD(1,:) = FC(1,:)
-            FC(1,:) = ZERO
+            FC(:,1) = merge(FC(:,1)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_VEL_NEW(:,1) = DES_VEL_OLD(:,1) + 0.5d0*( 3.d0*FC(:,1)-DES_ACC_OLD(:,1) )*DTSOLID
+            DES_POS_NEW(:,1) = DES_POS_OLD(:,1) + 0.5d0*( DES_VEL_OLD(:,1)+DES_VEL_NEW(:,1) )*DTSOLID
+            DES_ACC_OLD(:,1) = FC(:,1)
+            FC(:,1) = ZERO
 
             !$omp section
-            FC(2,:) = merge(FC(2,:)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_VEL_NEW(2,:) = DES_VEL_OLD(2,:) + 0.5d0*( 3.d0*FC(2,:)-DES_ACC_OLD(2,:) )*DTSOLID
-            DES_POS_NEW(2,:) = DES_POS_OLD(2,:) + 0.5d0*( DES_VEL_OLD(2,:)+DES_VEL_NEW(2,:) )*DTSOLID
-            DES_ACC_OLD(2,:) = FC(2,:)
-            FC(2,:) = ZERO
+            FC(:,2) = merge(FC(:,2)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_VEL_NEW(:,2) = DES_VEL_OLD(:,2) + 0.5d0*( 3.d0*FC(:,2)-DES_ACC_OLD(:,2) )*DTSOLID
+            DES_POS_NEW(:,2) = DES_POS_OLD(:,2) + 0.5d0*( DES_VEL_OLD(:,2)+DES_VEL_NEW(:,2) )*DTSOLID
+            DES_ACC_OLD(:,2) = FC(:,2)
+            FC(:,2) = ZERO
 
             !$omp section
-            FC(3,:) = merge(FC(3,:)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
-            DES_VEL_NEW(3,:) = DES_VEL_OLD(3,:) + 0.5d0*( 3.d0*FC(3,:)-DES_ACC_OLD(3,:) )*DTSOLID
-            DES_POS_NEW(3,:) = DES_POS_OLD(3,:) + 0.5d0*( DES_VEL_OLD(3,:)+DES_VEL_NEW(3,:) )*DTSOLID
-            DES_ACC_OLD(3,:) = FC(3,:)
-            FC(3,:) = ZERO
+            FC(:,3) = merge(FC(:,3)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_VEL_NEW(:,3) = DES_VEL_OLD(:,3) + 0.5d0*( 3.d0*FC(:,3)-DES_ACC_OLD(:,3) )*DTSOLID
+            DES_POS_NEW(:,3) = DES_POS_OLD(:,3) + 0.5d0*( DES_VEL_OLD(:,3)+DES_VEL_NEW(:,3) )*DTSOLID
+            DES_ACC_OLD(:,3) = FC(:,3)
+            FC(:,3) = ZERO
 
             !$omp section
-            OMEGA_NEW(1,:)   =  OMEGA_OLD(1,:) + 0.5d0*( 3.d0*TOW(1,:)*OMOI(:)-ROT_ACC_OLD(1,:) )*DTSOLID
-            ROT_ACC_OLD(1,:) = TOW(1,:)*OMOI(:)
-            TOW(1,:) = ZERO
+            OMEGA_NEW(:,1)   =  OMEGA_OLD(:,1) + 0.5d0*( 3.d0*TOW(:,1)*OMOI(:)-ROT_ACC_OLD(1,:) )*DTSOLID
+            ROT_ACC_OLD(1,:) = TOW(:,1)*OMOI(:)
+            TOW(:,1) = ZERO
 
             !$omp section
-            OMEGA_NEW(2,:)   =  OMEGA_OLD(2,:) + 0.5d0*( 3.d0*TOW(2,:)*OMOI(:)-ROT_ACC_OLD(2,:) )*DTSOLID
-            ROT_ACC_OLD(2,:) = TOW(2,:)*OMOI(:)
-            TOW(2,:) = ZERO
+            OMEGA_NEW(:,2)   =  OMEGA_OLD(:,2) + 0.5d0*( 3.d0*TOW(:,2)*OMOI(:)-ROT_ACC_OLD(2,:) )*DTSOLID
+            ROT_ACC_OLD(2,:) = TOW(:,2)*OMOI(:)
+            TOW(:,2) = ZERO
 
             !$omp section
-            OMEGA_NEW(3,:)   =  OMEGA_OLD(3,:) + 0.5d0*( 3.d0*TOW(3,:)*OMOI(:)-ROT_ACC_OLD(3,:) )*DTSOLID
-            ROT_ACC_OLD(3,:) = TOW(3,:)*OMOI(:)
-            TOW(3,:) = ZERO
+            OMEGA_NEW(:,3)   =  OMEGA_OLD(:,3) + 0.5d0*( 3.d0*TOW(:,3)*OMOI(:)-ROT_ACC_OLD(3,:) )*DTSOLID
+            ROT_ACC_OLD(3,:) = TOW(:,3)*OMOI(:)
+            TOW(:,3) = ZERO
 !$omp end sections
          ENDIF
 
@@ -140,11 +140,11 @@
 
          IF(PARTICLE_ORIENTATION) THEN
             DO L = 1, MAX_PIP
-            OMEGA_MAG = OMEGA_NEW(1,L)**2 +OMEGA_NEW(2,L)**2 + OMEGA_NEW(3,L)**2
+            OMEGA_MAG = OMEGA_NEW(L,1)**2 +OMEGA_NEW(L,2)**2 + OMEGA_NEW(L,3)**2
 
             IF(OMEGA_MAG>ZERO) THEN
                OMEGA_MAG=DSQRT(OMEGA_MAG)
-               OMEGA_UNIT(:) = OMEGA_NEW(:,L)/OMEGA_MAG
+               OMEGA_UNIT(:) = OMEGA_NEW(L,:)/OMEGA_MAG
                ROT_ANGLE = OMEGA_MAG * DTSOLID
 
                ORIENTATION(:,L) = ORIENTATION(:,L)*DCOS(ROT_ANGLE) &
@@ -158,7 +158,7 @@
 ! its radius since the last time a neighbor search was called. if so,
 ! make sure that neighbor is called in des_time_march
          IF(.NOT.DO_NSEARCH) THEN
-            do_nsearch = any((DES_POS_NEW(1,:) - PPOS(1,:))**2+(DES_POS_NEW(2,:) - PPOS(2,:))**2+(DES_POS_NEW(3,:) - PPOS(3,:))**2.GE.(NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(:))**2)
+            do_nsearch = any((DES_POS_NEW(:,1) - PPOS(:,1))**2+(DES_POS_NEW(:,2) - PPOS(:,2))**2+(DES_POS_NEW(:,3) - PPOS(:,3))**2.GE.(NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(:))**2)
          ENDIF
 
 !$omp end parallel

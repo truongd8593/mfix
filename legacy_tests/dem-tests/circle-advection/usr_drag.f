@@ -63,9 +63,9 @@
       lDgA = 0.0d0
 
 ! Set the particle velocity to the gas velocity
-      DES_VEL_NEW(1,M_NP) = lUg
-      DES_VEL_NEW(2,M_NP) = lVg
-      DES_VEL_NEW(3,M_NP) = lWg
+      DES_VEL_NEW(M_NP,1) = lUg
+      DES_VEL_NEW(M_NP,2) = lVg
+      DES_VEL_NEW(M_NP,3) = lWg
 
 
       RETURN

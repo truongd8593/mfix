@@ -215,7 +215,7 @@
  3003 FORMAT('<DataArray type="Float32" Name="Position" ', &
          'NumberOfComponents="3" format="ascii">')
       WRITE(555, 3003)
-      WRITE(555,"(3(3x,F15.8))") DES_POS_NEW(:,NP)
+      WRITE(555,"(3(3x,F15.8))") DES_POS_NEW(NP,:)
       WRITE(555,"('</DataArray>')")
 
       WRITE(555,"('</Points>')")
@@ -232,7 +232,7 @@
  3006 FORMAT('<DataArray type="Float32" Name="Velocity" ',&
          'NumberOfComponents="3" format="ascii">')
       WRITE(555, 3006)
-      WRITE(555,"(3(3x,F15.8))") DES_VEL_NEW(:,NP)
+      WRITE(555,"(3(3x,F15.8))") DES_VEL_NEW(NP,:)
       WRITE(555,"('</DataArray>')")
 
       WRITE(555,"('</PointData>')")

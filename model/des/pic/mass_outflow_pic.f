@@ -37,12 +37,12 @@
                IF(IS_NONEXISTENT(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
-               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
-               CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
-               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(1,NP)
-               CASE('E'); DIST = DES_POS_NEW(1,NP) - XE(BC_I_w(BCV))
-               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
-               CASE('T'); DIST = DES_POS_NEW(3,NP) - ZT(BC_K_b(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
+               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
+               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
+               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
                END SELECT
 
                IF(DIST < DES_RADIUS(NP)) CALL DELETE_PARCEL(NP)
@@ -86,10 +86,10 @@
 
       CALL SET_NONEXISTENT(NP)
 
-      DES_POS_OLD(:,NP) = ZERO
-      DES_POS_NEW(:,NP) = ZERO
-      DES_VEL_OLD(:,NP) = ZERO
-      DES_VEL_NEW(:,NP) = ZERO
+      DES_POS_OLD(NP,:) = ZERO
+      DES_POS_NEW(NP,:) = ZERO
+      DES_VEL_OLD(NP,:) = ZERO
+      DES_VEL_NEW(NP,:) = ZERO
       DES_RADIUS(NP) = ZERO
       PMASS(NP) = ZERO
       PVOL(NP) = ZERO
@@ -98,7 +98,7 @@
 
       DES_STAT_WT(NP) = ZERO
 
-      FC(:,NP) = ZERO
+      FC(NP,:) = ZERO
 
       PIP = PIP - 1
 

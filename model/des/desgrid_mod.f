@@ -736,12 +736,12 @@
             if(is_nonexistent(lcurpar)) cycle
 
             lparcount = lparcount + 1
-            li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(1,lcurpar))))
-            lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(2,lcurpar))))
+            li = min(dg_iend2,max(dg_istart2,iofpos(des_pos_new(lcurpar,1))))
+            lj = min(dg_jend2,max(dg_jstart2,jofpos(des_pos_new(lcurpar,2))))
             if(no_k) then
                lk = 1
             else
-               lk = min(dg_kend2,max(dg_kstart2,kofpos(des_pos_new(3,lcurpar))))
+               lk = min(dg_kend2,max(dg_kstart2,kofpos(des_pos_new(lcurpar,3))))
             end if
             dg_pijk(lcurpar) = dg_funijk(li,lj,lk)
             lijk = dg_pijk(lcurpar)
@@ -908,7 +908,7 @@
          kl_off = 1
          ku_off = 1
 
-         lcurpar_pos(:) = des_pos_new(:,lcurpar)
+         lcurpar_pos(:) = des_pos_new(lcurpar,:)
 !   The desgrid size should not be less than 2*dia*rlm_factor
          lcur_off = (lcurpar_pos(1)-dg_xstart)*dg_dxinv - &
             floor((lcurpar_pos(1)-dg_xstart)*dg_dxinv)
@@ -957,9 +957,9 @@
                endif
 
                lsearch_rad = factor_RLM*(des_radius(lcurpar)+des_radius(lneigh))
-               ldistvec(1) = lcurpar_pos(1)-des_pos_new(1,lneigh)
-               ldistvec(2) = lcurpar_pos(2)-des_pos_new(2,lneigh)
-               ldistvec(3) = lcurpar_pos(3)-des_pos_new(3,lneigh)
+               ldistvec(1) = lcurpar_pos(1)-des_pos_new(lneigh,1)
+               ldistvec(2) = lcurpar_pos(2)-des_pos_new(lneigh,2)
+               ldistvec(3) = lcurpar_pos(3)-des_pos_new(lneigh,3)
                ldistsquared = dot_product(ldistvec,ldistvec)
                if (ldistsquared.gt.lsearch_rad*lsearch_rad) cycle
                tmp_neigh(lpicloc) = lneigh

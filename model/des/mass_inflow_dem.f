@@ -42,12 +42,12 @@
                NP = DG_PIC(IJK)%P(LS)
                IF(IS_EXITING(NP) .or. IS_EXITING_GHOST(NP)) CYCLE
                SELECT CASE (BC_PLANE(BCV))
-               CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
-               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
-               CASE('E'); DIST = DES_POS_NEW(1,NP) - XE(BC_I_w(BCV))
-               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(1,NP)
-               CASE('T'); DIST = DES_POS_NEW(3,NP) - ZT(BC_K_b(BCV))
-               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
+               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
+               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
+               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
                END SELECT
 ! The particle is still inside the domain
                IF(DIST > DES_RADIUS(NP)) CALL SET_NORMAL(NP)
@@ -303,21 +303,21 @@
       ENDIF
 
 ! Set the initial position values based on mass inlet class
-      DES_POS_NEW(:,lNP) = lPOS(:)
-      PPOS(:,lNP) = lPOS(:)
-      DES_VEL_NEW(1,lNP) = BC_U_s(lBCV,BC_M)
-      DES_VEL_NEW(2,lNP) = BC_V_s(lBCV,BC_M)
-      DES_VEL_NEW(3,lNP) = BC_W_s(lBCV,BC_M)
+      DES_POS_NEW(lNP,:) = lPOS(:)
+      PPOS(lNP,:) = lPOS(:)
+      DES_VEL_NEW(lNP,1) = BC_U_s(lBCV,BC_M)
+      DES_VEL_NEW(lNP,2) = BC_V_s(lBCV,BC_M)
+      DES_VEL_NEW(lNP,3) = BC_W_s(lBCV,BC_M)
 
 ! Set the initial velocity values
       IF (DO_OLD) THEN
-         DES_POS_OLD(:,lNP) = lPOS(:)
-         DES_VEL_OLD(:,lNP) = DES_VEL_NEW(:,lNP)
-         OMEGA_OLD(:,lNP) = 0
+         DES_POS_OLD(lNP,:) = lPOS(:)
+         DES_VEL_OLD(lNP,:) = DES_VEL_NEW(lNP,:)
+         OMEGA_OLD(lNP,:) = 0
       ENDIF
 
 ! Set the initial angular velocity values
-      OMEGA_NEW(:,lNP) = 0
+      OMEGA_NEW(lNP,:) = 0
 
 ! Set the initial angular position values
       IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,lNP) = INIT_ORIENTATION
@@ -336,12 +336,12 @@
       PIJK(lNP,5) = lM
 
 ! Calculate the DES grid cell indices.
-      lI = min(DG_IEND2,max(DG_ISTART2,IOFPOS(DES_POS_NEW(1,lNP))))
-      lJ = min(DG_JEND2,max(DG_JSTART2,JOFPOS(DES_POS_NEW(2,lNP))))
+      lI = min(DG_IEND2,max(DG_ISTART2,IOFPOS(DES_POS_NEW(lNP,1))))
+      lJ = min(DG_JEND2,max(DG_JSTART2,JOFPOS(DES_POS_NEW(lNP,2))))
       IF(NO_K) THEN
          lK = 1
       ELSE
-         lK = min(DG_KEND2,max(DG_KSTART2,KOFPOS(DES_POS_NEW(3,lNP))))
+         lK = min(DG_KEND2,max(DG_KSTART2,KOFPOS(DES_POS_NEW(lNP,3))))
       ENDIF
 ! Store the triple
       DG_PIJK(lNP) = DG_FUNIJK(lI,lJ,lK)
@@ -352,7 +352,7 @@
       OMOI(lNP) = 5.d0 / (2.d0 * PMASS(lNP) * DES_RADIUS(lNP)**2)
 
 ! Clear the drag force
-      IF(DES_EXPLICITLY_COUPLED) DRAG_FC(:,lNP) = ZERO
+      IF(DES_EXPLICITLY_COUPLED) DRAG_FC(lNP,:) = ZERO
 
 ! If solving the energy equations, set the temperature
       IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
@@ -466,7 +466,7 @@
                NPG =  SIZE(PIC(IJK)%P)
                DO LL = 1, NPG
                   NP2 = PIC(IJK)%P(LL)
-                  DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(:,NP2)
+                  DISTVEC(:) = ppar_pos(:) - DES_POS_NEW(NP2,:)
                   DIST = DOT_PRODUCT(DISTVEC,DISTVEC)
                   R_LM = ppar_rad + DES_RADIUS(NP2)
                   IF(DIST .LE. R_LM*R_LM) TOUCHING = .TRUE.

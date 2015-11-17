@@ -27,8 +27,8 @@
       ENDIF
 
 ! Store the initial position and velocity
-      RK4_POS(:) = DES_POS_NEW(:,1)
-      RK4_VEL(:) = DES_VEL_NEW(:,1)
+      RK4_POS(:) = DES_POS_NEW(1,:)
+      RK4_VEL(:) = DES_VEL_NEW(1,:)
 
       return
       END SUBROUTINE USR0

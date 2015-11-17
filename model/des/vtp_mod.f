@@ -980,7 +980,7 @@
             IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
                PC =PC + 1
                DO LC2=LB, UB
-                  ltemp_array(LC2,PC) = DES_POS_NEW(LC2,LC1)
+                  ltemp_array(LC2,PC) = DES_POS_NEW(LC1,LC2)
                ENDDO
             ENDIF
             IF(PC==LOCAL_CNT) EXIT
@@ -1090,7 +1090,7 @@
                IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
                   PC =PC + 1
                   DO LC2=LB, UB
-                     ltemp_array(LC2,PC) = DES_POS_NEW(LC2,LC1)
+                     ltemp_array(LC2,PC) = DES_POS_NEW(LC1,LC2)
                   ENDDO
                ENDIF
                IF(PC==LOCAL_CNT) EXIT
@@ -1609,9 +1609,9 @@
          SELECT CASE(SELECT_PARTICLE_BY)
             CASE('C')  ! Particle center must be inside vtk region
 
-               XP = DES_POS_NEW(1,LC1)
-               YP = DES_POS_NEW(2,LC1)
-               ZP = DES_POS_NEW(3,LC1)
+               XP = DES_POS_NEW(LC1,1)
+               YP = DES_POS_NEW(LC1,2)
+               ZP = DES_POS_NEW(LC1,3)
 
 ! X-direction
                KEEP_XDIR=.FALSE.
@@ -1648,13 +1648,13 @@
 
                R = DES_RADIUS(LC1)
 
-               XP1 = DES_POS_NEW(1,LC1) - R
-               YP1 = DES_POS_NEW(2,LC1) - R
-               ZP1 = DES_POS_NEW(3,LC1) - R
+               XP1 = DES_POS_NEW(LC1,1) - R
+               YP1 = DES_POS_NEW(LC1,2) - R
+               ZP1 = DES_POS_NEW(LC1,3) - R
 
-               XP2 = DES_POS_NEW(1,LC1) + R
-               YP2 = DES_POS_NEW(2,LC1) + R
-               ZP2 = DES_POS_NEW(3,LC1) + R
+               XP2 = DES_POS_NEW(LC1,1) + R
+               YP2 = DES_POS_NEW(LC1,2) + R
+               ZP2 = DES_POS_NEW(LC1,3) + R
 
 ! X-direction
                KEEP_XDIR=.FALSE.
@@ -1691,13 +1691,13 @@
 
                R = DES_RADIUS(LC1)
 
-               XP1 = DES_POS_NEW(1,LC1) - R
-               YP1 = DES_POS_NEW(2,LC1) - R
-               ZP1 = DES_POS_NEW(3,LC1) - R
+               XP1 = DES_POS_NEW(LC1,1) - R
+               YP1 = DES_POS_NEW(LC1,2) - R
+               ZP1 = DES_POS_NEW(LC1,3) - R
 
-               XP2 = DES_POS_NEW(1,LC1) + R
-               YP2 = DES_POS_NEW(2,LC1) + R
-               ZP2 = DES_POS_NEW(3,LC1) + R
+               XP2 = DES_POS_NEW(LC1,1) + R
+               YP2 = DES_POS_NEW(LC1,2) + R
+               ZP2 = DES_POS_NEW(LC1,3) + R
 
 ! X-direction
                KEEP_XDIR=.FALSE.

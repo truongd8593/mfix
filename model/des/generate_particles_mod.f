@@ -374,9 +374,9 @@
          IF(NO_K) VEL(3) = 0.0d0
 
 
-         DES_POS_NEW(:,PIP) = POS(:)
-         DES_VEL_NEW(:,PIP) = VEL(:)
-         OMEGA_NEW(:,PIP) = 0.0d0
+         DES_POS_NEW(PIP,:) = POS(:)
+         DES_VEL_NEW(PIP,:) = VEL(:)
+         OMEGA_NEW(PIP,:) = 0.0d0
 
          DES_RADIUS(PIP) = D_P0(M)*HALF
          RO_SOL(PIP) =  RO_S0(M)
@@ -388,9 +388,9 @@
          PIJK(PIP,5) = M
 
          IF(DO_OLD) THEN
-            DES_VEL_OLD(:,PIP) = DES_VEL_NEW(:,PIP)
-            DES_POS_OLD(:,PIP) = DES_POS_NEW(:,PIP)
-            OMEGA_OLD(:,PIP) = ZERO
+            DES_VEL_OLD(PIP,:) = DES_VEL_NEW(PIP,:)
+            DES_POS_OLD(PIP,:) = DES_POS_NEW(PIP,:)
+            OMEGA_OLD(PIP,:) = ZERO
          ENDIF
 
          SOLIDS_DATA(M) = SOLIDS_DATA(M) + 1.0
@@ -730,8 +730,8 @@
             PIP = PIP + 1
             CALL PARTICLE_GROW(PIP)
 
-            DES_POS_NEW(:,PIP) = POS(:)
-            DES_VEL_NEW(:,PIP) = randVEL(LC,:)
+            DES_POS_NEW(PIP,:) = POS(:)
+            DES_VEL_NEW(PIP,:) = randVEL(LC,:)
 
             DES_RADIUS(PIP) = DES_D_P0(M)*HALF
             RO_SOL(PIP) =  DES_RO_S(M)

@@ -286,12 +286,12 @@ MODULE interpolation
 
 ! Determine the shift index necessary to account for the quadrant of
 ! the fluid cell where the particle is located.
-      IF( DES_POS_NEW(1,NP) <= XE(PC(1))-HALF*DX(PC(1)))THEN
+      IF( DES_POS_NEW(NP,1) <= XE(PC(1))-HALF*DX(PC(1)))THEN
          I_SHIFT = 0
       ELSE
          I_SHIFT = 1
       ENDIF
-      IF( DES_POS_NEW(2,NP) <= YN(PC(2))-HALF*DY(PC(2)))THEN
+      IF( DES_POS_NEW(NP,2) <= YN(PC(2))-HALF*DY(PC(2)))THEN
          J_SHIFT = 0
       ELSE
          J_SHIFT = 1
@@ -299,7 +299,7 @@ MODULE interpolation
       IF(DIMN == 2) THEN
          K_SHIFT = 0
       ELSE
-         IF( DES_POS_NEW(3,NP) <= ZT(PC(3))-HALF*DZ(PC(3)))THEN
+         IF( DES_POS_NEW(NP,3) <= ZT(PC(3))-HALF*DZ(PC(3)))THEN
             K_SHIFT = 0
          ELSE
             K_SHIFT = 1
@@ -528,11 +528,11 @@ MODULE interpolation
 ! Otherwise, the interpolated scalar value (INTERP_scalar) is desired.
       IF(DIMN.EQ.2) THEN
          CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1, 1:DIMN), &
-            STNCL_FEILD(1:2, 1:2, 1), DES_POS_NEW(1:2,NP), INTERP_scalar,&
+            STNCL_FEILD(1:2, 1:2, 1), DES_POS_NEW(NP,1:2), INTERP_scalar,&
             2, INTP_SCHM, WEIGHTS_CC )
       ELSE
          CALL interpolator( STNCL_GEMTY(1:2, 1:2, 1:2, 1:DIMN), &
-            STNCL_FEILD(1:2, 1:2, 1:2), DES_POS_NEW(:,NP), INTERP_scalar,&
+            STNCL_FEILD(1:2, 1:2, 1:2), DES_POS_NEW(NP,:), INTERP_scalar,&
             2, INTP_SCHM, WEIGHTS_CC )
       ENDIF
 ! Store interpolation weights in an array for calling routine.

@@ -109,7 +109,7 @@
             ENDIF
 
 ! Include gas pressure and gas-solids drag
-            DRAG_FC(:,NP) = DRAG_FC(:,NP) + lPF*PVOL(NP)
+            DRAG_FC(NP,:) = DRAG_FC(NP,:) + lPF*PVOL(NP)
 
          ENDDO
       ENDIF

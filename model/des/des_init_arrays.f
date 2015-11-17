@@ -107,9 +107,9 @@
       OMOI(LB:UB) = ZERO
 
 ! Particle position, velocity, etc
-      DES_POS_NEW(:,LB:UB) = ZERO
-      DES_VEL_NEW(:,LB:UB) = ZERO
-      OMEGA_NEW(:,LB:UB) = ZERO
+      DES_POS_NEW(LB:UB,:) = ZERO
+      DES_VEL_NEW(LB:UB,:) = ZERO
+      OMEGA_NEW(LB:UB,:) = ZERO
       IF(PARTICLE_ORIENTATION) THEN
          ORIENTATION(1,:) = INIT_ORIENTATION(1)
          ORIENTATION(2,:) = INIT_ORIENTATION(2)
@@ -131,8 +131,8 @@
       PIJK(LB:UB,:) = 0
 
 ! Translation and rotational forces
-      FC(:,LB:UB) = ZERO
-      TOW(:,LB:UB) = ZERO
+      FC(LB:UB,:) = ZERO
+      TOW(LB:UB,:) = ZERO
 
 ! Collision data
       WALL_COLLISION_FACET_ID(:,LB:UB) = -1
@@ -144,7 +144,7 @@
 
 ! Particle center drag coefficient and explicit drag force
       F_GP(LB:UB) = ZERO
-      DRAG_FC(:,LB:UB) = ZERO
+      DRAG_FC(LB:UB,:) = ZERO
 
 
 ! Interpolation variables.
@@ -163,10 +163,10 @@
 
 ! Higher order time integration variables.
       IF (DO_OLD) THEN
-         DES_POS_OLD(:,LB:UB) = ZERO
-         DES_VEL_OLD(:,LB:UB) = ZERO
-         DES_ACC_OLD(:,LB:UB) = ZERO
-         OMEGA_OLD(:,LB:UB) = ZERO
+         DES_POS_OLD(LB:UB,:) = ZERO
+         DES_VEL_OLD(LB:UB,:) = ZERO
+         DES_ACC_OLD(LB:UB,:) = ZERO
+         OMEGA_OLD(LB:UB,:) = ZERO
          ROT_ACC_OLD(:,LB:UB) = ZERO
       ENDIF
 

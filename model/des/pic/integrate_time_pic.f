@@ -111,9 +111,9 @@
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
          IF(IS_ENTERING(NP))THEN
-            FC(:,NP) = ZERO
+            FC(NP,:) = ZERO
          ELSE
-            FC(:,NP) = FC(:,NP)/PMASS(NP) + GRAV(:)
+            FC(NP,:) = FC(NP,:)/PMASS(NP) + GRAV(:)
          ENDIF
 
 ! DP_BAR is the D_p in the Snider paper (JCP, vol 170, 523-549, 2001)
@@ -130,8 +130,8 @@
 
 ! Numerically integrated particle velocity without particle normal
 ! stress force :: Snider (Eq 38)
-         VEL(:) = (DES_VEL_NEW(:,NP) + &
-            FC(:,NP)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
+         VEL(:) = (DES_VEL_NEW(NP,:) + &
+            FC(NP,:)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
 ! Estimated discrete particle velocity from continuum particle
 ! normal stress graident :: Snider (Eq 39)
@@ -157,13 +157,13 @@
 
 ! Total particle velocity is the sum of the particle velocity from
 ! normal stress and velocity from all other foces :: Sinder (Eq 37)
-         DES_VEL_NEW(:,NP) = VEL + UPRIMETAU
+         DES_VEL_NEW(NP,:) = VEL + UPRIMETAU
 ! Total distance traveled over the current time step
-         DIST(:) = DES_VEL_NEW(:,NP)*DTSOLID
+         DIST(:) = DES_VEL_NEW(NP,:)*DTSOLID
 
 ! Limit parcel movement in close pack regions to the mean free path. 
          IF(EPG_P(NP) < EPg_MFP) THEN
-            IF(dot_product(DES_VEL_NEW(:,NP),PS_GRAD(:,NP)) > ZERO) THEN
+            IF(dot_product(DES_VEL_NEW(NP,:),PS_GRAD(:,NP)) > ZERO) THEN
 ! Total distance traveled given current velocity.
                DIST_MAG = dot_product(DIST, DIST)
 ! Mean free path based on volume fraction :: Snider (43)
@@ -171,19 +171,19 @@
 ! Impose the distance limit and calculate the corresponding velocity.
                IF(MFP**2 < DIST_MAG) THEN
                   DIST = MFP*DIST/sqrt(DIST_MAG)
-                  DES_VEL_NEW(:,NP) = DIST/DTSOLID
+                  DES_VEL_NEW(NP,:) = DIST/DTSOLID
                ENDIF
             ENDIF
          ENDIF
 
 
 ! Update the parcel position.
-         DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST
+         DES_POS_NEW(NP,:) = DES_POS_NEW(NP,:) + DIST
 ! Clear out the force array.
-         FC(:,NP) = ZERO
+         FC(NP,:) = ZERO
 
 ! Determine the maximum distance traveled by any single parcel.
-         DIST_MAG = dot_product(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)) 
+         DIST_MAG = dot_product(DES_VEL_NEW(NP,:),DES_VEL_NEW(NP,:)) 
          MAX_VEL = max(MAX_VEL, DIST_MAG)
 
       ENDDO
@@ -357,8 +357,8 @@
          sig_u = 1.d0
          CALL NOR_RNO(RAND_VEL(LC, 1:MAX_PIP), MEAN_U, SIG_U)
       enddo
-      !WRITE(*, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
-      !WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(:,3)), MAXVAL(FC(:,3))
+      !WRITE(*, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(3,:)), MAXVAL(FC(3,:))
+      !WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC MIN AND MAX IN Z = ', MINVAL(FC(3,:)), MAXVAL(FC(3,:))
 
       DO NP = 1, MAX_PIP
          DELETE_PART = .false.
@@ -371,12 +371,12 @@
          DES_LOC_DEBUG = .FALSE.
 
          IF(.NOT.IS_ENTERING(NP))THEN
-            FC(:,NP) = FC(:,NP)/PMASS(NP) + GRAV(:)
+            FC(NP,:) = FC(NP,:)/PMASS(NP) + GRAV(:)
          ELSE
-            FC(:,NP) = ZERO
+            FC(NP,:) = ZERO
          ENDIF
 
-         IF(DES_FIXED_BED) FC(:,NP) = ZERO
+         IF(DES_FIXED_BED) FC(NP,:) = ZERO
 
          !DP_BAR is the D_p in the Snider paper (JCP, vol 170, 523-549, 2001)
          !By comparing the MFIX and equations in those papers,
@@ -396,14 +396,14 @@
          J = J_OF(IJK)
          K = K_OF(IJK)
 
-         DES_VEL_NEW(:,NP) = (DES_VEL_NEW(:,NP) + &
-         & FC(:,NP)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
+         DES_VEL_NEW(NP,:) = (DES_VEL_NEW(NP,:) + &
+         & FC(NP,:)*DTSOLID)/(1.d0+DP_BAR*DTSOLID)
 
-         IF(DES_FIXED_BED) DES_VEL_NEW(:,NP) = ZERO
+         IF(DES_FIXED_BED) DES_VEL_NEW(NP,:) = ZERO
 
-         !MPPIC_VPTAU(NP,:) = DES_VEL_NEW(:,NP)
+         !MPPIC_VPTAU(NP,:) = DES_VEL_NEW(NP,:)
 
-         VELP_INT(:) = DES_VEL_NEW(:,NP)
+         VELP_INT(:) = DES_VEL_NEW(NP,:)
 
          MEANVEL(1) = DES_U_S(IJK_OLD,M)
          MEANVEL(2) = DES_V_S(IJK_OLD,M)
@@ -418,28 +418,28 @@
 
          DO LC = 1, merge(2,3,NO_K)
             !SIG_U = 0.05D0*MEANVEL(LC)
-            !DES_VEL_NEW(LC,NP) = DES_VEL_NEW(LC,NP) + SIG_U*RAND_VEL(LC, L )
+            !DES_VEL_NEW(NP,LC) = DES_VEL_NEW(NP,LC) + SIG_U*RAND_VEL(LC, L )
             !PART_TAUP = RO_Sol(NP)*((2.d0*DES_RADIUS(NP))**2.d0)/(18.d0* MU_G(IJK))
             SIG_U = 0.005D0      !*MEANVEL(LC)
-            RAND_VEL(LC, NP)  = SIG_U*RAND_VEL(LC, NP)*DES_VEL_NEW(LC,NP)
+            RAND_VEL(LC, NP)  = SIG_U*RAND_VEL(LC, NP)*DES_VEL_NEW(NP,LC)
             IF(DES_FIXED_BED) RAND_VEL(LC,NP) = ZERO
             !rand_vel(LC, NP)  = sig_u*rand_vel(LC, NP)/part_taup
             !rand_vel(LC, NP)  = sig_u* mean_free_path*rand_vel(LC, NP)/part_taup
-            DES_VEL_NEW(LC,NP) = DES_VEL_NEW(LC,NP) + rand_vel(LC, NP)
+            DES_VEL_NEW(NP,LC) = DES_VEL_NEW(NP,LC) + rand_vel(LC, NP)
          enddo
 
          IF(.not.DES_ONEWAY_COUPLED.and.(.not.des_fixed_bed)) CALL MPPIC_APPLY_PS_GRAD_PART(NP)
 
-         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(1:,NP), DES_VEL_NEW(1:,NP)))
+         UPRIMEMOD = SQRT(DOT_PRODUCT(DES_VEL_NEW(NP,1:), DES_VEL_NEW(NP,1:)))
 
          !IF(UPRIMEMOD*DTSOLID.GT.MEAN_FREE_PATH) then
-         !   DES_VEL_NEW(:,NP) = (DES_VEL_NEW(:,NP)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
+         !   DES_VEL_NEW(NP,:) = (DES_VEL_NEW(NP,:)/UPRIMEMOD)*MEAN_FREE_PATH/DTSOLID
          !ENDIF
 
          IF(DES_FIXED_BED) THEN
             DD(:) = ZERO
          ELSE
-            DD(:) = DES_VEL_NEW(:,NP)*DTSOLID !+ rand_vel(:, NP)*dtsolid
+            DD(:) = DES_VEL_NEW(NP,:)*DTSOLID !+ rand_vel(:, NP)*dtsolid
          ENDIF
 
          CALL PIC_FIND_NEW_CELL(NP)
@@ -453,9 +453,9 @@
 
          IF(CUT_CELL_AT(IJK)) THEN
             POS_Z = zero
-            IF(DO_K) POS_Z = DES_POS_NEW(3,NP)
+            IF(DO_K) POS_Z = DES_POS_NEW(NP,3)
             CALL GET_DEL_H_DES(IJK,'SCALAR', &
-            & DES_POS_NEW(1,NP),  DES_POS_NEW(2,NP), &
+            & DES_POS_NEW(NP,1),  DES_POS_NEW(NP,2), &
             & POS_Z, &
             & DIST, NORM1, NORM2, NORM3, .true.)
 
@@ -466,12 +466,12 @@
          !IF(EP_G(IJK).LT.EP_STAR.and.INSIDE_DOMAIN) then
          IF(1.d0 - EP_G(IJK).GT. 1.3d0*(1.d0 - EP_STAR).and.INSIDE_DOMAIN.and.IJK.NE.IJK_OLD.and.OUTER_STABILITY_COND) then
             DD(:) = ZERO
-            DES_VEL_NEW(:,NP) = 0.8d0*DES_VEL_NEW(:,NP)
+            DES_VEL_NEW(NP,:) = 0.8d0*DES_VEL_NEW(NP,:)
          ENDIF
 
          PIJK(NP,:) = PIJK_OLD(:)
 
-         DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DD(:)
+         DES_POS_NEW(NP,:) = DES_POS_NEW(NP,:) + DD(:)
 
          DIST = SQRT(DOT_PRODUCT(DD,DD))
 
@@ -481,10 +481,10 @@
          IF(DO_K) D_GRIDUNITS(3) = ABS(DD(3))/DZ(PIJK(NP,3))
 
          DIST = SQRT(DOT_PRODUCT(DD,DD))
-         DTPIC_TMPX = (CFL_PIC*DX(PIJK(NP,1)))/(ABS(DES_VEL_NEW(1,NP))+SMALL_NUMBER)
-         DTPIC_TMPY = (CFL_PIC*DY(PIJK(NP,2)))/(ABS(DES_VEL_NEW(2,NP))+SMALL_NUMBER)
+         DTPIC_TMPX = (CFL_PIC*DX(PIJK(NP,1)))/(ABS(DES_VEL_NEW(NP,1))+SMALL_NUMBER)
+         DTPIC_TMPY = (CFL_PIC*DY(PIJK(NP,2)))/(ABS(DES_VEL_NEW(NP,2))+SMALL_NUMBER)
          DTPIC_TMPZ = LARGE_NUMBER
-         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(NP,3)))/(ABS(DES_VEL_NEW(3,NP))+SMALL_NUMBER)
+         IF(DO_K) DTPIC_TMPZ = (CFL_PIC*DZ(PIJK(NP,3)))/(ABS(DES_VEL_NEW(NP,3))+SMALL_NUMBER)
 
 
 ! Check if the particle has moved a distance greater than or equal to grid spacing
@@ -494,18 +494,18 @@
             IF(D_GRIDUNITS(LC).GT.ONE) THEN
                IF(DMP_LOG.OR.myPE.eq.pe_IO) THEN
 
-                  WRITE(UNIT_LOG, 2001) NP, D_GRIDUNITS(:), DES_VEL_NEW(:,NP)
+                  WRITE(UNIT_LOG, 2001) NP, D_GRIDUNITS(:), DES_VEL_NEW(NP,:)
                   WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,NP)
-                  IF (DO_OLD) WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,NP)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,NP)
-                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(:,NP)
+                  IF (DO_OLD) WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(NP,:)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(NP,:)
+                  WRITE(UNIT_LOG, '(A,2x,3(g17.8))') 'FC          = ', FC(NP,:)
 
-                  WRITE(*, 2001) NP, D_GRIDUNITS(:), DES_VEL_NEW(:,NP)
+                  WRITE(*, 2001) NP, D_GRIDUNITS(:), DES_VEL_NEW(NP,:)
 
                   WRITE(*, '(A,2x,3(g17.8))') 'rand_vel = ', rand_vel(:,NP)
-                  IF (DO_OLD) WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(:,NP)
-                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(:,NP)
-                  WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(:,NP)
+                  IF (DO_OLD) WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(NP,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(NP,:)
+                  WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(NP,:)
                   read(*,*)
                   DELETE_PART = .true.
 
@@ -521,7 +521,7 @@
             DTPIC_MIN_Y = MIN(DTPIC_MIN_Y, DTPIC_TMPY)
             DTPIC_MIN_Z = MIN(DTPIC_MIN_Z, DTPIC_TMPZ)
          ENDIF
-         FC(:,NP) = ZERO
+         FC(NP,:) = ZERO
 
          IF(DELETE_PART) THEN
             CALL SET_NONEXISTENT(NP)
@@ -645,7 +645,7 @@
             lijk = pijk(lp,4)
             write(100,*)"positon =",lijk,pijk(lp,1),pijk(lp,2), &
                pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
-            write(100,*)"forces =", FC(2,lp),tow(1,lp)
+            write(100,*)"forces =", FC(lp,2),tow(lp,1)
          end if
       end do
       close (100)
@@ -702,9 +702,9 @@
       do lp = pstart,pend
          if (.not.is_nonexistent(lp)) then
             lijk = pijk(lp,4)
-            write(100,*)lijk,des_pos_new(1,lp),des_pos_new(2,lp), &
-               des_vel_new(1,lp),des_vel_new(2,lp),ep_g(lijk),&
-               fc(1,lp),fc(2,lp),tow(lp,1)
+            write(100,*)lijk,des_pos_new(lp,1),des_pos_new(lp,2), &
+               des_vel_new(lp,1),des_vel_new(lp,2),ep_g(lijk),&
+               fc(lp,1),fc(lp,2),tow(1,lp)
          endif
       enddo
       close (100)

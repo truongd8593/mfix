@@ -56,12 +56,12 @@
                IF(IS_ENTERING(NP)) CYCLE
 
                SELECT CASE (BC_PLANE(BCV))
-               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(2,NP)
-               CASE('N'); DIST = DES_POS_NEW(2,NP) - YN(BC_J_s(BCV))
-               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(1,NP)
-               CASE('E'); DIST = DES_POS_NEW(1,NP) - XE(BC_I_w(BCV))
-               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(3,NP)
-               CASE('T'); DIST = DES_POS_NEW(3,NP) - ZT(BC_K_b(BCV))
+               CASE('S'); DIST = YN(BC_J_s(BCV)-1) - DES_POS_NEW(NP,2)
+               CASE('N'); DIST = DES_POS_NEW(NP,2) - YN(BC_J_s(BCV))
+               CASE('W'); DIST = XE(BC_I_w(BCV)-1) - DES_POS_NEW(NP,1)
+               CASE('E'); DIST = DES_POS_NEW(NP,1) - XE(BC_I_w(BCV))
+               CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
+               CASE('T'); DIST = DES_POS_NEW(NP,3) - ZT(BC_K_b(BCV))
                END SELECT
 
 ! The particle is still inside the domain
@@ -78,8 +78,8 @@
 ! Only 'freeze' a particle's velocy if it has it moving out of the
 ! domain. Otherwise, particles flagged as exiting but moving away from
 ! the BC appear to moon-walk through the domain until it crashes.
-                     IF(DES_VEL_NEW(IDX,NP)*SGN > 0.0d0) THEN
-                        DES_VEL_NEW(:,NP) = DES_VEL_NEW(:,NP)*FREEZE(:)
+                     IF(DES_VEL_NEW(NP,IDX)*SGN > 0.0d0) THEN
+                        DES_VEL_NEW(NP,:) = DES_VEL_NEW(NP,:)*FREEZE(:)
 ! Set the flags for an exiting particle.
                         IF (IS_GHOST(NP)) THEN
                            CALL SET_EXITING_GHOST(NP)
@@ -93,9 +93,9 @@
 ! exit needs to be controled.
                   ELSE
                      M = PIJK(NP,5)
-                     DES_VEL_NEW(1,NP) = BC_U_s(BCV,M)
-                     DES_VEL_NEW(2,NP) = BC_V_s(BCV,M)
-                     DES_VEL_NEW(3,NP) = BC_W_s(BCV,M)
+                     DES_VEL_NEW(NP,1) = BC_U_s(BCV,M)
+                     DES_VEL_NEW(NP,2) = BC_V_s(BCV,M)
+                     DES_VEL_NEW(NP,3) = BC_W_s(BCV,M)
 ! Set the flags for an exiting particle.
                      IF (IS_GHOST(NP)) THEN
                         CALL SET_EXITING_GHOST(NP)
@@ -155,16 +155,16 @@
       iGLOBAL_ID(NP) = -1
       CALL SET_NONEXISTENT(NP)
 
-      DES_POS_NEW(:,NP) = ZERO
-      DES_VEL_NEW(:,NP) = ZERO
-      OMEGA_NEW(:,NP) = ZERO
+      DES_POS_NEW(NP,:) = ZERO
+      DES_VEL_NEW(NP,:) = ZERO
+      OMEGA_NEW(NP,:) = ZERO
 
       IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,NP) = INIT_ORIENTATION
 
       IF (DO_OLD) THEN
-         DES_POS_OLD(:,NP) = ZERO
-         DES_VEL_OLD(:,NP) = ZERO
-         OMEGA_OLD(:,NP) = ZERO
+         DES_POS_OLD(NP,:) = ZERO
+         DES_VEL_OLD(NP,:) = ZERO
+         OMEGA_OLD(NP,:) = ZERO
       ENDIF
 
       DES_RADIUS(NP) = ZERO
@@ -173,10 +173,10 @@
       RO_Sol(NP) = ZERO
       OMOI(NP) = ZERO
 
-      FC(:,NP) = ZERO
-      TOW(:,NP) = ZERO
+      FC(NP,:) = ZERO
+      TOW(NP,:) = ZERO
 
-      PPOS(:,NP) = ZERO
+      PPOS(NP,:) = ZERO
 
       WALL_COLLISION_FACET_ID(:,NP) = -1
 

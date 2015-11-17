@@ -353,12 +353,12 @@
             if(NO_K) then !2-D
                call interpolator(gstencil(1:onew,1:onew,1,1:dimn), &
                psgradstencil(1:onew,1:onew,1,1:dimn), &
-               des_pos_new(1:dimn,np),PS_GRAD(1:dimn,np),  &
+               des_pos_new(np,1:dimn),PS_GRAD(1:dimn,np),  &
                onew,interp_scheme,weightp)
             else !3-D, diff in psgradstencil size
                call interpolator(gstencil(1:onew,1:onew,1:onew,1:dimn), &
                psgradstencil(1:onew,1:onew,1:onew,1:dimn), &
-               des_pos_new(1:dimn,np),PS_GRAD(1:dimn,np),  &
+               des_pos_new(np,1:dimn),PS_GRAD(1:dimn,np),  &
                onew,interp_scheme,weightp)
             endif
 

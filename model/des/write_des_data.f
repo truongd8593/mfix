@@ -345,12 +345,12 @@
             if(is_ghost(l) .or. is_entering_ghost(l) .or. is_exiting_ghost(l)) cycle
             if(DO_K) then
                write (des_data, '(8(2x,es12.5))')&
-                  (des_pos_new(k,l),k=1,wDIMN),(des_vel_new(k,l),k=1,wDIMN), &
+                  (des_pos_new(l,k),k=1,wDIMN),(des_vel_new(l,k),k=1,wDIMN), &
                    des_radius(l),ro_sol(l)
             else
                write (des_data, '(7(2x,es12.5))')&
-                  (des_pos_new(k,l),k=1,wDIMN), (des_vel_new(k,l),k=1,wDIMN), &
-                  omega_new(1,l), des_radius(l), ro_sol(l)
+                  (des_pos_new(l,k),k=1,wDIMN), (des_vel_new(l,k),k=1,wDIMN), &
+                  omega_new(l,1), des_radius(l), ro_sol(l)
             endif
         end do
 
@@ -373,15 +373,15 @@
 ! gather information from all processor
          lcount = 1
          do k = 1,wDIMN
-            call des_gather(des_pos_new(k,:))
+            call des_gather(des_pos_new(:,k))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end do
          do k = 1,wDIMN
-            call des_gather(des_vel_new(k,:))
+            call des_gather(des_vel_new(:,k))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end do
          if(NO_K) then
-            call des_gather(omega_new(1,:))
+            call des_gather(omega_new(:,1))
             ltemp_array(:,lcount) = drootbuf(:); lcount=lcount+1
          end if
          call des_gather(des_radius)

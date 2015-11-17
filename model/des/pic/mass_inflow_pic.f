@@ -152,13 +152,13 @@
 
                      CALL PIC_FIND_EMPTY_SPOT(LAST_EMPTY_SPOT, NEW_SPOT)
 
-                     DES_POS_OLD(1:DIMN, NEW_SPOT) =  CORD_START(1:DIMN) &
+                     DES_POS_OLD( NEW_SPOT,1:DIMN) =  CORD_START(1:DIMN) &
                           & + RANDPOS((IPCOUNT-1)*DIMN+1: &
                           & (IPCOUNT-1)*DIMN+DIMN)*DOML(1:DIMN)
-                     DES_POS_NEW(:, NEW_SPOT) = DES_POS_OLD(:,NEW_SPOT)
-                     DES_VEL_OLD(1:DIMN,NEW_SPOT) = VEL_INFLOW(1:DIMN)
+                     DES_POS_NEW( NEW_SPOT,:) = DES_POS_OLD(NEW_SPOT,:)
+                     DES_VEL_OLD(NEW_SPOT,1:DIMN) = VEL_INFLOW(1:DIMN)
 
-                     DES_VEL_NEW(:, NEW_SPOT) = DES_VEL_OLD(:, NEW_SPOT)
+                     DES_VEL_NEW( NEW_SPOT,:) = DES_VEL_OLD( NEW_SPOT,:)
 
                      DES_RADIUS(NEW_SPOT) = DES_D_p0(M)*HALF
 
@@ -175,11 +175,11 @@
                      PVOL(NEW_SPOT) = (4.0d0/3.0d0)*Pi*DES_RADIUS(NEW_SPOT)**3
                      PMASS(NEW_SPOT) = PVOL(NEW_SPOT)*RO_SOL(NEW_SPOT)
 
-                     FC(:, NEW_SPOT) = zero
+                     FC( NEW_SPOT,:) = zero
                      DELETE_PART = .false.
                      IF(PIC_BCMI_INCL_CUTCELL(BCV_I)) &
                           CALL CHECK_IF_PARCEL_OVERLAPS_STL &
-                          (des_pos_new(1:dimn, NEW_SPOT), &
+                          (des_pos_new( NEW_SPOT,1:dimn), &
                           DELETE_PART)
 
                      IF(.NOT.DELETE_PART) THEN
@@ -200,9 +200,9 @@
                      ENDIF
 
                      !WRITE(*,'(A,2(2x,i5), 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') &
-                     !   'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
+                     !   'NEW PART AT ', NEW_SPOT, MAX_PIP, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(NEW_SPOT,:)
                      !IF(DMP_LOG) WRITE(UNIT_LOG,'(A,2x,i5, 2x, A,2x, 3(2x,i2),2x, A, 3(2x,g17.8))') &
-                     !    'NEW PART AT ', NEW_SPOT, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(:,NEW_SPOT)
+                     !    'NEW PART AT ', NEW_SPOT, 'I, J, K = ', IFLUID, JFLUID, KFLUID, 'POS =', DES_POS_NEW(NEW_SPOT,:)
 
                      !WRITE(*,*) 'WDIR, DOML = ', WDIR, DOML(:)
                   END DO
@@ -350,10 +350,10 @@
       I = PIJK(LL,1)
       J = PIJK(LL,2)
       K = PIJK(LL,3)
-      XPOS = DES_POS_NEW(1,LL)
-      YPOS = DES_POS_NEW(2,LL)
+      XPOS = DES_POS_NEW(LL,1)
+      YPOS = DES_POS_NEW(LL,2)
       IF (DIMN .EQ. 3) THEN
-         ZPOS = DES_POS_NEW(3,LL)
+         ZPOS = DES_POS_NEW(LL,3)
       ENDIF
 
       IF(XPOS >= XE(I-1) .AND. XPOS < XE(I)) THEN

@@ -108,8 +108,8 @@
 ! Check particle LL for wall contacts
          RADSQ = DES_RADIUS(LL)*DES_RADIUS(LL)
 
-         particle_max(:) = des_pos_new(:, LL) + des_radius(LL)
-         particle_min(:) = des_pos_new(:, LL) - des_radius(LL)
+         particle_max(:) = des_pos_new( LL,:) + des_radius(LL)
+         particle_min(:) = des_pos_new( LL,:) - des_radius(LL)
 
          DO CELL_COUNT = 1, facets_at_dg(cell_id)%count
 
@@ -120,10 +120,10 @@
 ! Compute particle-particle VDW cohesive short-range forces
             IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
 
-               CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL),          &
+               CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:),          &
                   VERTEX(:,:,NF), CLOSEST_PT(:))
 
-               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
+               DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(LL,:)
                DISTSQ = DOT_PRODUCT(DIST, DIST)
                R_LM = 2*DES_RADIUS(LL)
 
@@ -139,7 +139,7 @@
                         (Asperities/(Asperities+DES_RADIUS(LL)) + ONE/ &
                         (ONE+Asperities/WALL_VDW_INNER_CUTOFF)**2 )
                   ENDIF
-                  FC(:,LL) = FC(:,LL) + DIST(:)*FORCE_COH/SQRT(DISTSQ)
+                  FC(LL,:) = FC(LL,:) + DIST(:)*FORCE_COH/SQRT(DISTSQ)
                ENDIF
             ENDIF
 
@@ -188,7 +188,7 @@
 ! same as plane's normal. For moving particles, the line's normal will
 ! be along the point joining new and old positions.
 
-            line_t = DOT_PRODUCT(VERTEX(1,:,NF) - des_pos_new(:,LL),&
+            line_t = DOT_PRODUCT(VERTEX(1,:,NF) - des_pos_new(LL,:),&
                NORM_FACE(:,NF))
 
 ! k - rad >= tol_orth, where k = -line_t, then orthogonal
@@ -205,10 +205,10 @@
                CYCLE
             ENDIF
 
-            CALL ClosestPtPointTriangle(DES_POS_NEW(:,LL),             &
+            CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:),             &
                VERTEX(:,:,NF), CLOSEST_PT(:))
 
-            DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(:,LL)
+            DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(LL,:)
             DISTSQ = DOT_PRODUCT(DIST, DIST)
 
             IF(DISTSQ .GE. RADSQ - SMALL_NUMBER) THEN !No overlap exists
@@ -290,10 +290,10 @@
                WALL_COLLISION_FACET_ID, WALL_COLLISION_PFT)
 
 ! Add the collision force to the total forces acting on the particle.
-            FC(:,LL) = FC(:,LL) + FNORM(:) + FTAN(:)
+            FC(LL,:) = FC(LL,:) + FNORM(:) + FTAN(:)
 
 ! Add the torque force to the toal torque acting on the particle.
-            TOW(:,LL) = TOW(:,LL) + DISTMOD*DES_CROSSPRDCT(NORMAL,FTAN)
+            TOW(LL,:) = TOW(LL,:) + DISTMOD*DES_CROSSPRDCT(NORMAL,FTAN)
 
          ENDDO
 
@@ -533,8 +533,8 @@
       DOUBLE PRECISION, DIMENSION(DIMN) :: VRELTRANS
 
 ! Total relative velocity + rotational contribution
-      V_ROT = DIST*OMEGA_NEW(:,LL)
-      VRELTRANS(:) =  DES_VEL_NEW(:,LL) + DES_CROSSPRDCT(V_ROT, NORM)
+      V_ROT = DIST*OMEGA_NEW(LL,:)
+      VRELTRANS(:) =  DES_VEL_NEW(LL,:) + DES_CROSSPRDCT(V_ROT, NORM)
 
 ! magnitude of normal component of relative velocity (scalar)
       VRN = DOT_PRODUCT(VRELTRANS,NORM)

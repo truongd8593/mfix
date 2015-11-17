@@ -116,7 +116,7 @@
 
 ! Write the results to a file.
       WRITE(uPos1,"(3x,F15.8,5X,F15.8,2(3x,F15.8))") lTime, gY1,   &
-         DES_POS_new(2,1), (ABS(gY1 - DES_POS_new(2,1))/ABS(gY1))*100
+         DES_POS_new(1,2), (ABS(gY1 - DES_POS_new(1,2))/ABS(gY1))*100
 
       WRITE(uPos2,"(3x,F15.8,5X,F15.8,2(3x,F15.8))") lTime, gY2,   &
          DES_POS_new(2,2), (ABS(gY2 - DES_POS_new(2,2))/ABS(gY1))*100

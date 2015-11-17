@@ -59,39 +59,39 @@
 ! any boundary is periodic
 ! ------------------------------
             IF (DES_PERIODIC_WALLS) THEN
-               XPOS(:) = DES_POS_NEW(1,LL)
-               YPOS(:) = DES_POS_NEW(2,LL)
+               XPOS(:) = DES_POS_NEW(LL,1)
+               YPOS(:) = DES_POS_NEW(LL,2)
                II = 1
                JJ = 1
                KK = 1
 
                IF(DES_PERIODIC_WALLS_X) THEN
-                  IF (DES_POS_NEW(1,L) + R_LM > XLENGTH) THEN
+                  IF (DES_POS_NEW(L,1) + R_LM > XLENGTH) THEN
                      II = 2
-                     XPOS(II) = DES_POS_NEW(1,LL) + XLENGTH
-                  ELSEIF (DES_POS_NEW(1,L) - R_LM < ZERO) THEN
+                     XPOS(II) = DES_POS_NEW(LL,1) + XLENGTH
+                  ELSEIF (DES_POS_NEW(L,1) - R_LM < ZERO) THEN
                      II = 2
-                     XPOS(II) = DES_POS_NEW(1,LL) - XLENGTH
+                     XPOS(II) = DES_POS_NEW(LL,1) - XLENGTH
                   ENDIF
                ENDIF
                IF(DES_PERIODIC_WALLS_Y) THEN
-                  IF (DES_POS_NEW(2,L) + R_LM > YLENGTH) THEN
+                  IF (DES_POS_NEW(L,2) + R_LM > YLENGTH) THEN
                      JJ = 2
-                     YPOS(JJ) = DES_POS_NEW(2,LL) + YLENGTH
-                  ELSEIF (DES_POS_NEW(2,L) - R_LM < YLENGTH) THEN
+                     YPOS(JJ) = DES_POS_NEW(LL,2) + YLENGTH
+                  ELSEIF (DES_POS_NEW(L,2) - R_LM < YLENGTH) THEN
                      JJ = 2
-                     YPOS(JJ) = DES_POS_NEW(2,LL) - YLENGTH
+                     YPOS(JJ) = DES_POS_NEW(LL,2) - YLENGTH
                   ENDIF
                ENDIF
                IF(DO_K) THEN
-                  ZPOS(:) = DES_POS_NEW(3,LL)
+                  ZPOS(:) = DES_POS_NEW(LL,3)
                   IF(DES_PERIODIC_WALLS_Z) THEN
-                     IF (DES_POS_NEW(3,L) + R_LM > ZLENGTH) THEN
+                     IF (DES_POS_NEW(L,3) + R_LM > ZLENGTH) THEN
                         KK = 2
-                        ZPOS(KK) = DES_POS_NEW(3,LL) + ZLENGTH
-                     ELSEIF (DES_POS_NEW(3,L) - R_LM < ZERO) THEN
+                        ZPOS(KK) = DES_POS_NEW(LL,3) + ZLENGTH
+                     ELSEIF (DES_POS_NEW(L,3) - R_LM < ZERO) THEN
                         KK = 2
-                        ZPOS(KK) = DES_POS_NEW(3,LL) - ZLENGTH
+                        ZPOS(KK) = DES_POS_NEW(LL,3) - ZLENGTH
                      ENDIF
                   ENDIF
                ENDIF
@@ -106,12 +106,12 @@
                      IF (DO_K) THEN
                         DO K = 1,KK
                            TMPPOS(3) = ZPOS(K)
-                           DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(:,L)
+                           DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(L,:)
                            DIST = dot_product(DISTVEC,DISTVEC)
                            IF (DIST.LE.R_LM) EXIT OUTER
                         ENDDO
                      ELSE
-                        DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(:,L)
+                        DISTVEC(:) = TMPPOS(:) - DES_POS_NEW(L,:)
                         DIST = dot_product(DISTVEC,DISTVEC)
                         IF (DIST.LE.R_LM) EXIT OUTER
                      ENDIF
@@ -119,7 +119,7 @@
                ENDDO OUTER
 
             ELSE   ! if .not.des_periodic_walls
-               DISTVEC(:) = DES_POS_NEW(:,LL) - DES_POS_NEW(:,L)
+               DISTVEC(:) = DES_POS_NEW(LL,:) - DES_POS_NEW(L,:)
                DIST = dot_product(DISTVEC,DISTVEC)
             ENDIF    ! endif des_periodic_walls
 ! ------------------------------

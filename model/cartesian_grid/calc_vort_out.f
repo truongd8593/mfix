@@ -313,7 +313,7 @@
 !  using Bairstow method
 !======================================================================
 
-            CALL BAIRSTOW(POLY,LAMBDA_1,LAMBDA_2,LAMBDA_3)
+            CALL BAIRSTOW(LAMBDA_3,POLY,LAMBDA_1,LAMBDA_2)
 
             LAMBDA2(IJK) = LAMBDA_2
 
@@ -341,7 +341,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE BAIRSTOW(A,X1,X2,X3)
+      SUBROUTINE BAIRSTOW(X3,A,X1,X2)
       USE param1
 
       IMPLICIT NONE

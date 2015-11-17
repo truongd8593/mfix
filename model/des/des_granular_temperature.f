@@ -74,12 +74,12 @@
          NP_PHASE(IJK,M) = NP_PHASE(IJK,M) + 1
 
          TEMP(IJK,M) = TEMP(IJK,M) + &
-            (DES_VEL_NEW(1,LL)-DES_U_s(IJK,M))**2
+            (DES_VEL_NEW(LL,1)-DES_U_s(IJK,M))**2
          TEMP(IJK,M) = TEMP(IJK,M) + &
-            (DES_VEL_NEW(2,LL)-DES_V_s(IJK,M))**2
+            (DES_VEL_NEW(LL,2)-DES_V_s(IJK,M))**2
          IF(DO_K) THEN
             TEMP(IJK,M) = TEMP(IJK,M) + &
-               (DES_VEL_NEW(3,LL)-DES_W_s(IJK,M))**2
+               (DES_VEL_NEW(LL,3)-DES_W_s(IJK,M))**2
          ENDIF
 
          IF(PC .EQ. PIP) EXIT
@@ -123,11 +123,11 @@
          SQR_VEL = ZERO
          SQR_ROT_VEL = ZERO
          DO I = 1, DIMN
-            SQR_VEL = SQR_VEL + DES_VEL_NEW(I,LL)**2
+            SQR_VEL = SQR_VEL + DES_VEL_NEW(LL,I)**2
          ENDDO
 
          DO I = 1, merge(1,3,NO_K)
-            SQR_ROT_VEL = SQR_ROT_VEL + OMEGA_NEW(I,LL)**2
+            SQR_ROT_VEL = SQR_ROT_VEL + OMEGA_NEW(LL,I)**2
          ENDDO
 
 
@@ -136,8 +136,8 @@
          DES_ROTE = DES_ROTE +                                         &
             (0.4D0*PMASS(LL)*DES_RADIUS(LL)**2)/2.d0 * SQR_ROT_VEL
          DES_PE = DES_PE + PMASS(LL)*DBLE(ABS(GRAV(2)))*&
-            DES_POS_NEW(2,LL)
-         DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(:,LL)
+            DES_POS_NEW(LL,2)
+         DES_VEL_AVG(:) =  DES_VEL_AVG(:) + DES_VEL_NEW(LL,:)
 
          IF(PC .EQ. PIP) EXIT
       ENDDO
@@ -165,9 +165,9 @@
          IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
          GLOBAL_GRAN_ENERGY(:) = GLOBAL_GRAN_ENERGY(:) + &
-            0.5d0*PMASS(LL)*(DES_VEL_NEW(:,LL)-DES_VEL_AVG(:))**2
+            0.5d0*PMASS(LL)*(DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
          GLOBAL_GRAN_TEMP(:) = GLOBAL_GRAN_TEMP(:) + &
-            (DES_VEL_NEW(:,LL)-DES_VEL_AVG(:))**2
+            (DES_VEL_NEW(LL,:)-DES_VEL_AVG(:))**2
 
          IF(PC .EQ. PIP) EXIT
       ENDDO
@@ -261,7 +261,7 @@
          IF(IS_GHOST(L) .OR. IS_ENTERING_GHOST(L) .OR. IS_EXITING_GHOST(L)) CYCLE
 
          M = PIJK(L,5)
-         hpart = DES_POS_NEW(2,L)
+         hpart = DES_POS_NEW(L,2)
          tmp_num(M) = tmp_num(M) + hpart
          tmp_den(M) = tmp_den(M) + 1
          IF(PC .EQ. PIP) EXIT

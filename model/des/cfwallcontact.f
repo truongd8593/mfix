@@ -50,9 +50,9 @@
       LZB = SZ1
 
 ! assign temporary local variables for manipulation/use
-      XPOS = DES_POS_NEW(1,L)
-      YPOS = DES_POS_NEW(2,L)
-      IF(DO_K) ZPOS = DES_POS_NEW(3,L)
+      XPOS = DES_POS_NEW(L,1)
+      YPOS = DES_POS_NEW(L,2)
+      IF(DO_K) ZPOS = DES_POS_NEW(L,3)
 
 
 ! initialize

@@ -117,11 +117,11 @@
          SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOL_WT
 ! Accumulate total solids momenum-ish (by phase)
          DES_U_S(IJK,M) = DES_U_S(IJK,M) +                             &
-            DES_VEL_NEW(1,NP)*VOL_WT
+            DES_VEL_NEW(NP,1)*VOL_WT
          DES_V_S(IJK,M) = DES_V_S(IJK,M) +                             &
-            DES_VEL_NEW(2,NP)*VOL_WT
+            DES_VEL_NEW(NP,2)*VOL_WT
          IF(DO_K) DES_W_S(IJK,M) = DES_W_S(IJK,M) +                    &
-            DES_VEL_NEW(3,NP)*VOL_WT
+            DES_VEL_NEW(NP,3)*VOL_WT
       ENDDO
 
 ! Calculate the cell average solids velocity, the bulk density,

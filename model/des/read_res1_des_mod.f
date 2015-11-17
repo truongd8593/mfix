@@ -256,7 +256,7 @@
 ! All process read positions for distributed IO restarts.
       IF(bDIST_IO) THEN
          DO LC1 = 1, lDIMN
-            CALL READ_RES_DES(lNEXT_REC, DES_POS_NEW(LC1,:))
+            CALL READ_RES_DES(lNEXT_REC, DES_POS_NEW(:,LC1))
          ENDDO
          RETURN
       ENDIF
@@ -521,7 +521,7 @@
 ! Unpack the particle data.
       DO LC1 = 1, PIP
          lBuf = (LC1-1)*lDIMN+1
-         DES_POS_NEW(1:lDIMN,LC1) = dProcBuf(lBuf:lBuf+lDIMN-1)
+         DES_POS_NEW(LC1,1:lDIMN) = dProcBuf(lBuf:lBuf+lDIMN-1)
          lBuf = lBuf + lDIMN
          CALL SET_NORMAL(LC1)
       ENDDO

@@ -55,7 +55,7 @@
 
       DO NP=ANGLE_START, ANGLE_END
 ! Calculate the rebound angle.
-         RBND_ANGLE = atan(DES_VEL_NEW(1,NP)/DES_VEL_NEW(2,NP))*180.0/PI
+         RBND_ANGLE = atan(DES_VEL_NEW(NP,1)/DES_VEL_NEW(NP,2))*180.0/PI
 ! Calculate the absolute relative error.
          rErr = (ABS(EXP_ANGLE(NP) - RBND_ANGLE)/                      &
             ABS(EXP_ANGLE(NP)))*100
@@ -81,11 +81,11 @@
 
       DO NP=AVEL_START, AVEL_END
 ! Calculate the absolute relative error.
-         rErr = (ABS(EXP_OMEGA(NP) - OMEGA_NEW(3,NP)) /                &
+         rErr = (ABS(EXP_OMEGA(NP) - OMEGA_NEW(NP,3)) /                &
             ABS(EXP_OMEGA(NP)))*100
 ! Write the results to a file.
          WRITE(UDF_UNIT,"(4(3x,F11.4))") INIT_ANGLE(NP),               &
-            EXP_OMEGA(NP), OMEGA_NEW(3,NP), rErr
+            EXP_OMEGA(NP), OMEGA_NEW(NP,3), rErr
       ENDDO
       CLOSE(UDF_UNIT)
 
@@ -105,7 +105,7 @@
 
       DO NP=COEFF_START, COEFF_END
 ! Calculate the restitution coefficient.
-         RST_COEFF = DES_VEL_new(1,NP)/INIT_VEL_T(NP)
+         RST_COEFF = DES_VEL_new(NP,1)/INIT_VEL_T(NP)
 ! Calculate the absolute relative error.
          rErr = abs(EXP_COEFF(NP)-RST_COEFF)/abs(EXP_COEFF(NP))*100
 ! Write the results to a file.

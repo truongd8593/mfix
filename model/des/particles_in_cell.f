@@ -71,40 +71,40 @@
 
          I = PIJK(L,1)
          IF(I <= ISTART3 .OR. I >= IEND3) THEN
-            CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                   &
+            CALL PIC_SEARCH(I, DES_POS_NEW(L,1), XE,                   &
                DIMENSION_I, IMIN2, IMAX2)
          ELSE
-            IF((DES_POS_NEW(1,L) >= XE(I-1)) .AND.                     &
-               (DES_POS_NEW(1,L) <  XE(I))) THEN
+            IF((DES_POS_NEW(L,1) >= XE(I-1)) .AND.                     &
+               (DES_POS_NEW(L,1) <  XE(I))) THEN
                I = I
-            ELSEIF((DES_POS_NEW(1,L) >= XE(I)) .AND.                   &
-               (DES_POS_NEW(1,L) < XE(I+1))) THEN
+            ELSEIF((DES_POS_NEW(L,1) >= XE(I)) .AND.                   &
+               (DES_POS_NEW(L,1) < XE(I+1))) THEN
               I = I+1
-            ELSEIF((DES_POS_NEW(1,L) >= XE(I-2)) .AND.                 &
-               (DES_POS_NEW(1,L) < XE(I-1))) THEN
+            ELSEIF((DES_POS_NEW(L,1) >= XE(I-2)) .AND.                 &
+               (DES_POS_NEW(L,1) < XE(I-1))) THEN
                I = I-1
             ELSE
-               CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                &
+               CALL PIC_SEARCH(I, DES_POS_NEW(L,1), XE,                &
                   DIMENSION_I, IMIN2, IMAX2)
             ENDIF
          ENDIF
 
          J = PIJK(L,2)
          IF(J <= JSTART3 .OR. J >= JEND3) THEN
-            CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                   &
+            CALL PIC_SEARCH(J, DES_POS_NEW(L,2), YN,                   &
                DIMENSION_J, JMIN2, JMAX2)
          ELSE
-            IF((DES_POS_NEW(2,L) >= YN(J-1)) .AND.                     &
-               (DES_POS_NEW(2,L) < YN(J))) THEN
+            IF((DES_POS_NEW(L,2) >= YN(J-1)) .AND.                     &
+               (DES_POS_NEW(L,2) < YN(J))) THEN
                J = J
-            ELSEIF((DES_POS_NEW(2,L) >= YN(J)) .AND.                   &
-               (DES_POS_NEW(2,L) < YN(J+1))) THEN
+            ELSEIF((DES_POS_NEW(L,2) >= YN(J)) .AND.                   &
+               (DES_POS_NEW(L,2) < YN(J+1))) THEN
                J = J+1
-            ELSEIF((DES_POS_NEW(2,L) >= YN(J-2)) .AND.                 &
-               (DES_POS_NEW(2,L) < YN(J-1)))THEN
+            ELSEIF((DES_POS_NEW(L,2) >= YN(J-2)) .AND.                 &
+               (DES_POS_NEW(L,2) < YN(J-1)))THEN
                J = J-1
             ELSE
-               CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                &
+               CALL PIC_SEARCH(J, DES_POS_NEW(L,2), YN,                &
                   DIMENSION_J, JMIN2, JMAX2)
             ENDIF
          ENDIF
@@ -115,20 +115,20 @@
          ELSE
             K = PIJK(L,3)
             IF(K <= KSTART3 .OR. K >= KEND3) THEN
-               CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                &
+               CALL PIC_SEARCH(K, DES_POS_NEW(L,3), ZT,                &
                   DIMENSION_K, KMIN2, KMAX2)
             ELSE
-               IF((DES_POS_NEW(3,L) >= ZT(K-1)) .AND.                  &
-                  (DES_POS_NEW(3,L) < ZT(K))) THEN
+               IF((DES_POS_NEW(L,3) >= ZT(K-1)) .AND.                  &
+                  (DES_POS_NEW(L,3) < ZT(K))) THEN
                   K = K
-                ELSEIF((DES_POS_NEW(3,L) >= ZT(K)) .AND.               &
-                  (DES_POS_NEW(3,L) < ZT(K+1))) THEN
+                ELSEIF((DES_POS_NEW(L,3) >= ZT(K)) .AND.               &
+                  (DES_POS_NEW(L,3) < ZT(K+1))) THEN
                   K = K+1
-               ELSEIF((DES_POS_NEW(3,L) >= ZT(K-2)) .AND.              &
-                  (DES_POS_NEW(3,L) < ZT(K-1))) THEN
+               ELSEIF((DES_POS_NEW(L,3) >= ZT(K-2)) .AND.              &
+                  (DES_POS_NEW(L,3) < ZT(K-1))) THEN
                   K = K-1
                ELSE
-                  CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,             &
+                  CALL PIC_SEARCH(K, DES_POS_NEW(L,3), ZT,             &
                      DIMENSION_K, KMIN2, KMAX2)
                ENDIF
             ENDIF
@@ -259,11 +259,11 @@
 ! Use a brute force technique to determine the particle locations in
 ! the Eulerian fluid grid.
 
-         CALL PIC_SEARCH(I, DES_POS_NEW(1,L), XE,                      &
+         CALL PIC_SEARCH(I, DES_POS_NEW(L,1), XE,                      &
             DIMENSION_I, IMIN2, IMAX2)
          PIJK(L,1) = I
 
-         CALL PIC_SEARCH(J, DES_POS_NEW(2,L), YN,                      &
+         CALL PIC_SEARCH(J, DES_POS_NEW(L,2), YN,                      &
             DIMENSION_J, JMIN2, JMAX2)
          PIJK(L,2) = J
 
@@ -271,7 +271,7 @@
             K=1
             PIJK(L,3) = 1
          ELSE
-            CALL PIC_SEARCH(K, DES_POS_NEW(3,L), ZT,                   &
+            CALL PIC_SEARCH(K, DES_POS_NEW(L,3), ZT,                   &
                DIMENSION_K, KMIN2, KMAX2)
             PIJK(L,3) = K
          ENDIF

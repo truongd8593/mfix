@@ -51,13 +51,13 @@
 
 ! Calculate the particle-wall rebound angle.
          NP = LC+31
-         VEL_XZ(1) = sqrt(DES_VEL_NEW(1,NP)**2 + DES_VEL_NEW(3,NP)**2)
-         RBND_ANGLE(1) = atan(VEL_XZ(1)/DES_VEL_NEW(2,NP))*180.0/PI
+         VEL_XZ(1) = sqrt(DES_VEL_NEW(NP,1)**2 + DES_VEL_NEW(NP,3)**2)
+         RBND_ANGLE(1) = atan(VEL_XZ(1)/DES_VEL_NEW(NP,2))*180.0/PI
 
 ! Calculate the particle-wall rebound angle.
          NP = LC
-         VEL_XZ(2) = sqrt(DES_VEL_NEW(1,NP)**2 + DES_VEL_NEW(3,NP)**2)
-         RBND_ANGLE(2) = atan(VEL_XZ(2)/DES_VEL_NEW(2,NP))*180.0/PI
+         VEL_XZ(2) = sqrt(DES_VEL_NEW(NP,1)**2 + DES_VEL_NEW(NP,3)**2)
+         RBND_ANGLE(2) = atan(VEL_XZ(2)/DES_VEL_NEW(NP,2))*180.0/PI
 
 ! Write the results to a file.
          WRITE(UDF_UNIT,"(3(3x,F11.4))") INIT_ANGLE(NP), RBND_ANGLE(1:2)
@@ -76,11 +76,11 @@
 
 ! Calculate particle-particle angular velocity
          NP=LC+31
-         ROT_XZ(1) = sqrt(OMEGA_NEW(1,NP)**2 + OMEGA_NEW(3,NP)**2)
+         ROT_XZ(1) = sqrt(OMEGA_NEW(NP,1)**2 + OMEGA_NEW(NP,3)**2)
 
 ! Calculate particle-wall angular velocity
          NP=LC
-         ROT_XZ(2) = sqrt(OMEGA_NEW(1,NP)**2 + OMEGA_NEW(3,NP)**2)
+         ROT_XZ(2) = sqrt(OMEGA_NEW(NP,1)**2 + OMEGA_NEW(NP,3)**2)
 
 ! Write the results to a file.
          WRITE(UDF_UNIT,"(3(3x,F11.4))") INIT_ANGLE(NP), ROT_XZ(1:2)
@@ -97,11 +97,11 @@
       DO LC=2, 31
 ! Calculate the particle-wall restitution coefficient.
          NP=LC+31
-         VEL_XZ(1) = sqrt(DES_VEL_NEW(1,NP)**2 + DES_VEL_NEW(3,NP)**2)
+         VEL_XZ(1) = sqrt(DES_VEL_NEW(NP,1)**2 + DES_VEL_NEW(NP,3)**2)
          RST_COEFF(1) =  VEL_XZ(1)/INIT_VEL_T(NP)
 ! Calculate the particle-wall restitution coefficient.
          NP=LC
-         VEL_XZ(2) = sqrt(DES_VEL_NEW(1,NP)**2 + DES_VEL_NEW(3,NP)**2)
+         VEL_XZ(2) = sqrt(DES_VEL_NEW(NP,1)**2 + DES_VEL_NEW(NP,3)**2)
          RST_COEFF(2) =  VEL_XZ(2)/INIT_VEL_T(NP)
 ! Write the results to a file.
          WRITE(UDF_UNIT,"(3(3x,F11.4))") INIT_ANGLE(NP), RST_COEFF(1:2)
