@@ -37,11 +37,10 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: L
-      DOUBLE PRECISION :: DD(3), NEIGHBOR_SEARCH_DIST
+      DOUBLE PRECISION :: NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
 !-----------------------------------------------
-
 
 ! Adams-Bashforth defaults to Euler for the first time step.
       IF(FIRST_PASS .AND. INTG_ADAMS_BASHFORTH) THEN
@@ -54,49 +53,56 @@
          ENDDO
       ENDIF
 
-!$omp parallel do if(max_pip .ge. 10000) default(none)                    &
+!$omp parallel default(none)                    &
 !$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,              &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
-!$omp       particle_orientation, orientation) &
-!$omp private(l,dd,neighbor_search_dist,rot_angle,omega_mag,omega_unit)   &
-!$omp reduction(.or.:do_nsearch) schedule (auto)
-
-      DO L = 1, MAX_PIP
-! only process particles that exist
-         IF(IS_NONEXISTENT(L)) CYCLE
-! skip ghost particles
-         IF(IS_GHOST(L).or.IS_ENTERING_GHOST(L).or.IS_EXITING_GHOST(L)) CYCLE
+!$omp       particle_orientation, orientation,do_nsearch,particle_state) &
+!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit)
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
 ! des_check_new_particle.f
-         IF(.NOT.IS_ENTERING(L) .AND. .NOT.IS_ENTERING_GHOST(L))THEN
-            FC(:,L) = FC(:,L)/PMASS(L) + GRAV(:)
-         ELSE
-            FC(:,L) = ZERO
-            TOW(:,L) = ZERO
-         ENDIF
 
 ! Advance particle position, velocity
         IF (INTG_EULER) THEN
 ! first-order method
-            DES_VEL_NEW(:,L) = DES_VEL_NEW(:,L) + FC(:,L)*DTSOLID
-            DD(:) = DES_VEL_NEW(:,L)*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_NEW(:,L) + DD(:)
-            OMEGA_NEW(:,L)   = OMEGA_NEW(:,L) + TOW(:,L)*OMOI(L)*DTSOLID
+!$omp sections
+           DES_VEL_NEW(1,:) = DES_VEL_NEW(1,:) + DTSOLID*merge(FC(1,:)/PMASS(:) + GRAV(1),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(1,:) = DES_POS_NEW(1,:) + DES_VEL_NEW(1,:)*DTSOLID
+            FC(1,:) = ZERO
+
+!$omp section
+            DES_VEL_NEW(2,:) = DES_VEL_NEW(2,:) + DTSOLID*merge(FC(2,:)/PMASS(:) + GRAV(2),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(2,:) = DES_POS_NEW(2,:) + DES_VEL_NEW(2,:)*DTSOLID
+            FC(2,:) = ZERO
+
+!$omp section
+            DES_VEL_NEW(3,:) = DES_VEL_NEW(3,:) + DTSOLID*merge(FC(3,:)/PMASS(:) + GRAV(3),ZERO,(PARTICLE_STATE(:).ne.ENTERING_PARTICLE))
+            DES_POS_NEW(3,:) = DES_POS_NEW(3,:) + DES_VEL_NEW(3,:)*DTSOLID
+            FC(3,:) = ZERO
+
+!$omp section
+            OMEGA_NEW(1,:)   = OMEGA_NEW(1,:) + TOW(1,:)*OMOI(1)*DTSOLID
+            TOW(1,:) = ZERO
+!$omp section
+            OMEGA_NEW(2,:)   = OMEGA_NEW(2,:) + TOW(2,:)*OMOI(2)*DTSOLID
+            TOW(2,:) = ZERO
+!$omp section
+            OMEGA_NEW(3,:)   = OMEGA_NEW(3,:) + TOW(3,:)*OMOI(3)*DTSOLID
+            TOW(3,:) = ZERO
+!$omp end sections
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
-            DES_VEL_NEW(:,L) = DES_VEL_OLD(:,L) + 0.5d0*&
-               ( 3.d0*FC(:,L)-DES_ACC_OLD(:,L) )*DTSOLID
-            OMEGA_NEW(:,L)   =  OMEGA_OLD(:,L) + 0.5d0*&
-               ( 3.d0*TOW(:,L)*OMOI(L)-ROT_ACC_OLD(:,L) )*DTSOLID
-            DD(:) = 0.5d0*( DES_VEL_OLD(:,L)+DES_VEL_NEW(:,L) )*DTSOLID
-            DES_POS_NEW(:,L) = DES_POS_OLD(:,L) + DD(:)
-            DES_ACC_OLD(:,L) = FC(:,L)
-            ROT_ACC_OLD(:,L) = TOW(:,L)*OMOI(L)
+            DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:) + 0.5d0*( 3.d0*FC(:,:)-DES_ACC_OLD(:,:) )*DTSOLID
+            OMEGA_NEW(1,:)   =  OMEGA_OLD(1,:) + 0.5d0*( 3.d0*TOW(1,:)*OMOI(1)-ROT_ACC_OLD(1,:) )*DTSOLID
+            OMEGA_NEW(2,:)   =  OMEGA_OLD(2,:) + 0.5d0*( 3.d0*TOW(2,:)*OMOI(2)-ROT_ACC_OLD(2,:) )*DTSOLID
+            OMEGA_NEW(3,:)   =  OMEGA_OLD(3,:) + 0.5d0*( 3.d0*TOW(3,:)*OMOI(3)-ROT_ACC_OLD(3,:) )*DTSOLID
+            DES_POS_NEW(:,:) = DES_POS_OLD(:,:) + 0.5d0*( DES_VEL_OLD(:,:)+DES_VEL_NEW(:,:) )*DTSOLID
+            DES_ACC_OLD(:,:) = FC(:,:)
+            ROT_ACC_OLD(:,:) = TOW(:,:)*OMOI(L)
          ENDIF
 
 ! Update particle orientation - Always first order
@@ -104,6 +110,7 @@
 ! Rodrigues' rotation formula
 
          IF(PARTICLE_ORIENTATION) THEN
+            DO L = 1, MAX_PIP
             OMEGA_MAG = OMEGA_NEW(1,L)**2 +OMEGA_NEW(2,L)**2 + OMEGA_NEW(3,L)**2
 
             IF(OMEGA_MAG>ZERO) THEN
@@ -115,41 +122,19 @@
                                  + DES_CROSSPRDCT(OMEGA_UNIT,ORIENTATION(:,L))*DSIN(ROT_ANGLE) &
                                  + OMEGA_UNIT(:)*DOT_PRODUCT(OMEGA_UNIT,ORIENTATION(:,L))*(ONE-DCOS(ROT_ANGLE))
             ENDIF
-         ENDIF
-
-! Check if the particle has moved a distance greater than or equal to
-! its radius during one solids time step. if so, call stop
-         IF(dot_product(DD,DD).GE.DES_RADIUS(L)**2) THEN
-            WRITE(*,1002) iGlobal_ID(L), sqrt(dot_product(DD,DD)), DES_RADIUS(L)
-            IF (DO_OLD) WRITE(*,'(5X,A,3(ES17.9))') &
-               'old particle pos = ', DES_POS_OLD(:,L)
-            WRITE(*,'(5X,A,3(ES17.9))') &
-               'new particle pos = ', DES_POS_NEW(:,L)
-            WRITE(*,'(5X,A,3(ES17.9))')&
-               'new particle vel = ', DES_VEL_NEW(:,L)
-            WRITE(*,1003)
-            STOP 1
+            enddo
          ENDIF
 
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius since the last time a neighbor search was called. if so,
 ! make sure that neighbor is called in des_time_march
          IF(.NOT.DO_NSEARCH) THEN
-            DD(:) = DES_POS_NEW(:,L) - PPOS(:,L)
-            NEIGHBOR_SEARCH_DIST = NEIGHBOR_SEARCH_RAD_RATIO*&
-               DES_RADIUS(L)
-            IF(dot_product(DD,DD).GE.NEIGHBOR_SEARCH_DIST**2) DO_NSEARCH = .TRUE.
+            do_nsearch = any((DES_POS_NEW(1,:) - PPOS(1,:))**2+(DES_POS_NEW(2,:) - PPOS(2,:))**2+(DES_POS_NEW(3,:) - PPOS(3,:))**2.GE.(NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(:))**2)
          ENDIF
 
-! Reset total contact force and torque
-         FC(:,L) = ZERO
-         TOW(:,L) = ZERO
-
-      ENDDO
-!$omp end parallel do
+!$omp end parallel
 
       FIRST_PASS = .FALSE.
-
 
  1002 FORMAT(/1X,70('*')//&
          ' From: CFNEWVALUES -',/&
