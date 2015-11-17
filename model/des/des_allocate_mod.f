@@ -98,18 +98,18 @@ CONTAINS
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_NEW (DIMN,MAX_PIP) )
-      Allocate(  DES_VEL_NEW (DIMN,MAX_PIP) )
-      Allocate(  OMEGA_NEW (DIMN,MAX_PIP) )
+      Allocate(  DES_POS_NEW (MAX_PIP,DIMN) )
+      Allocate(  DES_VEL_NEW (MAX_PIP,DIMN) )
+      Allocate(  OMEGA_NEW (MAX_PIP,DIMN) )
 
       IF(PARTICLE_ORIENTATION) Allocate(  ORIENTATION (DIMN,MAX_PIP) )
 
       IF (DO_OLD) THEN
-         Allocate(  DES_POS_OLD (DIMN,MAX_PIP) )
-         Allocate(  DES_VEL_OLD (DIMN,MAX_PIP) )
-         Allocate(  DES_ACC_OLD (DIMN,MAX_PIP) )
-         Allocate(  OMEGA_OLD (DIMN,MAX_PIP) )
-         Allocate(  ROT_ACC_OLD (DIMN,MAX_PIP))
+         Allocate(  DES_POS_OLD (MAX_PIP,DIMN) )
+         Allocate(  DES_VEL_OLD (MAX_PIP,DIMN) )
+         Allocate(  DES_ACC_OLD (MAX_PIP,DIMN) )
+         Allocate(  OMEGA_OLD (MAX_PIP,DIMN) )
+         Allocate(  ROT_ACC_OLD (MAX_PIP,DIMN))
       ENDIF
 
 ! Allocating user defined array
@@ -117,13 +117,13 @@ CONTAINS
          Allocate( DES_USR_VAR(DES_USR_VAR_SIZE,MAX_PIP) )
 
 ! Particle positions at the last call neighbor search algorithm call
-      Allocate(  PPOS (DIMN,MAX_PIP) )
+      Allocate(  PPOS (MAX_PIP,DIMN) )
 
 ! Total, normal and tangetial forces
-      Allocate(  FC (DIMN,MAX_PIP) )
+      Allocate(  FC (MAX_PIP,DIMN) )
 
 ! Torque
-      Allocate(  TOW (DIMN,MAX_PIP) )
+      Allocate(  TOW (MAX_PIP,DIMN) )
 
 
 ! allocate variable for des grid binning
@@ -172,7 +172,7 @@ CONTAINS
       F_gp(1:MAX_PIP)  = ZERO
 
 ! Explicit drag force acting on a particle.
-      Allocate(DRAG_FC (DIMN,MAX_PIP) )
+      Allocate(DRAG_FC (MAX_PIP,DIMN) )
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
@@ -518,22 +518,22 @@ CONTAINS
            call real_grow(PVOL,MAX_PIP)
            call real_grow(PMASS,MAX_PIP)
            call real_grow(OMOI,MAX_PIP)
-           call real_grow2(DES_POS_NEW,MAX_PIP)
-           call real_grow2(DES_VEL_NEW,MAX_PIP)
-           call real_grow2(OMEGA_NEW,MAX_PIP)
-           call real_grow2(PPOS,MAX_PIP)
+           call real_grow2_reverse(DES_POS_NEW,MAX_PIP)
+           call real_grow2_reverse(DES_VEL_NEW,MAX_PIP)
+           call real_grow2_reverse(OMEGA_NEW,MAX_PIP)
+           call real_grow2_reverse(PPOS,MAX_PIP)
            call byte_grow(PARTICLE_STATE,MAX_PIP)
            call integer_grow(iglobal_id,MAX_PIP)
            call integer_grow2_reverse(pijk,MAX_PIP)
            call integer_grow(dg_pijk,MAX_PIP)
            call integer_grow(dg_pijkprv,MAX_PIP)
            call logical_grow(ighost_updated,MAX_PIP)
-           call real_grow2(FC,MAX_PIP)
-           call real_grow2(TOW,MAX_PIP)
+           call real_grow2_reverse(FC,MAX_PIP)
+           call real_grow2_reverse(TOW,MAX_PIP)
            call real_grow(F_GP,MAX_PIP)
            call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
            call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
-           call real_grow2(DRAG_FC,MAX_PIP)
+           call real_grow2_reverse(DRAG_FC,MAX_PIP)
 
            call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
            call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)

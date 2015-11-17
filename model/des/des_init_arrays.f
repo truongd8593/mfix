@@ -106,7 +106,7 @@
       PMASS(LB:UB) = ZERO
       OMOI(LB:UB) = ZERO
 
-! Particle position, velocity, etc
+      ! Particle position, velocity, etc
       DES_POS_NEW(LB:UB,:) = ZERO
       DES_VEL_NEW(LB:UB,:) = ZERO
       OMEGA_NEW(LB:UB,:) = ZERO
@@ -146,7 +146,6 @@
       F_GP(LB:UB) = ZERO
       DRAG_FC(LB:UB,:) = ZERO
 
-
 ! Interpolation variables.
       IF(FILTER_SIZE > 0)THEN
          FILTER_CELL(:,LB:UB) = -1
@@ -163,10 +162,10 @@
 
 ! Higher order time integration variables.
       IF (DO_OLD) THEN
-         DES_POS_OLD(LB:UB,:) = ZERO
-         DES_VEL_OLD(LB:UB,:) = ZERO
-         DES_ACC_OLD(LB:UB,:) = ZERO
-         OMEGA_OLD(LB:UB,:) = ZERO
+         DES_POS_OLD(:,LB:UB) = ZERO
+         DES_VEL_OLD(:,LB:UB) = ZERO
+         DES_ACC_OLD(:,LB:UB) = ZERO
+         OMEGA_OLD(:,LB:UB) = ZERO
          ROT_ACC_OLD(:,LB:UB) = ZERO
       ENDIF
 
