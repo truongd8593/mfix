@@ -966,8 +966,8 @@
 
          ENDIF
 
-         LB = LBOUND(DES_POS_NEW,1) ! This should always be 1
-         UB = UBOUND(DES_POS_NEW,1) ! This should always be 2
+         LB = LBOUND(DES_POS_NEW,2) ! This should always be 1
+         UB = UBOUND(DES_POS_NEW,2) ! This should always be 2
 
          ALLOCATE (dProcBuf(LOCAL_CNT) )
          ALLOCATE (dRootBuf(GLOBAL_CNT))
@@ -1079,8 +1079,8 @@
 ! Number of bytes for X,Y,Z coordinates
             WRITE(VTU_UNIT) nbytes_vector
 
-            LB = LBOUND(DES_POS_NEW,1) ! This should always be 1
-            UB = UBOUND(DES_POS_NEW,1) ! This should always be 2
+            LB = LBOUND(DES_POS_NEW,2) ! This should always be 1
+            UB = UBOUND(DES_POS_NEW,2) ! This should always be 2
 
             ALLOCATE (ltemp_array((UB-LB)+1,LOCAL_CNT))
 
@@ -1326,8 +1326,8 @@
 
          ELSEIF(PASS==WRITE_DATA) THEN
 
-            LB = LBOUND(VAR,1) ! This should always be 1
-            UB = UBOUND(VAR,1) ! This should always be 2
+            LB = LBOUND(VAR,2) ! This should always be 1
+            UB = UBOUND(VAR,2) ! This should always be 2
 
             ALLOCATE (dProcBuf(LOCAL_CNT) )
             ALLOCATE (dRootBuf(GLOBAL_CNT))
@@ -1340,7 +1340,7 @@
                IF(BELONGS_TO_VTK_SUBDOMAIN(LC1)) THEN
                   PC =PC + 1
                   DO LC2=LB, UB
-                     ltemp_array(LC2,PC) = VAR(LC2,LC1)
+                     ltemp_array(LC2,PC) = VAR(LC1,LC2)
                   ENDDO
                ENDIF
                IF(PC==LOCAL_CNT) EXIT
