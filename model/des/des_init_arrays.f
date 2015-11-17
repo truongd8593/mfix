@@ -102,8 +102,8 @@
 ! Physical properties:
       DES_RADIUS(LB:UB) = ZERO
       RO_Sol(LB:UB) = ZERO
-      PVOL(LB:UB) = ZERO
-      PMASS(LB:UB) = ZERO
+      PVOL(LB:UB) = HUGE(0.0)
+      PMASS(LB:UB) = HUGE(0.0)
       OMOI(LB:UB) = ZERO
 
       ! Particle position, velocity, etc

@@ -99,8 +99,8 @@
       INTEGER :: LB, UB
       INTEGER :: PC, LC1, LC2
 
-      LB = LBOUND(DATA,1)
-      UB = UBOUND(DATA,1)
+      LB = LBOUND(DATA,2)
+      UB = UBOUND(DATA,2)
       NOC=''; WRITE(NOC,*) (UB-LB)+1
 
       IF(bDist_IO) THEN
@@ -126,7 +126,7 @@
          allocate (ltemp_array((UB-LB)+1,GLOBAL_CNT))
 
          DO LC1 = LB, UB
-            CALL DES_GATHER(DATA(LC1,:))
+            CALL DES_GATHER(DATA(:,LC1))
             ltemp_array(LC1,:) = drootbuf(:)
          ENDDO
 
