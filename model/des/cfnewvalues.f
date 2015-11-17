@@ -84,25 +84,51 @@
             FC(3,:) = ZERO
 
 !$omp section
-            OMEGA_NEW(1,:)   = OMEGA_NEW(1,:) + TOW(1,:)*OMOI(1)*DTSOLID
+            OMEGA_NEW(1,:)   = OMEGA_NEW(1,:) + TOW(1,:)*OMOI(:)*DTSOLID
             TOW(1,:) = ZERO
 !$omp section
-            OMEGA_NEW(2,:)   = OMEGA_NEW(2,:) + TOW(2,:)*OMOI(2)*DTSOLID
+            OMEGA_NEW(2,:)   = OMEGA_NEW(2,:) + TOW(2,:)*OMOI(:)*DTSOLID
             TOW(2,:) = ZERO
 !$omp section
-            OMEGA_NEW(3,:)   = OMEGA_NEW(3,:) + TOW(3,:)*OMOI(3)*DTSOLID
+            OMEGA_NEW(3,:)   = OMEGA_NEW(3,:) + TOW(3,:)*OMOI(:)*DTSOLID
             TOW(3,:) = ZERO
 !$omp end sections
          ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
-            DES_VEL_NEW(:,:) = DES_VEL_OLD(:,:) + 0.5d0*( 3.d0*FC(:,:)-DES_ACC_OLD(:,:) )*DTSOLID
-            OMEGA_NEW(1,:)   =  OMEGA_OLD(1,:) + 0.5d0*( 3.d0*TOW(1,:)*OMOI(1)-ROT_ACC_OLD(1,:) )*DTSOLID
-            OMEGA_NEW(2,:)   =  OMEGA_OLD(2,:) + 0.5d0*( 3.d0*TOW(2,:)*OMOI(2)-ROT_ACC_OLD(2,:) )*DTSOLID
-            OMEGA_NEW(3,:)   =  OMEGA_OLD(3,:) + 0.5d0*( 3.d0*TOW(3,:)*OMOI(3)-ROT_ACC_OLD(3,:) )*DTSOLID
-            DES_POS_NEW(:,:) = DES_POS_OLD(:,:) + 0.5d0*( DES_VEL_OLD(:,:)+DES_VEL_NEW(:,:) )*DTSOLID
-            DES_ACC_OLD(:,:) = FC(:,:)
-            ROT_ACC_OLD(:,:) = TOW(:,:)*OMOI(L)
+!$omp sections
+            DES_VEL_NEW(1,:) = DES_VEL_OLD(1,:) + 0.5d0*( 3.d0*FC(1,:)-DES_ACC_OLD(1,:) )*DTSOLID
+            DES_POS_NEW(1,:) = DES_POS_OLD(1,:) + 0.5d0*( DES_VEL_OLD(1,:)+DES_VEL_NEW(1,:) )*DTSOLID
+            DES_ACC_OLD(1,:) = FC(1,:)
+            FC(1,:) = ZERO
+
+            !$omp section
+            DES_VEL_NEW(2,:) = DES_VEL_OLD(2,:) + 0.5d0*( 3.d0*FC(2,:)-DES_ACC_OLD(2,:) )*DTSOLID
+            DES_POS_NEW(2,:) = DES_POS_OLD(2,:) + 0.5d0*( DES_VEL_OLD(2,:)+DES_VEL_NEW(2,:) )*DTSOLID
+            DES_ACC_OLD(2,:) = FC(2,:)
+            FC(2,:) = ZERO
+
+            !$omp section
+            DES_VEL_NEW(3,:) = DES_VEL_OLD(3,:) + 0.5d0*( 3.d0*FC(3,:)-DES_ACC_OLD(3,:) )*DTSOLID
+            DES_POS_NEW(3,:) = DES_POS_OLD(3,:) + 0.5d0*( DES_VEL_OLD(3,:)+DES_VEL_NEW(3,:) )*DTSOLID
+            DES_ACC_OLD(3,:) = FC(3,:)
+            FC(3,:) = ZERO
+
+            !$omp section
+            OMEGA_NEW(1,:)   =  OMEGA_OLD(1,:) + 0.5d0*( 3.d0*TOW(1,:)*OMOI(:)-ROT_ACC_OLD(1,:) )*DTSOLID
+            ROT_ACC_OLD(1,:) = TOW(1,:)*OMOI(:)
+            TOW(1,:) = ZERO
+
+            !$omp section
+            OMEGA_NEW(2,:)   =  OMEGA_OLD(2,:) + 0.5d0*( 3.d0*TOW(2,:)*OMOI(:)-ROT_ACC_OLD(2,:) )*DTSOLID
+            ROT_ACC_OLD(2,:) = TOW(2,:)*OMOI(:)
+            TOW(2,:) = ZERO
+
+            !$omp section
+            OMEGA_NEW(3,:)   =  OMEGA_OLD(3,:) + 0.5d0*( 3.d0*TOW(3,:)*OMOI(:)-ROT_ACC_OLD(3,:) )*DTSOLID
+            ROT_ACC_OLD(3,:) = TOW(3,:)*OMOI(:)
+            TOW(3,:) = ZERO
+!$omp end sections
          ENDIF
 
 ! Update particle orientation - Always first order
