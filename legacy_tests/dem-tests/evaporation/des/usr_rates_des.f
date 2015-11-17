@@ -247,9 +247,9 @@
       VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
       WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
 ! Solids
-      USCM = DES_VEL_NEW(1,NP)
-      VSCM = DES_VEL_NEW(2,NP)
-      WSCM = DES_VEL_NEW(3,NP)
+      USCM = DES_VEL_NEW(NP,1)
+      VSCM = DES_VEL_NEW(NP,2)
+      WSCM = DES_VEL_NEW(NP,3)
 
 ! magnitude of gas-solids relative velocity
       VREL = SQRT((UGC - USCM)**2 + (VGC - VSCM)**2 + (WGC - WSCM)**2)
