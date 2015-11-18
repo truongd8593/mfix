@@ -90,7 +90,6 @@
       return
       END SUBROUTINE LEQ_BICGS
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: LEQ_BICGS0                                              C
@@ -172,11 +171,12 @@
 ! Local variables
 !-----------------------------------------------
 
-      DOUBLE PRECISION, DIMENSION(:), allocatable :: R,Rtilde, Svec, Shat, Tvec,V
+      DOUBLE PRECISION, DIMENSION(:), allocatable :: R,Rtilde, Tvec,V
       DOUBLE PRECISION, DIMENSION(:), allocatable, target :: P, P_preconditioned
+      DOUBLE PRECISION, DIMENSION(:), allocatable, target :: Svec, Svec_preconditioned
 
       ! Phat points to either preconditioned value of P, or P itself (to avoid copying for efficiency)
-      DOUBLE PRECISION, POINTER :: Phat(:)
+      DOUBLE PRECISION, POINTER :: Phat(:), Shat(:)
 
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: &
                         alpha, beta, omega, rho
@@ -194,7 +194,7 @@
       allocate(P(DIMENSION_3))
       allocate(P_preconditioned(DIMENSION_3))
       allocate(Svec(DIMENSION_3))
-      allocate(Shat(DIMENSION_3))
+      allocate(Svec_preconditioned(DIMENSION_3))
       allocate(Tvec(DIMENSION_3))
       allocate(V(DIMENSION_3))
 
@@ -223,7 +223,7 @@
 !$omp section
       Svec(:) = zero
 !$omp section
-      Shat(:) = zero
+      Svec_preconditioned(:) = zero
 !$omp section
       Tvec(:) = zero
 !$omp section
@@ -348,7 +348,7 @@
 ! V(:) = A*Phat(:)
 ! --------------------------------
          if (USE_PC) then
-            call MSOLVE(Vname, P, A_m, P_preconditioned, CMETHOD) ! returns Phat
+            call MSOLVE(Vname, P, A_m, P_preconditioned, CMETHOD) ! returns P_preconditioned
             Phat => P_preconditioned
          else
             Phat => P
@@ -416,7 +416,14 @@
 ! Solve A*Shat(:) = Svec(:)
 ! Tvec(:) = A*Shat(:)
 ! --------------------------------
-         call MSOLVE( Vname, Svec, A_m, Shat, CMETHOD)  ! returns Shat
+
+         if (USE_PC) then
+            call MSOLVE(Vname, Svec, A_m, Svec_preconditioned, CMETHOD) ! returns S_preconditioned
+            Shat => Svec_preconditioned
+         else
+            Shat => Svec
+         endif
+
          call MATVEC( Vname, Shat, A_m, Tvec )   ! returns Tvec=A*Shat
 
          if(is_serial) then
@@ -522,7 +529,7 @@
       deallocate(P)
       deallocate(P_preconditioned)
       deallocate(Svec)
-      deallocate(Shat)
+      deallocate(Svec_preconditioned)
       deallocate(Tvec)
       deallocate(V)
 
