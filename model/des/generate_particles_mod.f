@@ -179,7 +179,6 @@
       DOUBLE PRECISION :: SOLIDS_DATA(0:DIM_M)
 
       LOGICAL :: VEL_FLUCT
-      DOUBLE PRECISION :: VEL_SIG
       DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
 
       logical :: report = .true.
@@ -211,15 +210,10 @@
       DOM_VOL = DOML(1)*DOML(2)*DOML(3)
 
       rPARTS=0
-      VEL_FLUCT = .FALSE.
       DO M=1,SMAX+DES_MMAX
-         IF(SOLIDS_MODEL(M) == 'DEM') THEN
 ! Number of particles for phase M
-            rPARTS(M) = &
-               floor((6.0d0*IC_EP_S(ICV,M)*DOM_VOL)/(PI*(D_P0(M)**3)))
-! Set flags for random velocity fluctuations
-            VEL_FLUCT = VEL_FLUCT .OR. (IC_Theta_M(ICV,M) /= 0.0d0)
-         ENDIF
+         IF(SOLIDS_MODEL(M) == 'DEM') rPARTS(M) = &
+            floor((6.0d0*IC_EP_S(ICV,M)*DOM_VOL)/(PI*(D_P0(M)**3)))
       ENDDO
 
 ! Total number of particles in this IC region.
@@ -227,30 +221,6 @@
       IF(tPARTS == 0) RETURN
 
       ADJ_DIA = 2.0d0*MAX_RADIUS*lFAC
-
-! Calculate velocity fluctuations if specified.
-      IF(VEL_FLUCT) THEN
-         allocate(randVEL(tPARTS,3))
-         LB=1
-         DO M=1,SMAX+DES_MMAX
-            IF(SOLIDS_MODEL(M) == 'DEM' .AND. rPARTS(M) > 0.0d0) THEN
-               UB=LB+int(rPARTS(M))-1
-               IF(IC_Theta_M(ICV,1) /= 0.0d0)THEN
-                  VEL_SIG = sqrt(IC_Theta_M(ICV,1))
-                  CALL NOR_RNO(randVEL(LB:UB,1), IC_U_s(ICV,1), VEL_SIG)
-                  CALL NOR_RNO(randVEL(LB:UB,2), IC_V_s(ICV,2), VEL_SIG)
-                  IF(DO_K) CALL NOR_RNO(randVEL(LB:UB,3), &
-                     IC_W_s(ICV,3), VEL_SIG)
-               ELSE
-                  randVEL(LB:UB,1) = ZERO
-                  randVEL(LB:UB,2) = ZERO
-                  IF(DO_K) randVEL(LB:UB,3) = ZERO
-               ENDIF
-               LB=UB+1
-            ENDIF
-         ENDDO
-      ENDIF
-
 
 ! Attempt to seed particle throughout the IC region
       FIT_FAILED=.FALSE.
@@ -294,6 +264,8 @@
       pCOUNT = 0
       tCOUNT = 0
 
+      VEL_FLUCT = SET_VEL_FLUCT(ICV,M)
+
       JJ_LP: DO JJ=1, SEED_Y
          POS(2) = YINIT + (JJ-1)*lDY
          IF(compare(POS(2),dg_ystart) .OR. compare(POS(2),dg_yend))    &
@@ -322,14 +294,8 @@
                   EXIT MM_LP
                ENDIF
             ENDDO MM_LP
-            IF(MM > SMAX+DES_MMAX) THEN
-               EXIT JJ_LP
-            ELSEIF(IC_Theta_M(ICV,MM) /= 0.0d0) THEN
-               VEL_SIG = sqrt(IC_Theta_M(ICV,MM))
-               CALL NOR_RNO(randVEL(:,1), 0.0d0, VEL_SIG)
-               CALL NOR_RNO(randVEL(:,2), 0.0d0, VEL_SIG)
-               IF(DO_K) CALL NOR_RNO(randVEL(:,3), 0.0d0, VEL_SIG)
-            ENDIF
+            IF(M > SMAX+DES_MMAX) EXIT JJ_LP
+            VEL_FLUCT = SET_VEL_FLUCT(ICV,M)
          ENDIF
 
          pCOUNT(M) = pCOUNT(M) + 1
@@ -363,9 +329,9 @@
          CALL SET_NORMAL(PIP)
 
          IF(VEL_FLUCT) THEN
-            VEL(1) = randVEL(tCOUNT,1)
-            VEL(2) = randVEL(tCOUNT,2)
-            VEL(3) = randVEL(tCOUNT,3)
+            VEL(1) = randVEL(pCOUNT(M),1)
+            VEL(2) = randVEL(pCOUNT(M),2)
+            VEL(3) = randVEL(pCOUNT(M),3)
          ELSE
             VEL(1) = IC_U_s(ICV,M)
             VEL(2) = IC_V_s(ICV,M)
@@ -434,6 +400,29 @@
 
  2010 FORMAT(2x,'|  ',I3,'  |',1x,I9,1x,'|',2(1x,ES9.2,1x,'|'),/2x,    &
          '|-------|',3(11('-'),'|'))
+
+
+      CONTAINS
+
+!......................................................................!
+! Function: SET_VEL_FLUCT                                              !
+! Purpose: Set the flag for random velocity fluctuations. If needed    !
+! the random velocities are calculated.                                !
+!......................................................................!
+      LOGICAL FUNCTION SET_VEL_FLUCT(lICV, lM)
+      INTEGER, INTENT(IN) :: lICV, lM
+      DOUBLE PRECISION :: VEL_SIG
+      SET_VEL_FLUCT=(IC_Theta_M(lICV,lM) /= 0.0d0)
+      IF(SET_VEL_FLUCT) THEN
+         if(allocated(randVEL)) deallocate(randVEL)
+         allocate(randVEL(100+int(rPARTS(lM)),3))
+         VEL_SIG = sqrt(IC_Theta_M(lICV,lM))
+         CALL NOR_RNO(randVEL(:,1), IC_U_s(lICV,lM),VEL_SIG)
+         CALL NOR_RNO(randVEL(:,2), IC_V_s(lICV,lM),VEL_SIG)
+         IF(DO_K) CALL NOR_RNO(randVEL(:,3),IC_W_s(lICV,lM),VEL_SIG)
+      ENDIF
+
+      END FUNCTION SET_VEL_FLUCT
 
       END SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM
 
