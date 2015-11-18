@@ -427,8 +427,11 @@
          call MATVEC( Vname, Shat, A_m, Tvec )   ! returns Tvec=A*Shat
 
          if(is_serial) then
+!$omp parallel sections
             TxS = dot_product( Tvec, Svec )
+!$omp section
             TxT = dot_product( Tvec, Tvec )
+!$omp end parallel sections
          else
             if(.not.minimize_dotproducts) then
                TxS = dot_product_par( Tvec, Svec )
