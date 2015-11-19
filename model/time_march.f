@@ -79,6 +79,7 @@
 
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
+      LOGICAL :: ABORT_SIGNAL = .FALSE.
 
 ! C Function
       INTERFACE
