@@ -49,7 +49,7 @@
             IF(IS_ENTERING(L).or.IS_ENTERING_GHOST(L)) CYCLE  ! Only non-entering
             IF(IS_GHOST(L)) CYCLE                             ! Skip ghost particles
             DES_ACC_OLD(L,:) = FC(L,:)/PMASS(L) + GRAV(:)
-            ROT_ACC_OLD(:,L) = TOW(L,:)
+            ROT_ACC_OLD(L,:) = TOW(L,:)
          ENDDO
       ENDIF
 
@@ -118,18 +118,18 @@
             FC(:,3) = ZERO
 
             !$omp section
-            OMEGA_NEW(:,1)   =  OMEGA_OLD(:,1) + 0.5d0*( 3.d0*TOW(:,1)*OMOI(:)-ROT_ACC_OLD(1,:) )*DTSOLID
-            ROT_ACC_OLD(1,:) = TOW(:,1)*OMOI(:)
+            OMEGA_NEW(:,1)   =  OMEGA_OLD(:,1) + 0.5d0*( 3.d0*TOW(:,1)*OMOI(:)-ROT_ACC_OLD(:,1) )*DTSOLID
+            ROT_ACC_OLD(:,1) = TOW(:,1)*OMOI(:)
             TOW(:,1) = ZERO
 
             !$omp section
-            OMEGA_NEW(:,2)   =  OMEGA_OLD(:,2) + 0.5d0*( 3.d0*TOW(:,2)*OMOI(:)-ROT_ACC_OLD(2,:) )*DTSOLID
-            ROT_ACC_OLD(2,:) = TOW(:,2)*OMOI(:)
+            OMEGA_NEW(:,2)   =  OMEGA_OLD(:,2) + 0.5d0*( 3.d0*TOW(:,2)*OMOI(:)-ROT_ACC_OLD(:,2) )*DTSOLID
+            ROT_ACC_OLD(:,2) = TOW(:,2)*OMOI(:)
             TOW(:,2) = ZERO
 
             !$omp section
-            OMEGA_NEW(:,3)   =  OMEGA_OLD(:,3) + 0.5d0*( 3.d0*TOW(:,3)*OMOI(:)-ROT_ACC_OLD(3,:) )*DTSOLID
-            ROT_ACC_OLD(3,:) = TOW(:,3)*OMOI(:)
+            OMEGA_NEW(:,3)   =  OMEGA_OLD(:,3) + 0.5d0*( 3.d0*TOW(:,3)*OMOI(:)-ROT_ACC_OLD(:,3) )*DTSOLID
+            ROT_ACC_OLD(:,3) = TOW(:,3)*OMOI(:)
             TOW(:,3) = ZERO
 !$omp end sections
          ENDIF

@@ -350,7 +350,7 @@
 ! 29) Translational acceleration (previous)
                call pack_dbuf(lbuf,des_acc_old(lcurpar,:),pface)
 ! 30) Rotational acceleration (previous)
-               call pack_dbuf(lbuf,rot_acc_old(:,lcurpar),pface)
+               call pack_dbuf(lbuf,rot_acc_old(lcurpar,:),pface)
 ! 31) Temperature (previous)
                IF(ENERGY_EQ) &
                   call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
