@@ -198,8 +198,6 @@
       allocate(Tvec(DIMENSION_3))
       allocate(V(DIMENSION_3))
 
-      is_serial = numPEs.eq.1.and.is_serial
-
 ! these scalars should not be necessary to initialize but done as failsafe
       rnorm = ZERO
       rnorm0 = ZERO
@@ -279,11 +277,7 @@
 
       call send_recv(R,nlayers_bicgs)
 
-      if(is_serial) then
-         Rnorm0 = sqrt( dot_product(R,R) )
-      else
-         Rnorm0 = sqrt( dot_product_par( R, R ) )
-      endif
+      Rnorm0 = sqrt( dot_product_par( R, R ) )
 
 ! determine an initial guess for the residual = residual + small random
 ! number (so it could be set to anything). note that since random_number
@@ -310,19 +304,12 @@
       iter = 1
       do i=1,itmax
 
-         if(is_serial) then
-            rho(i-1) = dot_product( Rtilde, R )
-         else
-            rho(i-1) = dot_product_par( Rtilde, R )
-         endif ! is_serial
-
-!         print*,'leq_bicgs, initial: ', Vname,' rho(i-1) ', rho(i-1)
+         rho(i-1) = dot_product_par( Rtilde, R )
 
          if (rho(i-1) .eq. zero) then
             if(i /= 1)then
 ! Method fails
 ! --------------------------------
-!               print*, 'leq_bicgs,',Vname,': rho(i-1) == 0 '
                ier = -2
             else
 ! Method converged.  residual is already zero
@@ -356,13 +343,7 @@
 
          call MATVEC(Vname, Phat, A_m, V)   ! returns V=A*Phat
 
-         if(is_serial) then
-            RtildexV = dot_product( Rtilde, V )
-         else
-            RtildexV = dot_product_par( Rtilde, V )
-         endif ! is_serial
-
-!         print*,'leq_bicgs, initial: ', Vname,' RtildexV ', RtildexV
+         RtildexV = dot_product_par( Rtilde, V )
 
 ! compute alpha
 ! --------------------------------
@@ -378,12 +359,7 @@
 ! set X(:) = X(:) + alpha(i)*Phat(:) and stop
 ! --------------------------------
          if(.not.minimize_dotproducts) then
-            if(is_serial) then
-               Snorm = sqrt( dot_product( Svec, Svec ) )
-            else
-               Snorm = sqrt( dot_product_par( Svec, Svec ) )
-            endif               ! is_serial
-!            print*,'leq_bicgs, initial: ', Vname,' Snorm ', real(Snorm)
+            Snorm = sqrt( dot_product_par( Svec, Svec ) )
 
             if (Snorm <= TOLMIN) then
 !$omp parallel workshare
@@ -401,12 +377,7 @@
                   R(:) = B_m(:) - R(:)
 !$omp end parallel workshare
 
-                  if(is_serial) then
-                     Rnorm = sqrt( dot_product( R, R ) )
-                  else
-                     Rnorm = sqrt( dot_product_par( R, R ) )
-                  endif
-!                  print*,'leq_bicgs, initial: ', Vname,' Rnorm ', Rnorm
+                  Rnorm = sqrt( dot_product_par( R, R ) )
                endif            ! idebugl >= 1
                isConverged = .TRUE.
                EXIT
@@ -426,21 +397,16 @@
 
          call MATVEC( Vname, Shat, A_m, Tvec )   ! returns Tvec=A*Shat
 
-         if(is_serial) then
-!$omp parallel sections
-            TxS = dot_product( Tvec, Svec )
-!$omp section
-            TxT = dot_product( Tvec, Tvec )
-!$omp end parallel sections
+         if(.not.minimize_dotproducts) then
+!     $omp parallel sections
+            TxS = dot_product_par( Tvec, Svec )
+!     $omp section
+            TxT = dot_product_par( Tvec, Tvec )
+!     $omp end parallel sections
          else
-            if(.not.minimize_dotproducts) then
-               TxS = dot_product_par( Tvec, Svec )
-               TxT = dot_product_par( Tvec, Tvec )
-            else
-               TxS_TxT = dot_product_par2(Tvec, Svec, Tvec, Tvec )
-               TxS = TxS_TxT(1)
-               TxT = TxS_TxT(2)
-            endif
+            TxS_TxT = dot_product_par2(Tvec, Svec, Tvec, Tvec )
+            TxS = TxS_TxT(1)
+            TxT = TxS_TxT(2)
          endif
 
          IF(TxT.eq.Zero) TxT = SMALL_NUMBER
@@ -460,11 +426,7 @@
 
 ! --------------------------------
          if(.not.minimize_dotproducts.or.(mod(iter,icheck_bicgs).eq.0)) then
-            if(is_serial) then
-               Rnorm = sqrt( dot_product(R, R ) )
-            else
-               Rnorm = sqrt( dot_product_par(R, R) )
-            endif               ! is_serial
+            Rnorm = sqrt( dot_product_par(R, R) )
 
             if (idebugl.ge.1) then
                if (myPE.eq.PE_IO) then
@@ -501,11 +463,7 @@
          R(:) = R(:) - B_m(:)
 !$omp end parallel workshare
 
-         if(is_serial) then
-            Rnorm = sqrt( dot_product( R,R) )
-         else
-            Rnorm = sqrt( dot_product_par( R,R) )
-         endif
+         Rnorm = sqrt( dot_product_par( R,R) )
 
          if(myPE.eq.0) print*,'leq_bicgs: final Rnorm ', Rnorm
 
