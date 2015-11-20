@@ -53,7 +53,7 @@ LOGICAL :: found
 !$omp parallel do default(none)                                         &
 !$omp private(cc,ll,found,cc_start,cc_end,cc_start_old,cc_end_old)      &
 !$omp shared(max_pip,neighbors,neighbor_index,neighbor_index_old,       &
-!$omp    neighbors_old, pft_neighbor,pft_neighbor_old,neigh_max)
+!$omp    neighbors_old, pft_neighbor,pft_neighbor_old)
       do ll = 1, max_pip
 
          CC_START = 1

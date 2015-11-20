@@ -84,7 +84,7 @@
 !$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
 !$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
-!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,neigh_max,        &
+!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
 !$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy,                   &
