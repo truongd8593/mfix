@@ -463,11 +463,11 @@ CONTAINS
 
         lSIZE1 = size(neighbors,1)
 
-        IF ( new_neigh_max < lSIZE1 ) RETURN
+        IF ( new_neigh_max .le. lSIZE1 ) RETURN
 
-        new_size = new_neigh_max
+        new_size = lSIZE1
 
-        DO WHILE(lSIZE1 > new_size)
+        DO WHILE(new_size < new_neigh_max)
            new_size = 2*new_size
         ENDDO
 
@@ -513,11 +513,13 @@ CONTAINS
         IMPLICIT NONE
 
         integer, intent(in) :: new_max_pip
-        integer :: new_size
+        integer :: old_size, new_size
 
-        new_size = size(des_radius)
+        IF (new_max_pip .le. size(des_radius)) RETURN
 
-        IF ( new_max_pip .le. new_size ) RETURN
+        old_size = size(des_radius)
+
+        new_size = old_size
 
         DO WHILE (new_size < new_max_pip)
            new_size = 2*new_size
@@ -600,7 +602,7 @@ CONTAINS
         IF(DES_USR_VAR_SIZE > 0) &
         call real_grow2(DES_USR_VAR,new_size)
 
-        CALL DES_INIT_PARTICLE_ARRAYS(new_size/2+1,new_size)
+        CALL DES_INIT_PARTICLE_ARRAYS(old_size+1,new_size)
 
         RETURN
 

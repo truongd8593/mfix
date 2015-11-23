@@ -80,6 +80,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
+      use discretelement, only: max_pip
 
       use functions, only: is_nonexistent
       use functions, only: is_normal,  set_normal
@@ -187,6 +188,7 @@
          call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
+         max_pip = pip
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
             lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
@@ -329,6 +331,7 @@
 !---------------------------------------------------------------------//
       use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
+      use discretelement, only: max_pip
       use functions, only: IS_NORMAL, IS_NONEXISTENT
       use functions, only: SET_ENTERING, SET_EXITING, SET_NORMAL
 
@@ -357,6 +360,7 @@
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)
+      max_pip = pip+lparcnt
 
       do lcurpar =1,lparcnt
 

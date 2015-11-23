@@ -325,6 +325,7 @@
 
          PIP = PIP + 1
          CALL PARTICLE_GROW(PIP)
+         MAX_PIP = PIP
 
          CALL SET_NORMAL(PIP)
 
@@ -718,6 +719,7 @@
 
             PIP = PIP + 1
             CALL PARTICLE_GROW(PIP)
+            MAX_PIP = PIP
 
             DES_POS_NEW(PIP,:) = POS(:)
             DES_VEL_NEW(PIP,:) = randVEL(LC,:)

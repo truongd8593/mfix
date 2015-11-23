@@ -453,6 +453,7 @@
 ! second pass: set and allocate scatter related variables
       pip = lproc_parcnt(mype)
       call PARTICLE_GROW(pip)
+      max_pip = pip
       iscr_recvcnt = pip*lpacketsize
       allocate (dprocbuf(iscr_recvcnt))
       if (mype.eq.pe_io) then
