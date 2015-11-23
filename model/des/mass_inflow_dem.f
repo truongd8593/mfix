@@ -80,7 +80,7 @@
 ! number of particles is exceeded, set the error flag and cycle.
             PIP = PIP + 1
             CALL PARTICLE_GROW(PIP)
-            MAX_PIP = PIP
+            MAX_PIP = max(PIP,MAX_PIP)
 
 ! Find the first free space in the particle existance array.
             NP_LP: DO NP = LS, MAX_PIP
