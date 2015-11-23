@@ -88,7 +88,7 @@
       IF (READ_SPX(1).AND..NOT.AT_EOF(1)) THEN
          IF(.NOT.SPX_OPEN(1)) THEN
            WRITE(*,*)' SP1 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(1)
          IF (NEXT_REC.EQ.LAST_REC(1)) THEN
@@ -108,7 +108,7 @@
       IF (READ_SPX(2).AND..NOT.AT_EOF(2)) THEN
          IF(.NOT.SPX_OPEN(2)) THEN
            WRITE(*,*)' SP2 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(2)
          IF (NEXT_REC.EQ.LAST_REC(2)) THEN
@@ -128,7 +128,7 @@
       IF (READ_SPX(3).AND..NOT.AT_EOF(3)) THEN
          IF(.NOT.SPX_OPEN(3)) THEN
            WRITE(*,*)' SP3 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(3)
          IF (NEXT_REC.EQ.LAST_REC(3)) THEN
@@ -149,7 +149,7 @@
       IF (READ_SPX(4).AND..NOT.AT_EOF(4)) THEN
          IF(.NOT.SPX_OPEN(4)) THEN
            WRITE(*,*)' SP4 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(4)
          IF (NEXT_REC.EQ.LAST_REC(4)) THEN
@@ -172,7 +172,7 @@
       IF (READ_SPX(5).AND..NOT.AT_EOF(5)) THEN
          IF(.NOT.SPX_OPEN(5)) THEN
            WRITE(*,*)' SP5 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(5)
          IF (NEXT_REC.EQ.LAST_REC(5)) THEN
@@ -193,7 +193,7 @@
       IF (READ_SPX(6).AND..NOT.AT_EOF(6)) THEN
          IF(.NOT.SPX_OPEN(6)) THEN
            WRITE(*,*)' SP6 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(6)
          IF (NEXT_REC.EQ.LAST_REC(6)) THEN
@@ -225,7 +225,7 @@
  !     IF (READ_SPX(7).AND..NOT.AT_EOF(7)) THEN
  !        IF(.NOT.SPX_OPEN(7)) THEN
  !          WRITE(*,*)' SP7 file is not open'
- !          ERROR STOP
+ !          STOP
  !        ENDIF
  !        NEXT_REC = REC_POINTER(7)
  !        IF (NEXT_REC.ge.LAST_REC(7)) THEN
@@ -253,7 +253,7 @@
       IF (READ_SPX(7).AND..NOT.AT_EOF(7)) THEN
          IF(.NOT.SPX_OPEN(7)) THEN
            WRITE(*,*)' SP7 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(7)
          IF (NEXT_REC.EQ.LAST_REC(7)) THEN
@@ -292,7 +292,7 @@
       IF (READ_SPX(8).AND..NOT.AT_EOF(8)) THEN
          IF(.NOT.SPX_OPEN(8)) THEN
            WRITE(*,*)' SP8 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(8)
          IF (NEXT_REC.EQ.LAST_REC(8)) THEN
@@ -313,7 +313,7 @@
       IF (READ_SPX(9).AND..NOT.AT_EOF(9)) THEN
          IF(.NOT.SPX_OPEN(9)) THEN
            WRITE(*,*)' SP9 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(9)
          IF (NEXT_REC.EQ.LAST_REC(9)) THEN
@@ -335,7 +335,7 @@
       IF (READ_SPX(10).AND..NOT.AT_EOF(10)) THEN
          IF(.NOT.SPX_OPEN(10)) THEN
            WRITE(*,*)' SPA file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(10)
          IF (NEXT_REC.GE.LAST_REC(10)) THEN
@@ -357,7 +357,7 @@
       IF (READ_SPX(11).AND..NOT.AT_EOF(11)) THEN
          IF(.NOT.SPX_OPEN(11)) THEN
            WRITE(*,*)' SP11 file is not open'
-           ERROR STOP
+           STOP
          ENDIF
          NEXT_REC = REC_POINTER(11)
          IF (NEXT_REC.EQ.LAST_REC(11)) THEN

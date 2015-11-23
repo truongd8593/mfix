@@ -34,7 +34,7 @@
 10    NERROR = NERROR + 1
       IF (NERROR.GT.10) THEN
          WRITE (*,*) ' HEADER_MAIN : TOO MANY INCORRECT INPUTS'
-         ERROR STOP
+         STOP
       END IF
       WRITE (*,*)&
         ' *************************************************'

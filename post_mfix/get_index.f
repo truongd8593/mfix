@@ -41,7 +41,7 @@
           IF(ANS .EQ. 'Y' .OR. ANS .EQ. 'y')THEN
             EXT = .TRUE.
           ELSE
-            ERROR STOP
+            STOP
           ENDIF
         ENDIF
         IF(A .LT. ARRAY(1)) THEN
