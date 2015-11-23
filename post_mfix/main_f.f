@@ -6,7 +6,7 @@
 
       CALL F_INIT
 
-      STOP
+      ERROR STOP
     END PROGRAM POST_MFIX
 
       SUBROUTINE  CHECK_INTER(inter)

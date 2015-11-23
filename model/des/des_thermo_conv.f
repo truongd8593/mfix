@@ -192,7 +192,7 @@
 
          CASE DEFAULT
             WRITE(*,*)'INVALID DES CONVECTION MODEL'
-            STOP
+            ERROR STOP 'INVALID DES CONVECTION MODEL'
             CALL MFIX_EXIT(myPE)
       END SELECT
 

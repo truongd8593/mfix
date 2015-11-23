@@ -188,7 +188,7 @@
          call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
-         max_pip = pip
+         max_pip = max(pip,max_pip)
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
             lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
@@ -360,7 +360,7 @@
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)
-      max_pip = pip+lparcnt
+      max_pip = max(pip+lparcnt,max_pip)
 
       do lcurpar =1,lparcnt
 

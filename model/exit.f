@@ -40,7 +40,7 @@
       IF(myPE == PE_IO) WRITE(*,1002)
 
 ! Hard Stop.
-      STOP 1
+      ERROR STOP 1
 
  1000 FORMAT(2/,1x,70('*'),/' Fatal error reported on one or more',    &
         ' processes. The .LOG file',/' may contain additional',        &

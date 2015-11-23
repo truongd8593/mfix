@@ -5494,7 +5494,7 @@ contains
 
   SUBROUTINE MPI_ABORT(MPI_COMM_WORLD, mpierr, ierr)
     integer, intent(in) :: MPI_COMM_WORLD, mpierr, ierr
-    STOP
+    ERROR STOP "terminated in MPI_ABORT"
   END SUBROUTINE MPI_ABORT
 #endif
 

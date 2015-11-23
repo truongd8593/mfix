@@ -15,7 +15,7 @@
   UNITS    = 'cgs'
   RUN_TYPE = 'new'
   TIME     = 0.0
-  TSTOP    = 0.0
+  TSTOP    = 0.0
   DT       = 1.0E-4
 
   GRAVITY  = 980.7

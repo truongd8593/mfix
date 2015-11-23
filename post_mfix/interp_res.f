@@ -541,5 +541,5 @@
       J1 = J1SAVE
       K1 = K1SAVE
 !
-      STOP
+      ERROR STOP
     END SUBROUTINE INTERP_RES

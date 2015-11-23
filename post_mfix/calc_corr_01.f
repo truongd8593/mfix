@@ -110,7 +110,7 @@
       ELSE
         IF(NSUM .LE. 0)THEN
           WRITE(*,5000)
-          STOP
+          ERROR STOP
         ENDIF
         DO K = 1, KMAX2
            DO J = 1, JMAX2

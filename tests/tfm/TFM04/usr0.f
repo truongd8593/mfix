@@ -239,7 +239,7 @@
           pr = 3.0d0 + 4.0d0*log(2.0d0)
         else
           write(*,*) "Check IC setup in usr0.f"
-          STOP
+          ERROR STOP
         end if
 
 ! set return values        
@@ -263,7 +263,7 @@
           gresho_ic = p_g_return
         case default
           write(*,*) "Check gresho_ic in usr0.f"
-          STOP
+          ERROR STOP
         end select
 
         RETURN
