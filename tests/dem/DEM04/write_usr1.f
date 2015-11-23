@@ -74,7 +74,7 @@
       IF(ROLLFRIC_END) RETURN
 
 ! Calculate the slip velocity.
-      SLIP = DES_VEL_NEW(1,1) + OMEGA_NEW(3,1)*DES_RADIUS(1)
+      SLIP = DES_VEL_NEW(1,1) + OMEGA_NEW(1,3)*DES_RADIUS(1)
 
 ! Check for a sign flip or a small difference.
       IF(COMPARE(abs(SLIP),1.0d-6) .OR. SLIP < ZERO) THEN
@@ -114,7 +114,7 @@
 
 ! Calculate the non-dimensional angular velocity.
          ANL_ND = 5.0d0/7.0d0
-         DEM_ND = abs(OMEGA_NEW(3,1)*DES_RADIUS(1)/u0)
+         DEM_ND = abs(OMEGA_NEW(1,3)*DES_RADIUS(1)/u0)
 
          Err = (abs(ANL_ND-DEM_ND)/abs(ANL_ND) )*100.
 

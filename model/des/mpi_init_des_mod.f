@@ -452,9 +452,8 @@
 
 ! second pass: set and allocate scatter related variables
       pip = lproc_parcnt(mype)
-      if (pip .gt. max_pip) then
-         call PARTICLE_GROW(pip)
-      endif
+      call PARTICLE_GROW(pip)
+      max_pip = pip
       iscr_recvcnt = pip*lpacketsize
       allocate (dprocbuf(iscr_recvcnt))
       if (mype.eq.pe_io) then
@@ -490,8 +489,8 @@
          lbuf = (lcurpar-1)*lpacketsize+1
          des_radius(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
          ro_sol(lcurpar) = dprocbuf(lbuf); lbuf = lbuf+1
-         des_pos_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
-         des_vel_new(1:rdimn,lcurpar) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
+         des_pos_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
+         des_vel_new(lcurpar,1:rdimn) = dprocbuf(lbuf:lbuf+rdimn-1); lbuf = lbuf+rdimn
          call set_normal(lcurpar)
       enddo
       deallocate (dprocbuf,drootbuf)

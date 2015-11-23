@@ -79,14 +79,14 @@
 ! Accumulate total solids momentum (by phase)
                !$omp atomic
                DES_U_S(IJK,M) = DES_U_S(IJK,M) + &
-                  DES_VEL_NEW(1,NP)*VOLxWEIGHT
+                  DES_VEL_NEW(NP,1)*VOLxWEIGHT
                !$omp atomic
                DES_V_S(IJK,M) = DES_V_S(IJK,M) + &
-                  DES_VEL_NEW(2,NP)*VOLxWEIGHT
+                  DES_VEL_NEW(NP,2)*VOLxWEIGHT
                IF(DO_K) THEN
                   !$omp atomic
                   DES_W_S(IJK,M) = DES_W_S(IJK,M) + &
-                     DES_VEL_NEW(3,NP)*VOLxWEIGHT
+                     DES_VEL_NEW(NP,3)*VOLxWEIGHT
                ENDIF
             ENDIF
          ENDDO

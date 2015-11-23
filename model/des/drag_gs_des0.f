@@ -150,7 +150,7 @@
             if(is_nonexistent(np)) cycle
             if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
 
-            desposnew(:) = des_pos_new(:,np)
+            desposnew(:) = des_pos_new(np,:)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
 
 ! Calculate the particle centered drag coefficient (F_GP) using the
@@ -160,7 +160,7 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            VEL_NEW(:) = DES_VEL_NEW(:,NP)
+            VEL_NEW(:) = DES_VEL_NEW(NP,:)
             CALL DES_DRAG_GP(NP, VEL_NEW, VELFP, EP_G(IJK))
 
 ! Calculate the gas-solids drag force on the particle
@@ -174,11 +174,11 @@
 
 ! Update the contact forces (FC) on the particle to include gas
 ! pressure and gas-solids drag
-            FC(:3,NP) = FC(:3,NP) + D_FORCE(:3)
+            FC(NP,:3) = FC(NP,:3) + D_FORCE(:3)
 
             IF(.NOT.MODEL_B) THEN
 ! P_force is evaluated as -dp/dx
-               FC(:3,NP) = FC(:3,NP) + P_FORCE(:,IJK)*PVOL(NP)
+               FC(NP,:3) = FC(NP,:3) + P_FORCE(:,IJK)*PVOL(NP)
             ENDIF
          ENDDO       ! end do (nindx = 1,pinc(ijk))
 
@@ -360,7 +360,7 @@
 ! skipping indices that do not represent particles and ghost particles
             if(is_nonexistent(np)) cycle
             if(is_ghost(np).or.is_entering_ghost(np).or.is_exiting_ghost(np)) cycle
-            desposnew(:) = des_pos_new(:,np)
+            desposnew(:) = des_pos_new(np,:)
             call DRAG_INTERPOLATION(gst_tmp,vst_tmp,desposnew,velfp,weight_ft)
 !
 ! Calculate the particle centered drag coefficient (F_GP) using the
@@ -370,7 +370,7 @@
 ! The drag force on each particle is equal to:
 !    beta(u_g-u_s)*vol_p/eps.
 ! Therefore, the drag force = f_gp*(u_g - u_s)
-            VEL_NEW(:) = DES_VEL_NEW(:,NP)
+            VEL_NEW(:) = DES_VEL_NEW(NP,:)
             CALL DES_DRAG_GP(NP, VEL_NEW, VELFP, EP_G(IJK))
 !-----------------------------------------------------------------<<<
 ! Calculate the corresponding gas solids drag force that is used in

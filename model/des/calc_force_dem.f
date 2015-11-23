@@ -102,7 +102,7 @@
 !$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
 !$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp, box_id, box_id2, found)         &
 !$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
-!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,neigh_max,        &
+!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
 !$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy,                   &
@@ -112,7 +112,7 @@
 
       DO LL = 1, MAX_PIP
          IF(IS_NONEXISTENT(LL)) CYCLE
-         pos = DES_POS_NEW(:,LL)
+         pos = DES_POS_NEW(LL,:)
          rad = DES_RADIUS(LL)
 
          CC_START = 1
@@ -181,7 +181,7 @@
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
-            DIST(:) = DES_POS_NEW(:,I) - POS(:)
+            DIST(:) = DES_POS_NEW(I,:) - POS(:)
             DIST_MAG = dot_product(DIST,DIST)
 
             FC_TMP(:) = ZERO
@@ -370,24 +370,24 @@
 ! total contact force ( FC_TMP may already include cohesive force)
             FC_TMP(:) = FC_TMP(:) + FN(:) + FT(:)
 
-            FC(:,LL) = FC(:,LL) + FC_TMP(:)
+            FC(LL,:) = FC(LL,:) + FC_TMP(:)
 
             !$omp atomic
-            FC(1,I) = FC(1,I) - FC_TMP(1)
+            FC(I,1) = FC(I,1) - FC_TMP(1)
             !$omp atomic
-            FC(2,I) = FC(2,I) - FC_TMP(2)
+            FC(I,2) = FC(I,2) - FC_TMP(2)
             !$omp atomic
-            FC(3,I) = FC(3,I) - FC_TMP(3)
+            FC(I,3) = FC(I,3) - FC_TMP(3)
 
 ! for each particle the signs of norm and ft both flip, so add the same torque
-            TOW(:,LL) = TOW(:,LL) + TOW_TMP(:,1)
+            TOW(LL,:) = TOW(LL,:) + TOW_TMP(:,1)
 
             !$omp atomic
-            TOW(1,I)  = TOW(1,I)  + TOW_TMP(1,2)
+            TOW(I,1)  = TOW(I,1)  + TOW_TMP(1,2)
             !$omp atomic
-            TOW(2,I)  = TOW(2,I)  + TOW_TMP(2,2)
+            TOW(I,2)  = TOW(I,2)  + TOW_TMP(2,2)
             !$omp atomic
-            TOW(3,I)  = TOW(3,I)  + TOW_TMP(3,2)
+            TOW(I,3)  = TOW(I,3)  + TOW_TMP(3,2)
 
          ENDDO
       ENDDO

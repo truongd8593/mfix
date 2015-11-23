@@ -288,15 +288,15 @@
                pip = pip - 1
                ighost_cnt = ighost_cnt-1
                call set_nonexistent(lcurpar)
-               fc(:,lcurpar) = 0.0
-               des_pos_new(:,lcurpar)=0
+               fc(lcurpar,:) = 0.0
+               des_pos_new(lcurpar,:)=0
                pijk(lcurpar,:) = -10
                IF (DO_OLD) THEN
-                  des_pos_old(:,lcurpar)=0
-                  des_vel_old(:,lcurpar)=0
+                  des_pos_old(lcurpar,:)=0
+                  des_vel_old(lcurpar,:)=0
                ENDIF
-               des_vel_new(:,lcurpar)=0
-               omega_new(:,lcurpar)=0
+               des_vel_new(lcurpar,:)=0
+               omega_new(lcurpar,:)=0
 
                IF(PARTICLE_ORIENTATION) &
                   ORIENTATION(1:3,lcurpar) = INIT_ORIENTATION

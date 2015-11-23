@@ -41,8 +41,8 @@
       DO NP=1, PIP
          IF(is_nonexistent(NP)) CYCLE
          lUNIT = 750 + PIJK(NP,5)
-         WRITE(lUNIT,1100) TIME, DES_POS_NEW(2,NP),                    &
-            sqrt(DOT_PRODUCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
+         WRITE(lUNIT,1100) TIME, DES_POS_NEW(NP,2),                    &
+            sqrt(DOT_PRODUCT(DES_VEL_NEW(NP,:),DES_VEL_NEW(NP,:)))
       ENDDO
 
  1100 FORMAT(3x,F6.2,3x,F7.2,3x,F5.2)

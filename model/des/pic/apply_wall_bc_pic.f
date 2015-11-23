@@ -90,17 +90,17 @@
 
             NORM_PLANE = NORM_FACE(:,NF)
 
-!            IF(dot_product(NORM_PLANE, DES_VEL_NEW(:,NP)) > 0.d0) &
+!            IF(dot_product(NORM_PLANE, DES_VEL_NEW(NP,:)) > 0.d0) &
 !               CYCLE LC1_LP
 
-            CALL INTERSECTLNPLANE(DES_POS_NEW(:,NP), DES_VEL_NEW(:,NP),&
+            CALL INTERSECTLNPLANE(DES_POS_NEW(NP,:), DES_VEL_NEW(NP,:),&
                 VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
 
             IF(abs(LINE_T) <= DT_RBND) THEN
 
 ! Project the parcel onto the facet.
-               DIST = LINE_T*DES_VEL_NEW(:,NP)
-               tPOS = DES_POS_NEW(:,NP) + DIST
+               DIST = LINE_T*DES_VEL_NEW(NP,:)
+               tPOS = DES_POS_NEW(NP,:) + DIST
 
 ! Avoid collisions with STLs that are not next to the parcel
                IF(HIT_FACET(VERTEX(:,:,NF), tPOS)) THEN
@@ -108,7 +108,7 @@
 ! Correct the position of particles found too close to the STL.
                   IF(dot_product(DIST,DIST) <= RADSQ .OR. &
                      LINE_T <= ZERO) THEN
-                     DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + DIST(:) + &
+                     DES_POS_NEW(NP,:) = DES_POS_NEW(NP,:) + DIST(:) + &
                         DES_RADIUS(NP)*NORM_PLANE
                   ENDIF
 
@@ -211,12 +211,12 @@
 
 
 
-      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(:), DES_VEL_NEW(:,LL))
+      VEL_NORMMAG_APP = DOT_PRODUCT(WALL_NORM(:), DES_VEL_NEW(LL,:))
 
 ! Currently assuming that wall is at rest. Needs improvement for moving wall
 
       VEL_NORM_APP(:) = VEL_NORMMAG_APP*WALL_NORM(:)
-      VEL_TANG_APP(:) = DES_VEL_NEW(:,LL) - VEL_NORM_APP(:)
+      VEL_TANG_APP(:) = DES_VEL_NEW(LL,:) - VEL_NORM_APP(:)
 
 
 !post collisional velocities
@@ -227,20 +227,20 @@
       VEL_NORM_SEP(:) = -COEFF_REST_EN*VEL_NORM_APP(:)
       VEL_TANG_SEP(:) =  COEFF_REST_ET*VEL_TANG_APP(:)
 
-      DES_VEL_NEW(:,LL) = VEL_NORM_SEP(:) + VEL_TANG_SEP(:)
+      DES_VEL_NEW(LL,:) = VEL_NORM_SEP(:) + VEL_TANG_SEP(:)
 
       IF(dot_product(WALL_NORM, minVEL) > 0.0d0)THEN
 
 ! Projection of rebound velocity onto mininum velocity.
-         projGRAV = dot_product(minVEL, DES_VEL_NEW(:,LL))*OoMinVEL_MAG
+         projGRAV = dot_product(minVEL, DES_VEL_NEW(LL,:))*OoMinVEL_MAG
          projGRAV = minVEL*projGRAV
 
          IF(dot_product(projGRAV, projGRAV) < minVEL_MAG) THEN
             DO LC=1,3
                IF(minVEL(LC) > SMALL_NUMBER) THEN
-                  DES_VEL_NEW(LC,LL)=max(DES_VEL_NEW(LC,LL),minVEL(LC))
+                  DES_VEL_NEW(LL,LC)=max(DES_VEL_NEW(LL,LC),minVEL(LC))
                ELSEIF(minVEL(LC) < -SMALL_NUMBER) THEN
-                  DES_VEL_NEW(LC,LL)=min(DES_VEL_NEW(LC,LL),minVEL(LC))
+                  DES_VEL_NEW(LL,LC)=min(DES_VEL_NEW(LL,LC),minVEL(LC))
                ENDIF
             ENDDO
 

@@ -59,9 +59,9 @@
 
             lPHI = J*2.0d0*PI/(MAX_J)
 
-            X_ERR = (0.15d0*sin(lTHETA)*cos(lPHI) + 0.35d0) - DES_POS_NEW(1,NP)
-            Y_ERR = (0.15d0*sin(lTHETA)*sin(lPHI) + 0.35d0) - DES_POS_NEW(2,NP)
-            Z_ERR = (0.15d0*cos(lTHETA) + 0.35d0)  - DES_POS_NEW(3,NP)
+            X_ERR = (0.15d0*sin(lTHETA)*cos(lPHI) + 0.35d0) - DES_POS_NEW(NP,1)
+            Y_ERR = (0.15d0*sin(lTHETA)*sin(lPHI) + 0.35d0) - DES_POS_NEW(NP,2)
+            Z_ERR = (0.15d0*cos(lTHETA) + 0.35d0)  - DES_POS_NEW(NP,3)
 
             L1 = sqrt(X_ERR**2 + Y_ERR**2 + Z_ERR**2)
             SUM_L1 = SUM_L1 + L1

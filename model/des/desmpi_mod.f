@@ -179,8 +179,8 @@
              if (lparcount.gt.pip) exit
              if (is_nonexistent(lcurpar))cycle
              lparcount=lparcount + 1
-             xpos = des_pos_new(1,lcurpar)
-             ypos = des_pos_new(2,lcurpar)
+             xpos = des_pos_new(lcurpar,1)
+             ypos = des_pos_new(lcurpar,2)
              li=iofpos(xpos);lj=jofpos(ypos)
              write(44,*)(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)),xpos,ypos,li,lj,dg_funijk(li,lj,1)
           end do
@@ -261,7 +261,7 @@
          do lcurpar = 1,max_pip
             if(lparcnt.gt.pip) exit
             lparcnt = lparcnt + 1
-            write(44,*) "particle position =",des_pos_new(1:dimn,lcurpar)
+            write(44,*) "particle position =",des_pos_new(lcurpar,1:dimn)
          end do
          write(44,*) "-----------------------------------------------"
       case (7)
@@ -275,7 +275,7 @@
             lparcnt = lparcnt+1
             if(is_ghost(lcurpar).or.is_entering_ghost(lcurpar).or.is_exiting_ghost(lcurpar)) cycle
             write(44,*) "Info for particle", iglobal_id(lcurpar)
-            write(44,*) "position new ", des_pos_new(:,lcurpar)
+            write(44,*) "position new ", des_pos_new(lcurpar,:)
          end do
          write(44,*) "-----------------------------------------------"
       end select

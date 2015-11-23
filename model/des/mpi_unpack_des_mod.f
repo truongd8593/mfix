@@ -80,6 +80,7 @@
       use constant, only: PI
 ! Dimension of particle spatial arrays.
       use discretelement, only: DIMN
+      use discretelement, only: max_pip
 
       use functions, only: is_nonexistent
       use functions, only: is_normal,  set_normal
@@ -142,11 +143,11 @@
 ! 5) Phase index
             call unpack_dbuf(lbuf,pijk(llocpar,5),pface)
 ! 6) Position
-            call unpack_dbuf(lbuf,des_pos_new(1:dimn,llocpar),pface)
+            call unpack_dbuf(lbuf,des_pos_new(llocpar,1:dimn),pface)
 ! 7) Translational Velocity
-            call unpack_dbuf(lbuf,des_vel_new(1:dimn,llocpar),pface)
+            call unpack_dbuf(lbuf,des_vel_new(llocpar,1:dimn),pface)
 ! 8) Rotational Velocity
-            call unpack_dbuf(lbuf,omega_new(1:3,llocpar),pface)
+            call unpack_dbuf(lbuf,omega_new(llocpar,1:3),pface)
 ! 9) Exiting particle flag
             call unpack_dbuf(lbuf,tmp,pface)
             if (tmp) call set_exiting_ghost(llocpar)
@@ -171,10 +172,10 @@
 
 ! Copy the current value to the previous value if needed.
             IF (DO_OLD) THEN
-               des_pos_old(:,llocpar)= des_pos_new(:,llocpar)
-               des_vel_old(:,llocpar)= des_vel_new(:,llocpar)
+               des_pos_old(llocpar,:)= des_pos_new(llocpar,:)
+               des_vel_old(llocpar,:)= des_vel_new(llocpar,:)
                if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)
-               omega_old(:,llocpar)= omega_new(:,llocpar)
+               omega_old(llocpar,:)= omega_new(llocpar,:)
             ENDIF
 
          else
@@ -187,6 +188,7 @@
          call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
+         max_pip = pip
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
             lbuf = (lcurpar-1)*iGhostPacketSize+ibufoffset
@@ -211,11 +213,11 @@
 !  5) Phase index
             call unpack_dbuf(lbuf,pijk(ispot,5),pface)
 !  6) Position
-            call unpack_dbuf(lbuf,des_pos_new(1:dimn,ispot),pface)
+            call unpack_dbuf(lbuf,des_pos_new(ispot,1:dimn),pface)
 !  7) Translational velocity
-            call unpack_dbuf(lbuf,des_vel_new(1:dimn,ispot),pface)
+            call unpack_dbuf(lbuf,des_vel_new(ispot,1:dimn),pface)
 !  8) Rotational velocity
-            call unpack_dbuf(lbuf,omega_new(1:dimn,ispot),pface)
+            call unpack_dbuf(lbuf,omega_new(ispot,1:dimn),pface)
 !  9) Exiting particle flag
             call unpack_dbuf(lbuf,tmp,pface)
             if (tmp) call set_exiting_ghost(ispot)
@@ -237,9 +239,9 @@
             PVOL(ispot) = (4.0D0/3.0D0)*PI*DES_RADIUS(ispot)**3
 
             IF (DO_OLD) THEN
-               des_pos_old(1:dimn,ispot) = des_pos_new(1:dimn,ispot)
-               des_vel_old(1:dimn,ispot) = des_vel_new(1:dimn,ispot)
-               omega_old(1:3,ispot) = omega_new(1:3,ispot)
+               des_pos_old(ispot,1:dimn) = des_pos_new(ispot,1:dimn)
+               des_vel_old(ispot,1:dimn) = des_vel_new(ispot,1:dimn)
+               omega_old(ispot,1:3) = omega_new(ispot,1:3)
                if(ENERGY_EQ) des_t_s_old(ispot) = des_t_s_new(ispot)
             ENDIF
          enddo
@@ -329,6 +331,7 @@
 !---------------------------------------------------------------------//
       use des_allocate
       use desmpi_wrapper, only: DES_MPI_STOP
+      use discretelement, only: max_pip
       use functions, only: IS_NORMAL, IS_NONEXISTENT
       use functions, only: SET_ENTERING, SET_EXITING, SET_NORMAL
 
@@ -357,6 +360,7 @@
 
 ! if mppic make sure enough space available
       call PARTICLE_GROW(pip+lparcnt)
+      max_pip = pip+lparcnt
 
       do lcurpar =1,lparcnt
 
@@ -424,15 +428,15 @@
 ! 15) 1/Moment of Inertia
          call unpack_dbuf(lbuf,omoi(llocpar),pface)
 ! 16) Position with cyclic shift
-         call unpack_dbuf(lbuf,des_pos_new(:,llocpar),pface)
+         call unpack_dbuf(lbuf,des_pos_new(llocpar,:),pface)
 ! 17) Translational velocity
-         call unpack_dbuf(lbuf,des_vel_new(:,llocpar),pface)
+         call unpack_dbuf(lbuf,des_vel_new(llocpar,:),pface)
 ! 18) Rotational velocity
-         call unpack_dbuf(lbuf,omega_new(:,llocpar),pface)
+         call unpack_dbuf(lbuf,omega_new(llocpar,:),pface)
 ! 19) Accumulated translational forces
-         call unpack_dbuf(lbuf,fc(:,llocpar),pface)
+         call unpack_dbuf(lbuf,fc(llocpar,:),pface)
 ! 20) Accumulated torque forces
-         call unpack_dbuf(lbuf,tow(:,llocpar),pface)
+         call unpack_dbuf(lbuf,tow(llocpar,:),pface)
 ! 21) Temperature
          IF(ENERGY_EQ) &
             call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
@@ -441,7 +445,7 @@
             call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
 ! 23) Explicit drag force
          IF(DES_EXPLICITLY_COUPLED) &
-            call unpack_dbuf(lbuf,drag_fc(:,llocpar),pface)
+            call unpack_dbuf(lbuf,drag_fc(llocpar,:),pface)
 ! 24) User defined variable
          IF(DES_USR_VAR_SIZE > 0) &
             call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)
@@ -452,15 +456,15 @@
 ! -- Higher order integration variables
          IF (DO_OLD) THEN
 ! 26) Position (previous)
-            call unpack_dbuf(lbuf,des_pos_old(:,llocpar),pface)
+            call unpack_dbuf(lbuf,des_pos_old(llocpar,:),pface)
 ! 27) Translational velocity (previous)
-            call unpack_dbuf(lbuf,des_vel_old(:,llocpar),pface)
+            call unpack_dbuf(lbuf,des_vel_old(llocpar,:),pface)
 ! 28) Rotational velocity (previous)
-            call unpack_dbuf(lbuf,omega_old(:,llocpar),pface)
+            call unpack_dbuf(lbuf,omega_old(llocpar,:),pface)
 ! 29) Translational acceleration (previous)
-            call unpack_dbuf(lbuf,des_acc_old(:,llocpar),pface)
+            call unpack_dbuf(lbuf,des_acc_old(llocpar,:),pface)
 ! 30) Rotational acceleration (previous)
-            call unpack_dbuf(lbuf,rot_acc_old(:,llocpar),pface)
+            call unpack_dbuf(lbuf,rot_acc_old(llocpar,:),pface)
 ! 31) Temperature (previous)
             IF(ENERGY_EQ) &
                call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)

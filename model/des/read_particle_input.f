@@ -81,9 +81,9 @@
          read(lunit,*) pip
          DO lcurpar = 1,pip
             call set_normal(lcurpar)
-            read (lunit,*) (des_pos_new(k,lcurpar),k=1,RDMN),&
+            read (lunit,*) (des_pos_new(lcurpar,k),k=1,RDMN),&
                des_radius(lcurpar), ro_sol(lcurpar),&
-               (des_vel_new(k,lcurpar),k=1,RDMN)
+               (des_vel_new(lcurpar,k),k=1,RDMN)
          ENDDO
 
 ! Serial IO (not bDIST_IO)

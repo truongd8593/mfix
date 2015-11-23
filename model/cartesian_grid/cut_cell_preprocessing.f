@@ -265,7 +265,9 @@
 
       INTEGER :: GROUP,GS,P
 
-      DOUBLE PRECISION,DIMENSION(DIM_GROUP,0:DIM_QUADRIC) :: F_G
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_G
+
+      ALLOCATE(F_G(N_GROUP,0:DIM_QUADRIC))
 
       SELECT CASE(METHOD)
 
@@ -334,12 +336,10 @@
 
       END SELECT
 
-
+      DEALLOCATE(F_G)
 
       RETURN
       END SUBROUTINE EVAL_F
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

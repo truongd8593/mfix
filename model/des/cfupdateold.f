@@ -31,9 +31,9 @@
       DO LL = 1, MAX_PIP
          IF(IS_NONEXISTENT(LL) .or. IS_GHOST(ll)) CYCLE
 
-         DES_POS_OLD(:,LL)  = DES_POS_NEW(:,LL)
-         DES_VEL_OLD(:,LL)  = DES_VEL_NEW(:,LL)
-         OMEGA_OLD(:,LL)    = OMEGA_NEW(:,LL)
+         DES_POS_OLD(LL,:)  = DES_POS_NEW(LL,:)
+         DES_VEL_OLD(LL,:)  = DES_VEL_NEW(LL,:)
+         OMEGA_OLD(LL,:)    = OMEGA_NEW(LL,:)
 
       ENDDO
 !!$omp end parallel do

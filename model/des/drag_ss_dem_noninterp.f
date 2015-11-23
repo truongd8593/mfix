@@ -117,7 +117,7 @@
 
 
 ! Relative (slip) velocity.
-               VSLP = DES_VEL_NEW(:,NP) - VelCS(:,M)
+               VSLP = DES_VEL_NEW(NP,:) - VelCS(:,M)
 ! Relative velocity magnitude.
                VREL = sqrt(dot_product(VSLP,VSLP))
 
@@ -136,7 +136,7 @@
 
             ENDDO ! end do loop (M=1,MMAX)
 
-            FC(:,NP) = FC(:,NP) + D_FORCE(:)*PVOL(NP)
+            FC(NP,:) = FC(NP,:) + D_FORCE(:)*PVOL(NP)
 
          ENDDO ! END DO LOOP (NP=1,MAX_PIP)
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
@@ -256,7 +256,7 @@
             DO M = 1, MMAX
 
 ! Relative (slip) velocity.
-               VSLP = DES_VEL_NEW(:,NP) - VelCS(:,M)
+               VSLP = DES_VEL_NEW(NP,:) - VelCS(:,M)
 ! Relative velocity magnitude.
                VREL = sqrt(dot_product(VSLP,VSLP))
 
@@ -282,7 +282,7 @@
 
               SDRAG_AM(IJK,M) = SDRAG_AM(IJK,M) + lFORCE
               SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
-                 lFORCE*DES_VEL_NEW(:,NP)
+                 lFORCE*DES_VEL_NEW(NP,:)
 
             ENDDO ! end do loop (M=1,MMAX)
 

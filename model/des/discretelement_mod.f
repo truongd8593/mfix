@@ -224,7 +224,7 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PFT_NEIGHBOR_OLD
 
-      INTEGER :: NEIGH_NUM,NEIGH_MAX
+      INTEGER :: NEIGH_NUM
 
 ! Quantities used for reporting: max no. neighbors and max overlap
 ! that exists during last solid time step of dem simulation

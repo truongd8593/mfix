@@ -70,20 +70,20 @@
          K = PIJK(L,3)
 
 ! Tentative weights for I indices to the West and East.
-         WEIGHT_I(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(1,L), XE(I-1))
-         WEIGHT_I( 1) = CALC_FILTER_WEIGHTS(XE(I), DES_POS_NEW(1,L))
+         WEIGHT_I(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(L,1), XE(I-1))
+         WEIGHT_I( 1) = CALC_FILTER_WEIGHTS(XE(I), DES_POS_NEW(L,1))
          WEIGHT_I( 0) = ONE - WEIGHT_I(-1) - WEIGHT_I(1)
 
 ! Tentative weights for J indices to the South and North.
-         WEIGHT_J(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(2,L), YN(J-1))
-         WEIGHT_J( 1) = CALC_FILTER_WEIGHTS(YN(J), DES_POS_NEW(2,L))
+         WEIGHT_J(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(L,2), YN(J-1))
+         WEIGHT_J( 1) = CALC_FILTER_WEIGHTS(YN(J), DES_POS_NEW(L,2))
          WEIGHT_J( 0) = ONE - WEIGHT_J(-1) - WEIGHT_J(1)
 
 ! Tentative weights for K indices to the Top and Bottom.
          IF(DO_K) THEN
             Km=-1;  Kp=1
-            WEIGHT_K(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(3,L),ZT(K-1))
-            WEIGHT_K( 1) = CALC_FILTER_WEIGHTS(ZT(K), DES_POS_NEW(3,L))
+            WEIGHT_K(-1) = CALC_FILTER_WEIGHTS(DES_POS_NEW(L,3),ZT(K-1))
+            WEIGHT_K( 1) = CALC_FILTER_WEIGHTS(ZT(K), DES_POS_NEW(L,3))
             WEIGHT_K( 0) = ONE - WEIGHT_K(-1) - WEIGHT_K(1)
          ELSE
             Km= 0; Kp=0
@@ -204,24 +204,24 @@
 
 ! Tentative weights for I indices to the West and East.
          XC = XE(I-1) + HALF*DX(I)
-         IF(DES_POS_NEW(1,L) < XE(I-1)+HALF*DX(I)) THEN
-            WEIGHT_I(-1) = (XC - DES_POS_NEW(1,L))*oDX_E(I-1)
+         IF(DES_POS_NEW(L,1) < XE(I-1)+HALF*DX(I)) THEN
+            WEIGHT_I(-1) = (XC - DES_POS_NEW(L,1))*oDX_E(I-1)
             WEIGHT_I( 0) = ONE - WEIGHT_I(-1)
             WEIGHT_I( 1) = ZERO
          ELSE
-            WEIGHT_I( 1) = (DES_POS_NEW(1,L) - XC)*oDX_E(I)
+            WEIGHT_I( 1) = (DES_POS_NEW(L,1) - XC)*oDX_E(I)
             WEIGHT_I( 0) = ONE - WEIGHT_I(1)
             WEIGHT_I(-1) = ZERO
          ENDIF
 
 ! Tentative weights for J indices to the South and North.
          YC = YN(J-1) + HALF*DY(J)
-         IF(DES_POS_NEW(2,L) < YN(J-1)+HALF*DY(J)) THEN
-            WEIGHT_J(-1) = (YC - DES_POS_NEW(2,L))*oDY_N(J-1)
+         IF(DES_POS_NEW(L,2) < YN(J-1)+HALF*DY(J)) THEN
+            WEIGHT_J(-1) = (YC - DES_POS_NEW(L,2))*oDY_N(J-1)
             WEIGHT_J( 0) = ONE - WEIGHT_J(-1)
             WEIGHT_J( 1) = ZERO
          ELSE
-            WEIGHT_J( 1) = (DES_POS_NEW(2,L) - YC)*oDY_N(J)
+            WEIGHT_J( 1) = (DES_POS_NEW(L,2) - YC)*oDY_N(J)
             WEIGHT_J( 0) = ONE - WEIGHT_J(1)
             WEIGHT_J(-1) = ZERO
          ENDIF
@@ -230,12 +230,12 @@
          IF(DO_K) THEN
             Km=-1;  Kp=1
             ZC = ZT(K-1) + HALF*DZ(K)
-            IF(DES_POS_NEW(3,L) < ZT(K-1)+HALF*DZ(K)) THEN
-               WEIGHT_K(-1) = (ZC - DES_POS_NEW(3,L))*oDZ_T(K-1)
+            IF(DES_POS_NEW(L,3) < ZT(K-1)+HALF*DZ(K)) THEN
+               WEIGHT_K(-1) = (ZC - DES_POS_NEW(L,3))*oDZ_T(K-1)
                WEIGHT_K( 0) = ONE - WEIGHT_K(-1)
                WEIGHT_K( 1) = ZERO
             ELSE
-               WEIGHT_K( 1) = (DES_POS_NEW(3,L) - ZC)*oDZ_T(K)
+               WEIGHT_K( 1) = (DES_POS_NEW(L,3) - ZC)*oDZ_T(K)
                WEIGHT_K( 0) = ONE - WEIGHT_K(1)
                WEIGHT_K(-1) = ZERO
             ENDIF

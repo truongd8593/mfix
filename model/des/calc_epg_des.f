@@ -152,8 +152,8 @@
             DO LC=1,PINC(IJK)
                M=PIC(IJK)%P(LC)
                WRITE(ERR_MSG,1103) iGlobal_ID(M), trim(iVal(           &
-                  DES_POS_NEW(1,M))), trim(iVal(DES_POS_NEW(2,M))),    &
-                  trim(iVal(DES_POS_NEW(3,M)))
+                  DES_POS_NEW(M,1))), trim(iVal(DES_POS_NEW(M,2))),    &
+                  trim(iVal(DES_POS_NEW(M,3)))
                CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
             ENDDO
          ENDDO

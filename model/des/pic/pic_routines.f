@@ -215,16 +215,16 @@
       COEFF_EN  = MPPIC_COEFF_EN1
       COEFF_EN2 = MPPIC_COEFF_EN2
 
-      VEL_ORIG(1:DIMN) = DES_VEL_NEW(:,L)
-      VEL_NEW (1:DIMN) = DES_VEL_NEW(:,L)
+      VEL_ORIG(1:DIMN) = DES_VEL_NEW(L,:)
+      VEL_NEW (1:DIMN) = DES_VEL_NEW(L,:)
       !IF(L.eq.1) WRITE(*,*) 'MPPIC COEFFS = ', COEFF_EN, COEFF_EN2
       IF(L.EQ.FOCUS_PARTICLE) THEN
 
          WRITE(*,'(A20,2x,3(2x,i4))') 'CELL ID = ', PIJK(L,1:3)
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'EPS = ', 1.d0 - EP_g(PIJK(L,4))
-         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', DES_VEL_NEW(:,L)
+         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', DES_VEL_NEW(L,:)
 
-         WRITE(*,'(A20,2x,3(2x,g17.8))') 'FC = ', FC(:,L)
+         WRITE(*,'(A20,2x,3(2x,g17.8))') 'FC = ', FC(L,:)
       ENDIF
 
       MEANVEL(1) = DES_U_S(IJK,M)
@@ -237,7 +237,7 @@
 
       MEANUS(:,M) =  AVGSOLVEL_P (:,L)
       !MEANUS(:,M) = MEANVEL(:)
-      RELVEL(:) = DES_VEL_NEW(:,L) - MEANUS(:,M)
+      RELVEL(:) = DES_VEL_NEW(L,:) - MEANUS(:,M)
 
       !IF(EPg_P(L).gt.1.2d0*ep_star) RETURN
 
@@ -336,11 +336,11 @@
          IF(MPPIC_GRAV_TREATMENT) THEN
             IF(DELUP(IDIM)*GRAV(IDIM).LT.ZERO.AND.VEL_ORIG(IDIM)*GRAV(IDIM).GT.ZERO) THEN
                VEL_NEW(IDIM) = -COEFF_EN*VEL_ORIG(IDIM)
-               !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW(IDIM, L)
+               !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW( L,IDIM)
             ENDIF
          ENDIF
-         !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW(IDIM, L)
-         DES_VEL_NEW(IDIM, L) = VEL_NEW(IDIM)
+         !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW( L,IDIM)
+         DES_VEL_NEW( L,IDIM) = VEL_NEW(IDIM)
       ENDDO
 
          !
@@ -350,9 +350,9 @@
 
          WRITE(*,'(A20,2x,3(2x,i5))') 'PIJK I, J, K =', I_OF(IJK),J_OF(IJK),K_OF(IJK)
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL ORIG = ', VEL_ORIG(:)
-         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL NEW = ', DES_VEL_NEW(:,L)
+         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_VEL NEW = ', DES_VEL_NEW(L,:)
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'MEANUS = ', MEANUS(:,1)
-         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_POS_NEW = ', DES_POS_NEW(:,L)
+         WRITE(*,'(A20,2x,3(2x,g17.8))') 'DES_POS_NEW = ', DES_POS_NEW(L,:)
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'GRAD PS = ', PS_FORCE(:)
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'DELUP =  ', DELUP(:)
 
@@ -371,16 +371,16 @@
       RETURN
 
       !MEANUS(:,M) = MEANVEL(:)
-      !RELVEL(:) = DES_VEL_NEW(:,L) - MEANUS(:,M)
+      !RELVEL(:) = DES_VEL_NEW(L,:) - MEANUS(:,M)
       !DO IDIM = 1, DIMN
       !    IF(ABS(PS_FORCE(IDIM)).eq.zero) cycle
 
       !   IF(RELVEL(IDIM)*DELUP(IDIM).GT.ZERO) THEN
       !do nothing
       !    ELSE
-      !       DES_VEL_NEW(IDIM,L) = MEANUS(IDIM,M) - 0.4d0*RELVEL(IDIM)
+      !       DES_VEL_NEW(L,IDIM) = MEANUS(IDIM,M) - 0.4d0*RELVEL(IDIM)
 
-      !IF(DES_VEL_NEW(IDIM,L)*DELUP(IDIM).LT.ZERO) DES_VEL_NEW(IDIM,L) = -0.5d0*DES_VEL_NEW(IDIM,L)
+      !IF(DES_VEL_NEW(L,IDIM)*DELUP(IDIM).LT.ZERO) DES_VEL_NEW(L,IDIM) = -0.5d0*DES_VEL_NEW(L,IDIM)
       !    ENDIF
       ! ENDDO
       ! CYCLE
@@ -726,7 +726,7 @@
          pc = pc+1
          IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
 
-         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW(IDIM, LL), IDIM = 1, DIMN), &
+         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW( LL,IDIM), IDIM = 1, DIMN), &
               (PS_GRAD(IDIM,LL) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
       ENDDO
       close(1000, status='keep')

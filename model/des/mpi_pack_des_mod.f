@@ -126,12 +126,12 @@
 ! 5) Phase index
             call pack_dbuf(lbuf,pijk(lcurpar,5),pface)
 ! 6) Position
-            call pack_dbuf(lbuf,des_pos_new(:,lcurpar)+                &
+            call pack_dbuf(lbuf,des_pos_new(lcurpar,:)+                &
                dcycl_offset(pface,:),pface)
 ! 7) Translational Velocity
-            call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
+            call pack_dbuf(lbuf,des_vel_new(lcurpar,:),pface)
 ! 8) Rotational Velocity
-            call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
+            call pack_dbuf(lbuf,omega_new(lcurpar,:),pface)
 ! 9) Exiting particle flag
             call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar).or.is_exiting_ghost(lcurpar)),pface)
 ! 10) Temperature
@@ -312,16 +312,16 @@
 ! 15) 1/Moment of Inertia
             call pack_dbuf(lbuf,omoi(lcurpar),pface)
 ! 16) Position with cyclic shift
-            call pack_dbuf(lbuf,des_pos_new(:,lcurpar) +               &
+            call pack_dbuf(lbuf,des_pos_new(lcurpar,:) +               &
                dcycl_offset(pface,:),pface)
 ! 17) Translational velocity
-            call pack_dbuf(lbuf,des_vel_new(:,lcurpar),pface)
+            call pack_dbuf(lbuf,des_vel_new(lcurpar,:),pface)
 ! 18) Rotational velocity
-            call pack_dbuf(lbuf,omega_new(:,lcurpar),pface)
+            call pack_dbuf(lbuf,omega_new(lcurpar,:),pface)
 ! 19) Accumulated translational forces
-            call pack_dbuf(lbuf,fc(:,lcurpar),pface)
+            call pack_dbuf(lbuf,fc(lcurpar,:),pface)
 ! 20) Accumulated torque forces
-            call pack_dbuf(lbuf,tow(:,lcurpar),pface)
+            call pack_dbuf(lbuf,tow(lcurpar,:),pface)
 ! 21) Temperature
             IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
@@ -330,7 +330,7 @@
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
 ! 23) Explicit drag force
             IF(DES_EXPLICITLY_COUPLED) &
-               call pack_dbuf(lbuf, drag_fc(:,lcurpar),pface)
+               call pack_dbuf(lbuf, drag_fc(lcurpar,:),pface)
 ! 24) User defined variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
@@ -341,16 +341,16 @@
 ! -- Higher order integration variables
             IF (DO_OLD) THEN
 ! 26) Position (previous)
-               call pack_dbuf(lbuf,des_pos_old(:,lcurpar) +            &
+               call pack_dbuf(lbuf,des_pos_old(lcurpar,:) +            &
                   dcycl_offset(pface,:),pface)
 ! 27) Translational velocity (previous)
-               call pack_dbuf(lbuf,des_vel_old(:,lcurpar),pface)
+               call pack_dbuf(lbuf,des_vel_old(lcurpar,:),pface)
 ! 28) Rotational velocity (previous)
-               call pack_dbuf(lbuf,omega_old(:,lcurpar),pface)
+               call pack_dbuf(lbuf,omega_old(lcurpar,:),pface)
 ! 29) Translational acceleration (previous)
-               call pack_dbuf(lbuf,des_acc_old(:,lcurpar),pface)
+               call pack_dbuf(lbuf,des_acc_old(lcurpar,:),pface)
 ! 30) Rotational acceleration (previous)
-               call pack_dbuf(lbuf,rot_acc_old(:,lcurpar),pface)
+               call pack_dbuf(lbuf,rot_acc_old(lcurpar,:),pface)
 ! 31) Temperature (previous)
                IF(ENERGY_EQ) &
                   call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
@@ -378,7 +378,7 @@
             END IF
 
 ! Clear out the force array.
-            fc(:,lcurpar) = 0.
+            fc(lcurpar,:) = 0.
             lparcnt = lparcnt + 1
          end do
       end do

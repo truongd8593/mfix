@@ -158,15 +158,15 @@
             cUg = AVG_X_E(U_g(IMJK), U_g(IJK), 1)
             cVg = AVG_Y_N(V_g(IJMK), V_g(IJK))
 ! Particle Velocity
-            Us = DES_VEL_NEW(1,NP)
-            Vs = DES_VEL_NEW(2,NP)
+            Us = DES_VEL_NEW(NP,1)
+            Vs = DES_VEL_NEW(NP,2)
 
 ! Calculate the magnitude of the slip velocity
             IF(NO_K) THEN
                SLIP = SQRT((cUg-Us)**2 + (cVg-Vs)**2)
             ELSE
                cWg = AVG_Z_T(W_g(IJKM), W_g(IJK))
-               Ws = DES_VEL_NEW(3,NP)
+               Ws = DES_VEL_NEW(NP,3)
                SLIP = SQRT((cUg-Us)**2 + (cVg-Vs)**2 + (cWg-Ws)**2)
             ENDIF
 

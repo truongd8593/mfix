@@ -48,7 +48,7 @@
 !-----------------------------------------------
 
 ! translational relative velocity
-         VRELTRANS(:) = (DES_VEL_NEW(:,L) - DES_VEL_NEW(:,II))
+         VRELTRANS(:) = (DES_VEL_NEW(L,:) - DES_VEL_NEW(II,:))
 
 ! calculate the distance from the particle center to the contact point,
 ! which is taken as the radical line
@@ -57,8 +57,8 @@
             (2.d0*DIST_LI)
          DIST_CI = DIST_LI - DIST_CL
 
-         OMEGA_SUM(:) = OMEGA_NEW(:,L)*DIST_CL + &
-              OMEGA_NEW(:,II)*DIST_CI
+         OMEGA_SUM(:) = OMEGA_NEW(L,:)*DIST_CL + &
+              OMEGA_NEW(II,:)*DIST_CI
 
 ! calculate the rotational relative velocity
       V_ROT = DES_CROSSPRDCT(OMEGA_SUM, NORM)

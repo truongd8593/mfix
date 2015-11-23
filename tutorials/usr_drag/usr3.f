@@ -36,7 +36,7 @@
          WRITE(lUNIT,"(   4x,'Theoretical:  ',F5.2)") lTHL(M)
          WRITE(lUNIT,"(   4x,'Experimental: ',F5.2)") lEXP(M)
          WRITE(lUNIT,"(   4x,'Simulated:    ',F5.2)") &
-            sqrt(DOT_PRODUCT(DES_VEL_NEW(:,NP),DES_VEL_NEW(:,NP)))
+            sqrt(DOT_PRODUCT(DES_VEL_NEW(NP,:),DES_VEL_NEW(NP,:)))
 
          close(lUNIT)
       ENDDO

@@ -123,6 +123,9 @@ void init_log_socket(char* port) {
 
 }
 
+
+
+
 void init_cmd_socket(char* port) {
 
   struct addrinfo *res0, *res, hints;
@@ -203,7 +206,8 @@ void check_sockets() {
   if(-1 == (nready = select(log_maxfd+1, &log_readfds, NULL, NULL, &timeout)))
     die("select()");
 
-  for(int ii=0; ii<=log_maxfd && nready>0; ii++) {
+  int ii;
+  for(ii=0; ii<=log_maxfd && nready>0; ii++) {
     if(FD_ISSET(ii, &log_readfds)) {
       nready--;
 
@@ -240,11 +244,14 @@ void check_sockets() {
   if(-1 == (nready = select(cmd_maxfd+1, &cmd_readfds, NULL, NULL, &timeout)))
     die("select()");
 
-  for(int ii=0; ii<=cmd_maxfd && nready>0; ii++) {
+  for(ii=0; ii<=cmd_maxfd && nready>0; ii++) {
     if(FD_ISSET(ii, &cmd_readfds)) {
       nready--;
 
       if(ii == cmd_sockfd) {
+
+(void)printf("Trying to accept() new connection(s)\n");
+
 	if(-1 == (new = accept(cmd_sockfd, NULL, NULL))) {
 	  if(EWOULDBLOCK != errno)
 	    perror("accept()");
@@ -263,6 +270,8 @@ void check_sockets() {
 	char buffer[BUFSIZ];
 	char outbuffer[BUFSIZ];
 
+ (void)printf("recv() data from one of descriptors(s)\n");
+
 	ssize_t nbytes;
 	if ((nbytes = recv(ii, buffer, strlen(buffer), 0)) == -1) {
 	  if(nbytes <= 0) {
@@ -272,6 +281,8 @@ void check_sockets() {
 	    break;
 	  }
 	}
+
+ (void)printf("%zi bytes received.\n", nbytes);
 
 	handle_command(outbuffer, buffer, &nbytes);
 

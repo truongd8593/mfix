@@ -32,7 +32,7 @@
 !$omp shared(FC, DRAG_FC, MAX_PIP)
             DO II = 1, MAX_PIP
                IF(IS_NORMAL(II)) &
-                  FC(:,II) = FC(:,II) + DRAG_FC(:,II)
+                  FC(II,:) = FC(II,:) + DRAG_FC(II,:)
             ENDDO
 !$omp end parallel do
          ENDIF

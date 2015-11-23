@@ -80,7 +80,7 @@
 
       use discretelement, only: MAX_PIP, PIP
       use discretelement, only: iGHOST_CNT
-      use discretelement, only: NEIGH_MAX,NEIGH_NUM
+      use discretelement, only: NEIGH_NUM
 
       use compar, only: numPEs
       use machine, only: OPEN_N1
@@ -129,10 +129,7 @@
          PIP = pIN_COUNT
          NEIGH_NUM = cIN_COUNT
 
-         DO WHILE(NEIGH_NUM > NEIGH_MAX)
-            NEIGH_MAX = 2*NEIGH_MAX
-         ENDDO
-         CALL PARTICLE_GROW(NEIGH_MAX)
+         CALL PARTICLE_GROW(NEIGH_NUM)
 
       ELSE
 
@@ -256,7 +253,7 @@
 ! All process read positions for distributed IO restarts.
       IF(bDIST_IO) THEN
          DO LC1 = 1, lDIMN
-            CALL READ_RES_DES(lNEXT_REC, DES_POS_NEW(LC1,:))
+            CALL READ_RES_DES(lNEXT_REC, DES_POS_NEW(:,LC1))
          ENDDO
          RETURN
       ENDIF
@@ -521,7 +518,7 @@
 ! Unpack the particle data.
       DO LC1 = 1, PIP
          lBuf = (LC1-1)*lDIMN+1
-         DES_POS_NEW(1:lDIMN,LC1) = dProcBuf(lBuf:lBuf+lDIMN-1)
+         DES_POS_NEW(LC1,1:lDIMN) = dProcBuf(lBuf:lBuf+lDIMN-1)
          lBuf = lBuf + lDIMN
          CALL SET_NORMAL(LC1)
       ENDDO
@@ -627,7 +624,7 @@
       use compar, only: numPEs, myPE
       use discretelement, only: iGLOBAL_ID
       use discretelement, only: PIP
-      use discretelement, only: NEIGH_MAX, NEIGH_NUM
+      use discretelement, only: NEIGH_NUM
       use functions, only: IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
       use mpi_utility, only: GLOBAL_ALL_SUM
@@ -760,10 +757,7 @@
 ! flag is set if that number exceeds the maximum.
       NEIGH_NUM = lCOL_CNT(myPE)
 
-      DO WHILE(NEIGH_NUM > NEIGH_MAX)
-         NEIGH_MAX = 2*NEIGH_MAX
-      ENDDO
-      CALL NEIGHBOR_GROW(NEIGH_MAX)
+      CALL NEIGHBOR_GROW(NEIGH_NUM)
 
       CALL FINL_ERR_MSG
 

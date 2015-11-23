@@ -62,8 +62,8 @@
       ! initialize SAP
       do nn=1, MAX_PIP
          if(is_nonexistent(nn)) cycle
-         aabb%minendpoint(:) = DES_POS_NEW(:,nn)-DES_RADIUS(nn)-0.001
-         aabb%maxendpoint(:) = DES_POS_NEW(:,nn)+DES_RADIUS(nn)+0.001
+         aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)-0.001
+         aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)+0.001
 
          if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
          if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then

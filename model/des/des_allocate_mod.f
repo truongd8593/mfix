@@ -99,18 +99,18 @@ CONTAINS
 
 ! Old and new particle positions, velocities (translational and
 ! rotational)
-      Allocate(  DES_POS_NEW (DIMN,MAX_PIP) )
-      Allocate(  DES_VEL_NEW (DIMN,MAX_PIP) )
-      Allocate(  OMEGA_NEW (DIMN,MAX_PIP) )
+      Allocate(  DES_POS_NEW (MAX_PIP,DIMN) )
+      Allocate(  DES_VEL_NEW (MAX_PIP,DIMN) )
+      Allocate(  OMEGA_NEW (MAX_PIP,DIMN) )
 
       IF(PARTICLE_ORIENTATION) Allocate(  ORIENTATION (DIMN,MAX_PIP) )
 
       IF (DO_OLD) THEN
-         Allocate(  DES_POS_OLD (DIMN,MAX_PIP) )
-         Allocate(  DES_VEL_OLD (DIMN,MAX_PIP) )
-         Allocate(  DES_ACC_OLD (DIMN,MAX_PIP) )
-         Allocate(  OMEGA_OLD (DIMN,MAX_PIP) )
-         Allocate(  ROT_ACC_OLD (DIMN,MAX_PIP))
+         Allocate(  DES_POS_OLD (MAX_PIP,DIMN) )
+         Allocate(  DES_VEL_OLD (MAX_PIP,DIMN) )
+         Allocate(  DES_ACC_OLD (MAX_PIP,DIMN) )
+         Allocate(  OMEGA_OLD (MAX_PIP,DIMN) )
+         Allocate(  ROT_ACC_OLD (MAX_PIP,DIMN))
       ENDIF
 
 ! Allocating user defined array
@@ -118,13 +118,13 @@ CONTAINS
          Allocate( DES_USR_VAR(DES_USR_VAR_SIZE,MAX_PIP) )
 
 ! Particle positions at the last call neighbor search algorithm call
-      Allocate(  PPOS (DIMN,MAX_PIP) )
+      Allocate(  PPOS (MAX_PIP,DIMN) )
 
 ! Total, normal and tangetial forces
-      Allocate(  FC (DIMN,MAX_PIP) )
+      Allocate(  FC (MAX_PIP,DIMN) )
 
 ! Torque
-      Allocate(  TOW (DIMN,MAX_PIP) )
+      Allocate(  TOW (MAX_PIP,DIMN) )
 
 
 ! allocate variable for des grid binning
@@ -143,16 +143,16 @@ CONTAINS
 ! Temporary variables to store wall position, velocity and normal vector
       Allocate(  WALL_NORMAL  (NWALLS,DIMN) )
 
-      NEIGH_MAX = MAX_PIP
-
       Allocate(  NEIGHBOR_INDEX (MAX_PIP) )
       Allocate(  NEIGHBOR_INDEX_OLD (MAX_PIP) )
-      Allocate(  NEIGHBORS (NEIGH_MAX) )
+      Allocate(  NEIGHBORS (MAX_PIP) )
       NEIGHBORS(:) = 0
-      Allocate(  NEIGHBORS_OLD (NEIGH_MAX) )
-      Allocate(  PFT_NEIGHBOR (3,NEIGH_MAX) )
-      Allocate(  PFT_NEIGHBOR_OLD (3,NEIGH_MAX) )
+
+      Allocate(  NEIGHBORS_OLD (MAX_PIP) )
+      Allocate(  PFT_NEIGHBOR (3,MAX_PIP) )
+      Allocate(  PFT_NEIGHBOR_OLD (3,MAX_PIP) )
       Allocate(  boxhandle(MAX_PIP) )
+
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
       ALLOCATE(PIC(DIMENSION_3))
@@ -173,7 +173,7 @@ CONTAINS
       F_gp(1:MAX_PIP)  = ZERO
 
 ! Explicit drag force acting on a particle.
-      Allocate(DRAG_FC (DIMN,MAX_PIP) )
+      Allocate(DRAG_FC (MAX_PIP,DIMN) )
 
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
@@ -436,10 +436,7 @@ CONTAINS
       IMPLICIT NONE
       INTEGER, INTENT(IN) :: ii,jj
 
-      if (NEIGHBOR_INDEX(ii) > NEIGH_MAX) then
-         NEIGH_MAX = 2*NEIGH_MAX
-         CALL NEIGHBOR_GROW(NEIGH_MAX)
-      endif
+      CALL NEIGHBOR_GROW(NEIGHBOR_INDEX(ii))
 
       NEIGHBORS(NEIGHBOR_INDEX(ii)) = jj
       NEIGHBOR_INDEX(ii) = NEIGHBOR_INDEX(ii) + 1
@@ -465,25 +462,34 @@ CONTAINS
         INTEGER :: lSIZE1
         INTEGER, DIMENSION(:), ALLOCATABLE :: neigh_tmp
         DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: pf_tmp
+        INTEGER new_size
 
         lSIZE1 = size(neighbors,1)
 
-        allocate(neigh_tmp(new_neigh_max))
+        IF ( new_neigh_max .le. lSIZE1 ) RETURN
+
+        new_size = lSIZE1
+
+        DO WHILE(new_size < new_neigh_max)
+           new_size = 2*new_size
+        ENDDO
+
+        allocate(neigh_tmp(new_size))
         neigh_tmp(1:lSIZE1) = neighbors(1:lSIZE1)
         neigh_tmp(lSIZE1+1:) = 0
         call move_alloc(neigh_tmp,neighbors)
 
-        allocate(neigh_tmp(new_neigh_max))
+        allocate(neigh_tmp(new_size))
         neigh_tmp(1:lSIZE1) = neighbors_old(1:lSIZE1)
         neigh_tmp(lSIZE1+1:) = 0
         call move_alloc(neigh_tmp,neighbors_old)
 
-        allocate(pf_tmp(3,new_neigh_max))
+        allocate(pf_tmp(3,new_size))
         pf_tmp(:,1:lSIZE1) = pft_neighbor(:,1:lSIZE1)
         pf_tmp(:,lSIZE1+1:) = 0
         call move_alloc(pf_tmp,pft_neighbor)
 
-        allocate(pf_tmp(3,new_neigh_max))
+        allocate(pf_tmp(3,new_size))
         pf_tmp(:,1:lSIZE1) = pft_neighbor_old(:,1:lSIZE1)
         pf_tmp(:,lSIZE1+1:) = 0
         call move_alloc(pf_tmp,pft_neighbor_old)
@@ -512,93 +518,99 @@ CONTAINS
         IMPLICIT NONE
 
         integer, intent(in) :: new_max_pip
+        integer :: old_size, new_size
 
-        DO WHILE (MAX_PIP < new_max_pip)
-           MAX_PIP = MAX_PIP*2
+        IF (new_max_pip .le. size(des_radius)) RETURN
 
-           call boxhandle_grow(boxhandle,MAX_PIP)
-           call real_grow(des_radius,MAX_PIP)
-           call real_grow(RO_Sol,MAX_PIP)
-           call real_grow(PVOL,MAX_PIP)
-           call real_grow(PMASS,MAX_PIP)
-           call real_grow(OMOI,MAX_PIP)
-           call real_grow2(DES_POS_NEW,MAX_PIP)
-           call real_grow2(DES_VEL_NEW,MAX_PIP)
-           call real_grow2(OMEGA_NEW,MAX_PIP)
-           call real_grow2(PPOS,MAX_PIP)
-           call byte_grow(PARTICLE_STATE,MAX_PIP)
-           call integer_grow(iglobal_id,MAX_PIP)
-           call integer_grow2_reverse(pijk,MAX_PIP)
-           call integer_grow(dg_pijk,MAX_PIP)
-           call integer_grow(dg_pijkprv,MAX_PIP)
-           call logical_grow(ighost_updated,MAX_PIP)
-           call real_grow2(FC,MAX_PIP)
-           call real_grow2(TOW,MAX_PIP)
-           call real_grow(F_GP,MAX_PIP)
-           call integer_grow2(WALL_COLLISION_FACET_ID,MAX_PIP)
-           call real_grow3(WALL_COLLISION_PFT,MAX_PIP)
-           call real_grow2(DRAG_FC,MAX_PIP)
+        old_size = size(des_radius)
 
-           call integer_grow(NEIGHBOR_INDEX,MAX_PIP)
-           call integer_grow(NEIGHBOR_INDEX_OLD,MAX_PIP)
+        new_size = old_size
 
-           IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,MAX_PIP)
-
-           IF(FILTER_SIZE > 0) THEN
-              call integer_grow2(FILTER_CELL,MAX_PIP)
-              call real_grow2(FILTER_WEIGHT,MAX_PIP)
-           ENDIF
-
-           IF(MPPIC) THEN
-              call real_grow(DES_STAT_WT,MAX_PIP)
-              call real_grow2(PS_GRAD,MAX_PIP)
-              call real_grow2(AVGSOLVEL_P,MAX_PIP)
-              call real_grow(EPG_P,MAX_PIP)
-           ENDIF
-
-           IF(USE_COHESION) THEN
-              call real_grow(PostCohesive,MAX_PIP)
-           ENDIF
-
-           IF (DO_OLD) THEN
-              call real_grow2(DES_POS_OLD,MAX_PIP)
-              call real_grow2(DES_VEL_OLD,MAX_PIP)
-              call real_grow2(DES_ACC_OLD,MAX_PIP)
-              call real_grow2(OMEGA_OLD,MAX_PIP)
-              call real_grow2(ROT_ACC_OLD,MAX_PIP)
-           ENDIF
-
-           IF(ENERGY_EQ)THEN
-              call real_grow(DES_T_s_OLD,MAX_PIP)
-              call real_grow(DES_T_s_NEW,MAX_PIP)
-              call real_grow(DES_C_PS,MAX_PIP)
-              call real_grow2_reverse(DES_X_s,MAX_PIP)
-              call real_grow(Q_Source,MAX_PIP)
-
-              IF (INTG_ADAMS_BASHFORTH) &
-                   call real_grow(Q_Source0,MAX_PIP)
-           ENDIF
-
-           IF(ANY_SPECIES_EQ)THEN
-              call real_grow2_reverse( DES_R_sp, MAX_PIP )
-              call real_grow2_reverse( DES_R_sc, MAX_PIP )
-
-              IF (INTG_ADAMS_BASHFORTH) THEN
-                 call real_grow( dMdt_OLD, MAX_PIP )
-                 call real_grow2_reverse( dXdt_OLD, MAX_PIP )
-              ENDIF
-
-              call real_grow( Qint, MAX_PIP )
-           ENDIF
-
-           IF(DES_USR_VAR_SIZE > 0) &
-              call real_grow2(DES_USR_VAR,MAX_PIP)
-
-           CALL DES_INIT_PARTICLE_ARRAYS(MAX_PIP/2+1,MAX_PIP)
-
+        DO WHILE (new_size < new_max_pip)
+           new_size = 2*new_size
         ENDDO
 
-      RETURN
+        call boxhandle_grow(boxhandle,new_size)
+        call real_grow(des_radius,new_size)
+        call real_grow(RO_Sol,new_size)
+        call real_grow(PVOL,new_size)
+        call real_grow(PMASS,new_size)
+        call real_grow(OMOI,new_size)
+        call real_grow2_reverse(DES_POS_NEW,new_size)
+        call real_grow2_reverse(DES_VEL_NEW,new_size)
+        call real_grow2_reverse(OMEGA_NEW,new_size)
+        call real_grow2_reverse(PPOS,new_size)
+        call byte_grow(PARTICLE_STATE,new_size)
+        call integer_grow(iglobal_id,new_size)
+        call integer_grow2_reverse(pijk,new_size)
+        call integer_grow(dg_pijk,new_size)
+        call integer_grow(dg_pijkprv,new_size)
+        call logical_grow(ighost_updated,new_size)
+        call real_grow2_reverse(FC,new_size)
+        call real_grow2_reverse(TOW,new_size)
+        call real_grow(F_GP,new_size)
+        call integer_grow2(WALL_COLLISION_FACET_ID,new_size)
+        call real_grow3(WALL_COLLISION_PFT,new_size)
+        call real_grow2_reverse(DRAG_FC,new_size)
+
+        call integer_grow(NEIGHBOR_INDEX,new_size)
+        call integer_grow(NEIGHBOR_INDEX_OLD,new_size)
+
+        IF(PARTICLE_ORIENTATION) call real_grow2(ORIENTATION,new_size)
+
+        IF(FILTER_SIZE > 0) THEN
+           call integer_grow2(FILTER_CELL,new_size)
+           call real_grow2(FILTER_WEIGHT,new_size)
+        ENDIF
+
+        IF(MPPIC) THEN
+           call real_grow(DES_STAT_WT,new_size)
+           call real_grow2(PS_GRAD,new_size)
+           call real_grow2(AVGSOLVEL_P,new_size)
+           call real_grow(EPG_P,new_size)
+        ENDIF
+
+        IF(USE_COHESION) THEN
+           call real_grow(PostCohesive,new_size)
+        ENDIF
+
+        IF (DO_OLD) THEN
+           call real_grow2_reverse(DES_POS_OLD,new_size)
+           call real_grow2_reverse(DES_VEL_OLD,new_size)
+           call real_grow2_reverse(DES_ACC_OLD,new_size)
+           call real_grow2_reverse(OMEGA_OLD,new_size)
+           call real_grow2_reverse(ROT_ACC_OLD,new_size)
+        ENDIF
+
+        IF(ENERGY_EQ)THEN
+           call real_grow(DES_T_s_OLD,new_size)
+           call real_grow(DES_T_s_NEW,new_size)
+           call real_grow(DES_C_PS,new_size)
+           call real_grow2_reverse(DES_X_s,new_size)
+           call real_grow(Q_Source,new_size)
+
+           IF (INTG_ADAMS_BASHFORTH) &
+           call real_grow(Q_Source0,new_size)
+        ENDIF
+
+        IF(ANY_SPECIES_EQ)THEN
+           call real_grow2_reverse( DES_R_sp, new_size )
+           call real_grow2_reverse( DES_R_sc, new_size )
+
+           IF (INTG_ADAMS_BASHFORTH) THEN
+              call real_grow( dMdt_OLD, new_size )
+              call real_grow2_reverse( dXdt_OLD, new_size )
+           ENDIF
+
+           call real_grow( Qint, new_size )
+        ENDIF
+
+        IF(DES_USR_VAR_SIZE > 0) &
+        call real_grow2(DES_USR_VAR,new_size)
+
+        CALL DES_INIT_PARTICLE_ARRAYS(old_size+1,new_size)
+
+        RETURN
 
       END SUBROUTINE PARTICLE_GROW
 

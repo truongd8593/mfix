@@ -140,19 +140,19 @@
 
          IF (I.GT.IEND1 .OR. I.LT.ISTART1) THEN
             WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_ID(L))),'I',        &
-               trim(iVal(I)),'X',DES_POS_NEW(1,L),'X',DES_VEL_NEW(1,L)
+               trim(iVal(I)),'X',DES_POS_NEW(L,1),'X',DES_VEL_NEW(L,1)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
 
          IF(J.GT.JEND1 .OR. J.LT.JSTART1) THEN
             WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_id(L))),'J',        &
-               trim(iVal(J)),'Y',DES_POS_NEW(2,L),'Y',DES_VEL_NEW(2,L)
+               trim(iVal(J)),'Y',DES_POS_NEW(L,2),'Y',DES_VEL_NEW(L,2)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
 
          IF (DO_K .AND. (K.GT.KEND1 .OR. K.LT.KSTART1)) THEN
             WRITE(ERR_MSG, 1101) trim(iVal(iGlobal_ID(L))),'K',        &
-               trim(iVal(K)),'Z',DES_POS_NEW(3,L),'Z',DES_VEL_NEW(3,L)
+               trim(iVal(K)),'Z',DES_POS_NEW(L,3),'Z',DES_VEL_NEW(L,3)
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
          ENDIF
       ENDDO
@@ -241,19 +241,19 @@
       CALL INIT_ERR_MSG("RECOVER_PARCEL")
       IF(lDEBUG) CALL OPEN_PE_LOG(IER)
 
-      oPOS = DES_POS_NEW(:,NP)
+      oPOS = DES_POS_NEW(NP,:)
 
 ! Reflect the parcle.
-      DES_VEL_NEW(:,NP) = -DES_VEL_NEW(:,NP)
+      DES_VEL_NEW(NP,:) = -DES_VEL_NEW(NP,:)
 
 ! Move the particle back to the previous position.
-      DES_POS_NEW(:,NP) = DES_POS_NEW(:,NP) + &
-         DES_VEL_NEW(:,NP) * DTSOLID
+      DES_POS_NEW(NP,:) = DES_POS_NEW(NP,:) + &
+         DES_VEL_NEW(NP,:) * DTSOLID
 
 ! Rebin the particle to the fluid grid.
-      CALL PIC_SEARCH(I,DES_POS_NEW(1,NP),XE,DIMENSION_I,IMIN2,IMAX2)
-      CALL PIC_SEARCH(J,DES_POS_NEW(2,NP),YN,DIMENSION_J,JMIN2,JMAX2)
-      CALL PIC_SEARCH(K,DES_POS_NEW(3,NP),ZT,DIMENSION_K,KMIN2,KMAX2)
+      CALL PIC_SEARCH(I,DES_POS_NEW(NP,1),XE,DIMENSION_I,IMIN2,IMAX2)
+      CALL PIC_SEARCH(J,DES_POS_NEW(NP,2),YN,DIMENSION_J,JMIN2,JMAX2)
+      CALL PIC_SEARCH(K,DES_POS_NEW(NP,3),ZT,DIMENSION_K,KMIN2,KMAX2)
 
 ! Calculate the fluid cell index.
       IJK = FUNIJK(I,J,K)
@@ -385,7 +385,7 @@
 ! centers are tracked.
          IF (I > IEND1 .OR. I < ISTART1) THEN
 
-            lPOS = DES_POS_NEW(1,L)
+            lPOS = DES_POS_NEW(L,1)
             IF(I.EQ.IEND1+1 .AND. &
                (lPOS >= XE(IEND1-1) .AND. lPOS <= XE(IEND1)) )THEN
 
@@ -394,7 +394,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1100) trim(iVal(L)),'I',trim(iVal(I)), &
-                  'X',DES_POS_OLD(1,L),'X',lPOS,'X',DES_VEL_NEW(1,L)
+                  'X',DES_POS_OLD(L,1),'X',lPOS,'X',DES_VEL_NEW(L,1)
                   CALL FLUSH_ERR_MSG
                ENDIF
             ELSE
@@ -405,7 +405,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'I',trim(iVal(I)), &
-                  'X',DES_POS_OLD(1,L),'X',lPOS,'X',DES_VEL_NEW(1,L),  &
+                  'X',DES_POS_OLD(L,1),'X',lPOS,'X',DES_VEL_NEW(L,1),  &
                   trim(iVal(IJK)), CUT_CELL_AT(IJK), FLUID_AT(IJK)
                   CALL FLUSH_ERR_MSG
                ENDIF
@@ -414,7 +414,7 @@
          ENDIF
 
          IF(J.GT.JEND1 .OR. J.LT.JSTART1) THEN
-            lPOS = DES_POS_NEW(2,L)
+            lPOS = DES_POS_NEW(L,2)
             IF(J.EQ.JEND1+1.AND.&
               (lPOS >= YN(JEND1-1) .AND. lPOS <= YN(JEND1)) ) THEN
 
@@ -423,7 +423,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1100) trim(iVal(L)),'J',trim(iVal(J)), &
-                  'Y',DES_POS_OLD(2,L),'Y',lPOS,'Y',DES_VEL_NEW(2,L)
+                  'Y',DES_POS_OLD(L,2),'Y',lPOS,'Y',DES_VEL_NEW(L,2)
                   CALL FLUSH_ERR_MSG
                ENDIF
 
@@ -435,7 +435,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'J',trim(iVal(J)), &
-                  'Y',DES_POS_OLD(2,L),'Y',lPOS,'Y',DES_VEL_NEW(2,L),  &
+                  'Y',DES_POS_OLD(L,2),'Y',lPOS,'Y',DES_VEL_NEW(L,2),  &
                   trim(iVal(IJK)), CUT_CELL_AT(IJK), FLUID_AT(IJK)
                   CALL FLUSH_ERR_MSG
                ENDIF
@@ -444,7 +444,7 @@
          ENDIF
 
          IF(DO_K .AND. (K > KEND1 .OR. K < KSTART1)) THEN
-            lPOS = DES_POS_NEW(3,L)
+            lPOS = DES_POS_NEW(L,3)
             IF(K == KEND1+1 .AND. &
               (lPOS >= ZT(KEND1-1) .AND. lPOS <= ZT(KEND1)) ) THEN
 
@@ -453,7 +453,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1100) trim(iVal(L)),'K',trim(iVal(K)), &
-                  'Z',DES_POS_OLD(3,L),'Z',lPOS,'Z',DES_VEL_NEW(3,L)
+                  'Z',DES_POS_OLD(L,3),'Z',lPOS,'Z',DES_VEL_NEW(L,3)
                   CALL FLUSH_ERR_MSG
                ENDIF
             ELSE
@@ -464,7 +464,7 @@
 
                IF(lDEBUG) THEN
                   WRITE(ERR_MSG,1110) trim(iVal(L)),'K',trim(iVal(K)), &
-                  'Z',DES_POS_OLD(3,L),'Z',lPOS,'Z',DES_VEL_NEW(3,L),  &
+                  'Z',DES_POS_OLD(L,3),'Z',lPOS,'Z',DES_VEL_NEW(L,3),  &
                   trim(iVal(IJK)), CUT_CELL_AT(IJK), FLUID_AT(IJK)
                   CALL FLUSH_ERR_MSG
                ENDIF

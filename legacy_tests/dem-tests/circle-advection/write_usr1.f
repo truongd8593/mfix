@@ -43,8 +43,8 @@
       DO NP = 1, 64
 
          lPHI = dble(NP-1) * 2.0d0*PI/64
-         X_ERR = (0.15d0*cos(lPHI) + 0.50d0) - DES_POS_NEW(1,NP)
-         Y_ERR = (0.15d0*sin(lPHI) + 0.75d0) - DES_POS_NEW(2,NP)
+         X_ERR = (0.15d0*cos(lPHI) + 0.50d0) - DES_POS_NEW(NP,1)
+         Y_ERR = (0.15d0*sin(lPHI) + 0.75d0) - DES_POS_NEW(NP,2)
 
          L1 = sqrt(X_ERR**2 + Y_ERR**2)
          SUM_L1 = SUM_L1 + L1

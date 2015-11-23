@@ -58,37 +58,25 @@
 !
 !      IJK = 1
       IF (IJKMAX2A > 0) THEN
-       IF (USE_DOLOOP) THEN
-!!!$omp    parallel do private( IJK )
-         DO IJK = ijkstart3, ijkend3
-           A_M(IJK,B,M) = ZERO
-           A_M(IJK,S,M) = ZERO
-           A_M(IJK,W,M) = ZERO
-           A_M(IJK,0,M) = -ONE
-           A_M(IJK,E,M) = ZERO
-           A_M(IJK,N,M) = ZERO
-           A_M(IJK,T,M) = ZERO
-
-           B_M(IJK,M) = ZERO
-         ENDDO
-       ELSE
+!$omp parallel
+!$omp sections
          A_M(:,B,M) = ZERO
+!$omp section
          A_M(:,S,M) = ZERO
+!$omp section
          A_M(:,W,M) = ZERO
+!$omp section
          A_M(:,0,M) = -ONE
+!$omp section
          A_M(:,E,M) = ZERO
+!$omp section
          A_M(:,N,M) = ZERO
+!$omp section
          A_M(:,T,M) = ZERO
+!$omp section
          B_M(:,M) = ZERO
-
-!         IJK = IJKMAX2A + 1
-       ENDIF
+!$omp end sections
+!$omp end parallel
       ENDIF
       RETURN
-      END SUBROUTINE INIT_AB_M
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 120 Replaced the index for initialization, :IJKMAX2A => :
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3
-!
+    END SUBROUTINE INIT_AB_M

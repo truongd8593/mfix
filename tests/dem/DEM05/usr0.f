@@ -28,8 +28,8 @@
 
 ! Store the collision angle and initial tangential velocity
       DO NP=1, 62
-         INIT_VEL_T(NP) = sqrt(VEL(1,NP)**2 + VEL(3,NP)**2)
-         INIT_ANGLE(NP) = abs(atan(INIT_VEL_T(NP)/VEL(2,NP)))*180.0/PI
+         INIT_VEL_T(NP) = sqrt(VEL(NP,1)**2 + VEL(NP,3)**2)
+         INIT_ANGLE(NP) = abs(atan(INIT_VEL_T(NP)/VEL(NP,2)))*180.0/PI
       ENDDO
 
       return

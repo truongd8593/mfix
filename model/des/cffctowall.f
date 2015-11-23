@@ -37,14 +37,14 @@
 !------------------------------------------------
 
 ! total contact force
-      FC(:,L) = FC(:,L) + FN(:) + FT(:)
+      FC(L,:) = FC(L,:) + FN(:) + FT(:)
 
 ! calculate the distance from the particle center to the wall
       DIST_CL = DIST_LI - DES_RADIUS(L)
 
 ! total torque
       CROSSP = DES_CROSSPRDCT(NORM, FT)
-      TOW(:,L) = TOW(:,L) + DIST_CL*CROSSP(:)
+      TOW(L,:) = TOW(L,:) + DIST_CL*CROSSP(:)
 
       RETURN
       END SUBROUTINE CFFCTOWALL

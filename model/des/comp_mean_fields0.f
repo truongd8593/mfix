@@ -162,7 +162,7 @@
          DO NINDX=1, PINC(IJK)
             NP = PIC(IJK)%P(NINDX)
 
-            call DRAG_WEIGHTFACTOR(gst_tmp,des_pos_new(:,np),weight_ft)
+            call DRAG_WEIGHTFACTOR(gst_tmp,des_pos_new(np,:),weight_ft)
 
             M = PIJK(NP,5)
             WTP = ONE
@@ -188,7 +188,7 @@
                   TEMP1
 
                DES_VEL_NODE(CUR_IJK,:,M) = DES_VEL_NODE(CUR_IJK,:,M) + &
-                  TEMP1*DES_VEL_NEW(:,NP)
+                  TEMP1*DES_VEL_NEW(NP,:)
             ENDDO
             ENDDO
             ENDDO

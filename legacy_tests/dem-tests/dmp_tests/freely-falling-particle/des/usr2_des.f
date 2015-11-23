@@ -155,11 +155,11 @@
       if (mype.eq.pe_io) lRad = drootbuf
 
 ! Gather particle position (Y-axis only)
-      call des_gather(des_POS_new(2,:))
+      call des_gather(des_POS_new(:,2))
       if (mype.eq.pe_io) lPos_Y = drootbuf
 
 ! Gather particle position (Y-axis only)
-      call des_gather(des_VEL_new(2,:))
+      call des_gather(des_VEL_new(:,2))
       if (mype.eq.pe_io) lVel_Y = drootbuf
 
 ! Set local variables.
