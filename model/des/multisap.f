@@ -85,8 +85,8 @@ contains
     min_grid(:) = max(min_grid(:),0)
     max_grid(:) = min(max_grid(:),this%grid(:)-1)
 
-    !if (any(min_grid.ne.0)) stop __LINE__
-    !if (any(max_grid.ne.0)) stop __LINE__
+    !if (any(min_grid.ne.0)) error stop __LINE__
+    !if (any(max_grid.ne.0)) error stop __LINE__
 
     if (debug) then
        print *,"NORMALIZED min_grid:  ",min_grid(:)
@@ -184,7 +184,7 @@ contains
     !    if (handlelist%list(nn)%sap_id < 0) cycle
     !    particle_id = this%saps(handlelist%list(nn)%sap_id)%boxes(handlelist%list(nn)%box_id)%particle_id
     ! enddo
-    ! if (particle_id < 0 ) stop __LINE__
+    ! if (particle_id < 0 ) error stop __LINE__
 
     debug = (handlelist%particle_id.eq.114 .or. handlelist%particle_id.eq. 115)
     ! if (debug) print *,""
@@ -218,7 +218,7 @@ contains
               !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
               !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
               !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
-              !    stop __LINE__
+              !    error stop __LINE__
               ! endif
 
               ! asdf = 0.1
@@ -228,7 +228,7 @@ contains
               !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
               !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
               !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
-              !    stop __LINE__
+              !    error stop __LINE__
               ! endif
 
 
@@ -248,7 +248,7 @@ contains
              !     print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
              !     print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
              !     print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
-             !     stop __LINE__
+             !     error stop __LINE__
              !  endif
 
               ! asdf = 0.1
@@ -258,7 +258,7 @@ contains
               !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
               !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
               !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
-              !    stop __LINE__
+              !    error stop __LINE__
               ! endif
 
              found = .true.
@@ -273,7 +273,7 @@ contains
           ! add SAPs yet not listed for this id
           if (first_blank .eq. -1) then
              print *,"FAIL",first_blank,handlelist%list
-             stop __LINE__
+             error stop __LINE__
           endif
           call add_box(this%saps(new_sap_ids(nn)),aabb,handlelist%particle_id,handlelist%list(first_blank)%box_id)
           handlelist%list(first_blank)%sap_id = new_sap_ids(nn)
@@ -324,10 +324,10 @@ contains
           do kk=0,this%grid(3)-1
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
              !print *,"NOW GOING TO SORT SAP::",ii,jj,kk,":::   ",ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             if (.not. check_boxes(this%saps(sap_id))) stop __LINE__
+             if (.not. check_boxes(this%saps(sap_id))) error stop __LINE__
              call sort(this%saps(sap_id))
-             if (.not.check_sort(this%saps(sap_id))) stop __LINE__
-             if (.not. check_boxes(this%saps(sap_id))) stop __LINE__
+             if (.not.check_sort(this%saps(sap_id))) error stop __LINE__
+             if (.not. check_boxes(this%saps(sap_id))) error stop __LINE__
           enddo
        enddo
     enddo
@@ -343,7 +343,7 @@ contains
 
                 ! if (pair(1).eq. 114 .and. pair(2).eq.115) then
                 !    print *,"GOTTA PAIR::::",pair, " IN SAP ",sap_id
-                !    stop __LINE__
+                !    error stop __LINE__
                 ! endif
 
                 if (pair(1).eq.0 .and. pair(2).eq.0) exit
@@ -371,9 +371,9 @@ contains
              ! print *,"NOW GOING DO QUICKSORT THE THING:::::   ",sap_id
              call do_quicksort(this,this%saps(sap_id))
              boxcount = boxcount + this%saps(sap_id)%boxes_len
-             !if (.not.check_boxes(multisap%saps(sap_id))) stop __LINE__
+             !if (.not.check_boxes(multisap%saps(sap_id))) error stop __LINE__
              ! print *,"NOW GOING TO CHECK",this%saps(sap_id)%id
-             if (.not.check_sort(this%saps(sap_id))) stop __LINE__
+             if (.not.check_sort(this%saps(sap_id))) error stop __LINE__
           enddo
        enddo
     enddo
@@ -389,16 +389,16 @@ contains
     integer :: nn
 
     call quicksort_endpoints(sap%x_endpoints(1:sap%x_endpoints_len),sap,1)
-    !if (.not.check_boxes(sap)) stop __LINE__
-    !if (.not.check_sort(sap)) stop __LINE__
+    !if (.not.check_boxes(sap)) error stop __LINE__
+    !if (.not.check_sort(sap)) error stop __LINE__
 
     call quicksort_endpoints(sap%y_endpoints(1:sap%y_endpoints_len),sap,2)
-    !if (.not.check_boxes(sap)) stop __LINE__
-    !if (.not.check_sort(sap)) stop __LINE__
+    !if (.not.check_boxes(sap)) error stop __LINE__
+    !if (.not.check_sort(sap)) error stop __LINE__
 
     call quicksort_endpoints(sap%z_endpoints(1:sap%z_endpoints_len),sap,3)
-    !if (.not.check_boxes(sap)) stop __LINE__
-    if (.not.check_sort(sap)) stop __LINE__
+    !if (.not.check_boxes(sap)) error stop __LINE__
+    if (.not.check_sort(sap)) error stop __LINE__
 
   end subroutine do_quicksort
 
@@ -418,7 +418,7 @@ contains
              ! print *,"NOW GOING TO sweep THE THING:::::   ",sap_id
              call sweep(this%saps(sap_id),sap_id)
 
-             !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) stop __LINE__
+             !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) error stop __LINE__
 
           enddo
        enddo

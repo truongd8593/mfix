@@ -81,17 +81,17 @@ module sweep_and_prune
             check_boxes = .false.
             return
          endif
-         if (abs(this%y_endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) stop __LINE__
-         if (abs(this%z_endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) stop __LINE__
+         if (abs(this%y_endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) error stop __LINE__
+         if (abs(this%z_endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) error stop __LINE__
          if (0.ne.this%boxes(ii)%maxendpoint_id(1) .and. abs(this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. ii) then
             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%maxendpoint_id(1)",this%boxes(ii)%maxendpoint_id(1)
             print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes(",ii,")%maxendpoint_id(1))%box_id",this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id
             check_boxes = .false.
             return
          endif
-         if (0.ne.this%boxes(ii)%maxendpoint_id(1) .and. abs(this%y_endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) stop __LINE__
+         if (0.ne.this%boxes(ii)%maxendpoint_id(1) .and. abs(this%y_endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) error stop __LINE__
          if (do_k) then
-            if (abs(this%z_endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) stop __LINE__
+            if (abs(this%z_endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) error stop __LINE__
             endif
 
 if (.true.) then
@@ -209,7 +209,7 @@ endif
       !       print *,"SAP_ID=",this%id,"ii-1:",ii-1,"  endpoints(ii):",this%x_endpoints(ii-1)%box_id,this%x_endpoints(ii-1)%value
       !       print *,"SAP_ID=",this%id,"ii:",ii,"  endpoints(ii):",this%x_endpoints(ii)%box_id,this%x_endpoints(ii)%value
       !       print *,"SAP_ID=",this%id,"****************************************************************************************"
-      !       !stop __LINE__
+      !       !error stop __LINE__
       !    endif
       ! enddo
 
@@ -341,7 +341,7 @@ endif
       ! print *,"SAP_ID=",this%id,"XXX === ",aabb%minendpoint(1)," TO ",aabb%maxendpoint(1)
       ! print *,"SAP_ID=",this%id,"YYY === ",aabb%minendpoint(2)," TO ",aabb%maxendpoint(2)
       ! print *,"SAP_ID=",this%id,"ZZZ === ",aabb%minendpoint(3)," TO ",aabb%maxendpoint(3)
-      ! if (.not. check_boxes(this)) stop __LINE__
+      ! if (.not. check_boxes(this)) error stop __LINE__
 
     end subroutine add_box
 
@@ -404,15 +404,15 @@ endif
       type(sap_t), intent(inout) :: this
       integer :: ii
 
-      !if (.not. check_boxes(this)) stop __LINE__
+      !if (.not. check_boxes(this)) error stop __LINE__
 
       ! sort end points
       call sort_endpoints(this%x_endpoints(1:this%x_endpoints_len),this,1)
-      !if (.not. check_boxes(this)) stop __LINE__
+      !if (.not. check_boxes(this)) error stop __LINE__
       call sort_endpoints(this%y_endpoints(1:this%y_endpoints_len),this,2)
-      if (.not. check_boxes(this)) stop __LINE__
+      if (.not. check_boxes(this)) error stop __LINE__
       if (do_k) call sort_endpoints(this%z_endpoints(1:this%z_endpoints_len),this,3)
-      if (.not. check_boxes(this)) stop __LINE__
+      if (.not. check_boxes(this)) error stop __LINE__
 
 ! cleanup HUGE endpoints
       ii = this%x_endpoints_len
@@ -447,7 +447,7 @@ endif
 
       type(active_t) :: active
 
-      !stop __LINE__
+      !error stop __LINE__
 
       call active_init(active)
 
@@ -478,7 +478,7 @@ endif
             call active_del(active,minmax)
          else
             print *,"SAP_ID=",this%id,"minmax shouldn't be zero: ",minmax
-            stop __LINE__
+            error stop __LINE__
          endif
       enddo
 
@@ -516,7 +516,7 @@ endif
            do old_len = 1, size(this%list)
               print *,"list: ",old_len,this%list(old_len)
            enddo
-           stop __LINE__
+           error stop __LINE__
         endif
       end subroutine active_add
 
@@ -700,7 +700,7 @@ endif
 
           !print *,"SAP_ID=",sap%id,"DONE SORTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ",ii,jj
           !call print_boxes(sap)
-          !if (.not. check_boxes(sap)) stop __LINE__
+          !if (.not. check_boxes(sap)) error stop __LINE__
 
        enddo
 
@@ -710,13 +710,13 @@ endif
              if (abs(endpoints(abs(sap%boxes(ii)%minendpoint_id(1)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%minendpoint_id(1)",sap%boxes(ii)%minendpoint_id(1)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%minendpoint_id(1))%box_id",endpoints(abs(sap%boxes(ii)%minendpoint_id(1)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
           if (abs(endpoints(abs(sap%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%maxendpoint_id(1)",sap%boxes(ii)%maxendpoint_id(1)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%maxendpoint_id(1))%box_id",endpoints(abs(sap%boxes(ii)%maxendpoint_id(1)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
        enddo
@@ -728,13 +728,13 @@ endif
           if (abs(endpoints(abs(sap%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%minendpoint_id(2)",sap%boxes(ii)%minendpoint_id(2)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%minendpoint_id(2))%box_id",endpoints(abs(sap%boxes(ii)%minendpoint_id(2)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
           if (abs(endpoints(abs(sap%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%maxendpoint_id(2)",sap%boxes(ii)%maxendpoint_id(2)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%maxendpoint_id(2))%box_id",endpoints(abs(sap%boxes(ii)%maxendpoint_id(2)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
        enddo
@@ -746,13 +746,13 @@ endif
           if (abs(endpoints(abs(sap%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%minendpoint_id(3)",sap%boxes(ii)%minendpoint_id(3)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%minendpoint_id(3))%box_id",endpoints(abs(sap%boxes(ii)%minendpoint_id(3)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
           if (abs(endpoints(abs(sap%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) then
              print *,"SAP_ID=",sap%id,"sap%boxes(",ii,")%maxendpoint_id(3)",sap%boxes(ii)%maxendpoint_id(3)
              print *,"SAP_ID=",sap%id,"endpoints(sap%boxes(",ii,")%maxendpoint_id(3))%box_id",endpoints(abs(sap%boxes(ii)%maxendpoint_id(3)))%box_id
-             stop __LINE__
+             error stop __LINE__
              return
           endif
        enddo
@@ -824,7 +824,7 @@ endif
             print *,"SAP_ID=",sap%id,"ii-1:",ii-1,"  endpoints(ii):",A%box_id,A%value
             print *,"SAP_ID=",sap%id,"ii:",ii,"  endpoints(ii):",A%box_id,A%value
             print *,"SAP_ID=",sap%id,"*******************************************************************************************"
-            stop __LINE__
+            error stop __LINE__
             return
          endif
       enddo

@@ -85,8 +85,8 @@
 
       ! do nn=0, size(multisap%saps)-1
       !    !print *,"nn = ",nn
-      !    if (.not.check_boxes(multisap%saps(nn))) stop __LINE__
-      !    if (.not.check_sort(multisap%saps(nn))) stop __LINE__
+      !    if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
+      !    if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
       ! enddo
 
 !print *,"CALC_FORCE_DEM =================================================================================="
@@ -143,7 +143,7 @@
 
             !          sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
 
-            !          if (.not.check_boxes(sap)) stop __LINE__
+            !          if (.not.check_boxes(sap)) error stop __LINE__
 
             !          !call print_boxes(sap)
 
@@ -171,7 +171,7 @@
             !             if (max(sap%x_endpoints(box%minendpoint_id(2))%value,sap%x_endpoints(box2%minendpoint_id(2))%value) < min(sap%x_endpoints(box%maxendpoint_id(2))%value,sap%x_endpoints(box2%maxendpoint_id(2))%value)) then
             !                print *,"Y OVERLAP"
             !                if (.not.is_pair(ll,i)) then
-            !                   stop __LINE__
+            !                   error stop __LINE__
             !                endif
             !             endif
             !          endif
@@ -260,7 +260,7 @@
 
                      ! sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
 
-                     ! if (.not.check_boxes(sap)) stop __LINE__
+                     ! if (.not.check_boxes(sap)) error stop __LINE__
 
                      !call print_boxes(sap)
 
@@ -280,7 +280,7 @@
 
                   enddo
 
-                  stop __LINE__
+                  error stop __LINE__
                endif
 
             IF(DIST_MAG == 0) THEN

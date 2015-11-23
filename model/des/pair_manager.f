@@ -117,7 +117,7 @@ endif
 
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       stop __LINE__
+       error stop __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -146,7 +146,7 @@ endif
     enddo
 
     print *,"loop in hash addressing, this should not occur"
-    stop __LINE__
+    error stop __LINE__
 
   end function is_pair
 
@@ -160,7 +160,7 @@ endif
 
     if (i0 < 1 .or. j0 < 1) then
        print *,"invalid pair: ",i0,j0
-       stop __LINE__
+       error stop __LINE__
     endif
 
     if (size(this%table) < 2*this%table_size ) then
@@ -170,7 +170,7 @@ endif
        if (size(table_tmp).ne.old_size) then
           print *,"size = ",size(table_tmp)
           print *,"old_size = ",old_size
-          stop __LINE__
+          error stop __LINE__
        endif
        table_tmp(0:old_size-1) = this%table(0:old_size-1)
 
@@ -189,7 +189,7 @@ endif
        if (this%table_size.ne.old_tablesize) then
           print *,"size = ",this%table_size
           print *,"old_size = ",old_tablesize
-          stop __LINE__
+          error stop __LINE__
        endif
        deallocate(table_tmp)
     endif
@@ -203,7 +203,7 @@ endif
 
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       stop __LINE__
+       error stop __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -227,7 +227,7 @@ endif
           this%table_size = this%table_size + 1
           ! if (ii.eq.114 .and. 115.eq.jj) print *,"added pair:",ii,jj,"   to location:",hash,"   in table of size:  ",this%table_size,"/",size(this%table)
           ! print *,"ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
-          ! if(.not. check_table(this)) stop __LINE__
+          ! if(.not. check_table(this)) error stop __LINE__
           return
        endif
        probe_count = probe_count + 1
@@ -238,7 +238,7 @@ endif
     enddo
 
     print *,"loop in hash addressing, this should not occur.  maybe hash table is full"
-    stop __LINE__
+    error stop __LINE__
 
   end subroutine add_pair
 
@@ -258,7 +258,7 @@ endif
 
       if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       stop __LINE__
+       error stop __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -269,7 +269,7 @@ endif
 
     do
        if (this%table(hash)%ii .eq. 0 .and. this%table(hash)%jj .eq. 0) then
-          ! if(.not. check_table(this)) stop __LINE__
+          ! if(.not. check_table(this)) error stop __LINE__
           return
        endif
        if (this%table(hash)%ii .eq. ii .and. this%table(hash)%jj .eq. jj) then
@@ -278,7 +278,7 @@ endif
              this%table(hash)%jj = 1
              this%table_size = this%table_size - 1
              if (ii.eq.114 .and. 115.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
-          ! if(.not. check_table(this)) stop __LINE__
+          ! if(.not. check_table(this)) error stop __LINE__
           return
        endif
        probe_count = probe_count + 1
@@ -287,7 +287,7 @@ endif
        if (hash .eq. init_hash) exit
     enddo
 
-    ! if(.not. check_table(this)) stop __LINE__
+    ! if(.not. check_table(this)) error stop __LINE__
 
     print *,"loop in hash addressing. must be a lot of DELETED entries:  ",this%table_size,"/",size(this%table)
 
