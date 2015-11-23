@@ -72,14 +72,14 @@ CONTAINS
 !      h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
       print *, Cp1, h1, h2
       CLOSE(UNIT=funit)
-      STOP
+      ERROR STOP
 200   PRINT *, 'READ_Therm_tester: Species ', &
          TRIM(SPECIES), ' not found in Database!'
-      STOP
+      ERROR STOP
 500   PRINT *, 'READ_Therm_tester: Cannot Open file ', TRIM(THERM), '!'
       PRINT *, 'Check path or copy mfix/model/thermochemical/', &
          TRIM(THERM), ' into run directory'
-      STOP
+      ERROR STOP
       END Subroutine READ_Therm_tester
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  C
@@ -166,7 +166,7 @@ CONTAINS
 
 300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', &
          TRIM(LINE_STRING(1:18))
-      STOP
+      ERROR STOP
 
       END SUBROUTINE READ_Therm
 

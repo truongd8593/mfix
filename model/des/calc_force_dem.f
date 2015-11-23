@@ -154,7 +154,7 @@
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I
-               STOP "division by zero"
+               ERROR STOP "division by zero"
  8550 FORMAT('distance between particles is zero:',2(2x,I10))
             ENDIF
 

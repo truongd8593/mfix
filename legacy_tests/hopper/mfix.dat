@@ -11,7 +11,7 @@
   RUN_TYPE 		= 'new'             
   UNITS 		= 'cgs'
   TIME  		= 0.0				!start time
-  TSTOP 		= 2.0E-2                        !increase it to 12.0 for actual runs
+  TSTOP 		= 2.0E-2                        !increase it to 12.0 for actual runs
   DT 			= 1.0E-4			!time step
   ENERGY_EQ 		= .FALSE.			!do not solve energy eq
   SPECIES_EQ 		= .FALSE.    .FALSE. 	.FALSE.	!do not solve species eq

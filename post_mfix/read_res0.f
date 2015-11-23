@@ -98,7 +98,7 @@
       IF (VERSION_NUMBER > 1.8) THEN
          WRITE (*, *) ' Update Subroutine read_res0'
          CALL SLUMBER
-!         STOP
+!         ERROR STOP
          call exitMPI(myPE)  ! Abort all PEs, not only the current one
       ENDIF
     endif

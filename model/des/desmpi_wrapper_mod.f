@@ -211,9 +211,9 @@
 
       call MPI_Finalize(mpierr)
 
-      STOP 'MPI terminated from des_mpi_stop'
+      ERROR STOP 'MPI terminated from des_mpi_stop'
 #else
-      stop
+      ERROR STOP 'terminated from des_mpi_stop'
 #endif
       end subroutine
 
