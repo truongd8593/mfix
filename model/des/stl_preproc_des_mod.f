@@ -193,9 +193,9 @@
 
       use geometry, only: DO_K
 
-      use desgrid, only: dg_dxinv
-      use desgrid, only: dg_dyinv
-      use desgrid, only: dg_dzinv
+      use desgrid, only: dg_dxinv, dg_xstart, dg_istart1
+      use desgrid, only: dg_dyinv, dg_ystart, dg_jstart1
+      use desgrid, only: dg_dzinv, dg_zstart, dg_kstart1
 
       use discretelement, only: MAX_RADIUS
 
@@ -225,21 +225,20 @@
 ! Legacy variable - should be removed
       INTEGER ::  CURRENT_COUNT
 
-
       BUFFER = 1.1d0*MAX_RADIUS
 
       lDX = ONE/DG_DXINV
       lDY = ONE/DG_DYINV
       lDZ = ONE/DG_DZINV
 
-      CENTER(1) = (dble(I-2)+HALF)*lDX
+      CENTER(1) = dg_xstart + (dble(I-dg_istart1)+HALF)*lDX
       HALFSIZE(1) = HALF*lDX + BUFFER
 
-      CENTER(2) = (dble(J-2)+HALF)*lDY
+      CENTER(2) = dg_ystart + (dble(J-dg_jstart1)+HALF)*lDY
       HALFSIZE(2) = HALF*lDY + BUFFER
 
       IF(DO_K)THEN
-         CENTER(3) = (dble(K-2)+HALF)*lDZ
+         CENTER(3) = dg_zstart + (dble(K-dg_kstart1)+HALF)*lDZ
          HALFSIZE(3) = HALF*lDZ + BUFFER
       ELSE
          CENTER(3) = HALF*lDZ
