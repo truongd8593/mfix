@@ -68,81 +68,81 @@
 ! Advance particle position, velocity
 ! first-order method
       IF (INTG_EULER) THEN
-!$omp sections
+!$omp workshare
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,1) =   &
             DES_VEL_NEW(:,1) + DTSOLID*(FC(:,1)/PMASS(:) + GRAV(1))
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,1) =       &
             DES_POS_NEW(:,1) + DES_VEL_NEW(:,1)*DTSOLID
          FC(:,1) = ZERO
 
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,2) =   &
             DES_VEL_NEW(:,2) + DTSOLID*(FC(:,2)/PMASS(:) + GRAV(2))
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,2) =       &
             DES_POS_NEW(:,2) + DES_VEL_NEW(:,2)*DTSOLID
          FC(:,2) = ZERO
 
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,3) =   &
             DES_VEL_NEW(:,3) + DTSOLID*(FC(:,3)/PMASS(:) + GRAV(3))
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,3) =       &
             DES_POS_NEW(:,3) + DES_VEL_NEW(:,3)*DTSOLID
          FC(:,3) = ZERO
 
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) OMEGA_NEW(:,1) =     &
             OMEGA_NEW(:,1) + TOW(:,1)*OMOI(:)*DTSOLID
          TOW(:,1) = ZERO
-!$omp section
+
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,2) =      &
             OMEGA_NEW(:,2) + TOW(:,2)*OMOI(:)*DTSOLID
          TOW(:,2) = ZERO
-!$omp section
+
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,3) =      &
             OMEGA_NEW(:,3) + TOW(:,3)*OMOI(:)*DTSOLID
          TOW(:,3) = ZERO
+!$omp end workshare
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
       ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
-!$omp sections
+!$omp workshare
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             FC(:,1) = FC(:,1)/PMASS(:) + GRAV(1)
             DES_VEL_NEW(:,1) = DES_VEL_OLD(:,1) +                      &
                  0.5d0*(3.d0*FC(:,1) - DES_ACC_OLD(:,1))*DTSOLID
             DES_ACC_OLD(:,1) = FC(:,1)
          ENDWHERE
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:,1) = DES_POS_OLD(:,1) + 0.5d0*               &
             (DES_VEL_OLD(:,1)+DES_VEL_NEW(:,1))*DTSOLID
          FC(:,1) = ZERO
 
-!$omp sections
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             FC(:,2) = FC(:,2)/PMASS(:) + GRAV(2)
             DES_VEL_NEW(:,2) = DES_VEL_OLD(:,2) +                      &
                  0.5d0*(3.d0*FC(:,2) - DES_ACC_OLD(:,2))*DTSOLID
             DES_ACC_OLD(:,2) = FC(:,2)
          ENDWHERE
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:,2) = DES_POS_OLD(:,2) + 0.5d0*               &
             (DES_VEL_OLD(:,2)+DES_VEL_NEW(:,2))*DTSOLID
          FC(:,2) = ZERO
 
-!$omp sections
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             FC(:,3) = FC(:,3)/PMASS(:) + GRAV(3)
             DES_VEL_NEW(:,3) = DES_VEL_OLD(:,3) +                      &
                  0.5d0*(3.d0*FC(:,3) - DES_ACC_OLD(:,3))*DTSOLID
             DES_ACC_OLD(:,3) = FC(:,3)
          ENDWHERE
+
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:,3) = DES_POS_OLD(:,3) + 0.5d0*               &
             (DES_VEL_OLD(:,3)+DES_VEL_NEW(:,3))*DTSOLID
          FC(:,3) = ZERO
 
-
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             OMEGA_NEW(:,1) = OMEGA_OLD(:,1) + 0.5d0*                   &
                (3.d0*TOW(:,1)*OMOI(:)-ROT_ACC_OLD(1,:) )*DTSOLID
@@ -150,7 +150,6 @@
          ENDWHERE
          TOW(:,1) = ZERO
 
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             OMEGA_NEW(:,2) = OMEGA_OLD(:,2) + 0.5d0*                   &
                  (3.d0*TOW(:,2)*OMOI(:)-ROT_ACC_OLD(2,:) )*DTSOLID
@@ -158,7 +157,6 @@
          ENDWHERE
          TOW(:,1) = ZERO
 
-!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
             OMEGA_NEW(:,3) = OMEGA_OLD(:,3) + 0.5d0*                   &
                  (3.d0*TOW(:,3)*OMOI(:)-ROT_ACC_OLD(3,:) )*DTSOLID
@@ -166,7 +164,7 @@
          ENDWHERE
          TOW(:,1) = ZERO
 
-!$omp end sections
+!$omp end workshare
       ENDIF
 
 ! Update particle orientation - Always first order
