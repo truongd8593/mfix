@@ -150,7 +150,7 @@
                end if
             end do
          end do
-         if(do_nsearch) call desmpi_cleanup
+         call desmpi_cleanup
          call des_mpi_barrier
       ENDIF   ! end if(.not.mppic)
 
