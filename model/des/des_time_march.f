@@ -34,8 +34,10 @@
 ! Total number of particles
       INTEGER, SAVE :: NP=0
 
+      !type(sap_t) :: sap
+
 ! time step loop counter index
-      INTEGER :: NN
+      INTEGER :: NN,ii,nnn
 
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
@@ -124,9 +126,47 @@
 ! Calculate thermochemical sources (energy and  rates of formation).
          CALL CALC_THERMO_DES
 ! Call user functions.
+
          IF(CALL_USR) CALL USR1_DES
+
+         ! sap = multisap%saps(0)
+         ! ! CHECK SORT
+         ! do ii=2, sap%x_endpoints_len
+         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
+         !       print *,"****************************************************************************************"
+         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
+         !       print *,"****************************************************************************************"
+         !       stop __LINE__
+         !    endif
+         ! enddo
+
+         ! do nnn=0, size(multisap%saps)-1
+         !    !print *,"nnn = ",nnn
+         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
+         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
+         ! enddo
+
 ! Update position and velocities
          CALL CFNEWVALUES
+
+         ! do nnn=0, size(multisap%saps)-1
+         !    !print *,"nnn = ",nnn
+         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
+         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
+         ! enddo
+
+         ! sap = multisap%saps(0)
+         ! ! CHECK SORT
+         ! do ii=2, sap%x_endpoints_len
+         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
+         !       print *,"****************************************************************************************"
+         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
+         !       print *,"****************************************************************************************"
+         !       stop __LINE__
+         !    endif
+         ! enddo
+
+
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
 ! Update particle from reactive chemistry process.

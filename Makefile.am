@@ -434,6 +434,7 @@ libmfix_src = \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
+	model/des/list.f \
 	model/des/make_arrays_des.f \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \
@@ -443,8 +444,10 @@ libmfix_src = \
 	model/des/mpi_node_des_mod.f \
 	model/des/mpi_pack_des_mod.f \
 	model/des/mpi_unpack_des_mod.f \
+	model/des/multisap.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
+	model/des/pair_manager.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
 	model/des/pic/apply_wall_bc_pic.f \
@@ -467,6 +470,8 @@ libmfix_src = \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
+	model/des/resize.f \
+	model/des/sap.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
@@ -759,6 +764,8 @@ libmfix_a_SOURCES += $(libmfix_src)
 ################################################################
 
 postmfix_SOURCES = \
+	model/BLAS.f \
+	model/DGTSV.f \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -1023,6 +1030,7 @@ postmfix_SOURCES = \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
+	model/des/resize.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
@@ -1188,8 +1196,6 @@ postmfix_SOURCES = \
 	model/set_fluidbed_p.f \
 	model/set_geometry.f \
 	model/set_geometry1.f \
-	model/BLAS.f \
-	model/DGTSV.f \
 	model/set_ic.f \
 	model/set_icbc_flags.f \
 	model/set_increments.f \

@@ -12,12 +12,19 @@
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
+      use functions, only: is_nonexistent
+      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep, do_sap
+      use geometry
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: FACTOR
+      INTEGER :: FACTOR, nn
+
+      type(aabb_t) :: aabb
+
+      real :: mins(3), maxs(3), rad
 
 !-----------------------------------------------
 ! Include statement functions
@@ -42,13 +49,44 @@
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
 
+      mins(1) = 0
+      mins(2) = 0
+      mins(3) = 0
+      maxs(1) = XLENGTH
+      maxs(2) = YLENGTH
+      maxs(3) = ZLENGTH
+      rad = 20*maxval(des_radius)
+
+      if (do_sap) then
+         call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
+         ! initialize SAP
+         do nn=1, MAX_PIP
+            if(is_nonexistent(nn)) cycle
+            aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)-0.001
+            aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)+0.001
+
+            if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
+               print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
+               error stop __LINE__
+            endif
+
+            call multisap_add(multisap,aabb,nn,boxhandle(nn))
+         enddo
+
+         call multisap_quicksort(multisap)
+         call multisap_sweep(multisap)
+      endif
+
       DO FACTOR = 1, NFACTOR
 ! calculate forces
+
          CALL CALC_FORCE_DEM
 ! update particle position/velocity
+
          CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
          DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
+
 ! Bin the particles to the DES grid.
          CALL DESGRID_PIC(.TRUE.)
 ! exchange particle crossing boundaries and updates ghost particles
@@ -75,4 +113,3 @@
 
       RETURN
       END SUBROUTINE INIT_SETTLING_DEM
-

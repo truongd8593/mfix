@@ -28,10 +28,13 @@
       USE mfix_pic
       USE mpi_utility
       USE parallel
+      USE run
       USE param
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
+      use multi_sweep_and_prune, only: aabb_t, multisap_sort, multisap_update, do_sap
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -40,6 +43,9 @@
       DOUBLE PRECISION :: NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
+
+      type(aabb_t) aabb
+
 !-----------------------------------------------
 
 ! Adams-Bashforth defaults to Euler for the first time step.
@@ -54,12 +60,12 @@
       ENDIF
 
 !$omp parallel default(none)                    &
-!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,              &
+!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,do_nsearch,   &
 !$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
 !$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
-!$omp       particle_orientation, orientation,do_nsearch,particle_state) &
-!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit)
+!$omp       particle_orientation,orientation,boxhandle,multisap,particle_state) &
+!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit,aabb)
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
@@ -180,6 +186,16 @@
 !$omp end sections
       ENDIF
 
+if (do_sap) then
+!$omp single
+         DO L = 1, MAX_PIP
+            aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)-0.001
+            aabb%maxendpoint(:) = DES_POS_NEW(L,:)+DES_RADIUS(L)+0.001
+            call multisap_update(multisap,aabb,boxhandle(L))
+         ENDDO
+!$omp end single
+endif
+
 ! Update particle orientation - Always first order
 ! When omega is non-zero, compute the rotation angle, and apply the
 ! Rodrigues' rotation formula
@@ -211,6 +227,10 @@
          (NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(:))**2)
 
 !$omp end parallel
+
+         if (do_sap) then
+            call multisap_sort(multisap)
+         endif
 
       FIRST_PASS = .FALSE.
 

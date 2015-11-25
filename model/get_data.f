@@ -42,7 +42,6 @@
 ! shift DX, DY and DZ values
       LOGICAL, PARAMETER :: SHIFT = .TRUE.
 
-
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
@@ -153,7 +152,6 @@
 ! this should go in int_fluid_var.?
 !     CALL SET_L_SCALE
       L_SCALE(:) = L_SCALE0
-
 
 !======================================================================
 ! Data initialization for Dashboard

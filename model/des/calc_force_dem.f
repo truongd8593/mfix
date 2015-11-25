@@ -18,6 +18,8 @@
       USE des_thermo_cond
       USE discretelement
       USE run
+      use pair_manager, only: is_pair
+      use multi_sweep_and_prune, only: do_sap
 
       IMPLICIT NONE
 
@@ -67,12 +69,27 @@
 
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
+      integer :: pp
+      integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
+      integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
+      integer :: nn, mm, box_id, box_id2
+      logical :: found
+
 !-----------------------------------------------
 
 ! Initialize cohesive forces
       IF(USE_COHESION) PostCohesive(:) = ZERO
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
+
+      ! do nn=0, size(multisap%saps)-1
+      !    !print *,"nn = ",nn
+      !    if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
+      !    if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
+      ! enddo
+
+!print *,"CALC_FORCE_DEM =================================================================================="
+
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -82,13 +99,13 @@
 !$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
 !$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
 !$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
-!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp)         &
+!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp, box_id, box_id2, found)         &
 !$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
 !$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
 !$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
 !$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
 !$omp    hamaker_constant,asperities,surface_energy,                   &
-!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source)
+!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, multisap, boxhandle)
 
 !$omp do
 
@@ -103,6 +120,7 @@
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
+
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
@@ -151,6 +169,44 @@
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
+
+            if (do_sap) then
+               if (.not.is_pair(multisap%hashtable,ll,i)) then
+
+                  print *,"SAP DIDNT FIND PAIR: ",ll,i
+                  print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+                  print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+
+                  print *,""
+                  print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
+                  print *,""
+
+                  print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
+                  print *,"IIIIIIIII ",boxhandle(i)%list(:)
+
+                  do mm=1,size(boxhandle(ll)%list)
+                     if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
+                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
+                     box_id = boxhandle(ll)%list(mm)%box_id
+
+                     found = .false.
+                     do nn=1,size(boxhandle(i)%list)
+                        if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
+                           print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+                           box_id2 = boxhandle(i)%list(nn)%box_id
+                           found = .true.
+                        endif
+                     enddo
+
+                     if (.not.found) cycle
+
+                     print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
+
+                  enddo
+
+                  error stop __LINE__
+               endif
+            endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I
