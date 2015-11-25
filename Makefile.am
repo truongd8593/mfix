@@ -58,12 +58,13 @@ libmfix_a_SOURCES = model/ODEPACK.F
 bin_PROGRAMS += pm ms
 
 ms_SOURCES = model/des/pair_manager.f
-ms_SOURCES += model/geometry_mod.f
 ms_SOURCES += model/des/discretelement_mod.f
+ms_SOURCES += model/des/list.f
 ms_SOURCES += model/des/multisap.f
 ms_SOURCES += model/des/resize.f
 ms_SOURCES += model/des/sap.f
 ms_SOURCES += model/des/test_ms.f
+ms_SOURCES += model/geometry_mod.f
 
 pm_SOURCES = model/des/pair_manager.f
 pm_SOURCES += model/des/discretelement_mod.f
@@ -72,14 +73,17 @@ pm_SOURCES += model/des/test_pm.f
 bin_PROGRAMS += sap
 
 sap_SOURCES = model/des/discretelement_mod.f
-sap_SOURCES += model/geometry_mod.f
-sap_SOURCES += model/des/sap.f
+sap_SOURCES += model/des/list.f
 sap_SOURCES += model/des/pair_manager.f
+sap_SOURCES += model/des/resize.f
+sap_SOURCES += model/des/sap.f
 sap_SOURCES += model/des/test_sap.f
+sap_SOURCES += model/geometry_mod.f
 
 bin_PROGRAMS += multisap
 
 multisap_SOURCES = model/des/discretelement_mod.f
+multisap_SOURCES += model/des/list.f
 multisap_SOURCES += model/des/multisap.f
 multisap_SOURCES += model/des/pair_manager.f
 multisap_SOURCES += model/des/resize.f
@@ -466,6 +470,7 @@ libmfix_src = \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
+	model/des/list.f \
 	model/des/make_arrays_des.f \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \

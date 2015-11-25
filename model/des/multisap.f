@@ -1,17 +1,75 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module: multi_sweep_and_prune                                       !
+!                                                                      !
+!  Purpose: Divides space into a grid of sap_t instances and adds      !
+!           AABB's to the corresponding sap_t instance(s)              !
+!                                                                      !
+!  Reference: http://www.codercorner.com/SAP.pdf                       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
 module multi_sweep_and_prune
 
   use sweep_and_prune
 
   type multisap_t
-     type(sap_t), dimension(:), allocatable :: saps
-     integer :: saps_len
-     real :: minbounds(3), maxbounds(3)
-     real :: one_over_cell_length(3)
+     ! grid particle, e.g. 20x20x20
      integer :: grid(3)
+
+     ! bounds of the grid (grid saps on the boundary extend to infinity)
+     real :: minbounds(3), maxbounds(3)
+
+     ! grid(:)/(maxbounds(:)-minbounds(:))
+     real :: one_over_cell_length(3)
+
+     ! list saps of length grid(1)*grid(2)*grid(3)
+     type(sap_t), dimension(:), allocatable :: saps
+
+     ! union of all hashtables for all saps in this multisap
      type(hashtable_t) :: hashtable
   end type multisap_t
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Type: boxhandle_t                                                   !
+  !                                                                      !
+  !  Purpose: Represents a reference to a particle box in a particular   !
+  !           sap for this multisap.                                     !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+  type boxhandle_t
+     integer :: sap_id
+     integer :: box_id
+  end type boxhandle_t
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Type: boxhandlelist_t                                               !
+  !                                                                      !
+  !  Purpose: List of boxhandle_t instances that corresponding to a      !
+  !           particular particle with id particle_id.                   !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+  ! The maximum number of saps an aabb can belong to. For 2d this could be 4,
+  ! but no harm in just setting it to 8.
+  integer, parameter :: MAX_SAPS = 8
+
+  type boxhandlelist_t
+     integer :: particle_id
+     type(boxhandle_t) :: list(MAX_SAPS)
+  end type boxhandlelist_t
+
 contains
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: init_sap                                                !
+  !                                                                      !
+  !  Purpose: multisap_t constructor                                     !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine init_multisap(this,x_grid,y_grid,z_grid2,minbounds,maxbounds)
     use geometry
@@ -20,7 +78,6 @@ contains
     integer, intent(in) :: x_grid,y_grid, z_grid2
     real, dimension(3), intent(in) :: minbounds, maxbounds
     integer :: ii,jj,kk, z_grid, sap_id
-
 
     if (NO_K) then
        z_grid = 1
@@ -49,6 +106,16 @@ contains
     this%maxbounds(:) = maxbounds(:)
 
   end subroutine init_multisap
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_raster                                         !
+  !                                                                      !
+  !  Purpose: For a given aabb, return the list sap_ids of ids of the    !
+  !           saps that the aabb intersects according to the grid.       !
+  !           Used by multisap_add and multisap_del.                     !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_raster(this,aabb,sap_ids,debug)
     implicit none
@@ -85,47 +152,62 @@ contains
     min_grid(:) = max(min_grid(:),0)
     max_grid(:) = min(max_grid(:),this%grid(:)-1)
 
-    !if (any(min_grid.ne.0)) error stop __LINE__
-    !if (any(max_grid.ne.0)) error stop __LINE__
-
     if (debug) then
        print *,"NORMALIZED min_grid:  ",min_grid(:)
        print *,"NORMALIZED max_grid:  ",max_grid(:)
     endif
 
-    call add_to_list((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
-    call add_to_list((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
-    call add_to_list((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
-    call add_to_list((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
-    call add_to_list((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
-    call add_to_list((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
-    call add_to_list((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
-    call add_to_list((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_set((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_set((min_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_set((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_set((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
+    call add_to_set((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
+    call add_to_set((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
 
     if (debug) then
-       print *,"AND THUS IT COMES TO:::::    ",sap_ids(:)
+       print *,"multisap_raster IS RETURNING::: ",sap_ids(:)
     endif
 
   contains
 
-    subroutine add_to_list(nn)
-      integer, intent(in) :: nn
+    !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+    !                                                                      !
+    !  Subroutine: add_to_set                                              !
+    !                                                                      !
+    !  Purpose: Add sap_id to sap_ids if it's not already in there.        !
+    !                                                                      !
+    !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+    subroutine add_to_set(sap_id)
+      integer, intent(in) :: sap_id
       integer :: mm
 
       do mm=1, size(sap_ids)
-         if (sap_ids(mm).eq.nn) then
+         if (sap_ids(mm).eq.sap_id) then
             ! already in the list
             return
          endif
          if (sap_ids(mm).eq.-1) then
-            sap_ids(mm) = nn
+            sap_ids(mm) = sap_id
             return
          endif
       enddo
 
-    end subroutine add_to_list
+    end subroutine add_to_set
 
   end subroutine multisap_raster
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_add                                            !
+  !                                                                      !
+  !  Purpose: Add boxes in appropriate saps for aabb representing        !
+  !           particle_id and return list of (sap_id,box_id) handles     !
+  !           in handlelist.                                             !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_add(this,aabb,particle_id,handlelist)
     implicit none
@@ -150,6 +232,14 @@ contains
 
   end subroutine multisap_add
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_del                                            !
+  !                                                                      !
+  !  Purpose: Delete all sap entries corresponding to handlelist.        !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine multisap_del(this,aabb,handlelist)
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -167,6 +257,16 @@ contains
 
   end subroutine multisap_del
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_update                                         !
+  !                                                                      !
+  !  Purpose: Update the sap entries corresponding to handlelist with    !
+  !           new location aabb.  Returns an updated handlelist with     !
+  !           possibly different sap entries.                            !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine multisap_update(this,aabb,handlelist)
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -176,7 +276,7 @@ contains
     integer, DIMENSION(MAX_SAPS) :: new_sap_ids
     logical :: found
     integer :: mm,nn,first_blank, ii, box_id
-    real ::  asdf,diff
+    !real ::  asdf,diff
     logical :: debug
 
     ! particle_id = -1
@@ -230,7 +330,6 @@ contains
               !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
               !    error stop __LINE__
               ! endif
-
 
              call update_box(this%saps(new_sap_ids(nn)),handlelist%list(mm)%box_id,aabb)
 
@@ -306,6 +405,16 @@ contains
 
   end subroutine multisap_update
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_sort                                           !
+  !                                                                      !
+  !  Purpose: Call sort on each of the saps in this multisap,            !
+  !           then set the multisap's hashtable to the union of the      !
+  !           hashtables of all the saps.                                !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine multisap_sort(this)
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -355,6 +464,14 @@ contains
 
   end subroutine multisap_sort
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_add                                            !
+  !                                                                      !
+  !  Purpose: Call quicksort on each of the saps in this multisap.       !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine multisap_quicksort(this)
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -362,45 +479,28 @@ contains
     integer :: sap_id, boxcount
 
     boxcount = 0
-    print *,"grid ",this%grid(:)
 
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             ! print *,"NOW GOING DO QUICKSORT THE THING:::::   ",sap_id
-             call do_quicksort(this,this%saps(sap_id))
+             call quicksort(this%saps(sap_id))
              boxcount = boxcount + this%saps(sap_id)%boxes_len
              !if (.not.check_boxes(multisap%saps(sap_id))) error stop __LINE__
-             ! print *,"NOW GOING TO CHECK",this%saps(sap_id)%id
              if (.not.check_sort(this%saps(sap_id))) error stop __LINE__
           enddo
        enddo
     enddo
 
-    print *,"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx TOTAL BOXES::::::::::::",boxcount
-
   end subroutine multisap_quicksort
 
-  subroutine do_quicksort(this,sap)
-    implicit none
-    type(multisap_t), intent(inout) :: this
-    type(sap_t), intent(inout) :: sap
-    integer :: nn
-
-    call quicksort_endpoints(sap%x_endpoints(1:sap%x_endpoints_len),sap,1)
-    !if (.not.check_boxes(sap)) error stop __LINE__
-    !if (.not.check_sort(sap)) error stop __LINE__
-
-    call quicksort_endpoints(sap%y_endpoints(1:sap%y_endpoints_len),sap,2)
-    !if (.not.check_boxes(sap)) error stop __LINE__
-    !if (.not.check_sort(sap)) error stop __LINE__
-
-    call quicksort_endpoints(sap%z_endpoints(1:sap%z_endpoints_len),sap,3)
-    !if (.not.check_boxes(sap)) error stop __LINE__
-    if (.not.check_sort(sap)) error stop __LINE__
-
-  end subroutine do_quicksort
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: multisap_sweep                                          !
+  !                                                                      !
+  !  Purpose: Call sweep on each of the saps in this multisap.           !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_sweep(this)
     ! use pair_manager
@@ -415,7 +515,6 @@ contains
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
-             ! print *,"NOW GOING TO sweep THE THING:::::   ",sap_id
              call sweep(this%saps(sap_id),sap_id)
 
              !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) error stop __LINE__
@@ -426,7 +525,15 @@ contains
 
   end subroutine multisap_sweep
 
-  SUBROUTINE boxhandle_GROW(boxhandles,new_size)
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: boxhandle_GROW                                          !
+  !                                                                      !
+  !  Purpose: resize array of box_t                                      !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+  subroutine boxhandle_GROW(boxhandles,new_size)
     IMPLICIT NONE
 
     INTEGER, INTENT(IN) :: new_size
@@ -439,6 +546,6 @@ contains
     boxhandle_tmp(1:lSIZE) = boxhandles(1:lSIZE)
     call move_alloc(boxhandle_tmp,boxhandles)
 
-  END SUBROUTINE boxhandle_GROW
+  end subroutine boxhandle_GROW
 
 end module multi_sweep_and_prune

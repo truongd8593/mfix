@@ -1,7 +1,7 @@
       program test_sap
 
         use discretelement
-        use pair_manager, only: pairs, init_pairs, add_pair,get_pair
+        use pair_manager, only: init_pairs, add_pair,get_pair
         use sweep_and_prune
 
       implicit none
@@ -9,10 +9,11 @@
       integer :: nn,mm,box_A,box_B
       integer :: pair(2)
       type(aabb_t) aabb
+      type (sap_t) :: sap
 
       MAX_PIP = 10
 
-      call init_sap(sap)
+      call init_sap(sap,101)
 
       aabb%minendpoint(1) = 5
       aabb%minendpoint(2) = 5
@@ -24,7 +25,7 @@
       print *,"after init"
       !call print_boxes(sap)
 
-      call add_box(sap,aabb,box_A)
+      call add_box(sap,aabb,202,box_A)
 
       print *,"after add"
       call print_boxes(sap)
@@ -36,12 +37,12 @@
       aabb%maxendpoint(2) = 17
       aabb%maxendpoint(3) = 17
 
-      call add_box(sap,aabb,box_B)
+      call add_box(sap,aabb,303,box_B)
 
       print *,"after second add:"
       call print_boxes(sap)
 
-      call init_pairs
+      call init_pairs(sap%hashtable)
 
       print *,"PRESORT"
       call sort(sap)
@@ -49,14 +50,14 @@
 
       print *,"after sort:"
       call print_boxes(sap)
-      call check_boxes(sap)
-
-      !call sweep(sap)
-      !print *,"after sweep:"
-      !call print_boxes(sap)
       !call check_boxes(sap)
 
-      call get_pair(pair)
+      call sweep(sap,sap%id)
+      print *,"after sweep:"
+      call print_boxes(sap)
+      !call check_boxes(sap)
+
+      call get_pair(sap%hashtable,pair)
       if (pair(1).ne. 1 .or. pair(2).ne.2) then
          print *,"SHOULD HAVE FOUND A PAIR HERE"
          stop __LINE__
@@ -74,14 +75,14 @@
       print *,"after update"
       call print_boxes(sap)
 
-      call init_pairs
+      call init_pairs(sap%hashtable)
       call sort(sap)
       !call sweep(sap)
 
       print *,"after second sweep"
       call print_boxes(sap)
 
-      call get_pair(pair)
+      call get_pair(sap%hashtable,pair)
       if (pair(1).ne. 0 .or. pair(2).ne.0) then
          print *,"SHOULD NOT HAVE FOUND A PAIR HERE"
          stop __LINE__

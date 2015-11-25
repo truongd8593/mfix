@@ -1,9 +1,35 @@
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module: pair_manager                                                !
+!                                                                      !
+!  Purpose: maintains a hashtable of pairs of positive 32-bit          !
+!           integers (meant to represent particle ids).                !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
 module pair_manager
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Type: pair_t                                                        !
+  !                                                                      !
+  !  Purpose: Represents a pair of particle ids.                         !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   type pair_t
      integer(kind=4) :: ii
      integer(kind=4) :: jj
   end type pair_t
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Type: hashtable_t                                                   !
+  !                                                                      !
+  !  Purpose: Represents a hashtable of pair_t. Uses open addressing.    !
+  !           Blank values are (0,0); deleted values are (0,1).          !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   type hashtable_t
      type(pair_t), dimension(:), allocatable :: table
@@ -14,6 +40,14 @@ module pair_manager
   end type hashtable_t
 
 contains
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: init_pairs                                              !
+  !                                                                      !
+  !  Purpose: hashtable_t constructor                                    !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine init_pairs(this)
     implicit none
@@ -27,6 +61,15 @@ contains
 
   end subroutine init_pairs
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: reset_pairs                                             !
+  !                                                                      !
+  !  Purpose: Resets the iterator for traversing the hashtable.          !
+  !           Used before calling get_pairs().                           !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine reset_pairs(this)
     implicit none
     type(hashtable_t), intent(inout) :: this
@@ -35,6 +78,13 @@ contains
 
   end subroutine reset_pairs
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: check_table                                             !
+  !                                                                      !
+  !  Purpose: Debugging                                                  !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   logical function check_table(this)
     implicit none
@@ -86,6 +136,15 @@ endif
 
   end function check_table
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: get_pair                                                !
+  !                                                                      !
+  !  Purpose: Returns the next pair in the hashtable.  Calling           !
+  !           reset_pairs() starts over again from the beginning.        !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
    subroutine get_pair(this,pair)
      implicit none
      type(hashtable_t), intent(inout) :: this
@@ -105,7 +164,15 @@ endif
      enddo
    end subroutine get_pair
 
-  logical function is_pair(this,i0,j0)
+   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+   !                                                                      !
+   !  Subroutine: is_pair                                                 !
+   !                                                                      !
+   !  Purpose: Returns .true. iff the pair (i0,j0) is in the hashtable.   !
+   !                                                                      !
+   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+   logical function is_pair(this,i0,j0)
     implicit none
     type(hashtable_t), intent(in) :: this
     integer, intent(in) :: i0, j0
@@ -149,6 +216,14 @@ endif
     error stop __LINE__
 
   end function is_pair
+
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: add_pair                                                !
+  !                                                                      !
+  !  Purpose: Adds (i0,j0) to the hashtable; resizes if necessary.       !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   recursive subroutine add_pair(this,i0,j0)
     implicit none
@@ -242,6 +317,14 @@ endif
 
   end subroutine add_pair
 
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: del_pair                                                !
+  !                                                                      !
+  !  Purpose: Removes (i0,j0) from the hashtable (if it exists).         !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
   subroutine del_pair(this,i0,j0)
     implicit none
     type(hashtable_t), intent(inout) :: this
@@ -252,9 +335,9 @@ endif
     ii = min(i0,j0)
     jj = max(i0,j0)
 
-      if (ii.eq. 114 .and. jj.eq.115) then
-         print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   DELETING ",ii,jj
-      endif
+      ! if (ii.eq. 114 .and. jj.eq.115) then
+      !    print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   DELETING ",ii,jj
+      ! endif
 
       if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
@@ -277,7 +360,7 @@ endif
              this%table(hash)%ii = 0
              this%table(hash)%jj = 1
              this%table_size = this%table_size - 1
-             if (ii.eq.114 .and. 115.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
+             ! if (ii.eq.114 .and. 115.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
           ! if(.not. check_table(this)) error stop __LINE__
           return
        endif
