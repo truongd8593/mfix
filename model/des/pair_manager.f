@@ -39,6 +39,9 @@ module pair_manager
      integer :: current_hash
   end type hashtable_t
 
+  public :: init_pairs, reset_pairs, is_pair, get_pair, add_pair, del_pair
+  private :: check_table
+
 contains
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!

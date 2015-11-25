@@ -33,8 +33,7 @@
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
-      use multi_sweep_and_prune
-      use pair_manager
+      use multi_sweep_and_prune, only: aabb_t, multisap_sort, multisap_update, do_sap
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -141,6 +140,7 @@
 !$omp end sections
          ENDIF
 
+if (do_sap) then
 !$omp single
          DO L = 1, MAX_PIP
             aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)-0.001
@@ -148,6 +148,7 @@
             call multisap_update(multisap,aabb,boxhandle(L))
          ENDDO
 !$omp end single
+endif
 
 ! Update particle orientation - Always first order
 ! When omega is non-zero, compute the rotation angle, and apply the
@@ -178,21 +179,9 @@
 
 !$omp end parallel
 
-      ! do nnn=0, size(multisap%saps)-1
-      !    !print *,"nnn = ",nnn
-      !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-      !    !if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-      ! enddo
-
-      ! !call init_pairs
-      call multisap_sort(multisap)
-      ! !call sweep(sap)
-
-      ! do nnn=0, size(multisap%saps)-1
-      !    !print *,"nnn = ",nnn
-      !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-      !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-      ! enddo
+         if (do_sap) then
+            call multisap_sort(multisap)
+         endif
 
       FIRST_PASS = .FALSE.
 

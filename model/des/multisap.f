@@ -13,6 +13,8 @@ module multi_sweep_and_prune
 
   use sweep_and_prune
 
+  logical, parameter :: do_sap = .false.
+
   type multisap_t
      ! grid particle, e.g. 20x20x20
      integer :: grid(3)
@@ -61,6 +63,9 @@ module multi_sweep_and_prune
      integer :: particle_id
      type(boxhandle_t) :: list(MAX_SAPS)
   end type boxhandlelist_t
+
+  public :: init_multisap, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow
+  private :: multisap_raster
 
 contains
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -386,7 +391,6 @@ contains
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_sweep(this)
-    ! use pair_manager
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk

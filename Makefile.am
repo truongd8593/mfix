@@ -55,42 +55,6 @@ noinst_LIBRARIES = libmfix.a
 mfix_SOURCES = model/mfix.f
 libmfix_a_SOURCES = model/ODEPACK.F
 
-bin_PROGRAMS += pm ms
-
-ms_SOURCES = model/des/pair_manager.f
-ms_SOURCES += model/des/discretelement_mod.f
-ms_SOURCES += model/des/list.f
-ms_SOURCES += model/des/multisap.f
-ms_SOURCES += model/des/resize.f
-ms_SOURCES += model/des/sap.f
-ms_SOURCES += model/des/test_ms.f
-ms_SOURCES += model/geometry_mod.f
-
-pm_SOURCES = model/des/pair_manager.f
-pm_SOURCES += model/des/discretelement_mod.f
-pm_SOURCES += model/des/test_pm.f
-
-bin_PROGRAMS += sap
-
-sap_SOURCES = model/des/discretelement_mod.f
-sap_SOURCES += model/des/list.f
-sap_SOURCES += model/des/pair_manager.f
-sap_SOURCES += model/des/resize.f
-sap_SOURCES += model/des/sap.f
-sap_SOURCES += model/des/test_sap.f
-sap_SOURCES += model/geometry_mod.f
-
-bin_PROGRAMS += multisap
-
-multisap_SOURCES = model/des/discretelement_mod.f
-multisap_SOURCES += model/des/list.f
-multisap_SOURCES += model/des/multisap.f
-multisap_SOURCES += model/des/pair_manager.f
-multisap_SOURCES += model/des/resize.f
-multisap_SOURCES += model/des/sap.f
-multisap_SOURCES += model/des/test_multisap.f
-multisap_SOURCES += model/geometry_mod.f
-
 ################################################################
 #                                                              #
 #           postmfix executable                                #
@@ -800,6 +764,8 @@ libmfix_a_SOURCES += $(libmfix_src)
 ################################################################
 
 postmfix_SOURCES = \
+	model/BLAS.f \
+	model/DGTSV.f \
 	model/GhdTheory/adjust_eps_ghd.f \
 	model/GhdTheory/bulk_viscosity.f \
 	model/GhdTheory/calc_d_ghd.f \
@@ -1064,6 +1030,7 @@ postmfix_SOURCES = \
 	model/des/read_particle_input.f \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
+	model/des/resize.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
@@ -1229,8 +1196,6 @@ postmfix_SOURCES = \
 	model/set_fluidbed_p.f \
 	model/set_geometry.f \
 	model/set_geometry1.f \
-	model/BLAS.f \
-	model/DGTSV.f \
 	model/set_ic.f \
 	model/set_icbc_flags.f \
 	model/set_increments.f \

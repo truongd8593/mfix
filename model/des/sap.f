@@ -89,8 +89,8 @@ module sweep_and_prune
      type(hashtable_t) :: hashtable
   end type sap_t
 
-  public :: add_box, del_box, update_box, sort, sweep
-  private :: partition
+  public :: init_sap, add_box, del_box, update_box, sort, sweep
+  private :: partition, fullcheck, boxes_grow, endpoints_grow, sort_endpoints, quicksort_endpoints
 
 contains
 
@@ -354,7 +354,7 @@ contains
   subroutine sweep(this,sap_id)
 
     use pair_manager, only: add_pair
-    use geometry
+    use geometry, only: no_k
 
     implicit none
     type(sap_t), intent(inout) :: this
@@ -412,7 +412,6 @@ contains
 
   subroutine sort_endpoints(this, endpoints, axis)
     use pair_manager, only: add_pair, del_pair
-    !use discretelement
     implicit none
     type(sap_t), intent(inout) :: this
     integer, intent(in) :: axis
@@ -483,7 +482,7 @@ contains
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   logical function fullcheck(this,id,id2,curr_axis)
-    use geometry
+    use geometry, only: no_k
     implicit none
     type(sap_t), intent(inout) :: this
     ! box ids to compare

@@ -18,8 +18,8 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      use pair_manager
-      use multi_sweep_and_prune
+      use pair_manager, only: is_pair
+      use multi_sweep_and_prune, only: do_sap
 
       IMPLICIT NONE
 
@@ -70,7 +70,6 @@
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
       integer :: pp
-      type(box_t) :: box, box2
       integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
       integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
       integer :: nn, mm, box_id, box_id2
@@ -122,62 +121,6 @@
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
 
-            ! if (.false. .and. ll.eq.105 .and. i.eq.106) then
-            !    do mm=1,size(boxhandle(ll)%list)
-            !       if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
-            !       print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
-            !       box_id = boxhandle(ll)%list(mm)%box_id
-
-            !       found = .false.
-            !       do nn=1,size(boxhandle(i)%list)
-            !          if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-            !             print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
-            !             box_id2 = boxhandle(i)%list(nn)%box_id
-            !             found = .true.
-            !          endif
-            !          enddo
-
-            !          if (.not.found) cycle
-
-            !          print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
-
-            !          sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
-
-            !          if (.not.check_boxes(sap)) error stop __LINE__
-
-            !          !call print_boxes(sap)
-
-            !          print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-            !          print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
-
-            !          box = sap%boxes(box_id)
-            !          print *,"LL BOX  ",box
-            !          print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-            !          print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-            !          print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-            !          print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
-
-            !          box2 = sap%boxes(box_id2)
-            !          print *,"I BOX  ",box
-            !          print *,"MIN1 i is ",box2%minendpoint_id(1),sap%x_endpoints(box2%minendpoint_id(1))%value
-            !          print *,"MAX1 i is ",box2%maxendpoint_id(1),sap%x_endpoints(box2%maxendpoint_id(1))%value
-            !          print *,"MIN2 i is ",box2%minendpoint_id(2),sap%y_endpoints(box2%minendpoint_id(2))%value
-            !          print *,"MAX2 i is ",box2%maxendpoint_id(2),sap%y_endpoints(box2%maxendpoint_id(2))%value
-
-            !          if (max(sap%x_endpoints(box%minendpoint_id(1))%value,sap%x_endpoints(box2%minendpoint_id(1))%value) < min(sap%x_endpoints(box%maxendpoint_id(1))%value,sap%x_endpoints(box2%maxendpoint_id(1))%value)) then
-            !             print *,"X OVERLAP"
-            !             print *,"X MAX OF MINS: ",max(sap%x_endpoints(box%minendpoint_id(1))%value,sap%x_endpoints(box%minendpoint_id(1))%value)
-            !             print *,"Y MIN OF MAXS: ",min(sap%x_endpoints(box%maxendpoint_id(1))%value,sap%x_endpoints(box%maxendpoint_id(1))%value)
-            !             if (max(sap%x_endpoints(box%minendpoint_id(2))%value,sap%x_endpoints(box2%minendpoint_id(2))%value) < min(sap%x_endpoints(box%maxendpoint_id(2))%value,sap%x_endpoints(box2%maxendpoint_id(2))%value)) then
-            !                print *,"Y OVERLAP"
-            !                if (.not.is_pair(ll,i)) then
-            !                   error stop __LINE__
-            !                endif
-            !             endif
-            !          endif
-            !    enddo
-            ! endif
-
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)
@@ -227,61 +170,43 @@
                CYCLE
             ENDIF
 
-            if (.not.is_pair(multisap%hashtable,ll,i)) then
+            if (do_sap) then
+               if (.not.is_pair(multisap%hashtable,ll,i)) then
 
-               print *,"SAP DIDNT FIND PAIR: ",ll,i
-               print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-               print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+                  print *,"SAP DIDNT FIND PAIR: ",ll,i
+                  print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
+                  print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
 
-               print *,""
-               print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
-               print *,""
+                  print *,""
+                  print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
+                  print *,""
 
-               print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
-               print *,"IIIIIIIII ",boxhandle(i)%list(:)
+                  print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
+                  print *,"IIIIIIIII ",boxhandle(i)%list(:)
 
-               do mm=1,size(boxhandle(ll)%list)
-                  if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
-                  print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
-                  box_id = boxhandle(ll)%list(mm)%box_id
+                  do mm=1,size(boxhandle(ll)%list)
+                     if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
+                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
+                     box_id = boxhandle(ll)%list(mm)%box_id
 
-                  found = .false.
-                  do nn=1,size(boxhandle(i)%list)
-                     if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-                        print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
-                        box_id2 = boxhandle(i)%list(nn)%box_id
-                        found = .true.
-                     endif
+                     found = .false.
+                     do nn=1,size(boxhandle(i)%list)
+                        if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
+                           print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+                           box_id2 = boxhandle(i)%list(nn)%box_id
+                           found = .true.
+                        endif
                      enddo
 
                      if (.not.found) cycle
 
                      print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
 
-                     ! sap = multisap%saps(boxhandle(ll)%list(mm)%sap_id)
-
-                     ! if (.not.check_boxes(sap)) error stop __LINE__
-
-                     !call print_boxes(sap)
-
-                     ! box = sap%boxes(box_id)
-                     ! print *,"LL BOX  ",box
-                     ! print *,"MIN1 LL is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-                     ! print *,"MAX1 LL is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-                     ! print *,"MIN2 LL is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-                     ! print *,"MAX2 LL is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
-
-                     ! box = sap%boxes(box_id2)
-                     ! print *,"I BOX  ",box
-                     ! print *,"MIN1 i is ",box%minendpoint_id(1),sap%x_endpoints(box%minendpoint_id(1))%value
-                     ! print *,"MAX1 i is ",box%maxendpoint_id(1),sap%x_endpoints(box%maxendpoint_id(1))%value
-                     ! print *,"MIN2 i is ",box%minendpoint_id(2),sap%y_endpoints(box%minendpoint_id(2))%value
-                     ! print *,"MAX2 i is ",box%maxendpoint_id(2),sap%y_endpoints(box%maxendpoint_id(2))%value
-
                   enddo
 
                   error stop __LINE__
                endif
+            endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I

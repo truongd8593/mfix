@@ -26,8 +26,6 @@
       use run, only: NSTEP
       use run, only: TIME, TSTOP, DT
       use sendrecv
-      !use multi_sweep_and_prune
-      !use sweep_and_prune
 
       IMPLICIT NONE
 !------------------------------------------------
