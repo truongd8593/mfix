@@ -91,10 +91,10 @@ contains
     type(hashtable_t), intent(in) :: this
     integer :: nn, blanks, deleted, full
 
-if (this%table_size > size(this%table)) then
-   check_table = .false.
-   return
-endif
+    if (this%table_size > size(this%table)) then
+       check_table = .false.
+       return
+    endif
 
     check_table = .true.
     ! return
@@ -145,34 +145,34 @@ endif
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-   subroutine get_pair(this,pair)
-     implicit none
-     type(hashtable_t), intent(inout) :: this
-     integer, intent(out) :: pair(2)
+  subroutine get_pair(this,pair)
+    implicit none
+    type(hashtable_t), intent(inout) :: this
+    integer, intent(out) :: pair(2)
 
-     pair(1) = 0
-     pair(2) = 0
+    pair(1) = 0
+    pair(2) = 0
 
-     do while (this%current_hash < size(this%table))
-        if (0.ne.this%table(this%current_hash)%ii .and. 0.ne.this%table(this%current_hash)%jj) then
-           pair(1) = this%table(this%current_hash)%ii
-           pair(2) = this%table(this%current_hash)%jj
-           this%current_hash = this%current_hash + 1
-           return
-        endif
-        this%current_hash = this%current_hash + 1
-     enddo
-   end subroutine get_pair
+    do while (this%current_hash < size(this%table))
+       if (0.ne.this%table(this%current_hash)%ii .and. 0.ne.this%table(this%current_hash)%jj) then
+          pair(1) = this%table(this%current_hash)%ii
+          pair(2) = this%table(this%current_hash)%jj
+          this%current_hash = this%current_hash + 1
+          return
+       endif
+       this%current_hash = this%current_hash + 1
+    enddo
+  end subroutine get_pair
 
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !                                                                      !
-   !  Subroutine: is_pair                                                 !
-   !                                                                      !
-   !  Purpose: Returns .true. iff the pair (i0,j0) is in the hashtable.   !
-   !                                                                      !
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !                                                                      !
+  !  Subroutine: is_pair                                                 !
+  !                                                                      !
+  !  Purpose: Returns .true. iff the pair (i0,j0) is in the hashtable.   !
+  !                                                                      !
+  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-   logical function is_pair(this,i0,j0)
+  logical function is_pair(this,i0,j0)
     implicit none
     type(hashtable_t), intent(in) :: this
     integer, intent(in) :: i0, j0
@@ -197,18 +197,15 @@ endif
     do
        if (this%table(hash)%ii .eq. ii .and. this%table(hash)%jj .eq. jj) then
           is_pair = .true.
-          ! if (ii.eq.114 .and. 115.eq.jj) print *,"FOUND PAIR:",ii,jj,"   AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
           return
        endif
        if (this%table(hash)%ii .eq. 0 .and. this%table(hash)%jj .eq. 0) then
-          ! if (ii.eq.114 .and. 115.eq.jj) print *,"DID NOT FIND PAIR:",ii,jj," AT LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
           is_pair = .false.
           return
        endif
        probe_count = probe_count + 1
        hash = mod(hash+probe_count*probe_count,size(this%table))
        if (hash < 0) hash = hash+size(this%table)
-       ! print *,"HASH IS =",hash," TABLE IS ",this%table_size,"/",size(this%table)
        if (hash .eq. init_hash) exit
     enddo
 
@@ -249,8 +246,6 @@ endif
        endif
        table_tmp(0:old_size-1) = this%table(0:old_size-1)
 
-       print *,"old_size == ",old_size
-
        deallocate(this%table)
        allocate(this%table(0:2*old_size))
        this%table(:)%ii = 0
@@ -272,10 +267,6 @@ endif
     ii = min(i0,j0)
     jj = max(i0,j0)
 
-      ! if (ii.eq. 114 .and. jj.eq.115) then
-      !    print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   ADDING ",ii,jj
-      ! endif
-
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
        error stop __LINE__
@@ -286,29 +277,22 @@ endif
     hash = mod(ii+jj*jj+probe_count*probe_count,size(this%table))
     if (hash < 0) hash = hash+size(this%table)
     init_hash = hash
-    !print *,"INIT HASH IS =",hash," TABLE IS ",this%table_size,"/",size(table)
 
     do
        if (this%table(hash)%ii .eq. ii .and. this%table(hash)%jj .eq. jj) then
           ! already in table
-          ! table(hash)%count = table(hash)%count + 1
-          ! if (ii.eq.114 .and. 115.eq.jj) print *,"INCREMENT PAIR:",ii,jj," TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
           return
        endif
        if (this%table(hash)%ii .eq. 0 .or. this%table(hash)%jj .eq. 0) then
           this%table(hash)%ii = ii
           this%table(hash)%jj = jj
-          ! table(hash)%count = 1
           this%table_size = this%table_size + 1
-          ! if (ii.eq.114 .and. 115.eq.jj) print *,"added pair:",ii,jj,"   to location:",hash,"   in table of size:  ",this%table_size,"/",size(this%table)
-          ! print *,"ADDED PAIR:",ii,jj,"   TO LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
           ! if(.not. check_table(this)) error stop __LINE__
           return
        endif
        probe_count = probe_count + 1
        hash = mod(hash+probe_count*probe_count,size(this%table))
        if (hash < 0) hash = hash+size(this%table)
-       !!print *,"HASH IS =",hash," TABLE IS ",this%table_size,"/",size(this%table)
        if (hash .eq. init_hash) exit
     enddo
 
@@ -335,11 +319,7 @@ endif
     ii = min(i0,j0)
     jj = max(i0,j0)
 
-      ! if (ii.eq. 114 .and. jj.eq.115) then
-      !    print *,"|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||   DELETING ",ii,jj
-      ! endif
-
-      if (ii < 1 .or. jj < 1) then
+    if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
        error stop __LINE__
     endif
@@ -356,11 +336,10 @@ endif
           return
        endif
        if (this%table(hash)%ii .eq. ii .and. this%table(hash)%jj .eq. jj) then
-             ! 0,1 signifies DELETED hash entry
-             this%table(hash)%ii = 0
-             this%table(hash)%jj = 1
-             this%table_size = this%table_size - 1
-             ! if (ii.eq.114 .and. 115.eq.jj) print *,"REMOVED PAIR:",ii,jj,"   FROM LOCATION:",hash,"   IN TABLE OF SIZE:  ",this%table_size,"/",size(this%table)
+          ! 0,1 signifies DELETED hash entry
+          this%table(hash)%ii = 0
+          this%table(hash)%jj = 1
+          this%table_size = this%table_size - 1
           ! if(.not. check_table(this)) error stop __LINE__
           return
        endif

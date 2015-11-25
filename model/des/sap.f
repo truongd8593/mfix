@@ -96,196 +96,6 @@ contains
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
-  !  Function: check_boxes                                               !
-  !                                                                      !
-  !  Purpose: Debug to check integrity of endpoints arrays               !
-  !                                                                      !
-  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-  logical function check_boxes(this)
-    ! use discretelement
-    use pair_manager
-    use geometry
-    implicit none
-    type(sap_t), intent(inout) :: this
-    integer :: ii, nn, ss, particle_id
-    double precision :: diff,asdf
-
-    check_boxes = .true.
-    return
-
-    do ii=1, this%boxes_len
-
-       if (0 .ne.this%boxes(ii)%minendpoint_id(1)) cycle
-
-       if (0.ne.this%boxes(ii)%minendpoint_id(1) .and. abs(this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id) .ne. ii) then
-          print *,"SAP_ID=",this%id,"   this%boxes(",ii,")%minendpoint_id(1)",this%boxes(ii)%minendpoint_id(1)
-          print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes(",ii,")%minendpoint_id(1))%box_id",this%x_endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id
-          check_boxes = .false.
-          return
-       endif
-       if (abs(this%y_endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) error stop __LINE__
-       if (abs(this%z_endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) error stop __LINE__
-       if (0.ne.this%boxes(ii)%maxendpoint_id(1) .and. abs(this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. ii) then
-          print *,"SAP_ID=",this%id,"this%boxes(",ii,")%maxendpoint_id(1)",this%boxes(ii)%maxendpoint_id(1)
-          print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes(",ii,")%maxendpoint_id(1))%box_id",this%x_endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id
-          check_boxes = .false.
-          return
-       endif
-       if (0.ne.this%boxes(ii)%maxendpoint_id(1) .and. abs(this%y_endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) error stop __LINE__
-       if (do_k) then
-          if (abs(this%z_endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) error stop __LINE__
-       endif
-
-       if (.true.) then
-          particle_id = this%boxes(ii)%particle_id
-
-          ! asdf = 0.1
-          ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value)
-          ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-          !    print *,"SAP_ID=",this%id,"  min xdiff ======== ",diff
-          !    print *,"SAP_ID=",this%id,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-          !    print *,"SAP_ID=",this%id,"DES_RADIUS = ",DES_RADIUS(particle_id)
-          !    print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%minendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value
-          !    check_boxes = .false.
-          !    return
-          ! endif
-
-          ! diff = (DES_POS_NEW(1,particle_id)+DES_RADIUS(particle_id) - this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value)
-          ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-          !    print *,"SAP_ID=",this%id,"SAP_ID::  ",this%id,"  max xdiff ======== ",diff
-          !    print *,"SAP_ID=",this%id,"DES_POS_NEW(1,",particle_id,") = ",DES_POS_NEW(1,particle_id)
-          !    print *,"SAP_ID=",this%id,"DES_RADIUS(",particle_id,") = ",DES_RADIUS(particle_id)
-          !    print *,"SAP_ID=",this%id,"this%boxes%maxendpoint_id(1) = ",this%boxes(ii)%maxendpoint_id(1)
-          !    print *,"SAP_ID=",this%id,"this%x_endpoints(this%boxes%maxendpoint_id(1))%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
-          !    print *,"SAP_ID=",this%id,"this%x_endpoints(",this%boxes(ii)%maxendpoint_id(1),")%value = ",this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
-          !    check_boxes = .false.
-          !    return
-          ! endif
-
-          ! diff = (DES_POS_NEW(2,particle_id)-DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value)
-          ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-          !    print *,"SAP_ID=",this%id,"  min ydiff ======== ",diff
-          !    print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
-          !    print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
-          !    print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%minendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value
-          !    check_boxes = .false.
-          !    return
-          ! endif
-
-          ! diff = (DES_POS_NEW(2,particle_id)+DES_RADIUS(particle_id) - this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value)
-          ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-          !    print *,"SAP_ID=",this%id,"  max ydiff ======== ",diff
-          !    print *,"SAP_ID=",this%id,"DES_POS_NEW(2,particle_id) = ",DES_POS_NEW(2,particle_id)
-          !    print *,"SAP_ID=",this%id,"DES_RADIUS(particle_id) = ",DES_RADIUS(particle_id)
-          !    print *,"SAP_ID=",this%id,"this%y_endpoints(this%boxes%maxendpoint_id(2))%value = ",this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value
-          !    check_boxes = .false.
-          !    return
-          ! endif
-
-       endif
-    enddo
-
-    check_boxes = .true.
-    return
-
-  end function check_boxes
-
-  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-  !                                                                      !
-  !  Function: check_sort                                                !
-  !                                                                      !
-  !  Purpose: Debugging                                                  !
-  !                                                                      !
-  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-  logical function check_sort(this)
-    use geometry, only: do_k
-    implicit none
-    type(sap_t), intent(inout) :: this
-    integer :: ii, nn
-
-    ! CHECK SORT
-    do ii=2, this%x_endpoints_len
-       if (this%x_endpoints(ii)%value < this%x_endpoints(ii-1)%value) then
-          print *,"SAP_ID=",this%id,"*********x endpoints********************************************************************"
-          print *,"SAP_ID=",this%id,"ii-1:",ii-1,"  endpoints(ii):",this%x_endpoints(ii-1)%box_id,this%x_endpoints(ii-1)%value
-          print *,"SAP_ID=",this%id,"ii:",ii,"  endpoints(ii):",this%x_endpoints(ii)%box_id,this%x_endpoints(ii)%value
-          print *,"SAP_ID=",this%id,"****************************************************************************************"
-          check_sort = .false.
-          return
-       endif
-    enddo
-
-    ! CHECK SORT
-    do ii=2, this%y_endpoints_len
-       if (this%y_endpoints(ii)%value < this%y_endpoints(ii-1)%value) then
-          print *,"SAP_ID=",this%id,"****************y endpoints************************************************************************"
-          print *,"SAP_ID=",this%id,"ii-1:",ii-1,"  endpoints(ii):",this%y_endpoints(ii-1)%box_id,this%y_endpoints(ii-1)%value
-          print *,"SAP_ID=",this%id,"ii:",ii,"  endpoints(ii):",this%y_endpoints(ii)%box_id,this%y_endpoints(ii)%value
-          print *,"SAP_ID=",this%id,"****************************************************************************************"
-          check_sort = .false.
-          return
-       endif
-    enddo
-
-    ! CHECK SORT
-    if (do_k) then
-       do ii=2, this%z_endpoints_len
-          if (this%z_endpoints(ii)%value < this%z_endpoints(ii-1)%value) then
-             print *,"SAP_ID=",this%id,"***********z endpoints******************************************************************"
-             print *,"SAP_ID=",this%id,"ii-1:",ii-1,"  endpoints(ii):",this%z_endpoints(ii-1)%box_id,this%z_endpoints(ii-1)%value
-             print *,"SAP_ID=",this%id,"ii:",ii,"  endpoints(ii):",this%z_endpoints(ii)%box_id,this%z_endpoints(ii)%value
-             print *,"SAP_ID=",this%id,"****************************************************************************************"
-             check_sort = .false.
-             return
-          endif
-       enddo
-    endif
-
-    check_sort = .true.
-    return
-
-  end function check_sort
-
-  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-  !                                                                      !
-  !  Subroutine: print_boxes                                             !
-  !                                                                      !
-  !  Purpose: Debugging                                                  !
-  !                                                                      !
-  !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-  subroutine print_boxes(this)
-    implicit none
-    type(sap_t), intent(inout) :: this
-    integer :: ii
-
-    ! CHECK SORT
-    ! do ii=2, this%x_endpoints_len
-    !    if (this%x_endpoints(ii)%value < this%x_endpoints(ii-1)%value) then
-    !       print *,"SAP_ID=",this%id,"****************************************************************************************"
-    !       print *,"SAP_ID=",this%id,"ii-1:",ii-1,"  endpoints(ii):",this%x_endpoints(ii-1)%box_id,this%x_endpoints(ii-1)%value
-    !       print *,"SAP_ID=",this%id,"ii:",ii,"  endpoints(ii):",this%x_endpoints(ii)%box_id,this%x_endpoints(ii)%value
-    !       print *,"SAP_ID=",this%id,"****************************************************************************************"
-    !       !error stop __LINE__
-    !    endif
-    ! enddo
-
-    do ii=1, this%x_endpoints_len
-       print *,"SAP_ID=",this%id,"ENDPOINTX ",this%x_endpoints_len,": ",ii,this%x_endpoints(ii)%box_id," has value ",this%x_endpoints(ii)%value
-    enddo
-
-    do ii=1, this%boxes_len
-       print *,"SAP_ID=",this%id,"BOXX ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(1)," to ",this%boxes(ii)%maxendpoint_id(1)
-       print *,"SAP_ID=",this%id,"BOXY ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(2)," to ",this%boxes(ii)%maxendpoint_id(2)
-       print *,"SAP_ID=",this%id,"BOXZ ",this%boxes_len,": ",ii," exists from ",this%boxes(ii)%minendpoint_id(3)," to ",this%boxes(ii)%maxendpoint_id(3)
-    enddo
-
-  end subroutine print_boxes
-
-  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-  !                                                                      !
   !  Subroutine: init_sap                                                !
   !                                                                      !
   !  Purpose: sap_t constructor                                          !
@@ -377,8 +187,6 @@ contains
     integer, intent(in) :: particle_id
     integer, intent(out) :: id
 
-    ! print *,"SAP_ID=",this%id,"SAP:: ",this%id,"ADDING PARTICLE #   ",particle_id
-
     if (this%x_endpoints_len+2 > size(this%x_endpoints)) then
        call endpoints_GROW(this%x_endpoints,2*(this%x_endpoints_len+2))
     endif
@@ -431,13 +239,6 @@ contains
     this%z_endpoints(this%z_endpoints_len)%box_id = id
     this%z_endpoints(this%z_endpoints_len)%value = aabb%maxendpoint(3)
 
-    ! print *,"SAP_ID=",this%id,"JUST ADDED PARTICLE",particle_id," TO SAP ",this%id
-    ! print *,"SAP_ID=",this%id," PARTICLE IS AT ",des_pos_new(:,particle_id)
-    ! print *,"SAP_ID=",this%id,"XXX === ",aabb%minendpoint(1)," TO ",aabb%maxendpoint(1)
-    ! print *,"SAP_ID=",this%id,"YYY === ",aabb%minendpoint(2)," TO ",aabb%maxendpoint(2)
-    ! print *,"SAP_ID=",this%id,"ZZZ === ",aabb%minendpoint(3)," TO ",aabb%maxendpoint(3)
-    ! if (.not. check_boxes(this)) error stop __LINE__
-
   end subroutine add_box
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -488,10 +289,6 @@ contains
     this%y_endpoints(this%boxes(id)%minendpoint_id(2))%value = aabb%minendpoint(2)
     this%z_endpoints(this%boxes(id)%minendpoint_id(3))%value = aabb%minendpoint(3)
 
-    if (this%boxes(id)%maxendpoint_id(1).eq.289) then
-       !print *,"SAP_ID=",this%id,"000000UPDATE    this%boxes(",289,"):   particle_id,value = ",this%boxes(id)%particle_id,aabb%maxendpoint(1)
-       !print *,"SAP_ID=",this%id,"SAP_ID: ",this%id," 000000UPDATE    this%x_endpoints(",this%boxes(id)%maxendpoint_id(1),")%value = ",this%x_endpoints(this%boxes(id)%maxendpoint_id(1))%value
-    endif
   end subroutine update_box
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -583,7 +380,6 @@ contains
 
              if (max(this%boxes(aa)%minendpoint_id(2),this%boxes(-minmax)%minendpoint_id(2)) <= min(this%boxes(-minmax)%maxendpoint_id(2),this%boxes(aa)%maxendpoint_id(2)) .and. &
                   (NO_K .or. max(this%boxes(aa)%minendpoint_id(3),this%boxes(-minmax)%minendpoint_id(3)) <= min(this%boxes(-minmax)%maxendpoint_id(3),this%boxes(aa)%maxendpoint_id(3)))) then
-                if (this%boxes(-minmax)%particle_id.eq.114 .and. 115.eq.this%boxes(aa)%particle_id) print *,"SAP_ID=",this%id,"FOUND PAIR! ADDING...",this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id
                 call add_pair(this%hashtable,this%boxes(-minmax)%particle_id,this%boxes(aa)%particle_id)
              endif
           enddo
@@ -592,7 +388,6 @@ contains
           call list_add(active,-minmax)
 
        else if ( 0 < minmax ) then
-          !print *,"SAP_ID=",this%id,"minmax = ",minmax
           ! remove box from active pair list
           call list_del(active,minmax)
        else
@@ -627,41 +422,8 @@ contains
     integer :: tmp_ii, tmp_jj
     type(endpoint_t) :: sweeppoint, swappoint
     real :: sweepval
-    !real :: zzz(3), asdf
-
-    ! print *,"SAP_ID=",this%id,"NOW SORTING AXIS ",axis,"############################################################"
-
-    ! private void SortAxis(List<SweepPoint> axis)
-    !  {
-    !      for (int j = 1; j < axis.Count; j++)
-    !      {
-    !          SweepPoint keyelement = axis[j];
-    !          float key = keyelement.Value;
-    !          int i = j - 1;
-    !          while (i >= 0 && axis[i].Value > key)
-    !          {
-    !              SweepPoint swapper = axis[i];
-    !              if (keyelement.Begin && !swapper.Begin)
-    !              {
-    !                  if (CheckBoundingBoxes(swapper.Body, keyelement.Body))
-    !                  {
-    !                      lock (fullOverlaps) fullOverlaps.Add(new BroadphasePair(swapper.Body, keyelement.Body));
-    !                  }
-    !              }
-    !              if (!keyelement.Begin && swapper.Begin)
-    !              {
-    !                  lock (fullOverlaps) fullOverlaps.Remove(new BroadphasePair(swapper.Body, keyelement.Body));
-    !              }
-    !              axis[i + 1] = swapper;
-    !              i = i - 1;
-    !          }
-    !          axis[i + 1] = keyelement;
-    !      }
-    !  }
 
     do ii=2, size(endpoints)
-
-       !print *,"SAP_ID=",this%id,"EVERYTHING BELOW ii=",ii," / ",size(endpoints),"  IS SORTED"
 
        sweeppoint = endpoints(ii)
        sweepval = sweeppoint%value
@@ -669,59 +431,24 @@ contains
 
        do while ( 0 < jj )
           if ( endpoints(jj)%value <= sweepval ) then
-             !print *,"SAP_ID=",this%id," AHAH, ",endpoints(jj)%value , " IS LESS THAN ",sweepval," . DONE WITH SORTING",ii
              exit
           endif
 
           swappoint = endpoints(jj)
 
-          !print *,"SAP_ID=",this%id,"SORTSTART................................................",ii,jj
-          !print *,"SAP_ID=",this%id,"swappoint is jj=",jj,",  "," BOX:",swappoint%box_id," VAL:",swappoint%value
-          !print *,"SAP_ID=",this%id,"NOW COMPARING ENDPOINTS BELONGING TO BOXES:",sweeppoint%box_id,swappoint%box_id
-          !print *,"SAP_ID=",this%id,"endpoints(ii) = ",endpoints(ii)
-          !print *,"SAP_ID=",this%id,"endpoints(ii)%box_id = ",endpoints(ii)%box_id
-
           if (sweeppoint%box_id < 0 .and. 0 < swappoint%box_id ) then
-
              if (fullcheck(this,-sweeppoint%box_id,swappoint%box_id,axis)) then
-                !print *,"SAP_ID=",this%id,"PAIR FOUND",this%boxes(-sweeppoint%box_id)%particle_id,this%boxes(swappoint%box_id)%particle_id
-
-                if (114.eq. min(this%boxes(-sweeppoint%box_id)%particle_id,this%boxes(swappoint%box_id)%particle_id) .and. 115.eq.max(this%boxes(-sweeppoint%box_id)%particle_id,this%boxes(swappoint%box_id)%particle_id))then
-                   print *,"SAP_ID=",this%id," ADDING TO SAP:::::::::::::::::::",this%id,ii,jj
-                endif
-
                 call add_pair(this%hashtable,this%boxes(-sweeppoint%box_id)%particle_id,this%boxes(swappoint%box_id)%particle_id)
-             else
-                !print *,"SAP_ID=",this%id,"NOPE, FAILED FULLAXISCHECK"
              endif
           endif
 
           if (0 < sweeppoint%box_id .and. swappoint%box_id < 0 ) then
-             !print *,"SAP_ID=",this%id,"PAIR RMEOVEd"
-             if ((2302 .eq. this%boxes(sweeppoint%box_id)%particle_id .and. 2334 .eq. this%boxes(-swappoint%box_id)%particle_id) .or. (2334 .eq. this%boxes(sweeppoint%box_id)%particle_id .and. 2302 .eq. this%boxes(-swappoint%box_id)%particle_id)) then
-                print *,"SAP_ID=",this%id,"GOT SWEEPPOINT FROM ",ii
-                print *,"SAP_ID=",this%id,"GOT SWAPPOINT FROM ",jj
-                print *,"SAP_ID=",this%id,"sweeppoint%box_id ==== ",sweeppoint%box_id,"sweeppoint%particle_id ==== ",this%boxes(sweeppoint%box_id)%particle_id
-                print *,"SAP_ID=",this%id,"swappoint%box_id ==== ",swappoint%box_id,"swappoint%particle_id ==== ",this%boxes(-swappoint%box_id)%particle_id
-             endif
-
              if (fullcheck(this,sweeppoint%box_id,-swappoint%box_id,axis)) then
-
-                if (114.eq. min(this%boxes(sweeppoint%box_id)%particle_id,this%boxes(-swappoint%box_id)%particle_id) .and. 115.eq.max(this%boxes(sweeppoint%box_id)%particle_id,this%boxes(-swappoint%box_id)%particle_id))then
-                   print *,"SAP_ID=",this%id," DELETING FROM SAP:::::::::::::::::::",this%id,ii,jj,this%boxes(sweeppoint%box_id)%particle_id,this%boxes(-swappoint%box_id)%particle_id,this%boxes(sweeppoint%box_id)%particle_id,this%boxes(-swappoint%box_id)%particle_id
-                   print *,""
-                endif
-
                 call del_pair(this%hashtable,this%boxes(sweeppoint%box_id)%particle_id,this%boxes(-swappoint%box_id)%particle_id)
              endif
           endif
 
           endpoints(jj+1) = swappoint
-
-          ! if (jj+1.eq.289) then
-          !    print *,"SAP_ID=",this%id,"00000000000000000SWAP    endpoints(",289,")%particle_id = ",this%boxes(abs(endpoints(jj+1)%box_id))%particle_id
-          !    print *,"SAP_ID=",this%id,"00000000000000000SWAP    endpoints(",289,")%value = ",endpoints(289)%value
-          ! endif
 
           ! if box_id is zero, that is an endpoint corresponding to a deleted box
           if (swappoint%box_id < 0) then
@@ -742,65 +469,7 @@ contains
           this%boxes(sweeppoint%box_id)%maxendpoint_id(axis) = jj+1
        endif
 
-       !print *,"SAP_ID=",this%id,"DONE SORTING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ",ii,jj
-       !call print_boxes(this)
-       !if (.not. check_boxes(this)) error stop __LINE__
-
     enddo
-
-    if (1.eq.axis) then
-       do ii=1, this%boxes_len
-          if (this%boxes(ii)%minendpoint_id(1) .eq. 0 ) cycle
-          if (abs(endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%minendpoint_id(1)",this%boxes(ii)%minendpoint_id(1)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%minendpoint_id(1))%box_id",endpoints(abs(this%boxes(ii)%minendpoint_id(1)))%box_id
-             error stop __LINE__
-             return
-          endif
-          if (abs(endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%maxendpoint_id(1)",this%boxes(ii)%maxendpoint_id(1)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%maxendpoint_id(1))%box_id",endpoints(abs(this%boxes(ii)%maxendpoint_id(1)))%box_id
-             error stop __LINE__
-             return
-          endif
-       enddo
-    endif
-
-    if (2.eq.axis) then
-       do ii=1, this%boxes_len
-          if (this%boxes(ii)%minendpoint_id(2) .eq. 0 ) cycle
-          if (abs(endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%minendpoint_id(2)",this%boxes(ii)%minendpoint_id(2)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%minendpoint_id(2))%box_id",endpoints(abs(this%boxes(ii)%minendpoint_id(2)))%box_id
-             error stop __LINE__
-             return
-          endif
-          if (abs(endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%maxendpoint_id(2)",this%boxes(ii)%maxendpoint_id(2)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%maxendpoint_id(2))%box_id",endpoints(abs(this%boxes(ii)%maxendpoint_id(2)))%box_id
-             error stop __LINE__
-             return
-          endif
-       enddo
-    endif
-
-    if (3.eq.axis) then
-       do ii=1, this%boxes_len
-          if (this%boxes(ii)%minendpoint_id(3) .eq. 0 ) cycle
-          if (abs(endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%minendpoint_id(3)",this%boxes(ii)%minendpoint_id(3)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%minendpoint_id(3))%box_id",endpoints(abs(this%boxes(ii)%minendpoint_id(3)))%box_id
-             error stop __LINE__
-             return
-          endif
-          if (abs(endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id) .ne. ii) then
-             print *,"SAP_ID=",this%id,"this%boxes(",ii,")%maxendpoint_id(3)",this%boxes(ii)%maxendpoint_id(3)
-             print *,"SAP_ID=",this%id,"endpoints(this%boxes(",ii,")%maxendpoint_id(3))%box_id",endpoints(abs(this%boxes(ii)%maxendpoint_id(3)))%box_id
-             error stop __LINE__
-             return
-          endif
-       enddo
-    endif
 
   end subroutine sort_endpoints
 
@@ -819,36 +488,6 @@ contains
     type(sap_t), intent(inout) :: this
     ! box ids to compare
     integer, intent(in) :: id, id2, curr_axis
-
-    !print *,"SAP_ID=",this%id,"FULLCHECK FOR ",id,id2
-
-    !print *,"SAP_ID=",this%id,"this%boxes(id)%minendpoint_id(1)==",this%boxes(id)%minendpoint_id(1),this%x_endpoints(this%boxes(id)%minendpoint_id(1))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id2)%minendpoint_id(1)==",this%boxes(id2)%minendpoint_id(1),this%x_endpoints(this%boxes(id2)%minendpoint_id(1))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id)%maxendpoint_id(1)==",this%boxes(id)%maxendpoint_id(1),this%x_endpoints(this%boxes(id)%maxendpoint_id(1))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id2)%maxendpoint_id(1)==",this%boxes(id2)%maxendpoint_id(1),this%x_endpoints(this%boxes(id2)%maxendpoint_id(1))%value
-    !print *,"SAP_ID=",this%id,""
-    !print *,"SAP_ID=",this%id,"this%boxes(id)%minendpoint_id(2)==",this%boxes(id)%minendpoint_id(2),this%y_endpoints(this%boxes(id)%minendpoint_id(2))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id2)%minendpoint_id(2)==",this%boxes(id2)%minendpoint_id(2),this%y_endpoints(this%boxes(id2)%minendpoint_id(2))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id)%maxendpoint_id(2)==",this%boxes(id)%maxendpoint_id(2),this%y_endpoints(this%boxes(id)%maxendpoint_id(2))%value
-    !print *,"SAP_ID=",this%id,"this%boxes(id2)%maxendpoint_id(2)==",this%boxes(id2)%maxendpoint_id(2),this%y_endpoints(this%boxes(id2)%maxendpoint_id(2))%value
-
-    ! if (max(this%boxes(id)%minendpoint_id(1),this%boxes(id2)%minendpoint_id(1)) <= min(this%boxes(id2)%maxendpoint_id(1),this%boxes(id)%maxendpoint_id(1))) then
-    !    print *,"SAP_ID=",this%id,"OVERLAP ON X AXIS"
-    ! else
-    !    print *,"SAP_ID=",this%id,"NOVERLAP ON X AXIS"
-    ! endif
-
-    ! if (max(this%boxes(id)%minendpoint_id(2),this%boxes(id2)%minendpoint_id(2)) <= min(this%boxes(id2)%maxendpoint_id(2),this%boxes(id)%maxendpoint_id(2))) then
-    !    print *,"SAP_ID=",this%id,"OVERLAP ON Y AXIS"
-    ! else
-    !    print *,"SAP_ID=",this%id,"NOVERLAP ON Y AXIS"
-    ! endif
-
-    ! if (NO_K .or. max(this%boxes(id)%minendpoint_id(3),this%boxes(id2)%minendpoint_id(3)) <= min(this%boxes(id2)%maxendpoint_id(3),this%boxes(id)%maxendpoint_id(3))) then
-    !    print *,"SAP_ID=",this%id,"OVERLAP ON Z AXIS"
-    ! else
-    !    print *,"SAP_ID=",this%id,"NOVERLAP ON Z AXIS"
-    ! endif
 
     fullcheck = ((curr_axis.eq.1 .or. max(this%boxes(id)%minendpoint_id(1),this%boxes(id2)%minendpoint_id(1)) &
                                       <= min(this%boxes(id2)%maxendpoint_id(1),this%boxes(id)%maxendpoint_id(1))) &
@@ -871,23 +510,15 @@ contains
   !           timestep.                                                  !
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-  
+
   subroutine quicksort(this)
     implicit none
     type(sap_t), intent(inout) :: this
     integer :: nn
 
     call quicksort_endpoints(this,this%x_endpoints(1:this%x_endpoints_len),1)
-    !if (.not.check_boxes(this)) error stop __LINE__
-    !if (.not.check_sort(this)) error stop __LINE__
-
     call quicksort_endpoints(this,this%y_endpoints(1:this%y_endpoints_len),2)
-    !if (.not.check_boxes(this)) error stop __LINE__
-    !if (.not.check_sort(this)) error stop __LINE__
-
     call quicksort_endpoints(this,this%z_endpoints(1:this%z_endpoints_len),3)
-    !if (.not.check_boxes(this)) error stop __LINE__
-    if (.not.check_sort(this)) error stop __LINE__
 
   end subroutine quicksort
 
@@ -919,20 +550,9 @@ contains
        call quicksort_endpoints(this,endpoints(iq:),axis)
     endif
 
-    do ii=2, size(endpoints)
-       if (endpoints(ii)%value < endpoints(ii-1)%value) then
-          print *,"sap_id=",this%id,"********************************************************************************************"
-          print *,"sap_id=",this%id,"ii-1:",ii-1,"  endpoints(ii):",endpoints%box_id,endpoints%value
-          print *,"sap_id=",this%id,"ii:",ii,"  endpoints(ii):",endpoints%box_id,endpoints%value
-          print *,"sap_id=",this%id,"*******************************************************************************************"
-          error stop __LINE__
-          return
-       endif
-    enddo
-
   end subroutine quicksort_endpoints
 
- !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+  !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
   !  subroutine: partition                                               !
   !                                                                      !
@@ -967,16 +587,6 @@ contains
        end do
        if (i < j) then
           ! exchange endpoints(i) and endpoints(j)
-          !print *,"sap_id=",this%id,"partioning...",i,j
-          !call print_boxes(this)
-          !call check_boxes(this)
-
-          !print *,"sap_id=",this%id,"now swapping endpoints belonging to boxes:",endpoints(i)%box_id,endpoints(j)%box_id
-
-          !print *,"sap_id=",this%id,"i = ",i
-          !print *,"sap_id=",this%id,"size(endpoints) = ",size(endpoints)
-          !print *,"sap_id=",this%id,"endpoints(i) = ",endpoints(i)
-          !print *,"sap_id=",this%id,"endpoints(i)%box_id = ",endpoints(i)%box_id
 
           if (endpoints(i)%box_id < 0) then
              tmp_ii = this%boxes(-endpoints(i)%box_id)%minendpoint_id(axis)
@@ -991,28 +601,18 @@ contains
 
           temp = endpoints(i)
           endpoints(i) = endpoints(j)
-          !print *,"sap_id=",this%id,"set endpoint to value ",endpoints(i)%value," which belong to box ",abs(endpoints(i)%box_id)
           endpoints(j) = temp
-          !print *,"sap_id=",this%id,"set endpoint to value ",endpoints(j)%value," which belong to box ",abs(endpoints(j)%box_id)
 
           if (endpoints(i)%box_id < 0) then
-             !print *,"sap_id=",this%id,j,"setting min endpoint of box ",-endpoints(j)%box_id, " on axis ",axis," to ",i
              this%boxes(-endpoints(i)%box_id)%minendpoint_id(axis) = tmp_ii
           else
-             !print *,"sap_id=",this%id,j,"setting max endpoint of box ",endpoints(j)%box_id, " on axis ",axis," to ",i
              this%boxes(endpoints(i)%box_id)%maxendpoint_id(axis) = tmp_ii
           endif
           if (endpoints(j)%box_id < 0) then
-             !print *,"sap_id=",this%id,j,"setting min endpoint of box ",-endpoints(j)%box_id, " on axis ",axis," to ",i
              this%boxes(-endpoints(j)%box_id)%minendpoint_id(axis) = tmp_jj
           else
-             !print *,"sap_id=",this%id,j,"setting max endpoint of box ",endpoints(j)%box_id, " on axis ",axis," to ",i
              this%boxes(endpoints(j)%box_id)%maxendpoint_id(axis) = tmp_jj
           endif
-
-          !print *,"sap_id=",this%id,"partioned! ",i,j
-          !call print_boxes(this)
-          !call check_boxes(this)
 
        elseif (i == j) then
           marker = i+1

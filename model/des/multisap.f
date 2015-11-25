@@ -94,7 +94,6 @@ contains
        do jj=0,y_grid-1
           do kk=0,z_grid-1
              sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
-             print *,"INITIALIZING...",sap_id
              call init_sap(this%saps(sap_id),sap_id)
           enddo
        enddo
@@ -117,45 +116,21 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine multisap_raster(this,aabb,sap_ids,debug)
+  subroutine multisap_raster(this,aabb,sap_ids)
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
-    logical, intent(in) :: debug
     integer, intent(out) :: sap_ids(MAX_SAPS)
     integer :: max_grid(3),min_grid(3)
 
     sap_ids(:) = -1
 
-    if (debug) then
-       print *,"aabb%minendpoint(:) = ",aabb%minendpoint(:)
-       print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
-
-       print *,"this%minbounds(:) = ",this%minbounds(:)
-       print *,"this%maxbounds(:) = ",this%maxbounds(:)
-
-       print *,"this%one_over_cell_length(:)",this%one_over_cell_length(:)
-    endif
-
     ! bin to grid
     min_grid(:) = floor((aabb%minendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:))
     max_grid(:) = floor((aabb%maxendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:))
 
-    if (debug) then
-       print *,"min_grid:  ",min_grid(:)
-       print *,"aabb%maxendpoint(:) = ",aabb%maxendpoint(:)
-       print *,"(aabb%maxendpoint(:)-this%maxbounds(:) = ",(aabb%maxendpoint(:)-this%minbounds(:))
-       print *,"(aabb%maxendpoint(:)-this%maxbounds(:))*this%one_over_cell_length(:) = ",(aabb%maxendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:)
-       print *,"max_grid:  ",max_grid(:)
-    endif
-
     min_grid(:) = max(min_grid(:),0)
     max_grid(:) = min(max_grid(:),this%grid(:)-1)
-
-    if (debug) then
-       print *,"NORMALIZED min_grid:  ",min_grid(:)
-       print *,"NORMALIZED max_grid:  ",max_grid(:)
-    endif
 
     call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
     call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
@@ -165,10 +140,6 @@ contains
     call add_to_set((max_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
     call add_to_set((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + min_grid(3))
     call add_to_set((max_grid(1)*this%grid(2) + max_grid(2))*this%grid(3) + max_grid(3))
-
-    if (debug) then
-       print *,"multisap_raster IS RETURNING::: ",sap_ids(:)
-    endif
 
   contains
 
@@ -218,7 +189,7 @@ contains
     integer :: sap_ids(MAX_SAPS)
     integer :: nn,id
 
-    call multisap_raster(this,aabb,sap_ids,.false.)
+    call multisap_raster(this,aabb,sap_ids)
 
     handlelist%particle_id = particle_id
 
@@ -250,7 +221,6 @@ contains
     ! remove from each SAP listed for this id
     do nn=1, size(handlelist%list)
        if (handlelist%list(nn)%sap_id >= 0) then
-          print *,"DELETED FROM SAP......",handlelist%list(nn)%sap_id
           call del_box(this%saps(handlelist%list(nn)%sap_id),handlelist%list(nn)%box_id)
        endif
     enddo
@@ -272,24 +242,11 @@ contains
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
     type(boxhandlelist_t), intent(inout) :: handlelist
-    ! integer :: particle_id
     integer, DIMENSION(MAX_SAPS) :: new_sap_ids
     logical :: found
     integer :: mm,nn,first_blank, ii, box_id
-    !real ::  asdf,diff
-    logical :: debug
 
-    ! particle_id = -1
-    ! do nn=1, size(handlelist%list)
-    !    if (handlelist%list(nn)%sap_id < 0) cycle
-    !    particle_id = this%saps(handlelist%list(nn)%sap_id)%boxes(handlelist%list(nn)%box_id)%particle_id
-    ! enddo
-    ! if (particle_id < 0 ) error stop __LINE__
-
-    debug = (handlelist%particle_id.eq.114 .or. handlelist%particle_id.eq. 115)
-    ! if (debug) print *,""
-    ! if (debug) print *," PARTICLE ",handlelist%particle_id
-    call multisap_raster(this,aabb,new_sap_ids,.false.)
+    call multisap_raster(this,aabb,new_sap_ids)
 
     ! update for each SAP listed for this id
     do nn=1, size(new_sap_ids)
@@ -302,76 +259,17 @@ contains
 
           if (handlelist%list(mm)%sap_id .eq. new_sap_ids(nn)) then
              ! update existing SAPs
-
              box_id = handlelist%list(mm)%box_id
-
-              ! if (particle_id.eq.43) then
-              !    print *,"PREUPDATE  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1))%value, &
-              !         this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1))%value, &
-              !         "boxid=",box_id," endpoint_ids =",this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1),this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1)
-              ! endif
-
-              ! asdf = 0.1
-              ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value)
-              ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-              !    print *,"  min xdiff ======== ",diff
-              !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-              !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
-              !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
-              !    error stop __LINE__
-              ! endif
-
-              ! asdf = 0.1
-              ! diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value)
-              ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-              !    print *,"  max xdiff ======== ",diff
-              !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-              !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
-              !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
-              !    error stop __LINE__
-              ! endif
-
              call update_box(this%saps(new_sap_ids(nn)),handlelist%list(mm)%box_id,aabb)
-
-             ! if (particle_id.eq.43) then
-             !    print *,"POSTUPDATE  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1))%value, &
-             !         this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1))%value, &
-             !         "boxid=",box_id," endpoint_ids =",this%saps(new_sap_ids(nn))%boxes(box_id)%minendpoint_id(1),this%saps(new_sap_ids(nn))%boxes(box_id)%maxendpoint_id(1)
-             ! endif
-
-             ! ii = handlelist%list(mm)%box_id
-             !  asdf = 0.1
-             !  diff = (DES_POS_NEW(1,particle_id)-DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value)
-             !  if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-             !     print *,"  min xdiff ======== ",diff
-             !     print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-             !     print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
-             !     print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%minendpoint_id(1))%value
-             !     error stop __LINE__
-             !  endif
-
-              ! asdf = 0.1
-              ! diff = (DES_POS_NEW(1,particle_id)+DES_RADIUS(particle_id) - this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value)
-              ! if (asdf < abs(diff) .and. abs(diff) < 1000000000.0) then
-              !    print *,"  max xdiff ======== ",diff
-              !    print *,"DES_POS_NEW(1) = ",DES_POS_NEW(1,particle_id)
-              !    print *,"DES_RADIUS = ",DES_RADIUS(particle_id)
-              !    print *,"value = ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(ii)%maxendpoint_id(1))%value
-              !    error stop __LINE__
-              ! endif
-
              found = .true.
              exit
           endif
        enddo
        if (.not.found) then
-          !if (particle_id.eq.43) then
-             !print *,"ADDDDDDD  ",this%saps(new_sap_ids(nn))%x_endpoints(this%saps(new_sap_ids(nn))%boxes(handlelist%list(mm)%box_id)%maxendpoint_id(1))%value
-          !endif
-
           ! add SAPs yet not listed for this id
+
           if (first_blank .eq. -1) then
-             print *,"FAIL",first_blank,handlelist%list
+             print *,"AABB is in more than 8 saps? Something is wrong:  ",first_blank,handlelist%list
              error stop __LINE__
           endif
           call add_box(this%saps(new_sap_ids(nn)),aabb,handlelist%particle_id,handlelist%list(first_blank)%box_id)
@@ -394,9 +292,6 @@ contains
 
        if (.not.found) then
           ! remove SAP not found in handle%sap_id
-          ! if (particle_id.eq.43) then
-             ! print *,"DELETED FROM SAP......",handlelist%list(mm)%sap_id
-          ! endif
           call del_box(this%saps(handlelist%list(mm)%sap_id),handlelist%list(mm)%box_id)
           handlelist%list(mm)%sap_id = -1
        endif
@@ -432,11 +327,7 @@ contains
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             !print *,"NOW GOING TO SORT SAP::",ii,jj,kk,":::   ",ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
-             if (.not. check_boxes(this%saps(sap_id))) error stop __LINE__
              call sort(this%saps(sap_id))
-             if (.not.check_sort(this%saps(sap_id))) error stop __LINE__
-             if (.not. check_boxes(this%saps(sap_id))) error stop __LINE__
           enddo
        enddo
     enddo
@@ -449,12 +340,6 @@ contains
              call reset_pairs(this%saps(sap_id)%hashtable)
              do
                 call get_pair(this%saps(sap_id)%hashtable,pair)
-
-                ! if (pair(1).eq. 114 .and. pair(2).eq.115) then
-                !    print *,"GOTTA PAIR::::",pair, " IN SAP ",sap_id
-                !    error stop __LINE__
-                ! endif
-
                 if (pair(1).eq.0 .and. pair(2).eq.0) exit
                 call add_pair(this%hashtable,pair(1),pair(2))
              enddo
@@ -486,8 +371,6 @@ contains
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
              call quicksort(this%saps(sap_id))
              boxcount = boxcount + this%saps(sap_id)%boxes_len
-             !if (.not.check_boxes(multisap%saps(sap_id))) error stop __LINE__
-             if (.not.check_sort(this%saps(sap_id))) error stop __LINE__
           enddo
        enddo
     enddo
@@ -516,9 +399,6 @@ contains
           do kk=0,this%grid(3)-1
              sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
              call sweep(this%saps(sap_id),sap_id)
-
-             !if (.not.check_boxes( this%saps(ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk) )) error stop __LINE__
-
           enddo
        enddo
     enddo

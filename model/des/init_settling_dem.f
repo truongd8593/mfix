@@ -65,7 +65,6 @@
          aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)-0.001
          aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)+0.001
 
-         if (0.eq.mod(nn,1000)) print *,"PARTICLE #  ",nn
          if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
             print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
             error stop __LINE__
@@ -75,43 +74,17 @@
       enddo
 
       call multisap_quicksort(multisap)
-
-      do nn=0,size(multisap%saps)-1
-         if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
-      enddo
-
       call multisap_sweep(multisap)
 
-      do nn=0,size(multisap%saps)-1
-         if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
-         if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
-      enddo
-
       DO FACTOR = 1, NFACTOR
-         print *,"FACTOR  =  ",FACTOR
 ! calculate forces
-
-         do nn=0,size(multisap%saps)-1
-            if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
-            if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
-         enddo
 
          CALL CALC_FORCE_DEM
 ! update particle position/velocity
 
-         do nn=0,size(multisap%saps)-1
-            if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
-            if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
-         enddo
-
          CALL CFNEWVALUES
 ! set the flag do_nsearch before calling particle in cell (for mpi)
          DO_NSEARCH = (MOD(FACTOR,NEIGHBOR_SEARCH_N)==0)
-
-         do nn=0,size(multisap%saps)-1
-            if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
-            if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
-         enddo
 
 ! Bin the particles to the DES grid.
          CALL DESGRID_PIC(.TRUE.)
