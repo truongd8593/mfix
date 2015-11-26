@@ -192,7 +192,7 @@ contains
     integer, intent(in) :: particle_id
     type(boxhandlelist_t), intent(out) :: handlelist
     integer :: sap_ids(MAX_SAPS)
-    integer :: nn,id
+    integer :: nn
 
     call multisap_raster(this,aabb,sap_ids)
 
@@ -216,10 +216,9 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine multisap_del(this,aabb,handlelist)
+  subroutine multisap_del(this,handlelist)
     implicit none
     type(multisap_t), intent(inout) :: this
-    type(aabb_t), intent(in) :: aabb
     type(boxhandlelist_t), intent(in) :: handlelist
     integer :: nn
 
@@ -249,7 +248,7 @@ contains
     type(boxhandlelist_t), intent(inout) :: handlelist
     integer, DIMENSION(MAX_SAPS) :: new_sap_ids
     logical :: found
-    integer :: mm,nn,first_blank, ii, box_id
+    integer :: mm,nn,first_blank, box_id
 
     call multisap_raster(this,aabb,new_sap_ids)
 
@@ -319,10 +318,7 @@ contains
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk, sap_id
-    type(sap_t) :: sap
-    type(box_t) :: box
     integer :: pair(2)
-    logical :: asdf
 
     call init_pairs(this%hashtable)
 
@@ -394,15 +390,13 @@ contains
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk
-    integer :: ll, i, sap_id
-    integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
-    integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
+    integer :: sap_id
 
     do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
-             call sweep(this%saps(sap_id),sap_id)
+             call sweep(this%saps(sap_id))
           enddo
        enddo
     enddo

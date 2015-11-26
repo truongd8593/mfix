@@ -58,7 +58,7 @@
 ! Restitution coefficient plus one
       DOUBLE PRECISION :: ENp1
 ! Integrated particle velocity without particle normal stress
-      DOUBLE PRECISION :: VEL(3), VEL_MAG
+      DOUBLE PRECISION :: VEL(3)
 ! Estimated parcel velocity from normal particle stress
       DOUBLE PRECISION :: DELUP(3)
 ! Actual parcel velocity from particle normal stress.
@@ -80,7 +80,7 @@
 ! Solids volume fraction at the parcel
       DOUBLE PRECISION :: EPs
 ! Loop bound
-      INTEGER :: LC_BND, IJK
+      INTEGER :: LC_BND
 ! Gravity normal and magnitude
       DOUBLE PRECISION :: GRAV_NORM(3)
 !......................................................................!

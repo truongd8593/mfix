@@ -111,7 +111,6 @@
 
             END DO
          END DO
-90       FORMAT(3(1x,i2),10(2x,E12.5))
          close(900)
 
       ELSE IF(WV.EQ.1) THEN

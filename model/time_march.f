@@ -63,7 +63,7 @@
       LOGICAL :: FINISH
 
 ! Loop indices
-      INTEGER :: L, M
+      INTEGER :: M
 ! Error index
       INTEGER :: IER
 ! Number of iterations
@@ -73,13 +73,8 @@
 ! dummy logical variable for initializing adjust_dt
       LOGICAL :: dummy
 
-! AEOLUS : stop trigger mechanism to terminate MFIX normally before
-! batch queue terminates
-      DOUBLE PRECISION :: CPU_STOP
-
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
-      LOGICAL :: ABORT_SIGNAL = .FALSE.
 
 ! C Function
       INTERFACE

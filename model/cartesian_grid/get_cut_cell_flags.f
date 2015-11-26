@@ -894,7 +894,6 @@
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'INTERSECTING GEOMETRY WITH V-MOMENTUM CELLS...'
       ENDIF
-10    FORMAT(1X,A)
 !======================================================================
 !  Intersection between quadric Grid
 !======================================================================
@@ -1321,7 +1320,6 @@
       IF(MyPE == PE_IO) THEN
          WRITE(*,*)'SETTING CUT CELL TREATMENT FLAGS...'
       ENDIF
-10    FORMAT(1X,A)
 !======================================================================
 !  Set flags identifying cells requiring cut cell treatment:
 !  These are the cut cells and their neighbours
@@ -1449,14 +1447,11 @@
       USE functions, ONLY: IM_OF, IP_OF, JM_OF, JP_OF, KM_OF, KP_OF
       USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, flag, do_k, flag_e, flag_n, flag_t
 
-      USE indices, ONLY: i_of, j_of, k_of
-
       USE bc, only:BC_TYPE
       USE sendrecv
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,I23,J23,K23
-      INTEGER :: IM,IP,JM,JP,KM,KP
       INTEGER :: BCID
       INTEGER :: IPJK,IMJK,IJPK,IJMK,IJKP,IJKM
 

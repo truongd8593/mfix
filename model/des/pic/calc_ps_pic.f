@@ -66,8 +66,7 @@
 ! Double precision parameters
       use param1, only: ONE
 ! Flag to solve 3D
-      use geometry, only: DO_K
-      use geometry, only: VOL, DX, DY, DZ
+      use geometry, only: DZ
 
 ! Module procedures:
 !---------------------------------------------------------------------//
@@ -75,16 +74,14 @@
       use functions, only: WEST_OF, EAST_OF
       use functions, only: SOUTH_OF, NORTH_OF
       use functions, only: BOTTOM_OF, TOP_OF
-      use functions, only: I_OF, J_OF, K_OF
-
-      use cutcell, only: CUT_CELL_AT
+      use functions, only: K_OF
 
       IMPLICIT NONE
 
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counter
-      INTEGER :: IJK, lIJK
+      INTEGER :: IJK
 ! Volume fraction of cell, modified for wall cells.
       DOUBLE PRECISION :: lEPg
 !......................................................................!

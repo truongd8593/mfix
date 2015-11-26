@@ -47,7 +47,6 @@
       use discretelement, only: PRINT_DES_DATA
       use discretelement, only: DISCRETE_ELEMENT
       use discretelement, only: DES_CONTINUUM_COUPLED
-      use discretelement, only: PARTICLES, NFACTOR
 
 !//       USE tmp_array
       IMPLICIT NONE

@@ -69,9 +69,6 @@
 
       DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
 
-      integer :: pp
-      integer :: minenx, mineny, minenz, minenx2, mineny2, minenz2
-      integer :: maxenx, maxeny, maxenz, maxenx2, maxeny2, maxenz2
       integer :: nn, mm, box_id, box_id2
       logical :: found
 

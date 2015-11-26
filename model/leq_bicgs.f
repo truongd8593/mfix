@@ -180,7 +180,7 @@
 
       DOUBLE PRECISION, DIMENSION(0:ITMAX+1) :: &
                         alpha, beta, omega, rho
-      DOUBLE PRECISION :: TxS, TxT, RtildexV, RtildexR, &
+      DOUBLE PRECISION :: TxS, TxT, RtildexV, &
                           aijmax, oam
       DOUBLE PRECISION :: Rnorm, Rnorm0, Snorm, TOLMIN, pnorm
       LOGICAL :: isconverged

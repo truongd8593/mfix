@@ -37,7 +37,7 @@
       USE param1
       USE parallel
       USE physprop
-      USE fldvar, only: ep_g, u_g, v_g, w_g
+      USE fldvar, only: w_g
       USE run
       USE geometry
       USE indices

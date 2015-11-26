@@ -256,7 +256,6 @@ contains
     implicit none
     type(sap_t), intent(inout) :: this
     integer, intent(in) :: id
-    integer :: len
 
     this%x_endpoints(this%boxes(id)%maxendpoint_id(1))%value = HUGE(0.0)
     this%y_endpoints(this%boxes(id)%maxendpoint_id(2))%value = HUGE(0.0)
@@ -351,14 +350,13 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine sweep(this,sap_id)
+  subroutine sweep(this)
 
     use pair_manager, only: add_pair
     use geometry, only: no_k
 
     implicit none
     type(sap_t), intent(inout) :: this
-    integer, intent(in) :: sap_id
 
     ! active list of box id's
     integer :: ii,aa,minmax,ai
@@ -416,9 +414,7 @@ contains
     type(sap_t), intent(inout) :: this
     integer, intent(in) :: axis
     type(endpoint_t), dimension(:), intent(inout) :: endpoints
-    type(endpoint_t) :: swap
     integer :: ii, jj
-    integer :: tmp_ii, tmp_jj
     type(endpoint_t) :: sweeppoint, swappoint
     real :: sweepval
 
@@ -513,7 +509,6 @@ contains
   subroutine quicksort(this)
     implicit none
     type(sap_t), intent(inout) :: this
-    integer :: nn
 
     call quicksort_endpoints(this,this%x_endpoints(1:this%x_endpoints_len),1)
     call quicksort_endpoints(this,this%y_endpoints(1:this%y_endpoints_len),2)
@@ -539,14 +534,14 @@ contains
     type(sap_t), intent(inout) :: this
     integer, intent(in) :: axis
     type(endpoint_t), intent(inout), dimension(:) :: endpoints
-    integer :: iq,ii
+    integer :: ii
 
     !call check_boxes(this)
 
     if(size(endpoints) > 1) then
-       call partition(this, endpoints, iq, axis)
-       call quicksort_endpoints(this,endpoints(:iq-1),axis)
-       call quicksort_endpoints(this,endpoints(iq:),axis)
+       call partition(this, endpoints, ii, axis)
+       call quicksort_endpoints(this,endpoints(:ii-1),axis)
+       call quicksort_endpoints(this,endpoints(ii:),axis)
     endif
 
   end subroutine quicksort_endpoints

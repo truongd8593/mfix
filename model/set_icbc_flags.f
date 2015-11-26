@@ -266,16 +266,7 @@
 
       RETURN
 
- 1100 FORMAT('Error 1100 (PE ',A,') : No initial or boundary ',        &
-         'condtions specified in','the following cells:',/             &
-         '    I       J       K')
-
- 1101 FORMAT(I5,3X,I5,3X,I5)
-
- 1102 FORMAT('Please correct the mfix.dat file.')
-
       END SUBROUTINE SET_IC_FLAGS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

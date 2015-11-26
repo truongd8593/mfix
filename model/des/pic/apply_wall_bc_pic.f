@@ -11,7 +11,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Particle postions: Current/Previous
-      use discretelement, only: DES_POS_NEW, DES_POS_OLD
+      use discretelement, only: DES_POS_NEW
 ! Paricle velocities
       use discretelement, only: DES_VEL_NEW
 ! Particle radius
@@ -26,16 +26,12 @@
       use stl, only: VERTEX
 ! STL Facet normals
       use stl, only: NORM_FACE
-! The number of mass inflow/outflow BCs
-      use pic_bc, only: PIC_BCMI, PIC_BCMO
 ! Minimum velocity to offset gravitational forces
       use pic_bc, only: minVEL, minVEL_MAG, OoMinVEL_MAG
 ! Solids time step size
       use discretelement, only: DTSOLID
 ! Gravitational force vector
       use discretelement, only: GRAV
-
-      use discretelement, only: MAX_RADIUS, S_TIME
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -53,7 +49,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counters.
-      INTEGER NF, NP, LC1, LC2
+      INTEGER NF, NP, LC1
 ! STL normal vector
       DOUBLE PRECISION :: NORM_PLANE(3)
 ! line is parameterized as p = p_ref + t * dir_line, t is line_param

@@ -145,9 +145,6 @@
 
       RETURN
 
-  999 IF(dmp_log)write(unit_log,"(/1X,70('*')//,A,/10X,A,/1X,70('*')/)")&
-         ' From: read_par_input -',&
-         ' particle_input.dat file is missing.  Terminating run.'
       CALL MFIX_EXIT(myPE)
 
       END SUBROUTINE READ_PAR_INPUT

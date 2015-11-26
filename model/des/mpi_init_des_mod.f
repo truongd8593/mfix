@@ -59,7 +59,7 @@
 !-----------------------------------------------
 ! local variables
 !-----------------------------------------------
-      integer :: lfaces,lfactor=4
+      integer :: lfaces
       integer :: lmaxlen1,lmaxlen2,lmaxarea,lmaxghostpar,ii
 
       DOUBLE PRECISION, PARAMETER :: ONEMBo8 = 131072.0
@@ -570,11 +570,6 @@
          enddo
       enddo
       call des_mpi_barrier
-
- 800  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
-         'WARNING: Unable to locate neighbor during restart (0)',/)
- 801  FORMAT(/2X,'From: DES_RESTART_GHOST: ',/2X,&
-         'WARNING: Unable to locate neighbor during restart (1)',/)
 
       end subroutine DES_RESTART_GHOST
 

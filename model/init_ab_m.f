@@ -42,9 +42,6 @@
 !                      Phase index
       INTEGER          M
 !
-!                      cell index
-      INTEGER          IJK
-!
 !                      Maximum dimension
       INTEGER          IJKMAX2A
 !
