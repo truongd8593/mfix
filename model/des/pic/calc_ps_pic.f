@@ -65,8 +65,6 @@
       use compar, only: IJKSTART3, IJKEND3
 ! Double precision parameters
       use param1, only: ONE
-! Flag to solve 3D
-      use geometry, only: DZ
 
 ! Module procedures:
 !---------------------------------------------------------------------//
@@ -74,7 +72,6 @@
       use functions, only: WEST_OF, EAST_OF
       use functions, only: SOUTH_OF, NORTH_OF
       use functions, only: BOTTOM_OF, TOP_OF
-      use functions, only: K_OF
 
       IMPLICIT NONE
 
