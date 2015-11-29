@@ -48,7 +48,6 @@
       USE compar
       USE fldvar
       USE indices
-      USE boundfunijk
       USE functions
       IMPLICIT NONE
 !-----------------------------------------------

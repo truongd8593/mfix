@@ -68,6 +68,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE WRITE_DES_Tp(lTime)
 
+        Use compar, only: mype, pe_io
       Use des_rxns
       Use des_thermo
       Use discretelement

@@ -29,7 +29,6 @@
 !   M o d u l e s
 !-----------------------------------------------
       USE bc
-      USE boundfunijk
       USE compar
       USE cutcell
       USE eos, ONLY: EOSG

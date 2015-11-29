@@ -50,7 +50,6 @@
       USE compar
       USE sendrecv
       USE sendrecv3
-      USE boundfunijk
       use mpi_utility
       USE function3
       USE functions

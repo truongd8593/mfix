@@ -30,16 +30,17 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE check
+      USE compar
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
       USE param
       USE param1
-      USE parallel
       USE physprop
-      USE geometry
-      USE fldvar
-      USE indices
-      USE compar
-      USE mpi_utility
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -53,9 +54,6 @@
 !
 !                      Solids phase
       INTEGER          M
-!
-!                      Functions
-      DOUBLE PRECISION Accumulation
 !
 !-----------------------------------------------
 

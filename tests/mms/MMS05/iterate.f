@@ -59,6 +59,7 @@
       USE scalars
       USE time_cpu
       USE toleranc
+      USE param1
       USE visc_g
       USE vtk
       USE interactive, only: CHECK_INTERACT_ITER
@@ -680,6 +681,7 @@
       USE bc
       USE geometry
       USE constant
+      USE param1
       USE compar
       USE run
       USE time_cpu

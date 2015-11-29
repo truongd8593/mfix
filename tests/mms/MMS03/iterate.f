@@ -57,6 +57,7 @@
       USE discretelement
       USE residual
       USE cutcell
+      USE param1
       USE vtk
       USE dashboard
       USE qmom_kinetic_equation
@@ -662,8 +663,6 @@
       RETURN
       END SUBROUTINE GET_TUNIT
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic
 !            domain with pressure drop is held constant at a
@@ -681,6 +680,7 @@
       USE compar
       USE constant
       USE geometry
+      USE param1
       USE run
       USE time_cpu
       USE utilities, ONLY: mfix_isnan

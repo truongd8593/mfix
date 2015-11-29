@@ -31,6 +31,7 @@
         Use indices
         Use param1
         Use physprop
+        Use read_input
         Use post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
         Use run
         Use rxns

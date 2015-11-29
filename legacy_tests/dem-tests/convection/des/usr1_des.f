@@ -17,11 +17,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR1_DES
 
-      Use des_rxns
-      Use des_thermo
-      Use discretelement
-      Use run
-      Use usr
+        Use param1, only: zero
+        Use des_rxns
+        Use des_thermo
+        Use discretelement
+        Use run
+        Use usr
 
       IMPLICIT NONE
 

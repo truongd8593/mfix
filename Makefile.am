@@ -243,9 +243,6 @@ libmfix_src = \
 	model/bc_phi.f \
 	model/bc_theta.f \
 	model/bodyforce_mod.f \
-	model/bound_x.f \
-	model/boundfunijk3_mod.f \
-	model/boundfunijk_mod.f \
 	model/cal_d.f \
 	model/calc_cell.f \
 	model/calc_coeff.f \
@@ -346,7 +343,6 @@ libmfix_src = \
 	model/check_data/check_solids_phases.f \
 	model/check_data_20.f \
 	model/check_data_30.f \
-	model/check_mass_balance.f \
 	model/check_mod.f \
 	model/check_plane.f \
 	model/chem/stiff_chem_dbg_mod.f \
@@ -562,7 +558,6 @@ libmfix_src = \
 	model/leq_gmres.f \
 	model/leq_sor.f \
 	model/leqsol_mod.f \
-	model/line_too_big.f \
 	model/location_check.f \
 	model/machine_mod.f \
 	model/make_upper_case.f \
@@ -637,7 +632,6 @@ libmfix_src = \
 	model/set_bc0.f \
 	model/set_bc1.f \
 	model/set_bc_flow.f \
-	model/set_constants.f \
 	model/set_constprop.f \
 	model/set_flags.f \
 	model/set_fluidbed_p.f \
@@ -699,7 +693,6 @@ libmfix_src = \
 	model/tmp_array_mod.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
-	model/transfer.f \
 	model/transport_prop.f \
 	model/turb_mod.f \
 	model/undef_2_0.f \
@@ -801,9 +794,6 @@ postmfix_SOURCES = \
 	model/bc_phi.f \
 	model/bc_theta.f \
 	model/bodyforce_mod.f \
-	model/bound_x.f \
-	model/boundfunijk3_mod.f \
-	model/boundfunijk_mod.f \
 	model/cal_d.f \
 	model/calc_cell.f \
 	model/calc_coeff.f \
@@ -904,7 +894,6 @@ postmfix_SOURCES = \
 	model/check_data/check_solids_phases.f \
 	model/check_data_20.f \
 	model/check_data_30.f \
-	model/check_mass_balance.f \
 	model/check_mod.f \
 	model/check_plane.f \
 	model/chem/stiff_chem_dbg_mod.f \
@@ -1115,7 +1104,6 @@ postmfix_SOURCES = \
 	model/leq_gmres.f \
 	model/leq_sor.f \
 	model/leqsol_mod.f \
-	model/line_too_big.f \
 	model/location_check.f \
 	model/machine_mod.f \
 	model/make_upper_case.f \
@@ -1181,7 +1169,6 @@ postmfix_SOURCES = \
 	model/set_bc0.f \
 	model/set_bc1.f \
 	model/set_bc_flow.f \
-	model/set_constants.f \
 	model/set_constprop.f \
 	model/set_flags.f \
 	model/set_fluidbed_p.f \
@@ -1243,7 +1230,6 @@ postmfix_SOURCES = \
 	model/tmp_array_mod.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
-	model/transfer.f \
 	model/transport_prop.f \
 	model/turb_mod.f \
 	model/undef_2_0.f \

@@ -916,3 +916,13 @@
         INTEGER, INTENT(IN) :: PP
         PARTICLE_STATE(PP)=EXITING_GHOST
       END SUBROUTINE SET_EXITING_GHOST
+
+      INTEGER FUNCTION BOUND_FUNIJK(pLI, pLJ, pLK)
+        USE compar, only: istart3, iend3, jstart3, jend3, kstart3, kend3
+        IMPLICIT NONE
+        INTEGER          pLI, pLJ, pLK
+        BOUND_FUNIJK  = FUNIJK ( MIN( IEND3, MAX (ISTART3, pLI) ),&
+             MIN( JEND3, MAX (JSTART3, pLJ) ),&
+             MIN( KEND3, MAX (KSTART3, pLK) ) )
+
+      END FUNCTION BOUND_FUNIJK

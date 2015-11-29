@@ -551,21 +551,22 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE bc
+      USE check, only: calc_mass_fluxhr, accumulation
+      USE compar
+      USE constant
       USE fldvar
-      USE parallel
       USE geometry
       USE indices
-      USE run
-      USE bc
-      USE constant
-      USE physprop
-      USE compar
-      USE mpi_utility
-      USE residual
-      USE rxns
       USE mflux
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE residual
+      USE run
+      USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -588,10 +589,6 @@
       INTEGER :: IER
       DOUBLE PRECISION :: flux_in, flux_out, fin, fout
       DOUBLE PRECISION :: err, accum_new, denom
-!-----------------------------------------------
-! Functions
-!-----------------------------------------------
-      DOUBLE PRECISION Accumulation
 !-----------------------------------------------
 
       if(dt == UNDEFINED)then

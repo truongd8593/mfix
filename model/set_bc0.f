@@ -111,8 +111,7 @@
       use physprop, only: smax, mmax, nmax
       use scalars, only: nscalar
 
-      use functions, only: is_on_mype_plus2layers
-      use boundfunijk, only: bound_funijk
+      use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
       IMPLICIT NONE
 
@@ -222,9 +221,8 @@
       use scales, only: scale_pressure
       use toleranc, only: tmin
 
-      use functions, only: is_on_mype_plus2layers
+      use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
-      use boundfunijk, only: bound_funijk
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -379,8 +377,7 @@
       use scales, only: scale_pressure
 
       use indices, only: im1, jm1, km1
-      use functions, only: is_on_mype_plus2layers
-      use boundfunijk, only: bound_funijk
+      use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
       IMPLICIT NONE
 
@@ -687,8 +684,7 @@
       use scalars, only: nscalar
 
       use indices, only: im1, ip1, jm1, jp1, km1, kp1
-      use functions, only: is_on_mype_plus2layers
-      use boundfunijk, only: bound_funijk
+      use functions, only: is_on_mype_plus2layers, bound_funijk
       use compar, only: dead_cell_at
       IMPLICIT NONE
 

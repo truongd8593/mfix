@@ -17,6 +17,7 @@
       USE MFIX_netcdf
       USE bc
       USE cdist
+      USE check
       USE coeff
       USE compar
       USE cont
@@ -43,16 +44,15 @@
       USE tau_s
       USE time_cpu
       USE toleranc
-! use function MAX_VEL_INLET to compute max. velocity at inlet
       USE utilities, ONLY: MAX_VEL_INLET
       USE visc_g
       USE visc_s
       USE vshear
       USE vtk
       USE vtp
-      use output, only: RES_DT, NLOG
-      use interactive, only: INTERACT, INIT_INTERACTIVE_MODE
       use adjust_dt
+      use interactive, only: INTERACT, INIT_INTERACTIVE_MODE
+      use output, only: RES_DT, NLOG
 
       IMPLICIT NONE
 !-----------------------------------------------

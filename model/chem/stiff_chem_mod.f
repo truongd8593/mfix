@@ -444,11 +444,11 @@
 ! Universal gas constant
       use constant, only : GAS_CONST
 
-
       use compar
       use mpi_utility
       use sendrecv
       use functions
+      use utilities
 
       implicit none
 

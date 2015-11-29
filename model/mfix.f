@@ -80,6 +80,7 @@
       USE parallel_mpi
       USE param
       USE param1
+      USE read_input
       USE qmom_kinetic_equation
       USE quadric
       USE run

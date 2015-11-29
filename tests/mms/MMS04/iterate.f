@@ -57,6 +57,7 @@
       USE residual
       USE run
       USE scalars
+      USE param1
       USE time_cpu
       USE toleranc
       USE visc_g
@@ -680,6 +681,7 @@
       USE bc
       USE geometry
       USE constant
+      USE param1
       USE compar
       USE run
       USE time_cpu

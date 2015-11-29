@@ -17,6 +17,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR1_DES
 
+        Use param1, only: zero
       Use des_rxns
       Use des_thermo
       Use discretelement

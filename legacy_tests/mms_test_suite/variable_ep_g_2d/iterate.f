@@ -58,6 +58,7 @@
       USE residual
       USE cutcell
       USE vtk
+      USE param1
       USE dashboard
       USE qmom_kinetic_equation
       USE stiff_chem, only : STIFF_CHEMISTRY
@@ -680,6 +681,7 @@
       USE compar
       USE constant
       USE geometry
+      USE param1
       USE run
       USE time_cpu
       USE utilities, ONLY: mfix_isnan

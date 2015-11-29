@@ -27,13 +27,13 @@
       SUBROUTINE USR0
 
       use rxns
+      use rxn_com
       use usr
 
       IMPLICIT NONE
 
       INTEGER :: L
       TYPE(REACTION_BLOCK), POINTER :: RxN
-
 
 ! Open the POST data file and write out the recation data table.
       OPEN(678,FILE='POST_Thermo.dat', status='NEW')

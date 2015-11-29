@@ -285,13 +285,13 @@
 
          jump = C(1) + (C(2) - C(1))*REAL(I-1)/10d0
 
-         A_M(IJK2,N,0) = ZERO
-         A_M(IJK2,S,0) = ZERO
+         A_M(IJK2,north,0) = ZERO
+         A_M(IJK2,south,0) = ZERO
          A_M(IJK2,0,0) = ONE
          B_M(IJK2,0) = T_g(IJK4) + jump
 
-         A_M(IJK3,N,0) = ZERO
-         A_M(IJK3,S,0) = ZERO
+         A_M(IJK3,north,0) = ZERO
+         A_M(IJK3,south,0) = ZERO
          A_M(IJK3,0,0) = ONE
          B_M(IJK3,0) = T_g(IJK1) - jump
       ENDDO
