@@ -12,7 +12,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE DES_THERMO
 
-      USE param
+      USE param, only: dim_m
 
 ! Heat transfer correlation specified in mfix.dat
 ! Default [RANZ_1952]

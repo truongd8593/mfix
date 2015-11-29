@@ -22,7 +22,7 @@
 
       implicit none
 
-      INTEGER :: IJK, I, J, K, M, N
+      INTEGER :: IJK, I, J, K, M, NN
 
       INTEGER PSV
 
@@ -180,9 +180,9 @@
       if(Cp0 == UNDEFINED) then
          IF(.NOT.database_read) call read_database0()
          CpxMFLOW = ZERO
-         do N = 1, NMAX(lM)
-            CpxMFLOW = CpxMFLOW + PS_X(N) * (GAS_CONST_cal / lMW(N)) * &
-              calc_CpoR(PS_T, lM, N, IER)
+         do nn = 1, NMAX(lM)
+            CpxMFLOW = CpxMFLOW + PS_X(NN) * (GAS_CONST_cal / lMW(NN)) * &
+              calc_CpoR(PS_T, lM, NN, IER)
          enddo
       else
          CpxMFLOW = Cp0
@@ -277,7 +277,7 @@
 ! Number of cells comprising the point source.
       INTEGER, intent(in) :: lPS_SIZE
 
-      INTEGER :: IJK, I, J, K, M, N
+      INTEGER :: IJK, I, J, K, M, NN
 
       INTEGER :: lc1
 
@@ -339,9 +339,9 @@
                write(*,"(7x,'Temperature: ',g12.5)")PS_T_g(lPSV)
             if(species_eq(0)) then
                write(*,"(7x,'Species Composition:')")
-               do n=1,nmax(0)
+               do nn=1,nmax(0)
                   write(*,"(9x,A,': ',g12.5)") &
-                     trim(SPECIES_ALIAS_g(n)), PS_X_g(lPSV,N)
+                     trim(SPECIES_ALIAS_g(nn)), PS_X_g(lPSV,NN)
                enddo
             endif
          else
@@ -362,9 +362,9 @@
                   write(*,"(7x,'Temperature: ',g12.5)")PS_T_s(lPSV,M)
                if(species_eq(m)) then
                   write(*,"(7x,'Species Composition:')")
-                  do n=1,nmax(m)
+                  do nn=1,nmax(m)
                      write(*,"(9x,A,': ',g12.5)") &
-                        trim(SPECIES_ALIAS_s(m,n)), PS_X_s(lPSV,m,N)
+                        trim(SPECIES_ALIAS_s(m,nn)), PS_X_s(lPSV,m,NN)
                   enddo
                endif
             else

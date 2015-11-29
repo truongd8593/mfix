@@ -101,7 +101,7 @@ CONTAINS
       RETURN
       END SUBROUTINE IN_BIN_512
 
-      subroutine convert_from_io_dp(arr_io,arr_internal,n)
+      subroutine convert_from_io_dp(arr_io,arr_internal,nn)
 
       use geometry
       use indices
@@ -111,7 +111,7 @@ CONTAINS
       implicit none
 
       double precision   arr_io(*) , arr_internal(*)
-      integer            n,i,j,k,ijk,ijk_io
+      integer            nn,i,j,k,ijk,ijk_io
 
       do k = 1,kmax2
          do j = 1,jmax2
@@ -126,7 +126,7 @@ CONTAINS
       return
     end subroutine convert_from_io_dp
 
-      subroutine convert_to_io_dp(arr_internal,arr_io,n)
+      subroutine convert_to_io_dp(arr_internal,arr_io,nn)
 
       use geometry
       use indices
@@ -136,7 +136,7 @@ CONTAINS
       implicit none
 
       double precision   arr_io(*) , arr_internal(*)
-      integer            n,i,j,k,ijk,ijk_io
+      integer            nn,i,j,k,ijk,ijk_io
 
       do k = 1,kmax2
          do j = 1,jmax2

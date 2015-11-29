@@ -65,7 +65,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -86,7 +86,7 @@
       IJKE = EAST_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -115,11 +115,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_U(IJK))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF)*VOL_U(IJK))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*U_SO(IJK,M)+VBF)*VOL_U(IJK))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -((B - A)/(EPS*AYZ(IJK))-P_STAR(IJK))
+      B_M = -((BB - A)/(EPS*AYZ(IJK))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_E
@@ -192,7 +192,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -214,7 +214,7 @@
       IJKN = NORTH_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -243,11 +243,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_V(IJK))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*V_SO(IJK,M)+VBF)*VOL_V(IJK))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*V_SO(IJK,M)+VBF)*VOL_V(IJK))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -((B - A)/(EPS*AXZ(IJK))-P_STAR(IJK))
+      B_M = -((BB - A)/(EPS*AXZ(IJK))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_N
@@ -320,7 +320,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -342,7 +342,7 @@
       IJKT = TOP_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -371,11 +371,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_W(IJK))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*W_SO(IJK,M)+VBF)*VOL_W(IJK))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*W_SO(IJK,M)+VBF)*VOL_W(IJK))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -((B - A)/(EPS*AXY(IJK))-P_STAR(IJK))
+      B_M = -((BB - A)/(EPS*AXY(IJK))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_T
@@ -447,7 +447,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -470,7 +470,7 @@
       IMJK = IM_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -499,11 +499,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_U(IJKW))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*U_SO(IMJK,M)+VBF)*VOL_U(IJKW))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*U_SO(IMJK,M)+VBF)*VOL_U(IJKW))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -(((-(B - A)/(EPS*AYZ(IMJK))))-P_STAR(IJK))
+      B_M = -(((-(BB - A)/(EPS*AYZ(IMJK))))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_W
@@ -576,7 +576,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -598,7 +598,7 @@
       IJMK = JM_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -627,11 +627,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_V(IJKS))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*V_SO(IJMK,M)+VBF)*VOL_V(IJKS))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*V_SO(IJMK,M)+VBF)*VOL_V(IJKS))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -(((-(B - A)/(EPS*AXZ(IJK))))-P_STAR(IJK))
+      B_M = -(((-(BB - A)/(EPS*AXZ(IJK))))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_S
@@ -703,7 +703,7 @@
       DOUBLE PRECISION A
 !
 !                      RHS (similar to b_m)
-      DOUBLE PRECISION B
+      DOUBLE PRECISION BB
 !
 !                      b_m
       DOUBLE PRECISION b_m
@@ -725,7 +725,7 @@
       IJKM = KM_OF(IJK)
 !
       A = ZERO
-      B = ZERO
+      BB = ZERO
       EPS = ZERO
 !
       DO M = 1, MMAX
@@ -754,11 +754,11 @@
 !
 !         Collect the terms
             A = A - ((V0 + ZMAX(VMT))*VOL_W(IJKB))
-            B=B-(SDP+SDPS+((V0+ZMAX((-VMT)))*W_SO(IJKM,M)+VBF)*VOL_W(IJKB))
+            BB=BB-(SDP+SDPS+((V0+ZMAX((-VMT)))*W_SO(IJKM,M)+VBF)*VOL_W(IJKB))
             EPS = EPS + EPGA
          ENDIF
       END DO
-      B_M = -(((-(B - A)/(EPS*AXY(IJK))))-P_STAR(IJK))
+      B_M = -(((-(BB - A)/(EPS*AXY(IJK))))-P_STAR(IJK))
 !
       RETURN
       END SUBROUTINE B_M_P_STAR_B

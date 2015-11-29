@@ -30,7 +30,6 @@
       USE geometry
       USE indices
       USE leqsol
-      USE matrix
       USE mflux
       USE mpi_utility
       USE output

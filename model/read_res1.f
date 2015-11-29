@@ -60,7 +60,7 @@
       INTEGER LC
 !
 !                      Local species index
-      INTEGER          N
+      INTEGER          NN
 !
 !             pointer to the next record
       INTEGER NEXT_REC
@@ -155,8 +155,8 @@
       ENDIF
 
       IF (VERSION_NUMBER >= 1.05) THEN
-         DO N = 1, NMAX(0)
-            call readScatterRes (X_g(:,n),array2, array1, 1, NEXT_REC)
+         DO NN = 1, NMAX(0)
+            call readScatterRes (X_g(:,nn),array2, array1, 1, NEXT_REC)
          END DO
       ENDIF
 
@@ -181,15 +181,15 @@
             call readScatterRes(THETA_M(:,LC), array2, array1, 1, NEXT_REC)
          end if
          IF (VERSION_NUMBER >= 1.05) THEN
-            DO N = 1, NMAX(LC)
-               call readScatterRes(X_S(:,LC,N), array2, array1, 1, NEXT_REC)
+            DO NN = 1, NMAX(LC)
+               call readScatterRes(X_S(:,LC,NN), array2, array1, 1, NEXT_REC)
             END DO
          ENDIF
       END DO
 
       IF (VERSION_NUMBER >= 1.3) THEN
-        DO N = 1, NScalar
-          call readScatterRes(Scalar(:,N), array2, array1, 1, NEXT_REC)
+        DO NN = 1, NScalar
+          call readScatterRes(Scalar(:,NN), array2, array1, 1, NEXT_REC)
         END DO
       ENDIF
 
@@ -213,8 +213,8 @@
 
 
       IF (VERSION_NUMBER >= 1.5) THEN
-        DO N = 1, nRR
-          call readScatterRes(ReactionRates(:,N), array2, array1, 1, NEXT_REC)
+        DO NN = 1, nRR
+          call readScatterRes(ReactionRates(:,NN), array2, array1, 1, NEXT_REC)
         END DO
       ENDIF
 
@@ -356,7 +356,7 @@
 
         implicit none
 
-        integer :: I , n
+        integer :: I , nn
 
         integer   :: ncid
         integer   :: varid_time
@@ -552,14 +552,14 @@
          end if
          call readScatterRes_netcdf(T_rs(:,i) , array2, array1, ncid , varid_TRS(i))
 
-         DO N = 1, NMAX(i)
+         DO NN = 1, NMAX(i)
             if (myPe .eq. PE_IO) then
                var_name = 'X_s_xxx_xxx'
                write (var_name(5:7) ,'(i3.3)') I
-               write (var_name(9:11),'(i3.3)') n
-               call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xs(I,n)) )
+               write (var_name(9:11),'(i3.3)') nn
+               call MFIX_check_netcdf( MFIX_nf90_inq_varid(ncid, var_name, varid_xs(I,nn)) )
             end if
-            call readScatterRes_netcdf(X_s(:,i,n) , array2, array1, ncid , varid_xs(i,n))
+            call readScatterRes_netcdf(X_s(:,i,nn) , array2, array1, ncid , varid_xs(i,nn))
          END DO
 
       end do
@@ -691,7 +691,7 @@
 !-----------------------------------------------
 ! indices
       INTEGER :: I,J,K, IJK, IJKNB
-      INTEGER :: M,N
+      INTEGER :: M,NN
       INTEGER :: NB
       INTEGER, DIMENSION(6) :: NBCELL
       LOGICAL :: NB_FOUND
@@ -759,14 +759,14 @@
                   THETA_M(IJK,1:MMAX) = THETA_M(IJKNB,1:MMAX)
 
                   DO M = 1,MMAX
-                     DO N = 1, NMAX(M)
-                        X_S(IJK,M,N)= X_S(IJKNB,M,N)
+                     DO NN = 1, NMAX(M)
+                        X_S(IJK,M,NN)= X_S(IJKNB,M,NN)
                      ENDDO
                   ENDDO
 
 
-                  DO N = 1, NScalar
-                     Scalar(IJK,N) = Scalar(IJKNB,N)
+                  DO NN = 1, NScalar
+                     Scalar(IJK,NN) = Scalar(IJKNB,NN)
                   END DO
 
                   GAMA_RG(IJK) = GAMA_RG(IJKNB)
@@ -776,8 +776,8 @@
                   T_RS(IJK,1:MMAX)    = T_RS(IJKNB,1:MMAX)
 
 
-                  DO N = 1, nRR
-                     ReactionRates(IJK,N) = ReactionRates(IJKNB,N)
+                  DO NN = 1, nRR
+                     ReactionRates(IJK,NN) = ReactionRates(IJKNB,NN)
                   END DO
 
                   IF (K_Epsilon) THEN

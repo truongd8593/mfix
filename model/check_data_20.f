@@ -60,7 +60,7 @@
 ! Solids phase
       INTEGER :: M
 ! Species index
-      INTEGER :: N
+      INTEGER :: NN
 ! Logical variable to set, if there is an error
       LOGICAL :: ABORT
 ! Whether L_scale is nonzero
@@ -139,15 +139,15 @@
 
             IF(SPECIES_EQ(0) .OR. RO_G0==UNDEFINED .AND. &
                MW_AVG==UNDEFINED) THEN
-               DO N = 1, NMAX(0)
-                  IF(X_G(IJK,N) == UNDEFINED) &
-                     CALL REPORT_ERROR(ABORT, I, J, K, 'X_G',N)
+               DO NN = 1, NMAX(0)
+                  IF(X_G(IJK,NN) == UNDEFINED) &
+                     CALL REPORT_ERROR(ABORT, I, J, K, 'X_G',NN)
                ENDDO
             ENDIF
 
-            DO N = 1, NScalar
-              IF(Scalar(IJK,N) == UNDEFINED) &
-                 CALL REPORT_ERROR(ABORT, I, J, K, 'SCALAR',N)
+            DO NN = 1, NScalar
+              IF(Scalar(IJK,NN) == UNDEFINED) &
+                 CALL REPORT_ERROR(ABORT, I, J, K, 'SCALAR',NN)
             ENDDO
 
 ! check solids phase fields. these quantities are specified via the
@@ -181,9 +181,9 @@
               ENDIF
 
               IF (SPECIES_EQ(M)) THEN
-                 DO N = 1, NMAX(M)
-                    IF(X_S(IJK,M,N) == UNDEFINED) &
-                       CALL REPORT_ERROR(ABORT, I, J, K, 'X_S', M, N)
+                 DO NN = 1, NMAX(M)
+                    IF(X_S(IJK,M,NN) == UNDEFINED) &
+                       CALL REPORT_ERROR(ABORT, I, J, K, 'X_S', M, NN)
                  ENDDO
               ENDIF
            ENDDO   ! end do m=1,smax

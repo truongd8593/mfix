@@ -28,7 +28,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE geometry
       USE indices
       USE compar
@@ -53,12 +52,12 @@
 
       IJK = 1
       IF (IJKMAX2 > 0) THEN
-         A_M(:IJKMAX2,W,0) = A_VEL(:IJKMAX2,W)
-         A_M(:IJKMAX2,E,0) = A_VEL(:IJKMAX2,E)
-         A_M(:IJKMAX2,S,0) = A_VEL(:IJKMAX2,S)
-         A_M(:IJKMAX2,N,0) = A_VEL(:IJKMAX2,N)
-         A_M(:IJKMAX2,B,0) = A_VEL(:IJKMAX2,B)
-         A_M(:IJKMAX2,T,0) = A_VEL(:IJKMAX2,T)
+         A_M(:IJKMAX2,west,0) = A_VEL(:IJKMAX2,west)
+         A_M(:IJKMAX2,east,0) = A_VEL(:IJKMAX2,east)
+         A_M(:IJKMAX2,south,0) = A_VEL(:IJKMAX2,south)
+         A_M(:IJKMAX2,north,0) = A_VEL(:IJKMAX2,north)
+         A_M(:IJKMAX2,bottom,0) = A_VEL(:IJKMAX2,bottom)
+         A_M(:IJKMAX2,top,0) = A_VEL(:IJKMAX2,top)
          IJK = IJKMAX2 + 1
       ENDIF
       RETURN
@@ -95,7 +94,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE geometry
       USE indices
       USE physprop
@@ -121,12 +119,12 @@
 
       IJK = 1
       IF (IJKMAX2 > 0) THEN
-         A_M(:IJKMAX2,W,M) = A_VEL(:IJKMAX2,W,M)
-         A_M(:IJKMAX2,E,M) = A_VEL(:IJKMAX2,E,M)
-         A_M(:IJKMAX2,S,M) = A_VEL(:IJKMAX2,S,M)
-         A_M(:IJKMAX2,N,M) = A_VEL(:IJKMAX2,N,M)
-         A_M(:IJKMAX2,B,M) = A_VEL(:IJKMAX2,B,M)
-         A_M(:IJKMAX2,T,M) = A_VEL(:IJKMAX2,T,M)
+         A_M(:IJKMAX2,west,M) = A_VEL(:IJKMAX2,west,M)
+         A_M(:IJKMAX2,east,M) = A_VEL(:IJKMAX2,east,M)
+         A_M(:IJKMAX2,south,M) = A_VEL(:IJKMAX2,south,M)
+         A_M(:IJKMAX2,north,M) = A_VEL(:IJKMAX2,north,M)
+         A_M(:IJKMAX2,bottom,M) = A_VEL(:IJKMAX2,bottom,M)
+         A_M(:IJKMAX2,top,M) = A_VEL(:IJKMAX2,top,M)
          IJK = IJKMAX2 + 1
       ENDIF
       RETURN

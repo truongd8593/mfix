@@ -564,8 +564,7 @@
 
       USE geometry, only: do_k
 
-      USE matrix, only: e, w, n, s, t, b
-      USE param, only: dimension_3
+      USE param
       USE param1, only: zero
       USE visc_g, only: df_gv
       IMPLICIT NONE
@@ -602,21 +601,21 @@
 ! part of 1/x d/dx (x.tau_xx) xdxdydz =>
 !         1/x d/dx (x.mu.dv/dx) xdxdydz =>
 ! delta (mu.dv/dx.Ayz) |E-W : at (i+1/2 - i-1/2), j+1/2, k
-         SSX = DF_GV(IJK,E)*(V_G(IPJK) - V_G(IJK)) - &
-               DF_GV(IJK,W)*(V_G(IJK) - V_G(IJKM))
+         SSX = DF_GV(IJK,east)*(V_G(IPJK) - V_G(IJK)) - &
+               DF_GV(IJK,west)*(V_G(IJK) - V_G(IJKM))
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.dv/dy) xdxdydz =>
 ! delta (mu.dv/dy.Axz) |N-S : at (i, j+1 - j-1, k)
-         SSY = DF_GV(IJK,N)*(V_G(IJPK)-V_G(IJK)) - &
-               DF_GV(IJK,S)*(V_G(IJK)-V_G(IJMK))
+         SSY = DF_GV(IJK,north)*(V_G(IJPK)-V_G(IJK)) - &
+               DF_GV(IJK,south)*(V_G(IJK)-V_G(IJMK))
 
          IF (DO_K) THEN
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu/x.dv/dz) xdxdydz =>
 ! delta (mu/x.dv/dz.Axy) |T-B : at (i, j+1/2, k+1/2 - k-1/2)
-            SSZ = DF_GV(IJK,T)*(V_G(IJKP)-V_G(IJK)) - &
-                  DF_GV(IJK,B)*(V_G(IJK)-V_G(IJKM))
+            SSZ = DF_GV(IJK,top)*(V_G(IJKP)-V_G(IJK)) - &
+                  DF_GV(IJK,bottom)*(V_G(IJK)-V_G(IJKM))
          ENDIF
       ENDIF   ! end if flow_at_n
 

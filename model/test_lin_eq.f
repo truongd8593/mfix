@@ -27,7 +27,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE compar
@@ -106,15 +105,15 @@
             IpJK = IP_OF(IJK)
             IJpK = JP_OF(IJK)
             Bm(IJK) = Am(IJK,0)*X_ACT(IJK)
-            IF(I_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,W)*X_ACT(ImJK)
-            IF(I_OF(IJK) < IMAX2) Bm(IJK) = Bm(IJK) +Am(IJK,E)*X_ACT(IpJK)
-            IF(J_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,S)*X_ACT(IJmK)
-            IF(J_OF(IJK) < JMAX2) Bm(IJK) = Bm(IJK) + Am(IJK,N)*X_ACT(IJpK)
+            IF(I_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,west)*X_ACT(ImJK)
+            IF(I_OF(IJK) < IMAX2) Bm(IJK) = Bm(IJK) +Am(IJK,east)*X_ACT(IpJK)
+            IF(J_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,south)*X_ACT(IJmK)
+            IF(J_OF(IJK) < JMAX2) Bm(IJK) = Bm(IJK) + Am(IJK,north)*X_ACT(IJpK)
             IF (DO_K) THEN
                IJKm = KM_OF(IJK)
                IJKp = KP_OF(IJK)
-               IF(K_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,B)*X_ACT(IJKm)
-               IF(K_OF(IJK) < KMAX2) Bm(IJK) = Bm(IJK) + Am(IJK,T)*X_ACT(IJKp)
+               IF(K_OF(IJK) > 1) Bm(IJK) = Bm(IJK) + Am(IJK,bottom)*X_ACT(IJKm)
+               IF(K_OF(IJK) < KMAX2) Bm(IJK) = Bm(IJK) + Am(IJK,top)*X_ACT(IJKp)
             ENDIF
       END DO
 

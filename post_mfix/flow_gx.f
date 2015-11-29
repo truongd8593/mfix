@@ -170,7 +170,6 @@
 !
       REAL FUNCTION XFLOW_gx(I, J, K, IJK, N)
 !
-      Use param
       Use param1
       Use fldvar
       Use indices

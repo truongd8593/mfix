@@ -47,7 +47,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: LC, N
+      INTEGER :: LC, NN
 !-----------------------------------------------
 !
       double precision, allocatable :: array1(:)    !//d
@@ -114,10 +114,10 @@
          if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'T_s')
       END DO
       IF (SPECIES_EQ(0)) THEN
-         DO N = 1, NMAX(0)
-            if (myPE == PE_IO) WRITE (UNIT_OUT, 1710) CHAR(12), N, TIME
+         DO NN = 1, NMAX(0)
+            if (myPE == PE_IO) WRITE (UNIT_OUT, 1710) CHAR(12), NN, TIME
 !           call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-            call gather (X_g(:,N),array1,root)    !//
+            call gather (X_g(:,NN),array1,root)    !//
 !           call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
             if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'X_g')
          END DO
@@ -125,10 +125,10 @@
 !
       DO LC = 1, MMAX
          IF (SPECIES_EQ(LC)) THEN
-            DO N = 1, NMAX(LC)
-               if (myPE == PE_IO) WRITE (UNIT_OUT, 1720) CHAR(12), LC, N, TIME
+            DO NN = 1, NMAX(LC)
+               if (myPE == PE_IO) WRITE (UNIT_OUT, 1720) CHAR(12), LC, NN, TIME
 !              call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
-               call gather (X_s(:,LC,N),array1,root)    !//
+               call gather (X_s(:,LC,NN),array1,root)    !//
 !              call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
                if (myPE == PE_IO) CALL OUT_ARRAY (array1, 'X_s')
             END DO

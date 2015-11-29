@@ -618,8 +618,7 @@
       USE geometry, only: dy, dz, vol_w, ayz_w
       USE indices, only: i_of, j_of, k_of, im1, kp1
 
-      USE matrix, only: e, w, n, s, t, b
-      use param, only: dimension_3
+      use param
       USE param1, only: zero, half
       USE visc_g, only: mu_gt, df_gw
       IMPLICIT NONE
@@ -710,20 +709,20 @@
 ! part of (tau_xz/x + 1/x d/dx (x tau_xz)) xdxdydz =>
 !         1/x d/dx (x.mu.dw/dx) xdxdydz =>
 ! delta (mu.dw/dx.Ayz) |E-W : at (i+1/2 - i-1/2), j, k+1/2
-         SSX = DF_GW(IJK,E)*(W_G(IPJK) - W_G(IJK)) - &
-               DF_GW(IJK,W)*(W_G(IJK) - W_G(IJKM))
+         SSX = DF_GW(IJK,east)*(W_G(IPJK) - W_G(IJK)) - &
+               DF_GW(IJK,west)*(W_G(IJK) - W_G(IJKM))
 
 ! part of d/dy (tau_zy) xdxdydz =>
 !         d/dy (mu.dw/dy) xdxdydz =>
 ! delta (mu.dw/dy.Axz) |N-S : at (i, j+1/2 - j-1/2, k+1/2)
-         SSY = DF_GW(IJK,N)*(W_G(IJPK)-W_G(IJK)) - &
-               DF_GW(IJK,S)*(W_G(IJK)-W_G(IJMK))
+         SSY = DF_GW(IJK,north)*(W_G(IJPK)-W_G(IJK)) - &
+               DF_GW(IJK,south)*(W_G(IJK)-W_G(IJMK))
 
 ! part of 1/x d/dz (tau_zz) xdxdydz =>
 !         1/x d/dz (mu/x.dw/dz) xdxdydz =>
 ! delta (mu/x.dw/dz.Axy) |T-B : at (i, j, k+1 - k-1)
-         SSZ = DF_GW(IJK,T)*(W_G(IJKP)-W_G(IJK)) - &
-               DF_GW(IJK,B)*(W_G(IJK)-W_G(IJKM))
+         SSZ = DF_GW(IJK,top)*(W_G(IJKP)-W_G(IJK)) - &
+               DF_GW(IJK,bottom)*(W_G(IJK)-W_G(IJKM))
 
       ENDIF
 

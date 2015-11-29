@@ -70,7 +70,6 @@
       USE fldvar
       USE run
       USE parallel
-      USE matrix
       USE constant
       USE physprop
       USE rxns
@@ -158,14 +157,14 @@
 
 ! East face (i+1/2, j, k)
             IF (U_S(IJK,M) < ZERO) THEN
-               A_M(IJK,E,0) = (ROP_S(IJKE,M)*E_E(IJK)*K_CP(IJKE)-&
+               A_M(IJK,east,0) = (ROP_S(IJKE,M)*E_E(IJK)*K_CP(IJKE)-&
                  RO_S(IJKE,M)*U_S(IJK,M))*AYZ(IJK)
                A_M(IJK,0,0) = A_M(IJK,0,0)+&
                   ROP_S(IJKE,M)*E_E(IJK)*K_P*AYZ(IJK)
                bme = (-ROP_S(IJKE,M)*U_S(IJK,M))*AYZ(IJK)
                B_M(IJK,0) = B_M(IJK,0) +  bme
             ELSE
-               A_M(IJK,E,0) = (ROP_S(IJK,M)*&
+               A_M(IJK,east,0) = (ROP_S(IJK,M)*&
                   E_E(IJK)*K_CP(IJKE))*AYZ(IJK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                   E_E(IJK)*K_P+RO_S(IJK,M)*U_S(IJK,M))*AYZ(IJK)
@@ -176,14 +175,14 @@
 
 ! West face (i-1/2, j, k)
             IF (U_S(IMJK,M) > ZERO) THEN
-               A_M(IJK,W,0) = (ROP_S(IJKW,M)*E_E(IMJK)*K_CP(IJKW)+&
+               A_M(IJK,west,0) = (ROP_S(IJKW,M)*E_E(IMJK)*K_CP(IJKW)+&
                   RO_S(IJKW,M)*U_S(IMJK,M))*AYZ(IMJK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + &
                   ROP_S(IJKW,M)*E_E(IMJK)*K_P*AYZ(IMJK)
                bmw = (ROP_S(IJKW,M)*U_S(IMJK,M))*AYZ(IMJK)
                B_M(IJK,0) = B_M(IJK,0) + bmw
             ELSE
-               A_M(IJK,W,0) = (ROP_S(IJK,M)*&
+               A_M(IJK,west,0) = (ROP_S(IJK,M)*&
                   E_E(IMJK)*K_CP(IJKW))*AYZ(IMJK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                   E_E(IMJK)*K_P-RO_S(IJK,M)*U_S(IMJK,M))*AYZ(IMJK)
@@ -194,14 +193,14 @@
 
 ! North face (i, j+1/2, k)
             IF (V_S(IJK,M) < ZERO) THEN
-               A_M(IJK,N,0) = (ROP_S(IJKN,M)*E_N(IJK)*K_CP(IJKN)-&
+               A_M(IJK,north,0) = (ROP_S(IJKN,M)*E_N(IJK)*K_CP(IJKN)-&
                   RO_S(IJKN,M)*V_S(IJK,M))*AXZ(IJK)
                A_M(IJK,0,0)=A_M(IJK,0,0)+&
                   ROP_S(IJKN,M)*E_N(IJK)*K_P*AXZ(IJK)
                bmn = (-ROP_S(IJKN,M)*V_S(IJK,M))*AXZ(IJK)
                B_M(IJK,0) = B_M(IJK,0) + bmn
             ELSE
-               A_M(IJK,N,0) = (ROP_S(IJK,M)*&
+               A_M(IJK,north,0) = (ROP_S(IJK,M)*&
                   E_N(IJK)*K_CP(IJKN))*AXZ(IJK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                   E_N(IJK)*K_P+RO_S(IJK,M)*V_S(IJK,M))*AXZ(IJK)
@@ -212,14 +211,14 @@
 
 ! South face (i, j-1/2, k)
             IF (V_S(IJMK,M) > ZERO) THEN
-               A_M(IJK,S,0) = (ROP_S(IJKS,M)*E_N(IJMK)*K_CP(IJKS)+&
+               A_M(IJK,south,0) = (ROP_S(IJKS,M)*E_N(IJMK)*K_CP(IJKS)+&
                   RO_S(IJKS,M)*V_S(IJMK,M))*AXZ(IJMK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + &
                   ROP_S(IJKS,M)*E_N(IJMK)*K_P*AXZ(IJMK)
                bms = (ROP_S(IJKS,M)*V_S(IJMK,M))*AXZ(IJMK)
                B_M(IJK,0) = B_M(IJK,0) + bms
             ELSE
-               A_M(IJK,S,0) = (ROP_S(IJK,M)*&
+               A_M(IJK,south,0) = (ROP_S(IJK,M)*&
                   E_N(IJMK)*K_CP(IJKS))*AXZ(IJMK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                   E_N(IJMK)*K_P-RO_S(IJK,M)*V_S(IJMK,M))*AXZ(IJMK)
@@ -231,14 +230,14 @@
             IF (DO_K) THEN
 ! Top face (i, j, k+1/2)
                IF (W_S(IJK,M) < ZERO) THEN
-                  A_M(IJK,T,0) = (ROP_S(IJKT,M)*E_T(IJK)*K_CP(IJKT)-&
+                  A_M(IJK,top,0) = (ROP_S(IJKT,M)*E_T(IJK)*K_CP(IJKT)-&
                      RO_S(IJKT,M)*W_S(IJK,M))*AXY(IJK)
                   A_M(IJK,0,0) = A_M(IJK,0,0) + &
                      ROP_S(IJKT,M)*E_T(IJK)*K_P*AXY(IJK)
                   bmt = (-ROP_S(IJKT,M)*W_S(IJK,M))*AXY(IJK)
                   B_M(IJK,0)=B_M(IJK,0) + bmt
                ELSE
-                  A_M(IJK,T,0) = (ROP_S(IJK,M)*&
+                  A_M(IJK,top,0) = (ROP_S(IJK,M)*&
                      E_T(IJK)*K_CP(IJKT))*AXY(IJK)
                   A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                      E_T(IJK)*K_P+RO_S(IJK,M)*W_S(IJK,M))*AXY(IJK)
@@ -249,14 +248,14 @@
 
 ! Bottom face (i, j, k-1/2)
                IF (W_S(IJKM,M) > ZERO) THEN
-                  A_M(IJK,B,0) = (ROP_S(IJKB,M)*E_T(IJKM)*K_CP(IJKB)+&
+                  A_M(IJK,bottom,0) = (ROP_S(IJKB,M)*E_T(IJKM)*K_CP(IJKB)+&
                      RO_S(IJKB,M)*W_S(IJKM,M))*AXY(IJKM)
                   A_M(IJK,0,0) = A_M(IJK,0,0) + &
                      ROP_S(IJKB,M)*E_T(IJKM)*K_P*AXY(IJKM)
                   bmb = (ROP_S(IJKB,M)*W_S(IJKM,M))*AXY(IJKM)
                   B_M(IJK,0) = B_M(IJK,0) + bmb
                ELSE
-                  A_M(IJK,B,0) = (ROP_S(IJK,M)*&
+                  A_M(IJK,bottom,0) = (ROP_S(IJK,M)*&
                      E_T(IJKM)*K_CP(IJKB))*AXY(IJKM)
                   A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_S(IJK,M)*&
                      E_T(IJKM)*K_P-RO_S(IJK,M)*W_S(IJKM,M))*AXY(IJKM)
@@ -328,7 +327,6 @@
       USE fldvar
       USE run
       USE parallel
-      USE matrix
       USE constant
       USE physprop
       USE rxns
@@ -447,7 +445,7 @@
 
 ! East face (i+1/2, j, k)
             ROP_SF = ROP_S(IJKE,M)*XSI_E(IJK) + ROP_S(IJK,M)*(ONE - XSI_E(IJK))
-            A_M(IJK,E,0) = (ROP_SF*E_E(IJK)*K_CP(IJKE)-RO_S(IJK,M)*U_S(IJK,M)*XSI_E&
+            A_M(IJK,east,0) = (ROP_SF*E_E(IJK)*K_CP(IJKE)-RO_S(IJK,M)*U_S(IJK,M)*XSI_E&
                (IJK))*AYZ(IJK)
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_E(IJK)*K_P+RO_S(IJK,M)*U_S(IJK,&
                M)*(ONE-XSI_E(IJK)))*AYZ(IJK)
@@ -456,7 +454,7 @@
 
 ! West face (i-1/2, j, k)
             ROP_SF=ROP_S(IJK,M)*XSI_E(IMJK)+ROP_S(IJKW,M)*(ONE-XSI_E(IMJK))
-            A_M(IJK,W,0) = (ROP_SF*E_E(IMJK)*K_CP(IJKW)+RO_S(IJK,M)*U_S(IMJK,M)*(&
+            A_M(IJK,west,0) = (ROP_SF*E_E(IMJK)*K_CP(IJKW)+RO_S(IJK,M)*U_S(IMJK,M)*(&
                ONE-XSI_E(IMJK)))*AYZ(IMJK)
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_E(IMJK)*K_P-RO_S(IJK,M)*U_S(&
                IMJK,M)*XSI_E(IMJK))*AYZ(IMJK)
@@ -466,7 +464,7 @@
 
 ! North face (i, j+1/2, k)
             ROP_SF = ROP_S(IJKN,M)*XSI_N(IJK) + ROP_S(IJK,M)*(ONE - XSI_N(IJK))
-            A_M(IJK,N,0) = (ROP_SF*E_N(IJK)*K_CP(IJKN)-RO_S(IJK,M)*V_S(IJK,M)*XSI_N&
+            A_M(IJK,north,0) = (ROP_SF*E_N(IJK)*K_CP(IJKN)-RO_S(IJK,M)*V_S(IJK,M)*XSI_N&
                (IJK))*AXZ(IJK)
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_N(IJK)*K_P+RO_S(IJK,M)*V_S(IJK,&
                M)*(ONE-XSI_N(IJK)))*AXZ(IJK)
@@ -476,7 +474,7 @@
 
 ! South face (i, j-1/2, k)
             ROP_SF=ROP_S(IJK,M)*XSI_N(IJMK)+ROP_S(IJKS,M)*(ONE-XSI_N(IJMK))
-            A_M(IJK,S,0) = (ROP_SF*E_N(IJMK)*K_CP(IJKS)+RO_S(IJK,M)*V_S(IJMK,M)*(&
+            A_M(IJK,south,0) = (ROP_SF*E_N(IJMK)*K_CP(IJKS)+RO_S(IJK,M)*V_S(IJMK,M)*(&
                ONE-XSI_N(IJMK)))*AXZ(IJMK)
             A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_N(IJMK)*K_P-RO_S(IJK,M)*V_S(&
                IJMK,M)*XSI_N(IJMK))*AXZ(IJMK)
@@ -487,7 +485,7 @@
             IF (DO_K) THEN
 ! Top face (i, j, k+1/2)
                ROP_SF=ROP_S(IJKT,M)*XSI_T(IJK)+ROP_S(IJK,M)*(ONE-XSI_T(IJK))
-               A_M(IJK,T,0) = (ROP_SF*E_T(IJK)*K_CP(IJKT)-RO_S(IJK,M)*W_S(IJK,M)*&
+               A_M(IJK,top,0) = (ROP_SF*E_T(IJK)*K_CP(IJKT)-RO_S(IJK,M)*W_S(IJK,M)*&
                   XSI_T(IJK))*AXY(IJK)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_T(IJK)*K_P+RO_S(IJK,M)*W_S(&
                   IJK,M)*(ONE-XSI_T(IJK)))*AXY(IJK)
@@ -497,7 +495,7 @@
 ! Bottom face (i, j, k-1/2)
                ROP_SF = ROP_S(IJK,M)*XSI_T(IJKM) + ROP_S(IJKB,M)*(ONE - XSI_T(&
                   IJKM))
-               A_M(IJK,B,0) = (ROP_SF*E_T(IJKM)*K_CP(IJKB)+RO_S(IJK,M)*W_S(IJKM,M)*&
+               A_M(IJK,bottom,0) = (ROP_SF*E_T(IJKM)*K_CP(IJKB)+RO_S(IJK,M)*W_S(IJKM,M)*&
                   (ONE-XSI_T(IJKM)))*AXY(IJKM)
                A_M(IJK,0,0) = A_M(IJK,0,0) + (ROP_SF*E_T(IJKM)*K_P-RO_S(IJK,M)*W_S(&
                   IJKM,M)*XSI_T(IJKM))*AXY(IJKM)

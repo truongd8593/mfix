@@ -101,7 +101,7 @@
       use discretelement, only: USE_COHESION, PostCohesive
       use des_rxns, only: DES_X_s
       use run, only: ANY_SPECIES_EQ
-      use param, only: DIMENSION_N_S
+      use param
       USE mfix_pic, only: des_stat_wt, mppic
 
       use error_manager
@@ -111,7 +111,7 @@
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP_PAR
       CHARACTER(len=10) :: lNoP
       CHARACTER(len=24) :: sTIMEc
-      INTEGER :: N
+      INTEGER :: NN
 
       sTIMEc=''; WRITE(sTIMEc,"(ES24.16)") S_TIME
 
@@ -166,8 +166,8 @@
          CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
 
       IF(ANY_SPECIES_EQ) THEN
-         DO N=1, DIMENSION_N_S
-            CALL VTP_WRITE_DATA(trim(iVar('X_s',N)), DES_X_s(:,N))
+         DO NN=1, DIMENSION_N_S
+            CALL VTP_WRITE_DATA(trim(iVar('X_s',NN)), DES_X_s(:,NN))
          ENDDO
       ENDIF
 

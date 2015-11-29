@@ -55,7 +55,7 @@
 ! max of residuals
       DOUBLE PRECISION :: maxres
 ! index
-      INTEGER :: L, M, maxL, maxM, N, maxN
+      INTEGER :: L, M, maxL, maxM, NN, maxN
 ! to indicate undefined residual in species eq at the
 ! beginning of iterations
       LOGICAL :: NO_RESID
@@ -118,9 +118,9 @@
       NO_RESID = .FALSE.
       DO M = 0, MMAX
          IF (SPECIES_EQ(M)) THEN
-            DO N = 1, NMAX(M)
-               IF (RESID(RESID_X+(N-1),M) == UNDEFINED) NO_RESID = .TRUE.
-               SUM_X = SUM_X + RESID(RESID_X+(N-1),M)
+            DO NN = 1, NMAX(M)
+               IF (RESID(RESID_X+(NN-1),M) == UNDEFINED) NO_RESID = .TRUE.
+               SUM_X = SUM_X + RESID(RESID_X+(NN-1),M)
             ENDDO
          ENDIF
       ENDDO

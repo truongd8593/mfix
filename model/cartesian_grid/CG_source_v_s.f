@@ -308,17 +308,13 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param, only: dimension_3, dimension_m
+      USE param
       USE param1, only: zero, one, undefined
-
-      USE matrix
       USE fldvar
       USE bc
-
       USE compar
       USE geometry
       USE indices
-
       USE cutcell
       USE quadric
       USE fun_avg
@@ -358,12 +354,12 @@
          SELECT CASE (BCT)
             CASE ('CG_NSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO
-                  A_M(IJK,W,M) = ZERO
-                  A_M(IJK,N,M) = ZERO
-                  A_M(IJK,S,M) = ZERO
-                  A_M(IJK,T,M) = ZERO
-                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,east,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
+                  A_M(IJK,top,M) = ZERO
+                  A_M(IJK,bottom,M) = ZERO
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -371,28 +367,28 @@
 
             CASE ('CG_FSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO
-                  A_M(IJK,W,M) = ZERO
-                  A_M(IJK,N,M) = ZERO
-                  A_M(IJK,S,M) = ZERO
-                  A_M(IJK,T,M) = ZERO
-                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,east,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
+                  A_M(IJK,top,M) = ZERO
+                  A_M(IJK,bottom,M) = ZERO
                   A_M(IJK,0,M) = -ONE
 !                  B_M(IJK,M) = - V_s(V_MASTER_OF(IJK),M)    ! Velocity of master node
                   B_M(IJK,M) = ZERO
                   IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
                      IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
-                        A_M(IJK,E,M) = ONE
+                        A_M(IJK,east,M) = ONE
                      ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
-                        A_M(IJK,W,M) = ONE
+                        A_M(IJK,west,M) = ONE
                      ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
-                        A_M(IJK,N,M) = ONE
+                        A_M(IJK,north,M) = ONE
                      ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
-                        A_M(IJK,S,M) = ONE
+                        A_M(IJK,south,M) = ONE
                      ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
-                        A_M(IJK,T,M) = ONE
+                        A_M(IJK,top,M) = ONE
                      ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
-                        A_M(IJK,B,M) = ONE
+                        A_M(IJK,bottom,M) = ONE
                      ENDIF
                   ENDIF
                ENDIF
@@ -400,12 +396,12 @@
 
             CASE ('CG_PSW')
                IF(WALL_V_AT(IJK)) THEN
-                  A_M(IJK,E,M) = ZERO
-                  A_M(IJK,W,M) = ZERO
-                  A_M(IJK,N,M) = ZERO
-                  A_M(IJK,S,M) = ZERO
-                  A_M(IJK,T,M) = ZERO
-                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,east,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
+                  A_M(IJK,top,M) = ZERO
+                  A_M(IJK,bottom,M) = ZERO
                   A_M(IJK,0,M) = -ONE
                   IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                      B_M(IJK,M) = -BC_VW_S(BCV,M)
@@ -413,34 +409,34 @@
                      B_M(IJK,M) = ZERO
                      IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
                         IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
-                           A_M(IJK,E,M) = ONE
+                           A_M(IJK,east,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
-                           A_M(IJK,W,M) = ONE
+                           A_M(IJK,west,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
-                           A_M(IJK,N,M) = ONE
+                           A_M(IJK,north,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
-                           A_M(IJK,S,M) = ONE
+                           A_M(IJK,south,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
-                           A_M(IJK,T,M) = ONE
+                           A_M(IJK,top,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
-                           A_M(IJK,B,M) = ONE
+                           A_M(IJK,bottom,M) = ONE
                         ENDIF
                      ENDIF
                   ELSE                              ! partial slip  (WARNING:currently same as FSW)
                      B_M(IJK,M) = ZERO
                      IF(DABS(NORMAL_V(IJK,2))/=ONE) THEN
                         IF (V_MASTER_OF(IJK) == EAST_OF(IJK)) THEN
-                           A_M(IJK,E,M) = ONE
+                           A_M(IJK,east,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == WEST_OF(IJK)) THEN
-                           A_M(IJK,W,M) = ONE
+                           A_M(IJK,west,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == NORTH_OF(IJK)) THEN
-                           A_M(IJK,N,M) = ONE
+                           A_M(IJK,north,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == SOUTH_OF(IJK)) THEN
-                           A_M(IJK,S,M) = ONE
+                           A_M(IJK,south,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == TOP_OF(IJK)) THEN
-                           A_M(IJK,T,M) = ONE
+                           A_M(IJK,top,M) = ONE
                         ELSEIF (V_MASTER_OF(IJK) == BOTTOM_OF(IJK)) THEN
-                           A_M(IJK,B,M) = ONE
+                           A_M(IJK,bottom,M) = ONE
                         ENDIF
                      ENDIF
                   ENDIF
@@ -448,12 +444,12 @@
 
 
             CASE ('CG_MI')
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                   B_M(IJK,M) = - BC_V_s(BCV,M)
@@ -462,12 +458,12 @@
                ENDIF
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJKS,E,M) = ZERO
-                  A_M(IJKS,W,M) = ZERO
-                  A_M(IJKS,N,M) = ZERO
-                  A_M(IJKS,S,M) = ZERO
-                  A_M(IJKS,T,M) = ZERO
-                  A_M(IJKS,B,M) = ZERO
+                  A_M(IJKS,east,M) = ZERO
+                  A_M(IJKS,west,M) = ZERO
+                  A_M(IJKS,north,M) = ZERO
+                  A_M(IJKS,south,M) = ZERO
+                  A_M(IJKS,top,M) = ZERO
+                  A_M(IJKS,bottom,M) = ZERO
                   A_M(IJKS,0,M) = -ONE
                   IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                      B_M(IJKS,M) = - BC_V_s(BCV,M)
@@ -478,19 +474,19 @@
 
 
             CASE ('CG_PO')
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
 
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
 
-                  A_M(IJK,S,M) = ONE
+                  A_M(IJK,south,M) = ONE
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -509,12 +505,12 @@
 
          SELECT CASE (BCT)
             CASE ('CG_MI')
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                   B_M(IJK,M) = - BC_V_s(BCV,M)
@@ -523,12 +519,12 @@
                ENDIF
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJKS,E,M) = ZERO
-                  A_M(IJKS,W,M) = ZERO
-                  A_M(IJKS,N,M) = ZERO
-                  A_M(IJKS,S,M) = ZERO
-                  A_M(IJKS,T,M) = ZERO
-                  A_M(IJKS,B,M) = ZERO
+                  A_M(IJKS,east,M) = ZERO
+                  A_M(IJKS,west,M) = ZERO
+                  A_M(IJKS,north,M) = ZERO
+                  A_M(IJKS,south,M) = ZERO
+                  A_M(IJKS,top,M) = ZERO
+                  A_M(IJKS,bottom,M) = ZERO
                   A_M(IJKS,0,M) = -ONE
                   IF(BC_V_s(BCV,M)/=UNDEFINED) THEN
                      B_M(IJKS,M) = - BC_V_s(BCV,M)
@@ -539,17 +535,17 @@
 
 
             CASE ('CG_PO')
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
                IJKS = SOUTH_OF(IJK)
                IF(FLUID_AT(IJKS)) THEN
-                  A_M(IJK,S,M) = ONE
+                  A_M(IJK,south,M) = ONE
                   A_M(IJK,0,M) = -ONE
                ENDIF
 

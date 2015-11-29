@@ -112,7 +112,7 @@
       INTEGER :: IJK    ! fluid cell index
       INTEGER :: H      ! reaction loop counter
       INTEGER :: L, M   ! global phase index loop counters
-      INTEGER :: N      ! global species index
+      INTEGER :: NN      ! global species index
       INTEGER :: lN     ! reaction speices index
       INTEGER :: lM     ! reaction phase index
       INTEGER :: mXfr   ! global phase index for mass transfer
@@ -199,7 +199,7 @@
 ! Global phase index.
             M = Reaction(H)%Species(lN)%pMap
 ! Global species index.
-            N = Reaction(H)%Species(lN)%sMap
+            NN = Reaction(H)%Species(lN)%sMap
 ! Index for interphase mass transfer. For a gas/solid reaction, the
 ! index is stored with the gas phase. For solid/solid mass transfer
 ! the index is stored with the source phase.
@@ -209,11 +209,11 @@
             IF(M == 0) THEN
 ! Consumption of gas phase species.
                IF(lRate < ZERO) THEN
-                  IF(X_g(IJK,N) > speciesLimiter) THEN
-                     r_ROXgc(N) = r_ROXgc(N) - lRate/X_g(IJK,N)
+                  IF(X_g(IJK,NN) > speciesLimiter) THEN
+                     r_ROXgc(NN) = r_ROXgc(NN) - lRate/X_g(IJK,NN)
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                      IF(M /= mXfr) r_RxH(M,mXfr) = r_RxH(M,mXfr) +     &
-                        lRate * CALC_H(T_G(IJK),0,N)
+                        lRate * CALC_H(T_G(IJK),0,NN)
                   ELSE
 ! There is an insignificant amount of reactant. Skip this reaction.
                      RATES(H) = ZERO
@@ -221,10 +221,10 @@
                   ENDIF
                ELSE
 ! Formation of gas phase species.
-                  r_Rgp(N) = r_Rgp(N) + lRate
+                  r_Rgp(NN) = r_Rgp(NN) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                   IF(M /= mXfr) r_RxH(M,mXfr) = r_RxH(M,mXfr) +        &
-                     lRate * CALC_H(T_s(IJK,mXfr),0,N)
+                     lRate * CALC_H(T_s(IJK,mXfr),0,NN)
                ENDIF
 
 
@@ -232,19 +232,19 @@
             ELSE
 ! Consumption of solids phase species.
                IF(lRate < ZERO) THEN
-                  IF(X_s(IJK,M,N) > speciesLimiter) THEN
-                     r_ROXsc(M,N) = r_ROXsc(M,N) - lRate/X_s(IJK,M,N)
+                  IF(X_s(IJK,M,NN) > speciesLimiter) THEN
+                     r_ROXsc(M,NN) = r_ROXsc(M,NN) - lRate/X_s(IJK,M,NN)
 ! Enthalpy transfer associated with mass transfer. (solid/solid) This
 ! is only calculated from the source (reactant) material.
                      IF(M /= mXfr) THEN
                         IF(M < mXfr) THEN
                            r_RxH(M,mXfr) =  r_RxH(M,mXfr) + lRate *    &
                               Reaction(H)%Species(lN)%xXfr *           &
-                              CALC_H(T_s(IJK,M),M,N)
+                              CALC_H(T_s(IJK,M),M,NN)
                         ELSE
                            r_RxH(mXfr,M) =  r_RxH(mXfr,M) - lRate *    &
                               Reaction(H)%Species(lN)%xXfr *           &
-                              CALC_H(T_s(IJK,M),M,N)
+                              CALC_H(T_s(IJK,M),M,NN)
                         ENDIF
                      ENDIF
                   ELSE
@@ -254,7 +254,7 @@
                   ENDIF
                ELSE
 ! Formation of solids phase species.
-                  r_Rsp(M,N) = r_Rsp(M,N) + lRate
+                  r_Rsp(M,NN) = r_Rsp(M,NN) + lRate
                ENDIF
             ENDIF
          ENDDO ! Loop of species
@@ -293,15 +293,15 @@
 ! Global phase index.
                   M = Reaction(H)%Species(lN)%pMap
 ! Global species index.
-                  N = Reaction(H)%Species(lN)%sMap
+                  NN = Reaction(H)%Species(lN)%sMap
 ! Rate of formation/consumption for speices N
                   lRate = RATES(H) * Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy change from energy equation derivation.
                   IF(M == 0) THEN
-                     r_HORg = r_HORg + CALC_H(T_g(IJK),0,N) * lRate
+                     r_HORg = r_HORg + CALC_H(T_g(IJK),0,NN) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
-                     r_HORs(M) = r_HORs(M) + CALC_H(T_s(IJK,M),M,N)*lRate
+                     r_HORs(M) = r_HORs(M) + CALC_H(T_s(IJK,M),M,NN)*lRate
                   ENDIF
                ENDDO
 

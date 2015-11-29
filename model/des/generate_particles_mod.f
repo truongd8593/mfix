@@ -140,6 +140,7 @@
 
       use functions
       use error_manager
+      use param, only: dimension_i, dimension_j, dimension_k
 
       IMPLICIT NONE
 

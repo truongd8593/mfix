@@ -1,3 +1,13 @@
+MODULE cont
+
+  !
+  !                      Indicates whether the continuity equation needs to be
+  !                      solved
+  !
+  LOGICAL, DIMENSION(:), ALLOCATABLE ::  DO_CONT
+
+CONTAINS
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOLVE_CONTINUITY                                        C
@@ -27,7 +37,6 @@
       USE fldvar
       USE indices
       USE residual
-      USE cont
       USE leqsol
       Use ambm
       USE ur_facs
@@ -57,7 +66,6 @@
 !-----------------------------------------------
 
       call lock_ambm
-
 
       IF (M==0) THEN
 ! solve gas phase continuity equation. note that this branch will never
@@ -127,4 +135,37 @@
 
 
       RETURN
+
+    CONTAINS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: ADJUST_ROP                                              C
+!  Purpose: Remove small negative values of density.                   C
+
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+      SUBROUTINE ADJUST_ROP(ROP)
+        USE functions, only: fluid_at
+      IMPLICIT NONE
+!-----------------------------------------------
+! Dummy arguments
+!-----------------------------------------------
+! density
+      DOUBLE PRECISION, INTENT(INOUT) :: ROP(DIMENSION_3)
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! Indices
+      INTEGER :: IJK
+!-----------------------------------------------
+
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) ROP(IJK) = DMAX1(ZERO,ROP(IJK))
+      ENDDO
+
+      RETURN
+      END SUBROUTINE ADJUST_ROP
+
       END SUBROUTINE SOLVE_CONTINUITY
+    END MODULE cont

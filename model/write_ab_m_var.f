@@ -25,7 +25,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
 
       USE geometry
       USE compar

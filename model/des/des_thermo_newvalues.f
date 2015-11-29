@@ -22,6 +22,7 @@
       Use physprop
       use run, only: ENERGY_EQ
       use functions
+      use funits, only: dmp_log
 
       IMPLICIT NONE
 

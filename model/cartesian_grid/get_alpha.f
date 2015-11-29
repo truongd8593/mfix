@@ -20,6 +20,7 @@
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, ayz, ayz_u, flag_e
       USE indices, ONLY: I_OF, J_OF, K_OF
+      USE param1, ONLY: half, one, undefined, zero
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -424,6 +425,7 @@
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K, axz, axz_v, flag_n
       USE indices, ONLY: I_OF, J_OF, K_OF
+      USE param1, ONLY: half, one, undefined, zero
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt
@@ -828,6 +830,7 @@
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: axy, axy_w, flag_t
       USE indices, ONLY: I_OF, J_OF, K_OF
+      USE param1, ONLY: half, one, undefined, zero
 
       IMPLICIT NONE
       DOUBLE PRECISION:: Xe,Ye,Ze,Xn,Yn,Zn,Xt,Yt,Zt

@@ -545,7 +545,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE geometry
       USE compar
       USE mpi_utility
@@ -834,7 +833,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE geometry
       USE compar
       USE mpi_utility

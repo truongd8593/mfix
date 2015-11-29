@@ -208,7 +208,7 @@
       IMPLICIT NONE
 
 ! Loop indices for mass phase and species
-      INTEGER M, N
+      INTEGER M, NN
 ! Loop counter for continuum and discrete species
       INTEGER Nsp, DES_Nsp
 
@@ -224,16 +224,16 @@
 
 ! Read species data for the gas phase.
 !-----------------------------------------------------------------------
-      DO N = 1, NMAX(0)
+      DO NN = 1, NMAX(0)
          Nsp = Nsp + 1
 ! If a species name was not specified in mfix.dat, flag error and exit.
           IF(SPECIES_NAME(Nsp) == UNDEFINED_C) THEN
-            WRITE(*,1010) N         ! screen
-            IF(DMP_LOG) WRITE(UNIT_LOG,1010) N  ! log file
+            WRITE(*,1010) NN         ! screen
+            IF(DMP_LOG) WRITE(UNIT_LOG,1010) NN  ! log file
              CALL MFIX_EXIT(mypE)
           ENDIF
 ! Read the database.
-         CALL READ_DATABASE(0, N, SPECIES_NAME(Nsp), MW_g(N))
+         CALL READ_DATABASE(0, NN, SPECIES_NAME(Nsp), MW_g(NN))
        ENDDO
 
 ! Read species data for the continuum solids phases.
@@ -242,15 +242,15 @@
 ! simulation is only employing discrete solids.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID)THEN
           DO M = 1, MMAX
-            DO N = 1, NMAX(M)
+            DO NN = 1, NMAX(M)
                 Nsp = Nsp + 1
 ! If a species name was not specified in mfix.dat, flag error and exit.
                 IF(SPECIES_NAME(Nsp) == UNDEFINED_C)THEN
-                  WRITE(*,1011)'continuum', M, N ! screen
-                  IF(DMP_LOG) WRITE(UNIT_LOG,1011)'continuum', M, N
+                  WRITE(*,1011)'continuum', M, NN ! screen
+                  IF(DMP_LOG) WRITE(UNIT_LOG,1011)'continuum', M, NN
                    CALL MFIX_EXIT(mypE)
                 ENDIF
-               CALL READ_DATABASE(M, N, SPECIES_NAME(Nsp), MW_s(M,N))
+               CALL READ_DATABASE(M, NN, SPECIES_NAME(Nsp), MW_s(M,NN))
              ENDDO   ! N=1, NMAX(M)
           ENDDO   ! M=1, MMAX
       ENDIF

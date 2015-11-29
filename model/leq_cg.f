@@ -22,7 +22,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE compar
       USE indices
@@ -103,7 +102,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE geometry
       USE compar
       USE mpi_utility

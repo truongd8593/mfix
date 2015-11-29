@@ -30,7 +30,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE fldvar
       USE geometry
       USE run
@@ -67,12 +66,12 @@
 !!!!$omp$ parallel do private(IJK,IJKT,IJKM)
       DO IJK = ijkstart3, ijkend3
          IF (ABS(A_M(IJK,0,M)) < SMALL_NUMBER) THEN
-            A_M(IJK,E,M) = ZERO
-            A_M(IJK,W,M) = ZERO
-            A_M(IJK,N,M) = ZERO
-            A_M(IJK,S,M) = ZERO
-            A_M(IJK,T,M) = ZERO
-            A_M(IJK,B,M) = ZERO
+            A_M(IJK,east,M) = ZERO
+            A_M(IJK,west,M) = ZERO
+            A_M(IJK,north,M) = ZERO
+            A_M(IJK,south,M) = ZERO
+            A_M(IJK,top,M) = ZERO
+            A_M(IJK,bottom,M) = ZERO
             A_M(IJK,0,M) = -ONE
             IF (B_M(IJK,M) < ZERO) THEN
                IJKT = TOP_OF(IJK)

@@ -222,7 +222,7 @@
       USE geometry
       USE indices
       Use interpolation
-      Use param1
+      Use param, only: dimension_3
       Use physprop
 
       use run, only: ODT

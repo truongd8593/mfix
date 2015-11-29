@@ -13,7 +13,7 @@
 
       MODULE PIC_BC
 
-      USE param
+      USE param, only: dimension_bc
 
       INTEGER :: PIC_BCMI
       INTEGER :: PIC_BCMO

@@ -853,7 +853,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop counters.
-      INTEGER L, M, N
+      INTEGER L, M, NN
 ! A flag generated to point out the location of the entry error.
       CHARACTER(LEN=512) FLAG
 ! Location in string to locate error.
@@ -865,20 +865,20 @@
 ! Loop over the number of (reactants/products)
       ALOOP : DO L=1, lNo
 ! Compare entry with gas phase species.
-         DO N = 1, lNg
-            IF( checkMatch(lSAg(N), lAlias(L))) THEN
+         DO NN = 1, lNg
+            IF( checkMatch(lSAg(NN), lAlias(L))) THEN
                lRxN%Species(lStart + L)%pMap = 0
-               lRxN%Species(lStart + L)%sMap = N
+               lRxN%Species(lStart + L)%sMap = NN
                lRxN%Species(lStart + L)%Coeff = lSgn * lCoeff(L)
                CYCLE ALOOP
             ENDIF
          ENDDO
 ! Compare entry with solids phase species.
          DO M = 1, lM
-            DO N = 1, lNs(M)
-               IF(checkMatch(lSAs(M,N),lAlias(L))) THEN
+            DO NN = 1, lNs(M)
+               IF(checkMatch(lSAs(M,NN),lAlias(L))) THEN
                   lRxN%Species(lStart + L)%pMap = M
-                  lRxN%Species(lStart + L)%sMap = N
+                  lRxN%Species(lStart + L)%sMap = NN
                   lRxN%Species(lStart + L)%Coeff = lSgn * lCoeff(L)
                   CYCLE ALOOP
                ENDIF

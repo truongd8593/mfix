@@ -38,6 +38,7 @@ CONTAINS
       use des_thermo
       use discretelement
       use funits
+      use param1, only: zero
       use physprop
 
       IMPLICIT NONE

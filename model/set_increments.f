@@ -437,7 +437,7 @@
 !-----------------------------------------------
 !
 !                      Indices
-      INTEGER          I, J, K, IJK, NEW_IJK,N
+      INTEGER          I, J, K, IJK, NEW_IJK,NN
 !
 !                      Index for the solids phase.
       INTEGER          M
@@ -520,8 +520,6 @@
 
       NEW_IJK = IJKSTART3
 
-
-
       IJK_OF_BACKGROUND = -999
 
 ! Step 0: Indentify dead cells
@@ -537,10 +535,7 @@
          J = J_OF(IJK)
          K = K_OF(IJK)
 
-
 !         IF(MyPE == PE_IO) WRITE(*,*)'IJK progress=',IJK,DBLE(IJK)/IJKEND3
-
-
 
          ANY_CUT_TREATMENT(IJK) =     CUT_TREATMENT_AT(IJK)&
                                   .OR.CUT_U_TREATMENT_AT(IJK)&
@@ -1030,10 +1025,10 @@
       CALL SHIFT_DP_ARRAY(T_GO)
       CALL SHIFT_DP_ARRAY(GAMA_RG)
       CALL SHIFT_DP_ARRAY(T_RG)
-      DO N = 1, NMAX(0)
-         CALL SHIFT_DP_ARRAY(X_G(:,N))
-         CALL SHIFT_DP_ARRAY(X_GO(:,N))
-         CALL SHIFT_DP_ARRAY(DIF_G(:,N))
+      DO NN = 1, NMAX(0)
+         CALL SHIFT_DP_ARRAY(X_G(:,NN))
+         CALL SHIFT_DP_ARRAY(X_GO(:,NN))
+         CALL SHIFT_DP_ARRAY(DIF_G(:,NN))
       ENDDO
       CALL SHIFT_DP_ARRAY(U_G)
       CALL SHIFT_DP_ARRAY(U_GO)
@@ -1070,10 +1065,10 @@
          CALL SHIFT_DP_ARRAY(T_SO(:,M))
          CALL SHIFT_DP_ARRAY(GAMA_RS(:,M))
          CALL SHIFT_DP_ARRAY(T_RS(:,M))
-         DO N = 1, NMAX(M)
-            CALL SHIFT_DP_ARRAY(X_S(:,M,N))
-            CALL SHIFT_DP_ARRAY(X_SO(:,M,N))
-            CALL SHIFT_DP_ARRAY(DIF_S(:,M,N))
+         DO NN = 1, NMAX(M)
+            CALL SHIFT_DP_ARRAY(X_S(:,M,NN))
+            CALL SHIFT_DP_ARRAY(X_SO(:,M,NN))
+            CALL SHIFT_DP_ARRAY(DIF_S(:,M,NN))
          ENDDO
          CALL SHIFT_DP_ARRAY(U_S(:,M))
          CALL SHIFT_DP_ARRAY(U_SO(:,M))
@@ -1091,9 +1086,9 @@
 
 
 
-      DO N=1,Nscalar
-         CALL SHIFT_DP_ARRAY(SCALAR(:,N))
-         CALL SHIFT_DP_ARRAY(SCALARO(:,N))
+      DO NN=1,Nscalar
+         CALL SHIFT_DP_ARRAY(SCALAR(:,NN))
+         CALL SHIFT_DP_ARRAY(SCALARO(:,NN))
       ENDDO
 
       IF(K_Epsilon) THEN
@@ -1412,33 +1407,33 @@
       placeholder = 1
       new_nsend1 = 0
 
-      DO n = 1,nsend1
-         j1       = xsend1(n)
-         j2       = xsend1(n+1)-1
+      do nn = 1,nsend1
+         j1       = xsend1(nn)
+         j2       = xsend1(nn+1)-1
          sendsize = j2-j1+1
 
-         new_send_size(n) = 0
+         new_send_size(nn) = 0
 
          DO jj=j1,j2
             ijk = sendijk1( jj )
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
-               new_send_size(n) = new_send_size(n) + 1
+               new_send_size(nn) = new_send_size(nn) + 1
                send_pos = send_pos + 1
                new_sendijk1(send_pos) = IJK_OF_BACKGROUND(IJK)
             ENDIF
          ENDDO
 
-         IF(new_send_size(n)>0) THEN
+         IF(new_send_size(nn)>0) THEN
             new_nsend1 = new_nsend1 + 1
             new_xsend1(new_nsend1) = placeholder
-            placeholder = placeholder + new_send_size(n)
+            placeholder = placeholder + new_send_size(nn)
 
-            new_sendtag1(new_nsend1) = sendtag1(n)
-            new_sendproc1(new_nsend1) = sendproc1(n)
+            new_sendtag1(new_nsend1) = sendtag1(nn)
+            new_sendproc1(new_nsend1) = sendproc1(nn)
 
             nj1 = new_xsend1(new_nsend1)
-            nj2 = nj1 + new_send_size(n) - 1
+            nj2 = nj1 + new_send_size(nn) - 1
 
             CALL BUBBLE_SORT_1D_INT_ARRAY(new_sendijk1(nj1:nj2),nj1,nj2)
          ENDIF
@@ -1482,33 +1477,33 @@
 
 
 
-      DO n = 1,nsend2
-         j1       = xsend2(n)
-         j2       = xsend2(n+1)-1
+      do nn = 1,nsend2
+         j1       = xsend2(nn)
+         j2       = xsend2(nn+1)-1
          sendsize = j2-j1+1
 
-         new_send_size(n) = 0
+         new_send_size(nn) = 0
 
          DO jj=j1,j2
             ijk = sendijk2( jj )
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
-               new_send_size(n) = new_send_size(n) + 1
+               new_send_size(nn) = new_send_size(nn) + 1
                send_pos = send_pos + 1
                new_sendijk2(send_pos) = IJK_OF_BACKGROUND(IJK)
             ENDIF
          ENDDO
 
-         IF(new_send_size(n)>0) THEN
+         IF(new_send_size(nn)>0) THEN
             new_nsend2 = new_nsend2 + 1
             new_xsend2(new_nsend2) = placeholder
-            placeholder = placeholder + new_send_size(n)
+            placeholder = placeholder + new_send_size(nn)
 
-            new_sendtag2(new_nsend2) = sendtag2(n)
-            new_sendproc2(new_nsend2) = sendproc2(n)
+            new_sendtag2(new_nsend2) = sendtag2(nn)
+            new_sendproc2(new_nsend2) = sendproc2(nn)
 
             nj1 = new_xsend2(new_nsend2)
-            nj2 = nj1 + new_send_size(n) - 1
+            nj2 = nj1 + new_send_size(nn) - 1
 
 !            if (MyPE==6) print*, 'n,new_nsend2,nj1,nj2',n,new_nsend2,nj1,nj2
 
@@ -1561,33 +1556,33 @@
       placeholder = 1
       new_nrecv1 = 0
 
-      DO n = 1,nrecv1
-         j1       = xrecv1(n)
-         j2       = xrecv1(n+1)-1
+      do nn = 1,nrecv1
+         j1       = xrecv1(nn)
+         j2       = xrecv1(nn+1)-1
          recvsize = j2-j1+1
 
-         new_recv_size(n) = 0
+         new_recv_size(nn) = 0
 
          DO jj=j1,j2
             ijk = recvijk1( jj )
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
-               new_recv_size(n) = new_recv_size(n) + 1
+               new_recv_size(nn) = new_recv_size(nn) + 1
                recv_pos = recv_pos + 1
                new_recvijk1(recv_pos) = IJK_OF_BACKGROUND(IJK)
             ENDIF
          ENDDO
 
-         IF(new_recv_size(n)>0) THEN
+         IF(new_recv_size(nn)>0) THEN
             new_nrecv1 = new_nrecv1 + 1
             new_xrecv1(new_nrecv1) = placeholder
-            placeholder = placeholder + new_recv_size(n)
+            placeholder = placeholder + new_recv_size(nn)
 
-            new_recvtag1(new_nrecv1) = recvtag1(n)
-            new_recvproc1(new_nrecv1) = recvproc1(n)
+            new_recvtag1(new_nrecv1) = recvtag1(nn)
+            new_recvproc1(new_nrecv1) = recvproc1(nn)
 
             nj1 = new_xrecv1(new_nrecv1)
-            nj2 = nj1 + new_recv_size(n) - 1
+            nj2 = nj1 + new_recv_size(nn) - 1
 
             CALL BUBBLE_SORT_1D_INT_ARRAY(new_recvijk1(nj1:nj2),nj1,nj2)
          ENDIF
@@ -1628,33 +1623,33 @@
       placeholder = 1
       new_nrecv2 = 0
 
-      DO n = 1,nrecv2
-         j1       = xrecv2(n)
-         j2       = xrecv2(n+1)-1
+      do nn = 1,nrecv2
+         j1       = xrecv2(nn)
+         j2       = xrecv2(nn+1)-1
          recvsize = j2-j1+1
 
-         new_recv_size(n) = 0
+         new_recv_size(nn) = 0
 
          DO jj=j1,j2
             ijk = recvijk2( jj )
 
             IF(IJK_OF_BACKGROUND(IJK)/=-999) THEN      ! Only keep active cells
-               new_recv_size(n) = new_recv_size(n) + 1
+               new_recv_size(nn) = new_recv_size(nn) + 1
                recv_pos = recv_pos + 1
                new_recvijk2(recv_pos) = IJK_OF_BACKGROUND(IJK)
             ENDIF
          ENDDO
 
-         IF(new_recv_size(n)>0) THEN
+         IF(new_recv_size(nn)>0) THEN
             new_nrecv2 = new_nrecv2 + 1
             new_xrecv2(new_nrecv2) = placeholder
-            placeholder = placeholder + new_recv_size(n)
+            placeholder = placeholder + new_recv_size(nn)
 
-            new_recvtag2(new_nrecv2) = recvtag2(n)
-            new_recvproc2(new_nrecv2) = recvproc2(n)
+            new_recvtag2(new_nrecv2) = recvtag2(nn)
+            new_recvproc2(new_nrecv2) = recvproc2(nn)
 
             nj1 = new_xrecv2(new_nrecv2)
-            nj2 = nj1 + new_recv_size(n) - 1
+            nj2 = nj1 + new_recv_size(nn) - 1
 
             CALL BUBBLE_SORT_1D_INT_ARRAY(new_recvijk2(nj1:nj2),nj1,nj2)
          ENDIF
@@ -1690,9 +1685,9 @@
 ! Fill in arrays
 
 
-      DO n = 1,nsend1
-         j1       = xsend1(n)
-         j2       = xsend1(n+1)-1
+      do nn = 1,nsend1
+         j1       = xsend1(nn)
+         j2       = xsend1(nn+1)-1
          sendsize = j2-j1+1
 
 
@@ -1725,12 +1720,12 @@
 ! Fill in arrays
 
 
-      DO n = 1,nsend2
-         j1       = xsend2(n)
-         j2       = xsend2(n+1)-1
+      do nn = 1,nsend2
+         j1       = xsend2(nn)
+         j2       = xsend2(nn+1)-1
          sendsize = j2-j1+1
 
-         new_send_size(n) = 0
+         new_send_size(nn) = 0
 
          DO jj=j1,j2
             ijk = sendijk2( jj )
@@ -1762,12 +1757,12 @@
 ! Fill in arrays
 
 
-      DO n = 1,nrecv1
-         j1       = xrecv1(n)
-         j2       = xrecv1(n+1)-1
+      do nn = 1,nrecv1
+         j1       = xrecv1(nn)
+         j2       = xrecv1(nn+1)-1
          recvsize = j2-j1+1
 
-         new_recv_size(n) = 0
+         new_recv_size(nn) = 0
 
          DO jj=j1,j2
             ijk = recvijk1( jj )
@@ -1795,12 +1790,12 @@
       allocate( new_recvijk2( size(recvijk2) ) )
 
 
-      DO n = 1,nrecv2
-         j1       = xrecv2(n)
-         j2       = xrecv2(n+1)-1
+      do nn = 1,nrecv2
+         j1       = xrecv2(nn)
+         j2       = xrecv2(nn+1)-1
          recvsize = j2-j1+1
 
-         new_recv_size(n) = 0
+         new_recv_size(nn) = 0
 
          DO jj=j1,j2
             ijk = recvijk2( jj )
@@ -2179,6 +2174,7 @@
       USE compar
       USE cutcell
       USE functions
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 
@@ -2238,6 +2234,7 @@
       USE compar
       USE cutcell
       USE functions
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 
@@ -2299,6 +2296,7 @@
       USE compar
       USE cutcell
       USE functions
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 
@@ -2361,6 +2359,7 @@
       USE compar
       USE cutcell
       USE functions
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 
@@ -2414,6 +2413,7 @@
       USE compar
       USE cutcell
       USE functions
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 

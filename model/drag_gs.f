@@ -431,7 +431,7 @@
 ! Local variables
 !-----------------------------------------------
 ! Variables which are function of EP_g
-      DOUBLE PRECISION :: A, B
+      DOUBLE PRECISION :: A, BB
 ! Ratio of settling velocity of a multiparticle system to
 ! that of a single particle
       DOUBLE PRECISION :: V_rm
@@ -448,13 +448,13 @@
 ! Calculate V_rm
       A = EPg**4.14D0
       IF (EPg <= 0.85D0) THEN
-         B = drag_c1*EPg**1.28D0
+         BB = drag_c1*EPg**1.28D0
       ELSE
-        B = EPg**drag_d1
+        BB = EPg**drag_d1
       ENDIF
 
       V_RM=HALF*(A-0.06D0*RE+&
-           SQRT((3.6D-3)*RE*RE+0.12D0*RE*(2.D0*B-A)+A*A) )
+           SQRT((3.6D-3)*RE*RE+0.12D0*RE*(2.D0*BB-A)+A*A) )
 
 !------------------Begin cluster correction --------------------------
 ! uncomment the following four lines ...
@@ -1197,7 +1197,7 @@
 ! dimensionless drag force F
       DOUBLE PRECISION :: F
 ! weighting factor to compute F_0 and F_2
-      DOUBLE PRECISION :: w
+      DOUBLE PRECISION :: ww
 !-----------------------------------------------
 
 
@@ -1209,13 +1209,13 @@
       ENDIF
 
       F_STOKES = 18.D0*Mug*EPg*EPg/DPM**2    ! use DPM
-      w = EXP(-10.0D0*(0.4D0-phis)/phis)
+      ww = EXP(-10.0D0*(0.4D0-phis)/phis)
 
       IF(phis > 0.01D0 .AND. phis < 0.4D0) THEN
-         F_0 = (1.0D0-w) * (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + &
+         F_0 = (1.0D0-ww) * (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + &
             135.0D0/64.0D0*phis*LOG(phis) + 17.14D0*phis) / &
             (1.0D0 + 0.681D0*phis - 8.48D0*phis*phis + &
-            8.16D0*phis**3) + w*10.0D0*phis/(1.0D0-phis)**3
+            8.16D0*phis**3) + ww*10.0D0*phis/(1.0D0-phis)**3
       ELSEIF(phis >= 0.4D0) THEN
          F_0 = 10.0D0*phis/(1.0D0-phis)**3
       ENDIF
@@ -1227,10 +1227,10 @@
       ENDIF
 
       IF(phis < 0.4D0) THEN
-        F_2 = (1.0D0-w) * (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + &
+        F_2 = (1.0D0-ww) * (1.0D0 + 3.0D0*dsqrt(phis/2.0D0) + &
            135.0D0/64.0D0*phis*LOG(phis) + 17.89D0*phis) / &
            (1.0D0 + 0.681D0*phis - 11.03D0*phis*phis + &
-           15.41D0*phis**3)+ w*10.0D0*phis/(1.0D0-phis)**3
+           15.41D0*phis**3)+ ww*10.0D0*phis/(1.0D0-phis)**3
       ELSE
          F_2 = 10.0D0*phis/(1.0D0-phis)**3
       ENDIF

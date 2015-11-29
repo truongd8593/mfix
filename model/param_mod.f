@@ -22,6 +22,31 @@
       INTEGER :: DIMENSION_SCALAR
       INTEGER :: DIM_SCALAR2
 
+! Definitions for sparse matrix
+!'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+! East
+      INTEGER :: east
+      PARAMETER (east = 1)
+
+! West
+      INTEGER :: west
+      PARAMETER (west =-1)
+
+! North
+      INTEGER :: north
+      PARAMETER (north = 2)
+
+! South
+      INTEGER :: south
+      PARAMETER (south =-2)
+
+! Top
+      INTEGER :: top
+      PARAMETER (top = 3)
+
+! Bottom
+      INTEGER :: bottom
+      PARAMETER (bottom =-3)
 
 ! Parameters limiting user-specifed input.
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''

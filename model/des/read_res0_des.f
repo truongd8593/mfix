@@ -18,7 +18,7 @@
       use machine
       use mfix_pic, only: MPPIC, DES_STAT_WT
       use mpi_utility
-      use param1
+      use param, only: dimension_n_s
       use read_res1_des
       use run
 
@@ -59,7 +59,7 @@
       IF(ENERGY_EQ) CALL READ_RES_pARRAY(lNEXT_REC, DES_T_s_NEW)
 
       IF(ANY_SPECIES_EQ) THEN
-         DO LC1=1, DIMENSION_N_S
+        DO LC1=1, DIMENSION_N_S
             CALL READ_RES_pARRAY(lNEXT_REC, DES_X_s(:,LC1))
          ENDDO
       ENDIF

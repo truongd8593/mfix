@@ -214,12 +214,12 @@ CONTAINS
       DOUBLE PRECISION SUM
 !
 !                      local index
-      INTEGER          N
+      INTEGER           NN
 !-----------------------------------------------
 !
       SUM = ZERO
-      DO N = 1, NMAX
-         SUM = SUM + X_G(L,N)/MW_G(N)
+      DO NN = 1, NMAX
+         SUM = SUM + X_G(L,NN)/MW_G(NN)
       END DO
       CALC_MW = ONE/MAX(SUM,OMW_MAX)
 !

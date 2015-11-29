@@ -20,7 +20,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
-      SUBROUTINE GET_EQ(A, B, VEL, DTXFA, IJK1)
+      SUBROUTINE GET_EQ(A, BB, VEL, DTXFA, IJK1)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -54,7 +54,7 @@
 !
 !                      Coefficients in the discretized momentum equations
 !                        Av = B, where v(0) = V_g, v(1) = V_s1 etc.
-      DOUBLE PRECISION A(0:DIMENSION_M, 0:DIMENSION_M), B(0:DIMENSION_M)
+      DOUBLE PRECISION A(0:DIMENSION_M, 0:DIMENSION_M), BB(0:DIMENSION_M)
 !
 !                      Solids velocity array passed
       DOUBLE PRECISION VEL (DIMENSION_3, DIMENSION_M)
@@ -86,13 +86,13 @@
                A(M,M+1:MMAX) = ZERO
                L = MMAX + 1
             ENDIF
-            IF (B(M) == UNDEFINED) THEN
+            IF (BB(M) == UNDEFINED) THEN
                A(0,0) = A(0,0) + DTXFA(0,M)
-               B(0) = B(0) + DTXFA(0,M)*VEL(IJK1,M)
+               BB(0) = BB(0) + DTXFA(0,M)*VEL(IJK1,M)
                DO L = 1, MMAX
                   IF (L/=M .AND. A(L,L)/=ZERO) THEN
                      A(L,L) = A(L,L) + DTXFA(L,M)
-                     B(L) = B(L) + DTXFA(L,M)*VEL(IJK1,M)
+                     BB(L) = BB(L) + DTXFA(L,M)*VEL(IJK1,M)
                   ENDIF
                END DO
             ENDIF

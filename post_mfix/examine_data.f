@@ -221,7 +221,7 @@
 
       SUBROUTINE EXAMINE_DATA
 !
-      Use param
+      Use param, only: dimension_3
       Use param1
       Use constant
       Use physprop
@@ -229,7 +229,7 @@
       Use indices
       Use run
       Use geometry
-      Use post3d
+      Use post3d, only: xdist_vec, xdist_sc, ydist_vec, ydist_sc, zdist_vec, zdist_sc
       Use rxns
       Use scalars
       Use compar

@@ -1,8 +1,7 @@
       MODULE rxns
 
-      Use param
-      Use param1
-      Use rxn_com
+        use param, only: dim_m, dim_n_all, dim_n_g, dim_n_s
+        Use rxn_com, only: reaction_block
 
 ! reaction rates
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  ReactionRates

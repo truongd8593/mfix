@@ -19,9 +19,8 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param, ONLY: DIMENSION_3, DIMENSION_M
+      USE param
       USE param1, ONLY: ZERO, ONE, UNDEFINED
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -89,14 +88,14 @@
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
-            NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IJKE)+&
-               A_M(IJK,W,M)*VAR(IJKW)+A_M(IJK,N,M)*VAR(IJKN)+A_M(IJK,S,M)*VAR(&
+            NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,east,M)*VAR(IJKE)+&
+               A_M(IJK,west,M)*VAR(IJKW)+A_M(IJK,north,M)*VAR(IJKN)+A_M(IJK,south,M)*VAR(&
                IJKS))
 
             IF (DO_K) THEN
                IJKB = BOTTOM_OF(IJK)
                IJKT = TOP_OF(IJK)
-               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKT)+A_M(IJK,B,M)*VAR(IJKB))
+               NUM1 = NUM1 - (A_M(IJK,top,M)*VAR(IJKT)+A_M(IJK,bottom,M)*VAR(IJKB))
             ENDIF
 
             NUM1 = ABS(NUM1)
@@ -201,7 +200,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -284,13 +282,13 @@
 ! evaluating the residual at cell ijk:
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
-            NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,E,M)*VAR(IPJK)+&
-               A_M(IJK,W,M)*VAR(IMJK)+A_M(IJK,N,M)*VAR(IJPK)+A_M(IJK,S,M)*VAR(&
+            NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*VAR(IJK)+A_M(IJK,east,M)*VAR(IPJK)+&
+               A_M(IJK,west,M)*VAR(IMJK)+A_M(IJK,north,M)*VAR(IJPK)+A_M(IJK,south,M)*VAR(&
                IJMK))
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)
                IJKP = KP_OF(IJK)
-               NUM1 = NUM1 - (A_M(IJK,T,M)*VAR(IJKP)+A_M(IJK,B,M)*VAR(IJKM))
+               NUM1 = NUM1 - (A_M(IJK,top,M)*VAR(IJKP)+A_M(IJK,bottom,M)*VAR(IJKM))
             ENDIF
 
             NUM1 = ABS(NUM1)
@@ -398,7 +396,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -731,7 +728,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -823,12 +819,12 @@
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*U_M(IJK)+&
-               A_M(IJK,E,M)*U_M(IPJK)+A_M(IJK,W,M)*U_M(IMJK)+&
-               A_M(IJK,N,M)*U_M(IJPK)+A_M(IJK,S,M)*U_M(IJMK))
+               A_M(IJK,east,M)*U_M(IPJK)+A_M(IJK,west,M)*U_M(IMJK)+&
+               A_M(IJK,north,M)*U_M(IJPK)+A_M(IJK,south,M)*U_M(IJMK))
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)
                IJKP = KP_OF(IJK)
-               NUM1 = NUM1 - (A_M(IJK,T,M)*U_M(IJKP)+A_M(IJK,B,M)*U_M(IJKM))
+               NUM1 = NUM1 - (A_M(IJK,top,M)*U_M(IJKP)+A_M(IJK,bottom,M)*U_M(IJKM))
             ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative
@@ -935,7 +931,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -1027,12 +1022,12 @@
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*V_M(IJK)+&
-               A_M(IJK,E,M)*V_M(IPJK)+A_M(IJK,W,M)*V_M(IMJK)+&
-               A_M(IJK,N,M)*V_M(IJPK)+A_M(IJK,S,M)*V_M(IJMK))
+               A_M(IJK,east,M)*V_M(IPJK)+A_M(IJK,west,M)*V_M(IMJK)+&
+               A_M(IJK,north,M)*V_M(IJPK)+A_M(IJK,south,M)*V_M(IJMK))
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)
                IJKP = KP_OF(IJK)
-               NUM1 = NUM1 - (A_M(IJK,T,M)*V_M(IJKP)+A_M(IJK,B,M)*V_M(IJKM))
+               NUM1 = NUM1 - (A_M(IJK,top,M)*V_M(IJKP)+A_M(IJK,bottom,M)*V_M(IJKM))
             ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative
@@ -1142,7 +1137,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE geometry
       USE indices
@@ -1233,12 +1227,12 @@
 !   RESp = B-sum(Anb*VARnb)-Ap*VARp
 !   (where nb = neighbor cells and p = center/0 cell)
             NUM1 = B_M(IJK,M) - (A_M(IJK,0,M)*W_M(IJK)+&
-               A_M(IJK,E,M)*W_M(IPJK)+A_M(IJK,W,M)*W_M(IMJK)+&
-               A_M(IJK,N,M)*W_M(IJPK)+A_M(IJK,S,M)*W_M(IJMK))
+               A_M(IJK,east,M)*W_M(IPJK)+A_M(IJK,west,M)*W_M(IMJK)+&
+               A_M(IJK,north,M)*W_M(IJPK)+A_M(IJK,south,M)*W_M(IJMK))
             IF (DO_K) THEN
                IJKM = KM_OF(IJK)
                IJKP = KP_OF(IJK)
-               NUM1 = NUM1 - (A_M(IJK,T,M)*W_M(IJKP)+A_M(IJK,B,M)*W_M(IJKM))
+               NUM1 = NUM1 - (A_M(IJK,top,M)*W_M(IJKP)+A_M(IJK,bottom,M)*W_M(IJKM))
             ENDIF
 
 ! Ignore momentum residual in stagnant regions.  Need an alternative

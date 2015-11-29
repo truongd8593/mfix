@@ -65,7 +65,7 @@
       INTEGER          L
 !
 !                      indices
-      INTEGER          IJK, M, N ,IJKW,IJKS,IJKB
+      INTEGER          IJK, M, NN ,IJKW,IJKS,IJKB
 !
 !----------------------------------------------
 
@@ -112,11 +112,11 @@
                   T_g(IJK) = TMIN
                ENDIF
 
-               N = 1
+               NN = 1
                IF (NMAX(0) > 0) THEN
                   WHERE (BC_X_G(L,:NMAX(0)) /= UNDEFINED) X_G(IJK,:&
                          NMAX(0)) = BC_X_G(L,:NMAX(0))
-                  N = NMAX(0) + 1
+                  NN = NMAX(0) + 1
                ENDIF
 
                IF (NScalar > 0) THEN
@@ -133,11 +133,11 @@
                   IF (BC_ROP_S(L,M) /= UNDEFINED) ROP_S(IJK,M) = BC_ROP_S(L,M)
                   IF(BC_T_S(L,M)/=UNDEFINED)T_S(IJK,M)=BC_T_S(L,M)
                   IF (BC_THETA_M(L,M) /= UNDEFINED) THETA_M(IJK,M)= BC_THETA_M(L,M)
-                  N = 1
+                  NN = 1
                   IF (NMAX(M) > 0) THEN
                      WHERE (BC_X_S(L,M,:NMAX(M)) /= UNDEFINED) X_S(&
                             IJK,M,:NMAX(M)) = BC_X_S(L,M,:NMAX(M))
-                     N = NMAX(M) + 1
+                     NN = NMAX(M) + 1
                   ENDIF
                END DO
 
@@ -310,8 +310,8 @@
 !            print*,'Default_wall_at IJK=',IJK,I_OF(IJK),J_OF(IJK),K_OF(IJK)
 
             GLOBAL_CORNER = .FALSE.
-            DO N = 1,8
-               IF(IJK==ACCEPTABLE_DEFAULT_WALL(N)) GLOBAL_CORNER = .TRUE.
+            DO NN = 1,8
+               IF(IJK==ACCEPTABLE_DEFAULT_WALL(NN)) GLOBAL_CORNER = .TRUE.
             ENDDO
 
             IF(.NOT.GLOBAL_CORNER.AND..NOT.BLOCKED_CELL_AT(IJK)) THEN

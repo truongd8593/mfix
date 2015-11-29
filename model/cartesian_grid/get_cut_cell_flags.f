@@ -16,9 +16,10 @@
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3, istart1, iend1, jstart1, jend1, kstart1, kend1
       USE cutcell
-      USE indices, ONLY: i_of, j_of, k_of
       USE functions, ONLY: funijk, ip_of, jp_of, kp_of, bottom_of, south_of, west_of, fluid_at, is_on_mype_wobnd
       USE geometry, ONLY: DO_I, DO_J, DO_K, IMIN1, IMAX3, JMIN1, JMAX3, KMIN1, KMAX3, no_k, vol, axy, axz, ayz, dx, dy, dz, flag
+      USE indices, ONLY: i_of, j_of, k_of
+      USE param, only: dimension_3
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
       USE sendrecv
@@ -37,7 +38,7 @@
 
       INTEGER, DIMENSION(6) :: NB
 
-      INTEGER :: IJK_NB,NODE_NB,N,N_NB,NC
+      INTEGER :: IJK_NB,NODE_NB,NN,N_NB,NC
 
       DOUBLE PRECISION :: X1,Y1,Z1,X2,Y2,Z2,D,TOT_VOL_NODE,TOT_VOL_CELLS
 
@@ -419,10 +420,10 @@
             ENDIF
 
 
-            DO N = 1,N_NB
-               IF(CUT_CELL_AT(NB(N))) THEN   ! For two neighbor cut cells, compare each cut-face node to remove duplicates
+            DO NN = 1,N_NB
+               IF(CUT_CELL_AT(NB(NN))) THEN   ! For two neighbor cut cells, compare each cut-face node to remove duplicates
 
-                  IJK_NB = NB(N)
+                  IJK_NB = NB(NN)
 
 !                  print*,'comparing:',IJK,' and',IJK_NB
 
@@ -653,6 +654,7 @@
       USE geometry, ONLY: no_k, axy_u, ayz_u, vol_u, axz_u
       USE quadric, ONLY: tol_f
       USE polygon, ONLY: n_polygon
+      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -882,6 +884,7 @@
       USE geometry, ONLY: no_k, axy_v, axz_v, ayz_v, vol_v
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
+      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1108,6 +1111,7 @@
       USE geometry, ONLY: axy_w, axz_w, ayz_w, vol_w
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
+      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1850,6 +1854,8 @@
       USE indices, only: i_of, j_of, k_of
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
+      USE param, ONLY: DIMENSION_3
+      USE param1, ONLY: HALF, ZERO
 
       IMPLICIT NONE
       INTEGER :: IJK,I,J,K,II,JJ,KK

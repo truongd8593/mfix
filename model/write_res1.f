@@ -66,7 +66,7 @@
 
 
 !             loop counter
-      INTEGER :: LC, N
+      INTEGER :: LC, NN
 !
 !             pointer to first time-dependent record in restart file
       INTEGER :: NEXT_REC
@@ -136,8 +136,8 @@
 !
       call gatherWriteRes (T_g,array2, array1, NEXT_REC)  !//d pnicol
 !
-      DO N = 1, NMAX(0)
-            call gatherWriteRes (X_g(:,n),array2, array1, NEXT_REC)  !//d pnicol
+      DO NN = 1, NMAX(0)
+            call gatherWriteRes (X_g(:,nn),array2, array1, NEXT_REC)  !//d pnicol
       END DO
 !
       call gatherWriteRes (U_g,array2, array1, NEXT_REC)  !//d pnicol
@@ -163,8 +163,8 @@
 !
         call gatherWriteRes (THETA_M(:,LC),array2, array1, NEXT_REC)  !//d pnicol
 !
-         DO N = 1, NMAX(LC)
-            call gatherWriteRes (X_s(:,LC,N),array2, array1, NEXT_REC)  !//d pnicol
+         DO NN = 1, NMAX(LC)
+            call gatherWriteRes (X_s(:,LC,NN),array2, array1, NEXT_REC)  !//d pnicol
          END DO
       END DO
 !
@@ -225,6 +225,7 @@
 
       USE cutcell
       USE in_binary_512
+      USE param, only: dimension_3
 
       IMPLICIT NONE
 
@@ -291,7 +292,7 @@
 
         implicit none
 
-        integer :: I , n
+        integer :: I , nn
 
         integer   :: ncid , xyz_dimid
         integer   :: varid_time , t_dimid
@@ -408,11 +409,11 @@
            write (var_name(5:7),'(i3.3)') I
            call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_trs(I)) )
 
-           DO N = 1, NMAX(i)
+           DO NN = 1, NMAX(i)
               var_name = 'X_s_xxx_xxx'
               write (var_name(5:7) ,'(i3.3)') I
-              write (var_name(9:11),'(i3.3)') n
-              call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,n)) )
+              write (var_name(9:11),'(i3.3)') nn
+              call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,nn)) )
            END DO
 
 
@@ -571,11 +572,11 @@
               call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_TRS(i) , arr1 ) )
            end if
 
-           do N = 1,nmax(i)
-              call gather(X_s(:,i,N),arr2,root)
+           do nn = 1,nmax(i)
+              call gather(X_s(:,i,NN),arr2,root)
               if (myPE .eq. PE_IO) then
                  call convert_to_io_dp(arr2,arr1,ijkmax2)
-                 call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xs(i,N), arr1 ) )
+                 call MFIX_check_netcdf( MFIX_nf90_put_var(ncid, varid_xs(i,NN), arr1 ) )
               end if
            end do
 

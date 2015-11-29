@@ -221,12 +221,9 @@
       USE functions, only: fluid_at
       USE functions, only: ip_of, jp_of, kp_of
       USE functions, only: im_of, jm_of, km_of
-
       USE geometry, only: do_k
-
-      USE param, only: dimension_3, dimension_m
+      USE param
       USE param1, only: zero
-      USE matrix, only: e, w, n, s, t, b
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -277,36 +274,36 @@
 
 ! East face (i+1/2, j, k)
             IF (UF(IJK) >= ZERO) THEN
-               A_M(IJK,E,M) = D_Fe
-               A_M(IPJK,W,M) = D_Fe + FLUX_E(IJK)
+               A_M(IJK,east,M) = D_Fe
+               A_M(IPJK,west,M) = D_Fe + FLUX_E(IJK)
             ELSE
-               A_M(IJK,E,M) = D_Fe - FLUX_E(IJK)
-               A_M(IPJK,W,M) = D_Fe
+               A_M(IJK,east,M) = D_Fe - FLUX_E(IJK)
+               A_M(IPJK,west,M) = D_Fe
             ENDIF
 ! West face (i-1/2, j, k)
             IF (.NOT.FLUID_AT(IMJK)) THEN
                IF (UF(IMJK) >= ZERO) THEN
-                  A_M(IJK,W,M) = D_Fw + FLUX_E(IMJK)
+                  A_M(IJK,west,M) = D_Fw + FLUX_E(IMJK)
                ELSE
-                  A_M(IJK,W,M) = D_Fw
+                  A_M(IJK,west,M) = D_Fw
                ENDIF
             ENDIF
 
 
 ! North face (i, j+1/2, k)
             IF (VF(IJK) >= ZERO) THEN
-               A_M(IJK,N,M) = D_Fn
-               A_M(IJPK,S,M) = D_Fn + FLUX_N(IJK)
+               A_M(IJK,north,M) = D_Fn
+               A_M(IJPK,south,M) = D_Fn + FLUX_N(IJK)
             ELSE
-               A_M(IJK,N,M) = D_Fn - FLUX_N(IJK)
-               A_M(IJPK,S,M) = D_Fn
+               A_M(IJK,north,M) = D_Fn - FLUX_N(IJK)
+               A_M(IJPK,south,M) = D_Fn
             ENDIF
 ! South face (i, j-1/2, k)
             IF (.NOT.FLUID_AT(IJMK)) THEN
                IF (VF(IJMK) >= ZERO) THEN
-                  A_M(IJK,S,M) = D_Fs + FLUX_N(IJMK)
+                  A_M(IJK,south,M) = D_Fs + FLUX_N(IJMK)
                ELSE
-                  A_M(IJK,S,M) = D_Fs
+                  A_M(IJK,south,M) = D_Fs
                ENDIF
             ENDIF
 
@@ -317,20 +314,20 @@
 
 ! Top face (i, j, k+1/2)
                IF (WF(IJK) >= ZERO) THEN
-                  A_M(IJK,T,M) = D_FT
-                  A_M(IJKP,B,M) = D_Ft + FLUX_T(IJK)
+                  A_M(IJK,top,M) = D_FT
+                  A_M(IJKP,bottom,M) = D_Ft + FLUX_T(IJK)
                ELSE
-                  A_M(IJK,T,M) = D_Ft - FLUX_T(IJK)
-                  A_M(IJKP,B,M) = D_Ft
+                  A_M(IJK,top,M) = D_Ft - FLUX_T(IJK)
+                  A_M(IJKP,bottom,M) = D_Ft
                ENDIF
 
 ! Bottom face (i, j, k-1/2)
 
                IF (.NOT.FLUID_AT(IJKM)) THEN
                   IF (WF(IJKM) >= ZERO) THEN
-                     A_M(IJK,B,M) = D_Fb + FLUX_T(IJKM)
+                     A_M(IJK,bottom,M) = D_Fb + FLUX_T(IJKM)
                   ELSE
-                     A_M(IJK,B,M) = D_Fb
+                     A_M(IJK,bottom,M) = D_Fb
                   ENDIF
                ENDIF
             ENDIF
@@ -618,14 +615,9 @@
       USE functions, only: fluid_at
       USE functions, only: ip_of, jp_of, kp_of
       USE functions, only: im_of, jm_of, km_of
-
       USE geometry, only: do_k
-
-      USE param, only: dimension_3, dimension_m
+      USE param
       USE param1, only: one
-
-      USE matrix, only: e, w, n, s, t, b
-
       USE xsi, only: calc_xsi
       USE xsi_array, only: xsi_e, xsi_n, xsi_t
       USE xsi_array, only: lock_xsi_array, unlock_xsi_array
@@ -686,20 +678,20 @@
             IJMK = JM_OF(IJK)
 
 ! East face (i+1/2, j, k)
-            A_M(IJK,E,M) = D_Fe - XSI_E(IJK)*FLUX_E(IJK)
-            A_M(IPJK,W,M) = D_Fe + (ONE - XSI_E(IJK))*FLUX_E(IJK)
+            A_M(IJK,east,M) = D_Fe - XSI_E(IJK)*FLUX_E(IJK)
+            A_M(IPJK,west,M) = D_Fe + (ONE - XSI_E(IJK))*FLUX_E(IJK)
 !  West face (i-1/2, j, k)
             IF (.NOT.FLUID_AT(IMJK)) THEN
-              A_M(IJK,W,M) = D_Fw + (ONE - XSI_E(IMJK))*FLUX_E(IMJK)
+              A_M(IJK,west,M) = D_Fw + (ONE - XSI_E(IMJK))*FLUX_E(IMJK)
             ENDIF
 
 
 ! North face (i, j+1/2, k)
-            A_M(IJK,N,M) = D_Fn - XSI_N(IJK)*FLUX_N(IJK)
-            A_M(IJPK,S,M) = D_Fn + (ONE - XSI_N(IJK))*FLUX_N(IJK)
+            A_M(IJK,north,M) = D_Fn - XSI_N(IJK)*FLUX_N(IJK)
+            A_M(IJPK,south,M) = D_Fn + (ONE - XSI_N(IJK))*FLUX_N(IJK)
 ! South face (i, j-1/2, k)
             IF (.NOT.FLUID_AT(IJMK)) THEN
-               A_M(IJK,S,M) = D_Fs + (ONE - XSI_N(IJMK))*FLUX_N(IJMK)
+               A_M(IJK,south,M) = D_Fs + (ONE - XSI_N(IJMK))*FLUX_N(IJMK)
             ENDIF
 
 
@@ -707,11 +699,11 @@
                IJKP = KP_OF(IJK)
                IJKM = KM_OF(IJK)
 ! Top face (i, j, k+1/2)
-               A_M(IJK,T,M) = D_Ft - XSI_T(IJK)*FLUX_T(IJK)
-               A_M(IJKP,B,M)=D_Ft + (ONE-XSI_T(IJK))*FLUX_T(IJK)
+               A_M(IJK,top,M) = D_Ft - XSI_T(IJK)*FLUX_T(IJK)
+               A_M(IJKP,bottom,M)=D_Ft + (ONE-XSI_T(IJK))*FLUX_T(IJK)
 ! Bottom face (i, j, k-1/2)
                IF (.NOT.FLUID_AT(IJKM)) THEN
-                  A_M(IJK,B,M) = D_Fb + (ONE - XSI_T(IJKM))*FLUX_T(IJKM)
+                  A_M(IJK,bottom,M) = D_Fb + (ONE - XSI_T(IJKM))*FLUX_T(IJKM)
                ENDIF
             ENDIF
 
@@ -739,8 +731,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param, only: dimension_is, dimension_3, dimension_m
-      USE matrix, only: e, w, n, s, t, b
+      USE param
       USE geometry, only: do_k
       USE geometry, only: ody_n, odx_e, odz_t, ox
       USE geometry, only: axz, axy, ayz
@@ -807,8 +798,8 @@
                   IPJK = IP_OF(IJK)
 
                   D_F = AVG_X_H(DIF(IJK),DIF(IJKE),I)*ODX_E(I)*AYZ(IJK)
-                  A_M(IJK,E,M) = A_M(IJK,E,M) - D_F
-                  A_M(IPJK,W,M) = A_M(IPJK,W,M) - D_F
+                  A_M(IJK,east,M) = A_M(IJK,east,M) - D_F
+                  A_M(IPJK,west,M) = A_M(IPJK,west,M) - D_F
                ENDDO
                ENDDO
                ENDDO
@@ -823,8 +814,8 @@
                   IJPK = JP_OF(IJK)
 
                   D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*AXZ(IJK)
-                  A_M(IJK,N,M) = A_M(IJK,N,M) - D_F
-                  A_M(IJPK,S,M) = A_M(IJPK,S,M) - D_F
+                  A_M(IJK,north,M) = A_M(IJK,north,M) - D_F
+                  A_M(IJPK,south,M) = A_M(IJPK,south,M) - D_F
                ENDDO
                ENDDO
                ENDDO
@@ -839,8 +830,8 @@
 
                      D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*&
                         OX(I)*ODZ_T(K)*AXY(IJK)
-                     A_M(IJK,T,M) = A_M(IJK,T,M) - D_F
-                     A_M(IJKP,B,M) = A_M(IJKP,B,M) - D_F
+                     A_M(IJK,top,M) = A_M(IJK,top,M) - D_F
+                     A_M(IJKP,bottom,M) = A_M(IJKP,bottom,M) - D_F
                   ENDDO
                   ENDDO
                   ENDDO

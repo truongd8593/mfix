@@ -72,7 +72,7 @@
       INTEGER          m
 !
 !                      species index
-      INTEGER          n
+      INTEGER          nn
 !
       DOUBLE PRECISION apo
 !
@@ -103,9 +103,9 @@
 !
 !     Fluid phase species mass balance equations
 !
-       DO N = 1, NScalar
+       DO NN = 1, NScalar
 
-          M = Phase4Scalar(N)
+          M = Phase4Scalar(NN)
 
           CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
 
@@ -116,10 +116,10 @@
                IF (FLUID_AT(IJK)) THEN
                   APO = ROP_GO(IJK)*VOL(IJK)*ODT
                   S_P(IJK) = APO + (  ZMAX(SUM_R_G(IJK)) &
-                                    + Scalar_p(IJK, N)      )*VOL(IJK)
-                  S_C(IJK) =   APO*ScalarO(IJK,N) &
-                             + Scalar(IJK,N)*ZMAX((-SUM_R_G(IJK)))*VOL(IJK) &
-                             + Scalar_c(IJK, N)*VOL(IJK)
+                                    + Scalar_p(IJK, NN)      )*VOL(IJK)
+                  S_C(IJK) =   APO*ScalarO(IJK,NN) &
+                             + Scalar(IJK,NN)*ZMAX((-SUM_R_G(IJK)))*VOL(IJK) &
+                             + Scalar_c(IJK, NN)*VOL(IJK)
                ELSE
 !
                   S_P(IJK) = ZERO
@@ -130,21 +130,21 @@
 
 
             IF(.NOT.ADDED_MASS) THEN
-               CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
+               CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M)
             ELSE
-               CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
+               CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M)
             ENDIF
 !
 !
-            CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
-                         BC_C_Scalar(1,N), M, A_M, B_M)
+            CALL BC_PHI (Scalar(1,nn), BC_Scalar(1,nn), BC_ScalarW(1,nn), BC_HW_Scalar(1,nn), &
+                         BC_C_Scalar(1,nn), M, A_M, B_M)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,N), M, A_M, B_M)
+            CALL SOURCE_PHI (S_P, S_C, EP_G, Scalar(1,nn), M, A_M, B_M)
 !
-            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
+            CALL CALC_RESID_S (Scalar(1,nn), A_M, B_M, M, num_res, den_res, res1, &
                mres1, ires1, ZERO)
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
                NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
@@ -154,7 +154,7 @@
                  IJK_RESID(RESID_sc,0) = ires1
                endif
 !
-            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9))
+            CALL UNDER_RELAX_S (Scalar(1,nn), A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -167,8 +167,8 @@
             CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
                LEQI, LEQM)
 !
-            write(Vname, '(A,I2)')'Scalar',N
-            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
+            write(Vname, '(A,I2)')'Scalar',nn
+            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,nn), A_M, B_M, M, LEQI, LEQM, &
                              LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER)
 !          call out_array(Scalar(1, N), Vname)
 !
@@ -179,10 +179,10 @@
                IF (FLUID_AT(IJK)) THEN
                   APO = ROP_sO(IJK, M)*VOL(IJK)*ODT
                   S_P(IJK) = APO + (  ZMAX(SUM_R_s(IJK, M)) &
-                                    + Scalar_p(IJK, N)       )*VOL(IJK)
-                  S_C(IJK) =   APO*ScalarO(IJK,N) &
-                             + Scalar(IJK,N)*ZMAX((-SUM_R_s(IJK, M)))*VOL(IJK)&
-                             + Scalar_c(IJK, N)*VOL(IJK)
+                                    + Scalar_p(IJK, NN)       )*VOL(IJK)
+                  S_C(IJK) =   APO*ScalarO(IJK,nn) &
+                             + Scalar(IJK,nn)*ZMAX((-SUM_R_s(IJK, M)))*VOL(IJK)&
+                             + Scalar_c(IJK, NN)*VOL(IJK)
                   EPs(IJK) = EP_s(IJK, M)
                ELSE
 !
@@ -195,23 +195,23 @@
 
 
             IF(.NOT.ADDED_MASS .OR. M /= M_AM) THEN
-               CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
+               CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_s(1,m), V_s(1,m), W_s(1,m), Flux_sE(1,M), Flux_sN(1,M), Flux_sT(1,M), M, &
                                A_M, B_M)
             ELSE ! virtual mass term added for M = M_AM ONLY!!!!
-               CALL CONV_DIF_PHI (Scalar(1,N), DIF_Scalar(1,N), DISCRETIZE(9), &
+               CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_s(1,m), V_s(1,m), W_s(1,m), Flux_sSE, Flux_sSN, Flux_sST, M, &
                                A_M, B_M)
             ENDIF
 !
 !
-            CALL BC_PHI (Scalar(1,N), BC_Scalar(1,N), BC_ScalarW(1,N), BC_HW_Scalar(1,N), &
-                         BC_C_Scalar(1,N), M, A_M, B_M)
+            CALL BC_PHI (Scalar(1,nn), BC_Scalar(1,nn), BC_ScalarW(1,nn), BC_HW_Scalar(1,nn), &
+                         BC_C_Scalar(1,nn), M, A_M, B_M)
 !
 !
-            CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,N), M, A_M, B_M)
+            CALL SOURCE_PHI (S_P, S_C, EPs, Scalar(1,nn), M, A_M, B_M)
 !
-            CALL CALC_RESID_S (Scalar(1,N), A_M, B_M, M, num_res, den_res, res1, &
+            CALL CALC_RESID_S (Scalar(1,nn), A_M, B_M, M, num_res, den_res, res1, &
                mres1, ires1, ZERO)
                RESID(RESID_sc,0) = RESID(RESID_sc,0)+res1
                NUM_RESID(RESID_sc,0) = NUM_RESID(RESID_sc,0)+num_res
@@ -221,7 +221,7 @@
                  IJK_RESID(RESID_sc,0) = ires1
                endif
 !
-            CALL UNDER_RELAX_S (Scalar(1,N), A_M, B_M, M, UR_FAC(9))
+            CALL UNDER_RELAX_S (Scalar(1,nn), A_M, B_M, M, UR_FAC(9))
 !
 !          call check_ab_m(a_m, b_m, m, .false., ier)
 !          call write_ab_m(a_m, b_m, ijkmax2, m, ier)
@@ -233,8 +233,8 @@
             CALL ADJUST_LEQ (res1, LEQ_IT(9), LEQ_METHOD(9), &
                LEQI, LEQM)
 !
-            write(Vname, '(A,I2)')'Scalar',N
-            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,N), A_M, B_M, M, LEQI, LEQM, &
+            write(Vname, '(A,I2)')'Scalar',nn
+            CALL SOLVE_LIN_EQ (Vname, 9, Scalar(1,nn), A_M, B_M, M, LEQI, LEQM, &
                              LEQ_SWEEP(9), LEQ_TOL(9), LEQ_PC(9), IER)
 !          call out_array(Scalar(1, N), Vname)
 !

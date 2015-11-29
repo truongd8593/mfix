@@ -28,7 +28,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE parallel
       USE compar
       IMPLICIT NONE
@@ -57,19 +56,19 @@
       IF (IJKMAX2A > 0) THEN
 !$omp parallel
 !$omp sections
-         A_M(:,B,M) = ZERO
+         A_M(:,bottom,M) = ZERO
 !$omp section
-         A_M(:,S,M) = ZERO
+         A_M(:,south,M) = ZERO
 !$omp section
-         A_M(:,W,M) = ZERO
+         A_M(:,west,M) = ZERO
 !$omp section
          A_M(:,0,M) = -ONE
 !$omp section
-         A_M(:,E,M) = ZERO
+         A_M(:,east,M) = ZERO
 !$omp section
-         A_M(:,N,M) = ZERO
+         A_M(:,north,M) = ZERO
 !$omp section
-         A_M(:,T,M) = ZERO
+         A_M(:,top,M) = ZERO
 !$omp section
          B_M(:,M) = ZERO
 !$omp end sections

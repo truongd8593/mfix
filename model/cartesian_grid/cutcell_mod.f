@@ -1,7 +1,7 @@
       MODULE cutcell
 
-      Use param
-      Use param1
+      ! Use param
+      ! Use param1
       USE progress_bar
 
 !     CUT_CELL.LOG unit number

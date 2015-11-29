@@ -235,7 +235,6 @@ libmfix_src = \
 	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
-	model/adjust_rop.f \
 	model/adjust_theta.f \
 	model/allocate_arrays.f \
 	model/ambm_mod.f \
@@ -359,7 +358,6 @@ libmfix_src = \
 	model/cn_extrapol.f \
 	model/coeff_mod.f \
 	model/constant_mod.f \
-	model/cont_mod.f \
 	model/conv_dif_phi.f \
 	model/conv_dif_u_g.f \
 	model/conv_dif_u_s.f \
@@ -520,7 +518,6 @@ libmfix_src = \
 	model/drag_ss.f \
 	model/energy_mod.f \
 	model/eos_mod.f \
-	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \
 	model/exchange.f \
@@ -570,7 +567,6 @@ libmfix_src = \
 	model/machine_mod.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
-	model/matrix_mod.f \
 	model/mfix.f \
 	model/mfix_netcdf_mod.f \
 	model/mflux_mod.f \
@@ -752,7 +748,6 @@ libmfix_src = \
 	model/xerbla.f \
 	model/xsi_array_mod.f \
 	model/xsi_mod.f \
-	model/zero_array.f \
 	model/zero_norm_vel.f
 
 libmfix_a_SOURCES += $(libmfix_src)
@@ -798,7 +793,6 @@ postmfix_SOURCES = \
 	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
-	model/adjust_rop.f \
 	model/adjust_theta.f \
 	model/allocate_arrays.f \
 	model/ambm_mod.f \
@@ -922,7 +916,6 @@ postmfix_SOURCES = \
 	model/cn_extrapol.f \
 	model/coeff_mod.f \
 	model/constant_mod.f \
-	model/cont_mod.f \
 	model/conv_dif_phi.f \
 	model/conv_dif_u_g.f \
 	model/conv_dif_u_s.f \
@@ -1079,7 +1072,6 @@ postmfix_SOURCES = \
 	model/drag_ss.f \
 	model/energy_mod.f \
 	model/eos_mod.f \
-	model/equal.f \
 	model/error_manager_mod.f \
 	model/error_routine.f \
 	model/exchange.f \
@@ -1128,7 +1120,6 @@ postmfix_SOURCES = \
 	model/machine_mod.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
-	model/matrix_mod.f \
 	model/mfix_netcdf_mod.f \
 	model/mflux_mod.f \
 	model/mms_mod.f \
@@ -1299,7 +1290,6 @@ postmfix_SOURCES = \
 	model/xerbla.f \
 	model/xsi_array_mod.f \
 	model/xsi_mod.f \
-	model/zero_array.f \
 	model/zero_norm_vel.f \
 	post_mfix/any_more_data.f \
 	post_mfix/calc_cell2.f \

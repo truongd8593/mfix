@@ -22,6 +22,7 @@
       USE indices, ONLY: I_OF, J_OF, K_OF
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
+      USE param, ONLY: DIMENSION_3
 
       IMPLICIT NONE
       INTEGER :: I,J,K,IM,JM,KM
@@ -326,6 +327,7 @@
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: NO_K, dx, dy, dz
       USE indices, ONLY: I_OF, J_OF, K_OF
+      USE param1, ONLY: HALF, ZERO
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -503,6 +505,7 @@
       USE cutcell
       USE functions, ONLY: FUNIJK_GL
       USE geometry, ONLY: NO_K, dx, dy, dz
+      USE param1, only: half, zero
       USE vtk, ONLY: GLOBAL_I_OF, GLOBAL_J_OF, GLOBAL_K_OF
 
       IMPLICIT NONE

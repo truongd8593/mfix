@@ -157,7 +157,6 @@
 !
       REAL FUNCTION XFLOW_sz(I, J, K, IJK, M, N)
 !
-      Use param
       Use param1
       Use fldvar
       Use indices

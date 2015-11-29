@@ -75,7 +75,6 @@
       USE fldvar
       USE run
       USE parallel
-      USE matrix
       USE physprop
       USE geometry
       USE indices
@@ -136,30 +135,30 @@
             IJKM = KM_OF(IJK)
 
 ! East face (i+1/2, j, k)
-            A_M(IJK,E,M) = ZMAX((-U_S(IJK,M)))*AYZ(IJK)
-            A_M(IPJK,W,M) = ZMAX(U_S(IJK,M))*AYZ(IJK)
+            A_M(IJK,east,M) = ZMAX((-U_S(IJK,M)))*AYZ(IJK)
+            A_M(IPJK,west,M) = ZMAX(U_S(IJK,M))*AYZ(IJK)
 
 ! North face (i, j+1/2, k)
-            A_M(IJK,N,M) = ZMAX((-V_S(IJK,M)))*AXZ(IJK)
-            A_M(IJPK,S,M) = ZMAX(V_S(IJK,M))*AXZ(IJK)
+            A_M(IJK,north,M) = ZMAX((-V_S(IJK,M)))*AXZ(IJK)
+            A_M(IJPK,south,M) = ZMAX(V_S(IJK,M))*AXZ(IJK)
 
 ! Top face (i, j, k+1/2)
             IF (DO_K) THEN
-               A_M(IJK,T,M) = ZMAX((-W_S(IJK,M)))*AXY(IJK)
-               A_M(IJKP,B,M) = ZMAX(W_S(IJK,M))*AXY(IJK)
+               A_M(IJK,top,M) = ZMAX((-W_S(IJK,M)))*AXY(IJK)
+               A_M(IJKP,bottom,M) = ZMAX(W_S(IJK,M))*AXY(IJK)
             ENDIF
 
 ! Modify west (i-1/2,j,k), south (i j-1/2,k) and bottom (i,j,k-1/2)
 ! faces if the neighboring west, south, bottom cells have
 ! phase_4_p_g of m or phase_4_p_s of m.
             IF (PHASE_4_P_G(IMJK)==M .OR. PHASE_4_P_S(IMJK)==M) &
-               A_M(IJK,W,M) = ZMAX(U_S(IMJK,M))*AYZ(IMJK)
+               A_M(IJK,west,M) = ZMAX(U_S(IMJK,M))*AYZ(IMJK)
             IF (PHASE_4_P_G(IJMK)==M .OR. PHASE_4_P_S(IJMK)==M) &
-               A_M(IJK,S,M) = ZMAX(V_S(IJMK,M))*AXZ(IJMK)
+               A_M(IJK,south,M) = ZMAX(V_S(IJMK,M))*AXZ(IJMK)
 
             IF (DO_K) THEN
                IF (PHASE_4_P_G(IJKM)==M .OR. PHASE_4_P_S(IJKM)==M) &
-                  A_M(IJK,B,M) = ZMAX(W_S(IJKM,M))*AXY(IJKM)
+                  A_M(IJK,bottom,M) = ZMAX(W_S(IJKM,M))*AXY(IJKM)
             ENDIF
          ENDIF
       END DO
@@ -200,7 +199,6 @@
       USE fldvar
       USE run
       USE parallel
-      USE matrix
       USE physprop
       USE geometry
       USE indices
@@ -259,25 +257,25 @@
             IJKM = KM_OF(IJK)
 
 ! East face (i+1/2, j, k)
-            A_M(IJK,E,M) = -XSI_E(IJK)*U_S(IJK,M)*AYZ(IJK)
-            A_M(IPJK,W,M) = (ONE - XSI_E(IJK))*U_S(IJK,M)*AYZ(IJK)
+            A_M(IJK,east,M) = -XSI_E(IJK)*U_S(IJK,M)*AYZ(IJK)
+            A_M(IPJK,west,M) = (ONE - XSI_E(IJK))*U_S(IJK,M)*AYZ(IJK)
 
 ! North face (i, j+1/2, k)
-            A_M(IJK,N,M) = -XSI_N(IJK)*V_S(IJK,M)*AXZ(IJK)
-            A_M(IJPK,S,M) = (ONE - XSI_N(IJK))*V_S(IJK,M)*AXZ(IJK)
+            A_M(IJK,north,M) = -XSI_N(IJK)*V_S(IJK,M)*AXZ(IJK)
+            A_M(IJPK,south,M) = (ONE - XSI_N(IJK))*V_S(IJK,M)*AXZ(IJK)
 
 ! Top face (i, j, k+1/2)
             IF (DO_K) THEN
-               A_M(IJK,T,M) = -XSI_T(IJK)*W_S(IJK,M)*AXY(IJK)
-               A_M(IJKP,B,M) = (ONE - XSI_T(IJK))*W_S(IJK,M)*AXY(IJK)
+               A_M(IJK,top,M) = -XSI_T(IJK)*W_S(IJK,M)*AXY(IJK)
+               A_M(IJKP,bottom,M) = (ONE - XSI_T(IJK))*W_S(IJK,M)*AXY(IJK)
             ENDIF
 
-            IF (PHASE_4_P_G(IMJK)==M .OR. PHASE_4_P_S(IMJK)==M) A_M(IJK,W,M) = &
+            IF (PHASE_4_P_G(IMJK)==M .OR. PHASE_4_P_S(IMJK)==M) A_M(IJK,west,M) = &
                (ONE - XSI_E(IMJK))*U_S(IMJK,M)*AYZ(IMJK)
-            IF (PHASE_4_P_G(IJMK)==M .OR. PHASE_4_P_S(IJMK)==M) A_M(IJK,S,M) = &
+            IF (PHASE_4_P_G(IJMK)==M .OR. PHASE_4_P_S(IJMK)==M) A_M(IJK,south,M) = &
                (ONE - XSI_N(IJMK))*V_S(IJMK,M)*AXZ(IJMK)
             IF (DO_K) THEN
-               IF (PHASE_4_P_G(IJKM)==M .OR. PHASE_4_P_S(IJKM)==M) A_M(IJK,B,M)&
+               IF (PHASE_4_P_G(IJKM)==M .OR. PHASE_4_P_S(IJKM)==M) A_M(IJK,bottom,M)&
                    = (ONE - XSI_T(IJKM))*W_S(IJKM,M)*AXY(IJKM)
             ENDIF
          ENDIF

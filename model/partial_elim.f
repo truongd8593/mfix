@@ -40,7 +40,6 @@
       USE param1
       USE parallel
       USE geometry
-      USE matrix
       USE physprop
       USE indices
       USE compar
@@ -105,11 +104,11 @@
                ENDDO
 
                IF (M == 0 ) THEN
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IJKE)+A_M(IJK,W,M)*VAR_G(IJKW&
-                       )+A_M(IJK,N,M)*VAR_G(IJKN)+A_M(IJK,S,M)*VAR_G(IJKS))
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_G(IJKE)+A_M(IJK,west,M)*VAR_G(IJKW&
+                       )+A_M(IJK,north,M)*VAR_G(IJKN)+A_M(IJK,south,M)*VAR_G(IJKS))
                ELSE
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+A_M(IJK,W,M)*VAR_S(&
-                       IJKW,M)+A_M(IJK,N,M)*VAR_S(IJKN,M)+A_M(IJK,S,M)*VAR_S(&
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_S(IJKE,M)+A_M(IJK,west,M)*VAR_S(&
+                       IJKW,M)+A_M(IJK,north,M)*VAR_S(IJKN,M)+A_M(IJK,south,M)*VAR_S(&
                        IJKS,M))
                ENDIF
 
@@ -117,10 +116,10 @@
                   IJKB = BOTTOM_OF(IJK)
                   IJKT = TOP_OF(IJK)
                   IF ( M ==0) THEN
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKT)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_G(IJKT)+A_M(IJK,bottom,M)*&
                            VAR_G(IJKB))
                   ELSE
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_S(IJKT,M)+A_M(IJK,bottom,M)*&
                            VAR_S(IJKB,M))
                   ENDIF
                ENDIF
@@ -192,7 +191,6 @@
       USE param1
       USE parallel
       USE geometry
-      USE matrix
       USE physprop
       USE indices
       USE compar
@@ -251,16 +249,16 @@
                   F(L,M) = F(M,L)
                ENDDO
 
-               SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IJKE,M)+&
-                  A_M(IJK,W,M)*VAR_S(IJKW,M)+&
-                  A_M(IJK,N,M)*VAR_S(IJKN,M)+&
-                  A_M(IJK,S,M)*VAR_S(IJKS,M))
+               SAXF(M) = -(A_M(IJK,east,M)*VAR_S(IJKE,M)+&
+                  A_M(IJK,west,M)*VAR_S(IJKW,M)+&
+                  A_M(IJK,north,M)*VAR_S(IJKN,M)+&
+                  A_M(IJK,south,M)*VAR_S(IJKS,M))
 
                IF (DO_K) THEN
                   IJKB = BOTTOM_OF(IJK)
                   IJKT = TOP_OF(IJK)
-                  SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKT,M)+&
-                     A_M(IJK,B,M)*VAR_S(IJKB,M))
+                  SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_S(IJKT,M)+&
+                     A_M(IJK,bottom,M)*VAR_S(IJKB,M))
                ENDIF
             ENDDO
 
@@ -333,7 +331,6 @@
       USE param1
       USE parallel
       USE geometry
-      USE matrix
       USE physprop
       USE indices
       USE run
@@ -407,11 +404,11 @@
                ENDDO
 
                IF (M == 0) THEN
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                            )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_G(IPJK)+A_M(IJK,west,M)*VAR_G(IMJK&
+                            )+A_M(IJK,north,M)*VAR_G(IJPK)+A_M(IJK,south,M)*VAR_G(IJMK))
                ELSE
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_S(IPJK,M)+A_M(IJK,west,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,north,M)*VAR_S(IJPK,M)+A_M(IJK,south,M)*VAR_S(&
                        IJMK,M))
                ENDIF
 
@@ -419,10 +416,10 @@
                   IJKM = KM_OF(IJK)
                   IJKP = KP_OF(IJK)
                   IF (M ==0) THEN
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_G(IJKP)+A_M(IJK,bottom,M)*&
                         VAR_G(IJKM))
                   ELSE
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_S(IJKP,M)+A_M(IJK,bottom,M)*&
                         VAR_S(IJKM,M))
                   ENDIF
                ENDIF
@@ -519,7 +516,6 @@
       USE param1
       USE parallel
       USE geometry
-      USE matrix
       USE physprop
       USE indices
       USE run
@@ -593,11 +589,11 @@
                ENDDO
 
                IF (M == 0) THEN
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                        )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_G(IPJK)+A_M(IJK,west,M)*VAR_G(IMJK&
+                        )+A_M(IJK,north,M)*VAR_G(IJPK)+A_M(IJK,south,M)*VAR_G(IJMK))
                ELSE
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_S(IPJK,M)+A_M(IJK,west,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,north,M)*VAR_S(IJPK,M)+A_M(IJK,south,M)*VAR_S(&
                        IJMK,M))
                ENDIF
 
@@ -605,10 +601,10 @@
                   IJKM = KM_OF(IJK)
                   IJKP = KP_OF(IJK)
                   IF (M == 0) THEN
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_G(IJKP)+A_M(IJK,bottom,M)*&
                         VAR_G(IJKM))
                   ELSE
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_S(IJKP,M)+A_M(IJK,bottom,M)*&
                         VAR_S(IJKM,M))
                   ENDIF
                ENDIF
@@ -698,7 +694,6 @@
       USE param1
       USE parallel
       USE geometry
-      USE matrix
       USE physprop
       USE indices
       USE run
@@ -772,11 +767,11 @@
                ENDDO
 
                IF (M == 0) THEN
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_G(IPJK)+A_M(IJK,W,M)*VAR_G(IMJK&
-                       )+A_M(IJK,N,M)*VAR_G(IJPK)+A_M(IJK,S,M)*VAR_G(IJMK))
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_G(IPJK)+A_M(IJK,west,M)*VAR_G(IMJK&
+                       )+A_M(IJK,north,M)*VAR_G(IJPK)+A_M(IJK,south,M)*VAR_G(IJMK))
                ELSE
-                  SAXF(M) = -(A_M(IJK,E,M)*VAR_S(IPJK,M)+A_M(IJK,W,M)*VAR_S(&
-                       IMJK,M)+A_M(IJK,N,M)*VAR_S(IJPK,M)+A_M(IJK,S,M)*VAR_S(&
+                  SAXF(M) = -(A_M(IJK,east,M)*VAR_S(IPJK,M)+A_M(IJK,west,M)*VAR_S(&
+                       IMJK,M)+A_M(IJK,north,M)*VAR_S(IJPK,M)+A_M(IJK,south,M)*VAR_S(&
                        IJMK,M))
                ENDIF
 
@@ -784,10 +779,10 @@
                   IJKM = KM_OF(IJK)
                   IJKP = KP_OF(IJK)
                   IF (M == 0) THEN
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_G(IJKP)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_G(IJKP)+A_M(IJK,bottom,M)*&
                                VAR_G(IJKM))
                   ELSE
-                     SAXF(M) = SAXF(M) - (A_M(IJK,T,M)*VAR_S(IJKP,M)+A_M(IJK,B,M)*&
+                     SAXF(M) = SAXF(M) - (A_M(IJK,top,M)*VAR_S(IJKP,M)+A_M(IJK,bottom,M)*&
                                VAR_S(IJKM,M))
                   ENDIF
                ENDIF

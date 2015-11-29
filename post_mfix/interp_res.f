@@ -22,22 +22,22 @@
 !
       SUBROUTINE INTERP_RES
 !
-      Use param
-      Use param1
-      Use geometry
-      Use indices
-      Use energy
-      Use physprop
-      Use fldvar
-      Use post3d
-      Use run
-      Use rxns
-      Use scalars
-      Use funits
-      Use compar
-      Use gridmap ! added
-      Use functions
-      use tmp_array        ! 16-jun-2004
+        Use compar
+        Use fldvar
+        Use functions
+        Use funits
+        Use geometry
+        Use gridmap ! added
+        Use indices
+        Use param1
+        Use physprop
+        Use post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
+        Use run
+        Use rxns
+        Use scalars
+        use energy, only: gama_rg, t_rg, gama_rs, t_rs
+        use param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
+        use tmp_array        ! 16-jun-2004
 
       IMPLICIT NONE
       INCLUDE 'xforms.inc'
@@ -94,12 +94,8 @@
       LOGICAL EXT_I, EXT_J, EXT_K, DONE, SHIFT, INTERNAL
 
       INTEGER I, J, K, IJK, M, N
-
-
 !
       WRITE(*,*)' Processing data. Please wait. '
-
-
 
       Allocate(  EP_g_OLD(DIMENSION_3) )
       Allocate(  P_g_OLD(DIMENSION_3) )

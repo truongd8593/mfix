@@ -896,7 +896,7 @@ subroutine usr_set_array(nsize,arr,var_no,m,n)
   use indices
   use compar
   use constant
-  use post3d
+  use post3d, only: ydist_sc
   use functions
 
   implicit none

@@ -25,7 +25,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE fldvar
       USE rxns
       USE run
@@ -78,8 +77,8 @@
                SRC = ZERO
             ENDIF
 
-            A_M(IJK,0,0) = -(A_M(IJK,E,0)+A_M(IJK,W,0)+A_M(IJK,N,0)+&
-                             A_M(IJK,S,0)+A_M(IJK,T,0)+A_M(IJK,B,0)+&
+            A_M(IJK,0,0) = -(A_M(IJK,east,0)+A_M(IJK,west,0)+A_M(IJK,north,0)+&
+                             A_M(IJK,south,0)+A_M(IJK,top,0)+A_M(IJK,bottom,0)+&
                              VOL(IJK)*ODT+ZMAX(DEL_V)+SRC)
             B_M(IJK,0) = -(ROP_GO(IJK)*VOL(IJK)*ODT+&
                            ZMAX((-DEL_V))*ROP_G(IJK)+&
@@ -100,12 +99,12 @@
          ELSE
 ! set the value of rop_g in all wall and flow boundary cells to what is
 ! known for that cell
-            A_M(IJK,E,0) = ZERO
-            A_M(IJK,W,0) = ZERO
-            A_M(IJK,N,0) = ZERO
-            A_M(IJK,S,0) = ZERO
-            A_M(IJK,T,0) = ZERO
-            A_M(IJK,B,0) = ZERO
+            A_M(IJK,east,0) = ZERO
+            A_M(IJK,west,0) = ZERO
+            A_M(IJK,north,0) = ZERO
+            A_M(IJK,south,0) = ZERO
+            A_M(IJK,top,0) = ZERO
+            A_M(IJK,bottom,0) = ZERO
             A_M(IJK,0,0) = -ONE
             B_M(IJK,0) = -ROP_G(IJK)
          ENDIF

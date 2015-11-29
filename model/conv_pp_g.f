@@ -40,7 +40,6 @@
       USE fldvar
       USE run
       USE parallel
-      USE matrix
       USE physprop
       USE geometry
       USE indices
@@ -80,33 +79,33 @@
 
 ! East face (i+1/2, j, k)
             AM = ROP_GE(IJK)*AYZ(IJK)
-            A_M(IJK,E,0) = AM
-            A_M(IPJK,W,0) = AM
+            A_M(IJK,east,0) = AM
+            A_M(IPJK,west,0) = AM
 
 ! North face (i, j+1/2, k)
             AM = ROP_GN(IJK)*AXZ(IJK)
-            A_M(IJK,N,0) = AM
-            A_M(IJPK,S,0) = AM
+            A_M(IJK,north,0) = AM
+            A_M(IJPK,south,0) = AM
 
 ! Top face (i, j, k+1/2)
             IF (DO_K) THEN
                AM = ROP_GT(IJK)*AXY(IJK)
-               A_M(IJK,T,0) = AM
-               A_M(IJKP,B,0) = AM
+               A_M(IJK,top,0) = AM
+               A_M(IJKP,bottom,0) = AM
             ENDIF
 
 ! West face (i-1/2, j, k)
             IMJK = IM_OF(IJK)
             IF (.NOT.FLUID_AT(IMJK)) THEN
                AM = ROP_GE(IMJK)*AYZ(IMJK)
-               A_M(IJK,W,0) = AM
+               A_M(IJK,west,0) = AM
             ENDIF
 
 ! South face (i, j-1/2, k)
             IJMK = JM_OF(IJK)
             IF (.NOT.FLUID_AT(IJMK)) THEN
                AM = ROP_GN(IJMK)*AXZ(IJMK)
-               A_M(IJK,S,0) = AM
+               A_M(IJK,south,0) = AM
             ENDIF
 
 ! Bottom face (i, j, k-1/2)
@@ -114,7 +113,7 @@
                IJKM = KM_OF(IJK)
                IF (.NOT.FLUID_AT(IJKM)) THEN
                   AM = ROP_GT(IJKM)*AXY(IJKM)
-                  A_M(IJK,B,0) = AM
+                  A_M(IJK,bottom,0) = AM
                ENDIF
             ENDIF
          ENDIF   ! end if (fluid_at(ijk))
@@ -136,33 +135,33 @@
 
 ! East face (i+1/2, j, k)
                   AM = ROP_SE(IJK,M)*AYZ(IJK)
-                  A_M(IJK,E,M) = AM
-                  A_M(IPJK,W,M) = AM
+                  A_M(IJK,east,M) = AM
+                  A_M(IPJK,west,M) = AM
 
 ! North face (i, j+1/2, k)
                   AM = ROP_SN(IJK,M)*AXZ(IJK)
-                  A_M(IJK,N,M) = AM
-                  A_M(IJPK,S,M) = AM
+                  A_M(IJK,north,M) = AM
+                  A_M(IJPK,south,M) = AM
 
 ! Top face (i, j, k+1/2)
                   IF (DO_K) THEN
                      AM = ROP_ST(IJK,M)*AXY(IJK)
-                     A_M(IJK,T,M) = AM
-                     A_M(IJKP,B,M) = AM
+                     A_M(IJK,top,M) = AM
+                     A_M(IJKP,bottom,M) = AM
                   ENDIF
 
 ! West face (i-1/2, j, k)
                   IMJK = IM_OF(IJK)
                   IF (.NOT.FLUID_AT(IMJK)) THEN
                      AM = ROP_SE(IMJK,M)*AYZ(IMJK)
-                     A_M(IJK,W,M) = AM
+                     A_M(IJK,west,M) = AM
                   ENDIF
 
 ! South face (i, j-1/2, k)
                   IJMK = JM_OF(IJK)
                   IF (.NOT.FLUID_AT(IJMK)) THEN
                      AM = ROP_SN(IJMK,M)*AXZ(IJMK)
-                     A_M(IJK,S,M) = AM
+                     A_M(IJK,south,M) = AM
                   ENDIF
 
 ! Bottom face (i, j, k-1/2)
@@ -170,7 +169,7 @@
                      IJKM = KM_OF(IJK)
                      IF (.NOT.FLUID_AT(IJKM)) THEN
                         AM = ROP_ST(IJKM,M)*AXY(IJKM)
-                        A_M(IJK,B,M) = AM
+                        A_M(IJK,bottom,M) = AM
                      ENDIF
                   ENDIF
 

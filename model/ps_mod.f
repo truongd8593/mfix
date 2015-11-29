@@ -21,7 +21,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       MODULE ps
 
-      use param
+      use param, only: dimension_ps, dim_m, dim_n_g, dim_n_s
 
 ! Run-time logical indicating that point sources are present.
       LOGICAL :: POINT_SOURCE

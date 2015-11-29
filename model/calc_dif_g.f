@@ -47,7 +47,7 @@
 !-----------------------------------------------
 
 !                      Indices
-      INTEGER          IJK, N
+      INTEGER          IJK, NN
 
       DOUBLE PRECISION Dab(3,3), Tg0, Pg0
 
@@ -104,17 +104,16 @@
 
 ! Default calculation of diffusivities
 ! Influence of gas temperature and gas pressure from Fuller relation
-      DO N = 1, NMAX(0)
+      DO NN = 1, NMAX(0)
          DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN
-               DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75 * &
+               DIF_G(IJK,NN) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75 * &
                               Pg0/(P_g(IJK)+P_REF)
             ELSE
-               DIF_G(IJK,N) = ZERO
+               DIF_G(IJK,NN) = ZERO
             ENDIF
          ENDDO
       ENDDO
-
 
 !*******************************************************************
 ! Calculation of diffusivities using the dilute mixture approximation for

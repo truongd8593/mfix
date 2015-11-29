@@ -223,17 +223,17 @@
 ! *************************  subroutine scavenger *********************
 
       subroutine scavenger
-      Use param
-      Use param1
-      Use run
-      Use geometry
-      Use fldvar
-      Use ParallelData
-      Use physprop
-      Use scalars
-      Use rxns
-      Use drag
-      Use energy
+        use param, only: dimension_scalar
+        Use param1
+        Use run
+        Use geometry
+        Use fldvar
+        Use ParallelData
+        Use physprop
+        Use scalars
+        Use rxns
+        Use drag
+        Use energy, only: hor_g, hor_s, gama_gs, gama_rg, gama_rs, t_rs, t_rg
 
       implicit none
 
@@ -405,12 +405,10 @@
       stop
       end
 
-
 ! *************************  subroutine ProcessSpxFile *********************
 
       subroutine ProcessSpxFile(L,nb,nArrays,kfile)
 
-      Use param
       Use param1
       Use run
       Use geometry
@@ -662,7 +660,6 @@
 
       subroutine CreateOpen_RES_files(nb,kfile)
 
-      Use param
       Use param1
       Use run
       Use geometry

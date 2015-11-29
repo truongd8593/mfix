@@ -12,6 +12,7 @@ MODULE interpolation
 
   USE constant
   USE discretelement
+  USE param1, only: half, one, zero
   IMPLICIT NONE
 
   PRIVATE
@@ -571,6 +572,7 @@ MODULE interpolation
        &,dimprob, ordernew)
        !USE discretelement, ONLY : order,ob2l,ob2r,  intx_per, inty_per, intz_per
     USE geometry
+    USE param1, only: half
 
     IMPLICIT NONE
     INTEGER, DIMENSION(3), INTENT(in):: pc

@@ -340,7 +340,7 @@
       INTEGER :: lCP_Err
       INTEGER :: gCP_Err
 ! Loop indicies
-      INTEGER :: IJK, N
+      INTEGER :: IJK, NN
 !......................................................................!
 
 ! User defined function
@@ -362,9 +362,9 @@
          IF(WALL_AT(IJK)) CYCLE IJK_LP
 ! Calculating an average specific heat for the fluid.
          C_PG(IJK) = ZERO
-         DO N = 1, NMAX(0)
-            lCp = calc_CpoR(T_G(IJK), 0, N, lCP_Err)
-            C_PG(IJK) = C_PG(IJK) + X_g(IJK,N) * lCp * RGAS / MW_g(N)
+         DO NN = 1, NMAX(0)
+            lCp = calc_CpoR(T_G(IJK), 0, NN, lCP_Err)
+            C_PG(IJK) = C_PG(IJK) + X_g(IJK,NN) * lCp * RGAS / MW_g(NN)
             gCP_Err = max(gCP_Err, lCP_Err)
          ENDDO
       ENDDO IJK_LP
@@ -424,7 +424,7 @@
 ! Local value for Cp
       DOUBLE PRECISION :: lCp
 ! Loop indicies
-      INTEGER :: IJK, M, N
+      INTEGER :: IJK, M, NN
 ! Local error flag indicating that the Cp is out of range.
       INTEGER :: lCP_Err
 !......................................................................!
@@ -447,10 +447,10 @@
 ! Calculating an average specific heat for the fluid.
             C_PS(IJK, M) = ZERO
 
-            DO N = 1, NMAX(M)
-               lCp = calc_CpoR(T_S(IJK,M), M, N, lCP_Err)
-               C_PS(IJK,M) = C_PS(IJK,M) + X_s(IJK,M,N) * &
-                  (lCp * RGAS / MW_s(M,N))
+            DO NN = 1, NMAX(M)
+               lCp = calc_CpoR(T_S(IJK,M), M, NN, lCP_Err)
+               C_PS(IJK,M) = C_PS(IJK,M) + X_s(IJK,M,NN) * &
+                  (lCp * RGAS / MW_s(M,NN))
             ENDDO
 
          ENDDO IJK_LP
@@ -636,7 +636,7 @@
 ! Flag to output header
       LOGICAL, intent(inout) :: tHeader
 ! Local aliase for inert species index
-      INTEGER :: N
+      INTEGER :: NN
 ! Local file values.
       LOGICAL :: lExists
       CHARACTER(LEN=255) :: lFile
@@ -669,12 +669,12 @@
          tHeader = .FALSE.
       endif
 
-      N = INERT_SPECIES(M)
+      NN = INERT_SPECIES(M)
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
       write(lUnit,"(6x,A,1X,g12.5)",advance='no') 'RO_s:', RO_s(IJK,M)
       write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'Base:', BASE_ROs(M)
-      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'X_s0:', X_s0(M,N)
-      write(lUnit,"(2x,A,1X,g12.5)") 'X_s:', X_s(IJK,M,N)
+      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'X_s0:', X_s0(M,NN)
+      write(lUnit,"(2x,A,1X,g12.5)") 'X_s:', X_s(IJK,M,NN)
 
       if(CARTESIAN_GRID) then
          write(lUnit,"(6x,A,1X,L1)",ADVANCE='NO') 'Cut Cell:', CUT_CELL_AT(IJK)

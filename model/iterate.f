@@ -679,6 +679,7 @@
       USE geometry
       USE constant
       USE compar
+      USE param1, only: one
       USE run
       USE time_cpu
       USE utilities, ONLY: mfix_isnan

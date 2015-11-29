@@ -364,15 +364,15 @@
       INTEGER :: N_CUT_FACE_NODES
       DOUBLE PRECISION, DIMENSION(3,15) :: COORD_CUT_FACE_NODES
       DOUBLE PRECISION :: X_MEAN,Y_MEAN,Z_MEAN
-      DOUBLE PRECISION, DIMENSION(3) :: N,V,N1,N2
+      DOUBLE PRECISION, DIMENSION(3) :: NN,V,N1,N2
       DOUBLE PRECISION :: NORM,N1_dot_N2
       DOUBLE PRECISION, DIMENSION(3) :: VECTEMP,VECTEMP2
 
      IF(NO_K) THEN  ! 2D case
 
-        N(1) = COORD_CUT_FACE_NODES(2,1) - COORD_CUT_FACE_NODES(2,2) ! y1-y2
-        N(2) = COORD_CUT_FACE_NODES(1,2) - COORD_CUT_FACE_NODES(1,1) ! x2-x1
-        N(3) = ZERO
+        NN(1) = COORD_CUT_FACE_NODES(2,1) - COORD_CUT_FACE_NODES(2,2) ! y1-y2
+        NN(2) = COORD_CUT_FACE_NODES(1,2) - COORD_CUT_FACE_NODES(1,1) ! x2-x1
+        NN(3) = ZERO
 
      ELSE
 
@@ -395,22 +395,22 @@
 
         VECTEMP  = COORD_CUT_FACE_NODES(:,2)-COORD_CUT_FACE_NODES(:,1)
         VECTEMP2 = COORD_CUT_FACE_NODES(:,3)-COORD_CUT_FACE_NODES(:,1)
-        N = CROSS_PRODUCT(VECTEMP,VECTEMP2)
+        NN = CROSS_PRODUCT(VECTEMP,VECTEMP2)
 
      ENDIF
 
-      NORM = sqrt(dot_product(n(:),n(:)))
-      N = N / NORM
+      NORM = sqrt(dot_product(nn(:),nn(:)))
+      NN = NN / NORM
 
       V(1) = X_MEAN - COORD_CUT_FACE_NODES(1,1)
       V(2) = Y_MEAN - COORD_CUT_FACE_NODES(2,1)
       V(3) = Z_MEAN - COORD_CUT_FACE_NODES(3,1)
 
-      IF (DOT_PRODUCT(N,V) < ZERO) N = - N
+      IF (DOT_PRODUCT(NN,V) < ZERO) NN = - NN
 
       IF(N_CUT_FACE_NODES > 3) THEN     ! FOR 3D geometry, check normal of plane defined by nodes 1,2, and 4
 
-         N1 = N  ! Keep copy of previous N (nodes 1,2,3)
+         N1 = NN  ! Keep copy of previous N (nodes 1,2,3)
 
         VECTEMP  = COORD_CUT_FACE_NODES(:,2)-COORD_CUT_FACE_NODES(:,1)
         VECTEMP2 = COORD_CUT_FACE_NODES(:,4)-COORD_CUT_FACE_NODES(:,1)
@@ -444,24 +444,24 @@
       SELECT CASE (TYPE_OF_CELL)
          CASE('SCALAR')
 
-            NORMAL_S(IJK,:) = N
+            NORMAL_S(IJK,:) = NN
             REFP_S(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
             IF(DO_K) CALL TEST_DEL_H(IJK,'SCALAR') ! test for negative del_H
 
          CASE('U_MOMENTUM')
 
-            NORMAL_U(IJK,:) = N
+            NORMAL_U(IJK,:) = NN
             REFP_U(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE('V_MOMENTUM')
 
-            NORMAL_V(IJK,:) = N
+            NORMAL_V(IJK,:) = NN
             REFP_V(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE('W_MOMENTUM')
 
-            NORMAL_W(IJK,:) = N
+            NORMAL_W(IJK,:) = NN
             REFP_W(IJK,:)   = COORD_CUT_FACE_NODES(:,1)
 
          CASE DEFAULT
@@ -513,7 +513,7 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: X_COPY,Y_COPY,Z_COPY
       INTEGER :: IJK
-      INTEGER :: NODE,N_N1,N_N2,N
+      INTEGER :: NODE,N_N1,N_N2,NN
       DOUBLE PRECISION :: Del_H
       DOUBLE PRECISION :: Nx,Ny,Nz
 
@@ -539,11 +539,11 @@
          IF(CONNECTIVITY(IJK,NODE)<=IJKEND3) THEN  ! node does not belong to the cut-face
                                                     ! i.e. is in the fluid region
 
-            DO N = N_N1,N_N2                     ! get node coordinate
-               IF(CONNECTIVITY(IJK,NODE) == IJK_OF_NODE(N)) THEN
-                  X_COPY = X_NODE(N)
-                  Y_COPY = Y_NODE(N)
-                  Z_COPY = Z_NODE(N)
+            DO NN = N_N1,N_N2                     ! get node coordinate
+               IF(CONNECTIVITY(IJK,NODE) == IJK_OF_NODE(NN)) THEN
+                  X_COPY = X_NODE(NN)
+                  Y_COPY = Y_NODE(NN)
+                  Z_COPY = Z_NODE(NN)
                   EXIT
                ENDIF
             ENDDO
@@ -609,7 +609,7 @@
       IMPLICIT NONE
 !      CHARACTER (LEN=*) :: TYPE_OF_CELL
       DOUBLE PRECISION:: X0,Y0,Z0,XREF,YREF,ZREF
-      INTEGER :: IJK,N
+      INTEGER :: IJK,NN
 
       DOUBLE PRECISION :: D_TO_CUT, D_TO_PE_REF
 
@@ -768,11 +768,11 @@
 
                ALREADY_VISITED(MyPE) = .TRUE.
 
-               DO N = 1,N_CUT_CELLS
+               DO NN = 1,N_CUT_CELLS
 
-                  Xref = LOCAL_REFP_S(N,1)
-                  Yref = LOCAL_REFP_S(N,2)
-                  Zref = LOCAL_REFP_S(N,3)
+                  Xref = LOCAL_REFP_S(NN,1)
+                  Yref = LOCAL_REFP_S(NN,2)
+                  Zref = LOCAL_REFP_S(NN,3)
 
                   D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
 
@@ -791,11 +791,11 @@
                   n1 = disp(iproc)+1
                   n2 = n1 + rcount(iproc) - 1
 
-                  DO N = n1,n2
+                  DO NN = n1,n2
 
-                     Xref = GLOBAL_REFP_S(N,1)
-                     Yref = GLOBAL_REFP_S(N,2)
-                     Zref = GLOBAL_REFP_S(N,3)
+                     Xref = GLOBAL_REFP_S(NN,1)
+                     Yref = GLOBAL_REFP_S(NN,2)
+                     Zref = GLOBAL_REFP_S(NN,3)
 
                      D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
 
@@ -829,11 +829,11 @@
                      n1 = disp(iproc)+1
                      n2 = n1 + rcount(iproc) - 1
 
-                     DO N = n1,n2
+                     DO NN = n1,n2
 
-                        Xref = GLOBAL_REFP_S(N,1)
-                        Yref = GLOBAL_REFP_S(N,2)
-                        Zref = GLOBAL_REFP_S(N,3)
+                        Xref = GLOBAL_REFP_S(NN,1)
+                        Yref = GLOBAL_REFP_S(NN,2)
+                        Zref = GLOBAL_REFP_S(NN,3)
 
                         D_TO_CUT = sqrt((X0 - Xref)**2 + (Y0 - Yref)**2 + (Z0 - Zref)**2)
 

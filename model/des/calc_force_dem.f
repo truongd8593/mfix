@@ -18,8 +18,9 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      use pair_manager, only: is_pair
       use multi_sweep_and_prune, only: do_sap
+      use pair_manager, only: is_pair
+      use param1, only: one, small_number, zero
 
       IMPLICIT NONE
 

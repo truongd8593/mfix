@@ -1,9 +1,5 @@
       MODULE polygon
 
-
-      Use param
-      Use param1
-
 !     Maximum of the number of polygons that can be read
       INTEGER, PARAMETER          :: DIM_POLYGON = 10
 !     Nnumber of polygons
@@ -20,6 +16,5 @@
       DOUBLE PRECISION :: TOL_POLY
 !     Boundary condition ID
       INTEGER, DIMENSION(DIM_POLYGON,DIM_VERTEX) :: BC_ID_P
-
 
       END MODULE polygon

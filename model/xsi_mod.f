@@ -575,7 +575,7 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CXS(INCR, DISCR, U, V, W, PHI, XSI_E, XSI_N, XSI_T)
+      SUBROUTINE CXS(INCR, DISCR, U, V, WW, PHI, XSI_E, XSI_N, XSI_T)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -596,7 +596,7 @@
       INTEGER, INTENT(IN) :: DISCR
       DOUBLE PRECISION, INTENT(IN) :: V(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: U(DIMENSION_3)
-      DOUBLE PRECISION, INTENT(IN) :: W(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(IN) :: WW(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: PHI(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: XSI_E(DIMENSION_3)
       DOUBLE PRECISION, INTENT(OUT) :: XSI_N(DIMENSION_3)
@@ -658,7 +658,7 @@
             ENDIF
 
             IF (DO_K) THEN
-               IF (W(IJK) >= ZERO) THEN
+               IF (WW(IJK) >= ZERO) THEN
                   IJKC = IJK
                   IJKD = TOP_OF(IJK)
                   IJKU = BOTTOM_OF(IJKC)
@@ -677,13 +677,13 @@
                DWFT=0d0
             ENDIF
 
-            CALL DW(U(IJK), VV(IJK), W(IJK), IJK, PHICU, PHIDU, PHIUU, &
+            CALL DW(U(IJK), VV(IJK), WW(IJK), IJK, PHICU, PHIDU, PHIUU, &
                     PHICV, PHIDV, PHIUV, PHICW, PHIDW, PHIUW, &
                     DWFE, DWFN, DWFT, DISCR)
 
             XSI_E(IJK) = XSI_func(U(IJK),DWFE)
             XSI_N(IJK) = XSI_func(VV(IJK),DWFN)
-            XSI_T(IJK) = XSI_func(W(IJK),DWFT)
+            XSI_T(IJK) = XSI_func(WW(IJK),DWFT)
 
             VV(IJK)=V(IJK)-VSH(IJK)
          ENDDO
@@ -730,7 +730,7 @@
             ENDIF
 
             IF (DO_K) THEN
-               IF (W(IJK) >= ZERO) THEN
+               IF (WW(IJK) >= ZERO) THEN
                   IJKC = IJK
                   IJKD = TOP_OF(IJK)
                   IJKU = BOTTOM_OF(IJKC)
@@ -749,13 +749,13 @@
                DWFT=0d0
             ENDIF
 
-            CALL DW(U(IJK), VV(IJK), W(IJK), IJK, PHICU, PHIDU, PHIUU, &
+            CALL DW(U(IJK), VV(IJK), WW(IJK), IJK, PHICU, PHIDU, PHIUU, &
                     PHICV, PHIDV, PHIUV, PHICW, PHIDW, PHIUW, &
                     DWFE, DWFN, DWFT, DISCR)
 
             XSI_E(IJK) = XSI_func(U(IJK),DWFE)
             XSI_N(IJK) = XSI_func(VV(IJK),DWFN)
-            XSI_T(IJK) = XSI_func(W(IJK),DWFT)
+            XSI_T(IJK) = XSI_func(WW(IJK),DWFT)
 
             VV(IJK)=V(IJK)-VSHE(IJK)
          ENDDO
@@ -802,7 +802,7 @@
             ENDIF
 
             IF (DO_K) THEN
-               IF (W(IJK) >= ZERO) THEN
+               IF (WW(IJK) >= ZERO) THEN
                   IJKC = IJK
                   IJKD = TOP_OF(IJK)
                   IJKU = BOTTOM_OF(IJKC)
@@ -821,13 +821,13 @@
                DWFT=0d0
             ENDIF
 
-            CALL DW(U(IJK), VV(IJK), W(IJK), IJK, PHICU, PHIDU, PHIUU, &
+            CALL DW(U(IJK), VV(IJK), WW(IJK), IJK, PHICU, PHIDU, PHIUU, &
                     PHICV, PHIDV, PHIUV, PHICW, PHIDW, PHIUW, &
                     DWFE, DWFN, DWFT, DISCR)
 
             XSI_E(IJK) = XSI_func(U(IJK),DWFE)
             XSI_N(IJK) = XSI_func(VV(IJK),DWFN)
-            XSI_T(IJK) = XSI_func(W(IJK),DWFT)
+            XSI_T(IJK) = XSI_func(WW(IJK),DWFT)
 
             VV(IJK)=V(IJK)-VSH(IJK)
          ENDDO

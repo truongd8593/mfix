@@ -84,6 +84,7 @@
       USE constant, only: pi
       USE quadric
       USE sendrecv, only: mype
+      USE param1, only: half, one, undefined, zero
 
       IMPLICIT NONE
 
@@ -91,7 +92,7 @@
       DOUBLE PRECISION :: THETA,THETA1,THETA2,THETA3m,THETA3
       DOUBLE PRECISION :: THETA1CYL1,THETA2TOR,THETA3CYL2,THETA_MIN
       DOUBLE PRECISION :: Y1,Y2,R
-      DOUBLE PRECISION :: c,s,ytest1,ytest2
+      DOUBLE PRECISION :: c,ss,ytest1,ytest2
       DOUBLE PRECISION :: f
       DOUBLE PRECISION :: fxmin,fxmax,fymin,fymax,fzmin,fzmax
       DOUBLE PRECISION, DIMENSION(1,3) :: X_VECTOR,XMT
@@ -167,15 +168,15 @@
 ! by the angle THETA_Y
 
             c = DCOS(THETA_Y(Q_ID))
-            s = DSIN(THETA_Y(Q_ID))
+            ss = DSIN(THETA_Y(Q_ID))
 
 !           Translation
             xt = x1-t_x(Q_ID)
             zt = x3-t_z(Q_ID)
 
 !           Rotation
-            xtr =  xt*c + zt*s
-            ztr = -xt*s + zt*c
+            xtr =  xt*c + zt*ss
+            ztr = -xt*ss + zt*c
 
             R1 = UCOIL_R1(Q_ID)
             R2 = UCOIL_R2(Q_ID)
@@ -207,7 +208,7 @@
 ! by the angle THETA_Y
 
             c = DCOS(THETA_Y(Q_ID))
-            s = DSIN(THETA_Y(Q_ID))
+            ss = DSIN(THETA_Y(Q_ID))
 
 !           Translation
             xt = x1-t_x(Q_ID)
@@ -215,9 +216,9 @@
             zt = x3-t_z(Q_ID)
 
 !           Rotation
-            xtr =  xt*c + zt*s
+            xtr =  xt*c + zt*ss
             ytr =  yt
-            ztr = -xt*s + zt*c
+            ztr = -xt*ss + zt*c
 
             R1 = UCOIL_R1(Q_ID)
             R2 = UCOIL_R2(Q_ID)
@@ -330,14 +331,14 @@
 ! Now join the pieces together:
             IF(THETA3<=THETA.AND.THETA<=THETA1CYL1) THEN  ! cylinder 1
                c = DCOS(THETA1)
-               s = DSIN(THETA1)
+               ss = DSIN(THETA1)
 !              translation
                xt = x1-(t_x(Q_ID)+R1*c)
-               yt = x2-(t_y(Q_ID)+R1*s)
+               yt = x2-(t_y(Q_ID)+R1*ss)
                zt = x3-t_z(Q_ID)
 !              Rotation
-               xtr =  xt*c  + yt*s
-               ytr = -xt*s  + yt*c
+               xtr =  xt*c  + yt*ss
+               ytr = -xt*ss  + yt*c
                ztr = zt
 
                f = (xtr/R2)**2 + (ztr/R2)**2 -1.0
@@ -356,14 +357,14 @@
 
             ELSEIF(THETA2<=THETA.AND.THETA<=THETA3CYL2) THEN  ! cylinder 2
                c = DCOS(THETA2)
-               s = DSIN(THETA2)
+               ss = DSIN(THETA2)
 !              translation
                xt = x1-(t_x(Q_ID)+R1*c)
-               yt = x2-(t_y(Q_ID)+R1*s)
+               yt = x2-(t_y(Q_ID)+R1*ss)
                zt = x3-t_z(Q_ID)
 !              Rotation
-               xtr =  xt*c  + yt*s
-               ytr = -xt*s  + yt*c
+               xtr =  xt*c  + yt*ss
+               ytr = -xt*ss  + yt*c
                ztr = zt
 
                f = (xtr/R2)**2 + (ztr/R2)**2 -1.0

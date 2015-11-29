@@ -76,7 +76,7 @@
       double precision, allocatable :: array2(:)     !//
 
 !             loop counters
-      INTEGER LC, N
+      INTEGER LC, NN
 !
 !             Pointer to the next record
       INTEGER NEXT_REC
@@ -352,43 +352,43 @@
          end if
          if (bDist_IO) then
             IF(RE_INDEXING) THEN
-               DO N = 1, NMAX(0)
-                  CALL UNSHIFT_DP_ARRAY(X_G(:,N),TMP_VAR)
+               DO NN = 1, NMAX(0)
+                  CALL UNSHIFT_DP_ARRAY(X_G(:,NN),TMP_VAR)
                   call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR),NEXT_REC)
                END DO
                DO LC = 1, MMAX
-                  DO N = 1, NMAX(LC)
-                     CALL UNSHIFT_DP_ARRAY(X_s(:,LC,N),TMP_VAR)
+                  DO NN = 1, NMAX(LC)
+                     CALL UNSHIFT_DP_ARRAY(X_s(:,LC,NN),TMP_VAR)
                      call OUT_BIN_R(uspx+L,TMP_VAR,size(TMP_VAR), NEXT_REC)
                   ENDDO
                END DO
             ELSE
-               DO N = 1, NMAX(0)
-                  call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
+               DO NN = 1, NMAX(0)
+                  call OUT_BIN_R(uspx+L,X_G(:,nn),size(X_G(:,nn)), NEXT_REC)
                END DO
                DO LC = 1, MMAX
-                  DO N = 1, NMAX(LC)
-                     call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
+                  DO NN = 1, NMAX(LC)
+                     call OUT_BIN_R(uspx+L,X_s(:,LC,nn),size(X_s(:,LC,nn)), NEXT_REC)
                   END DO
                END DO
             ENDIF
 
-!           DO N = 1, NMAX(0)
-!             call OUT_BIN_R(uspx+L,X_G(:,N),size(X_G(:,N)), NEXT_REC)
+!           DO NN = 1, NMAX(0)
+!             call OUT_BIN_R(uspx+L,X_G(:,nn),size(X_G(:,nn)), NEXT_REC)
 !           END DO
 !           DO LC = 1, MMAX
-!            DO N = 1, NMAX(LC)
-!               call OUT_BIN_R(uspx+L,X_s(:,LC,N),size(X_s(:,LC,N)), NEXT_REC)
+!            DO NN = 1, NMAX(LC)
+!               call OUT_BIN_R(uspx+L,X_s(:,LC,nn),size(X_s(:,LC,nn)), NEXT_REC)
 !            END DO
 !           END DO
 
          else
-          DO N = 1, NMAX(0)
-            call gatherWriteSpx (X_G(:,N),array2, array1, uspx+L, NEXT_REC)
+          DO NN = 1, NMAX(0)
+            call gatherWriteSpx (X_G(:,nn),array2, array1, uspx+L, NEXT_REC)
           END DO
           DO LC = 1, MMAX
-            DO N = 1, NMAX(LC)
-               call gatherWriteSpx (X_s(:,LC,N),array2, array1, uspx+L, NEXT_REC)
+            DO NN = 1, NMAX(LC)
+               call gatherWriteSpx (X_s(:,LC,nn),array2, array1, uspx+L, NEXT_REC)
             END DO
           END DO
          end if
@@ -561,6 +561,7 @@
         USE sendrecv         !//d pnicol : for gatherWriteSpx
         USE cutcell
         USE in_binary_512
+        USE param, only: dimension_3
         IMPLICIT NONE
         integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1
@@ -862,7 +863,7 @@
 
         implicit none
 
-        integer :: L , unit_add , I , n , ii
+        integer :: L , unit_add , I , nn , ii
 
         integer   :: ncid , x_dimid , y_dimid , z_dimid
         integer   :: t_dimid
@@ -1041,11 +1042,11 @@
            write (var_name(9:11),'(i3.3)') I
            if (bWrite_netcdf(11)) call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_thetam(I)) )
 
-           DO N = 1, NMAX(i)
+           DO NN = 1, NMAX(i)
               var_name = 'X_s_xxx_xxx'
               write (var_name(5:7) ,'(i3.3)') I
-              write (var_name(9:11),'(i3.3)') n
-              if (bWrite_netcdf(10)) call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,n)) )
+              write (var_name(9:11),'(i3.3)') nn
+              if (bWrite_netcdf(10)) call MFIX_check_netcdf( MFIX_nf90_def_var(ncid, var_name, NF90_DOUBLE, dimids, varid_xs(I,nn)) )
            END DO
 
 
@@ -1177,9 +1178,9 @@
            end if
 
            if (bWrite_netcdf(10)) then
-              do N = 1,nmax(i)
+              do nn = 1,nmax(i)
 
-                 call gatherWriteSpx_netcdf(X_s(:,i,N) , arr1, arr2 , arr4d, ncid, varid_xs(i,N) , &
+                 call gatherWriteSpx_netcdf(X_s(:,i,NN) , arr1, arr2 , arr4d, ncid, varid_xs(i,nn) , &
                       imax2,jmax2,kmax2,ijkmax2 , ijkmax3)
 
               end do

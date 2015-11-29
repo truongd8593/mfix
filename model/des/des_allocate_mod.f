@@ -337,6 +337,7 @@ CONTAINS
 !-----------------------------------------------
       USE des_bc
       USE discretelement
+      USE param1, only: undefined
       IMPLICIT NONE
 !-----------------------------------------------
 

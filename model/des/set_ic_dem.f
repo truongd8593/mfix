@@ -43,7 +43,7 @@
 ! Dummy indices
       INTEGER :: ICV
       INTEGER :: I, J, K, IJK
-      INTEGER :: M, N
+      INTEGER :: M, NN
       INTEGER :: NP
       INTEGER :: NINDX
 
@@ -81,8 +81,8 @@
                IF((ENERGY_EQ .AND. C_Ps0(M) == UNDEFINED) .OR.         &
                   SPECIES_EQ(M)) THEN
                   DES_X_s(NP,:) = ZERO
-                  DO N = 1, NMAX(M)
-                     DES_X_s(NP,N) = IC_X_s(ICV,M,N)
+                  DO NN = 1, NMAX(M)
+                     DES_X_s(NP,NN) = IC_X_s(ICV,M,NN)
                   ENDDO
                ENDIF
             ENDDO

@@ -1,11 +1,7 @@
-
-
       MODULE check
 
-
-        Use param
-        Use param1
-
+        Use param, only: dimension_bc, dim_m, dim_n_g, dim_n_s
+        ! Use param1
 !                        variables for check_mass_balance
         DOUBLE PRECISION start_time, report_time
 

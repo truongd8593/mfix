@@ -614,8 +614,7 @@
       USE geometry, only: ox_e, do_k, cylindrical, vol_u
       USE indices, only: i_of
 
-      USE matrix, only: e, w, n, s, t, b
-      USE param, only: dimension_3
+      USE param
       USE param1, only: zero
       USE visc_g, only: mu_gt, df_gu
       IMPLICIT NONE
@@ -669,21 +668,21 @@
 ! part of 1/x d/dx (x.tau_xx) xdxdydz =>
 !         1/x d/dx (x.mu.du/dx) xdxdydz =>
 ! delta (mu.du/dx.Ayz) |E-W : at (i+1 - i-1), j, k
-         SSX = DF_GU(IJK,E)*(U_G(IPJK) - U_G(IJK)) - &
-               DF_GU(IJK,W)*(U_G(IJK) - U_G(IJKM))
+         SSX = DF_GU(IJK,east)*(U_G(IPJK) - U_G(IJK)) - &
+               DF_GU(IJK,west)*(U_G(IJK) - U_G(IJKM))
 
 ! part of d/dy (tau_xy) xdxdydz =>
 !         d/dy (mu.du/dy) xdxdydz =>
 ! delta (mu.du/dy.Axz) |N-S : at (i+1/2, j+1/2 - j-1/2, k)
-         SSY = DF_GU(IJK,N)*(U_G(IJPK)-U_G(IJK)) - &
-               DF_GU(IJK,S)*(U_G(IJK)-U_G(IJMK))
+         SSY = DF_GU(IJK,north)*(U_G(IJPK)-U_G(IJK)) - &
+               DF_GU(IJK,south)*(U_G(IJK)-U_G(IJMK))
 
          IF (DO_K) THEN
 ! part of 1/x d/dz (tau_xz) xdxdydz =>
 !         1/x d/dz (mu/x.du/dz) xdxdydz =>
 ! delta (mu/x.du/dz.Axy) |T-B : at (i+1/2, j, k+1/2 - k-1/2)
-            SSZ = DF_GU(IJK,T)*(U_G(IJKP)-U_G(IJK)) - &
-                  DF_GU(IJK,B)*(U_G(IJK)-U_G(IJKM))
+            SSZ = DF_GU(IJK,top)*(U_G(IJKP)-U_G(IJK)) - &
+                  DF_GU(IJK,bottom)*(U_G(IJK)-U_G(IJKM))
          ENDIF
       ENDIF   ! end if flow_at_e
 

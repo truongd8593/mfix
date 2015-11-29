@@ -1,11 +1,7 @@
       MODULE residual
 
+      Use param, only: dim_n, dim_m
 
-      Use param
-      Use param1
-
-
-!
 !     residual.inc
 !
       INTEGER          MAX_RESID_INDEX

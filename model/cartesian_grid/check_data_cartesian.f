@@ -986,7 +986,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: IJK,IJKW,IJKS,IJKB,M,N
+      INTEGER :: IJK,IJKW,IJKS,IJKB,M,NN
       INTEGER :: IJKWW,IJKSS,IJKBB
       INTEGER :: BCV,BCV_U,BCV_V,BCV_W
 !-----------------------------------------------
@@ -1190,8 +1190,8 @@
                   SUM_EP = SUM_EP + BC_ROP_S(BCV,M)/RO_S0(M)
                   IF (SPECIES_EQ(M)) THEN
                      SUM = ZERO
-                        DO N = 1, NMAX(M)
-                           IF(BC_X_S(BCV,M,N)/=UNDEFINED)SUM=SUM+BC_X_S(BCV,M,N)
+                        DO NN = 1, NMAX(M)
+                           IF(BC_X_S(BCV,M,NN)/=UNDEFINED)SUM=SUM+BC_X_S(BCV,M,NN)
                         ENDDO
 
                      IF (BC_ROP_S(BCV,M)==ZERO .AND. SUM==ZERO) THEN
@@ -1199,10 +1199,10 @@
                         SUM = ONE
                      ENDIF
 
-                     DO N = 1, NMAX(M)
-                        IF (BC_X_S(BCV,M,N) == UNDEFINED) THEN
-                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG,1110)BCV,M,N
-                              BC_X_S(BCV,M,N) = ZERO
+                     DO NN = 1, NMAX(M)
+                        IF (BC_X_S(BCV,M,NN) == UNDEFINED) THEN
+                           IF(.NOT.COMPARE(ONE,SUM) .AND. DMP_LOG)WRITE (UNIT_LOG,1110)BCV,M,NN
+                              BC_X_S(BCV,M,NN) = ZERO
                         ENDIF
                      ENDDO
 
@@ -1305,9 +1305,9 @@
                      call mfix_exit(myPE)
                ENDIF
 
-               DO N = 1, NScalar
-                  IF (BC_Scalar(BCV,N) == UNDEFINED) THEN
-                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, N
+               DO NN = 1, NScalar
+                  IF (BC_Scalar(BCV,NN) == UNDEFINED) THEN
+                     IF(DMP_LOG)WRITE (UNIT_LOG, 1004) 'BC_Scalar', BCV, NN
                         CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDDO
@@ -2125,7 +2125,7 @@
 !-----------------------------------------------
 !
 !     loop/variable indices
-      INTEGER :: IJK, M, N, BCV
+      INTEGER :: IJK, M, NN, BCV
 !
       INTEGER :: iproc
       INTEGER :: NPS,PSV
@@ -2198,8 +2198,8 @@
                         PS_W_g(NPS)    = BC_W_g(BCV)
                      ENDIF
 
-                     DO N=1,NMAX(0)
-                        PS_X_g(NPS,N)    = BC_X_g(BCV,N)
+                     DO NN=1,NMAX(0)
+                        PS_X_g(NPS,NN)    = BC_X_g(BCV,NN)
                      ENDDO
 
                      DO M=1, MMAX
@@ -2226,8 +2226,8 @@
                         ENDIF
 
 
-                        DO N=1,NMAX(M)
-                           PS_X_s(NPS,M,N)    = BC_X_s(BCV,M,N)
+                        DO NN=1,NMAX(M)
+                           PS_X_s(NPS,M,NN)    = BC_X_s(BCV,M,NN)
                         ENDDO
 
                      ENDDO
@@ -2538,7 +2538,7 @@
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
 
-      INTEGER :: N,NX,NY,NZ
+      INTEGER :: NN,NX,NY,NZ
       INTEGER :: I,I1,I2,J,J1,J2,K,K1,K2
       DOUBLE PRECISION :: L,CELL_RATIO
 
@@ -2555,8 +2555,8 @@
 !      1.1 Shift control points arrays such that the user only needs to enter
 !          CPX(1) and above, and CPX(0) is automatically set to zero.
 
-      DO N = MAX_CP,1,-1
-         CPX(N) = CPX(N-1)
+      DO NN = MAX_CP,1,-1
+         CPX(nn) = CPX(NN-1)
       ENDDO
 
       CPX(0) = ZERO
@@ -2564,8 +2564,8 @@
 !      1.2. Last control point must match domain length.
 
       NX = 0
-      DO N = 1,MAX_CP
-         IF(CPX(N)>ZERO) NX = NX + 1
+      DO NN = 1,MAX_CP
+         IF(CPX(nn)>ZERO) NX = NX + 1
       ENDDO
 
       IF(NX>0) THEN
@@ -2585,76 +2585,76 @@
 
       INDEPENDENT_SEGMENT = .TRUE.
 
-      DO N = 1,NX   ! For each segment
+      DO NN = 1,NX   ! For each segment
 
-         IF(CPX(N) <= CPX(N-1)) THEN
+         IF(CPX(nn) <= CPX(NN-1)) THEN
             IF(MyPE==0)  WRITE(*,*)' ERROR: CONTROL POINTS ALONG X MUST BE SORTED IN ASCENDING ORDER.'
             IF(MyPE==0)  WRITE(*,*)' CPX = ',CPX(0:NX)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCX(N) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN X-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' NCX = ',NCX(N)
+         IF(NCX(nn) <= 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN X-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' NCX = ',NCX(nn)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(ERX(N) <= ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN X-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' ERX = ',ERX(N)
+         IF(ERX(nn) <= ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN X-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' ERX = ',ERX(nn)
             call mfix_exit(myPE)
          ENDIF
 
       ENDDO
 
-      DO N = 1,NX   ! For each segment
+      DO NN = 1,NX   ! For each segment
 
-         IF(FIRST_DX(N)/=ZERO.AND.LAST_DX(N)/=ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DX ARE DEFINED, WHICH IS NOT ALLOWED IN X-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(N)
-            IF(MyPE==0)  WRITE(*,*)' LAST  DX = ',LAST_DX(N)
+         IF(FIRST_DX(nn)/=ZERO.AND.LAST_DX(nn)/=ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DX ARE DEFINED, WHICH IS NOT ALLOWED IN X-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(nn)
+            IF(MyPE==0)  WRITE(*,*)' LAST  DX = ',LAST_DX(nn)
             call mfix_exit(myPE)
-         ELSEIF(FIRST_DX(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DX DEFINED IN X-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(N)
-            L = CPX(N) - CPX(N-1)  ! Size of the current segment
-            IF(L<=FIRST_DX(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DX IS NOT SMALLER THAN SEGMENT LENGTH IN X-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(N)
+         ELSEIF(FIRST_DX(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DX DEFINED IN X-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(nn)
+            L = CPX(nn) - CPX(NN-1)  ! Size of the current segment
+            IF(L<=FIRST_DX(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DX IS NOT SMALLER THAN SEGMENT LENGTH IN X-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' FIRST DX = ',FIRST_DX(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('FIRST',FIRST_DX(N),L,NCX(N),CELL_RATIO)
-            ERX(N) = CELL_RATIO**(NCX(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERX(N)
-         ELSEIF(LAST_DX(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DX DEFINED IN X-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' LAST DX = ',LAST_DX(N)
-            L = CPX(N) - CPX(N-1)  ! Size of the current segment
-            IF(L<=LAST_DX(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DX IS NOT SMALLER THAN SEGMENT LENGTH IN X-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' LAST DX = ',LAST_DX(N)
+            CALL FIND_CELL_RATIO('FIRST',FIRST_DX(nn),L,NCX(nn),CELL_RATIO)
+            ERX(nn) = CELL_RATIO**(NCX(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERX(nn)
+         ELSEIF(LAST_DX(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DX DEFINED IN X-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' LAST DX = ',LAST_DX(nn)
+            L = CPX(nn) - CPX(NN-1)  ! Size of the current segment
+            IF(L<=LAST_DX(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DX IS NOT SMALLER THAN SEGMENT LENGTH IN X-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' LAST DX = ',LAST_DX(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('LAST ',LAST_DX(N),L,NCX(N),CELL_RATIO)
-            ERX(N) = CELL_RATIO**(NCX(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERX(N)
-         ELSEIF(FIRST_DX(N)<ZERO) THEN
-            IF(N==1) THEN
+            CALL FIND_CELL_RATIO('LAST ',LAST_DX(nn),L,NCX(NN),CELL_RATIO)
+            ERX(nn) = CELL_RATIO**(NCX(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERX(nn)
+         ELSEIF(FIRST_DX(nn)<ZERO) THEN
+            IF(NN==1) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DX CANNOT MATCH PREVIOUS DX FOR FIRST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DX WILL ATTEMPT TO MATCH PREVIOUS DX FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DX WILL ATTEMPT TO MATCH PREVIOUS DX FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
-         ELSEIF(LAST_DX(N)<ZERO) THEN
-            IF(N==NX) THEN
+         ELSEIF(LAST_DX(nn)<ZERO) THEN
+            IF(NN==NX) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DX CANNOT MATCH NEXT DX FOR LAST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DX WILL ATTEMPT TO MATCH NEXT DX FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DX WILL ATTEMPT TO MATCH NEXT DX FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
          ENDIF
 
@@ -2668,24 +2668,24 @@
       I1 = 0  ! First index of segment
       I2 = 0  ! Last index of segment
 
-      DO N = 1,NX   ! For each segment
+      DO NN = 1,NX   ! For each segment
 
-         I2 = I1 + NCX(N) - 1
+         I2 = I1 + NCX(nn) - 1
 
-         IF(INDEPENDENT_SEGMENT(N)) THEN
+         IF(INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPX(N) - CPX(N-1)  ! Size of the current segment
+            L = CPX(nn) - CPX(NN-1)  ! Size of the current segment
 
-            IF(ERX(N)/=ONE) THEN
-               CELL_RATIO = ERX(N)**(ONE/DBLE(NCX(N)-1))                     ! Ratio between two consecutive cells
-               DX(I1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCX(N))     ! First cell size
+            IF(ERX(nn)/=ONE) THEN
+               CELL_RATIO = ERX(nn)**(ONE/DBLE(NCX(nn)-1))                     ! Ratio between two consecutive cells
+               DX(I1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCX(nn))     ! First cell size
 
                DO I = I1+1,I2                                                   ! All other cell sizes, geometric series
                  DX(I) = DX(I-1) * CELL_RATIO
                ENDDO
 
             ELSE
-               DX(I1:I2) = L / NCX(N)                                           ! Uniform size if expansion ratio is unity.
+               DX(I1:I2) = L / NCX(nn)                                           ! Uniform size if expansion ratio is unity.
             ENDIF
 
          ENDIF
@@ -2700,23 +2700,23 @@
       I1 = 0  ! First index of segment
       I2 = 0  ! Last index of segment
 
-      DO N = 1,NX   ! For each segment
+      DO NN = 1,NX   ! For each segment
 
-         I2 = I1 + NCX(N) - 1
+         I2 = I1 + NCX(nn) - 1
 
-         IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
+         IF(.NOT.INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPX(N) - CPX(N-1)  ! Size of the current segment
+            L = CPX(nn) - CPX(NN-1)  ! Size of the current segment
 
-            IF(FIRST_DX(N)<ZERO) THEN
+            IF(FIRST_DX(nn)<ZERO) THEN
                DX(I1) = DX(I1-1)                                                ! First cell size
-               CALL FIND_CELL_RATIO('FIRST',DX(I1),L,NCX(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('FIRST',DX(I1),L,NCX(NN),CELL_RATIO)
                DO I = I1+1,I2                                                   ! All other cell sizes, geometric series
                  DX(I) = DX(I-1) * CELL_RATIO
                ENDDO
-            ELSEIF(LAST_DX(N)<ZERO) THEN
+            ELSEIF(LAST_DX(nn)<ZERO) THEN
                DX(I2) = DX(I2+1)                                                ! Last cell size
-               CALL FIND_CELL_RATIO('LAST ',DX(I2),L,NCX(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('LAST ',DX(I2),L,NCX(nn),CELL_RATIO)
                DO I = I2-1,I1,-1                                                ! All other cell sizes, geometric series
                  DX(I) = DX(I+1) / CELL_RATIO
                ENDDO
@@ -2747,8 +2747,8 @@
 !      1.1 Shift control points arrays such that the user only needs to enter
 !          CPY(1) and above, and CPY(0) is automatically set to zero.
 
-      DO N = MAX_CP,1,-1
-         CPY(N) = CPY(N-1)
+      DO NN = MAX_CP,1,-1
+         CPY(nn) = CPY(NN-1)
       ENDDO
 
       CPY(0) = ZERO
@@ -2756,8 +2756,8 @@
 !      1.2. Last control point must match domain length.
 
       NY = 0
-      DO N = 1,MAX_CP
-         IF(CPY(N)>ZERO) NY = NY + 1
+      DO NN = 1,MAX_CP
+         IF(CPY(nn)>ZERO) NY = NY + 1
       ENDDO
 
       IF(NY>0) THEN
@@ -2777,76 +2777,76 @@
 
       INDEPENDENT_SEGMENT = .TRUE.
 
-      DO N = 1,NY   ! For each segment
+      DO NN = 1,NY   ! For each segment
 
-         IF(CPY(N) <= CPY(N-1)) THEN
+         IF(CPY(nn) <= CPY(NN-1)) THEN
             IF(MyPE==0)  WRITE(*,*)' ERROR: CONTROL POINTS ALONG Y MUST BE SORTED IN ASCENDING ORDER.'
             IF(MyPE==0)  WRITE(*,*)' CPY = ',CPY(0:NY)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCY(N) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Y-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' NCY = ',NCY(N)
+         IF(NCY(nn) <= 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Y-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' NCY = ',NCY(nn)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(ERY(N) <= ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN Y-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' ERY = ',ERY(N)
+         IF(ERY(nn) <= ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN Y-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' ERY = ',ERY(nn)
             call mfix_exit(myPE)
          ENDIF
 
       ENDDO
 
-      DO N = 1,NY   ! For each segment
+      DO NN = 1,NY   ! For each segment
 
-         IF(FIRST_DY(N)/=ZERO.AND.LAST_DY(N)/=ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DY ARE DEFINED, WHICH IS NOT ALLOWED IN Y-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(N)
-            IF(MyPE==0)  WRITE(*,*)' LAST  DY = ',LAST_DY(N)
+         IF(FIRST_DY(nn)/=ZERO.AND.LAST_DY(nn)/=ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DY ARE DEFINED, WHICH IS NOT ALLOWED IN Y-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(nn)
+            IF(MyPE==0)  WRITE(*,*)' LAST  DY = ',LAST_DY(nn)
             call mfix_exit(myPE)
-         ELSEIF(FIRST_DY(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DY DEFINED IN Y-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(N)
-            L = CPY(N) - CPY(N-1)  ! Size of the current segment
-            IF(L<=FIRST_DY(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DY IS NOT SMALLER THAN SEGMENT LENGTH IN Y-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(N)
+         ELSEIF(FIRST_DY(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DY DEFINED IN Y-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(nn)
+            L = CPY(nn) - CPY(NN-1)  ! Size of the current segment
+            IF(L<=FIRST_DY(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DY IS NOT SMALLER THAN SEGMENT LENGTH IN Y-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' FIRST DY = ',FIRST_DY(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('FIRST',FIRST_DY(N),L,NCY(N),CELL_RATIO)
-            ERY(N) = CELL_RATIO**(NCY(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERY(N)
-         ELSEIF(LAST_DY(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DY DEFINED IN Y-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' LAST DY = ',LAST_DY(N)
-            L = CPY(N) - CPY(N-1)  ! Size of the current segment
-            IF(L<=LAST_DY(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DY IS NOT SMALLER THAN SEGMENT LENGTH IN Y-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' LAST DY = ',LAST_DY(N)
+            CALL FIND_CELL_RATIO('FIRST',FIRST_DY(nn),L,NCY(nn),CELL_RATIO)
+            ERY(nn) = CELL_RATIO**(NCY(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERY(nn)
+         ELSEIF(LAST_DY(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DY DEFINED IN Y-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' LAST DY = ',LAST_DY(nn)
+            L = CPY(nn) - CPY(NN-1)  ! Size of the current segment
+            IF(L<=LAST_DY(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DY IS NOT SMALLER THAN SEGMENT LENGTH IN Y-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' LAST DY = ',LAST_DY(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('LAST ',LAST_DY(N),L,NCY(N),CELL_RATIO)
-            ERY(N) = CELL_RATIO**(NCY(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERY(N)
-         ELSEIF(FIRST_DY(N)<ZERO) THEN
-            IF(N==1) THEN
+            CALL FIND_CELL_RATIO('LAST ',LAST_DY(nn),L,NCY(nn),CELL_RATIO)
+            ERY(nn) = CELL_RATIO**(NCY(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERY(nn)
+         ELSEIF(FIRST_DY(nn)<ZERO) THEN
+            IF(NN==1) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DY CANNOT MATCH PREVIOUS DY FOR FIRST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DY WILL ATTEMPT TO MATCH PREVIOUS DY FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DY WILL ATTEMPT TO MATCH PREVIOUS DY FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
-         ELSEIF(LAST_DY(N)<ZERO) THEN
-            IF(N==NY) THEN
+         ELSEIF(LAST_DY(nn)<ZERO) THEN
+            IF(NN==NY) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DY CANNOT MATCH NEXT DY FOR LAST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DY WILL ATTEMPT TO MATCH NEXT DY FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DY WILL ATTEMPT TO MATCH NEXT DY FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
          ENDIF
 
@@ -2860,24 +2860,24 @@
       J1 = 0  ! First index of segment
       J2 = 0  ! Last index of segment
 
-      DO N = 1,NY   ! For each segment
+      DO NN = 1,NY   ! For each segment
 
-         J2 = J1 + NCY(N) - 1
+         J2 = J1 + NCY(nn) - 1
 
-         IF(INDEPENDENT_SEGMENT(N)) THEN
+         IF(INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPY(N) - CPY(N-1)  ! Size of the current segment
+            L = CPY(nn) - CPY(NN-1)  ! Size of the current segment
 
-            IF(ERY(N)/=ONE) THEN
-               CELL_RATIO = ERY(N)**(ONE/DBLE(NCY(N)-1))                     ! Ratio between two consecutive cells
-               DY(J1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCY(N))     ! First cell size
+            IF(ERY(nn)/=ONE) THEN
+               CELL_RATIO = ERY(nn)**(ONE/DBLE(NCY(nn)-1))                     ! Ratio between two consecutive cells
+               DY(J1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCY(nn))     ! First cell size
 
                DO J = J1+1,J2                                                   ! All other cell sizes, geometric series
                  DY(J) = DY(J-1) * CELL_RATIO
                ENDDO
 
             ELSE
-               DY(J1:J2) = L / NCY(N)                                           ! Uniform size if expansion ratio is unity.
+               DY(J1:J2) = L / NCY(nn)                                           ! Uniform size if expansion ratio is unity.
             ENDIF
 
          ENDIF
@@ -2892,23 +2892,23 @@
       J1 = 0  ! First index of segment
       J2 = 0  ! Last index of segment
 
-      DO N = 1,NY   ! For each segment
+      DO NN = 1,NY   ! For each segment
 
-         J2 = J1 + NCY(N) - 1
+         J2 = J1 + NCY(nn) - 1
 
-         IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
+         IF(.NOT.INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPY(N) - CPY(N-1)  ! Size of the current segment
+            L = CPY(nn) - CPY(NN-1)  ! Size of the current segment
 
-            IF(FIRST_DY(N)<ZERO) THEN
+            IF(FIRST_DY(nn)<ZERO) THEN
                DY(J1) = DY(J1-1)                                                ! First cell size
-               CALL FIND_CELL_RATIO('FIRST',DY(J1),L,NCY(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('FIRST',DY(J1),L,NCY(nn),CELL_RATIO)
                DO J = J1+1,J2                                                   ! All other cell sizes, geometric series
                  DY(J) = DY(J-1) * CELL_RATIO
                ENDDO
-            ELSEIF(LAST_DY(N)<ZERO) THEN
+            ELSEIF(LAST_DY(nn)<ZERO) THEN
                DY(J2) = DY(J2+1)                                                ! Last cell size
-               CALL FIND_CELL_RATIO('LAST ',DY(J2),L,NCY(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('LAST ',DY(J2),L,NCY(nn),CELL_RATIO)
                DO J = J2-1,J1,-1                                                ! All other cell sizes, geometric series
                  DY(J) = DY(J+1) / CELL_RATIO
                ENDDO
@@ -2941,8 +2941,8 @@
 !      1.1 Shift control points arrays such that the user only needs to enter
 !          CPZ(1) and above, and CPZ(0) is automatically set to zero.
 
-      DO N = MAX_CP,1,-1
-         CPZ(N) = CPZ(N-1)
+      DO NN = MAX_CP,1,-1
+         CPZ(nn) = CPZ(NN-1)
       ENDDO
 
       CPZ(0) = ZERO
@@ -2950,8 +2950,8 @@
 !      1.2. Last control point must match domain length.
 
       NZ = 0
-      DO N = 1,MAX_CP
-         IF(CPZ(N)>ZERO) NZ = NZ + 1
+      DO NN = 1,MAX_CP
+         IF(CPZ(nn)>ZERO) NZ = NZ + 1
       ENDDO
 
       IF(NZ>0) THEN
@@ -2971,76 +2971,76 @@
 
       INDEPENDENT_SEGMENT = .TRUE.
 
-      DO N = 1,NZ   ! For each segment
+      DO NN = 1,NZ   ! For each segment
 
-         IF(CPZ(N) <= CPZ(N-1)) THEN
+         IF(CPZ(nn) <= CPZ(NN-1)) THEN
             IF(MyPE==0)  WRITE(*,*)' ERROR: CONTROL POINTS ALONG Z MUST BE SORTED IN ASCENDING ORDER.'
             IF(MyPE==0)  WRITE(*,*)' CPZ = ',CPZ(0:NZ)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(NCZ(N) <= 1) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Z-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' NCZ = ',NCZ(N)
+         IF(NCZ(nn) <= 1) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: NUMBER OF CELLS MUST BE LARGER THAN 1 IN Z-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' NCZ = ',NCZ(nn)
             call mfix_exit(myPE)
          ENDIF
 
-         IF(ERZ(N) <= ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN Z-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' ERZ = ',ERZ(N)
+         IF(ERZ(nn) <= ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: EXPANSION RATIO MUST BE POSITIVE IN Z-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' ERZ = ',ERZ(nn)
             call mfix_exit(myPE)
          ENDIF
 
       ENDDO
 
-      DO N = 1,NZ   ! For each segment
+      DO NN = 1,NZ   ! For each segment
 
-         IF(FIRST_DZ(N)/=ZERO.AND.LAST_DZ(N)/=ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DZ ARE DEFINED, WHICH IS NOT ALLOWED IN Z-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(N)
-            IF(MyPE==0)  WRITE(*,*)' LAST  DZ = ',LAST_DZ(N)
+         IF(FIRST_DZ(nn)/=ZERO.AND.LAST_DZ(nn)/=ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST AND LAST DZ ARE DEFINED, WHICH IS NOT ALLOWED IN Z-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(nn)
+            IF(MyPE==0)  WRITE(*,*)' LAST  DZ = ',LAST_DZ(nn)
             call mfix_exit(myPE)
-         ELSEIF(FIRST_DZ(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DZ DEFINED IN Z-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(N)
-            L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
-            IF(L<=FIRST_DZ(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DZ IS NOT SMALLER THAN SEGMENT LENGTH IN Z-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(N)
+         ELSEIF(FIRST_DZ(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DZ DEFINED IN Z-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(nn)
+            L = CPZ(nn) - CPZ(NN-1)  ! Size of the current segment
+            IF(L<=FIRST_DZ(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DZ IS NOT SMALLER THAN SEGMENT LENGTH IN Z-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' FIRST DZ = ',FIRST_DZ(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('FIRST',FIRST_DZ(N),L,NCZ(N),CELL_RATIO)
-            ERZ(N) = CELL_RATIO**(NCZ(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERZ(N)
-         ELSEIF(LAST_DZ(N)>ZERO) THEN
-            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DZ DEFINED IN Z-SEGMENT :',N
-            IF(MyPE==0)  WRITE(*,*)' LAST DZ = ',LAST_DZ(N)
-            L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
-            IF(L<=LAST_DZ(N)+TOL_F) THEN
-               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DZ IS NOT SMALLER THAN SEGMENT LENGTH IN Z-SEGMENT :',N
-               IF(MyPE==0)  WRITE(*,*)' LAST DZ = ',LAST_DZ(N)
+            CALL FIND_CELL_RATIO('FIRST',FIRST_DZ(nn),L,NCZ(nn),CELL_RATIO)
+            ERZ(nn) = CELL_RATIO**(NCZ(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERZ(nn)
+         ELSEIF(LAST_DZ(nn)>ZERO) THEN
+            IF(MyPE==0)  WRITE(*,*)' INFO: LAST DZ DEFINED IN Z-SEGMENT :',NN
+            IF(MyPE==0)  WRITE(*,*)' LAST DZ = ',LAST_DZ(nn)
+            L = CPZ(nn) - CPZ(NN-1)  ! Size of the current segment
+            IF(L<=LAST_DZ(nn)+TOL_F) THEN
+               IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DZ IS NOT SMALLER THAN SEGMENT LENGTH IN Z-SEGMENT :',NN
+               IF(MyPE==0)  WRITE(*,*)' LAST DZ = ',LAST_DZ(nn)
                IF(MyPE==0)  WRITE(*,*)' SEGMENT LENGTH = ',L
                call mfix_exit(myPE)
             ENDIF
-            CALL FIND_CELL_RATIO('LAST ',LAST_DZ(N),L,NCZ(N),CELL_RATIO)
-            ERZ(N) = CELL_RATIO**(NCZ(N)-1)
-            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERZ(N)
-         ELSEIF(FIRST_DZ(N)<ZERO) THEN
-            IF(N==1) THEN
+            CALL FIND_CELL_RATIO('LAST ',LAST_DZ(nn),L,NCZ(nn),CELL_RATIO)
+            ERZ(nn) = CELL_RATIO**(NCZ(nn)-1)
+            IF(MyPE==0)  WRITE(*,*)' CORRESPONDING EXPANSION RATIO = ',ERZ(nn)
+         ELSEIF(FIRST_DZ(nn)<ZERO) THEN
+            IF(NN==1) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: FIRST DZ CANNOT MATCH PREVIOUS DZ FOR FIRST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DZ WILL ATTEMPT TO MATCH PREVIOUS DZ FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: FIRST DZ WILL ATTEMPT TO MATCH PREVIOUS DZ FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
-         ELSEIF(LAST_DZ(N)<ZERO) THEN
-            IF(N==NZ) THEN
+         ELSEIF(LAST_DZ(nn)<ZERO) THEN
+            IF(NN==NZ) THEN
                IF(MyPE==0)  WRITE(*,*)' ERROR: LAST DZ CANNOT MATCH NEXT DZ FOR LAST SEGMENT.'
                call mfix_exit(myPE)
             ELSE
-               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DZ WILL ATTEMPT TO MATCH NEXT DZ FOR SEGMENT :',N
-               INDEPENDENT_SEGMENT(N) = .FALSE.
+               IF(MyPE==0)  WRITE(*,*)' INFO: LAST DZ WILL ATTEMPT TO MATCH NEXT DZ FOR SEGMENT :',NN
+               INDEPENDENT_SEGMENT(nn) = .FALSE.
             ENDIF
          ENDIF
 
@@ -3054,24 +3054,24 @@
       K1 = 0  ! First index of segment
       K2 = 0  ! Last index of segment
 
-      DO N = 1,NZ   ! For each segment
+      DO NN = 1,NZ   ! For each segment
 
-         K2 = K1 + NCZ(N) - 1
+         K2 = K1 + NCZ(nn) - 1
 
-         IF(INDEPENDENT_SEGMENT(N)) THEN
+         IF(INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
+            L = CPZ(nn) - CPZ(NN-1)  ! Size of the current segment
 
-            IF(ERZ(N)/=ONE) THEN
-               CELL_RATIO = ERZ(N)**(ONE/DBLE(NCZ(N)-1))                     ! Ratio between two consecutive cells
-               DZ(K1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCZ(N))     ! First cell size
+            IF(ERZ(nn)/=ONE) THEN
+               CELL_RATIO = ERZ(nn)**(ONE/DBLE(NCZ(nn)-1))                     ! Ratio between two consecutive cells
+               DZ(K1) = L * (ONE - CELL_RATIO) / (ONE - CELL_RATIO**NCZ(nn))     ! First cell size
 
                DO K = K1+1,K2                                                   ! All other cell sizes, geometric series
                  DZ(K) = DZ(K-1) * CELL_RATIO
                ENDDO
 
             ELSE
-               DZ(K1:K2) = L / NCZ(N)                                           ! Uniform size if expansion ratio is unity.
+               DZ(K1:K2) = L / NCZ(nn)                                           ! Uniform size if expansion ratio is unity.
             ENDIF
 
          ENDIF
@@ -3086,23 +3086,23 @@
       K1 = 0  ! First index of segment
       K2 = 0  ! Last index of segment
 
-      DO N = 1,NZ   ! For each segment
+      DO NN = 1,NZ   ! For each segment
 
-         K2 = K1 + NCZ(N) - 1
+         K2 = K1 + NCZ(nn) - 1
 
-         IF(.NOT.INDEPENDENT_SEGMENT(N)) THEN
+         IF(.NOT.INDEPENDENT_SEGMENT(nn)) THEN
 
-            L = CPZ(N) - CPZ(N-1)  ! Size of the current segment
+            L = CPZ(nn) - CPZ(NN-1)  ! Size of the current segment
 
-            IF(FIRST_DZ(N)<ZERO) THEN
+            IF(FIRST_DZ(nn)<ZERO) THEN
                DZ(K1) = DZ(K1-1)                                                ! First cell size
-               CALL FIND_CELL_RATIO('FIRST',DZ(K1),L,NCZ(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('FIRST',DZ(K1),L,NCZ(nn),CELL_RATIO)
                DO K = K1+1,K2                                                   ! All other cell sizes, geometric series
                  DZ(K) = DZ(K-1) * CELL_RATIO
                ENDDO
-            ELSEIF(LAST_DZ(N)<ZERO) THEN
+            ELSEIF(LAST_DZ(nn)<ZERO) THEN
                DZ(K2) = DZ(K2+1)                                                ! Last cell size
-               CALL FIND_CELL_RATIO('LAST ',DZ(K2),L,NCZ(N),CELL_RATIO)
+               CALL FIND_CELL_RATIO('LAST ',DZ(K2),L,NCZ(nn),CELL_RATIO)
                DO K = K2-1,K1,-1                                                ! All other cell sizes, geometric series
                  DZ(K) = DZ(K+1) / CELL_RATIO
                ENDDO
@@ -3146,7 +3146,7 @@
 !  Purpose: #                                                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-  SUBROUTINE FIND_CELL_RATIO(POS,D_Target,L,N,ALPHA3)
+  SUBROUTINE FIND_CELL_RATIO(POS,D_Target,L,NN,ALPHA3)
 
       USE param
       USE param1
@@ -3166,10 +3166,10 @@
       DOUBLE PRECISION :: f1,f2,f3
       DOUBLE PRECISION :: ALPHA1,ALPHA2,ALPHA3,D_Target,L,DU
       DOUBLE PRECISION, PARAMETER :: ALPHAMAX = 10.0D0  ! maximum  value of cell ratio
-      INTEGER :: N,niter
+      INTEGER :: NN,niter
       CHARACTER (LEN=5) :: POS
 
-      DU = L / DBLE(N)                  ! Cell size if uniform distribution
+      DU = L / DBLE(NN)                  ! Cell size if uniform distribution
 
       IF(DU==D_TARGET) THEN
          ALPHA3 = 1.0
@@ -3200,10 +3200,8 @@
 
       ENDIF
 
-
-      f1 = F(POS,ALPHA1,D_Target,L,N)
-      f2 = F(POS,ALPHA2,D_Target,L,N)
-
+      f1 = F(POS,ALPHA1,D_Target,L,NN)
+      f2 = F(POS,ALPHA2,D_Target,L,NN)
 
 !======================================================================
 !  The cell ratio is solution of F(alpha) = zero. The root is found by
@@ -3226,7 +3224,7 @@
 
             ALPHA3 = ALPHA1 - f1*(ALPHA2-ALPHA1)/(f2-f1)  ! secant point
 
-            f3 = F(POS,ALPHA3,D_Target,L,N)
+            f3 = F(POS,ALPHA3,D_Target,L,NN)
 
             if(f1*f3<0) then            ! Reduce size of interval
               ALPHA2 = ALPHA3
@@ -3277,7 +3275,7 @@
         INTEGER:: N
         CHARACTER (LEN=5) :: POS
 
-        DU = L / DBLE(N)    ! Cell size if uniform distribution
+        DU = L / DBLE(nn)    ! Cell size if uniform distribution
 
         IF(ALPHAC==ONE) THEN
            D = DU
@@ -4744,7 +4742,7 @@
 
       INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
 
-      INTEGER :: N,NOIMPROVEMENT
+      INTEGER :: NN,NOIMPROVEMENT
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
@@ -4782,7 +4780,7 @@
 
       NOIMPROVEMENT=0
 
-      DO N = 1,NAMAX
+      DO NN = 1,NAMAX
 
          L_SIZE(IPROC_OF_MAX) = L_SIZE(IPROC_OF_MAX) - 1
          L_SIZE(IPROC_OF_MIN) = L_SIZE(IPROC_OF_MIN) + 1
@@ -5506,7 +5504,7 @@
 
       INTEGER, DIMENSION(LMIN1:LMAX1) :: NUC_L
 
-      INTEGER :: N,NOIMPROVEMENT
+      INTEGER :: NN,NOIMPROVEMENT
 
       INTEGER,PARAMETER :: NAMAX=10000  ! maximum number of adjustments, increase if optimized load is not reached
 
@@ -5545,7 +5543,7 @@
 
       NOIMPROVEMENT=0
 
-      DO N = 1,NAMAX
+      DO NN = 1,NAMAX
 
          L_SIZE(IPROC_OF_MAX) = L_SIZE(IPROC_OF_MAX) - 1
          L_SIZE(IPROC_OF_MIN) = L_SIZE(IPROC_OF_MIN) + 1

@@ -24,12 +24,14 @@
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: n_quadric, tol_f, bc_id_q, dim_quadric
       USE stl, ONLY: n_facet_at, list_facet_at, bc_id_stl_face
+      USE param, only: dimension_3
+      USE param1, only: undefined
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: I,J,K,IJK,L,NODE
       INTEGER :: IM,JM,KM,IMJK,IJMK,IJKM
-      INTEGER :: N,N_N1,N_N2,Q_ID
+      INTEGER :: NN,N_N1,N_N2,Q_ID
       INTEGER :: N_CUT_FACE_NODES
       INTEGER :: N_EAST_FACE_NODES,N_NORTH_FACE_NODES,N_TOP_FACE_NODES
       INTEGER :: N_WEST_FACE_NODES,N_SOUTH_FACE_NODES,N_BOTTOM_FACE_NODES
@@ -547,8 +549,8 @@
 
             IF(USE_STL.OR.USE_MSH) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  DO N=1,N_FACET_AT(IJK)
-                     NF=LIST_FACET_AT(IJK,N)
+                  DO NN=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,NN)
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
                                                 COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
@@ -578,8 +580,8 @@
 !            Reordering connectivity such that polygon is defined appropriately for 2D vtk file
 
             IF(NO_K) THEN
-               DO N = 1,N_TOP_FACE_NODES
-                  TEMP_CONNECTIVITY(N) = CONNECT(IJK,ORDER(N))
+               DO NN = 1,N_TOP_FACE_NODES
+                  TEMP_CONNECTIVITY(NN) = CONNECT(IJK,ORDER(NN))
                END DO
                CONNECT(IJK,:) = TEMP_CONNECTIVITY
              ENDIF
@@ -720,8 +722,8 @@
 
             IF(USE_STL.OR.USE_MSH) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  DO N=1,N_FACET_AT(IJK)
-                     NF=LIST_FACET_AT(IJK,N)
+                  DO NN=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,NN)
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
                                                 COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
@@ -868,8 +870,8 @@
 
             IF(USE_STL.OR.USE_MSH) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  DO N=1,N_FACET_AT(IJK)
-                     NF=LIST_FACET_AT(IJK,N)
+                  DO NN=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,NN)
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
                                                 COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
@@ -1006,8 +1008,8 @@
 
             IF(USE_STL.OR.USE_MSH) THEN
                DO NODE = 1,N_CUT_FACE_NODES
-                  DO N=1,N_FACET_AT(IJK)
-                     NF=LIST_FACET_AT(IJK,N)
+                  DO NN=1,N_FACET_AT(IJK)
+                     NF=LIST_FACET_AT(IJK,NN)
                      CALL IS_POINT_INSIDE_FACET(COORD_CUT_FACE_NODES(1,NODE),COORD_CUT_FACE_NODES(2,NODE),&
                                                 COORD_CUT_FACE_NODES(3,NODE),NF,INSIDE_FACET)
                      IF(INSIDE_FACET) THEN
@@ -1055,6 +1057,7 @@
       USE cutcell
       USE geometry, ONLY: no_k, zlength
       USE quadric, ONLY: cross_product
+      USE param1, only: half, undefined, zero
 
       IMPLICIT NONE
 
@@ -1063,7 +1066,7 @@
       DOUBLE PRECISION, INTENT(INOUT) :: AREA
       DOUBLE PRECISION, INTENT(INOUT), DIMENSION(3,15) :: COORD
 
-      INTEGER :: N,NC,NEW_NP
+      INTEGER :: NN,NC,NEW_NP
       INTEGER :: LAST,LASTM
       DOUBLE PRECISION, DIMENSION(3,15) :: COORD_BCK
       DOUBLE PRECISION, DIMENSION(3) :: NORMAL,CP,SUMCP
@@ -1077,24 +1080,24 @@
 !   Remove duplicate points in the list
 !======================================================================
       IF(.FALSE.) THEN
-      DO N=1,NP
-         D(N) = sqrt(dot_product(COORD(:,N),COORD(:,N)))
-         KEEP(N) = .TRUE.
-         COORD_BCK(:,N) = COORD(:,N)
+      DO NN=1,NP
+         D(NN) = sqrt(dot_product(COORD(:,NN),COORD(:,NN)))
+         KEEP(NN) = .TRUE.
+         COORD_BCK(:,NN) = COORD(:,NN)
       ENDDO
 
-      DO N=1,NP-1
-         DO NC=N+1,NP
-            IF(DABS(D(N)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
+      DO NN=1,NP-1
+         DO NC=NN+1,NP
+            IF(DABS(D(NN)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
          ENDDO
       ENDDO
 
       NEW_NP = 0
 
-      DO N=1,NP
-         IF(KEEP(N)) THEN
+      DO NN=1,NP
+         IF(KEEP(NN)) THEN
             NEW_NP = NEW_NP + 1
-            COORD(:,NEW_NP) = COORD_BCK(:,N)
+            COORD(:,NEW_NP) = COORD_BCK(:,NN)
          ENDIF
       ENDDO
 
@@ -1125,8 +1128,8 @@
          ENDIF
       ELSEIF( NP > 6 ) THEN
          WRITE(*,*)'CRITICAL ERROR: POLYGON WITH MORE THAN 6 POINTS.',NP
-         DO N=1,NP
-            print*,COORD(:,N)
+         DO NN=1,NP
+            print*,COORD(:,NN)
          ENDDO
          WRITE(*,*)'MFiX will exit now.'
          CALL MFIX_EXIT(myPE)
@@ -1152,8 +1155,8 @@
 
       SUMCP = ZERO
 
-      DO N = 1,NP
-         CP = CROSS_PRODUCT(COORD(:,N),COORD(:,N+1))
+      DO NN = 1,NP
+         CP = CROSS_PRODUCT(COORD(:,NN),COORD(:,NN+1))
          SUMCP = SUMCP + CP
       ENDDO
 
@@ -1169,8 +1172,8 @@
 
       SUM_AR = ZERO
       SUM_A  = ZERO
-      DO N = 1,NP-2
-         LAST  = N + 2
+      DO NN = 1,NP-2
+         LAST  = NN + 2
          LASTM = LAST - 1
          R = (COORD(:,1)+COORD(:,LASTM)+COORD(:,LAST))/3.0D0
          LASTM_VEC = COORD(:,LASTM)-COORD(:,1)
@@ -1204,9 +1207,10 @@
       USE compar, ONLY: mype
       USE cutcell
       USE quadric, only: cross_product
+      USE param1, only: zero
 
       IMPLICIT NONE
-      INTEGER :: I,K,N,NP,NC,NEW_NP
+      INTEGER :: I,K,NN,NP,NC,NEW_NP
       INTEGER :: LONGEST
       INTEGER :: I_SWAP,IERROR
 
@@ -1222,24 +1226,24 @@
 !   Remove duplicate points in the list
 !======================================================================
       IF(.FALSE.) THEN
-      DO N=1,NP
-         D(N) = sqrt(dot_product(COORD(:,N),COORD(:,N)))
-         KEEP(N) = .TRUE.
-         COORD_BCK(:,N) = COORD(:,N)
+      DO NN=1,NP
+         D(NN) = sqrt(dot_product(COORD(:,NN),COORD(:,NN)))
+         KEEP(NN) = .TRUE.
+         COORD_BCK(:,NN) = COORD(:,NN)
       ENDDO
 
-      DO N=1,NP-1
-         DO NC=N+1,NP
-            IF(DABS(D(N)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
+      DO NN=1,NP-1
+         DO NC=NN+1,NP
+            IF(DABS(D(NN)-D(NC))<TOL_MERGE) KEEP(NC)=.FALSE.
          ENDDO
       ENDDO
 
       NEW_NP = 0
 
-      DO N=1,NP
-         IF(KEEP(N)) THEN
+      DO NN=1,NP
+         IF(KEEP(NN)) THEN
             NEW_NP = NEW_NP + 1
-            COORD(:,NEW_NP) = COORD_BCK(:,N)
+            COORD(:,NEW_NP) = COORD_BCK(:,NN)
          ENDIF
       ENDDO
 
@@ -1256,8 +1260,8 @@
 !   Initialize order list
 !======================================================================
 
-      DO N=1,NP
-         ORDER(N) = N
+      DO NN=1,NP
+         ORDER(NN) = NN
       ENDDO
 
 !======================================================================
@@ -1268,10 +1272,10 @@
       Yc = ZERO
       Zc = ZERO
 
-      DO N=1,NP
-         Xc = Xc + COORD(1,N)
-         Yc = Yc + COORD(2,N)
-         Zc = Zc + COORD(3,N)
+      DO NN=1,NP
+         Xc = Xc + COORD(1,NN)
+         Yc = Yc + COORD(2,NN)
+         Zc = Zc + COORD(3,NN)
       ENDDO
 
       Xc = Xc / DBLE(NP)
@@ -1288,7 +1292,7 @@
 
       NORM = sqrt(dot_product(NORMAL(:),NORMAL(:)))
       IF(NORM==ZERO) THEN
-!         DO N=1,NP
+!         DO NN=1,NP
 !            print*,N,COORD(:,N)
 !         ENDDO
 
@@ -1445,7 +1449,7 @@
       USE bc, ONLY: bc_type, bc_hw_g, bc_vw_g, bc_uw_g, bc_ww_g
       USE compar, ONLY: mype
       USE cutcell
-      USE param1, only: one, zero
+      USE param1, only: one, zero, undefined
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -1614,7 +1618,7 @@
       USE bc, ONLY: bc_type, bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s
       USE compar, ONLY: mype
       USE cutcell
-      USE param1, ONLY: one, zero
+      USE param1, ONLY: one, zero, undefined
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL

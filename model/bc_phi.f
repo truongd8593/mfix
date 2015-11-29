@@ -16,7 +16,6 @@
 !--------------------------------------------------------------------//
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE bc
@@ -78,15 +77,15 @@
 
                IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-                  A_M(KP_OF(IJK),B,M) = ZERO
+                  A_M(KP_OF(IJK),bottom,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value (set
 ! the boundary cell value equal to adjacent fluid cell value)
-                  A_M(IJK,E,M) = ZERO
-                  A_M(IJK,W,M) = ZERO
-                  A_M(IJK,N,M) = ZERO
-                  A_M(IJK,S,M) = ZERO
-                  A_M(IJK,T,M) = ONE
-                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,east,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
+                  A_M(IJK,top,M) = ONE
+                  A_M(IJK,bottom,M) = ZERO
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -103,14 +102,14 @@
                IJK = FUNIJK(I1,J1,K1)
                IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-                  A_M(KM_OF(IJK),T,M) = ZERO
+                  A_M(KM_OF(IJK),top,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
-                  A_M(IJK,E,M) = ZERO
-                  A_M(IJK,W,M) = ZERO
-                  A_M(IJK,N,M) = ZERO
-                  A_M(IJK,S,M) = ZERO
-                  A_M(IJK,T,M) = ZERO
-                  A_M(IJK,B,M) = ONE
+                  A_M(IJK,east,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
+                  A_M(IJK,top,M) = ZERO
+                  A_M(IJK,bottom,M) = ONE
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -128,14 +127,14 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(JP_OF(IJK),S,M) = ZERO
+               A_M(JP_OF(IJK),south,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ONE
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ONE
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -152,14 +151,14 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(JM_OF(IJK),N,M) = ZERO
+               A_M(JM_OF(IJK),north,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ONE
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ONE
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -176,14 +175,14 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(IP_OF(IJK),W,M) = ZERO
+               A_M(IP_OF(IJK),west,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
-               A_M(IJK,E,M) = ONE
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ONE
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -200,14 +199,14 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(IM_OF(IJK),E,M) = ZERO
+               A_M(IM_OF(IJK),east,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ONE
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ONE
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -245,12 +244,12 @@
                         KM = KM1(K)
 ! first set the boundary cell value equal to the known value in that
 ! cell
-                        A_M(IJK,E,M) = ZERO
-                        A_M(IJK,W,M) = ZERO
-                        A_M(IJK,N,M) = ZERO
-                        A_M(IJK,S,M) = ZERO
-                        A_M(IJK,T,M) = ZERO
-                        A_M(IJK,B,M) = ZERO
+                        A_M(IJK,east,M) = ZERO
+                        A_M(IJK,west,M) = ZERO
+                        A_M(IJK,north,M) = ZERO
+                        A_M(IJK,south,M) = ZERO
+                        A_M(IJK,top,M) = ZERO
+                        A_M(IJK,bottom,M) = ZERO
                         A_M(IJK,0,M) = -ONE
                         B_M(IJK,M) = VAR(IJK)
 ! second modify the matrix equation according to the user specified
@@ -258,68 +257,68 @@
                         IF (FLUID_AT(EAST_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
 ! specified wall value (i.e., dirichlet type boundary)
-                              A_M(IJK,E,M) = -HALF
+                              A_M(IJK,east,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
 ! if bc_hw__phi=0 then specified flux boundary (i.e., neumann type
 ! boundary) otherwise a mixed type boundary
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(I))
-                              A_M(IJK,E,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I))
+                              A_M(IJK,east,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I))
                               B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
                                              BC_C_PHI(L))
                            ENDIF
                         ELSEIF (FLUID_AT(WEST_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                              A_M(IJK,W,M) = -HALF
+                              A_M(IJK,west,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
-                              A_M(IJK,W,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM))
+                              A_M(IJK,west,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM))
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(IM))
                               B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
                                              BC_C_PHI(L))
                            ENDIF
                         ELSEIF (FLUID_AT(NORTH_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                              A_M(IJK,N,M) = -HALF
+                              A_M(IJK,north,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(J))
-                              A_M(IJK,N,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J))
+                              A_M(IJK,north,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J))
                               B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
                                              BC_C_PHI(L))
                            ENDIF
                         ELSEIF (FLUID_AT(SOUTH_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                              A_M(IJK,S,M) = -HALF
+                              A_M(IJK,south,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
-                              A_M(IJK,S,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM))
+                              A_M(IJK,south,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM))
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(JM))
                               B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
                                              BC_C_PHI(L))
                            ENDIF
                         ELSEIF (FLUID_AT(TOP_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                              A_M(IJK,T,M) = -HALF
+                              A_M(IJK,top,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
                               A_M(IJK,0,M)=-(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(K))
-                              A_M(IJK,T,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K))
+                              A_M(IJK,top,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K))
                               B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+&
                                              BC_C_PHI(L))
                            ENDIF
                         ELSEIF (FLUID_AT(BOTTOM_OF(IJK))) THEN
                            IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                              A_M(IJK,B,M) = -HALF
+                              A_M(IJK,bottom,M) = -HALF
                               A_M(IJK,0,M) = -HALF
                               B_M(IJK,M) = -BC_PHIW(L)
                            ELSE
-                              A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-&
+                              A_M(IJK,bottom,M) = -(HALF*BC_HW_PHI(L)-&
                                                OX(I)*ODZ_T(KM))
                               A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+&
                                                OX(I)*ODZ_T(KM))
@@ -360,12 +359,12 @@
                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K)
 ! first set the flow boundary cell value equal to zero
-                        A_M(IJK,E,M) = ZERO
-                        A_M(IJK,W,M) = ZERO
-                        A_M(IJK,N,M) = ZERO
-                        A_M(IJK,S,M) = ZERO
-                        A_M(IJK,T,M) = ZERO
-                        A_M(IJK,B,M) = ZERO
+                        A_M(IJK,east,M) = ZERO
+                        A_M(IJK,west,M) = ZERO
+                        A_M(IJK,north,M) = ZERO
+                        A_M(IJK,south,M) = ZERO
+                        A_M(IJK,top,M) = ZERO
+                        A_M(IJK,bottom,M) = ZERO
                         A_M(IJK,0,M) = -ONE
                         B_M(IJK,M) = ZERO
 ! now set the flow boundary cell value equal to the adjacent fluid
@@ -373,18 +372,18 @@
                         SELECT CASE (TRIM(BC_PLANE(L)))
                         CASE ('E')
 ! fluid cell on the east side
-                           A_M(IJK,E,M) = ONE
+                           A_M(IJK,east,M) = ONE
                         CASE ('W')
 ! fluid cell on the west side
-                           A_M(IJK,W,M) = ONE
+                           A_M(IJK,west,M) = ONE
                         CASE ('N')
-                           A_M(IJK,N,M) = ONE
+                           A_M(IJK,north,M) = ONE
                         CASE ('S')
-                           A_M(IJK,S,M) = ONE
+                           A_M(IJK,south,M) = ONE
                         CASE ('T')
-                           A_M(IJK,T,M) = ONE
+                           A_M(IJK,top,M) = ONE
                         CASE ('B')
-                           A_M(IJK,B,M) = ONE
+                           A_M(IJK,bottom,M) = ONE
                         END SELECT
                      ENDDO
                   ENDDO
@@ -414,12 +413,12 @@
                         IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
                         IJK = FUNIJK(I,J,K)
 ! setting the value in the boundary cell equal to what is known
-                        A_M(IJK,E,M) = ZERO
-                        A_M(IJK,W,M) = ZERO
-                        A_M(IJK,N,M) = ZERO
-                        A_M(IJK,S,M) = ZERO
-                        A_M(IJK,T,M) = ZERO
-                        A_M(IJK,B,M) = ZERO
+                        A_M(IJK,east,M) = ZERO
+                        A_M(IJK,west,M) = ZERO
+                        A_M(IJK,north,M) = ZERO
+                        A_M(IJK,south,M) = ZERO
+                        A_M(IJK,top,M) = ZERO
+                        A_M(IJK,bottom,M) = ZERO
                         A_M(IJK,0,M) = -ONE
 !                        B_M(IJK,M) = -BC_PHIF(L)  !does not allow the profile to be changed, e.g., from usr1
                         B_M(IJK,M) = -VAR(IJK)
@@ -461,7 +460,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE bc
@@ -521,12 +519,12 @@
 
          IF(BLOCKED_CELL_AT(IJK)) THEN
 ! setting the value in the boundary cell equal to what is known
-            A_M(IJK,E,M) = ZERO
-            A_M(IJK,W,M) = ZERO
-            A_M(IJK,N,M) = ZERO
-            A_M(IJK,S,M) = ZERO
-            A_M(IJK,T,M) = ZERO
-            A_M(IJK,B,M) = ZERO
+            A_M(IJK,east,M) = ZERO
+            A_M(IJK,west,M) = ZERO
+            A_M(IJK,north,M) = ZERO
+            A_M(IJK,south,M) = ZERO
+            A_M(IJK,top,M) = ZERO
+            A_M(IJK,bottom,M) = ZERO
             A_M(IJK,0,M) = -ONE
             B_M(IJK,M) = -VAR(IJK)
          ENDIF
@@ -548,12 +546,12 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,E,M) = -HALF
+                     A_M(IJK,east,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(I))
-                     A_M(IJK,E,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I))
+                     A_M(IJK,east,M) = -(HALF*BC_HW_PHI(L)-ODX_E(I))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
                ENDIF
@@ -569,11 +567,11 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,W,M) = -HALF
+                     A_M(IJK,west,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
-                     A_M(IJK,W,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM))
+                     A_M(IJK,west,M) = -(HALF*BC_HW_PHI(L)-ODX_E(IM))
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODX_E(IM))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
@@ -590,12 +588,12 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,N,M) = -HALF
+                     A_M(IJK,north,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(J))
-                     A_M(IJK,N,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J))
+                     A_M(IJK,north,M) = -(HALF*BC_HW_PHI(L)-ODY_N(J))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
                ENDIF
@@ -611,11 +609,11 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,S,M) = -HALF
+                     A_M(IJK,south,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
-                     A_M(IJK,S,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM))
+                     A_M(IJK,south,M) = -(HALF*BC_HW_PHI(L)-ODY_N(JM))
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+ODY_N(JM))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
@@ -632,12 +630,12 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,T,M) = -HALF
+                     A_M(IJK,top,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
                      A_M(IJK,0,M)=-(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(K))
-                     A_M(IJK,T,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K))
+                     A_M(IJK,top,M)=-(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(K))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
                ENDIF
@@ -653,11 +651,11 @@
                IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
-                     A_M(IJK,B,M) = -HALF
+                     A_M(IJK,bottom,M) = -HALF
                      A_M(IJK,0,M) = -HALF
                      B_M(IJK,M) = -BC_PHIW(L)
                   ELSE
-                     A_M(IJK,B,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM))
+                     A_M(IJK,bottom,M) = -(HALF*BC_HW_PHI(L)-OX(I)*ODZ_T(KM))
                      A_M(IJK,0,M) = -(HALF*BC_HW_PHI(L)+OX(I)*ODZ_T(KM))
                      B_M(IJK,M) = -(BC_HW_PHI(L)*BC_PHIW(L)+BC_C_PHI(L))
                   ENDIF
@@ -677,12 +675,12 @@
 
             IF (BCT=='CG_MI'.OR.BCT=='CG_PO') THEN
                L = BCV
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = -BC_PHIF(L)
             ENDIF

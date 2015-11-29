@@ -11,8 +11,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE param, only: dim_m
       USE multi_sweep_and_prune, only: multisap_t, boxhandlelist_t
       IMPLICIT NONE
 !-----------------------------------------------

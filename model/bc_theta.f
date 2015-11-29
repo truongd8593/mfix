@@ -35,7 +35,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE constant
       USE toleranc
@@ -101,19 +100,19 @@
 ! Setting the temperature to zero - recall the center coefficient
 ! and source vector are negative. The off-diagonal coefficients
 ! are positive.
-                A_m(IJK, e, M) =  ZERO
-                A_m(IJK, w, M) =  ZERO
-                A_m(IJK, n, M) =  ZERO
-                A_m(IJK, s, M) =  ZERO
-                A_m(IJK, t, M) =  ZERO
-                A_m(IJK, b, M) =  ZERO
+                A_m(IJK, east, M) =  ZERO
+                A_m(IJK, west, M) =  ZERO
+                A_m(IJK, north, M) =  ZERO
+                A_m(IJK, south, M) =  ZERO
+                A_m(IJK, top, M) =  ZERO
+                A_m(IJK, bottom, M) =  ZERO
                 A_m(IJK, 0, M) = -ONE
                 b_m(IJK, M)    =  ZERO
 
 ! Checking if the west wall
                 IF(FLUID_AT(EAST_OF(IJK)))THEN
                    IF(EP_s(EAST_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, e, M) = ONE
+                      A_m(IJK, east, M) = ONE
                    ELSE
                       IF (BC_JJ_PS(L).EQ.3) THEN
 ! Setting the wall temperature equal to the adjacent fluid cell
@@ -130,7 +129,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                       ENDIF
 
-                      A_m(IJK, e, M) = -(HALF*hw - oDX_E(I)*gw)
+                      A_m(IJK, east, M) = -(HALF*hw - oDX_E(I)*gw)
                       A_m(IJK, 0, M) = -(HALF*hw + oDX_E(I)*gw)
 
                       IF (BC_JJ_PS(L) .EQ. 1) THEN
@@ -142,7 +141,7 @@
 
                 ELSEIF(FLUID_AT(WEST_OF(IJK)))THEN
                    IF(EP_s(WEST_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, w, M) = ONE
+                      A_m(IJK, west, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                         Gw = 1d0
@@ -154,7 +153,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
 
-                     A_m(IJK, w, M) = -(HALF*hw - oDX_E(IM)*gw)
+                     A_m(IJK, west, M) = -(HALF*hw - oDX_E(IM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDX_E(IM)*gw)
 
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
@@ -166,7 +165,7 @@
 
                 ELSEIF(FLUID_AT(NORTH_OF(IJK)))THEN
                    IF(EP_s(NORTH_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, n, M) = ONE
+                      A_m(IJK, north, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                         Gw = 1d0
@@ -178,7 +177,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
 
-                     A_m(IJK, n, M) = -(HALF*hw - oDY_N(J)*gw)
+                     A_m(IJK, north, M) = -(HALF*hw - oDY_N(J)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDY_N(J)*gw)
 
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
@@ -190,7 +189,7 @@
 
                 ELSEIF(FLUID_AT(SOUTH_OF(IJK)))THEN
                    IF(EP_s(SOUTH_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, s, M) = ONE
+                      A_m(IJK, south, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                         Gw = 1d0
@@ -202,7 +201,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
 
-                     A_m(IJK, s, M) = -(HALF*hw - oDY_N(JM)*gw)
+                     A_m(IJK, south, M) = -(HALF*hw - oDY_N(JM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oDY_N(JM)*gw)
 
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
@@ -214,7 +213,7 @@
 
                 ELSEIF(FLUID_AT(TOP_OF(IJK)))THEN
                    IF(EP_s(TOP_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, t, M) = ONE
+                      A_m(IJK, top, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                         Gw = 1d0
@@ -226,7 +225,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
 
-                     A_m(IJK, t, M) = -(HALF*hw - oX(I)*oDZ_T(K)*gw)
+                     A_m(IJK, top, M) = -(HALF*hw - oX(I)*oDZ_T(K)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oX(I)*oDZ_T(K)*gw)
 
                      IF (BC_JJ_PS(L) .EQ. 1) THEN
@@ -238,7 +237,7 @@
 
                 ELSEIF(FLUID_AT(BOTTOM_OF(IJK)))THEN
                    IF(EP_s(BOTTOM_OF(IJK),M).LE.DIL_EP_s)THEN
-                      A_m(IJK, b , M) = ONE
+                      A_m(IJK, bottom, M) = ONE
                    ELSE
                      IF (BC_JJ_PS(L).EQ.3) THEN
                         Gw = 1d0
@@ -250,7 +249,7 @@
                         IF (BC_JJ_PS(L).EQ.2) cw=0d0
                      ENDIF
 
-                     A_m(IJK, b, M) = -(HALF*hw - oX(I)*oDZ_T(KM)*gw)
+                     A_m(IJK, bottom, M) = -(HALF*hw - oX(I)*oDZ_T(KM)*gw)
                      A_m(IJK, 0, M) = -(HALF*hw + oX(I)*oDZ_T(KM)*gw)
 
                      IF (BC_JJ_PS(L) .EQ. 1) THEN

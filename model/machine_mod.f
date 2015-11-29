@@ -1,10 +1,5 @@
       MODULE machine
 
-
-!      Use param
-!      Use param1
-
-
 !              record length used in open statement for unformatted,
 !              direct access file, with 512 bytes per record
       INTEGER  OPEN_N1

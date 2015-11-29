@@ -88,7 +88,7 @@
 
 ! initializing
       CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
-      CALL ZERO_ARRAY (EPP)
+      EPP(:) = ZERO
 
 ! for consistency set m=mcp and use m rather than specifically using
 ! value of 1 since m=mcp is used in related subroutines.  this requires

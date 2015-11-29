@@ -42,7 +42,6 @@
       USE ghdtheory
       USE indices
       USE is
-      USE matrix
       USE mms
       USE parallel
       USE param
@@ -520,7 +519,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE constant
       USE physprop
@@ -997,7 +995,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE constant
       USE physprop

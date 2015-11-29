@@ -24,7 +24,7 @@ MODULE IN_BINARY_512I
 
 CONTAINS
 
-      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, N, NEXT_REC)
+      SUBROUTINE IN_BIN_512I(IUNIT, ARRAY, NN, NEXT_REC)
 !...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
 !...Switches: -xf
 !
@@ -44,7 +44,7 @@ CONTAINS
       INTEGER          IUNIT
 !
 !                      number of elements in ARRAY
-      INTEGER          N
+      INTEGER          NN
 !
 !                      next record number in direct access output file
       INTEGER          NEXT_REC
@@ -73,14 +73,14 @@ CONTAINS
 !-----------------------------------------------
 !
       NWORDS = NWORDS_I
-      IF (N <= NWORDS) THEN
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,N)
+      IF (NN <= NWORDS) THEN
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=1,NN)
          NEXT_REC = NEXT_REC + 1
          RETURN
       ENDIF
 
-      NSEG = N/NWORDS
-      NREM = MOD(N,NWORDS)
+      NSEG = NN/NWORDS
+      NREM = MOD(NN,NWORDS)
       N1 = 1
       N2 = NWORDS
 !
@@ -93,14 +93,14 @@ CONTAINS
          NEXT_REC = NEXT_REC + 1
       END DO
       IF (NREM /= 0) THEN
-         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,N)
+         READ (IUNIT, REC=NEXT_REC) (ARRAY(L),L=N1,NN)
          NEXT_REC = NEXT_REC + 1
       ENDIF
 
       RETURN
       END SUBROUTINE IN_BIN_512I
 
-      subroutine convert_from_io_i(arr_io,arr_internal,n)
+      subroutine convert_from_io_i(arr_io,arr_internal,nn)
 
       use geometry
       use indices
@@ -111,7 +111,7 @@ CONTAINS
 
       integer, intent(in) :: arr_io(:)
       integer, intent(out) :: arr_internal(:)
-      integer   n,i,j,k,ijk,ijk_io
+      integer   nn,i,j,k,ijk,ijk_io
 
 !     write(*,*) 'C0:',C0
 !     write(*,*) 'C1:',C1
@@ -138,7 +138,7 @@ CONTAINS
       return
     end subroutine convert_from_io_i
 
-      subroutine convert_to_io_i(arr_internal,arr_io,n)
+      subroutine convert_to_io_i(arr_internal,arr_io,nn)
 
       use geometry
       use indices
@@ -148,7 +148,7 @@ CONTAINS
       implicit none
 
       integer   arr_io(*) , arr_internal(*)
-      integer   n,i,j,k,ijk,ijk_io
+      integer   nn,i,j,k,ijk,ijk_io
 
       do k = 1,kmax2
          do j = 1,jmax2
@@ -163,7 +163,7 @@ CONTAINS
       return
     end subroutine convert_to_io_i
 
-      subroutine convert_to_io_c(arr_internal,arr_io,n)
+      subroutine convert_to_io_c(arr_internal,arr_io,nn)
 
       use geometry
       use indices
@@ -173,7 +173,7 @@ CONTAINS
       implicit none
 
       character(LEN=4)   arr_io(*) , arr_internal(*)
-      integer       n,i,j,k,ijk,ijk_io
+      integer       nn,i,j,k,ijk,ijk_io
 
       do k = 1,kmax2
          do j = 1,jmax2

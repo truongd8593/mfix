@@ -48,7 +48,7 @@
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
 !-----------------------------------------------
-      INTEGER :: L, M, N
+      INTEGER :: L, M, NN
 
       INTEGER :: MMAX_TOT
       DOUBLE PRECISION :: TMP_DP
@@ -253,8 +253,8 @@
       IF (SPECIES_EQ(0)) THEN
          WRITE (UNIT_OUT, 1315) NMAX(0)
          WRITE (UNIT_OUT, 1316)
-         DO N = 1, NMAX(0)
-            WRITE (UNIT_OUT, 1317) N, MW_G(N)
+         DO NN = 1, NMAX(0)
+            WRITE (UNIT_OUT, 1317) NN, MW_G(NN)
          END DO
       ENDIF
       IF (MW_AVG /= UNDEFINED) WRITE (UNIT_OUT, 1320) MW_AVG
@@ -307,11 +307,11 @@
             WRITE(UNIT_OUT,*)' '
 
 
-            DO N = 1, NMAX(M)
-               WRITE(UNIT_OUT, 1420, ADVANCE='NO') N, MW_S(M,N),       &
-                  SPECIES_ALIAS_s(M,N)(1:8), SPECIES_s(M,N)(1:8)
+            DO NN = 1, NMAX(M)
+               WRITE(UNIT_OUT, 1420, ADVANCE='NO') NN, MW_S(M,NN),       &
+                  SPECIES_ALIAS_s(M,NN)(1:8), SPECIES_s(M,NN)(1:8)
                IF(SOLVE_ROs(M)) WRITE(UNIT_OUT, 1421, ADVANCE='NO')    &
-                  RO_Xs0(M,N), X_s0(M,N)
+                  RO_Xs0(M,nn), X_s0(M,NN)
                WRITE(UNIT_OUT,*) ' '
 
  1420 FORMAT(10x,I2,5x,G12.5,2(2x,A8))
@@ -370,11 +370,11 @@
                WRITE(UNIT_OUT,1450) 'Hertzian spring-dashpot'
 
                DO M = 1, DES_MMAX
-                  DO N = M, DES_MMAX
-                     IF(M==N) THEN
-                       WRITE(UNIT_OUT,1456)M,N,HERT_KN(M,N),HERT_KT(M,N)
+                  DO NN = M, DES_MMAX
+                     IF(M==NN) THEN
+                       WRITE(UNIT_OUT,1456)M,NN,HERT_KN(M,nn),HERT_KT(M,nn)
                      ELSE
-                       WRITE(UNIT_OUT,1457)N,HERT_KN(M,N),HERT_KT(M,N)
+                       WRITE(UNIT_OUT,1457)NN,HERT_KN(M,nn),HERT_KT(M,nn)
                      ENDIF
                   ENDDO
                   WRITE(UNIT_OUT,1458) HERT_KWN(M),HERT_KWT(M)
@@ -385,11 +385,11 @@
  1451 FORMAT(/10X,'Damping Coefficients:',T37,'Normal',7x,'Tangential')
 
             DO M = 1, DES_MMAX
-               DO N = M, DES_MMAX
-                  IF(M==N) THEN
-                     WRITE(UNIT_OUT,1456)M,N,DES_ETAN(M,N),DES_ETAT(M,N)
+               DO NN = M, DES_MMAX
+                  IF(M==NN) THEN
+                     WRITE(UNIT_OUT,1456)M,NN,DES_ETAN(M,nn),DES_ETAT(M,nn)
                   ELSE
-                     WRITE(UNIT_OUT,1457)N,DES_ETAN(M,N),DES_ETAT(M,N)
+                     WRITE(UNIT_OUT,1457)NN,DES_ETAN(M,nn),DES_ETAT(M,nn)
                   ENDIF
                ENDDO
                WRITE(UNIT_OUT,1458) DES_ETAN_WALL(M),DES_ETAT_WALL(M)
@@ -435,8 +435,8 @@
             WRITE (UNIT_OUT, 1542) IC_T_G(L)
             IF (SPECIES_EQ(0)) THEN
                WRITE (UNIT_OUT, 1543)
-               DO N = 1, NMAX(0)
-                  WRITE (UNIT_OUT, 1544) N, IC_X_G(L,N)
+               DO NN = 1, NMAX(0)
+                  WRITE (UNIT_OUT, 1544) NN, IC_X_G(L,nn)
                END DO
             ENDIF
             IF (IC_GAMA_RG(L) /= ZERO) WRITE (UNIT_OUT, 1545) IC_GAMA_RG(L), &
@@ -452,8 +452,8 @@
                IF (SPECIES_EQ(M)) THEN
                   WRITE (UNIT_OUT, 1563) M
 
-                  DO N = 1, NMAX(M)
-                     WRITE (UNIT_OUT, 1564) N, IC_X_S(L,M,N)
+                  DO NN = 1, NMAX(M)
+                     WRITE (UNIT_OUT, 1564) NN, IC_X_S(L,M,nn)
                   END DO
                ENDIF
             END DO
@@ -523,8 +523,8 @@
             IF (BC_T_G(L) /= UNDEFINED) WRITE (UNIT_OUT, 1642) BC_T_G(L)
             IF (SPECIES_EQ(0) .AND. BC_X_G(L,1)/=UNDEFINED) THEN
                WRITE (UNIT_OUT, 1643)
-               DO N = 1, NMAX(0)
-                  WRITE (UNIT_OUT, 1644) N, BC_X_G(L,N)
+               DO NN = 1, NMAX(0)
+                  WRITE (UNIT_OUT, 1644) NN, BC_X_G(L,nn)
                END DO
             ENDIF
             IF (BC_MASSFLOW_G(L) /= UNDEFINED) WRITE (UNIT_OUT, 1648) &
@@ -553,8 +553,8 @@
                IF (SPECIES_EQ(M) .AND. BC_X_S(L,M,1)/=UNDEFINED) THEN
                   WRITE (UNIT_OUT, "(' ')")
                   WRITE (UNIT_OUT, 1663) M
-                  DO N = 1, NMAX(M)
-                     WRITE (UNIT_OUT, 1664) N, BC_X_S(L,M,N)
+                  DO NN = 1, NMAX(M)
+                     WRITE (UNIT_OUT, 1664) NN, BC_X_S(L,M,nn)
                   END DO
                ENDIF
             END DO

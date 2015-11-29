@@ -11,9 +11,6 @@
 
 MODULE qmom_kinetic_equation
 
-
-  USE param
-  USE param1
   USE qmomk_parameters
 
   !     QMOMK variables

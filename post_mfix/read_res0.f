@@ -33,7 +33,7 @@
       USE machine
       USE mpi_utility
       USE output
-      USE param
+      USE param, only: dimension_3, dimension_i, dimension_j, dimension_k, dimension_m, dimension_n_g, dimension_scalar
       USE param1
       USE physprop
       USE run

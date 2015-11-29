@@ -17,7 +17,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE physprop
       USE fldvar
@@ -66,9 +65,9 @@
             APO = VOL(IJK)*lOoDT
 
 ! Collect the terms
-            A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
-                             A_M(IJK,N,M)+A_M(IJK,S,M)+&
-                             A_M(IJK,T,M)+A_M(IJK,B,M)+ APO)
+            A_M(IJK,0,M) = -(A_M(IJK,east,M)+A_M(IJK,west,M)+&
+                             A_M(IJK,north,M)+A_M(IJK,south,M)+&
+                             A_M(IJK,top,M)+A_M(IJK,bottom,M)+ APO)
 
             S_C = APO*PHI(IJK)
 

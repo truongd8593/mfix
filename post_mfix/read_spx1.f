@@ -27,19 +27,17 @@
                           TIME_REAL,NSTEP_1)
 !
 !
-      Use param
+      Use param, only: dimension_3
       Use param1
       Use fldvar
       Use geometry
       Use physprop
       Use run
       Use funits
-      Use post3d
+      Use post3d, only: version_number, spx_open, last_rec
       Use scalars
       Use rxns
       Use machine
-
-
       Use indices
       Use compar
       Use functions

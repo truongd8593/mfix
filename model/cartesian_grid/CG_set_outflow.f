@@ -56,7 +56,7 @@
 !-----------------------------------------------
 !
 !                      indices
-      INTEGER          I, J, K, M, N
+      INTEGER          I, J, K, M, NN
 !
 !                      Local index for boundary cell
       INTEGER          IJK
@@ -104,10 +104,10 @@
 !                  IF (U_G(LFLUID)>=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -116,15 +116,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (U_G(LFLUID)>=ZERO) THEN
-                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                          Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Else
 !                      IF (U_s(LFLUID, M)>=ZERO) THEN
-                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                          Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Endif
                   END DO
@@ -150,10 +150,10 @@
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
 !
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -232,22 +232,22 @@
 !            read(*,*)
 
             T_G(IJK) = T_G(IJKW)
-            N = 1
+            NN = 1
             IF (NMAX(0) > 0) THEN
                X_G(IJK,:NMAX(0)) = X_G(IJKW,:NMAX(0))
-               N = NMAX(0) + 1
+               NN = NMAX(0) + 1
             ENDIF
             MW_MIX_G(IJK) = MW_MIX_G(IJKW)
             RO_G(IJK) = RO_G(IJKW)
             P_STAR(IJK) = P_STAR(IJKW)
             EP_G(IJK) = EP_G(IJKW)
             ROP_G(IJK) = ROP_G(IJKW)
-            DO N = 1, NScalar
-               M = Phase4Scalar(N)
+            DO NN = 1, NScalar
+               M = Phase4Scalar(NN)
                IF(M == 0)Then
-                  Scalar(IJK, N) = Scalar(IJKW, N)
+                  Scalar(IJK, NN) = Scalar(IJKW, NN)
                ELSE
-                  Scalar(IJK, N) = Scalar(IJKW, N)
+                  Scalar(IJK, NN) = Scalar(IJKW, NN)
                ENDIF
             ENDDO
             IF(K_Epsilon) THEN
@@ -278,10 +278,10 @@
 !
                IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
 !
-               N = 1
+               NN = 1
                IF (NMAX(M) > 0) THEN
                   X_S(IJK,M,:NMAX(M)) = X_S(IJKW,M,:NMAX(M))
-                  N = NMAX(M) + 1
+                  NN = NMAX(M) + 1
                ENDIF
             END DO
             ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -337,10 +337,10 @@
 !                  IF (U_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -349,15 +349,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (U_G(LFLUID) <= ZERO) THEN
-                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                          Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Else
 !                      IF (U_s(LFLUID, M) <= ZERO) THEN
-                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                          Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Endif
                   END DO
@@ -381,10 +381,10 @@
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -441,10 +441,10 @@
 !                  IF (V_G(LFLUID)>=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -453,15 +453,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (V_G(LFLUID) >= ZERO) THEN
-                          Scalar(IJK, N) = Scalar(LFLUID, N)
+                          Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Else
 !                      IF (V_s(LFLUID, M) >= ZERO) THEN
-                       Scalar(IJK, N) = Scalar(LFLUID, N)
+                       Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Endif
                   END DO
@@ -485,10 +485,10 @@
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -558,22 +558,22 @@
 !            read(*,*)
 
             T_G(IJK) = T_G(IJKS)
-            N = 1
+            NN = 1
             IF (NMAX(0) > 0) THEN
                X_G(IJK,:NMAX(0)) = X_G(IJKS,:NMAX(0))
-               N = NMAX(0) + 1
+               NN = NMAX(0) + 1
             ENDIF
             MW_MIX_G(IJK) = MW_MIX_G(IJKS)
             RO_G(IJK) = RO_G(IJKS)
             P_STAR(IJK) = P_STAR(IJKS)
             EP_G(IJK) = EP_G(IJKS)
             ROP_G(IJK) = ROP_G(IJKS)
-            DO N = 1, NScalar
-               M = Phase4Scalar(N)
+            DO NN = 1, NScalar
+               M = Phase4Scalar(NN)
                IF(M == 0)Then
-                  Scalar(IJK, N) = Scalar(IJKS, N)
+                  Scalar(IJK, NN) = Scalar(IJKS, NN)
                ELSE
-                  Scalar(IJK, N) = Scalar(IJKS, N)
+                  Scalar(IJK, NN) = Scalar(IJKS, NN)
                ENDIF
             ENDDO
             IF(K_Epsilon) THEN
@@ -603,10 +603,10 @@
                IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-               N = 1
+               NN = 1
                IF (NMAX(M) > 0) THEN
                   X_S(IJK,M,:NMAX(M)) = X_S(IJKS,M,:NMAX(M))
-                  N = NMAX(M) + 1
+                  NN = NMAX(M) + 1
                ENDIF
             END DO
             ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -660,10 +660,10 @@
 !                  IF (V_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -672,15 +672,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (V_G(LFLUID) <= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Else
 !                      IF (V_s(LFLUID, M) <= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Endif
                   END DO
@@ -704,10 +704,10 @@
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -754,10 +754,10 @@
 !                  IF (W_G(LFLUID)>=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -766,15 +766,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (W_G(LFLUID) >= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Else
 !                      IF (W_s(LFLUID, M) >= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Endif
                   END DO
@@ -798,10 +798,10 @@
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -848,22 +848,22 @@
             BCV = BC_ID(IJK)
 
             T_G(IJK) = T_G(IJKB)
-            N = 1
+            NN = 1
             IF (NMAX(0) > 0) THEN
                X_G(IJK,:NMAX(0)) = X_G(IJKB,:NMAX(0))
-               N = NMAX(0) + 1
+               NN = NMAX(0) + 1
             ENDIF
             MW_MIX_G(IJK) = MW_MIX_G(IJKB)
             RO_G(IJK) = RO_G(IJKB)
             P_STAR(IJK) = P_STAR(IJKB)
             EP_G(IJK) = EP_G(IJKB)
             ROP_G(IJK) = ROP_G(IJKB)
-            DO N = 1, NScalar
-               M = Phase4Scalar(N)
+            DO NN = 1, NScalar
+               M = Phase4Scalar(NN)
                IF(M == 0)Then
-                  Scalar(IJK, N) = Scalar(IJKB, N)
+                  Scalar(IJK, NN) = Scalar(IJKB, NN)
                ELSE
-                  Scalar(IJK, N) = Scalar(IJKB, N)
+                  Scalar(IJK, NN) = Scalar(IJKB, NN)
                ENDIF
             ENDDO
             IF(K_Epsilon) THEN
@@ -893,10 +893,10 @@
                IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-               N = 1
+               NN = 1
                IF (NMAX(M) > 0) THEN
                   X_S(IJK,M,:NMAX(M)) = X_S(IJKB,M,:NMAX(M))
-                  N = NMAX(M) + 1
+                  NN = NMAX(M) + 1
                ENDIF
             END DO
             ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
@@ -941,10 +941,10 @@
 !                  IF (W_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
 !                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
-                     N = 1
+                     NN = 1
                      IF (NMAX(0) > 0) THEN
                         X_G(IJK,:NMAX(0)) = X_G(LFLUID,:NMAX(0))
-                        N = NMAX(0) + 1
+                        NN = NMAX(0) + 1
                      ENDIF
                      MW_MIX_G(IJK) = MW_MIX_G(LFLUID)
                      IF (RO_G0 == UNDEFINED) RO_G(IJK) = EOSG(MW_MIX_G(IJK),P_G&
@@ -953,15 +953,15 @@
                   P_STAR(IJK) = P_STAR(LFLUID)
                   IF (BC_EP_G(BCV) == UNDEFINED) EP_G(IJK) = ONE
 
-                  DO N = 1, NScalar
-                     M = Phase4Scalar(N)
+                  DO NN = 1, NScalar
+                     M = Phase4Scalar(NN)
                      IF(M == 0)Then
 !                      IF (W_G(LFLUID) <= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                     ENDIF
                      Else
 !                      IF (W_s(LFLUID, M) <= ZERO) THEN
-                         Scalar(IJK, N) = Scalar(LFLUID, N)
+                         Scalar(IJK, NN) = Scalar(LFLUID, NN)
 !                      ENDIF
                      Endif
                   END DO
@@ -985,10 +985,10 @@
                      IF(BC_ROP_S(BCV,M)/=UNDEFINED)ROP_S(IJK,M)=BC_ROP_S(BCV,M)
 !
                      IF(BC_EP_G(BCV)==UNDEFINED)EP_G(IJK)=EP_G(IJK)-EP_S(IJK,M)
-                     N = 1
+                     NN = 1
                      IF (NMAX(M) > 0) THEN
                         X_S(IJK,M,:NMAX(M)) = X_S(LFLUID,M,:NMAX(M))
-                        N = NMAX(M) + 1
+                        NN = NMAX(M) + 1
                      ENDIF
                   END DO
                   ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)

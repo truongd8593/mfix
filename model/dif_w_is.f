@@ -12,8 +12,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param, only: dimension_is, dimension_3, dimension_m
-      USE matrix, only: e, w, n, s
+      USE param
       USE geometry, only: odx_e, ody_n, axz_w, ayz_w
 
       USE is, only: is_defined, is_plane
@@ -73,8 +72,8 @@
                                 AVG_Y_H(DIF(IJKT),DIF(IJKTN),J),K)*&
                         ODY_N(J)*AXZ_W(IJK)
 
-                  A_M(IJK,N,M) = A_M(IJK,N,M) - D_F
-                  A_M(IJPK,S,M) = A_M(IJPK,S,M) - D_F
+                  A_M(IJK,north,M) = A_M(IJK,north,M) - D_F
+                  A_M(IJPK,south,M) = A_M(IJPK,south,M) - D_F
                ENDDO
                ENDDO
                ENDDO
@@ -95,8 +94,8 @@
                                 AVG_X_H(DIF(IJKT),DIF(IJKTE),I),K)*&
                         ODX_E(I)*AYZ_W(IJK)
 
-                  A_M(IJK,E,M) = A_M(IJK,E,M) - D_F
-                  A_M(IPJK,W,M) = A_M(IPJK,W,M) - D_F
+                  A_M(IJK,east,M) = A_M(IJK,east,M) - D_F
+                  A_M(IPJK,west,M) = A_M(IPJK,west,M) - D_F
                ENDDO
                ENDDO
                ENDDO

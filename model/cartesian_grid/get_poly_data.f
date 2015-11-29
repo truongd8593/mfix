@@ -42,7 +42,7 @@
       USE polygon
       IMPLICIT NONE
 
-      INTEGER :: POLY,V,N,NSKIP
+      INTEGER :: POLY,V,NN,NSKIP
       LOGICAL :: PRESENT
 
 
@@ -63,7 +63,7 @@
       OPEN(CONVERT='BIG_ENDIAN',UNIT=333, FILE='poly.dat', STATUS='OLD', ERR=910)
 
       NSKIP = 13
-      DO N=1,NSKIP
+      DO NN=1,NSKIP
          READ(333,*,ERR=920,END=930)   ! Skip first NSKIP comment lines
       ENDDO
 

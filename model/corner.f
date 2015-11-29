@@ -33,7 +33,6 @@
       USE geometry
       USE indices
       USE machine, only: start_log, end_log
-      USE matrix
       USE param
       USE param1
       USE physprop
@@ -81,44 +80,44 @@
 !
             IF (FLUID_AT(IMJK)) THEN
                NUM = NUM + 1
-               DIR(W) = .TRUE.
+               DIR(west) = .TRUE.
             ELSE
-               DIR(W) = .FALSE.
+               DIR(west) = .FALSE.
             ENDIF
 !
             IF (FLUID_AT(IPJK)) THEN
                NUM = NUM + 1
-               DIR(E) = .TRUE.
+               DIR(east) = .TRUE.
             ELSE
-               DIR(E) = .FALSE.
+               DIR(east) = .FALSE.
             ENDIF
 !
             IF (FLUID_AT(IJMK)) THEN
                NUM = NUM + 1
-               DIR(S) = .TRUE.
+               DIR(south) = .TRUE.
             ELSE
-               DIR(S) = .FALSE.
+               DIR(south) = .FALSE.
             ENDIF
 !
             IF (FLUID_AT(IJPK)) THEN
                NUM = NUM + 1
-               DIR(N) = .TRUE.
+               DIR(north) = .TRUE.
             ELSE
-               DIR(N) = .FALSE.
+               DIR(north) = .FALSE.
             ENDIF
 !
             IF (FLUID_AT(IJKM)) THEN
                NUM = NUM + 1
-               DIR(B) = .TRUE.
+               DIR(bottom) = .TRUE.
             ELSE
-               DIR(B) = .FALSE.
+               DIR(bottom) = .FALSE.
             ENDIF
 !
             IF (FLUID_AT(IJKP)) THEN
                NUM = NUM + 1
-               DIR(T) = .TRUE.
+               DIR(top) = .TRUE.
             ELSE
-               DIR(T) = .FALSE.
+               DIR(top) = .FALSE.
             ENDIF
 !
             IF (NUM > 1) THEN
@@ -127,82 +126,82 @@
                NOTCORNER = .TRUE.
 !
 !           check for single cell thick internal walls
-               IF (DIR(W) .AND. DIR(E) .OR. DIR(S) .AND. DIR(N) .OR. DIR(T)&
-                   .AND. DIR(B)) THEN
+               IF (DIR(west) .AND. DIR(east) .OR. DIR(south) .AND. DIR(north) .OR. DIR(top)&
+                   .AND. DIR(bottom)) THEN
 !
                   IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                ENDIF
 !
 !           check for corner cells
 !
-               IF (DIR(E)) THEN
+               IF (DIR(east)) THEN
 !
-                  IF (DIR(N)) THEN
+                  IF (DIR(north)) THEN
                      IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                   ENDIF
 !
-                  IF (DIR(S)) THEN
+                  IF (DIR(south)) THEN
                      IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                   ENDIF
 !
                   IF (DO_K) THEN
-                     IF (DIR(T)) THEN
+                     IF (DIR(top)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
 !
-                     IF (DIR(B)) THEN
+                     IF (DIR(bottom)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
                   ENDIF
 !
                ENDIF
 !
-               IF (DIR(W)) THEN
+               IF (DIR(west)) THEN
 !
-                  IF (DIR(N)) THEN
+                  IF (DIR(north)) THEN
                      IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                   ENDIF
 !
-                  IF (DIR(S)) THEN
+                  IF (DIR(south)) THEN
                      IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                   ENDIF
 !
                   IF (DO_K) THEN
-                     IF (DIR(T)) THEN
+                     IF (DIR(top)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
 !
-                     IF (DIR(B)) THEN
+                     IF (DIR(bottom)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
                   ENDIF
 !
                ENDIF
 !
-               IF (DIR(N)) THEN
+               IF (DIR(north)) THEN
 !
 !
                   IF (DO_K) THEN
-                     IF (DIR(T)) THEN
+                     IF (DIR(top)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
 !
-                     IF (DIR(B)) THEN
+                     IF (DIR(bottom)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
                   ENDIF
 !
                ENDIF
 !
-               IF (DIR(S)) THEN
+               IF (DIR(south)) THEN
 !
 !
                   IF (DO_K) THEN
-                     IF (DIR(T)) THEN
+                     IF (DIR(top)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
 !
-                     IF (DIR(B)) THEN
+                     IF (DIR(bottom)) THEN
                         IF (NOTCORNER) CALL ADDCORN (NOTCORNER, NCORN)
                      ENDIF
                   ENDIF

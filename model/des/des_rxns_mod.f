@@ -12,8 +12,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE DES_RXNS
 
-      USE param
-      USE rxn_com
+      ! USE param
+      USE rxn_com, only: reaction_block
 
 ! Data Storage:
 !---------------------------------------------------------------------//

@@ -25,7 +25,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE fldvar
       USE rxns
       USE run
@@ -82,8 +81,8 @@
                SRC = ZERO
             ENDIF
 
-            A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+A_M(IJK,N,M)+&
-                             A_M(IJK,S,M)+A_M(IJK,T,M)+A_M(IJK,B,M)+&
+            A_M(IJK,0,M) = -(A_M(IJK,east,M)+A_M(IJK,west,M)+A_M(IJK,north,M)+&
+                             A_M(IJK,south,M)+A_M(IJK,top,M)+A_M(IJK,bottom,M)+&
                              VOL(IJK)*ODT+ZMAX(DEL_V)+SRC)
             B_M(IJK,M) = -(ROP_SO(IJK,M)*VOL(IJK)*ODT+&
                            ZMAX((-DEL_V))*ROP_S(IJK,M)+&
@@ -104,12 +103,12 @@
          ELSE
 ! set the value of rop_s in all wall and flow boundary cells to what is
 ! known for that cell
-            A_M(IJK,E,M) = ZERO
-            A_M(IJK,W,M) = ZERO
-            A_M(IJK,N,M) = ZERO
-            A_M(IJK,S,M) = ZERO
-            A_M(IJK,T,M) = ZERO
-            A_M(IJK,B,M) = ZERO
+            A_M(IJK,east,M) = ZERO
+            A_M(IJK,west,M) = ZERO
+            A_M(IJK,north,M) = ZERO
+            A_M(IJK,south,M) = ZERO
+            A_M(IJK,top,M) = ZERO
+            A_M(IJK,bottom,M) = ZERO
             A_M(IJK,0,M) = -ONE
             B_M(IJK,M) = -ROP_S(IJK,M)
          ENDIF
@@ -134,6 +133,7 @@
       use constant
       use geometry
       use indices
+      use param, only: dimension_m, dimension_3
       use param1, only: small_number
       use physprop
       use ps

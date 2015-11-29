@@ -455,16 +455,16 @@
 ! Local loop indicies.
       INTEGER :: IJK  ! Fluid Cell index.
       INTEGER :: M    ! Solids phase index
-      INTEGER :: N    ! Species index
+      INTEGER :: NN    ! Species index
 
       CALL send_recv(EP_G,2)
       CALL send_recv(RO_G,2)
       CALL send_recv(ROP_G,2)
       CALL send_recv(T_G,2)
 
-      DO N=1,NMAX(0)
-         CALL send_recv(X_G(:,N),2)
-         CALL BOUND_X (X_G(1,N), IJKMAX2)
+      DO NN=1,NMAX(0)
+         CALL send_recv(X_G(:,NN),2)
+         CALL BOUND_X (X_G(1,NN), IJKMAX2)
       ENDDO
 
       DO M = 1, MMAX
@@ -473,9 +473,9 @@
 ! Solids volume fraction. (Constant Solids Density)
          CALL send_recv(ROP_S(:,M),2)
 ! Solids phase species mass fractions.
-         DO N=1,NMAX(M)
-            CALL send_recv(X_S(:,M,N),2)
-            CALL BOUND_X (X_S(1,M,N), IJKMAX2)
+         DO NN=1,NMAX(M)
+            CALL send_recv(X_S(:,M,NN),2)
+            CALL BOUND_X (X_S(1,M,NN), IJKMAX2)
          ENDDO
       ENDDO
 

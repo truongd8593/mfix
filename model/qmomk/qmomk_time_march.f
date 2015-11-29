@@ -32,7 +32,6 @@ SUBROUTINE QMOMK_TIME_MARCH
   USE time_cpu
   USE is
   USE indices
-  USE matrix
   USE sendrecv
   USE qmom_kinetic_equation
   USE qmomk_fluxes

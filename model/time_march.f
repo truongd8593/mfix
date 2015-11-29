@@ -115,7 +115,7 @@
       CALL INIT_COEFF(IER)
 
       DO M=1, MMAX
-         CALL ZERO_ARRAY (F_gs(1,M))
+         F_gs(1,M) = ZERO
       ENDDO
 
 ! Remove undefined values at wall cells for scalars
@@ -126,14 +126,13 @@
 
 ! Initialize d's and e's to zero
       DO M = 0, MMAX
-         CALL ZERO_ARRAY (D_E(1,M))
-         CALL ZERO_ARRAY (D_N(1,M))
-         CALL ZERO_ARRAY (D_T(1,M))
+         D_E(1,M) = ZERO
+         D_N(1,M) = ZERO
+         D_T(1,M) = ZERO
       ENDDO
-      CALL ZERO_ARRAY (E_E)
-      CALL ZERO_ARRAY (E_N)
-      CALL ZERO_ARRAY (E_T)
-
+      E_E(:) = ZERO
+      E_N(:) = ZERO
+      E_T(:) = ZERO
 
 ! calculate shear velocities if periodic shear BCs are used
       IF(SHEAR) CALL CAL_D(V_sh)

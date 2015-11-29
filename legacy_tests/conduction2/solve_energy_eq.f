@@ -55,7 +55,6 @@
       USE mms
       USE functions
 
-      use matrix, only: N, S
       use constant, only: C
 
       IMPLICIT NONE

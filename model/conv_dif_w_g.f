@@ -268,8 +268,8 @@
       USE indices, only: i_of, j_of, k_of
       USE indices, only: kp1, im1, jm1
 
-      USE matrix, only: e, w, n, s, t, b
       USE visc_g, only: epmu_gt, df_gw
+      USE param
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -359,12 +359,12 @@
 ! Bottom face (i, j, k)
       D_Fb = EPMU_GT(IJK)*OX(I)*C_AB*AXY_W(IJKM)
 
-      DF_GW(IJK,E) = D_FE
-      DF_GW(IJK,W) = D_FW
-      DF_GW(IJK,N) = D_FN
-      DF_GW(IJK,S) = D_FS
-      DF_GW(IJK,T) = D_FT
-      DF_GW(IJK,B) = D_FB
+      DF_GW(IJK,east) = D_FE
+      DF_GW(IJK,west) = D_FW
+      DF_GW(IJK,north) = D_FN
+      DF_GW(IJK,south) = D_FS
+      DF_GW(IJK,top) = D_FT
+      DF_GW(IJK,bottom) = D_FB
 
 ! if jackson, implement jackson style governing equations: multiply by
 ! the void fraction otherwise multiply by 1
@@ -411,9 +411,8 @@
       USE functions, only: ip_of, jp_of, kp_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE param, only: dimension_3, dimension_m
+      USE param
       USE param1, only: zero
-      USE matrix, only: e, w, n, s, t, b
 
       IMPLICIT NONE
 
@@ -460,54 +459,54 @@
 
 ! East face (i+1/2, j, k+1/2)
             IF (Flux_e >= ZERO) THEN
-               A_W_G(IJK,E,0) = D_Fe
-               A_W_G(IPJK,W,0) = D_Fe + Flux_e
+               A_W_G(IJK,east,0) = D_Fe
+               A_W_G(IPJK,west,0) = D_Fe + Flux_e
             ELSE
-               A_W_G(IJK,E,0) = D_Fe - Flux_e
-               A_W_G(IPJK,W,0) = D_Fe
+               A_W_G(IJK,east,0) = D_Fe - Flux_e
+               A_W_G(IPJK,west,0) = D_Fe
             ENDIF
 ! West face (i-1/2, j, k+1/2)
             IF (.NOT.FLOW_AT_T(IMJK)) THEN
                IF (Flux_w >= ZERO) THEN
-                  A_W_G(IJK,W,0) = D_Fw + Flux_w
+                  A_W_G(IJK,west,0) = D_Fw + Flux_w
                ELSE
-                  A_W_G(IJK,W,0) = D_Fw
+                  A_W_G(IJK,west,0) = D_Fw
                ENDIF
             ENDIF
 
 
 ! North face (i, j+1/2, k+1/2)
             IF (Flux_n >= ZERO) THEN
-               A_W_G(IJK,N,0) = D_Fn
-               A_W_G(IJPK,S,0) = D_Fn + Flux_n
+               A_W_G(IJK,north,0) = D_Fn
+               A_W_G(IJPK,south,0) = D_Fn + Flux_n
             ELSE
-               A_W_G(IJK,N,0) = D_Fn - Flux_n
-               A_W_G(IJPK,S,0) = D_Fn
+               A_W_G(IJK,north,0) = D_Fn - Flux_n
+               A_W_G(IJPK,south,0) = D_Fn
             ENDIF
 ! South face (i, j-1/2, k+1/2)
             IF (.NOT.FLOW_AT_T(IJMK)) THEN
               IF (Flux_s >= ZERO) THEN
-                  A_W_G(IJK,S,0) = D_Fs + Flux_s
+                  A_W_G(IJK,south,0) = D_Fs + Flux_s
                ELSE
-                  A_W_G(IJK,S,0) = D_Fs
+                  A_W_G(IJK,south,0) = D_Fs
                ENDIF
             ENDIF
 
 
 ! Top face (i, j, k+1)
             IF (Flux_T >= ZERO) THEN
-               A_W_G(IJK,T,0) = D_Ft
-               A_W_G(IJKP,B,0) = D_Ft + Flux_t
+               A_W_G(IJK,top,0) = D_Ft
+               A_W_G(IJKP,bottom,0) = D_Ft + Flux_t
             ELSE
-               A_W_G(IJK,T,0) = D_Ft - Flux_t
-               A_W_G(IJKP,B,0) = D_Ft
+               A_W_G(IJK,top,0) = D_Ft - Flux_t
+               A_W_G(IJKP,bottom,0) = D_Ft
             ENDIF
 ! Bottom face (i, j, k)
             IF (.NOT.FLOW_AT_T(IJKM)) THEN
                IF (Flux_b >= ZERO) THEN
-                  A_W_G(IJK,B,0) = D_Fb + Flux_b
+                  A_W_G(IJK,bottom,0) = D_Fb + Flux_b
                ELSE
-                  A_W_G(IJK,B,0) = D_Fb
+                  A_W_G(IJK,bottom,0) = D_Fb
                ENDIF
             ENDIF
          ENDIF   ! end if (flow_at_t)
@@ -797,10 +796,8 @@
       USE functions, only: ip_of, jp_of, kp_of
       USE functions, only: im_of, jm_of, km_of
 
-      USE param, only: dimension_3, dimension_m
+      USE param
       USE param1, only: one
-
-      USE matrix, only: e, w, n, s, t, b
 
       USE run, only: discretize
 
@@ -872,29 +869,29 @@
             IJKM = KM_OF(IJK)
 
 ! East face (i+1/2, j, k+1/2)
-            A_W_G(IJK,E,0) = D_Fe - XSI_E(IJK)*Flux_e
-            A_W_G(IPJK,W,0) = D_Fe + (ONE - XSI_E(IJK))*Flux_e
+            A_W_G(IJK,east,0) = D_Fe - XSI_E(IJK)*Flux_e
+            A_W_G(IPJK,west,0) = D_Fe + (ONE - XSI_E(IJK))*Flux_e
 ! West face (i-1/2, j, k+1/2)
             IF (.NOT.FLOW_AT_T(IMJK)) THEN
-               A_W_G(IJK,W,0) = D_Fw + (ONE - XSI_E(IMJK))*Flux_w
+               A_W_G(IJK,west,0) = D_Fw + (ONE - XSI_E(IMJK))*Flux_w
             ENDIF
 
 
 ! North face (i, j+1/2, k+1/2)
-            A_W_G(IJK,N,0) = D_Fn - XSI_N(IJK)*Flux_n
-            A_W_G(IJPK,S,0) = D_Fn + (ONE - XSI_N(IJK))*Flux_n
+            A_W_G(IJK,north,0) = D_Fn - XSI_N(IJK)*Flux_n
+            A_W_G(IJPK,south,0) = D_Fn + (ONE - XSI_N(IJK))*Flux_n
 ! South face (i, j-1/2, k+1/2)
             IF (.NOT.FLOW_AT_T(IJMK)) THEN
-               A_W_G(IJK,S,0) = D_Fs + (ONE - XSI_N(IJMK))*Flux_s
+               A_W_G(IJK,south,0) = D_Fs + (ONE - XSI_N(IJMK))*Flux_s
             ENDIF
 
 
 ! Top face (i, j, k+1)
-            A_W_G(IJK,T,0) = D_Ft - XSI_T(IJK)*Flux_t
-            A_W_G(IJKP,B,0) = D_Ft + (ONE - XSI_T(IJK))*Flux_t
+            A_W_G(IJK,top,0) = D_Ft - XSI_T(IJK)*Flux_t
+            A_W_G(IJKP,bottom,0) = D_Ft + (ONE - XSI_T(IJK))*Flux_t
 ! Bottom face (i, j, k)
             IF (.NOT.FLOW_AT_T(IJKM)) THEN
-              A_W_G(IJK,B,0) = D_Fb + (ONE - XSI_T(IJKM))*Flux_b
+              A_W_G(IJK,bottom,0) = D_Fb + (ONE - XSI_T(IJKM))*Flux_b
             ENDIF
 
          ENDIF   ! end if flow_at_t

@@ -13,7 +13,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE physprop
       USE indices
@@ -79,7 +78,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE physprop
       USE indices
@@ -141,7 +139,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE physprop
       USE indices

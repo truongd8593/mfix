@@ -29,8 +29,7 @@
       USE mfix_pic
       USE output
       USE parallel
-      USE param
-      USE param1
+      USE param1, only: undefined
       USE particle_filter
       USE physprop
       USE pic_bc
@@ -47,7 +46,7 @@
       USE toleranc
       USE ur_facs
       USE usr
-      USE utilities, ONLY: blank_line, line_too_big, seek_comment
+      USE utilities
       USE vtk
       Use stl
 
@@ -69,7 +68,7 @@
 ! Line number
       INTEGER :: LINE_NO
 ! Coefficient of restitution (old symbol)
-      DOUBLE PRECISION e
+      DOUBLE PRECISION   e
 ! Indicates whether currently reading rxns or rate
       LOGICAL :: RXN_FLAG
 ! Indicate whether to do a namelist read on the line

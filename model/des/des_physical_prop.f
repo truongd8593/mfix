@@ -37,7 +37,7 @@
 ! Local Variables
 !-----------------------------------------------------------------------
 ! Dummy indices
-      INTEGER M, N
+      INTEGER M, NN
 ! error indicator
       INTEGER IER
 
@@ -58,10 +58,10 @@
             DES_C_PS(NP) = ZERO
 ! Calculate the specific heat based on the species composition of the
 ! particle and the data from the thermodynamic databases.
-            DO N = 1, NMAX_s(M)
-               lCPoR = DES_calc_CpoR(DES_T_s_NEW(NP), M, N, IER)
+            DO NN = 1, NMAX_s(M)
+               lCPoR = DES_calc_CpoR(DES_T_s_NEW(NP), M, NN, IER)
                DES_C_PS(NP) = DES_C_PS(NP) +                          &
-                  lCpoR * DES_X_s(NP,N) * RGAS / MW_s(M,N)
+                  lCpoR * DES_X_s(NP,NN) * RGAS / MW_s(M,NN)
             ENDDO
 ! Convert to SI units if needed.
             IF (UNITS == 'SI') DES_C_PS(NP) = 4183.925D0*DES_C_PS(NP)

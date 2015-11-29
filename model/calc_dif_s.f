@@ -44,7 +44,7 @@
 !-----------------------------------------------
 
 !                      Indices
-      INTEGER          IJK, N
+      INTEGER          IJK, NN
 
 !                      Solids phase
       INTEGER          M
@@ -61,12 +61,12 @@
 !!!!$omp  parallel do private(n,ijk) &
 !!!!$omp& schedule(dynamic,chunk_size)
 
-      DO N = 1, NMAX(M)
+      DO NN = 1, NMAX(M)
          DO IJK = IJKSTART3, IJKEND3
             IF (FLUID_AT(IJK)) THEN
-               DIF_S(IJK,M,N) = ROP_S(IJK,M)*Dab
+               DIF_S(IJK,M,NN) = ROP_S(IJK,M)*Dab
             ELSE
-               DIF_S(IJK,M,N) = ZERO
+               DIF_S(IJK,M,NN) = ZERO
             ENDIF
          ENDDO
       ENDDO

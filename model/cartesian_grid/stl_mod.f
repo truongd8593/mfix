@@ -1,8 +1,6 @@
       MODULE stl
 
-
-      Use param
-      Use param1
+      Use param1, only: zero
 
 !     Maximum number of facets that can be read
       INTEGER, PARAMETER          :: DIM_STL = 10000000   !10 Million
@@ -79,5 +77,3 @@
       CHARACTER(LEN=3) :: CAD_PROPAGATE_ORDER
 
       END MODULE stl
-
-

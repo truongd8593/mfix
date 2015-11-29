@@ -28,7 +28,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE compar
@@ -68,64 +67,64 @@
       IER = 0
       DO IJK = ijkstart3, ijkend3
          IF (.NOT.WALL_AT(IJK)) THEN
-            IF (A_M(IJK,B,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,B,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,bottom,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,bottom,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-b < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,B,M) = ZERO
+                  A_M(IJK,bottom,M) = ZERO
                ENDIF
             ENDIF
-            IF (A_M(IJK,S,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,S,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,south,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,south,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-s < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,S,M) = ZERO
+                  A_M(IJK,south,M) = ZERO
                ENDIF
             ENDIF
-            IF (A_M(IJK,W,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,W,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,west,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,west,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-w < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,W,M) = ZERO
+                  A_M(IJK,west,M) = ZERO
                ENDIF
             ENDIF
-            IF (A_M(IJK,E,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,E,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,east,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,east,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-e < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,E,M) = ZERO
+                  A_M(IJK,east,M) = ZERO
                ENDIF
             ENDIF
-            IF (A_M(IJK,N,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,N,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,north,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,north,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-n < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,N,M) = ZERO
+                  A_M(IJK,north,M) = ZERO
                ENDIF
             ENDIF
-            IF (A_M(IJK,T,M) < ZERO) THEN
-               IF (ABS(A_M(IJK,T,M)) > SMALL_NUMBER) THEN
+            IF (A_M(IJK,top,M) < ZERO) THEN
+               IF (ABS(A_M(IJK,top,M)) > SMALL_NUMBER) THEN
                   WRITE (LINE(1), *) 'Error: Diagonal-t < 0. Phase = ', M, &
                      ' IJK = ', IJK
                   CALL WRITE_ERROR ('CHECK_Ab_m', LINE, 1)
                   GO TO 500
                ELSE
-                  A_M(IJK,T,M) = ZERO
+                  A_M(IJK,top,M) = ZERO
                ENDIF
             ENDIF
             IF (A_M(IJK,0,M) >= ZERO) THEN
@@ -182,7 +181,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE compar
@@ -218,16 +216,16 @@
           i = i_of(ijk)
           j = j_of(ijk)
           k = k_of(ijk)
-          IF(A_m(ijk, e, M) .ne. A_m(ipjk, w, M))then
-            print *, i,j,k, 'east-west asymmetry', A_m(ijk,e,M), A_m(ipjk,w,M)
+          IF(A_m(ijk, east, M) .ne. A_m(ipjk, west, M))then
+            print *, i,j,k, 'east-west asymmetry', A_m(ijk,east,M), A_m(ipjk,west,M)
             IER = IER + 1
           endif
-          IF(A_m(ijk, n, M) .ne. A_m(ijpk, s, M))then
-            print *, i,j,k, 'north-south asymmetry', A_m(ijk,n,M), A_m(ijpk,s,M)
+          IF(A_m(ijk, north, M) .ne. A_m(ijpk, south, M))then
+            print *, i,j,k, 'north-south asymmetry', A_m(ijk,north,M), A_m(ijpk,south,M)
             IER = IER + 1
           endif
-          IF(A_m(ijk, t, M) .ne. A_m(ijkp, b, M))then
-            print *, i,j,k, 'top-bottom asymmetry', A_m(ijk,t,M), A_m(ijkp,b,M)
+          IF(A_m(ijk, top, M) .ne. A_m(ijkp, bottom, M))then
+            print *, i,j,k, 'top-bottom asymmetry', A_m(ijk,top,M), A_m(ijkp,bottom,M)
             IER = IER + 1
           endif
         endif

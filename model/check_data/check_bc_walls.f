@@ -275,7 +275,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop/variable counter.
-      INTEGER :: N
+      INTEGER :: NN
 ! Flag to check momentum eq input.
       LOGICAL :: CHECK_MOMENTUM
 ! Flag to check scalar eq input.
@@ -370,20 +370,20 @@
          ENDIF
 
          IF(SPECIES_EQ(M)) THEN
-            DO N=1, NMAX(M)
-               IF(BC_HW_X_S(BCV,M,N) < ZERO) THEN
-                  WRITE(ERR_MSG,1001) trim(iVar('BC_HW_X_s',BCV,M,N)), &
-                     trim(iVal(BC_HW_X_S(BCV,M,N)))
+            DO NN=1, NMAX(M)
+               IF(BC_HW_X_S(BCV,M,NN) < ZERO) THEN
+                  WRITE(ERR_MSG,1001) trim(iVar('BC_HW_X_s',BCV,M,NN)), &
+                     trim(iVal(BC_HW_X_S(BCV,M,NN)))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
-               IF(BC_HW_X_S(BCV,M,N)/=ZERO .AND.                       &
-                  BC_XW_S(BCV,M,N)==UNDEFINED) THEN
-                  WRITE(ERR_MSG,1000) trim(iVar('BC_Xw_s',BCV,M,N))
+               IF(BC_HW_X_S(BCV,M,NN)/=ZERO .AND.                       &
+                  BC_XW_S(BCV,M,NN)==UNDEFINED) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('BC_Xw_s',BCV,M,NN))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
-               IF(BC_HW_X_S(BCV,M,N)/=UNDEFINED .AND.                  &
-                  BC_C_X_S(BCV,M,N)==UNDEFINED) THEN
-                  WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_s',BCV,M,N))
+               IF(BC_HW_X_S(BCV,M,NN)/=UNDEFINED .AND.                  &
+                  BC_C_X_S(BCV,M,NN)==UNDEFINED) THEN
+                  WRITE(ERR_MSG,1000) trim(iVar('BC_C_X_s',BCV,M,NN))
                   CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
                ENDIF
             ENDDO
@@ -554,7 +554,7 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop/variable counter.
-      INTEGER :: N
+      INTEGER :: NN
 !......................................................................!
 
 
@@ -595,15 +595,15 @@
       ENDIF
 
 ! DEM cannot have a species flux at the walls.
-      DO N=1, DIM_N_s
-         IF(BC_HW_X_S(BCV,M,N) /= UNDEFINED) THEN
-            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_HW_X_s',BCV,M,N))
+      DO NN=1, DIM_N_s
+         IF(BC_HW_X_S(BCV,M,nn) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_HW_X_s',BCV,M,nn))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(BC_XW_S(BCV,M,N) /= UNDEFINED) THEN
-            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Xw_s',BCV,M,N))
+         ELSEIF(BC_XW_S(BCV,M,nn) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_Xw_s',BCV,M,nn))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(BC_C_X_S(BCV,M,N) /= UNDEFINED) THEN
-            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_C_X_s',BCV,M,N))
+         ELSEIF(BC_C_X_S(BCV,M,nn) /= UNDEFINED) THEN
+            WRITE(ERR_MSG,1101) BCV, trim(iVar('BC_C_X_s',BCV,M,nn))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
@@ -658,27 +658,27 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop/counter variable.
-      INTEGER :: N
+      INTEGER :: NN
 !......................................................................!
 
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_SCALAR_EQ")
 
-      DO N=1, NSCALAR
-         IF(BC_HW_Scalar(BCV,N) < ZERO) THEN
-            WRITE(ERR_MSG,1001) trim(iVar('BC_HW_SCALAR',BCV,N)),      &
-               trim(iVal(BC_HW_Scalar(BCV,N)))
+      DO NN=1, NSCALAR
+         IF(BC_HW_Scalar(BCV,nn) < ZERO) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('BC_HW_SCALAR',BCV,nn)),      &
+               trim(iVal(BC_HW_Scalar(BCV,nn)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-         IF(BC_HW_SCALAR(BCV,N) /= ZERO .AND.                          &
-            BC_SCALARw(BCV,N) == UNDEFINED) THEN
-            WRITE(ERR_MSG,1000) trim(iVar('BC_SCALARw',BCV,N))
+         IF(BC_HW_SCALAR(BCV,nn) /= ZERO .AND.                          &
+            BC_SCALARw(BCV,nn) == UNDEFINED) THEN
+            WRITE(ERR_MSG,1000) trim(iVar('BC_SCALARw',BCV,nn))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
-         IF(BC_HW_SCALAR(BCV,N) /= UNDEFINED .AND.                     &
-            BC_C_Scalar(BCV,N) == UNDEFINED) THEN
-            WRITE(ERR_MSG,1000) trim(iVar('BC_C_SCALAR',BCV,N))
+         IF(BC_HW_SCALAR(BCV,nn) /= UNDEFINED .AND.                     &
+            BC_C_Scalar(BCV,nn) == UNDEFINED) THEN
+            WRITE(ERR_MSG,1000) trim(iVar('BC_C_SCALAR',BCV,nn))
          ENDIF
       ENDDO
 

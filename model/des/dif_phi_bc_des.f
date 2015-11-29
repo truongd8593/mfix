@@ -10,7 +10,6 @@
 
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE bc
@@ -59,10 +58,10 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(IP_OF(IJK),W,M) = ZERO
+               A_M(IP_OF(IJK),west,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
                A_M(IJK,:,M) = ZERO
-               A_M(IJK,E,M) = ONE
+               A_M(IJK,east,M) = ONE
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -78,10 +77,10 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(IM_OF(IJK),E,M) = ZERO
+               A_M(IM_OF(IJK),east,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
                A_M(IJK,:,M) = ZERO
-               A_M(IJK,W,M) = ONE
+               A_M(IJK,west,M) = ONE
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -97,10 +96,10 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(JP_OF(IJK),S,M) = ZERO
+               A_M(JP_OF(IJK),south,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
                A_M(IJK,:,M) = ZERO
-               A_M(IJK,N,M) = ONE
+               A_M(IJK,north,M) = ONE
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -116,10 +115,10 @@
             IJK = FUNIJK(I1,J1,K1)
             IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-               A_M(JM_OF(IJK),N,M) = ZERO
+               A_M(JM_OF(IJK),north,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
                A_M(IJK,:,M) = ZERO
-               A_M(IJK,S,M) = ONE
+               A_M(IJK,south,M) = ONE
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
             ENDIF
@@ -137,11 +136,11 @@
 
                IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-                  A_M(KP_OF(IJK),B,M) = ZERO
+                  A_M(KP_OF(IJK),bottom,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value (set
 ! the boundary cell value equal to adjacent fluid cell value)
                   A_M(IJK,:,M) = ZERO
-                  A_M(IJK,T,M) = ONE
+                  A_M(IJK,top,M) = ONE
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -157,10 +156,10 @@
                IJK = FUNIJK(I1,J1,K1)
                IF (DEFAULT_WALL_AT(IJK)) THEN
 ! Cutting the neighbor link between fluid cell and wall cell
-                  A_M(KM_OF(IJK),T,M) = ZERO
+                  A_M(KM_OF(IJK),top,M) = ZERO
 ! Setting the wall value equal to the adjacent fluid cell value
                   A_M(IJK,:,M) = ZERO
-                  A_M(IJK,B,M) = ONE
+                  A_M(IJK,bottom,M) = ONE
                   A_M(IJK,0,M) = -ONE
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -200,29 +199,29 @@
 ! boundary condition
                IF (FLUID_AT(EAST_OF(IJK))) THEN
                   A_M(IJK,0,M) = -ODX_E(I)
-                  A_M(IJK,E,M) =  ODX_E(I)
+                  A_M(IJK,east,M) =  ODX_E(I)
 
                ELSEIF (FLUID_AT(WEST_OF(IJK))) THEN
                   IM = IM1(I)
-                  A_M(IJK,W,M) =  ODX_E(IM)
+                  A_M(IJK,west,M) =  ODX_E(IM)
                   A_M(IJK,0,M) = -ODX_E(IM)
 
                ELSEIF (FLUID_AT(NORTH_OF(IJK))) THEN
                   A_M(IJK,0,M) = -ODY_N(J)
-                  A_M(IJK,N,M) =  ODY_N(J)
+                  A_M(IJK,north,M) =  ODY_N(J)
 
                ELSEIF (FLUID_AT(SOUTH_OF(IJK))) THEN
                   JM = JM1(J)
-                  A_M(IJK,S,M) =  ODY_N(JM)
+                  A_M(IJK,south,M) =  ODY_N(JM)
                   A_M(IJK,0,M) = -ODY_N(JM)
 
                ELSEIF (FLUID_AT(TOP_OF(IJK))) THEN
                   A_M(IJK,0,M) = -OX(I)*ODZ_T(K)
-                  A_M(IJK,T,M) =  OX(I)*ODZ_T(K)
+                  A_M(IJK,top,M) =  OX(I)*ODZ_T(K)
 
                ELSEIF (FLUID_AT(BOTTOM_OF(IJK))) THEN
                   KM = KM1(K)
-                  A_M(IJK,B,M) =  OX(I)*ODZ_T(KM)
+                  A_M(IJK,bottom,M) =  OX(I)*ODZ_T(KM)
                   A_M(IJK,0,M) = -OX(I)*ODZ_T(KM)
 
                ENDIF
@@ -256,7 +255,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE matrix
       USE geometry
       USE indices
       USE bc
@@ -316,14 +314,14 @@
             IF (CUT_CELL_AT(IP_OF(IJK))) THEN
                IF( BC_ID(IP_OF(IJK)) > 0 ) THEN
                   A_M(IJK,0,M) = -ODX_E(I)
-                  A_M(IJK,E,M) =  ODX_E(I)
+                  A_M(IJK,east,M) =  ODX_E(I)
                   B_M(IJK,M) =  ZERO
                ENDIF
 
             ELSEIF (CUT_CELL_AT(IM_OF(IJK))) THEN
                IF(BC_ID(IM_OF(IJK)) > 0 ) THEN
                   IM = IM1(I)
-                  A_M(IJK,W,M) =  ODX_E(IM)
+                  A_M(IJK,west,M) =  ODX_E(IM)
                   A_M(IJK,0,M) = -ODX_E(IM)
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -331,14 +329,14 @@
             ELSEIF (CUT_CELL_AT(JP_OF(IJK))) THEN
                IF(BC_ID(JP_OF(IJK)) > 0 ) THEN
                   A_M(IJK,0,M) = -ODY_N(J)
-                  A_M(IJK,N,M) =  ODY_N(J)
+                  A_M(IJK,north,M) =  ODY_N(J)
                   B_M(IJK,M) = ZERO
                ENDIF
 
             ELSEIF (CUT_CELL_AT(JM_OF(IJK))) THEN
                IF(BC_ID(JM_OF(IJK)) > 0 ) THEN
                   JM = JM1(J)
-                  A_M(IJK,S,M) =  ODY_N(JM)
+                  A_M(IJK,south,M) =  ODY_N(JM)
                   A_M(IJK,0,M) = -ODY_N(JM)
                   B_M(IJK,M) = ZERO
                ENDIF
@@ -346,14 +344,14 @@
             ELSEIF (CUT_CELL_AT(KP_OF(IJK))) THEN
                IF(BC_ID(KP_OF(IJK)) > 0 ) THEN
                   A_M(IJK,0,M) = -OX(I)*ODZ_T(K)
-                  A_M(IJK,T,M) =  OX(I)*ODZ_T(K)
+                  A_M(IJK,top,M) =  OX(I)*ODZ_T(K)
                   B_M(IJK,M)  = ZERO
                ENDIF
 
             ELSEIF (CUT_CELL_AT(KM_OF(IJK))) THEN
                IF(BC_ID(KM_OF(IJK)) > 0 ) THEN
                   KM = KM1(K)
-                  A_M(IJK,B,M) =  OX(I)*ODZ_T(KM)
+                  A_M(IJK,bottom,M) =  OX(I)*ODZ_T(KM)
                   A_M(IJK,0,M) = -OX(I)*ODZ_T(KM)
                   B_M(IJK,M) = ZERO
                ENDIF

@@ -75,7 +75,7 @@
       USE vtp
 
       IMPLICIT NONE
-      INTEGER :: I,J,K,L,M,N,R,IJK,LCV
+      INTEGER :: I,J,K,L,M,NN,R,IJK,LCV
 
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  FACET_COUNT_DES, NEIGHBORING_FACET
 
@@ -198,37 +198,37 @@
 
 
          SPECIES_COUNTER = 0
-         DO N = 1,NMAX(0)
-            IF(VTK_X_g(VTK_REGION,N)) THEN
-               WRITE(SUBN,*)N
+         DO NN = 1,NMAX(0)
+            IF(VTK_X_g(VTK_REGION,NN)) THEN
+               WRITE(SUBN,*)NN
                IF(USE_RRATES) THEN
                   SPECIES_COUNTER = SPECIES_COUNTER + 1
                   VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
                   LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
                ELSE
-                  VAR_NAME = ADJUSTL(SPECIES_ALIAS_g(N))
-                  LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_g(N)))
+                  VAR_NAME = ADJUSTL(SPECIES_ALIAS_g(NN))
+                  LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_g(NN)))
                ENDIF
                VAR_NAME = VAR_NAME(1:LT)//'_Gas_mass_fractions_'//ADJUSTL(SUBN)
-               CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,N),PASS)
+               CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_g(:,NN),PASS)
             ENDIF
          END DO
 
         DO M = 1, MMAX
            WRITE(SUBM,*)M
-           DO N = 1,NMAX(M)
-              IF(VTK_X_s(VTK_REGION,M,N)) THEN
-                 WRITE(SUBN,*)N
+           DO NN = 1,NMAX(M)
+              IF(VTK_X_s(VTK_REGION,M,NN)) THEN
+                 WRITE(SUBN,*)NN
                  IF(USE_RRATES) THEN
                     SPECIES_COUNTER = SPECIES_COUNTER + 1
                     VAR_NAME = ADJUSTL(SPECIES_NAME(SPECIES_COUNTER))
                     LT = LEN_TRIM(ADJUSTL(SPECIES_NAME(SPECIES_COUNTER)))
                  ELSE
-                    VAR_NAME = ADJUSTL(SPECIES_ALIAS_s(M,N))
-                    LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_s(M,N)))
+                    VAR_NAME = ADJUSTL(SPECIES_ALIAS_s(M,NN))
+                    LT = LEN_TRIM(ADJUSTL(SPECIES_ALIAS_s(M,NN)))
                  ENDIF
                  VAR_NAME = VAR_NAME(1:LT)//'_Solids_mass_fractions_'//TRIM(ADJUSTL(SUBM))//'_'//ADJUSTL(SUBN)
-                 CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,N),PASS)
+                 CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,X_s(:,M,NN),PASS)
               ENDIF
            END DO
         END DO
@@ -240,11 +240,11 @@
            ENDIF
         END DO
 
-        DO N = 1,NSCALAR
-           IF(VTK_Scalar(VTK_REGION,N)) THEN
-              WRITE(SUBN,*)N
+        DO NN = 1,NSCALAR
+           IF(VTK_Scalar(VTK_REGION,NN)) THEN
+              WRITE(SUBN,*)NN
               VAR_NAME = 'Scalar_'//ADJUSTL(SUBN)
-              CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,Scalar(:,N),PASS)
+              CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,Scalar(:,NN),PASS)
            ENDIF
         END DO
 
@@ -301,11 +301,11 @@
        IF(VTK_IJK(VTK_REGION)) &
           CALL WRITE_VECTOR_IN_VTU_BIN('Scalar normal',NORMAL_S(:,1),NORMAL_S(:,2),NORMAL_S(:,3),PASS)
 
-       DO N=1,15
-          IF(VTK_DEBUG(VTK_REGION,N)) THEN
-             WRITE(SUBN,*)N
+       DO NN=1,15
+          IF(VTK_DEBUG(VTK_REGION,NN)) THEN
+             WRITE(SUBN,*)NN
              VAR_NAME = 'DEBUG_'//ADJUSTL(SUBN)
-             CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,DEBUG_CG(:,N),PASS)
+             CALL WRITE_SCALAR_IN_VTU_BIN(VAR_NAME,DEBUG_CG(:,NN),PASS)
           ENDIF
        ENDDO
 

@@ -68,7 +68,7 @@
 !---------------------------------------------------------------------//
       INTEGER :: H    ! Reaction loop counter
       INTEGER :: M    ! Global Phase index loop counter
-      INTEGER :: N    ! Global species index
+      INTEGER :: NN    ! Global species index
       INTEGER :: lN   ! Local reaction speices index/loop counter
       INTEGER :: LM   !
 
@@ -133,7 +133,7 @@
 ! Global phase index.
             M = DES_Reaction(H)%Species(lN)%pMap
 ! Global species index.
-            N = DES_Reaction(H)%Species(lN)%sMap
+            NN = DES_Reaction(H)%Species(lN)%sMap
 ! Index for interphase mass transfer. For a gas/solid reaction, the
 ! index is stored with the gas phase.
             mXfr = DES_Reaction(H)%Species(lN)%mXfr
@@ -142,11 +142,11 @@
             IF(M == 0) THEN
 ! Consumption of gas phase species.
                IF(lRate < ZERO) THEN
-                  IF(X_g(IJK,N) > speciesLimiter) THEN
-                     lRgc(N) = lRgc(N) - lRate
+                  IF(X_g(IJK,NN) > speciesLimiter) THEN
+                     lRgc(NN) = lRgc(NN) - lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
                      IF(M /= mXfr) RxH = RxH +                         &
-                        lRate*CALC_H(T_g(IJK),0,N)
+                        lRate*CALC_H(T_g(IJK),0,NN)
                   ELSE
 ! There is an insignificant amount of reactant. Skip this reaction.
                      DES_RATES(H) = ZERO
@@ -154,18 +154,18 @@
                   ENDIF
                ELSE
 ! Formation of gas phase species.
-                  lRgp(N) = lRgp(N) + lRate
+                  lRgp(nn) = lRgp(nn) + lRate
 ! Enthalpy transfer associated with mass transfer. (gas/solid)
-                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H(lTp,0,N)
+                  IF(M /= mXfr) RxH = RxH + lRate*CALC_H(lTp,0,NN)
                ENDIF
 ! Discrete Solids Phase:
             ELSE
 ! Consumption of solids phase species.
                IF(lRate < ZERO) THEN
-                  DES_R_sc(NP,N) = DES_R_sc(NP,N) - lRate
+                  DES_R_sc(NP,nn) = DES_R_sc(NP,nn) - lRate
                ELSE
 ! Formation of solids phase species.
-                  DES_R_sp(NP,N) = DES_R_sp(NP,N) + lRate
+                  DES_R_sp(NP,nn) = DES_R_sp(NP,nn) + lRate
                ENDIF
             ENDIF
          ENDDO ! Loop of species
@@ -181,16 +181,16 @@
 ! Global phase index.
                   M = DES_Reaction(H)%Species(lN)%pMap
 ! Global species index.
-                  N = DES_Reaction(H)%Species(lN)%sMap
+                  NN = DES_Reaction(H)%Species(lN)%sMap
 ! Rate of formation/consumption for speices N
                   lRate = DES_RATES(H) * &
                      DES_Reaction(H)%Species(lN)%MWxStoich
 ! Gas phase enthalpy chnage from energy equation derivation.
                   IF(M == 0) THEN
-                     llHORg = llHORg + CALC_H(T_g(IJK),0,N) * lRate
+                     llHORg = llHORg + CALC_H(T_g(IJK),0,nn) * lRate
 ! Solid phase enthalpy change from energy equation derivation.
                   ELSE
-                     lHORs = lHORs + CALC_H(lTp,M,N) * lRate
+                     lHORs = lHORs + CALC_H(lTp,M,nn) * lRate
                   ENDIF
                ENDDO
 

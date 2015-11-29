@@ -1,12 +1,4 @@
-
-
       MODULE usr
-
-
-        Use param
-        Use param1
-
-
 !
 !       Declare the user-defined namelist variables (usrnlst.inc) in this module.
 !       Also Include user-defined variables in this module.  To access the

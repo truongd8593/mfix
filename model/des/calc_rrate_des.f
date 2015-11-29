@@ -111,6 +111,7 @@
       SUBROUTINE ZERO_RRATE_DES
 
       USE des_rxns
+      USE param1, only: zero
 
       IMPLICIT NONE
 

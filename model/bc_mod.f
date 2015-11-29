@@ -20,13 +20,9 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-
       MODULE bc
 
-
-      Use param
-      Use param1
-
+      Use param, only: dimension_bc, dim_scalar, dim_m, dim_n_g, dim_n_s
 
 !
 !                      x coordinate of the west face of a region where

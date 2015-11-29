@@ -14,7 +14,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE toleranc
       USE run
       USE geometry
@@ -71,8 +70,8 @@
             ENDIF
          ENDIF
 
-         A_M(IJK,E,M) = D_F
-         A_M(IPJK,W,M) = D_F
+         A_M(IJK,east,M) = D_F
+         A_M(IPJK,west,M) = D_F
 
 ! West face (i-1/2, j, k)
          IMJK = IM_OF(IJK)
@@ -85,7 +84,7 @@
                   D_F = AVG_X_H(DIF(IJKW),DIF(IJK),IM)*ODX_E(IM)*DY(J)*DZ(K)
                ENDIF
             ENDIF
-            A_M(IJK,W,M) = D_F
+            A_M(IJK,west,M) = D_F
          ENDIF
 
 
@@ -96,8 +95,8 @@
                D_F = AVG_Y_H(DIF(IJK),DIF(IJKN),J)*ODY_N(J)*DX(I)*DZ(K)
             ENDIF
          ENDIF
-         A_M(IJK,N,M) = D_F
-         A_M(IJPK,S,M) = D_F
+         A_M(IJK,north,M) = D_F
+         A_M(IJPK,south,M) = D_F
 
 ! South face (i, j-1/2, k)
          IJMK = JM_OF(IJK)
@@ -110,7 +109,7 @@
                   D_F = AVG_Y_H(DIF(IJKS),DIF(IJK),JM)*ODY_N(JM)*DX(I)*DZ(K)
                ENDIF
             ENDIF
-            A_M(IJK,S,M) = D_F
+            A_M(IJK,south,M) = D_F
          ENDIF
 
 
@@ -124,8 +123,8 @@
                   D_F = AVG_Z_H(DIF(IJK),DIF(IJKT),K)*OX(I)*ODZ_T(K)*DX(I)*DY(J)
                ENDIF
             ENDIF
-            A_M(IJK,T,M) = D_F
-            A_M(IJKP,B,M) = D_F
+            A_M(IJK,top,M) = D_F
+            A_M(IJKP,bottom,M) = D_F
 
 
 ! Bottom face (i, j, k-1/2)
@@ -139,7 +138,7 @@
                      D_F = AVG_Z_H(DIF(IJKB),DIF(IJK),KM)*OX(I)*ODZ_T(KM)*DX(I)*DY(J)
                   ENDIF
                ENDIF
-               A_M(IJK,B,M) = D_F
+               A_M(IJK,bottom,M) = D_F
             ENDIF
          ENDIF
       END DO

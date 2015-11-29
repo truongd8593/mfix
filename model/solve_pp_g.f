@@ -77,7 +77,7 @@
       call lock_tmp_array1
 
 ! initializing
-      CALL ZERO_ARRAY (PP_G)
+      PP_G(:) = ZERO
       DO M = 0, MMAX
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
       ENDDO
@@ -155,6 +155,7 @@
       use constant
       use geometry
       use indices
+      use param, only: dimension_3, dimension_m
       use param1, only: small_number
       use physprop
       use ps

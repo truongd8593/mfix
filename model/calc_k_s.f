@@ -72,7 +72,7 @@
       INTEGER          M
 
 !                      Quantities in solids conductivity formula
-      DOUBLE PRECISION B, R_km, BoR, L_rm
+      DOUBLE PRECISION BB, R_km, BoR, L_rm
 
 !                      Transform K_g(IJK) into the CGS if we work with SI
       DOUBLE PRECISION Kg_micro
@@ -94,12 +94,12 @@
 
 ! Bauer & Schlunder's (1978) theory:
             IF( EP_s(IJK,M) >  DIL_EP_s) THEN
-               B = 1.25D0 * ((ONE - EP_g(IJK))/EP_g(IJK))**(10.D0/9.D0)
+               BB = 1.25D0 * ((ONE - EP_g(IJK))/EP_g(IJK))**(10.D0/9.D0)
                R_km = Ks_micro/Kg_micro
-               BoR  = B/R_km
+               BoR  = BB/R_km
                L_rm = -(TWO/(ONE-BoR)) * &
                   ( ((R_km-ONE)/(ONE-BoR)**2)*BoR*LOG(BoR) + &
-                    (B-ONE)/(ONE-BoR) + (B+ONE)/TWO )
+                    (BB-ONE)/(ONE-BoR) + (BB+ONE)/TWO )
 ! K_s is the macroscopic conductivity that has been modified by the presence of
 ! the gas phase (cal/s.cm.K)
                K_S(IJK,M) = (Phi_k*R_km + (ONE-Phi_k)*L_rm)*&

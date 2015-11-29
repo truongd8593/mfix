@@ -52,7 +52,7 @@
       INTEGER,PARAMETER :: MAX_POINTS = 10000000    ! Currently limited to 10 Million, increase if needed
       INTEGER,PARAMETER :: MAX_ZONES  = 1000        ! Currently limited to 1,000     , increase if needed
 
-      INTEGER ::I,D,N,NF
+      INTEGER ::I,D,NN,NF
 
       INTEGER   :: GRID_DIMENSION, N_POINTS,N_FACES,N_FACE_ZONES
       INTEGER   :: ZONE,ZONE_ID,N1,N2
@@ -140,8 +140,8 @@
          POINT_ZONE_INFO(ZONE,2) = N1
          POINT_ZONE_INFO(ZONE,3) = N2
 
-         DO N = N1,N2
-            READ(333,*) (POINT_COORDS(D,N),D=1,GRID_DIMENSION)
+         DO NN = N1,N2
+            READ(333,*) (POINT_COORDS(D,NN),D=1,GRID_DIMENSION)
          ENDDO
 
          IF(N2/=N_POINTS) THEN
@@ -186,7 +186,7 @@
 
          IF(BC_TYPE(ZONE_ID)(1:2)=='CG') THEN
 
-            DO N = N1,N2
+            DO NN = N1,N2
                READ(333,*)PPFACE
                IF(PPFACE<3.OR.PPFACE>4) THEN
                   IF(MyPE == PE_IO) WRITE(*,*)PPFACE, 'POINTS PER FACE. EACH FACE MUST HAVE 3 OR 4 POINTS.'
@@ -676,7 +676,7 @@
       USE bc
       IMPLICIT NONE
 
-      INTEGER :: N,IGNORED_FACETS
+      INTEGER :: NN,IGNORED_FACETS
       LOGICAL :: PRESENT,KEEP_READING,IGNORE_CURRENT_FACET
       DOUBLE PRECISION ::v1x,v1y,v1z
       DOUBLE PRECISION ::v2x,v2y,v2z
@@ -800,15 +800,15 @@
       IGNORED_FACETS = 0
 
 
-      DO N = NF1, NF2
+      DO NN = NF1, NF2
 
-         IF(MyPE == PE_IO) WRITE(*,2000) 'Reading geometry from '//TRIM(geometryfile(N))//' ...'
+         IF(MyPE == PE_IO) WRITE(*,2000) 'Reading geometry from '//TRIM(geometryfile(NN))//' ...'
 
-         INQUIRE(FILE=TRIM(geometryfile(N)),EXIST=PRESENT)
+         INQUIRE(FILE=TRIM(geometryfile(NN)),EXIST=PRESENT)
          IF(.NOT.PRESENT) THEN
             IF(MyPE == PE_IO) THEN
                WRITE(*,"('(PE ',I3,'): input data file, ',A11,' is missing: run aborted')") &
-               myPE,TRIM(geometryfile(N))
+               myPE,TRIM(geometryfile(NN))
             ENDIF
             CALL MFIX_EXIT(MYPE)
          ENDIF
@@ -817,7 +817,7 @@
 !
 !     OPEN geometry.stl ASCII FILE
 !
-         OPEN(UNIT=333, FILE=TRIM(geometryfile(N)), STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
+         OPEN(UNIT=333, FILE=TRIM(geometryfile(NN)), STATUS='OLD', ERR=910,CONVERT='BIG_ENDIAN')
 
          IF(MyPE == PE_IO) WRITE(*,2000)'STL file opened. Starting reading data...'
 
@@ -827,7 +827,7 @@
 
             READ(333,*,ERR=920,END=930) TEST_CHAR
 !            print *,'TEST_CHAR=',TEST_CHAR
-            IF(TRIM(TEST_CHAR) == 'solid'.AND.N==0) THEN
+            IF(TRIM(TEST_CHAR) == 'solid'.AND.NN==0) THEN
 
                BACKSPACE(333)
 
@@ -835,19 +835,19 @@
 
                L2=LEN(TRIM(BUFF_CHAR))-3
 
-               READ(BUFF_CHAR(L2:L2+4),fmt='(I4.4)') BC_PATCH(N)
+               READ(BUFF_CHAR(L2:L2+4),fmt='(I4.4)') BC_PATCH(NN)
 
-               IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(N), ' in STL file.'
+               IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(NN), ' in STL file.'
 
-               IF(BC_TYPE(BC_PATCH(N))(1:2)/='CG') THEN
+               IF(BC_TYPE(BC_PATCH(NN))(1:2)/='CG') THEN
                   IF(MyPE == PE_IO)  THEN
-                     WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(N)
+                     WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(NN)
                      WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again'
                      CALL MFIX_EXIT(myPE)
                   ENDIF
                ENDIF
 
-               BC_PATCH_FOUND_IN_STL(BC_PATCH(N)) = .TRUE.
+               BC_PATCH_FOUND_IN_STL(BC_PATCH(NN)) = .TRUE.
 
             ELSEIF(TRIM(TEST_CHAR) == 'facet') THEN
 
@@ -922,7 +922,7 @@
                   VERTEX(3,2,N_FACETS) = SCALE_STL*V3y + TY_STL
                   VERTEX(3,3,N_FACETS) = SCALE_STL*V3z + TZ_STL
 
-                  BC_ID_STL_FACE(N_FACETS) = BC_PATCH(N)
+                  BC_ID_STL_FACE(N_FACETS) = BC_PATCH(NN)
 
 
                ENDIF
@@ -947,10 +947,10 @@
 
 
       IF(myPE==0.AND.NF2==0) THEN
-         DO N = 1,NUMBER_OF_BC_PATCHES
+         DO NN = 1,NUMBER_OF_BC_PATCHES
 
-            IF(.NOT.BC_PATCH_FOUND_IN_STL(BC_PATCH(N))) THEN
-               WRITE (*, 140)'Did not find BC patch: ',BC_PATCH(N) , ' in stl file'
+            IF(.NOT.BC_PATCH_FOUND_IN_STL(BC_PATCH(NN))) THEN
+               WRITE (*, 140)'Did not find BC patch: ',BC_PATCH(NN) , ' in stl file'
                WRITE(*,100)'Please correct mfix.dat and/or stl file amd try again'
                CALL MFIX_EXIT(myPE)
             ENDIF
@@ -1199,7 +1199,7 @@
       DOUBLE PRECISION :: dot_denom,dot_num
       DOUBLE PRECISION :: VP1Ax,VP1Ay,VP1Az
       DOUBLE PRECISION :: Px,Py,Pz
-      DOUBLE PRECISION :: t
+      DOUBLE PRECISION :: tt
       DOUBLE PRECISION :: d_ac,d_bc
       LOGICAL :: INSIDE_FACET,INTERSECT_FLAG
 
@@ -1255,7 +1255,7 @@
 
          dot_num = NFx*VP1Ax + NFy*VP1Ay + NFz*VP1Az
 
-         t = dot_num / dot_denom
+         tt = dot_num / dot_denom
 
 !======================================================================
 ! 3) Verify that point P is inside triangular facet
@@ -1264,12 +1264,12 @@
 !    v   >= 0  , and
 !    u+v <= 1
 !======================================================================
-         IF((t>=ZERO).AND.(t<=ONE)) THEN       ! Intersection between A and B
+         IF((tt>=ZERO).AND.(tt<=ONE)) THEN       ! Intersection between A and B
                                                ! Now test if intersection point is inside triangle
 
-            Px = xa + t*nabx
-            Py = ya + t*naby
-            Pz = za + t*nabz
+            Px = xa + tt*nabx
+            Py = ya + tt*naby
+            Pz = za + tt*nabz
 
             CALL IS_POINT_INSIDE_FACET(Px,Py,Pz,FACET,INSIDE_FACET)
 

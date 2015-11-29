@@ -9,19 +9,19 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^c
       subroutine WRITE_RES0_DES
 
-      use param1
       use compar
-      use discretelement
-      use run
       use des_bc
       use des_rxns
       use des_thermo
-      use mfix_pic, only: MPPIC
-      use mfix_pic, only: DES_STAT_WT
-
+      use discretelement
       use error_manager
-      use write_res1_des
+      use mfix_pic, only: DES_STAT_WT
+      use mfix_pic, only: MPPIC
       use mpi_utility
+      use param, only: dimension_n_s
+      use param1
+      use run
+      use write_res1_des
 
       implicit none
 !-----------------------------------------------

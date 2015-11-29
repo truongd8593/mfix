@@ -437,7 +437,7 @@
       INTEGER :: IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, IMJK, IJMK, &
                  IJKM
 ! Solids phase
-      INTEGER :: S
+      INTEGER :: SS
 ! species density at cell faces
       integer :: kk, maxFluxS
       double precision :: epgN, rogN, mugN, Vg
@@ -480,12 +480,12 @@
 ! ---------------------------------------------------------------->>>
           IF(.NOT.IP_AT_E(IJK) .OR. .NOT.SIP_AT_E(IJK)) THEN
             IF(RO_g0 == ZERO) THEN ! special case of a granular flow
-              do s = 1, smax
-                rosN(s) = AVG_X(ROP_S(IJK,s),ROP_S(IJKE,s),I)/ RO_S(IJK,s) ! this is ep_s
-                if(rosN(s) > zero_ep_s) then
-                  u_s(ijk,s) = u_s(ijk,mmax) + JoiX(IJK,s)/(rosN(s)*ro_s(IJK,s))
+              do ss = 1, smax
+                rosN(ss) = AVG_X(ROP_S(IJK,ss),ROP_S(IJKE,ss),I)/ RO_S(IJK,ss) ! this is ep_s
+                if(rosN(ss) > zero_ep_s) then
+                  u_s(ijk,ss) = u_s(ijk,mmax) + JoiX(IJK,ss)/(rosN(ss)*ro_s(IJK,ss))
                 else
-                  u_s(ijk,s) = u_s(ijk,mmax) ! case of zero flux
+                  u_s(ijk,ss) = u_s(ijk,mmax) ! case of zero flux
                 endif
               enddo
             ELSE
@@ -494,33 +494,33 @@
               rogN = AVG_X(ROP_g(IJK),ROP_g(IJKE),I)
               mugN = AVG_X(MU_g(IJK),MU_g(IJKE),I)
 
-              do s = 1, smax
-                Ur(s) = u_g(ijk)-u_s(ijk,s)
+              do ss = 1, smax
+                Ur(ss) = u_g(ijk)-u_s(ijk,ss)
 ! vrel must not include Ur, which is being solved for iteratively and must be updated.
-                vrelSq(s) = (v_g(ijk)-v_s(ijk,s))**2 + (w_g(ijk)-w_s(ijk,s))**2
-                rosN(s) = AVG_X(ROP_S(IJK,s),ROP_S(IJKE,s),I)
-                velup(s) = 0.d0
-                beta_cell(s) = beta_cell_X(IJK,s)
-                dp(s)   = D_P(IJK,s)
+                vrelSq(ss) = (v_g(ijk)-v_s(ijk,ss))**2 + (w_g(ijk)-w_s(ijk,ss))**2
+                rosN(ss) = AVG_X(ROP_S(IJK,ss),ROP_S(IJKE,ss),I)
+                velup(ss) = 0.d0
+                beta_cell(ss) = beta_cell_X(IJK,ss)
+                dp(ss)   = D_P(IJK,ss)
 
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  JoiM(s) = DELTAU(IJK,s)
+                  JoiM(ss) = DELTAU(IJK,ss)
                 ELSE
-                  JoiM(s) = JoiMinusDragX(ijk,s)
+                  JoiM(ss) = JoiMinusDragX(ijk,ss)
                 ENDIF
 
                 do kk = 1, smax
-                  DijN_H(s,kk) = AVG_X_S(DijF(IJK,s,kk),DijF(IJKE,s,kk),I)
-                  DijN_A(s,kk) = AVG_X(DijF(IJK,s,kk),DijF(IJKE,s,kk),I)
+                  DijN_H(ss,kk) = AVG_X_S(DijF(IJK,ss,kk),DijF(IJKE,ss,kk),I)
+                  DijN_A(ss,kk) = AVG_X(DijF(IJK,ss,kk),DijF(IJKE,ss,kk),I)
                   if(DijF_HarmE(IJK,kk))THEN
-                    DijN(s,kk) = DijN_H(s,kk)
+                    DijN(ss,kk) = DijN_H(ss,kk)
                   ELSE
-                    DijN(s,kk) = DijN_A(s,kk)
+                    DijN(ss,kk) = DijN_A(ss,kk)
                   ENDIF
-                  if(s .eq. kk)then
-                    beta_ij_cell(s,kk)=0.d0
+                  if(ss .eq. kk)then
+                    beta_ij_cell(ss,kk)=0.d0
                   else
-                    beta_ij_cell(s,kk)=beta_ij_cell_X(IJK,s,kk)
+                    beta_ij_cell(ss,kk)=beta_ij_cell_X(IJK,ss,kk)
                   endif
                 enddo
               enddo
@@ -535,13 +535,13 @@
               ENDIF
 
 ! species velocity and flux update.
-              do s = 1, smax
+              do ss = 1, smax
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  U_S(IJK,s)=velup(s)
-                  JoiX(IJK,s) = rosN(s) * (u_s(ijk,s)-u_s(ijk,mmax))
+                  U_S(IJK,ss)=velup(ss)
+                  JoiX(IJK,ss) = rosN(ss) * (u_s(ijk,ss)-u_s(ijk,mmax))
                 ELSE
-                  u_s(ijk,s) =  u_g(ijk) - Ur(s)
-                  JoiX(IJK,s) = rosN(s) * (u_s(ijk,s)-u_s(ijk,mmax))
+                  u_s(ijk,ss) =  u_g(ijk) - Ur(ss)
+                  JoiX(IJK,ss) = rosN(ss) * (u_s(ijk,ss)-u_s(ijk,mmax))
                 ENDIF
               enddo
             ENDIF ! for a granular case (no gas and no drag)
@@ -552,15 +552,15 @@
           elseif(smax > 2) then
             maxFlux = JoiX(IJK,1)
             maxFluxS = 1
-            do s = 2, smax  ! finding species with maximum flux in a cell
-              if( abs(JoiX(IJK,s)) > abs(maxFlux) ) then
-                maxFlux = JoiX(IJK,s)
-                maxFluxS = s
+            do ss = 2, smax  ! finding species with maximum flux in a cell
+              if( abs(JoiX(IJK,ss)) > abs(maxFlux) ) then
+                maxFlux = JoiX(IJK,ss)
+                maxFluxS = ss
               endif
             enddo
             JoiX(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
-            do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
-              if(s /= maxFluxS) JoiX(IJK,maxFluxS) = JoiX(IJK,maxFluxS) - JoiX(IJK,s)
+            do ss = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+              if(ss /= maxFluxS) JoiX(IJK,maxFluxS) = JoiX(IJK,maxFluxS) - JoiX(IJK,ss)
             enddo
           endif
 ! End Compute Us
@@ -572,12 +572,12 @@
 ! ---------------------------------------------------------------->>>
           IF (.NOT.IP_AT_N(IJK) .OR. .NOT.SIP_AT_N(IJK)) THEN
             IF(RO_g0 == ZERO) THEN ! special case of a granular flow
-              do s = 1, smax
-                rosN(s) = AVG_Y(ROP_S(IJK,s),ROP_S(IJKN,s),J)/ RO_S(IJK,s) ! this is ep_s
-                if(rosN(s) > zero_ep_s) then
-                  v_s(ijk,s) = v_s(ijk,mmax) + JoiY(IJK,s)/(rosN(s)*ro_s(IJK,s))
+              do ss = 1, smax
+                rosN(ss) = AVG_Y(ROP_S(IJK,ss),ROP_S(IJKN,ss),J)/ RO_S(IJK,ss) ! this is ep_s
+                if(rosN(ss) > zero_ep_s) then
+                  v_s(ijk,ss) = v_s(ijk,mmax) + JoiY(IJK,ss)/(rosN(ss)*ro_s(IJK,ss))
                 else
-                   v_s(ijk,s) = v_s(ijk,mmax) ! case of zero flux
+                   v_s(ijk,ss) = v_s(ijk,mmax) ! case of zero flux
                 endif
               enddo
             ELSE
@@ -586,36 +586,36 @@
               rogN = AVG_Y(ROP_g(IJK),ROP_g(IJKN),J)
               mugN = AVG_Y(MU_g(IJK),MU_g(IJKN),J)
 
-              do s = 1, smax
-                Ur(s) = v_g(ijk)-v_s(ijk,s)
+              do ss = 1, smax
+                Ur(ss) = v_g(ijk)-v_s(ijk,ss)
 ! vrel must not include Ur, which is being solved for iteratively and must be updated.
-                vrelSq(s) = (u_g(ijk)-u_s(ijk,s))**2 + (w_g(ijk)-w_s(ijk,s))**2
-                rosN(s) = AVG_Y(ROP_S(IJK,s),ROP_S(IJKN,s),J)
-                velup(s) = 0.d0
-                beta_cell(s) = beta_cell_Y(IJK,s)
-                dp(s)   = D_P(IJK,s)
+                vrelSq(ss) = (u_g(ijk)-u_s(ijk,ss))**2 + (w_g(ijk)-w_s(ijk,ss))**2
+                rosN(ss) = AVG_Y(ROP_S(IJK,ss),ROP_S(IJKN,ss),J)
+                velup(ss) = 0.d0
+                beta_cell(ss) = beta_cell_Y(IJK,ss)
+                dp(ss)   = D_P(IJK,ss)
 
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  JoiM(s) = DELTAV(IJK,s)
+                  JoiM(ss) = DELTAV(IJK,ss)
                 ELSE
-                  JoiM(s) = JoiMinusDragY(ijk,s)
+                  JoiM(ss) = JoiMinusDragY(ijk,ss)
                 ENDIF
 
                 do kk = 1, smax
 
-                  DijN_H(s,kk) = AVG_Y_S(DijF(IJK,s,kk),DijF(IJKN,s,kk),J)
-                  DijN_A(s,kk) = AVG_Y(DijF(IJK,s,kk),DijF(IJKN,s,kk),J)
+                  DijN_H(ss,kk) = AVG_Y_S(DijF(IJK,ss,kk),DijF(IJKN,ss,kk),J)
+                  DijN_A(ss,kk) = AVG_Y(DijF(IJK,ss,kk),DijF(IJKN,ss,kk),J)
 
                   if(DijF_HarmN(IJK,kk))THEN
-                    DijN(s,kk) = DijN_H(s,kk)
+                    DijN(ss,kk) = DijN_H(ss,kk)
                   ELSE
-                    DijN(s,kk) = DijN_A(s,kk)
+                    DijN(ss,kk) = DijN_A(ss,kk)
                   ENDIF
 
-                  if(s .eq. kk)then
-                     beta_ij_cell(s,kk)=0.d0
+                  if(ss .eq. kk)then
+                     beta_ij_cell(ss,kk)=0.d0
                   else
-                    beta_ij_cell(s,kk)=beta_ij_cell_Y(IJK,s,kk)
+                    beta_ij_cell(ss,kk)=beta_ij_cell_Y(IJK,ss,kk)
                   endif
                 enddo
               enddo
@@ -630,13 +630,13 @@
               ENDIF
 
 ! species velocity and flux update
-              do s = 1, smax
+              do ss = 1, smax
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  V_S(IJK,s)=velup(s)
-                  JoiY(IJK,s) = rosN(s) * (v_s(ijk,s)-v_s(ijk,mmax))
+                  V_S(IJK,ss)=velup(ss)
+                  JoiY(IJK,ss) = rosN(ss) * (v_s(ijk,ss)-v_s(ijk,mmax))
                 ELSE
-                  v_s(ijk,s) =  v_g(ijk) - Ur(s)
-                  JoiY(IJK,s) = rosN(s) * (v_s(ijk,s)-v_s(ijk,mmax))
+                  v_s(ijk,ss) =  v_g(ijk) - Ur(ss)
+                  JoiY(IJK,ss) = rosN(ss) * (v_s(ijk,ss)-v_s(ijk,mmax))
                 ENDIF
               enddo
             ENDIF ! for a granular case (no gas and no drag)
@@ -647,15 +647,15 @@
           elseif(smax > 2) then
             maxFlux = JoiY(IJK,1)
             maxFluxS = 1
-            do s = 2, smax  ! finding species with maximum flux in a cell
-              if( abs(JoiY(IJK,s)) > abs(maxFlux) ) then
-                maxFlux = JoiY(IJK,s)
-                maxFluxS = s
+            do ss = 2, smax  ! finding species with maximum flux in a cell
+              if( abs(JoiY(IJK,ss)) > abs(maxFlux) ) then
+                maxFlux = JoiY(IJK,ss)
+                maxFluxS = ss
               endif
             enddo
             JoiY(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
-            do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
-              if(s /= maxFluxS) JoiY(IJK,maxFluxS) = JoiY(IJK,maxFluxS) - JoiY(IJK,s)
+            do ss = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+              if(ss /= maxFluxS) JoiY(IJK,maxFluxS) = JoiY(IJK,maxFluxS) - JoiY(IJK,ss)
             enddo
           endif
 ! End Compute Vs
@@ -666,12 +666,12 @@
 ! ---------------------------------------------------------------->>>
           IF(.NOT.NO_K .AND. (.NOT.IP_AT_T(IJK) .OR. .NOT.SIP_AT_T(IJK))) THEN
             IF(RO_g0 == ZERO) THEN ! special case of a granular flow
-              do s = 1, smax
-                rosN(s) = AVG_Z(ROP_S(IJK,s),ROP_S(IJKT,s),K)/ RO_S(IJK,s) ! this is ep_s
-                if(rosN(s) > zero_ep_s) then
-                  w_s(ijk,s) = w_s(ijk,mmax) + JoiZ(IJK,s)/(rosN(s)*ro_s(IJK,s))
+              do ss = 1, smax
+                rosN(ss) = AVG_Z(ROP_S(IJK,ss),ROP_S(IJKT,ss),K)/ RO_S(IJK,ss) ! this is ep_s
+                if(rosN(ss) > zero_ep_s) then
+                  w_s(ijk,ss) = w_s(ijk,mmax) + JoiZ(IJK,ss)/(rosN(ss)*ro_s(IJK,ss))
                 else
-                  w_s(ijk,s) = w_s(ijk,mmax) ! case of zero flux
+                  w_s(ijk,ss) = w_s(ijk,mmax) ! case of zero flux
                 endif
               enddo
             ELSE
@@ -680,33 +680,33 @@
               rogN = AVG_Z(ROP_g(IJK),ROP_g(IJKT),K)
               mugN = AVG_Z(MU_g(IJK),MU_g(IJKT),K)
 
-              do s = 1, smax
-                Ur(s) = w_g(ijk)-w_s(ijk,s)
+              do ss = 1, smax
+                Ur(ss) = w_g(ijk)-w_s(ijk,ss)
 ! vrel must not include Ur, which is being solved for iteratively and must be updated.
-                vrelSq(s) = (u_g(ijk)-u_s(ijk,s))**2 + (v_g(ijk)-v_s(ijk,s))**2
-                rosN(s) = AVG_Z(ROP_S(IJK,s),ROP_S(IJKT,s),K)
-                velup(s) = 0.d0
-                beta_cell(s) = beta_cell_Z(IJK,s)
-                dp(s)   = D_P(IJK,s)
+                vrelSq(ss) = (u_g(ijk)-u_s(ijk,ss))**2 + (v_g(ijk)-v_s(ijk,ss))**2
+                rosN(ss) = AVG_Z(ROP_S(IJK,ss),ROP_S(IJKT,ss),K)
+                velup(ss) = 0.d0
+                beta_cell(ss) = beta_cell_Z(IJK,ss)
+                dp(ss)   = D_P(IJK,ss)
 
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  JoiM(s) = DELTAW(IJK,s)
+                  JoiM(ss) = DELTAW(IJK,ss)
                 ELSE
-                  JoiM(s) = JoiMinusDragZ(ijk,s)
+                  JoiM(ss) = JoiMinusDragZ(ijk,ss)
                 ENDIF
 
                 do kk = 1, smax
-                  DijN_H(s,kk) = AVG_Z_S(DijF(IJK,s,kk),DijF(IJKT,s,kk),K)
-                  DijN_A(s,kk) = AVG_Z(DijF(IJK,s,kk),DijF(IJKT,s,kk),K)
+                  DijN_H(ss,kk) = AVG_Z_S(DijF(IJK,ss,kk),DijF(IJKT,ss,kk),K)
+                  DijN_A(ss,kk) = AVG_Z(DijF(IJK,ss,kk),DijF(IJKT,ss,kk),K)
                   if(DijF_HarmT(IJK,kk))THEN
-                    DijN(s,kk) = DijN_H(s,kk)
+                    DijN(ss,kk) = DijN_H(ss,kk)
                   ELSE
-                    DijN(s,kk) = DijN_A(s,kk)
+                    DijN(ss,kk) = DijN_A(ss,kk)
                   ENDIF
-                  if(s .eq. kk)then
-                     beta_ij_cell(s,kk)=0.d0
+                  if(ss .eq. kk)then
+                     beta_ij_cell(ss,kk)=0.d0
                   else
-                    beta_ij_cell(s,kk)=beta_ij_cell_Z(IJK,s,kk)
+                    beta_ij_cell(ss,kk)=beta_ij_cell_Z(IJK,ss,kk)
                   endif
                 enddo
               enddo
@@ -721,13 +721,13 @@
               ENDIF
 
 ! species velocity and flux update
-              do s = 1, smax
+              do ss = 1, smax
                 IF(DRAG_TYPE_ENUM .eq. HYS)THEN
-                  W_S(IJK,s)=velup(s)
-                  JoiZ(IJK,s) = rosN(s) * (w_s(ijk,s)-w_s(ijk,mmax))
+                  W_S(IJK,ss)=velup(ss)
+                  JoiZ(IJK,ss) = rosN(ss) * (w_s(ijk,ss)-w_s(ijk,mmax))
                 ELSE
-                  w_s(ijk,s) =  w_g(ijk) - Ur(s)
-                  JoiZ(IJK,s) = rosN(s) * (w_s(ijk,s)-w_s(ijk,mmax))
+                  w_s(ijk,ss) =  w_g(ijk) - Ur(ss)
+                  JoiZ(IJK,ss) = rosN(ss) * (w_s(ijk,ss)-w_s(ijk,mmax))
                 ENDIF
               enddo
             ENDIF ! for a granular case (no gas and no drag)
@@ -738,15 +738,15 @@
           elseif(smax > 2) then
             maxFlux = JoiZ(IJK,1)
             maxFluxS = 1
-            do s = 2, smax  ! finding species with maximum flux in a cell
-              if( abs(JoiZ(IJK,s)) > abs(maxFlux) ) then
-                maxFlux = JoiZ(IJK,s)
-                maxFluxS = s
+            do ss = 2, smax  ! finding species with maximum flux in a cell
+              if( abs(JoiZ(IJK,ss)) > abs(maxFlux) ) then
+                maxFlux = JoiZ(IJK,ss)
+                maxFluxS = ss
               endif
             enddo
             JoiZ(IJK,maxFluxS) = 0d0 ! reset max. flux to zero
-            do s = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
-              if(s /= maxFluxS) JoiZ(IJK,maxFluxS) = JoiZ(IJK,maxFluxS) - JoiZ(IJK,s)
+            do ss = 1, smax ! re-calc species with max. flux to satisfy SUM(fluxes) = 0
+              if(ss /= maxFluxS) JoiZ(IJK,maxFluxS) = JoiZ(IJK,maxFluxS) - JoiZ(IJK,ss)
             enddo
           endif
 ! End Compute Ws

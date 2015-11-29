@@ -13,7 +13,7 @@
 
       MODULE DES_BC
 
-      USE param
+      USE param, only: dimension_bc, dim_m
 
       INTEGER :: DEM_BCMI
       INTEGER :: DEM_BCMO

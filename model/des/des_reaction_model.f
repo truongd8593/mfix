@@ -19,7 +19,7 @@
       Use discretelement
       USE geometry
       USE indices
-      Use param1
+      Use param, only: dimension_n_s
       use run, only: ANY_SPECIES_EQ, SPECIES_EQ
       use physprop, only: SMAX, NMAX
       use run, only: SOLVE_ROs
@@ -38,7 +38,7 @@
 ! Index value of particle
       INTEGER lNP, NP
 ! index of solids phase and species
-      INTEGER M, N
+      INTEGER M, NN
 ! total rate of consumption/production of species (g/sec)
       DOUBLE PRECISION SUM_DES_R_sc, SUM_DES_Rs
 ! masses of species comprising the particle (g)
@@ -87,30 +87,30 @@
             ALL_GONE(:) = .FALSE.
 
 ! Reset the flag
-            DO N=1,NMAX(M)
-! Calculate the current mass of species N in the particle
-               S_MASS(N) = DES_X_s(NP,N) * PMASS(NP)
+            DO NN=1,NMAX(M)
+! Calculate the current mass of species NN in the particle
+               S_MASS(NN) = DES_X_s(NP,NN) * PMASS(NP)
 ! Calculte the amount of species N mass that is produced/consumed.
 !    dXMdt_DTs > 0 :: Net production in mass units
 !    dXMdt_DTs < 0 :: Net consumption in mass units
-               dXMdt_DTs = (DES_R_sp(NP,N)-DES_R_sc(NP,N))*DTSOLID
+               dXMdt_DTs = (DES_R_sp(NP,NN)-DES_R_sc(NP,NN))*DTSOLID
 ! Check to see if the amount of solids phase species N consumed will
 ! be larger than the amount of available solids.
-               IF((S_MASS(N) + dXMdt_DTs) < ZERO) THEN
+               IF((S_MASS(NN) + dXMdt_DTs) < ZERO) THEN
 ! Indicate that all of species is consumed.
-                  ALL_GONE(N) = .TRUE.
+                  ALL_GONE(NN) = .TRUE.
 ! Limit the consumption rate so that only the amount of species mass
 ! that the particle contains is consumed.
-                  dXMdt = S_MASS(N)/DTSOLID
+                  dXMdt = S_MASS(NN)/DTSOLID
 ! Calculate the total rate of change in particle mass
                   SUM_DES_Rs = SUM_DES_Rs + dXMdt
 ! Calculate the total rate of consumption
                   SUM_DES_R_sc = SUM_DES_R_sc + dXMdt
                ELSE
 ! Calculate the total particle mass rate of change (mass/time)
-                  SUM_DES_Rs = SUM_DES_Rs + (DES_R_sp(NP,N)-DES_R_sc(NP,N))
+                  SUM_DES_Rs = SUM_DES_Rs + (DES_R_sp(NP,NN)-DES_R_sc(NP,NN))
 ! Calculate the total rate of consumption (mass/time)
-                  SUM_DES_R_sc = SUM_DES_R_sc + DES_R_sc(NP,N)
+                  SUM_DES_R_sc = SUM_DES_R_sc + DES_R_sc(NP,NN)
                ENDIF
             ENDDO
 
@@ -133,22 +133,22 @@
 
 ! Update the species mass percent
 !---------------------------------------------------------------------//
-            DO N=1,NMAX(M)
-               IF(ALL_GONE(N))THEN
-                  DES_X_s(NP,N) = ZERO
+            DO NN=1,NMAX(M)
+               IF(ALL_GONE(NN))THEN
+                  DES_X_s(NP,NN) = ZERO
                ELSE
-                  dXdt = ((DES_R_sp(NP,N) - DES_R_sc(NP,N)) - &
-                     DES_X_s(NP,N) * SUM_DES_Rs)/PMASS(NP)
+                  dXdt = ((DES_R_sp(NP,NN) - DES_R_sc(NP,NN)) - &
+                     DES_X_s(NP,NN) * SUM_DES_Rs)/PMASS(NP)
 ! First-order method: Euler
                   IF(INTG_EULER) THEN
-                     DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID*dXdt
+                     DES_X_s(NP,NN) = DES_X_s(NP,nn) + DTSOLID*dXdt
 ! Second-order Adams-Bashforth scheme
                   ELSEIF(INTG_ADAMS_BASHFORTH) THEN
-                     IF(FIRST_PASS) dXdt_OLD(NP,N) = dXdt
-                     DES_X_s(NP,N) = DES_X_s(NP,N) + DTSOLID * &
-                        (1.50d0*dXdt - 0.5d0*dXdt_OLD(NP,N))
+                     IF(FIRST_PASS) dXdt_OLD(NP,nn) = dXdt
+                     DES_X_s(NP,nn) = DES_X_s(NP,nn) + DTSOLID * &
+                        (1.50d0*dXdt - 0.5d0*dXdt_OLD(NP,nn))
 ! Store the current value as the old value.
-                     dXdt_OLD(NP,N) = dXdt
+                     dXdt_OLD(NP,nn) = dXdt
                   ENDIF
                ENDIF
             ENDDO

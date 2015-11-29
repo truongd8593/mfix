@@ -30,7 +30,6 @@
       USE param
       USE param1
       USE parallel
-      USE matrix
       USE scales
       USE physprop
       USE fldvar
@@ -76,12 +75,12 @@
 
 ! dilute flow
             IF (EP(IJK) <= DIL_EP_S) THEN
-               A_M(IJK,E,M) = ZERO
-               A_M(IJK,W,M) = ZERO
-               A_M(IJK,N,M) = ZERO
-               A_M(IJK,S,M) = ZERO
-               A_M(IJK,T,M) = ZERO
-               A_M(IJK,B,M) = ZERO
+               A_M(IJK,east,M) = ZERO
+               A_M(IJK,west,M) = ZERO
+               A_M(IJK,north,M) = ZERO
+               A_M(IJK,south,M) = ZERO
+               A_M(IJK,top,M) = ZERO
+               A_M(IJK,bottom,M) = ZERO
                A_M(IJK,0,M) = -ONE
                B_M(IJK,M) = ZERO
 
@@ -90,37 +89,37 @@
                IJMK = JM_OF(IJK)
                IJKM = KM_OF(IJK)
                IF (EP(WEST_OF(IJK)) > DIL_EP_S .AND. &
-                   .NOT.IS_AT_E(IMJK)) A_M(IJK,W,M) = ONE
+                   .NOT.IS_AT_E(IMJK)) A_M(IJK,west,M) = ONE
                IF (EP(EAST_OF(IJK)) > DIL_EP_S .AND. &
-                   .NOT.IS_AT_E(IJK)) A_M(IJK,E,M) = ONE
+                   .NOT.IS_AT_E(IJK)) A_M(IJK,east,M) = ONE
                IF (EP(SOUTH_OF(IJK)) > DIL_EP_S .AND. &
-                   .NOT.IS_AT_N(IJMK)) A_M(IJK,S,M) = ONE
+                   .NOT.IS_AT_N(IJMK)) A_M(IJK,south,M) = ONE
                IF (EP(NORTH_OF(IJK)) > DIL_EP_S .AND. &
-                   .NOT.IS_AT_N(IJK)) A_M(IJK,N,M) = ONE
+                   .NOT.IS_AT_N(IJK)) A_M(IJK,north,M) = ONE
                IF(.NOT. NO_K) THEN
                   IF (EP(BOTTOM_OF(IJK)) > DIL_EP_S .AND. &
-                     .NOT.IS_AT_T(IJKM)) A_M(IJK,B,M) = ONE
+                     .NOT.IS_AT_T(IJKM)) A_M(IJK,bottom,M) = ONE
                   IF (EP(TOP_OF(IJK)) > DIL_EP_S .AND. &
-                     .NOT.IS_AT_T(IJK)) A_M(IJK,T,M) = ONE
+                     .NOT.IS_AT_T(IJK)) A_M(IJK,top,M) = ONE
                ENDIF
 
-               IF((A_M(IJK,W,M)+A_M(IJK,E,M)+&
-                  A_M(IJK,S,M)+A_M(IJK,N,M)+ &
-                  A_M(IJK,B,M)+A_M(IJK,T,M)) == ZERO) THEN
+               IF((A_M(IJK,west,M)+A_M(IJK,east,M)+&
+                  A_M(IJK,south,M)+A_M(IJK,north,M)+ &
+                  A_M(IJK,bottom,M)+A_M(IJK,top,M)) == ZERO) THEN
                   B_M(IJK,M) = -PHI(IJK)
                ELSE
-                  A_M(IJK,0,M) = -(A_M(IJK,E,M) + A_M(IJK,W,M) +&
-                     A_M(IJK,N,M) + A_M(IJK,S,M) + &
-                     A_M(IJK,T,M)+A_M(IJK,B,M))
+                  A_M(IJK,0,M) = -(A_M(IJK,east,M) + A_M(IJK,west,M) +&
+                     A_M(IJK,north,M) + A_M(IJK,south,M) + &
+                     A_M(IJK,top,M)+A_M(IJK,bottom,M))
                ENDIF
 
 ! Normal case
             ELSE
 
 ! Collect the terms
-               A_M(IJK,0,M) = -(A_M(IJK,E,M)+A_M(IJK,W,M)+&
-                                A_M(IJK,N,M)+A_M(IJK,S,M)+&
-                                A_M(IJK,T,M)+A_M(IJK,B,M)+S_P(IJK))
+               A_M(IJK,0,M) = -(A_M(IJK,east,M)+A_M(IJK,west,M)+&
+                                A_M(IJK,north,M)+A_M(IJK,south,M)+&
+                                A_M(IJK,top,M)+A_M(IJK,bottom,M)+S_P(IJK))
 
 ! B_m and A_m are corrected in case deferred corrections computes B_m > S_c
 ! see CONV_DIF_PHI_DC.
@@ -163,6 +162,7 @@
       use bc
       use usr
       use functions
+      use param, only: dimension_3, dimension_m
 
       IMPLICIT NONE
 !-----------------------------------------------
