@@ -980,6 +980,7 @@ postmfix_SOURCES = \
 	model/des/init_settling_dem.f \
 	model/des/interpolation_mod.f \
 	model/des/layout_mi_dem.f \
+	model/des/list.f \
 	model/des/make_arrays_des.f \
 	model/des/mass_inflow_dem.f \
 	model/des/mass_outflow_dem.f \
@@ -989,8 +990,10 @@ postmfix_SOURCES = \
 	model/des/mpi_node_des_mod.f \
 	model/des/mpi_pack_des_mod.f \
 	model/des/mpi_unpack_des_mod.f \
+	model/des/multisap.f \
 	model/des/neighbour.f \
 	model/des/nsquare.f \
+	model/des/pair_manager.f \
 	model/des/particle_filter_mod.f \
 	model/des/particles_in_cell.f \
 	model/des/pic/apply_wall_bc_pic.f \
@@ -1014,6 +1017,7 @@ postmfix_SOURCES = \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/resize.f \
+	model/des/sap.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
 	model/des/set_bc_dem_mi.f \
