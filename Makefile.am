@@ -200,6 +200,7 @@ libmfix_a_SOURCES += \
 	model/include/tfm_solids.inc \
 	model/include/usr_hooks.inc \
 	model/include/usrnlst.inc \
+	model/include/version.inc \
 	model/include/xforms.inc
 
 libmfix_src = \
