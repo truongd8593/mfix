@@ -112,7 +112,6 @@
 !-----------------------------------------------
       USE param
       USE param1
-      USE parallel
       USE geometry
       USE compar
       USE mpi_utility

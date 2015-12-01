@@ -1100,6 +1100,7 @@ CONTAINS
     use functions
     use geometry
     use indices
+    use parallel, only: is_serial
     use mpi_utility
     use param, only: dimension_3
     implicit none
@@ -1119,6 +1120,11 @@ CONTAINS
     double precision :: prod
     integer :: i, j, k, ijk
 !-----------------------------------------------
+
+    if (numPEs.eq.1.and.is_serial) then
+       dot_product_par = dot_product(r1,r2)
+       return
+    endif
 
     if(do_global_sum) then
        prod = 0.0d0
