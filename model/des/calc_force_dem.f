@@ -179,8 +179,8 @@
                   print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
                   print *,""
 
-                  print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
-                  print *,"IIIIIIIII ",boxhandle(i)%list(:)
+                  ! print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
+                  ! print *,"IIIIIIIII ",boxhandle(i)%list(:)
 
                   do mm=1,size(boxhandle(ll)%list)
                      if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
@@ -190,7 +190,7 @@
                      found = .false.
                      do nn=1,size(boxhandle(i)%list)
                         if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-                           print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+                           ! print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
                            box_id2 = boxhandle(i)%list(nn)%box_id
                            found = .true.
                         endif
@@ -198,7 +198,7 @@
 
                      if (.not.found) cycle
 
-                     print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
+                     ! print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
 
                   enddo
 
