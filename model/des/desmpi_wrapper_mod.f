@@ -4,7 +4,9 @@
 !                    and scatter, gather
 ! Author           : Pradeep.G
 !------------------------------------------------------------------------
-      module desmpi_wrapper
+#include "version.inc"
+
+module desmpi_wrapper
 
       use parallel_mpi
       use mpi_utility
@@ -211,9 +213,9 @@
 
       call MPI_Finalize(mpierr)
 
-      ERROR STOP 'MPI terminated from des_mpi_stop'
+      ERROR_STOP 'MPI terminated from des_mpi_stop'
 #else
-      ERROR STOP 'terminated from des_mpi_stop'
+      ERROR_STOP 'terminated from des_mpi_stop'
 #endif
       end subroutine
 

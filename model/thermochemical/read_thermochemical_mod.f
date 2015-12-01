@@ -17,6 +17,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
+#include "version.inc"
+
 MODULE read_thermochemical
 
   IMPLICIT NONE
@@ -72,14 +74,14 @@ CONTAINS
 !      h2 = calc_H0oR(12D2, Thigh, Tlow, Tcom, Ahigh, Alow)*1.987207
       print *, Cp1, h1, h2
       CLOSE(UNIT=funit)
-      ERROR STOP
+      ERROR_STOP
 200   PRINT *, 'READ_Therm_tester: Species ', &
          TRIM(SPECIES), ' not found in Database!'
-      ERROR STOP
+      ERROR_STOP
 500   PRINT *, 'READ_Therm_tester: Cannot Open file ', TRIM(THERM), '!'
       PRINT *, 'Check path or copy mfix/model/thermochemical/', &
          TRIM(THERM), ' into run directory'
-      ERROR STOP
+      ERROR_STOP
       END Subroutine READ_Therm_tester
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv  C
@@ -166,7 +168,7 @@ CONTAINS
 
 300   PRINT *, 'READ_Therm: Error reading coefficients for Species ', &
          TRIM(LINE_STRING(1:18))
-      ERROR STOP
+      ERROR_STOP
 
       END SUBROUTINE READ_Therm
 

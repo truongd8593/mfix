@@ -14,6 +14,9 @@
 !       no 4, pp 868-884, 2009.                                        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+#include "version.inc"
+
       SUBROUTINE DES_CONVECTION(NP, M, IJK, &
          INTERP_IJK, INTERP_WEIGHTS, FOCUS)
 
@@ -192,7 +195,7 @@
 
          CASE DEFAULT
             WRITE(*,*)'INVALID DES CONVECTION MODEL'
-            ERROR STOP 'INVALID DES CONVECTION MODEL'
+            ERROR_STOP 'INVALID DES CONVECTION MODEL'
             CALL MFIX_EXIT(myPE)
       END SELECT
 

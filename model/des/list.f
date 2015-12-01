@@ -1,3 +1,5 @@
+#include "version.inc"
+
 module list
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
@@ -64,7 +66,7 @@ contains
        do old_len = 1, size(this%list)
           print *,"list: ",old_len,this%list(old_len)
        enddo
-       error stop __LINE__
+       ERROR_STOP __LINE__
     endif
   end subroutine list_add
 

@@ -6,6 +6,7 @@
 !           integers (meant to represent particle ids).                !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+#include "version.inc"
 
 module pair_manager
 
@@ -187,7 +188,7 @@ contains
 
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       error stop __LINE__
+       ERROR_STOP __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -213,7 +214,7 @@ contains
     enddo
 
     print *,"loop in hash addressing, this should not occur"
-    error stop __LINE__
+    ERROR_STOP __LINE__
 
   end function is_pair
 
@@ -235,7 +236,7 @@ contains
 
     if (i0 < 1 .or. j0 < 1) then
        print *,"invalid pair: ",i0,j0
-       error stop __LINE__
+       ERROR_STOP __LINE__
     endif
 
     if (size(this%table) < 2*this%table_size ) then
@@ -245,7 +246,7 @@ contains
        if (size(table_tmp).ne.old_size) then
           print *,"size = ",size(table_tmp)
           print *,"old_size = ",old_size
-          error stop __LINE__
+          ERROR_STOP __LINE__
        endif
        table_tmp(0:old_size-1) = this%table(0:old_size-1)
 
@@ -262,7 +263,7 @@ contains
        if (this%table_size.ne.old_tablesize) then
           print *,"size = ",this%table_size
           print *,"old_size = ",old_tablesize
-          error stop __LINE__
+          ERROR_STOP __LINE__
        endif
        deallocate(table_tmp)
     endif
@@ -272,7 +273,7 @@ contains
 
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       error stop __LINE__
+       ERROR_STOP __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -290,7 +291,7 @@ contains
           this%table(hash)%ii = ii
           this%table(hash)%jj = jj
           this%table_size = this%table_size + 1
-          ! if(.not. check_table(this)) error stop __LINE__
+          ! if(.not. check_table(this)) ERROR_STOP __LINE__
           return
        endif
        probe_count = probe_count + 1
@@ -300,7 +301,7 @@ contains
     enddo
 
     print *,"loop in hash addressing, this should not occur.  maybe hash table is full"
-    error stop __LINE__
+    ERROR_STOP __LINE__
 
   end subroutine add_pair
 
@@ -324,7 +325,7 @@ contains
 
     if (ii < 1 .or. jj < 1) then
        print *,"invalid pair: ",ii,jj
-       error stop __LINE__
+       ERROR_STOP __LINE__
     endif
 
     ! assign ii to hash to convert to 64-bit
@@ -335,7 +336,7 @@ contains
 
     do
        if (this%table(hash)%ii .eq. 0 .and. this%table(hash)%jj .eq. 0) then
-          ! if(.not. check_table(this)) error stop __LINE__
+          ! if(.not. check_table(this)) ERROR_STOP __LINE__
           return
        endif
        if (this%table(hash)%ii .eq. ii .and. this%table(hash)%jj .eq. jj) then
@@ -343,7 +344,7 @@ contains
           this%table(hash)%ii = 0
           this%table(hash)%jj = 1
           this%table_size = this%table_size - 1
-          ! if(.not. check_table(this)) error stop __LINE__
+          ! if(.not. check_table(this)) ERROR_STOP __LINE__
           return
        endif
        probe_count = probe_count + 1
@@ -352,7 +353,7 @@ contains
        if (hash .eq. init_hash) exit
     enddo
 
-    ! if(.not. check_table(this)) error stop __LINE__
+    ! if(.not. check_table(this)) ERROR_STOP __LINE__
 
     print *,"loop in hash addressing. must be a lot of DELETED entries:  ",this%table_size,"/",size(this%table)
 

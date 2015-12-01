@@ -5,6 +5,9 @@
 !  Purpose: DES - allocating DES arrays
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+
+#include "version.inc"
+
       SUBROUTINE INIT_SETTLING_DEM
 
       USE desgrid, ONLY: desgrid_pic
@@ -67,7 +70,7 @@
 
             if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
                print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
-               error stop __LINE__
+               ERROR_STOP __LINE__
             endif
 
             call multisap_add(multisap,aabb,nn,boxhandle(nn))

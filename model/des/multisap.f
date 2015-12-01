@@ -9,6 +9,8 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
+#include "version.inc"
+
 module multi_sweep_and_prune
 
   use sweep_and_prune
@@ -274,7 +276,7 @@ contains
 
           if (first_blank .eq. -1) then
              print *,"AABB is in more than 8 saps? Something is wrong:  ",first_blank,handlelist%list
-             error stop __LINE__
+             ERROR_STOP __LINE__
           endif
           call add_box(this%saps(new_sap_ids(nn)),aabb,handlelist%particle_id,handlelist%list(first_blank)%box_id)
           handlelist%list(first_blank)%sap_id = new_sap_ids(nn)

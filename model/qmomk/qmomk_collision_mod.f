@@ -13,6 +13,9 @@
 !  Reviewer:                                        Date:              C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+#include "version.inc"
+
 MODULE qmomk_collision
 
 
@@ -712,7 +715,7 @@ CONTAINS
        Mtmp = M + h*Coll
     ELSE
        PRINT *,'QMOMK: Wrong order in Boltzmann collisions'
-       ERROR STOP
+       ERROR_STOP
     END IF
     M= Mtmp
   END SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_ONE_SPECIE
@@ -771,7 +774,7 @@ CONTAINS
        M1tmp = M1 + h*Coll;
     ELSE
        PRINT *,'QMOMK: Wrong order in Boltzmann collisions'
-       ERROR STOP
+       ERROR_STOP
     END IF
     M1 = M1tmp;
   END SUBROUTINE SOLVE_BOLTZMANN_COLLISIONS_TWO_SPECIES

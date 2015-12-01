@@ -1,6 +1,8 @@
 !       MPI Modules written at ORNL by Ed and Sreekanth for MFIX
 !       under joint effort with FETC - 06/08/99.
 
+#include "version.inc"
+
 module mpi_utility
 
   !       module to perform most of the mpi functionalities like scatter,
@@ -5494,7 +5496,7 @@ contains
 
   SUBROUTINE MPI_ABORT(MPI_COMM_WORLD, mpierr, ierr)
     integer, intent(in) :: MPI_COMM_WORLD, mpierr, ierr
-    ERROR STOP "terminated in MPI_ABORT"
+    ERROR_STOP "terminated in MPI_ABORT"
   END SUBROUTINE MPI_ABORT
 #endif
 

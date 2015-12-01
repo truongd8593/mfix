@@ -10,6 +10,9 @@
 !  Reviewer:                                Date: dd-mmm-yy            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+#include "version.inc"
+
 MODULE qmomk_quadrature
 
   USE qmomk_tools
@@ -277,19 +280,19 @@ CONTAINS
     IF ( sig(1,1) < 0.D0 ) THEN ! check that u variance is nonnegative
        PRINT *,'QMOMK: Negative u variance',sig
        sig(1,1) = 0.D0
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     IF ( sig(2,2) < 0.D0 ) THEN ! check that v variance is nonnegative
        PRINT *,'QMOMK: Negative v variance',sig
        sig(2,2) = 0.D0
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     IF ( sig(3,3) < 0.D0 ) THEN ! check that v variance is nonnegative
        PRINT *,'QMOMK: Negative w variance',sig
        sig(3,3) = 0.D0
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     s1 = SQRT(sig(1,1))
@@ -323,21 +326,21 @@ CONTAINS
        PRINT *,'U = ', u
        PRINT *,'V = ', v
        PRINT *,'W = ', w
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     IF ( s1*s3 < ABS(s13) ) THEN ! check that covariance matrix is nonnegative
        sig(1,3) = SIGN(1.D0, s13)*s1*s3
        sig(3,1) = sig(1,3)
        PRINT *,'QMOMK: unphysical uw correlation',sig(1,3)
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     IF ( s2*s3 < ABS(s23) ) THEN ! check that covariance matrix is nonnegative
        sig(2,3) = SIGN(1.D0, s23)*s2*s3
        sig(3,2) = sig(2,3)
        PRINT *,'QMOMK: unphysical vw correlation'
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     CALL CHOLESKY3(sig, chol) ! Bottom cholesky decomposition
@@ -512,7 +515,7 @@ CONTAINS
        PRINT *,'QMOMK: Negative weight in quadrature'
        PRINT *,nstar
        nstar = ABS(nstar)
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     x(1:8) = nstar
@@ -534,7 +537,7 @@ CONTAINS
        PRINT *,'QMOMK: First 10 moments not satisfied.'
        PRINT *,'F(1:10) = ',F(1:10)
        PRINT *,'M(1:10) = ',mom(1:10)
-       ERROR STOP
+       ERROR_STOP
     ENDIF
   END SUBROUTINE EIGHT_NODE_3D
 

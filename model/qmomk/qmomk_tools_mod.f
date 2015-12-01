@@ -8,6 +8,8 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
+#include "version.inc"
+
 MODULE qmomk_tools
 
   IMPLICIT NONE
@@ -48,7 +50,7 @@ CONTAINS
 
     IF (detA == 0.D0) THEN
        PRINT *,'QMOMK: Null determinant in matrix'
-       ERROR STOP
+       ERROR_STOP
     END IF
 
     B(1,1) = (A(3,3)*A(2,2) - A(3,2)*A(2,3))/detA
@@ -101,7 +103,7 @@ CONTAINS
     L(1,1) = SQRT(A(1,1))
     IF (L(1,1) == 0.D0) THEN
        PRINT *,'Impossible to find Cholesky decomposition.'
-       ERROR STOP
+       ERROR_STOP
     ELSE
        L(2,1) = A(2,1)/L(1,1)
        L(2,2) = SQRT(A(2,2) - (L(2,1))**2)
@@ -109,7 +111,7 @@ CONTAINS
 
        IF (L(2,2) ==  0.D0) THEN
           PRINT *,'Impossible to find Cholesky decomposition.'
-          ERROR STOP
+          ERROR_STOP
        ELSE
           L(3,2) = (A(3,2) - L(3,1)*L(2,1))/L(2,2)
           L(3,3) = SQRT(A(3,3) - (L(3,1))**2 - (L(3,2))**2)

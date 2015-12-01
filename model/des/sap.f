@@ -10,6 +10,8 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
+#include "version.inc"
+
 module sweep_and_prune
 
   use pair_manager
@@ -390,7 +392,7 @@ contains
           call list_del(active,minmax)
        else
           print *,"SAP_ID=",this%id,"minmax shouldn't be zero: ",minmax
-          error stop __LINE__
+          ERROR_STOP __LINE__
        endif
     enddo
 

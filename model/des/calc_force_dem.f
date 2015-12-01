@@ -9,7 +9,8 @@
 !           accounting for the wall properties                         !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_FORCE_DEM
+#include "version.inc"
+SUBROUTINE CALC_FORCE_DEM
 
 !---------------------------------------------------------------------//
       USE calc_collision_wall
@@ -82,8 +83,8 @@
 
       ! do nn=0, size(multisap%saps)-1
       !    !print *,"nn = ",nn
-      !    if (.not.check_boxes(multisap%saps(nn))) error stop __LINE__
-      !    if (.not.check_sort(multisap%saps(nn))) error stop __LINE__
+      !    if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
+      !    if (.not.check_sort(multisap%saps(nn))) ERROR_STOP __LINE__
       ! enddo
 
 !print *,"CALC_FORCE_DEM =================================================================================="
@@ -202,13 +203,13 @@
 
                   enddo
 
-                  error stop __LINE__
+                  ERROR_STOP __LINE__
                endif
             endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I
-               ERROR STOP "division by zero"
+               ERROR_STOP "division by zero"
  8550 FORMAT('distance between particles is zero:',2(2x,I10))
             ENDIF
 
