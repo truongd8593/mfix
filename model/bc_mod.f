@@ -142,19 +142,48 @@
 !
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
-      ! CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
+      CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
       INTEGER(KIND=16)     BC_TYPE_ENUM (DIMENSION_BC)
 
       ENUM, BIND(C)
          ENUMERATOR :: CG_NSW, CG_FSW, CG_PSW, CG_MI, NONE
-         ENUMERATOR :: NO_SLIP_WALL, FREE_SLIP_WALL, PAR_SLIP_WALL
+         ENUMERATOR :: NO_SLIP_WALL, FREE_SLIP_WALL, PAR_SLIP_WALL, NSW, FSW, PSW
          ENUMERATOR :: P_OUTFLOW, MASS_OUTFLOW, OUTFLOW
          ENUMERATOR :: P_INFLOW, MASS_INFLOW
          ENUMERATOR :: CG_PO, CG_MO
          ENUMERATOR :: BLANK
          ENUMERATOR :: DUMMY
-         ENUMERATOR :: SPECULAR_REFLECTIVE
       END ENUM
+
+      ! Total number of valid BC types
+      INTEGER, PARAMETER :: DIM_BCTYPE = 21
+      ! Valid boundary condition types
+      CHARACTER(LEN=16), DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
+           'MASS_INFLOW     ', 'MI              ',&
+           'MASS_OUTFLOW    ', 'MO              ',&
+           'P_INFLOW        ', 'PI              ',&
+           'P_OUTFLOW       ', 'PO              ',&
+           'FREE_SLIP_WALL  ', 'FSW             ',&
+           'NO_SLIP_WALL    ', 'NSW             ',&
+           'PAR_SLIP_WALL   ', 'PSW             ',&
+           'OUTFLOW         ', 'OF              ',&
+           'CG_NSW          ', 'CG_FSW          ',&
+           'CG_PSW          ', 'CG_MI           ',&
+           'CG_PO           '/)
+
+      INTEGER, DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE_ENUM = (/&
+           MASS_INFLOW     , MASS_INFLOW      ,&
+           MASS_OUTFLOW    , MASS_OUTFLOW      ,&
+           P_INFLOW        , P_INFLOW      ,&
+           P_OUTFLOW       , P_OUTFLOW      ,&
+           FREE_SLIP_WALL  , FSW     ,&
+           NO_SLIP_WALL    , NSW     ,&
+           PAR_SLIP_WALL   , PSW     ,&
+           OUTFLOW         , OUTFLOW      ,&
+           CG_NSW          , CG_FSW  ,&
+           CG_PSW          , CG_MI   ,&
+           CG_PO           /)
+
 
 !                      FLAG to specify if this PO BC applies to solid phase
 !                      in discrete implementation or not. For example, setting

@@ -131,18 +131,21 @@
 ! drag_c1 and drag_d1 accordingly)
       CHARACTER(64) :: DRAG_TYPE
       INTEGER :: DRAG_TYPE_ENUM
-      INTEGER,PARAMETER :: SYAM_OBRIEN=0
-      INTEGER,PARAMETER :: GIDASPOW=1
-      INTEGER,PARAMETER :: GIDASPOW_PCF=2
-      INTEGER,PARAMETER :: GIDASPOW_BLEND=3
-      INTEGER,PARAMETER :: GIDASPOW_BLEND_PCF=4
-      INTEGER,PARAMETER :: WEN_YU=5
-      INTEGER,PARAMETER :: WEN_YU_PCF=6
-      INTEGER,PARAMETER :: KOCH_HILL=7
-      INTEGER,PARAMETER :: KOCH_HILL_PCF=8
-      INTEGER,PARAMETER :: BVK=9
-      INTEGER,PARAMETER :: HYS=10
-      INTEGER,PARAMETER :: USER_DRAG=11
+
+      ENUM, BIND(C)
+         ENUMERATOR :: SYAM_OBRIEN=0
+         ENUMERATOR :: GIDASPOW=1
+         ENUMERATOR :: GIDASPOW_PCF=2
+         ENUMERATOR :: GIDASPOW_BLEND=3
+         ENUMERATOR :: GIDASPOW_BLEND_PCF=4
+         ENUMERATOR :: WEN_YU=5
+         ENUMERATOR :: WEN_YU_PCF=6
+         ENUMERATOR :: KOCH_HILL=7
+         ENUMERATOR :: KOCH_HILL_PCF=8
+         ENUMERATOR :: BVK=9
+         ENUMERATOR :: HYS=10
+         ENUMERATOR :: USER_DRAG=11
+      END ENUM
 
 ! filtered/subgrid corrections to the drag coefficient & granular
 ! stress terms including granular viscosity and solids pressure
@@ -150,9 +153,11 @@
       CHARACTER(64) :: SUBGRID_TYPE
 
       INTEGER :: SUBGRID_TYPE_ENUM
-      INTEGER,PARAMETER :: UNDEFINED_SUBGRID_TYPE=0
-      INTEGER,PARAMETER :: IGCI=1
-      INTEGER,PARAMETER :: MILIOLI=2
+      ENUM, BIND(C)
+         ENUMERATOR :: UNDEFINED_SUBGRID_TYPE=0
+         ENUMERATOR :: IGCI=1
+         ENUMERATOR :: MILIOLI=2
+      END ENUM
 
 ! If .TRUE. incorporate the wall effects upon the calculation of the
 ! subgrid solids viscosity, solids pressure, and gas-solids drag
@@ -173,13 +178,15 @@
 !             GD_99 for granular flow or GTSH for gas-solids flow
       CHARACTER(64) :: KT_TYPE
       INTEGER :: KT_TYPE_ENUM
-      INTEGER,PARAMETER :: LUN_1984=0
-      INTEGER,PARAMETER :: SIMONIN_1996=1
-      INTEGER,PARAMETER :: AHMADI_1995=2
-      INTEGER,PARAMETER :: GD_1999=3
-      INTEGER,PARAMETER :: GTSH_2012=4
-      INTEGER,PARAMETER :: IA_2005=5
-      INTEGER,PARAMETER :: GHD_2007=6
+      ENUM, BIND(C)
+         ENUMERATOR :: LUN_1984=0
+         ENUMERATOR :: SIMONIN_1996=1
+         ENUMERATOR :: AHMADI_1995=2
+         ENUMERATOR :: GD_1999=3
+         ENUMERATOR :: GTSH_2012=4
+         ENUMERATOR :: IA_2005=5
+         ENUMERATOR :: GHD_2007=6
+      END ENUM
 
 ! If .TRUE. use Simonin model (k_epsilon must also be true)
       LOGICAL :: SIMONIN
@@ -224,11 +231,13 @@
 ! for m = 1 then carnahan and starling rdf used
       CHARACTER(64) :: RDF_TYPE
       INTEGER :: RDF_TYPE_ENUM
-      INTEGER, PARAMETER :: LEBOWITZ=0
-      INTEGER, PARAMETER :: MODIFIED_LEBOWITZ=1
-      INTEGER, PARAMETER :: MANSOORI=2
-      INTEGER, PARAMETER :: MODIFIED_MANSOORI=3
-      INTEGER, PARAMETER :: CARNAHAN_STARLING=4
+      ENUM, BIND(C)
+         ENUMERATOR :: LEBOWITZ=0
+         ENUMERATOR :: MODIFIED_LEBOWITZ=1
+         ENUMERATOR :: MANSOORI=2
+         ENUMERATOR :: MODIFIED_MANSOORI=3
+         ENUMERATOR :: CARNAHAN_STARLING=4
+      END ENUM
 
 ! If .TRUE. use Yu and Standish correlation to compute ep_star
       LOGICAL :: YU_STANDISH

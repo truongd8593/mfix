@@ -47,21 +47,6 @@
       INTEGER :: BCV, I
 ! Error flag
       LOGICAL :: RECOGNIZED_BC_TYPE
-! Total number of valid BC types
-      INTEGER, PARAMETER :: DIM_BCTYPE = 21
-! Valid boundary condition types
-      CHARACTER(LEN=16), DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
-           'MASS_INFLOW     ', 'MI              ',&
-           'MASS_OUTFLOW    ', 'MO              ',&
-           'P_INFLOW        ', 'PI              ',&
-           'P_OUTFLOW       ', 'PO              ',&
-           'FREE_SLIP_WALL  ', 'FSW             ',&
-           'NO_SLIP_WALL    ', 'NSW             ',&
-           'PAR_SLIP_WALL   ', 'PSW             ',&
-           'OUTFLOW         ', 'OF              ',&
-           'CG_NSW          ', 'CG_FSW          ',&
-           'CG_PSW          ', 'CG_MI           ',&
-           'CG_PO           '/)
 !......................................................................!
 
 ! Skip this routine if reinitializing as BC locations cannot be changed.
@@ -97,7 +82,8 @@
             RECOGNIZED_BC_TYPE = .FALSE.
             DO I = 1, DIM_BCTYPE
                 VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
-                IF(VALID_BC_TYPE(I) == BC_TYPE_ENUM(BCV)) THEN
+                IF(VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN
+                   BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I)
                    RECOGNIZED_BC_TYPE = .TRUE.
                    EXIT
                 ENDIF
@@ -173,8 +159,12 @@
 ! Swap BC aliases for the "full name" complement.
          DO I = 1, DIM_BCTYPE
             VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
-            IF(VALID_BC_TYPE(I) == BC_TYPE_ENUM(BCV)) THEN
-               IF(MOD(I,2) == 0) BC_TYPE_ENUM(BCV) = VALID_BC_TYPE(I-1)
+            IF(VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN
+               IF(MOD(I,2) == 0) THEN
+                  BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I-1)
+               ELSE
+                  BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I)
+               ENDIF
                CYCLE  L50
             ENDIF
          ENDDO

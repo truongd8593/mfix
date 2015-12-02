@@ -302,9 +302,6 @@
 ! loop index
       INTEGER :: BCV
 
-! Total number of valid BC types
-      INTEGER, PARAMETER :: DIM_BCTYPE = 21
-
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("SET_BC_FLAGS_WALL")
