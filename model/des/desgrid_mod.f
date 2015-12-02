@@ -764,7 +764,7 @@
 
 ! redfine the array of dg_pic
 !$omp parallel do default(shared)                               &
-!$omp private(lijk,lcurpic) schedule (guided,50)
+!$omp private(lijk,lcurpic) schedule (guided,50) reduction(max:max_isize)
       do lijk = dg_ijkstart2,dg_ijkend2
          lcurpic = lpic(lijk)
          if(lcurpic > size(dg_pic(lijk)%p)) then
