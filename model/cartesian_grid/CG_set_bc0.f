@@ -99,7 +99,7 @@
          L = BC_ID(IJK)
 
          IF(L>0) THEN
-            IF(BC_TYPE(L)=='CG_PO') THEN
+            IF(BC_TYPE_ENUM(L)==CG_PO) THEN
 
                P_STAR(IJK) = ZERO
                P_G(IJK) = SCALE_PRESSURE(BC_P_G(L))
@@ -140,7 +140,7 @@
                   ENDIF
                END DO
 
-            ELSEIF(BC_TYPE(L)=='CG_MI') THEN
+            ELSEIF(BC_TYPE_ENUM(L)==CG_MI) THEN
 
                P_STAR(IJK) = ZERO
    !

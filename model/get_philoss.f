@@ -78,8 +78,8 @@
 
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. BC_TYPE(L)=='FREE_SLIP_WALL'&
-                .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN
+            IF (BC_TYPE_ENUM(L)==NO_SLIP_WALL .OR. BC_TYPE_ENUM(L)==FREE_SLIP_WALL&
+                .OR. BC_TYPE_ENUM(L)==PAR_SLIP_WALL) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)

@@ -71,7 +71,7 @@
       LOGICAL :: V_NODE_AT_N, V_NODE_AT_S
       LOGICAL :: W_NODE_AT_T, W_NODE_AT_B
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
@@ -102,23 +102,23 @@
                BCV = BC_ID(IJK)
 
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
                SELECT CASE (BCT)
-                  CASE ('CG_NSW')
+                  CASE (CG_NSW)
                      NOC_TRDG = .TRUE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE ('CG_FSW')
+                  CASE (CG_FSW)
                      NOC_TRDG = .FALSE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
                      IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                         NOC_TRDG = .TRUE.
                         UW_g = BC_UW_G(BCV)
@@ -132,13 +132,13 @@
                      ELSE                              ! partial slip
                         NOC_TRDG = .FALSE.
                      ENDIF
-                  CASE ('CG_MI')
+                  CASE (CG_MI)
                      TRD_G(IJK) = ZERO
                      RETURN
-                  CASE ('CG_PO')
+                  CASE (CG_PO)
                      TRD_G(IJK) = ZERO
                      RETURN
-                  CASE ('NONE')
+                  CASE (NONE)
                      TRD_G(IJK) = ZERO
                      RETURN
                END SELECT
@@ -348,7 +348,7 @@
       LOGICAL :: V_NODE_AT_N, V_NODE_AT_S
       LOGICAL :: W_NODE_AT_T, W_NODE_AT_B
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !-----------------------------------------------
 !
 !
@@ -370,23 +370,23 @@
       BCV = BC_ID(IJK)
 
       IF(BCV > 0 ) THEN
-         BCT = BC_TYPE(BCV)
+         BCT = BC_TYPE_ENUM(BCV)
       ELSE
-         BCT = 'NONE'
+         BCT = NONE
       ENDIF
 
       SELECT CASE (BCT)
-         CASE ('CG_NSW')
+         CASE (CG_NSW)
             NOC_TRDG = .TRUE.
             UW_g = ZERO
             VW_g = ZERO
             WW_g = ZERO
-         CASE ('CG_FSW')
+         CASE (CG_FSW)
             NOC_TRDG = .FALSE.
             UW_g = ZERO
             VW_g = ZERO
             WW_g = ZERO
-         CASE('CG_PSW')
+         CASE(CG_PSW)
             IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                NOC_TRDG = .TRUE.
                UW_g = BC_UW_G(BCV)
@@ -400,13 +400,13 @@
             ELSE                              ! partial slip
                NOC_TRDG = .FALSE.
             ENDIF
-         CASE ('CG_MI')
+         CASE (CG_MI)
             DELV = ZERO
             RETURN
-         CASE ('CG_PO')
+         CASE (CG_PO)
             DELV = ZERO
             RETURN
-         CASE ('NONE')
+         CASE (NONE)
             DELV = ZERO
             RETURN
       END SELECT

@@ -148,7 +148,7 @@
 ! Search for an outflow boundary condition where pressure is specified
       PJ = UNDEFINED
       DO L = 1, DIMENSION_BC
-         IF (BC_DEFINED(L) .AND. BC_TYPE(L)=='P_OUTFLOW') PJ = BC_P_G(L)
+         IF (BC_DEFINED(L) .AND. BC_TYPE_ENUM(L)==P_OUTFLOW) PJ = BC_P_G(L)
       ENDDO
 
       IF (PJ == UNDEFINED) THEN

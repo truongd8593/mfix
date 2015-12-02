@@ -75,7 +75,7 @@
       DOUBLE PRECISION :: UW_s
       DOUBLE PRECISION :: F_2
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 
 !-----------------------------------------------
 
@@ -129,21 +129,21 @@
                ELSEIF(INTERIOR_CELL_AT(IJK)) THEN
                   BCV = BC_U_ID(IJK)
                   IF(BCV > 0 ) THEN
-                     BCT = BC_TYPE(BCV)
+                     BCT = BC_TYPE_ENUM(BCV)
                   ELSE
-                     BCT = 'NONE'
+                     BCT = NONE
                   ENDIF
 
                   SELECT CASE (BCT)
-                     CASE ('CG_NSW')
+                     CASE (CG_NSW)
                         NOC_US = .TRUE.
                         UW_s = ZERO
                         MU_S_CUT =  (VOL(IJK)*MU_S(IJK,M) + VOL(IPJK)*MU_S(IJKE,M))/(VOL(IJK) + VOL(IPJK))
                         A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_U_CUT(IJK)/DELH_U(IJK)
-                     CASE ('CG_FSW')
+                     CASE (CG_FSW)
                         NOC_US = .FALSE.
                         UW_s = ZERO
-                     CASE('CG_PSW')
+                     CASE(CG_PSW)
                         IF(BC_JJ_PS(BCV)==1) THEN   ! Johnson-Jackson partial slip bc
                            NOC_US = .FALSE.
                            UW_s = BC_UW_S(BCV,M)
@@ -166,7 +166,7 @@
                            A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_U_CUT(IJK)*(BC_HW_S(BCV,M))
                            B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * UW_s * Area_U_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
-                     CASE ('NONE', 'CG_MI')
+                     CASE (NONE, CG_MI)
                         NOC_US = .FALSE.
 
                   END SELECT
@@ -350,7 +350,7 @@
       INTEGER :: IJK, IJKW
 ! for cartesian grid:
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(3)==1) RETURN
@@ -359,13 +359,13 @@
 
          BCV = BC_U_ID(IJK)
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
          SELECT CASE (BCT)
-            CASE ('CG_NSW')
+            CASE (CG_NSW)
                IF(WALL_U_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -378,7 +378,7 @@
                ENDIF
 
 
-            CASE ('CG_FSW')
+            CASE (CG_FSW)
                IF(WALL_U_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -407,7 +407,7 @@
                ENDIF
 
 
-            CASE ('CG_PSW')
+            CASE (CG_PSW)
                IF(WALL_U_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -457,7 +457,7 @@
                ENDIF
 
 
-            CASE ('CG_MI')
+            CASE (CG_MI)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -489,7 +489,7 @@
                ENDIF
 
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -510,14 +510,14 @@
 ! this is straight repeat of section of above code...?
          BCV = BC_ID(IJK)
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
 
          SELECT CASE (BCT)
-            CASE ('CG_MI')
+            CASE (CG_MI)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -549,7 +549,7 @@
                ENDIF
 
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO

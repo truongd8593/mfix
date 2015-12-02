@@ -23,7 +23,7 @@
 ! Flag: BC dimensions or Type is specified
       use bc, only: BC_DEFINED
 ! Use specified BC type
-      use bc, only: BC_TYPE
+      use bc
 ! User specifed BC solids bulk density
       use bc, only: BC_ROP_s
 ! Solids volume fraction at BC
@@ -75,13 +75,13 @@
 
          IF(MMAX_TOT == 1 .AND. BC_EP_g(BCV)/=ONE) SKIP(1) = .FALSE.
 
-         SELECT CASE (TRIM(BC_TYPE(BCV)))
+         SELECT CASE (BC_TYPE_ENUM(BCV))
 
-         CASE ('MASS_INFLOW')
+         CASE (MASS_INFLOW)
             CALL FLOW_TO_VEL_NEW(.TRUE., MMAX_TOT, SKIP, BCV)
             CALL CHECK_BC_VEL_INFLOW(MMAX_TOT, SKIP, BCV)
 
-         CASE ('MASS_OUTFLOW')
+         CASE (MASS_OUTFLOW)
             CALL FLOW_TO_VEL_NEW(.TRUE., MMAX_TOT, SKIP, BCV)
             CALL CHECK_BC_VEL_OUTFLOW(MMAX_TOT, SKIP, BCV)
          END SELECT

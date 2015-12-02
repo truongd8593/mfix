@@ -657,7 +657,7 @@
          IF (BC_DEFINED(L)) THEN
 
 ! Setting wall boundary conditions
-            IF (BC_TYPE(L) == 'NO_SLIP_WALL') THEN
+            IF (BC_TYPE_ENUM(L) == NO_SLIP_WALL) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -696,7 +696,7 @@
                   CALL JJ_BC_U_S (I1, I2, J1, J2, K1, K2, L, M, A_M, B_M)
                ENDIF
 
-            ELSEIF (BC_TYPE(L) == 'FREE_SLIP_WALL') THEN
+            ELSEIF (BC_TYPE_ENUM(L) == FREE_SLIP_WALL) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -735,7 +735,7 @@
                   CALL JJ_BC_U_S (I1, I2, J1, J2, K1, K2, L, M, A_M, B_M)
                ENDIF
 
-            ELSEIF (BC_TYPE(L) == 'PAR_SLIP_WALL') THEN
+            ELSEIF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -813,7 +813,7 @@
                ENDIF
 
 ! Setting flow boundary conditions
-            ELSEIF (BC_TYPE(L)=='P_INFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW') THEN
+            ELSEIF (BC_TYPE_ENUM(L)==P_INFLOW .OR. BC_TYPE_ENUM(L)==P_OUTFLOW) THEN
                IF (BC_PLANE(L) == 'W') THEN
                   I1 = BC_I_W(L)
                   I2 = BC_I_E(L)
@@ -840,7 +840,7 @@
                   ENDDO
                ENDIF
 
-            ELSEIF (BC_TYPE(L) == 'OUTFLOW') THEN
+            ELSEIF (BC_TYPE_ENUM(L) == OUTFLOW) THEN
                IF (BC_PLANE(L) == 'W') THEN
                   I1 = BC_I_W(L)
                   I2 = BC_I_E(L)

@@ -36,7 +36,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use bc, only: bc_type
+      use bc
       use bc, only: bc_k_b, bc_k_t
       use bc, only: bc_j_s, bc_j_n
       use bc, only: bc_i_w, bc_i_e
@@ -92,7 +92,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! Set the boundary cell value of the normal component of velocity
@@ -142,7 +142,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
 ! provide an initial value for the velocity component through the domain
@@ -186,7 +186,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
                   IF (ROP_G(IJK) > ZERO) THEN
@@ -221,7 +221,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
                   IF (V_G(IJK) == UNDEFINED) THEN
@@ -260,7 +260,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
                   IF (ROP_G(IJK) > ZERO) THEN
@@ -295,7 +295,7 @@
 
                   CALL SET_OUTFLOW_MISC(BCV, IJK, FIJK)
                   CALL SET_OUTFLOW_EP(BCV, IJK, FIJK, RVEL_G, RVEL_S)
-                  IF (BC_TYPE(BCV)=='P_INFLOW') &
+                  IF (BC_TYPE_ENUM(BCV)==P_INFLOW) &
                      CALL SET_PINOUTFLOW(BCV, IJK, FIJK, RVEL_G, RVEL_S)
 
                   IF (W_G(IJK) == UNDEFINED) THEN
@@ -356,7 +356,7 @@
 
 ! Global variables
 !---------------------------------------------------------------------//
-      use bc, only: bc_type
+      use bc
       use run, only: kt_type_enum, ghd_2007
       use fldvar, only: p_g, ro_g, T_g
       use fldvar, only: p_s, p_star
@@ -379,8 +379,8 @@
       INTEGER, INTENT(IN) :: FIJK
 !---------------------------------------------------------------------//
 
-      IF (BC_TYPE(BCV) /= 'P_OUTFLOW' .AND. &
-          BC_TYPE(BCV) /= 'P_INFLOW') P_G(IJK) = P_G(FIJK)
+      IF (BC_TYPE_ENUM(BCV) /= P_OUTFLOW .AND. &
+          BC_TYPE_ENUM(BCV) /= P_INFLOW) P_G(IJK) = P_G(FIJK)
 
       MW_MIX_G(IJK) = MW_MIX_G(FIJK)
 
@@ -414,7 +414,7 @@
 
 ! Global variables
 !---------------------------------------------------------------------//
-      use bc, only: bc_type, bc_ep_g, bc_rop_s
+      use bc
       use run, only: kt_type_enum, ghd_2007
       use physprop, only: smax, mmax
       use fldvar, only: rop_g, ro_g, ep_g
@@ -463,7 +463,7 @@
 
       DO M = 1, SMAX
 
-         IF(BC_TYPE(BCV) == 'P_INFLOW') THEN
+         IF(BC_TYPE_ENUM(BCV) == P_INFLOW) THEN
             ROP_S(IJK,M) = ROP_S(FIJK,M)
          ELSE
 ! the outflow type bc do not permit 're-entering' solids, in which

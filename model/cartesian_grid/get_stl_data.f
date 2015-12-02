@@ -184,7 +184,7 @@
 
          BC_LABELS_TO_READ = BC_LABELS_TO_READ + 1
 
-         IF(BC_TYPE(ZONE_ID)(1:2)=='CG') THEN
+         IF(IS_CG(BC_TYPE_ENUM(ZONE_ID))) THEN
 
             DO NN = N1,N2
                READ(333,*)PPFACE
@@ -410,7 +410,7 @@
                   BC_LABELS_READ = BC_LABELS_READ + 1
                   BC_LABEL_TEXT(ZONE,1) = TRIM(BUFF_CHAR(3))
                   BC_LABEL_TEXT(ZONE,2) = TRIM(BUFF_CHAR(4))
-                  IF(BC_TYPE(ZONE_ID)(1:2)=='CG') THEN
+                  IF(IS_CG(BC_TYPE_ENUM(ZONE_ID))) THEN
                      BC_ASSIGNED(ZONE) = .TRUE.
                   ENDIF
                ENDIF
@@ -440,7 +440,7 @@
                NFZ = FACE_ZONE_INFO(ZONE,3)-FACE_ZONE_INFO(ZONE,2) + 1
                N_FACES = N_FACES + NFZ
                L2=LEN(TRIM(BC_LABEL_TEXT(ZONE,2)))-4
-               WRITE(*,1000) ZID,BC_TYPE(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
+               WRITE(*,1000) ZID,BC_TYPE_ENUM(ZID),NFZ,BC_LABEL_TEXT(ZONE,1),BC_LABEL_TEXT(ZONE,2)(1:L2)
             ENDIF
          ENDDO
 
@@ -709,7 +709,7 @@
       ENDIF
       DO BCV = 1, DIMENSION_BC
 
-         IF(BC_TYPE(BCV)(1:2) == 'CG') THEN
+         IF(IS_CG(BC_TYPE_ENUM(BCV))) THEN
 
             NUMBER_OF_GEOMETRY_FILES = NUMBER_OF_GEOMETRY_FILES + 1
             NUMBER_OF_BC_PATCHES     = NUMBER_OF_BC_PATCHES + 1
@@ -718,7 +718,7 @@
             BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
             WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),200) 'geometry_',BCV
 
-            IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
+            IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE_ENUM(BCV)
 
          ENDIF
       ENDDO
@@ -839,7 +839,7 @@
 
                IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(NN), ' in STL file.'
 
-               IF(BC_TYPE(BC_PATCH(NN))(1:2)/='CG') THEN
+               IF(IS_CG(BC_TYPE_ENUM(BC_PATCH(NN)))) THEN
                   IF(MyPE == PE_IO)  THEN
                      WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(NN)
                      WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again'

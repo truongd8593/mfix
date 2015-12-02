@@ -69,7 +69,7 @@
 
       INTEGER          IJKW,IJKWW,IJKS,IJKSS,IJKB
 
-      CHARACTER(LEN=16) :: BCT1,BCT2,BCT3,BCT4
+      INTEGER :: BCT1,BCT2,BCT3,BCT4
 
       LOGICAL :: TEST1,TEST2
 !-----------------------------------------------
@@ -95,7 +95,7 @@
 
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
                IF (FLUID_AT(IM_OF(IJK))) THEN
                   LFLUID = IM_OF(IJK)
@@ -190,21 +190,21 @@
          IJKW = WEST_OF(IJK)
          IJKWW = WEST_OF(IJKW)
 
-         BCT1=''
-         BCT2=''
-         BCT3=''
+         BCT1=BLANK
+         BCT2=BLANK
+         BCT3=BLANK
          BCV = BC_ID(IJK)
-         IF(BCV>0) BCT1 = BC_TYPE(BCV)
+         IF(BCV>0) BCT1 = BC_TYPE_ENUM(BCV)
          BCV = BC_U_ID(IJK)
-         IF(BCV>0) BCT2 = BC_TYPE(BCV)
+         IF(BCV>0) BCT2 = BC_TYPE_ENUM(BCV)
          BCV = BC_U_ID(IJKW)
-         IF(BCV>0) BCT3 = BC_TYPE(BCV)
+         IF(BCV>0) BCT3 = BC_TYPE_ENUM(BCV)
          BCV = BC_ID(IJKW)
-         IF(BCV>0) BCT4 = BC_TYPE(BCV)
+         IF(BCV>0) BCT4 = BC_TYPE_ENUM(BCV)
 
-         TEST1= ((BCT1 == 'CG_PO').AND.(BCT2 /= 'CG_PO').AND.(BCT3 == 'CG_PO'))
+         TEST1= ((BCT1 == CG_PO).AND.(BCT2 /= CG_PO).AND.(BCT3 == CG_PO))
 
-         TEST2 = (BCT2 == 'CG_PO').AND.(BCT4 /= 'CG_PO')
+         TEST2 = (BCT2 == CG_PO).AND.(BCT4 /= CG_PO)
 
 !         TEST2 = (FLAG(IJK) == 11)
 
@@ -327,7 +327,7 @@
 
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
 
                IF (FLUID_AT(IP_OF(IJK))) THEN
@@ -335,7 +335,7 @@
 !            print*,'east treatment:IJK,LFLUID=',IJK,LFLUID
 !            read(*,*)
 !                  IF (U_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
-!                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
+!                     IF (BC_TYPE_ENUM(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
                      NN = 1
                      IF (NMAX(0) > 0) THEN
@@ -426,10 +426,10 @@
 !
 !      print*,'south'
           BCV = BC_V_ID(IJK)
-!      print*,ijk,I,J,K,bcv,BC_TYPE(BCV)
+!      print*,ijk,I,J,K,bcv,BC_TYPE_ENUM(BCV)
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
 
                IF (FLUID_AT(JM_OF(IJK))) THEN
@@ -439,7 +439,7 @@
 
 
 !                  IF (V_G(LFLUID)>=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
-!                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
+!                     IF (BC_TYPE_ENUM(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
                      NN = 1
                      IF (NMAX(0) > 0) THEN
@@ -519,25 +519,25 @@
          IJKS = SOUTH_OF(IJK)
          IJKSS = SOUTH_OF(IJKS)
 !         print*,'ijk,ijks=',ijk,ijks,JM_OF(IJK)
-         BCT1=''
-         BCT2=''
-         BCT3=''
+         BCT1=BLANK
+         BCT2=BLANK
+         BCT3=BLANK
          BCV = BC_ID(IJK)
 !         print*,'bcv=',bcv
-         IF(BCV>0) BCT1 = BC_TYPE(BCV)
+         IF(BCV>0) BCT1 = BC_TYPE_ENUM(BCV)
          BCV = BC_V_ID(IJK)
 !         print*,'bcv=',bcv
-         IF(BCV>0) BCT2 = BC_TYPE(BCV)
+         IF(BCV>0) BCT2 = BC_TYPE_ENUM(BCV)
          BCV = BC_V_ID(IJKS)
 !         print*,'bcv=',bcv
-         IF(BCV>0) BCT3 = BC_TYPE(BCV)
+         IF(BCV>0) BCT3 = BC_TYPE_ENUM(BCV)
 
 !         IF((BCT1 == 'CG_PO').AND.(BCT2 /= 'CG_PO').AND.(BCT3 == 'CG_PO')) THEN
 
 
 
-         TEST1 = (BCT1 == 'CG_PO').AND.(BCT2 /= 'CG_PO').AND.(BCT3 == 'CG_PO')
-         TEST2 = (FLAG(IJK) == 11).AND.(BCT2 == 'CG_PO')
+         TEST1 = (BCT1 == CG_PO).AND.(BCT2 /= CG_PO).AND.(BCT3 == CG_PO)
+         TEST2 = (FLAG(IJK) == 11).AND.(BCT2 == CG_PO)
 
          TEST2 = (FLAG(IJK) == 11)
 
@@ -648,7 +648,7 @@
 
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
 
                IF (FLUID_AT(JP_OF(IJK))) THEN
@@ -658,7 +658,7 @@
 !            read(*,*)
 
 !                  IF (V_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
-!                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
+!                     IF (BC_TYPE_ENUM(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
                      NN = 1
                      IF (NMAX(0) > 0) THEN
@@ -747,12 +747,12 @@
 
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
                IF (FLUID_AT(KM_OF(IJK))) THEN
                   LFLUID = KM_OF(IJK)
 !                  IF (W_G(LFLUID)>=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
-!                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
+!                     IF (BC_TYPE_ENUM(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
                      NN = 1
                      IF (NMAX(0) > 0) THEN
@@ -831,17 +831,17 @@
          ENDIF
 
          IJKB = BOTTOM_OF(IJK)
-         BCT1=''
-         BCT2=''
-         BCT3=''
+         BCT1=BLANK
+         BCT2=BLANK
+         BCT3=BLANK
          BCV = BC_ID(IJK)
-         IF(BCV>0) BCT1 = BC_TYPE(BCV)
+         IF(BCV>0) BCT1 = BC_TYPE_ENUM(BCV)
          BCV = BC_W_ID(IJK)
-         IF(BCV>0) BCT2 = BC_TYPE(BCV)
+         IF(BCV>0) BCT2 = BC_TYPE_ENUM(BCV)
          BCV = BC_W_ID(IJKB)
-         IF(BCV>0) BCT3 = BC_TYPE(BCV)
+         IF(BCV>0) BCT3 = BC_TYPE_ENUM(BCV)
 
-         IF((BCT1 == 'CG_PO').AND.(BCT2 /= 'CG_PO').AND.(BCT3 == 'CG_PO')) THEN
+         IF((BCT1 == CG_PO).AND.(BCT2 /= CG_PO).AND.(BCT3 == CG_PO)) THEN
 !            print*,'IJK,IJKB=',IJK,IJKB
 !            read(*,*)
 
@@ -933,13 +933,13 @@
 
           IF(BCV>0)THEN
 
-            IF (BC_TYPE(BCV) == 'CG_PO') THEN
+            IF (BC_TYPE_ENUM(BCV) == CG_PO) THEN
 
 
                IF (FLUID_AT(KP_OF(IJK))) THEN
                   LFLUID = KP_OF(IJK)
 !                  IF (W_G(IJK)<=ZERO .OR. EP_G(IJK)==UNDEFINED) THEN
-!                     IF (BC_TYPE(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
+!                     IF (BC_TYPE_ENUM(BCV) /= 'P_OUTFLOW') P_G(IJK) = P_G(LFLUID)
                      T_G(IJK) = T_G(LFLUID)
                      NN = 1
                      IF (NMAX(0) > 0) THEN

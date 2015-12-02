@@ -71,7 +71,7 @@
 ! used for activating check_data_30
       INTEGER :: NCHECK, DNCHECK
 ! dummy logical variable for initializing adjust_dt
-      LOGICAL :: dummy
+      LOGICAL :: dummy_adjust_dt
 
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
@@ -306,7 +306,7 @@
       IF(STIFF_CHEMISTRY) THEN
          CALL STIFF_CHEM_SOLVER(DT, IER)
          IF(IER /= 0) THEN
-            dummy = ADJUSTDT(IER, NIT)
+            dummy_adjust_dt = ADJUSTDT(IER, NIT)
             GOTO 150
          ENDIF
       ENDIF

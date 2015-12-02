@@ -43,8 +43,8 @@
 ! when the search for a master cell fails
 !======================================================================
       DO L = 1, DIMENSION_BC
-         IF (.NOT.BC_DEFINED(L).AND.BC_TYPE(L)(1:2)/='CG') THEN
-            BC_TYPE(L)='CG_NSW'
+         IF (.NOT. (BC_DEFINED(L).OR.IS_CG(BC_TYPE_ENUM(L)))) THEN
+            BC_TYPE_ENUM(L)=CG_NSW
             NSW_GHOST_BC_ID = L
             EXIT
          ENDIF
@@ -127,7 +127,7 @@
             IF(.NOT.MASTER_FOUND) THEN
                BCV = BC_U_ID(IJK)
                IF(BCV>0) THEN
-                  IF(BC_TYPE(BCV) == 'CG_FSW') THEN
+                  IF(BC_TYPE_ENUM(BCV) == CG_FSW) THEN
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_U_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR U_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'
@@ -272,7 +272,7 @@
             IF(.NOT.MASTER_FOUND) THEN
                BCV = BC_V_ID(IJK)
                IF(BCV>0) THEN
-                  IF(BC_TYPE(BCV) == 'CG_FSW') THEN
+                  IF(BC_TYPE_ENUM(BCV) == CG_FSW) THEN
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_V_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR V_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'
@@ -415,7 +415,7 @@
             IF(.NOT.MASTER_FOUND) THEN
                BCV = BC_W_ID(IJK)
                IF(BCV>0) THEN
-                  IF(BC_TYPE(BCV) == 'CG_FSW') THEN
+                  IF(BC_TYPE_ENUM(BCV) == CG_FSW) THEN
                      WRITE(*,*) ' WARNING IN SUBROUTINE: GET_W_MASTER_CELLS:'
                      WRITE(*,*) ' NO MASTER CELL FOUND FOR W_MOMENTUM WALL CELL:', IJK,I,J,K
                      WRITE(*,*) ' REVERTING TO NO SLIP WALL BOUNDARY CONDITION IN THIS CELL'

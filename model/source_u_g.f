@@ -582,7 +582,7 @@
 
 ! Setting wall boundary conditions
 ! ---------------------------------------------------------------->>>
-            IF (BC_TYPE(L) == 'NO_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN
+            IF (BC_TYPE_ENUM(L) == NO_SLIP_WALL .AND. .NOT. K_Epsilon) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -617,7 +617,7 @@
                   ENDDO
                ENDDO
 
-            ELSEIF (BC_TYPE(L) == 'FREE_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN
+            ELSEIF (BC_TYPE_ENUM(L) == FREE_SLIP_WALL .AND. .NOT. K_Epsilon) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -652,7 +652,7 @@
                   ENDDO
                ENDDO
 
-            ELSEIF (BC_TYPE(L) == 'PAR_SLIP_WALL' .AND. .NOT. K_Epsilon) THEN
+            ELSEIF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL .AND. .NOT. K_Epsilon) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -724,9 +724,9 @@
                ENDDO
 
 ! Setting wall boundary conditions when K_EPSILON
-            ELSEIF (BC_TYPE(L) == 'PAR_SLIP_WALL'   .OR.  &
-                    BC_TYPE(L) == 'NO_SLIP_WALL'    .OR.  &
-                    BC_TYPE(L) == 'FREE_SLIP_WALL'  .AND. &
+            ELSEIF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL   .OR.  &
+                    BC_TYPE_ENUM(L) == NO_SLIP_WALL    .OR.  &
+                    BC_TYPE_ENUM(L) == FREE_SLIP_WALL  .AND. &
                     K_Epsilon )THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
@@ -755,22 +755,22 @@
                            CALL Wall_Function(IJK,NORTH_OF(IJK),ODY_N(J),W_F_Slip)
                            A_M(IJK,north,M) = W_F_Slip
                            A_M(IJK,0,M) = -ONE
-                           IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_UW_G(L)
+                           IF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) B_M(IJK,M) = -BC_UW_G(L)
                         ELSEIF (FLUID_AT(SOUTH_OF(IJK))) THEN
                            CALL Wall_Function(IJK,SOUTH_OF(IJK),ODY_N(JM),W_F_Slip)
                            A_M(IJK,south,M) = W_F_Slip
                            A_M(IJK,0,M) = -ONE
-                           IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_UW_G(L)
+                           IF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) B_M(IJK,M) = -BC_UW_G(L)
                         ELSEIF (FLUID_AT(TOP_OF(IJK))) THEN
                            CALL Wall_Function(IJK,TOP_OF(IJK),ODZ_T(K)*OX_E(I),W_F_Slip)
                            A_M(IJK,top,M) = W_F_Slip
                            A_M(IJK,0,M) = -ONE
-                           IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_UW_G(L)
+                           IF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) B_M(IJK,M) = -BC_UW_G(L)
                         ELSEIF (FLUID_AT(BOTTOM_OF(IJK))) THEN
                            CALL Wall_Function(IJK,BOTTOM_OF(IJK),ODZ_T(KM)*OX_E(I),W_F_Slip)
                            A_M(IJK,bottom,M) = W_F_Slip
                            A_M(IJK,0,M) = -ONE
-                           IF (BC_TYPE(L) == 'PAR_SLIP_WALL') B_M(IJK,M) = -BC_UW_G(L)
+                           IF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) B_M(IJK,M) = -BC_UW_G(L)
                         ENDIF
                      ENDDO
                   ENDDO
@@ -780,7 +780,7 @@
 
 ! Setting p_inflow or p_outflow flow boundary conditions
 ! ---------------------------------------------------------------->>>
-            ELSEIF (BC_TYPE(L)=='P_INFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW') THEN
+            ELSEIF (BC_TYPE_ENUM(L)==P_INFLOW .OR. BC_TYPE_ENUM(L)==P_OUTFLOW) THEN
                IF (BC_PLANE(L) == 'W') THEN
 ! if the fluid cell is on the west side of the outflow/inflow boundary
 ! then set the velocity in the boundary cell equal to the velocity of
@@ -814,7 +814,7 @@
 
 ! Setting outflow flow boundary conditions
 ! ---------------------------------------------------------------->>>
-            ELSEIF (BC_TYPE(L) == 'OUTFLOW') THEN
+            ELSEIF (BC_TYPE_ENUM(L) == OUTFLOW) THEN
                IF (BC_PLANE(L) == 'W') THEN
                   I1 = BC_I_W(L)
                   I2 = BC_I_E(L)

@@ -84,7 +84,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! User-input: type of BC
-      use bc, only: BC_TYPE
+      use bc
 ! User-Input: gas velocity at wall BCs.
       use bc, only: BC_UW_G, BC_VW_G, BC_WW_G
 ! User-Input: gas energy eq BCs.
@@ -123,7 +123,7 @@
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_GAS")
 
 ! The wall velocities are not needed for no-slip or free-slip
-      IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL') THEN
+      IF(BC_TYPE_ENUM(BCV) == PAR_SLIP_WALL) THEN
          IF(BC_UW_G(BCV) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_g',BCV))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -210,7 +210,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! User-input: type of BC
-      use bc, only: BC_TYPE
+      use bc
 ! User-Input: solids velocity at wall BCs.
       use bc, only: BC_UW_s, BC_VW_s, BC_WW_s
 ! User-Input: solids energy eq BCs.
@@ -312,7 +312,7 @@
 ! The wall velocities are not needed for no-slip or free-slip
 ! Wall velocities are needed if johnson-jackson bc model is used
       IF(CHECK_MOMENTUM) THEN
-         IF(BC_TYPE(BCV) == 'PAR_SLIP_WALL' .OR. &
+         IF(BC_TYPE_ENUM(BCV) == PAR_SLIP_WALL .OR. &
             BC_JJ_PS(BCV) /= ZERO) THEN
             IF(BC_UW_S(BCV,M) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('BC_Uw_s',BCV,M))

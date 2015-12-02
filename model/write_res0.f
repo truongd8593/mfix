@@ -215,7 +215,7 @@
             NEXT_RECA)
       END DO
       DO LC = 1, DIMENSION_BC
-         WRITE (UNIT_RES, REC=NEXT_RECA) BC_TYPE(LC)
+         WRITE (UNIT_RES, REC=NEXT_RECA) BC_TYPE_ENUM(LC)
          NEXT_RECA = NEXT_RECA + 1
       END DO
 

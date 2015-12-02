@@ -23,7 +23,7 @@
 ! Flag: BC dimensions or Type is specified
       use bc, only: BC_DEFINED
 ! Use specified BC type
-      use bc, only: BC_TYPE
+      use bc
 ! User specified BC solids bulk density
       use bc, only: BC_ROP_s
 ! Solids volume fraction at BC
@@ -82,50 +82,50 @@
 
             IF(MMAX_TOT == 1 .AND. BC_EP_g(BCV)/=ONE) SKIP(1) = .FALSE.
 
-            SELECT CASE (TRIM(BC_TYPE(BCV)))
+            SELECT CASE (BC_TYPE_ENUM(BCV))
 
-            CASE ('MASS_INFLOW')
+            CASE (MASS_INFLOW)
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
                CALL CHECK_BC_MASS_INFLOW(MMAX_TOT, SKIP, BCV)
                CALL CHECK_BC_INFLOW(MMAX_TOT,SKIP,BCV)
 
-            CASE ('P_INFLOW')
+            CASE (P_INFLOW)
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
                CALL CHECK_BC_P_INFLOW(MMAX_TOT, SKIP, BCV)
                CALL CHECK_BC_INFLOW(MMAX_TOT, SKIP, BCV)
                CALL CHECK_BC_OUTFLOW(MMAX_TOT, BCV)
 
-            CASE ('OUTFLOW')
+            CASE (OUTFLOW)
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
                CALL CHECK_BC_OUTFLOW(MMAX_TOT, BCV)
 
-            CASE ('MASS_OUTFLOW')
+            CASE (MASS_OUTFLOW)
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
                CALL CHECK_BC_MASS_OUTFLOW(MMAX_TOT, BCV)
                CALL CHECK_BC_OUTFLOW(MMAX_TOT, BCV)
 
-            CASE ('P_OUTFLOW')
+            CASE (P_OUTFLOW)
                CALL CHECK_BC_GEOMETRY_FLOW(BCV)
                CALL CHECK_BC_P_OUTFLOW(MMAX_TOT, BCV)
                CALL CHECK_BC_OUTFLOW(MMAX_TOT, BCV)
 
-            CASE ('FREE_SLIP_WALL')
+            CASE (FREE_SLIP_WALL)
                CALL CHECK_BC_GEOMETRY_WALL(BCV)
                CALL CHECK_BC_WALLS(MMAX_TOT, SKIP, BCV)
 
-            CASE ('NO_SLIP_WALL')
+            CASE (NO_SLIP_WALL)
                CALL CHECK_BC_GEOMETRY_WALL(BCV)
                CALL CHECK_BC_WALLS(MMAX_TOT, SKIP, BCV)
 
-            CASE ('PAR_SLIP_WALL')
+            CASE (PAR_SLIP_WALL)
                CALL CHECK_BC_GEOMETRY_WALL(BCV)
                CALL CHECK_BC_WALLS(MMAX_TOT, SKIP, BCV)
 
             END SELECT
 
 ! Check whether BC values are specified for undefined BC locations
-         ELSEIF(BC_TYPE(BCV) /= 'DUMMY' .AND.                          &
-            BC_TYPE(BCV)(1:2) /= 'CG') THEN
+         ELSEIF(BC_TYPE_ENUM(BCV) /= DUMMY .AND.                          &
+            .NOT.IS_CG(BC_TYPE_ENUM(BCV))) THEN
 
             CALL CHECK_BC_RANGE(BCV)
 

@@ -919,8 +919,8 @@
 
       DO BCV = 1, DIMENSION_BC
 
-         IF (BC_TYPE(BCV) == 'CG_MI') THEN
-            BC_TYPE(BCV) = 'CG_NSW'
+         IF (BC_TYPE_ENUM(BCV) == CG_MI) THEN
+            BC_TYPE_ENUM(BCV) = CG_NSW
             CG_MI_CONVERTED_TO_PS(BCV) = .TRUE.
             if(MyPE==0) print*,'From check_data_cartesian: Converted CG_MI to CG_NSW for BC#',BCV
          ENDIF
@@ -1025,7 +1025,7 @@
          BCV = BC_ID(IJK)
          IF(BCV>0) THEN
 
-            IF(BC_TYPE(BCV)  == 'CG_MI') THEN
+            IF(BC_TYPE_ENUM(BCV)  == CG_MI) THEN
 
                print*,'CG_MI at', IJK  ! This should not be printed on the screen anymore after conversion to point source.
 
@@ -1034,7 +1034,7 @@
 !               FLAG_N(IJK) = UNDEFINED_I
 !               FLAG_T(IJK) = UNDEFINED_I
 
-            ELSEIF(BC_TYPE(BCV)  == 'CG_PO') THEN
+            ELSEIF(BC_TYPE_ENUM(BCV)  == CG_PO) THEN
 
                FLAG(IJK) = 11
                FLAG_E(IJK) = UNDEFINED_I
@@ -1044,7 +1044,7 @@
                IJKW = WEST_OF(IJK)
                BCV_U = BC_U_ID(IJKW)
                IF(BCV_U>0) THEN
-                  IF(BC_TYPE(BCV_U)  == 'CG_PO') THEN
+                  IF(BC_TYPE_ENUM(BCV_U)  == CG_PO) THEN
                      FLAG(IJKW) = 11
                      FLAG_E(IJKW) = UNDEFINED_I
                      FLAG_N(IJKW) = UNDEFINED_I
@@ -1055,7 +1055,7 @@
                IJKS = SOUTH_OF(IJK)
                BCV_V = BC_V_ID(IJKS)
                IF(BCV_V>0) THEN
-                  IF(BC_TYPE(BCV_V)  == 'CG_PO') THEN
+                  IF(BC_TYPE_ENUM(BCV_V)  == CG_PO) THEN
                      FLAG(IJKS) = 11
                      FLAG_E(IJKS) = UNDEFINED_I
                      FLAG_N(IJKS) = UNDEFINED_I
@@ -1067,7 +1067,7 @@
                   IJKB = BOTTOM_OF(IJK)
                   BCV_W = BC_W_ID(IJKB)
                   IF(BCV_W>0) THEN
-                     IF(BC_TYPE(BCV_W)  == 'CG_PO') THEN
+                     IF(BC_TYPE_ENUM(BCV_W)  == CG_PO) THEN
                         FLAG(IJKB) = 11
                         FLAG_E(IJKB) = UNDEFINED_I
                         FLAG_N(IJKB) = UNDEFINED_I
@@ -1084,7 +1084,7 @@
       DO IJK = ijkstart3, ijkend3
          BCV = BC_ID(IJK)
          IF(BCV>0) THEN
-            IF(BC_TYPE(BCV)  == 'CG_MI') THEN
+            IF(BC_TYPE_ENUM(BCV)  == CG_MI) THEN
 
 !               IJKW = WEST_OF(IJK)
 !               IF(FLUID_AT(IJKW)) THEN
@@ -1313,7 +1313,7 @@
                ENDDO
 
 
-            ELSEIF(BC_TYPE(BCV)  == 'CG_PO') THEN
+            ELSEIF(BC_TYPE_ENUM(BCV)  == CG_PO) THEN
 
                IJKW = WEST_OF(IJK)
                IF(FLUID_AT(IJKW)) THEN
@@ -1322,7 +1322,7 @@
 
                BCV_U = BC_U_ID(IJKW)
                IF(BCV_U>0) THEN
-                  IF(BC_TYPE(BCV_U)  == 'CG_PO') THEN
+                  IF(BC_TYPE_ENUM(BCV_U)  == CG_PO) THEN
                     IJKWW = WEST_OF(IJKW)
                     IF(FLUID_AT(IJKWW)) THEN
                        FLAG_E(IJKWW) = 2011
@@ -1337,7 +1337,7 @@
 
                BCV_V = BC_V_ID(IJKS)
                IF(BCV_V>0) THEN
-                  IF(BC_TYPE(BCV_V)  == 'CG_PO') THEN
+                  IF(BC_TYPE_ENUM(BCV_V)  == CG_PO) THEN
                     IJKSS = SOUTH_OF(IJKS)
                     IF(FLUID_AT(IJKSS)) THEN
                        FLAG_N(IJKSS) = 2011
@@ -1354,7 +1354,7 @@
 
                   BCV_W = BC_W_ID(IJKB)
                   IF(BCV_W>0) THEN
-                     IF(BC_TYPE(BCV_W)  == 'CG_PO') THEN
+                     IF(BC_TYPE_ENUM(BCV_W)  == CG_PO) THEN
                        IJKBB = BOTTOM_OF(IJKB)
                        IF(FLUID_AT(IJKBB)) THEN
                           FLAG_T(IJKBB) = 2011
@@ -1930,7 +1930,7 @@
 
       DO BCV = 1, DIMENSION_BC
 
-         IF (BC_TYPE(BCV)=='CG_MI') THEN
+         IF (BC_TYPE_ENUM(BCV)==CG_MI) THEN
 
             IF(BC_VELMAG_g(BCV)==UNDEFINED) THEN
 !
@@ -1950,7 +1950,7 @@
                         VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,(BC_P_G(BCV)-P_REF), &
                                                  BC_T_G(BCV))
                      ELSE
-                        IF (BC_TYPE(BCV) == 'CG_MO') THEN
+                        IF (BC_TYPE_ENUM(BCV) == CG_MO) THEN
                            IF (BC_MASSFLOW_G(BCV) == ZERO) THEN
                               VOLFLOW = ZERO
                            ENDIF
@@ -2336,8 +2336,8 @@
 
 !     print*,'setting bc_type to CG_NSW and exiting'
 !      DO BCV = 1, DIMENSION_BC
-!         IF (BC_TYPE(BCV) == 'CG_MI') THEN
-!            BC_TYPE(BCV) = 'CG_NSW'
+!         IF (BC_TYPE_ENUM(BCV) == 'CG_MI') THEN
+!            BC_TYPE_ENUM(BCV) = 'CG_NSW'
 !            print*,'Converted CG_MI to CG_FSW for BC#',BCV
 !         ENDIF
 !      ENDDO
@@ -2447,8 +2447,8 @@
       ENDDO
 
 !      DO BCV = 1, DIMENSION_BC
-!         IF (BC_TYPE(BCV) == 'CG_MI') THEN
-!            BC_TYPE(BCV) = 'CG_NSW'
+!         IF (BC_TYPE_ENUM(BCV) == 'CG_MI') THEN
+!            BC_TYPE_ENUM(BCV) = 'CG_NSW'
 !            print*,'Converted CG_MI to CG_FSW for BC#',BCV
 !         ENDIF
 !      ENDDO

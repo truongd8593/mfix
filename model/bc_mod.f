@@ -142,8 +142,19 @@
 !
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
-      CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
+      ! CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
+      INTEGER(KIND=16)     BC_TYPE_ENUM (DIMENSION_BC)
 
+      ENUM, BIND(C)
+         ENUMERATOR :: CG_NSW, CG_FSW, CG_PSW, CG_MI, NONE
+         ENUMERATOR :: NO_SLIP_WALL, FREE_SLIP_WALL, PAR_SLIP_WALL
+         ENUMERATOR :: P_OUTFLOW, MASS_OUTFLOW, OUTFLOW
+         ENUMERATOR :: P_INFLOW, MASS_INFLOW
+         ENUMERATOR :: CG_PO, CG_MO
+         ENUMERATOR :: BLANK
+         ENUMERATOR :: DUMMY
+         ENUMERATOR :: SPECULAR_REFLECTIVE
+      END ENUM
 
 !                      FLAG to specify if this PO BC applies to solid phase
 !                      in discrete implementation or not. For example, setting
@@ -375,5 +386,36 @@
 ! for the PIC solids
 ! Number of computational particles/parcels will be calculated by the code
       DOUBLE PRECISION :: BC_PIC_MI_CONST_STATWT(DIMENSION_BC, DIM_M)
+
+    CONTAINS
+
+      LOGICAL FUNCTION IS_CG(boundary_condition)
+        implicit none
+        INTEGER(16), intent(in) :: boundary_condition
+        IS_CG = ((boundary_condition .eq. CG_PO) &
+             .or. (boundary_condition .eq. CG_MO) &
+             )
+      END FUNCTION IS_CG
+
+      LOGICAL FUNCTION IS_NSW(boundary_condition)
+        implicit none
+        INTEGER(16), intent(in) :: boundary_condition
+        IS_NSW = ((boundary_condition .eq. CG_NSW) &
+             )
+      END FUNCTION IS_NSW
+
+      LOGICAL FUNCTION IS_FSW(boundary_condition)
+        implicit none
+        INTEGER(16), intent(in) :: boundary_condition
+        IS_FSW = ((boundary_condition .eq. CG_FSW) &
+             )
+      END FUNCTION IS_FSW
+
+      LOGICAL FUNCTION IS_PSW(boundary_condition)
+        implicit none
+        INTEGER(16), intent(in) :: boundary_condition
+        IS_PSW = ((boundary_condition .eq. CG_PSW) &
+             )
+      END FUNCTION IS_PSW
 
       END MODULE bc

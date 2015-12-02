@@ -74,7 +74,7 @@
       DOUBLE PRECISION :: MU_S_E,MU_S_W,MU_S_N,MU_S_S,MU_S_T,MU_S_B,MU_S_CUT
       DOUBLE PRECISION :: VW_s
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN
@@ -124,21 +124,21 @@
                ELSEIF(INTERIOR_CELL_AT(IJK)) THEN
                   BCV = BC_V_ID(IJK)
                   IF(BCV > 0 ) THEN
-                     BCT = BC_TYPE(BCV)
+                     BCT = BC_TYPE_ENUM(BCV)
                   ELSE
-                     BCT = 'NONE'
+                     BCT = NONE
                   ENDIF
 
                   SELECT CASE (BCT)
-                     CASE ('CG_NSW')
+                     CASE (CG_NSW)
                         NOC_VS = .TRUE.
                         VW_s = ZERO
                         MU_S_CUT = (VOL(IJK)*MU_S(IJK,M) + VOL(IJKN)*MU_S(IJKN,M))/(VOL(IJK) + VOL(IJKN))
                         A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_S_CUT * Area_V_CUT(IJK)/DELH_V(IJK)
-                     CASE ('CG_FSW')
+                     CASE (CG_FSW)
                         NOC_VS = .FALSE.
                         VW_s = ZERO
-                     CASE('CG_PSW')
+                     CASE(CG_PSW)
                         IF(BC_JJ_PS(BCV)==1) THEN   ! Johnson-Jackson partial slip bc
                            NOC_VS = .FALSE.
                            VW_s = BC_VW_S(BCV,M)
@@ -161,7 +161,7 @@
                            A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_V_CUT(IJK)*(BC_HW_S(BCV,M))
                            B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * VW_s * Area_V_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
-                     CASE ('NONE', 'CG_MI')
+                     CASE (NONE, CG_MI)
                         NOC_VS = .FALSE.
 
                   END SELECT
@@ -337,7 +337,7 @@
       INTEGER :: IJK, IJKS
 ! for cartesian grid:
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !-----------------------------------------------
 
       IF(CG_SAFE_MODE(4)==1) RETURN
@@ -346,13 +346,13 @@
 
          BCV = BC_V_ID(IJK)
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
          SELECT CASE (BCT)
-            CASE ('CG_NSW')
+            CASE (CG_NSW)
                IF(WALL_V_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -365,7 +365,7 @@
                ENDIF
 
 
-            CASE ('CG_FSW')
+            CASE (CG_FSW)
                IF(WALL_V_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -394,7 +394,7 @@
                ENDIF
 
 
-            CASE ('CG_PSW')
+            CASE (CG_PSW)
                IF(WALL_V_AT(IJK)) THEN
                   A_M(IJK,east,M) = ZERO
                   A_M(IJK,west,M) = ZERO
@@ -443,7 +443,7 @@
                ENDIF
 
 
-            CASE ('CG_MI')
+            CASE (CG_MI)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -473,7 +473,7 @@
                ENDIF
 
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -497,14 +497,14 @@
 ! this is straight repeat of section of above code...?
          BCV = BC_ID(IJK)
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
 
          SELECT CASE (BCT)
-            CASE ('CG_MI')
+            CASE (CG_MI)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
@@ -534,7 +534,7 @@
                ENDIF
 
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
                A_M(IJK,north,M) = ZERO
