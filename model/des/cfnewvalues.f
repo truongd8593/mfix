@@ -87,7 +87,6 @@
             DES_VEL_NEW(:,2) + DTSOLID*(FC(:,2)/PMASS(:) + GRAV(2))
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,2) =       &
             DES_POS_NEW(:,2) + DES_VEL_NEW(:,2)*DTSOLID
-         !$omp section
          FC(:,2) = ZERO
 
 !$omp section
@@ -118,12 +117,12 @@
 
 !$omp sections
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,1) = FC(:MAX_PIP,1)/PMASS(:MAX_PIP) + GRAV(1)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             DES_VEL_NEW(:MAX_PIP,1) = DES_VEL_OLD(:MAX_PIP,1) + 0.5d0* &
                (3.d0*FC(:MAX_PIP,1)-DES_ACC_OLD(:MAX_PIP,1) )*DTSOLID
             DES_ACC_OLD(:MAX_PIP,1) = FC(:MAX_PIP,1)
-         ENDWHERE
 
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:MAX_PIP,1) = DES_POS_OLD(:MAX_PIP,1) + 0.5d0* &
@@ -131,12 +130,12 @@
          FC(:MAX_PIP,1) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,2) = FC(:MAX_PIP,2)/PMASS(:MAX_PIP) + GRAV(2)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             DES_VEL_NEW(:MAX_PIP,2) = DES_VEL_OLD(:MAX_PIP,2) + 0.5d0* &
                (3.d0*FC(:MAX_PIP,2)-DES_ACC_OLD(:MAX_PIP,2) )*DTSOLID
             DES_ACC_OLD(:MAX_PIP,2) = FC(:MAX_PIP,2)
-         ENDWHERE
 
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:MAX_PIP,2) = DES_POS_OLD(:MAX_PIP,2) + 0.5d0* &
@@ -144,12 +143,12 @@
          FC(:MAX_PIP,2) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,3) = FC(:MAX_PIP,3)/PMASS(:MAX_PIP) + GRAV(3)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             DES_VEL_NEW(:MAX_PIP,3) = DES_VEL_OLD(:MAX_PIP,3) + 0.5d0* &
                  (3.d0*FC(:MAX_PIP,3)-DES_ACC_OLD(:MAX_PIP,3) )*DTSOLID
             DES_ACC_OLD(:MAX_PIP,3) = FC(:MAX_PIP,3)
-         ENDWHERE
 
          WHERE(PARTICLE_STATE < NORMAL_GHOST)                          &
             DES_POS_NEW(:MAX_PIP,3) = DES_POS_OLD(:MAX_PIP,3) + 0.5d0* &
@@ -157,30 +156,30 @@
          FC(:MAX_PIP,3) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE(:MAX_PIP) == NORMAL_PARTICLE)
-            OMEGA_NEW(:MAX_PIP,1) = OMEGA_OLD(:MAX_PIP,1) + 0.5d0*     &
+        WHERE(PARTICLE_STATE(:MAX_PIP) == NORMAL_PARTICLE) &
+           OMEGA_NEW(:MAX_PIP,1) = OMEGA_OLD(:MAX_PIP,1) + 0.5d0*     &
                (3.d0*TOW(:MAX_PIP,1)*OMOI(:MAX_PIP) -                  &
                ROT_ACC_OLD(:MAX_PIP,1))*DTSOLID
+        WHERE(PARTICLE_STATE(:MAX_PIP) == NORMAL_PARTICLE) &
             ROT_ACC_OLD(:MAX_PIP,1) = TOW(:MAX_PIP,1)*OMOI(:MAX_PIP)
-         ENDWHERE
          TOW(:MAX_PIP,1) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             OMEGA_NEW(:MAX_PIP,2) = OMEGA_OLD(:MAX_PIP,2) + 0.5d0*     &
                  (3.d0*TOW(:MAX_PIP,2)*OMOI(:MAX_PIP)-                 &
                  ROT_ACC_OLD(:MAX_PIP,2) )*DTSOLID
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             ROT_ACC_OLD(:MAX_PIP,2) = TOW(:MAX_PIP,2)*OMOI(:MAX_PIP)
-         ENDWHERE
          TOW(:MAX_PIP,2) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)
+        WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             OMEGA_NEW(:MAX_PIP,3) = OMEGA_OLD(:MAX_PIP,3) + 0.5d0*     &
                (3.d0*TOW(:MAX_PIP,3)*OMOI(:MAX_PIP)-                   &
                ROT_ACC_OLD(:MAX_PIP,3) )*DTSOLID
+        WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             ROT_ACC_OLD(:MAX_PIP,3) = TOW(:MAX_PIP,3)*OMOI(:MAX_PIP)
-         ENDWHERE
          TOW(:MAX_PIP,3) = ZERO
 
 !$omp end sections
@@ -220,11 +219,16 @@ endif
 ! Check if the particle has moved a distance greater than or equal to
 ! its radius since the last time a neighbor search was called. if so,
 ! make sure that neighbor is called in des_time_march
-      IF(.NOT.DO_NSEARCH) DO_NSEARCH = any(              &
-         (DES_POS_NEW(:,1) - PPOS(:,1))**2+              &
-         (DES_POS_NEW(:,2) - PPOS(:,2))**2+              &
-         (DES_POS_NEW(:,3) - PPOS(:,3))**2  >=           &
-         (NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(:))**2)
+      IF(.NOT.DO_NSEARCH) THEN
+!$omp do reduction (.or.:do_nsearch)
+         DO L = 1, MAX_PIP
+            DO_NSEARCH = DO_NSEARCH .or. &
+               (DES_POS_NEW(L,1) - PPOS(L,1))**2+              &
+               (DES_POS_NEW(L,2) - PPOS(L,2))**2+              &
+               (DES_POS_NEW(L,3) - PPOS(L,3))**2  >=           &
+               (NEIGHBOR_SEARCH_RAD_RATIO*DES_RADIUS(L))**2
+         ENDDO
+      ENDIF
 
 !$omp end parallel
 
