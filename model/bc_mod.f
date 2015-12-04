@@ -423,6 +423,10 @@
         INTEGER, intent(in) :: boundary_condition
         IS_CG = ((boundary_condition .eq. CG_PO) &
              .or. (boundary_condition .eq. CG_MO) &
+             .or. (boundary_condition .eq. CG_NSW) &
+             .or. (boundary_condition .eq. CG_FSW) &
+             .or. (boundary_condition .eq. CG_PSW) &
+             .or. (boundary_condition .eq. CG_MI) &
              )
       END FUNCTION IS_CG
 
