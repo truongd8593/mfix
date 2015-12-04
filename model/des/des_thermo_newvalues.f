@@ -15,6 +15,7 @@
       USE compar
       Use des_thermo
       Use des_rxns
+      Use derived_types, only: pic
       Use discretelement
       USE geometry
       USE indices

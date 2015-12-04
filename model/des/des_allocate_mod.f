@@ -24,40 +24,41 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE constant
+      USE cutcell
+      USE derived_types, only: boxhandle, pic
+      USE des_bc
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mfix_pic
       USE param
       USE param1
-      USE constant
-      USE discretelement
-      Use indices
-      Use geometry
-      Use compar
-      Use physprop
-      Use des_bc
-      use funits
-      USE mfix_pic
-      use pic_bc, only: pic_bcmo, pic_bcmi
-      Use des_thermo
-      Use des_rxns
-      USE cutcell
-      USE functions
+      USE physprop
+      USE pic_bc, only: pic_bcmo, pic_bcmi
 
-      use run, only: ENERGY_EQ
-      use run, only: ANY_SPECIES_EQ
+      USE run, only: ENERGY_EQ
+      USE run, only: ANY_SPECIES_EQ
 
-      use particle_filter, only: DES_INTERP_SCHEME_ENUM
-      use particle_filter, only: DES_INTERP_GARG
-      use particle_filter, only: DES_INTERP_DPVM
-      use particle_filter, only: DES_INTERP_GAUSS
-      use particle_filter, only: DES_INTERP_LHAT
-      use particle_filter, only: FILTER_SIZE
-      use particle_filter, only: FILTER_CELL
-      use particle_filter, only: FILTER_WEIGHT
+      USE particle_filter, only: DES_INTERP_SCHEME_ENUM
+      USE particle_filter, only: DES_INTERP_GARG
+      USE particle_filter, only: DES_INTERP_DPVM
+      USE particle_filter, only: DES_INTERP_GAUSS
+      USE particle_filter, only: DES_INTERP_LHAT
+      USE particle_filter, only: FILTER_SIZE
+      USE particle_filter, only: FILTER_CELL
+      USE particle_filter, only: FILTER_WEIGHT
 
-      use multi_sweep_and_prune, only: boxhandle
+      USE multi_sweep_and_prune, only: boxhandle
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
-      use error_manager
+      USE error_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -502,6 +503,7 @@ CONTAINS
 
         USE des_rxns
         USE des_thermo
+        USE derived_types, only: boxhandle
         USE discretelement
         USE mfix_pic
         USE multi_sweep_and_prune, ONLY: boxhandle_grow, boxhandle
