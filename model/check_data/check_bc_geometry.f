@@ -51,8 +51,10 @@
 
 ! Skip this routine if reinitializing as BC locations cannot be changed.
       IF(REINITIALIZING) RETURN
- 
+
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY")
+
+      BC_TYPE_ENUM = BLANK
 
       L50: DO BCV = 1, DIMENSION_BC
 
