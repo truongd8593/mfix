@@ -80,7 +80,7 @@
       USE discretelement, only: des_mmax, dtsolid
       USE discretelement, only: DES_RO_s, DES_D_P0
       USE physprop, only: MU_g0
-      USE mfix_pic, only : dtpic_taup, des_tau_p
+      USE mfix_pic, only : dtpic_taup, des_tau_p, MPPIC_PDRAG_IMPLICIT
       use error_manager
       IMPLICIT NONE
 !-----------------------------------------------
@@ -100,6 +100,7 @@
 
       DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
       DTPIC_TAUP = DTSOLID      !maximum dt for point-particles based on taup
+      if(MPPIC_PDRAG_IMPLICIT) DTPIC_TAUP = LARGE_NUMBER
 
       WRITE(ERR_MSG, 1000) DTSolid
       CALL FLUSH_ERR_MSG(Header = .false.)
