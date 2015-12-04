@@ -14,7 +14,7 @@
 ! Modules
 !--------------------------------------------------------------------//
       use bc, only: ijk_p_g
-      use bc, only: bc_type, bc_defined
+      use bc
       use fldvar, only: x_g, t_g, p_g
       use mms, only: calculate_mms, calculate_mms_source, use_mms
 
@@ -48,30 +48,30 @@
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
 
-            SELECT CASE (TRIM(BC_TYPE(L)))
+            SELECT CASE (BC_TYPE_ENUM(L))
 
-            CASE ('FREE_SLIP_WALL')
+            CASE (FREE_SLIP_WALL)
                CALL SET_BC0_WALLS(L)
-            CASE ('NO_SLIP_WALL')
+            CASE (NO_SLIP_WALL)
                CALL SET_BC0_WALLS(L)
-            CASE ('PAR_SLIP_WALL')
+            CASE (PAR_SLIP_WALL)
                CALL SET_BC0_WALLS(L)
-            CASE ('P_OUTFLOW')
+            CASE (P_OUTFLOW)
                CALL SET_BC0_INIT_BCDT_CALCS(L)
                CALL SET_BC0_OUTFLOW(L)
                CALL SET_BC0_INIT_BCSCALARS(L)
-            CASE ('MASS_OUTFLOW')
+            CASE (MASS_OUTFLOW)
                CALL SET_BC0_INIT_BCDT_CALCS(L)
                CALL SET_BC0_INFLOW(L)
                CALL SET_BC0_INIT_BCSCALARS(L)
-            CASE ('OUTFLOW')
+            CASE (OUTFLOW)
                CALL SET_BC0_INIT_BCDT_CALCS(L)
                CALL SET_BC0_OUTFLOW(L)
                CALL SET_BC0_INIT_BCSCALARS(L)
-            CASE ('MASS_INFLOW')
+            CASE (MASS_INFLOW)
                CALL SET_BC0_INIT_JET(L)
                CALL SET_BC0_INFLOW(L)
-            CASE ('P_INFLOW')
+            CASE (P_INFLOW)
                CALL SET_BC0_INFLOW(L)
             END SELECT
          ENDIF
@@ -785,7 +785,7 @@
       use funits, only: DMP_LOG
 
       use bc, only: BC_DEFINED
-      use bc, only: BC_TYPE
+      use bc
 
 ! MFIX Runtime parameters:
       use param, only: DIMENSION_BC
@@ -831,8 +831,8 @@
 ! If there are no cyclic boundaries, look for a pressure outflow.
       lpBCV: DO BCV = 1, DIMENSION_BC
          IF (.NOT.BC_DEFINED(BCV)) cycle lpBCV
-         IF (BC_TYPE(BCV) == 'P_OUTFLOW' .OR. &
-             BC_TYPE(BCV) == 'P_INFLOW') THEN
+         IF (BC_TYPE_ENUM(BCV) == P_OUTFLOW .OR. &
+             BC_TYPE_ENUM(BCV) == P_INFLOW) THEN
             IF(dFlag) write(*,"(3x,A)")                                &
                'Outflow PC defined: IJK_P_g remaining undefined.'
             RETURN

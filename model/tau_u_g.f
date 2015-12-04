@@ -295,7 +295,7 @@
       DOUBLE PRECISION :: MU_GT_CUT, SSY_CUT, SSZ_CUT
       DOUBLE PRECISION :: UW_g, VW_g, WW_g
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !---------------------------------------------------------------------//
 
 !$omp  parallel do default(none) &
@@ -304,7 +304,7 @@
 !$omp          IJKNE, IJKSE, IJKTE, IJKBE,                             &
 !$omp          IPJK, IMJK, IJMK, IJKM, IPJMK, IPJKM,                   &
 !$omp          EPGA, MU_GTE, MU_GBE, SBV, SSX, SSY, SSZ,               &
-!$omp          BCV, BCT, NOC_UG, uw_g, vw_g, ww_g,                     &
+!$omp          BCV, BCT, BC_TYPE_ENUM, NOC_UG, uw_g, vw_g, ww_g,       &
 !$omp          del_h, nx, ny, nz, xi, yi, zi, sx, sy, sz, vi, wi,      &
 !$omp          v_node_at_ne, v_node_at_sw, v_node_at_se, v_node_at_nw, &
 !$omp          w_node_at_bw, w_node_at_be, w_node_at_tw, w_node_at_te, &
@@ -385,25 +385,25 @@
 
                BCV = BC_U_ID(IJK)
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
                SELECT CASE (BCT)
-                  CASE ('CG_NSW')
+                  CASE (CG_NSW)
                      CUT_TAU_UG = .TRUE.
                      NOC_UG     = .TRUE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE ('CG_FSW')
+                  CASE (CG_FSW)
                      CUT_TAU_UG = .FALSE.
                      NOC_UG     = .FALSE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
                      IF(BC_HW_G(BC_U_ID(IJK))==UNDEFINED) THEN   ! same as NSW
                         CUT_TAU_UG = .TRUE.
                         NOC_UG     = .TRUE.
@@ -420,7 +420,7 @@
                         VW_g = ZERO
                         WW_g = ZERO
                      ENDIF
-                  CASE ('NONE')
+                  CASE (NONE)
                      lTAU_U_G(IJK) = ZERO
                      CYCLE
                END SELECT
@@ -691,4 +691,3 @@
 
       RETURN
       END SUBROUTINE GET_FULL_TAU_U_G
-

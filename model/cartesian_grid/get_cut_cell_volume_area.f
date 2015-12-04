@@ -14,7 +14,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_CUT_CELL_VOLUME_AND_AREAS(IJK,TYPE_OF_CELL,N_NODES,CONNECT,X_NP,Y_NP,Z_NP)
 
-      USE bc, ONLY: bc_type
+      USE bc
       USE compar, ONLY: ijkend3, istart1, jstart1, kstart1, mype
       USE cutcell
       USE functions, only: funijk
@@ -515,8 +515,8 @@
                      ENDIF
                   ENDDO
                   IF(BC_ID(IJK)>0) THEN
-!                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
-                     IF(BC_TYPE(BC_ID(IJK))  == 'CG_NSW') EXIT
+!                     IF(BC_TYPE_ENUM(BC_ID(IJK))  == CG_MI) EXIT
+                     IF(BC_TYPE_ENUM(BC_ID(IJK))  == CG_NSW) EXIT
                   ENDIF
                ENDDO
             ENDIF
@@ -528,7 +528,7 @@
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_ID(IJK) = BCID
                      IF(BC_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -541,7 +541,7 @@
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_ID(IJK) = BCID
                      IF(BC_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -556,7 +556,7 @@
                      IF(INSIDE_FACET) THEN
                         BC_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_ID(IJK)>0) THEN
-                           IF(BC_TYPE(BC_ID(IJK))  == 'CG_MI') EXIT
+                           IF(BC_TYPE_ENUM(BC_ID(IJK))  == CG_MI) EXIT
                         ENDIF
                      ENDIF
                   ENDDO
@@ -565,11 +565,11 @@
 
             IF (BC_ID(IJK)>0) THEN
 
-               IF (BC_TYPE(BC_ID(IJK))(1:2)  /= 'CG')  THEN
+               IF (.not. IS_CG(BC_TYPE_ENUM(BC_ID(IJK))))  THEN
                   WRITE(*,'(/1X,A)')'ERROR: INVALID BOUNDARY CONDITION ASSIGNED TO A CUT CELL.'
                   WRITE(*,'(/1X,A,I9,I6)')'IJK, MyPE = ', IJK,myPE
                   WRITE(*,'(1X,A,I6)')'BC_ID  = ',BC_ID(IJK)
-                  WRITE(*,'(1X,A,A)')'BC_TYPE = ',BC_TYPE(BC_ID(IJK))
+                  WRITE(*,'(1X,A,A)')'BC_TYPE = ',BC_TYPE_ENUM(BC_ID(IJK))
                   WRITE(*,'(1X,A)')'VALID BC_TYPE FOR CUT CELLS ARE: CG_NSW, CG_FSW, CG_PSW, CG_MI, and CG_PO'
                   WRITE(*,'(/1X,A)')'PLEASE CORRECT MFIX.DAT AND TRY AGAIN.'
                   call mfix_exit(myPE)
@@ -684,8 +684,8 @@
                      ENDIF
                   ENDDO
                   IF(BC_U_ID(IJK)>0) THEN
-                     IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
-!                     IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_NSW') EXIT
+                     IF(BC_TYPE_ENUM(BC_U_ID(IJK))  == CG_MI) EXIT
+!                     IF(BC_TYPE_ENUM(BC_U_ID(IJK))  == CG_NSW) EXIT
                   ENDIF
 
                ENDDO
@@ -699,7 +699,7 @@
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_U_ID(IJK) = BCID
                      IF(BC_U_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_U_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -713,7 +713,7 @@
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_U_ID(IJK) = BCID
                      IF(BC_U_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_U_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -729,7 +729,7 @@
                      IF(INSIDE_FACET) THEN
                         BC_U_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_U_ID(IJK)>0) THEN
-                           IF(BC_TYPE(BC_U_ID(IJK))  == 'CG_MI') EXIT
+                           IF(BC_TYPE_ENUM(BC_U_ID(IJK))  == CG_MI) EXIT
                         ENDIF
                      ENDIF
                   ENDDO
@@ -832,8 +832,8 @@
                      ENDIF
                   ENDDO
                   IF(BC_V_ID(IJK)>0) THEN
-                      IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
-!                     IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_NSW') EXIT
+                      IF(BC_TYPE_ENUM(BC_V_ID(IJK))  == CG_MI) EXIT
+!                     IF(BC_TYPE_ENUM(BC_V_ID(IJK))  == CG_NSW) EXIT
                   ENDIF
 
                ENDDO
@@ -847,7 +847,7 @@
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_V_ID(IJK) = BCID
                      IF(BC_V_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_V_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -861,7 +861,7 @@
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_V_ID(IJK) = BCID
                      IF(BC_V_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_V_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -877,7 +877,7 @@
                      IF(INSIDE_FACET) THEN
                         BC_V_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_V_ID(IJK)>0) THEN
-                           IF(BC_TYPE(BC_V_ID(IJK))  == 'CG_MI') EXIT
+                           IF(BC_TYPE_ENUM(BC_V_ID(IJK))  == CG_MI) EXIT
                         ENDIF
                      ENDIF
                   ENDDO
@@ -970,8 +970,8 @@
                      ENDIF
                   ENDDO
                   IF(BC_W_ID(IJK)>0) THEN
-                     IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
-!                     IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_NSW') EXIT
+                     IF(BC_TYPE_ENUM(BC_W_ID(IJK))  == CG_MI) EXIT
+!                     IF(BC_TYPE_ENUM(BC_W_ID(IJK))  == CG_NSW) EXIT
                   ENDIF
                ENDDO
             ENDIF
@@ -984,7 +984,7 @@
                    IF(F_CUT_FACE(1)==ZERO) THEN
                      BC_W_ID(IJK) = BCID
                      IF(BC_W_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_W_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -999,7 +999,7 @@
                   IF(DABS(F_CUT_FACE(1)) < TOL_F) THEN
                      BC_W_ID(IJK) = BCID
                      IF(BC_W_ID(IJK)>0) THEN
-                        IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
+                        IF(BC_TYPE_ENUM(BC_W_ID(IJK))  == CG_MI) EXIT
                      ENDIF
                   ENDIF
                ENDDO
@@ -1015,7 +1015,7 @@
                      IF(INSIDE_FACET) THEN
                         BC_W_ID(IJK) = BC_ID_STL_FACE(NF)
                         IF(BC_W_ID(IJK)>0) THEN
-                           IF(BC_TYPE(BC_W_ID(IJK))  == 'CG_MI') EXIT
+                           IF(BC_TYPE_ENUM(BC_W_ID(IJK))  == CG_MI) EXIT
                         ENDIF
                      ENDIF
                   ENDDO
@@ -1446,7 +1446,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_G(IJK,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
 
-      USE bc, ONLY: bc_type, bc_hw_g, bc_vw_g, bc_uw_g, bc_ww_g
+      USE bc
       USE compar, ONLY: mype
       USE cutcell
       USE param1, only: one, zero, undefined
@@ -1455,7 +1455,7 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
 
 !======================================================================
@@ -1475,20 +1475,20 @@
 
             BCV = BC_U_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
 
                      IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
@@ -1513,20 +1513,20 @@
 
             BCV = BC_V_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
 
                      IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
@@ -1551,20 +1551,20 @@
 
             BCV = BC_W_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
                      IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
                         HW   = ZERO
@@ -1615,7 +1615,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE GET_INTERPOLATION_TERMS_S(IJK,M,TYPE_OF_CELL,ALPHA_CUT,AW,HW,VELW)
 
-      USE bc, ONLY: bc_type, bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s
+      USE bc
       USE compar, ONLY: mype
       USE cutcell
       USE param1, ONLY: one, zero, undefined
@@ -1624,7 +1624,7 @@
       CHARACTER (LEN=*) :: TYPE_OF_CELL
       INTEGER :: IJK,M
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
       DOUBLE PRECISION :: ALPHA_CUT,AW,HW,VELW
 
 !======================================================================
@@ -1644,20 +1644,20 @@
 
             BCV = BC_U_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
 
                      IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
@@ -1682,20 +1682,20 @@
 
             BCV = BC_V_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
 
                      IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
@@ -1720,20 +1720,20 @@
 
             BCV = BC_W_ID(IJK)
             IF(BCV>0) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
                SELECT CASE(BCT)
 
-                  CASE('CG_NSW')
+                  CASE(CG_NSW)
                      AW   = ALPHA_CUT
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_FSW')
+                  CASE(CG_FSW)
                      AW   = ONE
                      HW   = ZERO
                      VELW = ZERO
 
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
                      IF(BC_HW_S(BCV,M)==UNDEFINED) THEN   ! same as NSW
                         AW   = ALPHA_CUT
                         HW   = ZERO

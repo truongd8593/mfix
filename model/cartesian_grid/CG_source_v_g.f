@@ -93,7 +93,7 @@
       DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
       DOUBLE PRECISION :: VW_g
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !                       virtual (added) mass
       DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usc, Usw, Vse, Vsw, Wst, Wsb, Wsc, Vst, Vsb
 ! Wall function
@@ -134,13 +134,13 @@
             BCV = BC_V_ID(IJK)
 
             IF(BCV > 0 ) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
             ELSE
-               BCT = 'NONE'
+               BCT = NONE
             ENDIF
 
             SELECT CASE (BCT)
-               CASE ('CG_NSW')
+               CASE (CG_NSW)
                   NOC_VG = .TRUE.
                   VW_g = ZERO
                   MU_GT_CUT = (VOL(IJK)*MU_GT(IJK) + VOL(IJKN)*MU_GT(IJKN))/(VOL(IJK) + VOL(IJKN))
@@ -151,10 +151,10 @@
                      CALL Wall_Function(IJK,IJK,ONE/DELH_V(IJK),W_F_Slip)
                      A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)*(ONE-W_F_Slip)/DELH_V(IJK)
                   ENDIF
-               CASE ('CG_FSW')
+               CASE (CG_FSW)
                   NOC_VG = .FALSE.
                   VW_g = ZERO
-               CASE('CG_PSW')
+               CASE(CG_PSW)
                   IF(BC_HW_G(BCV)==UNDEFINED) THEN   ! same as NSW
                      NOC_VG = .TRUE.
                      VW_g = BC_VW_G(BCV)
@@ -171,7 +171,7 @@
                      A_M(IJK,0,M) = A_M(IJK,0,M)  - MU_GT_CUT * Area_V_CUT(IJK)*(BC_HW_G(BCV))
                      B_M(IJK,M) = B_M(IJK,M) - MU_GT_CUT * VW_g * Area_V_CUT(IJK)*(BC_HW_G(BCV))
                   ENDIF
-               CASE ('NONE', 'CG_MI')
+               CASE (NONE, CG_MI)
                   NOC_VG = .FALSE.
             END SELECT
 
@@ -422,7 +422,7 @@
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 
 !-----------------------------------------------
 
@@ -436,14 +436,14 @@
          BCV = BC_V_ID(IJK)
 
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
          SELECT CASE (BCT)
 
-            CASE ('CG_NSW')
+            CASE (CG_NSW)
 
                IF(WALL_V_AT(IJK)) THEN
 
@@ -494,7 +494,7 @@
 
                ENDIF
 
-            CASE ('CG_FSW')
+            CASE (CG_FSW)
 
                IF(WALL_V_AT(IJK)) THEN
 
@@ -531,7 +531,7 @@
                ENDIF
 
 
-            CASE ('CG_PSW')
+            CASE (CG_PSW)
 
                IF(WALL_V_AT(IJK)) THEN
 
@@ -633,7 +633,7 @@
 
 
 
-            CASE ('CG_MI')
+            CASE (CG_MI)
 
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
@@ -670,7 +670,7 @@
 
                ENDIF
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
 
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
@@ -697,14 +697,14 @@
          BCV = BC_ID(IJK)
 
          IF(BCV > 0 ) THEN
-            BCT = BC_TYPE(BCV)
+            BCT = BC_TYPE_ENUM(BCV)
          ELSE
-            BCT = 'NONE'
+            BCT = NONE
          ENDIF
 
          SELECT CASE (BCT)
 
-            CASE ('CG_MI')
+            CASE (CG_MI)
 
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO
@@ -741,7 +741,7 @@
 
                ENDIF
 
-            CASE ('CG_PO')
+            CASE (CG_PO)
 
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO

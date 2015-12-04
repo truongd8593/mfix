@@ -248,7 +248,7 @@
       DOUBLE PRECISION :: MU_GT_CUT, SSX_CUT, SSZ_CUT
       DOUBLE PRECISION :: UW_g, VW_g, WW_g
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !---------------------------------------------------------------------//
 
 !$omp  parallel do default(none)                                       &
@@ -257,7 +257,7 @@
 !$omp          IJKTN, IJKBN, IJKNW, IJKNE,                             &
 !$omp          IJPK, IMJK, IJMK, IJKM, IJPKM, IMJPK,                   &
 !$omp          EPGA, SBV, SSX, SSY, SSZ,                               &
-!$omp          BCV, BCT, NOC_VG, uw_g, vw_g, ww_g,                     &
+!$omp          BCV, BCT, BC_TYPE_ENUM, NOC_VG, uw_g, vw_g, ww_g,       &
 !$omp          del_h, nx, ny, nz, xi, yi, zi, sx, sy, sz, wi, ui,      &
 !$omp          u_node_at_sw, u_node_at_se, u_node_at_nw, u_node_at_ne, &
 !$omp          w_node_at_bs, w_node_at_bn, w_node_at_ts, w_node_at_tn, &
@@ -336,25 +336,25 @@
 
                BCV = BC_V_ID(IJK)
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
                SELECT CASE (BCT)
-                  CASE ('CG_NSW')
+                  CASE (CG_NSW)
                      CUT_TAU_VG = .TRUE.
                      NOC_VG     = .TRUE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE ('CG_FSW')
+                  CASE (CG_FSW)
                      CUT_TAU_VG = .FALSE.
                      NOC_VG     = .FALSE.
                      UW_g = ZERO
                      VW_g = ZERO
                      WW_g = ZERO
-                  CASE('CG_PSW')
+                  CASE(CG_PSW)
                      IF(BC_HW_G(BC_V_ID(IJK))==UNDEFINED) THEN   ! same as NSW
                         CUT_TAU_VG = .TRUE.
                         NOC_VG     = .TRUE.
@@ -371,7 +371,7 @@
                         CUT_TAU_VG = .FALSE.
                         NOC_VG     = .FALSE.
                      ENDIF
-                  CASE ('NONE')
+                  CASE (NONE)
                      lTAU_V_G(IJK) = ZERO
                      CYCLE
                END SELECT

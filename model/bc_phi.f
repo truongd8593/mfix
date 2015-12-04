@@ -223,9 +223,9 @@
 ! ---------------------------------------------------------------->>>
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE(L)=='NO_SLIP_WALL' .OR. &
-                BC_TYPE(L)=='FREE_SLIP_WALL' .OR. &
-                BC_TYPE(L)=='PAR_SLIP_WALL') THEN
+            IF (BC_TYPE_ENUM(L)==NO_SLIP_WALL .OR. &
+                BC_TYPE_ENUM(L)==FREE_SLIP_WALL .OR. &
+                BC_TYPE_ENUM(L)==PAR_SLIP_WALL) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -342,9 +342,9 @@
 ! ---------------------------------------------------------------->>>
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE(L)=='P_OUTFLOW' .OR. &
-                BC_TYPE(L)=='MASS_OUTFLOW' .OR. &
-                BC_TYPE(L)=='OUTFLOW') THEN
+            IF (BC_TYPE_ENUM(L)==P_OUTFLOW .OR. &
+                BC_TYPE_ENUM(L)==MASS_OUTFLOW .OR. &
+                BC_TYPE_ENUM(L)==OUTFLOW) THEN
                I1 = BC_I_W(L)
                I2 = BC_I_E(L)
                J1 = BC_J_S(L)
@@ -392,8 +392,8 @@
 ! conditions
 ! ----------------------------------------------------------------<<<
 
-            ELSEIF(BC_TYPE(L)=='P_INFLOW' .OR. &
-                   BC_TYPE(L)=='MASS_INFLOW') THEN
+            ELSEIF(BC_TYPE_ENUM(L)==P_INFLOW .OR. &
+                   BC_TYPE_ENUM(L)==MASS_INFLOW) THEN
 
 ! Setting bc that are defined but not nsw, fsw, psw, p_outflow,
 ! mass_outflow or outflow (at this time, this section addresses
@@ -502,7 +502,7 @@
       INTEGER :: L
 ! Boundary identifiers
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 
       LOGICAL :: ALONG_GLOBAL_GHOST_LAYER
 
@@ -538,12 +538,12 @@
             IF (CUT_CELL_AT(IP_OF(IJK))) THEN
                BCV = BC_ID(IP_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,east,M) = -HALF
@@ -559,12 +559,12 @@
             ELSEIF (CUT_CELL_AT(IM_OF(IJK))) THEN
                BCV = BC_ID(IM_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,west,M) = -HALF
@@ -580,12 +580,12 @@
             ELSEIF (CUT_CELL_AT(JP_OF(IJK))) THEN
                BCV = BC_ID(JP_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,north,M) = -HALF
@@ -601,12 +601,12 @@
             ELSEIF (CUT_CELL_AT(JM_OF(IJK))) THEN
                BCV = BC_ID(JM_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,south,M) = -HALF
@@ -622,12 +622,12 @@
             ELSEIF (CUT_CELL_AT(KP_OF(IJK))) THEN
                BCV = BC_ID(KP_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,top,M) = -HALF
@@ -643,12 +643,12 @@
             ELSEIF (CUT_CELL_AT(KM_OF(IJK))) THEN
                BCV = BC_ID(KM_OF(IJK))
                IF(BCV > 0 ) THEN
-                  BCT = BC_TYPE(BCV)
+                  BCT = BC_TYPE_ENUM(BCV)
                ELSE
-                  BCT = 'NONE'
+                  BCT = NONE
                ENDIF
 
-               IF (BCT=='CG_NSW'.OR.BCT=='CG_FSW'.OR.BCT=='CG_PSW') THEN
+               IF (BCT==CG_NSW.OR.BCT==CG_FSW.OR.BCT==CG_PSW) THEN
                   L = BCV
                   IF (BC_HW_PHI(L) == UNDEFINED) THEN
                      A_M(IJK,bottom,M) = -HALF
@@ -668,12 +668,12 @@
          IF(CUT_CELL_AT(IJK)) THEN
             BCV = BC_ID(IJK)
             IF(BCV > 0 ) THEN
-               BCT = BC_TYPE(BCV)
+               BCT = BC_TYPE_ENUM(BCV)
             ELSE
-               BCT = 'NONE'
+               BCT = NONE
             ENDIF
 
-            IF (BCT=='CG_MI'.OR.BCT=='CG_PO') THEN
+            IF (BCT==CG_MI.OR.BCT==CG_PO) THEN
                L = BCV
                A_M(IJK,east,M) = ZERO
                A_M(IJK,west,M) = ZERO

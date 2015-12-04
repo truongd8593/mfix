@@ -14,7 +14,7 @@
 ! Flag: BC contains geometric data and/or specified type
       use bc, only: BC_DEFINED
 ! User specified BC
-      use bc, only: BC_TYPE
+      use bc
 ! User specified: BC geometry
       use bc, only: BC_X_e, BC_X_w, BC_I_e, BC_I_w
       use bc, only: BC_Y_n, BC_Y_s, BC_J_n, BC_J_s
@@ -47,27 +47,14 @@
       INTEGER :: BCV, I
 ! Error flag
       LOGICAL :: RECOGNIZED_BC_TYPE
-! Total number of valid BC types
-      INTEGER, PARAMETER :: DIM_BCTYPE = 21
-! Valid boundary condition types
-      CHARACTER(LEN=16), DIMENSION(1:DIM_BCTYPE) ::VALID_BC_TYPE = (/&
-           'MASS_INFLOW     ', 'MI              ',&
-           'MASS_OUTFLOW    ', 'MO              ',&
-           'P_INFLOW        ', 'PI              ',&
-           'P_OUTFLOW       ', 'PO              ',&
-           'FREE_SLIP_WALL  ', 'FSW             ',&
-           'NO_SLIP_WALL    ', 'NSW             ',&
-           'PAR_SLIP_WALL   ', 'PSW             ',&
-           'OUTFLOW         ', 'OF              ',&
-           'CG_NSW          ', 'CG_FSW          ',&
-           'CG_PSW          ', 'CG_MI           ',&
-           'CG_PO           '/)
 !......................................................................!
 
 ! Skip this routine if reinitializing as BC locations cannot be changed.
       IF(REINITIALIZING) RETURN
- 
+
       CALL INIT_ERR_MSG("CHECK_BC_GEOMETRY")
+
+      BC_TYPE_ENUM = BLANK
 
       L50: DO BCV = 1, DIMENSION_BC
 
@@ -97,7 +84,8 @@
             RECOGNIZED_BC_TYPE = .FALSE.
             DO I = 1, DIM_BCTYPE
                 VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
-                IF(VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN
+                IF(VALID_BC_TYPE(I) == trim(BC_TYPE(BCV))) THEN
+                   BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I)
                    RECOGNIZED_BC_TYPE = .TRUE.
                    EXIT
                 ENDIF
@@ -105,13 +93,13 @@
 
             IF(.NOT.RECOGNIZED_BC_TYPE) THEN
                WRITE(ERR_MSG, 1100) trim(iVar('BC_TYPE',BCV)), &
-                  trim(BC_TYPE(BCV)), VALID_BC_TYPE
+                  BC_TYPE_ENUM(BCV), VALID_BC_TYPE
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ENDIF
 
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
-         IF(BC_TYPE(BCV)(1:2) == 'CG') CYCLE
+         IF(IS_CG(BC_TYPE_ENUM(BCV))) CYCLE
 
          IF(BC_X_W(BCV)==UNDEFINED .AND. BC_I_W(BCV)==UNDEFINED_I) THEN
             IF(NO_I) THEN
@@ -174,13 +162,17 @@
          DO I = 1, DIM_BCTYPE
             VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
             IF(VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN
-               IF(MOD(I,2) == 0) BC_TYPE(BCV) = VALID_BC_TYPE(I-1)
+               IF(MOD(I,2) == 0) THEN
+                  BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I-1)
+               ELSE
+                  BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I)
+               ENDIF
                CYCLE  L50
             ENDIF
          ENDDO
 
          WRITE(ERR_MSG, 1100) trim(iVar('BC_TYPE',BCV)),               &
-            trim(BC_TYPE(BCV)), VALID_BC_TYPE
+            BC_TYPE_ENUM(BCV), VALID_BC_TYPE
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
       ENDDO L50   ! end loop over (bcv=1,dimension_bc)

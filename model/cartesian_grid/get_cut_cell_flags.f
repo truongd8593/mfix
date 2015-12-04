@@ -1451,7 +1451,7 @@
       USE functions, ONLY: IM_OF, IP_OF, JM_OF, JP_OF, KM_OF, KP_OF
       USE geometry, ONLY: imax1, imin1, jmax1, jmin1, kmax1, kmin1, vol, vol_u, vol_v, vol_w, axy, axz, ayz, ayz_u, ayz_v, ayz_w, axy_u, axy_v, axy_w, axz_u, axz_v, axz_w, flag, do_k, flag_e, flag_n, flag_t
 
-      USE bc, only:BC_TYPE
+      USE bc
       USE sendrecv
 
       IMPLICIT NONE
@@ -1788,42 +1788,42 @@
 
             IF(CUT_CELL_AT(IMJK)) THEN
                BCID=BC_ID(IMJK)
-               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IMJK))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 102
 
             ELSEIF(CUT_CELL_AT(IPJK)) THEN
                BCID=BC_ID(IPJK)
-               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IPJK))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 102
 
             ELSEIF(CUT_CELL_AT(IJMK)) THEN
                BCID=BC_ID(IJMK)
-               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IJMK))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 102
 
             ELSEIF(CUT_CELL_AT(IJPK)) THEN
                BCID=BC_ID(IJPK)
-               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IJPK))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 102
 
             ELSEIF(CUT_CELL_AT(IJKM)) THEN
                BCID=BC_ID(IJKM)
-               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IJKM))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 102
 
             ELSEIF(CUT_CELL_AT(IJKP)) THEN
                BCID=BC_ID(IJKP)
-               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='NSW') FLAG(IJK) = 100
-               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='FSW') FLAG(IJK) = 101
-               IF(BC_TYPE(BC_ID(IJKP))(4:6)=='PSW') FLAG(IJK) = 102
+               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 100
+               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 101
+               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 102
 
             ENDIF
-         ENDIF 
+         ENDIF
       ENDDO
 
       call send_recv(FLAG,2)

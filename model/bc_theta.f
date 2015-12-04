@@ -75,9 +75,9 @@
 ! Setup Johnson and Jackson Pseudo-thermal temp B.C.
       DO L = 1, DIMENSION_BC
         IF( BC_DEFINED(L) ) THEN
-          IF(BC_TYPE(L) .EQ. 'NO_SLIP_WALL' .OR.&
-             BC_TYPE(L) .EQ. 'FREE_SLIP_WALL' .OR.&
-             BC_TYPE(L) .EQ. 'PAR_SLIP_WALL' ) THEN
+          IF(BC_TYPE_ENUM(L) .EQ. NO_SLIP_WALL .OR.&
+             BC_TYPE_ENUM(L) .EQ. FREE_SLIP_WALL .OR.&
+             BC_TYPE_ENUM(L) .EQ. PAR_SLIP_WALL ) THEN
             I1 = BC_I_w(L)
             I2 = BC_I_e(L)
             J1 = BC_J_s(L)

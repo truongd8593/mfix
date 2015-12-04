@@ -41,17 +41,17 @@ SUBROUTINE QMOMK_INIT_BC
         K2 = BC_K_T(L)
 
         ! Wall BC's
-        IF (BC_TYPE(L)=='FREE_SLIP_WALL' .OR. BC_TYPE(L)=='NO_SLIP_WALL'&
-            .OR. BC_TYPE(L)=='PAR_SLIP_WALL') THEN
+        IF (BC_TYPE_ENUM(L)==FREE_SLIP_WALL .OR. BC_TYPE_ENUM(L)==NO_SLIP_WALL&
+            .OR. BC_TYPE_ENUM(L)==PAR_SLIP_WALL) THEN
           IF (QMOMK_WALL_BC_TYPE == 'SPECULAR_REFLECTIVE') THEN
             CALL QMOMK_REFLECTIVE_WALL_BC(L, I1, I2, J1, J2, K1, K2, .TRUE.)
           ENDIF
         ! Outlet BC's
-        ELSEIF (BC_TYPE(L) == 'MASS_OUTFLOW' .OR. BC_TYPE(L)=='P_OUTFLOW'&
-            .OR. BC_TYPE(L)=='OUTFLOW') THEN
+        ELSEIF (BC_TYPE_ENUM(L) == MASS_OUTFLOW .OR. BC_TYPE_ENUM(L)==P_OUTFLOW&
+            .OR. BC_TYPE_ENUM(L)==OUTFLOW) THEN
           CALL QMOMK_OUTLET_BC(L, I1, I2, J1, J2, K1, K2, .TRUE.)
         ! Inlet BC's
-        ELSEIF (BC_TYPE(L) == 'MASS_INFLOW') THEN
+        ELSEIF (BC_TYPE_ENUM(L) == MASS_INFLOW) THEN
           CALL QMOMK_INLET_BC(L, .TRUE.)
         ! Cyclic BC's
         ELSEIF (CYCLIC) THEN

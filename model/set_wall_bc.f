@@ -76,16 +76,16 @@
             K1 = BC_K_B(L)
             K2 = BC_K_T(L)
 
-            SELECT CASE (TRIM(BC_TYPE(L)))
-               CASE ('FREE_SLIP_WALL')
+            SELECT CASE (BC_TYPE_ENUM(L))
+               CASE (FREE_SLIP_WALL)
                   CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, &
                                      BC_JJ_PS(L))
 
-               CASE ('NO_SLIP_WALL')
+               CASE (NO_SLIP_WALL)
                   CALL SET_WALL_BC1 (I1, I2, J1, J2, K1, K2, &
                                      BC_JJ_PS(L))
 
-               CASE ('PAR_SLIP_WALL')
+               CASE (PAR_SLIP_WALL)
 ! updating the boundary velocity may improve convergence
             END SELECT
          ENDIF

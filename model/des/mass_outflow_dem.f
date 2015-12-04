@@ -34,7 +34,7 @@
 
          BCV = DEM_BCMO_MAP(BCV_I)
 
-         FREEZE_VEL = (BC_TYPE(BCV) /= 'MASS_OUTFLOW')
+         FREEZE_VEL = (BC_TYPE_ENUM(BCV) /= MASS_OUTFLOW)
 
          SELECT CASE (BC_PLANE(BCV))
          CASE('N'); FREEZE = (/0.0d0, 1.0d0, 0.0d0/); IDX=2; SGN=-1.0d0

@@ -13,7 +13,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! User specified BC
-      use bc, only: BC_TYPE
+      use bc
 ! User specified: BC geometry
       use bc, only: BC_EP_s
 ! Use specified flag for ignoring PO BC for discrete solids
@@ -62,10 +62,10 @@
 ! Loop over all BCs looking for DEM solids inlets/outlets
       DO BCV = 1, DIMENSION_BC
 
-         SELECT CASE (TRIM(BC_TYPE(BCV)))
+         SELECT CASE (BC_TYPE_ENUM(BCV))
 
 ! Determine the number of mass inlets that contain DEM solids.
-         CASE ('MASS_INFLOW')
+         CASE (MASS_INFLOW)
             M_LP: DO M=1,M_TOT
                IF(SOLIDS_MODEL(M)=='DEM' .AND.                         &
                   BC_EP_s(BCV,M) > ZERO) THEN
@@ -76,14 +76,14 @@
             ENDDO M_LP
 
 ! Count the number of pressure outflows.
-         CASE ('P_OUTFLOW','MASS_OUTFLOW')
+         CASE (P_OUTFLOW,MASS_OUTFLOW)
             IF(BC_PO_APPLY_TO_DES(BCV)) then
                DEM_BCMO = DEM_BCMO + 1
                DEM_BCMO_MAP(DEM_BCMO) = BCV
             ENDIF
 
 ! Flag CG_MI as an error if DEM solids are present.
-         CASE ('CG_MI')
+         CASE (CG_MI)
             DO M=1,M_TOT
                IF(SOLIDS_MODEL(M)=='DEM') THEN
                   IF(BC_EP_s(BCV,M) /= UNDEFINED .AND.                 &
@@ -95,13 +95,13 @@
                ENDIF
             ENDDO
 
-         CASE ('CG_PO')
+         CASE (CG_PO)
             WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)), 'GC_PO'
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
-         CASE ('OUTFLOW', 'P_INFLOW')
+         CASE (OUTFLOW, P_INFLOW)
             WRITE(ERR_MSG,1100) trim(iVar('BC_TYPE',BCV)),             &
-               trim(BC_TYPE(BCV))
+               BC_TYPE_ENUM(BCV)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
 
          END SELECT

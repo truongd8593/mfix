@@ -345,7 +345,7 @@
 
       use geometry, only: ZLENGTH, DO_K
 
-      use bc, only: BC_DEFINED, BC_TYPE
+      use bc, only: BC_DEFINED, BC_TYPE_ENUM, FREE_SLIP_WALL, NO_SLIP_WALL, PAR_SLIP_WALL
       use bc, only: BC_I_w, BC_I_e
       use bc, only: BC_J_s, BC_J_n
       use bc, only: BC_K_b, BC_K_t
@@ -370,9 +370,9 @@
       DO BCV=1, DIMENSION_BC
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
 
-         IF(trim(BC_TYPE(BCV)) == 'FREE_SLIP_WALL' .OR.   &
-            trim(BC_TYPE(BCV)) == 'NO_SLIP_WALL'   .OR.   &
-            trim(BC_TYPE(BCV)) == 'PAR_SLIP_WALL') THEN
+         IF(BC_TYPE_ENUM(BCV) == FREE_SLIP_WALL .OR.   &
+            BC_TYPE_ENUM(BCV) == NO_SLIP_WALL   .OR.   &
+            BC_TYPE_ENUM(BCV) == PAR_SLIP_WALL) THEN
 
             lXw = XE(BC_I_w(BCV)-1); lXe = XE(BC_I_e(BCV))
             lYs = YN(BC_J_s(BCV)-1); lYn = YN(BC_J_n(BCV))

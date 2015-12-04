@@ -10,7 +10,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      use bc, only: bc_defined, bc_type
+      use bc
       USE param, only: dimension_bc
       IMPLICIT NONE
 
@@ -24,18 +24,18 @@
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
 
-            SELECT CASE(TRIM(BC_TYPE(L)))
-            CASE ('P_OUTFLOW')
+            SELECT CASE(BC_TYPE_ENUM(L))
+            CASE (P_OUTFLOW)
                CALL SET_OUTFLOW(L)
                CALL SET_BC1_REPORT_OUTFLOW(L)
-            CASE ('MASS_OUTFLOW')
+            CASE (MASS_OUTFLOW)
                CALL SET_OUTFLOW(L)
                CALL SET_BC1_ADJUST_OUTFLOW(L)
-            CASE ('MASS_INFLOW')
+            CASE (MASS_INFLOW)
                CALL SET_BC1_JET(L)
-            CASE ('P_INFLOW')
+            CASE (P_INFLOW)
                CALL SET_OUTFLOW(L)
-            CASE ('OUTFLOW')
+            CASE (OUTFLOW)
                CALL SET_OUTFLOW(L)
                CALL SET_BC1_REPORT_OUTFLOW(L)
             END SELECT

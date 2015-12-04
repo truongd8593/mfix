@@ -85,7 +85,7 @@ CONTAINS
 
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE(L) == 'MASS_INFLOW' .OR. BC_TYPE(L) == 'P_INFLOW') THEN
+            IF (BC_TYPE_ENUM(L) == MASS_INFLOW .OR. BC_TYPE_ENUM(L) == P_INFLOW) THEN
 
                DO K = BC_K_B(L), BC_K_T(L)
                   DO J = BC_J_S(L), BC_J_N(L)

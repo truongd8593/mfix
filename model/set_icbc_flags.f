@@ -302,9 +302,6 @@
 ! loop index
       INTEGER :: BCV
 
-! Total number of valid BC types
-      INTEGER, PARAMETER :: DIM_BCTYPE = 21
-
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("SET_BC_FLAGS_WALL")
@@ -313,9 +310,9 @@
       DO BCV=1, DIMENSION_BC
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
 
-         IF(BC_TYPE(BCV)=='FREE_SLIP_WALL' .OR. &
-            BC_TYPE(BCV)=='NO_SLIP_WALL'   .OR. &
-            BC_TYPE(BCV)=='PAR_SLIP_WALL') THEN
+         IF(BC_TYPE_ENUM(BCV)==FREE_SLIP_WALL .OR. &
+            BC_TYPE_ENUM(BCV)==NO_SLIP_WALL   .OR. &
+            BC_TYPE_ENUM(BCV)==PAR_SLIP_WALL) THEN
 
             DO K = BC_K_B(BCV), BC_K_T(BCV)
             DO J = BC_J_S(BCV), BC_J_N(BCV)
@@ -326,10 +323,10 @@
 
                IJK = FUNIJK(I,J,K)
 
-               SELECT CASE (TRIM(BC_TYPE(BCV)))
-               CASE('FREE_SLIP_WALL'); ICBC_FLAG(IJK)(1:1) = 'S'
-               CASE('NO_SLIP_WALL');   ICBC_FLAG(IJK)(1:1) = 'W'
-               CASE('PAR_SLIP_WALL');  ICBC_FLAG(IJK)(1:1) = 's'
+               SELECT CASE (BC_TYPE_ENUM(BCV))
+               CASE(FREE_SLIP_WALL); ICBC_FLAG(IJK)(1:1) = 'S'
+               CASE(NO_SLIP_WALL);   ICBC_FLAG(IJK)(1:1) = 'W'
+               CASE(PAR_SLIP_WALL);  ICBC_FLAG(IJK)(1:1) = 's'
                END SELECT
                WRITE (ICBC_FLAG(IJK)(2:3),"(I2.2)") MOD(BCV,100)
             ENDDO
@@ -398,11 +395,11 @@
 
          IF(.NOT.BC_DEFINED(BCV)) CYCLE
 
-         IF(BC_TYPE(BCV)=='MASS_INFLOW'  .OR. &
-            BC_TYPE(BCV)=='MASS_OUTFLOW' .OR. &
-            BC_TYPE(BCV)=='P_INFLOW'     .OR. &
-            BC_TYPE(BCV)=='P_OUTFLOW'    .OR. &
-            BC_TYPE(BCV)=='OUTFLOW') THEN
+         IF(BC_TYPE_ENUM(BCV)==MASS_INFLOW  .OR. &
+            BC_TYPE_ENUM(BCV)==MASS_OUTFLOW .OR. &
+            BC_TYPE_ENUM(BCV)==P_INFLOW     .OR. &
+            BC_TYPE_ENUM(BCV)==P_OUTFLOW    .OR. &
+            BC_TYPE_ENUM(BCV)==OUTFLOW) THEN
 
             X_CONSTANT = (BC_X_W(BCV) == BC_X_E(BCV))
             Y_CONSTANT = (BC_Y_S(BCV) == BC_Y_N(BCV))
@@ -450,12 +447,12 @@
 ! Verify that the FLOW BC is overwriting a wall.
                IF(WALL_ICBC_FLAG(IJK)) THEN
 
-                  SELECT CASE (TRIM(BC_TYPE(BCV)))
-                  CASE ('P_OUTFLOW');    ICBC_FLAG(IJK)(1:1) = 'P'
-                  CASE ('MASS_INFLOW');  ICBC_FLAG(IJK)(1:1) = 'I'
-                  CASE ('MASS_OUTFLOW'); ICBC_FLAG(IJK)(1:1) = 'O'
-                  CASE ('OUTFLOW');      ICBC_FLAG(IJK)(1:1) = 'o'
-                  CASE ('P_INFLOW');     ICBC_FLAG(IJK)(1:1) = 'p'
+                  SELECT CASE (BC_TYPE_ENUM(BCV))
+                  CASE (P_OUTFLOW);    ICBC_FLAG(IJK)(1:1) = 'P'
+                  CASE (MASS_INFLOW);  ICBC_FLAG(IJK)(1:1) = 'I'
+                  CASE (MASS_OUTFLOW); ICBC_FLAG(IJK)(1:1) = 'O'
+                  CASE (OUTFLOW);      ICBC_FLAG(IJK)(1:1) = 'o'
+                  CASE (P_INFLOW);     ICBC_FLAG(IJK)(1:1) = 'p'
                   END SELECT
 
                   WRITE(ICBC_FLAG(IJK)(2:3),"(I2.2)") MOD(BCV,100)

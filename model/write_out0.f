@@ -485,25 +485,25 @@
          IF (BC_DEFINED(L)) THEN
             WRITE (UNIT_OUT, 1610) L
             WRITE (UNIT_OUT, 1611) BC_TYPE(L)
-            SELECT CASE (TRIM(BC_TYPE(L)))
-            CASE ('MASS_INFLOW','CG_MI')
+            SELECT CASE (BC_TYPE_ENUM(L))
+            CASE (MASS_INFLOW,CG_MI)
                WRITE (UNIT_OUT, 1612)
-            CASE ('MASS_OUTFLOW')
+            CASE (MASS_OUTFLOW)
                WRITE (UNIT_OUT, 1613)
-            CASE ('P_INFLOW')
+            CASE (P_INFLOW)
                WRITE (UNIT_OUT, 1614)
-            CASE ('P_OUTFLOW','CG_PO')
+            CASE (P_OUTFLOW,CG_PO)
                WRITE (UNIT_OUT, 1615)
-            CASE ('FREE_SLIP_WALL','CG_FSW')
+            CASE (FREE_SLIP_WALL,CG_FSW)
                WRITE (UNIT_OUT, 1616)
-            CASE ('NO_SLIP_WALL','CG_NSW')
+            CASE (NO_SLIP_WALL,CG_NSW)
                WRITE (UNIT_OUT, 1617)
-            CASE ('PAR_SLIP_WALL','CG_PSW')
+            CASE (PAR_SLIP_WALL,CG_PSW)
                WRITE (UNIT_OUT, 1618)
-            CASE ('OUTFLOW')
+            CASE (OUTFLOW)
                WRITE (UNIT_OUT, 1619)
             END SELECT
-            IF (BC_TYPE(L)(1:2)/='CG') THEN
+            IF (.not.IS_CG(BC_TYPE_ENUM(L))) THEN
                LOC(1) = LOCATION(BC_I_W(L),XMIN,DX) - HALF*DX(BC_I_W(L))
                LOC(2) = LOCATION(BC_I_E(L),XMIN,DX) + HALF*DX(BC_I_E(L))
                LOC(3) = LOCATION(BC_J_S(L),ZERO,DY) - HALF*DY(BC_J_S(L))
@@ -568,7 +568,7 @@
                IF(BC_V_S(L,M)/=UNDEFINED)WRITE(UNIT_OUT,1671)M,BC_V_S(L,M)
                IF(BC_W_S(L,M)/=UNDEFINED)WRITE(UNIT_OUT,1672)M,BC_W_S(L,M)
             END DO
-            IF (BC_TYPE(L) == 'PAR_SLIP_WALL') THEN
+            IF (BC_TYPE_ENUM(L) == PAR_SLIP_WALL) THEN
                WRITE (UNIT_OUT, 1675) BC_HW_G(L), BC_UW_G(L), BC_VW_G(L), &
                   BC_WW_G(L)
                DO M = 1, MMAX_TOT

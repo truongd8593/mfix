@@ -261,7 +261,7 @@
 ! for cutcell:
 ! wall velocity for slip conditions
       USE bc, only: bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s
-      USE bc, only: bc_type
+      USE bc
       USE quadric
       USE cutcell
       IMPLICIT NONE
@@ -297,7 +297,7 @@
       DOUBLE PRECISION :: MU_S_CUT,SSX_CUT,SSZ_CUT
       DOUBLE PRECISION :: UW_s,VW_s,WW_s
       INTEGER :: BCV
-      CHARACTER(LEN=9) :: BCT
+      INTEGER :: BCT
 !---------------------------------------------------------------------//
 
       J = J_OF(IJK)
@@ -357,25 +357,25 @@
       ELSE
          BCV = BC_V_ID(IJK)
          IF(BCV > 0 ) THEN
-           BCT = BC_TYPE(BCV)
+           BCT = BC_TYPE_ENUM(BCV)
          ELSE
-           BCT = 'NONE'
+           BCT = NONE
          ENDIF
 
          SELECT CASE (BCT)
-            CASE ('CG_NSW')
+            CASE (CG_NSW)
                CUT_TAU_VS = .TRUE.
                NOC_VS     = .TRUE.
                UW_s = ZERO
                VW_s = ZERO
                WW_s = ZERO
-            CASE ('CG_FSW')
+            CASE (CG_FSW)
                CUT_TAU_VS = .FALSE.
                NOC_VS     = .FALSE.
                UW_s = ZERO
                VW_s = ZERO
                WW_s = ZERO
-            CASE('CG_PSW')
+            CASE(CG_PSW)
                IF(BC_HW_S(BC_V_ID(IJK),M)==UNDEFINED) THEN   ! same as NSW
                   CUT_TAU_VS = .TRUE.
                   NOC_VS     = .TRUE.
@@ -392,7 +392,7 @@
                   CUT_TAU_VS = .FALSE.
                   NOC_VS     = .FALSE.
                ENDIF
-            CASE ('NONE')
+            CASE (NONE)
 ! equivalent of setting tau_v_s to zero at this ijk cell
                SSX = ZERO
                SSY = ZERO
