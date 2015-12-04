@@ -69,20 +69,20 @@
          IF(BC_J_N(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE.
          IF(BC_K_B(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE.
          IF(BC_K_T(BCV) /= UNDEFINED_I) BC_DEFINED(BCV) = .TRUE.
-         IF(BC_TYPE_ENUM(BCV) == CG_NSW)   BC_DEFINED(BCV) = .TRUE.
-         IF(BC_TYPE_ENUM(BCV) == CG_FSW)   BC_DEFINED(BCV) = .TRUE.
-         IF(BC_TYPE_ENUM(BCV) == CG_PSW)   BC_DEFINED(BCV) = .TRUE.
-         IF(BC_TYPE_ENUM(BCV) == CG_MI)    BC_DEFINED(BCV) = .TRUE.
-         IF(BC_TYPE_ENUM(BCV) == CG_PO)    BC_DEFINED(BCV) = .TRUE.
+         IF(BC_TYPE(BCV) == 'CG_NSW')   BC_DEFINED(BCV) = .TRUE.
+         IF(BC_TYPE(BCV) == 'CG_FSW')   BC_DEFINED(BCV) = .TRUE.
+         IF(BC_TYPE(BCV) == 'CG_PSW')   BC_DEFINED(BCV) = .TRUE.
+         IF(BC_TYPE(BCV) == 'CG_MI')    BC_DEFINED(BCV) = .TRUE.
+         IF(BC_TYPE(BCV) == 'CG_PO')    BC_DEFINED(BCV) = .TRUE.
 
-         IF (BC_TYPE_ENUM(BCV) == DUMMY) BC_DEFINED(BCV) = .FALSE.
+         IF (BC_TYPE(BCV) == 'DUMMY') BC_DEFINED(BCV) = .FALSE.
 
-         IF(BC_TYPE_ENUM(BCV)/=UNDEFINED_I .AND. BC_TYPE_ENUM(BCV)/=DUMMY)THEN
+         IF(BC_TYPE(BCV)/=UNDEFINED_C .AND. BC_TYPE(BCV)/='DUMMY')THEN
 
             RECOGNIZED_BC_TYPE = .FALSE.
             DO I = 1, DIM_BCTYPE
                 VALID_BC_TYPE(I) = TRIM(VALID_BC_TYPE(I))
-                IF(VALID_BC_TYPE(I) == BC_TYPE(BCV)) THEN
+                IF(VALID_BC_TYPE(I) == trim(BC_TYPE(BCV))) THEN
                    BC_TYPE_ENUM(BCV) = VALID_BC_TYPE_ENUM(I)
                    RECOGNIZED_BC_TYPE = .TRUE.
                    EXIT

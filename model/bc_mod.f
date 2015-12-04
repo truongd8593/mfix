@@ -142,8 +142,8 @@
 !
 !                      Type of boundary: MASS_INFLOW, MASS_OUTFLOW,
 !                      P_INFLOW, P_OUTFLOW, FREE_SLIP_WALL, NO_SLIP_WALL
-      CHARACTER(LEN=16)     BC_TYPE (DIMENSION_BC)
-      INTEGER(KIND=16)     BC_TYPE_ENUM (DIMENSION_BC)
+      CHARACTER(LEN=16)  ::   BC_TYPE (DIMENSION_BC)
+      INTEGER ::     BC_TYPE_ENUM (DIMENSION_BC)
 
       ENUM, BIND(C)
          ENUMERATOR :: CG_NSW, CG_FSW, CG_PSW, CG_MI, NONE
@@ -420,7 +420,7 @@
 
       LOGICAL FUNCTION IS_CG(boundary_condition)
         implicit none
-        INTEGER(16), intent(in) :: boundary_condition
+        INTEGER, intent(in) :: boundary_condition
         IS_CG = ((boundary_condition .eq. CG_PO) &
              .or. (boundary_condition .eq. CG_MO) &
              )
@@ -428,21 +428,21 @@
 
       LOGICAL FUNCTION IS_NSW(boundary_condition)
         implicit none
-        INTEGER(16), intent(in) :: boundary_condition
+        INTEGER, intent(in) :: boundary_condition
         IS_NSW = ((boundary_condition .eq. CG_NSW) &
              )
       END FUNCTION IS_NSW
 
       LOGICAL FUNCTION IS_FSW(boundary_condition)
         implicit none
-        INTEGER(16), intent(in) :: boundary_condition
+        INTEGER, intent(in) :: boundary_condition
         IS_FSW = ((boundary_condition .eq. CG_FSW) &
              )
       END FUNCTION IS_FSW
 
       LOGICAL FUNCTION IS_PSW(boundary_condition)
         implicit none
-        INTEGER(16), intent(in) :: boundary_condition
+        INTEGER, intent(in) :: boundary_condition
         IS_PSW = ((boundary_condition .eq. CG_PSW) &
              )
       END FUNCTION IS_PSW
