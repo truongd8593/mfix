@@ -304,7 +304,7 @@
 !$omp          IJKNE, IJKSE, IJKTE, IJKBE,                             &
 !$omp          IPJK, IMJK, IJMK, IJKM, IPJMK, IPJKM,                   &
 !$omp          EPGA, MU_GTE, MU_GBE, SBV, SSX, SSY, SSZ,               &
-!$omp          BCV, BCT, NOC_UG, uw_g, vw_g, ww_g,                     &
+!$omp          BCV, BCT, BC_TYPE_ENUM, NOC_UG, uw_g, vw_g, ww_g,       &
 !$omp          del_h, nx, ny, nz, xi, yi, zi, sx, sy, sz, vi, wi,      &
 !$omp          v_node_at_ne, v_node_at_sw, v_node_at_se, v_node_at_nw, &
 !$omp          w_node_at_bw, w_node_at_be, w_node_at_tw, w_node_at_te, &
@@ -691,4 +691,3 @@
 
       RETURN
       END SUBROUTINE GET_FULL_TAU_U_G
-

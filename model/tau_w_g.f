@@ -317,7 +317,7 @@
 !$omp          IJKTE, IJKNT, IJKTW, IJKST,                             &
 !$omp          IMJK, IJMK, IJKM, IJKP, IJMKP, IMJKP,                   &
 !$omp          EPGA, SBV, SSX, SSY, SSZ,                               &
-!$omp          BCV, BCT, noc_wg, uw_g, vw_g, ww_g,                     &
+!$omp          BCV, BCT, BC_TYPE_ENUM, noc_wg, uw_g, vw_g, ww_g,       &
 !$omp          del_h, nx, ny, nz, xi, yi, zi, sx, sy, sz, vi, ui,      &
 !$omp          cut_tau_wg, mu_gt_cut, ssy_cut, ssx_cut,                &
 !$omp          dudz_at_e, dudz_at_w, dvdz_at_S, dvdz_at_N,             &

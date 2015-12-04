@@ -257,7 +257,7 @@
 !$omp          IJKTN, IJKBN, IJKNW, IJKNE,                             &
 !$omp          IJPK, IMJK, IJMK, IJKM, IJPKM, IMJPK,                   &
 !$omp          EPGA, SBV, SSX, SSY, SSZ,                               &
-!$omp          BCV, BCT, NOC_VG, uw_g, vw_g, ww_g,                     &
+!$omp          BCV, BCT, BC_TYPE_ENUM, NOC_VG, uw_g, vw_g, ww_g,       &
 !$omp          del_h, nx, ny, nz, xi, yi, zi, sx, sy, sz, wi, ui,      &
 !$omp          u_node_at_sw, u_node_at_se, u_node_at_nw, u_node_at_ne, &
 !$omp          w_node_at_bs, w_node_at_bn, w_node_at_ts, w_node_at_tn, &
