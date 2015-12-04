@@ -1,4 +1,5 @@
-      MODULE cont
+! -*- f90 -*-
+MODULE cont
 
 ! Indicates whether the continuity equation needs to be
 ! solved
