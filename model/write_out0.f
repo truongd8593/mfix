@@ -484,7 +484,7 @@
       DO L = 1, DIMENSION_BC
          IF (BC_DEFINED(L)) THEN
             WRITE (UNIT_OUT, 1610) L
-            WRITE (UNIT_OUT, 1611) BC_TYPE_ENUM(L)
+            WRITE (UNIT_OUT, 1611) BC_TYPE(L)
             SELECT CASE (BC_TYPE_ENUM(L))
             CASE (MASS_INFLOW,CG_MI)
                WRITE (UNIT_OUT, 1612)

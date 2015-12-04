@@ -718,7 +718,7 @@
             BC_PATCH(NUMBER_OF_GEOMETRY_FILES) = BCV
             WRITE(geometryfile(NUMBER_OF_GEOMETRY_FILES),200) 'geometry_',BCV
 
-            IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE_ENUM(BCV)
+            IF(MyPE == PE_IO) WRITE(*,130)BCV,BC_TYPE(BCV)
 
          ENDIF
       ENDDO
