@@ -342,7 +342,7 @@ CONTAINS
 !!$      omp_start=omp_get_wtime()
 
     IF (SETGUESS) THEN
-!$omp   parallel do private(i,j,k,ijk)
+!omp   parallel do private(i,j,k,ijk) collapse(3)
        do k = kstart3,kend3
           do i = istart3,iend3
              do j = jstart3,jend3
