@@ -193,6 +193,7 @@
          BCT1=BLANK
          BCT2=BLANK
          BCT3=BLANK
+         BCT4=BLANK
          BCV = BC_ID(IJK)
          IF(BCV>0) BCT1 = BC_TYPE_ENUM(BCV)
          BCV = BC_U_ID(IJK)

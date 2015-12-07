@@ -76,8 +76,8 @@
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
       DOUBLE PRECISION :: WEIGHT
-! Interpolated gas phase quanties.
-      DOUBLE PRECISION :: lEPg, VELFP(3), lPF(3)
+! Interpolated gas phase quantities and particle velocity.
+      DOUBLE PRECISION :: lEPg, VELFP(3), lPF(3), vel_p(3)
 ! Drag force acting on each particle.
       DOUBLE PRECISION :: D_FORCE(3)
 ! Flag for Model A momentum equation
@@ -100,7 +100,7 @@
 
 !$omp parallel default(none) private(np,lepg,velfp,ijk,weight,lpf,d_force)    &
 !$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight, &
-!$omp          ep_g,pijk,des_vel_new,f_gp,mppic,ugc,vgc,wgc,p_force,          &
+!$omp          ep_g,pijk,des_vel_new,f_gp,mppic,ugc,vgc,wgc,p_force,vel_p,    &
 !$omp          des_explicitly_coupled,drag_fc,mppic_pdrag_implicit,fc,model_a,pvol)
 !$omp do
       DO NP=1,MAX_PIP
@@ -147,7 +147,8 @@
          ELSE
 
 ! Calculate the drag coefficient.
-            CALL DES_DRAG_GP(NP, DES_VEL_NEW(NP,:), VELFP, lEPg)
+            vel_p = DES_VEL_NEW(NP,:)
+            CALL DES_DRAG_GP(NP, vel_p, VELFP, lEPg)
 
 ! Calculate the gas-solids drag force on the particle
             IF(MPPIC .AND. MPPIC_PDRAG_IMPLICIT) THEN
@@ -250,8 +251,8 @@
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
       DOUBLE PRECISION :: WEIGHT
-! Interpolated gas phase quanties.
-      DOUBLE PRECISION :: lEPg, VELFP(3)
+! Interpolated gas phase quantities and particle velocity
+      DOUBLE PRECISION :: lEPg, VELFP(3), vel_p(3)
 ! Loop bound for filter
       INTEGER :: LP_BND
 ! Drag force (intermediate calculation)
@@ -279,7 +280,7 @@
 ! Calculate the gas phase forces acting on each particle.
 
 !$omp parallel default(none) private(np,lepg,velfp,ijk,weight,ldrag_bm,lforce) &
-!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight,  &
+!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight,vel_p, &
 !$omp          ep_g,pijk,des_vel_new,f_gp,vol,des_stat_wt,mppic,drag_bm,f_gds,ugc,vgc,wgc)
 !$omp do
       DO NP=1,MAX_PIP
@@ -320,7 +321,8 @@
          IF(lEPg == ZERO) lEPG = EP_g(PIJK(NP,4))
 
 ! Calculate drag coefficient
-         CALL DES_DRAG_GP(NP, DES_VEL_NEW(NP,:), VELFP, lEPg)
+         vel_p = DES_VEL_NEW(NP,:)
+         CALL DES_DRAG_GP(NP, vel_p, VELFP, lEPg)
 
          lFORCE = F_GP(NP)
          IF(MPPIC) lFORCE = lFORCE*DES_STAT_WT(NP)
