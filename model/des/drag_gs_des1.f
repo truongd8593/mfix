@@ -334,27 +334,27 @@
                IJK = FILTER_CELL(LC,NP)
                WEIGHT = FILTER_WEIGHT(LC,NP)/VOL(IJK)
 
-               !$omp atomic
+!$omp atomic
                DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
-               !$omp atomic
+!$omp atomic
                DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
-               !$omp atomic
+!$omp atomic
                DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
-               !$omp atomic
+!$omp atomic
                F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
             ENDDO
          ELSE
             IJK = PIJK(NP,4)
             WEIGHT = ONE/VOL(IJK)
 
-            !$omp atomic
+!$omp atomic
             DRAG_BM(IJK,1) = DRAG_BM(IJK,1) + lDRAG_BM(1)*WEIGHT
-            !$omp atomic
+!$omp atomic
             DRAG_BM(IJK,2) = DRAG_BM(IJK,2) + lDRAG_BM(2)*WEIGHT
-            !$omp atomic
+!$omp atomic
             DRAG_BM(IJK,3) = DRAG_BM(IJK,3) + lDRAG_BM(3)*WEIGHT
 
-            !$omp atomic
+!$omp atomic
             F_GDS(IJK) = F_GDS(IJK) + lFORCE*WEIGHT
          ENDIF
 

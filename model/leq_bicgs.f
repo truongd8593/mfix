@@ -395,11 +395,11 @@
          call MATVEC( Vname, Shat, A_m, Tvec )   ! returns Tvec=A*Shat
 
          if(.not.minimize_dotproducts) then
-!     $omp parallel sections
+!!     $omp parallel sections
             TxS = dot_product_par( Tvec, Svec )
-!     $omp section
+!!     $omp section
             TxT = dot_product_par( Tvec, Tvec )
-!     $omp end parallel sections
+!!     $omp end parallel sections
          else
             TxS_TxT = dot_product_par2(Tvec, Svec, Tvec, Tvec )
             TxS = TxS_TxT(1)

@@ -156,10 +156,10 @@ SUBROUTINE CALC_FORCE_DEM
                IF(CALC_COND_DES(PIJK(LL,5))) THEN
                   QQ_TMP = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
 
-                  !$omp atomic
+!$omp atomic
                   Q_Source(LL) = Q_Source(LL) + QQ_TMP
 
-                  !$omp atomic
+!$omp atomic
                   Q_Source(I) = Q_Source(I) - QQ_TMP
                ENDIF
             ENDIF
@@ -296,21 +296,21 @@ SUBROUTINE CALC_FORCE_DEM
 
             FC(LL,:) = FC(LL,:) + FC_TMP(:)
 
-            !$omp atomic
+!$omp atomic
             FC(I,1) = FC(I,1) - FC_TMP(1)
-            !$omp atomic
+!$omp atomic
             FC(I,2) = FC(I,2) - FC_TMP(2)
-            !$omp atomic
+!$omp atomic
             FC(I,3) = FC(I,3) - FC_TMP(3)
 
 ! for each particle the signs of norm and ft both flip, so add the same torque
             TOW(LL,:) = TOW(LL,:) + TOW_TMP(:,1)
 
-            !$omp atomic
+!$omp atomic
             TOW(I,1)  = TOW(I,1)  + TOW_TMP(1,2)
-            !$omp atomic
+!$omp atomic
             TOW(I,2)  = TOW(I,2)  + TOW_TMP(2,2)
-            !$omp atomic
+!$omp atomic
             TOW(I,3)  = TOW(I,3)  + TOW_TMP(3,2)
 
          ENDDO

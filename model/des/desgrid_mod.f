@@ -800,14 +800,14 @@
          if(is_nonexistent(lcurpar)) cycle
          lijk = dg_pijk(lcurpar)
 
-         !$omp atomic capture
+!$omp atomic capture
          lijk_count = lindx(lijk)
          lindx(lijk) = lindx(lijk) +  1
-         !$omp end atomic
+!$omp end atomic
 
          dg_pic(lijk)%p(lijk_count) = lcurpar
 
-         !$omp atomic
+!$omp atomic
          lparcount = lparcount + 1
       enddo
 !$omp end do

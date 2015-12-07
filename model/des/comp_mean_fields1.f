@@ -73,18 +73,18 @@
 ! Particle volume times the weight for this cell.
             VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
 ! Accumulate total solids volume (by phase)
-            !$omp atomic
+!$omp atomic
             SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
             IF(MPPIC) THEN
 ! Accumulate total solids momentum (by phase)
-               !$omp atomic
+!$omp atomic
                DES_U_S(IJK,M) = DES_U_S(IJK,M) + &
                   DES_VEL_NEW(NP,1)*VOLxWEIGHT
-               !$omp atomic
+!$omp atomic
                DES_V_S(IJK,M) = DES_V_S(IJK,M) + &
                   DES_VEL_NEW(NP,2)*VOLxWEIGHT
                IF(DO_K) THEN
-                  !$omp atomic
+!$omp atomic
                   DES_W_S(IJK,M) = DES_W_S(IJK,M) + &
                      DES_VEL_NEW(NP,3)*VOLxWEIGHT
                ENDIF
