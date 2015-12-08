@@ -36,29 +36,30 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE ghdtheory
-      USE output
-      USE indices
-      USE drag
-      USE residual
+      ! USE toleranc
+      USE run, only: kt_type, momentum_x_eq, momentum_y_eq, momentum_z_eq
+      USE physprop,only: mmax
+      USE geometry, only: do_k, ijkmax2
+      USE fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
+      ! USE ghdtheory
+      ! USE output
+      ! USE indices
+      ! USE drag
+      USE residual, only: resid_u, resid_v, resid_w, num_resid, den_resid, resid, max_resid, ijk_resid
       USE ur_facs
-      USE pgcor
-      USE pscor
-      USE leqsol
-      Use ambm
-      Use tmp_array1,  VxF_gs => Arraym1
-      Use tmp_array,  VxF_ss => ArrayLM
-      USE compar
-      USE discretelement
+      USE pgcor, only: d_e, d_t, d_n
+      USE pscor, only: e_e, e_t, e_n, mcp
+      USE leqsol, only: leq_sweep, leq_tol, leq_pc, leq_it, leq_method
+      ! Use ambm
+      ! Use tmp_array1,  VxF_gs => Arraym1
+      ! Use tmp_array,  VxF_ss => ArrayLM
+      USE compar, only: ijkstart3, ijkend3
+      USE discretelement, only: des_continuum_hybrid, discrete_element, des_continuum_coupled
       USE qmom_kinetic_equation
-      use ps
+      use ps, only: point_source
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -101,31 +102,110 @@
       allocate(V_stmp(DIMENSION_3,DIMENSION_M))
       allocate(W_stmp(DIMENSION_3,DIMENSION_M))
 
-      call lock_ambm        ! locks arrys a_m and b_m
-      call lock_tmp_array1  ! locks arraym1 (locally vxf_gs)
-      call lock_tmp_array2  ! locks arraylm (locally vxf_ss)
+      ! call lock_ambm        ! locks arrys a_m and b_m
+      ! call lock_tmp_array1  ! locks arraym1 (locally vxf_gs)
+      ! call lock_tmp_array2  ! locks arraylm (locally vxf_ss)
 
-! Store the velocities so that the order of solving the momentum
-! equations does not matter
-      DO IJK = ijkstart3, ijkend3
-         U_gtmp(IJK) = U_g(IJK)
-         V_gtmp(IJK) = V_g(IJK)
-         W_gtmp(IJK) = W_g(IJK)
-      ENDDO
-      DO M = 1, MMAX
-         IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-            (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
-            DO IJK = ijkstart3, ijkend3
-               U_stmp(IJK, M) = U_s(IJK, M)
-               V_stmp(IJK, M) = V_s(IJK, M)
-               W_stmp(IJK, M) = W_s(IJK, M)
-            ENDDO
-         ENDIF
-      ENDDO
+      CALL init(U_gtmp, V_gtmp, W_gtmp, U_stmp, V_stmp, W_stmp)
 
       DO_SOLIDS = .NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID
 
+!!$omp parallel default(shared)
+!!$omp sections
+      CALL U_m_star(U_gtmp,U_stmp)
+!!$omp section
+      CALL V_m_star(V_gtmp,V_stmp)
+!!$omp section
+      CALL W_m_star(W_gtmp,W_stmp)
+!!$omp end sections
+
+      CALL save(U_gtmp, V_gtmp, W_gtmp, U_stmp, V_stmp, W_stmp)
+
+! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
+      IF(TRIM(KT_TYPE) == 'GHD') THEN
+         CALL calc_external_forces()
+         CALL GHDMassFlux() ! to compute solid species mass flux
+         CALL UpdateSpeciesVelocities() ! located at end of ghdMassFlux.f file
+      ENDIF
+
+      ! call unlock_ambm
+      ! call unlock_tmp_array1
+      ! call unlock_tmp_array2
+
+      deallocate(U_gtmp)
+      deallocate(V_gtmp)
+      deallocate(W_gtmp)
+      deallocate(U_stmp)
+      deallocate(V_stmp)
+      deallocate(W_stmp)
+
+      RETURN
+
+    CONTAINS
+
+      SUBROUTINE init(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
+        IMPLICIT NONE
+        DOUBLE PRECISION, DIMENSION(:), intent(out) :: U_g_tmp,  V_g_tmp, W_g_tmp
+        DOUBLE PRECISION, DIMENSION(:,:), intent(out) :: U_s_tmp, V_s_tmp, W_s_tmp
+
+        ! Store the velocities so that the order of solving the momentum
+        ! equations does not matter
+        DO IJK = ijkstart3, ijkend3
+           U_g_tmp(IJK) = U_g(IJK)
+           V_g_tmp(IJK) = V_g(IJK)
+           W_g_tmp(IJK) = W_g(IJK)
+        ENDDO
+        DO M = 1, MMAX
+           IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
+                (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+              DO IJK = ijkstart3, ijkend3
+                 U_stmp(IJK, M) = U_s(IJK, M)
+                 V_stmp(IJK, M) = V_s(IJK, M)
+                 W_stmp(IJK, M) = W_s(IJK, M)
+              ENDDO
+           ENDIF
+        ENDDO
+
+      END SUBROUTINE init
+
+      SUBROUTINE save(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
+        IMPLICIT NONE
+
+        DOUBLE PRECISION, DIMENSION(:), intent(in) :: U_g_tmp,  V_g_tmp, W_g_tmp
+        DOUBLE PRECISION, DIMENSION(:,:), intent(in) :: U_s_tmp, V_s_tmp, W_s_tmp
+
+        ! Now update all velocity components
+        DO IJK = ijkstart3, ijkend3
+           U_g(IJK) = U_g_tmp(IJK)
+           V_g(IJK) = V_g_tmp(IJK)
+           W_g(IJK) = W_g_tmp(IJK)
+        ENDDO
+        DO M = 1, MMAX
+           IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
+                (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+              DO IJK = ijkstart3, ijkend3
+                 U_s(IJK, M) = U_s_tmp(IJK, M)
+                 V_s(IJK, M) = V_s_tmp(IJK, M)
+                 W_s(IJK, M) = W_s_tmp(IJK, M)
+              ENDDO
+           ENDIF
+        ENDDO
+
+      END SUBROUTINE save
+
+      SUBROUTINE U_m_star(U_g_tmp, U_s_tmp)
+        IMPLICIT NONE
+        DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: U_g_tmp
+        DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: U_s_tmp
+
+        DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
+        DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+
+        allocate(vxf_gs(DIMENSION_3,DIMENSION_M))
+        allocate(vxf_ss(DIMENSION_3,DIMENSION_M))
+        ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
+        ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
 
 ! Calculate U_m_star and residuals
 ! ---------------------------------------------------------------->>>
@@ -257,6 +337,26 @@
 ! End U_m_star and residuals
 ! ----------------------------------------------------------------<<<
 
+      deallocate(vxf_gs)
+      deallocate(vxf_ss)
+      deallocate(a_m)
+      deallocate(b_m)
+
+    END SUBROUTINE U_m_star
+
+      SUBROUTINE V_m_star(V_g_tmp, V_s_tmp)
+        IMPLICIT NONE
+        DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: V_g_tmp
+        DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: V_s_tmp
+
+        DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
+        DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+
+        allocate(vxf_gs(DIMENSION_3,DIMENSION_M))
+        allocate(vxf_ss(DIMENSION_3,DIMENSION_M))
+        ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
+        ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
+
 ! Calculate V_m_star and residuals
 ! ---------------------------------------------------------------->>>
       DO M = 0, MMAX
@@ -384,6 +484,25 @@
 ! End V_m_star and residuals
 ! ----------------------------------------------------------------<<<
 
+      deallocate(vxf_gs)
+      deallocate(vxf_ss)
+      deallocate(a_m)
+      deallocate(b_m)
+
+    END SUBROUTINE V_m_star
+
+      SUBROUTINE W_m_star(W_g_tmp, W_s_tmp)
+        IMPLICIT NONE
+        DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: W_g_tmp
+        DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: W_s_tmp
+
+        DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
+        DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+
+        ALLOCATE(VXF_GS(DIMENSION_3,DIMENSION_M))
+        ALLOCATE(VXF_SS(DIMENSION_3,DIMENSION_M))
+        ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
+        ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
 
 ! Calculate W_m_star and residuals
 ! ---------------------------------------------------------------->>>
@@ -510,40 +629,11 @@
 ! End W_m_star and residuals
 ! ----------------------------------------------------------------<<<
 
-! Now update all velocity components
-      DO IJK = ijkstart3, ijkend3
-         U_g(IJK) = U_gtmp(IJK)
-         V_g(IJK) = V_gtmp(IJK)
-         W_g(IJK) = W_gtmp(IJK)
-      ENDDO
-      DO M = 1, MMAX
-         IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-           (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
-            DO IJK = ijkstart3, ijkend3
-               U_s(IJK, M) = U_stmp(IJK, M)
-               V_s(IJK, M) = V_stmp(IJK, M)
-               W_s(IJK, M) = W_stmp(IJK, M)
-            ENDDO
-         ENDIF
-      ENDDO
+      deallocate(vxf_gs)
+      deallocate(vxf_ss)
+      deallocate(a_m)
+      deallocate(b_m)
 
-! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
-         CALL calc_external_forces()
-         CALL GHDMassFlux() ! to compute solid species mass flux
-         CALL UpdateSpeciesVelocities() ! located at end of ghdMassFlux.f file
-      ENDIF
+    END SUBROUTINE W_M_STAR
 
-      call unlock_ambm
-      call unlock_tmp_array1
-      call unlock_tmp_array2
-
-      deallocate(U_gtmp)
-      deallocate(V_gtmp)
-      deallocate(W_gtmp)
-      deallocate(U_stmp)
-      deallocate(V_stmp)
-      deallocate(W_stmp)
-
-      RETURN
-      END SUBROUTINE SOLVE_VEL_STAR
+  END SUBROUTINE SOLVE_VEL_STAR
