@@ -70,8 +70,6 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! solids phase index
-      INTEGER :: M
 ! fluid cell index
       INTEGER :: IJK
 ! temporary velocity arrays
@@ -111,14 +109,13 @@
       DO_SOLIDS = .NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID
 
-!!$omp parallel default(shared)
-!!$omp sections
+!$omp parallel sections default(shared)
       CALL U_m_star(U_gtmp,U_stmp)
-!!$omp section
+!$omp section
       CALL V_m_star(V_gtmp,V_stmp)
-!!$omp section
+!$omp section
       CALL W_m_star(W_gtmp,W_stmp)
-!!$omp end sections
+!$omp end parallel sections
 
       CALL save(U_gtmp, V_gtmp, W_gtmp, U_stmp, V_stmp, W_stmp)
 
@@ -146,6 +143,10 @@
 
       SUBROUTINE init(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
         IMPLICIT NONE
+
+        ! solids phase index
+        INTEGER :: M
+
         DOUBLE PRECISION, DIMENSION(:), intent(out) :: U_g_tmp,  V_g_tmp, W_g_tmp
         DOUBLE PRECISION, DIMENSION(:,:), intent(out) :: U_s_tmp, V_s_tmp, W_s_tmp
 
@@ -171,6 +172,9 @@
 
       SUBROUTINE save(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
         IMPLICIT NONE
+
+        ! solids phase index
+        INTEGER :: M
 
         DOUBLE PRECISION, DIMENSION(:), intent(in) :: U_g_tmp,  V_g_tmp, W_g_tmp
         DOUBLE PRECISION, DIMENSION(:,:), intent(in) :: U_s_tmp, V_s_tmp, W_s_tmp
@@ -198,6 +202,9 @@
         IMPLICIT NONE
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: U_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: U_s_tmp
+
+        ! solids phase index
+        INTEGER :: M
 
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
@@ -349,6 +356,9 @@
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: V_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: V_s_tmp
 
+        ! solids phase index
+        INTEGER :: M
+
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
 
@@ -495,6 +505,9 @@
         IMPLICIT NONE
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: W_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: W_s_tmp
+
+        ! solids phase index
+        INTEGER :: M
 
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M

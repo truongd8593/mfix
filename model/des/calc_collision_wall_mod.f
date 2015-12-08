@@ -66,18 +66,17 @@
 
       DOUBLE PRECISION :: MAX_DISTSQ, DISTAPART, FORCE_COH, R_LM
       INTEGER :: MAX_NF, axis
-      DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX
+      DOUBLE PRECISION, DIMENSION(3) :: PARTICLE_MIN, PARTICLE_MAX, POS_TMP
 
       DES_LOC_DEBUG = .false. ;      DEBUG_DES = .false.
       FOCUS_PARTICLE = -1
-
 
 !$omp parallel default(none) private(LL,ijk,MAG_OVERLAP_T,             &
 !$omp    cell_id,radsq,particle_max,particle_min,tangent,              &
 !$omp    axis,nf,closest_pt,dist,r_lm,distapart,force_coh,distsq,      &
 !$omp    line_t,max_distsq,max_nf,normal,distmod,overlap_n,VREL_T,     &
 !$omp    v_rel_trans_norm,phaseLL,sqrt_overlap,kn_des_w,kt_des_w,      &
-!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd)         &
+!$omp    etan_des_w,etat_des_w,fnorm,overlap_t,ftan,ftmd,fnmd,pos_tmp) &
 !$omp shared(max_pip,focus_particle,debug_des,                         &
 !$omp    pijk,dg_pijk,i_of,j_of,k_of,des_pos_new,    &
 !$omp    des_radius,facets_at_dg,vertex,  &
@@ -205,7 +204,8 @@
                CYCLE
             ENDIF
 
-            CALL ClosestPtPointTriangle(DES_POS_NEW(LL,:),             &
+            pos_tmp = DES_POS_NEW(LL,:)
+            CALL ClosestPtPointTriangle(pos_tmp,             &
                VERTEX(:,:,NF), CLOSEST_PT(:))
 
             DIST(:) = CLOSEST_PT(:) - DES_POS_NEW(LL,:)
