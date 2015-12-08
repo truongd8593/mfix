@@ -76,40 +76,40 @@
       IF (INTG_EULER) THEN
 !$omp sections
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:MAX_PIP,1) =   &
-            DES_VEL_NEW(:MAX_PIP,1) + DTSOLID*(FC(:MAX_PIP,1)/PMASS(:MAX_PIP) + GRAV(1))
-         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:MAX_PIP,1) =       &
-            DES_POS_NEW(:MAX_PIP,1) + DES_VEL_NEW(:MAX_PIP,1)*DTSOLID
-         FC(:MAX_PIP,1) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,1) =   &
+            DES_VEL_NEW(:,1) + DTSOLID*(FC(:,1)/PMASS(:) + GRAV(1))
+         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,1) =       &
+            DES_POS_NEW(:,1) + DES_VEL_NEW(:,1)*DTSOLID
+         FC(:,1) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:MAX_PIP,2) =   &
-            DES_VEL_NEW(:MAX_PIP,2) + DTSOLID*(FC(:MAX_PIP,2)/PMASS(:MAX_PIP) + GRAV(2))
-         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:MAX_PIP,2) =       &
-            DES_POS_NEW(:MAX_PIP,2) + DES_VEL_NEW(:MAX_PIP,2)*DTSOLID
-         FC(:MAX_PIP,2) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,2) =   &
+            DES_VEL_NEW(:,2) + DTSOLID*(FC(:,2)/PMASS(:) + GRAV(2))
+         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,2) =       &
+            DES_POS_NEW(:,2) + DES_VEL_NEW(:,2)*DTSOLID
+         FC(:,2) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:MAX_PIP,3) =   &
-            DES_VEL_NEW(:MAX_PIP,3) + DTSOLID*(FC(:MAX_PIP,3)/PMASS(:MAX_PIP) + GRAV(3))
-         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:MAX_PIP,3) =       &
-            DES_POS_NEW(:MAX_PIP,3) + DES_VEL_NEW(:MAX_PIP,3)*DTSOLID
-         FC(:MAX_PIP,3) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,3) =   &
+            DES_VEL_NEW(:,3) + DTSOLID*(FC(:,3)/PMASS(:) + GRAV(3))
+         WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,3) =       &
+            DES_POS_NEW(:,3) + DES_VEL_NEW(:,3)*DTSOLID
+         FC(:,3) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) OMEGA_NEW(:MAX_PIP,1) =     &
-            OMEGA_NEW(:MAX_PIP,1) + TOW(:MAX_PIP,1)*OMOI(:MAX_PIP)*DTSOLID
-         TOW(:MAX_PIP,1) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) OMEGA_NEW(:,1) =     &
+            OMEGA_NEW(:,1) + TOW(:,1)*OMOI(:)*DTSOLID
+         TOW(:,1) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:MAX_PIP,2) =      &
-            OMEGA_NEW(:MAX_PIP,2) + TOW(:MAX_PIP,2)*OMOI(:MAX_PIP)*DTSOLID
-         TOW(:MAX_PIP,2) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,2) =      &
+            OMEGA_NEW(:,2) + TOW(:,2)*OMOI(:)*DTSOLID
+         TOW(:,2) = ZERO
 
 !$omp section
-         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:MAX_PIP,3) =      &
-            OMEGA_NEW(:MAX_PIP,3) + TOW(:MAX_PIP,3)*OMOI(:MAX_PIP)*DTSOLID
-         TOW(:MAX_PIP,3) = ZERO
+         WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,3) =      &
+            OMEGA_NEW(:,3) + TOW(:,3)*OMOI(:)*DTSOLID
+         TOW(:,3) = ZERO
 !$omp end sections
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
