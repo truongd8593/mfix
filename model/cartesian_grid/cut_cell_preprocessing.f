@@ -265,52 +265,47 @@
 
       INTEGER :: GROUP,GS,P
 
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: F_G
-      DOUBLE PRECISION :: F_G_tmp
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: F_G
 
-      ALLOCATE(F_G(N_GROUP))
+      ALLOCATE(F_G(N_GROUP,0:DIM_QUADRIC))
 
       SELECT CASE(METHOD)
 
          CASE('QUADRIC')
 
+            F_G = - UNDEFINED
+
             DO GROUP = 1, N_GROUP
                GS = GROUP_SIZE(GROUP)
                GR = TRIM(GROUP_RELATION(GROUP))
 
+               DO P = 1 , GS
+                  Q_ID = GROUP_Q(GROUP,P)
+                  CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G(GROUP,P),CLIP_FLAG)
+               ENDDO
                IF(GR == 'AND') THEN
-                  f_g_tmp = -HUGE(0.0)
-                  DO P = 1 , GS
-                     Q_ID = GROUP_Q(GROUP,P)
-                     CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G_tmp,CLIP_FLAG)
-                  ENDDO
-                  F_G(GROUP) = max(f_g_tmp,F_G(GROUP))
+                  F_G(GROUP,0) = MAXVAL(F_G(GROUP,1:GS))
                ELSEIF(GR == 'OR') THEN
-                  f_g_tmp = HUGE(0.0)
-                  DO P = 1 , GS
-                     Q_ID = GROUP_Q(GROUP,P)
-                     CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G_tmp,CLIP_FLAG)
-                  ENDDO
-                  F_G(GROUP) = min(f_g_tmp,F_G(GROUP))
+                  F_G(GROUP,0) = MINVAL(F_G(GROUP,1:GS))
                ELSEIF(GR == 'PIECEWISE') THEN
                   CALL REASSSIGN_QUADRIC(x1,x2,x3,GROUP,Q_ID)
 !                  CLIP_FLAG=.FALSE.
-                  CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G(GROUP),CLIP_FLAG)
+                  CALL GET_F_QUADRIC(x1,x2,x3,Q_ID,F_G(GROUP,0),CLIP_FLAG)
 !                  CLIP_FLAG=.TRUE.
                ENDIF
 
             ENDDO
 
-            f = F_G(1)
+            f = F_G(1,0)
 
             DO GROUP = 2, N_GROUP
 
                GR = TRIM(RELATION_WITH_PREVIOUS(GROUP))
 
                IF(GR =='AND') THEN
-                  f = DMAX1(f,F_G(GROUP))
+                  f = DMAX1(f,F_G(GROUP,0))
                ELSEIF(GR =='OR') THEN
-                  f = DMIN1(f,F_G(GROUP))
+                  f = DMIN1(f,F_G(GROUP,0))
                ENDIF
 
             ENDDO
