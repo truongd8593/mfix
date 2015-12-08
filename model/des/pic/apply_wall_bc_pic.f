@@ -61,6 +61,8 @@
       DOUBLE PRECISION :: DT_RBND, RADSQ
 !......................................................................!
 
+      double precision :: vv(3)
+
 ! Minimum velocity needed to offset gravity.
       minVEL = -DTSOLID*GRAV(:)
       minVEL_MAG = dot_product(minVEL,minVEL)
@@ -89,8 +91,9 @@
 !            IF(dot_product(NORM_PLANE, DES_VEL_NEW(NP,:)) > 0.d0) &
 !               CYCLE LC1_LP
 
+            vv = VERTEX(1,:,NF)
             CALL INTERSECTLNPLANE(DES_POS_NEW(NP,:), DES_VEL_NEW(NP,:),&
-                VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
+                vv, NORM_FACE(:,NF), LINE_T)
 
             IF(abs(LINE_T) <= DT_RBND) THEN
 
@@ -319,7 +322,7 @@
 ! line is parameterized as p = p_ref + t * dir_line, t is line_param
       DOUBLE PRECISION :: LINE_T
       DOUBLE PRECISION :: DIST(3), RADSQ
-
+      double precision :: vv(3)
 
       K = 1
       IF(DO_K) K = min(DG_KEND2,max(DG_KSTART2,KOFPOS(POS(3))))
@@ -342,8 +345,9 @@
       DO LC = 1, FACETS_AT_DG(IJK)%COUNT
          NF = FACETS_AT_DG(IJK)%ID(LC)
 
+         vv = VERTEX(1,:,NF)
          CALL INTERSECTLNPLANE(POS, NORM_FACE(:,NF), &
-            VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
+            vv, NORM_FACE(:,NF), LINE_T)
 
 ! Orthogonal projection puts the point outside of the domain or less than
 ! one particle radius to the facet.

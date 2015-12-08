@@ -456,6 +456,8 @@
       DOUBLE PRECISION :: LINE_T
       DOUBLE PRECISION :: RADSQ, DIST(3)
 
+      double precision :: vv(3)
+
       REMOVE = .TRUE.
 
       I1 = IofPOS(XE(fI-1))
@@ -481,8 +483,9 @@
          DO LC = 1, FACETS_AT_DG(IJK)%COUNT
             NF = FACETS_AT_DG(IJK)%ID(LC)
 
+            vv = VERTEX(1,:,NF)
             CALL INTERSECTLNPLANE(POS, NORM_FACE(:,NF), &
-               VERTEX(1,:,NF), NORM_FACE(:,NF), LINE_T)
+               vv, NORM_FACE(:,NF), LINE_T)
 
 ! Orthogonal projection puts the point outside of the domain or less than
 ! one particle radius to the facet.
