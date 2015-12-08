@@ -93,20 +93,20 @@ SUBROUTINE CALC_FORCE_DEM
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
-!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
-!$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
-!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
-!$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
-!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp, box_id, box_id2, found)         &
-!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
-!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
-!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
-!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!$omp    hamaker_constant,asperities,surface_energy,                   &
-!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, multisap, boxhandle)
+!!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
+!!$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
+!!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
+!!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
+!!$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
+!!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp, box_id, box_id2, found)         &
+!!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
+!!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
+!!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
+!!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
+!!$omp    hamaker_constant,asperities,surface_energy,                   &
+!!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, multisap, boxhandle)
 
-!$omp do
+!!$omp do
 
       DO LL = 1, MAX_PIP
          IF(IS_NONEXISTENT(LL)) CYCLE
@@ -156,10 +156,10 @@ SUBROUTINE CALC_FORCE_DEM
                IF(CALC_COND_DES(PIJK(LL,5))) THEN
                   QQ_TMP = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
 
-!$omp atomic
+!!$omp atomic
                   Q_Source(LL) = Q_Source(LL) + QQ_TMP
 
-!$omp atomic
+!!$omp atomic
                   Q_Source(I) = Q_Source(I) - QQ_TMP
                ENDIF
             ENDIF
@@ -296,28 +296,28 @@ SUBROUTINE CALC_FORCE_DEM
 
             FC(LL,:) = FC(LL,:) + FC_TMP(:)
 
-!$omp atomic
+!!$omp atomic
             FC(I,1) = FC(I,1) - FC_TMP(1)
-!$omp atomic
+!!$omp atomic
             FC(I,2) = FC(I,2) - FC_TMP(2)
-!$omp atomic
+!!$omp atomic
             FC(I,3) = FC(I,3) - FC_TMP(3)
 
 ! for each particle the signs of norm and ft both flip, so add the same torque
             TOW(LL,:) = TOW(LL,:) + TOW_TMP(:,1)
 
-!$omp atomic
+!!$omp atomic
             TOW(I,1)  = TOW(I,1)  + TOW_TMP(1,2)
-!$omp atomic
+!!$omp atomic
             TOW(I,2)  = TOW(I,2)  + TOW_TMP(2,2)
-!$omp atomic
+!!$omp atomic
             TOW(I,3)  = TOW(I,3)  + TOW_TMP(3,2)
 
          ENDDO
       ENDDO
-!$omp end do
+!!$omp end do
 
-!$omp end parallel
+!!$omp end parallel
 
 ! just for post-processing mag. of cohesive forces on each particle
       IF(USE_COHESION .AND. VAN_DER_WAALS .AND. GRAV_MAG > ZERO) THEN

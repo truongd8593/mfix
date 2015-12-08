@@ -37,7 +37,6 @@
       USE cutcell
       USE eos, ONLY: EOSG
       USE fldvar
-      USE functions
       USE geometry
       USE indices
       USE mflux
@@ -1025,4 +1024,9 @@
 
 !      print*,'bottom of cg_set_outflow'
       RETURN
+
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
       END SUBROUTINE CG_SET_OUTFLOW

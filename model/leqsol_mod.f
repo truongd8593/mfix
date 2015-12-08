@@ -342,15 +342,18 @@ CONTAINS
 !!$      omp_start=omp_get_wtime()
 
     IF (SETGUESS) THEN
-!omp   parallel do private(i,j,k,ijk) collapse(3)
-       do k = kstart3,kend3
-          do i = istart3,iend3
-             do j = jstart3,jend3
-                IJK = (J + C0 + I*C1 + K*C2)
-                VAR(IJK) = B_M(IJK)
-             enddo
-          enddo
-       enddo
+
+! !!omp   parallel do private(i,j,k,ijk) collapse(3)
+!        do k = kstart3,kend3
+!           do i = istart3,iend3
+!              do j = jstart3,jend3
+!                 IJK = (J + C0 + I*C1 + K*C2)
+!                 VAR(IJK) = B_M(IJK)
+!              enddo
+!           enddo
+!        enddo
+
+       VAR(:) = B_M(:)
 
        call send_recv(var,nlayers_bicgs)
     ENDIF
@@ -1122,7 +1125,15 @@ CONTAINS
 !-----------------------------------------------
 
     if (numPEs.eq.1.and.is_serial) then
+!$  if (.false.) then
        dot_product_par = dot_product(r1,r2)
+!$  endif
+
+!$       dot_product_par = 0
+!$omp parallel do private(ijk) reduction(+:dot_product_par)
+!$       do ijk = 1, DIMENSION_3
+!$          dot_product_par = dot_product_par + r1(ijk)*r2(ijk)
+!$       enddo
        return
     endif
 
@@ -1138,10 +1149,7 @@ CONTAINS
 
           call global_all_sum(prod, dot_product_par)
 
-
        ELSE
-
-
 
 !$omp parallel do private(i,j,k,ijk) reduction(+:prod)  collapse (3)
           do k = kstart1, kend1

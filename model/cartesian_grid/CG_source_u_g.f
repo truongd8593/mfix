@@ -27,26 +27,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
-      USE constant
-      USE physprop
-      USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE is
-      USE tau_g
+
       USE bc
       USE compar
-      USE sendrecv
+      USE fldvar
       USE fun_avg
-      USE functions
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE toleranc
+      USE visc_g
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -333,6 +325,11 @@
 
 
       RETURN
+
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
       END SUBROUTINE CG_SOURCE_U_G
 !
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -364,26 +361,18 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
-      USE constant
-      USE physprop
-      USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE is
-      USE tau_g
-      USE bc
-      USE output
-      USE compar
-      USE fun_avg
-      USE functions
+
+        USE bc
+        USE compar
+        USE fldvar
+        USE fun_avg
+        USE indices
+        USE param
+        USE param1
+        USE physprop
+        USE run
+        USE toleranc
+        USE visc_g
 
 !=======================================================================
 ! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
@@ -393,7 +382,6 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
-
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -783,6 +771,10 @@
 !=======================================================================
 ! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
 !=======================================================================
+
+    CONTAINS
+
+      INCLUDE 'functions.inc'
 
       END SUBROUTINE CG_SOURCE_U_G_BC
 

@@ -151,8 +151,6 @@
 ! Flag for user defined function
       use run, only: USR_ROg
 
-      use functions
-
       implicit none
 
 ! Local Variables:
@@ -198,10 +196,11 @@
          ENDIF
       ENDDO IJK_LP
 
-
       RETURN
+
       END SUBROUTINE PHYSICAL_PROP_ROg
 
+      INCLUDE 'functions.inc'
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

@@ -43,7 +43,6 @@
       USE run
       USE funits
       USE compar
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -184,8 +183,12 @@
          ENDDO
       ENDDO
       RETURN
-      END SUBROUTINE SET_WALL_BC
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE SET_WALL_BC
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -229,7 +232,6 @@
       USE run
       USE funits
       USE compar
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -400,6 +402,8 @@
       RETURN
 
       CONTAINS
+
+        INCLUDE 'functions.inc'
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

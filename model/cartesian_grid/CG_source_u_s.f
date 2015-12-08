@@ -41,7 +41,6 @@
       USE cutcell
       USE quadric
       USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -300,8 +299,12 @@
 
 
       RETURN
-      END SUBROUTINE CG_SOURCE_U_S
 
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
+      END SUBROUTINE CG_SOURCE_U_S
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -331,7 +334,6 @@
       USE cutcell
       USE quadric
       USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -569,4 +571,9 @@
       ENDDO
 
       RETURN
+
+    CONTAINS
+
+      INCLUDE 'functions.inc'
+
       END SUBROUTINE CG_SOURCE_U_S_BC
