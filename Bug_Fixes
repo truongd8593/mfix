@@ -22,4 +22,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   |                       |          |  model/dmp_modules/sendrecv3_mod.f
                   |                       |          |
 ==================================================================================================
-
+  12/08/2015      | fix DEM restarts with |  Minor   |  des/read_res0_des.f
+                  | chemical reactions    |          |  des/write_res0_des.f
+                  |                       |          |
+==================================================================================================
