@@ -19,7 +19,6 @@ SUBROUTINE CALC_FORCE_DEM
       USE des_thermo_cond
       USE discretelement
       USE run
-      use multi_sweep_and_prune, only: do_sap
       use pair_manager, only: is_pair
       use param1, only: one, small_number, zero
 
@@ -51,11 +50,11 @@ SUBROUTINE CALC_FORCE_DEM
 ! normal and tangential forces
       DOUBLE PRECISION :: FN(3), FT(3)
 ! temporary storage of force
-      DOUBLE PRECISION :: FC_TMP(3)
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC_TMP
 ! temporary storage of force for torque
       DOUBLE PRECISION :: TOW_FORCE(3)
 ! temporary storage of torque
-      DOUBLE PRECISION :: TOW_TMP(3,2)
+      DOUBLE PRECISION, DIMENSION(:,:,:), ALLOCATABLE :: TOW_TMP
 ! temporary storage of conduction/radiation
       DOUBLE PRECISION :: QQ_TMP
 
@@ -81,32 +80,26 @@ SUBROUTINE CALC_FORCE_DEM
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
-      ! do nn=0, size(multisap%saps)-1
-      !    !print *,"nn = ",nn
-      !    if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
-      !    if (.not.check_sort(multisap%saps(nn))) ERROR_STOP __LINE__
-      ! enddo
-
-!print *,"CALC_FORCE_DEM =================================================================================="
-
+      allocate(fc_tmp(3,size(neighbors)))
+      allocate(tow_tmp(3,2,size(neighbors)))
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
 
-!!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
-!!$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
-!!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
-!!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
-!!$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
-!!$omp    dist_cl, dist_ci, fc_tmp, tow_tmp, tow_force, qq_tmp, box_id, box_id2, found)         &
-!!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
-!!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
-!!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
-!!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
-!!$omp    hamaker_constant,asperities,surface_energy,                   &
-!!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, multisap, boxhandle)
+!$omp parallel default(none) private(pos,rad,cc,cc_start,cc_end,ll,i,  &
+!$omp    overlap_n,vrel_t,v_rel_trans_norm,sqrt_overlap,dist,r_lm,     &
+!$omp    kn_des,kt_des,hert_kn,hert_kt,phasell,phasei,etan_des,        &
+!$omp    etat_des,fn,ft,overlap_t,tangent,mag_overlap_t,               &
+!$omp    eq_radius,distapart,force_coh,dist_mag,NORMAL,ftmd,fnmd,      &
+!$omp    dist_cl, dist_ci, tow_force, qq_tmp, box_id, box_id2, found)         &
+!$omp shared(max_pip,neighbors,neighbor_index,des_pos_new,des_radius,  &
+!$omp    des_coll_model_enum,kn,kt,pft_neighbor,pijk,                  &
+!$omp    des_etan,des_etat,mew,use_cohesion, calc_cond_des, dtsolid,   &
+!$omp    van_der_waals,vdw_outer_cutoff,vdw_inner_cutoff,              &
+!$omp    hamaker_constant,asperities,surface_energy,                   &
+!$omp    tow, fc, energy_eq, grav_mag, postcohesive, pmass, q_source, tow_tmp, fc_tmp)
 
-!!$omp do
+!$omp do
 
       DO LL = 1, MAX_PIP
          IF(IS_NONEXISTENT(LL)) CYCLE
@@ -126,7 +119,8 @@ SUBROUTINE CALC_FORCE_DEM
             DIST(:) = DES_POS_NEW(I,:) - POS(:)
             DIST_MAG = dot_product(DIST,DIST)
 
-            FC_TMP(:) = ZERO
+            FC_TMP(:,cc) = ZERO
+            TOW_TMP(:,:,cc) = ZERO
 
 ! Compute particle-particle VDW cohesive short-range forces
             IF(USE_COHESION .AND. VAN_DER_WAALS) THEN
@@ -143,8 +137,8 @@ SUBROUTINE CALC_FORCE_DEM
                        (Asperities/(Asperities+EQ_RADIUS) + ONE/          &
                        (ONE+Asperities/VDW_INNER_CUTOFF)**2 )
                   ENDIF
-                  FC_TMP(:) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
-                  TOW_TMP(:,:) = ZERO
+                  FC_TMP(:,cc) = DIST(:)*FORCE_COH/SQRT(DIST_MAG)
+                  TOW_TMP(:,:,cc) = ZERO
 
 ! just for post-processing mag. of cohesive forces on each particle
                   PostCohesive(LL) = PostCohesive(LL) + FORCE_COH / PMASS(LL)
@@ -156,11 +150,11 @@ SUBROUTINE CALC_FORCE_DEM
                IF(CALC_COND_DES(PIJK(LL,5))) THEN
                   QQ_TMP = DES_CONDUCTION(LL, I, sqrt(DIST_MAG), PIJK(LL,5), PIJK(LL,4))
 
-!!$omp atomic
+!$omp critical
                   Q_Source(LL) = Q_Source(LL) + QQ_TMP
 
-!!$omp atomic
                   Q_Source(I) = Q_Source(I) - QQ_TMP
+!$omp end critical
                ENDIF
             ENDIF
 
@@ -168,44 +162,6 @@ SUBROUTINE CALC_FORCE_DEM
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
-
-            if (do_sap) then
-               if (.not.is_pair(multisap%hashtable,ll,i)) then
-
-                  print *,"SAP DIDNT FIND PAIR: ",ll,i
-                  print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-                  print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
-
-                  print *,""
-                  print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
-                  print *,""
-
-                  ! print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
-                  ! print *,"IIIIIIIII ",boxhandle(i)%list(:)
-
-                  do mm=1,size(boxhandle(ll)%list)
-                     if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
-                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
-                     box_id = boxhandle(ll)%list(mm)%box_id
-
-                     found = .false.
-                     do nn=1,size(boxhandle(i)%list)
-                        if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-                           ! print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
-                           box_id2 = boxhandle(i)%list(nn)%box_id
-                           found = .true.
-                        endif
-                     enddo
-
-                     if (.not.found) cycle
-
-                     ! print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
-
-                  enddo
-
-                  ERROR_STOP __LINE__
-               endif
-            endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I
@@ -287,37 +243,40 @@ SUBROUTINE CALC_FORCE_DEM
             DIST_CI = DIST_MAG - DIST_CL
 
             TOW_force(:) = DES_CROSSPRDCT(NORMAL(:), FT(:))
-            TOW_TMP(:,1) = DIST_CL*TOW_force(:)
-            TOW_TMP(:,2) = DIST_CI*TOW_force(:)
+            TOW_TMP(:,1,cc) = DIST_CL*TOW_force(:)
+            TOW_TMP(:,2,cc) = DIST_CI*TOW_force(:)
 
 ! Calculate the total force FC of a collision pair
 ! total contact force ( FC_TMP may already include cohesive force)
-            FC_TMP(:) = FC_TMP(:) + FN(:) + FT(:)
-
-            FC(LL,:) = FC(LL,:) + FC_TMP(:)
-
-!!$omp atomic
-            FC(I,1) = FC(I,1) - FC_TMP(1)
-!!$omp atomic
-            FC(I,2) = FC(I,2) - FC_TMP(2)
-!!$omp atomic
-            FC(I,3) = FC(I,3) - FC_TMP(3)
-
-! for each particle the signs of norm and ft both flip, so add the same torque
-            TOW(LL,:) = TOW(LL,:) + TOW_TMP(:,1)
-
-!!$omp atomic
-            TOW(I,1)  = TOW(I,1)  + TOW_TMP(1,2)
-!!$omp atomic
-            TOW(I,2)  = TOW(I,2)  + TOW_TMP(2,2)
-!!$omp atomic
-            TOW(I,3)  = TOW(I,3)  + TOW_TMP(3,2)
+            FC_TMP(:,cc) = FC_TMP(:,cc) + FN(:) + FT(:)
 
          ENDDO
       ENDDO
-!!$omp end do
+      !$omp end do
 
-!!$omp end parallel
+      !$omp end parallel
+
+            DO LL = 1, MAX_PIP
+               IF(IS_NONEXISTENT(LL)) CYCLE
+
+               CC_START = 1
+               IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
+               CC_END   = NEIGHBOR_INDEX(LL)
+
+               DO CC = CC_START, CC_END-1
+                  I  = NEIGHBORS(CC)
+
+                  IF(IS_NONEXISTENT(I)) CYCLE
+
+            FC(LL,:) = FC(LL,:) + FC_TMP(:,cc)
+            FC(I,:) = FC(I,:) - FC_TMP(:,cc)
+
+            ! for each particle the signs of norm and ft both flip, so add the same torque
+            TOW(LL,:) = TOW(LL,:) + TOW_TMP(:,1,cc)
+            TOW(I,:)  = TOW(I,:)  + TOW_TMP(:,2,cc)
+
+         ENDDO
+      ENDDO
 
 ! just for post-processing mag. of cohesive forces on each particle
       IF(USE_COHESION .AND. VAN_DER_WAALS .AND. GRAV_MAG > ZERO) THEN
