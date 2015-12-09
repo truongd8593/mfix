@@ -161,9 +161,9 @@
            IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
                 (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
               DO IJK = ijkstart3, ijkend3
-                 U_stmp(IJK, M) = U_s(IJK, M)
-                 V_stmp(IJK, M) = V_s(IJK, M)
-                 W_stmp(IJK, M) = W_s(IJK, M)
+                 U_s_tmp(IJK, M) = U_s(IJK, M)
+                 V_s_tmp(IJK, M) = V_s(IJK, M)
+                 W_s_tmp(IJK, M) = W_s(IJK, M)
               ENDDO
            ENDIF
         ENDDO
@@ -319,7 +319,7 @@
 !            DO_K,ier)
          CALL ADJUST_LEQ (RESID(RESID_U,0), LEQ_IT(3), LEQ_METHOD(3), &
             LEQI, LEQM)
-         CALL SOLVE_LIN_EQ ('U_g', 3, U_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('U_g', 3, U_G_tmp, A_M, B_M, 0, LEQI, LEQM, &
             LEQ_SWEEP(3), LEQ_TOL(3),  LEQ_PC(3), IER)
 !         call out_array(u_g, 'u_g')
       ENDIF
@@ -333,7 +333,7 @@
 !                     a_m(1, -3, M), 1, DO_K,ier)
                   CALL ADJUST_LEQ (RESID(RESID_U,M), LEQ_IT(3),&
                      LEQ_METHOD(3), LEQI, LEQM)
-                  CALL SOLVE_LIN_EQ ('U_s', 3, U_Stmp(1,M), A_M, &
+                  CALL SOLVE_LIN_EQ ('U_s', 3, U_S_tmp(1,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(3), LEQ_TOL(3),&
                      LEQ_PC(3), IER)
 !                  call out_array(u_s(1,m), 'u_s')
@@ -469,7 +469,7 @@
 !            1, DO_K, ier)
          CALL ADJUST_LEQ (RESID(RESID_V,0), LEQ_IT(4), LEQ_METHOD(4), &
             LEQI, LEQM)
-         CALL SOLVE_LIN_EQ ('V_g', 4, V_Gtmp, A_M, B_M, 0, LEQI, LEQM, &
+         CALL SOLVE_LIN_EQ ('V_g', 4, V_G_tmp, A_M, B_M, 0, LEQI, LEQM, &
             LEQ_SWEEP(4), LEQ_TOL(4),  LEQ_PC(4), IER)
 !         call out_array(v_g, 'v_g')
       ENDIF
@@ -483,7 +483,7 @@
 !                     a_m(1, -3, M), 1, DO_K, ier)
                   CALL ADJUST_LEQ (RESID(RESID_V,M), LEQ_IT(4), &
                      LEQ_METHOD(4), LEQI, LEQM)
-                  CALL SOLVE_LIN_EQ ('V_s', 4, V_Stmp(1,M), A_M, &
+                  CALL SOLVE_LIN_EQ ('V_s', 4, V_S_tmp(1,M), A_M, &
                      B_M, M, LEQI, LEQM, LEQ_SWEEP(4), LEQ_TOL(4), &
                      LEQ_PC(4), IER)
 !                  call out_array(v_s(1,m), 'v_s')
@@ -616,7 +616,7 @@
 !               1, DO_K, ier)
             CALL ADJUST_LEQ (RESID(RESID_W,0), LEQ_IT(5), &
                LEQ_METHOD(5), LEQI, LEQM)
-            CALL SOLVE_LIN_EQ ('W_g', 5, W_Gtmp, A_M, B_M, 0, LEQI,&
+            CALL SOLVE_LIN_EQ ('W_g', 5, W_G_tmp, A_M, B_M, 0, LEQI,&
                LEQM, LEQ_SWEEP(5), LEQ_TOL(5), LEQ_PC(5), IER)
 !            call out_array(w_g, 'w_g')
          ENDIF
@@ -630,7 +630,7 @@
 !                        a_m(1, -3, M), 1, DO_K, ier)
                      CALL ADJUST_LEQ (RESID(RESID_W,M), LEQ_IT(5), &
                         LEQ_METHOD(5), LEQI, LEQM)
-                     CALL SOLVE_LIN_EQ ('W_s', 5, W_Stmp(1,M), &
+                     CALL SOLVE_LIN_EQ ('W_s', 5, W_S_tmp(1,M), &
                         A_M, B_M, M, LEQI, LEQM, LEQ_SWEEP(5), &
                         LEQ_TOL(5), LEQ_PC(5), IER)
 !                     call out_array(w_s(1,m), 'w_s')

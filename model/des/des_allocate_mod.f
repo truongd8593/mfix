@@ -523,6 +523,7 @@ CONTAINS
         integer :: old_size, new_size
 
         IF (new_max_pip .le. size(des_radius)) RETURN
+        max_pip = max(max_pip, new_max_pip)
 
         old_size = size(des_radius)
 
