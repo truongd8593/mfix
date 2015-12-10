@@ -73,7 +73,7 @@
             NP = PIC(IJK)%p(lNP)
 
 ! Skip indices that do not represent particles
-            IF(.NOT.IS_NORMAL(NP)) CYCLE lNP_LP
+            IF(IS_ANY_GHOST(NP)) CYCLE lNP_LP
 
 ! Reset the debug flag
             FOCUS = .FALSE.

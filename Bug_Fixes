@@ -30,3 +30,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | grid cell offset to   |          |  
                   | correctly set to NEW  |          |
 ==================================================================================================
+  12/10/2015      | calc DEM physical     | Minor    |  des/calc_thero_des.f
+                  | prop for enter/exit   |          |  
+                  | particles too.        |          |
+==================================================================================================
