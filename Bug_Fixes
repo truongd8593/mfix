@@ -26,3 +26,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | chemical reactions    |          |  des/write_res0_des.f
                   |                       |          |
 ==================================================================================================
+  12/10/2015      | fix DEM mass inflow   | Moderate |  des/set_bc_dem_mi.f
+                  | grid cell offset to   |          |  
+                  | correctly set to NEW  |          |
+==================================================================================================
