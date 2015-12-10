@@ -3,8 +3,8 @@
 !  Subroutine: COMP_MEAN_FIELDS                                        !
 !  Author: J.Musser                                   Date: 11-NOV-14  !
 !                                                                      !
-!  Purpose: Driver routine for calculating field variables (DES_ROP_s, !
-!   DES_U_S, DES_V_S, DES_W_S) from particle data.                     !
+!  Purpose: Driver routine for calculating continuous field variables  !
+!  corresponding to discrete data (ROP_s, u_s, v_s, w_s)               !
 !                                                                      !
 !  o The diffusion filter is only applied to the the solids bulk       !
 !    density because DEM simulations do not utilize the other field    !
@@ -13,18 +13,21 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
       SUBROUTINE COMP_MEAN_FIELDS
 
+! Modules
+!---------------------------------------------------------------------//
+      use discretelement, only: DES_MMAX
+      use fldvar, only: rop_s
+! Flag: Diffuse DES field variables.
+      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
       use particle_filter, only: DES_INTERP_MEAN_FIELDS
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
       use particle_filter, only: DES_INTERP_GARG
-
-      use discretelement, only: DES_MMAX
-      use discretelement, only: DES_ROP_S
-
-! Flag: Diffuse DES field variables.
-      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
-
+      use physprop, only: mmax
       IMPLICIT NONE
+
+! Local variables
+!---------------------------------------------------------------------//
 
 ! Loop counter.
       INTEGER :: M
@@ -44,12 +47,12 @@
 
 ! Apply the diffusion filter.
       IF(DES_DIFFUSE_MEAN_FIELDS) THEN
-         DO M=1, DES_MMAX
-            CALL DIFFUSE_MEAN_FIELD(DES_ROP_S(:,M),'DES_ROP_S')
+         DO M=MMAX+1, MMAX+DES_MMAX
+            CALL DIFFUSE_MEAN_FIELD(ROP_S(:,M),'ROP_S')
          ENDDO
       ENDIF
 
-! Calculate the gas phase volume fraction from DES_ROP_s.
+! Calculate the gas phase volume fraction from ROP_s.
       CALL CALC_EPG_DES
 
       RETURN
@@ -63,9 +66,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE COMP_MEAN_FIELDS_ZERO_ORDER
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE fldvar
@@ -79,12 +81,12 @@
       use desmpi
       USE mfix_pic
       USE functions
-
+      USE physprop, only: MMAX
+      USE run, only: solids_model
       IMPLICIT NONE
 
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Loop counters: partciles, filter cells, phases
       INTEGER NP, M
 ! Fluid cell index
@@ -95,17 +97,23 @@
       DOUBLE PRECISION :: OoSOLVOL
 ! PVOL times statistical weight
       DOUBLE PRECISION :: VOL_WT
-
+! total number of 'solids' phases in simulation
+      INTEGER :: MMAX_TOT
+!......................................................................!
       SOLVOLINC(:,:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
+      MMAX_TOT = DES_MMAX+MMAX
+! initialize only information related to the discrete 'phases' of
+! these continuous variables
+      U_s(:,MMAX+1:MMAX_TOT) = ZERO
+      V_s(:,MMAX+1:MMAX_TOT) = ZERO
+      W_s(:,MMAX+1:MMAX_TOT) = ZERO
 
-! Calculate the gas phae forces acting on each particle.
+! Calculate the gas phase forces acting on each particle.
       DO NP=1,MAX_PIP
          IF(IS_NONEXISTENT(NP)) CYCLE
-         IF(IS_GHOST(NP) .or. IS_ENTERING_GHOST(NP) .or. IS_EXITING_GHOST(NP)) CYCLE
+         IF(IS_GHOST(NP) .or. IS_ENTERING_GHOST(NP) .or. &
+            IS_EXITING_GHOST(NP)) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)
@@ -116,11 +124,11 @@
 ! Accumulate total solids volume (by phase)
          SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOL_WT
 ! Accumulate total solids momenum-ish (by phase)
-         DES_U_S(IJK,M) = DES_U_S(IJK,M) +                             &
+         U_S(IJK,M) = U_S(IJK,M) +                             &
             DES_VEL_NEW(NP,1)*VOL_WT
-         DES_V_S(IJK,M) = DES_V_S(IJK,M) +                             &
+         V_S(IJK,M) = V_S(IJK,M) +                             &
             DES_VEL_NEW(NP,2)*VOL_WT
-         IF(DO_K) DES_W_S(IJK,M) = DES_W_S(IJK,M) +                    &
+         IF(DO_K) W_S(IJK,M) = W_S(IJK,M) +                    &
             DES_VEL_NEW(NP,3)*VOL_WT
       ENDDO
 
@@ -131,24 +139,24 @@
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 
 ! calculating the cell average solids velocity for each solids phase
-         DO M = 1, DES_MMAX
+         DO M = MMAX+1, MMAX_TOT
             IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
                OoSOLVOL = ONE/SOLVOLINC(IJK,M)
-               DES_U_s(IJK,M) = DES_U_s(IJK,M)*OoSOLVOL
-               DES_V_s(IJK,M) = DES_V_s(IJK,M)*OoSOLVOL
-               IF(DO_K) DES_W_s(IJK,M) = DES_W_s(IJK,M)*OoSOLVOL
+               U_s(IJK,M) = U_s(IJK,M)*OoSOLVOL
+               V_s(IJK,M) = V_s(IJK,M)*OoSOLVOL
+               IF(DO_K) W_s(IJK,M) = W_s(IJK,M)*OoSOLVOL
             ENDIF
 
 ! calculating the bulk density of solids phase m based on the total
 ! number of particles having their center in the cell
-            DES_ROP_S(IJK,M) = DES_RO_S(M)*SOLVOLINC(IJK,M)/VOL(IJK)
+            ROP_S(IJK,M) = RO_S(IJK,M)*SOLVOLINC(IJK,M)/VOL(IJK)
 
-         ENDDO   ! end loop over M=1,DES_MMAX
+         ENDDO   ! end loop over M=MMAX+1,MMAX_TOT
 
       ENDDO     ! end loop over IJK=ijkstart3,ijkend3
 
 ! Halo exchange of solids volume fraction data.
-      CALL SEND_RECV(DES_ROP_S,2)
+      CALL SEND_RECV(ROP_S,2)
 
       RETURN
       END SUBROUTINE COMP_MEAN_FIELDS_ZERO_ORDER

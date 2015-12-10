@@ -40,16 +40,19 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_ENERGY
 
+! Global Variables
+!---------------------------------------------------------------------//
+
       use des_thermo, only: DES_MIN_COND_DIST
       use run, only: UNITS
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
-
       use error_manager
 
       IMPLICIT NONE
+!......................................................................!
 
 
 ! Initialize the error manager.
@@ -88,19 +91,16 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-
 ! Runtime Flag: Invoke a cohesion model for DES simulation
       use discretelement, only: USE_COHESION
 ! Largest discrete particle diameter.
       use discretelement, only: MAX_RADIUS
-
 ! Runtime Flag: Invoke Square Well
       use discretelement, only: SQUARE_WELL
 ! Runtime Flag: Invoke Van der Waals model.
       use discretelement, only: VAN_DER_WAALS
 ! User specified parameter for increase neighbor search area.
       use discretelement, only: FACTOR_RLM
-
 ! User specified parameters for Van der Waals model.
       use discretelement, only: VDW_INNER_CUTOFF
       use discretelement, only: VDW_OUTER_CUTOFF
@@ -111,22 +111,20 @@
       use discretelement, only: ASPERITIES
       use discretelement, only: SURFACE_ENERGY
       use discretelement, only: WALL_SURFACE_ENERGY
-
+      use error_manager
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
       use param1, only: ZERO
       use constant, only: Pi
-
-      use error_manager
-
       IMPLICIT NONE
 
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Neighborhood size for Van der Waals force.
       DOUBLE PRECISION :: VDW_NEIGHBORHOOD
+!......................................................................!
 
 
 ! Override the following settings if cohesion not used.
@@ -330,11 +328,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_COLL_LSD
 
-
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
+      use constant, only: PI
 ! Number of discrete solids phases
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
+      USE discretelement, only: DES_MMAX
 ! Particle and wall normal and tangential spring constants
       USE discretelement, only: KN, KN_W
       USE discretelement, only: KT, KT_W
@@ -351,23 +349,24 @@
 ! Tangential damping factors := ET/EN
       USE discretelement, only: DES_ETAT_FAC, DES_ETAT_W_FAC
 
-      use constant, only: PI
-
       use discretelement, only: DTSOLID
 
-! Parameter constatns.
+! Parameter constants.
       USE param1, only: ZERO, HALF, ONE, UNDEFINED
-
-!      USE mpi_utility
+!
+      use physprop, only: mmax, d_p0, ro_s0
+      use run, only: solids_model
+! USE mpi_utility
       use error_manager
-
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop index.
-      INTEGER :: M, L, LC
+      INTEGER :: M, L, LC, MMAX_TOT
+! Calculate phase index offset for certain inputs until it can be
+! addressed in other ways. should not matter unlesss hybrid
+      INTEGER :: lent, lend, lenc
 ! Flag to warn user.
       LOGICAL :: FLAG_WARN
 ! Collision length scale.
@@ -376,6 +375,7 @@
       DOUBLE PRECISION :: MASS_M, MASS_L, MASS_EFF
 ! Alias for coefficient restitution
       DOUBLE PRECISION :: EN
+!......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_COLL_LSD")
@@ -442,34 +442,48 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
- 2101 FORMAT('Warning 2101: Tangential damping factor ',A,' not ',     &
+ 2101 FORMAT('Warning 2101: Tangential damping factor ',A,' not ', &
          'specified',/'in mfix.dat. Setting to default: (1/2).')
 
+! Shift the phase index for certain inputs to match the global phase
+! index until this matter can be addressed otherwise (i.e., require
+! the user specify correct indexing in mfix.dat). This should have no
+! impact if not running a hybrid case
+      MMAX_TOT = DES_MMAX+MMAX
+      des_en_wall_input((MMAX+1):MMAX_TOT) = des_en_wall_input(1:DES_MMAX)
+      des_et_wall_input((MMAX+1):MMAX_TOT) = des_et_wall_input(1:DES_MMAX)
+      lent = MMAX_TOT+MMAX_TOT*(MMAX_TOT-1)/2
+      lend = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
+      lenc = lent-lend
+      des_en_input((lenc+1):lent) = des_en_input(1:lend)
+      des_et_input((lenc+1):lent) = des_et_input(1:lend)
+      LC = lenc
 
-      LC = 0
-      DO M = 1, DES_MMAX
+      DO M = MMAX+1, MMAX_TOT
+         IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
 
 ! Calculate the mass of a phase M particle.
-         MASS_M = (PI/6.d0)*(DES_D_P0(M)**3)*DES_RO_S(M)
+         MASS_M = (PI/6.d0)*(D_P0(M)**3)*RO_S0(M)
 
 ! Particle-Particle Collision Parameters ------------------------------>
-         DO L = M, DES_MMAX
+         DO L = M, MMAX_TOT
+! not necessary to cycle here given requirements on ordering of solids input
             LC = LC+1
 
 ! Check particle-particle normal restitution coefficient
             IF(DES_EN_INPUT(LC) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('DES_EN_INPUT',LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                         &
-               DES_EN_INPUT(LC) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),      &
+            ELSEIF(DES_EN_INPUT(LC) > ONE .OR. &
+                   DES_EN_INPUT(LC) < ZERO) THEN
+               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)), &
                   trim(iVal(DES_EN_INPUT(LC)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
             EN = DES_EN_INPUT(LC)
 
 ! Calculate masses used for collision calculations.
-            MASS_L = (PI/6.d0)*(DES_D_P0(L)**3)*DES_RO_S(L)
+            MASS_L = (PI/6.d0)*(D_P0(L)**3)*RO_S0(L)
             MASS_EFF = MASS_M*MASS_L/(MASS_M+MASS_L)
 
 ! Calculate the M-L normal and tangential damping coefficients.
@@ -486,7 +500,7 @@
             DES_ETAT(L,M) = DES_ETAT(M,L)
 
 ! Calculate the collision time scale.
-            TCOLL_TMP = PI/SQRT(KN/MASS_EFF -                          &
+            TCOLL_TMP = PI/SQRT(KN/MASS_EFF - &
                ((DES_ETAN(M,L)/MASS_EFF)**2)/4.d0)
             TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
@@ -497,9 +511,9 @@
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_EN_WALL_INPUT',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(DES_EN_WALL_INPUT(M) > ONE .OR.                        &
+         ELSEIF(DES_EN_WALL_INPUT(M) > ONE .OR. &
             DES_EN_WALL_INPUT(M) < ZERO) THEN
-            WRITE(ERR_MSG,1001) trim(iVar('DES_EN_WALL_INPUT',M)),     &
+            WRITE(ERR_MSG,1001) trim(iVar('DES_EN_WALL_INPUT',M)), &
                trim(iVal(DES_EN_WALL_INPUT(M)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -525,8 +539,13 @@
 
 ! if following are assigned warn user they are discarded
       FLAG_WARN = .FALSE.
-      DO M = 1, DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
-         IF(DES_ET_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
+      LC = lenc
+      DO M = MMAX+1, MMAX_TOT
+         IF(SOLIDS_MODEL(M) /= 'DEM') CYCLE
+         DO L = M, MMAX_TOT
+            LC = LC + 1
+            IF(DES_ET_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
+         ENDDO
       ENDDO
       IF (FLAG_WARN) THEN
          WRITE(ERR_MSG,2102) 'DES_ET_INPUT'
@@ -534,7 +553,8 @@
       ENDIF
 
       FLAG_WARN = .FALSE.
-      DO M = 1, DES_MMAX
+      DO M = MMAX+1, MMAX_TOT
+         IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
          IF(DES_ET_WALL_INPUT(M) .NE. UNDEFINED) FLAG_WARN = .TRUE.
       ENDDO
       IF (FLAG_WARN)THEN
@@ -577,10 +597,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_DEM_COLL_HERTZ
 
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
+! The constant PI
+      use constant, only: PI
 ! Number of discrete solids phases, diameters and densities
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
+      USE discretelement, only: DES_MMAX
 ! User defined coefficients of restitution: Normal and Tangential
       USE discretelement, only: DES_EN_INPUT, DES_EN_WALL_INPUT
       USE discretelement, only: DES_ET_INPUT, DES_ET_WALL_INPUT
@@ -593,7 +615,7 @@
 ! Tangential damping factors := ET/EN
       USE discretelement, only: DES_ETAT_FAC, DES_ETAT_W_FAC
 ! Particle and wall Young's modulus and Shear modulus
-      USE discretelement, only: E_YOUNG, Ew_YOUNG, G_MOD
+      USE discretelement, only: E_YOUNG, Ew_YOUNG
 ! Particle and wall Poisson ratio
       USE discretelement, only: V_POISSON, Vw_POISSON
 ! Solids time step-size.
@@ -602,13 +624,14 @@
       USE discretelement, only: KN, KN_W
 ! Particle and wall tangential spring factor := KN/KT
       USE discretelement, only: KT_FAC, KT_W_FAC
-! The constant PI
-      use constant, only: PI
 
+      use param, only: DIM_M
 ! Parameter constatns.
       USE param1, only: ZERO, ONE, UNDEFINED
 
-!      USE mpi_utility
+      USE physprop, only: mmax, ro_s0, d_p0
+      USE run, only: solids_model
+! USE mpi_utility
       use error_manager
 
       IMPLICIT NONE
@@ -616,7 +639,10 @@
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Loop index.
-      INTEGER :: M, L, LC
+      INTEGER :: M, L, LC, MMAX_TOT
+! Calculate phase index offset for certain inputs until it can be
+! addressed in other ways. should not matter unlesss hybrid
+      INTEGER :: lent, lend, lenc
 ! Message for formatted output.
       CHARACTER(len=64) :: MSG
 ! Collision length scale.
@@ -627,8 +653,11 @@
       DOUBLE PRECISION :: R_EFF, E_EFF, G_MOD_EFF, RED_MASS_EFF
 ! Alias for coefficient restitution
       DOUBLE PRECISION :: EN, ET
+! shear modulus
+      DOUBLE PRECISION :: G_MOD(DIM_M)
 ! Shear modules for wall
       DOUBLE PRECISION :: G_MOD_WALL
+!......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_COLL_HERTZ")
@@ -654,7 +683,23 @@
 
       G_MOD_WALL = 0.5d0*Ew_YOUNG/(1.d0+Vw_POISSON)
 
-      DO M=1,DES_MMAX
+! Shift the phase index for certain inputs to match the global phase
+! index until this matter can be addressed otherwise (i.e., require
+! the user specify correct indexing in mfix.dat). This should have no
+! impact if not running a hybrid case
+      MMAX_TOT = DES_MMAX+MMAX
+      e_young((MMAX+1):MMAX_TOT) = e_young(1:DES_MMAX)
+      v_poisson((MMAX+1):MMAX_TOT) = v_poisson(1:DES_MMAX)
+      des_en_wall_input((MMAX+1):MMAX_TOT) = des_en_wall_input(1:DES_MMAX)
+      des_et_wall_input((MMAX+1):MMAX_TOT) = des_et_wall_input(1:DES_MMAX)
+      lent = MMAX_TOT+MMAX_TOT*(MMAX_TOT-1)/2
+      lend = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
+      lenc = lent-lend
+      des_en_input((lent+1):lent) = des_en_input(1:lend)
+      des_et_input((lent+1):lent) = des_et_input(1:lend)
+
+      DO M=MMAX+1,MMAX_TOT
+         IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
 
          IF(E_YOUNG(M) == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"('Phase ',I2,' Youngs modulus')") M
@@ -665,9 +710,9 @@
             MSG=''; WRITE(MSG,"('Phase ',I2,' Poissons ratio')") M
             WRITE(ERR_MSG,1002) 'V_POISSON', MSG
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(V_POISSON(M) > 0.5d0 .OR.                              &
-            V_POISSON(M) <= -ONE) THEN
-            WRITE(ERR_MSG,1001) trim(iVar('V_POISSON',M)),             &
+         ELSEIF(V_POISSON(M) > 0.5d0 .OR. &
+                V_POISSON(M) <= -ONE) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('V_POISSON',M)),  &
                iVal(V_POISSON(M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -675,54 +720,55 @@
          G_MOD(M) = 0.5d0*E_YOUNG(M)/(1.d0+V_POISSON(M))
       ENDDO
 
+! see above index shift
+      LC = LENC
+      DO M=MMAX+1,MMAX_TOT
+         IF(SOLIDS_MODEL(M) /='DEM') CYCLE
 
-      LC = 0
-      DO M=1,DES_MMAX
 ! Calculate the mass of a phase M particle.
-         MASS_M = (PI/6.d0)*(DES_D_P0(M)**3)*DES_RO_S(M)
+         MASS_M = (PI/6.d0)*(D_P0(M)**3)*RO_S0(M)
 
 ! Particle-Particle Collision Parameters ------------------------------>
-         DO L=M,DES_MMAX
+         DO L=M,MMAX_TOT
+! not necessary to cycle here given requirements on ordering of solids input
             LC = LC+1
 
 ! Check particle-particle normal restitution coefficient
             IF(DES_EN_INPUT(LC) == UNDEFINED) THEN
                WRITE(ERR_MSG,1000) trim(iVar('DES_EN_INPUT',LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-
-            ELSEIF(DES_EN_INPUT(LC) > ONE .OR.                         &
+            ELSEIF(DES_EN_INPUT(LC) > ONE .OR. &
                DES_EN_INPUT(LC) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)),      &
+               WRITE(ERR_MSG,1001) trim(iVar('DES_EN_INPUT',LC)), &
                   trim(iVal(DES_EN_INPUT(LC)))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
             EN = DES_EN_INPUT(LC)
 
 ! Check particle-particle tangential restitution coefficient
-            IF(DES_ET_INPUT(M) == UNDEFINED) THEN
-               WRITE(ERR_MSG,1000) trim(iVar('DES_ET_INPUT',M))
+            IF(DES_ET_INPUT(LC) == UNDEFINED) THEN
+               WRITE(ERR_MSG,1000) trim(iVar('DES_ET_INPUT',LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-            ELSEIF(DES_ET_INPUT(M) > ONE .OR.                          &
-               DES_ET_INPUT(M) < ZERO) THEN
-               WRITE(ERR_MSG,1001) trim(iVar('DES_ET_INPUT',M)),       &
-                  iVal(DES_ET_INPUT(M))
+            ELSEIF(DES_ET_INPUT(LC) > ONE .OR. &
+                   DES_ET_INPUT(LC) < ZERO) THEN
+               WRITE(ERR_MSG,1001) trim(iVar('DES_ET_INPUT',LC)), &
+                  iVal(DES_ET_INPUT(LC))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
             ET = DES_ET_INPUT(LC)
 
 
 ! Calculate masses used for collision calculations.
-            MASS_L = (PI/6.d0)*(DES_D_P0(L)**3)*DES_RO_S(L)
+            MASS_L = (PI/6.d0)*(D_P0(L)**3)*RO_S0(L)
             MASS_EFF = (MASS_M*MASS_L)/(MASS_M+MASS_L)
             RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF
 ! Calculate the effective radius, Youngs modulus, and shear modulus.
-            R_EFF = 0.5d0*(DES_D_P0(M)*DES_D_P0(L)/                    &
-               (DES_D_P0(M) + DES_D_P0(L)))
-            E_EFF = E_YOUNG(M)*E_YOUNG(L) /                            &
-               (E_YOUNG(M)*(1.d0 - V_POISSON(L)**2) +                  &
+            R_EFF = 0.5d0*(D_P0(M)*D_P0(L)/(D_P0(M) + D_P0(L)))
+            E_EFF = E_YOUNG(M)*E_YOUNG(L) /  &
+               (E_YOUNG(M)*(1.d0 - V_POISSON(L)**2) + &
                 E_YOUNG(L)*(1.d0 - V_POISSON(M)**2))
-            G_MOD_EFF = G_MOD(M)*G_MOD(L)/                             &
-               (G_MOD(M)*(2.d0 - V_POISSON(L)) +                       &
+            G_MOD_EFF = G_MOD(M)*G_MOD(L)/ &
+               (G_MOD(M)*(2.d0 - V_POISSON(L)) + &
                 G_MOD(L)*(2.d0 - V_POISSON(M)))
 
 ! Calculate the spring properties and store in symmetric matrix format.
@@ -732,11 +778,11 @@
             HERT_KN(L,M) = HERT_KN(M,L)
             HERT_KT(L,M) = HERT_KT(M,L)
 
-! Calculate the normal coefficient.
+! Calculate the normal damping coefficient.
             IF(EN .NE. ZERO) THEN
-               DES_ETAN(M,L) = 2.d0*SQRT(HERT_KN(M,L)*MASS_EFF)*       &
+               DES_ETAN(M,L) = 2.d0*SQRT(HERT_KN(M,L)*MASS_EFF)* &
                   ABS(LOG(EN))
-               DES_ETAN(M,L) = DES_ETAN(M,L)/                          &
+               DES_ETAN(M,L) = DES_ETAN(M,L)/ &
                   SQRT(PI*PI + (LOG(EN))**2)
             ELSE
                DES_ETAN(M,L) = 2.d0*SQRT(HERT_KN(M,L)*MASS_EFF)
@@ -745,15 +791,15 @@
 
 ! Calculate the tangential coefficients.
             IF(ET .NE. ZERO) THEN
-               DES_ETAT(M,L) = 2.d0*SQRT(HERT_KT(M,L)*RED_MASS_EFF)*   &
+               DES_ETAT(M,L) = 2.d0*SQRT(HERT_KT(M,L)*RED_MASS_EFF)* &
                   ABS(LOG(ET))
-               DES_ETAT(M,L) = DES_ETAT(M,L)/ SQRT(PI*PI + (LOG(ET))**2)
+               DES_ETAT(M,L) = DES_ETAT(M,L)/ SQRT(PI*PI+(LOG(ET))**2)
             ELSE
                DES_ETAT(M,L) = 2.d0*SQRT(HERT_KT(M,L)*RED_MASS_EFF)
             ENDIF
             DES_ETAT(L,M) = DES_ETAT(M,L)
 
-            TCOLL_TMP = PI/SQRT(HERT_KN(M,L)/MASS_EFF -                &
+            TCOLL_TMP = PI/SQRT(HERT_KN(M,L)/MASS_EFF - &
                ((DES_ETAN(M,L)/MASS_EFF)**2)/4.d0)
             TCOLL = MIN(TCOLL_TMP, TCOLL)
          ENDDO
@@ -763,9 +809,9 @@
          IF(DES_EN_WALL_INPUT(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_EN_WALL_INPUT',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(DES_EN_WALL_INPUT(M) > ONE .OR.                        &
-            DES_EN_WALL_INPUT(M) < ZERO) THEN
-            WRITE(ERR_MSG,1001) trim(iVar('DES_EN_WALL_INPUT',M)),     &
+         ELSEIF(DES_EN_WALL_INPUT(M) > ONE .OR. &
+                DES_EN_WALL_INPUT(M) < ZERO) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('DES_EN_WALL_INPUT',M)), &
                trim(iVal(DES_EN_WALL_INPUT(M)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -775,9 +821,9 @@
          IF(DES_ET_WALL_INPUT(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_ET_WALL_INPUT',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ELSEIF(DES_ET_WALL_INPUT(M) > ONE .OR.                        &
-            DES_ET_WALL_INPUT(M) < ZERO) THEN
-            WRITE(ERR_MSG,1001) trim(iVar('DES_ET_WALL_INPUT',M)),     &
+         ELSEIF(DES_ET_WALL_INPUT(M) > ONE .OR. &
+                DES_ET_WALL_INPUT(M) < ZERO) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('DES_ET_WALL_INPUT',M)), &
                trim(iVal(DES_ET_WALL_INPUT(M)))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
@@ -787,7 +833,7 @@
          MASS_EFF = MASS_M
          RED_MASS_EFF = (2.d0/7.d0)*MASS_EFF
 ! Calculate the effective radius, Youngs modulus, and shear modulus.
-         R_EFF = 0.5d0*DES_D_P0(M)
+         R_EFF = 0.5d0*D_P0(M)
          E_EFF = E_YOUNG(M)*Ew_YOUNG /                                 &
             (E_YOUNG(M)*(1.d0-Vw_POISSON**2) +                         &
              Ew_YOUNG  *(1.d0-V_POISSON(M)**2))

@@ -9,20 +9,21 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DRAG_DES
 
+! Modules
+!---------------------------------------------------------------------//
       use discretelement, only: DES_CONTINUUM_COUPLED
       use discretelement, only: DES_CONTINUUM_HYBRID
-
-      use particle_filter, only: DES_INTERP_SCHEME_ENUM
-      use particle_filter, only: DES_INTERP_GARG
-
       use discretelement, only: DES_EXPLICITLY_COUPLED
-
       use discretelement, only: DRAG_FC, FC, MAX_PIP
       use functions, only: IS_NORMAL
-
+      use particle_filter, only: DES_INTERP_SCHEME_ENUM
+      use particle_filter, only: DES_INTERP_GARG
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: II
+!......................................................................!
 
 ! Apply the drag force calculated by the gas phase.
       IF(DES_EXPLICITLY_COUPLED) THEN
@@ -70,13 +71,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DRAG_DES_2FLUID
 
+! Modules
+!---------------------------------------------------------------------//
       use discretelement, only: DES_CONTINUUM_COUPLED
       use discretelement, only: DES_CONTINUUM_HYBRID
-
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_GARG
-
       IMPLICIT NONE
+!......................................................................!
 
 
 ! Calculate gas-solids drag force.
@@ -111,19 +113,20 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_DRAG_DES_EXPLICIT
 
+! Modules
+!---------------------------------------------------------------------//
       use discretelement, only: DES_CONTINUUM_COUPLED
-      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
-
 ! Contribution to gas momentum equation due to drag
       use discretelement, only: DRAG_BM
 ! Scalar cell center total drag force
       use discretelement, only: F_GDS
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
-
+      use particle_filter, only: DES_DIFFUSE_MEAN_FIELDS
       use rxns
-
       IMPLICIT NONE
+!......................................................................!
+
 
 ! Bin particles to the fluid grid.
       CALL PARTICLES_IN_CELL

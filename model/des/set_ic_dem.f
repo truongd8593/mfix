@@ -28,7 +28,7 @@
       use param1, only: undefined, zero
 
       use physprop, only: C_PS0
-      use physprop, only: SMAX, NMAX
+      use physprop, only: NMAX
 
       USE compar
       use indices
@@ -70,7 +70,7 @@
                NP = PIC(IJK)%P(NINDX)
 
 ! Shift the phase index to the absolute phase index.
-               M = PIJK(NP,5) + SMAX
+               M = PIJK(NP,5) 
 
 ! Set the initial particle temperature.
                IF(ENERGY_EQ) THEN

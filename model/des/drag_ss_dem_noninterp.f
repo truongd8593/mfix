@@ -10,49 +10,47 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_SS_DEM_NONINTERP
 
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! Fudge factor for SS drag (c.f. Gera, 2004)
+      use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC
+      use discretelement, only: PINC, PIC, PIJK
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
       use discretelement, only: DES_RADIUS, PVOL
 ! Total forces acting on particle
       use discretelement, only: FC
-      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
-! Number of continuum solids phases
-      use physprop, only: MMAX
-! Diameter of continuum solids phases
-      use fldvar, only: D_P
-! Material (ROs) and bulk density (ROPs) of continuum solids
-      use fldvar, only: ROP_s, RO_s
-! Fluid grid loop bounds.
-      use compar, only: IJKStart3, IJKEnd3
-! Function to deterine if a cell contains fluid.
-      use functions, only: FLUID_AT
 ! Gas phase volume fraction
       use fldvar, only: EP_g
 ! Solids pressure
       use fldvar, only: P_STAR
-! Flag that a continuum solids can pack
-      use physprop, only: CLOSE_PACKED
-! Fudge factor for SS drag (c.f. Gera, 2004)
-      use constant, only: SEGREGATION_SLOPE_COEFFICIENT
-
-! Global Parameters:
-!---------------------------------------------------------------------//
+! Diameter of continuum solids phases
+      use fldvar, only: D_P
+! Material (ROs) and bulk density (ROPs) of continuum solids
+      use fldvar, only: ROP_s, RO_s
+      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
+! Function to deterine if a cell contains fluid.
+      use functions, only: FLUID_AT
 ! Double precision values.
       use param1, only: ZERO, ONE
 ! Array sizes for solids
       use param, only: DIMENSION_M
-
+! Number of continuum solids phases
+      use physprop, only: MMAX, SMAX
+! Flag that a continuum solids can pack
+      use physprop, only: CLOSE_PACKED
+! radial distribution function
+      use rdf, only: g_0
       IMPLICIT NONE
 
-! Local variables:
+! Local variables
 !---------------------------------------------------------------------//
 ! Loop indices:
-      INTEGER :: IJK, M, NINDX, NP
+      INTEGER :: IJK, M, NINDX, NP, L
 ! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS(3, DIMENSION_M)
 ! relative velocity between solids phase m and l
@@ -80,7 +78,7 @@
 !!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
 !!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
 !!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
-!!$omp   VELCS, VSLP, VREL, lDss)
+!!$omp   VELCS, VSLP, VREL, lDss, L)
       DO IJK = IJKSTART3, IJKEND3
 
          IF(.NOT.FLUID_AT(IJK)) CYCLE
@@ -93,7 +91,7 @@
          CALL CALC_EPSoDP(IJK, EPSoDP)
 
 ! Calculate the continuum solids velocity at scalar cell center.
-         CALL CALC_NONINTERP_VELFP_SOLIDS(IJK, VelCS)
+         CALL CALC_CELL_CENTER_CSOLIDS_VEL(IJK, VelCS)
 
 ! Calculate the solids drag for each particle in the current cell.
          DO NINDX = 1,PINC(IJK)
@@ -106,15 +104,18 @@
             lDP = 2.0d0*DES_RADIUS(NP)
 
             D_FORCE = ZERO
-            DO M = 1, MMAX
+            DO M = 1, SMAX
 
 ! evaluating g0 - taken from G_0.f subroutine (lebowitz form)
 ! this section is needed to account for all solids phases until g0 for
 ! multiple solids types (i.e. discrete & continuum) can be addressed
 ! more effectively.
-               G0_ML = OoEPg + 3.0d0*EPSoDP*D_P(IJK,M)*lDP /           &
-                  (EPg_2 *(D_P(IJK,M) + lDP))
-
+!               G0_ML = OoEPg + 3.0d0*EPSoDP*D_P(IJK,M)*lDP /           &
+!                  (EPg_2 *(D_P(IJK,M) + lDP))
+! the calculation below allows for a more generic g0 form, however,
+! the calculation above is truer to the discrete nature of the info
+               L = PIJK(NP,5)
+               G0_ML = G_0(IJK,L,M)
 
 ! Relative (slip) velocity.
                VSLP = DES_VEL_NEW(NP,:) - VelCS(:,M)
@@ -160,50 +161,48 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_SS_TFM_NONINTERP
 
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
+! Fudge factor for SS drag (c.f. Gera, 2004)
+      use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC
+      use discretelement, only: PINC, PIC, PIJK
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
       use discretelement, only: DES_RADIUS
 ! Total forces acting on particle
       use discretelement, only: SDRAG_AM, SDRAG_BM, F_SDS
-! Number of continuum solids phases
-      use physprop, only: MMAX
+! Gas phase volume fraction
+      use fldvar, only: EP_g
 ! Diameter of continuum solids phases
       use fldvar, only: D_P
 ! Material (ROs) and bulk density (ROPs) of continuum solids
       use fldvar, only: ROP_s, RO_s
-! Fluid grid loop bounds.
-      use compar, only: IJKStart3, IJKEnd3
-! Function to deterine if a cell contains fluid.
-      use functions, only: FLUID_AT
-! Gas phase volume fraction
-      use fldvar, only: EP_g
 ! Solids pressure
       use fldvar, only: P_STAR
-! Flag that a continuum solids can pack
-      use physprop, only: CLOSE_PACKED
-! Fudge factor for SS drag (c.f. Gera, 2004)
-      use constant, only: SEGREGATION_SLOPE_COEFFICIENT
-
-! Global Parameters:
-!---------------------------------------------------------------------//
+! Function to deterine if a cell contains fluid.
+      use functions, only: FLUID_AT
+      use functions, only: IS_NONEXISTENT, IS_GHOST
+      use functions, only: IS_ENTERING_GHOST, IS_EXITING_GHOST
 ! Double precision values.
       use param1, only: ZERO, ONE
 ! Array sizes for solids
       use param, only: DIMENSION_M
-
-      use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
-
+! Flag that a continuum solids can pack
+      use physprop, only: CLOSE_PACKED
+! Number of continuum solids phases
+      use physprop, only: MMAX, SMAX
+! radial distribution function
+      use rdf, only: g_0
       IMPLICIT NONE
 
-! Local variables:
+! Local variables
 !---------------------------------------------------------------------//
 ! Loop indices:
-      INTEGER :: IJK, M, NINDX, NP
+      INTEGER :: IJK, M, NINDX, NP, L
 ! average solids velocity at scalar cell center in array form
       DOUBLE PRECISION :: VELCS(3, DIMENSION_M)
 ! relative velocity between solids phase m and l
@@ -222,7 +221,6 @@
       DOUBLE PRECISION :: lFORCE
 ! One divided by fluid cell volume
       DOUBLE PRECISION :: OoVOL
-
 !......................................................................!
 
       DO IJK = IJKSTART3, IJKEND3
@@ -241,7 +239,7 @@
          CALL CALC_EPSoDP(IJK, EPSoDP)
 
 ! Calculate the continuum solids velocity at scalar cell center.
-         CALL CALC_NONINTERP_VELFP_SOLIDS(IJK, VelCS)
+         CALL CALC_CELL_CENTER_CSOLIDS_VEL(IJK, VelCS)
 
 ! Calculate the solids drag for each particle in the current cell.
          DO NINDX = 1,PINC(IJK)
@@ -253,7 +251,7 @@
 ! Diameter of particle (not a phase diameter).
             lDP = 2.0d0*DES_RADIUS(NP)
 
-            DO M = 1, MMAX
+            DO M = 1, SMAX
 
 ! Relative (slip) velocity.
                VSLP = DES_VEL_NEW(NP,:) - VelCS(:,M)
@@ -264,8 +262,12 @@
 ! this section is needed to account for all solids phases until g0 for
 ! multiple solids types (i.e. discrete & continuum) can be addressed
 ! more effectively.
-               G0_ML = OoEPg + 3.0d0*EPSoDP*D_P(IJK,M)*lDP /           &
-                  (EPg_2 *(D_P(IJK,M) + lDP))
+!               G0_ML = OoEPg + 3.0d0*EPSoDP*D_P(IJK,M)*lDP /           &
+!                  (EPg_2 *(D_P(IJK,M) + lDP))
+! the calculation below allows for a more generic g0 form, however,
+! the calculation above is truer to the discrete nature of the info
+               L = PIJK(NP,5)
+               G0_ML = G_0(IJK,L,M)
 
                CALL DRAG_SS_SYAM(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
                   RO_SOL(NP), G0_ML, VREL)
@@ -292,51 +294,43 @@
 
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
 
-
-
       RETURN
       END SUBROUTINE DRAG_SS_TFM_NONINTERP
 
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CALC_NONINTER_VELFP                                     !
+!  Subroutine: CALC_CELL_CENTER_CSOLIDS_VEL                            !
 !  Author: J.Musser                                   Date: 07-NOV-14  !
 !                                                                      !
-!  Purpose: Calculate the scalar cell center gas velocity. This code   !
-!  is common to the DEM and GAS calls for non-interpolated drag        !
-!  routines.                                                           !
+!  Purpose: Calculate the scalar cell center continuum solids          !
+!  velocity. This code is common to the DEM and GAS calls for non-     !
+!  interpolated drag routines.                                         !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_NONINTERP_VELFP_SOLIDS(IJK, lVELFP)
+      SUBROUTINE CALC_CELL_CENTER_CSOLIDS_VEL(IJK, lVELFP)
 
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
-! Number of solid phases.
-      use physprop, only: MMAX
-! Solids velocities.
-      use fldvar, only: U_S, V_S, W_S
-! Functions to average momentum to scalar cell center.
-      use fun_avg, only: AVG_X_E, AVG_Y_N, AVG_Z_T
 ! Flags and correction factors for cut momentum cells.
       use cutcell, only: CUT_U_TREATMENT_AT, THETA_UE, THETA_UE_BAR
       use cutcell, only: CUT_V_TREATMENT_AT, THETA_VN, THETA_VN_BAR
       use cutcell, only: CUT_W_TREATMENT_AT, THETA_WT, THETA_WT_BAR
+! Solids velocities.
+      use fldvar, only: U_S, V_S, W_S
+! Functions to average momentum to scalar cell center.
+      use fun_avg, only: AVG_X_E, AVG_Y_N, AVG_Z_T
 ! Functions to lookup adjacent cells by index.
       use functions, only: IM_OF, JM_OF, KM_OF
-      use indices, only: I_OF
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
-
-! Global Parameters:
-!---------------------------------------------------------------------//
+      use indices, only: I_OF
 ! Double precision parameters.
       use param1, only: ZERO
 ! Array sizes for solids
       use param, only: DIMENSION_M
-
+! Number of solid phases.
+      use physprop, only: MMAX, SMAX
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -346,15 +340,16 @@
 ! Fluid velocity vector at IJK cell center.
       DOUBLE PRECISION, INTENT(OUT) :: lVELFP(3, DIMENSION_M)
 
-! Local variables:
+! Local variables
 !---------------------------------------------------------------------//
 ! Phase loop counter
       INTEGER :: M
 ! Indices of adjacent cells
       INTEGER :: IMJK, IJMK, IJKM
+!......................................................................!
 
 ! Calculate the average fluid velocity at scalar cell center.
-      DO M=1,MMAX
+      DO M=1,SMAX
 
          IMJK = IM_OF(IJK)
          IF(CUT_U_TREATMENT_AT(IMJK)) THEN
@@ -386,16 +381,13 @@
       ENDDO
 
       RETURN
-      END SUBROUTINE CALC_NONINTERP_VELFP_SOLIDS
+      END SUBROUTINE CALC_CELL_CENTER_CSOLIDS_VEL
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Subroutine: CALC_NONINTER_VELFP                                     !
+!  Subroutine: CALC_EPSoDP                                             !
 !  Author: J.Musser                                   Date: 07-NOV-14  !
 !                                                                      !
-!  Purpose: Calculate the scalar cell center gas velocity. This code   !
-!  is common to the DEM and GAS calls for non-interpolated drag        !
-!  routines.                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_EPSoDP(IJK, lEPSoDP)
@@ -413,7 +405,7 @@
 ! Function to calculate continuum solids volume fraction
       use fldvar, only: EP_s
 ! Number of continuum solids phases
-      use physprop, only: MMAX
+      use physprop, only: SMAX, MMAX
 
       use functions
 
@@ -441,14 +433,15 @@
       DO NINDX = 1,PINC(IJK)
          NP = PIC(IJK)%P(NINDX)
          IF(IS_NONEXISTENT(NP)) CYCLE
-         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
+         IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR.&
+            IS_EXITING_GHOST(NP)) CYCLE
          lEPSoDP = lEPSoDP + PVOL(NP)/DES_RADIUS(NP)
       ENDDO
 ! Convert radius to diameter and divide by cell volume.
       lEPSoDP = lEPSoDP/(2.0d0*VOL(IJK))
 
 ! Add contributions from continuum solids.
-      DO M = 1, MMAX
+      DO M = 1, SMAX
          lEPSoDP = lEPSoDP + EP_s(IJK,M)/D_p(IJK,M)
       ENDDO
 

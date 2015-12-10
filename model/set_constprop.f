@@ -17,6 +17,8 @@
 !-----------------------------------------------
       USE param1, only: zero, half, one, undefined
 
+      use discretelement, only: des_mmax
+
       USE fldvar, only: ro_g
       USE fldvar, only: ro_s, d_p
       use fldvar, only: p_s
@@ -171,8 +173,12 @@
 
       ENDDO
 
-
-      DO M = 1, MMAX
+! ensure ro_s(ijk,m) is assigned to ro_s0(m) or ro_s(np) so that the
+! function ep_s works for discrete phases. might be able to move this
+! to set_ic_dem and set_ic_mppic. also required d_p(ijk,m) for hybrid
+! use.  note check_solids_common_all ensures d_p0 is set for all
+! solids defined also either ro_s0 must be set or base_ros
+      DO M = 1, MMAX+DES_MMAX
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN
 ! Fluid and inflow/outflow cells: FLAG < 100

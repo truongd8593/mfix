@@ -8,9 +8,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_BC_DEM_MI
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE bc
       USE compar
       USE constant
@@ -26,14 +25,11 @@
       USE physprop
       USE run
       USE toleranc
-
       IMPLICIT NONE
 
-      INTEGER :: BCV
-
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
+      INTEGER :: BCV
       INTEGER BCV_I      ! BC loop counter
       INTEGER M, MM           ! Mass phase loop counter
       INTEGER RANGE_TOP, RANGE_BOT ! Dummy values
@@ -41,7 +37,7 @@
       INTEGER PHASE_LIST(DIM_M) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
-      DOUBLE PRECISION NPMpSEC(DES_MMAX) ! For solid phase m
+      DOUBLE PRECISION NPMpSEC(DIM_M) ! For solid phase m
       DOUBLE PRECISION NPpSEC
       DOUBLE PRECISION NPpDT        ! Total for BC
       DOUBLE PRECISION SCALED_VAL
@@ -52,7 +48,6 @@
 
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
       LOGICAL :: FATAL
 
 ! Temp inlet velocity for solids phase M
@@ -64,11 +59,9 @@
       DOUBLE PRECISION  MAX_VEL
 
       DOUBLE PRECISION  MINIPV, MAXIPV
-
       INTEGER :: OCCUPANTS
-! jump_here
 
-!-----------------------------------------------
+!......................................................................!
 
       CALL INIT_ERR_MSG("SET_BC_DEM_MI")
 
@@ -96,13 +89,13 @@
          MAX_DIA = ZERO
 
 ! Determine if the inlet is mono or polydisperse
-         DO M=1, SMAX + DES_MMAX
+         DO M=1, MMAX + DES_MMAX
             IF(SOLIDS_MODEL(M) /= 'DEM') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
             IF(COMPARE(BC_ROP_s(BCV,M),ZERO)) CYCLE
             PHASE_CNT = PHASE_CNT + 1
-            PHASE_LIST(PHASE_CNT) = M-SMAX
-            MAX_DIA = MAX(MAX_DIA,DES_D_P0(M-SMAX))
+            PHASE_LIST(PHASE_CNT) = M
+            MAX_DIA = MAX(MAX_DIA,D_P0(M))
          ENDDO
 ! Set the polydispersity flag.
          DEM_MI(BCV_I)%POLYDISPERSE = (PHASE_CNT > 1)
@@ -120,9 +113,9 @@
 
 ! Pull off the BC velocity normal to the flow plane.
             SELECT CASE(BC_PLANE(BCV))
-            CASE('N','S'); VEL_TMP(M) = abs(BC_V_s(BCV,M+SMAX))
-            CASE('E','W'); VEL_TMP(M) = abs(BC_U_s(BCV,M+SMAX))
-            CASE('T','B'); VEL_TMP(M) = abs(BC_W_s(BCV,M+SMAX))
+            CASE('N','S'); VEL_TMP(M) = abs(BC_V_s(BCV,M))
+            CASE('E','W'); VEL_TMP(M) = abs(BC_U_s(BCV,M))
+            CASE('T','B'); VEL_TMP(M) = abs(BC_W_s(BCV,M))
             END SELECT
 
 ! Check for min/max inlet velocity
@@ -130,10 +123,10 @@
 ! Calculate volumetric flow rate to convert to particle count. BC_AREA
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
-            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M+SMAX)
+            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
 ! Calculate the number of particles of mass phase M are injected per
 ! second for each solid phase present at the boundary
-            NPMpSEC(M) = VOL_FLOW / (PI/6.d0*DES_D_P0(M)**3)
+            NPMpSEC(M) = VOL_FLOW / (PI/6.d0*D_P0(M)**3)
 ! Write some debugging information if needed.
             if(dFlag) write(*,1100) M, VEL_TMP(M), NPMpSEC(M)
          ENDDO
@@ -196,8 +189,8 @@
          EPs_TMP = ZERO
          DO MM = 1, PHASE_CNT
             M = PHASE_LIST(MM)
-            EPs_TMP(M) = BC_EP_s(BCV,M+SMAX) * (VEL_TMP(M) / MAX_VEL)
-            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M+SMAX) - EPs_TMP(M))
+            EPs_TMP(M) = BC_EP_s(BCV,M) * (VEL_TMP(M) / MAX_VEL)
+            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M) - EPs_TMP(M))
 
 ! Over-write the current BC value.
             SELECT CASE(BC_PLANE(BCV))
@@ -320,49 +313,41 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_DEM_BCMI_IJK
 
+! Modules
+!---------------------------------------------------------------------//
       use bc, only: BC_PLANE
       use bc, only: BC_X_w, BC_X_e, BC_Y_s, BC_Y_n, BC_Z_b, BC_Z_t
-
       use des_bc, only: DEM_BCMI, DEM_BCMI_MAP, DEM_BCMI_IJK
       use des_bc, only: DEM_BCMI_IJKSTART, DEM_BCMI_IJKEND
-
-      use funits, only: DMP_LOG
-
-      use mpi_utility
-      use error_manager
       use desgrid, only: dg_IMIN1, dg_IMAX1
       use desgrid, only: dg_JMIN1, dg_JMAX1
       use desgrid, only: dg_KMIN1, dg_KMAX1
-
       use desgrid, only: DG_FUNIJK
       use desgrid, only: IofPOS, JofPOS, KofPOS
       use desgrid, only: dg_is_ON_myPE_plus1layers
-
+      use error_manager
+      use funits, only: DMP_LOG
+      use mpi_utility
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER, ALLOCATABLE :: LOC_DEM_BCMI_IJK(:)
-
       INTEGER :: BCV, BCV_I
-
       INTEGER :: LC
-
       INTEGER :: MAX_CELLS
-
       INTEGER :: BND1, BND2
-
       LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
-
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
+!......................................................................!
 
       CALL INIT_ERR_MSG("SET_DEM_BCMI_IJK")
 
       dFlag = (DMP_LOG .AND. setDBG)
 
       if(dFlag) write(*,"(2/,2x,'From: SET_DEM_BCMI_IJK')")
-
-
 
 ! Loop over all inflow BCs to get an approximate count of the number
 ! of fluid cells that are adjacent to them.
@@ -487,9 +472,7 @@
 
       deallocate(LOC_DEM_BCMI_IJK)
 
-
       CALL FINL_ERR_MSG
-
 
       RETURN
       END SUBROUTINE SET_DEM_BCMI_IJK

@@ -12,12 +12,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IC_COMMON_DISCRETE
 
+! Modules
+!---------------------------------------------------------------------//
 ! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only : gener_part_config
 ! Simulation dimension (2D/3D)
       USE discretelement, only: DIMN
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
+! direction wise spans of the domain and grid spacing in each direction
+      Use geometry, only: xlength, ylength, zlength
 ! Flag indicating that the IC region is defined.
       USE ic, only: IC_DEFINED
 ! IC Region gas volume fraction.
@@ -26,32 +30,28 @@
       USE ic, only: IC_EP_S
 ! IC Region gas volume fraction.
       USE ic, only: IC_THETA_M
-
+!
       USE ic, only: IC_X_w, IC_X_e, IC_Y_s, IC_Y_n, IC_Z_b, IC_Z_t
-
-      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE
-
-! direction wise spans of the domain and grid spacing in each direction
-      Use geometry, only: xlength, ylength, zlength
-
-
 ! Maximum number of IC regions
       USE param, only: DIMENSION_IC
+!
+      USE param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE
+!
+      use physprop, only: mmax
 
-      ! Use the error manager for posting error messages.
-!---------------------------------------------------------------------//
+! Use the error manager for posting error messages.
       use error_manager
-
       implicit none
 
+! Local variables 
+!---------------------------------------------------------------------//
       INTEGER :: ICV, ICV2, M, IDIM
       INTEGER :: COUNT_IC, COUNT_IC_WITH_SOLS
       INTEGER :: FIRST_DEF_IC
-
       DOUBLE PRECISION :: IC_ORIG(3), IC_END(3), IC2_ORIG(3) , IC2_END(3)
       DOUBLE PRECISION :: IC_MIN, IC_MAX, IC2_MIN, IC2_MAX , TOL_IC_REG
-
       LOGICAL :: SEP_AXIS, first_ic_ok
+!---------------------------------------------------------------------//
 
       IF (.NOT.GENER_PART_CONFIG) RETURN
 
@@ -170,7 +170,7 @@
       DO ICV = 1, DIMENSION_IC
 
          IF (IC_DEFINED(ICV).and.IC_EP_G(ICV).LT.ONE) THEN
-            DO M = 1, DES_MMAX
+            DO M = MMAX+1, DES_MMAX+MMAX
                IF(IC_THETA_M(ICV,M)==UNDEFINED) THEN
                   IF(IC_EP_S(ICV,M).gt.Zero) THEN
                      WRITE(ERR_MSG, 1000) trim(iVar('IC_THETA_M',ICV,M))

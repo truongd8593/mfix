@@ -19,18 +19,19 @@ CONTAINS
 !......................................................................!
       DOUBLE PRECISION FUNCTION G_0AVG (IJK1, IJK2, DIR, L, M1, M2)
 
+      USE compar
+      USE constant
+      use discretelement, only: des_mmax
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE geometry
-      USE indices
-      USE compar
       USE visc_s
-      USE constant
       USE run
       USE toleranc
-      USE functions
 
       IMPLICIT NONE
 
@@ -80,7 +81,7 @@ CONTAINS
             DP_AVG_M2 = HALF*(D_p(IJK1,M2)+D_p(IJK2,M2))
             EPSoDP = ZERO
 
-            DO Mx = 1, MMAX
+            DO Mx = 1, DES_MMAX+MMAX
                EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
                EPSoDP = EPSoDP + 2d0*EPS / (D_p(IJK1,Mx)+D_p(IJK2,Mx))
             ENDDO
@@ -98,7 +99,7 @@ CONTAINS
             EPSoDP = ZERO
             SUM_EPS = ZERO
 
-            DO Mx = 1, MMAX
+            DO Mx = 1, DES_MMAX+MMAX
                EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
                DP_AVG = HALF*( D_p(IJK1,Mx)+D_p(IJK2,Mx) )
                EPSoDP = EPSoDP + EPS/DP_AVG
@@ -132,7 +133,7 @@ CONTAINS
             SUM_EPS = ZERO
             XI = ZERO
 
-            DO Mx = 1, MMAX
+            DO Mx = 1, DES_MMAX+MMAX
                EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
                SUM_EPS = SUM_EPS + EPS
 
@@ -165,7 +166,7 @@ CONTAINS
             SUM_EPS = ZERO
             XI = ZERO
 
-            DO Mx = 1, MMAX
+            DO Mx = 1, DES_MMAX+MMAX
                EPS = AVG_XYZ(EP_s(IJK1, Mx), EP_s(IJK2, Mx), DIR, L)
                SUM_EPS = SUM_EPS + EPS
 
@@ -237,18 +238,19 @@ CONTAINS
 !......................................................................!
       DOUBLE PRECISION FUNCTION G_0 (IJK, M1, M2)
 
+      USE compar
+      USE constant
+      use discretelement, only: des_mmax
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE geometry
-      USE indices
-      USE compar
-      USE visc_s
-      USE constant
       USE run
       USE toleranc
-      USE functions
+      USE visc_s
 
       IMPLICIT NONE
 
@@ -283,7 +285,7 @@ CONTAINS
 
       SUM_EPS = ZERO
       EPg = EP_G(IJK)
-      DO MM = 1, MMAX
+      DO MM = 1, DES_MMAX+MMAX
           EPS = EP_s(IJK, MM)
           SUM_EPS = SUM_EPS + EPS
       END DO
@@ -295,7 +297,7 @@ CONTAINS
       CASE(LEBOWITZ)
 
          EPSoDP = ZERO
-         DO Mx = 1, MMAX
+         DO Mx = 1, DES_MMAX+MMAX
             EPS = EP_s(IJK, Mx)
             EPSoDP = EPSoDP + EPS / D_p(IJK,Mx)
          ENDDO
@@ -311,7 +313,7 @@ CONTAINS
          EPSoDP = ZERO
          SUM_EPS = ZERO
 
-         DO MM = 1, MMAX
+         DO MM = 1, DES_MMAX+MMAX
             EPS = EP_s(IJK, MM)
             EPSoDP = EPSoDP + (EPS/D_p(IJK,MM))
             SUM_EPS = SUM_EPS + EPS
@@ -335,7 +337,7 @@ CONTAINS
          SUM_EPS = ZERO
          XI = ZERO
 
-         DO MM = 1, MMAX
+         DO MM = 1, DES_MMAX+MMAX
             EPS = EP_s(IJK, MM)
             SUM_EPS = SUM_EPS + EPS
             VOLP = (PI/6.0D0)*D_P(IJK,MM)**3.0
@@ -362,7 +364,7 @@ CONTAINS
          SUM_EPS = ZERO
          XI = ZERO
 
-         DO MM = 1, MMAX
+         DO MM = 1, DES_MMAX+MMAX
             EPS = EP_s(IJK, MM)
             SUM_EPS = SUM_EPS + EPS
             VOLP = (PI/6.0D0)*D_P(IJK,MM)**3.0

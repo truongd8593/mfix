@@ -8,26 +8,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE
 
-
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
 ! Runtime Flag: Generate initial particle configuration.
       USE discretelement, only: GENER_PART_CONFIG
-! Runtime Flag: Invoke MPPIC model.
-      USE mfix_pic, only: MPPIC
 ! Runtime Flag: Store DES_*_OLD arrays.
       USE discretelement, only: DO_OLD
-! Runtime Flag: Solve energy equations
-      USE run, only: ENERGY_EQ
-! Runtime Flag: One or more species equations are solved.
-      use run, only: ANY_SPECIES_EQ
 ! Number of DEM solids phases.
       USE discretelement, only: DES_MMAX
-! DEM solid phase diameters and densities.
-      USE discretelement, only: DES_D_p0, DES_RO_s
-! TFM solids phase diameters and densities. (DEM default)
-      USE physprop, only: D_p0, RO_s0
-
 ! User specified integration method.
       USE discretelement, only: DES_INTG_METHOD
       USE discretelement, only: INTG_ADAMS_BASHFORTH
@@ -43,78 +31,51 @@
       USE discretelement, only: DES_PERIODIC_WALLS_X
       USE discretelement, only: DES_PERIODIC_WALLS_Y
       USE discretelement, only: DES_PERIODIC_WALLS_Z
-! Flag: Solve variable solids density.
-      use run, only: SOLVE_ROs
+! Use the error manager for posting error messages.
+      use error_manager
+! Runtime Flag: Invoke MPPIC model.
+      USE mfix_pic, only: MPPIC
+      USE mpi_utility
+
+      use param1, only: undefined, undefined_c
+      use param, only: dim_m
+! number of continuous solids phases and
+! solids 'phase' diameters and densities
+      USE physprop, only: MMAX, D_p0, RO_s0
 ! Calculated baseline variable solids density.
       use physprop, only: BASE_ROs
-
+      USE physprop, only: CLOSE_PACKED
+! Runtime Flag: Solve energy equations
+      USE run, only: ENERGY_EQ
+! Runtime Flag: One or more species equations are solved.
+      use run, only: ANY_SPECIES_EQ
 ! Flag: Solve variable solids density.
-      USE run, only: SOLVE_ROs
-! Calculated baseline variable solids density.
-      USE physprop, only: BASE_ROs
-
-
-! Number of ranks.
+      use run, only: SOLVE_ROs
       use run, only: SOLIDS_MODEL
-
-! Subroutine access.
-      use physprop, only: MMAX
-
       USE run, only: MOMENTUM_X_EQ
       USE run, only: MOMENTUM_Y_EQ
       USE run, only: MOMENTUM_Z_EQ
-
       use run, only: RUN_TYPE
-      use discretelement, only: GENER_PART_CONFIG
-
-      USE physprop, only: CLOSE_PACKED
-
-      USE mpi_utility
-
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: undefined, undefined_c
-      use param, only: dim_m
-
-! Use the error manager for posting error messages.
-!---------------------------------------------------------------------//
-      use error_manager
-
       implicit none
 
-! Local Variables:
+! Local Variables
 !---------------------------------------------------------------------//
-! Loop index.
-      INTEGER :: M, lM  ! Solids phase Index
+      INTEGER :: M 
+!......................................................................!
 
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_DISCRETE")
 
-
-      DES_D_p0 = UNDEFINED
-      DES_RO_s = UNDEFINED
-
-      MAX_RADIUS = -UNDEFINED
-      MIN_RADIUS =  UNDEFINED
-
-      M = 0
-      DO lM=1, MMAX+DES_MMAX
-
-! The accounts for an offset between the DEM and TFM phase indices
-         IF(SOLIDS_MODEL(lM) == 'TFM') CYCLE
-         M = M+1
-
-! Copy of the input keyword values into discrete solids arrays. We may be
-! able to remove the DES_ specific variables moving forward.
-         DES_D_p0(M) = D_p0(lM)
-         DES_RO_s(M) = merge(BASE_ROs(lM), RO_s0(lM), SOLVE_ROs(lM))
 ! Determine the maximum particle size in the system (MAX_RADIUS), which
 ! in turn is used for various tasks
-         MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*DES_D_P0(M))
-         MIN_RADIUS = MIN(MIN_RADIUS, 0.5d0*DES_D_P0(M))
+      MAX_RADIUS = -UNDEFINED
+      MIN_RADIUS =  UNDEFINED
+! For number of continuous solids phases (use MMAX rather than SMAX to
+! accomodate GHD particularity)
+      DO M = MMAX+1,DES_MMAX+MMAX
+         MAX_RADIUS = MAX(MAX_RADIUS, 0.5d0*D_P0(M))
+         MIN_RADIUS = MIN(MIN_RADIUS, 0.5d0*D_P0(M))
       ENDDO
-
 
 ! Set close_packed to true to prevent possible issues stemming from the
 ! pressure correction equation.  Specifically, if closed_packed is false
@@ -236,50 +197,35 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_ENERGY
 
-
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
-      use run, only: UNITS
-
-      use discretelement, only: DES_MMAX
-
-      use physprop, only: SMAX
-      use physprop, only: K_S0
-
+      use param1, only: ZERO, UNDEFINED
       use des_thermo, only: DES_CONV_CORR
       use des_thermo, only: DES_CONV_CORR_ENUM
       use des_thermo, only: RANZ_1952
-
       use des_thermo, only: SB_CONST
       use des_thermo, only: DES_Em
-
       use des_thermo, only: CALC_CONV_DES ! Convection
       use des_thermo, only: CALC_COND_DES ! Conduction
       use des_thermo, only: CALC_RADT_DES ! Radiation
-
+! Flag to explicitly couple source terms and DES
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+      use discretelement, only: DES_MMAX
       use discretelement, only: DES_CONTINUUM_COUPLED
-
-      use run, only: SOLIDS_MODEL
+! Use the error manager for posting error messages.
+      use error_manager
 ! User input for DES interpolation scheme.
       use particle_filter, only: DES_INTERP_SCHEME
 ! Enumerated interpolation scheme for faster access
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
-! Flag to explicitly couple source terms and DES
-      use discretelement, only: DES_EXPLICITLY_COUPLED
 
-! Global Parameters:
-!---------------------------------------------------------------------//
-      use param1, only: ZERO, UNDEFINED
-
-
-! Use the error manager for posting error messages.
-!---------------------------------------------------------------------//
-      use error_manager
-
+      use physprop, only: MMAX
+      use physprop, only: K_S0
+      use run, only: UNITS
+      use run, only: SOLIDS_MODEL
 
       IMPLICIT NONE
-
 
 ! Local Variables:
 !---------------------------------------------------------------------//
@@ -295,9 +241,7 @@
 
 ! Set runtime flags for which modes of heat transfer to calculate.
       CALC_CONV_DES = DES_CONTINUUM_COUPLED
-      DO M = SMAX+1, SMAX+DES_MMAX
-! Only interested in discrete solids.
-         IF(SOLIDS_MODEL(M) == 'TFM') CYCLE
+      DO M = MMAX+1, MMAX+DES_MMAX
 ! Flag to calculate radiation.
          IF(DES_Em(M) > ZERO) CALC_RADT_DES(M) = .TRUE.
 ! Flag to calculate conduction.
@@ -324,7 +268,7 @@
 ! Radiation Equation:
 !'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 ! Verify that a emmisivity value is specified for each solids phase
-      DO M = SMAX+1, SMAX+DES_MMAX
+      DO M = MMAX+1, MMAX+DES_MMAX
          IF(DES_Em(M) == UNDEFINED) THEN
             WRITE(ERR_MSG,1000) trim(iVar('DES_Em',M))
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
@@ -387,16 +331,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_THERMO
 
-      use stiff_chem, only: STIFF_CHEMISTRY
+! Modules
+!---------------------------------------------------------------------//
       use discretelement, only: DES_EXPLICITLY_COUPLED
+      use error_manager
 ! User input for DES interpolation scheme.
       use particle_filter, only: DES_INTERP_SCHEME
 ! Enumerated interpolation scheme for faster access
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_NONE
-
-      use error_manager
-
+      use stiff_chem, only: STIFF_CHEMISTRY
       IMPLICIT NONE
 
 !......................................................................!
@@ -454,26 +398,23 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_GEOMETRY
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE geometry, only: COORDINATES
-      USE geometry, only: NO_I, NO_J
-      USE geometry, only: ZLENGTH
-! Flag: Use DES E-L model
-      USE discretelement, only: DES_CONTINUUM_COUPLED
-      USE discretelement, only: MAX_RADIUS
+!---------------------------------------------------------------------//
 ! Flag: Use Cartesian grid cut-cell implementation
       USE cutcell, only: CARTESIAN_GRID
 ! Flag: Use STL representation in CG
       USE cutcell, only: USE_STL
-
+! Flag: Use DES E-L model
+      USE discretelement, only: DES_CONTINUUM_COUPLED
+      USE discretelement, only: MAX_RADIUS
       use error_manager
-
+      USE geometry, only: COORDINATES
+      USE geometry, only: NO_I, NO_J
+      USE geometry, only: ZLENGTH
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION :: MIN_DEPTH
 
 !......................................................................!
@@ -546,10 +487,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_COMMON_DISCRETE_INTERP
 
+! Modules
+!---------------------------------------------------------------------//
 ! Runtime Flag: Invoke gas/solids coupled simulation.
       use discretelement, only: DES_CONTINUUM_COUPLED
+      use error_manager
+! Runtime FLag: 3D simulation
+      use geometry, only: DO_K
 ! Runtime Flag: Invoke MPPIC model.
       USE mfix_pic, only: MPPIC
+      use param1, only: UNDEFINED
 ! User input for DES interpolation scheme.
       use particle_filter, only: DES_INTERP_SCHEME
 ! Enumerated interpolation scheme for faster access
@@ -571,13 +518,6 @@
       use particle_filter, only: DES_INTERP_ON
 ! Size of interpolation filter
       use particle_filter, only: FILTER_SIZE
-! Runtime FLag: 3D simulation
-      use geometry, only: DO_K
-
-      use param1, only: UNDEFINED
-
-      use error_manager
-
       IMPLICIT NONE
 
 !......................................................................!

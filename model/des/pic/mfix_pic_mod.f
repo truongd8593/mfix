@@ -5,19 +5,17 @@
 !  Author: R. Garg                                                     !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       MODULE MFIX_PIC
 
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE param, only: dim_m
-!-----------------------------------------------
+      use param, only: dim_m
+!......................................................................!
 
 ! flag for turning on MP-PIC method
       LOGICAL :: MPPIC
 
-      DOUBLE PRECISION PSFAC_FRIC_PIC, FRIC_EXP_PIC, FRIC_NON_SING_FAC
+      DOUBLE PRECISION :: PSFAC_FRIC_PIC
+      DOUBLE PRECISION :: FRIC_EXP_PIC
+      DOUBLE PRECISION :: FRIC_NON_SING_FAC
 
       LOGICAL :: MPPIC_SOLID_STRESS_SNIDER
       LOGICAL :: MPPIC_CORR_VOLFRAC
@@ -32,22 +30,17 @@
 ! EP_g interpolated at particle position (used for MP-PIC)
       DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: EPG_P
 
-! Total number of real and computational
-! particles in each solid phase (used only for MP-PIC)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RNP_PIC !(DES_MMAX)
-      INTEGER, DIMENSION(:), ALLOCATABLE          :: CNP_PIC !(DES_MMAX)
-
 ! to initially seed the particles based on constant number of
 ! particles per cell or constant statistical weight of each particle
 ! number of particles per cell for the case of CONSTANTNPC
       LOGICAL :: MPPIC_CONSTANTNPC, MPPIC_CONSTANTWT
 
+      INTEGER NPC_PIC(DIM_M)
+
 ! coefficeient of restituion used in MPPIC case in the
 ! frictional regime
       DOUBLE PRECISION :: MPPIC_COEFF_EN1, MPPIC_COEFF_EN2
-
       DOUBLE PRECISION :: MPPIC_COEFF_EN_WALL, MPPIC_COEFF_ET_WALL
-      INTEGER NPC_PIC(DIM_M)
 
 ! statistical weight or number of real particles per computational
 ! particle for the case of CONSTANTWT
@@ -84,21 +77,17 @@
 ! trajectory evolution equation
       LOGICAL MPPIC_PDRAG_IMPLICIT
 
-! the impulse velocity for the MPPIC collisions
-      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: MPPIC_VPTAU
-
-
-! Face centered u-velocity required by PIC model. Not using the U_s arrays anymore
+! Solids pressure as a result of granular motion
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: PIC_P_s
+!Face centered u-velocity required by PIC model.
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_U_S
 ! Face centered v-velocity required by PIC model. Not using the U_s arrays anymore
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_V_S
 ! Face centered z-velocity required by PIC model. Not using the U_s arrays anymore
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: PIC_W_S
 
-!                      Solids pressure as a result of granular motion
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: PIC_P_s
-
 ! A run time flag to report minimum value of gas voidage
       LOGICAL :: PIC_REPORT_MIN_EPG
-      end MODULE MFIX_PIC
+
+      END MODULE MFIX_PIC
 

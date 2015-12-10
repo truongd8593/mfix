@@ -13,9 +13,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DRAG_GS_DES0
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE constant
@@ -35,9 +34,9 @@
       USE mfix_pic
       USE functions
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, cur_ijk
       INTEGER :: II, JJ, KK
@@ -65,6 +64,7 @@
           DOUBLE PRECISION :: velfp(3), desposnew(3)
           DOUBLE PRECISION :: D_FORCE(3)
           DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
+!......................................................................!
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
 ! Calculate the gas solids drag coefficient using the particle
@@ -188,6 +188,7 @@
       RETURN
       END SUBROUTINE DRAG_GS_DES0
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: DES_DRAG_GS                                             C
@@ -204,9 +205,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DRAG_GS_GAS0
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE constant
@@ -226,11 +226,10 @@
       USE mfix_pic
       USE functions
       use mpi_node_des, only: des_addnodevalues
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! local variable used for debugging
       LOGICAL :: FOCUS
 ! general i, j, k indices
@@ -267,9 +266,7 @@
       DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
       DOUBLE PRECISION :: velfp(3), desposnew(3)
       DOUBLE PRECISION, DIMENSION(3) :: VEL_NEW
-
-!-----------------------------------------------
-
+!......................................................................!
 
 
 ! INTERPOLATED fluid-solids drag (the rest of this routine):
@@ -476,63 +473,63 @@
 !                       interface for OpenMP implementation.            C
 !                                                                       C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-
       SUBROUTINE DRAG_INTERPOLATION(GSTEN,VSTEN,DESPOS,VELFP,WEIGHTFACTOR)
 
+! Modules
+!---------------------------------------------------------------------//
       use geometry, only: NO_K
+      IMPLICIT NONE
 
-        IMPLICIT NONE
-
-!-----------------------------------------------
 ! Local Variables
-!-----------------------------------------------
-        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
-        DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
-        DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
-        DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
-        DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
-        INTEGER :: II, JJ, KK
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: GSTEN
+      DOUBLE PRECISION, DIMENSION(2,2,2,3), INTENT(IN):: VSTEN
+      DOUBLE PRECISION, DIMENSION(3), INTENT(IN):: DESPOS
+      DOUBLE PRECISION, DIMENSION(3), INTENT(OUT) :: VELFP
+      DOUBLE PRECISION, DIMENSION(2,2,2), INTENT(OUT) :: WEIGHTFACTOR
+      INTEGER :: II, JJ, KK
 
-        DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
-        DOUBLE PRECISION :: DXX, DYY, DZZ
-        DOUBLE PRECISION, DIMENSION(3) :: ZETAA
+      DOUBLE PRECISION, DIMENSION(2) :: XXVAL, YYVAL, ZZVAL
+      DOUBLE PRECISION :: DXX, DYY, DZZ
+      DOUBLE PRECISION, DIMENSION(3) :: ZETAA
+!......................................................................!
 
-        DXX = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
-        DYY = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
+      DXX = GSTEN(2,1,1,1) - GSTEN(1,1,1,1)
+      DYY = GSTEN(1,2,1,2) - GSTEN(1,1,1,2)
 
-        ZETAA(1:2) = DESPOS(1:2) - GSTEN(1,1,1,1:2)
+      ZETAA(1:2) = DESPOS(1:2) - GSTEN(1,1,1,1:2)
 
-        ZETAA(1) = ZETAA(1)/DXX
-        ZETAA(2) = ZETAA(2)/DYY
+      ZETAA(1) = ZETAA(1)/DXX
+      ZETAA(2) = ZETAA(2)/DYY
 
-        XXVAL(1)=1-ZETAA(1)
-        YYVAL(1)=1-ZETAA(2)
-        XXVAL(2)=ZETAA(1)
-        YYVAL(2)=ZETAA(2)
+      XXVAL(1)=1-ZETAA(1)
+      YYVAL(1)=1-ZETAA(2)
+      XXVAL(2)=ZETAA(1)
+      YYVAL(2)=ZETAA(2)
 
-        VELFP(:) = 0.D0
+      VELFP(:) = 0.D0
 
-        IF(NO_K) THEN
-           DO JJ=1,2
-              DO II=1,2
-                 WEIGHTFACTOR(II,JJ,1) = XXVAL(II)*YYVAL(JJ)
-                 VELFP(1:2) = VELFP(1:2) + VSTEN(II,JJ,1,1:2)*WEIGHTFACTOR(II,JJ,1)
-              ENDDO
-           ENDDO
-        ELSE
-           DZZ = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
-           ZETAA(3) = DESPOS(3) - GSTEN(1,1,1,3)
-           ZETAA(3) = ZETAA(3)/DZZ
-           ZZVAL(1)=1-ZETAA(3)
-           ZZVAL(2)=ZETAA(3)
-           DO KK=1,2
-              DO JJ=1,2
-                 DO II=1,2
-                    WEIGHTFACTOR(II,JJ,KK) = XXVAL(II)*YYVAL(JJ)*ZZVAL(KK)
-                    VELFP(1:3) = VELFP(1:3) + VSTEN(II,JJ,KK,1:3)*WEIGHTFACTOR(II,JJ,KK)
-                 ENDDO
-              ENDDO
-           ENDDO
-        ENDIF
+      IF(NO_K) THEN
+         DO JJ=1,2
+            DO II=1,2
+               WEIGHTFACTOR(II,JJ,1) = XXVAL(II)*YYVAL(JJ)
+               VELFP(1:2) = VELFP(1:2) + VSTEN(II,JJ,1,1:2)*WEIGHTFACTOR(II,JJ,1)
+            ENDDO
+         ENDDO
+      ELSE
+         DZZ = GSTEN(1,1,2,3) - GSTEN(1,1,1,3)
+         ZETAA(3) = DESPOS(3) - GSTEN(1,1,1,3)
+         ZETAA(3) = ZETAA(3)/DZZ
+         ZZVAL(1)=1-ZETAA(3)
+         ZZVAL(2)=ZETAA(3)
+         DO KK=1,2
+            DO JJ=1,2
+               DO II=1,2
+                  WEIGHTFACTOR(II,JJ,KK) = XXVAL(II)*YYVAL(JJ)*ZZVAL(KK)
+                  VELFP(1:3) = VELFP(1:3) + VSTEN(II,JJ,KK,1:3)*WEIGHTFACTOR(II,JJ,KK)
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDIF
 
       END SUBROUTINE DRAG_INTERPOLATION

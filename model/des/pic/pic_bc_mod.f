@@ -10,15 +10,15 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       MODULE PIC_BC
 
-      USE param, only: dimension_bc
+      use param, only: dimension_bc
+!......................................................................!
 
       INTEGER :: PIC_BCMI
       INTEGER :: PIC_BCMO
 
-      LOGICAL PIC_MIO  ! either inlet or outlet exists
+      LOGICAL :: PIC_MIO  ! either inlet or outlet exists
 
 ! Map between PIC MI/MO IDs and the user input BC index.
       INTEGER :: PIC_BCMI_MAP(DIMENSION_BC)

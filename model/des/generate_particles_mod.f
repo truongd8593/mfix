@@ -84,6 +84,7 @@
 
 
 ! Global Variables:
+!---------------------------------------------------------------------//
 ! particle radius and density
       use discretelement, only: DES_RADIUS, RO_Sol
 ! particle position new and old
@@ -100,8 +101,8 @@
       use discretelement, only: DO_OLD
 ! Angular velocity
       use discretelement, only: OMEGA_OLD, OMEGA_NEW, PIJK
-! DEM solid phase diameters and densities.
-      use physprop, only: D_p0, RO_s0, SMAX
+! solid phase diameters and densities.
+      use physprop, only: D_p0, RO_s0, MMAX
 ! IC Region solids volume fraction.
       use ic, only: IC_EP_S
 
@@ -144,6 +145,8 @@
 
       IMPLICIT NONE
 
+! Dummy arguments
+!---------------------------------------------------------------------//
       INTEGER, INTENT(IN) :: ICV
 
 ! Local variables
@@ -180,6 +183,7 @@
       DOUBLE PRECISION :: SOLIDS_DATA(0:DIM_M)
 
       LOGICAL :: VEL_FLUCT
+      DOUBLE PRECISION :: VEL_SIG
       DOUBLE PRECISION, ALLOCATABLE :: randVEL(:,:)
 
       logical :: report = .true.
@@ -211,10 +215,12 @@
       DOM_VOL = DOML(1)*DOML(2)*DOML(3)
 
       rPARTS=0
-      DO M=1,SMAX+DES_MMAX
+      DO M=MMAX+1,MMAX+DES_MMAX
+         IF(SOLIDS_MODEL(M) == 'DEM') THEN
 ! Number of particles for phase M
-         IF(SOLIDS_MODEL(M) == 'DEM') rPARTS(M) = &
-            floor((6.0d0*IC_EP_S(ICV,M)*DOM_VOL)/(PI*(D_P0(M)**3)))
+            rPARTS(M) = &
+               floor((6.0d0*IC_EP_S(ICV,M)*DOM_VOL)/(PI*(D_P0(M)**3)))
+         ENDIF
       ENDDO
 
 ! Total number of particles in this IC region.
@@ -289,13 +295,13 @@
             EXIT JJ_LP
 ! Find the next phase that needs to be seeded
          ELSEIF(pCOUNT(M) > int(rPARTS(M))) THEN
-            MM_LP: DO MM=M+1,SMAX+DES_MMAX
+            MM_LP: DO MM=M+1,MMAX+DES_MMAX
                IF(rPARTS(MM) > 0.0) THEN
                   M=MM
                   EXIT MM_LP
                ENDIF
             ENDDO MM_LP
-            IF(M > SMAX+DES_MMAX) EXIT JJ_LP
+            IF(M > MMAX+DES_MMAX) EXIT JJ_LP
             VEL_FLUCT = SET_VEL_FLUCT(ICV,M)
          ENDIF
 
@@ -382,7 +388,7 @@
       WRITE(ERR_MSG,2000) ICV
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
-      DO M=1, SMAX+DES_MMAX
+      DO M=MMAX+1, MMAX+DES_MMAX
          IF(SOLIDS_DATA(M) < SMALL_NUMBER) CYCLE
          WRITE(ERR_MSG,2010) M, int(SOLIDS_DATA(M)), IC_EP_S(ICV,M),   &
             (dble(SOLIDS_DATA(M))*(Pi/6.0d0)*D_P0(M)**3)/SOLIDS_DATA(0)
@@ -441,6 +447,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GENERATE_PARTICLE_CONFIG_MPPIC(ICV)
 
+! Global variables
+!---------------------------------------------------------------------//
 ! Number of DES solids phases.
       use discretelement, only: DES_MMAX
 ! Flag indicating that the IC region is defined.
@@ -457,6 +465,7 @@
 ! Maximum number of IC regions and solids phases
       use param, only: DIMENSION_IC
       use param, only: DIM_M
+      use physprop, only: mmax
 
 ! The accumulated number of particles in each IJK.
       use tmp_array, only: PARTICLE_COUNT => ARRAY1
@@ -464,10 +473,11 @@
 
       use error_manager
 
-
+      use run, only: solids_model
       IMPLICIT NONE
 
-
+! Dummy arguments
+!---------------------------------------------------------------------//
       INTEGER, INTENT(IN) :: ICV
 
 ! Local variables
@@ -493,11 +503,13 @@
       CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 
 ! Set up the individual solids phases.
-      DO M=1, DES_MMAX
-         IF(IC_ROP_S(ICV,M) == ZERO) CYCLE
+      DO M=MMAX+1, DES_MMAX+MMAX
+         IF(SOLIDS_MODEL(M) == 'PIC') THEN
+            IF(IC_ROP_S(ICV,M) == ZERO) CYCLE
 ! Seed parcels with constant stastical weight.
-         CALL GPC_MPPIC_CONST_NPC(ICV, M, SOLIDS_DATA(0), &
+            CALL GPC_MPPIC_CONST_NPC(ICV, M, SOLIDS_DATA(0), &
             SOLIDS_DATA((4*M-3):(4*M)))
+         ENDIF
       ENDDO
 
 ! Collect the data
@@ -513,12 +525,14 @@
          ES15.4,/'Please correct the mfix.dat file.')
 
 ! Report solids information for the IC region.
-      DO M=1, DES_MMAX
-         WRITE(ERR_MSG,2010) M, int(SOLIDS_DATA(4*M-3)),&
-            int(SOLIDS_DATA(4*M-3)*SOLIDS_DATA(4*M-2)), &
-            SOLIDS_DATA(4*M-2), SOLIDS_DATA(4*M-1),     &
-            SOLIDS_DATA(4*M)/SOLIDS_DATA(0)
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      DO M=MMAX+1, DES_MMAX+MMAX
+         IF(SOLIDS_MODEL(M) == 'PIC') THEN
+            WRITE(ERR_MSG,2010) M, int(SOLIDS_DATA(4*M-3)),&
+               int(SOLIDS_DATA(4*M-3)*SOLIDS_DATA(4*M-2)), &
+               SOLIDS_DATA(4*M-2), SOLIDS_DATA(4*M-1),     &
+               SOLIDS_DATA(4*M)/SOLIDS_DATA(0)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+         ENDIF
       ENDDO
 
       CALL FINL_ERR_MSG
@@ -550,47 +564,39 @@
 
 ! Global variables
 !---------------------------------------------------------------------//
+! Constant: 3.14159...
+      use constant, only: PI
+! Cut_cell identifier array
+      use cutcell, only: cut_cell_at
       use cutcell, only : CARTESIAN_GRID
       use discretelement, only: XE, YN, ZT
 
-! Number of DES solids phases.
-      use discretelement, only: DES_MMAX
-
-! DEM solid phase diameters and densities.
-      use discretelement, only: DES_D_p0, DES_RO_s
-
+      use des_allocate, only: PARTICLE_GROW
       use discretelement
-
-! Implied total number of physical particles
-      use mfix_pic, only: rnp_pic
-! Total number of computational particles/parcels
-      use mfix_pic, only: cnp_pic
-
-      use mfix_pic, only: des_stat_wt
+      use discretelement, only: XE, YN, ZT
 
 ! Flag indicating that the IC region is defined.
       use ic, only: IC_DEFINED
 ! IC Region bulk density (RO_s * EP_s)
       use ic, only: IC_EP_s
-
       use ic, only: IC_I_w, IC_I_e, IC_J_s, IC_J_n, IC_K_b, IC_K_t
 
 ! initally specified velocity field and granular temperature
       use ic, only: IC_U_s, IC_V_s, IC_W_s, IC_Theta_M
       use ic, only: IC_PIC_CONST_NPC
       use ic, only: IC_PIC_CONST_STATWT
-! Cut_cell identifier array
-      use cutcell, only: cut_cell_at
+
+      use mfix_pic, only: des_stat_wt
+      use mpi_utility
 
 ! Maximum number of IC regions and solids phases
       use param, only: DIMENSION_IC
       use param, only: DIM_M
       use param1, only: UNDEFINED, UNDEFINED_I, ZERO, ONE, HALF
 
-! Constant: 3.14159...
-      use constant, only: PI
-
-      use mpi_utility
+! solid phase diameters and densities.
+      use physprop, only: D_p0, RO_s0
+      use run, only: solids_model
 
       use randomno
       use error_manager
@@ -612,7 +618,6 @@
 ! Local variables
 !----------------------------------------------------------------------//
       DOUBLE PRECISION :: EP_SM
-
 
 ! Number of real and comp. particles in a cell.
       DOUBLE PRECISION ::  rPARTS
@@ -649,7 +654,7 @@
       VEL_SIG = sqrt(IC_Theta_M(ICV,M))
 
 ! Volume occupied by one particle
-      sVOL = (Pi/6.0d0)*(DES_D_P0(M)**3.d0)
+      sVOL = (Pi/6.0d0)*(D_P0(M)**3.d0)
 
       SEEDED = 0
       sVOL_TOT = 0.0d0
@@ -725,8 +730,8 @@
             DES_POS_NEW(PIP,:) = POS(:)
             DES_VEL_NEW(PIP,:) = randVEL(LC,:)
 
-            DES_RADIUS(PIP) = DES_D_P0(M)*HALF
-            RO_SOL(PIP) =  DES_RO_S(M)
+            DES_RADIUS(PIP) = D_P0(M)*HALF
+            RO_SOL(PIP) =  RO_S0(M)
 
             PIJK(PIP,1) = I
             PIJK(PIP,2) = J

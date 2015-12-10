@@ -18,18 +18,21 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DRAG_GS_DES1
 
-! Flag: The fluid and discrete solids are explicitly coupled.
-      use discretelement, only: DES_EXPLICITLY_COUPLED
+! Modules
+!---------------------------------------------------------------------//
 ! Gas phase volume fraction
       use fldvar, only: EP_G
 ! Gas phase velocities
       use fldvar, only: U_G, V_G, W_G
+! Function to deterine if a cell contains fluid.
+      use functions, only: FLUID_AT
+      use functions, only: is_normal
+! Flag for 3D simulatoins.
+      use geometry, only: DO_K
 ! Size of particle arrays on this processor.
       use discretelement, only: MAX_PIP
-! Flag to use interpolation
-      use particle_filter, only: DES_INTERP_ON
-! Interpolation cells and weights
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+! Flag: The fluid and discrete solids are explicitly coupled.
+      use discretelement, only: DES_EXPLICITLY_COUPLED
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
 ! Drag force on each particle
@@ -44,34 +47,29 @@
       use discretelement, only: PVOL
 ! Particle drag force
       use discretelement, only: DRAG_FC
+! Flag for MPPIC runs.
+      use mfix_pic, only: MPPIC
+! Flag to use implicit drag for MPPIC
+      use mfix_pic, only: MPPIC_PDRAG_IMPLICIT
+! Double precision values.
+      use param1, only: ZERO
+! Flag to use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Interpolation cells and weights
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Model B momentum equation
       use run, only: MODEL_B
 ! Cell-center gas velocities.
       use tmp_array, only: UGC => ARRAY1
       use tmp_array, only: VGC => ARRAY2
       use tmp_array, only: WGC => ARRAY3
-! Flag for MPPIC runs.
-      use mfix_pic, only: MPPIC
-! Flag to use implicit drag for MPPIC
-      use mfix_pic, only: MPPIC_PDRAG_IMPLICIT
-! Flag for 3D simulatoins.
-      use geometry, only: DO_K
-! Function to deterine if a cell contains fluid.
-      use functions, only: FLUID_AT
-
-      use functions, only: is_normal
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-! Double precision values.
-      use param1, only: ZERO
-
 ! Lock/Unlock the temp arrays to prevent double usage.
       use tmp_array, only: LOCK_TMP_ARRAY
       use tmp_array, only: UNLOCK_TMP_ARRAY
-
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -84,6 +82,7 @@
       LOGICAL :: MODEL_A
 ! Loop bound for filter
       INTEGER :: LP_BND
+!......................................................................!
 
 ! Set flag for Model A momentum equation.
       MODEL_A = .NOT.MODEL_B
@@ -175,6 +174,7 @@
       RETURN
       END SUBROUTINE DRAG_GS_DES1
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: DRAG_GS_GAS1                                            !
@@ -196,17 +196,8 @@
 
 ! Flag: The fluid and discrete solids are explicitly coupled.
       use discretelement, only: DES_EXPLICITLY_COUPLED
-! Gas phase volume fraction
-      use fldvar, only: EP_G
-! Gas phase velocities
-      use fldvar, only: U_G, V_G, W_G
-      use fldvar, only: U_GO, V_GO, W_GO
 ! Size of particle array on this process.
       use discretelement, only: MAX_PIP
-! Flag to use interpolation
-      use particle_filter, only: DES_INTERP_ON
-! Interpolation cells and weights
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! IJK of fluid cell containing particles center
       use discretelement, only: PIJK
 ! Drag force on each particle
@@ -217,14 +208,31 @@
       use discretelement, only: DRAG_BM
 ! Scalar cell center total drag force
       use discretelement, only: F_GDS
-! Flag for MPPIC runs
-      use mfix_pic, only: MPPIC
-! Statical weight of each MPPIC parcel
-      use mfix_pic, only: DES_STAT_WT
+! Gas phase volume fraction
+      use fldvar, only: EP_G
+! Gas phase velocities
+      use fldvar, only: U_G, V_G, W_G
+      use fldvar, only: U_GO, V_GO, W_GO
+      use functions, only: FLUID_AT
+      use functions, only: IS_NONEXISTENT
+      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
+      use functions, only: IS_EXITING, IS_EXITING_GHOST
 ! Volume of scalar cell.
       use geometry, only: VOL
 ! Flag for 3D simulatoins.
       use geometry, only: DO_K
+! Flag for MPPIC runs
+      use mfix_pic, only: MPPIC
+! Statical weight of each MPPIC parcel
+      use mfix_pic, only: DES_STAT_WT
+! Double precision values.
+      use param1, only: ZERO, ONE
+! Flag to use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Interpolation cells and weights
+      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+! MPI wrapper for halo exchange.
+      use sendrecv, only: SEND_RECV
 ! Cell-center gas velocities.
       use tmp_array, only: UGC => ARRAY1
       use tmp_array, only: VGC => ARRAY2
@@ -232,21 +240,10 @@
 ! Lock/Unlock the temp arrays to prevent double usage.
       use tmp_array, only: LOCK_TMP_ARRAY
       use tmp_array, only: UNLOCK_TMP_ARRAY
-! MPI wrapper for halo exchange.
-      use sendrecv, only: SEND_RECV
-
-      use functions, only: FLUID_AT
-      use functions, only: IS_NONEXISTENT
-      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
-      use functions, only: IS_EXITING, IS_EXITING_GHOST
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-! Double precision values.
-      use param1, only: ZERO, ONE
-
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -259,6 +256,8 @@
       DOUBLE PRECISION :: lFORCE
 ! Drag sources for fluid (intermediate calculation)
       DOUBLE PRECISION :: lDRAG_BM(3)
+!......................................................................!
+
 
 ! Initialize fluid cell values.
       F_GDS = ZERO
@@ -383,34 +382,29 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_CELL_CENTER_GAS_VEL(lUg, lVg, lWg)
 
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
-! Functions to average momentum to scalar cell center.
-      use fun_avg, only: AVG_X_E, AVG_Y_N, AVG_Z_T
+! Fluid grid loop bounds.
+      use compar, only: IJKStart3, IJKEnd3
 ! Flags and correction factors for cut momentum cells.
       use cutcell, only: CUT_U_TREATMENT_AT, THETA_UE, THETA_UE_BAR
       use cutcell, only: CUT_V_TREATMENT_AT, THETA_VN, THETA_VN_BAR
       use cutcell, only: CUT_W_TREATMENT_AT, THETA_WT, THETA_WT_BAR
+! Functions to average momentum to scalar cell center.
+      use fun_avg, only: AVG_X_E, AVG_Y_N, AVG_Z_T
 ! Functions to lookup adjacent cells by index.
       use functions, only: IM_OF, JM_OF, KM_OF
-      use indices, only: I_OF
-! Fluid grid loop bounds.
-      use compar, only: IJKStart3, IJKEnd3
-! Flag for 3D simulatoins.
-      use geometry, only: DO_K
 ! Function to deterine if a cell contains fluid.
       use functions, only: FLUID_AT
-
-      use tmp_array, only: UGC => ARRAY1
-      use tmp_array, only: VGC => ARRAY2
-      use tmp_array, only: WGC => ARRAY3
-
-! Global Parameters:
-!---------------------------------------------------------------------//
+! Flag for 3D simulatoins.
+      use geometry, only: DO_K
+      use indices, only: I_OF
 ! Double precision parameters.
       use param, only: DIMENSION_3
       use param1, only: ZERO
-
+      use tmp_array, only: UGC => ARRAY1
+      use tmp_array, only: VGC => ARRAY2
+      use tmp_array, only: WGC => ARRAY3
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -423,6 +417,8 @@
 !---------------------------------------------------------------------//
 ! Indices of adjacent cells
       INTEGER :: IJK, IMJK, IJMK, IJKM
+!......................................................................!
+
 
 ! Calculate the cell center gas velocity components.
       DO IJK=IJKSTART3, IJKEND3

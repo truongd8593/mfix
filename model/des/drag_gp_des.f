@@ -19,9 +19,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE DES_DRAG_GP(NP, PARTICLE_VEL, FLUID_VEL, EPg)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE compar
       USE constant
       USE discretelement
@@ -37,11 +36,10 @@
       USE run
       USE sendrecv
       USE ur_facs
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! particle number id.
       INTEGER , INTENT(IN) :: NP
 ! particle velocity
@@ -51,9 +49,8 @@
 ! Gas phase volume fraction.
       DOUBLE PREcISION, INTENT(IN) :: EPg
 
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! indices, associated with current particle
       INTEGER :: IJK
 ! solids phase index, associated with current particle
@@ -71,17 +68,18 @@
       INTEGER :: lM
 ! correction factors for implementing polydisperse drag model
 ! proposed by van der Hoef et al. (2005)
-      DOUBLE PRECISION :: F_cor, tSUM
+      DOUBLE PRECISION :: F_cor, tSUM, tfac
 ! average particle diameter in polydisperse systems
       DOUBLE PRECISION :: DPA
 ! diameter ratio in polydisperse systems
       DOUBLE PRECISION :: Y_i
-! total solids volume fraction
-      DOUBLE PRECISION :: PHIS
-! aliases for void fraction, gas density, gas bulk density,
-! solids volume fraction, particle diameter, particle density
-      DOUBLE PRECISION :: ROg, ROPg, DPM
-!-----------------------------------------------
+! total solids volume fraction and phase volume fraction
+      DOUBLE PRECISION :: PHIS, phism
+! aliases for gas density, gas bulk density,
+      DOUBLE PRECISION :: ROg, ROPg
+! particle diameter, particle density
+      DOUBLE PRECISION :: DPM, ROd
+!......................................................................!
 
 ! values based on current particle
       IJK = PIJK(NP,4)
@@ -97,6 +95,7 @@
       VREL = SQRT(dot_product(VSLP, VSLP))
 ! assign variables for short dummy arguments
       DPM = 2.0d0*DES_RADIUS(NP)
+      ROd = RO_SOL(NP)
 ! Total solids volume fraction.
       PHIS = ONE - EPg
 
@@ -119,37 +118,41 @@
          CALL DRAG_KOCH_HILL(DgA,EPg,Mu,ROPg,VREL,DPM,DPM,phis)
 
       CASE (USER_DRAG)
-         CALL DRAG_USR(IJK,NP,DgA,EPg,Mu,ROg,VREL,DPM,DES_RO_S(M), &
+         CALL DRAG_USR(IJK,NP,DgA,EPg,Mu,ROg,VREL,DPM,ROd, &
             FLUID_VEL(1), FLUID_VEL(2), FLUID_VEL(3))
 
       CASE DEFAULT
 
-! calculate the average particle diameter and particle ratio
+! calculate the average particle diameter and particle ratio:
+! the loop over discrete solids could be replaced using a loop
+! over all particles in the given ijk cell but this should be
+! done outside the current particle loop to minimize repetitive
+! computational expense
          tSUM = ZERO
-         DO lM = 1,DES_MMAX
-            IF(PHIS > ZERO) THEN
-               tSUM = tSUM + DES_ROP_S(IJK,lM) / &
-                  (PHIS*DES_RO_S(lM)*DES_D_p0(lM))
-             ELSE
-               tSUM = tSUM + ONE/DES_D_p0(lM)
-             ENDIF
+         DO lM = MMAX+1,DES_MMAX+MMAX
+            phism = EP_S(IJK,lm)     ! PVOL(NP)/VOL(IJK)
+            IF (phis .GT. ZERO) THEN
+               tfac = phism/phis
+               tSUM = tSUM + tfac/DPM
+            ELSE
+               tSUM = tSUM + ONE/DPM
+            ENDIF
          ENDDO
          IF(DES_CONTINUUM_HYBRID) THEN
-            DO lM = 1,SMAX
-               IF (phis .GT. ZERO) THEN
-                  tSUM = tSUM + EP_S(IJK,lM)/(PHIS*D_P(IJK,lM))
-               ELSE
-                  tSUM = tSUM + ONE/D_P(IJK,lM)
-               ENDIF
+            DO lM = 1,MMAX
+               phism = EP_S(IJK,lM)
+               IF(PHIS > ZERO) THEN
+                  tfac = phism/phis
+                  tSUM = tSUM + tfac/D_p(IJK,lM)
+                ELSE
+                  tSUM = tSUM + ONE/D_p(IJK,lM)
+                ENDIF
             ENDDO
          ENDIF
-
          DPA = ONE / tSUM
-         Y_i = DPM * tSUM
+         Y_i = DPM / DPA
 
          SELECT CASE(DRAG_TYPE_ENUM)
-
-
          CASE (GIDASPOW_PCF)
             CALL DRAG_GIDASPOW(DgA,EPg,Mu,ROg,ROPg,VREL,DPA)
          CASE (GIDASPOW_BLEND_PCF)

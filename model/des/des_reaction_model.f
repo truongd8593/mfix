@@ -21,7 +21,7 @@
       USE indices
       Use param, only: dimension_n_s
       use run, only: ANY_SPECIES_EQ, SPECIES_EQ
-      use physprop, only: SMAX, NMAX
+      use physprop, only: NMAX
       use run, only: SOLVE_ROs
       use functions
 
@@ -70,10 +70,11 @@
 ! Skip indices that do not represent particles
             IF(IS_NONEXISTENT(NP)) CYCLE lNP_LP
 ! Skip indices that represent ghost particles
-            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE lNP_LP
+            IF(IS_GHOST(NP) .OR. IS_ENTERING_GHOST(NP) .OR. &
+               IS_EXITING_GHOST(NP)) CYCLE lNP_LP
 
 ! Set the particle phase index
-            M = PIJK(NP,5) + SMAX
+            M = PIJK(NP,5)
 
 ! Skip particles when not solving species equations
             IF(.NOT.SPECIES_EQ(M)) CYCLE lNP_LP

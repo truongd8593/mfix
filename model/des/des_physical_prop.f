@@ -8,6 +8,8 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_PHYSICAL_PROP(NP, FOCUS)
 
+! Modules
+!---------------------------------------------------------------------//
       Use des_rxns
       Use des_thermo
       Use discretelement
@@ -16,18 +18,15 @@
       Use param1
       Use physprop
       Use run
-
 ! Calculate the specific heat from polynomical data obtained from the
 ! thermodynamic databases.
       use read_thermochemical, only: DES_calc_CpoR
-
 ! Universal gas constant in cal/mol.K
       use constant, only: RGAS => GAS_CONST_cal
-
       IMPLICIT NONE
 
-! Passed Variables
-!-----------------------------------------------------------------------
+! Dummy arguments
+!---------------------------------------------------------------------//
 ! Index of particle
       INTEGER, INTENT(IN) :: NP
 ! Logical indicating to write additional data about the particle for
@@ -35,16 +34,16 @@
       LOGICAL, INTENT(IN) :: FOCUS
 
 ! Local Variables
-!-----------------------------------------------------------------------
+!---------------------------------------------------------------------//
 ! Dummy indices
       INTEGER M, NN
 ! error indicator
       INTEGER IER
-
       DOUBLE PRECISION :: lCPoR
+!......................................................................!
 
 ! Get the solids phase of the particle
-      M = PIJK(NP,5) + SMAX
+      M = PIJK(NP,5)
 
 ! Specific heat
 !-----------------------------------------------------------------------

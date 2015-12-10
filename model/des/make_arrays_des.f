@@ -9,24 +9,26 @@
 
       USE calc_collision_wall
       USE compar
+      use constant, only: PI
       USE cutcell
-      USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE des_rxns
-      USE stl_functions_des
       USE des_thermo
       USE desgrid
       USE discretelement
       USE error_manager
       USE functions
       USE funits
+      use fldvar, only: ro_s
+      USE GENERATE_PARTICLES, only: GENERATE_PARTICLE_CONFIG
       USE geometry
-      USE mpi_utility
-      USE param1
-      USE run
-      USE stl
       use mfix_pic, only:  MPPIC
       use mpi_funs_des, only: DES_PAR_EXCHANGE
-      use constant, only: PI
+      USE mpi_utility
+      USE param1
+      use physprop, only: mmax, ro_s0
+      USE run
+      USE stl
+      USE stl_functions_des
       use stl_preproc_des, only: add_facet
 
       IMPLICIT NONE

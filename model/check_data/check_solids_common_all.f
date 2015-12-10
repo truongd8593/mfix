@@ -24,7 +24,7 @@
 ! Flag: Use legacy rrates implementation.
       use rxns, only: USE_RRATES
 ! Number of continuum solids phases.
-      use physprop, only: SMAX
+      use physprop, only: SMAX, MMAX
 ! Number of discrete (DEM/MPPIC) solids.
       use discretelement, only: DES_MMAX
 ! User specified: Constant solids specific heat.
@@ -64,7 +64,7 @@
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_ALL")
 
 ! Set the number of solids phases to be checked.
-      MMAX_L = SMAX + DES_MMAX
+      MMAX_L = MMAX + DES_MMAX
 
 ! Check D_p0
       DO M = 1, MMAX_L

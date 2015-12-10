@@ -9,23 +9,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_SOLIDS_MODEL_PREREQS
 
-
-! Global Variables:
+! Modules
 !---------------------------------------------------------------------//
-! Number of ranks.
-      use run, only: SOLIDS_MODEL
-
-! Flag: Use DES E-E solids model
-      use run, only: TFM_SOLIDS, TFM_COUNT
-      use run, only: DEM_SOLIDS, DEM_COUNT
-      use run, only: PIC_SOLIDS, PIC_COUNT
-! Flag: Solve species eq.
-      USE run, only: SPECIES_EQ, ANY_SPECIES_EQ
-
 ! Flag: Use DES E-L model
       use discretelement, only: DISCRETE_ELEMENT
-! Flag: Use MPPIC E-L model
-      use mfix_pic, only: MPPIC
 ! Flag: Use TFM and DEM solids models.
       use discretelement, only: DES_CONTINUUM_HYBRID
 ! Flag: gas/solids E-L simulation, otherwise granular flow.
@@ -34,34 +21,41 @@
       use discretelement, only: DES_ONEWAY_COUPLED
 ! Number of discrete solids phases.
       use discretelement, only: DES_MMAX
+! Print E-L data.
+      use discretelement, only: PRINT_DES_DATA
+
+      use error_manager
+
+! Maximum number of solids phases.
+      use param, only: DIM_M
+
 ! Number of phases specified by the user.
       use physprop, only: MMAX, SMAX
 ! User specified constant gas density
       use physprop, only: RO_g0
-! Print E-L data.
-      use discretelement, only: PRINT_DES_DATA
-! Kinetic theory model for TFM solids.
-      use run, only: KT_TYPE
+
+! Flag: Use MPPIC E-L model
+      use mfix_pic, only: MPPIC
 ! Flag: Method of manufactured solutions (MMS)
       use mms, only: USE_MMS
+
+      use run, only: SOLIDS_MODEL
+! Flag: Use DES E-E solids model
+      use run, only: TFM_SOLIDS, TFM_COUNT
+      use run, only: DEM_SOLIDS, DEM_COUNT
+      use run, only: PIC_SOLIDS, PIC_COUNT
+! Flag: Solve species eq.
+      USE run, only: SPECIES_EQ, ANY_SPECIES_EQ
+! Kinetic theory model for TFM solids.
+      use run, only: KT_TYPE
 
 ! Number of scalar equations to solve
       USE scalars, only: NSCALAR, phase4scalar
 ! Phase associated with scalar transport.
       USE scalars, only: phase4scalar
-
-! Global Parameters:
-!---------------------------------------------------------------------//
-! Maximum number of solids phases.
-      use param, only: DIM_M
-
-! Global Module procedures:
-!---------------------------------------------------------------------//
-      use error_manager
-
       implicit none
 
-! Local Variables:
+! Local Variables
 !---------------------------------------------------------------------//
 ! Loop counter
       INTEGER :: M ! Phase index
@@ -115,11 +109,12 @@
 
 ! Set the number of TFM phases.  (should be equivalent to tfm_count)
       MMAX = MMAX - DES_MMAX
-      SMAX = MMAX   ! USE smax in the code for the number of TFM phases
+      SMAX = MMAX   ! USE smax in the TFM code for the number of TFM phases
 ! For GHD theory increase MMAX by one to serve as 'mixture' phase
       IF(TRIM(KT_TYPE) == 'GHD') THEN
          MMAX = MMAX + 1
          TFM_COUNT = TFM_COUNT + 1
+         SOLIDS_MODEL(MMAX) = 'TFM'
       ENDIF
 
 
@@ -200,16 +195,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE HYBRID_HACK
 
-! Number of ranks.
-      use run, only: SOLIDS_MODEL
-
-! Global Parameters:
+! Modules
 !---------------------------------------------------------------------//
 ! Maximum number of solids phases.
       use param, only: DIM_M
-
       use error_manager
+      use run, only: SOLIDS_MODEL
 
+! Local variables
+!---------------------------------------------------------------------//
       integer :: TFM_MAX
       integer :: DEM_MIN
       integer :: M

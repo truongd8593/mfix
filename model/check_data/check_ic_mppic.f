@@ -38,6 +38,7 @@
 ! direction wise spans of the domain and grid spacing in each direction
       Use geometry, only: zlength, dz
 
+      use physprop, only: mmax
       USE mpi_utility
       USE functions
 
@@ -65,7 +66,7 @@
          IF(.not.ic_defined(icv)) cycle
 
          IF (IC_EP_G(ICV).lt.ONE) THEN
-            DO M = 1, DES_MMAX
+            DO M = MMAX+1, DES_MMAX+MMAX
                CONST_NPC    = (IC_PIC_CONST_NPC   (ICV, M) .ne. 0)
                CONST_STATWT = (IC_PIC_CONST_STATWT(ICV, M) .ne. ZERO  )
                IF(CONST_NPC.and.CONST_STATWT.and.ic_ep_s(icv,m).gt.zero) then

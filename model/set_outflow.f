@@ -420,7 +420,6 @@
       use fldvar, only: rop_g, ro_g, ep_g
       use fldvar, only: rop_s, ep_s
       use discretelement, only: discrete_element, des_mmax
-      use discretelement, only: des_rop_s, des_ro_s
 ! Global parameters
 !---------------------------------------------------------------------//
       use param, only: dimension_m
@@ -449,12 +448,11 @@
 !---------------------------------------------------------------------//
 ! indices
       INTEGER :: M
-! solids volume fraction
-      DOUBLE PRECISION :: EPs
 ! sum of solids phases volume fractions
       DOUBLE PRECISION :: SUM_EPs
 ! sum of solids phases bulk densities
       DOUBLE PRECISION :: SUM_ROPS
+      LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 !---------------------------------------------------------------------//
 
 ! initializing summation quantities
@@ -490,17 +488,17 @@
 
 ! this section must be skipped until after the initial setup of the
 ! discrete element portion of the simulation (set_bc1 is called once
-! before the initial setup).
-      IF (DISCRETE_ELEMENT .AND. ALLOCATED(DES_ROP_S)) THEN
-         DO M = 1, DES_MMAX
+! before the initial dem setup).
+      IF (DISCRETE_ELEMENT .AND. .NOT.FIRST_PASS) THEN
+         FIRST_PASS = .FALSE.
+         DO M = MMAX+1, DES_MMAX+MMAX
 ! unlike in the two fluid model, in the discrete element model it is
 ! possible to actually calculate the bulk density in a flow boundary
 ! cell. Currently, however, such calculations are not strictly enforced.
 ! therefore use the bulk density of the adjacent fluid cell
-            DES_ROP_S(IJK,M) = DES_ROP_S(FIJK,M)
-            SUM_ROPS = SUM_ROPS + DES_ROP_S(IJK,M)
-            EPS = DES_ROP_S(IJK,M)/DES_RO_S(M)
-            SUM_EPS = SUM_EPS + EPS
+            ROP_S(IJK,M) = ROP_S(FIJK,M)
+            SUM_ROPS = SUM_ROPS + ROP_S(IJK,M)
+            SUM_EPS = SUM_EPS + EP_S(IJK,M)
          ENDDO
       ENDIF
 

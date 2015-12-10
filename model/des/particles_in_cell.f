@@ -281,7 +281,8 @@
          PIJK(L,4) = IJK
 
 ! Enumerate the number of 'real' particles in the ghost cell.
-         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
+         IF(.NOT.IS_GHOST(L) .AND. .NOT.IS_ENTERING_GHOST(L) .AND. &
+            .NOT.IS_EXITING_GHOST(L)) PINC(IJK) = PINC(IJK) + 1
       ENDDO
 
 ! Bin the particles to the DES grid.

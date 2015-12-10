@@ -33,9 +33,9 @@ CONTAINS
       Use compar
       Use physprop
       Use des_bc
-      Use pic_bc
       use funits
       USE mfix_pic
+      use pic_bc, only: pic_bcmo, pic_bcmi
       Use des_thermo
       Use des_rxns
       USE cutcell
@@ -179,11 +179,6 @@ CONTAINS
 ! force due to gas-pressure gradient
       ALLOCATE(P_FORCE(DIMN, DIMENSION_3))
 
-! Volume averaged solids volume in a computational fluid cell
-      Allocate(  DES_U_s (DIMENSION_3, DES_MMAX) )
-      Allocate(  DES_V_s (DIMENSION_3, DES_MMAX) )
-      Allocate(  DES_W_s (DIMENSION_3, DES_MMAX) )
-
 ! Volume of nodes
       ALLOCATE(DES_VOL_NODE(DIMENSION_3))
 
@@ -195,8 +190,8 @@ CONTAINS
          ALLOCATE(FILTER_CELL(FILTER_SIZE, MAX_PIP))
          ALLOCATE(FILTER_WEIGHT(FILTER_SIZE, MAX_PIP))
       CASE(DES_INTERP_GARG)
-         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DES_MMAX))
-         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DES_MMAX))
+         ALLOCATE(DES_ROPS_NODE(DIMENSION_3, DIMENSION_M))
+         ALLOCATE(DES_VEL_NODE(DIMENSION_3, DIMN, DIMENSION_M))
       END SELECT
 
 ! Variables for hybrid model
@@ -207,10 +202,6 @@ CONTAINS
          ALLOCATE(F_SDS(DIMENSION_3,DIMENSION_M))
          ALLOCATE(VXF_SDS(DIMENSION_3,DIMENSION_M))
       ENDIF
-! Bulk density in a computational fluid cell / for communication with
-! MFIX continuum
-      ALLOCATE( DES_ROP_S(DIMENSION_3, DES_MMAX) )
-      ALLOCATE( DES_ROP_SO(DIMENSION_3, DES_MMAX) )
 
 ! MP-PIC related
       IF(MPPIC) THEN
@@ -221,21 +212,15 @@ CONTAINS
          ALLOCATE(AVGSOLVEL_P(3, MAX_PIP))
          ALLOCATE(EPG_P(MAX_PIP))
 
-         Allocate(PIC_U_S(DIMENSION_3, DES_MMAX))
-         Allocate(PIC_V_S(DIMENSION_3, DES_MMAX))
-         Allocate(PIC_W_S(DIMENSION_3, DES_MMAX))
-
-         Allocate(PIC_P_s (DIMENSION_3, DES_MMAX) )
-!         ALLOCATE(MPPIC_VPTAU(MAX_PIP, DIMN))
+         Allocate(PIC_U_s (DIMENSION_3, DIMENSION_M) )
+         Allocate(PIC_V_s (DIMENSION_3, DIMENSION_M) )
+         Allocate(PIC_W_s (DIMENSION_3, DIMENSION_M) )
+         Allocate(PIC_P_s (DIMENSION_3, DIMENSION_M) )
          PIC_U_s = zero
          PIC_V_s = zero
          PIC_W_s = zero
          PIC_P_s = zero
       ENDIF
-
-
-! Granular temperature in a computational fluid cell
-      Allocate(DES_THETA (DIMENSION_3, DES_MMAX) )
 
 ! Averaged velocity obtained by averaging over all the particles
       ALLOCATE(DES_VEL_AVG(DIMN) )
@@ -245,7 +230,7 @@ CONTAINS
       ALLOCATE(GLOBAL_GRAN_TEMP(DIMN) )
 
 ! variable for bed height of solids phase M
-      ALLOCATE(BED_HEIGHT(DES_MMAX))
+      ALLOCATE(BED_HEIGHT(DIMENSION_M))
 
 ! ---------------------------------------------------------------->>>
 ! BEGIN COHESION
@@ -335,9 +320,13 @@ CONTAINS
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE des_bc
-      USE discretelement
       USE param1, only: undefined
+      USE des_bc, only: dem_bcmi
+      USE des_bc, only: pi_factor, pi_count
+      use des_bc, only: numfrac_limit
+      use des_bc, only: dem_mi_time, dem_bc_poly_layout
+      use des_bc, only: dem_mi
+      use des_bc, only: dem_bcmi_ijkstart, dem_bcmi_ijkend
       IMPLICIT NONE
 !-----------------------------------------------
 
@@ -375,6 +364,7 @@ CONTAINS
       RETURN
       END SUBROUTINE ALLOCATE_DEM_MI
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: ALLOCATE_PIC_MIO                                        !
@@ -383,49 +373,44 @@ CONTAINS
 !                                                                      !
 !  Author: R. Garg                                    Date: 11-Jun-14  !
 !                                                                      !
-!  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE ALLOCATE_PIC_MIO
 
-!-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE pic_bc
-      USE discretelement
+      USE pic_bc, only: pic_bcmi, pic_bcmo
+      USE pic_bc, only: pic_bcmi_ijkstart, pic_bcmi_ijkend
+      USE pic_bc, only: pic_bcmo_ijkstart, pic_bcmo_ijkend
+      USE pic_bc, only: pic_bcmi_normdir
+      USE pic_bc, only: pic_bcmi_offset
+      USE pic_bc, only: pic_bcmi_incl_cutcell
       IMPLICIT NONE
 !-----------------------------------------------
 
 ! Allocate/Initialize for inlets
       IF(PIC_BCMI /= 0)THEN
-
          allocate( PIC_BCMI_IJKSTART(PIC_BCMI) )
          allocate( PIC_BCMI_IJKEND  (PIC_BCMI) )
          allocate( PIC_BCMI_NORMDIR (PIC_BCMI,3) )
-
          ALLOCATE( PIC_BCMI_OFFSET  (PIC_BCMI,3))
-
          ALLOCATE( PIC_BCMI_INCL_CUTCELL(PIC_BCMI) )
-
          PIC_BCMI_IJKSTART = -1
          PIC_BCMI_IJKEND   = -1
-
       ENDIF  ! end if PIC_BCMI /= 0
-
 
 
       IF(PIC_BCMO > 0)THEN
          allocate( PIC_BCMO_IJKSTART(PIC_BCMO) )
          allocate( PIC_BCMO_IJKEND(PIC_BCMO) )
-
          PIC_BCMO_IJKSTART = -1
          PIC_BCMO_IJKEND   = -1
       ENDIF
 
-
       RETURN
       END SUBROUTINE ALLOCATE_PIC_MIO
+
+
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: ADD_PAIR                                                 !

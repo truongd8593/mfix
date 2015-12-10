@@ -17,7 +17,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Total number of (actual) continuum solids.
-      use physprop, only: SMAX
+      use physprop, only: SMAX, MMAX
 ! Total number of discrete solids.
       use discretelement, only: DES_MMAX
 ! Flag: BC dimensions or Type is specified
@@ -68,7 +68,7 @@
 ! Determine which BCs are DEFINED
       CALL CHECK_BC_GEOMETRY
 
-! Total number of solids.
+! Total number of solids. (this won't work for GHD)
       MMAX_TOT = SMAX + DES_MMAX
 
 ! Loop over each defined BC and check the user data.
@@ -131,6 +131,8 @@
 
          ENDIF
       ENDDO
+
+      MMAX_TOT = MMAX+DES_MMAX
 ! Additional checks needed for DEM boundaries
       IF(DEM_SOLIDS) CALL CHECK_BC_DEM(MMAX_TOT)
 ! Additional checks needed for PIC inflow/outflow boundaries

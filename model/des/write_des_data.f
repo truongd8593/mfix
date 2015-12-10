@@ -514,17 +514,19 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,&
+                    POSITION="append")
             ENDIF
          ENDIF
          FIRST_PASS = .FALSE.
       ELSE
 ! Open the file and mark for appending
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,POSITION="append")
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=BH_UNIT,FILE=FNAME_BH,&
+              POSITION="append")
       ENDIF
 
       WRITE(BH_UNIT, '(10(2X,E20.12))') s_time, &
-         (bed_height(M), M=1,DES_MMAX), height_avg, height_rms
+         (bed_height(M), M=MMAX+1,MMAX+DES_MMAX), height_avg, height_rms
 ! Close the file and keep
       CLOSE(BH_UNIT, STATUS="KEEP")
 
@@ -536,14 +538,14 @@
          ' accidental overwriting of files.',/1X,70('*')/)
 
       END SUBROUTINE WRITE_DES_BEDHEIGHT
-!-----------------------------------------------
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !
 !  Module name: WRITE_DES_THETA
-!  Purpose: The following code writes out des_theta to a file for each
-!  ijk cell in the system each time des_granular_temperature is called.
-!
+!  Purpose: The following code writes out theta_m for discrete
+!  particles to a file for each ijk cell in the system each time
+!  des_granular_temperature is called.
 !
 !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -588,7 +590,8 @@
          IF (.NOT.F_EXISTS) THEN
 ! If the file does not exist, then create it with the necessary
 ! header information.
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,STATUS='NEW')
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,&
+                 STATUS='NEW')
          ELSE
             IF(RUN_TYPE .EQ. 'NEW') THEN
 ! If the run is new and the GT file already exists replace it with a
@@ -601,20 +604,22 @@
                CALL MFIX_EXIT(myPE)
             ELSE
 ! Open the file for appending of new data (RESTART_1 Case)
-               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT, FILE=FNAME_GT, POSITION='APPEND')
+               OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT, FILE=FNAME_GT,&
+                    POSITION='APPEND')
             ENDIF
          ENDIF
          FIRST_PASS =  .FALSE.
       ELSE
 ! Open file and mark for appending
-         OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,POSITION='APPEND')
+         OPEN(CONVERT='BIG_ENDIAN',UNIT=GT_UNIT,FILE=FNAME_GT,&
+              POSITION='APPEND')
       ENDIF   ! endif (first_pass)
 
       WRITE(GT_UNIT,*) ''
       WRITE(GT_UNIT,'(A6,ES24.16)') 'Time=', S_TIME
       WRITE(GT_UNIT,'(A6,2X,3(A6,2X),A8)',ADVANCE="NO") 'IJK', &
          'I', 'J', 'K', 'NP'
-      DO M = 1,DES_MMAX
+      DO M = MMAX+1,DES_MMAX+MMAX
          WRITE(GT_UNIT,'(7X,A6,I1)',ADVANCE="NO") 'THETA_',M
       ENDDO
       WRITE(GT_UNIT,*) ''
@@ -625,7 +630,7 @@
             K = K_OF(IJK)
             NP = PINC(IJK)
             WRITE(GT_UNIT,'(I6,2X,3(I6,2X),I8,(2X,ES15.5))') &
-               IJK, I, J, K, NP, (DES_THETA(IJK,M), M = 1,DES_MMAX)
+               IJK, I, J, K, NP, (THETA_M(IJK,M), M = MMAX+1,DES_MMAX+MMAX)
          ENDIF
       ENDDO
 

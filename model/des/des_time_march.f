@@ -8,13 +8,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE DES_TIME_MARCH
 
+! Modules
+!---------------------------------------------------------------------//
       use des_bc, only: DEM_BCMI, DEM_BCMO
       use des_thermo, only: DES_ENERGY_SOURCE
       use desgrid, only: desgrid_pic
       use discretelement
       use error_manager
       use fldvar, only: EP_g, ROP_g, ROP_s
-      use fldvar, only: EP_g, ROP_g, ROP_s
+      use fldvar, only: U_s, V_s, W_s
       use functions
       use machine
       use mpi_funs_des, only: DES_PAR_EXCHANGE
@@ -26,11 +28,10 @@
       use run, only: NSTEP
       use run, only: TIME, TSTOP, DT
       use sendrecv
-
       IMPLICIT NONE
-!------------------------------------------------
+
 ! Local variables
-!------------------------------------------------
+!---------------------------------------------------------------------//
 ! Total number of particles
       INTEGER, SAVE :: NP=0
 
@@ -38,16 +39,15 @@
 
 ! time step loop counter index
       INTEGER :: NN,ii,nnn
-
 ! loop counter index for any initial particle settling incoupled cases
       INTEGER :: FACTOR
-
 ! Temporary variables when des_continuum_coupled is T to track
 ! changes in solid time step
       DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
-
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
+
+!......................................................................!
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
@@ -115,7 +115,7 @@
             ENDIF
          ENDIF
 
-! Calculate forces acting on particles (collisions, drag, etc).
+! Calculate inter particle forces acting (collisional, cohesion)
          CALL CALC_FORCE_DEM
 ! Calculate or distribute fluid-particle drag force.
          CALL CALC_DRAG_DES
@@ -241,9 +241,9 @@
       ELSE
          call send_recv(ep_g,2)
          call send_recv(rop_g,2)
-         call send_recv(des_u_s,2)
-         call send_recv(des_v_s,2)
-         if(do_K) call send_recv(des_w_s,2)
+         call send_recv(u_s,2)
+         call send_recv(v_s,2)
+         if(do_K) call send_recv(w_s,2)
          call send_recv(rop_s,2)
          if(ENERGY_EQ) call send_recv(des_energy_source,2)
 

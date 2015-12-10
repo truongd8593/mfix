@@ -320,7 +320,8 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ, THREEINTOSQRT2, RAD_EFF, POS_Z
+      DOUBLE PRECISION :: DTPIC_TMPX, DTPIC_TMPY , DTPIC_TMPZ
+      DOUBLE PRECISION :: THREEINTOSQRT2, RAD_EFF, POS_Z
       DOUBLE PRECISION :: VELP_INT(3)
 
       LOGICAL :: DELETE_PART, INSIDE_DOMAIN
@@ -328,7 +329,8 @@
 
       INTEGER :: LPIP_DEL_COUNT_ALL(0:numPEs-1), PIJK_OLD(5)
 
-      double precision  sig_u, mean_u, DTPIC_MIN_X,  DTPIC_MIN_Y,  DTPIC_MIN_Z
+      double precision  sig_u, mean_u
+      DOUBLE PRECISION :: DTPIC_MIN_X, DTPIC_MIN_Y, DTPIC_MIN_Z
       double precision, allocatable, dimension(:,:) ::  rand_vel
 
       double precision :: norm1, norm2, norm3
@@ -405,9 +407,9 @@
 
          VELP_INT(:) = DES_VEL_NEW(NP,:)
 
-         MEANVEL(1) = DES_U_S(IJK_OLD,M)
-         MEANVEL(2) = DES_V_S(IJK_OLD,M)
-         IF(DO_K) MEANVEL(3) = DES_W_S(IJK_OLD,M)
+         MEANVEL(1) = U_S(IJK_OLD,M)
+         MEANVEL(2) = V_S(IJK_OLD,M)
+         IF(DO_K) MEANVEL(3) = W_S(IJK_OLD,M)
 
          RAD_EFF = DES_RADIUS(NP)
          !RAD_EFF = (DES_STAT_WT(NP)**(1.d0/3.d0))*DES_RADIUS(NP)
@@ -617,7 +619,7 @@
 !-----------------------------------------------
       use discretelement
       USE fldvar
-
+      use physprop, only: mmax
       use functions
       implicit none
 !-----------------------------------------------
@@ -644,7 +646,7 @@
          if (is_normal(lp) .or. is_entering(lp) .or. is_exiting(lp)) then
             lijk = pijk(lp,4)
             write(100,*)"positon =",lijk,pijk(lp,1),pijk(lp,2), &
-               pijk(lp,3),ep_g(lijk),DES_U_s(lijk,1)
+               pijk(lp,3),ep_g(lijk),U_s(lijk,MMAX+1)
             write(100,*)"forces =", FC(lp,2),tow(lp,1)
          end if
       end do

@@ -63,7 +63,7 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer
-      DO LM = 1,DES_MMAX
+      DO LM = 1,DES_MMAX+MMAX
          CALL DES_EXCHANGENODE(DES_ROPS_NODE(:,LM),PADD=.TRUE.)
          DO LI =1,DIMN
             CALL DES_EXCHANGENODE(DES_VEL_NODE(:,LI,LM),PADD=.TRUE.)
@@ -210,7 +210,7 @@
 !-----------------------------------------------
 
 ! fill the temporary buffer
-      do lm = 1,DES_MMAX
+      do lm = 1,DES_MMAX+MMAX
          call des_exchangenode(des_rops_node(:,lm),padd=.true.)
       end do
 

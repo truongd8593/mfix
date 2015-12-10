@@ -51,7 +51,7 @@
       ENDIF
 
 ! Set the particle emmisivity. Phase shift needed for TFM/DEM hybrid.
-      lEM= DES_Em(iM + SMAX)
+      lEM= DES_Em(iM)
 
 ! Calculate the surface area of the particle
       A_S = 4.0d0 * Pi * DES_RADIUS(I) * DES_RADIUS(I)

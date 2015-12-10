@@ -128,16 +128,9 @@
 ! that are marked as close_packed except for the solids phase which
 ! is also marked by phase_4_p_s (skipping its own continuity)
                SUMVF = ZERO
-               DO M = 1, MMAX
+               DO M = 1, MMAX+DES_MMAX
                   IF (CLOSE_PACKED(M) .AND. M/=MCPl) SUMVF = SUMVF + EP_S(IJK,M)
                ENDDO
-! sum of solids volume fraction from the DEM
-               IF (DES_CONTINUUM_HYBRID) THEN
-                  DO M = 1,DES_MMAX
-                     EPS = DES_ROP_S(IJK,M)/DES_RO_S(M)
-                     SUMVF = SUMVF + EPS
-                  ENDDO
-               ENDIF
                ROP_S(IJK,MCPl) = (EPCP - SUMVF)*RO_S(IJK,MCPl)
             ENDIF
 !-----------------------------------------------------------------<<<
@@ -168,33 +161,23 @@
                SUMVF = SUMVF + EP_G(IJK)
             ENDIF
 
-! modified for GHD theory
+! evaluate mixture bulk density rop_s(mmax) for GHD theory
             IF(KT_TYPE_ENUM == GHD_2007) THEN
               ROP_S(IJK,MMAX) = ZERO  ! mixture density
               DO M = 1, SMAX
-! volume of particle M based on fixed diamter Dp0
-                 VOL_M = PI*D_P0(M)**3/6d0
                  IF (M /= MF) THEN
-                   SUMVF = SUMVF + EP_S(IJK,M)
                    ROP_S(IJK,MMAX) = ROP_S(IJK,MMAX) + RO_S(IJK,M)*EP_S(IJK,M)
                  ENDIF
               ENDDO
-            ELSE
+            ENDIF
+
 ! summing the solids volume fraction of all continuum solids phases
 ! except for the continuum solids phase which was marked by phase_4_p_g
 ! (skipping its continuity while solving gas continuity)
-              DO M = 1, MMAX
-                 IF (M /= MF) SUMVF = SUMVF + EP_S(IJK,M)
-              ENDDO
-            ENDIF   ! end if/else trim(kt_type)=='ghd'
-
-! sum of solids volume fraction from the DEM
-            IF (DES_CONTINUUM_HYBRID) THEN
-               DO M = 1,DES_MMAX
-                  EPS = DES_ROP_S(IJK,M)/DES_RO_S(M)
-                  SUMVF = SUMVF + EPS
-               ENDDO
-            ENDIF
+            DO M = 1, DES_MMAX+MMAX
+               IF(KT_TYPE_ENUM == GHD_2007 .AND. M == MMAX) CYCLE
+               IF (M /= MF) SUMVF = SUMVF + EP_S(IJK,M)
+            ENDDO
 
             IF (0 == MF) THEN
 ! if no gas phase continuity was solved in the current cell then correct

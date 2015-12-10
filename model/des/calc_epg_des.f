@@ -26,9 +26,7 @@
 ! Particle positions
       use discretelement, only: DES_POS_NEW
 ! Number of continuum solids phases
-      use physprop, only: SMAX
-! Discrete particle material and bulk densities
-      use discretelement, only: DES_RO_S, DES_ROP_s
+      use physprop, only: MMAX
 ! Number of particles in indexed fluid cell
       use discretelement, only: PINC
 ! List of particles in each cell.
@@ -89,25 +87,20 @@
 ! Calculate gas volume fraction from solids volume fraction:
 !---------------------------------------------------------------------//
 !$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
-!$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, SMAX,&
-!$omp    EP_G, RO_G, ROP_G, DES_ROP_S, DES_RO_S, DES_CONTINUUM_HYBRID, &
-!$omp    MPPIC, PACKED_EPS) private(IJK, SUM_EPs, M)
+!$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, MMAX,&
+!$omp        EP_G, RO_G, ROP_G, DES_CONTINUUM_HYBRID, MPPIC, PACKED_EPS) &
+!$omp private(IJK, SUM_EPs, M)
       DO IJK = IJKSTART3, IJKEND3
 ! Skip wall cells.
          IF(.NOT.FLUID_AT(IJK)) CYCLE
 ! Initialize EP_g and the accumulator.
          EP_G(IJK) = ONE
          SUM_EPS = ZERO
-! Sum the DES solids volume fraction.
-         DO M = 1, DES_MMAX
-            SUM_EPS = SUM_EPS + DES_ROP_S(IJK,M)/DES_RO_S(M)
+! Sum the DES solids volume fraction.  If hybrid TFM solids contributions
+! will be included
+         DO M = 1, DES_MMAX+MMAX
+            SUM_EPS = SUM_EPS + EP_S(IJK,M)
          ENDDO
-! Add in TFM solids contributions.
-         IF(DES_CONTINUUM_HYBRID) THEN
-            DO M = 1,SMAX
-               SUM_EPS = SUM_EPS + EP_S(IJK,M)
-            ENDDO
-         ENDIF
 
 ! Calculate the gas phase volume fraction.
          EP_G(IJK) = ONE - min(PACKED_EPS, SUM_EPS)

@@ -29,27 +29,19 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE INTERPOLATE_PIC1
 
-      USE geometry, only: DO_K
-
       use discretelement, only: MAX_PIP, PIJK
-
-      use discretelement, only: Us => DES_U_S
-      use discretelement, only: Vs => DES_V_S
-      use discretelement, only: Ws => DES_W_S
-
+      USE geometry, only: DO_K
+      use fldvar, only: EP_G, u_s, v_s, w_s
+      use functions, only: FLUID_AT
+      use functions, only: IS_NONEXISTENT
       use mfix_pic, only: AVGVEL => AVGSOLVEL_P
       use mfix_pic, only: PS_GRAD, PS_FORCE_PIC
-
+      use mfix_pic, only: EPG_P
 ! Flag to use interpolation
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
-
-      use mfix_pic, only: EPG_P
-      use fldvar, only: EP_G
-
-      use functions, only: FLUID_AT 
-      use functions, only: IS_NONEXISTENT
+      use physprop, only: mmax
 
       implicit none
 
@@ -84,9 +76,9 @@
                IJK = FILTER_CELL(LC,NP)
                WEIGHT = FILTER_WEIGHT(LC,NP)
 ! Gas phase velocity.
-               AVGVEL(1,NP) = AVGVEL(1,NP) + Us(IJK,1)*WEIGHT
-               AVGVEL(2,NP) = AVGVEL(2,NP) + Vs(IJK,1)*WEIGHT
-               AVGVEL(3,NP) = AVGVEL(3,NP) + Ws(IJK,1)*WEIGHT
+               AVGVEL(1,NP) = AVGVEL(1,NP) + U_s(IJK,MMAX+1)*WEIGHT
+               AVGVEL(2,NP) = AVGVEL(2,NP) + V_s(IJK,MMAX+1)*WEIGHT
+               AVGVEL(3,NP) = AVGVEL(3,NP) + W_s(IJK,MMAX+1)*WEIGHT
 ! Particle normal stress.
                PS_GRAD(:,NP) = PS_GRAD(:,NP)+PS_FORCE_PIC(:,IJK)*WEIGHT
 ! TO BE REMOVED
@@ -97,9 +89,9 @@
         ELSE
             IJK = PIJK(NP,4)
 ! Gas phase velocity.
-            AVGVEL(1,NP) = Us(IJK,1)
-            AVGVEL(2,NP) = Vs(IJK,1)
-            AVGVEL(3,NP) = Ws(IJK,1)
+            AVGVEL(1,NP) = U_s(IJK,MMAX+1)
+            AVGVEL(2,NP) = V_s(IJK,MMAX+1)
+            AVGVEL(3,NP) = W_s(IJK,MMAX+1)
 ! Particle normal stress.
             PS_GRAD(:,NP) = PS_FORCE_PIC(:,IJK)
 ! TO BE REMOVED
@@ -232,7 +224,7 @@
             VOL_TOT_VEC(1) = VOL(CUR_IJK) + VOL(IJPK)
             VOL_TOT_VEC(2) = VOL(CUR_IJK) + VOL(IPJK)
 
-            DO M = 1, DES_MMAX
+            DO M = MMAX+1,DES_MMAX+MMAX
                VEL_SOL_STENCIL(I,J,K,1,M) = &
                   PIC_U_S(CUR_IJK,M)*VOL(CUR_IJK) + &
                   PIC_U_S(IJPK,M)*VOL(IJPK)
@@ -294,7 +286,7 @@
                   W_G(IJPK)*VOL(IJPK) + W_G(IPJK)*VOL(IPJK) + &
                   W_G(IPJPK)*VOL(IPJPK)
 
-               DO M = 1, DES_MMAX
+               DO M = MMAX+1, DES_MMAX+MMAX
                   VEL_SOL_STENCIL(I,J,K,1,M) = &
                      VEL_SOL_STENCIL(I,J,K,1,M) + &
                      PIC_U_S(IJKP,M)*VOL(IJKP) + & 
@@ -313,7 +305,7 @@
                ENDDO
             ELSE
                PSGRADSTENCIL(I,J,K,3) = 0.D0
-               VEL_SOL_STENCIL(I,J,K,3, 1:DES_MMAX) = 0.D0
+               VEL_SOL_STENCIL(I,J,K,3, MMAX+1:DES_MMAX+MMAX) = 0.D0
                VSTENCIL(I,J,K,3) = 0.D0
             ENDIF
 
@@ -325,8 +317,8 @@
                   psgradstencil(i,j,k,idim) = &
                      psgradstencil(i,j,k,idim)/VOL_TOT_VEC(idim)
 
-                  VEL_SOL_STENCIL(i,j,k,idim, 1:DES_MMAX) = &
-                     VEL_SOL_STENCIL(i,j,k,idim, 1:DES_MMAX)/&
+                  VEL_SOL_STENCIL(i,j,k,idim, MMAX+1:DES_MMAX+MMAX) = &
+                     VEL_SOL_STENCIL(i,j,k,idim, MMAX+1:DES_MMAX+MMAX)/&
                      VOL_TOT_VEC(idim)
 
                   vstencil(i,j,k,idim) = &

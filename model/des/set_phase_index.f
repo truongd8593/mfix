@@ -8,38 +8,39 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_PHASE_INDEX
 
-      use param1, only: small_number
-
-      USE physprop, only: SMAX
-
+! Modules
+!---------------------------------------------------------------------//
       use discretelement, only: PIJK
       USE discretelement, only: DES_RADIUS, RO_SOL
-      USE discretelement, only: DES_MMAX, DES_D_P0, DES_RO_s
+      USE discretelement, only: DES_MMAX
       USE discretelement, only: MAX_PIP
-      USE functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
-      use mpi_funs_des, only: des_par_exchange
-
-      USE run, only: RUN_TYPE
-      USE run, only: ANY_SPECIES_EQ
-
-      use mpi_utility
-      use sendrecv
-
+      USE functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST
+      USE functions, only: IS_EXITING_GHOST
       USE error_manager
-
+      use mpi_funs_des, only: des_par_exchange
+      use mpi_utility
+      use param1, only: small_number
+      USE physprop, only: MMAX, D_p0, RO_s0
+      USE run, only: RUN_TYPE, solids_model
+      USE run, only: ANY_SPECIES_EQ
+      use sendrecv
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! particle no.
       INTEGER :: L
 ! solids phase no.
       INTEGER :: M
+! May need to offset index when using d_p0 and ro_s
+      INTEGER :: DM
 ! IER for error reporting
       INTEGER :: IER
 ! Difference between a particles diameter (density) and the diameter
 ! (density) of a phase specified in the data file.
       DOUBLE PRECISION dDp, dRho
+!......................................................................!
+
 
 ! The restart file contains the phase index for reacting cases as the
 ! diameter and/or density of the particle may have changed.
@@ -56,9 +57,9 @@
 
 ! Determining the solids phase of each particle by matching the diameter
 ! and density to those specified in the data file.
-         M_LP: DO M = 1, DES_MMAX
-            dDp  = ABS(2.0d0*DES_RADIUS(L)-DES_D_P0(M))
-            dRho = ABS( RO_Sol(L)-DES_RO_S(M))
+         M_LP: DO M = MMAX+1, MMAX+DES_MMAX
+            dDp  = ABS(2.0d0*DES_RADIUS(L)-D_P0(M))
+            dRho = ABS( RO_Sol(L)-RO_S0(M))
             IF( dDp < SMALL_NUMBER .AND. dRho < SMALL_NUMBER) THEN
                PIJK(L,5) = M
                EXIT M_LP
@@ -102,8 +103,8 @@
  1101 FORMAT(' ',/'Defined phase parameters from mfix.dat:',/3x,'ID',&
          5X,'Diameter',5x,'Density')
 
-      DO M = 1, DES_MMAX
-         WRITE(ERR_MSG, 9000) SMAX+M, DES_D_P0(M), DES_RO_S(M)
+      DO M = MMAX+1, DES_MMAX+MMAX
+         WRITE(ERR_MSG, 9000) M, D_P0(M), RO_S0(M)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
       ENDDO
 

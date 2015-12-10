@@ -6,23 +6,26 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE MASS_INFLOW_PIC
 
-      USE run
-      USE discretelement
-      USE geometry
+! Modules
+!---------------------------------------------------------------------//
+      USE bc
       USE constant
       USE cutcell
-      USE mfix_pic
-      USE pic_bc
-      USE bc
-      USE mpi_utility
-      USE randomno
+      USE discretelement
       use error_manager
       USE functions
-
+      USE geometry
+      USE mfix_pic
+      USE mpi_utility
+      USE param, only: dimension_m
+      use physprop, only: mmax, D_p0, ro_s0
+      USE pic_bc
+      USE randomno
+      USE run
       IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
+
+! Local Variables
+!---------------------------------------------------------------------//
       INTEGER :: WDIR, IDIM, IPCOUNT, LAST_EMPTY_SPOT, NEW_SPOT
       INTEGER :: BCV, BCV_I, L, LC, PIP_ADD_COUNT, IPROC
       INTEGER ::  IFLUID, JFLUID, KFLUID, IJK, M
@@ -30,9 +33,10 @@
       DOUBLE PRECISION :: AREA_INFLOW, VEL_INFLOW(DIMN), STAT_WT
 
       LOGICAL :: DELETE_PART
-      DOUBLE PRECISION :: EPS_INFLOW(DES_MMAX)
-      DOUBLE PRECISION REAL_PARTS(DES_MMAX), COMP_PARTS(DES_MMAX), VEL_NORM_MAG, VOL_INFLOW, VOL_IJK
-
+      DOUBLE PRECISION :: EPS_INFLOW(DIMENSION_M)
+      DOUBLE PRECISION :: REAL_PARTS(DIMENSION_M)
+      DOUBLE PRECISION :: COMP_PARTS(DIMENSION_M)
+      DOUBLE PRECISION :: VEL_NORM_MAG, VOL_INFLOW, VOL_IJK
 
 ! Temp logical variables for checking constant npc and statwt specification
       LOGICAL :: CONST_NPC, CONST_STATWT
@@ -55,8 +59,8 @@
            cur_spotlist => NULL(), &
            prev_spotlist => NULL(), &
            temp_spotlist => NULL()
+!......................................................................!
 
-!-----------------------------------------------
 
       CALL INIT_ERR_MSG("PIC_MI_BC")
 
@@ -105,10 +109,11 @@
             !set this to zero as the particles will
             !be seeded only on the BC plane
 
-            DO M = 1, DES_MMAX
+            DO M = 1, DES_MMAX+MMAX
 
                IF(SOLIDS_MODEL(M) /= 'PIC') CYCLE
-               EPS_INFLOW(M) = BC_ROP_S(BCV, M)/DES_RO_S(M)
+
+               EPS_INFLOW(M) = BC_ROP_S(BCV, M)/RO_S0(M)
                VEL_INFLOW(1) = BC_U_S(BCV, M)
                VEL_INFLOW(2) = BC_V_S(BCV, M)
                VEL_INFLOW(3) = BC_W_S(BCV, M)
@@ -116,7 +121,8 @@
                VEL_NORM_MAG = ABS(DOT_PRODUCT(VEL_INFLOW(1:DIMN), WALL_NORM(1:DIMN)))
                VOL_INFLOW   = AREA_INFLOW*VEL_NORM_MAG*DTSOLID
 
-               REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/(PI*(DES_D_p0(M)**3.d0))
+               REAL_PARTS(M) = 6.d0*EPS_INFLOW(M)*VOL_INFLOW/&
+                               (PI*(D_p0(M)**3.d0))
                COMP_PARTS(M) = zero
 
                CONST_NPC    = (BC_PIC_MI_CONST_NPC   (BCV, M) .ne. 0)
@@ -160,9 +166,9 @@
 
                      DES_VEL_NEW( NEW_SPOT,:) = DES_VEL_OLD( NEW_SPOT,:)
 
-                     DES_RADIUS(NEW_SPOT) = DES_D_p0(M)*HALF
+                     DES_RADIUS(NEW_SPOT) = D_p0(M)*HALF
 
-                     RO_Sol(NEW_SPOT) =  DES_RO_S(M)
+                     RO_Sol(NEW_SPOT) =  RO_S0(M)
 
                      DES_STAT_WT(NEW_SPOT) = STAT_WT
 
@@ -260,23 +266,26 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE PIC_FIND_EMPTY_SPOT(LAST_INDEX, EMPTY_SPOT)
+
+! Modules
+!---------------------------------------------------------------------//
       USE funits
       USE mpi_utility
       USE error_manager
       USE discretelement, only: max_pip
       USE functions, only: is_nonexistent
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       INTEGER, INTENT(INOUT) :: LAST_INDEX
       INTEGER, INTENT(OUT) :: EMPTY_SPOT
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
+
+! Local Variables
+!---------------------------------------------------------------------//
       LOGICAL :: SPOT_FOUND
       INTEGER :: LL
-!-----------------------------------------------
+!......................................................................!
 
       CALL INIT_ERR_MSG("PIC_FIND_EMPTY_SPOT")
 
@@ -327,25 +336,25 @@
 !  Purpose:                                                            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE PIC_FIND_NEW_CELL(LL)
+
+! Modules
+!---------------------------------------------------------------------//
       USE discretelement
       use mpi_utility
       USE cutcell
       USE functions
-
       IMPLICIT NONE
 
-!-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       INTEGER, INTENT(IN) :: LL
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
+
+! Local Variables
+!---------------------------------------------------------------------//
       DOUBLE PRECISION :: XPOS, YPOS, ZPOS
       INTEGER :: I, J, K
-!-----------------------------------------------
+!......................................................................!
 
       I = PIJK(LL,1)
       J = PIJK(LL,2)

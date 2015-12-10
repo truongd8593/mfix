@@ -17,18 +17,19 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE discretelement
-      USE param
-      USE param1
-      USE run
-      USE geometry
-      USE indices
       USE compar
-      USE sendrecv
-      USE physprop
+      USE discretelement
+      USE fldvar, only: u_s, v_s, w_s, theta_m
       USE fun_avg
       USE functions
+      USE geometry
+      USE indices
       USE mpi_utility
+      USE param
+      USE param1
+      USE physprop, only: mmax
+      USE run
+      USE sendrecv
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -38,9 +39,9 @@
 !
       INTEGER :: M, LL
 ! counter for no. of particles in phase m in cell ijk
-      INTEGER :: NP_PHASE(DIMENSION_3, DES_MMAX)
+      INTEGER :: NP_PHASE(DIMENSION_3, DIMENSION_M)
 ! temporary variable for mth phase granular temperature in cell ijk
-      DOUBLE PRECISION :: TEMP(DIMENSION_3, DES_MMAX)
+      DOUBLE PRECISION :: TEMP(DIMENSION_3, DIMENSION_M)
 ! accounted for particles
       INTEGER :: PC
 ! squared particle velocity v.v
@@ -74,12 +75,12 @@
          NP_PHASE(IJK,M) = NP_PHASE(IJK,M) + 1
 
          TEMP(IJK,M) = TEMP(IJK,M) + &
-            (DES_VEL_NEW(LL,1)-DES_U_s(IJK,M))**2
+            (DES_VEL_NEW(LL,1)-U_s(IJK,M))**2
          TEMP(IJK,M) = TEMP(IJK,M) + &
-            (DES_VEL_NEW(LL,2)-DES_V_s(IJK,M))**2
+            (DES_VEL_NEW(LL,2)-V_s(IJK,M))**2
          IF(DO_K) THEN
             TEMP(IJK,M) = TEMP(IJK,M) + &
-               (DES_VEL_NEW(LL,3)-DES_W_s(IJK,M))**2
+               (DES_VEL_NEW(LL,3)-W_s(IJK,M))**2
          ENDIF
 
          IF(PC .EQ. PIP) EXIT
@@ -89,12 +90,12 @@
       DO IJK = IJKSTART3, IJKEND3
          IF(FLUID_AT(IJK)) THEN
 
-            DO M = 1,DES_MMAX
+            DO M = MMAX+1,DES_MMAX+MMAX
                IF (NP_PHASE(IJK,M) > 0 ) THEN
-                  DES_THETA(IJK,M) = TEMP(IJK,M)/&
+                  THETA_M(IJK,M) = TEMP(IJK,M)/&
                      DBLE(DIMN*NP_PHASE(IJK,M))
                ELSE
-                  DES_THETA(IJK,M) = ZERO
+                  THETA_M(IJK,M) = ZERO
                ENDIF
             ENDDO
          ENDIF
@@ -200,14 +201,15 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE indices
-      USE geometry
       USE compar
-      USE discretelement
       USE des_bc
-      USE physprop
+      USE discretelement
       USE fldvar
       USE functions
+      USE geometry
+      USE indices
+      use param, only: dimension_m
+      USE physprop
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
@@ -227,7 +229,7 @@
 ! volume fraction of phase M in fluid cell
       DOUBLE PRECISION :: EP_SM
 ! tmp variables for calculations
-      DOUBLE PRECISION :: tmp_num(DES_MMAX), tmp_den(DES_MMAX)
+      DOUBLE PRECISION :: tmp_num(DIMENSION_M), tmp_den(DIMENSION_M)
 !-----------------------------------------------
 
 ! calculation of bed height following the formulation of Goldschmidt et
@@ -236,10 +238,10 @@
       tmp_den(:) = ZERO
       DO IJK = IJKSTART3, IJKEND3
          J = J_OF(IJK)
-         DO M = 1, DES_MMAX
-            IF(DES_ROP_S(IJK,M) > ZERO) THEN
+         DO M = MMAX+1, DES_MMAX+MMAX
+            IF(ROP_S(IJK,M) > ZERO) THEN
                hcell = 0.5d0*(YN(J)+YN(J-1))
-               EP_SM = DES_ROP_S(IJK,M)/DES_RO_S(M)
+               EP_SM = EP_S(IJK,M)
                tmp_num(M) = tmp_num(M) + EP_SM*hcell*VOL(IJK)
                tmp_den(M) = tmp_den(M) + EP_SM*VOL(IJK)
             ENDIF

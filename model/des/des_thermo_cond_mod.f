@@ -84,7 +84,7 @@ CONTAINS
 !---------------------------------------------------------------------//
 
 ! Identify the solid phases of the neighbor particle
-         jM = PIJK(J,5) + SMAX
+         jM = PIJK(J,5)
 
 ! Determine the radius of the larger and smaller particle
          MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))

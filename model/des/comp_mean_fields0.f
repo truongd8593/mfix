@@ -2,14 +2,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE COMP_MEAN_FIELDS0
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE param
       USE param1
       USE parallel
       USE constant
-      USE physprop
+      USE physprop, only: MMAX
+      use run, only: solids_model
       USE fldvar
       USE run
       USE geometry
@@ -25,19 +25,16 @@
       USE mfix_pic
       USE mpi_utility
 
-
       use mpi_node_des, only: des_addnodevalues_mean_fields
       use particle_filter, only: DES_REPORT_MASS_INTERP
-
 
       use functions, only: FLUID_AT
       use functions, only: FUNIJK
       use functions, only: IS_ON_myPE_wobnd
 
       IMPLICIT NONE
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! general i, j, k indices
       INTEGER :: I, J, K, IJK, &
                  II, JJ, KK
@@ -75,13 +72,18 @@
 
       INTEGER :: COUNT_NODES_OUTSIDE, COUNT_NODES_INSIDE, &
                  COUNT_NODES_INSIDE_MAX
-      double precision :: RESID_ROPS(DES_MMAX), &
-                          RESID_VEL(3, DES_MMAX)
-      double precision :: NORM_FACTOR
+
+      DOUBLE PRECISION :: RESID_ROPS(DIMENSION_M)
+      DOUBLE PRECISION :: RESID_VEL(3, DIMENSION_M)
+      DOUBLE PRECISION :: NORM_FACTOR
+
 !Handan Liu added on Jan 17 2013
-          DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp
-          DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
-!-----------------------------------------------
+      DOUBLE PRECISION, DIMENSION(2,2,2,3) :: gst_tmp
+      DOUBLE PRECISION, DIMENSION(2,2,2) :: weight_ft
+
+! total number of 'solids' phases in simulation
+      INTEGER :: MMAX_TOT
+!......................................................................!
 
 ! initializing
       MASS_SOL1 = ZERO
@@ -94,25 +96,27 @@
 ! cartesian_grid related quantities
       COUNT_NODES_INSIDE_MAX = merge(4, 8, NO_K)
 
-
-! Initialize entire arrays to zero
+      MMAX_TOT = DES_MMAX+MMAX
+! initialize only information related to the discrete 'phases' of
+! these continuous variables
+      ROP_S(:,MMAX+1:MMAX_TOT) = zero
+      U_S(:,MMAX+1:MMAX_TOT) = ZERO
+      V_S(:,MMAX+1:MMAX_TOT) = ZERO
+      IF(DO_K) W_S(:,MMAX+1:MMAX_TOT) = ZERO
+! these are not 'continuous' variables but used only within this routine...
       DES_VEL_NODE = ZERO
       DES_ROPS_NODE = ZERO
-      DES_ROP_S = zero
-      DES_U_S = ZERO
-      DES_V_S = ZERO
-      IF(DO_K) DES_W_S = ZERO
-
 
 ! sets several quantities including interp_scheme, scheme, and
 ! order and allocates arrays necessary for interpolation
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!$omp parallel default(shared)                                             &
-!$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, GST_TMP, &
-!$omp    COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, NINDX, NP, WTP, M,       &
-!$omp    WEIGHT_FT, I1, I2, J1, J2, K1, K2, IDIM,                          &
-!$omp    IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL,COUNT_NODES_OUTSIDE, TEMP1)
+!$omp parallel default(shared) &
+!$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, &
+!$omp         GST_TMP, COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, &
+!$omp         NINDX, NP, WTP, M, WEIGHT_FT, I1, I2, J1, J2, K1, K2, &
+!$omp         IDIM, IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL, &
+!$omp         COUNT_NODES_OUTSIDE, TEMP1) &
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       DO IJK = IJKSTART3,IJKEND3
 
@@ -135,43 +139,36 @@
          DO K=1, merge(1, ONEW, NO_K)
          DO J=1, ONEW
          DO I=1, ONEW
-
             II = IW + I-1
             JJ = JS + J-1
             KK = KB + K-1
             CUR_IJK = funijk_map_c(II,JJ,KK)
-
             GST_TMP(I,J,K,1) = XE(II)
             GST_TMP(I,J,K,2) = YN(JJ)
             GST_TMP(I,J,K,3) = merge(DZ(1), ZT(KK), NO_K)
-
             IF(CARTESIAN_GRID) THEN
                IF(SCALAR_NODE_ATWALL(CUR_IJK))                   &
                   COUNT_NODES_OUTSIDE = COUNT_NODES_OUTSIDE + 1
             ENDIF
-
          ENDDO
          ENDDO
          ENDDO
 
 
-! Calculate des_rops_node so des_rop_s, and in turn, ep_g can be updated
+! Calculate des_rops_node so rop_s, and in turn, ep_g can be updated
 !----------------------------------------------------------------->>>
 
 ! looping through particles in the cell
          DO NINDX=1, PINC(IJK)
             NP = PIC(IJK)%P(NINDX)
-
             call DRAG_WEIGHTFACTOR(gst_tmp,des_pos_new(np,:),weight_ft)
-
             M = PIJK(NP,5)
             WTP = ONE
+
             IF(MPPIC) WTP = DES_STAT_WT(NP)
 
             MASS_SOL1 = MASS_SOL1 + PMASS(NP)*WTP
-
-            TEMP2 = DES_RO_S(M)*PVOL(NP)*WTP
-
+            TEMP2 = PMASS(NP)*WTP
             DO K = 1, merge(1, ONEW, NO_K)
             DO J = 1, ONEW
             DO I = 1, ONEW
@@ -179,14 +176,11 @@
                II = IW + I-1
                JJ = JS + J-1
                KK = KB + K-1
-
                CUR_IJK = FUNIJK_MAP_C(II,JJ,KK)
-
                TEMP1 = WEIGHT_FT(I,J,K)*TEMP2
 
                DES_ROPS_NODE(CUR_IJK,M) = DES_ROPS_NODE(CUR_IJK,M) +   &
                   TEMP1
-
                DES_VEL_NODE(CUR_IJK,:,M) = DES_VEL_NODE(CUR_IJK,:,M) + &
                   TEMP1*DES_VEL_NEW(NP,:)
             ENDDO
@@ -202,17 +196,16 @@
 ! array is then redistribited equally to the nodes that are in the fluid
 ! domain. These steps are done to conserve mass.
 !----------------------------------------------------------------->>>
+! initializing
+         RESID_ROPS = ZERO
+         RESID_VEL = ZERO
          IF (CARTESIAN_GRID) THEN
 
 ! only for cartesian_grid will count_nodes_outside be modified from zero
-            COUNT_NODES_INSIDE = &
-               COUNT_NODES_INSIDE_MAX - COUNT_NODES_OUTSIDE
+            COUNT_NODES_INSIDE = COUNT_NODES_INSIDE_MAX - &
+                                 COUNT_NODES_OUTSIDE
 
             IF(COUNT_NODES_INSIDE.LT.COUNT_NODES_INSIDE_MAX) THEN
-
-! initializing
-               RESID_ROPS(1:DES_MMAX) = ZERO
-               RESID_VEL(:, 1:DES_MMAX) = ZERO
 
 ! Convention used to number node numbers
 ! i=1, j=2           i=2, j=2
@@ -231,25 +224,24 @@
                J2 = J
                K1 = merge(K, K-1, NO_K)
                K2 = K
+
 ! first calculate the residual des_rops_node and des_vel_node that was
 ! computed on nodes that do not belong to the domain
-
                DO KK = K1, K2
                DO JJ = J1, J2
                DO II = I1, I2
-
                   IJK2 = funijk(II, JJ, KK)
-
                   IF(SCALAR_NODE_ATWALL(IJK2)) THEN
-                     RESID_ROPS(1:DES_MMAX) = RESID_ROPS(1:DES_MMAX) + &
-                        DES_ROPS_NODE(IJK2,1:DES_MMAX)
+                     DO M = MMAX+1,MMAX_TOT
+                        RESID_ROPS(M) = RESID_ROPS(M) + &
+                           DES_ROPS_NODE(IJK2,M)
+                        DES_ROPS_NODE(IJK2,M) = ZERO
 
-                     DES_ROPS_NODE(IJK2,1:DES_MMAX) = ZERO
-                     DO IDIM = 1, merge(2,3,NO_K)
-                        RESID_VEL(IDIM, 1:DES_MMAX) =                  &
-                            RESID_VEL(IDIM, 1:DES_MMAX) +              &
-                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX)
-                        DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) = ZERO
+                        DO IDIM = 1, merge(2,3,NO_K)
+                           RESID_VEL(IDIM,M) = RESID_VEL(IDIM, M) + &
+                              DES_VEL_NODE(IJK2,IDIM, M)
+                           DES_VEL_NODE(IJK2,IDIM, M) = ZERO
+                        ENDDO
                      ENDDO
                   ENDIF
                ENDDO
@@ -262,21 +254,22 @@
                DO JJ = J1, J2
                DO II = I1, I2
                   IJK2 = funijk(II, JJ, KK)
-
                   IF(.NOT.SCALAR_NODE_ATWALL(IJK2)) THEN
-                     DES_ROPS_NODE(IJK2,1:DES_MMAX) =                  &
-                        DES_ROPS_NODE(IJK2,1:DES_MMAX) +               &
-                        RESID_ROPS(1:DES_MMAX)*NORM_FACTOR
-                     DO IDIM = 1, merge(2,3,NO_K)
-                        DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) =          &
-                           DES_VEL_NODE(IJK2,IDIM, 1:DES_MMAX) +       &
-                           RESID_VEL(IDIM, 1:DES_MMAX)*NORM_FACTOR
+                     DO M = MMAX+1,MMAX_TOT
+                        DES_ROPS_NODE(IJK2,M) = &
+                           DES_ROPS_NODE(IJK2,M) + &
+                           RESID_ROPS(M)*NORM_FACTOR
+                        DO IDIM = 1, merge(2,3,NO_K)
+                           DES_VEL_NODE(IJK2,IDIM, M) = &
+                              DES_VEL_NODE(IJK2,IDIM, M) + &
+                              RESID_VEL(IDIM, M)*NORM_FACTOR
+                        ENDDO
                      ENDDO
                   ENDIF
+               ENDDO
+               ENDDO
+               ENDDO
 
-               ENDDO
-               ENDDO
-               ENDDO
             ENDIF
          ENDIF   ! end if (cartesian_grid)
       ENDDO
@@ -312,14 +305,14 @@
 ! vol(ijk2) is the volume of the scalar cell in consideration and
 ! vol_sur is the sum of all the scalar cell volumes that have this node
 ! as the common node.
-!---------------------------------------------------------------------//
-!$omp parallel do default(none) collapse (3)                           &
-!$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, VOL,&
-!$omp   DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, DES_MMAX, DES_ROPS_NODE, &
-!$omp   DES_VEL_NODE)                                                  &
-!$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY,      &
-!$omp   DES_VEL_DENSITY)                                               &
-!$omp reduction(+:DES_ROP_S, DES_U_S, DES_V_S, DES_W_S)
+
+!$omp parallel do default(none) collapse (3) &
+!$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, &
+!$omp        VOL, DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, MMAX_TOT, &
+!$omp        DES_ROPS_NODE, DES_VEL_NODE) &
+!$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY, &
+!$omp         DES_VEL_DENSITY) &
+!$omp reduction(+:ROP_S, U_S, V_S, W_S)
       DO K = KSTART2, KEND1
       DO J = JSTART2, JEND1
       DO I = ISTART2, IEND1
@@ -328,8 +321,7 @@
          if (VOL_SURR(IJK).eq.ZERO) CYCLE ! no FLUID_AT any of the stencil points have
 
 ! looping over stencil points (NODE VALUES)
-         DO M = 1, DES_MMAX
-
+         DO M = MMAX+1, MMAX_TOT
             DES_ROP_DENSITY = DES_ROPS_NODE(IJK, M)/VOL_SURR(IJK)
             DES_VEL_DENSITY(:) = DES_VEL_NODE(IJK, :, M)/VOL_SURR(IJK)
 
@@ -344,10 +336,10 @@
 ! subsequent send receives, do not compute any value here as this will
 ! mess up the total mass value that is computed below to ensure mass conservation
 ! between Lagrangian and continuum representations
-                  DES_ROP_S(IJK2, M) = DES_ROP_S(IJK2, M) + DES_ROP_DENSITY*VOL(IJK2)
-                  DES_U_S(IJK2, M) = DES_U_S(IJK2, M) + DES_VEL_DENSITY(1)*VOL(IJK2)
-                  DES_V_S(IJK2, M) = DES_V_S(IJK2, M) + DES_VEL_DENSITY(2)*VOL(IJK2)
-                  IF(DO_K) DES_W_S(IJK2, M) = DES_W_S(IJK2, M) + DES_VEL_DENSITY(3)*VOL(IJK2)
+                  ROP_S(IJK2, M) = ROP_S(IJK2, M) + DES_ROP_DENSITY*VOL(IJK2)
+                  U_S(IJK2, M) = U_S(IJK2, M) + DES_VEL_DENSITY(1)*VOL(IJK2)
+                  V_S(IJK2, M) = V_S(IJK2, M) + DES_VEL_DENSITY(2)*VOL(IJK2)
+                  IF(DO_K) W_S(IJK2, M) = W_S(IJK2, M) + DES_VEL_DENSITY(3)*VOL(IJK2)
                ENDIF
             ENDDO  ! end do (ii=i1,i2)
             ENDDO  ! end do (jj=j1,j2)
@@ -357,54 +349,46 @@
       ENDDO   ! end do (j=jstart2,jend1)
       ENDDO   ! end do (k=kstart2,kend1)
 !omp end parallel do
-
 !-----------------------------------------------------------------<<<
 
 
-!$omp parallel do default(none) private(IJK, M)                        &
-!$omp shared(IJKSTART3, IJKEND3, DO_K, DES_MMAX, DES_ROP_s, DES_U_S,   &
-!$omp   DES_V_S, DES_W_S, VOL)
+!$omp parallel do default(none) private(IJK, M) &
+!$omp shared(IJKSTART3, IJKEND3, DO_K, MMAX_TOT, ROP_s, U_S, &
+!$omp        V_S, W_S, VOL)
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
-
-         DO M = 1, DES_MMAX
-            IF(DES_ROP_S(IJK, M).GT.ZERO) THEN
-               DES_U_S(IJK, M) = DES_U_S(IJK,M)/DES_ROP_S(IJK, M)
-               DES_V_S(IJK, M) = DES_V_S(IJK,M)/DES_ROP_S(IJK, M)
-               IF(DO_K) DES_W_S(IJK, M) = DES_W_S(IJK,M)/DES_ROP_S(IJK, M)
-
+         DO M = MMAX+1, MMAX_TOT
+            IF(ROP_S(IJK, M).GT.ZERO) THEN
+               U_S(IJK, M) = U_S(IJK,M)/ROP_S(IJK, M)
+               V_S(IJK, M) = V_S(IJK,M)/ROP_S(IJK, M)
+               IF(DO_K) W_S(IJK, M) = W_S(IJK,M)/ROP_S(IJK, M)
 ! Divide by scalar cell volume to obtain the bulk density
-               DES_ROP_S(IJK, M) = DES_ROP_S(IJK, M)/VOL(IJK)
-
+               ROP_S(IJK, M) = ROP_S(IJK, M)/VOL(IJK)
             ENDIF
-         ENDDO   ! end loop over M=1,DES_MMAX
+         ENDDO   ! end loop over M=1,MMAX_TOT
       ENDDO  ! end loop over IJK=ijkstart3,ijkend3
 !omp end parallel do
 
 
-      IF (MPPIC) CALL SEND_RECV(DES_ROP_S,2)
-
+      IF (MPPIC) CALL SEND_RECV(ROP_S,2)
       CALL CALC_EPG_DES
 
-
       IF(MPPIC) THEN
-
-! Now calculate Eulerian mean velocity fields like U_S, V_S, and W_S.
-         CALL SEND_RECV(DES_U_S,2)
-         CALL SEND_RECV(DES_V_S,2)
-         IF(DO_K) CALL SEND_RECV(DES_W_S,2)
+! Now calculate Eulerian mean velocity fields for discrete phases
+         CALL SEND_RECV(U_S,2)
+         CALL SEND_RECV(V_S,2)
+         IF(DO_K) CALL SEND_RECV(W_S,2)
 
 ! The Eulerian velocity field is used to set up the stencil to interpolate
-! mean solid velocity at the parcel's location. DES_U_S could have also been
+! mean solid velocity at the parcel's location. U_S could have also been
 ! used, but that also would have require the communication at this stage.
 ! The final interpolated value does not change if the stencil is formed by
 ! first obtaining face centered Eulerian velocities (U_S, etc.)
 ! and then computing the node velocities from them or directly computing
-! the node velocities from cell centered average velocity field (DES_U_S,
+! the node velocities from cell centered average velocity field (U_S,
 ! etc.). We are using the first approach as it is more natural to set
 ! BC's on solid velocity field in the face centered represenation (U_S,
 ! etc.)
-
          IF(.NOT.CARTESIAN_GRID) THEN
             CALL MPPIC_COMP_EULERIAN_VELS_NON_CG
          ELSE
@@ -416,29 +400,28 @@
 ! between discrete and continuum representations. Should be turned to
 ! false for any production runs.
       IF(DES_REPORT_MASS_INTERP) THEN
-
-
          DO IJK = IJKSTART3, IJKEND3
             IF(.NOT.FLUID_AT(IJK)) CYCLE
-
             I = I_OF(IJK)
             J = J_OF(IJK)
             K = K_OF(IJK)
-
 ! It is important to check both FLUID_AT and IS_ON_MYPE_WOBND.
-            IF(IS_ON_myPE_wobnd(I,J,K)) MASS_SOL2 = MASS_SOL2 +        &
-               sum(DES_ROP_S(IJK,1:DES_MMAX))*VOL(IJK)
+            IF(IS_ON_myPE_wobnd(I,J,K)) THEN
+               DO M=MMAX+1,MMAX_TOT
+                  MASS_SOL2 = MASS_SOL2 + &
+                     ROP_S(IJK,M)*VOL(IJK)
+               ENDDO
+            ENDIF
          ENDDO
-
-
          CALL GLOBAL_SUM(MASS_SOL1, MASS_SOL1_ALL)
          CALL GLOBAL_SUM(MASS_SOL2, MASS_SOL2_ALL)
          if(myPE.eq.pe_IO) THEN
             WRITE(*,'(/,5x,A,4(2x,g17.8),/)') &
-                 'SOLIDS MASS DISCRETE AND CONTINUUM =  ', &
-                 MASS_SOL1_ALL, MASS_SOL2_ALL
+              'SOLIDS MASS DISCRETE AND CONTINUUM =  ', &
+              MASS_SOL1_ALL, MASS_SOL2_ALL
          ENDIF
       ENDIF
+
       END SUBROUTINE COMP_MEAN_FIELDS0
 
 

@@ -31,12 +31,6 @@
 
       PINC(:) = ZERO
 
-      DES_U_s(:,:) = ZERO
-      DES_V_s(:,:) = ZERO
-      DES_W_s(:,:) = ZERO
-      DES_ROP_S(:,:) = ZERO
-      DES_ROP_SO(:,:) = ZERO
-
       P_FORCE(:,:) = ZERO
 
       IF(allocated(DRAG_AM)) DRAG_AM = ZERO

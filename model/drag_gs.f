@@ -81,13 +81,13 @@
       INTEGER :: MAXM
 ! tmp local variable for the particle diameter of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: DP_loc(2*DIM_M)
+      DOUBLE PRECISION :: DP_loc(DIM_M)
 ! tmp local variable for the solids volume fraction of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: EPs_loc(2*DIM_M)
+      DOUBLE PRECISION :: EPs_loc(DIM_M)
 ! tmp local variable for the particle density of solids
 ! phase M (continuous or discrete)
-      DOUBLE PRECISION :: ROs_loc(2*DIM_M)
+      DOUBLE PRECISION :: ROs_loc(DIM_M)
 ! correction factors for implementing polydisperse drag model
 ! proposed by van der Hoef et al. (2005)
       DOUBLE PRECISION :: F_cor, tmp_sum, tmp_fac
@@ -120,24 +120,17 @@
             IJMK = JM_OF(IJK)
             IJKM = KM_OF(IJK)
 
-            MAXM = SMAX
-            DO CM = 1,SMAX
-               DP_loc(CM) = D_p(IJK,CM)
-               EPs_loc(CM) = EP_S(IJK,CM)
-               ROs_loc(CM) = RO_S(IJK,CM)
+            DO L = 1,DES_MMAX+MMAX
+               IF(KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX) THEN
+! set this to avoid issues later in routine
+                  DP_loc(L) = one
+                  EPS_loc(L) = zero
+                  ROs_loc(L) = zero
+               ENDIF
+               DP_loc(L) = D_p(IJK,L)
+               EPs_loc(L) = EP_S(IJK,L)
+               ROs_loc(L) = RO_S(IJK,L)
             ENDDO
-
-! Append DEM phase information to the end for hybrid runs and update
-! the number of solids 'phases' to loop over.
-            IF(DES_CONTINUUM_HYBRID) THEN
-               MAXM = SMAX + DES_MMAX
-               DO DM = 1,DES_MMAX
-                  L = SMAX + DM
-                  DP_loc(L) = DES_D_p0(DM)
-                  EPs_loc(L) = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
-                  ROs_loc(L) = DES_RO_S(DM)
-               ENDDO
-            ENDIF
 
 ! Calculate velocity components at i, j, k
             UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
@@ -175,7 +168,7 @@
 
 ! calculate the total solids volume fraction
             phis = ZERO
-            DO L = 1, MAXM
+            DO L = 1, DES_MMAX+MMAX
 ! this is slightly /= one-ep_g due to round-off
                phis = phis + EPs_loc(L)
             ENDDO
@@ -184,7 +177,7 @@
             DPA = ZERO
             tmp_sum = ZERO
             tmp_fac = ZERO
-            DO L = 1, MAXM
+            DO L = 1, DES_MMAX+MMAX
                IF (phis .GT. ZERO) THEN
                   tmp_fac = EPs_loc(L)/phis
                   tmp_sum = tmp_sum + tmp_fac/DP_loc(L)
@@ -253,6 +246,8 @@
                      ROs, UGC, VGC, WGC)
 
                CASE (HYS)
+! only over the continuous two fluid phases
+                  MAXM = SMAX
 ! calculate velocity components of each solids phase
                   USCM_HYS = ZERO
                   VSCM_HYS = ZERO
@@ -1374,13 +1369,13 @@
 ! magnitude of gas-solids relative velocity
       DOUBLE PRECISION, INTENT(IN) :: VREL
 ! local variable for the particle diameter
-      DOUBLE PRECISION :: DPM(2*DIM_M)
+      DOUBLE PRECISION :: DPM(DIM_M)
 ! average particle diameter
       DOUBLE PRECISION, INTENT(IN) :: DPA
 ! diameter ratio in polydisperse systems
       DOUBLE PRECISION, INTENT(IN) :: Y_i
 ! local variable for the solids volume fraction
-      DOUBLE PRECISION :: EP_sM(2*DIM_M)
+      DOUBLE PRECISION :: EP_sM(DIM_M)
 ! total solids volume fraction of solids phases
       DOUBLE PRECISION, INTENT(IN) :: PHIS
 ! current solids phase index and fluid cell index

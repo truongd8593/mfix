@@ -9,26 +9,27 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MASS_INFLOW_DEM
 
+! Modules
+!---------------------------------------------------------------------//
       use bc
       use des_allocate
       use des_bc
       use discretelement
       use functions
-
       use mpi_utility, only: BCAST
-
       implicit none
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: IP, LS, M, NP, IJK, LC
       INTEGER :: BCV, BCV_I
       LOGICAL :: CHECK_FOR_ERRORS, OWNS
-
 ! I/J/K index of fluid cell containing the new particle.
       INTEGER :: IJKP(3)
-
       DOUBLE PRECISION :: DIST, POS(3)
 ! Random numbers -shared by all ranks-
       DOUBLE PRECISION :: RAND(3)
+!......................................................................!
 
       CHECK_FOR_ERRORS = .FALSE.
 
@@ -121,14 +122,13 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE SEED_NEW_PARTICLE(lBCV, lBCV_I, lRAND, lM, lPOS,      &
+      SUBROUTINE SEED_NEW_PARTICLE(lBCV, lBCV_I, lRAND, lM, lPOS, &
          lIJKP, lOWNS)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE compar
+!---------------------------------------------------------------------//
       USE bc
+      USE compar
       USE des_bc
       USE desgrid
       USE discretelement
@@ -137,9 +137,9 @@
       USE param1
       USE physprop
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! The associated bc no.
       INTEGER, INTENT(IN) :: lBCV, lBCV_I
 ! Random numbers
@@ -153,9 +153,8 @@
 ! Logical indicating that the current rank is the owner
       LOGICAL, INTENT(OUT) :: lOWNS
 
-!-----------------------------------------------
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! the associated bc no.
 !      INTEGER :: BCV
 ! Random position
@@ -164,11 +163,10 @@
       INTEGER :: VACANCY
 ! Number of array position.
       INTEGER :: OCCUPANTS
-
       INTEGER :: RAND_I
       INTEGER :: lI, lJ, lK
-
       DOUBLE PRECISION :: WINDOW
+!......................................................................!
 
 !      IF(PARTICLE_PLCMNT(lBCV_I) == 'ORDR')THEN
          VACANCY = DEM_MI(lBCV_I)%VACANCY
@@ -190,8 +188,8 @@
       ENDIF
 
       WINDOW = DEM_MI(lBCV_I)%WINDOW
-      RAND1 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*lRAND(1)
-      RAND2 = HALF*DES_D_p0(lM) + (WINDOW - DES_D_p0(lM))*lRAND(2)
+      RAND1 = HALF*D_p0(lM) + (WINDOW - D_p0(lM))*lRAND(1)
+      RAND2 = HALF*D_p0(lM) + (WINDOW - D_p0(lM))*lRAND(2)
 
 
 ! Set the physical location and I/J/K location of the particle.
@@ -254,29 +252,29 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_NEW_PARTICLE_PROPS(lBCV, lM, lNP, lPOS, lIJKP)
 
-      USE compar
+! Modules
+!---------------------------------------------------------------------//
       USE bc
+      USE compar
+      use constant, only: PI
       USE des_bc
+      use desgrid
+      use des_rxns
+      USE des_thermo
       USE discretelement
+      use functions
       USE funits
       USE geometry
+      use indices
       USE param1
-      USE physprop
-      USE des_thermo
-      use des_rxns
-
+      USE physprop, only: d_p0, ro_s0, c_ps0
+      USE physprop, only: nmax
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
-      use constant, only: PI
-
-      use desgrid
-      use indices
-      use functions
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! The associated bc no.
       INTEGER, INTENT(IN) :: lBCV
 ! Phase of incoming particle.
@@ -287,14 +285,13 @@
       DOUBLE PRECISION, INTENT(IN) :: lPOS(3)
 ! I/J/K index of fluid cell containing the new particle.
       INTEGER, INTENT(IN) :: lIJKP(3)
+
+! Local variables
+!---------------------------------------------------------------------//
 ! I/J/K index of DES grid cell
       INTEGER :: lI, lJ, lK
+!......................................................................!
 
-! Global phase index
-      INTEGER :: BC_M
-
-! Shift the phase index by SMAX to refernece global variables.
-      BC_M = lM + SMAX
 
 ! The particle exists and is entering, not exiting nor a ghost particle
       IF (IS_GHOST(lNP)) THEN
@@ -306,9 +303,9 @@
 ! Set the initial position values based on mass inlet class
       DES_POS_NEW(lNP,:) = lPOS(:)
       PPOS(lNP,:) = lPOS(:)
-      DES_VEL_NEW(lNP,1) = BC_U_s(lBCV,BC_M)
-      DES_VEL_NEW(lNP,2) = BC_V_s(lBCV,BC_M)
-      DES_VEL_NEW(lNP,3) = BC_W_s(lBCV,BC_M)
+      DES_VEL_NEW(lNP,1) = BC_U_s(lBCV,lM)
+      DES_VEL_NEW(lNP,2) = BC_V_s(lBCV,lM)
+      DES_VEL_NEW(lNP,3) = BC_W_s(lBCV,lM)
 
 ! Set the initial velocity values
       IF (DO_OLD) THEN
@@ -324,10 +321,10 @@
       IF(PARTICLE_ORIENTATION) ORIENTATION(1:3,lNP) = INIT_ORIENTATION
 
 ! Set the particle radius value
-      DES_RADIUS(lNP) = HALF * DES_D_P0(lM)
+      DES_RADIUS(lNP) = HALF * D_P0(lM)
 
 ! Set the particle density value
-      RO_Sol(lNP) = DES_RO_S(lM)
+      RO_Sol(lNP) = RO_S0(lM)
 
 ! Store the I/J/K indices of the particle.
       PIJK(lNP,1:3) = lIJKP(:)
@@ -357,13 +354,13 @@
 
 ! If solving the energy equations, set the temperature
       IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
-         DES_T_s_NEW(lNP) = BC_T_s(lBCV,BC_M)
+         DES_T_s_NEW(lNP) = BC_T_s(lBCV,lM)
          DES_T_s_OLD(lNP) = DES_T_s_NEW(lNP)
       ENDIF
 
 ! Set species mass fractions
-      IF((ENERGY_EQ .AND. C_PS0(BC_M)/=UNDEFINED) .OR. ANY_SPECIES_EQ)&
-         DES_X_s(lNP,1:NMAX(BC_M)) = BC_X_s(lBCV,BC_M,1:NMAX(BC_M))
+      IF((ENERGY_EQ .AND. C_PS0(lM)/=UNDEFINED) .OR. ANY_SPECIES_EQ)&
+         DES_X_s(lNP,1:NMAX(lM)) = BC_X_s(lBCV,lM,1:NMAX(lM))
 
 ! Calculate time dependent physical properties
       CALL DES_PHYSICAL_PROP(lNP, .FALSE.)
@@ -391,32 +388,32 @@
 !  Comments:                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       SUBROUTINE DES_NEW_PARTICLE_TEST(BCV_I,ppar_rad,ppar_pos,TOUCHING)
 
+! Modules
+!---------------------------------------------------------------------//
       USE compar
       USE constant
       USE des_bc
       USE discretelement
+      USE functions
       USE funits
       USE geometry
       USE indices
       USE param1
       USE physprop
-      USE functions
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! index of boundary condition
       INTEGER, INTENT(IN) :: BCV_I
       DOUBLE PRECISION, INTENT(IN) :: ppar_pos(DIMN)
       DOUBLE PRECISION, INTENT(IN) :: ppar_rad
       LOGICAL, INTENT(INOUT) :: TOUCHING
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! particle number id of a potential overlapping/contacting particle
       INTEGER NP2
 ! total number of particles in current ijk cell and loop counter
@@ -427,7 +424,7 @@
       integer listart,liend,ljstart,ljend,lkstart,lkend
 
       DOUBLE PRECISION  DISTVEC(DIMN), DIST, R_LM
-!-----------------------------------------------
+!......................................................................!
 
       TOUCHING = .FALSE.
 

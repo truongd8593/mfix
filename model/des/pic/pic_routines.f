@@ -7,7 +7,9 @@
       SUBROUTINE MPPIC_COMP_EULERIAN_VELS_NON_CG
         USE compar
         USE constant
+        use desmpi
         USE discretelement
+        use fldvar, only: u_s, v_s, w_s
         USE functions
         USE geometry
         USE indices
@@ -15,7 +17,7 @@
         USE parallel
         USE param
         USE param1
-        use desmpi
+        USE physprop, only: mmax
         IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -25,7 +27,10 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
+      INTEGER :: MMAX_TOT
+!-----------------------------------------------
 
+      MMAX_TOT = MMAX+DES_MMAX
       DO IJK = ijkstart3, ijkend3
             I = I_OF(IJK)
             J = J_OF(IJK)
@@ -33,6 +38,7 @@
             !U_so(IJK, :) = U_s(IJK, :)
             !V_so(IJK, :) = V_s(IJK, :)
             !W_so(IJK, :) = W_s(IJK, :)
+! could these be replaced by u_s, w_s, v_s?
             PIC_U_S(IJK, :) = ZERO
             PIC_V_S(IJK, :) = ZERO
             PIC_W_S(IJK, :) = ZERO
@@ -42,16 +48,16 @@
             IF(I.GE.IMIN1.AND.I.LT.IMAX1) then !because we don't want to
                !calculate solids velocity at the wall cells.
                IPJK = IP_OF(IJK)
-               DO M = 1, DES_MMAX
-                  PIC_U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+               DO M = MMAX+1, MMAX_TOT
+                  PIC_U_S(IJK,M) = 0.5d0*(U_S(IJK, M) + U_S(IPJK,M))
                ENDDO
             ENDIF
 
             if(J.GE.JMIN1.AND.J.LT.JMAX1) then !because we don't want to
                !calculate solids velocity at the wall cells.
                IJPK = JP_OF(IJK)
-               DO M = 1, DES_MMAX
-                  PIC_V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+               DO M = MMAX+1, MMAX_TOT
+                  PIC_V_S(IJK,M) = 0.5d0*(V_S(IJK, M) + V_S(IJPK,M))
                ENDDO
             ENDIF
 
@@ -59,8 +65,8 @@
             if(K.GE.KMIN1.AND.K.LT.KMAX1.AND.DO_K) then !because we don't want to
                !calculate solids velocity at the wall cells.
                IJKP = KP_OF(IJK)
-               DO M = 1, DES_MMAX
-                  PIC_W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+               DO M = MMAX+1, MMAX_TOT
+                  PIC_W_S(IJK,M) = 0.5d0*(W_S(IJK, M) + W_S(IJKP,M))
                ENDDO
             ENDIF
          ENDDO
@@ -89,6 +95,7 @@
         USE cutcell
         USE desmpi
         USE discretelement
+        use fldvar, only: u_s, v_s, w_s
         USE functions
         USE geometry
         USE indices
@@ -96,6 +103,7 @@
         USE parallel
         USE param
         USE param1
+        use physprop, only: mmax
         IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -105,6 +113,8 @@
 
 ! index of solid phase that particle NP belongs to
       INTEGER :: M
+      INTEGER :: MMAX_TOT
+!-----------------------------------------------
 
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
@@ -130,11 +140,11 @@
 
             IPJK = IP_OF(IJK)
             IF(FLUID_AT(IPJK)) THEN
-               DO M = 1, DES_MMAX
-                  PIC_U_S(IJK,M) = 0.5d0*(DES_U_S(IJK, M) + DES_U_S(IPJK,M))
+               DO M = MMAX+1, MMAX_TOT
+                  PIC_U_S(IJK,M) = 0.5d0*(U_S(IJK, M) + U_S(IPJK,M))
                ENDDO
             ELSE
-               PIC_U_S(IJK,:) = DES_U_S(IJK, :)
+               PIC_U_S(IJK,:) = U_S(IJK, :)
             ENDIF
          ENDIF
 
@@ -144,11 +154,11 @@
             if(.not.FLUID_AT(IJK)) cycle
             IJPK = JP_OF(IJK)
             IF(FLUID_AT(IJPK)) THEN
-               DO M = 1, DES_MMAX
-                  PIC_V_S(IJK,M) = 0.5d0*(DES_V_S(IJK, M) + DES_V_S(IJPK,M))
+               DO M = MMAX+1, MMAX_TOT
+                  PIC_V_S(IJK,M) = 0.5d0*(V_S(IJK, M) + V_S(IJPK,M))
                ENDDO
             ELSE
-               PIC_V_S(IJK,:) = DES_V_S(IJK, :)
+               PIC_V_S(IJK,:) = V_S(IJK, :)
             ENDIF
          ENDIF
 
@@ -159,11 +169,11 @@
                if(.not.FLUID_AT(IJK)) cycle
                IJKP = KP_OF(IJK)
                IF(FLUID_AT(IJKP)) THEN
-                  DO M = 1, DES_MMAX
-                     PIC_W_S(IJK,M) = 0.5d0*(DES_W_S(IJK, M) + DES_W_S(IJKP,M))
+                  DO M = MMAX+1, MMAX_TOT
+                     PIC_W_S(IJK,M) = 0.5d0*(W_S(IJK, M) + W_S(IJKP,M))
                   ENDDO
                ELSE
-                  PIC_W_S(IJK,:) = DES_W_S(IJK, :)
+                  PIC_W_S(IJK,:) = W_S(IJK, :)
                ENDIF
             ENDIF
          ENDIF
@@ -187,7 +197,7 @@
       USE mpi_utility
       USE mfix_pic
       USE cutcell
-      USE fldvar, only: ep_g
+      USE fldvar, only: ep_g, u_s, v_s, w_s
       USE fun_avg
       USE functions
       IMPLICIT NONE
@@ -204,7 +214,10 @@
 
 ! dt's in each direction  based on cfl_pic for the mppic case
 
-      DOUBLE PRECISION  MEANUS(DIMN, DES_MMAX), RELVEL(DIMN), MEANVEL(DIMN), VEL_NEW(DIMN)
+      DOUBLE PRECISION :: MEANUS(DIMN, DIMENSION_M)
+      DOUBLE PRECISION :: RELVEL(DIMN)
+      DOUBLE PRECISION :: MEANVEL(DIMN)
+      DOUBLE PRECISION :: VEL_NEW(DIMN)
 !      INTEGER :: TOT_CASE, case1_count, case2_count, case3_count, case4_count
 
       LOGICAL :: INSIDE_DOMAIN
@@ -227,9 +240,9 @@
          WRITE(*,'(A20,2x,3(2x,g17.8))') 'FC = ', FC(L,:)
       ENDIF
 
-      MEANVEL(1) = DES_U_S(IJK,M)
-      MEANVEL(2) = DES_V_S(IJK,M)
-      IF(DO_K) MEANVEL(3) = DES_W_S(IJK,M)
+      MEANVEL(1) = U_S(IJK,M)
+      MEANVEL(2) = V_S(IJK,M)
+      IF(DO_K) MEANVEL(3) = W_S(IJK,M)
 
       PS_FORCE(:) = PS_GRAD(:,L)
       !IF(ABS(PS_FORCE(2)).GT.ZERO)  WRITE(*,*) 'PS_FORCE = ', PS_FORCE
@@ -336,10 +349,8 @@
          IF(MPPIC_GRAV_TREATMENT) THEN
             IF(DELUP(IDIM)*GRAV(IDIM).LT.ZERO.AND.VEL_ORIG(IDIM)*GRAV(IDIM).GT.ZERO) THEN
                VEL_NEW(IDIM) = -COEFF_EN*VEL_ORIG(IDIM)
-               !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW( L,IDIM)
             ENDIF
          ENDIF
-         !MPPIC_VPTAU(L, IDIM) = VEL_NEW(IDIM) -  DES_VEL_NEW( L,IDIM)
          DES_VEL_NEW( L,IDIM) = VEL_NEW(IDIM)
       ENDDO
 
@@ -630,9 +641,11 @@
 
       integer :: ijk, i, j,k
 
-      write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',' "DES_ROPS_NODE" '
+      write(funit,*)'VARIABLES= ',' "I" ',' "J" ',' "K" ',&
+         ' "DES_ROPS_NODE" '
 
-      write(funit, *)'ZONE F=POINT, I=', (IEND1-ISTART2)+1,  ', J=', JEND1-JSTART2+1, ', K=', KEND1-KSTART2 + 1
+      write(funit, *)'ZONE F=POINT, I=', (IEND1-ISTART2)+1,  ', J=', &
+         JEND1-JSTART2+1, ', K=', KEND1-KSTART2 + 1
 
       DO K = KSTART2, KEND1
          DO J = JSTART2, JEND1
@@ -640,7 +653,8 @@
                IJK = funijk(I, J, K)
                !WRITE(*,*) 'IJK = ', IJK, I, J, K , SIZE(BUFIN,1)
 
-               WRITE(funit, '(3(2x, i10), 3x, g17.8)') I, J, K , DES_ROPS_NODE(IJK,1)
+               WRITE(funit, '(3(2x, i10), 3x, g17.8)') I, J, K,&
+                  DES_ROPS_NODE(IJK,1)
             ENDDO
          ENDDO
       ENDDO
@@ -662,7 +676,8 @@
       USE geometry
       USE indices
       USE compar
-      USE fldvar, only : ep_g
+      USE fldvar, only : ep_g, u_s, v_s, w_s
+      use physprop, only: mmax
       USE discretelement
       USE mfix_pic
       USE functions
@@ -672,16 +687,21 @@
       character(LEN=255) :: filename
 
       WRITE(filename,'(A,"_",I5.5,".dat")') TRIM(RUN_NAME)//'_U_S_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
+      OPEN(1000, file = TRIM(filename), form ='formatted', &
+           status='unknown',CONVERT='BIG_ENDIAN')
       IF(DIMN.eq.2) then
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
-              ' "EP_s " ', ' "U_S" ', ' "V_S" ',' "DES_U_s" ', ' "DES_V_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
-         write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
+              ' "EP_s " ', ' "pU_S" ', ' "pV_S" ',' "dU_s" ',&
+              ' "dV_s" '!, ' "P_S_FOR1" ', ' "P_S_FOR2" '
+         write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=',&
+            JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       else
          write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
-              ' "EP_s " ', ' "U_S" ', ' "V_S" ', ' "W_S" ',' "DES_U_s" ', ' "DES_V_s" ', ' "DES_W_s" '!, &
+              ' "EP_s " ', ' "pU_S" ', ' "pV_S" ', ' "pW_S" ',&
+              ' "dU_s" ', ' "dV_s" ', ' "dW_s" '!, &
         ! & ' "P_S_FOR1" ', ' "P_S_FOR2" ', ' "P_S_FOR3" '
-         write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=', JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
+         write(1000,*)'ZONE F=POINT, I=', (IEND3-ISTART3)+1,  ', J=',&
+            JEND3-JSTART3+1, ', K=', KEND3-KSTART3 + 1
       ENDIF
       DO K=KSTART3, KEND3
          DO J=JSTART3, JEND3
@@ -694,14 +714,16 @@
                END IF
                IF(DIMN.EQ.2) THEN
                   ZCOR = ZT(K)
-                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
-                     1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), DES_U_S(IJK,1), &
-                     DES_V_S(IJK,1) !, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK)
+                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))') &
+                     XE(I-1)+DX(I), YN(J-1)+DY(J), ZCOR, 1.D0-EP_G(IJK),&
+                     PIC_U_S(IJK,MMAX+1), PIC_V_S(IJK,MMAX+1),&
+                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1) !, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK)
                ELSE
                   ZCOR = ZT(K-1) + DZ(K)
-                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))')  XE(I-1)+DX(I), YN(J-1)+DY(J),ZCOR, &
-                     1.D0 - EP_G(IJK), PIC_U_S(IJK,1), PIC_V_S(IJK,1), PIC_W_S(IJK,1), DES_U_S(IJK,1), &
-                    DES_V_S(IJK,1), DES_W_S(IJK,1)!, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
+                  WRITE(1000,'(3(2X,G17.8),4( 2X, G17.8))') XE(I-1)+DX(I),&
+                     YN(J-1)+DY(J), ZCOR, 1.D0-EP_G(IJK), &
+                     PIC_U_S(IJK,MMAX+1), PIC_V_S(IJK,MMAX+1), PIC_W_S(IJK,MMAX+1),&
+                     U_S(IJK,MMAX+1), V_S(IJK,MMAX+1), W_S(IJK,MMAX+1)!, PS_FORCE_PIC(1,IJK), PS_FORCE_PIC(2,IJK),  PS_FORCE_PIC(3,IJK)
                ENDIF
             ENDDO
          ENDDO
@@ -710,13 +732,17 @@
 
       return
 
-      WRITE(FILENAME,'(A,"_",I5.5,".DAT")') TRIM(RUN_NAME)//'_PS_FORCE_',myPE
-      OPEN(1000, file = TRIM(filename), form ='formatted', status='unknown',CONVERT='BIG_ENDIAN')
+      WRITE(FILENAME,'(A,"_",I5.5,".DAT")') &
+         TRIM(RUN_NAME)//'_PS_FORCE_',myPE
+      OPEN(1000, file = TRIM(filename), form ='formatted',&
+           status='unknown',CONVERT='BIG_ENDIAN')
 
-      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ', &
-           ' "DELPX" ', '"DELPY"', '"DELPZ" ',' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
+      IF(DIMN.eq.3) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ',' "Z" ',&
+           ' "DELPX" ', '"DELPY"', '"DELPZ" ',&
+           ' "US_part" ', '"VS_part"' , '"WS_part"', '"EP_s_part"'
       IF(DIMN.eq.2) write(1000,*)'VARIABLES= ',' "X" ',' "Y" ', &
-           ' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , '"EP_S_part"'
+           ' "DELPX" ', '"DELPY"', ' "US_part" ', '"VS_part"' , &
+           '"EP_S_part"'
 
       PC = 1
       DO LL = 1, MAX_PIP
@@ -724,10 +750,13 @@
          IF(PC .GT. PIP) EXIT
          IF(IS_NONEXISTENT(LL)) CYCLE
          pc = pc+1
-         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. IS_EXITING_GHOST(LL)) CYCLE
+         IF(IS_GHOST(LL) .OR. IS_ENTERING_GHOST(LL) .OR. &
+            IS_EXITING_GHOST(LL)) CYCLE
 
-         WRITE(1000,'(10( 2x, g17.8))') (DES_POS_NEW( LL,IDIM), IDIM = 1, DIMN), &
-              (PS_GRAD(IDIM,LL) , IDIM = 1, DIMN), (AVGSOLVEL_P (IDIM, LL) , IDIM = 1, DIMN), 1-EPg_P(LL)
+         WRITE(1000,'(10( 2x, g17.8))') &
+            (DES_POS_NEW(LL,IDIM), IDIM=1,DIMN), &
+            (PS_GRAD(IDIM,LL), IDIM=1,DIMN), &
+            (AVGSOLVEL_P(IDIM,LL),IDIM=1,DIMN), 1-EPg_P(LL)
       ENDDO
       close(1000, status='keep')
 

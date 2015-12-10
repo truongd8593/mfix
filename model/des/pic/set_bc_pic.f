@@ -12,25 +12,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_BC_PIC
 
-      USE constant
-      USE pic_bc
-      USE discretelement
-      USE funits
-      USE geometry
-      USE indices
-      USE param
-      USE param1
-      USE physprop
-      USE run
-      USE mfix_pic
-      use mpi_utility
-
-      use bc
-
+! Modules
+!---------------------------------------------------------------------//
+      USE discretelement, only: particles
       use error_manager
-
+      USE param1, only: undefined_i
+      USE pic_bc, only: pic_bcmi, pic_bcmo, pic_mio
       IMPLICIT NONE
-
+!......................................................................!
 
       CALL INIT_ERR_MSG("SET_BC_PIC")
 

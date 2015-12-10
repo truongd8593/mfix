@@ -10,8 +10,9 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 #include "version.inc"
-SUBROUTINE CALC_FORCE_DEM
+      SUBROUTINE CALC_FORCE_DEM
 
+! Modules
 !---------------------------------------------------------------------//
       USE calc_collision_wall
       USE constant, ONLY: Pi
@@ -73,7 +74,7 @@ SUBROUTINE CALC_FORCE_DEM
       integer :: nn, mm, box_id, box_id2
       logical :: found
 
-!-----------------------------------------------
+!......................................................................!
 
 ! Initialize cohesive forces
       IF(USE_COHESION) PostCohesive(:) = ZERO
@@ -112,7 +113,6 @@ SUBROUTINE CALC_FORCE_DEM
 
          DO CC = CC_START, CC_END-1
             I  = NEIGHBORS(CC)
-
             IF(IS_NONEXISTENT(I)) CYCLE
 
             R_LM = rad + DES_RADIUS(I)

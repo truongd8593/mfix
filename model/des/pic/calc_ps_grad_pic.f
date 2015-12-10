@@ -6,13 +6,15 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_PS_GRAD_PIC
 
+! Modules
+!---------------------------------------------------------------------//
       use particle_filter, only: DES_INTERP_SCHEME_ENUM
       use particle_filter, only: DES_INTERP_GARG
-
       use mfix_pic, only: PIC_P_S
       use mfix_pic, only: PS_FORCE_PIC
-
       IMPLICIT NONE
+
+!......................................................................!
 
       SELECT CASE(DES_INTERP_SCHEME_ENUM)
       CASE(DES_INTERP_GARG); CALL CALC_PS_GRAD_PIC0
@@ -33,31 +35,31 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_PS_GRAD_PIC0
 
-      USE param
-      USE param1
-      USE parallel
-      USE physprop
-      USE run
-      USE geometry
-      USE indices
-      USE bc
-      USE compar
-      USE sendrecv
-      USE discretelement
-      USE constant
-      USE cutcell
-      USE interpolation
-      USE mfix_pic
-      USE fun_avg
-      USE functions
-
+! Modules
+!---------------------------------------------------------------------//
+      use compar, only: IJKSTART3, IJKEND3
+      use compar, only: istart2, jstart2, kstart2
+      use compar, only: istart3, jstart3, kstart3
+      use compar, only: iend3, jend3, kend3
+      use functions, only: FLUID_AT
+      use functions, only: I_OF, J_OF, K_OF
+      use functions, only: IP_OF, JP_OF, KP_OF
+      use functions, only: funijk
+      use functions, only: is_on_mype_owns
+      use geometry, only: DO_K, NO_K
+      use geometry, only: DX, DY, DZ
+      use geometry, only: imin2, jmin2, kmin2
+      USE mfix_pic, only: pic_p_s, ps_force_pic
+      use param1, only: ZERO
+      use sendrecv, only: send_recv
       implicit none
 
-      ! general i, j, k indices
+! Local variables
+!---------------------------------------------------------------------//
+! general i, j, k indices
       INTEGER I, J, K, IJK, IPJK, IJPK, IJKP, IDIM
-
       integer :: I1, J1, K1
-
+!......................................................................!
 
 ! Since EP_G is already shared across the processors, the pressure
 ! gradient calculation can be made a function call so that the extra

@@ -37,7 +37,7 @@
       INTEGER BCV_I      ! BC loop counter
       INTEGER M           ! Mass phase loop counter
       INTEGER PHASE_CNT        ! Number of solid phases at bc
-      INTEGER PHASE_LIST(DES_MMAX) ! List of phases used in current bc
+      INTEGER PHASE_LIST(DIM_M) ! List of phases used in current bc
 
 ! the number of particles injected in a solids time step
       DOUBLE PRECISION MAX_DIA ! Max diameter of incoming particles at bc
@@ -91,13 +91,13 @@
          MAX_DIA = ZERO
 
 ! Determine if the inlet is mono or polydisperse
-         DO M=1, DES_MMAX
+         DO M=1, DES_MMAX+MMAX
             IF(SOLIDS_MODEL(M) /= 'PIC') CYCLE
             IF(BC_ROP_s(BCV,M) == UNDEFINED) CYCLE
             IF(COMPARE(BC_ROP_s(BCV,M),ZERO)) CYCLE
             PHASE_CNT = PHASE_CNT + 1
             PHASE_LIST(PHASE_CNT) = M
-            MAX_DIA = MAX(MAX_DIA,DES_D_P0(M))
+            MAX_DIA = MAX(MAX_DIA,D_P0(M))
          ENDDO
 
       ENDDO
@@ -123,48 +123,44 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE SET_PIC_BCMI_IJK
+
+! Modules
+!---------------------------------------------------------------------//
       use bc, only: BC_PLANE
       use bc, only: BC_I_w, BC_I_e, BC_J_s, BC_J_n, BC_K_b, BC_K_t
-
+      USE cutcell, only: CUT_CELL_AT
+      USE discretelement, only : DES_MMAX
+      use error_manager
+      use functions
+      use funits, only: DMP_LOG
+      use mpi_utility
+      use param, only: dim_m
       use pic_bc, only: PIC_BCMI, PIC_BCMI_MAP, PIC_BCMI_IJK
       use pic_bc, only: PIC_BCMI_IJKSTART, PIC_BCMI_IJKEND
       use pic_bc, only: pic_bcmi_cnp
       use pic_bc, only: pic_bcmi_rnp
       use pic_bc, only: PIC_BCMI_INCL_CUTCELL
-      USE discretelement, only : DES_MMAX
-      use funits, only: DMP_LOG
-
-      USE cutcell, only: CUT_CELL_AT
-
-      use mpi_utility
-      use error_manager
-      use functions
-
       IMPLICIT NONE
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER, ALLOCATABLE :: LOC_PIC_BCMI_IJK(:)
-
       INTEGER :: BCV, BCV_I
-
       INTEGER :: LC
-
       INTEGER :: MAX_CELLS
-
       INTEGER :: BND1, BND2
-
       LOGICAL, parameter :: setDBG = .false.
       LOGICAL :: dFlag
-
       INTEGER :: I,J,K,IJK
       INTEGER :: I_w, I_e, J_s, J_n, K_b, K_t
+!......................................................................!
+
 
       CALL INIT_ERR_MSG("SET_PIC_BCMI_IJK")
 
       dFlag = (DMP_LOG .AND. setDBG)
 
       if(dFlag) write(*,"(2/,2x,'From: SET_PIC_BCMI_IJK')")
-
-
 
 ! Loop over all inflow BCs to get an approximate count of the number
 ! of fluid cells that are adjacent to them.
@@ -266,8 +262,8 @@
 ! Allocate the global store arrary array. This changes across MPI ranks.
       IF(LC > 1) THEN
          allocate( PIC_BCMI_IJK(LC-1) )
-         allocate(pic_bcmi_cnp(LC-1, DES_MMAX))
-         allocate(pic_bcmi_rnp(LC-1, DES_MMAX))
+         allocate(pic_bcmi_cnp(LC-1, DIM_M))
+         allocate(pic_bcmi_rnp(LC-1, DIM_M))
 
          PIC_BCMI_IJK(1:LC-1) = LOC_PIC_BCMI_IJK(1:LC-1)
 
@@ -283,9 +279,7 @@
 
       deallocate(LOC_PIC_BCMI_IJK)
 
-
       CALL FINL_ERR_MSG
-
 
       RETURN
       END SUBROUTINE SET_PIC_BCMI_IJK

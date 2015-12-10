@@ -76,29 +76,32 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param1
       USE discretelement, only: des_mmax, dtsolid
-      USE discretelement, only: DES_RO_s, DES_D_P0
-      USE physprop, only: MU_g0
-      USE mfix_pic, only : dtpic_taup, des_tau_p, MPPIC_PDRAG_IMPLICIT
+      use param1, only: large_number
+      USE physprop, only: MU_g0, mmax, d_p0, ro_s0
+      USE mfix_pic, only : dtpic_taup, des_tau_p
+      USE mfix_pic, only: MPPIC_PDRAG_IMPLICIT
       use error_manager
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: M
+      INTEGER :: M, MMAX_TOT
+!-----------------------------------------------
 
       CALL INIT_ERR_MSG("CFASSIGN_PIC")
 
-      DO M = 1, DES_MMAX
-         DES_TAU_P(M) = DES_RO_S(M)*(DES_D_P0(M)**2.d0)/(18.d0*MU_g0)
+      MMAX_TOT = DES_MMAX+MMAX
+      DO M = MMAX+1, MMAX_TOT
+! account for a possible offset index when using d_p0 and ro_s.
+         DES_TAU_P(M) = RO_S0(M)*(D_P0(M)**2.d0)/(18.d0*MU_g0)
          WRITE(err_msg,'(/A,I2,A,G17.8)') &
          'TAU_P FOR ', M,'th SOLID PHASE= ', DES_TAU_P(M)
          CALL FLUSH_ERR_MSG (Header = .false., Footer = .false.)
 
       ENDDO
 
-      DTSOLID = MINVAL(DES_TAU_P(1:DES_MMAX))
+      DTSOLID = MINVAL(DES_TAU_P(MMAX+1:MMAX_TOT))
       DTPIC_TAUP = DTSOLID      !maximum dt for point-particles based on taup
       if(MPPIC_PDRAG_IMPLICIT) DTPIC_TAUP = LARGE_NUMBER
 
@@ -173,11 +176,6 @@
 ! also not extendable to cut-cell. So this routine computes the geoemetric C
 ! volume of the nodes.                                                     C
 !                                                                          C
-! des_vol_node_ratio was defined in order to develop an estimation         C
-! algorithm for computing mean fields when Cartesian grid is on.           C
-! Subsequently, another algorithm was developed that negated the need for  C
-! des_vol_node_ratio.                                                      C
-! However, still keeping this variable for now (RG: July 27, 2012)         C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
       SUBROUTINE compute_volume_of_nodes

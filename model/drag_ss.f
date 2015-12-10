@@ -102,27 +102,7 @@
             D_PL = D_P(IJK,L)
             RO_M = RO_S(IJK,M)
             RO_L = RO_S(IJK,L)
-
-            IF (DES_CONTINUUM_HYBRID) THEN
-! evaluating g0 - taken from G_0.f subroutine (lebowitz form)
-! this section is needed to account for all solids phases until g0 for
-! multiple solids types (i.e. discrete & continuum) can be addressed
-! more effectively.
-               EPSoDP = ZERO
-               DO CM = 1, MMAX
-                  EPS = EP_s(IJK, CM)
-                  EPSoDP = EPSoDP + EPS / D_p(IJK,CM)
-               ENDDO
-               DO DM = 1, DES_MMAX
-                  EPS = DES_ROP_S(IJK,DM)/DES_RO_S(DM)
-                  EPSoDP = EPSoDP + EPS / DES_D_p0(DM)
-               ENDDO
-               EPg = EP_g(IJK)
-               G0_ML = ONE/EPg + 3.0d0*EPSoDP*D_pM*D_PL / &
-                  (EPg*EPg *(D_pM + D_pL))
-            ELSE
-               G0_ML = G_0(IJK,L,M)
-            ENDIF
+            G0_ML = G_0(IJK,L,M)
 
 ! determining the solids-solids 'drag coefficient'
             CALL DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,VREL)
@@ -164,7 +144,7 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L, G0_ML, VREL)
+      SUBROUTINE DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,VREL)
 
 !-----------------------------------------------
 ! Modules
