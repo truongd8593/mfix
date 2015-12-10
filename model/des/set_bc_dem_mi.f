@@ -425,23 +425,23 @@
 ! the fluid cell.
          SELECT CASE (BC_PLANE(BCV))
          CASE('N')
-            J_s = JofPOS(BC_Y_s(BCV))+1
-            J_n = JofPOS(BC_Y_n(BCV))+1
+            J_s = JofPOS(BC_Y_s(BCV))
+            J_n = JofPOS(BC_Y_n(BCV))
          CASE('S')
-            J_s = JofPOS(BC_Y_s(BCV))-1
-            J_n = JofPOS(BC_Y_n(BCV))-1
+            J_s = JofPOS(BC_Y_s(BCV))
+            J_n = JofPOS(BC_Y_n(BCV))
          CASE('E')
-            I_w = IofPOS(BC_X_w(BCV))+1
-            I_e = IofPOS(BC_X_e(BCV))+1
+            I_w = IofPOS(BC_X_w(BCV))
+            I_e = IofPOS(BC_X_e(BCV))
          CASE('W')
-            I_w = IofPOS(BC_X_w(BCV))-1
-            I_e = IofPOS(BC_X_e(BCV))-1
+            I_w = IofPOS(BC_X_w(BCV))
+            I_e = IofPOS(BC_X_e(BCV))
          CASE('T')
-            K_b = KofPOS(BC_Z_b(BCV))+1
-            K_t = KofPOS(BC_Z_t(BCV))+1
+            K_b = KofPOS(BC_Z_b(BCV))
+            K_t = KofPOS(BC_Z_t(BCV))
          CASE('B')
-            K_b = KofPOS(BC_Z_b(BCV))-1
-            K_t = KofPOS(BC_Z_t(BCV))-1
+            K_b = KofPOS(BC_Z_b(BCV))
+            K_t = KofPOS(BC_Z_t(BCV))
          END SELECT
 
          if(dFlag) then
