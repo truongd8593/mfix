@@ -68,7 +68,7 @@
 ! Determine which BCs are DEFINED
       CALL CHECK_BC_GEOMETRY
 
-! Total number of solids. (this won't work for GHD)
+! Total number of solids. (this won't work for GHD/hybrid)
       MMAX_TOT = SMAX + DES_MMAX
 
 ! Loop over each defined BC and check the user data.

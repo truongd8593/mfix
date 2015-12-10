@@ -111,12 +111,12 @@
 ! order and allocates arrays necessary for interpolation
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!$omp parallel default(shared) &
+!$omp parallel default(shared)
 !$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, &
 !$omp         GST_TMP, COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, &
 !$omp         NINDX, NP, WTP, M, WEIGHT_FT, I1, I2, J1, J2, K1, K2, &
 !$omp         IDIM, IJK2, NORM_FACTOR, RESID_ROPS, RESID_VEL, &
-!$omp         COUNT_NODES_OUTSIDE, TEMP1) &
+!$omp         COUNT_NODES_OUTSIDE, TEMP1)
 !$omp do reduction(+:MASS_SOL1) reduction(+:DES_ROPS_NODE,DES_VEL_NODE)
       DO IJK = IJKSTART3,IJKEND3
 

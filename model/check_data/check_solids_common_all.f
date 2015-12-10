@@ -64,7 +64,7 @@
       CALL INIT_ERR_MSG("CHECK_SOLIDS_COMMON_ALL")
 
 ! Set the number of solids phases to be checked.
-      MMAX_L = MMAX + DES_MMAX
+      MMAX_L = SMAX + DES_MMAX
 
 ! Check D_p0
       DO M = 1, MMAX_L
