@@ -695,8 +695,8 @@
       lent = MMAX_TOT+MMAX_TOT*(MMAX_TOT-1)/2
       lend = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
       lenc = lent-lend
-      des_en_input((lent+1):lent) = des_en_input(1:lend)
-      des_et_input((lent+1):lent) = des_et_input(1:lend)
+      des_en_input((lenc+1):lent) = des_en_input(1:lend)
+      des_et_input((lenc+1):lent) = des_et_input(1:lend)
 
       DO M=MMAX+1,MMAX_TOT
          IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
