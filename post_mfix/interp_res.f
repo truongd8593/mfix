@@ -21,24 +21,23 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE INTERP_RES
-!
-        Use compar
-        Use fldvar
-        Use functions
-        Use funits
-        Use geometry
-        Use gridmap ! added
-        Use indices
-        Use param1
-        Use physprop
-        Use read_input
-        Use post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
-        Use run
-        Use rxns
-        Use scalars
-        use energy, only: gama_rg, t_rg, gama_rs, t_rs
-        use param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
-        use tmp_array        ! 16-jun-2004
+
+        USE compar
+        USE energy, only: gama_rg, t_rg, gama_rs, t_rs
+        USE fldvar
+        USE functions
+        USE funits
+        USE geometry
+        USE gridmap ! added
+        USE indices
+        USE param, only: dimension_3, dimension_m, dimension_n_g, dimension_n_s
+        USE param1
+        USE physprop
+        USE post3d, only: xdist_sc, xdist_vec, ydist_sc, ydist_vec, zdist_sc, zdist_vec
+        USE read_input
+        USE run
+        USE rxns
+        USE scalars
 
       IMPLICIT NONE
       INCLUDE 'xforms.inc'

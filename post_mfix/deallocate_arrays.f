@@ -13,34 +13,31 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE ambm
+      USE cont
+      USE drag
+      USE energy
+      USE fldvar
+      USE geometry
+      USE ghdtheory
+      USE indices
+      USE kintheory
+      USE mflux
       USE param
       USE param1
-      Use ambm
-      Use cont
-      Use drag
-      Use energy
-      Use fldvar
-      Use geometry
-      Use indices
-      Use pgcor
-      Use physprop
-      Use pscor
-      Use residual
-      Use rxns
-      Use run
-      Use scalars
-      Use tau_g
-      Use tau_s
-      Use tmp_array
-      Use tmp_array1
-      Use trace
-      Use visc_g
-      Use visc_s
-      Use xsi_array
-      Use vshear
-      Use mflux
-      use kintheory
-      use ghdtheory
+      USE pgcor
+      USE physprop
+      USE pscor
+      USE residual
+      USE run
+      USE rxns
+      USE scalars
+      USE tau_g
+      USE tau_s
+      USE trace
+      USE visc_g
+      USE visc_s
+      USE vshear
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -270,19 +267,6 @@
       Deallocate(  TAU_V_s )
       Deallocate(  TAU_W_s )
 
-!tmp_array
-      Deallocate(  Array1 )
-      Deallocate(  Array2 )
-      Deallocate(  Array3 )
-      Deallocate(  Array4 )
-      Deallocate(  Array1i )
-      Deallocate(  Array1c )
-      deallocate(  TMP4)
-      deallocate(  ArrayLM)
-
-!tmp_array1
-      Deallocate(  Arraym1 )
-
 !trace
       Deallocate(  trD_s_C  )
       Deallocate(  trD_s2  )
@@ -319,11 +303,6 @@
       Deallocate(  I2_devD_s )
       Deallocate(  TrM_s )
       Deallocate(  TrDM_s )
-
-!xsi_array
-      Deallocate(  Xsi_e )
-      Deallocate(  Xsi_n )
-      Deallocate(  Xsi_t )
 
 !vshear
       Deallocate(  VSH )
