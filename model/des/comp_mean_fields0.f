@@ -111,7 +111,7 @@
 ! order and allocates arrays necessary for interpolation
       CALL SET_INTERPOLATION_SCHEME(2)
 
-!$omp parallel default(shared)
+!$omp parallel default(shared) &
 !$omp private(IJK, I, J, K, PCELL, IW, IE, JS, JN, KB, KTP, ONEW, &
 !$omp         GST_TMP, COUNT_NODES_INSIDE, II, JJ, KK, CUR_IJK, &
 !$omp         NINDX, NP, WTP, M, WEIGHT_FT, I1, I2, J1, J2, K1, K2, &
@@ -309,7 +309,7 @@
 !$omp parallel do default(none) collapse (3) &
 !$omp shared(KSTART2, KEND1, JSTART2, JEND1, ISTART2, IEND1, DO_K, &
 !$omp        VOL, DEAD_CELL_AT, FUNIJK_MAP_C, VOL_SURR, MMAX_TOT, &
-!$omp        DES_ROPS_NODE, DES_VEL_NODE) &
+!$omp        MMAX, DES_ROPS_NODE, DES_VEL_NODE) &
 !$omp private(I, J, K, IJK, M, II, JJ, KK, IJK2, DES_ROP_DENSITY, &
 !$omp         DES_VEL_DENSITY) &
 !$omp reduction(+:ROP_S, U_S, V_S, W_S)
@@ -353,7 +353,7 @@
 
 
 !$omp parallel do default(none) private(IJK, M) &
-!$omp shared(IJKSTART3, IJKEND3, DO_K, MMAX_TOT, ROP_s, U_S, &
+!$omp shared(IJKSTART3, IJKEND3, DO_K, MMAX_TOT, MMAX, ROP_s, U_S, &
 !$omp        V_S, W_S, VOL)
       DO IJK = IJKSTART3, IJKEND3
          IF(.NOT.FLUID_AT(IJK)) CYCLE
