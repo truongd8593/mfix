@@ -108,7 +108,7 @@
 
 ! calculating the cell average solids velocity for each solids phase
          DO M = MMAX+1, DES_MMAX+MMAX
-            IF(SOLVOLINC(IJK,M).GT.ZERO) THEN
+            IF(SOLVOLINC(IJK,M).GT.ZERO .AND.MPPIC) THEN
                OoSOLVOL = ONE/SOLVOLINC(IJK,M)
                U_s(IJK,M) = U_s(IJK,M)*OoSOLVOL
                V_s(IJK,M) = V_s(IJK,M)*OoSOLVOL
