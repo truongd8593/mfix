@@ -46,7 +46,6 @@
       USE rxns
       USE scalars
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       USE compar
       USE mflux
       USE functions
@@ -88,12 +87,13 @@
 !                      linear equation solver method and iterations
       INTEGER          LEQM, LEQI
 
+      DOUBLE PRECISION :: S_P(DIMENSION_3), S_C(DIMENSION_3), EPS(DIMENSION_3)
+
       character(LEN=8) :: Vname
 
 !-----------------------------------------------
 
       call lock_ambm
-      call lock_tmp_array
 
       RESID(RESID_sc,0) = ZERO
       NUM_RESID(RESID_sc,0) = ZERO
@@ -128,7 +128,6 @@
                ENDIF
             END DO
 
-
             IF(.NOT.ADDED_MASS) THEN
                CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gE, Flux_gN, Flux_gT, M, A_M, B_M)
@@ -136,7 +135,6 @@
                CALL CONV_DIF_PHI (Scalar(1,nn), DIF_Scalar(1,nn), DISCRETIZE(9), &
                                U_G, V_G, W_G, Flux_gSE, Flux_gSN, Flux_gST, M, A_M, B_M)
             ENDIF
-!
 !
             CALL BC_PHI (Scalar(1,nn), BC_Scalar(1,nn), BC_ScalarW(1,nn), BC_HW_Scalar(1,nn), &
                          BC_C_Scalar(1,nn), M, A_M, B_M)
@@ -242,12 +240,6 @@
       END DO
 
       call unlock_ambm
-      call unlock_tmp_array
 
       RETURN
       END SUBROUTINE SOLVE_Scalar_EQ
-
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

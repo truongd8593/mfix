@@ -198,8 +198,6 @@
       USE param, only: dimension_3
       USE param1, only: one
       USE xsi, only: calc_xsi
-      USE xsi_array, only: xsi_e, xsi_n, xsi_t
-      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -223,14 +221,13 @@
       INTEGER :: IJKW, IJKS, IJKB, IMJK, IJMK, IJKM
       Integer :: incr
 
-!---------------------------------------------------------------------//
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
-      call lock_xsi_array
+!---------------------------------------------------------------------//
 
 ! Calculate factors
       incr=0
       CALL CALC_XSI (DISC, ROP, U, V, W, XSI_E, XSI_N, XSI_T, incr)
-
 
 !!!$omp  parallel do private(IJK, IJKE, IJKN, IJKT, IJKW, IJKS, IJKB, &
 !!!$omp                      IMJK, IJMK, IJKM) &
@@ -283,8 +280,6 @@
 
          ENDIF   ! end if fluid_at
       ENDDO    ! end do ijk
-
-      call unlock_xsi_array
 
       RETURN
       END SUBROUTINE CONV_ROP1

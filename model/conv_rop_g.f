@@ -177,19 +177,18 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE compar
       USE fldvar
-      USE run
-      USE parallel
-      USE physprop
+      USE functions
       USE geometry
       USE indices
+      USE parallel
+      USE param
+      USE param1
       USE pgcor
-      Use xsi_array
-      USE compar
+      USE physprop
+      USE run
       USE xsi
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -206,11 +205,10 @@
       INTEGER :: incr
 ! temporary use of global arrays:
 ! xsi_array: convection weighting factors
-!      DOUBLE PRECISION :: XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
-!                          XSI_t(DIMENSION_3)
+      DOUBLE PRECISION :: XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
+                          XSI_t(DIMENSION_3)
 !-----------------------------------------------
 
-      call lock_xsi_array
 
 ! loezos
       incr=0
@@ -264,8 +262,6 @@
 
          ENDIF
       ENDDO
-
-      call unlock_xsi_array
 
       RETURN
       END SUBROUTINE CONV_ROP_G1

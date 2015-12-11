@@ -53,7 +53,6 @@
       USE ur_facs
       USE usr
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -95,14 +94,15 @@
 !
 !                      small value of K or E, 1 cm2/s2 = 1e-4 m2/s2 = 1e-4 m2/s3
       DOUBLE PRECISION smallTheta
-!
+
+      DOUBLE PRECISION :: S_P(DIMENSION_3), S_C(DIMENSION_3)
+
       character(LEN=8) :: Vname
 !-----------------------------------------------
 
       IF( .NOT. K_Epsilon) RETURN
 
       call lock_ambm
-      call lock_tmp_array
 
 !
       smallTheta = (to_SI)**4 * ZERO_EP_S
@@ -369,12 +369,6 @@
            END DO
 
       call unlock_ambm
-      call unlock_tmp_array
 
       RETURN
       END SUBROUTINE SOLVE_K_Epsilon_EQ
-
-
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,ijkmax2-> ijkstart3, ijkend3

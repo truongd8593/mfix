@@ -46,7 +46,6 @@
       USE ur_facs
       USE utilities
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3, VxGama => Array4
       use functions
       use ps
       use toleranc
@@ -84,15 +83,15 @@
 ! array1 (locally s_p)
 ! source lhs: coefficient of dependent variable
 ! becomes part of a_m matrix; must be positive
-!      DOUBLE PRECISION :: S_P(DIMENSION_3)
+      DOUBLE PRECISION :: S_P(DIMENSION_3)
 ! array2 (locally s_c)
 ! source rhs vector: constant part becomes part of b_m vector
-!      DOUBLE PRECISION :: S_C(DIMENSION_3)
+      DOUBLE PRECISION :: S_C(DIMENSION_3)
 ! array3 (locally eps)
 ! alias for solids volume fraction
-!      DOUBLE PRECISION :: eps(DIMENSION_3)
+      DOUBLE PRECISION :: eps(DIMENSION_3)
 ! array4 (locally vxgama)
-!      DOUBLE PRECISION :: vxgama(DIMENSION_3)
+      DOUBLE PRECISION :: vxgama(DIMENSION_3)
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
@@ -104,8 +103,6 @@
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrys a_m and b_m
-      call lock_tmp_array  ! locks array1,array2,array3,array4
-                           ! (locally s_p, s_c, eps, vxgama)
 
 ! Initialize error flag.
       Err_l = 0
@@ -275,8 +272,6 @@
 ! ----------------------------------------------------------------<<<
 
       call unlock_ambm
-      call unlock_tmp_array
-
 
 ! If the linear solver diverged, species mass fractions may take on
 ! unphysical values. To prevent them from propogating through the domain

@@ -13,37 +13,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      Use ambm
-      Use cont
-      Use drag
-      Use energy
-      Use fldvar
-      Use geometry
-      Use indices
-      Use pgcor
-      Use physprop
-      Use pscor
-      Use residual
-      Use rxns
-      Use run
-      Use scalars
-      Use turb
-      Use tau_g
-      Use tau_s
-      Use tmp_array
-      Use tmp_array1
-      Use trace
-      Use visc_g
-      Use visc_s
-      Use xsi_array
-      Use vshear
-      Use mflux
-      USE ghdtheory
+      use ambm
+      use cdist
+      use cont
+      use des_rxns
+      use drag
+      use energy
+      use fldvar
+      use geometry
+      use ghdtheory
+      use indices
       use kintheory
-      Use cdist
-      Use des_rxns
+      use mflux
+      use param
+      use param1
+      use pgcor
+      use physprop
+      use pscor
+      use residual
+      use run
+      use rxns
+      use scalars
+      use tau_g
+      use tau_s
+      use trace
+      use turb
+      use visc_g
+      use visc_s
+      use vshear
 
       IMPLICIT NONE
 
@@ -241,20 +238,6 @@
       Allocate(  TAU_V_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(  TAU_W_s(DIMENSION_3p, DIMENSION_M) )
 
-!tmp_array
-      Allocate(  Array1(DIMENSION_3) )
-      Allocate(  Array2(DIMENSION_3) )
-      Allocate(  Array3(DIMENSION_3) )
-      Allocate(  Array4(DIMENSION_3) )
-      Allocate(  Array1i(DIMENSION_3) )
-      Allocate(  Array1c(DIMENSION_3) )
-      Allocate(  TMP4(DIMENSION_4) )
-      Allocate(  ArrayLM (DIMENSION_3, DIMENSION_LM) )  !S. Dartevelle, LANL, Feb. 2004
-
-
-!tmp_array1
-      Allocate(  Arraym1(DIMENSION_3, DIMENSION_M) )
-
 !trace
       Allocate(  trD_s_C (DIMENSION_3, DIMENSION_M) )
       Allocate(  trD_s2 (DIMENSION_3, DIMENSION_M) )
@@ -291,15 +274,9 @@
       Allocate(  TrM_s (DIMENSION_3) )
       Allocate(  TrDM_s (DIMENSION_3) )
 
-!xsi_array
-      Allocate(  Xsi_e(DIMENSION_3) )
-      Allocate(  Xsi_n(DIMENSION_3) )
-      Allocate(  Xsi_t(DIMENSION_3) )
-
 !shear quantities
       Allocate(  VSH(DIMENSION_3) )
       Allocate(  VSHE(DIMENSION_3) )
-
 
 !mflux
       Allocate( Flux_gE(DIMENSION_3p) )

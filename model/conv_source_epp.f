@@ -18,14 +18,13 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE compar
+      USE fldvar
+      USE geometry
       USE param
       USE param1
-      USE fldvar
       USE run
-      USE geometry
-      USE compar
       USE sendrecv
-      Use xsi_array
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -47,7 +46,6 @@
       RETURN
       END SUBROUTINE CONV_SOURCE_EPP
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: CONV_SOURCE_EPp0                                        C
@@ -65,22 +63,22 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE run
-      USE parallel
+      USE compar
       USE constant
-      USE physprop
-      USE rxns
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
+      USE parallel
+      USE param
+      USE param1
       USE pgcor
+      USE physprop
       USE pscor
-      USE compar
+      USE run
+      USE rxns
       USE sendrecv
       USE solids_pressure
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -322,25 +320,24 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE run
-      USE parallel
+      USE compar
       USE constant
-      USE physprop
-      USE rxns
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
+      USE parallel
+      USE param
+      USE param1
       USE pgcor
+      USE physprop
       USE pscor
-      USE xsi
-      USE xsi_array
-      USE vshear
-      USE compar
+      USE run
+      USE rxns
       USE sendrecv
       USE solids_pressure
-      USE functions
+      USE vshear
+      USE xsi
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -375,12 +372,10 @@
       CHARACTER(LEN=80) :: LINE(1)
 ! temporary use of global arrays:
 ! xsi_array: convection weighting factors
-!      DOUBLE PRECISION :: XSI_e(DIMENSION_3), &
-!                          XSI_n(DIMENSION_3),&
-!                          XSI_t(DIMENSION_3)
+      DOUBLE PRECISION :: XSI_e(DIMENSION_3), &
+                          XSI_n(DIMENSION_3),&
+                          XSI_t(DIMENSION_3)
 !-----------------------------------------------
-
-      call lock_xsi_array
 
       IF (MCP == UNDEFINED_I) THEN
 ! this error should be caught earlier in the routines so that this
@@ -549,12 +544,8 @@
          ENDDO
       ENDIF
 
-      call unlock_xsi_array
-
-
       RETURN
       END SUBROUTINE CONV_SOURCE_EPP1
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

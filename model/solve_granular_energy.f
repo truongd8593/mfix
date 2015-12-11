@@ -43,7 +43,6 @@
       USE energy
       USE rxns
       Use ambm
-      Use tmp_array, S_p => Array1, S_c => Array2, EPs => Array3
       USE compar
       USE mflux
       USE mpi_utility
@@ -96,12 +95,12 @@
 ! array1 (locally s_p)
 ! source vector: coefficient of dependent variable
 ! becomes part of a_m matrix; must be positive
-!      DOUBLE PRECISION :: S_P(DIMENSION_3)
+      DOUBLE PRECISION :: S_P(DIMENSION_3)
 ! array2 (locally s_c)
 ! source vector: constant part becomes part of b_m vector
-!      DOUBLE PRECISION :: S_C(DIMENSION_3)
+      DOUBLE PRECISION :: S_C(DIMENSION_3)
 ! array3 (locally eps)
-!      DOUBLE PRECISION :: eps(DIMENSION_3)
+      DOUBLE PRECISION :: eps(DIMENSION_3)
 
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
@@ -109,8 +108,6 @@
 !-----------------------------------------------
 
       call lock_ambm       ! locks arrays a_m and b_m
-      call lock_tmp_array  ! locks array1,array2,array3
-                           ! (locally s_p, s_c, eps)
 
 ! Initialize error flags.
       Err_l = 0
@@ -444,14 +441,9 @@
       END SELECT   ! end selection of kt_type_enum
 
       call unlock_ambm
-      call unlock_tmp_array
-
 
       CALL global_all_sum(Err_l, Err_g)
       IER = maxval(Err_g)
 
-
       RETURN
       END SUBROUTINE SOLVE_GRANULAR_ENERGY
-
-

@@ -20,17 +20,12 @@
       use leqsol, only: LEQ_METHOD, LEQ_IT
 ! Preconditioner, sweep method, convergence tolerance
       use leqsol, only: LEQ_PC, LEQ_SWEEP, LEQ_TOL
-! Cell-center gas velocities.
-      use tmp_array, only: DIF => ARRAY1
 ! Size of fluid variable arrays.
       use param, only: DIMENSION_3
 
 ! Module procedures
 !---------------------------------------------------------------------//
-! Lock/Unlock the temp arrays to prevent double usage.
-      use tmp_array, only: LOCK_TMP_ARRAY
-      use tmp_array, only: UNLOCK_TMP_ARRAY
-! Routines to mange messages to user.
+! Routines to manage messages to user.
       use error_manager
       use machine, only: wall_time
 
@@ -55,6 +50,7 @@
       DOUBLE PRECISION :: WALL_START
 ! Local flag to print debug messages
       LOGICAL, PARAMETER :: setDBG = .TRUE.
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: DIF
 !......................................................................!
 
       IF(setDBG) THEN
@@ -63,12 +59,8 @@
          WALL_START = WALL_TIME()
       ENDIF
 
-! Lock the temp arrays.
-      CALL LOCK_TMP_ARRAY
-
 ! Populate the diffusion coefficients
       CALL CALC_DIF_DES(DIF, setDBG, IER)
-
 
       DIF_STOP = 1.0d0
       DIF_TIME = 0.0d0
@@ -101,13 +93,8 @@
 
  9001 FORMAT(5x,'Wall Time: ',g11.4)
 
-! Unlock the temp arrays.
-      CALL UNLOCK_TMP_ARRAY
-
-
       RETURN
       END SUBROUTINE DIFFUSE_MEAN_FIELD
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

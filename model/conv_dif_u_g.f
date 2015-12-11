@@ -570,20 +570,13 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE param, only: dimension_3
+      USE param, only: dimension_3, dimension_4
       USE param1, only: zero
 
       USE run, only: discretize, fpfoi
       USE sendrecv3, only: send_recv3
 
-      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
-      USE tmp_array, only: tmp4
-      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
-      USE tmp_array, only: lock_tmp4_array, unlock_tmp4_array
-
       USE xsi, only: calc_xsi
-      USE xsi_array, only: xsi_e, xsi_n, xsi_t
-      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
 
       IMPLICIT NONE
 
@@ -618,16 +611,16 @@
 
 ! temporary use of global arrays:
 ! array1 (locally u)  - the x directional velocity
-!      DOUBLE PRECISION :: U(DIMENSION_3)
+      DOUBLE PRECISION :: U(DIMENSION_3)
 ! array2 (locally v)  - the y directional velocity
-!      DOUBLE PRECISION :: V(DIMENSION_3)
+      DOUBLE PRECISION :: V(DIMENSION_3)
 ! array3 (locally ww) - the z directional velocity
-!      DOUBLE PRECISION :: WW(DIMENSION_3)
-!---------------------------------------------------------------------//
+      DOUBLE PRECISION :: WW(DIMENSION_3)
+!---------------------------------------------------------------------
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
-      call lock_tmp4_array
-      call lock_tmp_array
-      call lock_xsi_array
+      allocate(tmp4(DIMENSION_4))
 
       CALL GET_UCELL_GVTERMS(U, V, WW)
 
@@ -783,13 +776,10 @@
          ENDIF ! end if flow_at_e
       ENDDO   ! end do ijk
 
-      call unlock_tmp4_array
-      call unlock_tmp_array
-      call unlock_xsi_array
+      DEALLOCATE(tmp4)
 
       RETURN
       END SUBROUTINE STORE_A_U_GDC
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -826,12 +816,8 @@
 
       USE run, only: discretize
 
-      USE tmp_array, only: U => Array1, V => Array2, WW => Array3
-      USE tmp_array, only: lock_tmp_array, unlock_tmp_array
-
       USE xsi, only: calc_xsi
-      USE xsi_array, only: xsi_e, xsi_n, xsi_t
-      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
+
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -853,15 +839,14 @@
 
 ! temporary use of global arrays:
 ! array1 (locally u)  - the x directional velocity
-!      DOUBLE PRECISION :: U(DIMENSION_3)
+      DOUBLE PRECISION :: U(DIMENSION_3)
 ! array2 (locally v)  - the y directional velocity
-!      DOUBLE PRECISION :: V(DIMENSION_3)
+      DOUBLE PRECISION :: V(DIMENSION_3)
 ! array3 (locally ww) - the z directional velocity
-!      DOUBLE PRECISION :: WW(DIMENSION_3)
+      DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------//
-
-      call lock_tmp_array
-      call lock_xsi_array
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
       CALL GET_UCELL_GVTERMS(U, V, WW)
 
@@ -869,7 +854,6 @@
       incr=1
       CALL CALC_XSI (DISCRETIZE(3), U_G, U, V, WW, XSI_E, XSI_N, &
                      XSI_T, incr)
-
 
 !!!$omp      parallel do                                                 &
 !!!$omp&     private(IJK, IPJK, IJPK, IJKP, IMJK, IJMK, IJKM,            &
@@ -923,9 +907,5 @@
          ENDIF   ! end if flow_at_e
       ENDDO   ! end do ijk
 
-      call unlock_tmp_array
-      call unlock_xsi_array
-
       RETURN
       END SUBROUTINE STORE_A_U_G1
-

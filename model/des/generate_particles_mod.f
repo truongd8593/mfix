@@ -468,7 +468,6 @@
       use physprop, only: mmax
 
 ! The accumulated number of particles in each IJK.
-      use tmp_array, only: PARTICLE_COUNT => ARRAY1
       use mpi_utility, only: GLOBAL_ALL_SUM
 
       use error_manager

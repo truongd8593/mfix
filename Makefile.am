@@ -690,8 +690,6 @@ libmfix_src = \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
 	model/time_march.f \
-	model/tmp_array1_mod.f \
-	model/tmp_array_mod.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -740,7 +738,6 @@ libmfix_src = \
 	model/write_usr0.f \
 	model/write_usr1.f \
 	model/xerbla.f \
-	model/xsi_array_mod.f \
 	model/xsi_mod.f \
 	model/zero_norm_vel.f
 
@@ -1231,8 +1228,6 @@ postmfix_SOURCES = \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
 	model/time_march.f \
-	model/tmp_array1_mod.f \
-	model/tmp_array_mod.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -1279,7 +1274,6 @@ postmfix_SOURCES = \
 	model/write_usr0.f \
 	model/write_usr1.f \
 	model/xerbla.f \
-	model/xsi_array_mod.f \
 	model/xsi_mod.f \
 	model/zero_norm_vel.f \
 	post_mfix/any_more_data.f \

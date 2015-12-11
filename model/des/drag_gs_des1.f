@@ -59,17 +59,13 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Model B momentum equation
       use run, only: MODEL_B
-! Cell-center gas velocities.
-      use tmp_array, only: UGC => ARRAY1
-      use tmp_array, only: VGC => ARRAY2
-      use tmp_array, only: WGC => ARRAY3
-! Lock/Unlock the temp arrays to prevent double usage.
-      use tmp_array, only: LOCK_TMP_ARRAY
-      use tmp_array, only: UNLOCK_TMP_ARRAY
+
       IMPLICIT NONE
 
 ! Local variables
 !---------------------------------------------------------------------//
+!     Cell-center gas velocities.
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -88,9 +84,6 @@
       MODEL_A = .NOT.MODEL_B
 ! Loop bounds for interpolation.
       LP_BND = merge(27,9,DO_K)
-
-! Lock the temp arrays.
-      CALL LOCK_TMP_ARRAY
 
 ! Calculate the cell center gas velocities.
       CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
@@ -168,12 +161,8 @@
       ENDDO
 !$omp end parallel
 
-! Unlock the temp arrays.
-      CALL UNLOCK_TMP_ARRAY
-
       RETURN
       END SUBROUTINE DRAG_GS_DES1
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -233,17 +222,13 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
-! Cell-center gas velocities.
-      use tmp_array, only: UGC => ARRAY1
-      use tmp_array, only: VGC => ARRAY2
-      use tmp_array, only: WGC => ARRAY3
-! Lock/Unlock the temp arrays to prevent double usage.
-      use tmp_array, only: LOCK_TMP_ARRAY
-      use tmp_array, only: UNLOCK_TMP_ARRAY
+
       IMPLICIT NONE
 
 ! Local variables
 !---------------------------------------------------------------------//
+!     Cell-center gas velocities.
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -265,9 +250,6 @@
 
 ! Loop bounds for interpolation.
       LP_BND = merge(27,9,DO_K)
-
-! Lock the temp arrays.
-      CALL LOCK_TMP_ARRAY
 
 ! Calculate the cell center gas velocities.
       IF(DES_EXPLICITLY_COUPLED) THEN
@@ -360,9 +342,6 @@
       ENDDO
 !$omp end parallel
 
-! Unlock the temp arrays.
-      CALL UNLOCK_TMP_ARRAY
-
 ! Update the drag force and sources in ghost layers.
       CALL SEND_RECV(F_GDS, 2)
       CALL SEND_RECV(DRAG_BM, 2)
@@ -402,9 +381,7 @@
 ! Double precision parameters.
       use param, only: DIMENSION_3
       use param1, only: ZERO
-      use tmp_array, only: UGC => ARRAY1
-      use tmp_array, only: VGC => ARRAY2
-      use tmp_array, only: WGC => ARRAY3
+
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -412,7 +389,7 @@
       DOUBLE PRECISION, INTENT(IN) :: lUg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lVg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lWg(DIMENSION_3)
-
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
 ! Local variables:
 !---------------------------------------------------------------------//
 ! Indices of adjacent cells

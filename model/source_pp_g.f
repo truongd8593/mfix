@@ -40,7 +40,6 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
       USE rxns, ONLY: SUM_R_G, SUM_R_S
       USE ur_facs, ONLY: UR_FAC
       USE vshear, ONLY: VSH
-      USE xsi_array, ONLY: LOCK_XSI_ARRAY, UNLOCK_XSI_ARRAY
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -72,7 +71,6 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 !      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
 !                       XSI_t(DIMENSION_3)
 !-----------------------------------------------
-      call lock_xsi_array
 ! loezos
 ! update to true velocity
       IF (SHEAR) THEN
@@ -293,8 +291,6 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
          A_M(IJK_P_G,:,0) = ZERO
          A_M(IJK_P_G,0,0) = -ONE
       ENDIF
-
-      call unlock_xsi_array
 
       RETURN
 

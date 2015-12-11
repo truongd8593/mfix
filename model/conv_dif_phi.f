@@ -370,18 +370,13 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE param, only: dimension_3, dimension_m
+      USE param, only: dimension_3, dimension_m, dimension_4
       USE param1, only: zero, one
 
       USE run, only: fpfoi
       USE sendrecv3, only: send_recv3
 
-      USE tmp_array, only: tmp4
-      USE tmp_array, only: lock_tmp4_array, unlock_tmp4_array
-
       USE xsi, only: calc_xsi
-      USE xsi_array, only: xsi_e, xsi_n, xsi_t
-      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -423,10 +418,13 @@
       DOUBLE PRECISION :: SOUTH_DC
       DOUBLE PRECISION :: TOP_DC
       DOUBLE PRECISION :: BOTTOM_DC
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
+
 !---------------------------------------------------------------------//
 
-      call lock_xsi_array
-      call lock_tmp4_array
+      allocate(tmp4(DIMENSION_4))
 
 ! Send recv the third ghost layer
       IF (FPFOI) THEN
@@ -584,13 +582,10 @@
          ENDIF   ! end if fluid_at
       ENDDO   ! end do ijk
 
-      call unlock_tmp4_array
-      call unlock_xsi_array
+      DEALLOCATE(tmp4)
 
       RETURN
       END SUBROUTINE CONV_DIF_PHI_DC
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -619,8 +614,6 @@
       USE param
       USE param1, only: one
       USE xsi, only: calc_xsi
-      USE xsi_array, only: xsi_e, xsi_n, xsi_t
-      USE xsi_array, only: lock_xsi_array, unlock_xsi_array
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -654,9 +647,10 @@
       INTEGER :: incr
 ! Diffusion parameter
       DOUBLE PRECISION :: D_fe, d_fw, d_fn, d_fs, d_ft, d_fb
-!---------------------------------------------------------------------//
 
-      call lock_xsi_array
+      DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
+
+!---------------------------------------------------------------------//
 
 ! shear indicator
       incr=0
@@ -709,8 +703,6 @@
 
          ENDIF
       ENDDO
-
-      call unlock_xsi_array
 
       RETURN
       END SUBROUTINE CONV_DIF_PHI1

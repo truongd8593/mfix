@@ -709,10 +709,9 @@
       USE physprop
       USE indices
       USE compar
-      Use xsi_array
       USE mpi_utility
-      USE xsi
       USE functions
+      USE xsi, only: calc_xsi
       IMPLICIT NONE
 
 !
@@ -745,7 +744,7 @@
 !                      Indices
       INTEGER          I, J, K, IJK
 
-      call lock_xsi_array
+    DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
 !     Unlike other calls to calc_xsi, the fluxes rather than the velocities are passed.
 !     This should work fine because the velocities are used to determine the upwind bias,
@@ -811,7 +810,6 @@
 
             call global_all_sum(flux_in)
             call global_all_sum(flux_out)
-      call unlock_xsi_array
 
       return
       end SUBROUTINE  Calc_mass_flux_spHR

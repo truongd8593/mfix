@@ -33,7 +33,6 @@
       USE leqsol
       USE physprop
       Use ambm
-      Use tmp_array1, B_mMAX => ARRAYm1
       use ps
 
       IMPLICIT NONE
@@ -73,14 +72,13 @@
 ! temporary use of global arrays:
 ! arraym1 (locally b_mmax)
 ! vector B_M based on dominate term in correction equation
-!      DOUBLE PRECISION :: B_MMAX(DIMENSION_3, DIMENSION_M)
+      DOUBLE PRECISION :: B_MMAX(DIMENSION_3, DIMENSION_M)
 ! Septadiagonal matrix A_m, vector B_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 !-----------------------------------------------
 
       call lock_ambm
-      call lock_tmp_array1
 
 ! Form the sparse matrix equation.  Note that the index 0 is explicitly
 ! used throughout this routine for creating the matrix equation.
@@ -143,7 +141,6 @@
 
 !      call out_array(EPp, 'EPp')
 
-      call unlock_tmp_array1
       call unlock_ambm
 
       RETURN
