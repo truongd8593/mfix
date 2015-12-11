@@ -573,7 +573,6 @@
 
       use des_allocate, only: PARTICLE_GROW
       use discretelement
-      use discretelement, only: XE, YN, ZT
 
 ! Flag indicating that the IC region is defined.
       use ic, only: IC_DEFINED
