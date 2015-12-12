@@ -52,7 +52,7 @@ mfix_LDADD = libmfix.a
 noinst_LIBRARIES = libmfix.a
 
 # mfix.f needs to be in mfix_SOURCES (not just libmfix_a_SOURCES) for gfortran 4.4
-mfix_SOURCES = model/mfix.f model/main.f
+mfix_SOURCES = model/mfix.f
 libmfix_a_SOURCES = model/ODEPACK.F
 
 ################################################################
@@ -61,7 +61,7 @@ libmfix_a_SOURCES = model/ODEPACK.F
 #                                                              #
 ################################################################
 
-pymfix.so: libmfix.a model/main.f
+pymfix.so: libmfix.a
 	f2py -c -m pymfix -I$(top_builddir)/model $(addprefix $(top_srcdir)/,$(pymfix_SOURCES)) $(filter-out $(pymfix_OBJECTS),$(libmfix_a_OBJECTS)) --f90flags="-ffree-form"
 
 pymfix_SOURCES = \
@@ -710,7 +710,6 @@ libmfix_src = \
 	model/thermochemical/get_values.f \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
-	model/time_march.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -726,11 +725,11 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
-        model/usr_prop_mod.f \
+	model/usr_prop_mod.f \
 	model/usr_properties.f \
 	model/usr_rates.f \
-        model/usr_sources.f\
-        model/usr_src_mod.f \
+	model/usr_sources.f\
+	model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
 	model/utilities_mod.f \
@@ -1253,7 +1252,6 @@ postmfix_SOURCES = \
 	model/thermochemical/get_values.f \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
-	model/time_march.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -1269,10 +1267,10 @@ postmfix_SOURCES = \
 	model/usr_drag.f \
 	model/usr_mod.f \
 	model/usr_prop_mod.f \
-        model/usr_properties.f \
+	model/usr_properties.f \
 	model/usr_rates.f \
-        model/usr_sources.f \
-        model/usr_src_mod.f \
+	model/usr_sources.f \
+	model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/utilities_mod.f \
 	model/vavg_u_g.f \
