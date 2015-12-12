@@ -1,5 +1,7 @@
       MODULE GENERATE_PARTICLES
 
+        DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PARTICLE_COUNT
+
       CONTAINS
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -66,8 +68,6 @@
       RETURN
       END SUBROUTINE GENERATE_PARTICLE_CONFIG
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                !
@@ -81,7 +81,6 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GENERATE_PARTICLE_CONFIG_DEM(ICV)
-
 
 ! Global Variables:
 !---------------------------------------------------------------------//

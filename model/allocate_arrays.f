@@ -20,6 +20,7 @@
       use drag
       use energy
       use fldvar
+      use generate_particles, only: particle_count
       use geometry
       use ghdtheory
       use indices
@@ -237,6 +238,9 @@
       Allocate(  TAU_U_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(  TAU_V_s(DIMENSION_3p, DIMENSION_M) )
       Allocate(  TAU_W_s(DIMENSION_3p, DIMENSION_M) )
+
+! generate_particles / particle_count
+      Allocate(  PARTICLE_COUNT(DIMENSION_3) )
 
 !trace
       Allocate(  trD_s_C (DIMENSION_3, DIMENSION_M) )

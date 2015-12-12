@@ -38,6 +38,9 @@
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
+      !     The accumulated number of particles in each IJK.
+      use generate_particles, only: particle_count
+
       use discretelement, only: DES_POS_NEW
       use functions, only: IS_NONEXISTENT, IS_GHOST, IS_ENTERING_GHOST, IS_EXITING_GHOST
 
@@ -45,8 +48,6 @@
 
 ! Local Variables
 !---------------------------------------------------------------------//
-!     The accumulated number of particles in each IJK.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PARTICLE_COUNT
 ! particle no.
       INTEGER L
 ! accounted for particles
