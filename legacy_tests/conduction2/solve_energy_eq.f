@@ -43,8 +43,6 @@
       USE energy
       USE rxns
       Use ambm
-      Use tmp_array, S_p => ARRAY1, S_C => ARRAY2, EPs => ARRAY3
-      Use tmp_array1, VxGama => ARRAYm1
       USE compar
       USE discretelement
       USE des_thermo
@@ -100,16 +98,16 @@
 ! temporary use of global arrays:
 ! arraym1 (locally vxgama)
 ! the volume x average gas-solids heat transfer at cell centers
-!      DOUBLE PRECISION :: VXGAMA(DIMENSION_3, DIMENSION_M)
+      DOUBLE PRECISION :: VXGAMA(DIMENSION_3, DIMENSION_M)
 ! array1 (locally s_p)
 ! source vector: coefficient of dependent variable
 ! becomes part of a_m matrix; must be positive
-!      DOUBLE PRECISION :: S_P(DIMENSION_3)
+      DOUBLE PRECISION :: S_P(DIMENSION_3)
 ! array2 (locally s_c)
 ! source vector: constant part becomes part of b_m vector
-!      DOUBLE PRECISION :: S_C(DIMENSION_3)
+      DOUBLE PRECISION :: S_C(DIMENSION_3)
 ! array3 (locally eps)
-!      DOUBLE PRECISION :: EPS(DIMENSION_3)
+      DOUBLE PRECISION :: EPS(DIMENSION_3)
 
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
@@ -117,9 +115,7 @@
 !-----------------------------------------------
 
       call lock_ambm         ! locks arrys a_m and b_m
-      call lock_tmp_array    ! locks arraym1 (locally vxgama)
-      call lock_tmp_array1   ! locks array1, array2, array3
-                             ! (locally s_p, s_c, eps)
+
 ! Initialize error flags.
       Err_l = 0
 
@@ -358,8 +354,6 @@
       ENDDO   ! end do (m=1, tmp_smax)
 
       call unlock_ambm
-      call unlock_tmp_array
-      call unlock_tmp_array1
 
 ! If the linear solver diverged, temperatures may take on unphysical
 ! values. To prevent them from propogating through the domain or
