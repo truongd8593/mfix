@@ -78,7 +78,7 @@ MODULE MAIN
   CHARACTER*512 :: in_buffer
 
   INTEGER :: request_pending = 0
-  INTEGER :: mfix_waiting = 0
+  INTEGER :: mfix_stopped = 0
 
   !-----------------------------------------------
   ! Module variables

@@ -11,7 +11,7 @@ PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
-CLEANFILES=*.$(FC_MODEXT) *.so mfix.py
+CLEANFILES=*.$(FC_MODEXT) *.so
 MODDIR=$(top_builddir)/model
 
 # Current directory takes precedence over model/include/ and model/
@@ -45,7 +45,7 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS run test mfix.py pymfix.so
+.PHONY: $(LIBMFIX) TAGS run test pymfix.so
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -121,11 +121,6 @@ pymfix.so: $(LIBMFIX)
 	$(MAKE) -C $(top_builddir) $@
 	rm -f $@
 	cp $(top_builddir)/$@ $@
-
-mfix.py: pymfix.so
-	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
-	cp $(top_srcdir)/$@ $@
 
 ################################################################
 #                                                              #
