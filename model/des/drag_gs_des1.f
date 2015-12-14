@@ -89,7 +89,7 @@
       LP_BND = merge(27,9,DO_K)
 
 ! Calculate the cell center gas velocities.
-      CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
+      CALL CALC_CELL_CENTER_GAS_VEL(U_G,V_G,W_G,UGC,VGC,WGC)
 
 ! Calculate the gas phase forces acting on each particle.
 
@@ -259,9 +259,9 @@
 
 ! Calculate the cell center gas velocities.
       IF(DES_EXPLICITLY_COUPLED) THEN
-         CALL CALC_CELL_CENTER_GAS_VEL(U_GO, V_GO, W_GO)
+         CALL CALC_CELL_CENTER_GAS_VEL(U_GO,V_GO,W_GO,UGC,VGC,WGC)
       ELSE
-         CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G)
+         CALL CALC_CELL_CENTER_GAS_VEL(U_G,V_G,W_G,UGC,VGC,WGC)
       ENDIF
 
 ! Calculate the gas phase forces acting on each particle.
@@ -365,7 +365,7 @@
 !  routines.                                                           !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE CALC_CELL_CENTER_GAS_VEL(lUg, lVg, lWg)
+      SUBROUTINE CALC_CELL_CENTER_GAS_VEL(lUg, lVg, lWg, UGC, VGC, WGC)
 
 ! Modules
 !---------------------------------------------------------------------//
@@ -395,9 +395,9 @@
       DOUBLE PRECISION, INTENT(IN) :: lUg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lVg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lWg(DIMENSION_3)
-      DOUBLE PRECISION :: UGC(DIMENSION_3)
-      DOUBLE PRECISION :: VGC(DIMENSION_3)
-      DOUBLE PRECISION :: WGC(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: UGC(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: VGC(DIMENSION_3)
+      DOUBLE PRECISION, INTENT(OUT) :: WGC(DIMENSION_3)
 ! Local variables:
 !---------------------------------------------------------------------//
 ! Indices of adjacent cells
