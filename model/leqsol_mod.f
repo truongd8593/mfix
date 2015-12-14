@@ -1125,15 +1125,15 @@ CONTAINS
 !-----------------------------------------------
 
     if (numPEs.eq.1.and.is_serial) then
-!$  if (.false.) then
+!!$  if (.false.) then
        dot_product_par = dot_product(r1,r2)
-!$  endif
+!!$  endif
 
-!$       dot_product_par = 0
-!$omp parallel do private(ijk) reduction(+:dot_product_par)
-!$       do ijk = 1, DIMENSION_3
-!$          dot_product_par = dot_product_par + r1(ijk)*r2(ijk)
-!$       enddo
+!!$       dot_product_par = 0
+!!$omp parallel do private(ijk) reduction(+:dot_product_par)
+!!$       do ijk = 1, DIMENSION_3
+!!$          dot_product_par = dot_product_par + r1(ijk)*r2(ijk)
+!!$       enddo
        return
     endif
 

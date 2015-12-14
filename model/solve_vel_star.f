@@ -109,13 +109,13 @@
       DO_SOLIDS = .NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
          DES_CONTINUUM_HYBRID
 
-!$omp parallel sections default(shared)
+!!$omp parallel sections default(shared)
       CALL U_m_star(U_gtmp,U_stmp)
-!$omp section
+!!$omp section
       CALL V_m_star(V_gtmp,V_stmp)
-!$omp section
+!!$omp section
       CALL W_m_star(W_gtmp,W_stmp)
-!$omp end parallel sections
+!!$omp end parallel sections
 
       CALL save(U_gtmp, V_gtmp, W_gtmp, U_stmp, V_stmp, W_stmp)
 
