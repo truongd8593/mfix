@@ -549,7 +549,7 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE param, only: dimension_3
+      USE param, only: dimension_3, dimension_4
       USE param1, only: zero
 
       USE run, only: discretize, fpfoi
@@ -595,7 +595,7 @@
 ! array3 (locally ww) - the z directional velocity
       DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+      DOUBLE PRECISION :: TMP4(DIMENSION_4)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
       CALL GET_WCELL_GVTERMS(U, V, WW)
@@ -611,7 +611,6 @@
          ENDDO
          CALL send_recv3(tmp4)
       ENDIF
-
 
 ! shear indicator:
       incr=0

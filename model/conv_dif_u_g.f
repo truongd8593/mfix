@@ -617,10 +617,8 @@
 ! array3 (locally ww) - the z directional velocity
       DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+      DOUBLE PRECISION :: TMP4(DIMENSION_4)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
-
-      allocate(tmp4(DIMENSION_4))
 
       CALL GET_UCELL_GVTERMS(U, V, WW)
 
@@ -775,8 +773,6 @@
 
          ENDIF ! end if flow_at_e
       ENDDO   ! end do ijk
-
-      DEALLOCATE(tmp4)
 
       RETURN
       END SUBROUTINE STORE_A_U_GDC

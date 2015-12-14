@@ -53,6 +53,7 @@
       use mfix_pic, only: MPPIC_PDRAG_IMPLICIT
 ! Double precision values.
       use param1, only: ZERO
+      use param, only: dimension_3
 ! Flag to use interpolation
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
@@ -65,7 +66,9 @@
 ! Local variables
 !---------------------------------------------------------------------//
 !     Cell-center gas velocities.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
+      DOUBLE PRECISION :: UGC(DIMENSION_3)
+      DOUBLE PRECISION :: VGC(DIMENSION_3)
+      DOUBLE PRECISION :: WGC(DIMENSION_3)
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -216,6 +219,7 @@
       use mfix_pic, only: DES_STAT_WT
 ! Double precision values.
       use param1, only: ZERO, ONE
+      use param, only: DIMENSION_3
 ! Flag to use interpolation
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
@@ -228,7 +232,9 @@
 ! Local variables
 !---------------------------------------------------------------------//
 !     Cell-center gas velocities.
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
+      DOUBLE PRECISION :: UGC(DIMENSION_3)
+      DOUBLE PRECISION :: VGC(DIMENSION_3)
+      DOUBLE PRECISION :: WGC(DIMENSION_3)
 ! Loop counters: Particle, fluid cell, neighbor cells
       INTEGER :: NP, IJK, LC
 ! Interpolation weight
@@ -389,7 +395,9 @@
       DOUBLE PRECISION, INTENT(IN) :: lUg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lVg(DIMENSION_3)
       DOUBLE PRECISION, INTENT(IN) :: lWg(DIMENSION_3)
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: UGC, VGC, WGC
+      DOUBLE PRECISION :: UGC(DIMENSION_3)
+      DOUBLE PRECISION :: VGC(DIMENSION_3)
+      DOUBLE PRECISION :: WGC(DIMENSION_3)
 ! Local variables:
 !---------------------------------------------------------------------//
 ! Indices of adjacent cells

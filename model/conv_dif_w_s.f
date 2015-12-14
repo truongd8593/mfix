@@ -556,7 +556,7 @@
 
       USE indices, only: i_of, j_of, k_of
 
-      USE param, only: dimension_3, dimension_m
+      USE param, only: dimension_3, dimension_m, dimension_4
       USE param1, only: zero
 
       USE run, only: discretize, fpfoi
@@ -604,7 +604,7 @@
 ! array3 (locally ww) - the z directional velocity
       DOUBLE PRECISION :: WW(DIMENSION_3)
 !---------------------------------------------------------------------//
-      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: TMP4
+      DOUBLE PRECISION :: TMP4(DIMENSION_4)
       DOUBLE PRECISION, DIMENSION(DIMENSION_3) :: XSI_e, XSI_n, XSI_t
 
       CALL GET_WCELL_SVTERMS(U, V, WW, M)
