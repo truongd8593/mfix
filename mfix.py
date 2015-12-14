@@ -50,7 +50,7 @@ class Echo(protocol.Protocol):
         elif cmd=='go':
             response = 'STARTING MFIX\n'
             pymfix.main.mfix_stopped = 0
-        elif cmd=='shout':
+        elif cmd=='hello':
             print("HELLO FROM MPI RANK %d" % (pymfix.compar.mype))
             response = 'PRINTING MPI RANK INFO TO STDOUT\n'
         elif cmd=='step':
@@ -68,10 +68,15 @@ class Echo(protocol.Protocol):
 def main():
     """This runs the protocol on port 8000"""
     thread.start_new_thread(run_mfix, ())
-    factory = protocol.ServerFactory()
-    factory.protocol = Echo
-    reactor.listenTCP(8000,factory)
-    reactor.run()
+    time.sleep(1)
+
+    if 0==pymfix.compar.mype:
+        factory = protocol.ServerFactory()
+        factory.protocol = Echo
+        reactor.listenTCP(8000,factory)
+        reactor.run()
+    else:
+        while(True): time.sleep(1)
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':

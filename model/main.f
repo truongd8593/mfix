@@ -231,7 +231,7 @@ CONTAINS
     USE interactive, only: init_interactive_mode
     USE machine, only: start_log, end_log
     USE mfix_netcdf, only: mfix_usingnetcdf
-    USE mpi, only: mpi_comm_world
+    USE mpi, only: mpi_comm_world  ! depcomp-ignore
     USE mpi_utility, only: mpi_barrier
     USE output, only: dbgprn_layout
     USE param1, only: n_spx, undefined, zero

@@ -62,7 +62,7 @@ libmfix_a_SOURCES = model/ODEPACK.F
 ################################################################
 
 pymfix.so: libmfix.a
-	f2py -c -m pymfix -I$(top_builddir)/model $(addprefix $(top_srcdir)/,$(pymfix_src)) $(filter-out $(pymfix_OBJECTS),$(libmfix_a_OBJECTS)) --f90flags="-ffree-form"
+	f2py -c --f90exec=mpifort -m pymfix -I$(top_builddir)/model $(addprefix $(top_srcdir)/,$(pymfix_src)) $(filter-out $(pymfix_OBJECTS),$(libmfix_a_OBJECTS)) --f90flags="-ffree-form"
 
 pymfix_src = \
 	model/param_mod.f \
