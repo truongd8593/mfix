@@ -131,6 +131,9 @@
 !!!$omp  parallel do private(ijk, L)
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
 
 ! Velocity components at the scalar faces
             CALL GET_FACE_VEL_GAS(IJK, uge, ugw, ugn, ugs, ugt, ugb, ugcc, &
@@ -234,9 +237,6 @@
 
 
 ! Calculate velocity components at i, j, k to be used in wall functions
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
             IMJK = IM_OF(IJK)
             IPJK = IP_OF(IJK)
             IJMK = JM_OF(IJK)
