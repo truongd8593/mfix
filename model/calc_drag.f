@@ -55,38 +55,15 @@
             IF (DRAGD(0,M) .AND. RO_G0/=ZERO) CALL DRAG_GS(M, IER)
          ENDDO
 
-         IF (GRANULAR_ENERGY) THEN
-            SELECT CASE (KT_TYPE_ENUM)
-               CASE(LUN_1984, SIMONIN_1996, AHMADI_1995)
-                  DO M = 1, SMAX
-                     DO L = 1, M - 1
-                        IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
-                     ENDDO
-                  ENDDO
-               CASE(IA_2005)
-                  DO M= 1, SMAX
-                     DO L = 1, SMAX
-                        IF (DRAGD(L,M)) CALL DRAG_SS_IA (L,M,IER)
-                     ENDDO
-                  ENDDO
-               CASE (GD_1999, GTSH_2012, GHD_2007)
-! strictly speaking gd and gtsh are monodisperse theories and so
-! do not have solids-solids drag. ghd theory is a polydisperse
-! theory but is self contained and does not invoke this routine
-
-               CASE DEFAULT
-! should never hit this
-                  WRITE (*, '(A)') 'CALC_DRAG'
-                  WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
-               call mfix_exit(myPE)
-            END SELECT
-         ELSE
-            DO M = 1,SMAX
-               DO L = 1, M - 1
-                  IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
-               ENDDO
+! 'solids-solids' interaction based on relative velocity differences
+! any other interphase interaction should be setup via the exchange
+! routine
+         DO M = 1, SMAX
+            DO L = 1, M - 1
+               IF (DRAGD(L,M)) CALL DRAG_SS (L, M, IER)
             ENDDO
-         ENDIF
+         ENDDO
+
       ENDIF
 
 ! calculate drag between continuum phases and discrete particles

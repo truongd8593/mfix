@@ -55,56 +55,49 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IJK, IM, JM, KM
+      INTEGER :: I, J, K, IJK
       INTEGER :: IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-      INTEGER :: IMJPK, IMJMK, IMJKP, IMJKM, IPJKM
-      INTEGER :: IPJMK, IJMKP, IJMKM, IJPKM
+! Loop indices
       INTEGER :: I1, J1, K1
 ! Solids phase index
       INTEGER :: M
-! U_g at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION U_g_N
-! U_g at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION U_g_S
-! U_g at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION U_g_T
-! U_g at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION U_g_B
-! U_g at the center of the THETA cell-(i, j, k)
+! U_g at the east (i+1/2, j, k) and west face (i-1/2, j, k)
+      DOUBLE PRECISION :: UgE, UgW
+! U_g at the north (i, j+1/2, k) and south face (i, j-1/2, k)
+      DOUBLE PRECISION :: UgN, UgS
+! U_g at the top (i, j, k+1/2) and bottom face (i, j, k-1/2)
+      DOUBLE PRECISION :: UgT, UgB
+! U_g at the center of a scalar cell (i, j, k)
 ! Calculated for Cylindrical coordinates only.
-      DOUBLE PRECISION U_g_C
-! V_g at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION V_g_E
-! V_g at the west face of the THETA cell-(i-1/2, j, k)
-      DOUBLE PRECISION V_g_W
-! V_g at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION V_g_T
-! V_g at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION V_g_B
-! W_g at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION W_g_E
-! W_g at the west face of the THETA cell-(1-1/2, j, k)
-      DOUBLE PRECISION W_g_W
-! W_g at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION W_g_N
-! W_g at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION W_g_S
-
-! W_g at the center of the THETA cell-(i, j, k).
-! Calculated for Cylindrical coordinates only.
-      DOUBLE PRECISION W_g_C
+      DOUBLE PRECISION :: UgcC
 ! Cell center value of U_g
       DOUBLE PRECISION UGC
+! V_g at the east (i+1/2, j, k) and west face (i-1/2, j, k)
+      DOUBLE PRECISION :: VgE, VgW
+! V_g at the north (i, j+1/2, k) and south face (i, j-1/2, k)
+      DOUBLE PRECISION :: VgN, VgS
+! V_g at the top (i, j, k+1/2) and bottom face (i, j, k-1/2)
+      DOUBLE PRECISION :: VgT, VgB
 ! Cell center value of V_g
       DOUBLE PRECISION VGC
+! W_g at the east (i+1/2, j, k) and west face (i-1/2, j, k)
+      DOUBLE PRECISION :: WgE, WgW
+! W_g at the north (i, j+1/2, k) and south face (i, j-1/2, k)
+      DOUBLE PRECISION :: WgN, WgS
+! W_g at the top (i, j, k+1/2) and bottom face (i, j, k-1/2)
+      DOUBLE PRECISION :: WgT, WgB
+! W_g at the center of a scalar cell (i, j, k).
+! Calculated for Cylindrical coordinates only.
+      DOUBLE PRECISION :: WgcC
 ! Cell center value of W_g
       DOUBLE PRECISION WGC
 ! trace_g and eddy viscosity
       DOUBLE PRECISION :: Trace_G, Mu_gas_t
-
       DOUBLE PRECISION :: C_Eps_Pope, Xsi_Pope
-      DOUBLE PRECISION :: UG(3,3), D_g
-      DIMENSION D_g(3,3)
+! gradient of velocity
+      DOUBLE PRECISION :: DelV_G(3,3)
+! rate of strain tensor
+      DOUBLE PRECISION :: D_g(3,3)
 
 !  Production of Turb. Due to shear, Turb Visc, and Constants.
 !  See Wilcox PP. 89
@@ -139,103 +132,16 @@
       DO IJK = IJKSTART3, IJKEND3
          IF (FLUID_AT(IJK)) THEN
 
-! Part copied from calc_mu_g.f to calculate the rate of strain Sii tensor
-! of the gas phase.
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
-            IM = IM1(I)
-            JM = JM1(J)
-            KM = KM1(K)
-            IMJK = IM_OF(IJK)
-            IPJK = IP_OF(IJK)
-            IJMK = JM_OF(IJK)
-            IJPK = JP_OF(IJK)
-            IJKM = KM_OF(IJK)
-            IJKP = KP_OF(IJK)
-            IMJPK = IM_OF(IJPK)
-            IMJMK = IM_OF(IJMK)
-            IMJKP = IM_OF(IJKP)
-            IMJKM = IM_OF(IJKM)
-            IPJKM = IP_OF(IJKM)
-            IPJMK = IP_OF(IJMK)
-            IJMKP = JM_OF(IJKP)
-            IJMKM = JM_OF(IJKM)
-            IJPKM = JP_OF(IJKM)
+! Velocity components at the scalar faces
+            CALL GET_FACE_VEL_GAS(IJK, uge, ugw, ugn, ugs, ugt, ugb, ugcc, &
+                                       vge, vgw, vgn, vgs, vgt, vgb, &
+                                       wge, wgw, wgn, wgs, wgt, wgb, wgcc)
 
-! Find fluid velocity values at faces of the cell
-            U_G_N = AVG_Y(AVG_X_E(U_G(IMJK),U_G(IJK),I), &
-                          AVG_X_E(U_G(IMJPK),U_G(IJPK),I),J)     !i, j+1/2, k
-            U_G_S = AVG_Y(AVG_X_E(U_G(IMJMK),U_G(IJMK),I),&
-                          AVG_X_E(U_G(IMJK),U_G(IJK),I),JM)      !i, j-1/2, k
-            U_G_T = AVG_Z(AVG_X_E(U_G(IMJK),U_G(IJK),I),&
-                          AVG_X_E(U_G(IMJKP),U_G(IJKP),I),K)     !i, j, k+1/2
-            U_G_B = AVG_Z(AVG_X_E(U_G(IMJKM),U_G(IJKM),I),&
-                          AVG_X_E(U_G(IMJK),U_G(IJK),I),KM)      !i, j, k-1/2
-            V_G_E = AVG_X(AVG_Y_N(V_G(IJMK),V_G(IJK)),&
-                          AVG_Y_N(V_G(IPJMK),V_G(IPJK)),I)       !i+1/2, j, k
-            V_G_W = AVG_X(AVG_Y_N(V_G(IMJMK),V_G(IMJK)),&
-                          AVG_Y_N(V_G(IJMK),V_G(IJK)),IM)        !i-1/2, j, k
-            V_G_T = AVG_Z(AVG_Y_N(V_G(IJMK),V_G(IJK)),&
-                          AVG_Y_N(V_G(IJMKP),V_G(IJKP)),K)       !i, j, k+1/2
-            V_G_B = AVG_Z(AVG_Y_N(V_G(IJMKM),V_G(IJKM)),&
-                          AVG_Y_N(V_G(IJMK),V_G(IJK)),KM)        !i, j, k-1/2
-            W_G_N = AVG_Y(AVG_Z_T(W_G(IJKM),W_G(IJK)),&
-                          AVG_Z_T(W_G(IJPKM),W_G(IJPK)),J)       !i, j+1/2, k
-            W_G_S = AVG_Y(AVG_Z_T(W_G(IJMKM),W_G(IJMK)),&
-                          AVG_Z_T(W_G(IJKM),W_G(IJK)),JM)        !i, j-1/2, k
-            W_G_E = AVG_X(AVG_Z_T(W_G(IJKM),W_G(IJK)),&
-                          AVG_Z_T(W_G(IPJKM),W_G(IPJK)),I)       !i+1/2, j, k
-            W_G_W = AVG_X(AVG_Z_T(W_G(IMJKM),W_G(IMJK)),&
-                          AVG_Z_T(W_G(IJKM),W_G(IJK)),IM)        !i-1/2, j, k
+! Velocity derivatives (gradient and rate of strain tensor)
+            CALL CALC_DERIV_VEL_GAS(IJK, DelV_g, D_g)
 
-            IF (CYLINDRICAL) THEN
-               U_G_C = AVG_X_E(U_G(IMJK),U_G(IJK),I)             !i, j, k
-               W_G_C = AVG_Z_T(W_G(IJKM),W_G(IJK))               !i, j, k
-            ELSE
-               U_G_C = ZERO
-               W_G_C = ZERO
-            ENDIF
-
-! Calculate velocity components at i, j, k to be used in wall functions
-            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
-            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
-            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
-
-
-            IF(.NOT.CUT_CELL_AT(IJK)) THEN
-! Velocity derivives computed for the Pope Approximation.
-               UG(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I)
-               UG(1,2) = (U_G_N - U_G_S)*ODY(J)
-               UG(1,3) = (U_G_T-U_G_B)*(OX(I)*ODZ(K))-W_G_C*OX(I)
-               UG(2,1) = (V_G_E-V_G_W)*ODX(I)
-               UG(2,2) = (V_G(IJK)-V_G(IJMK))*ODY(J)
-               UG(2,3) = (V_G_T-V_G_B)*(OX(I)*ODZ(K))
-               UG(3,1) = (W_G_E - W_G_W)*ODX(I)
-               UG(3,2) = (W_G_N-W_G_S)*ODY(J)
-               UG(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
-
-! Find components of fluid phase strain rate
-! tensor, D_g, at center of the cell - (i, j, k)
-               D_G(1,1) = (U_G(IJK)-U_G(IMJK))*ODX(I)
-               D_G(1,2) = HALF*((U_G_N - U_G_S)*ODY(J)+(V_G_E-V_G_W)*ODX(I))
-               D_G(1,3) = HALF*((W_G_E - W_G_W)*ODX(I)+(U_G_T-U_G_B)*(OX(I)*ODZ(K)&
-                  )-W_G_C*OX(I))
-               D_G(2,1) = D_G(1,2)
-               D_G(2,2) = (V_G(IJK)-V_G(IJMK))*ODY(J)
-               D_G(2,3)=HALF*((V_G_T-V_G_B)*(OX(I)*ODZ(K))+(W_G_N-W_G_S)*ODY(J))
-               D_G(3,1) = D_G(1,3)
-               D_G(3,2) = D_G(2,3)
-               D_G(3,3) = (W_G(IJK)-W_G(IJKM))*(OX(I)*ODZ(K)) + U_G_C*OX(I)
-
-            ELSE  ! CUT_CELL
-               CALL CG_CALC_VEL_G_GRAD(IJK,UG)
-               DO P = 1,3
-                  DO Q = 1,3
-                     D_G(P,Q) = HALF * (UG(P,Q)+UG(Q,P))
-                  ENDDO
-               ENDDO
-            ENDIF
+! Value of trace is also available via trd_g but the latter is
+! calculated only once per time step
             Trace_g = D_G(1,1) + D_G(2,2) + D_G(3,3)
 
 ! Pope's correction in 2-D to the Epsilon Equation for a round-Jet
@@ -244,14 +150,13 @@
             DO I1 = 1,3
                DO J1 = 1,3
                   DO K1 = 1,3
-                     Xsi_Pope = Xsi_Pope + (UG(I1,J1) - UG(J1,I1))* &
-                                (UG(J1,K1) - UG(K1,J1))*&
-                                (UG(K1,I1) + UG(I1,K1))
+                     Xsi_Pope = Xsi_Pope + (DelV_g(I1,J1) - DelV_g(J1,I1))* &
+                                (DelV_g(J1,K1) - DelV_g(K1,J1))*&
+                                (DelV_g(K1,I1) + DelV_g(I1,K1))
                   ENDDO
                ENDDO
             ENDDO
             Xsi_Pope = Xsi_Pope/6. * K_Turb_G(IJK)**2/(E_Turb_G(IJK)+Small_number)
-
 
 ! This IF statment is to ensure that we are using the turbulent viscosity
 ! and NOT the effective viscosity.
@@ -263,17 +168,16 @@
 
 ! Calculate Tau(i,j)*dUi/dXj (production term in the K Equation
             IF(.NOT.CUT_CELL_AT(IJK)) THEN
-               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(                     &
-                  D_G(1,1) * D_G(1,1) +                      &
-                  D_G(1,2) * (U_G_N - U_G_S)*ODY(J) +        &
-                  D_G(1,3) * ((U_G_T-U_G_B)*                 &
-                     (OX(I)*ODZ(K))-W_G_C*OX(I)) +           &
-                  D_G(2,1) * (V_G_E-V_G_W)*ODX(I) +          &
-                  D_G(2,2) * D_G(2,2) +                      &
-                  D_G(2,3) * (V_G_T-V_G_B)*(OX(I)*ODZ(K)) +  &
-                  D_G(3,1) * (W_G_E - W_G_W)*ODX(I) +        &
-                  D_G(3,2) * (W_G_N-W_G_S)*ODY(J) +          &
-                  D_G(3,3) * D_G(3,3)) -                     &
+               Tauij_gDUi_gODxj = 2D0*Mu_gas_t*(             &
+                  D_G(1,1) * D_G(1,1) + &
+                  D_G(1,2) * (UgN-UgS)*ODY(J) + &
+                  D_G(1,3) * ((UgT-UgB)*(OX(I)*ODZ(K))-WgcC*OX(I)) + &
+                  D_G(2,1) * (VgE-VgW)*ODX(I) + &
+                  D_G(2,2) * D_G(2,2) + &
+                  D_G(2,3) * (VgT-VgB)*(OX(I)*ODZ(K)) + &
+                  D_G(3,1) * (WgE-WgW)*ODX(I) + &
+                  D_G(3,2) * (WgN-WgS)*ODY(J) + &
+                  D_G(3,3) * D_G(3,3)) - &
                   F2O3 * RO_G(IJK) * K_Turb_G(IJK)*Trace_g - &
                   F2O3 * Mu_gas_t * Trace_g**2
 
@@ -328,10 +232,26 @@
                   EP_g(IJK)*RO_G(IJK)*E_Turb_G(IJK)+Neg_PI_kq_2)/ &
                   K_Turb_G(IJK)
 
+
+! Calculate velocity components at i, j, k to be used in wall functions
+            I = I_OF(IJK)
+            J = J_OF(IJK)
+            K = K_OF(IJK)
+            IMJK = IM_OF(IJK)
+            IPJK = IP_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJPK = JP_OF(IJK)
+            IJKM = KM_OF(IJK)
+            IJKP = KP_OF(IJK)
+            UGC = AVG_X_E(U_G(IMJK),U_G(IJK),I)
+            VGC = AVG_Y_N(V_G(IJMK),V_G(IJK))
+            WGC = AVG_Z_T(W_G(IJKM),W_G(IJK))
+
 ! Implementing wall functions targeted to fluid cells next to walls...
 ! Setting Source and sink terms in the K equation since the production
 ! in the K eq. due to shear should include the LOG law of the wall.
-               IF(WALL_AT(JP_OF(IJK)).OR.WALL_AT(JM_OF(IJK))) THEN
+! North/South wall
+               IF(WALL_AT(IJPK).OR.WALL_AT(IJMK)) THEN
                   Check_Log = LOG(9.81*C_mu**0.25*                     &
                      RO_G(IJK)*SQRT(K_Turb_G(IJK))*DY(J)/2.0D+0/       &
                      Mu_g(IJK))
@@ -346,8 +266,8 @@
                         C_mu**0.75*K_Turb_G(IJK)**1.5/DY(J)*           &
                         2.0D+0/Kappa))/K_Turb_G(IJK)
                   ENDIF !for check_log less than zero
-
-               ELSEIF(WALL_AT(KP_OF(IJK)).OR.WALL_AT(KM_OF(IJK))) THEN
+! Top/Bottom wall
+               ELSEIF(WALL_AT(IJKP).OR.WALL_AT(IJKM)) THEN
                   Check_Log = LOG(9.81*C_mu**0.25*                     &
                      RO_G(IJK)*SQRT(K_Turb_G(IJK))/                    &
                      (ODZ(K)*OX(I)*2.0D+0)/Mu_g(IJK))
@@ -364,11 +284,10 @@
                   ENDIF !for check_log less than zero
                ENDIF !For walls
 
-
 ! For Cylindrical cases, wall_at (IP) is a wall cell, but wall_at (IM) is
 ! the axis of symmetry where wall functions obviously don't apply.
                IF(CYLINDRICAL) THEN
-                  IF (WALL_AT(IP_OF(IJK)))  THEN
+                  IF (WALL_AT(IPJK))  THEN
                      Check_Log = LOG(9.81*C_mu**0.25* RO_G(IJK)*       &
                      SQRT(K_Turb_G(IJK))*DX(I)/2.0D+0/Mu_g(IJK))
                      IF(Check_Log .LE. ZERO) THEN
@@ -383,8 +302,8 @@
                            2.0D+0/Kappa))/ K_Turb_G(IJK)
                      ENDIF !for check_log less than zero
                   ENDIF  ! for wall cells in I direction
-
-               ELSEIF (WALL_AT(IP_OF(IJK)).OR.WALL_AT(IM_OF(IJK))) THEN
+! East/West wall
+               ELSEIF (WALL_AT(IPJK).OR.WALL_AT(IMJK)) THEN
                   Check_Log = LOG(9.81*C_mu**0.25*RO_G(IJK)*           &
                      SQRT(K_Turb_G(IJK))*DX(I)/2.0D+0/Mu_g(IJK))
                   IF(Check_Log .LE. ZERO) THEN

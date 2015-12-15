@@ -6,98 +6,71 @@
 !                                                                      C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 01-MAY-09  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE CG_SOURCE_V_G(A_M, B_M)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-        USE bc
-        USE compar
-        USE fldvar
-        USE fun_avg
-        USE indices
-        USE param
-        USE param1
-        USE physprop
-        USE run
-        USE toleranc
-        USE visc_g
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! Modules
+!-----------------------------------------------
+      USE bc
+      USE compar
+      USE fldvar
+      USE fun_avg
+      use geometry, only: do_k, vol, vol_v
+      use geometry, only: axy, ayz, axz
+      use geometry, only: ayz_v, axz_v, axy_v
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE toleranc
+      USE visc_g
       USE cutcell
       USE quadric
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-
       IMPLICIT NONE
+
+! Dummy arguments
 !-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I, J, K, IJK, IJKN
-!
-!                      Phase index
-      INTEGER          M
-!
-!                      Average volume fraction
-      DOUBLE PRECISION EPGA
-!
-!                      Septadiagonal matrix A_m
+! Septadiagonal matrix A_m
       DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!
-!                      Vector b_m
+! Vector b_m
       DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
-      INTEGER ::          IM,JM,IP,JP,KM,KP
-      INTEGER ::          IMJK,IPJK,IJMK,IJPK,IJKP,IJKM,IJKC,IJKE,IJKNE,IJKW,IJKWN,IMJPK,IJPKM
-      INTEGER ::          IJKT,IJKTN,IJKB,IJKBN
+! Local variables 
+!-----------------------------------------------
+! Indices
+      INTEGER :: I, J, K, IJK, IJKN
+! Phase index
+      INTEGER :: M
+! Average volume fraction
+      DOUBLE PRECISION EPGA
+      INTEGER :: IM,JM,IP,JP,KM,KP
+      INTEGER :: IMJK,IPJK,IJMK,IJPK,IJKP,IJKM
+      INTEGER :: IJKC,IJKE,IJKNE,IJKW,IJKWN,IMJPK,IJPKM
+      INTEGER :: IJKT,IJKTN,IJKB,IJKBN
       DOUBLE PRECISION :: Vn,Vs,Ve,Vw, Vt,Vb
       DOUBLE PRECISION :: B_NOC
-      DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S,MU_GT_T,MU_GT_B,MU_GT_CUT
+      DOUBLE PRECISION :: MU_GT_E,MU_GT_W,MU_GT_N,MU_GT_S
+      DOUBLE PRECISION :: MU_GT_T,MU_GT_B,MU_GT_CUT
       DOUBLE PRECISION :: VW_g
       INTEGER :: BCV
       INTEGER :: BCT
-!                       virtual (added) mass
-      DOUBLE PRECISION F_vir, ROP_MA, Vsn, Vss, U_se, Usc, Usw, Vse, Vsw, Wst, Wsb, Wsc, Vst, Vsb
+!  virtual (added) mass
+      DOUBLE PRECISION :: F_vir, ROP_MA
+      DOUBLE PRECISION :: Vsn, Vss, U_se, Usc, Usw, Vse, Vsw
+      DOUBLE PRECISION :: Wst, Wsb, Wsc, Vst, Vsb
 ! Wall function
       DOUBLE PRECISION :: W_F_Slip
+!-----------------------------------------------
 
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 
-!
       M = 0
       IF (.NOT.MOMENTUM_Y_EQ(0)) RETURN
-!
+
 !!!$omp  parallel do private( I, J, K, IJK, IJKN, ISV, Sdp, V0, Vpm, Vmt, Vbf, &
 !!!$omp&  PGN, ROGA, MUGA, ROPGA, EPGA,VSH_n,VSH_s,VSH_e,VSH_w,&
 !!!$omp&  VSH_p,Source_conv, SRT ) &
@@ -109,17 +82,14 @@
          IJKN = NORTH_OF(IJK)
          EPGA = AVG_Y(EP_G(IJK),EP_G(IJKN),J)
          IF (IP_AT_N(IJK)) THEN
-!
-!        do nothing
-!
-!       dilute flow
-         ELSE IF (EPGA <= DIL_EP_S) THEN
-!
-!        do nothing
-!
-!         ELSE
+! do nothing
+
+! dilute flow
+         ELSEIF (EPGA <= DIL_EP_S) THEN
+! do nothing
+
          ELSEIF(INTERIOR_CELL_AT(IJK)) THEN
-!
+
             BCV = BC_V_ID(IJK)
 
             IF(BCV > 0 ) THEN
@@ -166,7 +136,6 @@
 
 
             IF(NOC_VG) THEN
-
                IMJK = IM_OF(IJK)
                IJMK = JM_OF(IJK)
                IJKM = KM_OF(IJK)
@@ -176,10 +145,8 @@
 
                Vn = Theta_Vn_bar(IJK)  * V_g(IJK)  + Theta_Vn(IJK)  * V_g(IJPK)
                Vs = Theta_Vn_bar(IJMK) * V_g(IJMK) + Theta_Vn(IJMK) * V_g(IJK)
-
                Ve = Theta_Ve_bar(IJK)  * V_g(IJK)  + Theta_Ve(IJK)  * V_g(IPJK)
                Vw = Theta_Ve_bar(IMJK) * V_g(IMJK) + Theta_Ve(IMJK) * V_g(IJK)
-
 
                IJKN = NORTH_OF(IJK)
                IF (WALL_AT(IJK)) THEN
@@ -190,29 +157,23 @@
                JP = JP1(J)
                IJKE = EAST_OF(IJK)
                IJKNE = EAST_OF(IJKN)
-
                IM = IM1(I)
                IJKW = WEST_OF(IJK)
                IJKWN = NORTH_OF(IJKW)
                IMJPK = JP_OF(IMJK)
-
-
                KM = KM1(K)
                IJKT = TOP_OF(IJK)
                IJKTN = NORTH_OF(IJKT)
-
                IJKB = BOTTOM_OF(IJK)
                IJKBN = NORTH_OF(IJKB)
 
 
                MU_GT_E = AVG_Y_H(AVG_X_H(MU_GT(IJKC),MU_GT(IJKE),I),&
                          AVG_X_H(MU_GT(IJKN),MU_GT(IJKNE),I),J)
-
                MU_GT_W = AVG_Y_H(AVG_X_H(MU_GT(IJKW),MU_GT(IJKC),IM),&
                          AVG_X_H(MU_GT(IJKWN),MU_GT(IJKN),IM),J)
 
                MU_GT_N = MU_GT(IJKN)
-
                MU_GT_S = MU_GT(IJKC)
 
 
@@ -236,7 +197,6 @@
                                 - MU_GT_B * Axy_V(IJKM) * (Vb-VW_g) * NOC_V_T(IJKM)
 
                ENDIF
-
                   B_M(IJK,M) = B_M(IJK,M) + B_NOC
 
             ENDIF
@@ -244,82 +204,60 @@
 
             IF(CUT_V_TREATMENT_AT(IJK)) THEN
 
-!
-!!! BEGIN VIRTUAL MASS SECTION (explicit terms)
+! BEGIN VIRTUAL MASS SECTION (explicit terms)
 ! adding transient term dVs/dt to virtual mass term
                F_vir = ZERO
                IF(Added_Mass) THEN
                   F_vir = ( (V_s(IJK,M_AM) - V_sO(IJK,M_AM)) )*ODT*VOL_V(IJK)
-
                   IM = I - 1
                   JM = J - 1
                   KM = K - 1
-
                   IP = I + 1
                   JP = J + 1
                   KP = K + 1
-
                   IMJK = FUNIJK(IM,J,K)
                   IJMK = FUNIJK(I,JM,K)
                   IPJK = FUNIJK(IP,J,K)
                   IJPK = FUNIJK(I,JP,K)
                   IJKP = FUNIJK(I,J,KP)
                   IJKM = FUNIJK(I,J,KM)
-
                   IMJPK = IM_OF(IJPK)
-
                   IJKN = NORTH_OF(IJK)
 
-!
 ! defining gas-particles velocity at momentum cell faces (or scalar cell center)
-
-
                   Vse = Theta_Ve_bar(IJK)  * V_s(IJK,M_AM)  + Theta_Ve(IJK)  * V_s(IPJK,M_AM)
                   Vsw = Theta_Ve_bar(IMJK) * V_s(IMJK,M_AM) + Theta_Ve(IMJK) * V_s(IJK,M_AM)
-
                   U_se =  Theta_V_ne(IJK)  * U_s(IJK,M_AM)  + Theta_V_se(IJK)  * U_s(IJPK,M_AM)
                   Usw =  Theta_V_ne(IMJK) * U_s(IMJK,M_AM) + Theta_V_se(IMJK) * U_s(IMJPK,M_AM)
-
                   Usc = (DELX_ve(IJK) * Usw + DELX_vw(IJK) * U_se) / (DELX_ve(IJK) + DELX_vw(IJK))
-
-
                   Vsn = Theta_Vn_bar(IJK)  * V_s(IJK,M_AM)  + Theta_Vn(IJK)  * V_s(IJPK,M_AM)
                   Vss = Theta_Vn_bar(IJMK) * V_s(IJMK,M_AM) + Theta_Vn(IJMK) * V_s(IJK,M_AM)
 
-
-
                   IF(DO_K) THEN
-
                      IJPKM = KM_OF(IJPK)
-
                      Vst = Theta_Vt_bar(IJK)  * V_s(IJK,M_AM)  + Theta_Vt(IJK)  * V_s(IJKP,M_AM)
                      Vsb = Theta_Vt_bar(IJKM) * V_s(IJKM,M_AM) + Theta_Vt(IJKM) * V_s(IJK,M_AM)
-
                      Wst = Theta_V_nt(IJK)  * W_s(IJK,M_AM)  + Theta_V_st(IJK)  * W_s(IJPK,M_AM)
                      Wsb = Theta_V_nt(IJKM) * W_s(IJKM,M_AM) + Theta_V_st(IJKM) * W_s(IJPKM,M_AM)
                      Wsc = (DELZ_vt(IJK) * Wsb + DELZ_vb(IJK) * Wst) / (DELZ_vt(IJK) + DELZ_vb(IJK))
-
                      F_vir = F_vir +  Wsc* (Vst - Vsb)*AXY(IJK)
-
                   ENDIF
-!
+
 ! adding convective terms (U dV/dx + V dV/dy) to virtual mass; W dV/dz added above.
                   F_vir = F_vir + V_s(IJK,M_AM)*(Vsn - Vss)*AXZ(IJK) + &
                       Usc*(Vse - Vsw)*AYZ(IJK)
 
-
-                  ROP_MA  = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM)  + VOL(IJKN)*ROP_g(IJKN)*EP_s(IJKN,M_AM) )/(VOL(IJK) + VOL(IJKN))
+                  ROP_MA  = (VOL(IJK)*ROP_g(IJK)*EP_s(IJK,M_AM)  + &
+                             VOL(IJKN)*ROP_g(IJKN)*EP_s(IJKN,M_AM) )/(VOL(IJK) + VOL(IJKN))
                   F_vir = F_vir * Cv * ROP_MA
-
                   B_M(IJK,M) = B_M(IJK,M) - F_vir ! adding explicit-part of virtual mass force.
                ENDIF
-!
-!!! END VIRTUAL MASS SECTION
+! END VIRTUAL MASS SECTION
             ENDIF
 
          ENDIF
-      END DO
-!
+      ENDDO
+
       RETURN
 
     CONTAINS
@@ -327,7 +265,8 @@
       INCLUDE 'functions.inc'
 
       END SUBROUTINE CG_SOURCE_V_G
-!
+
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CG_SOURCE_V_g_BC(A_m, B_m, IER)                        C
@@ -336,75 +275,47 @@
 !                                                                      C
 !                                                                      C
 !  Author: Jeff Dietiker                              Date: 01-MAY-09  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
       SUBROUTINE CG_SOURCE_V_G_BC(A_M, B_M)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
 
-        USE bc
-        USE compar
-        USE fldvar
-        USE fun_avg
-        USE indices
-        USE param
-        USE param1
-        USE physprop
-        USE run
-        USE toleranc
-        USE visc_g
-
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! Modules 
+!-----------------------------------------------
+      USE bc
+      USE compar
+      USE fldvar
+      USE fun_avg
+      use geometry, only: do_k, vol, vol_v
+      use geometry, only: ayz, axy, ayz_v, axy_v
+      use geometry, only: odx_e, ody_n
+      USE indices
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE toleranc
+      USE visc_g
       USE cutcell
       USE quadric
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Indices
-      INTEGER          I,  J, K, JM, IJK,&
-                       IM, KM, IJKS, IMJK
-!
-!                      Solids phase
-      INTEGER          M
-!
-!                      Septadiagonal matrix A_m
-      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!
-!                      Vector b_m
-      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!
-!                      Turbulent shear stress
-      DOUBLE PRECISION  W_F_Slip
 
-!=======================================================================
-! JFD: START MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
+! Dummy arguments
+!-----------------------------------------------
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+! Vector b_m
+      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
+
+! Local variables
+!-----------------------------------------------
+! Indices
+      INTEGER :: I,  J, K, JM, IJK
+      INTEGER :: IM, KM, IJKS, IMJK
+! Solids phase
+      INTEGER :: M
+! Turbulent shear stress
+      DOUBLE PRECISION :: W_F_Slip
       INTEGER :: BCV
       INTEGER :: BCT
 
@@ -412,7 +323,6 @@
 
       IF(CG_SAFE_MODE(4)==1) RETURN
 
-!
       M = 0
 
       DO IJK = ijkstart3, ijkend3
@@ -607,10 +517,6 @@
                         ENDIF
 
                      ENDIF
-
-
-
-
                   ENDIF
 
                ENDIF
@@ -749,9 +655,6 @@
       ENDDO
 
       RETURN
-!=======================================================================
-! JFD: END MODIFICATION FOR CARTESIAN GRID IMPLEMENTATION
-!=======================================================================
 
     CONTAINS
 
@@ -759,7 +662,3 @@
 
       END SUBROUTINE CG_SOURCE_V_G_BC
 
-!// Comments on the modifications for DMP version implementation
-!// 001 Include header file and common declarations for parallelization
-!// 350 Changed do loop limits: 1,kmax2->kmin3,kmax3
-!// 360 Check if i,j,k resides on current processor

@@ -188,22 +188,15 @@
 
       END SUBROUTINE CALC_RRATE
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: CALC_TRD_AND_TAU                                        !
-!  Purpose: This routine directs the calculation of all physical and   !
-!           transport properties, and exchange rates.                  !
+!  Purpose: Calculate various terms in the gas and solids phase        !
+!  stress tensor as indicated below                                    !
 !                                                                      !
 !  Author: M. Syamlal                                 Date: 25-AUG-05  !
-!  Reviewer:                                          Date:            !
 !                                                                      !
-!                                                                      !
-!                                                                      !
-!  Literature/Document References:                                     !
-!                                                                      !
-!  Variables referenced:                                               !
-!  Variables modified:                                                 !
-!  Local variables:                                                    !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_TRD_AND_TAU()

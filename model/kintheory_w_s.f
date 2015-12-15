@@ -1,52 +1,5 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_KTMOMSOURCE_W_S                                    C
-!  Purpose: Determine source terms for W_S momentum equation arising   C
-!           from kinetic theory constitutive relations for stress      C
-!           and solid-solid drag                                       C
-!                                                                      C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE CALC_KTMOMSOURCE_W_S()
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-
-      USE param1, only: zero
-
-! kinetic theories
-      USE run, only: kt_type_enum
-      USE run, only: ia_2005
-
-! number of solids phases
-      USE physprop, only: smax
-
-! solids source term
-      USE kintheory, only: ktmom_w_s
-
-      IMPLICIT NONE
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! Solids phase index
-      INTEGER :: M
-!-----------------------------------------------
-
-      DO M = 1, SMAX
-         KTMOM_W_s(:,M) = ZERO
-         IF (KT_TYPE_ENUM == IA_2005) THEN
-            CALL CALC_IA_MOMSOURCE_W_S (M)
-         ENDIF
-      ENDDO
-
-      RETURN
-      END SUBROUTINE CALC_KTMOMSOURCE_W_S
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
 !  Subroutine: CALC_IA_MOMSOURCE_W_S                                   C
 !  Purpose: Determine source terms for W_S momentum equation arising   C
 !           from IA kinetic theory constitutive relations for stress   C

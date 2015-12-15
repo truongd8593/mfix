@@ -22,21 +22,22 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE compar
-      USE constant
-      USE discretelement
-      USE drag
-      USE fldvar
-      USE fun_avg
-      USE functions
-      USE geometry
-      USE indices
-      USE parallel
-      USE param
-      USE param1
-      USE physprop
-      USE rdf
-      USE sendrecv
+      use compar, only: mype, ijkstart3, ijkend3
+      USE constant, only: segregation_slope_coefficient
+      USE discretelement, only: des_mmax
+      USE drag, only: f_ss
+      USE fldvar, only: d_p, ro_s, rop_s, theta_m, p_star
+      USE fldvar, only: u_s, v_s, w_s
+      USE fun_avg, only: avg_x_e, avg_y_n, avg_z_t
+      use functions, only: wall_at, funlm
+      use functions, only: im_of, jm_of, km_of
+      USE indices, only: i_of
+      USE param1, only: zero, one
+      USE physprop, only: smax, close_packed
+      USE rdf, only: g_0
+      use run, only: granular_energy, kt_type, kt_type_enum
+      use run, only: lun_1984, simonin_1996, ahmadi_1995
+      use run, only: ia_2005, gd_1999, ghd_2007, gtsh_2012
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -62,6 +63,8 @@
       DOUBLE PRECISION :: RO_M, RO_L
 ! radial distribution function between phases M and L
       DOUBLE PRECISION :: G0_ML
+! granular temperature of phase M and phase L
+      DOUBLE PRECISION :: thetaM, thetaL
 ! void fraction and solids volume fraction
       DOUBLE PRECISION :: EPg, EPs
 ! sum over all phases of ratio volume fraction over particle diameter
@@ -69,6 +72,7 @@
 ! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
 !-----------------------------------------------
+
 
       LM = FUNLM(L,M)
 
@@ -102,10 +106,37 @@
             D_PL = D_P(IJK,L)
             RO_M = RO_S(IJK,M)
             RO_L = RO_S(IJK,L)
+            ThetaM = Theta_M(IJK,M)
+            ThetaL = Theta_M(IJK,L)
             G0_ML = G_0(IJK,L,M)
 
 ! determining the solids-solids 'drag coefficient'
-            CALL DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,VREL)
+            IF (GRANULAR_ENERGY) THEN
+               SELECT CASE (KT_TYPE_ENUM)
+                  CASE(LUN_1984, SIMONIN_1996, AHMADI_1995)
+                     CALL DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,&
+                        VREL)
+                  CASE (IA_2005)
+                     CALL DRAG_SS_IA(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,&
+                        thetaM,thetaL)
+                  CASE (GD_1999, GTSH_2012)
+! strictly speaking gd and gtsh are monodisperse theories and so
+! do not have solids-solids drag
+                     ldss = zero
+! ghd theory is a polydisperse theory but is self contained and does
+! not invoke this routine
+                  CASE (GHD_2007)
+                     RETURN
+               CASE DEFAULT
+! should never hit this
+                  WRITE (*, '(A)') 'DRAG_SS'
+                  WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
+               call mfix_exit(myPE)
+               END SELECT
+            ELSE
+               CALL DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,&
+                    VREL)
+            ENDIF
 
             F_SS(IJK,LM) = lDss*ROP_S(IJK,M)*ROP_S(IJK,L)
 
@@ -113,7 +144,7 @@
 ! close-packed system. Note the check for mmax >= 2 below is unnecessary
 ! since this routine will not be entered unless mmax >=2
             IF(CLOSE_PACKED(M) .AND. CLOSE_PACKED(L) .AND. &
-              (MMAX >= 2))  F_SS(IJK,LM) = F_SS(IJK,LM) + &
+              (SMAX >= 2))  F_SS(IJK,LM) = F_SS(IJK,LM) + &
                SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 
           ELSE   ! elseif (.not.wall_at(ijk))
@@ -144,15 +175,13 @@
 !                                                                      C
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
-      SUBROUTINE DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,VREL)
+      SUBROUTINE DRAG_SS_SYAM(lDss,D_PM,D_PL,RO_M,RO_L, G0_ML, VREL)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE constant
-      use run
+      USE param1, only: one
+      USE constant, only: c_e, c_f, pi
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -197,9 +226,10 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: DRAG_ss_IA                                              !
-!  Purpose: Compute the coefficient of drag between solids phase m     !
-!           and solids phase l using Iddir Arastoopour (2005) kinetic  !
-!           theory model                                               !
+!  Purpose: Compute collisional momentum source terms betweem solids   !
+!  phase M and solids phase L using Iddir Arastoopour (2005) kinetic   !
+!  theory mdoel that is proportional to the relative velocity between  !
+!  between the two phases (i.e. solids-solids drag).                   !
 !                                                                      !
 !  Literature/Document References:                                     !
 !    Iddir, Y.H., "Modeling of the multiphase mixture of particles     !
@@ -210,154 +240,68 @@
 !      no. 6, June 2005                                                !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
-      SUBROUTINE DRAG_SS_IA(L, M)
+      SUBROUTINE DRAG_SS_IA(lDss,D_PM,D_PL,RO_M,RO_L,G0_ML,&
+                            Theta_M,Theta_L)
 
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE compar
-      USE constant
-      USE drag
-      USE fldvar
-      USE functions
-      USE geometry
-      USE indices
-      USE kintheory
-      USE param1
-      USE physprop
-      USE rdf
-      USE sendrecv
-
+      USE param1, only: zero
+      USE constant, only: c_e, pi
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
 !-----------------------------------------------
-! Solids phase index
-      INTEGER, INTENT(IN) :: M, L
+! drag coefficient
+      DOUBLE PRECISION, INTENT(OUT) :: ldss
+! particle diameter of solids phase M and L
+      DOUBLE PRECISION, INTENT(IN) :: D_PM, D_PL
+! particle density of solids phase M and L
+      DOUBLE PRECISION, INTENT(IN) :: RO_M, RO_L
+! radial distribution function between phases M and L
+      DOUBLE PRECISION, INTENT(IN) :: G0_ML
+! granular temperature of solids phase M and L
+      DOUBLE PRECISION, INTENT(IN) :: Theta_M, Theta_L
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! Indices
-      INTEGER :: IJK
-! Index for storing solids-solids drag coefficients
-! in the upper triangle of the matrix
-      INTEGER :: LM
-! Particle diameters
-      DOUBLE PRECISION :: D_PM, D_PL
 ! Sum of particle diameters
       DOUBLE PRECISION :: DPSUM
 !
-      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, DPSUMo2, NU_PL, NU_PM
-      DOUBLE PRECISION :: Ap_lm, Dp_lm, R0p_lm, R2p_lm, R3p_lm, &
-                          R4p_lm, R10p_lm, Bp_lm
-      DOUBLE PRECISION :: Fss_ip, Fnus_ip, FTsM_ip, FTsL_ip, &
-                          F_common_term
+      DOUBLE PRECISION :: M_PM, M_PL, MPSUM, DPSUMo2
+      DOUBLE PRECISION :: Ap_lm, Dp_lm, Bp_lm, R2p_lm
+      DOUBLE PRECISION :: F_common_term
 !-----------------------------------------------
 
-      DO IJK = ijkstart3, ijkend3
+      DPSUM = D_PL + D_PM
+      M_PM = (Pi/6.d0) * D_PM**3 *RO_M
+      M_PL = (Pi/6.d0) * D_PL**3 *RO_L
+      MPSUM = M_PM + M_PL
+      DPSUMo2 = DPSUM/2.d0
 
-          IF (.NOT.WALL_AT(IJK)) THEN
+      IF(Theta_M > ZERO .AND. Theta_L > ZERO) THEN
 
-               LM = FUNLM(L,M)
+         Ap_lm = (M_PM*Theta_L+M_PL*Theta_M)/2.d0
+         Bp_lm = (M_PM*M_PL*(Theta_L-Theta_M ))/(2.d0*MPSUM)
+         Dp_lm = (M_PL*M_PM*(M_PM*Theta_M+M_PL*Theta_L ))/&
+             (2.d0*MPSUM*MPSUM)
 
-               IF (M == L) THEN
-                    F_SS(IJK,LM) = ZERO
-                    Fnu_s_ip(IJK,M,L) = ZERO
-                    FT_sM_ip(IJK,M,L) = ZERO
-                    FT_sL_ip(IJK,M,L) = ZERO
+         R2p_lm = ( 1.d0/( 2.d0*Ap_lm**1.5 * Dp_lm*Dp_lm ) )+&
+                  ( (3.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**3 ) )+&
+                  ( (15.d0*Bp_lm**4)/( 2.d0*Ap_lm**3.5 * Dp_lm**4 ) )
 
-               ELSE
-                    D_PM = D_P(IJK,M)
-                    D_PL = D_P(IJK,L)
-                    DPSUM = D_PL + D_PM
-                    M_PM = (Pi/6.d0) * D_PM**3 *RO_S(IJK,M)
-                    M_PL = (Pi/6.d0) * D_PL**3 *RO_S(IJK,L)
-                    MPSUM = M_PM + M_PL
-                    DPSUMo2 = DPSUM/2.d0
-                    NU_PM = ROP_S(IJK,M)/M_PM
-                    NU_PL = ROP_S(IJK,L)/M_PL
-
-                 IF(Theta_m(IJK,M) > ZERO .AND. Theta_m(IJK,L) > ZERO) THEN
-
-                    Ap_lm = (M_PM*Theta_m(IJK,L)+M_PL*Theta_m(IJK,M))/&
-                          2.d0
-                    Bp_lm = (M_PM*M_PL*(Theta_m(IJK,L)-Theta_m(IJK,M) ))/&
-                         (2.d0*MPSUM)
-                    Dp_lm = (M_PL*M_PM*(M_PM*Theta_m(IJK,M)+M_PL*Theta_m(IJK,L) ))/&
-                         (2.d0*MPSUM*MPSUM)
-
-                    R0p_lm = ( 1.d0/( Ap_lm**1.5 * Dp_lm**2.5 ) )+ &
-                              ( (15.d0*Bp_lm*Bp_lm)/( 2.d0* Ap_lm**2.5 * Dp_lm**3.5 ) )+&
-                              ( (175.d0*(Bp_lm**4))/( 8.d0*Ap_lm**3.5 * Dp_lm**4.5 ) )
-
-                    R2p_lm = ( 1.d0/( 2.d0*Ap_lm**1.5 * Dp_lm*Dp_lm ) )+&
-                              ( (3.d0*Bp_lm*Bp_lm)/( Ap_lm**2.5 * Dp_lm**3 ) )+&
-                              ( (15.d0*Bp_lm**4)/( 2.d0*Ap_lm**3.5 * Dp_lm**4 ) )
-
-                    R3p_lm = ( 1.d0/( (Ap_lm**1.5)*(Dp_lm**3.5) ) )+&
-                              ( (21.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**2.5 * Dp_lm**4.5 ) )+&
-                              ( (315.d0*Bp_lm**4)/( 8.d0 * Ap_lm**3.5 *Dp_lm**5.5 ) )
-
-                    R4p_lm = ( 3.d0/( Ap_lm**2.5 * Dp_lm**3.5 ) )+&
-                              ( (35.d0*Bp_lm*Bp_lm)/( 2.d0 * Ap_lm**3.5 * Dp_lm**4.5 ) )+&
-                              ( (441.d0*Bp_lm**4)/( 8.d0 * Ap_lm**4.5 * Dp_lm**5.5 ) )
-
-                    R10p_lm = ( 1.d0/( Ap_lm**2.5 * Dp_lm**2.5 ) )+&
-                              ( (25.d0*Bp_lm*Bp_lm)/( 2.d0* Ap_lm**3.5 * Dp_lm**3.5 ) )+&
-                              ( (1225.d0*Bp_lm**4)/( 24.d0* Ap_lm**4.5 * Dp_lm**4.5 ) )
-
-                    F_common_term = (DPSUMo2*DPSUMo2/4.d0)*(M_PM*M_PL/MPSUM)*&
-                         G_0(IJK,M,L)*(1.d0+C_E)*(M_PM*M_PL)**1.5
+         F_common_term = (DPSUMo2*DPSUMo2/4.d0)*(M_PM*M_PL/MPSUM)*&
+              G0_ML*(1.d0+C_E)*(M_PM*M_PL)**1.5
 
 ! Momentum source associated with relative velocity between solids
 ! phase m and solid phase l
-                    Fss_ip = F_common_term*NU_PM*NU_PL*DSQRT(PI)*R2p_lm*&
-                           (Theta_m(IJK,M)*Theta_m(IJK,L))**2
+! Factor of rop_sm and rop_sl included in calling routine
+         ldss = F_common_term/(M_PM*M_PL)*DSQRT(PI)*R2p_lm*&
+                     (Theta_M*Theta_L)**2
 
-! Momentum source associated with the difference in the gradients in
-! number density of solids phase m and all other solids phases
-                    Fnus_ip = F_common_term*(PI*DPSUMo2/12.d0)*R0p_lm*&
-                           (Theta_m(IJK,M)*Theta_m(IJK,L))**2.5
-
-! Momentum source associated with the gradient in granular temperature
-! of solid phase M
-                    FTsM_ip = F_common_term*NU_PM*NU_PL*DPSUMo2*PI*&
-                              (Theta_m(IJK,M)**1.5 * Theta_m(IJK,L)**2.5) *&
-                              (  (-1.5d0/12.d0*R0p_lm)+&
-                              Theta_m(IJK,L)/16.d0*(  (-M_PM*R10p_lm) - &
-                              ((5.d0*M_PL*M_PL*M_PM/(192.d0*MPSUM*MPSUM))*R3p_lm)+&
-                              ((5.d0*M_PM*M_PL)/(96.d0*MPSUM)*R4p_lm*Bp_lm)  )  )
-
-! Momentum source associated with the gradient in granular temperature
-! of solid phase L ! no need to recompute (sof Aug 30 2006)
-                    FTsL_ip = F_common_term*NU_PM*NU_PL*DPSUMo2*PI*&
-                             (Theta_m(IJK,L)**1.5 * Theta_m(IJK,M)**2.5) *&
-                              (  (1.5d0/12.d0*R0p_lm)+&
-                              Theta_m(IJK,M)/16.d0*(  (M_PL*R10p_lm)+&
-                              (5.d0*M_PM*M_PM*M_PL/(192.d0*MPSUM*MPSUM)*R3p_lm)+&
-                              (5.d0*M_PM*M_PL/(96.d0*MPSUM) *R4p_lm*Bp_lm)  )  )
-
-                    F_SS(IJK,LM) = Fss_ip
-
-                    Fnu_s_ip(IJK,M,L) = Fnus_ip
-
-! WARNING: the following two terms have caused some convergence problems
-! earlier. Set them to ZERO for debugging in case of converegence
-! issues. (sof)
-                    FT_sM_ip(IJK,M,L) = FTsM_ip  ! ZERO
-
-                    FT_sL_ip(IJK,M,L) = FTsL_ip  ! ZERO
-                 ELSE
-                   F_SS(IJK,LM) = ZERO
-                    Fnu_s_ip(IJK,M,L) = ZERO
-                    FT_sM_ip(IJK,M,L) = ZERO
-                    FT_sL_ip(IJK,M,L) = ZERO
-                 ENDIF
-               ENDIF
-          ENDIF
-      ENDDO
+      ELSE
+         ldss = zero
+      ENDIF
 
       RETURN
       END SUBROUTINE DRAG_SS_IA
-

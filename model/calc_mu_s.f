@@ -2576,45 +2576,20 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: zero, one, half
-
+      USE compar, only: ijkstart3, ijkend3
       USE constant, only: v_ex
-
+      USE cutcell, only: cut_cell_at
+      USE functions, only: fluid_at
+      USE geometry, only: cylindrical
+      USE physprop, only: smax
+      USE param1, only: zero, one, half
       USE run, only: kt_type_enum
       USE run, only: ia_2005
-
-      USE run, only: shear, V_sh
-      Use vshear, only: VSH
-
-      USE visc_s, only: I2_devD_s
-
+      USE run, only: shear
       USE trace, only: trD_s_c
       USE trace, only: trD_s2
       USE trace, only: trD_s2_ip
-
-      USE fldvar, only: u_s, v_s, w_s
-      USE physprop, only: smax
-
-      USE is, only: any_is_defined
-
-      USE cutcell, only: cut_cell_at
-
-      USE fun_avg, only: avg_x, avg_y, avg_z
-      USE fun_avg, only: avg_x_e, avg_y_n, avg_z_t
-
-      USE functions, only: fluid_at, wall_at
-      USE functions, only: west_of, east_of, south_of, north_of
-      USE functions, only: top_of, bottom_of
-      USE functions, only: im_of, ip_of, jm_of, jp_of, km_of, kp_of
-      USE functions, only: is_at_e, is_at_n, is_at_t
-
-      USE geometry, only: xlength
-      USE geometry, only: cylindrical
-      USE geometry, only: odx_e, odx, ox
-      USE geometry, only: ody, odz
-
-      USE indices, only: i_of, j_of, k_of, im1, jm1, km1
-      USE compar, only: ijkstart3, ijkend3
+      USE visc_s, only: I2_devD_s
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -2624,214 +2599,48 @@
 
 ! Local variables
 !---------------------------------------------------------------------//
-! Strain rate tensor components for mth solids phase
-      DOUBLE PRECISION :: D_s(3,3), D_sl(3,3)
-! U_s at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION :: U_s_N, Usl_N
-! U_s at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION :: U_s_S, Usl_S
-! U_s at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION :: U_s_T, Usl_T
-! U_s at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION :: U_s_B, Usl_B
-! U_s at the center of the THETA cell-(i, j, k)
-! Calculated for Cylindrical coordinates only.
-      DOUBLE PRECISION :: U_s_C, Usl_C
-! V_s at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION :: V_s_E, Vsl_E
-! V_s at the west face of the THETA cell-(i-1/2, j, k)
-      DOUBLE PRECISION :: V_s_W, Vsl_W
-! V_s at the top face of the THETA cell-(i, j, k+1/2)
-      DOUBLE PRECISION :: V_s_T, Vsl_T
-! V_s at the bottom face of the THETA cell-(i, j, k-1/2)
-      DOUBLE PRECISION :: V_s_B, Vsl_B
-! W_s at the east face of the THETA cell-(i+1/2, j, k)
-      DOUBLE PRECISION :: W_s_E, Wsl_E
-! W_s at the west face of the THETA cell-(1-1/2, j, k)
-      DOUBLE PRECISION :: W_s_W, Wsl_W
-! W_s at the north face of the THETA cell-(i, j+1/2, k)
-      DOUBLE PRECISION :: W_s_N, Wsl_N
-! W_s at the south face of the THETA cell-(i, j-1/2, k)
-      DOUBLE PRECISION :: W_s_S, Wsl_S
-! W_s at the center of the THETA cell-(i, j, k).
-! Calculated for Cylindrical coordinates only
-      DOUBLE PRECISION :: W_s_C, Wsl_C
-
-! Local DO-LOOP counters and phase index
-      INTEGER :: I1, I2
-! Indices
-      INTEGER :: I, J, K, IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP,&
-                 IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,&
-                 IM, JM, KM
-      INTEGER :: IMJPK, IMJMK, IMJKP, IMJKM, IPJKM, IPJMK, IJMKP,&
-                 IJMKM, IJPKM
 ! solids phase index
       INTEGER :: L
+! Indices
+      INTEGER :: IJK
+! Local DO-LOOP counters and phase index
+      INTEGER :: I1, I2
+! Strain rate tensor components for mth and lth solids phases
+      DOUBLE PRECISION :: D_sM(3,3), D_sl(3,3)
+! velocity gradient for mth and lth solids phases
+      DOUBLE PRECISION :: DelV_sM(3,3), DelV_sL(3,3)
 ! shear related reciprocal time scale
       DOUBLE PRECISION :: SRT
 !---------------------------------------------------------------------//
 
       IF (SHEAR) THEN
          CALL add_shear(M)
-         SRT=(2d0*V_sh/XLENGTH)
+         IF (KT_TYPE_ENUM == IA_2005) THEN
+            DO L = 1,SMAX
+               IF (L .NE. M) THEN
+                  CALL add_shear(L)
+               ENDIF
+            ENDDO
+         ENDIF
       ENDIF
 
-!!$omp  parallel do default(shared)                                             &
-!!$omp  private( I, J, K, IJK, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, IJKT,  &
-!!$omp           IMJK, IPJK, IJMK, IJPK, IJKM, IJKP, IMJPK, IMJMK, IMJKM,IMJKP, &
-!!$omp           IJPKM, IJMKM, IJMKP, IPJMK, IPJKM, U_s_N, U_s_S, U_s_T, U_s_B, &
-!!$omp           V_s_E, V_s_W, V_s_T, V_s_B, W_s_N, W_s_S, W_s_E, W_s_W, U_s_C, &
-!!$omp           W_s_C, Usl_N, Usl_S, Usl_T, Usl_B, Vsl_E, Vsl_W, Vsl_T,        &
-!!$omp           Vsl_B, Wsl_n, Wsl_S, Wsl_E, Wsl_W, Usl_C, Wsl_C,               &
-!!$omp           D_s, D_sl, L,                                                  &
-!!$omp           I1, I2)
+!!$omp  parallel do default(shared) &
+!!$omp  private( IJK, L, I1, I2, D_sM, D_sL, DelV_sM, DelV_sL)
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
-            I = I_OF(IJK)
-            J = J_OF(IJK)
-            K = K_OF(IJK)
-            IM = Im1(I)
-            JM = Jm1(J)
-            KM = Km1(K)
-            IJKW  = WEST_OF(IJK)
-            IJKE  = EAST_OF(IJK)
-            IJKS  = SOUTH_OF(IJK)
-            IJKN  = NORTH_OF(IJK)
-            IJKB  = BOTTOM_OF(IJK)
-            IJKT  = TOP_OF(IJK)
-            IMJK  = IM_OF(IJK)
-            IPJK  = IP_OF(IJK)
-            IJMK  = JM_OF(IJK)
-            IJPK  = JP_OF(IJK)
-            IJKM  = KM_OF(IJK)
-            IJKP  = KP_OF(IJK)
-            IMJPK = IM_OF(IJPK)
-            IMJMK = IM_OF(IJMK)
-            IMJKP = IM_OF(IJKP)
-            IMJKM = IM_OF(IJKM)
-            IPJKM = IP_OF(IJKM)
-            IPJMK = IP_OF(IJMK)
-            IJMKP = JM_OF(IJKP)
-            IJMKM = JM_OF(IJKM)
-            IJPKM = JP_OF(IJKM)
 
-            U_s_N = AVG_Y(                                   & !i, j+1/2, k
-                AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I),&
-                AVG_X_E(U_s(IMJPK, M), U_s(IJPK, M), I), J)
-            U_s_S = AVG_Y(                                   & !i, j-1/2, k
-                AVG_X_E(U_s(IMJMK, M), U_s(IJMK, M), I),&
-                AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I), JM)
-            U_s_T = AVG_Z(                                   & !i, j, k+1/2
-                AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I),&
-                AVG_X_E(U_s(IMJKP, M), U_s(IJKP, M), I), K)
-            U_s_B = AVG_Z(                                   & !i, j, k-1/2
-                AVG_X_E(U_s(IMJKM, M), U_s(IJKM, M), I),&
-                AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I), KM)
-
-            IF (SHEAR)  THEN
-               V_s_E = AVG_X(                                & !i+1/2, j, k
-                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
-                   AVG_Y_N((V_s(IPJMK, M) - VSH(IPJMK) + &
-                            VSH(IJMK) + SRT*ONE/oDX_E(I)),&
-                           (V_s(IPJK, M) - VSH(IPJK) + &
-                            VSH(IJK) + SRT*ONE/oDX_E(I))), I)
-               V_s_W = AVG_X(                                & !i-1/2, j, k
-                   AVG_Y_N((V_s(IMJMK, M) - VSH(IMJMK) + &
-                            VSH(IJMK) - SRT*ONE/oDX_E(IM1(I))),&
-                           (V_s(IMJK, M) - VSH(IMJK) + &
-                            VSH(IJK) - SRT*ONE/oDX_E(IM1(I))) ),&
-                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM)
-            ELSE
-               V_s_E = AVG_X(                                & !i+1/2, j, k
-                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
-                   AVG_Y_N(V_s(IPJMK, M), V_s(IPJK, M)), I )
-               V_s_W = AVG_X(                                & !i-1/2, j, k
-                   AVG_Y_N(V_s(IMJMK, M), V_s(IMJK, M)),&
-                   AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), IM )
-            ENDIF
-
-            V_s_T = AVG_Z(                                   & !i, j, k+1/2
-                AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)),&
-                AVG_Y_N(V_s(IJMKP, M), V_s(IJKP, M)), K )
-            V_s_B = AVG_Z(                                   & !i, j, k-1/2
-                AVG_Y_N(V_s(IJMKM, M), V_s(IJKM, M)),&
-                AVG_Y_N(V_s(IJMK, M), V_s(IJK, M)), KM )
-            W_s_N = AVG_Y(                                   & !i, j+1/2, k
-                AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)),&
-                AVG_Z_T(W_s(IJPKM, M), W_s(IJPK, M)), J )
-            W_s_S = AVG_Y(                                   & !i, j-1/2, k
-                AVG_Z_T(W_s(IJMKM, M), W_s(IJMK, M)),&
-                AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)), JM )
-            W_s_E = AVG_X(                                   & !i+1/2, j, k
-                AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)),&
-                AVG_Z_T(W_s(IPJKM, M), W_s(IPJK, M)), I)
-            W_s_W = AVG_X(                                   & !i-1/2, j, k
-                AVG_Z_T(W_s(IMJKM, M), W_s(IMJK, M)),&
-                AVG_Z_T(W_s(IJKM, M), W_s(IJK, M)), IM )
-
-            IF(CYLINDRICAL) THEN
-               U_s_C = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)   !i, j, k
-               W_s_C = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))      !i, j, k
-            ELSE
-               U_s_C = ZERO
-               W_s_C = ZERO
-            ENDIF
-
-! Check for IS surfaces and modify solids velocity-comp accordingly
-            IF(ANY_IS_DEFINED) THEN
-               IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
-                  U_s_N = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-               IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
-                  U_s_S = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-               IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
-                  U_s_T = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-               IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
-                  U_s_B = AVG_X_E(U_s(IMJK, M), U_s(IJK, M), I)
-               IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
-                  V_s_E = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-               IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
-                  V_s_W = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-               IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
-                  V_s_T = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-               IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
-                  V_s_B = AVG_Y_N(V_s(IJMK, M), V_s(IJK, M))
-               IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
-                  W_s_N = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-               IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
-                  W_s_S = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-               IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
-                  W_s_E = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-               IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
-                  W_s_W = AVG_Z_T(W_s(IJKM, M), W_s(IJK, M))
-            ENDIF
-
-! Find components of Mth solids phase continuum strain rate
-! tensor, D_s, at center of THETA cell-(i, j, k)
-            D_s(1,1) = ( U_s(IJK,M) - U_s(IMJK,M) ) * oDX(I)
-            D_s(1,2) = HALF * ( (U_s_N - U_s_S) * oDY(J) +&
-                (V_s_E - V_s_W) * oDX(I) )
-            D_s(1,3) = HALF * ( (W_s_E - W_s_W) * oDX(I) +&
-                (U_s_T - U_s_B) * (oX(I)*oDZ(K)) - W_s_C * oX(I) )
-            D_s(2,1) = D_s(1,2)
-            D_s(2,2) = ( V_s(IJK,M) - V_s(IJMK,M) ) * oDY(J)
-            D_s(2,3) = HALF * ( (V_s_T - V_s_B) * (oX(I)*oDZ(K)) +&
-                (W_s_N - W_s_S) * oDY(J) )
-            D_s(3,1) = D_s(1,3)
-            D_s(3,2) = D_s(2,3)
-            D_s(3,3) = ( W_s(IJK,M) - W_s(IJKM,M) ) * (oX(I)*oDZ(K)) +&
-                U_s_C * oX(I)
-
-            IF (V_EX /= ZERO) CALL CALC_BOYLE_MASSOUDI_STRESS(IJK,M,D_s)
-            IF(CUT_CELL_AT(IJK))  CALL CG_CALC_VEL_S_GRAD(IJK,M,D_s)
+! Velocity derivatives (gradient and rate of strain tensor) for Mth 
+! solids phase at i, j, k
+            CALL CALC_DERIV_VEL_SOLIDS(IJK, M, DelV_sM, D_sM)
 
 ! Calculate the trace of D_s
-            trD_s_C(IJK,M) = D_s(1,1) + D_s(2,2) + D_s(3,3)
+            trD_s_C(IJK,M) = D_sM(1,1) + D_sM(2,2) + D_sM(3,3)
 
 ! Calculate trace of the square of D_s
             trD_s2(IJK,M) = ZERO ! initialize the totalizer
             DO I1 = 1,3
                DO I2 = 1,3
-                  trD_s2(IJK,M) = trD_s2(IJK,M) + D_s(I1,I2)*D_s(I1,I2)
+                  trD_s2(IJK,M) = trD_s2(IJK,M) + D_sM(I1,I2)*D_sM(I1,I2)
                ENDDO
             ENDDO
 
@@ -2840,10 +2649,12 @@
 
 ! Frictional-flow stress tensor
 ! Calculate the second invariant of the deviator of D_s
-            I2_devD_s(IJK) = ( (D_s(1,1)-D_s(2,2))**2&
-                +(D_s(2,2)-D_s(3,3))**2&
-                +(D_s(3,3)-D_s(1,1))**2 )/6.&
-                + D_s(1,2)**2 + D_s(2,3)**2 + D_s(3,1)**2
+            I2_devD_s(IJK) = ( (D_sM(1,1)-D_sM(2,2))**2 + &
+                               (D_sM(2,2)-D_sM(3,3))**2 + &
+                               (D_sM(3,3)-D_sM(1,1))**2 )/6.&
+                 + D_sM(1,2)**2 + D_sM(2,3)**2 + D_sM(3,1)**2
+
+            IF (V_EX /= ZERO) CALL CALC_BOYLE_MASSOUDI_STRESS(IJK,M,D_sM)
 
 ! Quantities for iddir-arastoopour theory: the trace of D_sm dot D_sl
 ! is required
@@ -2851,113 +2662,11 @@
             IF (KT_TYPE_ENUM == IA_2005) THEN
                DO L = 1,SMAX
                   IF (L .NE. M) THEN
-                     IF (L > M) THEN !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
-                        Usl_N = AVG_Y(&                        !i, j+1/2, k
-                            AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I),&
-                            AVG_X_E(U_s(IMJPK, L), U_s(IJPK, L), I), J)
-                        Usl_S = AVG_Y(&                        !i, j-1/2, k
-                            AVG_X_E(U_s(IMJMK, L), U_s(IJMK, L), I),&
-                            AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I), JM)
-                        Usl_T = AVG_Z(&                        !i, j, k+1/2
-                            AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I),&
-                            AVG_X_E(U_s(IMJKP, L), U_s(IJKP, L), I), K)
-                        Usl_B = AVG_Z(&                        !i, j, k-1/2
-                            AVG_X_E(U_s(IMJKM, L), U_s(IJKM, L), I),&
-                            AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I), KM)
+                     IF (L > M) THEN  !done because trD_s2_ip(IJK,M,L) is symmetric, sof.
 
-                        IF (SHEAR)  THEN
-                           Vsl_E = AVG_X(&                     !i+1/2, j, k
-                               AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)),&
-                               AVG_Y_N((V_s(IPJMK, L)-VSH(IPJMK)+&
-                                        VSH(IJMK)+SRT*ONE/oDX_E(I)),&
-                                       (V_s(IPJK, L)-VSH(IPJK)+VSH(IJK)&
-                                        +SRT*ONE/oDX_E(I))), I)
-                           Vsl_W = AVG_X(&                     !i-1/2, j, k
-                               AVG_Y_N((V_s(IMJMK, L)-VSH(IMJMK)+&
-                                        VSH(IJMK)-SRT*ONE/oDX_E(IM1(I))),&
-                                       (V_s(IMJK, L)-VSH(IMJK)+VSH(IJK)&
-                                        -SRT*ONE/oDX_E(IM1(I)))),&
-                               AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)), IM)
-                        ELSE
-                           Vsl_E = AVG_X(&                     !i+1/2, j, k
-                               AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)),&
-                               AVG_Y_N(V_s(IPJMK, L), V_s(IPJK, L)), I )
-                           Vsl_W = AVG_X(&                     !i-1/2, j, k
-                               AVG_Y_N(V_s(IMJMK, L), V_s(IMJK, L)),&
-                               AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)), IM )
-                        ENDIF
-
-                        Vsl_T = AVG_Z(&                        !i, j, k+1/2
-                            AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)),&
-                            AVG_Y_N(V_s(IJMKP, L), V_s(IJKP, L)), K )
-                        Vsl_B = AVG_Z(&                        !i, j, k-1/2
-                            AVG_Y_N(V_s(IJMKM, L), V_s(IJKM, L)),&
-                            AVG_Y_N(V_s(IJMK, L), V_s(IJK, L)), KM )
-                        Wsl_N = AVG_Y(&                        !i, j+1/2, k
-                            AVG_Z_T(W_s(IJKM, L), W_s(IJK, L)),&
-                            AVG_Z_T(W_s(IJPKM, L), W_s(IJPK, L)), J )
-                        Wsl_S = AVG_Y(&                        !i, j-1/2, k
-                            AVG_Z_T(W_s(IJMKM, L), W_s(IJMK, L)),&
-                            AVG_Z_T(W_s(IJKM, L), W_s(IJK, L)), JM )
-                        Wsl_E = AVG_X(&                        !i+1/2, j, k
-                            AVG_Z_T(W_s(IJKM, L), W_s(IJK, L)),&
-                            AVG_Z_T(W_s(IPJKM, L), W_s(IPJK, L)), I)
-                        Wsl_W = AVG_X(&                        !i-1/2, j, k
-                            AVG_Z_T(W_s(IMJKM, L), W_s(IMJK, L)),&
-                            AVG_Z_T(W_s(IJKM, L), W_s(IJK, L)), IM )
-
-                        IF(CYLINDRICAL) THEN
-                            Usl_C = AVG_X_E(U_s(IMJK, L), U_s(IJK, L), I) !i, j, k
-                            Wsl_C = AVG_Z_T(W_s(IJKM, L), W_s(IJK, L))    !i, j, k
-                        ELSE
-                            Usl_C = ZERO
-                            Wsl_C = ZERO
-                        ENDIF
-
-! Check for IS surfaces and modify solids velocity-comp accordingly
-                        IF(ANY_IS_DEFINED) THEN
-                           IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
-                              Usl_N = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
-                           IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
-                              Usl_S = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
-                           IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
-                              Usl_T = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
-                           IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
-                              Usl_B = AVG_X_E(U_s(IMJK,L),U_s(IJK,L), I)
-                           IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
-                              Vsl_E = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
-                           IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
-                              Vsl_W = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
-                           IF(IS_AT_T(IJK)  .AND. .NOT.WALL_AT(IJKP)) &
-                              Vsl_T = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
-                           IF(IS_AT_T(IJKM) .AND. .NOT.WALL_AT(IJKM)) &
-                              Vsl_B = AVG_Y_N(V_s(IJMK,L),V_s(IJK,L))
-                           IF(IS_AT_N(IJK)  .AND. .NOT.WALL_AT(IJPK)) &
-                              Wsl_N = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
-                           IF(IS_AT_N(IJMK) .AND. .NOT.WALL_AT(IJMK)) &
-                              Wsl_S = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
-                           IF(IS_AT_E(IJK)  .AND. .NOT.WALL_AT(IPJK)) &
-                              Wsl_E = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
-                           IF(IS_AT_E(IMJK) .AND. .NOT.WALL_AT(IMJK)) &
-                              Wsl_W = AVG_Z_T(W_s(IJKM,L),W_s(IJK,L))
-                        ENDIF
-
-! Find components of Lth solids phase continuum strain rate
-! tensor, D_sl, at center of THETA cell-(i, j, k)
-                        D_sl(1,1) = ( U_s(IJK,L) - U_s(IMJK,L) ) * oDX(I)
-                        D_sl(1,2) = HALF * ( (Usl_N - Usl_S) * oDY(J) + &
-                            (Vsl_E - Vsl_W) * oDX(I) )
-                        D_sl(1,3) = HALF * ( (Wsl_E - Wsl_W) * oDX(I) + &
-                            (Usl_T - Usl_B) * &
-                            (oX(I)*oDZ(K)) - Wsl_C * oX(I) )
-                        D_sl(2,1) = D_sl(1,2)
-                        D_sl(2,2) = ( V_s(IJK,L) - V_s(IJMK,L) ) * oDY(J)
-                        D_sl(2,3) = HALF * ( (Vsl_T - Vsl_B) * &
-                            (oX(I)*oDZ(K)) + (Wsl_N - Wsl_S) * oDY(J) )
-                        D_sl(3,1) = D_sl(1,3)
-                        D_sl(3,2) = D_sl(2,3)
-                        D_sl(3,3) = ( W_s(IJK,L) - W_s(IJKM,L) ) * &
-                            (oX(I)*oDZ(K)) + Usl_C * oX(I)
+! Velocity derivatives (gradient and rate of strain tensor) for Mth
+! solids phase at i, j, k
+                        CALL CALC_DERIV_VEL_SOLIDS(IJK, L, DelV_sL, D_sL)
 
 ! Calculate trace of the D_sl dot D_sm
 ! (normal matrix multiplication)
@@ -2965,7 +2674,7 @@
                         DO I1 = 1,3
                            DO I2 = 1,3
                               trD_s2_ip(IJK,M,L) = trD_s2_ip(IJK,M,L)+&
-                                 D_sl(I1,I2)*D_s(I1,I2)
+                                 D_sL(I1,I2)*D_sM(I1,I2)
                            ENDDO
                         ENDDO
 
@@ -2978,11 +2687,21 @@
                ENDDO   ! end do (l=1,smax)
             ENDIF   ! endif (kt_type = IA theory)
 
+
          ENDIF   ! end if (fluid_at)
       ENDDO   ! end outer IJK loop
 !!$omp end parallel do
 
-      IF (SHEAR) call remove_shear(M)
+      IF (SHEAR) THEN
+         call remove_shear(M)
+         IF (KT_TYPE_ENUM == IA_2005) THEN
+            DO L = 1,SMAX
+               IF (L .NE. M) THEN
+                  CALL remove_shear(L)
+               ENDIF
+            ENDDO
+         ENDIF
+      ENDIF
 
       RETURN
       END SUBROUTINE INIT1_MU_S
@@ -3025,8 +2744,8 @@
 ! Local variables
 !---------------------------------------------------------------------//
 ! Indices
-      INTEGER :: I, J, K, IM, JM, KM, IJKW, IJKE, IJKS, IJKN, IJKB, &
-                 IJKT
+      INTEGER :: I, J, K, IM, JM, KM
+      INTEGER :: IJKW, IJKE, IJKS, IJKN, IJKB, IJKT
 ! Solids volume fraction gradient tensor
       DOUBLE PRECISION :: M_s(3,3)
 ! d(EP_sm)/dX

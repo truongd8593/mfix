@@ -36,7 +36,9 @@
 ! Kinetic theory model.
       use run, only: KT_TYPE_enum
       use run, only: ia_2005, gd_1999, gtsh_2012
-      use kintheory, only: CALC_IA_ENERGY_DISSIPATION_SS, CALC_GD_99_ENERGY_DISSIPATION_SS, CALC_GTSH_ENERGY_DISSIPATION_SS
+      use kintheory, only: CALC_IA_ENERGY_DISSIPATION_SS
+      use kintheory, only: CALC_GD_99_ENERGY_DISSIPATION_SS
+      use kintheory, only: CALC_GTSH_ENERGY_DISSIPATION_SS
 
       implicit none
 

@@ -219,12 +219,9 @@
 ! Calculate the stress tensor trace and cross terms for all phases.
       CALL CALC_TRD_AND_TAU()
 
-! Calculate additional solid phase momentum source terms
-! that arise from kinetic theory constitutive relations
+! Calculate additional solids phase momentum source terms
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-         CALL CALC_KTMOMSOURCE_U_S ()
-         CALL CALC_KTMOMSOURCE_V_S ()
-         CALL CALC_KTMOMSOURCE_W_S ()
+         CALL CALC_EXPLICIT_MOM_SOURCE_S
       ENDIF
 
 ! Check rates and sums of mass fractions every NLOG time steps
