@@ -74,12 +74,6 @@
 
 MODULE MAIN
 
-  CHARACTER*512 :: out_buffer
-  CHARACTER*512 :: in_buffer
-
-  INTEGER :: request_pending = 0
-  INTEGER :: mfix_stopped = 0
-
   !-----------------------------------------------
   ! Module variables
   !-----------------------------------------------
@@ -1202,5 +1196,28 @@ CONTAINS
 
     RETURN
   END SUBROUTINE write_parallel_info
+
+    function do_mpi_bcast(str)
+      ! use mpi, only: mpi_bcast, mpi_comm_world, mpi_character ! depcomp-ignore
+      use mpi ! depcomp-ignore
+      implicit none
+
+      character*500,intent(in) :: str
+      character :: aa(500)
+      character :: do_mpi_bcast(500)
+      integer :: ii
+      integer :: ierr
+
+      do ii = 1,len(str)
+         aa(ii) = str(ii:ii)
+      end do
+
+      call mpi_bcast(aa,500,mpi_character,0,mpi_comm_world,ierr)
+
+      do ii = 1,500
+         do_mpi_bcast(ii:ii) = aa(ii)
+      end do
+
+  end function do_mpi_bcast
 
 END MODULE MAIN

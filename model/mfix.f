@@ -65,7 +65,7 @@ PROGRAM MFIX
   ! Modules
   !-----------------------------------------------
   USE leqsol, only: SOLVER_STATISTICS, report_solver_stats
-  USE main, only: setup, start, step, end, mfix_stopped, request_pending, nit_total, finish
+  USE main, only: setup, start, step, end, nit_total, finish
   USE run, only: nstep, auto_restart, automatic_restart, iter_restart, time, tstop
 
   IMPLICIT NONE
@@ -79,15 +79,6 @@ PROGRAM MFIX
 
      ! The TIME loop begins here.............................................
      DO
-
-        ! wait for request to finish
-        do while(1.eq.request_pending)
-           mfix_stopped = 1
-           ! without a write, this loop gets optimized away
-           write(*,fmt='(a)',advance='no') ''
-        enddo
-        mfix_stopped = 0
-
         CALL STEP
 
         IF (FINISH) EXIT

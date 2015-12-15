@@ -8,21 +8,70 @@ from twisted.internet import reactor, protocol
 
 import pymfix
 
+requests = {}
+responses = {}
+
+mfix_stopped = False
+
 def run_mfix():
+    global mfix_stopped
+
     pymfix.main.setup()
     pymfix.main.start()
     while pymfix.run.time < pymfix.run.tstop:
-        if 1 == pymfix.main.request_pending:
-            pymfix.main.mfix_stopped = 1
-        while 1 == pymfix.main.mfix_stopped:
+        if requests:
+            # requests would only arrive at rank 0
+            req_id,command = requests.popitem()
+        else:
+            # command is empty for rank>0
+            req_id,command = '',''
+
+        # broadcast command from rank 0 to all ranks
+        command = pymfix.main.do_mpi_bcast(command)
+
+        command = ''.join(command).strip()
+
+        if command:
+            handle(req_id,command)
+
+        if mfix_stopped:
             time.sleep(1)
-        pymfix.main.step()
+        else:
+            pymfix.main.step()
     pymfix.main.end()
 
+def handle(req_id,command):
+    global mfix_stopped
 
-def handle():
-    req = queue.get()
-    q.task_done()
+    cmd = command.split(' ')[0].lower().strip()
+    print "THE COMMAND IS",cmd
+    if cmd=='help':
+        responses[req_id] = '''Usage:
+        stop          - stop mfix
+        go            - (re)start mfix
+        hello         - say hello from each rank
+        step          - execute one timestep
+        set VAR=VALUE - set variable to value
+        \n'''
+
+    elif cmd=='stop':
+        responses[req_id] = 'STOPPING MFIX\n'
+        mfix_stopped = True
+
+    elif cmd=='go':
+        responses[req_id] = 'STARTING MFIX\n'
+        mfix_stopped = False
+
+    elif cmd=='hello':
+        print("HELLO FROM MPI RANK %d" % (pymfix.compar.mype))
+        responses[req_id] = 'PRINTING MPI RANK INFO TO STDOUT\n'
+
+    elif cmd=='step':
+        pymfix.main.step()
+        responses[req_id] = 'DOING ONE TIMESTEP\n'
+
+    else:
+        responses[req_id] = 'UNRECOGNIZED COMMAND\n'
 
 class Echo(protocol.Protocol):
     """This is just about the simplest possible protocol"""
@@ -30,40 +79,23 @@ class Echo(protocol.Protocol):
     def dataReceived(self, data):
         "Called with data sent from client."
         # Should make sure this routine is synchronized
-        pymfix.main.request_pending = 1
 
-        # wait for mfix to stop
-        while 1 != pymfix.main.mfix_stopped:
+        req_id = thread.get_ident()
+
+        requests[req_id] = data
+
+        while req_id not in responses:
             pass
+
+        self.transport.write(responses[req_id])
+        del responses[req_id]
 
         # change any variable...
         # pymfix.run.time  = 1000
         # pymfix.run.tstop = pymfix.run.tstop/2
         # pymfix.run.dt    = 10
 
-        cmd = data.split(' ')[0].lower().strip()
-        print "THE DATA IS",data
-        print "THE COMMAND IS",cmd
-        if cmd=='stop':
-            response = 'STOPPING MFIX\n'
-            pymfix.main.mfix_stopped = 1
-        elif cmd=='go':
-            response = 'STARTING MFIX\n'
-            pymfix.main.mfix_stopped = 0
-        elif cmd=='hello':
-            print("HELLO FROM MPI RANK %d" % (pymfix.compar.mype))
-            response = 'PRINTING MPI RANK INFO TO STDOUT\n'
-        elif cmd=='step':
-            pymfix.main.step()
-            response = 'DOING ONE TIMESTEP\n'
-        else:
-            response = 'UNRECOGNIZED COMMAND\n'
-
         # response = 'the pressure is %s \n tstop is %s' % (str(pymfix.fldvar.p_g[:100]),pymfix.run.tstop)
-        self.transport.write(response)
-
-        # resume mfix
-        pymfix.main.request_pending = 0
 
 def main():
     """This runs the protocol on port 8000"""
