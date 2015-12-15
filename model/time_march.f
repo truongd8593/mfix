@@ -186,6 +186,9 @@
 
 ! Set wall boundary conditions and transient flow b.c.'s
       CALL SET_BC1
+! include here so they are set before calculations rely on value
+! (e.g., calc_mu_g, calc_mu_s)
+      CALL SET_EP_FACTORS
 
 ! Uncoupled discrete element simulations
       IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
