@@ -163,7 +163,7 @@
                            A_M(IJK,0,M) = A_M(IJK,0,M) - MU_S_CUT * Area_W_CUT(IJK)*(BC_HW_S(BCV,M))
                            B_M(IJK,M) = B_M(IJK,M) - MU_S_CUT * WW_s * Area_W_CUT(IJK)*(BC_HW_S(BCV,M))
                         ENDIF
-                     CASE (NONE)
+                     CASE (NONE,CG_MI)
                         NOC_WS = .FALSE.
 
                   END SELECT

@@ -363,7 +363,7 @@
          ENDIF
 
          SELECT CASE (BCT)
-            CASE (CG_NSW)
+            CASE (CG_NSW,CG_MI)
                CUT_TAU_VS = .TRUE.
                NOC_VS     = .TRUE.
                UW_s = ZERO

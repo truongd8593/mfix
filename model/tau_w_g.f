@@ -396,7 +396,7 @@
                ENDIF
 
                SELECT CASE (BCT)
-                  CASE (CG_NSW)
+                  CASE (CG_NSW,CG_MI)
                      CUT_TAU_WG = .TRUE.
                      NOC_WG     = .TRUE.
                      UW_g = ZERO
