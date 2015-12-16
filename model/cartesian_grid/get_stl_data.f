@@ -839,7 +839,7 @@
 
                IF(MyPE == PE_IO)  WRITE(*,140) 'Found BC patch #', BC_PATCH(NN), ' in STL file.'
 
-               IF(IS_CG(BC_TYPE_ENUM(BC_PATCH(NN)))) THEN
+               IF(.NOT.IS_CG(BC_TYPE_ENUM(BC_PATCH(NN)))) THEN
                   IF(MyPE == PE_IO)  THEN
                      WRITE(*,110) 'This BC patch does not mach a CG BC in mfix.dat:',BC_PATCH(NN)
                      WRITE(*,100)'Please Correct mfix.dat and/or stl file amd try again'
