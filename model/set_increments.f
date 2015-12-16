@@ -995,9 +995,11 @@
          NCPP_UNIFORM(MyPE) = BACKGROUND_IJKEND3
       ENDIF
 
+#ifdef MPI
       call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
 
-       CALL ALLGATHER_1i (NCPP_UNIFORM(MyPE),NCPP_UNIFORM_ALL,IERR)
+      CALL ALLGATHER_1i (NCPP_UNIFORM(MyPE),NCPP_UNIFORM_ALL,IERR)
 
       CALL ALLGATHER_1i (BACKGROUND_IJKEND3,BACKGROUND_IJKEND3_ALL,IERR)
 
@@ -1008,8 +1010,6 @@
 !      print*,'From set increment: MyPE,NCCP_UNIFORM=',MyPE,NCPP_UNIFORM
 
 !       WRITE(*,*) 'set increment:',MyPE,NCPP_UNIFORM(MyPE),BACKGROUND_IJKEND3,IJKEND3
-
-
 
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: Shifting arrays...'
 
@@ -1042,7 +1042,6 @@
       CALL SHIFT_DP_ARRAY(P_star)
       CALL SHIFT_DP_ARRAY(P_staro)
 
-
       CALL SHIFT_DP_ARRAY(MU_G)
       CALL SHIFT_DP_ARRAY(MW_MIX_G)
 
@@ -1051,8 +1050,6 @@
 
       CALL SHIFT_DP_ARRAY(C_pg)
       CALL SHIFT_DP_ARRAY(K_g)
-
-
 
       DO M = 1, MMAX
          CALL SHIFT_DP_ARRAY(RO_S(:,M))
@@ -1813,24 +1810,21 @@
 
       recvijk2 => new_recvijk2
 
-
-
       ENDIF
 
+#ifdef MPI
       comm = MPI_COMM_WORLD
-
+#endif
 
 !  INSERT NEW SEND_RECV INIT HERE
 
    call sendrecv_re_init_after_re_indexing(comm, 0 )
 
-
    ENDIF ! IS_SERIAL
 
-
+#ifdef MPI
    call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
-
-
+#endif
 
 !goto 999
 
@@ -1906,17 +1900,15 @@
                INCREMENT_FOR_MP(5,ICLASS) = INCREMENT_FOR_KM(ICLASS)
                INCREMENT_FOR_MP(6,ICLASS) = INCREMENT_FOR_KP(ICLASS)
 
-!
                DENOTE_CLASS(ICLASS) = INCREMENT_FOR_N(ICLASS) + INCREMENT_FOR_S&
                   (ICLASS) + INCREMENT_FOR_E(ICLASS) + INCREMENT_FOR_W(ICLASS)&
                    + INCREMENT_FOR_T(ICLASS) + INCREMENT_FOR_B(ICLASS) + &
                   INCREMENT_FOR_IM(ICLASS) + INCREMENT_FOR_IP(ICLASS) + &
                   INCREMENT_FOR_JM(ICLASS) + INCREMENT_FOR_JP(ICLASS) + &
                   INCREMENT_FOR_KM(ICLASS) + INCREMENT_FOR_KP(ICLASS)
-!
+
                CELL_CLASS(IJK) = ICLASS
-!
-!
+
 !          Place the cell in a class based on its DENOTE_CLASS(ICLASS) value
                DO IC = 1, ICLASS - 1             !Loop over previous and present classes
 !                                                !IF a possible match in cell types
@@ -1949,32 +1941,25 @@
          END DO
       END DO
 
-
       IF(MyPE == PE_IO) WRITE(*,*)' Re-indexing: New number of classes = ', ICLASS
 
     CALL WRITE_IJK_VALUES
 
 !      IJKEND3 = BACKGROUND_IJKEND3  ! for debugging purpose, will need to be removed
 
-
-
 !      RETURN
-
 
       ALLOCATE( NEW_IJKSIZE3_ALL(0:NUMPES-1) )
 
-
       CALL ALLGATHER_1I (IJKEND3,NEW_IJKSIZE3_ALL,IERR)
-
-
 
 !      print*,'MyPE, NEW_IJKSIZE3_ALL=',MyPE,NEW_IJKSIZE3_ALL
 
-
-
       IF(NUMPES.GT.1) THEN
 
+#ifdef MPI
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
 
          IF(MyPE.EQ.0) THEN
             WRITE(*,1000)"============================================================================="
@@ -1983,7 +1968,9 @@
             WRITE(*,1000)"============================================================================="
          ENDIF
 
+#ifdef MPI
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
 
          DO IPROC = 0,NumPes-1
             IF(MyPE==IPROC) THEN
@@ -1993,10 +1980,11 @@
                DIFF_NCPP(IPROC) = DBLE(NEW_IJKSIZE3_ALL(IPROC)-NCPP_UNIFORM_ALL(IPROC))/DBLE(NCPP_UNIFORM_ALL(IPROC))*100.0D0
                WRITE(*,1060) IPROC,I_SIZE,J_SIZE,K_SIZE,BACKGROUND_IJKEND3_ALL(IPROC),NEW_IJKSIZE3_ALL(IPROC),DIFF_NCPP(IPROC)
             ENDIF
+#ifdef MPI
             call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
          ENDDO
 
-         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
          IF(MyPE.EQ.0) THEN
             WRITE(*,1000)"============================================================================="
             WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM_ALL),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM_ALL)-1
@@ -2005,7 +1993,9 @@
                  DBLE(MAXVAL(NEW_IJKSIZE3_ALL)-MAXVAL(NCPP_UNIFORM_ALL))/DBLE(MAXVAL(NCPP_UNIFORM_ALL))*100.0
            WRITE(*,1000)"============================================================================="
          ENDIF
+#ifdef MPI
          call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
       ENDIF
 
 1000  FORMAT(1x,A)
@@ -2020,8 +2010,6 @@
 !
 
       END SUBROUTINE RE_INDEX_ARRAYS
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -2720,9 +2708,9 @@
 
 !      ENDIF
 
-      call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
-
-
+#ifdef MPI
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
 
 !=====================================================================
 ! JFD: End of Print send info

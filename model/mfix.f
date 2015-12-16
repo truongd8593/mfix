@@ -295,7 +295,9 @@
 
       END SELECT
 
+#ifdef MPI
       call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+#endif
 
       IF (DT_TMP /= UNDEFINED) THEN
          DT = MAX(DT_MIN,MIN(DT_MAX,DT))
@@ -816,11 +818,8 @@
 
       close(unit=11)
 
-
       RETURN
       END SUBROUTINE DEBUG_WRITE_LAYOUT
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 
@@ -895,4 +894,3 @@
 
       RETURN
       END SUBROUTINE write_parallel_info
-

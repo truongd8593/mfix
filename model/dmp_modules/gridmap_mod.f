@@ -598,8 +598,10 @@
 
 
 ! Call to sendrecv_init to set all the communication pattern
+#ifdef MPI
       COMM = MPI_COMM_WORLD
       CALL SENDRECV_INIT(COMM, CYC_XL, CYC_YL, CYC_ZL, idebug=0)
+#endif
 
       CALL FINL_ERR_MSG
       RETURN

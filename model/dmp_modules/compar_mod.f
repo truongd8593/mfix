@@ -13,7 +13,9 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE mpi
+#ifdef MPI
+        USE mpi ! ignore-depcomp
+#endif
 !-----------------------------------------------
 
 ! myPE - my processor id (it varies from 0 to nproc-1)

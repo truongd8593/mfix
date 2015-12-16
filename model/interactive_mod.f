@@ -555,7 +555,9 @@
       use compar, only: myPE, PE_IO
       use mpi_utility
 
+#ifdef MPI
       CALL MPI_BARRIER(MPI_COMM_WORLD,MPIERR)
+#endif
       IF(myPE == PE_IO) CALL SYSTEM('rm interact.dat')
 
 
@@ -588,7 +590,9 @@
          ENDDO
       ENDIF
 
+#ifdef MPI
       CALL MPI_BARRIER(MPI_COMM_WORLD,MPIERR)
+#endif
 
       RETURN
       END SUBROUTINE INTERACTIVE_WAIT

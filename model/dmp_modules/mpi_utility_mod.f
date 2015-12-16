@@ -5488,16 +5488,4 @@ contains
 
   END SUBROUTINE exitMPI
 
-#ifndef MPI
-  SUBROUTINE MPI_BARRIER(MPI_COMM_WORLD, mpierr)
-    integer, intent(in) :: MPI_COMM_WORLD, mpierr
-    RETURN
-  END SUBROUTINE MPI_BARRIER
-
-  SUBROUTINE MPI_ABORT(MPI_COMM_WORLD, mpierr, ierr)
-    integer, intent(in) :: MPI_COMM_WORLD, mpierr, ierr
-    ERROR_STOP "terminated in MPI_ABORT"
-  END SUBROUTINE MPI_ABORT
-#endif
-
 end module mpi_utility

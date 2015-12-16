@@ -637,7 +637,9 @@
 ! Only update pvd file when there are particles in vtk region
       IF(GLOBAL_CNT>0.AND.MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
+#ifdef MPI
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN

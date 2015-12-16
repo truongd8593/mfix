@@ -43,7 +43,7 @@
 
         subroutine MPI_Check( msg, ierr )
 #ifdef MPI
-          use mpi, only: MPI_SUCCESS
+          use mpi, only: MPI_SUCCESS ! ignore-depcomp
 #endif
           implicit none
           character(len=*),intent(in) :: msg

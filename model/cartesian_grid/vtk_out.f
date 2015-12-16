@@ -317,7 +317,9 @@
       CALL CLOSE_VTU_FILE_BIN(MODE)
       IF(MODE==0) CALL UPDATE_AND_CLOSE_PVD_FILE
 
+#ifdef MPI
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif
 
 ! Update Frames
       IF (myPE == PE_IO.AND.TIME_DEPENDENT_FILENAME) THEN
@@ -376,8 +378,9 @@
       INTEGER :: MODE   ! MODE = 0 : Write regular VTK region file
                         ! MODE = 1 : Write debug   VTK region file (VTK_DBG_FILE = .TRUE.)
 
-
+#ifdef MPI
       call MPI_barrier(MPI_COMM_WORLD,mpierr)
+#endif
 
 ! Only open the file from head node when not using distributed I/O
       IF (myPE /= PE_IO.AND.(.NOT.BDIST_IO)) RETURN
