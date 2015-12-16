@@ -2166,7 +2166,6 @@ contains
     integer :: lidebug
     integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-    integer, dimension(MPI_STATUS_SIZE) :: recv_status
     integer, dimension(:,:), pointer :: send_status
 
     !       --------------------------
@@ -2220,10 +2219,10 @@ contains
 
              if (use_persistent_message) then
                 call MPI_WAITANY( nrecv, recv_persistent_request,  &
-                     jindex, recv_status, ierror )
+                     jindex, MPI_STATUS_IGNORE, ierror )
              else
                 call MPI_WAITANY( nrecv, recvrequest,   &
-                     jindex, recv_status, ierror )
+                     jindex, MPI_STATUS_IGNORE, ierror )
              endif
 
              call MPI_Check( 'sendrecv3_end_1d:MPI_WAITANY ', ierror )
@@ -2242,9 +2241,9 @@ contains
           enddo
        else
           if (use_persistent_message) then
-             call MPI_WAITALL( nrecv, recv_persistent_request, recv_status, ierror )
+             call MPI_WAITALL( nrecv, recv_persistent_request, MPI_STATUSES_IGNORE, ierror )
           else
-             call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
+             call MPI_WAITALL( nrecv, recvrequest, MPI_STATUSES_IGNORE, ierror )
           endif
           call MPI_Check( 'sendrecv3_end_1d:MPI_WAITALL recv ', ierror )
 
@@ -2285,7 +2284,6 @@ contains
     integer :: lidebug
     integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-    integer, dimension(MPI_STATUS_SIZE) :: recv_status
     integer, dimension(:,:), pointer :: send_status
 
     !       --------------------------
@@ -2336,7 +2334,7 @@ contains
 
        if (use_waitany) then
           do ii=1,nrecv
-             call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status, ierror )
+             call MPI_WAITANY( nrecv, recvrequest, jindex, MPI_STATUS_IGNORE, ierror )
              call MPI_Check( 'sendrecv3_end_1c:MPI_WAITANY ', ierror )
 
              j1 = xrecv( jindex )
@@ -2354,11 +2352,10 @@ contains
                    XX(ijk)(ic:ic) = crecvbuffer(jpos)
                 enddo
 
-
              enddo
           enddo
        else
-          call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
+          call MPI_WAITALL( nrecv, recvrequest, MPI_STATUSES_IGNORE, ierror )
           call MPI_Check( 'sendrecv3_end_1c:MPI_WAITALL recv ', ierror )
 
           j1 = xrecv(1)
@@ -2407,7 +2404,6 @@ contains
     integer :: lidebug
     integer :: jj,ijk,  jindex, ii,j1,j2, ierror
 
-    integer, dimension(MPI_STATUS_SIZE) :: recv_status
     integer, dimension(:,:), pointer :: send_status
 
     !       --------------------------
@@ -2454,7 +2450,7 @@ contains
 
        if (use_waitany) then
           do ii=1,nrecv
-             call MPI_WAITANY( nrecv, recvrequest, jindex, recv_status, ierror )
+             call MPI_WAITALL( nrecv, recvrequest, MPI_STATUSES_IGNORE, ierror )
              call MPI_Check( 'sendrecv3_end_1i:MPI_WAITANY ', ierror )
 
              j1 = xrecv( jindex )
@@ -2470,7 +2466,7 @@ contains
              enddo
           enddo
        else
-          call MPI_WAITALL( nrecv, recvrequest, recv_status, ierror )
+          call MPI_WAITALL( nrecv, recvrequest, MPI_STATUSES_IGNORE, ierror )
           call MPI_Check( 'sendrecv3_end_1i:MPI_WAITALL recv ', ierror )
 
           j1 = xrecv(1)
