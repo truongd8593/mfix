@@ -15,7 +15,7 @@ module multi_sweep_and_prune
 
   use sweep_and_prune
 
-  logical, parameter :: do_sap = .false.
+  logical, parameter :: do_sap = .true.
 
   type multisap_t
      ! grid particle, e.g. 20x20x20
@@ -317,10 +317,13 @@ contains
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_sort(this)
+    ! use discretelement
+    ! use functions, only: is_nonexistent
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk, sap_id
     integer :: pair(2)
+    integer :: sighs, cc,ll,i, cc_start, cc_end
 
     call init_pairs(this%hashtable)
 
@@ -336,19 +339,43 @@ contains
     enddo
 !$omp end parallel
 
-    do ii=0,this%grid(1)-1
+    print *," NUMBER OF DESGRIDS IS: ",this%grid(1)*this%grid(2)*this%grid(3)
+
+ sighs = 0
+
+ open (unit=235,file="pairs.txt",action="write",status="replace")
+
+   do ii=0,this%grid(1)-1
        do jj=0,this%grid(2)-1
           do kk=0,this%grid(3)-1
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
              call reset_pairs(this%saps(sap_id)%hashtable)
+             print *,"SAP ID ",sap_id," HAS TABLE OF SIZE",this%saps(sap_id)%hashtable%table_size
+             sighs = sighs + this%saps(sap_id)%hashtable%table_size
              do
                 call get_pair(this%saps(sap_id)%hashtable,pair)
                 if (pair(1).eq.0 .and. pair(2).eq.0) exit
+                write (235,*) pair(1),pair(2)
                 call add_pair(this%hashtable,pair(1),pair(2))
+
              enddo
           enddo
        enddo
     enddo
+
+    close (unit=235)
+
+    ! call reset_pairs(this%hashtable)
+
+    ! do
+    !    call get_pair(this%hashtable,pair)
+    !    if (pair(1).eq.0 .and. pair(2).eq.0) exit
+    !    write (235,*) pair(1),pair(2)
+    ! enddo
+
+    ! print *,"multisize ",this%hashtable%table_size
+    ! print *,"sighs ",sighs
+    ! stop __LINE__
 
   end subroutine multisap_sort
 

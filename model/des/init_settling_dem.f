@@ -58,8 +58,11 @@
       maxs(1) = XLENGTH
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
-      rad = 20*maxval(des_radius)
-
+      rad = 100*maxval(des_radius)
+      print *,"rad = ",rad
+      print *,"XLENGTH = ",XLENGTH
+      print *,"YLENGTH = ",YLENGTH
+      print *,"ZLENGTH = ",ZLENGTH
       if (do_sap) then
          call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
          ! initialize SAP
