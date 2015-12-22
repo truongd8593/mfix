@@ -88,7 +88,7 @@
 
       call init_random_seed
 
-      do i = 1, ceiling(real(nsize/2))
+      do i = 1, ceiling(real(nsize/2.0))
          do n = 1,100000
             call random_number(x)
             x = 2.0 * x - 1.0
