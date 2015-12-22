@@ -34,3 +34,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | prop for enter/exit   |          |  
                   | particles too.        |          |
 ==================================================================================================
+  12/21/2015      | fix implicit type     | Minor    |  des/randomno_mod.f
+                  | conversion in randno  |          |  
+                  | generator.            |          |
+==================================================================================================
