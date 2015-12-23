@@ -210,7 +210,7 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Subroutine: DES_Hgm                                                 !
+!  Subroutine: ZERO_ENERGY_SOURCE                                      !
 !                                                                      !
 !  Purpose: ZERO out the array that passes energy source terms back to !
 !  the continuum model. Additional entries may be needed to include    !

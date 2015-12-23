@@ -77,7 +77,7 @@
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-!  Subroutine: DES_Hgm                                                 !
+!  Subroutine: DES_2FLUID_CONV                                         !
 !  Author: J.Musser                                   Date: 15-Jan-11  !
 !                                                                      !
 !  Purpose: This routine is called from the continuum phase and        !
