@@ -1,8 +1,5 @@
 MODULE energy
 
-  USE fldvar
-  USE param
-  USE param1
 
 !   Gas-phase heat of reaction
   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE ::  HOR_g
@@ -36,6 +33,7 @@ CONTAINS
   !
   !  S_p for gas phase at i, j, k
   DOUBLE PRECISION FUNCTION S_Rpg(IJK)
+    USE fldvar, only: t_g
     IMPLICIT NONE
     INTEGER IJK
     S_Rpg = 4.d0 * GAMA_Rg(IJK) *  T_g(IJK)**3
@@ -43,6 +41,7 @@ CONTAINS
 
   !  S_c for gas phase at i, j, k
   DOUBLE PRECISION FUNCTION S_Rcg(IJK)
+    USE fldvar, only: t_g
     IMPLICIT NONE
     INTEGER IJK
     S_Rcg = GAMA_Rg(IJK) * ( T_Rg(IJK)**4 + 3.d0 * T_g(IJK)**4 )
@@ -50,6 +49,7 @@ CONTAINS
 
   !  S_p for solids phase at i, j, k
   DOUBLE PRECISION FUNCTION S_Rps(IJK, M)
+    USE fldvar, only: t_s
     IMPLICIT NONE
     INTEGER IJK, M
     S_Rps = 4.d0 * GAMA_Rs(IJK, M) *  T_s(IJK, M)**3
@@ -57,6 +57,7 @@ CONTAINS
 
   !  S_c for solids phase at i, j, k
   DOUBLE PRECISION FUNCTION S_Rcs(IJK, M)
+    USE fldvar, only: t_s
     IMPLICIT NONE
     INTEGER IJK, M
     S_Rcs = GAMA_Rs(IJK, M) * ( T_Rs(IJK, M)**4 &

@@ -5,58 +5,56 @@
 !     form Ax=b. The center coefficient (ap) and source vector (b)     C
 !     are negative.  The off-diagonal coefficients are positive.       C
 !                                                                      C
-!  Purpose: Solve granular energy equations                            C
-!                                                                      C
-!                                                                      C
 !  Author: K. Agrawal                                 Date:            C
-!  Reviewer:                                          Date:            C
-!                                                                      C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_GRANULAR_ENERGY(IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE visc_s
-      USE geometry
-      USE fldvar
-      USE constant
-      USE output
-      USE indices
-      USE drag
-      USE residual
-      USE ur_facs
-      USE pgcor
-      USE pscor
-      USE leqsol
-      USE bc
-      USE energy
-      USE rxns
-      Use ambm
-      USE compar
-      USE mflux
-      USE mpi_utility
-      USE mms
-      USE functions
+!---------------------------------------------------------------------//
+      use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
+      use bc, only: bc_theta_m, bc_thetaw_m, bc_hw_theta_m, bc_c_theta_m
+      use compar, only: ijkstart3, ijkend3, mype, numpes
+      use constant, only: to_si, pi
+      use fldvar, only: ep_g, theta_m, theta_mo
+      use fldvar, only: ep_s, u_s, v_s, w_s, rop_so
+      use fldvar, only: ro_s, d_p
+      use functions, only: fluid_at, wall_at, zmax
+      use geometry, only: ijkmax2, vol
+      use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
+      use mflux, only: flux_se, flux_sn, flux_st
+      use mflux, only: flux_sse, flux_ssn, flux_sst
+      use mflux, only: flux_ne, flux_nn, flux_nt
+      use mms, only: use_mms, mms_theta_m_src
+      use mpi_utility, only: global_all_sum
+      use param, only: dimension_3, dimension_m
+      use param1, only: zero, one, dimension_lm
+      use physprop, only: kth_s
+      use physprop, only: smax, mmax
+      use residual, only: resid, max_resid, ijk_resid
+      use residual, only: num_resid, den_resid
+      use residual, only: resid_th
+      use run, only: discretize, odt, added_mass, m_am, schaeffer
+      use run, only: kt_type_enum, lun_1984, ahmadi_1995, simonin_1996
+      use run, only: kt_type, gd_1999, gtsh_2012, ghd_2007, ia_2005
+      use rxns, only: sum_r_s
+      use toleranc, only: zero_ep_s 
+      use ur_facs, only: ur_fac
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: gran_energy
+      use visc_s, only: ep_g_blend_start
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Error index
       INTEGER :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! phase index
       INTEGER :: M, L
 ! Cp * Flux
@@ -105,7 +103,7 @@
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_ambm       ! locks arrays a_m and b_m
 
@@ -176,6 +174,10 @@
 
 ! set the source terms in a and b matrix form
             CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
+
+! usr source
+            IF (CALL_USR_SOURCE(8)) CALL CALC_USR_SOURCE(GRAN_ENERGY,&
+                                  A_M, B_M, lM=M)
 
 ! Adjusting the values of theta_m to zero when Ep_g < EP_star
 ! (Shaeffer, 1987). This is done here instead of calc_mu_s to
@@ -286,6 +288,10 @@
 
 ! set the source terms in a and b matrix form
             CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
+
+! usr source
+            IF (CALL_USR_SOURCE(8)) CALL CALC_USR_SOURCE(GRAN_ENERGY,&
+                                  A_M, B_M, lM=M)
           ENDDO   ! end do loop (m = 1, smax)
 
 ! use partial elimination on collisional dissipation term: SUM(Nip)
@@ -407,6 +413,10 @@
 
 ! set the source terms in a and b matrix form
           CALL SOURCE_PHI (S_P, S_C, EPS, THETA_M(1,M), M, A_M, B_M)
+
+! usr source
+          IF (CALL_USR_SOURCE(8)) CALL CALC_USR_SOURCE(GRAN_ENERGY,&
+                                  A_M, B_M, lM=M)
 
           CALL CALC_RESID_S (THETA_M(1,M), A_M, B_M, M, &
             NUM_RESID(RESID_TH,M), DEN_RESID(RESID_TH,M), RESID(RESID_TH,M),&

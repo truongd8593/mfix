@@ -708,6 +708,8 @@ libmfix_src = \
 	model/usr_mod.f \
 	model/usr_physical_prop.f \
 	model/usr_rates.f \
+        model/usr_sources.f\
+        model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
 	model/utilities_mod.f \
@@ -1246,6 +1248,8 @@ postmfix_SOURCES = \
 	model/usr_mod.f \
 	model/usr_physical_prop.f \
 	model/usr_rates.f \
+        model/usr_sources.f \
+        model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/utilities_mod.f \
 	model/vavg_u_g.f \

@@ -1,76 +1,60 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOURCE_Pp_g                                             C
-!  Purpose: Determine source terms for Pressure correction equation.   C
+!  Purpose: Determine source terms for pressure correction equation.   C
 !                                                                      C
 !  Notes: The off-diagonal coefficients are positive. The center       C
 !         coefficient and the source vector are negative. See          C
 !         conv_Pp_g                                                    C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 21-JUN-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 1                                                  C
 !  Purpose: To incorporate Cartesian grid modifications                C
 !  Author: Jeff Dietiker                              Date: 01-Jul-09  C
 !                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 
-SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
-
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       USE bc, ONLY: IJK_P_G
-      USE param
-      USE param1, ONLY: SMALL_NUMBER, ONE, ZERO, UNDEFINED
       USE compar, ONLY: IJKSTART3, IJKEND3
       USE cutcell, ONLY: CARTESIAN_GRID, A_UPG_E, A_VPG_N, A_WPG_T
-      USE eos, ONLY: DROODP_G
-      USE fldvar, ONLY: U_G, V_G, W_G, U_S, V_S, W_S, ROP_G, ROP_S, ROP_GO, ROP_SO, RO_G, P_G, EP_G
+      USE fldvar, ONLY: U_G, V_G, W_G, U_S, V_S, W_S, ROP_G, ROP_S
+      USE fldvar, only: ROP_GO, ROP_SO, RO_G
       USE geometry, ONLY: VOL
+      USE param, only: dimension_3, dimension_m
+      USE param, only: east, west, south, north, top, bottom
+      USE param1, ONLY: SMALL_NUMBER, ONE, ZERO, UNDEFINED
       USE pgcor, ONLY: D_E, D_N, D_T
       USE physprop, ONLY: CLOSE_PACKED, MMAX, RO_G0
       USE run, ONLY: SHEAR, ODT, UNDEFINED_I
       USE rxns, ONLY: SUM_R_G, SUM_R_S
-      USE ur_facs, ONLY: UR_FAC
       USE vshear, ONLY: VSH
-
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Septadiagonal matrix A_m
       DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+
 ! Local Variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! solids phase index
       INTEGER :: M
 ! Indices
       INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
-! under relaxation factor for pressure
-      DOUBLE PRECISION fac
 ! terms of bm expression
       DOUBLE PRECISION bma, bme, bmw, bmn, bms, bmt, bmb, bmr
-! loezos: used for including shearing
-      integer :: incr
 ! error message
       CHARACTER(LEN=80) :: LINE(1)
-! temporary use of global arrays:
-! xsi_array: convection weighting factors
-!      DOUBLE PRECISION XSI_e(DIMENSION_3), XSI_n(DIMENSION_3),&
-!                       XSI_t(DIMENSION_3)
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! loezos
 ! update to true velocity
       IF (SHEAR) THEN
@@ -85,9 +69,12 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 ! Calculate convection-diffusion fluxes through each of the faces
 
 !$omp parallel default(none) &
-!$omp          private(IJK, IMJK, IJMK, IJKM, M, bma,bme,bmw,bmn,bms,bmt,bmb,bmr,line)  &
-!$omp          shared(ijkstart3,ijkend3,cartesian_grid,rop_g,rop_go,rop_s,rop_so,vol,odt,u_g,v_g,w_g,u_s,v_s,w_s,b_m, &
-!$omp                 b_mmax,d_e,d_n,d_t,a_m,a_upg_e,a_vpg_n,a_wpg_t,mmax,close_packed,sum_r_s,sum_r_g,ro_g0)
+!$omp          private(IJK, IMJK, IJMK, IJKM, M, bma,bme,bmw,bmn,&
+!$omp                  bms,bmt,bmb,bmr,line)  &
+!$omp          shared(ijkstart3,ijkend3,cartesian_grid,rop_g,rop_go,&
+!$omp                 rop_s,rop_so,vol,odt,u_g,v_g,w_g,u_s,v_s,w_s,b_m, &
+!$omp                 b_mmax,d_e,d_n,d_t,a_m,a_upg_e,a_vpg_n,a_wpg_t,&
+!$omp                 mmax,close_packed,sum_r_s,sum_r_g,ro_g0)
 !$omp do
       DO IJK = ijkstart3, ijkend3
          IF (FLUID_AT(IJK)) THEN
@@ -103,8 +90,10 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
             bmt = A_M(IJK,top,0)*W_G(IJK)
             bmb = A_M(IJK,bottom,0)*W_G(IJKM)
             bmr = SUM_R_G(IJK)*VOL(IJK)
-            B_M(IJK,0) = -((-(bma + bme - bmw + bmn - bms + bmt - bmb ))+ bmr )
-            B_MMAX(IJK,0) = max(abs(bma), abs(bme), abs(bmw), abs(bmn), abs(bms), abs(bmt), abs(bmb), abs(bmr) )
+            B_M(IJK,0) = -((-(bma + bme - bmw + &
+                              bmn - bms + bmt - bmb ))+ bmr )
+            B_MMAX(IJK,0) = max(abs(bma),abs(bme),abs(bmw),&
+               abs(bmn),abs(bms),abs(bmt),abs(bmb),abs(bmr) )
 
             A_M(IJK,east,0) = A_M(IJK,east,0)*D_E(IJK,0)
             A_M(IJK,west,0) = A_M(IJK,west,0)*D_E(IMJK,0)
@@ -154,8 +143,9 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
                ENDIF
             ENDDO
 
-            A_M(IJK,0,0) = -(A_M(IJK,east,0)+A_M(IJK,west,0)+A_M(IJK,north,0)+A_M(IJK,south,0&
-               )+A_M(IJK,top,0)+A_M(IJK,bottom,0))
+            A_M(IJK,0,0) = -(A_M(IJK,east,0)+A_M(IJK,west,0)+&
+                             A_M(IJK,north,0)+A_M(IJK,south,0)+&
+                             A_M(IJK,top,0)+A_M(IJK,bottom,0))
 
             IF (ABS(A_M(IJK,0,0)) < SMALL_NUMBER) THEN
                IF (ABS(B_M(IJK,0)) < SMALL_NUMBER) THEN
@@ -169,6 +159,7 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
 !!$omp             end critical
                ENDIF
             ENDIF
+
 
          ELSE   ! if/else branch .not.fluid_at(ijk)
 ! set the value (correction) in all wall and flow boundary cells to zero
@@ -198,67 +189,8 @@ SUBROUTINE SOURCE_PP_G(A_M, B_M, B_MMAX)
          ENDDO
       ENDIF
 
-
-! make correction for compressible flows
-      IF (RO_G0 == UNDEFINED) THEN
-         fac = UR_FAC(1)  !since p_g = p_g* + ur_fac * pp_g
-
-! loezos
-         incr=0
-!         CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr)
-
-!!$omp    parallel do                                                     &
-!!$omp&   private(IJK,I,J,K,                                       &
-!!$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
-         DO IJK = ijkstart3, ijkend3
-            IF (FLUID_AT(IJK)) THEN
-
-               A_M(IJK,0,0) = A_M(IJK,0,0) - &
-                  fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
-                  EP_G(IJK)*VOL(IJK)*ODT
-
-! Although the following is a better approximation for high speed flows because
-! it considers density changes in the neighboring cells, the code runs faster
-! without it for low speed flows.  The gas phase mass balance cannot be
-! maintained to machine precision with the following approximation. If the
-! following lines are uncommented, the calc_xsi call above should also be
-! uncommented
-!               IMJK = IM_OF(IJK)
-!               IJMK = JM_OF(IJK)
-!               IJKM = KM_OF(IJK)
-!               IJKE = EAST_OF(IJK)
-!               IJKW = WEST_OF(IJK)
-!               IJKN = NORTH_OF(IJK)
-!               IJKS = SOUTH_OF(IJK)
-!               IJKT = TOP_OF(IJK)
-!               IJKB = BOTTOM_OF(IJK)
-!               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(&
-!                  IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-XSI_E(IMJK)*U_G(&
-!                  IMJK)*AYZ(IMJK)+(ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-XSI_N(IJMK&
-!                  )*V_G(IJMK)*AXZ(IJMK))
-
-!               A_M(IJK,east,0) = A_M(IJK,east,0) - EP_G(IJKE)*fac*DROODP_G(RO_G(IJKE),P_G&
-!                  (IJKE))*XSI_E(IJK)*U_G(IJK)*AYZ(IJK)
-!               A_M(IJK,west,0) = A_M(IJK,west,0) + EP_G(IJKW)*fac*DROODP_G(RO_G(IJKW),P_G&
-!                  (IJKW))*(ONE - XSI_E(IMJK))*U_G(IMJK)*AYZ(IMJK)
-!               A_M(IJK,north,0) = A_M(IJK,north,0) - EP_G(IJKN)*fac*DROODP_G(RO_G(IJKN),P_G&
-!                  (IJKN))*XSI_N(IJK)*V_G(IJK)*AXZ(IJK)
-!               A_M(IJK,south,0) = A_M(IJK,south,0) + EP_G(IJKS)*fac*DROODP_G(RO_G(IJKS),P_G&
-!                  (IJKS))*(ONE - XSI_N(IJMK))*V_G(IJMK)*AXZ(IJMK)
-!               IF (DO_K) THEN
-!                  A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
-!                     EP_G(IJK)*((ONE - XSI_T(IJK))*W_G(IJK)*AXY(IJK)-XSI_T(IJKM&
-!                     )*W_G(IJKM)*AXY(IJKM))
-!                  A_M(IJK,top,0) = A_M(IJK,top,0) - EP_G(IJKT)*fac*DROODP_G(RO_G(IJKT),&
-!                     P_G(IJKT))*XSI_T(IJK)*W_G(IJK)*AXY(IJK)
-!                  A_M(IJK,bottom,0) = A_M(IJK,bottom,0) + EP_G(IJKB)*fac*DROODP_G(RO_G(IJKB),&
-!                     P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM)
-!               ENDIF
-!
-            ENDIF   !end if (fluid_at(ijk))
-         ENDDO    ! end do (ijk=ijkstart3,ijkend3)
-      ENDIF   ! end if (ro_g0 == undefined); i.e., compressible flow
-
+! Modification for compressibility 
+      IF (RO_G0 == UNDEFINED) CALL COMPRESSIBLE_PP_G(A_M)
 
 ! Remove the asymmetry in matrix caused by the pressure outlet or inlet
 ! boundaries.  Because the P' at such boundaries is zero we may set the
@@ -299,3 +231,128 @@ CONTAINS
       INCLUDE 'functions.inc'
 
 END SUBROUTINE SOURCE_PP_G
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: COMPRESSIBLE_PP_G                                       C
+!  Purpose: Correction for incompressible flows.                       C
+!                                                                      C
+!  Notes: A HS_CORRECT option is available as a better approximation   C
+!  for high speed flows because it considers density changes in the    C
+!  neighboring C cells. However, the code runs faster without it for   C
+!  low speed flows. The gas phase mass balance cannot be maintained    C
+!  to machine precision with this approximation.                       C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE COMPRESSIBLE_PP_G(A_M)
+
+! Modules
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use eos, only: droodp_g
+      use fldvar, only: ep_g, u_g, v_g, w_g, rop_g, ro_g, p_g
+      use functions, only: fluid_at, im_of, jm_of, km_of
+      use functions, only: east_of, west_of, north_of, south_of
+      use functions, only: top_of, bottom_of
+      use geometry, only: vol, ayz, axz, axy, do_k
+      use param, only: dimension_3, dimension_m
+      use param, only: east, west, south, north, top, bottom
+      use param1, only: one
+      use run, only: discretize, odt
+      use ur_facs, only: ur_fac
+      IMPLICIT NONE
+
+! Parameters
+!---------------------------------------------------------------------//
+      LOGICAL, PARAMETER :: HS_CORRECT = .FALSE.
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Septadiagonal matrix A_m
+      DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
+
+! Local variables
+!---------------------------------------------------------------------//
+! loezos: used for including shearing
+      integer :: incr
+! temporary use of global arrays:
+! xsi_array: convection weighting factors
+      DOUBLE PRECISION :: XSI_e(DIMENSION_3)
+      DOUBLE PRECISION :: XSI_n(DIMENSION_3)
+      DOUBLE PRECISION :: XSI_t(DIMENSION_3)
+! under relaxation factor for pressure
+      double precision :: fac
+! Indices
+      INTEGER :: IJK, IMJK, IPJK, IJMK, IJPK, IJKM, IJKP
+      INTEGER :: IJKE, IJKW, IJKN, IJKS, IJKT, IJKB
+!---------------------------------------------------------------------//
+
+! since p_g = p_g* + ur_fac * pp_g
+      fac = UR_FAC(1)  
+
+     IF (.NOT.HS_CORRECT) THEN
+!!$omp    parallel do  &
+!!$omp&   private(IJK)
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+! account for change in density w.r.t. pressure
+            A_M(IJK,0,0) = A_M(IJK,0,0) - ur_fac(1)*&
+               DROODP_G(RO_G(IJK),P_G(IJK))*EP_G(IJK)*VOL(IJK)*ODT
+         ENDIF
+      ENDDO
+      ENDIF
+
+      IF (HS_CORRECT) THEN
+! since p_g = p_g* + ur_fac * pp_g
+! loezos
+      incr=0
+      CALL CALC_XSI(DISCRETIZE(1),ROP_G,U_G,V_G,W_G,XSI_E,XSI_N,XSI_T,incr)
+
+!!$omp    parallel do  &
+!!$omp&   private(IJK,I,J,K, &
+!!$omp&            IMJK,IJMK,IJKM,IJKE,IJKW,IJKN,IJKS,IJKT,IJKB)
+      DO IJK = ijkstart3, ijkend3
+         IF (FLUID_AT(IJK)) THEN
+            IMJK = IM_OF(IJK)
+            IJMK = JM_OF(IJK)
+            IJKM = KM_OF(IJK)
+            IJKE = EAST_OF(IJK)
+            IJKW = WEST_OF(IJK)
+            IJKN = NORTH_OF(IJK)
+            IJKS = SOUTH_OF(IJK)
+            IJKT = TOP_OF(IJK)
+            IJKB = BOTTOM_OF(IJK)
+            A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
+               EP_G(IJK)*((ONE - XSI_E(IJK))*U_G(IJK)*AYZ(IJK)-&
+                                 XSI_E(IMJK)*U_G(IMJK)*AYZ(IMJK)+&
+                             (ONE-XSI_N(IJK))*V_G(IJK)*AXZ(IJK)-&
+                                  XSI_N(IJMK)*V_G(IJMK)*AXZ(IJMK))
+
+            A_M(IJK,east,0) = A_M(IJK,east,0) - EP_G(IJKE)*fac*&
+               DROODP_G(RO_G(IJKE),P_G(IJKE))*XSI_E(IJK)*U_G(IJK)*AYZ(IJK)
+            A_M(IJK,west,0) = A_M(IJK,west,0) + EP_G(IJKW)*fac*&
+               DROODP_G(RO_G(IJKW),P_G(IJKW))*(ONE - XSI_E(IMJK))*U_G(IMJK)*AYZ(IMJK)
+            A_M(IJK,north,0) = A_M(IJK,north,0) - EP_G(IJKN)*fac*&
+               DROODP_G(RO_G(IJKN),P_G(IJKN))*XSI_N(IJK)*V_G(IJK)*AXZ(IJK)
+            A_M(IJK,south,0) = A_M(IJK,south,0) + EP_G(IJKS)*fac*&
+               DROODP_G(RO_G(IJKS),P_G(IJKS))*(ONE - XSI_N(IJMK))*V_G(IJMK)*AXZ(IJMK)
+            IF (DO_K) THEN
+               A_M(IJK,0,0) = A_M(IJK,0,0) - fac*DROODP_G(RO_G(IJK),P_G(IJK))*&
+                  EP_G(IJK)*((ONE - XSI_T(IJK))*W_G(IJK)*AXY(IJK)-&
+                                    XSI_T(IJKM)*W_G(IJKM)*AXY(IJKM))
+               A_M(IJK,top,0) = A_M(IJK,top,0) - EP_G(IJKT)*fac*&
+                  DROODP_G(RO_G(IJKT),P_G(IJKT))*XSI_T(IJK)*W_G(IJK)*AXY(IJK)
+               A_M(IJK,bottom,0) = A_M(IJK,bottom,0) + EP_G(IJKB)*fac*&
+                  DROODP_G(RO_G(IJKB),P_G(IJKB))*(ONE - XSI_T(IJKM))*W_G(IJKM)*AXY(IJKM)
+            ENDIF
+
+         ENDIF   !end if (fluid_at(ijk))
+      ENDDO    ! end do (ijk=ijkstart3,ijkend3)
+      ENDIF   ! end if (hs_correct)
+
+      RETURN
+      END SUBROUTINE COMPRESSIBLE_PP_G
+
+

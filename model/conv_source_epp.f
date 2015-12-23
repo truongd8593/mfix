@@ -13,7 +13,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_SOURCE_EPP(A_M, B_M, B_mmax)
+      SUBROUTINE CONV_SOURCE_EPP(A_M, B_M, B_mmax, M)
 
 !-----------------------------------------------
 ! Modules
@@ -35,12 +35,15 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
+! Lowest solids phase index of those solids phases that can
+! close packed (M=MCP)
+      INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
 
       IF (DISCRETIZE(2) == 0) THEN               ! 0 & 1 => first order upwinding
-         CALL CONV_SOURCE_EPP0 (A_M, B_M, B_MMAX)
+         CALL CONV_SOURCE_EPP0 (A_M, B_M, B_MMAX, M)
       ELSE
-         CALL CONV_SOURCE_EPP1 (A_M, B_M, B_MMAX)
+         CALL CONV_SOURCE_EPP1 (A_M, B_M, B_MMAX, M)
       ENDIF
 
       RETURN
@@ -58,7 +61,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, B_MMAX)
+      SUBROUTINE CONV_SOURCE_EPP0(A_M, B_M, B_MMAX, M)
 
 !-----------------------------------------------
 ! Modules
@@ -89,11 +92,12 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
+! Lowest solids phase index of those solids phases that can
+! close packed (M=MCP)
+      INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! solids phase index locally assigned to mcp
-      INTEGER :: M
 ! Indices
       INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
       INTEGER :: IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS
@@ -108,17 +112,6 @@
 ! terms of bm expression
       DOUBLE PRECISION :: bma, bme, bmw, bmn, bms, bmt, bmb, bmr
 !-----------------------------------------------
-
-      IF (MCP == UNDEFINED_I) THEN
-! this error should be caught earlier in the routines so that this
-! branch should never be entered
-         RETURN
-      ELSE
-! the lowest solids phase index of those solids phases that can close
-! pack (i.e. close_packed=T) and the index of the solids phase that is
-! used to form the solids correction equation.
-         M = MCP
-      ENDIF
 
 !!$omp    parallel do                                            &
 !!$omp&   private(I, J, K, IJK, IPJK, IJPK, IJKP,                &
@@ -315,7 +308,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, B_MMAX)
+      SUBROUTINE CONV_SOURCE_EPP1(A_M, B_M, B_MMAX, M)
 
 !-----------------------------------------------
 ! Modules
@@ -348,11 +341,13 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
+! Lowest solids phase index of those solids phases that can
+! close packed (M=MCP)
+      INTEGER, INTENT(IN) :: M
+
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! solids phase index locally assigned to mcp
-      INTEGER :: M
 ! Indices
       INTEGER :: I, J, K, IJK, IPJK, IJPK, IJKP
       INTEGER :: IMJK, IJMK, IJKM, IJKE, IJKW, IJKN, IJKS
@@ -376,17 +371,6 @@
                           XSI_n(DIMENSION_3),&
                           XSI_t(DIMENSION_3)
 !-----------------------------------------------
-
-      IF (MCP == UNDEFINED_I) THEN
-! this error should be caught earlier in the routines so that this
-! branch should never be entered
-         RETURN
-      ELSE
-! the lowest solids phase index of those solids phases that can close
-! pack (i.e. close_packed=T) and the index of the solids phase that is
-! used to form the solids correction equation.
-         M = MCP
-      ENDIF
 
 ! Loezos:
       incr=0
@@ -561,7 +545,7 @@
 !  Reviewer:                                          Date:            C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE POINT_SOURCE_EPP(B_M, B_MMAX)
+      SUBROUTINE POINT_SOURCE_EPP(B_M, B_MMAX, M)
 
 !-----------------------------------------------
 ! Modules
@@ -584,31 +568,20 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
-
+! Lowest solids phase index of those solids phases that can
+! close packed (M=MCP)
+      INTEGER, INTENT(IN) :: M
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-
 ! Indices
       INTEGER :: IJK, I, J, K
-      INTEGER :: PSV, M
+      INTEGER :: PSV
 
 ! terms of bm expression
       DOUBLE PRECISION :: pSource
 
 !-----------------------------------------------
-
-      IF (MCP == UNDEFINED_I) THEN
-! this error should be caught earlier in the routines so that this
-! branch should never be entered
-         RETURN
-      ELSE
-! the lowest solids phase index of those solids phases that can close
-! pack (i.e. close_packed=T) and the index of the solids phase that is
-! used to form the solids correction equation.
-         M = MCP
-      ENDIF
-
 
       PS_LP: do PSV = 1, DIMENSION_PS
 

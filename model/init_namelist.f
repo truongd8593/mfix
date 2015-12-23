@@ -48,6 +48,7 @@
       USE parallel
       USE cdist
       USE stiff_chem
+      use usr_src, only: call_usr_source
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -3106,6 +3107,17 @@
 !  <valid value=".TRUE." note="Call user-defined subroutines."/>
 !  <valid value=".FALSE." note="Do NOT call user-defined subroutines."/>
       CALL_USR = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to enable user_defined subroutine, usr_source, for
+!    calculating source terms in the indicated equation.
+!  </description>
+!  <arg index="1" id="Equation ID Number" min="1" max="DIM_EQS"/>
+!  <valid value=".TRUE." note="Call user-defined source."/>
+!  <valid value=".FALSE." note="MFIX default: No additional source."/>
+      CALL_USR_SOURCE(:) = .FALSE.
 !</keyword>
 
 !<keyword category="UDF Control" required="false">

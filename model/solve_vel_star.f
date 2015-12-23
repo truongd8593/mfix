@@ -4,72 +4,52 @@
 !  Purpose: Solve starred velocity components                          C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 25-APR-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
 !  Revision Number: 2                                                  C
 !  Purpose: allow multiparticle in D_E, D_N and D_T claculations       C
 !           and account for the averaged Solid-Solid drag              C
 !  Author: S. Dartevelle, LANL                        Date: 28-FEb-04  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Revision Number: 3                                                  C
-!  Purpose: To flag the solids calculations: Continuum or DES          C
-!           and to change the gas arrays incorporating the drag        C
-!           when doing DES                                             C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!                                                                      C
-!  Revision Number: 4                                                  C
-!  Purpose: Incorporation of QMOM for the solution of the particle     C
-!           kinetic equation                                           C
-!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_VEL_STAR(IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-
-      USE param
-      USE param1
-      ! USE toleranc
-      USE run, only: kt_type, momentum_x_eq, momentum_y_eq, momentum_z_eq
-      USE physprop,only: mmax
-      USE geometry, only: do_k, ijkmax2
-      USE fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
-      ! USE ghdtheory
-      ! USE output
-      ! USE indices
-      ! USE drag
-      USE residual, only: resid_u, resid_v, resid_w, num_resid, den_resid, resid, max_resid, ijk_resid
-      USE ur_facs
-      USE pgcor, only: d_e, d_t, d_n
-      USE pscor, only: e_e, e_t, e_n, mcp
-      USE leqsol, only: leq_sweep, leq_tol, leq_pc, leq_it, leq_method
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use discretelement, only: des_continuum_hybrid, discrete_element, des_continuum_coupled
+      use fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
+      use geometry, only: do_k, ijkmax2
+      use leqsol, only: leq_sweep, leq_tol, leq_pc, leq_it, leq_method
+      use param, only: dimension_3, dimension_m
+      use param1, only: zero, dimension_lm
+      use pgcor, only: d_e, d_t, d_n
+      use ps, only: point_source
+      use pscor, only: e_e, e_t, e_n, mcp
+      use physprop,only: mmax
+      use residual, only: resid_u, resid_v, resid_w, num_resid, den_resid, resid, max_resid, ijk_resid
+      use run, only: kt_type_enum, GHD_2007
+      use run, only: momentum_x_eq, momentum_y_eq, momentum_z_eq
+      use ur_facs, only: ur_fac
       ! Use ambm
       ! Use tmp_array1,  VxF_gs => Arraym1
       ! Use tmp_array,  VxF_ss => ArrayLM
-      USE compar, only: ijkstart3, ijkend3
-      USE discretelement, only: des_continuum_hybrid, discrete_element, des_continuum_coupled
       USE qmom_kinetic_equation
-      use ps, only: point_source
-
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: gas_u_mom, gas_v_mom, gas_w_mom
+      use usr_src, only: solids_u_mom, solids_v_mom, solids_w_mom
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! fluid cell index
       INTEGER :: IJK
 ! temporary velocity arrays
@@ -90,8 +70,7 @@
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       allocate(U_gtmp(DIMENSION_3))
       allocate(V_gtmp(DIMENSION_3))
@@ -120,7 +99,7 @@
       CALL save(U_gtmp, V_gtmp, W_gtmp, U_stmp, V_stmp, W_stmp)
 
 ! modification for GHD theory to compute species velocity: Ui = Joi/(mi ni) + U.
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
+      IF(KT_TYPE_ENUM == GHD_2007) THEN
          CALL calc_external_forces()
          CALL GHDMassFlux() ! to compute solid species mass flux
          CALL UpdateSpeciesVelocities() ! located at end of ghdMassFlux.f file
@@ -141,14 +120,18 @@
 
     CONTAINS
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE init(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
         IMPLICIT NONE
-
-        ! solids phase index
-        INTEGER :: M
-
+!---------------------------------------------------------------------//
         DOUBLE PRECISION, DIMENSION(:), intent(out) :: U_g_tmp,  V_g_tmp, W_g_tmp
         DOUBLE PRECISION, DIMENSION(:,:), intent(out) :: U_s_tmp, V_s_tmp, W_s_tmp
+!---------------------------------------------------------------------//
+        ! solids phase index
+        INTEGER :: M
+!---------------------------------------------------------------------//
 
         ! Store the velocities so that the order of solving the momentum
         ! equations does not matter
@@ -158,8 +141,8 @@
            W_g_tmp(IJK) = W_g(IJK)
         ENDDO
         DO M = 1, MMAX
-           IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-                (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+           IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+                (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
               DO IJK = ijkstart3, ijkend3
                  U_s_tmp(IJK, M) = U_s(IJK, M)
                  V_s_tmp(IJK, M) = V_s(IJK, M)
@@ -170,14 +153,18 @@
 
       END SUBROUTINE init
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE save(U_g_tmp, V_g_tmp, W_g_tmp, U_s_tmp, V_s_tmp, W_s_tmp)
         IMPLICIT NONE
-
-        ! solids phase index
-        INTEGER :: M
-
+!---------------------------------------------------------------------//
         DOUBLE PRECISION, DIMENSION(:), intent(in) :: U_g_tmp,  V_g_tmp, W_g_tmp
         DOUBLE PRECISION, DIMENSION(:,:), intent(in) :: U_s_tmp, V_s_tmp, W_s_tmp
+!---------------------------------------------------------------------//
+        ! solids phase index
+        INTEGER :: M
+!---------------------------------------------------------------------//
 
         ! Now update all velocity components
         DO IJK = ijkstart3, ijkend3
@@ -186,8 +173,8 @@
            W_g(IJK) = W_g_tmp(IJK)
         ENDDO
         DO M = 1, MMAX
-           IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-                (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+           IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+                (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
               DO IJK = ijkstart3, ijkend3
                  U_s(IJK, M) = U_s_tmp(IJK, M)
                  V_s(IJK, M) = V_s_tmp(IJK, M)
@@ -198,19 +185,23 @@
 
       END SUBROUTINE save
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE U_m_star(U_g_tmp, U_s_tmp)
         IMPLICIT NONE
+!---------------------------------------------------------------------//
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: U_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: U_s_tmp
-
+!---------------------------------------------------------------------//
         ! solids phase index
         INTEGER :: M
-
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+!---------------------------------------------------------------------//
 
         allocate(vxf_gs(DIMENSION_3,DIMENSION_M))
-        allocate(vxf_ss(DIMENSION_3,DIMENSION_M))
+        allocate(vxf_ss(DIMENSION_3,DIMENSION_LM))
         ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
         ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
 
@@ -230,9 +221,11 @@
 ! equations
       CALL SOURCE_U_G (A_M, B_M)
       IF(POINT_SOURCE) CALL POINT_SOURCE_U_G (A_M, B_M)
+      IF(CALL_USR_SOURCE(3)) CALL CALC_USR_SOURCE(GAS_U_MOM, A_M, B_M)
       IF(DO_SOLIDS) THEN
          CALL SOURCE_U_S (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_U_S (A_M, B_M)
+         IF(CALL_USR_SOURCE(3)) CALL CALC_USR_SOURCE(SOLIDS_U_MOM, A_M, B_M)
       ENDIF
 
 ! evaluate local variable vxf_gs and vxf_ss.  both terms are sent to the
@@ -240,12 +233,12 @@
 ! former is also used in the subroutine partial_elim_u while the latter
 ! is effectively re-evaluated within said subroutine
       CALL VF_GS_X (VXF_GS)
-      IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      IF(DO_SOLIDS .AND. (KT_TYPE_ENUM /= GHD_2007)) THEN
          IF (MMAX > 0) CALL VF_SS_X (VXF_SS)
       ENDIF
 
 ! calculate coefficients for the pressure correction equation
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
+      IF(KT_TYPE_ENUM == GHD_2007) THEN
          CALL CALC_D_GHD_E (A_M, VXF_GS, D_E)
       ELSE
          CALL CALC_D_E (A_M, VXF_GS, VXF_SS, D_E, IER)
@@ -257,7 +250,7 @@
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
-         IF(TRIM(KT_TYPE) == 'GHD') THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
             IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_U (U_G,U_S,VXF_GS,A_M,B_M)
          ELSE
             IF (MMAX > 0) CALL PARTIAL_ELIM_U (U_G,U_S,VXF_GS,A_M,B_M)
@@ -295,8 +288,8 @@
 
       IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
-            IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-              (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+            IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+              (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                IF (MOMENTUM_X_EQ(M)) THEN
                   CALL CALC_RESID_U (U_S(1,M), V_S(1,M), W_S(1,M), A_M,&
                      B_M, M, NUM_RESID(RESID_U,M), &
@@ -326,8 +319,8 @@
 
       IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
-            IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-              (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+            IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+              (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                IF (MOMENTUM_X_EQ(M)) THEN
 !                  call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                     a_m(1, -3, M), 1, DO_K,ier)
@@ -351,19 +344,23 @@
 
     END SUBROUTINE U_m_star
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE V_m_star(V_g_tmp, V_s_tmp)
         IMPLICIT NONE
+!---------------------------------------------------------------------//
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: V_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: V_s_tmp
-
+!---------------------------------------------------------------------//
         ! solids phase index
         INTEGER :: M
-
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+!---------------------------------------------------------------------//
 
         allocate(vxf_gs(DIMENSION_3,DIMENSION_M))
-        allocate(vxf_ss(DIMENSION_3,DIMENSION_M))
+        allocate(vxf_ss(DIMENSION_3,DIMENSION_LM))
         ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
         ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
 
@@ -374,26 +371,30 @@
          IF (M >= 1) VXF_GS(:,M) = ZERO
       ENDDO
 
+! convection-diffusion terms
       CALL CONV_DIF_V_G (A_M, B_M, IER)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(DO_SOLIDS) CALL CONV_DIF_V_S (A_M, B_M, IER)
 
+! source terms
       CALL SOURCE_V_G (A_M, B_M)
       IF(POINT_SOURCE) CALL POINT_SOURCE_V_G (A_M, B_M)
-
+      IF(CALL_USR_SOURCE(4)) CALL CALC_USR_SOURCE(GAS_V_MOM, A_M, B_M)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
       IF(DO_SOLIDS) THEN
          CALL SOURCE_V_S (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_V_S (A_M, B_M)
-      END IF
+         IF(CALL_USR_SOURCE(4)) CALL CALC_USR_SOURCE(SOLIDS_V_MOM, A_M, B_M)
+      ENDIF
 
+! evaluate local vxf_gs and vxf_ss
       CALL VF_GS_Y (VXF_GS)
-      IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+      IF(DO_SOLIDS .AND. (KT_TYPE_ENUM /= GHD_2007)) THEN
          IF (MMAX > 0) CALL VF_SS_Y (VXF_SS)
       ENDIF
 
 ! calculate coefficients for the pressure correction equation
-      IF(TRIM(KT_TYPE) == 'GHD') THEN
+      IF(KT_TYPE_ENUM == GHD_2007) THEN
          CALL CALC_D_GHD_N (A_M, VXF_GS, D_N)
       ELSE
          CALL CALC_D_N (A_M, VXF_GS, VXF_SS, D_N, IER)
@@ -405,21 +406,20 @@
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
-         IF(TRIM(KT_TYPE) == 'GHD') THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
            IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_V (V_G,V_S,VXF_GS,A_M,B_M)
          ELSE
            IF (MMAX > 0) CALL PARTIAL_ELIM_V (V_G,V_S,VXF_GS,A_M,B_M)
          ENDIF
       ENDIF
 
-!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
+! handle special case where center coefficient is zero
       CALL ADJUST_A_V_G (A_M, B_M)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         CALL ADJUST_A_V_S (A_M, B_M)
-      ENDIF
+      IF(DO_SOLIDS) CALL ADJUST_A_V_S (A_M, B_M)
+!      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 
+! modification to matrix equation for DEM drag terms
       IF(DES_CONTINUUM_COUPLED) THEN
          CALL GAS_DRAG_V(A_M, B_M, IER)
          IF (DES_CONTINUUM_HYBRID) &
@@ -446,8 +446,8 @@
 
       IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
-            IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-              (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+            IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+              (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                IF (MOMENTUM_Y_EQ(M)) THEN
                   CALL CALC_RESID_V (U_S(1,M), V_S(1,M), W_S(1,M), A_M,&
                      B_M, M, NUM_RESID(RESID_V,M), &
@@ -476,8 +476,8 @@
 
       IF(DO_SOLIDS) THEN
          DO M = 1, MMAX
-            IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-              (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+            IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+              (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                IF (MOMENTUM_Y_EQ(M)) THEN
 !                  call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                     a_m(1, -3, M), 1, DO_K, ier)
@@ -501,19 +501,23 @@
 
     END SUBROUTINE V_m_star
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE W_m_star(W_g_tmp, W_s_tmp)
         IMPLICIT NONE
+!---------------------------------------------------------------------//
         DOUBLE PRECISION, DIMENSION(:), INTENT(OUT) :: W_g_tmp
         DOUBLE PRECISION, DIMENSION(:, :), INTENT(OUT) :: W_s_tmp
-
+!---------------------------------------------------------------------//
         ! solids phase index
         INTEGER :: M
-
         DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: VXF_GS, VXF_SS, B_M
         DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE :: A_M
+!---------------------------------------------------------------------//
 
         ALLOCATE(VXF_GS(DIMENSION_3,DIMENSION_M))
-        ALLOCATE(VXF_SS(DIMENSION_3,DIMENSION_M))
+        ALLOCATE(VXF_SS(DIMENSION_3,DIMENSION_LM))
         ALLOCATE(A_M(DIMENSION_3, -3:3, 0:DIMENSION_M))
         ALLOCATE(B_M(DIMENSION_3, 0:DIMENSION_M))
 
@@ -525,25 +529,30 @@
             IF (M >= 1) VXF_GS(:,M) = ZERO
          ENDDO
 
+! convection diffusion
          CALL CONV_DIF_W_G (A_M, B_M)
          IF(DO_SOLIDS) CALL CONV_DIF_W_S (A_M, B_M)
 
+! source terms
          CALL SOURCE_W_G (A_M, B_M)
          IF(POINT_SOURCE) CALL POINT_SOURCE_W_G (A_M, B_M)
+         IF(CALL_USR_SOURCE(5)) CALL CALC_USR_SOURCE(GAS_W_MOM, A_M, B_M)
 !         call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
          IF(DO_SOLIDS) THEN
             CALL SOURCE_W_S (A_M, B_M)
             IF(POINT_SOURCE) CALL POINT_SOURCE_W_S (A_M, B_M)
+            IF(CALL_USR_SOURCE(5)) CALL CALC_USR_SOURCE(SOLIDS_W_MOM, A_M, B_M)
          ENDIF
 !        call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
 
+! evaluate local variable vxf_gs and vxf_ss
          CALL VF_GS_Z (VXF_GS)
-         IF(DO_SOLIDS .AND. (TRIM(KT_TYPE) /= 'GHD')) THEN
+         IF(DO_SOLIDS .AND. (KT_TYPE_ENUM /= GHD_2007)) THEN
             IF (MMAX > 0) CALL VF_SS_Z (VXF_SS)
          ENDIF
 
 ! calculate coefficients for the pressure correction equation
-         IF(TRIM(KT_TYPE) == 'GHD') THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
             CALL CALC_D_GHD_T (A_M, VXF_GS, D_T)
          ELSE
             CALL CALC_D_T (A_M, VXF_GS, VXF_SS, D_T, IER)
@@ -555,19 +564,20 @@
 
 ! calculate modifications to the A matrix center coefficient and B
 ! source vector for partial elimination
-            IF(TRIM(KT_TYPE) == 'GHD') THEN
+            IF(KT_TYPE_ENUM == GHD_2007) THEN
                IF (MMAX > 0) CALL PARTIAL_ELIM_GHD_W (W_G, W_S, VXF_GS, A_M, B_M)
             ELSE
                IF (MMAX > 0) CALL PARTIAL_ELIM_W (W_G, W_S, VXF_GS, A_M, B_M)
             ENDIF
          ENDIF
 
+! handle special case where center coefficient is zero
          CALL ADJUST_A_W_G (A_M, B_M)
-         IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-            DES_CONTINUUM_HYBRID) THEN
+         IF(DO_SOLIDS) THEN
             CALL ADJUST_A_W_S (A_M, B_M)
          ENDIF
 
+! modifications to matrix equation for DEM
          IF(DES_CONTINUUM_COUPLED) THEN
             CALL GAS_DRAG_W(A_M, B_M, IER)
             IF (DISCRETE_ELEMENT .AND. DES_CONTINUUM_HYBRID) &
@@ -592,8 +602,8 @@
 
          IF(DO_SOLIDS) THEN
             DO M = 1, MMAX
-               IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-                 (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+               IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+                 (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                   IF (MOMENTUM_Z_EQ(M)) THEN
                      CALL CALC_RESID_W (U_S(1,M), V_S(1,M), W_S(1,M),&
                         A_M, B_M, M, NUM_RESID(RESID_W,M), &
@@ -623,8 +633,8 @@
 
          IF(DO_SOLIDS) THEN
             DO M = 1, MMAX
-               IF(TRIM(KT_TYPE) /= 'GHD' .OR. &
-                 (TRIM(KT_TYPE) == 'GHD' .AND. M==MMAX)) THEN
+               IF(KT_TYPE_ENUM /= GHD_2007 .OR. &
+                 (KT_TYPE_ENUM == GHD_2007 .AND. M==MMAX)) THEN
                   IF (MOMENTUM_Z_EQ(M)) THEN
 !                     call test_lin_eq(ijkmax2, ijmax2, imax2, &
 !                        a_m(1, -3, M), 1, DO_K, ier)

@@ -1,6 +1,3 @@
-! TO DO:
-! 1. Check the formulation based on MCp
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SOLVE_Epp                                               C
@@ -9,43 +6,37 @@
 !  Notes: MCP must be defined to call this routine.                    C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 25-SEP-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_EPP(NORMS, RESS, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE geometry
-      USE pscor
-      USE residual
-      USE leqsol
-      USE physprop
-      Use ambm
-      use ps
-
+!---------------------------------------------------------------------//
+      use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
+      use geometry, only: ijkmax2
+      use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
+      use param, only: dimension_3, dimension_m
+      use param1, only: undefined_i, zero, one
+      use ps, only: point_source
+      use pscor, only: epp, mcp
+      use residual, only: resid, max_resid, ijk_resid
+      use residual, only: num_resid, den_resid
+      use residual, only: resid_p
+      use run, only: momentum_x_eq, momentum_y_eq
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: solids_correction
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local parameters
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Parameter to make tolerance for residual scaled with max value
 ! compatible with residual scaled with first iteration residual.
 ! Increase it to tighten convergence.
       DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1 !5.0D2
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Normalization factor for solids volume fraction correction residual.
 ! At start of the iterate loop norms will either be 1 (i.e. not
 ! normalized) or a user defined value given by norm_s.  If norm_s
@@ -56,7 +47,7 @@
       DOUBLE PRECISION, INTENT(OUT) :: RESs
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
 !-----------------------------------------------
 ! solids phase index locally assigned to mcp
@@ -76,8 +67,21 @@
 ! Septadiagonal matrix A_m, vector B_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
+! Note that currently this subroutine is only called when MMAX=1 AND
+! MCP is defined. This combintion effectively means solids phase 1
+! can close pack.
+       IF (MCP == UNDEFINED_I) THEN
+! this error should be caught earlier in the routines so that this
+! branch should never be entered
+         RETURN
+      ELSE
+! the lowest solids phase index of those solids phases that can close
+! pack (i.e. close_packed=T) and the index of the solids phase that is
+! used to form the solids correction equation.
+         M = MCP
+      ENDIF
       call lock_ambm
 
 ! Form the sparse matrix equation.  Note that the index 0 is explicitly
@@ -88,23 +92,14 @@
       CALL INIT_AB_M (A_M, B_M, IJKMAX2, 0)
       EPP(:) = ZERO
 
-! for consistency set m=mcp and use m rather than specifically using
-! value of 1 since m=mcp is used in related subroutines.  this requires
-! mcp be defined before this routine is called, which it should be.
-
-! Note that currently this subroutine is only called when MMAX=1.
-! Therefore, if solids phase 1 can close pack then MCP will be defined
-! as 1 otherwise MCP will be undefined.
-      IF (MCP /= UNDEFINED_I) THEN
-         M = MCP
-      ELSE  ! current fail safe condition - goes through routines
-         M = 1
-      ENDIF
-
-      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax)
+      CALL CONV_SOURCE_EPP (A_M, B_M, B_mmax, M)
 
 ! Add point source contributions.
-      IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax)
+      IF(POINT_SOURCE) CALL POINT_SOURCE_EPP (B_M, B_mmax, M)
+
+! Add usr source contributions
+      IF(CALL_USR_SOURCE(2)) CALL CALC_USR_SOURCE(SOLIDS_CORRECTION, &
+                           A_M, B_M, lB_MMAX=B_MMAX, lM=M)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)

@@ -1,48 +1,41 @@
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: SOLVE_Pp_g
+!  Subroutine: SOLVE_Pp_g                                              C
 !  Purpose: Solve fluid pressure correction equation                   C
 !                                                                      C
 !  Author: M. Syamlal                                 Date: 19-JUN-96  C
-!  Reviewer:                                          Date:            C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_PP_G(NORMG, RESG, IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE fldvar
-      USE physprop
-      USE geometry
-      USE pgcor
-      USE residual
-      USE leqsol
-      USE run
-      Use ambm
-      use ps
-
+!---------------------------------------------------------------------//
+      use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
+      use geometry, only: ijkmax2
+      use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
+      use param, only: dimension_3, dimension_m
+      use param1, only: zero, one, undefined
+      use pgcor, only: pp_g
+      use physprop, only: mmax, ro_g0
+      use ps, only: point_source
+      use residual, only: resid, max_resid, ijk_resid
+      use residual, only: num_resid, den_resid
+      use residual, only: resid_p
+      use run, only: momentum_x_eq, momentum_y_eq
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: pressure_correction
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local parameters
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Parameter to make tolerance for residual scaled with max value
 ! compatible with residual scaled with first iteration residual.
 ! Increase it to tighten convergence.
       DOUBLE PRECISION, PARAMETER :: DEN = 1.0D1   !5.0D2
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Normalization factor for gas pressure correction residual.
 ! At start of the iterate loop normg will either be 1 (i.e. not
 ! normalized) or a user defined value given by norm_g.  If norm_g
@@ -53,9 +46,9 @@
       DOUBLE PRECISION, INTENT(OUT) :: RESg
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! phase index
       INTEGER :: M
 ! Normalization factor for gas pressure correction residual
@@ -70,7 +63,7 @@
 ! Septadiagonal matrix A_m, vector B_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_ambm
 
@@ -91,6 +84,8 @@
       CALL CONV_PP_G (A_M, B_M)
       CALL SOURCE_PP_G (A_M, B_M, B_MMAX)
       IF(POINT_SOURCE) CALL POINT_SOURCE_PP_G (B_M, B_MMAX)
+      IF(CALL_USR_SOURCE(1)) CALL CALC_USR_SOURCE(Pressure_correction,&
+                           A_M, B_M, lB_MMAX=B_MMAX, lM=0)
 
 !      call check_ab_m(a_m, b_m, 0, .false., ier)
 !      call write_ab_m(a_m, b_m, ijkmax2, 0, ier)
@@ -146,29 +141,30 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE POINT_SOURCE_PP_G(B_M, B_mmax)
 
-      use compar
-      use constant
-      use geometry
-      use indices
+! Modules 
+!-----------------------------------------------
+      use compar, only: dead_cell_at
+      use geometry, only: vol
+      use functions, only: fluid_at, funijk
+      use functions, only: is_on_myPe_plus2layers
       use param, only: dimension_3, dimension_m
       use param1, only: small_number
-      use physprop
-      use ps
-      use run
-      use functions
-
+      use ps, only: ps_defined, dimension_ps
+      use ps, only: ps_massflow_g, ps_volume
+      use ps, only: ps_k_b, ps_k_t
+      use ps, only: ps_j_s, ps_j_n
+      use ps, only: ps_i_w, ps_i_e
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
 !-----------------------------------------------
 ! Vector b_m
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! maximum term in b_m expression
       DOUBLE PRECISION, INTENT(INOUT) :: B_mmax(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+
 ! Local Variables
 !-----------------------------------------------
-
 ! Indices
       INTEGER :: IJK, I, J, K
       INTEGER :: PSV

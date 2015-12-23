@@ -15,50 +15,53 @@
 !  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_SPECIES_EQ(IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE ChiScheme
-      USE bc
-      USE compar
-      USE drag
-      USE energy
-      USE fldvar
-      USE geometry
-      USE indices
-      USE leqsol
-      USE mflux
-      USE mpi_utility
-      USE output
-      USE param
-      USE param1
-      USE pgcor
-      USE physprop
-      USE pscor
-      USE residual
-      USE run
-      USE rxns
-      USE sendrecv
-      USE toleranc
-      USE ur_facs
-      USE utilities
-      Use ambm
-      use functions
-      use ps
-      use toleranc
-
+!---------------------------------------------------------------------//
+      use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
+      use bc, only: bc_x_g, bc_xw_g, bc_hw_x_g, bc_c_x_g
+      use bc, only: bc_x_s, bc_xw_s, bc_hw_x_s, bc_c_x_s
+      use ChiScheme, only: set_chi, unset_chi
+      use compar, only: ijkstart3, ijkend3, mype, numpes
+      use fldvar, only: ep_g, u_g, v_g, w_g, x_g, x_go, rop_go
+      use fldvar, only: ep_s, u_s, v_s, w_s, x_s, x_so, rop_so
+      use functions, only: fluid_at, zmax
+      use geometry, only: ijkmax2, vol
+      use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
+      use mflux, only: flux_ge, flux_gse, flux_gn, flux_gsn
+      use mflux, only: flux_se, flux_sse, flux_sn, flux_ssn
+      use mflux, only: flux_gt, flux_gst, flux_st, flux_sst
+      use mpi_utility, only: global_all_sum
+      use param, only: dimension_3, dimension_m
+      use param, only: dimension_n_s, dimension_n_g
+      use param1, only: zero
+      use physprop, only: nmax, dif_g, dif_s
+      use physprop, only: smax
+      use ps, only: point_source
+      use ps, only: ps_x_g, ps_massflow_g
+      use ps, only: ps_x_s, ps_massflow_s
+      use residual, only: resid, max_resid, ijk_resid
+      use residual, only: num_resid, den_resid
+      use residual, only: resid_x
+      use run, only: species_eq, discretize, odt, added_mass, m_am
+      use run, only: chi_scheme
+      use rxns, only: sum_r_g, rox_gc, r_gp
+      use rxns, only: sum_r_s, rox_sc, r_sp
+      use toleranc, only: zero_x_gs
+      use ur_facs, only: ur_fac
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: gas_species, solids_species
+      use utilities, only: bound_x
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! phase index
       INTEGER :: M
 ! species index
@@ -96,11 +99,10 @@
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
 
-!-----------------------------------------------
 ! External functions
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       DOUBLE PRECISION , EXTERNAL :: Check_conservation
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       call lock_ambm       ! locks arrys a_m and b_m
 
@@ -153,6 +155,10 @@
 ! Add point sources.
             IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_G(1,LN), &
                PS_X_G(:,LN), PS_MASSFLOW_G, 0, A_M, B_M)
+
+! usr sources
+            IF(CALL_USR_SOURCE(8)) CALL CALC_USR_SOURCE(GAS_SPECIES, &
+                                 A_M, B_M, lM=0, lN=lN)
 
             CALL CALC_RESID_S (X_G(1,LN), A_M, B_M, 0, &
                NUM_RESID(RESID_X+(LN-1),0), &
@@ -233,6 +239,10 @@
 ! Add point sources.
                IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (X_S(1,M,LN), &
                   PS_X_S(:,M,LN), PS_MASSFLOW_S(:,M), M, A_M, B_M)
+
+! usr sources
+            IF(CALL_USR_SOURCE(8)) CALL CALC_USR_SOURCE(SOLIDS_SPECIES,&
+                                 A_M, B_M, lM=M, lN=lN)
 
                CALL CALC_RESID_S (X_S(1,M,LN), A_M, B_M, M, &
                   NUM_RESID(RESID_X+(LN-1),M), &

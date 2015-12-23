@@ -3,68 +3,63 @@
 !  Subroutine: SOLVE_ENERGY_EQ                                         C
 !  Purpose: Solve energy equations                                     C
 !                                                                      C
-!                                                                      C
 !  Author: M. Syamlal                                 Date: 29-APR-97  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: Eliminate energy calculations when doing DEM               C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
 !                                                                      C
 !  Literature/Document References:                                     C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE SOLVE_ENERGY_EQ(IER)
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE drag
-      USE residual
-      USE ur_facs
-      USE pgcor
-      USE pscor
-      USE leqsol
-      USE bc
-      USE energy
-      USE rxns
-      Use ambm
-      USE compar
-      USE discretelement
-      USE des_thermo
-      USE mflux
-      USE mpi_utility
-      USE sendrecv
-      USE ps
-      USE mms
-      USE functions
-
+!---------------------------------------------------------------------//
+      use ambm, only: a_m, b_m, lock_ambm, unlock_ambm
+      use bc, only: bc_t_g, bc_tw_g, bc_hw_t_g, bc_c_t_g
+      use bc, only: bc_t_s, bc_tw_s, bc_hw_t_s, bc_c_t_s
+      use compar, only: ijkstart3, ijkend3, mype, numpes
+      use discretelement, only: des_continuum_coupled
+      use energy, only: hor_s, s_rps, s_rcs, gama_gs
+      use energy, only: hor_g, s_rpg, s_rcg
+      use fldvar, only: ep_g, u_g, v_g, w_g, t_g, t_go, rop_go
+      use fldvar, only: ep_s, u_s, v_s, w_s, t_s, t_so, rop_so
+      use functions, only: fluid_at, wall_at
+      use functions, only: is_on_mype_plus2layers
+      use functions, only: ip_of, jp_of, kp_of
+      use geometry, only: ijkmax2, vol
+      use indices, only: i_of, j_of, k_of
+      use indices, only: ip1, jp1, kp1
+      use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
+      use mflux, only: flux_ge, flux_gse, flux_gn, flux_gsn
+      use mflux, only: flux_se, flux_sse, flux_sn, flux_ssn
+      use mflux, only: flux_gt, flux_gst, flux_st, flux_sst
+      use mms, only: use_mms, mms_t_g_src, mms_t_s_src
+      use mpi_utility, only: global_all_sum
+      use param, only: dimension_3, dimension_m
+      use param1, only: zero, half
+      use physprop, only: k_g, c_pg
+      use physprop, only: k_s, c_ps, smax
+      use ps, only: point_source
+      use ps, only: ps_t_g, ps_cpxmflow_g
+      use ps, only: ps_t_s, ps_cpxmflow_s
+      use residual, only: resid, max_resid, ijk_resid
+      use residual, only: num_resid, den_resid
+      use residual, only: resid_t
+      use run, only: discretize, odt, added_mass, m_am
+      use toleranc, only: tmin, tmax
+      use ur_facs, only: ur_fac
+      use usr_src, only: call_usr_source, calc_usr_source
+      use usr_src, only: gas_energy, solids_energy
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Dummy arguments
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 ! phase index
       INTEGER :: M
-      INTEGER :: TMP_SMAX
 !  Cp * Flux
       DOUBLE PRECISION :: CpxFlux_E(DIMENSION_3), &
                           CpxFlux_N(DIMENSION_3), &
@@ -82,7 +77,6 @@
 ! 12x - Unclassified
       INTEGER :: Err_l(0:numPEs-1)  ! local
       INTEGER :: Err_g(0:numPEs-1)  ! global
-
 
 ! temporary use of global arrays:
 ! arraym1 (locally vxgama)
@@ -103,7 +97,7 @@
 ! Septadiagonal matrix A_m, vector b_m
 !      DOUBLE PRECISION A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
 !      DOUBLE PRECISION B_m(DIMENSION_3, 0:DIMENSION_M)
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       ALLOCATE(VXGAMA(DIMENSION_3,DIMENSION_M))
 
@@ -112,16 +106,13 @@
 ! Initialize error flags.
       Err_l = 0
 
-      TMP_SMAX = SMAX
-      IF(DISCRETE_ELEMENT) THEN
-         TMP_SMAX = 0   ! Only the gas calculations are needed
-      ENDIF
-
 ! initializing
-      DO M = 0, TMP_SMAX
+      DO M = 0, SMAX
          CALL INIT_AB_M (A_M, B_M, IJKMAX2, M)
       ENDDO
 
+! Gas phase computations
+! ---------------------------------------------------------------->>>
       DO IJK = IJKSTART3, IJKEND3
          I = I_OF(IJK)
          J = J_OF(IJK)
@@ -178,8 +169,13 @@
 ! add point sources
       IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (T_g, PS_T_g, &
          PS_CpxMFLOW_g, 0, A_M, B_M)
+! usr source
+      IF (CALL_USR_SOURCE(6)) CALL CALC_USR_SOURCE(GAS_ENERGY, &
+                            A_M, B_M, lM=0)
 
-      DO M = 1, TMP_SMAX
+! Solids phases computations
+! ---------------------------------------------------------------->>>
+      DO M = 1, SMAX
          DO IJK = IJKSTART3, IJKEND3
             I = I_OF(IJK)
             J = J_OF(IJK)
@@ -242,10 +238,16 @@
          IF(POINT_SOURCE) CALL POINT_SOURCE_PHI (T_s(:,M), PS_T_s(:,M),&
             PS_CpxMFLOW_s(:,M), M, A_M, B_M)
 
-      ENDDO   ! end do (m=1,tmp_smax)
+! usr source
+         IF (CALL_USR_SOURCE(6)) CALL CALC_USR_SOURCE(SOLIDS_ENERGY, &
+                               A_M, B_M, lM=M)
 
+      ENDDO   ! end do (m=1,smax)
+
+! Solve gas and solids phase equations
+! ---------------------------------------------------------------->>>
 ! use partial elimination on interphase heat transfer term
-      IF (TMP_SMAX > 0 .AND. .NOT.USE_MMS) &
+      IF (SMAX > 0 .AND. .NOT.USE_MMS) &
         CALL PARTIAL_ELIM_S (T_G, T_S, VXGAMA, A_M, B_M)
 
       CALL CALC_RESID_S (T_G, A_M, B_M, 0, NUM_RESID(RESID_T,0),&
@@ -261,7 +263,7 @@
 !         ijk_resid(resid_t, 0)
 
 
-      DO M = 1, TMP_SMAX
+      DO M = 1, SMAX
          CALL CALC_RESID_S (T_S(1,M), A_M, B_M, M, NUM_RESID(RESID_T,M), &
             DEN_RESID(RESID_T,M), RESID(RESID_T,M), MAX_RESID(&
             RESID_T,M), IJK_RESID(RESID_T,M), ZERO)
@@ -284,16 +286,14 @@
          IF(.NOT.WALL_AT(IJK))&
             T_g(IJK) = MIN(TMAX, MAX(TMIN, T_g(IJK)))
       ENDDO
-
 !      call out_array(T_g, 'T_g')
 
-      DO M = 1, TMP_SMAX
+      DO M = 1, SMAX
          CALL ADJUST_LEQ (RESID(RESID_T,M), LEQ_IT(6), LEQ_METHOD(6), &
             LEQI, LEQM)
 !         call test_lin_eq(a_m(1, -3, M), LEQI, LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6),  0, ier)
          CALL SOLVE_LIN_EQ ('T_s', 6, T_S(1,M), A_M, B_M, M, LEQI, &
             LEQM, LEQ_SWEEP(6), LEQ_TOL(6), LEQ_PC(6), IER)
-
 ! Check for linear solver divergence.
          IF(ier == -2) Err_l(myPE) = 121
 
@@ -302,7 +302,7 @@
             IF(.NOT.WALL_AT(IJK))&
                T_s(IJK, M) = MIN(TMAX, MAX(TMIN, T_s(IJK, M)))
          ENDDO
-      ENDDO   ! end do (m=1, tmp_smax)
+      ENDDO   ! end do (m=1, smax)
 
       call unlock_ambm
 
