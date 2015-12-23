@@ -150,6 +150,8 @@
       use eos, only: EOSG
 ! Flag for user defined function
       use run, only: USR_ROg
+! Detect NaN in density for compressible flows.
+      use utilities, only: mfix_isnan
 
       implicit none
 
@@ -190,7 +192,7 @@
             ROP_G(IJK) = RO_G(IJK)*EP_G(IJK)
          ENDIF
 
-         IF(RO_G(IJK) < ZERO) THEN
+         IF(RO_G(IJK) < ZERO .or. mfix_isnan(RO_G(IJK))) THEN
             Err_l(myPE) = 100
             IF(REPORT_NEG_DENSITY)CALL ROgErr_LOG(IJK, wHeader)
          ENDIF
@@ -588,7 +590,7 @@
 
       RETURN
 
- 1000 FORMAT(2X,'One or more cells have reported a negative gas',      &
+ 1000 FORMAT(2X,'One or more cells have reported a negative/NaN gas',  &
          ' density (RO_g(IJK)). If',/2x,'this is a persistent issue,', &
          ' lower UR_FAC(1) in mfix.dat.')
 
@@ -686,7 +688,7 @@
 
       RETURN
 
- 1000 FORMAT(2X,'One or more cells have reported a negative gas',      &
+ 1000 FORMAT(2X,'One or more cells have reported a negative solids',   &
          ' density (RO_g(IJK)). If',/2x,'this is a persistent issue,', &
          ' lower UR_FAC(1) in mfix.dat.')
 
