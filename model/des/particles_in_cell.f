@@ -35,6 +35,7 @@
       USE geometry, only: KMIN2, KMAX2
 ! Fixed array sizes in the I/J/K direction
       use param, only: DIMENSION_I, DIMENSION_J, DIMENSION_K
+      use param, only: DIMENSION_3
 ! Function to conpute IJK from I/J/K
       use functions, only: FUNIJK
 
@@ -61,6 +62,7 @@
 ! following quantities are reset every call to particles_in_cell
       PINC(:) = 0
 
+!      allocate(PARTICLE_COUNT(DIMENSION_3))
 ! Use an incremental approach to determine the new particle location.
 !-----------------------------------------------------------------------
 !!$omp parallel default(shared) private(L, I, J, K, IJK)
@@ -192,6 +194,8 @@
          PIC(IJK)%P(POS) = L
          PARTICLE_COUNT(IJK) = PARTICLE_COUNT(IJK) + 1
       ENDDO
+
+!      deallocate(PARTICLE_COUNT)
 
       RETURN
       END SUBROUTINE PARTICLES_IN_CELL

@@ -20,14 +20,8 @@
 ! discrete solids species mass fractions (PARTICLES, 0:MAX_DES_NMAX))
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_X_s
 
-! Rate of production of solids species
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_R_sp
-! rate of consumption of solids species
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_R_sc
-
-! combined rate of production and consumption of solids species
-      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_SUM_R_s
-
+! Rate of production/consumption of solids species
+      DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE :: DES_R_s
 
 ! Numerical integration:
 !---------------------------------------------------------------------//

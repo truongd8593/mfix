@@ -36,8 +36,12 @@
 
   CALL_USR = .T.
 
-  DES_INTERP_ON = .T.
-  DES_INTERP_SCHEME = 'GARG_2012'
+  DES_INTERP_ON = .F.
+  DES_INTERP_MEAN_FIELDS = .F.
+  DES_INTERP_SCHEME = 'NONE'
+
+  DES_EXPLICITLY_COUPLED = .T.
+  DES_ONEWAY_COUPLED = .T.
 
 #_______________________________________________________________________
 # NUMERICAL SECTION

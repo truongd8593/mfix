@@ -136,7 +136,6 @@
             des_pos_old(:,:) = des_pos_new(:,:)
             des_vel_old(:,:) = des_vel_new(:,:)
          ENDIF
-         IF(ENERGY_EQ) DES_T_s_OLD(:) = DES_T_s_NEW(:)
 
       ELSE
 

@@ -66,11 +66,5 @@
 
       ENDIF
 
-! calculate drag between continuum phases and discrete particles
-! (gas-particle & solids-particle)
-      IF (DES_CONTINUUM_COUPLED .AND. .NOT.DES_EXPLICITLY_COUPLED) &
-         CALL CALC_DRAG_DES_2FLUID
-
-
       RETURN
       END SUBROUTINE CALC_DRAG

@@ -333,7 +333,7 @@
          IER2 = 0
 
          write(*,"(7x,g12.5)",ADVANCE="NO") T
-         lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
+         lCP  = calc_CpoR(T, lM, lN) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
          write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 
@@ -352,7 +352,7 @@
          IER2 = 0
 
          write(*,"(7x,g12.5)",ADVANCE="NO") T
-         lCP  = calc_CpoR(T, lM, lN, IER1) * RGAS / lMW
+         lCP  = calc_CpoR(T, lM, lN) * RGAS / lMW
          lICP = calc_ICpoR(T, lM, lN, IER2) * RGAS / lMW
          write(*,"(2(3x,g12.5))",ADVANCE="NO")lCP, lICP
 

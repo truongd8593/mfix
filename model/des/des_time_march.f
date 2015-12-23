@@ -11,7 +11,6 @@
 ! Modules
 !---------------------------------------------------------------------//
       use des_bc, only: DEM_BCMI, DEM_BCMO
-      use des_thermo, only: DES_ENERGY_SOURCE
       use desgrid, only: desgrid_pic
       use discretelement
       use error_manager
@@ -21,7 +20,7 @@
       use machine
       use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
-      use run, only: ANY_SPECIES_EQ
+      use des_thermo, only: CALC_RADT_DES
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
       use run, only: ENERGY_EQ
@@ -90,12 +89,16 @@
       IF(DES_CONTINUUM_COUPLED) THEN
          IF(DES_EXPLICITLY_COUPLED) THEN
             CALL DRAG_GS_DES1
+            IF(ENERGY_EQ) CALL CONV_GS_DES1
+            IF(ANY_SPECIES_EQ) CALL DES_REACTION_MODEL
          ELSE
             IF(ANY_SPECIES_EQ) CALL ZERO_RRATE_DES
             IF(ENERGY_EQ) CALL ZERO_ENERGY_SOURCE
          ENDIF
          CALL CALC_PG_GRAD
       ENDIF
+
+      IF(any(CALC_RADT_DES)) CALL CALC_avgTs
 
 
 ! Main DEM time loop
@@ -169,8 +172,6 @@
 
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
-! Update particle from reactive chemistry process.
-         CALL DES_REACTION_MODEL
 
 ! Set DO_NSEARCH before calling DES_PAR_EXCHANGE.
          DO_NSEARCH = (NN == 1 .OR. MOD(NN,NEIGHBOR_SEARCH_N) == 0)
@@ -245,7 +246,6 @@
          call send_recv(v_s,2)
          if(do_K) call send_recv(w_s,2)
          call send_recv(rop_s,2)
-         if(ENERGY_EQ) call send_recv(des_energy_source,2)
 
          TMP_WALL = WALL_TIME() - TMP_WALL
          IF(TMP_WALL > 1.0d-10) THEN

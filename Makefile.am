@@ -375,13 +375,15 @@ libmfix_src = \
 	model/dbg_mod.f \
 	model/deprecated.f \
 	model/des/calc_collision_wall_mod.f \
+  model/des/calc_des_2fluid.f \
 	model/des/calc_drag_des.f \
 	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
+  model/des/calc_gamma_des.f \
 	model/des/calc_grad_des.f \
 	model/des/calc_interp_weights.f \
 	model/des/calc_pg_grad.f \
-	model/des/calc_rrate_des.f \
+	model/des/calc_rrates_des.f \
 	model/des/calc_thermo_des.f \
 	model/des/cfassign.f \
 	model/des/cffctowall.f \
@@ -404,7 +406,6 @@ libmfix_src = \
 	model/des/des_init_namelist.f \
 	model/des/des_physical_prop.f \
 	model/des/des_reaction_model.f \
-	model/des/des_rrates0.f \
 	model/des/des_rxns_mod.f \
 	model/des/des_thermo_cond_mod.f \
 	model/des/des_thermo_conv.f \
@@ -466,6 +467,7 @@ libmfix_src = \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/resize.f \
+  model/des/rxns_gs_des1.f \
 	model/des/sap.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \
@@ -922,13 +924,15 @@ postmfix_SOURCES = \
 	model/dbg_mod.f \
 	model/deprecated.f \
 	model/des/calc_collision_wall_mod.f \
-	model/des/calc_drag_des.f \
+	model/des/calc_des_2fluid.f \
+  model/des/calc_drag_des.f \
 	model/des/calc_epg_des.f \
 	model/des/calc_force_dem.f \
+  model/des/calc_gamma_des.f \
 	model/des/calc_grad_des.f \
 	model/des/calc_interp_weights.f \
 	model/des/calc_pg_grad.f \
-	model/des/calc_rrate_des.f \
+	model/des/calc_rrates_des.f \
 	model/des/calc_thermo_des.f \
 	model/des/cfassign.f \
 	model/des/cffctowall.f \
@@ -951,7 +955,6 @@ postmfix_SOURCES = \
 	model/des/des_init_namelist.f \
 	model/des/des_physical_prop.f \
 	model/des/des_reaction_model.f \
-	model/des/des_rrates0.f \
 	model/des/des_rxns_mod.f \
 	model/des/des_thermo_cond_mod.f \
 	model/des/des_thermo_conv.f \
@@ -1013,6 +1016,7 @@ postmfix_SOURCES = \
 	model/des/read_res0_des.f \
 	model/des/read_res1_des_mod.f \
 	model/des/resize.f \
+  model/des/rxns_gs_des1.f \
 	model/des/sap.f \
 	model/des/sendrecvnode_mod.f \
 	model/des/set_bc_dem.f \

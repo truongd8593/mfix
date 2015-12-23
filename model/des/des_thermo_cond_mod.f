@@ -90,7 +90,7 @@ CONTAINS
          MIN_RAD = MIN(DES_RADIUS(I), DES_RADIUS(J))
          MAX_RAD = MAX(DES_RADIUS(I), DES_RADIUS(J))
 
-         DeltaTp = DES_T_s_NEW(J) - DES_T_s_NEW(I)
+         DeltaTp = DES_T_s(J) - DES_T_s(I)
 
 ! Calculate the particle-particle conduction
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)

@@ -177,7 +177,7 @@ CONTAINS
 ! Purpose: Evaluate the polynomial form of the specific heat.          !
 !                                                                      !
 !**********************************************************************!
-      DOUBLE PRECISION FUNCTION  calc_CpoR(T, M, N, IER)
+      PURE DOUBLE PRECISION FUNCTION  calc_CpoR(T, M, N)
 
 ! Polynomial coefficients
       use physprop, only: Ahigh  ! for T in [Tcom, Thigh]
@@ -196,26 +196,14 @@ CONTAINS
       INTEGER, intent(in) :: M
 ! Species index.
       INTEGER, intent(in) :: N
-! Error Flag.
-      INTEGER, intent(inout) :: IER
 
 ! Local Variables:
 !-----------------------------------------------------------------------
 ! Bounded temperature.
       DOUBLE PRECISION :: xT
 
-! Initialize the bounded temperature and error flag.
-      xT = T
-      IER = 0
-
-! Verify that the temperature is in a valid range.
-      if(T > Thigh(M,N)) THEN
-        xT = Thigh(M,N)
-        IER = 101
-      elseif(T < Tlow(M,N)) THEN
-        xT = Tlow(M,N)
-        IER = 102
-      endif
+! Bound the temperature to the valid region.
+      xT = max(min(T,Thigh(M,N)),Tlow(M,N))
 
 ! Evaluate the polynomial form.
       IF(T < Tcom(M,N))THEN
@@ -229,67 +217,11 @@ CONTAINS
 
 
 !**********************************************************************!
-! Function: calc_CpoR                                                  !
-! Purpose: Evaluate the polynomial form of the specific heat.          !
-!                                                                      !
-!**********************************************************************!
-      DOUBLE PRECISION FUNCTION  DES_calc_CpoR(T, M, N, IER)
-
-! Polynomial coefficients
-      use physprop, only: Ahigh  ! for T in [Tcom, Thigh]
-      use physprop, only: Alow   ! for T in [Tlow, Tcom)
-      use physprop, only: Thigh  ! Upper bound of use
-      use physprop, only: Tlow   ! Lower bound of use
-      use physprop, only: Tcom   ! Switch from low to high coeffs
-
-      implicit none
-
-! Dummy Arguments:
-!-----------------------------------------------------------------------
-! Evaluation temperaure (K)
-      DOUBLE PRECISION, intent(in) :: T
-! Phase index.
-      INTEGER, intent(in) :: M
-! Species index.
-      INTEGER, intent(in) :: N
-! Error Flag.
-      INTEGER, intent(inout) :: IER
-
-! Local Variables:
-!-----------------------------------------------------------------------
-! Bounded temperature.
-      DOUBLE PRECISION :: xT
-
-! Initialize the bounded temperature and error flag.
-      xT = T
-      IER = 0
-
-! Verify that the temperature is in a valid range.
-      if(T > Thigh(M,N)) THEN
-        xT = Thigh(M,N)
-        IER = 101
-      elseif(T < Tlow(M,N)) THEN
-        xT = Tlow(M,N)
-        IER = 102
-      endif
-
-! Evaluate the polynomial form.
-      IF(T < Tcom(M,N))THEN
-        DES_calc_CpoR = calc_CpoR0(xT, Alow(1:5,M,N))
-      ELSE
-        DES_calc_CpoR = calc_CpoR0(xT, Ahigh(1:5,M,N))
-      ENDIF
-
-      RETURN
-      END Function DES_calc_CpoR
-
-
-!**********************************************************************!
 ! Function: calc_CpoR0                                                 !
 ! Purpose: Evaluate the polynomial form of the specific heat.          !
 !                                                                      !
 !**********************************************************************!
-      DOUBLE PRECISION FUNCTION  calc_CpoR0(T, A)
+      PURE DOUBLE PRECISION FUNCTION  calc_CpoR0(T, A)
 
       implicit none
 
@@ -369,7 +301,7 @@ CONTAINS
 ! Purpose: Integrate the polynomial form of the specific heat.         !
 !                                                                      !
 !**********************************************************************!
-      DOUBLE PRECISION FUNCTION calc_ICpoR0(T, A, REF_ICpoR)
+      PURE DOUBLE PRECISION FUNCTION calc_ICpoR0(T, A, REF_ICpoR)
 
       implicit none
 
@@ -407,7 +339,7 @@ CONTAINS
 ! >>> This function is currently unused.                               !
 !                                                                      !
 !**********************************************************************!
-      DOUBLE PRECISION FUNCTION calc_H0oR(T, Th, Tl, Tc, Ah, Al)
+      PURE DOUBLE PRECISION FUNCTION calc_H0oR(T, Th, Tl, Tc, Ah, Al)
 
       implicit none
 

@@ -24,6 +24,8 @@
       use ur_facs, only: UR_F_gs
 ! Under relaxation factor solid conductivity coefficient for IA theory
       use ur_facs, only: UR_kth_sml
+! Flag for DES coupled simulation
+      use discretelement, only: DES_CONTINUUM_COUPLED
 ! Flag for explcit coupling between the fluid and particles.
       use discretelement, only: DES_EXPLICITLY_COUPLED
 
@@ -58,8 +60,6 @@
 ! rates.
       CALL CALC_COEFF(IER, 2)
 
-      IF(DES_EXPLICITLY_COUPLED) CALL CALC_DRAG_DES_EXPLICIT
-
 ! Calculate reaction rates and interphase mass transfer.
       CALL CALC_RRATE(IER)
 
@@ -69,6 +69,9 @@
         UR_Kth_sml = loc_UR_Kth_sml
       ENDIF
 
+! DES interaction for explictly coupled simulations
+      IF(DES_CONTINUUM_COUPLED .AND. DES_EXPLICITLY_COUPLED) &
+         CALL CALC_DES_2FLUID
 
       RETURN
       END SUBROUTINE CALC_COEFF_ALL
@@ -94,6 +97,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CALC_COEFF(IER, pLevel)
 
+! Flag for DES coupled simulation
+      use discretelement, only: DES_CONTINUUM_COUPLED
+! Flag for explcit coupling between the fluid and particles.
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+
       implicit none
 
 ! Dummy arguments
@@ -116,10 +124,12 @@
 ! Calculate interphase coeffs: (momentum and energy)
       CALL EXCHANGE(IER)
 
+! Calculate DES coupled quantities.
+      IF(DES_CONTINUUM_COUPLED .AND. .NOT.DES_EXPLICITLY_COUPLED) &
+         CALL CALC_DES_2FLUID
+
       RETURN
       END SUBROUTINE CALC_COEFF
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -133,12 +143,11 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE compar,         only : myPE
       USE discretelement, only : DISCRETE_ELEMENT
-      USE funits,         only : DMP_LOG, UNIT_LOG
-      USE machine, only: start_log, end_log
       USE rxns,           only : RRATE, USE_RRATES
       use run, only: ANY_SPECIES_EQ
+
+      use error_manager
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -150,41 +159,29 @@
 ! Error index
       INTEGER, INTENT(INOUT) :: IER
 
-! For DEM simulations that do not have a homogeneous gas phase reaction,
-! the gas phase arrays phase change arrays need to be cleared in
-! CALC_RRATE_DES. Other
-      LOGICAL CLEAR_ARRAYS
-
 !-----------------------------------------------
 
-      CLEAR_ARRAYS = .TRUE.
 ! Calculate reaction rates and interphase mass transfer
       IF(RRATE) THEN
 ! Legacy hook: Calculate reactions from rrates.f.
          IF(USE_RRATES) THEN
             CALL RRATES (IER)
             IF(IER .EQ. 1) THEN
-               CALL START_LOG
-               IF(DMP_LOG) WRITE (UNIT_LOG, 1000)
-               CALL END_LOG
-               CALL MFIX_EXIT(myPE)
+               CALL INIT_ERR_MSG('CALC_RRATE')
+               WRITE(ERR_MSG, 1000)
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
          ELSE
             CALL RRATES0 (IER)
-            CLEAR_ARRAYS = .FALSE.
          ENDIF
       ENDIF
 
-      IF(DISCRETE_ELEMENT .AND. ANY_SPECIES_EQ) &
-         CALL CALC_RRATE_DES(CLEAR_ARRAYS)
-
       RETURN
- 1000 FORMAT(/1X,70('*')//' From: CALC_COEFF',/,&
-         ' Species balance equations are being solved; but chemical',/, &
+
+ 1000 FORMAT('Species balance equations are being solved; but chemical',/, &
          ' reactions are not specified in mfix.dat or in rrates.f.',/,  &
          ' Copy the file mfix/model/rrates.f into the run directory ',/, &
-         ' and remove the initial section that returns IER=1.',/&
-         1X,70('*')/)
+         ' and remove the initial section that returns IER=1.')
 
       END SUBROUTINE CALC_RRATE
 

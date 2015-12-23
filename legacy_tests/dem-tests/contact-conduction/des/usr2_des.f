@@ -130,14 +130,14 @@
          B_C*(Tp10-Tp20)*exp(-(A_C + B_C)*lTime))
 
 ! Calculate the relative error.
-       REL_ERR1 = (ABS(Tp1 - DES_T_S_NEW(1))/ABS(Tp1))*100
-       REL_ERR2 = (ABS(Tp2 - DES_T_S_NEW(2))/ABS(Tp2))*100
+       REL_ERR1 = (ABS(Tp1 - DES_T_s(1))/ABS(Tp1))*100
+       REL_ERR2 = (ABS(Tp2 - DES_T_s(2))/ABS(Tp2))*100
 
 ! Write the data to a file.
-      WRITE(TP_UNIT1,"(4(3X,F12.8))")lTime,Tp1,DES_T_S_NEW(1),REL_ERR1
+      WRITE(TP_UNIT1,"(4(3X,F12.8))")lTime,Tp1,DES_T_s(1),REL_ERR1
       CLOSE(TP_UNIT1)
 
-      WRITE(TP_UNIT2,"(4(3X,F12.8))")lTime,Tp2,DES_T_S_NEW(2),REL_ERR2
+      WRITE(TP_UNIT2,"(4(3X,F12.8))")lTime,Tp2,DES_T_s(2),REL_ERR2
       CLOSE(TP_UNIT2)
 
 

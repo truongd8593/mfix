@@ -246,8 +246,7 @@ CONTAINS
 ! BEGIN Thermodynamic Allocation
       IF(ENERGY_EQ)THEN
 ! Particle temperature
-         Allocate( DES_T_s_OLD( MAX_PIP ) )
-         Allocate( DES_T_s_NEW( MAX_PIP ) )
+         Allocate( DES_T_s( MAX_PIP ) )
 ! Specific heat
          Allocate( DES_C_PS( MAX_PIP ) )
 ! Species mass fractions comprising a particle. This array may not be
@@ -257,8 +256,16 @@ CONTAINS
          Allocate( Q_Source( MAX_PIP ) )
 ! Average solids temperature in fluid cell
          Allocate(avgDES_T_s(DIMENSION_3) )
-
-         Allocate(DES_ENERGY_SOURCE(DIMENSION_3) )
+! Gas/Solids convective heat transfer coupling
+         IF(CALC_CONV_DES) THEN
+! Fluid phase energy equation source terms
+            Allocate(CONV_Sc(DIMENSION_3) )
+            Allocate(CONV_Sp(DIMENSION_3) )
+! Particle convection source term (explicit coupled)
+            Allocate(CONV_Qs(MAX_PIP))
+! Gas-particle heat transfer coefficient TIMES surface area
+            Allocate(GAMMAxSA(MAX_PIP))
+         ENDIF
 
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) &
@@ -271,10 +278,8 @@ CONTAINS
 ! ---------------------------------------------------------------->>>
 ! BEGIN Species Allocation
       IF(ANY_SPECIES_EQ)THEN
-! Rate of solids phase production for each species
-         Allocate( DES_R_sp( MAX_PIP, DIMENSION_N_s) )
-! Rate of solids phase consumption for each species
-         Allocate( DES_R_sc( MAX_PIP, DIMENSION_N_s) )
+! Rate of solids phase production/consumption for each species
+         Allocate( DES_R_s( MAX_PIP, DIMENSION_N_s) )
 
 
          Allocate( DES_R_gp( DIMENSION_3, DIMENSION_N_g ) )
@@ -293,7 +298,7 @@ CONTAINS
          ENDIF
 
 ! Energy generation from reaction (cal/sec)
-         Allocate( Qint( MAX_PIP ) )
+         Allocate( RXNS_Qs( MAX_PIP ) )
       ENDIF
 ! End Species Allocation
 ! ----------------------------------------------------------------<<<
@@ -571,26 +576,27 @@ CONTAINS
         ENDIF
 
         IF(ENERGY_EQ)THEN
-           call real_grow(DES_T_s_OLD,new_size)
-           call real_grow(DES_T_s_NEW,new_size)
+           call real_grow(DES_T_s,new_size)
            call real_grow(DES_C_PS,new_size)
            call real_grow2_reverse(DES_X_s,new_size)
            call real_grow(Q_Source,new_size)
-
-           IF (INTG_ADAMS_BASHFORTH) &
-           call real_grow(Q_Source0,new_size)
+           IF(CALC_CONV_DES) THEN
+              call real_grow(CONV_Qs, new_size)
+              call real_grow(GAMMAxSA, new_size)
+           ENDIF
+           IF(INTG_ADAMS_BASHFORTH) &
+              call real_grow(Q_Source0,new_size)
         ENDIF
 
         IF(ANY_SPECIES_EQ)THEN
-           call real_grow2_reverse( DES_R_sp, new_size )
-           call real_grow2_reverse( DES_R_sc, new_size )
+           call real_grow2_reverse( DES_R_s, new_size )
 
            IF (INTG_ADAMS_BASHFORTH) THEN
               call real_grow( dMdt_OLD, new_size )
               call real_grow2_reverse( dXdt_OLD, new_size )
            ENDIF
 
-           call real_grow( Qint, new_size )
+           call real_grow( RXNS_Qs, new_size )
         ENDIF
 
         IF(DES_USR_VAR_SIZE > 0) &

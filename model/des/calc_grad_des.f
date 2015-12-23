@@ -87,7 +87,8 @@
          IMJK = IM_OF(IJK)
          IPJK = IP_OF(IJK)
 
-         IF((I>IMIN1).AND.(I<IMAX1)) THEN
+         IF(IMIN1 == IMAX1) THEN
+         ELSEIF((I>IMIN1).AND.(I<IMAX1)) THEN
             DEL_PHI(1,IJK) = oDX(I)*(AVG_X(PHI(IJK),PHI(IPJK),I) -     &
                AVG_X(PHI(IMJK),PHI(IJK),I-1))
          ELSEIF(I == IMIN1) THEN
@@ -105,7 +106,8 @@
          IJMK = JM_OF(IJK)
          IJPK = JP_OF(IJK)
 
-         IF((J>JMIN1) .AND. (J<JMAX1)) THEN
+         IF(JMIN1 == JMAX1) THEN
+         ELSEIF((J>JMIN1) .AND. (J<JMAX1)) THEN
             DEL_PHI(2,IJK) = oDY(J)*(AVG_Y(PHI(IJK),PHI(IJPK),J) -     &
                AVG_Y(PHI(IJMK),PHI(IJK),J-1))
          ELSEIF(J == JMIN1) THEN
@@ -115,7 +117,7 @@
             DEL_PHI(2,IJK) = 2.0d0*oDY(J) *                            &
                (PHI(IJK)- AVG_Y(PHI(IJMK),PHI(IJK),J-1))
          ELSE
-            DEL_PHI(2,IJK) = ZERO 
+            DEL_PHI(2,IJK) = ZERO
          ENDIF
 
          IF(DO_K) THEN
@@ -124,7 +126,8 @@
             IJKM = KM_OF(IJK)
             IJKP = KP_OF(IJK)
 
-            IF((K>KMIN1) .AND. (K<KMAX1)) THEN
+            IF(KMIN1 == KMAX1) THEN
+            ELSEIF((K>KMIN1) .AND. (K<KMAX1)) THEN
                DEL_PHI(3,IJK) = oDZ(K)*(AVG_Z(PHI(IJK),PHI(IJKP),K) -  &
                   AVG_Z(PHI(IJKM),PHI(IJK),K-1))
             ELSEIF(K == KMIN1) THEN

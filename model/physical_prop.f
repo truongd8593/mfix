@@ -362,7 +362,7 @@
 ! Calculating an average specific heat for the fluid.
          C_PG(IJK) = ZERO
          DO NN = 1, NMAX(0)
-            lCp = calc_CpoR(T_G(IJK), 0, NN, lCP_Err)
+            lCp = calc_CpoR(T_G(IJK), 0, NN)
             C_PG(IJK) = C_PG(IJK) + X_g(IJK,NN) * lCp * RGAS / MW_g(NN)
             gCP_Err = max(gCP_Err, lCP_Err)
          ENDDO
@@ -447,7 +447,7 @@
             C_PS(IJK, M) = ZERO
 
             DO NN = 1, NMAX(M)
-               lCp = calc_CpoR(T_S(IJK,M), M, NN, lCP_Err)
+               lCp = calc_CpoR(T_S(IJK,M), M, NN)
                C_PS(IJK,M) = C_PS(IJK,M) + X_s(IJK,M,NN) * &
                   (lCp * RGAS / MW_s(M,NN))
             ENDDO

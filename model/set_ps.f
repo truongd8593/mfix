@@ -182,7 +182,7 @@
          CpxMFLOW = ZERO
          do nn = 1, NMAX(lM)
             CpxMFLOW = CpxMFLOW + PS_X(NN) * (GAS_CONST_cal / lMW(NN)) * &
-              calc_CpoR(PS_T, lM, NN, IER)
+              calc_CpoR(PS_T, lM, NN)
          enddo
       else
          CpxMFLOW = Cp0

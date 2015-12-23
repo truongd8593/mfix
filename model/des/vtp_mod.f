@@ -564,7 +564,7 @@
       USE vtk, only: TIME_DEPENDENT_FILENAME,VTU_FRAME_UNIT,VTU_FRAME_FILENAME
       USE vtk, only: VTK_DBG_FILE
       USE output, only: FULL_LOG
-
+      use des_thermo, only: DES_T_s
       IMPLICIT NONE
       INTEGER :: L,N,LCV
 
@@ -617,7 +617,7 @@
          ENDDO
 
          IF(ENERGY_EQ.AND.VTK_PART_TEMP(VTK_REGION)) &
-           CALL WRITE_SCALAR_IN_VTP_BIN('Temperature', DES_T_s_NEW,PASS)
+           CALL WRITE_SCALAR_IN_VTP_BIN('Temperature', DES_T_s,PASS)
 
          IF(ANY_SPECIES_EQ) THEN
             DO N=1, DIMENSION_N_S

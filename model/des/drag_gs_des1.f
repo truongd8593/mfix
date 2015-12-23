@@ -60,7 +60,8 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Model B momentum equation
       use run, only: MODEL_B
-
+      use param, only: DIMENSION_3
+      use compar
       IMPLICIT NONE
 
 ! Local variables
@@ -89,7 +90,7 @@
       LP_BND = merge(27,9,DO_K)
 
 ! Calculate the cell center gas velocities.
-      CALL CALC_CELL_CENTER_GAS_VEL(U_G,V_G,W_G,UGC,VGC,WGC)
+      CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G, UGC, VGC, WGC)
 
 ! Calculate the gas phase forces acting on each particle.
 
@@ -138,7 +139,6 @@
 ! gas phase drag calculations.
          ELSEIF(DES_EXPLICITLY_COUPLED) THEN
             DRAG_FC(NP,:) = F_GP(NP)*(VELFP - DES_VEL_NEW(NP,:))
-
          ELSE
 
 ! Calculate the drag coefficient.
@@ -226,6 +226,7 @@
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
+      use param, only: DIMENSION_3
 
       IMPLICIT NONE
 
@@ -249,7 +250,6 @@
       DOUBLE PRECISION :: lDRAG_BM(3)
 !......................................................................!
 
-
 ! Initialize fluid cell values.
       F_GDS = ZERO
       DRAG_BM = ZERO
@@ -258,11 +258,7 @@
       LP_BND = merge(27,9,DO_K)
 
 ! Calculate the cell center gas velocities.
-      IF(DES_EXPLICITLY_COUPLED) THEN
-         CALL CALC_CELL_CENTER_GAS_VEL(U_GO,V_GO,W_GO,UGC,VGC,WGC)
-      ELSE
-         CALL CALC_CELL_CENTER_GAS_VEL(U_G,V_G,W_G,UGC,VGC,WGC)
-      ENDIF
+      CALL CALC_CELL_CENTER_GAS_VEL(U_G, V_G, W_G, UGC, VGC, WGC)
 
 ! Calculate the gas phase forces acting on each particle.
 

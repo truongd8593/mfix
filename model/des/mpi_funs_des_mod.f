@@ -259,7 +259,7 @@
       use discretelement, only: dg_pic, pijk
 
       use run, only: ENERGY_EQ,ANY_SPECIES_EQ
-      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+      use des_thermo, only: DES_T_s
 
       use des_rxns, only: DES_X_s
 
@@ -301,10 +301,7 @@
                IF(PARTICLE_ORIENTATION) &
                   ORIENTATION(1:3,lcurpar) = INIT_ORIENTATION
 
-               if(ENERGY_EQ) then
-                  des_t_s_new(lcurpar)=0
-                  des_t_s_old(lcurpar)=0
-               endif
+               if(ENERGY_EQ) des_t_s(lcurpar)=0
 
                if(ANY_SPECIES_EQ)then
                   des_x_s(lcurpar,1:dimension_n_s)= 0

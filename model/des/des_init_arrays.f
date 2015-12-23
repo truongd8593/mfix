@@ -48,10 +48,9 @@
 
       GRAV(:) = ZERO
 
-      IF(ENERGY_EQ)THEN
-         avgDES_T_s(:) = ZERO
-         DES_ENERGY_SOURCE(:) = ZERO
-      ENDIF
+      IF(allocated(avgDES_T_s)) avgDES_T_s = ZERO
+      IF(allocated(CONV_Sp))   CONV_Sp = ZERO
+      IF(allocated(CONV_Sc))   CONV_Sc = ZERO
 
       CALL DES_INIT_PARTICLE_ARRAYS(1,MAX_PIP)
 
@@ -165,8 +164,7 @@
 
 ! Energy equation variables.
       IF(ENERGY_EQ)THEN
-         DES_T_s_OLD(LB:UB) = ZERO
-         DES_T_s_NEW(LB:UB) = ZERO
+         DES_T_s(LB:UB) = ZERO
          DES_C_PS(LB:UB) = ZERO
          DES_X_s(LB:UB,:) = ZERO
          Q_Source(LB:UB) = ZERO
@@ -176,13 +174,12 @@
 
 ! Chemical reaction variables.
       IF(ANY_SPECIES_EQ)THEN
-         DES_R_sp(LB:UB,:) = ZERO
-         DES_R_sc(LB:UB,:) = ZERO
+         DES_R_s(LB:UB,:) = ZERO
          IF (INTG_ADAMS_BASHFORTH) THEN
             dMdt_OLD(LB:UB) = ZERO
             dXdt_OLD(LB:UB,:) = ZERO
          ENDIF
-         Qint(LB:UB) = ZERO
+         RXNS_Qs(LB:UB) = ZERO
       ENDIF
 
 

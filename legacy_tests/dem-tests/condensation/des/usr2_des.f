@@ -100,7 +100,7 @@
       ENDIF
 
 ! Write the data to a file.
-      WRITE(TP_UNIT,"(2(3X,F12.8))")lTime, (DES_T_S_NEW(1)-273.15d0)
+      WRITE(TP_UNIT,"(2(3X,F12.8))")lTime, (DES_T_s(1)-273.15d0)
       CLOSE(TP_UNIT)
 
       RETURN

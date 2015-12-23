@@ -298,12 +298,12 @@
 
       IF(DES_EXPLICITLY_COUPLED)THEN
          WRITE(ERR_MSG, 2100)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         CALL FLUSH_ERR_MSG!(ABORT=.TRUE.)
       ENDIF
 
  2100 FORMAT('Error 2100: The DES Energy equation implementation ',    &
          'does not',/'currently support explicit coupling (DES_',      &
-         'EXPLICITLY_COUPLED).','Please correct the mfix.dat file.')
+         'EXPLICITLY_COUPLED).',/'Please correct the mfix.dat file.')
 
       CALL FINL_ERR_MSG
 
@@ -373,7 +373,7 @@
 
       IF(DES_EXPLICITLY_COUPLED)THEN
          WRITE(ERR_MSG, 2100)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         CALL FLUSH_ERR_MSG!(ABORT=.TRUE.)
       ENDIF
 
  2100 FORMAT('Error 2100: The DES Species equation implementation ',   &

@@ -53,7 +53,7 @@
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW
 ! Particle tempertures. current/previous
-      use des_thermo, only: DES_T_s_NEW
+      use des_thermo, only: DES_T_s
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS
 ! Number of cells used in interpolation
@@ -136,7 +136,7 @@
             call pack_dbuf(lbuf,merge(1,0,is_exiting(lcurpar).or.is_exiting_ghost(lcurpar)),pface)
 ! 10) Temperature
             IF(ENERGY_EQ) &
-               call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
+               call pack_dbuf(lbuf,des_t_s(lcurpar),pface)
 ! 11) User Variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf,des_usr_var(:,lcurpar),pface)
@@ -197,7 +197,7 @@
 ! Particle species composition
       use des_rxns, only: DES_X_s
 ! Particle tempertures. current/previous
-      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+      use des_thermo, only: DES_T_s
 ! Force arrays acting on the particle
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
@@ -324,7 +324,7 @@
             call pack_dbuf(lbuf,tow(lcurpar,:),pface)
 ! 21) Temperature
             IF(ENERGY_EQ) &
-               call pack_dbuf(lbuf,des_t_s_new(lcurpar),pface)
+               call pack_dbuf(lbuf,des_t_s(lcurpar),pface)
 ! 22) Species composition
             IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
@@ -351,9 +351,6 @@
                call pack_dbuf(lbuf,des_acc_old(lcurpar,:),pface)
 ! 30) Rotational acceleration (previous)
                call pack_dbuf(lbuf,rot_acc_old(lcurpar,:),pface)
-! 31) Temperature (previous)
-               IF(ENERGY_EQ) &
-                  call pack_dbuf(lbuf,des_t_s_old(lcurpar),pface)
             ENDIF
 
 ! PIC particles are removed and the number of particles on the processor

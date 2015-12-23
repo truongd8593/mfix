@@ -107,7 +107,7 @@
 ! Calculate the value for the analytic solution.
 
 ! Calculate the relative error.
-!      REL_ERR = (ABS(Tp - DES_T_S_NEW(1))/ABS(Tp))*100
+!      REL_ERR = (ABS(Tp - DES_T_s(1))/ABS(Tp))*100
 
 ! Write the data to a file.
       WRITE(TP_UNIT,"(9(3X,F12.5))")lTime, &

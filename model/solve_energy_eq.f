@@ -162,8 +162,8 @@
          ENDIF
       ENDDO
 
-! Account for heat transfer between the discrete particles and the gas phase.
-      IF(DES_CONTINUUM_COUPLED) CALL DES_Hgm(S_C)
+! Account for convective heat transfer between gas and DES particles.
+      IF(DES_CONTINUUM_COUPLED) CALL DES_2FLUID_CONV(S_P, S_C)
 
 ! calculate the convection-diffusion terms
       CALL CONV_DIF_PHI (T_g, K_G, DISCRETIZE(6), U_G, V_G, W_G, &

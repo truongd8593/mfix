@@ -94,7 +94,7 @@
       INCLUDE 'usrnlst.inc'
 
 ! Alias particle temperature.
-      Tp = DES_T_s_NEW(NP)
+      Tp = DES_T_s(NP)
 ! Calculate particle diameter.
       Dp0 = 2.0d0 * DES_RADIUS(NP)
 

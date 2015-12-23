@@ -54,8 +54,8 @@
       use discretelement, only: DES_VEL_NEW, DES_VEL_OLD
 ! Particle rotational velocities: current/previous
       use discretelement, only: OMEGA_NEW, OMEGA_OLD
-! Particle tempertures. current/previous
-      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+! Particle tempertures
+      use des_thermo, only: DES_T_s
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS, PVOL
 ! Number of cells used in interpolation
@@ -153,7 +153,7 @@
             if (tmp) call set_exiting_ghost(llocpar)
 ! 10) Temperature
             IF(ENERGY_EQ) &
-               call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
+               call unpack_dbuf(lbuf,des_t_s(llocpar),pface)
 ! 11) User Variables
             IF(DES_USR_VAR_SIZE > 0) &
                call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
@@ -174,7 +174,6 @@
             IF (DO_OLD) THEN
                des_pos_old(llocpar,:)= des_pos_new(llocpar,:)
                des_vel_old(llocpar,:)= des_vel_new(llocpar,:)
-               if(ENERGY_EQ)des_t_s_old(llocpar)= des_t_s_new(llocpar)
                omega_old(llocpar,:)= omega_new(llocpar,:)
             ENDIF
 
@@ -223,7 +222,7 @@
             if (tmp) call set_exiting_ghost(ispot)
 ! 10) Temperature.
             IF(ENERGY_EQ) &
-               call unpack_dbuf(lbuf,des_t_s_new(ispot),pface)
+               call unpack_dbuf(lbuf,des_t_s(ispot),pface)
 ! 11) User varaible
             IF(DES_USR_VAR_SIZE > 0)&
                call unpack_dbuf(lbuf,des_usr_var(:,ispot),pface)
@@ -242,7 +241,6 @@
                des_pos_old(ispot,1:dimn) = des_pos_new(ispot,1:dimn)
                des_vel_old(ispot,1:dimn) = des_vel_new(ispot,1:dimn)
                omega_old(ispot,1:3) = omega_new(ispot,1:3)
-               if(ENERGY_EQ) des_t_s_old(ispot) = des_t_s_new(ispot)
             ENDIF
          enddo
       endif
@@ -298,8 +296,8 @@
       use discretelement, only: DES_ACC_OLD, ROT_ACC_OLD
 ! Particle species composition
       use des_rxns, only: DES_X_s
-! Particle tempertures. current/previous
-      use des_thermo, only: DES_T_s_NEW, DES_T_s_OLD
+! Particle tempertures.
+      use des_thermo, only: DES_T_s
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_WEIGHT
 ! Force arrays acting on the particle
@@ -439,7 +437,7 @@
          call unpack_dbuf(lbuf,tow(llocpar,:),pface)
 ! 21) Temperature
          IF(ENERGY_EQ) &
-            call unpack_dbuf(lbuf,des_t_s_new(llocpar),pface)
+            call unpack_dbuf(lbuf,des_t_s(llocpar),pface)
 ! 22) Species composition
          IF(ANY_SPECIES_EQ) &
             call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
@@ -465,9 +463,6 @@
             call unpack_dbuf(lbuf,des_acc_old(llocpar,:),pface)
 ! 30) Rotational acceleration (previous)
             call unpack_dbuf(lbuf,rot_acc_old(llocpar,:),pface)
-! 31) Temperature (previous)
-            IF(ENERGY_EQ) &
-               call unpack_dbuf(lbuf,des_t_s_old(llocpar),pface)
          ENDIF
 ! 32) Statistical weight
          IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)

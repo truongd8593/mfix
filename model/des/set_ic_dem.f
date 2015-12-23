@@ -17,7 +17,7 @@
 
       use ic
 
-      use des_thermo, only: DES_T_s_NEW
+      use des_thermo, only: DES_T_s
 
       use discretelement, only: MAX_PIP
       use discretelement, only: PINC, PIC
@@ -74,7 +74,7 @@
 
 ! Set the initial particle temperature.
                IF(ENERGY_EQ) THEN
-                  DES_T_s_NEW(NP) = IC_T_s(ICV,M)
+                  DES_T_s(NP) = IC_T_s(ICV,M)
                ENDIF
 
 ! Set the initial species composition.
@@ -107,7 +107,7 @@
 
 ! Check that the temperature is specified.
          IF(ENERGY_EQ) THEN
-            IF(DES_T_s_NEW(NP) == ZERO) THEN
+            IF(DES_T_s(NP) == ZERO) THEN
                WRITE(ERR_MSG, 2000) trim(iVal(NP)), trim(iVal(M))
                CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
             ENDIF
@@ -133,9 +133,6 @@
          'mass fractions defined: IC_X_s(ICV,',A,',:).')
 
       ENDDO
-
-! Calculate the average solids temperature in each fluid cell
-      CALL SET_INIT_avgTs
 
       CALL FINL_ERR_MSG
 

@@ -59,7 +59,7 @@
 
       use ic, only: IC_X_s
 
-      use des_thermo, only: DES_T_S_NEW
+      use des_thermo, only: DES_T_S
       use des_rxns, only: DES_X_s
 
       use discretelement, only: S_TIME

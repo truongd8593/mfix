@@ -120,10 +120,10 @@
       Tp = Tg - (Tg - Tp0)*exp(coeff*lTime)
 
 ! Calculate the relative error.
-      REL_ERR = (ABS(Tp - DES_T_S_NEW(1))/ABS(Tp))*100
+      REL_ERR = (ABS(Tp - DES_T_S(1))/ABS(Tp))*100
 
 ! Write the data to a file.
-      WRITE(TP_UNIT,"(4(3X,F12.8))")lTime,Tp,DES_T_S_NEW(1),REL_ERR
+      WRITE(TP_UNIT,"(4(3X,F12.8))")lTime,Tp,DES_T_S(1),REL_ERR
       CLOSE(TP_UNIT)
 
       END SUBROUTINE WRITE_DES_Tp

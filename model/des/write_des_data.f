@@ -96,7 +96,7 @@
       use discretelement, only: S_TIME
       use discretelement, only: DES_POS_NEW, DES_VEL_NEW, DES_USR_VAR
       use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
-      use des_thermo, only: DES_T_s_NEW
+      use des_thermo, only: DES_T_s
       use discretelement, only: DES_RADIUS
       use discretelement, only: USE_COHESION, PostCohesive
       use des_rxns, only: DES_X_s
@@ -163,7 +163,7 @@
       ENDIF
 
       IF(ENERGY_EQ) &
-         CALL VTP_WRITE_DATA('Temperature', DES_T_s_NEW)
+         CALL VTP_WRITE_DATA('Temperature', DES_T_s)
 
       IF(ANY_SPECIES_EQ) THEN
          DO NN=1, DIMENSION_N_S

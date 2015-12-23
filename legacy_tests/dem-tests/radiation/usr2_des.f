@@ -121,21 +121,23 @@
       INQUIRE(FILE=FNAME1,EXIST=F_EXISTS1)
       IF (.NOT.F_EXISTS1) THEN
          OPEN(UNIT=TP_UNIT1,FILE=FNAME1,STATUS='NEW')
-         WRITE(TP_UNIT1,"(7X,'Time',11X,'Tp1',10X,'Tp1_MFIX',6X,'REL ERR 1')")
+         WRITE(TP_UNIT1,1000)
       ELSE
          OPEN(UNIT=TP_UNIT1,FILE=FNAME1,&
             POSITION="APPEND",STATUS='OLD')
       ENDIF
+ 1000 FORMAT(7X,'Time',11X,'Tp1',10X,'Tp1_MFIX',6X,'REL ERR 1')
 
       FNAME2 = 'POST_TP2.dat'
       INQUIRE(FILE=FNAME2,EXIST=F_EXISTS2)
       IF (.NOT.F_EXISTS2) THEN
          OPEN(UNIT=TP_UNIT2,FILE=FNAME2,STATUS='NEW')
-         WRITE(TP_UNIT2,"(7X,'Time',11X,'Tp2',10X,'Tp2_MFIX',6X,'REL ERR 2')")
+         WRITE(TP_UNIT2,1001)
       ELSE
          OPEN(UNIT=TP_UNIT2,FILE=FNAME2,&
             POSITION="APPEND",STATUS='OLD')
       ENDIF
+ 1001 FORMAT(7X,'Time',11X,'Tp2',10X,'Tp2_MFIX',6X,'REL ERR 2')
 
 
 ! Calculate the value for the RK4 solutions.
@@ -241,14 +243,14 @@
 
 
 ! Calculate the relative error.
-       REL_ERR1 = (ABS(TP1_RK4 - DES_T_S_NEW(1))/ABS(TP1_RK4))*100
-       REL_ERR2 = (ABS(TP2_RK4 - DES_T_S_NEW(2))/ABS(TP2_RK4))*100
+       REL_ERR1 = (ABS(TP1_RK4 - DES_T_s(1))/ABS(TP1_RK4))*100
+       REL_ERR2 = (ABS(TP2_RK4 - DES_T_s(2))/ABS(TP2_RK4))*100
 
 ! Write the data to a file.
-      WRITE(TP_UNIT1,"(4(3X,F12.8))")lTime,TP1_RK4,DES_T_S_NEW(1),REL_ERR1
+      WRITE(TP_UNIT1,"(4(3X,F12.8))")lTime,TP1_RK4,DES_T_s(1),REL_ERR1
       CLOSE(TP_UNIT1)
 
-      WRITE(TP_UNIT2,"(4(3X,F12.8))")lTime,TP2_RK4,DES_T_S_NEW(2),REL_ERR2
+      WRITE(TP_UNIT2,"(4(3X,F12.8))")lTime,TP2_RK4,DES_T_s(2),REL_ERR2
       CLOSE(TP_UNIT2)
 
 

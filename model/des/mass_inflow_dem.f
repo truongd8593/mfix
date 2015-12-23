@@ -353,10 +353,7 @@
       IF(DES_EXPLICITLY_COUPLED) DRAG_FC(lNP,:) = ZERO
 
 ! If solving the energy equations, set the temperature
-      IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) THEN
-         DES_T_s_NEW(lNP) = BC_T_s(lBCV,lM)
-         DES_T_s_OLD(lNP) = DES_T_s_NEW(lNP)
-      ENDIF
+      IF(ANY_SPECIES_EQ .OR. ENERGY_EQ ) DES_T_s(lNP) = BC_T_s(lBCV,lM)
 
 ! Set species mass fractions
       IF((ENERGY_EQ .AND. C_PS0(lM)/=UNDEFINED) .OR. ANY_SPECIES_EQ)&
