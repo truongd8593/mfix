@@ -720,7 +720,7 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      integer, dimension(dg_ijksize2) :: lpic,lindx
+      integer, dimension(:), allocatable :: lpic,lindx
       integer li,lj,lk,lijk,lijk_count,lcurpar,lparcount,lcurpic
       logical, save :: first_pass = .true.
 !-----------------------------------------------
@@ -728,6 +728,8 @@
 ! locate the particles including ghost cells
       max_isize = 0
       lparcount = 1
+      allocate(lpic(dg_ijksize2))
+      allocate(lindx(dg_ijksize2))
       lpic(:) = 0
       if (plocate) then
          dg_pijkprv(:)= dg_pijk(:)
@@ -818,6 +820,9 @@
 !      open (unit=100,file='desgrid.txt',status='unknown')
 !      write(100,*)lpic
 !      close(100)
+
+      deallocate(lpic)
+      deallocate(lindx)
 
     contains
 

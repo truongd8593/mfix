@@ -53,7 +53,7 @@ CONTAINS
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
 
-      use multi_sweep_and_prune, only: do_sap
+      use multi_sweep_and_prune, only: do_sap, boxhandle
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -502,7 +502,7 @@ CONTAINS
         USE des_thermo
         USE discretelement
         USE mfix_pic
-        USE multi_sweep_and_prune, ONLY: boxhandle_grow, do_sap
+        USE multi_sweep_and_prune, ONLY: boxhandle_grow, do_sap, boxhandle
         USE particle_filter
         USE resize
         USE run

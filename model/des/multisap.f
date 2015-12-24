@@ -15,7 +15,7 @@ module multi_sweep_and_prune
 
   use sweep_and_prune
 
-  logical, parameter :: do_sap = .false.
+  logical, parameter :: do_sap = .true.
 
   type multisap_t
      ! grid particle, e.g. 20x20x20
@@ -66,7 +66,12 @@ module multi_sweep_and_prune
      type(boxhandle_t) :: list(MAX_SAPS)
   end type boxhandlelist_t
 
-  public :: init_multisap, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow
+  ! the global multisap
+  type(multisap_t) multisap
+
+  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
+
+ public :: init_multisap, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow
   private :: multisap_raster
 
 contains
@@ -354,7 +359,6 @@ contains
           do kk=0,this%grid(3)-1
              sap_id = ii*this%grid(2)*this%grid(3)+jj*this%grid(3)+kk
              call reset_pairs(this%saps(sap_id)%hashtable)
-             print *,"SAP ID ",sap_id," HAS TABLE OF SIZE",this%saps(sap_id)%hashtable%table_size
              sighs = sighs + this%saps(sap_id)%hashtable%table_size
              do
                 call get_pair(this%saps(sap_id)%hashtable,pair)

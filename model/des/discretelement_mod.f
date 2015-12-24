@@ -12,7 +12,6 @@
 ! Modules
 !-----------------------------------------------
       USE param, only: dim_m
-      USE multi_sweep_and_prune, only: multisap_t, boxhandlelist_t
       IMPLICIT NONE
 !-----------------------------------------------
 
@@ -233,11 +232,6 @@
 ! cell based neighbor search
       INTEGER :: DESGRIDSEARCH_IMAX, DESGRIDSEARCH_JMAX, &
                  DESGRIDSEARCH_KMAX
-
-      ! the global multisap
-      type(multisap_t) multisap
-
-      type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
 ! End neighbor search related quantities
 !-----------------------------------------------------------------<<<

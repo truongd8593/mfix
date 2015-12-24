@@ -262,6 +262,7 @@ END SUBROUTINE SOURCE_PP_G
       use param1, only: one
       use run, only: discretize, odt
       use ur_facs, only: ur_fac
+      use xsi
       IMPLICIT NONE
 
 ! Parameters
