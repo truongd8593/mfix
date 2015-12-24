@@ -16,7 +16,7 @@
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use functions, only: is_nonexistent
-      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep, do_sap, multisap, boxhandle
+      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle
       use geometry
 
       IMPLICIT NONE
@@ -63,7 +63,7 @@
       print *,"XLENGTH = ",XLENGTH
       print *,"YLENGTH = ",YLENGTH
       print *,"ZLENGTH = ",ZLENGTH
-      if (do_sap) then
+#ifdef do_sap
          call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
          ! initialize SAP
          do nn=1, MAX_PIP
@@ -81,7 +81,7 @@
 
          call multisap_quicksort(multisap)
          call multisap_sweep(multisap)
-      endif
+#endif
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces

@@ -20,7 +20,7 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      use multi_sweep_and_prune, only: do_sap, multisap, boxhandle
+      use multi_sweep_and_prune, only: multisap, boxhandle
       use pair_manager
       use param1, only: one, small_number, zero
 
@@ -83,6 +83,7 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
+#ifdef do_sap
       ! do nn=0, size(multisap%saps)-1
       !    !print *,"nn = ",nn
       !    if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
@@ -118,6 +119,7 @@ close (unit=123)
                    stop __LINE__
                 endif
              enddo
+#endif
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -197,7 +199,7 @@ close (unit=123)
                CYCLE
             ENDIF
 
-            if (do_sap) then
+#ifdef do_sap
                if (.not.is_pair(multisap%hashtable,ll,i)) then
 
                   print *,"SAP DIDNT FIND PAIR: ",ll,i
@@ -233,7 +235,7 @@ close (unit=123)
 
                   ERROR_STOP __LINE__
                endif
-            endif
+#endif
 
             IF(DIST_MAG == 0) THEN
                WRITE(*,8550) LL, I

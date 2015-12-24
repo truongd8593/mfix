@@ -53,7 +53,7 @@ CONTAINS
       use particle_filter, only: FILTER_CELL
       use particle_filter, only: FILTER_WEIGHT
 
-      use multi_sweep_and_prune, only: do_sap, boxhandle
+      use multi_sweep_and_prune, only: boxhandle
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -152,7 +152,9 @@ CONTAINS
       Allocate(  NEIGHBORS_OLD (MAX_PIP) )
       Allocate(  PFT_NEIGHBOR (3,MAX_PIP) )
       Allocate(  PFT_NEIGHBOR_OLD (3,MAX_PIP) )
-      if (do_sap) Allocate(  boxhandle(MAX_PIP) )
+#ifdef do_sap
+      Allocate(  boxhandle(MAX_PIP) )
+#endif
 
 ! Variable that stores the particle in cell information (ID) on the
 ! computational fluid grid defined by imax, jmax and kmax in mfix.dat
@@ -502,7 +504,7 @@ CONTAINS
         USE des_thermo
         USE discretelement
         USE mfix_pic
-        USE multi_sweep_and_prune, ONLY: boxhandle_grow, do_sap, boxhandle
+        USE multi_sweep_and_prune, ONLY: boxhandle_grow, boxhandle
         USE particle_filter
         USE resize
         USE run
@@ -523,7 +525,9 @@ CONTAINS
            new_size = 2*new_size
         ENDDO
 
-        if (do_sap) call boxhandle_grow(boxhandle,new_size)
+#ifdef do_sap
+        call boxhandle_grow(boxhandle,new_size)
+#endif
         call real_grow(des_radius,new_size)
         call real_grow(RO_Sol,new_size)
         call real_grow(PVOL,new_size)
