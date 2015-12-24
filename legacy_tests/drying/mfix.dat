@@ -124,7 +124,7 @@
   
   NLOG   = 25
   FULL_LOG = .TRUE.
-  RESID_STRING = 'T0' 'T1' 'V0'
+  RESID_STRING = 'T0' 'T1' 'V0' 'P0'
 
 
 # DMP control
