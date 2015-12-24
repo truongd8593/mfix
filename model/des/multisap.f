@@ -15,7 +15,7 @@ module multi_sweep_and_prune
 
   use sweep_and_prune
 
-  logical, parameter :: do_sap = .true.
+  logical, parameter :: do_sap = .false.
 
   type multisap_t
      ! grid particle, e.g. 20x20x20
