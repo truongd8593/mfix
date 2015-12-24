@@ -92,14 +92,14 @@ contains
        z_grid = z_grid2
     endif
 
-    this%grid(1) = x_grid
-    this%grid(2) = y_grid
-    this%grid(3) = z_grid
+    this%grid(1) = max(x_grid,1)
+    this%grid(2) = max(y_grid,1)
+    this%grid(3) = max(z_grid,1)
 
-    allocate(this%saps(0:x_grid*y_grid*z_grid-1))
-    do ii=0,x_grid-1
-       do jj=0,y_grid-1
-          do kk=0,z_grid-1
+    allocate(this%saps(0:this%grid(1)*this%grid(2)*this%grid(3)-1))
+    do ii=0,this%grid(1)-1
+       do jj=0,this%grid(2)-1
+          do kk=0,this%grid(3)-1
              sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
              call init_sap(this%saps(sap_id),sap_id)
           enddo
@@ -136,8 +136,12 @@ contains
     min_grid(:) = floor((aabb%minendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:))
     max_grid(:) = floor((aabb%maxendpoint(:)-this%minbounds(:))*this%one_over_cell_length(:))
 
-    min_grid(:) = max(min_grid(:),0)
-    max_grid(:) = min(max_grid(:),this%grid(:)-1)
+    min_grid(1) = min(max(min_grid(1),0),this%grid(1)-1)
+    min_grid(2) = min(max(min_grid(2),0),this%grid(2)-1)
+    min_grid(3) = min(max(min_grid(3),0),this%grid(3)-1)
+    max_grid(1) = min(max(max_grid(1),0),this%grid(1)-1)
+    max_grid(2) = min(max(max_grid(2),0),this%grid(2)-1)
+    max_grid(3) = min(max(max_grid(3),0),this%grid(3)-1)
 
     call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + min_grid(3))
     call add_to_set((min_grid(1)*this%grid(2) + min_grid(2))*this%grid(3) + max_grid(3))
@@ -431,6 +435,24 @@ contains
     enddo
 
   end subroutine multisap_sweep
+
+  subroutine multisap_check(this)
+    implicit none
+    type(multisap_t), intent(inout) :: this
+    integer :: ii, jj, kk
+    integer :: sap_id
+
+    do ii=0,this%grid(1)-1
+       do jj=0,this%grid(2)-1
+          do kk=0,this%grid(3)-1
+             sap_id = (ii*this%grid(2)+jj)*this%grid(3)+kk
+
+             call check(this%saps(sap_id))
+          enddo
+       enddo
+    enddo
+
+  end subroutine multisap_check
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !

@@ -96,6 +96,88 @@ module sweep_and_prune
 
 contains
 
+  subroutine check(this)
+    use discretelement
+    implicit none
+    type(sap_t), intent(inout) :: this
+    integer :: ii, pid
+    do ii = 1, this%x_endpoints_len
+
+       if (0 > this%x_endpoints(ii)%box_id) then
+
+       if (ii .ne. this%boxes(-this%x_endpoints(ii)%box_id)%minendpoint_id(1)  ) then
+          print *,"ii is ",ii
+          print *,"this%x_endpoints(ii)%box_id is ",this%x_endpoints(ii)%box_id
+          print *,"this%boxes(this%x_endpoints(ii)%box_id)%minendpoint_id(1)",this%boxes(-this%x_endpoints(ii)%box_id)%minendpoint_id(1)
+          stop __LINE__
+       endif
+else
+       if (ii .ne. this%boxes(this%x_endpoints(ii)%box_id)%maxendpoint_id(1)  ) then
+          print *,"ii is ",ii
+          print *,"this%x_endpoints(ii)%box_id is ",this%x_endpoints(ii)%box_id
+          print *,"this%boxes(this%x_endpoints(ii)%box_id)%minendpoint_id(1)",this%boxes(this%x_endpoints(ii)%box_id)%maxendpoint_id(1)
+
+          stop __LINE__
+       endif
+endif
+    enddo
+
+    do ii = 1, this%y_endpoints_len
+       if (0 > this%y_endpoints(ii)%box_id) then
+          if (ii .ne. this%boxes(-this%y_endpoints(ii)%box_id)%minendpoint_id(2)  ) then
+             print *,"ii is ",ii
+             print *,"this%y_endpoints(ii)%box_id is ",this%y_endpoints(ii)%box_id
+             print *,"this%boxes(this%y_endpoints(ii)%box_id)%minendpoint_id(1)",this%boxes(-this%y_endpoints(ii)%box_id)%minendpoint_id(2)
+
+             stop __LINE__
+          endif
+       else
+          if (ii .ne. this%boxes(this%y_endpoints(ii)%box_id)%maxendpoint_id(2)  ) then
+             stop __LINE__
+          endif
+       endif
+    enddo
+
+    do ii = 1, this%z_endpoints_len
+       if (0 > this%z_endpoints(ii)%box_id) then
+          if (ii .ne. this%boxes(-this%z_endpoints(ii)%box_id)%minendpoint_id(3)  ) then
+             stop __LINE__
+          endif
+       else
+          if (ii .ne. this%boxes(this%z_endpoints(ii)%box_id)%maxendpoint_id(3)  ) then
+             stop __LINE__
+          endif
+       endif
+    enddo
+
+    do ii = 1, this%boxes_len
+       pid = this%boxes(ii)%particle_id
+       if ( 0.0001 < abs(this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value - this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value - 2*des_radius(pid))) then
+
+          print *,this%x_endpoints(this%boxes(ii)%maxendpoint_id(1))%value
+          print *,this%x_endpoints(this%boxes(ii)%minendpoint_id(1))%value
+          print *,2*des_radius(pid)
+
+          stop __LINE__
+       endif
+    enddo
+
+    do ii = 1, this%boxes_len
+       pid = this%boxes(ii)%particle_id
+       if ( 0.0001 < abs(this%y_endpoints(this%boxes(ii)%maxendpoint_id(2))%value - this%y_endpoints(this%boxes(ii)%minendpoint_id(2))%value - 2*des_radius(pid))) then
+          stop __LINE__
+       endif
+    enddo
+
+    do ii = 1, this%boxes_len
+       pid = this%boxes(ii)%particle_id
+       if ( 0.0001 < abs(this%z_endpoints(this%boxes(ii)%maxendpoint_id(3))%value - this%z_endpoints(this%boxes(ii)%minendpoint_id(3))%value - 2*des_radius(pid))) then
+          stop __LINE__
+       endif
+    enddo
+
+  end subroutine check
+
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
   !  Subroutine: init_sap                                                !

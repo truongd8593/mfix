@@ -188,8 +188,8 @@
 if (do_sap) then
 !$omp single
          DO L = 1, MAX_PIP
-            aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)-0.001
-            aabb%maxendpoint(:) = DES_POS_NEW(L,:)+DES_RADIUS(L)+0.001
+            aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)
+            aabb%maxendpoint(:) = DES_POS_NEW(L,:)+DES_RADIUS(L)
             call multisap_update(multisap,aabb,boxhandle(L))
          ENDDO
 !$omp end single
