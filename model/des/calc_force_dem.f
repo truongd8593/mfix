@@ -18,9 +18,10 @@
       USE constant, ONLY: Pi
       USE des_thermo
       USE des_thermo_cond
+      use compar
       USE discretelement
       USE run
-      use multi_sweep_and_prune, only: multisap, boxhandle
+      use multi_sweep_and_prune
       use pair_manager
       use param1, only: one, small_number, zero
 
@@ -70,7 +71,7 @@
 
       LOGICAL, PARAMETER :: report_excess_overlap = .FALSE.
 
-      DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3)
+      DOUBLE PRECISION :: FNMD, FTMD, MAG_OVERLAP_T, TANGENT(3), disttt
 
       integer :: nn, mm, box_id, box_id2
       logical :: found
@@ -83,43 +84,45 @@
 
       CALL CALC_DEM_FORCE_WITH_WALL_STL
 
-#ifdef do_sap
-      ! do nn=0, size(multisap%saps)-1
-      !    !print *,"nn = ",nn
-      !    if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
-      !    if (.not.check_sort(multisap%saps(nn))) ERROR_STOP __LINE__
-      ! enddo
+! #ifdef do_sap
+!       do nn=0, size(multisap%saps)-1
+!          print *,"nn = ",nn
+!          if (.not.check_boxes(multisap%saps(nn))) ERROR_STOP __LINE__
+!          if (.not.check_sort(multisap%saps(nn))) ERROR_STOP __LINE__
+!       enddo
 
-!print *,"CALC_FORCE_DEM =================================================================================="
+! print *,"CALC_FORCE_DEM =================================================================================="
 
-print *," TOTAL NUM OF NEIGHBORS IS ",NEIGHBOR_INDEX(MAX_PIP-1)
+! print *," TOTAL NUM OF NEIGHBORS IS ",NEIGHBOR_INDEX(MAX_PIP-1)
 
-open (unit=123,file="neighbors.txt",action="write",status="replace")
+! open (unit=123,file="neighbors.txt",action="write",status="replace")
 
-DO LL = 1, MAX_PIP
-   CC_START = 1
-   IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
-   CC_END   = NEIGHBOR_INDEX(LL)
+! DO LL = 1, MAX_PIP
+!    CC_START = 1
+!    IF (LL.gt.1) CC_START = NEIGHBOR_INDEX(LL-1)
+!    CC_END   = NEIGHBOR_INDEX(LL)
 
-   DO CC = CC_START, CC_END-1
-      I  = NEIGHBORS(CC)
-      write (123,*) ll,i
-   enddo
-enddo
+!    DO CC = CC_START, CC_END-1
+!       I  = NEIGHBORS(CC)
+!       write (123,*) ll,i
+!    enddo
+! enddo
 
-close (unit=123)
+! close (unit=123)
 
-             call reset_pairs(multisap%hashtable)
-             do
-                call get_pair(multisap%hashtable,pair)
-                if (pair(1).eq.0 .and. pair(2).eq.0) exit
+             ! call reset_pairs(multisap%hashtable)
+             ! do
+             !    call get_pair(multisap%hashtable,pair)
+             !    if (pair(1).eq.0 .and. pair(2).eq.0) exit
 
-                if ( des_radius(pair(1))+des_radius(pair(2))> sqrt(dot_product(DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:),DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:)))) then
-                   print *,"invalid pair: ",pair(1),pair(2)
-                   stop __LINE__
-                endif
-             enddo
-#endif
+!                 if ( des_radius(pair(1))+des_radius(pair(2))> sqrt(dot_product(DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:),DES_POS_NEW(pair(1),:)-DES_POS_NEW(pair(2),:)))) then
+!                    print *,"invalid pair: ",pair(1),pair(2)
+!                    stop __LINE__
+!                 endif
+!              enddo
+! #endif
+
+! call multisap_check(multisap)
 
 ! Check particle LL neighbor contacts
 !---------------------------------------------------------------------//
@@ -202,12 +205,14 @@ close (unit=123)
 #ifdef do_sap
                if (.not.is_pair(multisap%hashtable,ll,i)) then
 
-                  print *,"SAP DIDNT FIND PAIR: ",ll,i
-                  print *,"PARTICLE (",ll,"):  ",des_pos_new(:,ll), " WITH RADIUS: ",des_radius(ll)
-                  print *,"PARTICLE (",i,"):  ",des_pos_new(:,i), " WITH RADIUS: ",des_radius(i)
+                  print *,mype,":  SAP DIDNT FIND PAIR: ",ll,i
+                  print *,mype,":  PARTICLE (",ll,"):  ",des_pos_new(ll,:), " WITH RADIUS: ",des_radius(ll)
+                  print *,mype,":  PARTICLE (",i,"):  ",des_pos_new(i,:), " WITH RADIUS: ",des_radius(i)
+
+                  disttt = sqrt(dot_product(des_pos_new(ll,:)-des_pos_new(i,:),des_pos_new(ll,:)-des_pos_new(i,:)))
 
                   print *,""
-                  print *," ******   ",sqrt(dot_product(des_pos_new(:,ll)-des_pos_new(:,i),des_pos_new(:,ll)-des_pos_new(:,i))),"     *********"
+                  print *," ******   ",disttt,"     *********"
                   print *,""
 
                   ! print *,"LLLLLLLLL ",boxhandle(ll)%list(:)
@@ -221,7 +226,7 @@ close (unit=123)
                      found = .false.
                      do nn=1,size(boxhandle(i)%list)
                         if (boxhandle(i)%list(nn)%sap_id .eq. boxhandle(ll)%list(mm)%sap_id) then
-                           ! print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
+                           print *," PARTICLE ",i," IS ALSO IN ",boxhandle(i)%list(nn)
                            box_id2 = boxhandle(i)%list(nn)%box_id
                            found = .true.
                         endif
@@ -229,11 +234,13 @@ close (unit=123)
 
                      if (.not.found) cycle
 
-                     ! print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
+                     print *,"BOTH ",ll,i," ARE IN ",boxhandle(ll)%list(mm)
 
                   enddo
 
-                  ERROR_STOP __LINE__
+                  ! if (disttt > 1.01*(des_radius(ll)+des_radius(i))) then
+                     ERROR_STOP __LINE__
+                  ! endif
                endif
 #endif
 
@@ -348,6 +355,8 @@ close (unit=123)
 !!$omp end do
 
 !!$omp end parallel
+
+      ! call multisap_check(multisap)
 
 ! just for post-processing mag. of cohesive forces on each particle
       IF(USE_COHESION .AND. VAN_DER_WAALS .AND. GRAV_MAG > ZERO) THEN

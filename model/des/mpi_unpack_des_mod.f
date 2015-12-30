@@ -86,6 +86,7 @@
       use functions, only: is_normal,  set_normal
       use functions, only: is_exiting, set_exiting, set_exiting_ghost
       use functions, only: set_ghost
+      use multi_sweep_and_prune, only: multisap_add_particle, multisap_update_particle
 
       IMPLICIT NONE
 
@@ -187,6 +188,9 @@
          call PARTICLE_GROW(pip+lnewcnt)
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
+
+         print *,"ADDING NEW lnewcnt NOW....",lnewcnt
+
          max_pip = max(pip,max_pip)
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
@@ -232,6 +236,8 @@
                call unpack_dbuf(lbuf,filter_weight(:,ispot),pface)
             ENDIF
 
+            call multisap_add_particle(ispot)
+
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
 
@@ -242,6 +248,9 @@
                des_vel_old(ispot,1:dimn) = des_vel_new(ispot,1:dimn)
                omega_old(ispot,1:3) = omega_new(ispot,1:3)
             ENDIF
+
+            call multisap_update_particle(ispot)
+
          enddo
       endif
 
@@ -332,6 +341,7 @@
       use discretelement, only: max_pip
       use functions, only: IS_NORMAL, IS_NONEXISTENT
       use functions, only: SET_ENTERING, SET_EXITING, SET_NORMAL
+      use multi_sweep_and_prune, only: multisap_add_particle
 
       implicit none
 
@@ -357,8 +367,11 @@
       lparcnt = drecvbuf(1+mod(pface,2))%facebuf(1)
 
 ! if mppic make sure enough space available
-      call PARTICLE_GROW(pip+lparcnt)
-      max_pip = max(pip+lparcnt,max_pip)
+      IF(MPPIC) THEN
+         call PARTICLE_GROW(pip+lparcnt)
+         max_pip = max(pip+lparcnt,max_pip)
+         print *,"***************************   lparcnt ==== ",lparcnt
+      ENDIF
 
       do lcurpar =1,lparcnt
 
@@ -466,6 +479,9 @@
          ENDIF
 ! 32) Statistical weight
          IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)
+
+         call multisap_add_particle(llocpar)
+         print *,"JUST DID THE THING FOR ",llocpar
 
       end do
 

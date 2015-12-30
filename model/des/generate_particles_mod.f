@@ -1,9 +1,9 @@
       MODULE GENERATE_PARTICLES
-
         DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: PARTICLE_COUNT
 
       CONTAINS
 
+#include "version.inc"
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  SUBROUTINE: GENERATE_PARTICLE_CONFIG                                C

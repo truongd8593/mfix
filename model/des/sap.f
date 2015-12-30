@@ -16,7 +16,6 @@ module sweep_and_prune
 
   use pair_manager
   use list
-
   ! endpoint data structure should be 64 bits in size
   type endpoint_t
      ! owner of the endpoint
@@ -91,8 +90,8 @@ module sweep_and_prune
      type(hashtable_t) :: hashtable
   end type sap_t
 
-  public :: init_sap, add_box, del_box, update_box, sort, sweep
-  private :: partition, fullcheck, boxes_grow, endpoints_grow, sort_endpoints, quicksort_endpoints
+   ! public :: init_sap, add_box, del_box, update_box, sort, sweep, fullcheck
+  ! private :: partition, boxes_grow, endpoints_grow, sort_endpoints, quicksort_endpoints
 
 contains
 
@@ -619,8 +618,6 @@ endif
     integer, intent(in) :: axis
     type(endpoint_t), intent(inout), dimension(:) :: endpoints
     integer :: ii
-
-    !call check_boxes(this)
 
     if(size(endpoints) > 1) then
        call partition(this, endpoints, ii, axis)

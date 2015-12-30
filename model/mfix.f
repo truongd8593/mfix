@@ -105,7 +105,7 @@
 ! Temporary storage for DT
       DOUBLE PRECISION :: DT_tmp
 ! loop counter
-      INTEGER :: L
+      INTEGER :: L, ii
 ! DISTIO variable for specifying the mfix version
       CHARACTER(LEN=512) :: version
 ! environment variable
@@ -130,6 +130,12 @@
       END INTERFACE
 
 !-----------------------------------------------
+
+      print *,"PID ",mype," ready for attach\n"
+      ii = 1
+      do while (0 == ii)
+         ! sleep(1)
+      enddo
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -176,7 +182,6 @@
 !$      omp_id = omp_get_thread_num()
 !$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
 !$omp  end parallel
-
 
 ! Set machine dependent constants
       CALL MACHINE_CONS

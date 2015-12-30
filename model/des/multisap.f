@@ -69,19 +69,51 @@ module multi_sweep_and_prune
 
   type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
- public :: init_multisap, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow
-  private :: multisap_raster
+ public :: multisap_init, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow, multisap_add_particle, multisap_update_particle
+ private :: multisap_raster
 
 contains
+  subroutine multisap_add_particle(nn)
+    use discretelement, only: des_pos_new, des_radius
+    use geometry, only: no_k
+    implicit none
+    integer, intent(in) :: nn
+    type(aabb_t) :: aabb
+
+    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
+    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
+
+    if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
+       print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
+       ERROR_STOP __LINE__
+    endif
+
+    call multisap_add(multisap,aabb,nn,boxhandle(nn))
+
+  end subroutine multisap_add_particle
+
+  subroutine multisap_update_particle(nn)
+    use discretelement, only: des_pos_new, des_radius
+    use geometry, only: no_k
+    implicit none
+    integer, intent(in) :: nn
+    type(aabb_t) :: aabb
+
+    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
+    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
+    call multisap_update(multisap,aabb,boxhandle(nn))
+
+  end subroutine multisap_update_particle
+
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
-  !  Subroutine: init_sap                                                !
+  !  Subroutine: multisap_init                                           !
   !                                                                      !
   !  Purpose: multisap_t constructor                                     !
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine init_multisap(this,x_grid,y_grid,z_grid2,minbounds,maxbounds)
+  subroutine multisap_init(this,x_grid,y_grid,z_grid2,minbounds,maxbounds)
     use geometry
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -114,7 +146,7 @@ contains
     this%minbounds(:) = minbounds(:)
     this%maxbounds(:) = maxbounds(:)
 
-  end subroutine init_multisap
+  end subroutine multisap_init
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
@@ -251,6 +283,7 @@ contains
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
   subroutine multisap_update(this,aabb,handlelist)
+    use compar
     implicit none
     type(multisap_t), intent(inout) :: this
     type(aabb_t), intent(in) :: aabb
@@ -273,6 +306,12 @@ contains
           if (handlelist%list(mm)%sap_id .eq. new_sap_ids(nn)) then
              ! update existing SAPs
              box_id = handlelist%list(mm)%box_id
+             if (0.eq.box_id) then
+                print *,mype,":  box_id is zero for mm=",mm
+                print *,"for particle ",handlelist%particle_id
+                print *,"for particle at ",aabb
+                stop __LINE__
+             endif
              call update_box(this%saps(new_sap_ids(nn)),handlelist%list(mm)%box_id,aabb)
              found = .true.
              exit
@@ -346,7 +385,7 @@ contains
     enddo
 !$omp end parallel
 
-    print *," NUMBER OF DESGRIDS IS: ",this%grid(1)*this%grid(2)*this%grid(3)
+    ! print *," NUMBER OF DESGRIDS IS: ",this%grid(1)*this%grid(2)*this%grid(3)
 
  sighs = 0
 

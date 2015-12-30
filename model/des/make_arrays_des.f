@@ -6,6 +6,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MAKE_ARRAYS_DES
+#include "version.inc"
 
       USE calc_collision_wall
       USE compar
@@ -30,16 +31,19 @@
       USE stl
       USE stl_functions_des
       use stl_preproc_des, only: add_facet
+      use multi_sweep_and_prune, only: aabb_t, multisap_init, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle, multisap_add_particle
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: I, J, K, L, IJK
+      INTEGER :: I, J, K, L, IJK, NN
       INTEGER :: I1, I2, J1, J2, K1, K2, II, JJ, KK, IJK2
       INTEGER :: lcurpar, lpip_all(0:numpes-1), lglobal_id
       INTEGER :: CELL_ID, I_CELL, J_CELL, K_CELL, COUNT, NF
       INTEGER :: IMINUS1, IPLUS1, JMINUS1, JPLUS1, KMINUS1, KPLUS1
+
+      real :: mins(3), maxs(3), rad
 
 ! MPPIC related quantities
       CALL INIT_ERR_MSG("MAKE_ARRAYS_DES")
@@ -91,6 +95,33 @@
                CALL READ_PAR_INPUT
             ENDIF
          ENDIF
+
+#ifdef do_sap
+
+         mins(1) = 0
+         mins(2) = 0
+         mins(3) = 0
+         maxs(1) = XLENGTH
+         maxs(2) = YLENGTH
+         maxs(3) = ZLENGTH
+         rad = 100*maxval(des_radius)
+         print *,"rad = ",rad
+         print *,"XLENGTH = ",XLENGTH
+         print *,"YLENGTH = ",YLENGTH
+         print *,"ZLENGTH = ",ZLENGTH
+
+         print *,"MAXPIP == ",MAX_PIP
+
+         call multisap_init(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
+         ! initialize SAP
+         do nn=1, MAX_PIP
+            if(is_nonexistent(nn)) cycle
+            call multisap_add_particle(nn)
+         enddo
+
+         call multisap_quicksort(multisap)
+         call multisap_sweep(multisap)
+#endif
 
 ! Set the global ID for the particles and set the ghost cnt
          ighost_cnt = 0

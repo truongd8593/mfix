@@ -16,23 +16,17 @@
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use functions, only: is_nonexistent
-      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle
       use geometry
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: FACTOR, nn
-
-      type(aabb_t) :: aabb
-
-      real :: mins(3), maxs(3), rad
+      INTEGER :: FACTOR
 
 !-----------------------------------------------
 ! Include statement functions
 !-----------------------------------------------
-
 
 ! Skip this routine if there are no particles.
       IF(PARTICLES == 0) RETURN
@@ -52,36 +46,11 @@
 ! Disable the coupling flag.
       DES_CONTINUUM_COUPLED = .FALSE.
 
-      mins(1) = 0
-      mins(2) = 0
-      mins(3) = 0
-      maxs(1) = XLENGTH
-      maxs(2) = YLENGTH
-      maxs(3) = ZLENGTH
-      rad = 100*maxval(des_radius)
-      print *,"rad = ",rad
-      print *,"XLENGTH = ",XLENGTH
-      print *,"YLENGTH = ",YLENGTH
-      print *,"ZLENGTH = ",ZLENGTH
-#ifdef do_sap
-         call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
-         ! initialize SAP
-         do nn=1, MAX_PIP
-            if(is_nonexistent(nn)) cycle
-            aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
-            aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
-
-            if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
-               print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
-               ERROR_STOP __LINE__
-            endif
-
-            call multisap_add(multisap,aabb,nn,boxhandle(nn))
-         enddo
-
-         call multisap_quicksort(multisap)
-         call multisap_sweep(multisap)
-#endif
+      ! print *,"PID ",mype," ready for attach\n"
+      ! ii = 0
+      ! do while (0 == ii)
+      !    ! sleep(1)
+      !    enddo
 
       DO FACTOR = 1, NFACTOR
 ! calculate forces
