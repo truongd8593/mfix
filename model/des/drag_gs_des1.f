@@ -94,9 +94,9 @@
 
 ! Calculate the gas phase forces acting on each particle.
 
-!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,lpf,d_force)    &
+!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,lpf,d_force,vel_p)    &
 !$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight, &
-!$omp          ep_g,pijk,des_vel_new,f_gp,mppic,ugc,vgc,wgc,p_force,vel_p,    &
+!$omp          ep_g,pijk,des_vel_new,f_gp,mppic,ugc,vgc,wgc,p_force,    &
 !$omp          des_explicitly_coupled,drag_fc,mppic_pdrag_implicit,fc,model_a,pvol)
 !$omp do
       DO NP=1,MAX_PIP
@@ -262,8 +262,8 @@
 
 ! Calculate the gas phase forces acting on each particle.
 
-!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,ldrag_bm,lforce) &
-!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight,vel_p, &
+!$omp parallel default(none) private(np,lepg,velfp,ijk,weight,ldrag_bm,lforce,vel_p) &
+!$omp          shared(max_pip,des_interp_on,lp_bnd,filter_cell,filter_weight, &
 !$omp          ep_g,pijk,des_vel_new,f_gp,vol,des_stat_wt,mppic,drag_bm,f_gds,ugc,vgc,wgc)
 !$omp do
       DO NP=1,MAX_PIP
