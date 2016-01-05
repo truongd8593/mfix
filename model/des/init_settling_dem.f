@@ -58,12 +58,13 @@
       maxs(1) = XLENGTH
       maxs(2) = YLENGTH
       maxs(3) = ZLENGTH
+
+#ifdef do_sap
       rad = 100*maxval(des_radius)
       print *,"rad = ",rad
       print *,"XLENGTH = ",XLENGTH
       print *,"YLENGTH = ",YLENGTH
       print *,"ZLENGTH = ",ZLENGTH
-#ifdef do_sap
          call init_multisap(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
          ! initialize SAP
          do nn=1, MAX_PIP
@@ -72,7 +73,7 @@
             aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
 
             if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
-               print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
+               print *,"BAD RADIUS..grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
                ERROR_STOP __LINE__
             endif
 
