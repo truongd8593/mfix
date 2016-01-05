@@ -341,7 +341,7 @@
       use discretelement, only: max_pip
       use functions, only: IS_NORMAL, IS_NONEXISTENT
       use functions, only: SET_ENTERING, SET_EXITING, SET_NORMAL
-      use multi_sweep_and_prune, only: multisap_add_particle
+      use multi_sweep_and_prune, only: multisap_update_particle
 
       implicit none
 
@@ -480,7 +480,7 @@
 ! 32) Statistical weight
          IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)
 
-         call multisap_add_particle(llocpar)
+         call multisap_update_particle(llocpar)
          print *,"JUST DID THE THING FOR ",llocpar
 
       end do
