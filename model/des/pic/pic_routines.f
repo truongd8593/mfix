@@ -116,6 +116,7 @@
       INTEGER :: MMAX_TOT
 !-----------------------------------------------
 
+      MMAX_TOT = MMAX+DES_MMAX
       DO IJK = ijkstart3, ijkend3
          I = I_OF(IJK)
          J = J_OF(IJK)
