@@ -508,7 +508,7 @@
                   IF (DO_OLD) WRITE(*, '(A,2x,3(g17.8))') 'des_pos_old = ', des_pos_old(NP,:)
                   WRITE(*, '(A,2x,3(g17.8))') 'des_pos_new = ', des_pos_new(NP,:)
                   WRITE(*, '(A,2x,3(g17.8))') 'FC          = ', FC(NP,:)
-                  read(*,*)
+!                  read(*,*)
                   DELETE_PART = .true.
 
                ENDIF
