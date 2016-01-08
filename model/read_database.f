@@ -9,12 +9,13 @@
 !  Purpose: Provided support for DEM access to database.               C
 !                                                                      C
 !  Modification 2: J. Musser                          Date: 02-Oct-12  C
-!  Purpose: Calls to READ_DATABASE were moved to CHECK_DATA_04/05      C
-!  duing input data integrity checks for the gas and solids phases.    C
+!  Purpose: Calls to READ_DATABASE were moved to check_gas_phase and   C
+!  check_solids_common_all during input data integrity checks for the  C
+!  gas and solids phases.                                              C
 !  Rather than looping through all species for each phase, the model   C
 !  (TFM/DEM), phase index, species index, species name, and molecular  C
-!  weight are passed as dummy arguments so that only infomration for   C
-!  referenced species (lName) is obtained.                             C                             C
+!  weight are passed as dummy arguments so that only information for   C
+!  referenced species (lName) is obtained.                             C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE READ_DATABASE(lM, lN, lName, lMW)

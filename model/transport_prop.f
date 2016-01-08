@@ -53,7 +53,6 @@
       IF (DIFF(0)) CALL CALC_DIF_G()   ! Fluid diffusivity
 
       DO M = 1, MMAX
-
 ! Particle-Particle Energy Dissipation
 ! for gtsh theory this call needs to be done before calc_mu_s so that
 ! the cooling rate is available for mu_s
@@ -68,7 +67,7 @@
             END SELECT
          ENDIF
 ! these were moved after gran_diss since some quantities above are
-! needed in the subsequent gtsh calculations
+! needed in the subsequent gtsh calculations performed via calc_mu_s
          IF (COND(M)) CALL CALC_K_S (M)   ! Solids conductivity
          IF (VISC(M)) CALL CALC_MU_S (M)  ! Solids viscosity
          IF (DIFF(M)) CALL CALC_DIF_S (M) ! Solids diffusivity
