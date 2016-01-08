@@ -311,7 +311,7 @@
             WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(TNITs))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
          ENDIF
- 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'DEM NITs: ',A)
+ 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'Remaining DEM NITs: ',A)
 
          WALL_NOW = WALL_TIME()
 ! Calculate the elapsed wall time.
