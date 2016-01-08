@@ -156,7 +156,7 @@
                call unpack_dbuf(lbuf,des_t_s(llocpar),pface)
 ! 11) User Variables
             IF(DES_USR_VAR_SIZE > 0) &
-               call unpack_dbuf(lbuf,des_usr_var(1:3,llocpar),pface)
+               call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)
 ! 12) Interpolation verights
             IF(FILTER_SIZE > 0) THEN
                call unpack_dbuf(lbuf,filter_cell(:,llocpar),pface)
