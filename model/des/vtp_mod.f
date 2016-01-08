@@ -613,7 +613,7 @@
 
          DO N=1, DES_USR_VAR_SIZE
             IF(VTK_PART_USR_VAR(VTK_REGION,N)) &
-              CALL WRITE_SCALAR_IN_VTP_BIN('User Defined Var',DES_USR_VAR(N,:),PASS)
+              CALL WRITE_SCALAR_IN_VTP_BIN('User Defined Var '//trim(iVal(N)),DES_USR_VAR(N,:),PASS)
          ENDDO
 
          IF(ENERGY_EQ.AND.VTK_PART_TEMP(VTK_REGION)) &
