@@ -86,7 +86,7 @@
       use functions, only: is_normal,  set_normal
       use functions, only: is_exiting, set_exiting, set_exiting_ghost
       use functions, only: set_ghost
-      use multi_sweep_and_prune, only: multisap_add_particle, multisap_update_particle
+      use multi_sweep_and_prune, only: multisap_update_particle
 
       IMPLICIT NONE
 
@@ -189,8 +189,6 @@
          ighost_cnt = ighost_cnt + lnewcnt
          pip = pip + lnewcnt
 
-         print *,"ADDING NEW lnewcnt NOW....",lnewcnt
-
          max_pip = max(pip,max_pip)
          do lcurpar = 1,lparcnt
             if(lfound(lcurpar)) cycle
@@ -235,8 +233,6 @@
                call unpack_dbuf(lbuf,filter_cell(:,ispot),pface)
                call unpack_dbuf(lbuf,filter_weight(:,ispot),pface)
             ENDIF
-
-            call multisap_add_particle(ispot)
 
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -370,7 +366,6 @@
       IF(MPPIC) THEN
          call PARTICLE_GROW(pip+lparcnt)
          max_pip = max(pip+lparcnt,max_pip)
-         print *,"***************************   lparcnt ==== ",lparcnt
       ENDIF
 
       do lcurpar =1,lparcnt
@@ -481,7 +476,6 @@
          IF(MPPIC) call unpack_dbuf(lbuf,des_stat_wt(llocpar),pface)
 
          call multisap_update_particle(llocpar)
-         print *,"JUST DID THE THING FOR ",llocpar
 
       end do
 

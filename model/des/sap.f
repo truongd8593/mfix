@@ -78,6 +78,7 @@ module sweep_and_prune
      integer :: x_endpoints_len
      integer :: y_endpoints_len
      integer :: z_endpoints_len
+     type(hashtable_t) :: ht
 
      ! list of boxes
      type(box_t), dimension(:), allocatable :: boxes
@@ -204,6 +205,7 @@ endif
     call list_init(this%deleted_boxes)
 
     call init_pairs(this%hashtable)
+    call init_pairs(this%ht)
 
   end subroutine init_sap
 
@@ -262,6 +264,22 @@ endif
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
+  subroutine print_box(this,box_id)
+
+    implicit none
+    type(sap_t), intent(inout) :: this
+    integer, intent(in) :: box_id
+
+    print *,"----box for particle: ",this%boxes(box_id)%particle_id,"------"
+
+    print *,"================================  minima of ",box_id," are ",this%boxes(box_id)%minendpoint_id(:)
+    print *,"================================  maxima of ",box_id," are ",this%boxes(box_id)%maxendpoint_id(:)
+
+    print *,"================================  vals of ",box_id," are ",this%x_endpoints(this%boxes(box_id)%minendpoint_id(1))%value,this%y_endpoints(this%boxes(box_id)%minendpoint_id(2))%value,this%z_endpoints(this%boxes(box_id)%minendpoint_id(3))%value
+    print *,"================================  vals of ",box_id," are ",this%x_endpoints(this%boxes(box_id)%maxendpoint_id(1))%value,this%y_endpoints(this%boxes(box_id)%maxendpoint_id(2))%value,this%z_endpoints(this%boxes(box_id)%minendpoint_id(3))%value
+
+  end subroutine print_box
+
   subroutine add_box(this,aabb,particle_id,id)
 
     implicit none
@@ -307,6 +325,13 @@ endif
     this%boxes(id)%minendpoint_id(1) = this%x_endpoints_len-1
     this%boxes(id)%minendpoint_id(2) = this%y_endpoints_len-1
     this%boxes(id)%minendpoint_id(3) = this%z_endpoints_len-1
+
+
+    if (is_pair(this%ht,1,particle_id)) then
+       print *,"TWO BOXES WITH THE SAME PARTICLE: ",particle_id
+       stop __LINE__
+    endif
+    call add_pair(this%ht,1,particle_id)
 
     this%x_endpoints(this%x_endpoints_len-1)%box_id = -id
     this%x_endpoints(this%x_endpoints_len-1)%value = aabb%minendpoint(1)
@@ -392,9 +417,9 @@ endif
     integer :: ii
 
     ! sort end points
-    call sort_endpoints(this,this%x_endpoints(1:this%x_endpoints_len),1)
-    call sort_endpoints(this,this%y_endpoints(1:this%y_endpoints_len),2)
-    if (do_k) call sort_endpoints(this,this%z_endpoints(1:this%z_endpoints_len),3)
+    call sort_endpoints(this,this%x_endpoints,this%x_endpoints_len,1)
+    call sort_endpoints(this,this%y_endpoints,this%y_endpoints_len,2)
+    if (do_k) call sort_endpoints(this,this%z_endpoints,this%z_endpoints_len,3)
 
     ! cleanup HUGE endpoints
     !
@@ -491,17 +516,30 @@ endif
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine sort_endpoints(this, endpoints, axis)
+  subroutine sort_endpoints(this, endpoints, endpoint_len, axis)
     use pair_manager, only: add_pair, del_pair
+    use compar
     implicit none
     type(sap_t), intent(inout) :: this
     integer, intent(in) :: axis
     type(endpoint_t), dimension(:), intent(inout) :: endpoints
-    integer :: ii, jj
+    integer, intent(in) :: endpoint_len
+    integer :: ii, jj, kk
     type(endpoint_t) :: sweeppoint, swappoint
     real :: sweepval
+    type(hashtable_t) :: ht
 
-    do ii=2, size(endpoints)
+    call init_pairs(ht)
+
+    do ii=1, this%boxes_len
+       if (is_pair(ht,1,this%boxes(ii)%particle_id)) then
+          print *,mype,"  two boxes with the same particle: ",this%boxes(ii)%particle_id
+          stop __LINE__
+       endif
+       call add_pair(ht,1,this%boxes(ii)%particle_id)
+    end do
+
+    do ii=2, endpoint_len
 
        sweeppoint = endpoints(ii)
        sweepval = sweeppoint%value

@@ -187,7 +187,7 @@ contains
     jj = max(i0,j0)
 
     if (ii < 1 .or. jj < 1) then
-       print *,"invalid pair: ",ii,jj
+       print *,"is_pair:  invalid pair ",ii,jj
        ERROR_STOP __LINE__
     endif
 
@@ -235,7 +235,7 @@ contains
     type(pair_t), dimension(:), allocatable :: table_tmp
 
     if (i0 < 1 .or. j0 < 1) then
-       print *,"invalid pair: ",i0,j0
+       print *,"add_pair: invalid pair ",i0,j0
        ERROR_STOP __LINE__
     endif
 
@@ -272,7 +272,7 @@ contains
     jj = max(i0,j0)
 
     if (ii < 1 .or. jj < 1) then
-       print *,"invalid pair: ",ii,jj
+       print *,"addpair2: invalid pair ",ii,jj
        ERROR_STOP __LINE__
     endif
 
@@ -324,7 +324,7 @@ contains
     jj = max(i0,j0)
 
     if (ii < 1 .or. jj < 1) then
-       print *,"invalid pair: ",ii,jj
+       print *,"del_pair: invalid pair ",ii,jj
        ERROR_STOP __LINE__
     endif
 

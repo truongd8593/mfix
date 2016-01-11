@@ -41,10 +41,11 @@
 !-----------------------------------------------
 ! Local Variables
 !-----------------------------------------------
-      INTEGER :: L
+      INTEGER :: L,nn
       DOUBLE PRECISION :: NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
+      logical :: printit
 
       type(aabb_t) aabb
 
@@ -190,73 +191,33 @@
 #ifdef do_sap
 !$omp single
 
-if (mype.eq.1) then
-
-   print *,mype,": 44",boxhandle(44)%list(1)%sap_id,boxhandle(44)%list(1)%box_id
-   print *,mype,": 1111",boxhandle(1111)%list(1)%sap_id,boxhandle(1111)%list(1)%box_id
-
-   print *,mype,": fcxxx ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,1)
-   print *,mype,": fcyyy ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,2)
-   print *,mype,": fczzz ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,3)
-
-   if (fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,1).and.   fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,2).and.   fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,3)) then
-
-      if (.not.is_pair(multisap%hashtable,44,1111)) then
-         print *,"why come is not pair?"
-         stop __LINE__
-      else
-         print *,"TERRFIC, a pair!!!!! "
-         endif
-   endif
-
-   print *,mype,": ....",multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(1),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%maxendpoint_id(1),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(2),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%maxendpoint_id(2)
-   print *,mype,": ....",multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(1),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%maxendpoint_id(1),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(2),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%maxendpoint_id(2)
-
-   print *,mype,": ????",multisap%saps(boxhandle(44)%list(1)%sap_id)%x_endpoints(multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(1))%value - des_pos_new(44,1)
-   print *,mype,": ????",multisap%saps(boxhandle(44)%list(1)%sap_id)%y_endpoints(multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(2))%value - des_pos_new(44,2)
-   print *,mype,": !!!!",multisap%saps(boxhandle(1111)%list(1)%sap_id)%x_endpoints(multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(1))%value - des_pos_new(1111,1)
-   print *,mype,": !!!!",multisap%saps(boxhandle(1111)%list(1)%sap_id)%y_endpoints(multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(2))%value - des_pos_new(1111,2)
-   print *,mype,": MP_ ",MAX_PIP," 44_ ",des_pos_new(44,:)," 1111_ ",des_pos_new(1111,:)
-
-endif
          DO L = 1, MAX_PIP
+            if (.not.is_nonexistent(L)) then
+            if (boxhandle(L)%particle_id .ne. L) then
+               print *,mype,":  something is wrong for L==",L,boxhandle(L)%particle_id
+               stop __LINE__
+            endif
+
+            printit = ((L.eq.44) .or. (L.eq.1111))
+            ! if (L.eq.854) print *,"UPDATING 854 from cfnewvalues"
+            call multisap_update_particle(L,printit)
 
             if (boxhandle(L)%particle_id .ne. L) then
                print *,mype,":  something is wrong for L==",L,boxhandle(L)%particle_id
                stop __LINE__
             endif
 
-            call multisap_update_particle(L)
+            do nn=1, size(boxhandle(L)%list)
+               if (0 < boxhandle(L)%list(nn)%sap_id) then
+               if (L.ne.multisap%saps(boxhandle(L)%list(nn)%sap_id)%boxes(boxhandle(L)%list(nn)%box_id)%particle_id) then
+                  print *,"YOU HAVE FAILED ME FOR THE LAST TIME"
+                  stop __LINE__
+               endif
+               endif
+            enddo
+
+            endif
          ENDDO
-
-         if (mype.eq.1) then
-
-   print *,mype,": 44",boxhandle(44)%list(1)%sap_id,boxhandle(44)%list(1)%box_id
-   print *,mype,": 1111",boxhandle(1111)%list(1)%sap_id,boxhandle(1111)%list(1)%box_id
-
-   print *,mype,": fcxxx ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,1)
-   print *,mype,": fcyyy ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,2)
-   print *,mype,": fczzz ",fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,3)
-
-   if (fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,1).and.   fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,2).and.   fullcheck(multisap%saps(0),boxhandle(44)%list(1)%box_id,boxhandle(1111)%list(1)%box_id,3)) then
-      if (.not.is_pair(multisap%hashtable,44,1111)) then
-         print *,"why come is not pair?"
-         stop __LINE__
-      else
-         print *,"TERRFIC, a pair!!!!! "
-         endif
-   endif
-
-   print *,mype,": ....",multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(1),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%maxendpoint_id(1),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(2),multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%maxendpoint_id(2)
-   print *,mype,": ....",multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(1),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%maxendpoint_id(1),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(2),multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%maxendpoint_id(2)
-
-   print *,mype,": ????",multisap%saps(boxhandle(44)%list(1)%sap_id)%x_endpoints(multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(1))%value - des_pos_new(44,1)
-   print *,mype,": ????",multisap%saps(boxhandle(44)%list(1)%sap_id)%y_endpoints(multisap%saps(boxhandle(44)%list(1)%sap_id)%boxes(boxhandle(44)%list(1)%box_id)%minendpoint_id(2))%value - des_pos_new(44,2)
-   print *,mype,": !!!!",multisap%saps(boxhandle(1111)%list(1)%sap_id)%x_endpoints(multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(1))%value - des_pos_new(1111,1)
-   print *,mype,": !!!!",multisap%saps(boxhandle(1111)%list(1)%sap_id)%y_endpoints(multisap%saps(boxhandle(1111)%list(1)%sap_id)%boxes(boxhandle(1111)%list(1)%box_id)%minendpoint_id(2))%value - des_pos_new(1111,2)
-   print *,mype,": MP_ ",MAX_PIP," 44_ ",des_pos_new(44,:)," 1111_ ",des_pos_new(1111,:)
-
-endif
 
 !$omp end single
 #endif

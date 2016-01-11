@@ -69,39 +69,44 @@ module multi_sweep_and_prune
 
   type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
 
- public :: multisap_init, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow, multisap_add_particle, multisap_update_particle
- private :: multisap_raster
+ public :: multisap_init, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow, multisap_update_particle
+ private :: multisap_raster, multisap_del!, multisap_add_particle
 
 contains
-  subroutine multisap_add_particle(nn)
+
+  ! subroutine multisap_add_particle(nn)
+  !   use discretelement, only: des_pos_new, des_radius
+  !   use geometry, only: no_k
+  !   implicit none
+  !   integer, intent(in) :: nn
+  !   type(aabb_t) :: aabb
+
+    ! aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)*1.001
+    ! aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)*1.001
+
+    ! if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
+    !    print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
+    !    ERROR_STOP __LINE__
+    ! endif
+
+    ! boxhandle(nn)%particle_id = nn
+
+    ! call multisap_update(multisap,aabb,boxhandle(nn))
+
+  ! end subroutine multisap_add_particle
+
+  subroutine multisap_update_particle(nn,printit)
     use discretelement, only: des_pos_new, des_radius
     use geometry, only: no_k
     implicit none
     integer, intent(in) :: nn
     type(aabb_t) :: aabb
+    logical, intent(in), optional :: printit
 
-    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
-    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
-
-    if ( any(DES_RADIUS(nn)*multisap%one_over_cell_length(1:merge(2,3,NO_K)) > 0.5 ) ) then
-       print *,"BAD RADIUS...grid too fine, need to have radius=",des_radius(nn),"  less than half cell length= ",0.5/multisap%one_over_cell_length(:)
-       ERROR_STOP __LINE__
-    endif
-
-    call multisap_add(multisap,aabb,nn,boxhandle(nn))
-
-  end subroutine multisap_add_particle
-
-  subroutine multisap_update_particle(nn)
-    use discretelement, only: des_pos_new, des_radius
-    use geometry, only: no_k
-    implicit none
-    integer, intent(in) :: nn
-    type(aabb_t) :: aabb
-
-    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)
-    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)
-    call multisap_update(multisap,aabb,boxhandle(nn))
+    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)*1.001
+    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)*1.001
+    boxhandle(nn)%particle_id = nn
+    call multisap_update(multisap,aabb,boxhandle(nn),nn)
 
   end subroutine multisap_update_particle
 
@@ -226,28 +231,28 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine multisap_add(this,aabb,particle_id,handlelist)
-    implicit none
-    type(multisap_t), intent(inout) :: this
-    type(aabb_t), intent(in) :: aabb
-    integer, intent(in) :: particle_id
-    type(boxhandlelist_t), intent(out) :: handlelist
-    integer :: sap_ids(MAX_SAPS)
-    integer :: nn
+  ! subroutine multisap_add(this,aabb,particle_id,handlelist)
+  !   implicit none
+  !   type(multisap_t), intent(inout) :: this
+  !   type(aabb_t), intent(in) :: aabb
+  !   integer, intent(in) :: particle_id
+  !   type(boxhandlelist_t), intent(out) :: handlelist
+  !   integer :: sap_ids(MAX_SAPS)
+  !   integer :: nn
 
-    call multisap_raster(this,aabb,sap_ids)
+    ! call multisap_raster(this,aabb,sap_ids)
 
-    handlelist%particle_id = particle_id
+    ! handlelist%particle_id = particle_id
 
-    ! add to each individual SAP
-    do nn=1, size(sap_ids)
-       handlelist%list(nn)%sap_id = sap_ids(nn)
-       if (sap_ids(nn) >= 0) then
-          call add_box(this%saps(sap_ids(nn)),aabb,particle_id,handlelist%list(nn)%box_id)
-       endif
-    enddo
+    ! ! add to each individual SAP
+    ! do nn=1, size(sap_ids)
+    !    handlelist%list(nn)%sap_id = sap_ids(nn)
+    !    if (sap_ids(nn) >= 0) then
+    !       call add_box(this%saps(sap_ids(nn)),aabb,particle_id,handlelist%list(nn)%box_id)
+    !    endif
+    ! enddo
 
-  end subroutine multisap_add
+  ! end subroutine multisap_add
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
@@ -257,16 +262,18 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine multisap_del(this,handlelist)
+  subroutine multisap_del(this,handlelist,printit)
     implicit none
     type(multisap_t), intent(inout) :: this
     type(boxhandlelist_t), intent(in) :: handlelist
     integer :: nn
+    logical, intent(in), optional :: printit
 
     ! remove from each SAP listed for this id
     do nn=1, size(handlelist%list)
        if (handlelist%list(nn)%sap_id >= 0) then
           call del_box(this%saps(handlelist%list(nn)%sap_id),handlelist%list(nn)%box_id)
+          if (present(printit)) call print_box(this%saps(handlelist%list(nn)%sap_id),handlelist%list(nn)%box_id)
        endif
     enddo
 
@@ -282,7 +289,7 @@ contains
   !                                                                      !
   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-  subroutine multisap_update(this,aabb,handlelist)
+  subroutine multisap_update(this,aabb,handlelist, printit)
     use compar
     implicit none
     type(multisap_t), intent(inout) :: this
@@ -291,6 +298,7 @@ contains
     integer, DIMENSION(MAX_SAPS) :: new_sap_ids
     logical :: found
     integer :: mm,nn,first_blank, box_id
+    integer, intent(in), optional :: printit
 
     call multisap_raster(this,aabb,new_sap_ids)
 
@@ -343,7 +351,7 @@ contains
        enddo
 
        if (.not.found) then
-          ! remove SAP not found in handle%sap_id
+          ! remove SAPs not found in handle%sap_id
           call del_box(this%saps(handlelist%list(mm)%sap_id),handlelist%list(mm)%box_id)
           handlelist%list(mm)%sap_id = -1
        endif
@@ -365,6 +373,7 @@ contains
   subroutine multisap_sort(this)
     ! use discretelement
     ! use functions, only: is_nonexistent
+    use compar
     implicit none
     type(multisap_t), intent(inout) :: this
     integer :: ii, jj, kk, sap_id
@@ -384,8 +393,6 @@ contains
        enddo
     enddo
 !$omp end parallel
-
-    ! print *," NUMBER OF DESGRIDS IS: ",this%grid(1)*this%grid(2)*this%grid(3)
 
  sighs = 0
 
@@ -426,7 +433,7 @@ contains
 
   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
   !                                                                      !
-  !  Subroutine: multisap_add                                            !
+  !  Subroutine: multisap_quicksort                                      !
   !                                                                      !
   !  Purpose: Call quicksort on each of the saps in this multisap.       !
   !                                                                      !
@@ -509,10 +516,14 @@ contains
     INTEGER, INTENT(IN) :: new_size
     type(boxhandlelist_t), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: boxhandles
     type(boxhandlelist_t), DIMENSION(:), ALLOCATABLE :: boxhandle_tmp
-    INTEGER lSIZE
+    INTEGER lSIZE,ii
 
     lSIZE = size(boxhandles,1)
     allocate(boxhandle_tmp(new_size))
+    do ii=1,size(boxhandle_tmp)
+       boxhandle_tmp(ii)%list(:)%sap_id = -2
+       boxhandle_tmp(ii)%list(:)%box_id = -2
+    enddo
     boxhandle_tmp(1:lSIZE) = boxhandles(1:lSIZE)
     call move_alloc(boxhandle_tmp,boxhandles)
 

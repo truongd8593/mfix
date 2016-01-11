@@ -31,7 +31,7 @@
       USE stl
       USE stl_functions_des
       use stl_preproc_des, only: add_facet
-      use multi_sweep_and_prune, only: aabb_t, multisap_init, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle, multisap_add_particle
+      use multi_sweep_and_prune!, only: aabb_t, multisap_init, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle, multisap_update_particle
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -105,18 +105,12 @@
          maxs(2) = YLENGTH
          maxs(3) = ZLENGTH
          rad = 100*maxval(des_radius)
-         print *,"rad = ",rad
-         print *,"XLENGTH = ",XLENGTH
-         print *,"YLENGTH = ",YLENGTH
-         print *,"ZLENGTH = ",ZLENGTH
-
-         print *,"MAXPIP == ",MAX_PIP
 
          call multisap_init(multisap,floor(XLENGTH/rad),floor(YLENGTH/rad),floor(ZLENGTH/rad),mins,maxs)
          ! initialize SAP
          do nn=1, MAX_PIP
             if(is_nonexistent(nn)) cycle
-            call multisap_add_particle(nn)
+            call multisap_update_particle(nn)
          enddo
 
          call multisap_quicksort(multisap)

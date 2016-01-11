@@ -119,8 +119,6 @@
             ENDIF
          ENDIF
 
-         print *,mype,": ====== is pair ",is_pair(multisap%hashtable,44,1111)
-
 ! Calculate inter particle forces acting (collisional, cohesion)
          CALL CALC_FORCE_DEM
 ! Calculate or distribute fluid-particle drag force.
@@ -135,47 +133,8 @@
 
          IF(CALL_USR) CALL USR1_DES
 
-         print *,mype,": @@@@@@@@@ is pair ",is_pair(multisap%hashtable,44,1111)
-
-         ! sap = multisap%saps(0)
-         ! ! CHECK SORT
-         ! do ii=2, sap%x_endpoints_len
-         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
-         !       print *,"****************************************************************************************"
-         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
-         !       print *,"****************************************************************************************"
-         !       stop __LINE__
-         !    endif
-         ! enddo
-
-         ! do nnn=0, size(multisap%saps)-1
-         !    !print *,"nnn = ",nnn
-         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-         ! enddo
-
 ! Update position and velocities
          CALL CFNEWVALUES
-
-         print *,mype,": $$$$$$$ is pair ",is_pair(multisap%hashtable,44,1111)
-
-         ! do nnn=0, size(multisap%saps)-1
-         !    !print *,"nnn = ",nnn
-         !    if (.not.check_boxes(multisap%saps(nnn))) stop __LINE__
-         !    if (.not.check_sort(multisap%saps(nnn))) stop __LINE__
-         ! enddo
-
-         ! sap = multisap%saps(0)
-         ! ! CHECK SORT
-         ! do ii=2, sap%x_endpoints_len
-         !    if (sap%x_endpoints(ii)%value < sap%x_endpoints(ii-1)%value) then
-         !       print *,"****************************************************************************************"
-         !       print *,"ii:",ii,"  endpoints(ii):",sap%x_endpoints(ii)%box_id,sap%x_endpoints(ii)%value
-         !       print *,"****************************************************************************************"
-         !       stop __LINE__
-         !    endif
-         ! enddo
-
 
 ! Update particle temperatures
          CALL DES_THERMO_NEWVALUES
@@ -208,8 +167,6 @@
 ! Calculate mean fields (EPg).
             CALL COMP_MEAN_FIELDS
          ENDIF
-
-         print *,mype,": ******* pair ",is_pair(multisap%hashtable,44,1111)
 
 ! Update time to reflect changes
          S_TIME = S_TIME + DTSOLID

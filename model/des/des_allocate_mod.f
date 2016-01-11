@@ -64,7 +64,7 @@ CONTAINS
 ! Local variables
 !-----------------------------------------------
 ! indices
-      INTEGER :: IJK
+      INTEGER :: IJK,ii
 !-----------------------------------------------
 
       CALL INIT_ERR_MSG("DES_ALLOCATE_ARRAYS")
@@ -154,6 +154,10 @@ CONTAINS
       Allocate(  PFT_NEIGHBOR_OLD (3,MAX_PIP) )
 #ifdef do_sap
       Allocate(  boxhandle(MAX_PIP) )
+      do ii=1,size(boxhandle)
+         boxhandle(ii)%list(:)%sap_id = -2
+         boxhandle(ii)%list(:)%box_id = -2
+      enddo
 #endif
 
 ! Variable that stores the particle in cell information (ID) on the

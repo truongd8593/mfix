@@ -23,6 +23,7 @@
       USE run
       use multi_sweep_and_prune
       use pair_manager
+      use sweep_and_prune
       use param1, only: one, small_number, zero
 
       IMPLICIT NONE
@@ -220,7 +221,7 @@
 
                   do mm=1,size(boxhandle(ll)%list)
                      if (boxhandle(ll)%list(mm)%sap_id < 0 ) cycle
-                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)%sap_id
+                     print *," PARTICLE ",ll," IS IN ",boxhandle(ll)%list(mm)
                      box_id = boxhandle(ll)%list(mm)%box_id
 
                      found = .false.
