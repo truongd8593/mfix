@@ -13,7 +13,7 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! Flag: Solve species equations.
-      use run, only: SPECIES_EQ
+      use run, only: SPECIES_EQ, ENERGY_EQ
 ! Flag: Use legacy reaction rates implementation
       use rxns, only: USE_RRATES
 ! User specified: Constant gas viscosity
@@ -29,7 +29,7 @@
 ! User specified: Constant gas mixture molecular weight
       use physprop, only: MW_AVG
 
-
+      use mms, only: use_mms
 ! Global Parameters:
 !---------------------------------------------------------------------//
 ! Parameter constants
@@ -83,6 +83,27 @@
          CALL CHECK_GAS_SPECIES_LEGACY
       ELSE
          CALL CHECK_GAS_SPECIES
+      ENDIF
+
+! Currently MMS uses constant properties. These are in place simply
+! to give the developer a heads-up that the code/setup may not fully
+! encompass the use of non-constant properties
+      IF (USE_MMS) THEN
+         IF (MU_G0 == UNDEFINED) THEN
+            WRITE(ERR_MSG, 1200) 'MU_G0'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF (K_G0 == UNDEFINED .AND. ENERGY_EQ) THEN
+            WRITE(ERR_MSG, 1200) 'K_G0'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+         IF (DIF_G0 == UNDEFINED .AND. SPECIES_EQ(0)) THEN
+            WRITE(ERR_MSG, 1200) 'DIF_G0'
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 1200 FORMAT('Error 1200: ',A,' must be defined when USE_MMS is T.',/,&
+         'Please correct the mfix.dat file.')
       ENDIF
 
 ! CHECK MW_AVG

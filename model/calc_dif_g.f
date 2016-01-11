@@ -1,147 +1,219 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_DIF_g(IER)
-!  Purpose: Calculate the effective diffusivity of fluid phase        C
+!  Subroutine: CALC_DIF_g                                              C
+!  Purpose: Calculate the effective diffusivity of fluid phase         C
 !                                                                      C
-!  Author:M. Syamlal                                  Date: 13-FEB-98  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!
-!  Updated with the dilute mixture approximation for calculation of    C
-!  multicomponent diffusion coefficients                               C
-!  Author:N. Reuge                                    Date: 11-APR-07  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!  Literature/Document References:                                     C
+!  Comments:                                                           C
+!  This routine will not be called if dif_g is defined                 C
 !                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       SUBROUTINE CALC_DIF_G()
-!...Switches: -xf
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE physprop
-      USE fldvar
-      USE geometry
-      USE indices
-      USE constant
-      USE scales
-      USE compar
-      USE sendrecv
-      USE run
-      USE functions
+
+! Modules
+!---------------------------------------------------------------------//
+      USE param1, only: undefined
+      USE physprop, only: dif_g0, dif_g
+      USE sendrecv, only: send_recv
+! invoke user defined quantity
+      USE usr_prop, only: usr_difg, calc_usr_prop
+      USE usr_prop, only: gas_diffusivity
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
-!                      Indices
-      INTEGER          IJK, NN
-
-      DOUBLE PRECISION Dab(3,3), Tg0, Pg0
-
-!-----------------------------------------------
-
-! Default gas diffusion coefficient
-! Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
-      Dab(1,2) = 0.165D0       !cm^2/s
-      Tg0 = 298.2D0
-      Pg0 = 1.01D6             !dyne
-
-      IF(UNITS == 'SI') THEN
-         Dab(1,2) = Dab(1,2)*0.0001D0   !m^2/s
-         Pg0 = Pg0/10.D0                !Pa
+      IF (USR_Difg) THEN
+         CALL CALC_USR_PROP(Gas_Diffusivity,lm=0)
+      ELSEIF (Dif_g0 == UNDEFINED) THEN
+! unncessary check but included for clarity
+         CALL CALC_DEFAULT_DIF_GAS
       ENDIF
 
-
-!********Gas diffusion coef for a system of 3 species***************
-! Species: SiH4, H2 & N2
-! Calculated using relation derived from Chapman and Enskog's theory
-! of gases - Reid, Prausnitz and Poling (1987)
-
-! Binary diffusion coefficient SiH4/H2 at 873 K
-!      Dab(1,2) = 3.78      ! cm^2/s
-!      Dab(2,1) = Dab(1,2)
-
-! Binary diffusion coefficient SiH4/N2 at 873 K
-!      Dab(1,3) = 1.02      ! cm^2/s
-!      Dab(3,1) = Dab(1,3)
-
-! Binary diffusion coefficient H2/N2 at 873 K
-!      Dab(2,3) = 4.52      ! cm^2/s
-!      Dab(3,2) = Dab(2,3)
-
-!      Tg0 = 873.0
-!      Pg0 = 1.01e6         ! dyne
-
-!      IF(UNITS == 'SI') THEN
-!         DO N1 = 1, NMAX(0)-1
-!            DO N2 = N1+1, NMAX(0)
-!               Dab(N1,N2) = Dab(N1,N2)*0.0001D0   !m^2/s
-!               Dab(N2,N1) = Dab(N1,N2)
-!            ENDDO
-!         ENDDO
-!         Pg0 = Pg0/10.D0                    !Pa
-!      ENDIF
-
-!*******************************************************************
-
-      IF (DIF_G0 /= UNDEFINED) RETURN
-
-!!!!$omp  parallel do private(ijk) &
-!!!!$omp& schedule(dynamic,chunk_size)
-
-! Default calculation of diffusivities
-! Influence of gas temperature and gas pressure from Fuller relation
-      DO NN = 1, NMAX(0)
-         DO IJK = IJKSTART3, IJKEND3
-            IF (FLUID_AT(IJK)) THEN
-               DIF_G(IJK,NN) = ROP_G(IJK)*Dab(1,2)*(T_g(IJK)/Tg0)**1.75 * &
-                              Pg0/(P_g(IJK)+P_REF)
-            ELSE
-               DIF_G(IJK,NN) = ZERO
-            ENDIF
-         ENDDO
-      ENDDO
-
-!*******************************************************************
-! Calculation of diffusivities using the dilute mixture approximation for
-! multicomponent diffusion - Curtiss-Hirschfelder, Wilke & Blanc
-! Valid if the mass fraction of the carrier species > 0.9
-
-! Influence of gas temperature and gas pressure from Fuller relation
-!      DO N = 1, NMAX(0)
-!         DO IJK = IJKSTART3, IJKEND3
-!            IF (FLUID_AT(IJK)) THEN
-!               IF ((1.0-X_g(IJK,N)) > 1.e-8) THEN
-!                  SUMJ = ZERO
-!                  DO N2 = 1, NMAX(0)
-!                     IF (N2 /= N) SUMJ = SUMJ+X_g(IJK,N2)/Dab(N,N2)
-!                  ENDDO
-!                  DIF_G(IJK,N) = ROP_G(IJK)*(1-X_g(IJK,N))/SUMJ * &
-!                                 (T_g(IJK)/Tg0)**1.75*Pg0/P_g(IJK)
-!               ELSE
-!                  DIF_G(IJK,N) = ROP_G(IJK)*Dab(1,2)
-!               ENDIF
-!            ELSE
-!               DIF_G(IJK,N) = ZERO
-!            ENDIF
-!         ENDDO
-!      ENDDO
-!****************************************************************************
-
+      CALL send_recv(DIF_G, 2)
 
       RETURN
       END SUBROUTINE CALC_DIF_G
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: CALC_DEFAULT_DIF_GAS                                    C
+!  Purpose: Compute the default value for diffusivity of each gas      C
+!  species; each species is assigned the same value with the base      C
+!  value corresponding to CO2 in N2 at T=298K and P~=1atm.             C
+!                                                                      C
+!  Author:M. Syamlal                                  Date: 13-FEB-98  C
+!                                                                      C
+!  Revision: Include dilute mixture approximation for calculation of   C
+!  multicomponent diffusion coefficients                               C
+!  Author:N. Reuge                                    Date: 11-APR-07  C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!  Fuller relation - to account for influence of gas temperature       C
+!     and pressure                                                     C
+!  Curtiss-Hirschfelder, Wilke & Blanc - dilute mixture approximation  C
+!     for multicomponent diffusion. Valid if the mass fraction of the  C
+!     carrier species > 0.9                                            C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CALC_DEFAULT_DIF_GAS
+
+! Modules
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use fldvar, only: ROP_g, T_g, P_g, X_g
+      use functions, only: fluid_at
+      use param1, only: zero, one
+      use physprop, only: NMAX, Dif_g
+      use scales, only: unscale_pressure
+      IMPLICIT NONE
+
+! Local Variables
+!---------------------------------------------------------------------//
+! Indices
+      INTEGER :: IJK
+! Species index
+      INTEGER :: N, L
+! Binary diffusion coefficient
+      DOUBLE PRECISION :: Dab(NMAX(0),NMAX(0))
+! Reference temperature and pressure for each species diffusion
+! coefficient
+      DOUBLE PRECISION :: Tg_ref(NMAX(0))
+      DOUBLE PRECISION :: Pg_ref(NMAX(0))
+! Intermediate calculation to determine weighted average diffusion
+! coefficient
+      DOUBLE PRECISION :: lDab, Sum_XgoDab
+!---------------------------------------------------------------------//
+
+      CALL SET_BINARY_DAB_GAS(Dab, Tg_ref, Pg_ref)
+
+!!$omp  parallel do private(ijk) &
+!!$omp& schedule(dynamic,chunk_size)
+      DO N = 1, NMAX(0)
+         DO IJK = IJKSTART3, IJKEND3
+            IF (FLUID_AT(IJK)) THEN
+
+               IF (NMAX(0) == 1) THEN
+! Only 1 species present in gas phase
+                  lDab = Dab(N,N)
+
+               ELSE
+! Dilute mixture approximation for multi-component diffusion
+                  IF ((ONE-X_g(IJK,N)) > 1.e-8) THEN
+! i.e. when cell is not only species N
+                     SUM_XgoDab = ZERO
+                     DO L = 1, NMAX(0)
+                        IF (L /= N) SUM_XgoDab = SUM_XgoDab+&
+                                                 X_g(IJK,L)/Dab(N,L)
+                     ENDDO
+                     IF (SUM_XgoDab > ZERO) THEN
+                        lDab = (ONE-X_g(IJK,N))/SUM_XgoDab
+                     ELSE
+! this should not occur...
+                        lDab = Dab(N,N)
+                     ENDIF
+                  ELSE
+! Address case when the mass fraction of the Nth species is nearly 1.
+                     lDab = Dab(N,N)
+                  ENDIF
+               ENDIF
+
+! Influence of gas temperature and gas pressure from Fuller relation
+               DIF_G(IJK,N) = ROP_G(IJK)*lDab* &
+                           (T_g(IJK)/Tg_ref(N))**1.75* &
+                           Pg_ref(N)/UNSCALE_PRESSURE(P_g(IJK))
+            ELSE
+               DIF_G(IJK,N) = ZERO
+            ENDIF
+         ENDDO
+      ENDDO
+
+      RETURN
+      END SUBROUTINE CALC_DEFAULT_DIF_GAS
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SET_BINARY_DAB_GAS                                      C
+!  Purpose: Set binary diffusion coefficients for all cross species    C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!  Bird, Stewart and lightfoot (1960)                                  C
+!  Reid, Prausnitz and Poling (1987)                                   C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SET_BINARY_DAB_GAS(lDab, lTg_ref, lPg_ref)
+
+! Modules
+!---------------------------------------------------------------------//
+      use physprop, only: NMAX
+      use run, only: units
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Binary diffusion coefficient
+      DOUBLE PRECISION, INTENT(OUT) :: lDab(NMAX(0),NMAX(0))
+      DOUBLE PRECISION, INTENT(OUT) :: lTg_ref(NMAX(0))
+      DOUBLE PRECISION, INTENT(OUT) :: lPg_ref(NMAX(0))
+
+! Local Variables
+!---------------------------------------------------------------------//
+! Species index
+      INTEGER :: N, L
+!---------------------------------------------------------------------//
+
+
+! Default gas diffusion coefficient
+! Bird, Stewart, and Lightfoot (1960) -- CO2--N2 at 298.2 K
+      DO N = 1,NMAX(0)
+         DO L = N,NMAX(0)
+!         DO L = N+1, NMAX(0)
+!            IF (N /= L) THEN
+! assign the diaganol case for when nmax = 1 or when only species N present
+! in given cell.
+               lDab(N,L) = 0.165D0       !cm^2/s
+               lDab(L,N) = lDab(N,L)
+!            ENDIF
+         ENDDO
+         lTg_ref(N) = 298.2d0
+         lPg_ref(N) = 1.01D6             !dyne
+      ENDDO
+
+! Gas diffusion coefficients for 3 species system: SiH4, H2 & N2
+! Calculated using relation derived from Chapman and Enskog's theory
+! of gases - Reid, Prausnitz and Poling (1987)
+! Binary diffusion coefficient SiH4/H2 at 873 K
+!      lDab(1,2) = 3.78      ! cm^2/s
+!      lDab(2,1) = lDab(1,2)
+! Binary diffusion coefficient SiH4/N2 at 873 K
+!      lDab(1,3) = 1.02      ! cm^2/s
+!      lDab(3,1) = lDab(1,3)
+! Binary diffusion coefficient H2/N2 at 873 K
+!      lDab(2,3) = 4.52      ! cm^2/s
+!      lDab(3,2) = lDab(2,3)
+!      DO N = 1,NMAX(0)
+!         lTg_ref(N) = 873.0
+!         lPg_ref(N) = 1.01e6         ! dyne
+!      ENDDO
+
+      IF(UNITS == 'SI') THEN
+         DO N = 1,NMAX(0)
+            DO L = N,NMAX(0)
+!               IF (N /= L) THEN
+! assign the diaganol case nmax = 1 or when only species N present
+! in given cell.
+                  lDab(N,L) = lDab(N,L)*0.0001D0   !m^2/s
+                  lDab(L,N) = lDab(N,L)
+!               ENDIF
+            ENDDO
+            lPg_ref(N) = lPg_ref(N)/10.D0          !Pa
+         ENDDO
+      ENDIF
+
+      RETURN
+      END SUBROUTINE SET_BINARY_DAB_GAS

@@ -45,9 +45,7 @@
       use param1, only: UNDEFINED
 ! Kinetic theory model.
       USE run, only: kt_type_enum
-      USE run, only: gd_1999
-      USE run, only: gtsh_2012
-      USE run, only: ia_2005
+      USE run, only: gd_1999, gtsh_2012, ia_2005, ghd_2007
 ! Run-time flag for invoking DQMOM
       use run, only: CALL_DQMOM
 ! Real number of solids phases (GHD theory)
@@ -72,16 +70,20 @@
       use physprop, only: C_PG0, C_PS0
 ! Specified constant thermal conductivity.
       use physprop, only: K_G0, K_S0
+! specified constant diffusivity
+      use physprop, only: DIF_G0, DIF_S0
 ! Specified number of solids phases.
       use physprop, only: MMAX
 ! Specified constant viscosity.
       use physprop, only: MU_g0
 ! Variable solids density flag.
       use run, only: SOLVE_ROs
-! UDF flags for physical properties
-      use run, only: USR_ROg, USR_ROs, USR_CPg, USR_CPs
 ! MMS flag
       use mms, only: USE_MMS
+! user defined flags
+      use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
+      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
+      use usr_prop, only: usr_gama, usr_fgs, usr_fss
       implicit none
 
 ! Dummy Arguments:
@@ -102,6 +104,7 @@
       IF(.NOT.allocated(DENSITY)) allocate( DENSITY(0:DIMENSION_M))
       IF(.NOT.allocated(SP_HEAT)) allocate( SP_HEAT(0:DIMENSION_M))
       IF(.NOT.allocated(PSIZE)) allocate( PSIZE(0:DIMENSION_M))
+! Interphase heat transfer coefficient (GAMA)
 
       DENSITY = .FALSE.
       SP_HEAT = .FALSE.
@@ -129,64 +132,74 @@
 !```````````````````````````````````````````````````````````````````````
 ! Compressible flow.
       if(RO_G0 == UNDEFINED .OR. USR_ROg) DENSITY(0) = .TRUE.
-! Viscosity is recalculated iteration-to-iteration if:
-! 1) the energy equations are solved
-! 2) a turbulace length scale is defined (L_SCALE0 /= ZERO)
-! 3) K-Epsilon model is used.
-      VISC(0) = RECALC_VISC_G
+
+! Gas viscosity:
+! Calc_mu_g must be invoked every iteration even if constant viscosity
+! (mu_g0 /= undefined) to incorporate ishii form of governing equations
+! wherein the viscosity is multiplied by the phase volume fraction.
+! Alternatively, we could invoke calc_mu_g only if energy, k_epsilon,
+! l_scale0 /= 0, or ishii (use recalc_visc_g)
+      VISC(0) = .TRUE.
+
 ! Specific heat and thermal conductivity.
       if(ENERGY_EQ) then
-         if(C_PG0 == UNDEFINED) SP_HEAT(0) = .TRUE.
-         if(K_G0  == UNDEFINED) COND(0) = .TRUE.
+         if(C_PG0 == UNDEFINED .or. usr_cpg) SP_HEAT(0) = .TRUE.
+         if(K_G0  == UNDEFINED .or. usr_kg) COND(0) = .TRUE.
       endif
-      if(USR_CPg) SP_HEAT(0) = .TRUE.
-! Species diffusivity.
-      if(SPECIES_EQ(0)) DIFF(0) = .TRUE.
 
+! Species diffusivity.
+      if(SPECIES_EQ(0)) then
+        if (dif_g0 == undefined .or. usr_difg) DIFF(0) = .TRUE.
+      endif
 
 ! Interphase transfer terms.
 !```````````````````````````````````````````````````````````````````````
+! this needs to be mmax for ghd
        if(.NOT.QMOMK .AND. .NOT.USE_MMS) DRAGCOEF(0:MMAX,0:MMAX)=.TRUE.
+
+! Interphase heat transfer coefficient (GAMA)
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+         if(ENERGY_EQ .AND. .NOT.USE_MMS) HEAT_TR(0:SMAX,0:SMAX)=.TRUE.
+      ENDIF
 
 ! Coefficients for solids phase parameters.
 !```````````````````````````````````````````````````````````````````````
       IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-! Interphase heat transfer coefficient (GAMA)
-         if(ENERGY_EQ .AND. .NOT.USE_MMS) HEAT_TR(0:MMAX,0:MMAX)=.TRUE.
-
-! Variable solids density.
-         if(any(SOLVE_ROs)) DENSITY(1:MMAX) = .TRUE.
-         if(USR_ROs) DENSITY(1:MMAX) = .TRUE.
+         DO M=1,SMAX
+! Variable solids density or user solids density
+            if(SOLVE_ROs(M) .or. USR_ROs(M)) DENSITY(M) = .TRUE.
+         ENDDO
 
 ! Solids viscosity.
-!         DO M = 1, MMAX
-!            IF (MU_s0(M) == UNDEFINED) THEN
-!               VISC(M) = .TRUE.
-!            ENDIF
-!         ENDDO
 ! Calc_mu_s must be invoked every iteration even if constant viscosity
 ! (mu_s0 /= undefined) to incorporate ishii form of governing equations
 ! wherein the viscosity is multiplied by the phase volume fraction
-         VISC(1:MMAX) = .TRUE.
+         VISC(1:SMAX) = .TRUE.
+! mu_s only needs to be called for ghd_2007 when m=mmax
+         IF (KT_TYPE_ENUM == GHD_2007) THEN
+            VISC(1:SMAX) = .FALSE.
+            VISC(MMAX) = .TRUE.
+         ENDIF
 
+         do M=1,SMAX
 ! Specific heat and thermal conductivity.
-         do M=1,MMAX
             if(ENERGY_EQ) THEN
-               if(C_PS0(M) == UNDEFINED) SP_HEAT(M) = .TRUE.
-               if(K_S0(M)  == UNDEFINED) COND(M) = .TRUE.
+               if(C_PS0(M) == UNDEFINED .or. usr_cps(M)) SP_HEAT(M) = .TRUE.
+               if(K_S0(M)  == UNDEFINED .or. usr_ks(M)) COND(M) = .TRUE.
             endif
-            if(USR_CPS) SP_HEAT(M) = .TRUE.
+! Species diffusivity. Generally no need to invoke this routine since
+! by default solids diffusivisty is zero, however, now it is invoked
+! for user options
+            IF(SPECIES_EQ(M)) THEN
+               IF (DIF_S0(M) == UNDEFINED .or. usr_difs(M)) DIFF(M) = .TRUE.
+            ENDIF
          enddo
-
-! Species diffusivity. There is no reason to invoke this routine as the
-! diffusion coefficient for solids is always zero.
-         DIFF(1:MMAX) = .FALSE.
 
 ! Particle-Particle Energy Dissipation
          IF (KT_TYPE_ENUM == IA_2005 .OR. &
              KT_TYPE_ENUM == GD_1999 .OR. &
              KT_TYPE_ENUM == GTSH_2012) THEN
-            GRAN_DISS(:MMAX) = .TRUE.
+            GRAN_DISS(:SMAX) = .TRUE.
          ENDIF
 
 ! Particle diameter.
@@ -198,16 +211,18 @@
 
 ! Invoke calc_coeff.
       IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_COUPLED) THEN
+         CALL CALC_COEFF(IER, 2)
+
 ! If gas viscosity is undefined and the flag for calculating gas
 ! viscosity is turned off: Turn it on and make the call to calc_coeff.
 ! Once viscosity values have been calculated (i.e., an initial value
 ! is calculated), turn the flag off again so it isn't recalculated.
-         IF(MU_g0 == UNDEFINED .AND. .NOT.VISC(0)) THEN
-            VISC(0) = .TRUE.; CALL CALC_COEFF(IER, 2)
-            VISC(0) = .FALSE.
-         ELSE
-            CALL CALC_COEFF(IER, 2)
-         ENDIF
+!         IF(MU_g0 == UNDEFINED .AND. .NOT.VISC(0)) THEN
+!            VISC(0) = .TRUE.; CALL CALC_COEFF(IER, 2)
+!            VISC(0) = .FALSE.
+!         ELSE
+!            CALL CALC_COEFF(IER, 2)
+!         ENDIF
       ENDIF
 
       END SUBROUTINE INIT_COEFF

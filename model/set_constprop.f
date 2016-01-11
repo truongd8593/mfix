@@ -102,7 +102,8 @@
       F_SS = ZERO
 
 ! Set the flag for recalculating gas viscosity.
-      RECALC_VISC_G = (ENERGY_EQ .OR. L_SCALE0/=ZERO .OR. K_EPSILON)
+!      RECALC_VISC_G = (MU_g0==UNDEFINED .OR. L_SCALE0/=ZERO .OR.&
+!                       K_EPSILON .OR. ISHII)
 
 ! Set default value for virtual mass coefficient
       Cv = HALF
@@ -196,7 +197,7 @@
                   EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
-               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               IF (DIF_S0(M) /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0(M)
             ENDIF
 
             IF (USE_MMS) THEN
@@ -207,7 +208,7 @@
                   EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
-               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               IF (DIF_S0(M) /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0(M)
             ENDIF
 
 ! set ep_star_array to user input ep_star in all cells.

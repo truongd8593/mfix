@@ -114,7 +114,7 @@
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g
 
 ! Specified constant solids diffusivity
-      DOUBLE PRECISION DIF_s0
+      DOUBLE PRECISION DIF_s0(DIM_M)
 
 ! Diffusivity of solids species N
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s

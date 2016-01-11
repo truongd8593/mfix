@@ -168,6 +168,7 @@
       l_2SI = merge(4.183925d3, ONE, UNITS(1:2) == 'SI')
 
 ! Set the number of TFM solids phases.
+! the following 2 lines could be replaced by assing lmmax=smax
       noSolids = DISCRETE_ELEMENT .AND. (.NOT.DES_CONTINUUM_HYBRID)
       lMMAX = merge(0, MMAX, noSolids)
 

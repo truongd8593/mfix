@@ -22,6 +22,28 @@
 
 ! Modules
 !---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE error_manager, only: err_msg, init_err_msg, finl_err_msg
+      USE error_manager, only: flush_err_msg
+! solids pressure
+      USE fldvar, only: p_s, p_s_c, p_s_v
+      USE fldvar, only: p_s_f
+! factor of ep_s if ishii otherwise 1
+      USE fldvar, only: eps_ifac
+! some constants
+      USE param1, only: one, undefined
+! specified constant solids phase viscosity
+      USE physprop, only: mu_s0
+! runtime flag indicates whether the solids phase becomes close-packed
+! at ep_star
+      USE physprop, only: close_packed
+! number of solids phases
+      USE physprop, only: mmax
+      USE physprop, only: blend_function
+
+! runtime flag to use qmomk
+      USE qmom_kinetic_equation, only: qmomk
+
 ! runtime flag to solve partial differential granular energy eqn(s)
       USE run, only: granular_energy
 ! kinetic theories
@@ -41,37 +63,14 @@
       USE run, only: friction, schaeffer
 ! runtime flag for blending stress (only with schaeffer)
       USE run, only: blending_stress
-
 ! solids transport coefficients
       USE visc_s, only: mu_s, epmu_s, mu_s_c, mu_s_v
       USE visc_s, only: mu_s_p, mu_s_f
       USE visc_s, only: lambda_s, eplambda_s, lambda_s_c, lambda_s_v
       USE visc_s, only: lambda_s_p, lambda_s_f
-! solids pressure
-      USE fldvar, only: p_s, p_s_c, p_s_v
-      USE fldvar, only: p_s_f
-! factor of ep_s if ishii otherwise 1
-      USE fldvar, only: eps_ifac
-
-! some constants
-      USE param1, only: one, undefined
-
-! specified constant solids phase viscosity
-      USE physprop, only: mu_s0
-
-! runtime flag indicates whether the solids phase becomes close-packed
-! at ep_star
-      USE physprop, only: close_packed
-! number of solids phases
-      USE physprop, only: mmax
-      USE physprop, only: blend_function
-! runtime flag to use qmomk
-      USE qmom_kinetic_equation, only: qmomk
-
-      USE compar, only: ijkstart3, ijkend3
-
-      USE error_manager, only: err_msg, init_err_msg, finl_err_msg
-      USE error_manager, only: flush_err_msg
+! invoke user defined quantity
+      USE usr_prop, only: usr_mus, calc_usr_prop
+      USE usr_prop, only: solids_viscosity
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -86,16 +85,18 @@
 ! blend factor
       DOUBLE PRECISION :: BLEND
 !---------------------------------------------------------------------//
-      IF (MU_S0(M) /= UNDEFINED) THEN
-          CALL CALC_MU_S0(M)
-! return as none of the subroutines below should be called for 
-! constant viscosity case
-          RETURN
+      IF (USR_MuS(M)) THEN
+         CALL CALC_USR_PROP(Solids_Viscosity,lm=M)
+         CALL SET_EPMUS_VALUES(M)
+         RETURN
+! none of the following subroutines should be called when user
+! specified or constant viscosity case
+      ELSEIF (MU_S0(M) /= UNDEFINED) THEN
+         CALL CALC_MU_S0(M)
+         CALL SET_EPMUS_VALUES(M)
+         RETURN
       ENDIF
 
-! GHD Theory is called only for the mixture granular energy,
-! i.e. for m == mmax
-      IF (KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) RETURN
 
 ! General initializations
 !---------------------------------------------------------------------
@@ -178,36 +179,78 @@
             blend =  blend_function(IJK)
             Mu_s(IJK,M) = (ONE-blend)*Mu_s_p(IJK) &
                 + blend*Mu_s_v(IJK)
-! no point in blending lambda_s_p since it has no value
+! is there any point in blending P_s_p or lambda_s_p since neither are
+! assigned? the only thing this would effectively do is reduce P_s_v
+! and lambda_s_v by the blend value and therefore P_s and lambda_s.
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
-! if ishii then multiply by void fraction otherwise multiply by 1
-            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
-            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
-! is there any point in blending P_s_p since it is never assigned?
-! the only thing it would effectively do is reduce P_s_v by the blend
-! value and therefore P_s.
          ENDDO
       ELSE
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
          LAMBDA_s(:,M) = Lambda_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
          P_s(:,M) = P_s_v(:) + P_s_f(:)
-! if ishii then multiply by void fraction otherwise multiply by 1
-         EPMU_s(:,M) = EPS_IFAC(:,M)*Mu_s(:,M)
-         EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*Lambda_s(:,M)
       ENDIF  ! end if/else (blending_stress)
+
+      CALL SET_EPMUS_VALUES(M)
 
       RETURN
       END SUBROUTINE CALC_MU_s
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
+!  Subroutine: SET_EPMUS_VALUES                                        C
+!  Purpose: This routine sets the internal variables epmu_s and        C
+!  eplambda_s that are used in the stress calculations. If the         C
+!  keyword Ishii is invoked then these quantities represent the        C
+!  viscosity and second viscosity multiplied by the volume fraction    C
+!  otherwise they are simply viscosity/second viscosity (i.e. are      C
+!  multipled by one).                                                  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SET_EPMUS_VALUES(M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: eps_ifac
+      USE functions, only: fluid_at
+      USE param1, only: zero
+      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+
+! Local variables
+!---------------------------------------------------------------------//
+! cell index
+      INTEGER :: IJK
+!---------------------------------------------------------------------//
+
+!      EPMU_S(:,M) = EPS_IFAC(:,M)*MU_s(:,M)
+!      EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*LAMBDA_S(:,M)
+
+      DO IJK=ijkstart3,ijkend3
+         IF(FLUID_AT(IJK)) THEN
+! if ishii then multiply by volume fraction otherwise multiply by 1
+            EPMU_S(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
+         ELSE
+            EPMU_S(IJK,M) = ZERO
+            EPLAMBDA_S(IJK,M) = ZERO
+         ENDIF
+      ENDDO
+      RETURN
+      END SUBROUTINE SET_EPMUS_VALUES
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
 !  Subroutine: CALC_MU_s0                                              C
 !  Purpose: Calculate transport coefficients (viscosity,               C
-!  bulk viscosity) for a non-granular material                         C
+!  bulk viscosity) when constant viscosity is specified                C
 !                                                                      C
-!  Comments: Provide a mechanism for variable viscosity for 'solids'   C
-!  phases that is not based on granular model                          C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE CALC_MU_S0(M)
@@ -215,13 +258,12 @@
 ! Modules
 !---------------------------------------------------------------------//
       USE compar, only: ijkstart3, ijkend3
-      USE fldvar, only: eps_ifac
       USE fldvar, only: P_s
       USE functions, only: fluid_at
       USE param1, only: zero
       USE physprop, only: mu_s0
-      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
-      USE mms, only   : use_mms
+      USE visc_s, only: mu_s, lambda_s
+      USE mms, only: use_mms
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -239,27 +281,24 @@
 ! MMS tests require physical properties to be defined at all cells
 ! (including ghost cells)
          IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
-! 'pressure' of this phase.  At this point this quantity is simply 
-! set to zero.  Care must be taken in considering how MFIX's governing
-! equations have been posed (nominally for gas-solids). In particular,
-! the gradient in gas phase pressure is already present in the 'solids'
-! phase momentum balance (see source_*_s for details).  For a gas-
-! liquid system the quantity P_S could be considered to represent a 
-! capillary pressure type term. 
-            P_s(IJK,M) = ZERO  
+! The 'pressure' of this phase is currently simply set to zero. Care
+! should be taken in considering how MFIX's governing equations have
+! been posed (nominally for gas-solids). In particular, the gradient
+! in gas phase pressure is already present in the solids phase momentum
+! balance (see source_*_s for details). In addition, a seperate plastic
+! pressure term is also present in the solids phase momentum balance
+! whose value becomes non-zero depending on the solids volume fraction
+! and value of maximum packing (ep_star). Finally, for a gas-liquid
+! system the quantity P_S could be considered to represent a capillary
+! pressure type term.
+            P_s(IJK,M) = ZERO
 
-! viscosity of water in Poise
-! here is where a user would enter their function
+! viscosity in Poise
             MU_S(IJK,M) = MU_S0(M)
             LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
-! if ishii then multiply by void fraction otherwise multiply by 1
-            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*MU_S(IJK,M)
-            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*LAMBDA_S(IJK,M)
          ELSE
             MU_S(IJK,M) = ZERO
             LAMBDA_S(IJK,M) = ZERO
-            EPMU_S(IJK,M) = ZERO
-            EPLAMBDA_S(IJK,M) = ZERO
          ENDIF
       ENDDO
       RETURN
@@ -2629,7 +2668,7 @@
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
 
-! Velocity derivatives (gradient and rate of strain tensor) for Mth 
+! Velocity derivatives (gradient and rate of strain tensor) for Mth
 ! solids phase at i, j, k
             CALL CALC_DERIV_VEL_SOLIDS(IJK, M, DelV_sM, D_sM)
 

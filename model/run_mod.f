@@ -117,9 +117,6 @@
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
 
-! If .TRUE. call user-defined physical properties routines
-      LOGICAL :: USR_ROg, USR_ROs, USR_CPg, USR_CPs
-
 ! If .TRUE. force time-step when NIT=MAX_NIT and DT=DT_MIN
       LOGICAL :: PERSISTENT_MODE
 

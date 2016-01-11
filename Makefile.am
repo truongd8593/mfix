@@ -252,7 +252,6 @@ libmfix_src = \
 	model/calc_d_t.f \
 	model/calc_dif_g.f \
 	model/calc_dif_s.f \
-	model/calc_drag.f \
 	model/calc_e.f \
 	model/calc_gama.f \
 	model/calc_grbdry.f \
@@ -706,7 +705,8 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
-	model/usr_physical_prop.f \
+        model/usr_prop_mod.f \
+	model/usr_properties.f \
 	model/usr_rates.f \
         model/usr_sources.f\
         model/usr_src_mod.f \
@@ -803,7 +803,6 @@ postmfix_SOURCES = \
 	model/calc_d_t.f \
 	model/calc_dif_g.f \
 	model/calc_dif_s.f \
-	model/calc_drag.f \
 	model/calc_e.f \
 	model/calc_gama.f \
 	model/calc_grbdry.f \
@@ -1246,7 +1245,8 @@ postmfix_SOURCES = \
 	model/usr3.f \
 	model/usr_drag.f \
 	model/usr_mod.f \
-	model/usr_physical_prop.f \
+	model/usr_prop_mod.f \
+        model/usr_properties.f \
 	model/usr_rates.f \
         model/usr_sources.f \
         model/usr_src_mod.f \

@@ -49,6 +49,11 @@
       USE cdist
       USE stiff_chem
       use usr_src, only: call_usr_source
+! user defined flags
+      use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
+      use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
+      use usr_prop, only: usr_gama, usr_fgs, usr_fss
+     
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -1280,7 +1285,7 @@
 !<keyword category="Solids Phase" required="false" tfm="true" dem="true">
 !  <description>
 !    Mass fraction of inert solids phase species in the dilute region.
-!    In dilute region (see DIL_FACTOR_VSD), the solids density is computed based 
+!    In dilute region (see DIL_FACTOR_VSD), the solids density is computed based
 !    on this inert species mass fraction, rather than the current inert species mass fraction.
 !    This may help convergence when the Variable Solids Density model is invoked.
 !  </description>
@@ -1296,7 +1301,7 @@
 !  <description>
 !    Factor to define the dilute region where the solids density is set using DIL_INERT_X_VSD.
 !    Cells where the solids volume fraction is between DIL_EP_S and DIL_EP_S x DIL_FACTOR_VSD
-!    will automatically set the solids density using DIL_INERT_X_VSD instead of the current 
+!    will automatically set the solids density using DIL_INERT_X_VSD instead of the current
 !    inerts species mass fraction. Set this factor to zero to always use the current inert
 !    species mass fraction.
 !  </description>
@@ -1658,7 +1663,8 @@
 !  <description>
 !    Specified constant solids diffusivity [(cm^2)/s in CGS].
 !  </description>
-      DIF_S0 = UNDEFINED
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      DIF_S0(:DIM_M) = UNDEFINED
 !</keyword>
 
 !<keyword category="Two Fluid Model" required="false" tfm="true">
@@ -3122,8 +3128,8 @@
 
 !<keyword category="UDF Control" required="false">
 !  <description>
-!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROg,
-!    in model/usr_physical_prop.f  for calculating the gas phase
+!    Flag to use the User Defined Function, USR_PROP_ROg,
+!    in model/usr_prop.f for calculating the gas phase
 !    density, RO_g.
 !  </description>
 !  <valid value=".TRUE." note="Call user-defined function."/>
@@ -3133,36 +3139,140 @@
 
 !<keyword category="UDF Control" required="false">
 !  <description>
-!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPg,
-!    in model/usr_physical_prop.f  for calculating the gas phase
-!    constant pressure specific heat, C_PG.
+!    Flag to use the User Defined Function, USR_PROP_CPg,
+!    in model/usr_prop.f for calculating the gas phase
+!    constant pressure specific heat, C_pg.
 !  </description>
 !  <valid value=".TRUE." note="Call user-defined function."/>
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
       USR_CPg = .FALSE.
 !</keyword>
 
-!<keyword category="UDF Control" required="false" tfm="true">
+!<keyword category="UDF Control" required="false">
 !  <description>
-!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_ROs,
-!    in model/usr_physical_prop.f  for calculating the solids phase
-!    density, RO_s.
+!    Flag to use the User Defined Function, USR_PROP_Kg,
+!    in model/usr_prop.f for calculating the gas phase
+!    conductivity, K_g.
 !  </description>
 !  <valid value=".TRUE." note="Call user-defined function."/>
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
-      USR_ROs = .FALSE.
+      USR_Kg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Difg,
+!    in model/usr_prop.f for calculating the gas phase
+!    diffusivity, Dif_g.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_Difg = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Mug,
+!    in model/usr_prop.f for calculating the gas phase
+!    viscosity, Mu_g.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+      USR_Mug = .FALSE.
 !</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
-!    Flag to use the User Defined Function, USR_PHYSICAL_PROP_CPs,
-!    in model/usr_physical_prop.f  for calculating the solids phase
-!    constant pressure specific heat, C_PS.
+!    Flag to use the User Defined Function, USR_PROP_ROs,
+!    in model/usr_prop.f for calculating the solids phase
+!    density, RO_s.
 !  </description>
 !  <valid value=".TRUE." note="Call user-defined function."/>
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
-      USR_CPs = .FALSE.
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_ROs(:DIM_M) = .FALSE.
 !</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_CPs,
+!    in model/usr_prop.f for calculating the solids phase
+!    constant pressure specific heat, C_ps.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_CPs(:DIM_M) = .FALSE.
+!</keyword>
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Ks,
+!    in model/usr_prop.f for calculating the solids phase
+!    conductivity, K_s.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_Ks(:DIM_M) = .FALSE.
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Difs,
+!    in model/usr_prop.f for calculating the solids phase
+!    diffusivity, Dif_s.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_Ks(:DIM_M) = .FALSE.
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Mus,
+!    in model/usr_prop.f for calculating the solids phase
+!    viscosity, Mu_s; second viscosity, lambda_s; and pressure,
+!    P_s.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_Mus(:DIM_M) = .FALSE.
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Gama,
+!    in model/usr_prop.f for calculating the gas-solids phase
+!    heat transfer coefficient, Gama_gs.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_Gama(:DIM_M) = .FALSE.
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Fgs, in
+!    model/usr_prop.f for calculating the gas-solids phase drag
+!    coefficient due to relative velocity differences, F_gs.
+!    Currently unavailable.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_M"/>
+      USR_Fgs(:DIM_M) = .FALSE.
+
+!<keyword category="UDF Control" required="false" tfm="true">
+!  <description>
+!    Flag to use the User Defined Function, USR_PROP_Fss, in
+!    model/usr_prop.f for calculating the solids-solids phase
+!    drag coefficient due to relative velocity differences, F_ss.
+!    Currently unavailable.
+!  </description>
+!  <valid value=".TRUE." note="Call user-defined function."/>
+!  <valid value=".FALSE." note="Use MFIX default calculation."/>
+!  <arg index="1" id="Phase" min="1" max="DIM_LM"/>
+      USR_Fss( :((DIM_M*(DIM_M-1)/2)+1) ) = .FALSE.
 
 !<keyword category="UDF Control" required="false">
 !  <description>User defined constants.</description>
