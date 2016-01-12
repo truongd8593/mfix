@@ -103,8 +103,8 @@ contains
     type(aabb_t) :: aabb
     logical, intent(in), optional :: printit
 
-    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)*1.001
-    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)*1.001
+    aabb%minendpoint(:) = DES_POS_NEW(nn,:)-DES_RADIUS(nn)*1.01
+    aabb%maxendpoint(:) = DES_POS_NEW(nn,:)+DES_RADIUS(nn)*1.01
     boxhandle(nn)%particle_id = nn
     call multisap_update(multisap,aabb,boxhandle(nn),nn)
 
@@ -309,7 +309,7 @@ contains
        found = .false.
        first_blank = -1
        do mm=1, size(handlelist%list)
-          if (handlelist%list(mm)%sap_id < 0) first_blank = mm
+          if (first_blank < 0 .and. handlelist%list(mm)%sap_id < 0) first_blank = mm
 
           if (handlelist%list(mm)%sap_id .eq. new_sap_ids(nn)) then
              ! update existing SAPs

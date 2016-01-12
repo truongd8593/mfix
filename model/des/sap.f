@@ -439,6 +439,7 @@ endif
        this%boxes(abs(this%x_endpoints(ii)%box_id))%minendpoint_id(:) = 0
        this%boxes(abs(this%x_endpoints(ii)%box_id))%maxendpoint_id(:) = 0
        call list_add(this%deleted_boxes,this%x_endpoints(ii)%box_id)
+       call del_pair(this%ht,1,this%boxes(abs(this%x_endpoints(ii)%box_id))%particle_id)
        ii = ii - 1
     enddo
 
@@ -527,17 +528,6 @@ endif
     integer :: ii, jj, kk
     type(endpoint_t) :: sweeppoint, swappoint
     real :: sweepval
-    type(hashtable_t) :: ht
-
-    call init_pairs(ht)
-
-    do ii=1, this%boxes_len
-       if (is_pair(ht,1,this%boxes(ii)%particle_id)) then
-          print *,mype,"  two boxes with the same particle: ",this%boxes(ii)%particle_id
-          stop __LINE__
-       endif
-       call add_pair(ht,1,this%boxes(ii)%particle_id)
-    end do
 
     do ii=2, endpoint_len
 
