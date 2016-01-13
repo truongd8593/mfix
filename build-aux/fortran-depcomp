@@ -56,7 +56,7 @@ for f in ${FILES} ${UNIQSTR} ; do
     ${SED} -e "/\/\*/,/.*\*\//{s,.*\*/,,; t e; s,/\*.*,,; t e; d; :e;}" - | \
     ${GREP} -iv "ignore-depcomp" | \
     ${SED} -e "s/\!.*$//" | \
-    ${GREP} -v "\"\|'\|&" | \
+    ${GREP} -v "\"\|'" | \
     tr -d '\015' | \
     tr "[:upper:]" "[:lower:]" | \
     ${GREP} -e "use" -e "module" | \
