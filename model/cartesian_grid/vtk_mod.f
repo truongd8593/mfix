@@ -137,6 +137,9 @@ use param, only: DIMENSION_N_S
 ! VTK slice tolerance
       DOUBLE PRECISION :: VTK_SLICE_TOL(DIMENSION_VTK)
 
+! Flag to write only cut cell data in VTK file
+      LOGICAL :: VTK_CUTCELL_ONLY(DIMENSION_VTK)
+
 ! VTK filename base
       CHARACTER(LEN=255) :: VTK_FILEBASE(DIMENSION_VTK)
 

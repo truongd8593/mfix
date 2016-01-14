@@ -3140,6 +3140,19 @@
                   J = GLOBAL_J_OF(IJK)
                   K = GLOBAL_K_OF(IJK)
 
+                  IF(VTK_CUTCELL_ONLY(VTK_REGION)) THEN
+                     IF(I==IMIN1.OR.I==IMAX1.OR. &
+                        J==JMIN1.OR.J==JMAX1.OR. &
+                        K==KMIN1.OR.K==KMAX1.OR. &
+                        GLOBAL_CUT_CELL_AT(IJK)) THEN
+
+                        BELONGS_TO_VTK_SUBDOMAIN(IJK) = .TRUE.
+                        NUMBER_OF_VTK_CELLS = NUMBER_OF_VTK_CELLS + 1
+                     ENDIF
+                     CYCLE
+                  ENDIF
+
+
 ! X-direction
                   KEEP_XDIR=.FALSE.
                   IF(NXS==0) THEN

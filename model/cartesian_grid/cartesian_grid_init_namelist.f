@@ -1220,6 +1220,11 @@
       VTK_PART_COHESION= .FALSE.
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>Write cut-cell data only in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_CUTCELL_ONLY= .FALSE.
+!</keyword>
 
 !<keyword category="Output Control" required="false">
 !  <description>Starting Index appended to VTU files</description>
