@@ -45,7 +45,11 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS run test pymfix.so
+mfix.so:
+	$(MAKE) -C $(top_builddir) $@
+	$(LN_S) $(top_builddir)/mfix.so $@
+
+.PHONY: $(LIBMFIX) TAGS run test mfix.so
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -117,10 +121,8 @@ postmfix$(EXEEXT): $(LIBMFIX)
 #                                                              #
 ################################################################
 
-pymfix.so: $(LIBMFIX)
+mfix.so: $(LIBMFIX)
 	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
-	cp $(top_builddir)/$@ $@
 
 ################################################################
 #                                                              #

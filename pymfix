@@ -1,12 +1,16 @@
+#!/usr/bin/env python
+
 import os, sys
-sys.path.append(os.getcwd())
+print os.path.realpath('build')
+sys.path.append(os.path.realpath('build'))
+# sys.path.append(os.getcwd())
 
 import thread
 import time
 
 from twisted.internet import reactor, protocol
 
-import pymfix
+import mfix
 
 requests = {}
 responses = {}
@@ -16,9 +20,9 @@ mfix_stopped = False
 def run_mfix():
     global mfix_stopped
 
-    pymfix.main.setup()
-    pymfix.main.start()
-    while pymfix.run.time < pymfix.run.tstop:
+    mfix.main.setup()
+    mfix.main.start()
+    while mfix.run.time < mfix.run.tstop:
         if requests:
             # requests would only arrive at rank 0
             req_id,command = requests.popitem()
@@ -27,7 +31,7 @@ def run_mfix():
             req_id,command = '',''
 
         # broadcast command from rank 0 to all ranks
-        command = pymfix.main.do_mpi_bcast(command)
+        command = mfix.main.do_mpi_bcast(command)
 
         command = ''.join(command).strip()
 
@@ -37,8 +41,8 @@ def run_mfix():
         if mfix_stopped:
             time.sleep(1)
         else:
-            pymfix.main.step()
-    pymfix.main.end()
+            mfix.main.step()
+    mfix.main.end()
 
 def handle(req_id,command):
     global mfix_stopped
@@ -57,9 +61,9 @@ def handle(req_id,command):
     elif cmd=='list':
         resp = ''
         for module in ('compar','discretelement','fldvar','main','param','run','run_dp'):
-            attr = getattr(pymfix,module)
+            attr = getattr(mfix,module)
             resp = resp + 'in module %s you can set attributes %s \n\n' % (module,dir(attr))
-        resp = resp + " Except for those of the above that are really subroutines/functions instead of variables. Also, the above list is incomplete, and is missing most of the interesting variables. \n\n  Don't forget to prefix with pymfix; e.g. set pymfix.run.dt 0.001\n\n"
+        resp = resp + " Except for those of the above that are really subroutines/functions instead of variables. Also, the above list is incomplete, and is missing most of the interesting variables. \n\n  Don't forget to prefix with mfix; e.g. set mfix.run.dt 0.001\n\n"
         responses[req_id] = resp
         mfix_stopped = True
 
@@ -72,16 +76,16 @@ def handle(req_id,command):
         mfix_stopped = False
 
     elif cmd=='step':
-        pymfix.main.step()
+        mfix.main.step()
         responses[req_id] = 'DOING ONE TIMESTEP\n'
 
     elif cmd=='set':
-        pymfix.main.step()
+        mfix.main.step()
         var = command.split(' ')[1].lower().strip()
         val = command.split(' ')[2].lower().strip()
 
         # slow things down for development
-        time.sleep(pymfix.compar.mype)
+        time.sleep(mfix.compar.mype)
 
         if len(command.split(' ')) > 3:
             ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
@@ -92,9 +96,9 @@ def handle(req_id,command):
                             exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k),val))
                             print "GOING TO EXECUTE: ",exec_string
                             exec(exec_string)
-                            print "rank ",pymfix.compar.mype," set value for",i,j,k,funijk(i,j,k)
+                            print "rank ",mfix.compar.mype," set value for",i,j,k,funijk(i,j,k)
                         else:
-                            print "rank ",pymfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
+                            print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
         else:
             exec('%s = %s' % (var,val))
         responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
@@ -103,10 +107,10 @@ def handle(req_id,command):
         responses[req_id] = 'UNRECOGNIZED COMMAND\n'
 
 def funijk(i,j,k):
-    return pymfix.compar.ijk_array_of[i,j,k]
+    return mfix.compar.ijk_array_of[i,j,k]
 
 def is_on_mype_owns(li, lj, lk):
-      return li >= pymfix.compar.istart and li <= pymfix.compar.iend and lj >= pymfix.compar.jstart and lj <= pymfix.compar.jend and lk >= pymfix.compar.kstart and lk <= pymfix.compar.kend
+      return li >= mfix.compar.istart and li <= mfix.compar.iend and lj >= mfix.compar.jstart and lj <= mfix.compar.jend and lk >= mfix.compar.kstart and lk <= mfix.compar.kend
 
 class Echo(protocol.Protocol):
     """This is just about the simplest possible protocol"""
@@ -126,18 +130,18 @@ class Echo(protocol.Protocol):
         del responses[req_id]
 
         # change any variable...
-        # pymfix.run.time  = 1000
-        # pymfix.run.tstop = pymfix.run.tstop/2
-        # pymfix.run.dt    = 10
+        # mfix.run.time  = 1000
+        # mfix.run.tstop = mfix.run.tstop/2
+        # mfix.run.dt    = 10
 
-        # response = 'the pressure is %s \n tstop is %s' % (str(pymfix.fldvar.p_g[:100]),pymfix.run.tstop)
+        # response = 'the pressure is %s \n tstop is %s' % (str(mfix.fldvar.p_g[:100]),mfix.run.tstop)
 
 def main():
     """This runs the protocol on port 8000"""
     thread.start_new_thread(run_mfix, ())
     time.sleep(1)
 
-    if 0==pymfix.compar.mype:
+    if 0==mfix.compar.mype:
         factory = protocol.ServerFactory()
         factory.protocol = Echo
         reactor.listenTCP(8000,factory)

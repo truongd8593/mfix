@@ -225,7 +225,9 @@ CONTAINS
     USE interactive, only: init_interactive_mode
     USE machine, only: start_log, end_log
     USE mfix_netcdf, only: mfix_usingnetcdf
+#ifdef MPI
     USE mpi, only: mpi_comm_world  ! depcomp-ignore
+#endif
     USE mpi_utility, only: mpi_barrier
     USE output, only: dbgprn_layout
     USE param1, only: n_spx, undefined, zero
@@ -320,7 +322,9 @@ CONTAINS
 
     END SELECT
 
+#ifdef MPI
     call MPI_Barrier(MPI_COMM_WORLD,mpierr)
+#endif
 
     IF (DT_TMP /= UNDEFINED) THEN
        DT = MAX(DT_MIN,MIN(DT_MAX,DT))
@@ -1199,7 +1203,9 @@ CONTAINS
 
     function do_mpi_bcast(str)
       ! use mpi, only: mpi_bcast, mpi_comm_world, mpi_character ! depcomp-ignore
+#ifdef MPI
       use mpi ! depcomp-ignore
+#endif
       implicit none
 
       character*500,intent(in) :: str
@@ -1212,7 +1218,9 @@ CONTAINS
          aa(ii) = str(ii:ii)
       end do
 
+#ifdef MPI
       call mpi_bcast(aa,500,mpi_character,0,mpi_comm_world,ierr)
+#endif
 
       do ii = 1,500
          do_mpi_bcast(ii:ii) = aa(ii)

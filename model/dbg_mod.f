@@ -209,7 +209,11 @@
             if(do_K)write(*,"(5x,'K start/end 1:',2(2x,I3))") kstart1, kend1
          endif
 #ifdef MPI
+<<<<<<< 55fa340dd2df90511210f6beec2d36199f8fdb3c
             CALL MPI_Barrier(MPI_COMM_WORLD,mpierr)
+=======
+         CALL MPI_Barrier(MPI_COMM_WORLD,mpierr)
+>>>>>>> use FC and FCFLAGS when building mfix.so
 #endif
       enddo
 

@@ -1985,6 +1985,12 @@
 #endif
          ENDDO
 
+<<<<<<< 55fa340dd2df90511210f6beec2d36199f8fdb3c
+=======
+#ifdef MPI
+         call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+#endif
+>>>>>>> use FC and FCFLAGS when building mfix.so
          IF(MyPE.EQ.0) THEN
             WRITE(*,1000)"============================================================================="
             WRITE(*,1070)'MAX # OF CELLS (BACKGRD)    = ',MAXVAL(NCPP_UNIFORM_ALL),'     AT PROCESSOR: ',MAXLOC(NCPP_UNIFORM_ALL)-1
