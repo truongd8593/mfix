@@ -266,7 +266,7 @@
          RETURN
       ENDIF
 
-      IF(.NOT.SOLVE_ROs(M)) THEN
+      IF(SOLVE_ROs(M)) THEN
 ! Initialize header flag.
          wHeader = .TRUE.
 ! Set the index of the inert species

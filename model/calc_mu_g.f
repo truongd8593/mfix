@@ -48,6 +48,7 @@
       RETURN
       END SUBROUTINE CALC_MU_G
 
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: SET_EPMUG_VALUES                                        C
@@ -152,6 +153,7 @@
             MU_GT(IJK) = MU_G(IJK)
             LAMBDA_GT(IJK) = -F2O3*MU_GT(IJK)
          ELSE
+            MU_G(IJK) = ZERO
             MU_GT(IJK) = ZERO
             LAMBDA_GT(IJK) = ZERO
          ENDIF

@@ -68,6 +68,7 @@
       use param1, only: zero, one
       use physprop, only: NMAX, Dif_g
       use scales, only: unscale_pressure
+      use toleranc, only: zero_x_gs
       IMPLICIT NONE
 
 ! Local Variables
@@ -84,7 +85,7 @@
       DOUBLE PRECISION :: Pg_ref(NMAX(0))
 ! Intermediate calculation to determine weighted average diffusion
 ! coefficient
-      DOUBLE PRECISION :: lDab, Sum_XgoDab
+      DOUBLE PRECISION :: lDab, Sum_XgLoDab, Sum_XgL
 !---------------------------------------------------------------------//
 
       CALL SET_BINARY_DAB_GAS(Dab, Tg_ref, Pg_ref)
@@ -101,15 +102,33 @@
 
                ELSE
 ! Dilute mixture approximation for multi-component diffusion
-                  IF ((ONE-X_g(IJK,N)) > 1.e-8) THEN
+
+                  SUM_XgLoDab = ZERO
+                  SUM_XgL = ZERO
+                  DO L = 1, NMAX(0)
+                     IF (L /= N) THEN
+                        SUM_XgLoDab = SUM_XgLoDab+&
+                                     X_g(IJK,L)/Dab(N,L)
+                        SUM_XgL = SUM_XgL + X_g(IJK,L)
+                     ENDIF
+                  ENDDO
+
+                  IF ((ONE-X_g(IJK,N)) > ZERO_X_GS .AND. &
+                      SUM_XgL > ZERO_X_GS) THEN
+!                  IF ((ONE-X_G(IJK,N)) > 1E-4) THEN
 ! i.e. when cell is not only species N
-                     SUM_XgoDab = ZERO
-                     DO L = 1, NMAX(0)
-                        IF (L /= N) SUM_XgoDab = SUM_XgoDab+&
-                                                 X_g(IJK,L)/Dab(N,L)
-                     ENDDO
-                     IF (SUM_XgoDab > ZERO) THEN
-                        lDab = (ONE-X_g(IJK,N))/SUM_XgoDab
+! If this criteria is too strict (i.e. when XgN->1), then this section
+! may be evaluated when the other XgN do not carry significant value
+! (i.e. are effectively zero). As a result, lDab may be evaluated and
+! become unrealistically large. This may happen when happen when
+! 1-XgN != sum_XgL. Generally, sum_XgL should equal 1-XgN but they may
+! differ due to the numerical evaluation of each Xg. If XgN->1, then
+! use both sum_XgL and 1-XgN to determine whether calculations should
+! proceed. Given the noted limitation of this approximation then an
+! additional criteria should probably be added to only evaluate when
+! sum_xgL <0.1.
+                     IF (SUM_XgLoDab > ZERO) THEN
+                        lDab = (ONE-X_g(IJK,N))/SUM_XgLoDab
                      ELSE
 ! this should not occur...
                         lDab = Dab(N,N)

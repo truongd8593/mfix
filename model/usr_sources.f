@@ -27,9 +27,10 @@
 ! Modules 
 !-----------------------------------------------
       use constant, only: pi, gas_const, gravity
-      use fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
-      use fldvar, only: p_g, rop_g, ro_g, T_g, X_g
-      use fldvar, only: d_p, rop_s, ro_s, T_s, X_s, theta_m
+      use fldvar, only: u_g, v_g, w_g
+      use fldvar, only: u_s, v_s, w_s
+      use fldvar, only: ep_g, rop_g, ro_g, T_g, X_g, P_g
+      use fldvar, only: ep_s, rop_s, ro_s, T_s, X_s, d_p, theta_m
       use fldvar, only: k_turb_g, e_turb_g, scalar
       use functions
       use geometry
