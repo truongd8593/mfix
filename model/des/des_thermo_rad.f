@@ -91,15 +91,16 @@
       SUBROUTINE CALC_avgTs
 
       USE compar
-      Use des_thermo
-      Use des_rxns
-      Use discretelement
+      USE derived_types, only: PIC
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
+      USE functions
       USE geometry
       USE indices
-      Use param1
-      Use physprop
-      use run, only: ENERGY_EQ
-      use functions
+      USE param1
+      USE physprop
+      USE run, only: ENERGY_EQ
 
       IMPLICIT NONE
 

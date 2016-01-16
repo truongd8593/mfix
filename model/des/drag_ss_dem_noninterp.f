@@ -17,7 +17,7 @@
 ! Fudge factor for SS drag (c.f. Gera, 2004)
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC
+      use discretelement, only: PINC, PIJK
       use derived_types, only: PIC
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
@@ -70,7 +70,6 @@
       DOUBLE PRECISION :: D_FORCE(3)
 
 !......................................................................!
-
 
 ! Calculate the solid-solid drag for each particle.
 !---------------------------------------------------------------------//
@@ -144,12 +143,8 @@
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
 !!$omp end parallel do
 
-
-
       RETURN
       END SUBROUTINE DRAG_SS_DEM_NONINTERP
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -170,7 +165,7 @@
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
       use derived_types, only: PIC
-      use discretelement, only: PINC
+      use discretelement, only: PINC, PIJK
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
@@ -298,7 +293,6 @@
 
       RETURN
       END SUBROUTINE DRAG_SS_TFM_NONINTERP
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

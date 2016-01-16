@@ -38,7 +38,6 @@
          module procedure arrayExtract_log
       end interface
 
-
 ! Module variables (private):
 !---------------------------------------------------------------------//
 
@@ -88,7 +87,6 @@
       LOGICAL :: fApnd
 ! Flag to write IJK values with output.
       LOGICAL :: fwIJK, pwIJK
-
 
       contains
 
@@ -209,11 +207,7 @@
             if(do_K)write(*,"(5x,'K start/end 1:',2(2x,I3))") kstart1, kend1
          endif
 #ifdef MPI
-<<<<<<< 55fa340dd2df90511210f6beec2d36199f8fdb3c
-            CALL MPI_Barrier(MPI_COMM_WORLD,mpierr)
-=======
          CALL MPI_Barrier(MPI_COMM_WORLD,mpierr)
->>>>>>> use FC and FCFLAGS when building mfix.so
 #endif
       enddo
 
@@ -393,7 +387,6 @@
       INTEGER, intent(in) :: lNBGHS(-3:3), lOWNER
       DOUBLE PRECISION, intent(in) :: lA_m(-3:3)
 
-
 ! Local process IJK for neighbor cell mapped to global Am output matrix.
       INTEGER :: nIJK
 ! Increments from I,J,K for neighbor calculations.
@@ -415,7 +408,6 @@
       if(dbgMode) write(*,9003) lNBGHS(0), dbg_funijk(i,j,k),           &
          i, j, k, lOWNER
 
-
 ! Bottom Neighboring Fluid Cell
 !---------------------------------------------------------------------//
       if(do_K) then
@@ -431,7 +423,6 @@
          endif
       endif
 
-
 ! South Neighboring Fluid Cell
 !---------------------------------------------------------------------//
       if(j > jLB) then
@@ -445,7 +436,6 @@
       else
          if(dbgMode) write(*,9001)'South of  ', lA_m(-2)
       endif
-
 
 ! West Neighboring Fluid Cell
 !---------------------------------------------------------------------//
@@ -461,7 +451,6 @@
          if(dbgMode) write(*,9001)'West of   ', lA_m(-1)
       endif
 
-
 ! Center Coefficient
 !---------------------------------------------------------------------//
 
@@ -471,7 +460,6 @@
 
       if(dbgMode) write(*,9000)'Cntr Coef ', lNBGHS(0),                &
          nIJK, ii, jj, kk, lA_m(0)
-
 
 ! East Neighboring Fluid Cell
 !---------------------------------------------------------------------//
@@ -487,7 +475,6 @@
          if(dbgMode) write(*,9001)'East of   ', lA_m( 1)
       endif
 
-
 ! North Neighboring Fluid Cell
 !---------------------------------------------------------------------//
       if(j < jUB) then
@@ -501,7 +488,6 @@
       else
          if(dbgMode) write(*,9001)'North of  ', lA_m( 2)
       endif
-
 
 ! Top Neighboring Fluid Cell
 !---------------------------------------------------------------------//
@@ -518,7 +504,6 @@
             if(dbgMode) write(*,9001)'Top of    ', lA_m( 3)
          endif
       endif
-
 
       return
 
@@ -668,7 +653,6 @@
          ijk_Buff = 0
       ENDIF
 
-
 ! Construct the file name.
       VarFName=''
       IF(fApnd) THEN
@@ -708,8 +692,6 @@
 ! for an append file.
       pwIJK = merge(.FALSE., fwIJK, fwIJK.AND.lExist)
 
-
-
       RETURN
 
  1000 FORMAT(//1X,70('*')/' From: dbg_mod -> arrayExtract_init',/,     &
@@ -727,18 +709,13 @@
          ' Error 1001: dgbLock is set. Something must have failed.',/  &
          1x,70('*'),2/)
 
-
  1002 FORMAT(//1X,70('*')/' From: dbg_mod -> arrayExtract_init',/,     &
          ' Error 1002: Buffer already allocated: ',A,/1x,70('*'),2/)
 
  1003 FORMAT(//1X,70('*')/' From: dbg_mod -> arrayExtract_init',/,     &
          ' Error 1002: Error opening file: ',A,/1x,70('*'),2/)
 
-
       END SUBROUTINE arrayExtract_init
-
-
-
 
 !----------------------------------------------------------------------!
 !                                                                        !
@@ -760,9 +737,6 @@
 
       RETURN
       END SUBROUTINE arrayExtract_finl
-
-
-
 
 !----------------------------------------------------------------------!
 !                                                                        !
@@ -826,7 +800,6 @@
       RETURN
       END SUBROUTINE arrayExtract_prnt
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !                                                                      !
@@ -849,7 +822,6 @@
 
       RETURN
       END SUBROUTINE WRITE_INDEX
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -880,8 +852,6 @@
       RETURN
       END SUBROUTINE WRITE_INT
 
-
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !                                                                      !
@@ -909,8 +879,6 @@
 
       RETURN
       END SUBROUTINE WRITE_DBL
-
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -945,8 +913,6 @@
 
       RETURN
       END SUBROUTINE WRITE_LOG
-
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -1024,7 +990,6 @@
       enddo
       enddo
 
-
       MSG='  > Collecting array data.'
       if(dbgMode) CALL DBG_WRITE(trim(MSG))
 ! Global sum updates lAm and lBm for all ranks.
@@ -1053,8 +1018,6 @@
 
       RETURN
       END SUBROUTINE arrayExtract_int
-
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -1162,7 +1125,6 @@
       RETURN
       END SUBROUTINE arrayExtract_dbl
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !                                                                      !
@@ -1239,7 +1201,6 @@
       enddo
       enddo
       enddo
-
 
       MSG='  > Collecting array data.'
       if(dbgMode) CALL DBG_WRITE(trim(MSG))
