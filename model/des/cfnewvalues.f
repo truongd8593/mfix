@@ -34,7 +34,7 @@
       USE param1
       USE physprop
       use geometry, only: DO_K, NO_K
-      use multi_sweep_and_prune, only: aabb_t, multisap_sort, multisap_update, multisap, boxhandle
+      use multi_sweep_and_prune, only: aabb_t, multisap_sort, multisap_update
 
       IMPLICIT NONE
 !-----------------------------------------------

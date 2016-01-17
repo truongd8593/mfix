@@ -21,7 +21,6 @@
       USE des_thermo_cond
       USE discretelement
       USE run
-      use multi_sweep_and_prune, only: multisap, boxhandle
       use pair_manager
       use param1, only: one, small_number, zero
 

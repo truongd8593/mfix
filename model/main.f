@@ -31,10 +31,6 @@ MODULE MAIN
 !$ INTEGER :: length
 !$ INTEGER :: status
 
-!$ INTEGER num_threads, threads_specified, omp_id
-!$ INTEGER omp_get_num_threads
-!$ INTEGER omp_get_thread_num
-
    ! Flag to indicate one pass through iterate for steady
    ! state conditions.
    LOGICAL :: FINISH
@@ -60,13 +56,17 @@ CONTAINS
       USE compar, only: mype, pe_io
       USE cutcell, only: cartesian_grid
       USE error_manager, only: init_err_msg, finl_err_msg
-      USE funits, only: dmp_log
-      USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id
+      USE funits, only: dmp_log, unit_log
+      USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
       USE parallel_mpi, only: parallel_init, parallel_fin
       USE read_input, only: get_data
       USE run ,only: id_version
       USE time_cpu, only: CPU00, wall0
       IMPLICIT NONE
+
+!$    INTEGER num_threads, threads_specified, omp_id
+!$    INTEGER omp_get_num_threads
+!$    INTEGER omp_get_thread_num
 
       ! DISTIO
       ! If you change the value below in this subroutine, you must also
@@ -132,11 +132,11 @@ CONTAINS
       ! Write the initial part of the special output file(s)
       CALL WRITE_USR0
 
-      !$    CALL START_LOG
-      !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
-      !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified
-      !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
-      !$    CALL END_LOG
+!$    CALL START_LOG
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' Number of processors used = ', threads_specified
+!$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
+!$    CALL END_LOG
 
       !  setup for PC quickwin application
       CALL PC_QUICKWIN

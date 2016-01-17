@@ -54,8 +54,6 @@ CONTAINS
       USE particle_filter, only: FILTER_CELL
       USE particle_filter, only: FILTER_WEIGHT
 
-      USE multi_sweep_and_prune, only: boxhandle
-
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
       USE error_manager
@@ -506,7 +504,7 @@ CONTAINS
         USE derived_types, only: boxhandle
         USE discretelement
         USE mfix_pic
-        USE multi_sweep_and_prune, ONLY: boxhandle_grow, boxhandle
+        USE multi_sweep_and_prune, ONLY: boxhandle_grow
         USE particle_filter
         USE resize
         USE run
