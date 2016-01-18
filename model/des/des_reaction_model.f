@@ -16,7 +16,6 @@
       Use constant
       Use des_rxns
       Use des_thermo
-      Use derived_types, only: pic
       Use discretelement
       USE geometry
       USE indices
