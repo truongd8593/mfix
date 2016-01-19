@@ -34,6 +34,7 @@ MODULE MAIN
    ! Flag to indicate one pass through iterate for steady
    ! state conditions.
    LOGICAL :: FINISH
+   LOGICAL :: REALLY_FINISH
 
    ! Loop indices
    INTEGER :: M
@@ -398,39 +399,6 @@ CONTAINS
       ! Get the initial value of CPU time
       CALL CPU_TIME (CPU0)
 
-   END SUBROUTINE START
-
-   SUBROUTINE START2
-      USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
-      USE check, only: check_mass_balance
-      USE compar, only: mpierr, mype, pe_io
-      USE coeff, only: init_coeff
-      USE cont, only: do_cont
-      USE cutcell, only: cartesian_grid, re_indexing, set_corner_cells
-      USE discretelement, only: discrete_element
-      USE drag, only: f_gs
-      USE error_manager, only: err_msg, flush_err_msg
-      USE fldvar, only: rop_g, rop_s
-      USE funits, only: dmp_log, unit_log, unit_res
-      USE interactive, only: init_interactive_mode
-      USE machine, only: start_log, end_log
-      USE mfix_netcdf, only: mfix_usingnetcdf
-#ifdef MPI
-      USE mpi, only: mpi_comm_world, mpi_barrier  ! ignore-depcomp
-#endif
-      USE output, only: dbgprn_layout
-      USE param1, only: n_spx, undefined, zero
-      USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
-      USE physprop, only: mmax
-      USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: interactive_mode, iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
-      USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
-      USE vtk, only: write_vtk_files
-      IMPLICIT NONE
-
-
       ! Find the solution of the equations from TIME to TSTOP at
       ! intervals of DT
 
@@ -493,7 +461,7 @@ CONTAINS
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
            DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
-   END SUBROUTINE START2
+   END SUBROUTINE START
 
    SUBROUTINE STEP
       !f2py threadsafe
@@ -561,6 +529,7 @@ CONTAINS
 
       IF (DT == UNDEFINED) THEN
          IF (FINISH) THEN
+            REALLY_FINISH = .TRUE.
             RETURN
          ELSE
             FINISH = .TRUE.
