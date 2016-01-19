@@ -38,3 +38,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | conversion in randno  |          |  
                   | generator.            |          |
 ==================================================================================================
+  01/19/2016      | fix fully entered     | Minor    |  des/mass_inflow_dem.f
+                  | particle type for DEM |          |  
+                  | inflows in DMP.       |          |
+==================================================================================================
