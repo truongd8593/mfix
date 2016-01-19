@@ -64,9 +64,9 @@ PROGRAM MFIX
   !-----------------------------------------------
   ! Modules
   !-----------------------------------------------
-   USE LEQSOL, ONLY: SOLVER_STATISTICS, REPORT_SOLVER_STATS
-   USE MAIN, ONLY: SETUP, START, STEP, END, NIT_TOTAL, FINISH, REALLY_FINISH
-   USE RUN, ONLY: NSTEP, AUTO_RESTART, AUTOMATIC_RESTART, ITER_RESTART, TIME, TSTOP
+   USE leqsol, only: SOLVER_STATISTICS, report_solver_stats
+   USE main, only: setup, start, end, nit_total
+   USE run, only: nstep, auto_restart, automatic_restart, iter_restart, time, tstop
 
    IMPLICIT NONE
 
@@ -77,19 +77,16 @@ PROGRAM MFIX
 
       CALL START
 
-      REALLY_FINISH = .FALSE.
-      DO
-         CALL STEP
-         IF (REALLY_FINISH) EXIT
-      ENDDO
+      ! The TIME loop begins here.............................................
+
+      CALL TIME_MARCH
 
       IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
-      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) THEN
-         CYCLE
-      ELSE
-         EXIT
-      ENDIF
+
+      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) CYCLE
+      EXIT
    ENDDO
+
 
    CALL END
 
