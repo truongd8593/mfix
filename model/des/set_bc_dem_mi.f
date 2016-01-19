@@ -120,14 +120,29 @@
 
 ! Check for min/max inlet velocity
             MAX_VEL = MAX(ABS(VEL_TMP(M)), MAX_VEL)
+
+! Calculate the number of particles of mass phase M are injected per
+! second for each solid phase present at the boundary.
+
+! Use the mass flow rate if defined.
+            IF(BC_MASSFLOW_s(BCV,M) /= UNDEFINED) THEN
+               NPMPSEC(M) = BC_MASSFLOW_s(BCV,M) / &
+                  (RO_s0(M)*(PI/6.d0*D_P0(M)**3))
+
+! Otherwise use the volumetric flow rate if defined.
+            ELSEIF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+               NPMpSEC(M) = BC_VOLFLOW_s(BCV,M) / (PI/6.d0*D_P0(M)**3)
+
 ! Calculate volumetric flow rate to convert to particle count. BC_AREA
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
-            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
+            ELSE
+               VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
 ! Calculate the number of particles of mass phase M are injected per
 ! second for each solid phase present at the boundary
-            NPMpSEC(M) = VOL_FLOW / (PI/6.d0*D_P0(M)**3)
+               NPMpSEC(M) = VOL_FLOW / (PI/6.d0*D_P0(M)**3)
 ! Write some debugging information if needed.
+            ENDIF
             if(dFlag) write(*,1100) M, VEL_TMP(M), NPMpSEC(M)
          ENDDO
 
