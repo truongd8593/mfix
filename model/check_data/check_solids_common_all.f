@@ -101,21 +101,6 @@
          ENDIF
       ENDDO
 
-! Check Dif_s0
-      DO M=1, MMAX_L
-         IF (Dif_s0(M) < ZERO) THEN
-            WRITE(ERR_MSG, 1001) trim(iVar('Dif_s0',M)), iVal(Dif_s0(M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDDO
-
-      DO M = MMAX_L+1, DIM_M
-         IF(Dif_s0(M) /= UNDEFINED)THEN
-            WRITE(ERR_MSG,1002) trim(iVar('Dif_s0',M))
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-         ENDIF
-      ENDDO
-
 ! Check C_ps0
       DO M=1, MMAX_L
          IF (C_PS0(M) < ZERO) THEN

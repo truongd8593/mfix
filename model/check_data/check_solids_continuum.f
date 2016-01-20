@@ -60,6 +60,12 @@
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO
+      DO M = SMAX+1, DIM_M
+         IF(DIF_S0(M) /= UNDEFINED)THEN
+            WRITE(ERR_MSG,1002) trim(iVar('Dif_s0',M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
 ! CHECK MU_s0
       def_mus0 = 0
