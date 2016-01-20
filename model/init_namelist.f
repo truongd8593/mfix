@@ -220,7 +220,6 @@
 !  <valid value=".FALSE." note="Default form."/>
       JACKSON = .FALSE.
 !</keyword>
-
 !<keyword category="Run Control" required="false">
 !  <description>
 !    Flag to enable Ishii form of momentum equations.
@@ -3234,7 +3233,7 @@
 !  <valid value=".TRUE." note="Call user-defined function."/>
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
-      USR_Ks(:DIM_M) = .FALSE.
+      USR_Difs(:DIM_M) = .FALSE.
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
