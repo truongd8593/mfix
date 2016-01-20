@@ -528,7 +528,8 @@
 
  5050 FORMAT(5X,'Average ',A,G12.5)
  5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
- 5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, 'MbErr%=', G11.4)
+ 5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
+             'MbErr%=', G11.4)
  5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
       I3,'MbErr%=', G11.4, ': ',A,' :-(')
 

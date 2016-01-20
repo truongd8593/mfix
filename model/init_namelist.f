@@ -3037,6 +3037,15 @@
 
 !<keyword category="Output Control" required="false">
 !  <description>
+!    Provide detailed logging of zero or negative specific heat errors.
+!  </description>
+!  <valid value=".FALSE." note="Do not log zero or negative specific heat errors."/>
+!  <valid value=".TRUE." note="Log zero or negative specific heat errors."/>
+      REPORT_NEG_SPECIFICHEAT = .FALSE.
+!</keyword>
+
+!<keyword category="Output Control" required="false">
+!  <description>
 !    Frequency to perform an overall species mass balance. Leaving
 !    undefined suppresses the mass balance calculations which can
 !    slightly extend run time.

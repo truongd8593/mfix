@@ -311,9 +311,6 @@
 ! calculations
       LOGICAL :: DEBUG_RESID
 
-! Generate log files when negative gas density is detected.
-      LOGICAL :: REPORT_NEG_DENSITY
-
        common /run_dp/ time      !for Linux
 
 

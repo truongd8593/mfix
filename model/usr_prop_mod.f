@@ -45,12 +45,14 @@
 !                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_USR_PROP(lprop, lM, lerr)
+      SUBROUTINE CALC_USR_PROP(lprop, lM, lL, lerr)
 
 ! Modules
 !-----------------------------------------------
       use compar, only: ijkstart3, ijkend3, myPE, numPEs
       use functions, only: fluid_at, wall_at, fluidorp_flow_at
+      use output, only: REPORT_NEG_DENSITY
+      use output, only: REPORT_NEG_SPECIFICHEAT
       use param1, only: undefined_i, zero
       use physprop, only: nmax
       use physprop, only: k_g, dif_g, c_pg, mu_g
@@ -59,10 +61,6 @@
       use fldvar, only: ro_s, p_s
       use visc_g, only: mu_gt, lambda_gt
       use visc_s, only: mu_s, lambda_s
-
-! Run time flag for generating negative gas density log files
-      use run, only: REPORT_NEG_DENSITY
-! Detect NaN in density for compressible flows.
       use utilities, only: mfix_isnan
 
       use error_manager
@@ -83,12 +81,14 @@
 ! Phase index 
       INTEGER, OPTIONAL, INTENT(IN) :: lM
 
+! Phase index 
+      INTEGER, OPTIONAL, INTENT(IN) :: lL
+
 ! Error index
 ! Arrays for storing errors:
 ! 100 - Negative gas phase density
 ! 101 - Negative solids phase density
 ! 10x - Unclassified
-! 900 - Invalid temperature in calc_CpoR
       INTEGER, OPTIONAL, INTENT(INOUT) :: lerr(0:numPEs-1)
 
 ! Local variables
@@ -96,7 +96,7 @@
 ! indices
       INTEGER :: IJK
 ! tmp indices
-      INTEGER :: M, N
+      INTEGER :: M, L, N
 ! Flag to write log header
       LOGICAL :: wHeader
 
@@ -107,6 +107,13 @@
          M = UNDEFINED_I
       ELSE
          M = lM
+      ENDIF
+
+! set local values for phase index
+      IF (.NOT.present(lL)) THEN
+         L = UNDEFINED_I
+      ELSE
+         L = lL
       ENDIF
          
       N = UNDEFINED_I
@@ -133,6 +140,11 @@
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
             CALL USR_PROPERTIES(lprop, IJK, 0, N)
+! report errors.
+            IF(C_PG(IJK) <= ZERO) THEN
+!               lErr(myPE) = 103
+               IF(REPORT_NEG_SPECIFICHEAT) CALL CPgErr_LOG(IJK, wHeader)
+            ENDIF
          ENDDO
  
 ! Solids physical properties: density
@@ -154,6 +166,11 @@
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
             CALL USR_PROPERTIES(lprop, IJK, M, N)
+! report errors.
+            IF(C_PS(IJK,M) <= ZERO) THEN
+!               lErr(myPE) = 104
+               IF(REPORT_NEG_SPECIFICHEAT) CALL CPsErr_LOG(IJK, M, wHeader)
+            ENDIF
          ENDDO
 
 ! Gas transport properties: conductivity
@@ -244,8 +261,8 @@
 ! Solids-solids exchange: interphase drag
       CASE(SolidsSolids_Drag)
          DO IJK=IJKSTART3,IJKEND3
-            IF (WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, M, N)
+            IF (.NOT.WALL_AT(IJK)) CYCLE
+            CALL USR_PROPERTIES(lprop, IJK, M, L)
          ENDDO
 
 ! error out
