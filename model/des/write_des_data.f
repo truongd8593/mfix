@@ -152,7 +152,7 @@
       CALL VTP_WRITE_DATA('ID', iGLOBAL_ID)
 
       DO NN=1, DES_USR_VAR_SIZE
-         CALL VTP_WRITE_DATA('User Defined Var', DES_USR_VAR(NN,:))
+         CALL VTP_WRITE_DATA(trim(iVar('USR_VAR',NN)),DES_USR_VAR(NN,:))
       ENDDO
 
       IF(PARTICLE_ORIENTATION) &
