@@ -18,7 +18,7 @@
       INTEGER, PARAMETER :: PVD_UNIT = 2050
 
 ! formatted file name
-      CHARACTER(LEN=64) :: FNAME_VTP
+      CHARACTER(LEN=511) :: FNAME_VTP
 
       INTERFACE VTP_WRITE_DATA
          MODULE PROCEDURE VTP_WRITE_DP1
@@ -237,7 +237,8 @@
 
 ! Modules
 !-----------------------------------------------
-      USE run, only: RUN_TYPE, RUN_NAME
+      use discretelement, only: VTP_DIR
+      use run, only: RUN_TYPE, RUN_NAME
 
       IMPLICIT NONE
 
@@ -258,6 +259,7 @@
 ! status of the vtp file to be written
       CHARACTER(LEN=8) :: STATUS_VTP
 
+      IF(TRIM(VTP_DIR)/='.') CALL CREATE_DIR(trim(VTP_DIR))
 
 ! Initial the global count.
       GLOBAL_CNT = 10
@@ -269,8 +271,13 @@
          NumberOfPoints = LOCAL_CNT
          WRITE(NoPc,"(I10.10)") NumberOfPoints
 
-         WRITE(fname_vtp,'(A,"_DES",I4.4,"_",I5.5,".vtp")') &
-            trim(run_name), vtp_findex, mype
+         IF(TRIM(VTP_DIR)/='.') THEN
+            WRITE(fname_vtp,'(A,"/",A,"_DES",I4.4,"_",I5.5,".vtp")') &
+               trim(VTP_DIR), trim(run_name), vtp_findex, mype
+         ELSE
+            WRITE(fname_vtp,'(A,"_DES",I4.4,"_",I5.5,".vtp")') &
+               trim(run_name), vtp_findex, mype
+         ENDIF
 
 ! Serial IO
       ELSE
@@ -295,8 +302,13 @@
          ENDDO
 
 ! set the file name and unit number and open file
-         WRITE(fname_vtp,'(A,"_DES_",I5.5,".vtp")') &
-            trim(run_name), vtp_findex
+         IF(TRIM(VTP_DIR)/='.') THEN
+            WRITE(fname_vtp,'(A,"/",A,"_DES_",I5.5,".vtp")') &
+               trim(VTP_DIR),trim(run_name), vtp_findex
+         ELSE
+            WRITE(fname_vtp,'(A,"_DES_",I5.5,".vtp")') &
+               trim(run_name), vtp_findex
+         ENDIF
       ENDIF
 
       IER = 0
@@ -319,7 +331,7 @@
 
 ! Open the file and record any erros.
          IF(IER == 0) THEN
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=DES_UNIT, FILE=FNAME_VTP,                        &
+            OPEN(CONVERT='BIG_ENDIAN',UNIT=DES_UNIT, FILE=FNAME_VTP,   &
                STATUS=STATUS_VTP, IOSTAT=IOS)
             IF(IOS /= 0) IER = 2
          ENDIF
@@ -366,6 +378,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE ADD_VTP_TO_PVD
 
+      use discretelement, only: VTP_DIR
       use run, only: RUN_TYPE, RUN_NAME
 
 !-----------------------------------------------
@@ -416,7 +429,7 @@
                IF(EXISTS_PVD) THEN
                   IER = 1
                ELSE
-                  OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
+                  OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,STATUS='NEW')
                   WRITE(PVD_UNIT,"(A)")'<?xml version="1.0"?>'
                   WRITE(PVD_UNIT,"(A)")'<VTKFile type="Collection" &
                      &version="0.1" byte_order="LittleEndian">'
@@ -431,7 +444,7 @@
             ELSE ! a restart run
                IF(EXISTS_PVD) THEN
 ! Open the file at the beginning.
-                  OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+                  OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
                      POSITION="REWIND",STATUS='OLD',IOSTAT=IOS)
                   IF(IOS /= 0) IER = 2
                ELSE ! a pvd file does not exist
@@ -475,7 +488,7 @@
             FIRST_PASS = .FALSE.
 
          ELSE ! not FIRST_PASS
-            OPEN(CONVERT='BIG_ENDIAN',UNIT=PVD_UNIT,FILE=FNAME_PVD,&
+            OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
                POSITION="APPEND",STATUS='OLD',IOSTAT=IOS)
             IF (IOS /= 0) IER = 2
          ENDIF
