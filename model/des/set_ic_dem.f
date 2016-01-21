@@ -13,7 +13,6 @@
       SUBROUTINE SET_IC_DEM
 
       use run, only: ENERGY_EQ, SPECIES_EQ
-      use run, only: RUN_TYPE
 
       use ic
 
@@ -47,8 +46,6 @@
       INTEGER :: M, NN
       INTEGER :: NP
       INTEGER :: NINDX
-
-      IF(RUN_TYPE /= 'NEW') RETURN
 
       CALL INIT_ERR_MSG("SET_IC_DEM")
 
