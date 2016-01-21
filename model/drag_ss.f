@@ -88,7 +88,6 @@
 !---------------------------------------------------------------------//
       use compar, only: mype, ijkstart3, ijkend3
       USE constant, only: segregation_slope_coefficient
-      USE constant, only: c_e, c_f, pi
       USE drag, only: f_ss
       USE fldvar, only: d_p, ro_s, rop_s, theta_m, p_star
       USE fldvar, only: u_s, v_s, w_s
@@ -96,7 +95,6 @@
       use functions, only: wall_at, funlm
       use functions, only: im_of, jm_of, km_of
       USE indices, only: i_of
-      USE param1, only: zero, one
       USE physprop, only: smax, close_packed
       USE rdf, only: g_0
       IMPLICIT NONE
@@ -125,10 +123,6 @@
       DOUBLE PRECISION :: G0_ML
 ! solid-solid drag coefficient
       DOUBLE PRECISION :: lDss
-! Sum of particle diameters
-      DOUBLE PRECISION :: DPSUM
-! Intermediate calculation
-      DOUBLE PRECISION :: const
 
 !---------------------------------------------------------------------//
       LM = FUNLM(L,M)
@@ -165,10 +159,7 @@
          G0_ML = G_0(IJK,L,M)
 
 ! evaluating the solids-solids drag coefficient
-         DPSUM = D_PL + D_PM
-         const = 3.d0*(ONE + C_E)*(PI/2.d0 + C_F*PI*PI/8.d0)*&
-         DPSUM**2/(2.d0*PI*(RO_L*D_PL**3+RO_M*D_PM**3))
-         ldss = const * G0_ML * VREL
+         CALL DRAG_SS_SYAM0(ldss, d_pm, d_pl, ro_m, ro_l, g0_ml, vrel)
          F_SS(IJK,LM) = lDss*ROP_S(IJK,M)*ROP_S(IJK,L)
 
 ! Gera: accounting for particle-particle drag due to enduring contact
@@ -182,6 +173,50 @@
       RETURN
       END SUBROUTINE DRAG_SS_SYAM
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: DRAG_SS_SYAM0                                           C
+!  Purpose: Created as a work-around for des/hybrid cases that need    C
+!  to use this model while passing particle type information.          C
+!                                                                      C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+      SUBROUTINE DRAG_SS_SYAM0(ldss, d_pm, d_pl, ro_m, ro_l, g0_ml, vrel)
+
+! Modules 
+!---------------------------------------------------------------------//
+      use param1, only: one
+      use constant, only: c_e, c_f, pi
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solid-solid drag coefficient
+      DOUBLE PRECISION, INTENT(OUT) :: lDss
+! particle diameters of phase M and phase L
+      DOUBLE PRECISION, INTENT(IN) :: D_pm, D_pl
+! particle densities of phase M and phase L
+      DOUBLE PRECISION, INTENT(IN) :: RO_M, RO_L
+! radial distribution function between phases M and L
+      DOUBLE PRECISION, INTENT(IN) :: G0_ML
+! relative velocity between solids phase m and l
+      DOUBLE PRECISION, INTENT(IN) :: VREL
+
+! Local variables
+!---------------------------------------------------------------------//
+! Sum of particle diameters
+      DOUBLE PRECISION :: DPSUM
+! Intermediate calculation
+      DOUBLE PRECISION :: const
+!---------------------------------------------------------------------//
+
+      DPSUM = D_PL + D_PM
+      const = 3.d0*(ONE + C_E)*(PI/2.d0 + C_F*PI*PI/8.d0)*&
+              DPSUM**2/(2.d0*PI*(RO_L*D_PL**3+RO_M*D_PM**3))
+      ldss = const * G0_ML * VREL
+
+      RETURN
+      END SUBROUTINE DRAG_SS_SYAM0
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !

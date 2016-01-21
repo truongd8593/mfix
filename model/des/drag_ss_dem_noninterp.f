@@ -122,7 +122,7 @@
 ! Relative velocity magnitude.
                VREL = sqrt(dot_product(VSLP,VSLP))
 
-               CALL DRAG_SS_SYAM(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
+               CALL DRAG_SS_SYAM0(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),  &
                   RO_SOL(NP), G0_ML, VREL)
 
                lDss = lDss*ROP_S(IJK,M)*RO_Sol(NP)
@@ -266,7 +266,7 @@
                L = PIJK(NP,5)
                G0_ML = G_0(IJK,L,M)
 
-               CALL DRAG_SS_SYAM(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
+               CALL DRAG_SS_SYAM0(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
                   RO_SOL(NP), G0_ML, VREL)
 
                lDss = lDss*ROP_S(IJK,M)*RO_Sol(NP)
