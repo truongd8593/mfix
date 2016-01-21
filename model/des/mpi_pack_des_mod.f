@@ -222,6 +222,8 @@
       use discretelement, only: DES_EXPLICITLY_COUPLED
 ! Explicit particle drag force
       use discretelement, only: DRAG_FC
+! Explict convection and HOR
+      use des_thermo, only: CONV_Qs, RXNS_Qs
 ! Cells and weights for interpolation
       use particle_filter, only: FILTER_WEIGHT
 
@@ -329,35 +331,41 @@
 ! 22) Species composition
             IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
-! 23) Explicit drag force
-            IF(DES_EXPLICITLY_COUPLED) &
-               call pack_dbuf(lbuf, drag_fc(lcurpar,:),pface)
-! 24) User defined variable
+! 23) User defined variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
-! 25) Particle orientation
+! 24) Particle orientation
             IF(PARTICLE_ORIENTATION) &
                call pack_dbuf(lbuf,orientation(:,lcurpar),pface)
 
 ! -- Higher order integration variables
             IF (DO_OLD) THEN
-! 26) Position (previous)
+! 25) Position (previous)
                call pack_dbuf(lbuf,des_pos_old(lcurpar,:) +            &
                   dcycl_offset(pface,:),pface)
-! 27) Translational velocity (previous)
+! 26) Translational velocity (previous)
                call pack_dbuf(lbuf,des_vel_old(lcurpar,:),pface)
-! 28) Rotational velocity (previous)
+! 27) Rotational velocity (previous)
                call pack_dbuf(lbuf,omega_old(lcurpar,:),pface)
-! 29) Translational acceleration (previous)
+! 28) Translational acceleration (previous)
                call pack_dbuf(lbuf,des_acc_old(lcurpar,:),pface)
-! 30) Rotational acceleration (previous)
+! 29) Rotational acceleration (previous)
                call pack_dbuf(lbuf,rot_acc_old(lcurpar,:),pface)
+            ENDIF
+
+            IF(DES_EXPLICITLY_COUPLED) THEN
+! 30) Explicit drag force
+               call pack_dbuf(lbuf, drag_fc(lcurpar,:),pface)
+! 31) Explicit convective heat transfer
+               IF(ENERGY_EQ) call pack_dbuf(lbuf, conv_qs(lcurpar),pface)
+! 32) Explicit heat of reaction
+               IF(ANY_SPECIES_EQ) call pack_dbuf(lbuf, rxns_qs(lcurpar),pface)
             ENDIF
 
 ! PIC particles are removed and the number of particles on the processor
 ! is decremented.
             IF (MPPIC) THEN
-! 32) Statistical weight
+! 34) Statistical weight
                call pack_dbuf(lbuf,des_stat_wt(lcurpar),pface)
                call set_nonexistent(lcurpar)
                pip = pip - 1
@@ -406,18 +414,18 @@
           if(is_nonexistent(lneigh)) cycle
           if(is_exiting(lneigh)) cycle
 
-! 34) Global ID of particle being packed.
+! 35) Global ID of particle being packed.
           call pack_dbuf(lbuf,iglobal_id(lcurpar),pface)
-! 35) DES grid IJK of cell receiving the particle.
+! 36) DES grid IJK of cell receiving the particle.
           call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lcurpar),pface,    &
                ineighproc(pface)),pface)
-! 36) Global ID of neighbor particle.
+! 37) Global ID of neighbor particle.
           call pack_dbuf(lbuf,iglobal_id(lneigh),pface)
-! 37) DES grid IJK of cell containing the neighbor particle.
+! 38) DES grid IJK of cell containing the neighbor particle.
           call pack_dbuf(lbuf,dg_ijkconv(dg_pijkprv(lneigh),pface,     &
                ineighproc(pface)),pface)
-! 38) Tangential collision history.
-          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface) 
+! 39) Tangential collision history.
+          call pack_dbuf(lbuf,PFT_NEIGHBOR(:,CC),pface)
 ! Increment the number of pairs being sent.
           num_neighborlists_to_send = num_neighborlists_to_send + 1
        enddo
@@ -426,7 +434,7 @@
 ! stored before the pairing data so the receiving process knows the
 ! amount of data to 'unpack.'
       lbuf = num_neighborlists_send_buf_loc
-! 33) Number of pair datasets.
+! 34) Number of pair datasets.
       call pack_dbuf(lbuf,num_neighborlists_to_send,pface)
 
       dsendbuf(1+mod(pface,2))%facebuf(1) = lparcnt
