@@ -42,3 +42,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | particle type for DEM |          |  
                   | inflows in DMP.       |          |
 ==================================================================================================
+  01/22/2016      | Increase max value of | Minor    |  cartesian_grid/check_data_cartesian.f
+                  | FAC_DIM_MAX_CUT_CELL  |          |  
+                  | to 5.0                |          |
+==================================================================================================
