@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 
 import os, sys
-print os.path.realpath('build')
-sys.path.append(os.path.realpath('build'))
-# sys.path.append(os.getcwd())
+sys.path.append(os.getcwd())
 
 import thread
 import time

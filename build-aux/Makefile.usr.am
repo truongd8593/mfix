@@ -113,14 +113,22 @@ postmfix$(EXEEXT): $(LIBMFIX)
 
 ################################################################
 #                                                              #
-#      Python launcher for mfix (for sockets support)          #
+#           pymfix Python module                               #
 #                                                              #
 ################################################################
 
-mfix.so: $(LIBMFIX)
-	$(MAKE) -C $(top_builddir) $@
-	rm -f $@
-	$(LN_S) $(top_builddir)/mfix.so $@
+pymfix_src = \
+	$(top_srcdir)/model/param_mod.f \
+	$(top_srcdir)/model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/model/fldvar_mod.f \
+	$(top_srcdir)/model/des/discretelement_mod.f \
+	$(top_srcdir)/model/main.f \
+	$(top_srcdir)/model/run_mod.f
+
+pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
+
+mfix.so: $(LIBMFIX) $(bin_PROGRAMS)
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch
 
 ################################################################
 #                                                              #

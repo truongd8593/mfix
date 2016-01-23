@@ -57,25 +57,6 @@ libmfix_a_SOURCES = model/ODEPACK.F
 
 ################################################################
 #                                                              #
-#           pymfix Python module                               #
-#                                                              #
-################################################################
-
-mfix.so: libmfix.a
-	f2py -c  --f77exec=$(FC)  --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(addprefix $(top_srcdir)/,$(pymfix_src)) $(filter-out $(pymfix_OBJECTS),$(libmfix_a_OBJECTS)) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch
-
-pymfix_src = \
-	model/param_mod.f \
-	model/dmp_modules/compar_mod.f \
-	model/fldvar_mod.f \
-	model/des/discretelement_mod.f \
-	model/main.f \
-	model/run_mod.f
-
-pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
-
-################################################################
-#                                                              #
 #           postmfix executable                                #
 #                                                              #
 ################################################################
