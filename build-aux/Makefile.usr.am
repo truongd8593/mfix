@@ -45,10 +45,6 @@ mfix_LDADD += $(LIBMFIX)
 build:
 	$(LN_S) $(top_builddir) $@
 
-mfix.so:
-	$(MAKE) -C $(top_builddir) $@
-	$(LN_S) $(top_builddir)/mfix.so $@
-
 .PHONY: $(LIBMFIX) TAGS run test mfix.so
 
 # top level directory needs to be built first
@@ -123,6 +119,8 @@ postmfix$(EXEEXT): $(LIBMFIX)
 
 mfix.so: $(LIBMFIX)
 	$(MAKE) -C $(top_builddir) $@
+	rm -f $@
+	$(LN_S) $(top_builddir)/mfix.so $@
 
 ################################################################
 #                                                              #
