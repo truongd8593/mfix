@@ -1074,13 +1074,13 @@
             NEXT_RECA = NEXT_RECA + 1
             DO LC = 1, MMAX
                READ (UNIT_RES, REC=NEXT_RECA) INERT_SPECIES(LC), &
-                  BASE_ROs(LC), (X_s0(LC,N),N=1,NMAX(LC))
+                  RO_s0(LC), (X_s0(LC,N),N=1,NMAX(LC))
                NEXT_RECA = NEXT_RECA + 1
             ENDDO
          ENDIF
          call bcast(SOLVE_ROs,PE_IO)
          call bcast(INERT_SPECIES,PE_IO)
-         call bcast(BASE_ROs,PE_IO)
+         call bcast(RO_s0,PE_IO)
          call bcast(X_s0,PE_IO)
 
          ANY_SOLVE_ROs = ANY(SOLVE_ROs)
