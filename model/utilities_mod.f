@@ -71,86 +71,70 @@ CONTAINS
       USE run
       USE compar
       USE discretelement
+      use mpi_utility, only: GLOBAL_ALL_MAX
+      USE toleranc, only: max_allowed_vel, max_inlet_vel, max_inlet_vel_fac
       USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-      INTEGER :: L, I, J, K, IJK, IJK2, M
+      INTEGER :: L, I, J, K, IJK, M
+      DOUBLE PRECISION :: maxVEL
 !-----------------------------------------------
 
 ! initializing
-      MAX_VEL_INLET = ZERO
+      maxVEL = ZERO
 
       DO L = 1, DIMENSION_BC
-         IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE_ENUM(L) == MASS_INFLOW .OR. BC_TYPE_ENUM(L) == P_INFLOW) THEN
 
-               DO K = BC_K_B(L), BC_K_T(L)
-                  DO J = BC_J_S(L), BC_J_N(L)
-                     DO I = BC_I_W(L), BC_I_E(L)
-                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                        IJK = FUNIJK(I,J,K)
+         IF(.NOT.(BC_DEFINED(L).AND.(BC_TYPE_ENUM(L)==MASS_INFLOW .OR. &
+            BC_TYPE_ENUM(L) == P_INFLOW))) CYCLE
 
-                        SELECT CASE (BC_PLANE(L))
-                        CASE ('S')
-                           IJK2 = JM_OF(IJK)
-                           IF( ABS(V_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_G(IJK2))
-                        CASE ('N')
-                           IF( ABS(V_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_G(IJK))
-                        CASE ('W')
-                           IJK2 = IM_OF(IJK)
-                           IF( ABS(U_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_G(IJK2))
-                        CASE ('E')
-                           IF( ABS(U_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_G(IJK))
-                        CASE ('B')
-                           IJK2 = KM_OF(IJK)
-                           IF( ABS(W_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_G(IJK2))
-                        CASE ('T')
-                           IF( ABS(W_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_G(IJK))
-                        END SELECT
+         DO K = BC_K_B(L), BC_K_T(L)
+         DO J = BC_J_S(L), BC_J_N(L)
+         DO I = BC_I_W(L), BC_I_E(L)
 
-                       IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
-                          SELECT CASE (BC_PLANE(L))
-                           CASE ('S')
-                              IJK2 = JM_OF(IJK)
-                              DO M = 1, MMAX
-                                 IF( ABS(V_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_s(IJK2, M))
-                              ENDDO
-                           CASE ('N')
-                              DO M = 1, MMAX
-                                IF( ABS(V_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_s(IJK, M))
-                              ENDDO
-                           CASE ('W')
-                              IJK2 = IM_OF(IJK)
-                              DO M = 1, MMAX
-                                IF( ABS(U_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_s(IJK2, M))
-                              ENDDO
-                           CASE ('E')
-                              DO M = 1, MMAX
-                                IF( ABS(U_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_s(IJK, M))
-                              ENDDO
-                           CASE ('B')
-                              IJK2 = KM_OF(IJK)
-                              DO M = 1, MMAX
-                                IF( ABS(W_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_s(IJK2, M))
-                              ENDDO
-                           CASE ('T')
-                              DO M = 1, MMAX
-                                IF( ABS(W_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_s(IJK, M))
-                              ENDDO
-                           END SELECT
-                        ENDIF   ! end if (.not.des_continuum_coupled .or. des_continuum_hybrid)
+            IF (.NOT.IS_ON_myPE_OWNS(I,J,K)) CYCLE
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE
+            IJK = FUNIJK(I,J,K)
 
-                     ENDDO
-                  ENDDO
-               ENDDO
+            SELECT CASE (BC_PLANE(L))
+            CASE ('E'); maxVEL = max(maxVEL,abs(U_G(IJK)))
+            CASE ('N'); maxVEL = max(maxVEL,abs(V_G(IJK)))
+            CASE ('T'); maxVEL = max(maxVEL,abs(W_G(IJK)))
+            CASE ('W'); maxVEL = max(maxVEL,abs(U_G(IM_OF(IJK))))
+            CASE ('S'); maxVEL = max(maxVEL,ABS(V_G(JM_OF(IJK))))
+            CASE ('B'); maxVEL = max(maxVEL,abs(W_G(KM_OF(IJK))))
+            END SELECT
 
-           ENDIF
-         ENDIF
+            DO M=1,MMAX
+               SELECT CASE (BC_PLANE(L))
+               CASE ('E'); maxVEL = max(maxVEL,abs(U_s(IJK,M)))
+               CASE ('N'); maxVEL = max(maxVEL,abs(V_s(IJK,M)))
+               CASE ('T'); maxVEL = max(maxVEL,abs(W_s(IJK,M)))
+               CASE ('W'); maxVEL = max(maxVEL,abs(U_s(IM_OF(IJK),M)))
+               CASE ('S'); maxVEL = max(maxVEL,abs(V_s(JM_OF(IJK),M)))
+               CASE ('B'); maxVEL = max(maxVEL,abs(W_s(KM_OF(IJK),M)))
+               END SELECT
+            ENDDO
+
+         ENDDO
+         ENDDO
+         ENDDO
       ENDDO
+
+      CALL GLOBAL_ALL_MAX(maxVEL, MAX_VEL_INLET)
+
+! If no inlet velocity is specified, use an upper limit defined in
+! toleranc_mod.f
+      IF(MAX_VEL_INLET <= SMALL_NUMBER) THEN
+         MAX_VEL_INLET = MAX_ALLOWED_VEL
+         IF(UNITS == 'SI') MAX_INLET_VEL = 1D-2*MAX_ALLOWED_VEL
+      ELSE
+! Scale the value using a user defined scale factor
+         MAX_VEL_INLET = MAX_INLET_VEL_FAC*MAX_VEL_INLET
+      ENDIF
 
       RETURN
       END FUNCTION MAX_VEL_INLET

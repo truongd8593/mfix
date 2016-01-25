@@ -480,7 +480,7 @@ CONTAINS
       USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      USE toleranc, only: max_allowed_vel, max_inlet_vel, max_inlet_vel_fac
+      USE toleranc, only: max_inlet_vel
       USE utilities, only: max_vel_inlet
       IMPLICIT NONE
 
@@ -574,16 +574,8 @@ CONTAINS
          ODT = ODT * 2.0d0
       ENDIF
 
-      ! Check for maximum velocity at inlet to avoid convergence problems
-      MAX_INLET_VEL = 100.0d0*MAX_VEL_INLET()
-      ! if no inlet velocity is specified, use an upper limit defined in
-      ! toleranc_mod.f
-      IF(MAX_INLET_VEL <= SMALL_NUMBER) THEN
-         MAX_INLET_VEL = MAX_ALLOWED_VEL
-         IF (UNITS == 'SI') MAX_INLET_VEL = 1D-2 * MAX_ALLOWED_VEL
-      ENDIF
-      ! Scale the value using a user defined scale factor
-      MAX_INLET_VEL = MAX_INLET_VEL * MAX_INLET_VEL_FAC
+! Check for maximum velocity at inlet to avoid convergence problems
+      MAX_INLET_VEL = MAX_VEL_INLET()
 
       ! Advance the solution in time by iteratively solving the equations
 150   CALL ITERATE (IER, NIT)
