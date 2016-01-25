@@ -728,8 +728,6 @@
       use run, only: SOLVE_ROs
 ! User specified: constant solids density
       use physprop, only: RO_s0
-! Calculated baseline variable solids density.
-      use physprop, only: BASE_ROs
 ! Baseline species densities
       use physprop, only: RO_Xs0
 ! Baseline species mass fractions.
@@ -889,7 +887,7 @@
 
 ! All of the information for variable solids density has been verified
 ! as of this point. Calculate and store the baseline density.
-            BASE_ROs(M) = EOSS0(M)
+            RO_s0(M) = EOSS0(M)
 
 ! Check physical restrictions on constant solids density input.
          ELSEIF(RO_S0(M) <= ZERO) THEN

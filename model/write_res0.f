@@ -382,7 +382,7 @@
       NEXT_RECA = NEXT_RECA + 1
       DO LC = 1, MMAX
          IDX = INERT_SPECIES(LC)
-         WRITE (UNIT_RES, REC=NEXT_RECA) IDX, BASE_ROs(LC),&
+         WRITE (UNIT_RES, REC=NEXT_RECA) IDX, RO_s0(LC),&
             (X_s0(LC,NN),NN=1,NMAX(LC))
          NEXT_RECA = NEXT_RECA + 1
       ENDDO

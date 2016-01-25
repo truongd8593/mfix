@@ -642,8 +642,8 @@
       use run, only: GRANULAR_ENERGY
 ! Flag. Solve variable solids density
       use run, only: SOLVE_ROs
-! Baseline solids density, baseline mass fraction, index of intert
-      use physprop, only: BASE_ROs, X_S0, INERT_SPECIES
+! Baseline solids mass fraction, index of intert
+      use physprop, only: X_S0, INERT_SPECIES
 ! Specified constant solids density.
       use physprop, only: RO_S0
 ! Number of gas phase species
@@ -855,7 +855,7 @@
 
 ! Set the solids density for the IC region.
          IF(SKIP(M)) THEN
-            IC_ROs(M) = merge(BASE_ROs(M), RO_s0(M), SOLVE_ROs(M))
+            IC_ROs(M) = merge(RO_s0(M), RO_s0(M), SOLVE_ROs(M))
 
          ELSEIF(.NOT.SOLVE_ROs(M)) THEN
             IC_ROs(M) = RO_s0(M)
@@ -876,7 +876,7 @@
          'necessary corrections to the data file.')
 
 ! Calculate the solids density.
-            IC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),               &
+            IC_ROs(M) = EOSS(RO_s0(M), X_s0(M,INERT),                  &
                IC_X_S(ICV,M,INERT))
          ENDIF
 

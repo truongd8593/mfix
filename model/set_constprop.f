@@ -178,7 +178,7 @@
 ! function ep_s works for discrete phases. might be able to move this
 ! to set_ic_dem and set_ic_mppic. also required d_p(ijk,m) for hybrid
 ! use.  note check_solids_common_all ensures d_p0 is set for all
-! solids defined also either ro_s0 must be set or base_ros
+! solids defined also either ro_s0 must be set or ro_s0
       DO M = 1, MMAX+DES_MMAX
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN

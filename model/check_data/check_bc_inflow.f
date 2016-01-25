@@ -247,7 +247,7 @@
       use param, only: dim_m
       use param1, only: undefined, one, zero
       use physprop, only: ro_g0, ro_s0
-      use physprop, only: inert_species, x_s0, base_ros
+      use physprop, only: inert_species, x_s0
       use run, only: solve_ros
       use toleranc, only: compare
       use error_manager
@@ -339,7 +339,7 @@
          ELSE
 ! presence of non-zero inert species is checked by bc_inflow
             INERT = INERT_SPECIES(M)
-            BC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),&
+            BC_ROs(M) = EOSS(RO_s0(M), X_s0(M,INERT),&
                BC_X_S(BCV,M,INERT))
          ENDIF
 

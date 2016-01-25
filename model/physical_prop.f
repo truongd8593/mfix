@@ -226,7 +226,7 @@
       use output, only: REPORT_NEG_DENSITY
       use param1, only: undefined, zero
 ! Baseline/Unreaced solids density
-      use physprop, only: BASE_ROs
+      use physprop, only: RO_s0
 ! Initial mass fraction of inert species
       use physprop, only: X_S0
 ! Index of inert solids phase species.
@@ -273,17 +273,17 @@
 ! Set the index of the inert species
          IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-         minROPs = BASE_ROs(M)*(DIL_FACTOR_VSD*DIL_EP_s)
+         minROPs = RO_s0(M)*(DIL_FACTOR_VSD*DIL_EP_s)
 
 ! Calculate the solids denisty over all cells.
          IJK_LP: DO IJK = IJKSTART3, IJKEND3
             IF(WALL_AT(IJK)) cycle IJK_LP
             IF(ROP_s(IJK,M) > minROPs) THEN
-               RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS), &
+               RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   X_s(IJK,M,IIS))
             ELSE
-!               RO_s(IJK,M) = BASE_ROs(M)
-               RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS), &
+!               RO_s(IJK,M) = RO_s0(M)
+               RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS), &
                   DIL_INERT_X_VSD(M))
             ENDIF
 
@@ -672,7 +672,7 @@
 !
       use indices, only: i_of, j_of, k_of
 ! Baseline/Unreaced solids density
-      use physprop, only: BASE_ROs
+      use physprop, only: RO_s0
 ! Initial mass fraction of inert species
       use physprop, only: X_S0
 ! Index of inert solids phase species.
@@ -728,7 +728,7 @@
       NN = INERT_SPECIES(M)
       write(lUnit,1001) IJK, I_OF(IJK), J_OF(IJK), K_OF(IJK)
       write(lUnit,"(6x,A,1X,g12.5)",advance='no') 'RO_s:', RO_s(IJK,M)
-      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'Base:', BASE_ROs(M)
+      write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'Base:', RO_s0(M)
       write(lUnit,"(2x,A,1X,g12.5)",advance='no') 'X_s0:', X_s0(M,NN)
       write(lUnit,"(2x,A,1X,g12.5)") 'X_s:', X_s(IJK,M,NN)
 
