@@ -18,7 +18,7 @@
   UNITS = 'CGS'
 
   TIME =   0.0
-  TSTOP =  1.0
+  TSTOP =  0.1
 
 
 
