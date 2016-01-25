@@ -133,7 +133,7 @@ CONTAINS
          IF(UNITS == 'SI') MAX_INLET_VEL = 1D-2*MAX_ALLOWED_VEL
       ELSE
 ! Scale the value using a user defined scale factor
-         MAX_VEL_INLET = MAX_INLET_VEL_FAC*MAX_VEL_INLET
+         MAX_VEL_INLET = 100.0d0*MAX_INLET_VEL_FAC*MAX_VEL_INLET
       ENDIF
 
       RETURN
