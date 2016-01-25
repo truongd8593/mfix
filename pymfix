@@ -6,7 +6,8 @@ sys.path.append(os.getcwd())
 import thread
 import time
 
-from twisted.internet import reactor, protocol
+from flask import Flask, render_template
+app = Flask(__name__)
 
 import mfix
 
@@ -15,31 +16,49 @@ responses = {}
 
 mfix_stopped = False
 
+# change any variable...
+# mfix.run.time  = 1000
+# mfix.run.tstop = mfix.run.tstop/2
+# mfix.run.dt    = 10
+
+# response = 'the pressure is %s \n tstop is %s' % (str(mfix.fldvar.p_g[:100]),mfix.run.tstop)
+
 def run_mfix():
     global mfix_stopped
 
     mfix.main.setup()
     mfix.main.start()
-    while mfix.run.time < mfix.run.tstop:
-        if requests:
-            # requests would only arrive at rank 0
-            req_id,command = requests.popitem()
-        else:
-            # command is empty for rank>0
-            req_id,command = '',''
+    while True:
+        while not mfix.main.really_finish:
+            if requests:
+                # requests would only arrive at rank 0
+                req_id,command = requests.popitem()
+            else:
+                # command is empty for rank>0
+                req_id,command = '',''
 
-        # broadcast command from rank 0 to all ranks
-        command = mfix.main.do_mpi_bcast(command)
+            # broadcast command from rank 0 to all ranks
+            command = mfix.main.do_mpi_bcast(command)
 
-        command = ''.join(command).strip()
+            command = ''.join(command).strip()
 
-        if command:
-            handle(req_id,command)
+            if command:
+                handle(req_id,command)
 
-        if mfix_stopped:
-            time.sleep(1)
-        else:
-            mfix.main.step()
+            if mfix_stopped:
+                time.sleep(1)
+            else:
+                mfix.main.step()
+            leftover = (mfix.run.tstop - mfix.run.time)
+
+        # TODO: support automatic restart
+        # if (mfix.leqsol.solver_statistics):
+        #     mfix.leqsol.report_solver_stats(mfix.main.nit_total, mfix.run.nstep)
+        # if (mfix.run.auto_restart and mfix.run.automatic_restart and mfix.run.iter_restart < 10):
+        #     continue
+
+        break
+
     mfix.main.end()
 
 def handle(req_id,command):
@@ -49,9 +68,10 @@ def handle(req_id,command):
     print "THE COMMAND IS",cmd
     if cmd=='help':
         responses[req_id] = '''Usage:
-        go                                  - (re)start mfix
+        get VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - get value of variable [ for a certain index range ]
         list                                - list variables that can be set
         set VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - set variable to value [ for a certain index range ]
+        start                               - (re)start mfix
         step                                - execute one timestep
         stop                                - stop mfix
         \n'''
@@ -69,7 +89,7 @@ def handle(req_id,command):
         responses[req_id] = 'STOPPING MFIX\n'
         mfix_stopped = True
 
-    elif cmd=='go':
+    elif cmd=='start':
         responses[req_id] = 'STARTING MFIX\n'
         mfix_stopped = False
 
@@ -110,42 +130,52 @@ def funijk(i,j,k):
 def is_on_mype_owns(li, lj, lk):
       return li >= mfix.compar.istart and li <= mfix.compar.iend and lj >= mfix.compar.jstart and lj <= mfix.compar.jend and lk >= mfix.compar.kstart and lk <= mfix.compar.kend
 
-class Echo(protocol.Protocol):
-    """This is just about the simplest possible protocol"""
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    def dataReceived(self, data):
-        "Called with data sent from client."
-        # Should make sure this routine is synchronized
+@app.route('/help',methods=['GET'])
+def help():
+    return do_command( "HELP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        req_id = thread.get_ident()
+@app.route('/list',methods=['GET'])
+def list():
+    return do_command( "LIST" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        requests[req_id] = data
+@app.route('/set',methods=['POST'])
+def set():
+    return do_command( "SET" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        while req_id not in responses:
-            pass
+@app.route('/get',methods=['GET'])
+def get():
+    return do_command( "GET" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        self.transport.write(responses[req_id])
-        del responses[req_id]
+@app.route('/start',methods=['PUT'])
+def start():
+    return do_command( "START" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        # change any variable...
-        # mfix.run.time  = 1000
-        # mfix.run.tstop = mfix.run.tstop/2
-        # mfix.run.dt    = 10
+@app.route('/stop',methods=['PUT'])
+def stop():
+    return do_command( "STOP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-        # response = 'the pressure is %s \n tstop is %s' % (str(mfix.fldvar.p_g[:100]),mfix.run.tstop)
+def do_command(cmd):
+    req_id = thread.get_ident()
+    requests[req_id] = cmd
+    while req_id not in responses:
+        pass
+    resp = responses[req_id]
+    del responses[req_id]
+
+    return resp
 
 def main():
-    """This runs the protocol on port 8000"""
+    """This starts the Flask server on port 5000 """
     thread.start_new_thread(run_mfix, ())
     time.sleep(1)
 
     if 0==mfix.compar.mype:
-        factory = protocol.ServerFactory()
-        factory.protocol = Echo
-        reactor.listenTCP(8000,factory)
-        reactor.run()
-    else:
-        while(True): time.sleep(1)
+        app.run(host='0.0.0.0',debug=False)
+    while(True): time.sleep(1)
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
