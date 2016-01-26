@@ -29,8 +29,12 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 MODULE DES_THERMO_COND
+ 
+
 
 CONTAINS
+
+
 
       FUNCTION DES_CONDUCTION(I, J, CENTER_DIST, iM, iIJK)
 
@@ -79,6 +83,10 @@ CONTAINS
       DOUBLE PRECISION lK_eff
 ! Radius of contact area
       DOUBLE PRECISION lRadius
+! Particle overlap (simulated and corrected)
+      DOUBLE PRECISION OLAP_Sim, OLAP_actual
+! Corrected center distance
+      DOUBLE PRECISION CENTER_DIST_CORR
 
 ! Functions
 !---------------------------------------------------------------------//
@@ -96,13 +104,25 @@ CONTAINS
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
 !---------------------------------------------------------------------//
          Q_pp = 0.0
+
+! Initialize corrected center-center distance
+         CENTER_DIST_CORR = CENTER_DIST
          IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
+! Correct particle overlap to account for artificial softening
+            OLAP_Sim = MAX_RAD + MIN_RAD - CENTER_DIST
+            IF(Im.ge.Jm)THEN
+               OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Jm,Im)
+            ELSE
+               OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Im,Jm)
+            ENDIF
+            CENTER_DIST_CORR = MAX_RAD + MIN_RAD - OLAP_Actual
 ! Effective thermal conductivity
             lK_eff = K_eff(K_s0(iM),K_s0(jM))
 ! Effective contact area's radius
             lRadius = RADIUS(MAX_RAD, MIN_RAD)
 ! Inter-particle heat transfer
             Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
+
 ! Assign the inter-particle heat transfer to both particles.
          ENDIF
 
@@ -128,7 +148,7 @@ CONTAINS
 ! zero if the particles are not touching and is the radius of the
 ! shared contact area otherwise.
             RD_IN = ZERO
-            IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
+            IF(CENTER_DIST_CORR < (MAX_RAD + MIN_RAD) ) &
                RD_IN = RADIUS(MAX_RAD, MIN_RAD)
 ! Calculate the rate of heat transfer between the particles through the
 ! fluid using adaptive Simpson's rule to manage the integral.
@@ -164,7 +184,7 @@ CONTAINS
       DOUBLE PRECISION VALUE
 
 ! Calculate
-      VALUE = (R1**2 - R2**2 + CENTER_DIST**2)/(2.0d0 * R1 * CENTER_DIST)
+      VALUE = (R1**2 - R2**2 + CENTER_DIST_CORR**2)/(2.0d0 * R1 * CENTER_DIST_CORR)
 ! Check to ensure that VALUE is less than or equal to one. If VALUE is
 ! greater than one, the triangle inequality has been violated. Therefore
 ! there is no intersection between the fluid lens surrounding the larger
@@ -219,11 +239,12 @@ CONTAINS
 !......................................................................!
       DOUBLE PRECISION FUNCTION F(R)
         USE utilities
+        USE des_thermo
       IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: R
 
-      F = (2.0d0*Pi*R)/MAX((CENTER_DIST - SQRT(MAX_RAD**2-R**2) - &
+      F = (2.0d0*Pi*R)/MAX((CENTER_DIST_CORR - SQRT(MAX_RAD**2-R**2) - &
          SQRT(MIN_RAD**2-R**2)), DES_MIN_COND_DIST)
 
       IF( mfix_isnan(F))PRINT*,'F IS NAN'
@@ -330,6 +351,139 @@ CONTAINS
 
       END FUNCTION ADPT_SIMPSON
 
-    END FUNCTION DES_CONDUCTION
+      END FUNCTION DES_CONDUCTION
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: DES_CONDUCTION                                         !
+!                                                                      !
+!  Purpose: Compute conductive heat transfer with wall                 !
+!                                                                      !
+!  Author: A.Morris                                  Date: 07-Jan-16   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      FUNCTION DES_CONDUCTION_WALL(OLAP, K_sol, K_wall, K_gas, TWall, &
+      TPart, Rpart, RLens, M)
+      USE param1, only: zero
+      USE DES_THERMO, only: des_min_cond_dist
+
+      DOUBLE PRECISION :: DES_CONDUCTION_WALL 
+      DOUBLE PRECISION, intent(in) :: OLAP, K_sol, K_wall, K_gas, TWall&
+      &                               ,TPart,RPart, RLens
+      DOUBLE PRECISION :: Rin, Rout
+      DOUBLE PRECISION :: OLAP_ACTUAL, TAUC_CORRECTION
+      DOUBLE PRECISION :: KEff
+      DOUBLE PRECISION :: Q_pw, Q_pfw
+      INTEGER :: M ! Solids phase index
+
+      ! Initialize variables
+      Q_pw = ZERO
+      Q_pfw= ZERO
+      OLAP_ACTUAL = OLAP
+
+      ! Check to see if particle is in contact (P-W) conduction
+      IF(OLAP.gt.ZERO)THEN
+      ! Compute effective solids conductivity
+         KEff = 2.0D0*K_sol*K_wall/(K_sol+K_wall)
+      ! Correct for overlap using "area" correction terms
+         OLAP_ACTUAL = CORRECT_OLAP(OLAP,M,-1) ! (-1 indicates wall)
+         OLAP_ACTUAL = 0.001*OLAP
+      ! Compute inner Rad
+         Rin = sqrt(2.0D0*OLAP_ACTUAL*Rpart-OLAP_ACTUAL*OLAP_ACTUAL)
+      ! Compute time correction term
+         TAUC_CORRECTION = 1.0D0 !(PLACEHOLDER - ADD FUNCTION THAT COMPARES COLN TIME)
+      ! Compute heat transfer (particle-wall)
+         Q_pw = 2.0D0*Rin*Keff*(TWall-TPart)
+      ENDIF
+      ! Compute heat transfer (particle-fluid-wall)
+      Q_pfw=EVAL_H_PFW(RLens,DES_MIN_COND_DIST, OLAP_ACTUAL, RPart) * &
+      &     K_gas*RPart*(TWall-TPart)
+
+      DES_CONDUCTION_WALL=Q_pw+Q_pfw
+     
+      RETURN 
+      END FUNCTION DES_CONDUCTION_WALL
+
+
+!     THIS FUNCTION COMPUTES THE OVERLAP THAT WOULD OCCUR (for a given force)
+!     IF ACTUAL MATERIAL PROPERTIES WERE USED. 
+      FUNCTION CORRECT_OLAP(OLAP,M,L)
+      use discretelement
+      IMPLICIT NONE
+      DOUBLE PRECISION :: CORRECT_OLAP
+      DOUBLE PRECISION, INTENT (IN) :: OLAP
+      INTEGER, INTENT (IN) :: M, L
+      DOUBLE PRECISION :: KN_ACTUAL, KN_SIM
+      ! L=-1 corresponds to wall
+      IF(L.eq.-1)THEN
+         ! WALL CONTACT
+         IF(DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            CORRECT_OLAP = (HERT_KWN(M)/HERT_KWN_ACTUAL(M))**(2.0D0/3.0D0)*OLAP
+         ELSE
+            CORRECT_OLAP = (KN_W*OLAP/HERT_KWN_ACTUAL(M))**(2.0D0/3.0D0)
+         ENDIF
+      ELSE
+         ! PARTICLE-PARTICLE
+         IF(DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            CORRECT_OLAP = (HERT_KN(M,L)/HERT_KN_ACTUAL(M,L))**(2.0D0/3.0D0)*OLAP
+         ELSE
+            CORRECT_OLAP = (KN*OLAP/HERT_KN_ACTUAL(M,L))**(2.0D0/3.0D0)
+         ENDIF
+      ENDIF
+      RETURN
+      END FUNCTION CORRECT_OLAP
+
+
+      DOUBLE PRECISION FUNCTION EVAL_H_PFW(RLENS_dim,S,OLAP_dim,RP)
+      USE CONSTANT
+      USE PARAM1
+     
+      IMPLICIT NONE
+      ! Note: Function inputs dimensional quantities
+      DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
+      ! BELOW VARIABLES ARE NONDIMENSIONALIZED BY RP
+      DOUBLE PRECISION :: RLENS, OLAP, KN
+      DOUBLE PRECISION :: TERM1,TERM2,TERM3
+      DOUBLE PRECISION :: Rout,Rkn
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
+      
+      RLENS = RLENS_dim/RP
+      KN = S/RP
+      OLAP = OLAP_dim/RP
+
+      IF(-OLAP.ge.(RLENS-ONE))THEN
+         Rout = ZERO
+      ELSEIF(OLAP.le.TWO)THEN
+         Rout = sqrt(RLENS**2-(ONE-OLAP)**2)
+      ELSE
+         WRITE(*,*)'ERROR: Extremeley excessive overlap (Olap > Diam)'
+         WRITE(*,*)'OLAP = ',OLAP_dim,OLAP, RP
+         WRITE(*,*)'RLENS_dim',RLENS_dim, RLENS
+         write(*,*)'S, Kn', S,KN
+         STOP
+      ENDIF
+      Rout=MIN(Rout,ONE)
+      
+      IF(OLAP.ge.ZERO)THEN
+     !     Particle in contact (below code verified)
+         TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
+         TERM2 = TWO*PI*(sqrt(ONE-Rout**2)-(ONE-OLAP-KN))
+         TERM3 = TWO*PI*(ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/Kn)
+         EVAL_H_PFW = TERM1+TERM2+TERM3
+      ELSE
+         IF(-OLAP.ge.KN)THEN
+            Rkn = ZERO
+         ELSE
+            Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
+         ENDIF
+    
+         TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
+         TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
+         EVAL_H_PFW = TWO*PI*(TERM1+TERM2)
+         
+      ENDIF
+      RETURN
+      END FUNCTION EVAL_H_PFW
+
+      
   END MODULE DES_THERMO_COND

@@ -10,6 +10,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
+      use calc_collision_wall, only: calc_dem_thermo_with_wall_stl
       use des_bc, only: DEM_BCMI, DEM_BCMO
       use desgrid, only: desgrid_pic
       use discretelement
@@ -122,6 +123,8 @@
          CALL CALC_FORCE_DEM
 ! Calculate or distribute fluid-particle drag force.
          CALL CALC_DRAG_DES
+! Calculate heat conduction to/from wall
+         IF(ENERGY_EQ)CALL CALC_DEM_THERMO_WITH_WALL_STL
 
 ! Update the old values of particle position and velocity with the new
 ! values computed
