@@ -11,7 +11,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 from flask import Flask, render_template, request
-app = Flask(__name__)
+path = os.path.dirname(os.path.realpath(__file__))
+app = Flask(__name__, static_folder=path+'/static', template_folder=path+'/templates')
 
 import mfix
 
