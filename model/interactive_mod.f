@@ -76,6 +76,7 @@
 
       use mpi_utility
       use error_manager
+      use reinit, only: reinitialize
 
       LOGICAL :: INTERACTING
 

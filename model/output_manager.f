@@ -1,3 +1,5 @@
+MODULE output_man
+   CONTAINS
 !----------------------------------------------------------------------!
 !                                                                      !
 !  Subroutine: OUTPUT_MANAGER                                          !
@@ -497,6 +499,7 @@
       INTEGER :: LC
 
       IF(myPE /= PE_IO) RETURN
+      IF(RES_BACKUPS == UNDEFINED_I) RETURN
 
 ! Shift all the existing backups by one.
       DO LC=RES_BACKUPS,2,-1
@@ -596,3 +599,4 @@
       END SUBROUTINE SET_FNAME
 
       END SUBROUTINE BACKUP_RES
+END MODULE output_man

@@ -11,15 +11,16 @@
 ! Modules
 !---------------------------------------------------------------------//
       use des_bc, only: DEM_BCMI, DEM_BCMO
+      use des_thermo, only: CALC_RADT_DES
       use desgrid, only: desgrid_pic
       use discretelement
       use error_manager
       use functions
       use machine
-      use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_funs_des, only: DESMPI_SEND_RECV_FIELD_VARS
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
       use mpi_utility
-      use des_thermo, only: CALC_RADT_DES
+      use output_man, only: OUTPUT_MANAGER
       use run, only: ANY_SPECIES_EQ
       use run, only: CALL_USR
       use run, only: ENERGY_EQ

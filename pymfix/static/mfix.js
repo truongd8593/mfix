@@ -1,4 +1,4 @@
-var mfixrunning = true;
+var mfixrunning = false;
 
 $(document).ready(function(){
     $("#curlstartstop").text('curl -X PUT '+document.location.origin+'/stop');
@@ -32,14 +32,13 @@ $(document).ready(function(){
             type: 'GET',
             success: function(response) {
                 $("#getresponse").text(response);
-                var retVal = true;
-                if (retVal) {
-                    $("#status").text('Successfully got value');
-                    $("#status").css('color', 'green');
-                } else {
-                    $("#status").text('Error while getting value');
-                    $("#status").css('color', 'red');
-                }
+                $("#status").text('Successfully got value');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#getresponse").text(response);
+                $("#status").text('Error retrieving value');
+                $("#status").css('color', 'red');
             }
         });
     });
@@ -55,32 +54,62 @@ $(document).ready(function(){
             type: 'POST',
             data: {'varvalue':value},
             success: function(response) {
-                var retVal = true;
-                if (retVal) {
-                    $("#status").text('Successfully set value');
-                    $("#status").css('color', 'green');
-                } else {
-                    $("#status").text('Error while setting value');
-                    $("#status").css('color', 'red');
-                }
+                $("#status").text('Successfully set value');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Error doing set value');
+                $("#status").css('color', 'red');
             }
         });
     });
 
     $('#step').click(function(){
 
+        var stepcount = $("#stepcount").val();
         $.ajax({
             url: 'step',
             type: 'POST',
+            data: {'stepcount':stepcount},
             success: function(response) {
-                var retVal = true;
-                if (retVal) {
-                    $("#status").text('Successfully did timestep');
-                    $("#status").css('color', 'green');
-                } else {
-                    $("#status").text('Error doing timestep');
-                    $("#status").css('color', 'red');
-                }
+                $("#status").text('Successfully did timesteps');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Error doing timesteps');
+                $("#status").css('color', 'red');
+            }
+        });
+    });
+
+    $('#backupres').click(function(){
+
+        $.ajax({
+            url: 'backupres',
+            type: 'POST',
+            success: function(response) {
+                $("#status").text('Successfully backed up resource files');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Error while backing up resource files');
+                $("#status").css('color', 'red');
+            }
+        });
+    });
+
+    $('#reinit').click(function(){
+
+        $.ajax({
+            url: 'reinit',
+            type: 'POST',
+            success: function(response) {
+                $("#status").text('Successfully reinitialized');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Reinitialize failed');
+                $("#status").css('color', 'red');
             }
         });
     });
@@ -89,9 +118,17 @@ $(document).ready(function(){
     $("input").keydown(updateCurlCommands);
     $("input").keyup(updateCurlCommands);
 
+    $('.stepcount').keyup(function () {
+        if (this.value != this.value.replace(/[^0-9]/g, '')) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        }
+    });
+
 });
 
 function updateCurlCommands() {
+    $("#curlbackupres").text('curl -X POST '+document.location.origin+'/backupres');
+    $("#curlreinit").text('curl -X POST '+document.location.origin+'/reinit');
     $("#curlstep").text('curl -X PUT '+document.location.origin+'/step');
 
     var varname = ["mfix",

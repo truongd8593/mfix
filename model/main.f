@@ -165,6 +165,7 @@ CONTAINS
       USE mpi, only: mpi_comm_world, mpi_barrier  ! ignore-depcomp
 #endif
       USE output, only: dbgprn_layout
+      USE output_man, only: init_output_vars, output_manager
       USE param1, only: n_spx, undefined, zero
       USE pgcor, only: d_e, d_n, d_t, phase_4_p_g, switch_4_p_g
       USE physprop, only: mmax
@@ -474,6 +475,7 @@ CONTAINS
       USE error_manager, only: flush_err_msg
       USE leqsol, only: solver_statistics, report_solver_stats
       USE output, only: res_dt
+      USE output_man, only: output_manager
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
@@ -1158,5 +1160,17 @@ CONTAINS
       end do
 
    end function do_mpi_bcast
+
+   subroutine do_backupres
+      use output_man, only: backup_res
+      implicit none
+      call backup_res
+   end subroutine do_backupres
+
+   subroutine do_reinit
+      use reinit, only: reinitialize
+      implicit none
+      call reinitialize
+   end subroutine do_reinit
 
 END MODULE MAIN

@@ -3,7 +3,8 @@
   <head>
     <title>Pymfix browser interface</title>
     <script type = "text/javascript"
-            src = "http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+            src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"
+            ></script>
     <script type="text/javascript" src="{{ url_for('static', filename='mfix.js') }}"/></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='mfix.css') }}"/>
   </head>
@@ -12,13 +13,20 @@
    <h1>Browser interface for controlling MFIX</h1>
 
     <span id="status"></span><p/>
-
-    <a href="#" class="toggler">&nbsp;</a>
-    <label id='running'>MFIX IS RUNNING</label><p/>
+    <a href="#" class="toggler off">&nbsp;</a>
+    <label id='running'>MFIX IS STOPPED</label><p/>
     <pre style='clear:both'><code id='curlstartstop' onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
 
-    <button id="step">STEP</button><p/>
+    <button id="step">STEP</button>
+    for
+    <input id="stepcount" type="text" value="1" size="8"/>
+    timestep(s)<p/>
     <pre style='clear:both'><code id='curlstep' onclick="selectText(this)">curl -X PUT http://localhost:5000/step</code></pre>
+
+    <button id="backupres">BACKUP RES</button><p/>
+    <pre style='clear:both'><code id="curlbackupres" onclick="selectText(this)">curl -X PUT http://localhost:5000/backupres</code></pre>
+    <button id="reinit">REINITIALIZE</button><p/>
+    <pre style='clear:both'><code id="curlreinit" onclick="selectText(this)">curl -X PUT http://localhost:5000/reinit</code></pre>
 
     <button id="get">GET</button>
     mfix.

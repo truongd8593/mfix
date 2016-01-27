@@ -19,7 +19,7 @@ import mfix
 requests = {}
 responses = {}
 
-mfix_stopped = False
+mfix_stopped = True
 
 # change any variable...
 # mfix.run.time  = 1000
@@ -75,6 +75,7 @@ def handle(req_id,command,var,args):
 
     print "THE COMMAND IS ",cmd
 
+    # TODO: refactor with a Command class, instead of a big switch statement
     if cmd=='help':
         responses[req_id] = '''Usage:
         get VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - get value of variable [ for a certain index range ]
@@ -94,6 +95,14 @@ def handle(req_id,command,var,args):
         responses[req_id] = resp
         mfix_stopped = True
 
+    elif cmd=='backupres':
+        responses[req_id] = 'BACKING UP RESOURCE FILES\n'
+        mfix.main.do_backupres()
+
+    elif cmd=='reinit':
+        responses[req_id] = 'REINITIALIZING MFIX\n'
+        mfix.main.do_reinit()
+
     elif cmd=='stop':
         responses[req_id] = 'STOPPING MFIX\n'
         mfix_stopped = True
@@ -103,8 +112,10 @@ def handle(req_id,command,var,args):
         mfix_stopped = False
 
     elif cmd=='step':
-        mfix.main.step()
-        responses[req_id] = 'DOING ONE TIMESTEP\n'
+        stepcount = int(args.get('stepcount',None))
+        for _ in range(stepcount):
+            mfix.main.step()
+        responses[req_id] = 'DOING %s TIMESTEP(S)\n' % stepcount
 
     elif cmd=='get':
 
@@ -195,15 +206,23 @@ def list():
 
 @app.route('/set/<varname>',methods=['POST'])
 def set(varname):
-    return do_command( "SET", varname, request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    return do_command( "SET", varname, args=request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/get/<varname>',methods=['GET'])
 def get(varname):
-    return do_command( "GET", varname, request.args ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    return do_command( "GET", varname, args=request.args ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/backupres',methods=['POST'])
+def backupres():
+    return do_command( "BACKUPRES" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/reinit',methods=['POST'])
+def reinit():
+    return do_command( "REINIT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/step',methods=['POST'])
 def step():
-    return do_command( "STEP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    return do_command( "STEP", args=request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/start',methods=['PUT'])
 def start():

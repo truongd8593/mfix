@@ -1,3 +1,5 @@
+MODULE REINIT
+   CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  SUBROUTINE: REINITIALIZE                                            !
@@ -244,3 +246,4 @@
 
       RETURN
       END SUBROUTINE REINIT_RXN_DATA
+END MODULE REINIT
