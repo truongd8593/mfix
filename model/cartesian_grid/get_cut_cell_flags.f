@@ -1788,39 +1788,51 @@
 
             IF(CUT_CELL_AT(IMJK)) THEN
                BCID=BC_ID(IMJK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IPJK)) THEN
                BCID=BC_ID(IPJK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJMK)) THEN
                BCID=BC_ID(IJMK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJPK)) THEN
                BCID=BC_ID(IJPK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJKM)) THEN
                BCID=BC_ID(IJKM)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJKP)) THEN
                BCID=BC_ID(IJKP)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ENDIF
          ENDIF
