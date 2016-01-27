@@ -43,6 +43,7 @@ mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
 build:
+	rm -f $@
 	$(LN_S) $(top_builddir) $@
 
 .PHONY: $(LIBMFIX) TAGS run test mfix.so
@@ -126,6 +127,10 @@ pymfix_src = \
 	$(top_srcdir)/model/run_mod.f
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
+
+pymfix: mfix.so
+	rm -f $@
+	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
 mfix.so: $(LIBMFIX) $(bin_PROGRAMS)
 	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch
