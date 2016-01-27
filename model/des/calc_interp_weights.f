@@ -61,9 +61,7 @@
 !$omp do
       DO L = 1, MAX_PIP
 
-         IF(IS_NONEXISTENT(L) .OR.                        &
-            IS_ENTERING(L) .OR. IS_ENTERING_GHOST(L) .OR. &
-            IS_EXITING(L) .OR. IS_EXITING_GHOST(L)) CYCLE
+         IF(.NOT.IS_NORMAL(L)) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)
@@ -194,9 +192,7 @@
 
       DO L = 1, MAX_PIP
 
-         IF(IS_NONEXISTENT(L) .OR.                        &
-            IS_ENTERING(L) .OR. IS_ENTERING_GHOST(L) .OR. &
-            IS_EXITING(L) .OR. IS_EXITING_GHOST(L)) CYCLE
+         IF(.NOT.IS_NORMAL(L)) CYCLE
 
          I = PIJK(L,1)
          J = PIJK(L,2)

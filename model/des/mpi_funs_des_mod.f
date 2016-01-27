@@ -318,4 +318,72 @@
       END SUBROUTINE DESMPI_CLEANUP
 
 
+!----------------------------------------------------------------------!
+! Subroutine: DESMPI_SEND_RECV_FIELD_VARS                              !
+! Author: J.Musser                                                     !
+!                                                                      !
+! Purpose: Collect data from ghost cells for interpolated cases and    !
+!   preform halo exchange go sync ghost cell data.                     !
+!----------------------------------------------------------------------!
+      SUBROUTINE DESMPI_SEND_RECV_FIELD_VARS
+
+! Flags for solving energy, species and solids density
+      use run, only: ENERGY_EQ, ANY_SPECIES_EQ, SOLVE_ROs
+! Flag for explicitly coupled simulations
+      use discretelement, only: DES_EXPLICITLY_COUPLED
+! Flag for use interpolation
+      use particle_filter, only: DES_INTERP_ON
+! Gas phae volume fraction and bluk density
+      use fldvar, only: EP_g, ROP_g
+! Solids bulk density and material density
+      use fldvar, only: ROP_s, RO_s
+! Gas phase mass and species mass source terms
+      use des_rxns, only: DES_R_gp, DES_R_gc
+      use des_rxns, only: DES_SUM_R_g, DES_R_PHASE
+! Gas phase energy equation source terms
+      use des_thermo, only: CONV_Sc
+      use des_rxns, only: DES_HOR_g
+! MPI function for collecting interpolated data from ghost cells.
+      use sendrecvnode, only: DES_COLLECT_gDATA
+! MPI wrapper for halo exchange.
+      use sendrecv, only: SEND_RECV
+
+      implicit none
+
+! Local variables:
+!---------------------------------------------------------------------//
+
+      CALL SEND_RECV(EP_G,2)
+      CALL SEND_RECV(ROP_G,2)
+
+      CALL SEND_RECV(ROP_S,2)
+      IF(any(SOLVE_ROs)) CALL SEND_RECV(RO_S,2)
+
+! Add in interpolated data from ghost cells and halo exchange
+      IF(.NOT.DES_EXPLICITLY_COUPLED) THEN
+
+         IF(DES_INTERP_ON) THEN
+            IF(ENERGY_EQ) CALL DES_COLLECT_gDATA(CONV_SC)
+            IF(ANY_SPECIES_EQ) THEN 
+               CALL DES_COLLECT_gDATA(DES_R_gp)
+               CALL DES_COLLECT_gDATA(DES_R_gc)
+               CALL DES_COLLECT_gDATA(DES_R_PHASE)
+               CALL DES_COLLECT_gDATA(DES_HOR_g)
+               CALL DES_COLLECT_gDATA(DES_SUM_R_g)
+            ENDIF
+         ENDIF
+
+         IF(ENERGY_EQ) CALL SEND_RECV(CONV_SC, 2)
+         IF(ANY_SPECIES_EQ) THEN 
+            CALL SEND_RECV(DES_R_gp, 2) 
+            CALL SEND_RECV(DES_R_gc, 2) 
+            CALL SEND_RECV(DES_R_PHASE, 2) 
+            CALL SEND_RECV(DES_HOR_g, 2) 
+            CALL SEND_RECV(DES_SUM_R_g, 2) 
+         ENDIF
+      ENDIF
+
+      RETURN
+      END SUBROUTINE DESMPI_SEND_RECV_FIELD_VARS
+
       END MODULE MPI_FUNS_DES

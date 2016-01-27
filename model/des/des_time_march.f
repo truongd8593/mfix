@@ -14,11 +14,10 @@
       use desgrid, only: desgrid_pic
       use discretelement
       use error_manager
-      use fldvar, only: EP_g, ROP_g, ROP_s
-      use fldvar, only: U_s, V_s, W_s
       use functions
       use machine
       use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use mpi_funs_des, only: DESMPI_SEND_RECV_FIELD_VARS
       use mpi_utility
       use des_thermo, only: CALC_RADT_DES
       use run, only: ANY_SPECIES_EQ
@@ -42,7 +41,7 @@
       INTEGER :: FACTOR
 ! Temporary variables when des_continuum_coupled is T to track
 ! changes in solid time step
-      DOUBLE PRECISION :: TMP_DTS, DTSOLID_TMP
+      DOUBLE PRECISION :: DTSOLID_TMP
 ! Numbers to calculate wall time spent in DEM calculations.
       DOUBLE PRECISION :: TMP_WALL
 
@@ -50,8 +49,7 @@
 
 ! In case of restarts assign S_TIME from MFIX TIME
       S_TIME = TIME
-      TMP_DTS = ZERO
-      DTSOLID_TMP = ZERO
+      DTSOLID_TMP = DTSOLID
       TMP_WALL = WALL_TIME()
 
 ! Initialize time stepping variables for coupled gas/solids simulations.
@@ -60,7 +58,6 @@
             FACTOR = CEILING(real(DT/DTSOLID))
          ELSE
             FACTOR = 1
-            DTSOLID_TMP = DTSOLID
             DTSOLID = DT
          ENDIF
 
@@ -112,10 +109,8 @@
 ! If next time step in the discrete loop will exceed the current time
 ! in the continuum simulation, modify the discrete time step so final
 ! time will match
-            IF((S_TIME+DTSOLID).GT.(TIME+DT)) THEN
-               TMP_DTS = DTSOLID
+            IF((S_TIME+DTSOLID).GT.(TIME+DT)) &
                DTSOLID = TIME + DT - S_TIME
-            ENDIF
          ENDIF
 
 ! Calculate inter particle forces acting (collisional, cohesion)
@@ -223,41 +218,20 @@
 
       IF(CALL_USR) CALL USR3_DES
 
-!      CALL DIFFUSE_MEAN_FIELDS
-!      CALL CALC_EPG_DES
+! Reset the discrete time step to original value.
+      DTSOLID = DTSOLID_TMP
 
-! When coupled, and if needed, reset the discrete time step accordingly
-      IF(DT.LT.DTSOLID_TMP) THEN
-         DTSOLID = DTSOLID_TMP
-      ENDIF
+      IF(DES_CONTINUUM_COUPLED) CALL DESMPI_SEND_RECV_FIELD_VARS
 
-      IF(TMP_DTS.NE.ZERO) THEN
-         DTSOLID = TMP_DTS
-         TMP_DTS = ZERO
-      ENDIF
-
-      IF(.NOT.DES_CONTINUUM_COUPLED)THEN
-         WRITE(ERR_MSG,"('<---------- END DES_TIME_MARCH ----------')")
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      TMP_WALL = WALL_TIME() - TMP_WALL
+      IF(TMP_WALL > 1.0d-10) THEN
+         WRITE(ERR_MSG, 9000) trim(iVal(dble(FACTOR)/TMP_WALL))
       ELSE
-         call send_recv(ep_g,2)
-         call send_recv(rop_g,2)
-         call send_recv(u_s,2)
-         call send_recv(v_s,2)
-         if(do_K) call send_recv(w_s,2)
-         call send_recv(rop_s,2)
-
-         TMP_WALL = WALL_TIME() - TMP_WALL
-         IF(TMP_WALL > 1.0d-10) THEN
-            WRITE(ERR_MSG, 9000) trim(iVal(dble(FACTOR)/TMP_WALL))
-         ELSE
-            WRITE(ERR_MSG, 9000) '+Inf'
-         ENDIF
-         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
+         WRITE(ERR_MSG, 9000) '+Inf'
+      ENDIF
+      CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
 
  9000 FORMAT('    NITs/SEC = ',A)
-
-      ENDIF
 
       RETURN
       END SUBROUTINE DES_TIME_MARCH

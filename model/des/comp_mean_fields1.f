@@ -19,9 +19,15 @@
       use desmpi
       USE mfix_pic
       USE functions
+
+      use run, only: SOLVE_ROs
       use particle_filter, only: FILTER_WEIGHT
       use particle_filter, only: FILTER_CELL
+      use particle_filter, only: FILTER_SIZE
+      use particle_filter, only: DES_INTERP_ON
       use physprop, only: mmax
+      use sendrecvnode, only: DES_COLLECT_gDATA
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -31,72 +37,139 @@
 ! Fluid cell index
       INTEGER IJK
 ! Total Mth solids phase volume in IJK
-      DOUBLE PRECISION :: SOLVOLINC(DIMENSION_3,DES_MMAX)
+      DOUBLE PRECISION :: sVOL(DIMENSION_3,DES_MMAX)
+      DOUBLE PRECISION :: sMASS(DIMENSION_3,DES_MMAX)
 ! One divided by the total solids volume.
       DOUBLE PRECISION :: OoSOLVOL
 ! PVOL times statistical weight, and times filter weight
       DOUBLE PRECISION :: VOL_WT, VOLxWEIGHT
 ! Loop bound for filter
-      INTEGER :: LP_BND
-
-
+      LOGICAL :: CALC_sMASS
 !-----------------------------------------------
 
-
-      SOLVOLINC(:,:) = ZERO
+      CALC_sMASS = any(SOLVE_ROs)
       MMAX_TOT = DES_MMAX+MMAX
 
+! Initialize arrays
+
+      sVOL(:,:) = ZERO
+      if(CALC_sMASS) sMASS(:,:) = ZERO
+
       IF(MPPIC) THEN
-! initialize only information related to the discrete 'phases' of these 
-! continuous variables
          U_S(:,MMAX+1:MMAX_TOT) = ZERO
          V_S(:,MMAX+1:MMAX_TOT) = ZERO
          IF(DO_K) W_S(:,MMAX+1:MMAX_TOT) = ZERO
       ENDIF
 
-! Loop bounds for interpolation.
-      LP_BND = merge(27,9,DO_K)
-
 ! Calculate the gas phase forces acting on each particle.
 !$omp parallel default(none) &
 !$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT) &
-!$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC, &
-!$omp       FILTER_WEIGHT, SOLVOLINC, U_S, V_S, W_S, DO_K, &
-!$omp       FILTER_CELL, DES_VEL_NEW)
+!$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, FILTER_SIZE, MPPIC, &
+!$omp       FILTER_WEIGHT, sVOL, U_S, V_S, W_S, DO_K, CALC_sMASS,  &
+!$omp       FILTER_CELL, DES_VEL_NEW, sMASS, pMASS, DES_INTERP_ON)
 !$omp do
       do NP=1,MAX_PIP
-         IF(.NOT.IS_NORMAL(NP) .and. .NOT.IS_GHOST(NP)) CYCLE
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
 
          VOL_WT = PVOL(NP)
          IF(MPPIC) VOL_WT = VOL_WT*DES_STAT_WT(NP)
 ! Particle phase for data binning.
          M = PIJK(NP,5)
 
-         DO LC=1,LP_BND
-            IJK = FILTER_CELL(LC,NP)
+! Interpolated
+!---------------------------------------------------------------------//
+         IF(DES_INTERP_ON) THEN
+
+            DO LC=1,FILTER_SIZE
+               IJK = FILTER_CELL(LC,NP)
 ! Particle volume times the weight for this cell.
-            VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
-! Accumulate total solids volume (by phase)
+               VOLxWEIGHT = VOL_WT*FILTER_WEIGHT(LC,NP)
+
+
 !$omp atomic
-            SOLVOLINC(IJK,M) = SOLVOLINC(IJK,M) + VOLxWEIGHT
-            IF(MPPIC) THEN
+               sVOL(IJK,M) = sVOL(IJK,M) + VOLxWEIGHT
+
 ! Accumulate total solids momentum (by phase)
+               IF(MPPIC) THEN
+!$omp atomic
+                  U_S(IJK,M) = U_S(IJK,M) + &
+                     DES_VEL_NEW(NP,1)*VOLxWEIGHT
+!$omp atomic
+                  V_S(IJK,M) = V_S(IJK,M) + &
+                     DES_VEL_NEW(NP,2)*VOLxWEIGHT
+
+                  IF(DO_K) THEN
+!$omp atomic
+                     W_S(IJK,M) = W_S(IJK,M) + &
+                          DES_VEL_NEW(NP,3)*VOLxWEIGHT
+                  ENDIF
+               ENDIF
+
+! Accumulate total solids mass (by phase)
+               IF(CALC_sMASS) THEN
+                  IF(MPPIC) THEN
+!$omp atomic
+                     sMASS(IJK,M) = sMASS(IJK,M) + pMASS(NP) * &
+                        FILTER_WEIGHT(LC,NP) * DES_STAT_WT(NP)
+                  ELSE
+!$omp atomic
+                     sMASS(IJK,M) = sMASS(IJK,M) + pMASS(NP) * &
+                        FILTER_WEIGHT(LC,NP)
+                  ENDIF
+               ENDIF
+            ENDDO
+
+! Non-interpolated
+!---------------------------------------------------------------------//
+         ELSE
+            IJK = PIJK(NP,4)
+!$omp atomic
+            sVOL(IJK,M) = sVOL(IJK,M) + VOL_WT
+
+! Accumulate total solids momentum (by phase)
+            IF(MPPIC) THEN
 !$omp atomic
                U_S(IJK,M) = U_S(IJK,M) + &
-                  DES_VEL_NEW(NP,1)*VOLxWEIGHT
+                  DES_VEL_NEW(NP,1)*VOL_WT
 !$omp atomic
                V_S(IJK,M) = V_S(IJK,M) + &
-                  DES_VEL_NEW(NP,2)*VOLxWEIGHT
+                  DES_VEL_NEW(NP,2)*VOL_WT
+
                IF(DO_K) THEN
 !$omp atomic
                   W_S(IJK,M) = W_S(IJK,M) + &
-                     DES_VEL_NEW(NP,3)*VOLxWEIGHT
+                       DES_VEL_NEW(NP,3)*VOL_WT
                ENDIF
             ENDIF
-         ENDDO
+
+! Accumulate total solids mass (by phase)
+            IF(CALC_sMASS) THEN
+               IF(MPPIC) THEN
+!$omp atomic
+                  sMASS(IJK,M)= sMASS(IJK,M) + pMASS(NP)*DES_STAT_WT(NP)
+               ELSE
+!$omp atomic
+                  sMASS(IJK,M)= sMASS(IJK,M) + pMASS(NP)
+               ENDIF
+            ENDIF
+         ENDIF
       ENDDO
 !$omp end do
 !$omp end parallel
+
+
+! Summ data interpolted into ghost cells into physical cells
+!---------------------------------------------------------------------//
+      IF(DES_INTERP_ON) THEN
+         CALL DES_COLLECT_gDATA(sVOL(:,MMAX+1:MMAX_TOT))
+         IF(CALC_sMASS) CALL DES_COLLECT_gDATA(sMASS(:,MMAX+1:MMAX_TOT))
+         IF(MPPIC) THEN
+            CALL DES_COLLECT_gDATA(U_s(:,MMAX+1:MMAX_TOT))
+            CALL DES_COLLECT_gDATA(V_s(:,MMAX+1:MMAX_TOT))
+            CALL DES_COLLECT_gDATA(W_s(:,MMAX+1:MMAX_TOT))
+         ENDIF
+      ENDIF
+
 
 ! Calculate the cell average solids velocity, the bulk density,
 ! and the void fraction.
@@ -108,24 +181,27 @@
 
 ! calculating the cell average solids velocity for each solids phase
          DO M = MMAX+1, DES_MMAX+MMAX
-            IF(SOLVOLINC(IJK,M).GT.ZERO .AND.MPPIC) THEN
-               OoSOLVOL = ONE/SOLVOLINC(IJK,M)
-               U_s(IJK,M) = U_s(IJK,M)*OoSOLVOL
-               V_s(IJK,M) = V_s(IJK,M)*OoSOLVOL
-               IF(DO_K) W_s(IJK,M) = W_s(IJK,M)*OoSOLVOL
-            ENDIF
+            IF(sVOL(IJK,M) > ZERO) THEN
+
+! Update the solids density for reacting cases.
+               IF(CALC_sMASS) RO_s(IJK,M)=sMASS(IJK,M)/sVOL(IJK,M)
 
 ! calculating the bulk density of solids phase m based on the total
 ! number of particles having their center in the cell
-            ROP_S(IJK,M) = RO_S(IJK,M)*SOLVOLINC(IJK,M)/VOL(IJK)
+               ROP_S(IJK,M) = RO_S(IJK,M)*sVOL(IJK,M)/VOL(IJK)
 
-         ENDDO   ! end loop over M=MMAX+1,DES_MMAX+MMAX
+               IF(MPPIC) THEN
+                  OoSOLVOL = ONE/sVOL(IJK,M)
+                  U_s(IJK,M) = U_s(IJK,M)*OoSOLVOL
+                  V_s(IJK,M) = V_s(IJK,M)*OoSOLVOL
+                  IF(DO_K) W_s(IJK,M) = W_s(IJK,M)*OoSOLVOL
+               ENDIF
+            ELSE
+               ROP_S(IJK,M) = ZERO
+            ENDIF
 
-      ENDDO     ! end loop over IJK=ijkstart3,ijkend3
+         ENDDO
+      ENDDO
 !$omp end parallel do
-
-
-! Halo exchange of solids volume fraction data.
-      calL SEND_RECV(ROP_S,2)
 
       end SUBROUTINE COMP_MEAN_FIELDS1
