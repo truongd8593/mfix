@@ -22,13 +22,13 @@ $(document).ready(function(){
     });
 
     $('#get').click(function(){
-        var the_varname = ["mfix",
+        var varname = ["mfix",
                            $("#getmodname").val(),
                            $("#getvarname").val()].join('.');
         var value = $("#getvalue").val();
 
         $.ajax({
-            url: 'get/'+the_varname,
+            url: 'get/'+varname,
             type: 'GET',
             success: function(response) {
                 $("#getresponse").text(response);
@@ -45,7 +45,7 @@ $(document).ready(function(){
     });
 
     $('#set').click(function(){
-        var the_varname = ["mfix",
+        var varname = ["mfix",
                            $("#setmodname").val(),
                            $("#setvarname").val()].join('.');
         var value = $("#setvalue").val();
@@ -94,16 +94,16 @@ $(document).ready(function(){
 function updateCurlCommands() {
     $("#curlstep").text('curl -X PUT '+document.location.origin+'/step');
 
-    var the_varname = ["mfix",
+    var varname = ["mfix",
                        $("#setmodname").val(),
                        $("#setvarname").val()].join('.');
     var value = $("#setvalue").val();
-    $("#curlset").text('curl -X POST '+document.location.origin+'/set/'+the_varname+' -d "varvalue='+value+'"');
+    $("#curlset").text('curl -X POST '+document.location.origin+'/set/'+varname+' -d "varvalue='+value+'"');
 
-    var the_varname = ["mfix",
+    var varname = ["mfix",
                        $("#getmodname").val(),
                        $("#getvarname").val()].join('.');
-    $("#curlget").text('curl -X GET '+document.location.origin+'/get/'+the_varname);
+    $("#curlget").text('curl -X GET '+document.location.origin+'/get/'+varname);
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');

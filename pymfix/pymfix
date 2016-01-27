@@ -129,13 +129,17 @@ def handle(req_id,command,var,args):
                                 print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
             else:
                 print "GOING TO EVALUTE ", var
-                val = str(eval(var))
+                try:
+                    val = str(eval(var))
+                except AttributeError:
+                    # TODO: use error code for REST call
+                    val = "ERROR INCORRECT EXPRESSION: "+var
+
                 print "GOING TO RETURN ", val
                 responses[req_id] = val
 
     elif cmd=='set':
 
-        var = varname
         val = args.get('varvalue',None)
         ids = args.get('ids',None)
 
@@ -158,9 +162,16 @@ def handle(req_id,command,var,args):
                                 print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
             else:
                 print "GOING TO SET ", ('%s = %s' % (var,val))
-                exec('%s = %s' % (var,val))
-        print 'ok, I set %s to %s\n' % (var,val)
-        responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
+                try:
+                    exec('%s = %s' % (var,val))
+                    responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
+                except AttributeError:
+                    # TODO: better error code REST response
+                    responses[req_id] = 'ERROR could not set: %s to %s\n' % (var,val)
+
+                print 'ok, I set %s to %s\n' % (var,val)
+        else:
+            responses[req_id] = 'could not set %s to %s\n' % (var,val)
     else:
         responses[req_id] = 'UNRECOGNIZED COMMAND\n'
 
