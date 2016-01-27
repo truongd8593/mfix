@@ -491,6 +491,7 @@ MODULE output_man
       use compar, only: myPE, PE_IO
       use output, only: RES_BACKUPS
       use discretelement, only: DISCRETE_ELEMENT
+      use param1, only: UNDEFINED_I
 
       IMPLICIT NONE
 
