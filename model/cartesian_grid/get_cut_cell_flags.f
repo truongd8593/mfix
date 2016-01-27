@@ -764,7 +764,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_U_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_U_CELL_AT(IJK) = .FALSE.
                   STANDARD_U_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
@@ -992,7 +992,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_V_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_V_CELL_AT(IJK) = .FALSE.
                   STANDARD_V_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
@@ -1206,7 +1206,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_W_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_W_CELL_AT(IJK) = .FALSE.
                   STANDARD_W_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
