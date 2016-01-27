@@ -10,13 +10,19 @@
   <body>
 
    <h1>Browser interface for controlling MFIX</h1>
+
+    <span id="status"></span><p/>
+
     <a href="#" class="toggler">&nbsp;</a>
     <label id='running'>MFIX IS RUNNING</label><p/>
-    <pre style='clear:both'><code id='selectable' onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
+    <pre style='clear:both'><code id='curlstartstop' onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
 
-    <button id="set">GET</button>
+    <button id="step">STEP</button><p/>
+    <pre style='clear:both'><code id='curlstep' onclick="selectText(this)">curl -X PUT http://localhost:5000/step</code></pre>
+
+    <button id="get">GET</button>
     mfix.
-  <select class="opts">
+  <select id="getmodname" class="opts">
     <option value="param">param</option>
     <option value="compar">compar</option>
     <option value="fldvar">fldvar</option>
@@ -24,13 +30,13 @@
     <option selected value="run">run</option>
   </select>
   .
-    <input type="text" value="time" size="80"/><p/>
-    <textarea rows="10" cols="100">blah</textarea><p/>
-    <pre style='clear:both'><code id='selectable' onclick="selectText(this)">curl -X GET http://localhost:5000/get -d "varname=mfix.run.time"</code></pre>
+    <input id="getvarname" type="text" value="time" size="80"/><p/>
+    <textarea id="getresponse" rows="10" cols="100">blah</textarea><p/>
+    <pre style='clear:both'><code id='curlget' onclick="selectText(this)">curl -X GET http://localhost:5000/get -d "varname=mfix.run.time"</code></pre>
 
     <button id="set">SET</button>
     mfix.
-  <select class="opts">
+  <select id="setmodname" class="opts">
     <option value="param">param</option>
     <option value="compar">compar</option>
     <option value="fldvar">fldvar</option>
@@ -38,8 +44,8 @@
     <option selected value="run">run</option>
   </select>
   .
-    <input type="text" value="dt" size="80"/><p/>
-    <span id="status"></span>
-    <pre style='clear:both'><code id='selectable' onclick="selectText(this)">curl -X POST http://localhost:5000/set -d "varname=mfix.run.dt&varvalue=0.01"</code></pre>
+    <input id="setvarname" type="text" value="dt" size="80"/><p/>
+    <input id="setvalue" type="text" value="0.01" size="80"/><p/>
+    <pre style='clear:both'><code id='curlset' onclick="selectText(this)">curl -X POST http://localhost:5000/set -d "varname=mfix.run.dt&varvalue=0.01"</code></pre>
   </body>
 </html>

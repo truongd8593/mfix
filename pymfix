@@ -3,10 +3,14 @@
 import os, sys
 sys.path.append(os.getcwd())
 
+import json
 import thread
 import time
 
-from flask import Flask, render_template
+import logging
+from logging.handlers import RotatingFileHandler
+
+from flask import Flask, render_template, request
 app = Flask(__name__)
 
 import mfix
@@ -32,24 +36,26 @@ def run_mfix():
         while not mfix.main.really_finish:
             if requests:
                 # requests would only arrive at rank 0
-                req_id,command = requests.popitem()
+                req_id,cmd_var_args = requests.popitem()
             else:
                 # command is empty for rank>0
-                req_id,command = '',''
+                req_id = None
+                cmd_var_args = (None,None,None)
+
+            json_cmd_var_args = json.dumps(cmd_var_args)
 
             # broadcast command from rank 0 to all ranks
-            command = mfix.main.do_mpi_bcast(command)
+            json_cmd_var_args = mfix.main.do_mpi_bcast(json_cmd_var_args)
 
-            command = ''.join(command).strip()
+            command, varname, args = json.loads(json_cmd_var_args.tostring())
 
             if command:
-                handle(req_id,command)
+                handle(req_id,command,varname,args)
 
             if mfix_stopped:
                 time.sleep(1)
             else:
                 mfix.main.step()
-            leftover = (mfix.run.tstop - mfix.run.time)
 
         # TODO: support automatic restart
         # if (mfix.leqsol.solver_statistics):
@@ -61,11 +67,13 @@ def run_mfix():
 
     mfix.main.end()
 
-def handle(req_id,command):
+def handle(req_id,command,var,args):
     global mfix_stopped
 
     cmd = command.split(' ')[0].lower().strip()
-    print "THE COMMAND IS",cmd
+
+    print "THE COMMAND IS ",cmd
+
     if cmd=='help':
         responses[req_id] = '''Usage:
         get VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - get value of variable [ for a certain index range ]
@@ -97,30 +105,61 @@ def handle(req_id,command):
         mfix.main.step()
         responses[req_id] = 'DOING ONE TIMESTEP\n'
 
-    elif cmd=='set':
-        mfix.main.step()
-        var = command.split(' ')[1].lower().strip()
-        val = command.split(' ')[2].lower().strip()
+    elif cmd=='get':
+
+        ids = args.get('ids',None)
 
         # slow things down for development
         time.sleep(mfix.compar.mype)
 
-        if len(command.split(' ')) > 3:
-            ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
-            for i in range(int(ii),int(i2)+1):
-                for j in range(int(jj),int(j2)+1):
-                    for k in range(int(kk),int(k2)+1):
-                        if is_on_mype_owns(i,j,k):
-                            exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k),val))
-                            print "GOING TO EXECUTE: ",exec_string
-                            exec(exec_string)
-                            print "rank ",mfix.compar.mype," set value for",i,j,k,funijk(i,j,k)
-                        else:
-                            print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
-        else:
-            exec('%s = %s' % (var,val))
-        responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
+        if var:
+            if ids and len(ids.split(' ')) > 3:
+                print "GOING TO GET IDS ", ('%s' % (var))
+                ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
+                for i in range(int(ii),int(i2)+1):
+                    for j in range(int(jj),int(j2)+1):
+                        for k in range(int(kk),int(k2)+1):
+                            if is_on_mype_owns(i,j,k):
+                                exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k)))
+                                print "GOING TO EXECUTE: ",exec_string
+                                exec(exec_string)
+                                print "rank ",mfix.compar.mype," set value for",i,j,k,funijk(i,j,k)
+                            else:
+                                print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
+            else:
+                print "GOING TO EVALUTE ", var
+                val = str(eval(var))
+                print "GOING TO RETURN ", val
+                responses[req_id] = val
 
+    elif cmd=='set':
+
+        var = varname
+        val = args.get('varvalue',None)
+        ids = args.get('ids',None)
+
+        # slow things down for development
+        time.sleep(mfix.compar.mype)
+
+        if var and val:
+            if ids and len(ids.split(' ')) > 3:
+                print "GOING TO SET IDS ", ('%s = %s' % (var,val))
+                ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
+                for i in range(int(ii),int(i2)+1):
+                    for j in range(int(jj),int(j2)+1):
+                        for k in range(int(kk),int(k2)+1):
+                            if is_on_mype_owns(i,j,k):
+                                exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k),val))
+                                print "GOING TO EXECUTE: ",exec_string
+                                exec(exec_string)
+                                print "rank ",mfix.compar.mype," set value for",i,j,k,funijk(i,j,k)
+                            else:
+                                print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
+            else:
+                print "GOING TO SET ", ('%s = %s' % (var,val))
+                exec('%s = %s' % (var,val))
+        print 'ok, I set %s to %s\n' % (var,val)
+        responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
     else:
         responses[req_id] = 'UNRECOGNIZED COMMAND\n'
 
@@ -142,13 +181,17 @@ def help():
 def list():
     return do_command( "LIST" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/set',methods=['POST'])
-def set():
-    return do_command( "SET" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+@app.route('/set/<varname>',methods=['POST'])
+def set(varname):
+    return do_command( "SET", varname, request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/get',methods=['GET'])
-def get():
-    return do_command( "GET" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+@app.route('/get/<varname>',methods=['GET'])
+def get(varname):
+    return do_command( "GET", varname, request.args ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/step',methods=['POST'])
+def step():
+    return do_command( "STEP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/start',methods=['PUT'])
 def start():
@@ -158,9 +201,10 @@ def start():
 def stop():
     return do_command( "STOP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
-def do_command(cmd):
+def do_command(cmd, varname=None, args = []):
     req_id = thread.get_ident()
-    requests[req_id] = cmd
+
+    requests[req_id] = ( cmd, varname, args )
     while req_id not in responses:
         pass
     resp = responses[req_id]
@@ -174,6 +218,9 @@ def main():
     time.sleep(1)
 
     if 0==mfix.compar.mype:
+        handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
+        handler.setLevel(logging.INFO)
+        app.logger.addHandler(handler)
         app.run(host='0.0.0.0',debug=False)
     while(True): time.sleep(1)
 
