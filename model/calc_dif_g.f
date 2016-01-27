@@ -85,7 +85,7 @@
       DOUBLE PRECISION :: Pg_ref(NMAX(0))
 ! Intermediate calculation to determine weighted average diffusion
 ! coefficient
-      DOUBLE PRECISION :: lDab, Sum_XgLoDab, Sum_XgL
+      DOUBLE PRECISION :: lDab, Sum_XgLoDab, Sum_XgL, lXgN
 !---------------------------------------------------------------------//
 
       CALL SET_BINARY_DAB_GAS(Dab, Tg_ref, Pg_ref)
@@ -109,13 +109,15 @@
                      IF (L /= N) THEN
                         SUM_XgLoDab = SUM_XgLoDab+&
                                      X_g(IJK,L)/Dab(N,L)
+! Sum_XgL = 1-XgN
                         SUM_XgL = SUM_XgL + X_g(IJK,L)
                      ENDIF
                   ENDDO
+! it is possible for lXgN to evaluate <0
+                  lXgN = ONE-SUM_XgL
 
-                  IF ((ONE-X_g(IJK,N)) > ZERO_X_GS .AND. &
-                      SUM_XgL > ZERO_X_GS) THEN
-!                  IF ((ONE-X_G(IJK,N)) > 1E-4) THEN
+                  IF (lXgN > ZERO_X_GS .AND. &
+                     SUM_XgL > ZERO_X_GS) THEN
 ! i.e. when cell is not only species N
 ! If this criteria is too strict (i.e. when XgN->1), then this section
 ! may be evaluated when the other XgN do not carry significant value
@@ -128,7 +130,8 @@
 ! additional criteria should probably be added to only evaluate when
 ! sum_xgL <0.1.
                      IF (SUM_XgLoDab > ZERO) THEN
-                        lDab = (ONE-X_g(IJK,N))/SUM_XgLoDab
+! for numerical reasons use Sum_XgL rather than ONE-X_g(IJK,N)
+                        lDab = SUM_XgL/SUM_XgLoDab
                      ELSE
 ! this should not occur...
                         lDab = Dab(N,N)
