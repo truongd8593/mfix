@@ -54,7 +54,7 @@ def run_mfix():
                 handle(req_id,command,varname,args)
 
             if mfix_stopped:
-                time.sleep(1)
+                time.sleep(0.1)
             else:
                 mfix.main.step()
 
@@ -207,7 +207,7 @@ def do_command(cmd, varname=None, args = []):
 
     requests[req_id] = ( cmd, varname, args )
     while req_id not in responses:
-        pass
+        time.sleep(0.1)
     resp = responses[req_id]
     del responses[req_id]
 
@@ -223,7 +223,7 @@ def main():
         handler.setLevel(logging.INFO)
         app.logger.addHandler(handler)
         app.run(host='0.0.0.0',debug=False)
-    while(True): time.sleep(1)
+    while(True): time.sleep(10)
 
 # this only runs if the module was *not* imported
 if __name__ == '__main__':
