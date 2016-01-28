@@ -1,5 +1,5 @@
 var mfixrunning = false;
-var req_common = 'import requests; requests.post("'+document.location.origin;
+var req_common = '>>> import requests; requests.post("'+document.location.origin;
 
 $(document).ready(function(){
     $("#curlstartstop").text(req_common+'/stop")');
