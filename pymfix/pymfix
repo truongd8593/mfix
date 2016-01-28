@@ -77,7 +77,7 @@ def handle(req_id,command,var,args):
 
     # TODO: refactor with a Command class, instead of a big switch statement
     if cmd=='help':
-        responses[req_id] = '''Usage:
+        responses[req_id] = 200,'''Usage:
         get VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - get value of variable [ for a certain index range ]
         list                                - list variables that can be set
         set VAR=VALUE [ i1 j1 k1 i2 j2 k2 ] - set variable to value [ for a certain index range ]
@@ -92,38 +92,38 @@ def handle(req_id,command,var,args):
             attr = getattr(mfix,module)
             resp = resp + 'in module %s you can set attributes %s \n\n' % (module,dir(attr))
         resp = resp + " Except for those of the above that are really subroutines/functions instead of variables. Also, the above list is incomplete, and is missing most of the interesting variables. \n\n  Don't forget to prefix with mfix; e.g. set mfix.run.dt 0.001\n\n"
-        responses[req_id] = resp
+        responses[req_id] = 200,resp
         mfix_stopped = True
 
     elif cmd=='backupres':
-        responses[req_id] = 'BACKING UP RESOURCE FILES\n'
+        responses[req_id] = 200,'BACKING UP RESOURCE FILES\n'
         mfix.main.do_backupres()
 
     elif cmd=='reinit':
-        responses[req_id] = 'REINITIALIZING MFIX\n'
+        responses[req_id] = 200,'REINITIALIZING MFIX\n'
         mfix.main.do_reinit()
 
     elif cmd=='exit':
-        responses[req_id] = 'EXITING MFIX\n'
+        responses[req_id] = 200,'EXITING MFIX\n'
         mfix.main.do_exit()
 
     elif cmd=='abort':
-        responses[req_id] = 'ABORTING MFIX\n'
+        responses[req_id] = 200,'ABORTING MFIX\n'
         mfix.main.do_abort()
 
     elif cmd=='stop':
-        responses[req_id] = 'STOPPING MFIX\n'
+        responses[req_id] = 200,'STOPPING MFIX\n'
         mfix_stopped = True
 
     elif cmd=='start':
-        responses[req_id] = 'STARTING MFIX\n'
+        responses[req_id] = 200,'STARTING MFIX\n'
         mfix_stopped = False
 
     elif cmd=='step':
         stepcount = int(args.get('stepcount',None))
         for _ in range(stepcount):
             mfix.main.step()
-        responses[req_id] = 'DOING %s TIMESTEP(S)\n' % stepcount
+        responses[req_id] = 200,'DOING %s TIMESTEP(S)\n' % stepcount
 
     elif cmd=='get':
 
@@ -150,12 +150,13 @@ def handle(req_id,command,var,args):
                 print "GOING TO EVALUTE ", var
                 try:
                     val = str(eval(var))
-                except AttributeError:
+                    responses[req_id] = 200,val
+                except AttributeError,SyntaxError:
                     # TODO: use error code for REST call
-                    val = "ERROR INCORRECT EXPRESSION: "+var
+                    val = "ERROR: could not evaluate "+var
+                    responses[req_id] = 400,val
 
                 print "GOING TO RETURN ", val
-                responses[req_id] = val
 
     elif cmd=='set':
 
@@ -183,16 +184,16 @@ def handle(req_id,command,var,args):
                 print "GOING TO SET ", ('%s = %s' % (var,val))
                 try:
                     exec('%s = %s' % (var,val))
-                    responses[req_id] = 'ok, I set %s to %s\n' % (var,val)
+                    responses[req_id] = 200,'ok, I set %s to %s\n' % (var,val)
                 except AttributeError:
                     # TODO: better error code REST response
-                    responses[req_id] = 'ERROR could not set: %s to %s\n' % (var,val)
+                    responses[req_id] = 500,'ERROR could not set: %s to %s\n' % (var,val)
 
                 print 'ok, I set %s to %s\n' % (var,val)
         else:
-            responses[req_id] = 'could not set %s to %s\n' % (var,val)
+            responses[req_id] = 500,'could not set %s to %s\n' % (var,val)
     else:
-        responses[req_id] = 'UNRECOGNIZED COMMAND\n'
+        responses[req_id] = 500,'UNRECOGNIZED COMMAND\n'
 
 def funijk(i,j,k):
     return mfix.compar.ijk_array_of[i,j,k]
@@ -206,47 +207,59 @@ def index():
 
 @app.route('/help',methods=['GET'])
 def help():
-    return do_command( "HELP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "HELP" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/list',methods=['GET'])
 def list():
-    return do_command( "LIST" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "LIST" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/set/<varname>',methods=['POST'])
 def set(varname):
-    return do_command( "SET", varname, args=request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "SET", varname, args=request.form )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/get/<varname>',methods=['GET'])
 def get(varname):
-    return do_command( "GET", varname, args=request.args ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "GET", varname, args=request.args )
+    print "DATTTAAA ",data
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/backupres',methods=['POST'])
 def backupres():
-    return do_command( "BACKUPRES" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "BACKUPRES" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/reinit',methods=['POST'])
 def reinit():
-    return do_command( "REINIT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "REINIT" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/exit',methods=['POST'])
 def exit():
-    return do_command( "EXIT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "EXIT" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/abort',methods=['POST'])
 def abort():
-    return do_command( "ABORT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "ABORT" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/step',methods=['POST'])
 def step():
-    return do_command( "STEP", args=request.form ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "STEP", args=request.form )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/start',methods=['PUT'])
 def start():
-    return do_command( "START" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "START" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/stop',methods=['PUT'])
 def stop():
-    return do_command( "STOP" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+    status_code, data = do_command( "STOP" )
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def do_command(cmd, varname=None, args = []):
     req_id = thread.get_ident()

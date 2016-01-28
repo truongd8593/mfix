@@ -12,7 +12,6 @@
 
    <h1>Browser interface for controlling MFIX</h1>
 
-    <span id="status"></span><p/>
     <a href="#" class="toggler off">&nbsp;</a>
     <label id='running'>MFIX IS STOPPED</label><p/>
     <pre style='clear:both'><code id="curlstartstop" onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
@@ -66,5 +65,14 @@ pause at time
     <input id="setvarname" type="text" value="dt" size="80"/><p/>
     <input id="setvalue" type="text" value="0.01" size="80"/><p/>
     <pre style='clear:both'><code id='curlset' onclick="selectText(this)">curl -X POST http://localhost:5000/set -d "varname=mfix.run.dt&varvalue=0.01"</code></pre>
+
+<div class="notice info"><p>This is a an info notice, it provides feedback of a neutral nature to the user.</p></div>
+
+<div class="notice success"><p>This is a success notice, it provides feedback of a positive nature to the user.</p></div>
+
+<div class="notice warning"><p>This is a warning notice, it provides feedback of a potentially negative nature to the user.</p></div>
+
+<div class="notice error"><p>This is an error notice, it provides feedback of a negative nature to the user.</p></div>
+
   </body>
 </html>

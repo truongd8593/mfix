@@ -2,6 +2,12 @@ var mfixrunning = false;
 var req_common = '>>> import requests; requests.post("'+document.location.origin;
 
 $(document).ready(function(){
+
+    $(".notice").hide();
+    $('.notice').click(function(){
+        $(this).fadeOut();
+    });
+
     $("#curlstartstop").text(req_common+'/stop")');
     updateCurlCommands();
     $('a.toggler').click(function(){
@@ -33,13 +39,15 @@ $(document).ready(function(){
             type: 'GET',
             success: function(response) {
                 $("#getresponse").text(response);
-                $("#status").text('Successfully got value');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully got value');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#getresponse").text(response);
-                $("#status").text('Error retrieving value');
-                $("#status").css('color', 'red');
+                $("#getresponse").text("");
+                $(".notice").hide();
+                $("div.error").text('Error retrieving value');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -55,12 +63,14 @@ $(document).ready(function(){
             type: 'POST',
             data: {'varvalue':value},
             success: function(response) {
-                $("#status").text('Successfully set value');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully set value');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Error doing set value');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Error setting value');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -73,12 +83,14 @@ $(document).ready(function(){
             type: 'POST',
             data: {'stepcount':stepcount},
             success: function(response) {
-                $("#status").text('Successfully did timesteps');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully did timesteps');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Error doing timesteps');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Error doing timesteps');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -90,12 +102,14 @@ $(document).ready(function(){
             type: 'POST',
             data: {'varvalue':pausetime},
             success: function(response) {
-                $("#status").text('Successfully set pausetime');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully set pausetime');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Error setting pausetime');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Error setting pausetime');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -105,12 +119,14 @@ $(document).ready(function(){
             url: 'backupres',
             type: 'POST',
             success: function(response) {
-                $("#status").text('Successfully backed up resource files');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully backed up resource files');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Error while backing up resource files');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Error while backing up resource files');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -120,12 +136,14 @@ $(document).ready(function(){
             url: 'reinit',
             type: 'POST',
             success: function(response) {
-                $("#status").text('Successfully reinitialized');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully reinitialized');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Reinitialize failed');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Reinitialize failed');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -135,12 +153,14 @@ $(document).ready(function(){
             url: 'exit',
             type: 'POST',
             success: function(response) {
-                $("#status").text('Successfully exited');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.success").text('Successfully exited');
+                $("div.success").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Exit failed');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Exit failed');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -150,12 +170,14 @@ $(document).ready(function(){
             url: 'abort',
             type: 'POST',
             success: function(response) {
-                $("#status").text('Successfully aborted');
-                $("#status").css('color', 'green');
+                $(".notice").hide();
+                $("div.error").text('Successfully aborted');
+                $("div.error").fadeIn();
             },
             error: function(response) {
-                $("#status").text('Abort failed');
-                $("#status").css('color', 'red');
+                $(".notice").hide();
+                $("div.error").text('Abort failed');
+                $("div.error").fadeIn();
             }
         });
     });
@@ -202,13 +224,11 @@ function updateCurlCommands() {
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');
         $("#curlstartstop").text(req_common+'/stop")');
-        $('#step').prop('disabled',true);
-        $('#pausetime').prop('disabled',true);
+        $('button, input, select').prop('disabled',true);
     } else {
         $("#running").text('MFIX IS STOPPED');
         $("#curlstartstop").text(req_common+'/start")');
-        $('#step').prop('disabled',false);
-        $('#pausetime').prop('disabled',false);
+        $('button, input, select').prop('disabled',false);
     }
 
 }
