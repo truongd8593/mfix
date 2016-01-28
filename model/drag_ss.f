@@ -36,7 +36,7 @@
       LM = FUNLM(L,M)
 
       IF (USR_FSS(LM)) THEN
-         CALL CALC_USR_PROP(SolidsSolids_Drag,lM=M,lL=L)
+         CALL CALC_USR_PROP(SolidsSolids_Drag,lL=L,lM=M)
       ELSE
          IF (GRANULAR_ENERGY) THEN
             SELECT CASE (KT_TYPE_ENUM)
@@ -95,7 +95,7 @@
       use functions, only: wall_at, funlm
       use functions, only: im_of, jm_of, km_of
       USE indices, only: i_of
-      USE physprop, only: smax, close_packed
+      USE physprop, only: close_packed
       USE rdf, only: g_0
       IMPLICIT NONE
 
@@ -248,7 +248,7 @@
       USE fldvar, only: d_p, ro_s, rop_s, theta_m, p_star
       use functions, only: wall_at, funlm
       USE param1, only: zero
-      USE physprop, only: smax, close_packed
+      USE physprop, only: close_packed
       USE rdf, only: g_0
       IMPLICIT NONE
 

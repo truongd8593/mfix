@@ -89,13 +89,13 @@
          CALL CALC_USR_PROP(Solids_Viscosity,lm=M)
          CALL SET_EPMUS_VALUES(M)
          RETURN
-! none of the following subroutines should be called when user
-! specified or constant viscosity case
       ELSEIF (MU_S0(M) /= UNDEFINED) THEN
-         CALL CALC_MU_S0(M)
+         CALL CALC_MU_S0(M)  ! I think this call can be removed unless MMS requires it
          CALL SET_EPMUS_VALUES(M)
          RETURN
       ENDIF
+! when user specified or constant viscosity case is invoked then
+! none of the following subroutines should be called
 
 
 ! General initializations
@@ -288,9 +288,7 @@
 ! balance (see source_*_s for details). In addition, a seperate plastic
 ! pressure term is also present in the solids phase momentum balance
 ! whose value becomes non-zero depending on the solids volume fraction
-! and value of maximum packing (ep_star). Finally, for a gas-liquid
-! system the quantity P_S could be considered to represent a capillary
-! pressure type term.
+! and value of maximum packing (ep_star).
             P_s(IJK,M) = ZERO
 
 ! viscosity in Poise

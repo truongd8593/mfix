@@ -125,7 +125,8 @@
          wHeader = .TRUE.
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, 0, N)
+!            CALL USR_PROPERTIES(lprop, IJK, 0, N)
+            CALL USR_PROP_ROG(IJK)
             ROP_G(IJK) = EP_G(IJK)*RO_G(IJK)
 ! report errors
             IF(RO_G(IJK) < ZERO .or. mfix_isnan(RO_G(IJK))) THEN
@@ -139,12 +140,52 @@
       CASE(Gas_SpecificHeat)
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, 0, N)
+!            CALL USR_PROPERTIES(lprop, IJK, 0, N)
+            CALL USR_PROP_CPG(IJK)
 ! report errors.
             IF(C_PG(IJK) <= ZERO) THEN
 !               lErr(myPE) = 103
                IF(REPORT_NEG_SPECIFICHEAT) CALL CPgErr_LOG(IJK, wHeader)
             ENDIF
+         ENDDO
+
+! Gas transport properties: viscosity
+      CASE(Gas_Viscosity)
+         DO IJK=IJKSTART3,IJKEND3
+            IF (FLUID_AT(IJK)) THEN
+!               CALL USR_PROPERTIES(lprop, IJK, 0, N)
+               CALL USR_PROP_MUG(IJK)
+               MU_GT(IJK) = MU_G(IJK)
+               LAMBDA_GT(IJK) = -2./3.*MU_GT(IJK)
+            ELSE ! probably unnecessary
+               MU_g(IJK) = zero
+               MU_GT(IJK) = ZERO
+               LAMBDA_GT(IJK) = ZERO
+            ENDIF
+         ENDDO
+
+! Gas transport properties: conductivity
+      CASE(Gas_Conductivity)
+         DO IJK=IJKSTART3,IJKEND3
+            IF (FLUID_AT(IJK)) THEN
+!               CALL USR_PROPERTIES(lprop, IJK, 0, N)
+               CALL USR_PROP_KG(IJK)
+            ELSE ! probably unnecessary
+               K_G(IJK) = ZERO
+            ENDIF
+         ENDDO
+
+! Gas transport properties: diffusivity
+      CASE(Gas_Diffusivity)
+         DO N=1,NMAX(0)
+            DO IJK=IJKSTART3,IJKEND3
+               IF (FLUID_AT(IJK)) THEN
+!                  CALL USR_PROPERTIES(lprop, IJK, 0, N)
+                  CALL USR_PROP_DIFG(IJK,N)
+               ELSE ! probably unnecessary
+                  DIF_G(IJK,N) = ZERO
+               ENDIF
+            ENDDO
          ENDDO
  
 ! Solids physical properties: density
@@ -152,7 +193,8 @@
          wHeader = .TRUE.
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, M, N)
+!            CALL USR_PROPERTIES(lprop, IJK, M, N)
+            CALL USR_PROP_ROS(IJK,M)
 ! report errors.
             IF(RO_S(IJK,M) <= ZERO) THEN
                lErr(myPE) = 101
@@ -165,7 +207,8 @@
       CASE(Solids_SpecificHeat)
          DO IJK=IJKSTART3,IJKEND3
             IF (WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, M, N)
+!            CALL USR_PROPERTIES(lprop, IJK, M, N)
+            CALL USR_PROP_CPS(IJK,M)
 ! report errors.
             IF(C_PS(IJK,M) <= ZERO) THEN
 !               lErr(myPE) = 104
@@ -173,60 +216,26 @@
             ENDIF
          ENDDO
 
-! Gas transport properties: conductivity
-      CASE(Gas_Conductivity)
+! Solids transport properties: viscosity
+      CASE(Solids_Viscosity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-               CALL USR_PROPERTIES(lprop, IJK, 0, N)
-            ELSE ! probably unncessary
-               K_G(IJK) = ZERO
+!               CALL USR_PROPERTIES(lprop, IJK, M, N)
+               CALL USR_PROP_MUS(IJK,M)
+            ELSE ! probably unnecessary
+               MU_S(IJK,M) = ZERO
+               LAMBDA_S(IJK,M) = ZERO
             ENDIF
-         ENDDO
-
-! Gas transport properties: viscosity
-      CASE(Gas_Viscosity)
-         DO IJK=IJKSTART3,IJKEND3
-            IF (FLUID_AT(IJK)) THEN
-               CALL USR_PROPERTIES(lprop, IJK, 0, N)
-               MU_GT(IJK) = MU_G(IJK)
-               LAMBDA_GT(IJK) = -2./3.*MU_GT(IJK)
-            ELSE ! probably unncessary
-               MU_g(IJK) = zero
-               MU_GT(IJK) = ZERO
-               LAMBDA_GT(IJK) = ZERO
-            ENDIF
-         ENDDO
-
-! Gas transport properties: diffusivity
-      CASE(Gas_Diffusivity)
-         DO N=1,NMAX(0)
-            DO IJK=IJKSTART3,IJKEND3
-               IF (FLUID_AT(IJK)) THEN
-                  CALL USR_PROPERTIES(lprop, IJK, 0, N)
-               ELSE ! probably unncessary
-                  DIF_G(IJK,N) = ZERO
-               ENDIF
-            ENDDO
          ENDDO
 
 ! Solids transport properties: conductivity
       CASE(Solids_Conductivity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-               CALL USR_PROPERTIES(lprop, IJK, M, N)
-            ELSE ! probably unncessary
+!               CALL USR_PROPERTIES(lprop, IJK, M, N)
+               CALL USR_PROP_KS(IJK,M)
+            ELSE ! probably unnecessary
                K_S(IJK,M) = ZERO
-            ENDIF
-         ENDDO
-
-! Solids transport properties: viscosity
-      CASE(Solids_Viscosity)
-         DO IJK=IJKSTART3,IJKEND3
-            IF (FLUID_AT(IJK)) THEN
-               CALL USR_PROPERTIES(lprop, IJK, M, N)
-            ELSE ! probably unncessary
-               MU_S(IJK,M) = ZERO
-               LAMBDA_S(IJK,M) = ZERO
             ENDIF
          ENDDO
 
@@ -235,8 +244,9 @@
          DO N=1,NMAX(M)
             DO IJK=IJKSTART3,IJKEND3
                IF (FLUID_AT(IJK)) THEN
-                  CALL USR_PROPERTIES(lprop, IJK, M, N)
-               ELSE ! probably unncessary
+!                  CALL USR_PROPERTIES(lprop, IJK, M, N)
+                  CALL USR_PROP_DIFS(IJK,M,N)
+               ELSE ! probably unnecessary
                   DIF_S(IJK,M,N) = ZERO
                ENDIF
             ENDDO
@@ -246,7 +256,8 @@
       CASE(GasSolids_HeatTransfer)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
-               CALL USR_PROPERTIES(lprop, IJK, M, N)
+!               CALL USR_PROPERTIES(lprop, IJK, M, N)
+               CALL USR_PROP_GAMA(IJK,M)
             ENDIF
          ENDDO
 
@@ -255,6 +266,8 @@
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUIDorP_FLOW_AT(IJK)) THEN
                CALL USR_PROPERTIES(lprop, IJK, M, N)
+! this hook is not accessed or functioning.
+! use drag_type = usr_drag to access this entity
             ENDIF
          ENDDO
 
@@ -262,7 +275,8 @@
       CASE(SolidsSolids_Drag)
          DO IJK=IJKSTART3,IJKEND3
             IF (.NOT.WALL_AT(IJK)) CYCLE
-            CALL USR_PROPERTIES(lprop, IJK, M, L)
+!            CALL USR_PROPERTIES(lprop, IJK, M, L)
+            CALL USR_PROP_FSS(IJK,L,M)
          ENDDO
 
 ! error out
