@@ -20,6 +20,8 @@ MODULE MAIN
    CHARACTER(LEN=4) :: TUNIT
    ! Save TIME in input file for RESTART_2
    DOUBLE PRECISION :: TIME_SAVE
+   ! Time set in browser at which to pause mfix
+   DOUBLE PRECISION :: PAUSETIME = HUGE(1.0)
    ! Temporary storage for DT
    DOUBLE PRECISION :: DT_tmp
    ! loop counter
@@ -1172,5 +1174,17 @@ CONTAINS
       implicit none
       call reinitialize
    end subroutine do_reinit
+
+   subroutine do_exit
+      use compar, only: mype
+      implicit none
+      call mfix_exit(mype)
+   end subroutine do_exit
+
+   subroutine do_abort
+      use compar, only: mype
+      implicit none
+      call mfix_exit(mype)
+   end subroutine do_abort
 
 END MODULE MAIN

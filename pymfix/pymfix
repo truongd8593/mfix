@@ -53,7 +53,7 @@ def run_mfix():
             if command:
                 handle(req_id,command,varname,args)
 
-            if mfix_stopped:
+            if mfix_stopped or mfix.main.pausetime <= mfix.run.time:
                 time.sleep(0.1)
             else:
                 mfix.main.step()
@@ -102,6 +102,14 @@ def handle(req_id,command,var,args):
     elif cmd=='reinit':
         responses[req_id] = 'REINITIALIZING MFIX\n'
         mfix.main.do_reinit()
+
+    elif cmd=='exit':
+        responses[req_id] = 'EXITING MFIX\n'
+        mfix.main.do_exit()
+
+    elif cmd=='abort':
+        responses[req_id] = 'ABORTING MFIX\n'
+        mfix.main.do_abort()
 
     elif cmd=='stop':
         responses[req_id] = 'STOPPING MFIX\n'
@@ -219,6 +227,14 @@ def backupres():
 @app.route('/reinit',methods=['POST'])
 def reinit():
     return do_command( "REINIT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/exit',methods=['POST'])
+def exit():
+    return do_command( "EXIT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/abort',methods=['POST'])
+def abort():
+    return do_command( "ABORT" ), 200, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/step',methods=['POST'])
 def step():

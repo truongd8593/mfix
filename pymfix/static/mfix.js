@@ -1,7 +1,8 @@
 var mfixrunning = false;
+var req_common = 'import requests; requests.post("'+document.location.origin;
 
 $(document).ready(function(){
-    $("#curlstartstop").text('curl -X PUT '+document.location.origin+'/stop');
+    $("#curlstartstop").text(req_common+'/stop")');
     updateCurlCommands();
     $('a.toggler').click(function(){
 
@@ -82,8 +83,24 @@ $(document).ready(function(){
         });
     });
 
-    $('#backupres').click(function(){
+    $('#pausetime').change(function(){
+        var pausetime = $("#pausetime").val();
+        $.ajax({
+            url: 'set/mfix.main.pausetime',
+            type: 'POST',
+            data: {'varvalue':pausetime},
+            success: function(response) {
+                $("#status").text('Successfully set pausetime');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Error setting pausetime');
+                $("#status").css('color', 'red');
+            }
+        });
+    });
 
+    $('#backupres').click(function(){
         $.ajax({
             url: 'backupres',
             type: 'POST',
@@ -99,7 +116,6 @@ $(document).ready(function(){
     });
 
     $('#reinit').click(function(){
-
         $.ajax({
             url: 'reinit',
             type: 'POST',
@@ -114,42 +130,85 @@ $(document).ready(function(){
         });
     });
 
+    $('#exit').click(function(){
+        $.ajax({
+            url: 'exit',
+            type: 'POST',
+            success: function(response) {
+                $("#status").text('Successfully exited');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Exit failed');
+                $("#status").css('color', 'red');
+            }
+        });
+    });
+
+    $('#abort').click(function(){
+        $.ajax({
+            url: 'abort',
+            type: 'POST',
+            success: function(response) {
+                $("#status").text('Successfully aborted');
+                $("#status").css('color', 'green');
+            },
+            error: function(response) {
+                $("#status").text('Abort failed');
+                $("#status").css('color', 'red');
+            }
+        });
+    });
+
     $("input, select").change(updateCurlCommands);
     $("input").keydown(updateCurlCommands);
     $("input").keyup(updateCurlCommands);
 
-    $('.stepcount').keyup(function () {
+    // TODO: better integer validation
+    $('#stepcount').keyup(function () {
         if (this.value != this.value.replace(/[^0-9]/g, '')) {
             this.value = this.value.replace(/[^0-9]/g, '');
+        }
+    });
+
+    // TODO: better float validation
+    $('#pausetime').keyup(function () {
+        if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
+            this.value = this.value.replace(/[^0-9\.]/g, '');
         }
     });
 
 });
 
 function updateCurlCommands() {
-    $("#curlbackupres").text('curl -X POST '+document.location.origin+'/backupres');
-    $("#curlreinit").text('curl -X POST '+document.location.origin+'/reinit');
-    $("#curlstep").text('curl -X PUT '+document.location.origin+'/step');
+    $("#curlbackupres").text(req_common+'/backupres")');
+    $("#curlreinit").text(req_common+'/reinit")');
+    $("#curlexit").text(req_common+'/exit")');
+    $("#curlabort").text(req_common+'/abort")');
+    $("#curlpausetime").text(req_common+'/set/mfix.main.pausetime", data={"varvalue":"'+$("#pausetime").val()+'"})');
+    $("#curlstep").text(req_common+'/step'+'", data={"stepcount":"'+$("#stepcount").val()+'"})');
 
     var varname = ["mfix",
-                       $("#setmodname").val(),
-                       $("#setvarname").val()].join('.');
+                   $("#setmodname").val(),
+                   $("#setvarname").val()].join('.');
     var value = $("#setvalue").val();
-    $("#curlset").text('curl -X POST '+document.location.origin+'/set/'+varname+' -d "varvalue='+value+'"');
+    $("#curlset").text(req_common+'/set/'+varname+'", data={"varvalue":"'+value+'"})');
 
     var varname = ["mfix",
-                       $("#getmodname").val(),
-                       $("#getvarname").val()].join('.');
-    $("#curlget").text('curl -X GET '+document.location.origin+'/get/'+varname);
+                   $("#getmodname").val(),
+                   $("#getvarname").val()].join('.');
+    $("#curlget").text(req_common+'/get/'+varname+'").text');
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');
-        $("#curlstartstop").text('curl -X PUT '+document.location.origin+'/stop');
+        $("#curlstartstop").text(req_common+'/stop")');
         $('#step').prop('disabled',true);
+        $('#pausetime').prop('disabled',true);
     } else {
         $("#running").text('MFIX IS STOPPED');
-        $("#curlstartstop").text('curl -X PUT '+document.location.origin+'/start');
+        $("#curlstartstop").text(req_common+'/start")');
         $('#step').prop('disabled',false);
+        $('#pausetime').prop('disabled',false);
     }
 
 }

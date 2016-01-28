@@ -15,18 +15,29 @@
     <span id="status"></span><p/>
     <a href="#" class="toggler off">&nbsp;</a>
     <label id='running'>MFIX IS STOPPED</label><p/>
-    <pre style='clear:both'><code id='curlstartstop' onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
+    <pre style='clear:both'><code id="curlstartstop" onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
 
     <button id="step">STEP</button>
     for
     <input id="stepcount" type="text" value="1" size="8"/>
     timestep(s)<p/>
-    <pre style='clear:both'><code id='curlstep' onclick="selectText(this)">curl -X PUT http://localhost:5000/step</code></pre>
+    <pre style='clear:both'><code id="curlstep" onclick="selectText(this)">curl -X PUT http://localhost:5000/step</code></pre>
+
+pause at time
+    <input id="pausetime" type="text" value="" size="8"/><p/>
+    <pre style='clear:both'><code id="curlpausetime" onclick="selectText(this)">curl -X PUT http://localhost:5000/step</code></pre>
 
     <button id="backupres">BACKUP RES</button><p/>
     <pre style='clear:both'><code id="curlbackupres" onclick="selectText(this)">curl -X PUT http://localhost:5000/backupres</code></pre>
+
     <button id="reinit">REINITIALIZE</button><p/>
     <pre style='clear:both'><code id="curlreinit" onclick="selectText(this)">curl -X PUT http://localhost:5000/reinit</code></pre>
+
+    <button id="exit">EXIT</button>(writes RES files, then terminates)<p/>
+    <pre style='clear:both'><code id="curlexit" onclick="selectText(this)">curl -X PUT http://localhost:5000/exit</code></pre>
+
+    <button id="abort">ABORT</button>(terminates without writing RES files)<p/>
+    <pre style='clear:both'><code id="curlabort" onclick="selectText(this)">curl -X PUT http://localhost:5000/abort</code></pre>
 
     <button id="get">GET</button>
     mfix.
