@@ -133,7 +133,7 @@ pymfix: mfix.so
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
 mfix.so: $(LIBMFIX) $(bin_PROGRAMS)
-	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 
 ################################################################
 #                                                              #
@@ -148,9 +148,12 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
+F2PY_FLAGS =
+
 if MPI
 AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
+F2PY_FLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################
