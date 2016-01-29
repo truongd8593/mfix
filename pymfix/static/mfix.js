@@ -114,6 +114,23 @@ $(document).ready(function(){
         });
     });
 
+    $('#write_dbg_vt').click(function(){
+        $.ajax({
+            url: 'write_dbg_vt',
+            type: 'POST',
+            success: function(response) {
+                $(".notice").hide();
+                $("div.success").text('Successfully called WRITE_DBG_VTU_AND_VTP_FILES');
+                $("div.success").fadeIn();
+            },
+            error: function(response) {
+                $(".notice").hide();
+                $("div.error").text('Error while calling WRITE_DBG_VTU_AND_VTP_FILES');
+                $("div.error").fadeIn();
+            }
+        });
+    });
+
     $('#backupres').click(function(){
         $.ajax({
             url: 'backupres',
@@ -203,6 +220,7 @@ $(document).ready(function(){
 });
 
 function updateCurlCommands() {
+    $("#curlwritedbgvt").text(req_common+'/write_dbg_vt")');
     $("#curlbackupres").text(req_common+'/backupres")');
     $("#curlreinit").text(req_common+'/reinit")');
     $("#curlexit").text(req_common+'/exit")');

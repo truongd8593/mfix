@@ -17,6 +17,7 @@
 
       USE compar, ONLY: ijkend3
       USE cutcell
+      USE cut_cell_preproc, ONLY: eval_f
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: DO_K, NO_K
       USE indices, ONLY: I_OF, J_OF, K_OF
@@ -106,7 +107,6 @@
                N_NODES = N_NODES + 1
                CONNECT(IJK,N_NODES) = IJK_OF_NODE(NODE)
             ENDIF
-
 
          END DO
 
@@ -324,6 +324,7 @@
 
       USE compar, ONLY: mype
       USE cutcell
+      USE exit, only: mfix_exit
       USE functions, ONLY: FUNIJK
       USE geometry, ONLY: NO_K, dx, dy, dz
       USE indices, ONLY: I_OF, J_OF, K_OF
@@ -503,6 +504,7 @@
 
       USE compar, ONLY: MYPE
       USE cutcell
+      USE exit, only: mfix_exit
       USE functions, ONLY: FUNIJK_GL
       USE geometry, ONLY: NO_K, dx, dy, dz
       USE param1, only: half, zero

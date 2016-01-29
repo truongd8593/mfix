@@ -33,6 +33,7 @@
       USE bc
       USE compar
       USE constant
+      USE exit, only: mfix_exit
       USE fldvar
       USE funits
       USE mpi_utility
@@ -658,22 +659,23 @@
 !   M o d u l e s
 !-----------------------------------------------
 
+      USE bc
+      USE compar
+      USE constant
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits
-      USE rxns
-      USE compar
-      USE mpi_utility
       USE progress_bar
+      USE quadric
+      USE run
+      USE rxns
+      USE scalars
       USE stl
       USE vtk
-      USE quadric
-      USE constant
-      USE bc
       IMPLICIT NONE
 
       INTEGER :: NN,IGNORED_FACETS
@@ -725,17 +727,12 @@
 
       IF(MyPE == PE_IO) WRITE(*,110)'Number of CG BCs in mfix.dat = ',NUMBER_OF_BC_PATCHES
 
-
-
-
-
 100  FORMAT(1X,A)
 110  FORMAT(1X,A,I6)
 120  FORMAT(1X,A6,4X,A7)
 130  FORMAT(1X,I6,4X,A6)
 140  FORMAT(1X,A,I6,A)
 200  FORMAT(A,I4.4,".stl")
-
 
 ! VERIFY THAT THERE IS AT LEAST ONE STL FILE TO READ
 
@@ -1061,9 +1058,6 @@
  5000 FORMAT(1X,A,F10.4)
       END SUBROUTINE GET_STL_DATA
 
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: EVAL_STL_FCT_AT                                        C
@@ -1346,7 +1340,6 @@
       DOUBLE PRECISION :: u,v
       LOGICAL :: U_POSITIVE,V_POSITIVE,UPVL1,INSIDE_FACET
 
-
       DOUBLE PRECISION :: Vx,Vy,Vz
       DOUBLE PRECISION :: D(3),MINVAL_D,DH
 
@@ -1426,11 +1419,6 @@
 
       INSIDE_FACET = (U_POSITIVE.AND.V_POSITIVE.AND.UPVL1)
 
-
       RETURN
 
       END SUBROUTINE IS_POINT_INSIDE_FACET
-
-
-
-

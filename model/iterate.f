@@ -677,9 +677,10 @@
 ! Modules
 !-----------------------------------------------
       USE bc
-      USE geometry
-      USE constant
       USE compar
+      USE constant
+      USE exit, only: mfix_exit
+      USE geometry
       USE param1, only: one
       USE run
       USE time_cpu

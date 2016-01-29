@@ -24,8 +24,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE ERROR_ROUTINE(CALL_ROUTINE,MESSAGE,ACTION_CODE,MESSAGE_CODE)
 
-      USE funits
       USE compar
+      USE exit, only: mfix_exit
+      USE funits
       USE mpi_utility
 
       IMPLICIT NONE

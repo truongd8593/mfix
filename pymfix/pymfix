@@ -6,9 +6,7 @@ sys.path.append(os.getcwd())
 import json
 import thread
 import time
-
-import logging
-from logging.handlers import RotatingFileHandler
+import traceback
 
 from flask import Flask, render_template, request
 path = os.path.dirname(os.path.realpath(__file__))
@@ -95,6 +93,10 @@ def handle(req_id,command,var,args):
         responses[req_id] = 200,resp
         mfix_stopped = True
 
+    elif cmd=='write_dbg_vt':
+        responses[req_id] = 200,'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
+        mfix.main.do_write_dbg_vtu_and_vtp_files()
+
     elif cmd=='backupres':
         responses[req_id] = 200,'BACKING UP RESOURCE FILES\n'
         mfix.main.do_backupres()
@@ -147,11 +149,12 @@ def handle(req_id,command,var,args):
                             else:
                                 print "rank ",mfix.compar.mype,"does not own",i,j,k,funijk(i,j,k)
             else:
-                print "GOING TO EVALUTE ", var
+                print "GOING TO EVALUATE ", var
                 try:
                     val = str(eval(var))
                     responses[req_id] = 200,val
-                except AttributeError,SyntaxError:
+                except:
+                    traceback.print_exc()
                     # TODO: use error code for REST call
                     val = "ERROR: could not evaluate "+var
                     responses[req_id] = 400,val
@@ -223,7 +226,11 @@ def set(varname):
 @app.route('/get/<varname>',methods=['GET'])
 def get(varname):
     status_code, data = do_command( "GET", varname, args=request.args )
-    print "DATTTAAA ",data
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@app.route('/write_dbg_vt',methods=['POST'])
+def write_dbg_vt():
+    status_code, data = do_command( "WRITE_DBG_VT" )
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/backupres',methods=['POST'])
@@ -278,9 +285,6 @@ def main():
     time.sleep(1)
 
     if 0==mfix.compar.mype:
-        handler = RotatingFileHandler('foo.log', maxBytes=10000, backupCount=1)
-        handler.setLevel(logging.INFO)
-        app.logger.addHandler(handler)
         app.run(host='0.0.0.0',debug=False)
     while(True): time.sleep(10)
 

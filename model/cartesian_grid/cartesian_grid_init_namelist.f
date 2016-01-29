@@ -1,3 +1,5 @@
+MODULE CG_INIT_NAMELIST
+   CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C
 !     Module name: CARTESIAN_GRID_INIT_NAMELIST                           C
@@ -1537,3 +1539,4 @@
 !</keyword>
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST
+END MODULE CG_INIT_NAMELIST

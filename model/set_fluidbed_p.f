@@ -41,6 +41,7 @@
       USE constant
       USE discretelement
       USE eos, ONLY: EOSG
+      USE exit, only: mfix_exit
       USE fldvar
       USE functions
       USE funits

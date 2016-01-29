@@ -1,3 +1,6 @@
+MODULE CALC_GR_BOUNDARY
+   USE exit, only: mfix_exit
+   CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: CALC_GRBDRY                                             C
@@ -111,11 +114,6 @@
       CHARACTER(LEN=80) :: LINE
 
 !-----------------------------------------------
-!  Function subroutines
-!-----------------------------------------------
-      DOUBLE PRECISION F_HW
-!-----------------------------------------------
-
 ! Note: EP_s, MU_g, and RO_g are undefined at IJK1 (wall cell).
 !       Hence IJK2 (fluid cell) is used in averages.
 
@@ -757,7 +755,6 @@
       RETURN
       END SUBROUTINE CALC_GRBDRY
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Function: F_HW                                                      C
@@ -1145,14 +1142,12 @@
 ! defining granular pressure (for Jenkins BC)
          Ps = ROs_avg(M)*EPS(M)*TH(M)*(ONE+2.d0*(ONE+C_E)*g0EPs_avg)
 
-
       CASE DEFAULT
 ! should never hit this
          WRITE (*, '(A)') 'CALC_GRBDRY => F_HW '
          WRITE (*, '(A,A)') 'Unknown KT_TYPE: ', KT_TYPE
          call mfix_exit(myPE)
       END SELECT
-
 
 ! setting the coefficients for JJ BC
 ! -------------------------------------------------------------------
@@ -1712,4 +1707,4 @@
 
       RETURN
       END SUBROUTINE GET_CG_F2
-
+END MODULE CALC_GR_BOUNDARY

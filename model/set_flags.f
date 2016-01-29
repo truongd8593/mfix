@@ -37,22 +37,23 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE function3
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE is
+      USE parallel
       USE param
       USE param1
-      USE parallel
-      USE fldvar
-      USE geometry
-      USE bc
-      USE is
-      USE indices
       USE physprop
-      USE funits
-      USE compar
       USE sendrecv
       USE sendrecv3
       use mpi_utility
-      USE function3
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables
@@ -82,8 +83,6 @@
 ! 107       C      CYCLIC_PD      Cyclic b.c. with pressure drop
 ! Flag values greater than 100 are considered to be wall cells
 ! (see function.inc).
-
-
 
 ! make the wall cells adjacent to flow boundaries free-slip wall to
 ! avoid unphysical strain rates in fluid cells adjacent to the flow
@@ -121,7 +120,6 @@
           ENDDO
       ENDDO
 ! ----------------------------------------------------------------<<<
-
 
 ! Define the numerical value of the variable flag for all cells based
 ! on the corresponding character value of icbc_flag.  By this point the
@@ -343,8 +341,6 @@
 
       END SUBROUTINE SET_FLAGS
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: SET_FLAGS1                                             C
@@ -497,5 +493,3 @@
 
       RETURN
       END SUBROUTINE SET_FLAGS1
-
-

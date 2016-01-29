@@ -28,23 +28,23 @@
 !   M o d u l e s
 !-----------------------------------------------
 
+      USE compar
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits
-      USE rxns
-      USE compar
-      USE mpi_utility
-      USE progress_bar
       USE polygon
+      USE progress_bar
+      USE run
+      USE rxns
+      USE scalars
       IMPLICIT NONE
 
       INTEGER :: POLY,V,NN,NSKIP
       LOGICAL :: PRESENT
-
 
       WRITE(*,2000) 'READING polygon geometry from poly.dat...'
 
@@ -255,8 +255,6 @@
                ENDIF
             ENDDO
 
-
-
             IF((COUNTER/2) * 2 == COUNTER) THEN
                F_POLY(POLY) = -POLY_SIGN(POLY)    ! even ==> outside
             ELSE
@@ -269,14 +267,10 @@
 
       ENDDO
 
-
       f_pol = MAXVAL(F_POLY(1:N_POLYGON))
-
 
       CLIP_FLAG = .TRUE.
 
-
       RETURN
-
 
       END SUBROUTINE EVAL_POLY_FCT

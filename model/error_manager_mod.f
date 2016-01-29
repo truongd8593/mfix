@@ -8,6 +8,7 @@
       MODULE ERROR_MANAGER
 
       use, intrinsic :: ISO_C_BINDING
+      use exit, only: mfix_exit
 
       implicit none
 
@@ -18,9 +19,6 @@
          module procedure iVal_dbl
          module procedure iVal_log
       end interface
-
-
-
 
 ! Maximum number of lines a message can have before a flush is needed.
       INTEGER, PARAMETER :: LINE_COUNT  = 32
@@ -41,11 +39,7 @@
 ! Flag for writing messages to the screen.
       LOGICAL, PRIVATE :: SCR_LOG
 ! Flag for writing messages to the GUI I/O port.
-#ifdef socket
-      LOGICAL, PRIVATE, PARAMETER :: GUI_LOG=.TRUE.
-#else
       LOGICAL, PRIVATE, PARAMETER :: GUI_LOG=.FALSE.
-#endif
 
 ! Error Flag.
       INTEGER :: IER_EM
@@ -176,7 +170,6 @@
 
       END SUBROUTINE INIT_ERROR_MANAGER
 
-
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: INIT_ERR_MSG                                             !
 !                                                                      !
@@ -222,7 +215,6 @@
          ' CALL tree depth is: ',I4)
 
       END SUBROUTINE INIT_ERR_MSG
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: FINL_ERR_MSG                                             !
@@ -315,8 +307,6 @@
 
       END SUBROUTINE FINL_ERR_MSG
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -372,14 +362,6 @@
 
 ! The current calling routine.
       CHARACTER(LEN=128) :: CALLER
-
-
-      INTERFACE
-         SUBROUTINE CHECK_SOCKETS() BIND ( C )
-           use, INTRINSIC :: iso_c_binding
-         END SUBROUTINE CHECK_SOCKETS
-      END INTERFACE
-
 
 ! Set the abort flag. Continue running by default.
       IF(PRESENT(ABORT))THEN
@@ -494,19 +476,12 @@
          ENDIF
       ENDIF
 
-
-#ifdef socket
-      CALL CHECK_SOCKETS()
-#endif
-
-
 ! Clear the message array.
       ERR_MSG=''
 
 ! Clear the message container.
       GUI_MSG=''
       GUI_LC=1
-
 
 ! Abort the run if specified.
       IF(A_FLAG) THEN
@@ -532,7 +507,6 @@
 
       END SUBROUTINE FLUSH_ERR_MSG
 
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -545,12 +519,10 @@
 
       CHARACTER(KIND=C_CHAR, LEN=1), INTENT(OUT) :: OBUFF(1024)
 
-
 ! Local Variables:
 !---------------------------------------------------------------------//
 ! Line Counter
       INTEGER :: LC
-
 
 ! Copy over the formatted GUI message
       DO LC = 1, GUI_LC
@@ -559,10 +531,8 @@
 ! Null terminate the string.
       OBUFF(GUI_LC+1) = CHAR(00)
 
-
       RETURN
       END SUBROUTINE FLUSH_ERR_MSG_GUI
-
 
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
@@ -594,7 +564,6 @@
 
       RETURN
       END SUBROUTINE GUI_MSG_BODY
-
 
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
@@ -638,7 +607,6 @@
       RETURN
       END SUBROUTINE GUI_MSG_HEADER
 
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -669,7 +637,6 @@
 
       RETURN
       END SUBROUTINE GUI_MSG_FOOTER
-
 
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
@@ -733,8 +700,6 @@
 
       END SUBROUTINE SHOW_CALL_TREE
 
-
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -753,7 +718,6 @@
       tVar=''; WRITE(tVar,"(A,'(',A)") &
          trim(adjustl(VAR)), trim(adjustl(iASc))
 
-
       IF(PRESENT(i2))THEN
          iASc=''; WRITE(iASc,*)i2
          WRITE(tVar,"(A,',',A)") trim(tVar), trim(adjustl(iASc))
@@ -771,7 +735,6 @@
       RETURN
       END FUNCTION iVar
 
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -784,7 +747,6 @@
       iVal_int = trim(adjustl(iASc))
 
       END FUNCTION iVal_int
-
 
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
@@ -804,7 +766,6 @@
 
       END FUNCTION iVal_dbl
 
-
 !``````````````````````````````````````````````````````````````````````!
 !                                                                      !
 !......................................................................!
@@ -819,7 +780,6 @@
 
       RETURN
       END FUNCTION iVal_log
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Function: Reports TRUE if one or more processes set an ABORT flag.   !

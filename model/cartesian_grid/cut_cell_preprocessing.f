@@ -1,3 +1,6 @@
+MODULE CUT_CELL_PREPROC
+   USE exit, ONLY: mfix_exit
+   CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: CUT_CELL_PREPROCESSING                                 C
@@ -17,22 +20,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE CUT_CELL_PREPROCESSING
 
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
+      USE cdist
       USE compar
-      USE sendrecv
-      USE quadric
+      USE constant
       USE cutcell
-      USE vtk
-      use cdist
       USE fldvar
       USE functions
+      USE geometry
+      USE indices
+      USE parallel
+      USE param
+      USE param1
+      USE quadric
+      USE run
+      USE sendrecv
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 
@@ -60,8 +63,6 @@
       IF(WRITE_VTK_FILES.AND.(.NOT.BDIST_IO)) THEN
          CALL WRITE_CUT_SURFACE_VTK
       ENDIF
-
-
 
       CALL SET_3D_CUT_U_CELL_FLAGS
       CALL SET_3D_CUT_V_CELL_FLAGS
@@ -97,10 +98,7 @@
 
       CALL CONVERT_CG_MI_TO_PS
 
-
       CALL CPU_TIME (CPU_PP_END)
-
-
 
       IF(myPE == PE_IO) THEN
          WRITE(*,20)'CARTESIAN GRID PRE-PROCESSING COMPLETED IN ',CPU_PP_END - CPU_PP_START, ' SECONDS.'
@@ -136,11 +134,8 @@
             WRITE(*,10)'######################################################################'
             WRITE(*,10)'######################################################################'
 
-
-
          ENDIF
       ENDIF
-
 
       RETURN
 
@@ -149,7 +144,625 @@
 
       END SUBROUTINE CUT_CELL_PREPROCESSING
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CG_FLOW_TO_VEL                                         C
+!  Purpose: Convert flow to velocity bc's                              C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 21-Feb-08  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CG_FLOW_TO_VEL
 
+      USE bc
+      USE compar
+      USE constant
+      USE cutcell
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!     loop/variable indices
+      INTEGER :: M, BCV
+!     Volumetric flow rate computed from mass flow rate
+      DOUBLE PRECISION :: VOLFLOW
+!     Solids phase volume fraction
+      DOUBLE PRECISION :: EPS
+!     Average molecular weight
+      DOUBLE PRECISION :: MW
+!
+!-----------------------------------------------
+
+      DO BCV = 1, DIMENSION_BC
+
+         IF (BC_TYPE_ENUM(BCV)==CG_MI) THEN
+
+            IF(BC_VELMAG_g(BCV)==UNDEFINED) THEN
+!
+!           If gas mass flow is defined convert it to volumetric flow
+!
+               IF (BC_MASSFLOW_G(BCV) /= UNDEFINED) THEN
+                  IF (RO_G0 /= UNDEFINED) THEN
+                     VOLFLOW = BC_MASSFLOW_G(BCV)/RO_G0
+                  ELSE
+                     IF (BC_P_G(BCV)/=UNDEFINED .AND. BC_T_G(BCV)/=UNDEFINED) &
+                        THEN
+                        IF (MW_AVG == UNDEFINED) THEN
+                           MW = CALC_MW(BC_X_G,DIMENSION_BC,BCV,NMAX(0),MW_G)
+                        ELSE
+                           MW = MW_AVG
+                        ENDIF
+                        VOLFLOW = BC_MASSFLOW_G(BCV)/EOSG(MW,(BC_P_G(BCV)-P_REF), &
+                                                 BC_T_G(BCV))
+                     ELSE
+                        IF (BC_TYPE_ENUM(BCV) == CG_MO) THEN
+                           IF (BC_MASSFLOW_G(BCV) == ZERO) THEN
+                              VOLFLOW = ZERO
+                           ENDIF
+                        ELSE
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1020) BCV
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ENDIF
+                  ENDIF
+!
+!             If volumetric flow is also specified compare both
+!
+                  IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
+                     IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_G(BCV))) THEN
+                        IF(DMP_LOG)WRITE (UNIT_LOG, 1000) BCV, VOLFLOW, BC_VOLFLOW_G(BCV)
+                        call mfix_exit(myPE)
+                     ENDIF
+                  ELSE
+                     BC_VOLFLOW_G(BCV) = VOLFLOW
+                  ENDIF
+               ENDIF
+!
+!           If gas volumetric flow is defined convert it to velocity
+!
+               IF (BC_VOLFLOW_G(BCV) /= UNDEFINED) THEN
+                  IF (BC_EP_G(BCV) /= UNDEFINED) THEN
+                     BC_VELMAG_g(BCV) = BC_VOLFLOW_G(BCV)/(BC_AREA(BCV)*BC_EP_G(BCV))
+                  ELSE
+                     RETURN                      !Error caught in Check_data_07
+                  ENDIF
+               ENDIF
+
+            ENDIF
+
+
+!
+!  Do flow conversions for solids phases
+!
+            DO M = 1, MMAX
+
+               IF(BC_VELMAG_s(BCV,M)==UNDEFINED) THEN
+!
+!             If solids mass flow is defined convert it to volumetric flow
+!
+                  IF (BC_MASSFLOW_S(BCV,M) /= UNDEFINED) THEN
+                     IF (RO_S0(M) /= UNDEFINED) THEN
+                        VOLFLOW = BC_MASSFLOW_S(BCV,M)/RO_S0(M)
+                     ELSE
+                        RETURN                   !  This error will be caught in a previous routine
+                     ENDIF
+!
+!               If volumetric flow is also specified compare both
+!
+                     IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+                        IF (.NOT.COMPARE(VOLFLOW,BC_VOLFLOW_S(BCV,M))) THEN
+                           IF(DMP_LOG)WRITE(UNIT_LOG,1200)BCV,VOLFLOW,M,BC_VOLFLOW_S(BCV,M)
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ELSE
+                        BC_VOLFLOW_S(BCV,M) = VOLFLOW
+                     ENDIF
+                  ENDIF
+
+                  IF (BC_ROP_S(BCV,M)==UNDEFINED .AND. MMAX==1) BC_ROP_S(BCV,M)&
+                        = (ONE - BC_EP_G(BCV))*RO_S0(M)
+                  IF (BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+                     IF (BC_ROP_S(BCV,M) /= UNDEFINED) THEN
+                        EPS = BC_ROP_S(BCV,M)/RO_S0(M)
+                        IF (EPS /= ZERO) THEN
+                           BC_VELMAG_s(BCV,M) = BC_VOLFLOW_S(BCV,M)/(BC_AREA(BCV)*EPS)
+                        ELSE
+                           IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                              BC_VELMAG_s(BCV,M) = ZERO
+                           ELSE
+                              IF(DMP_LOG)WRITE (UNIT_LOG, 1250) BCV, M
+                              call mfix_exit(myPE)
+                           ENDIF
+                        ENDIF
+                     ELSE
+                        IF (BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+                           BC_VELMAG_s(BCV,M) = ZERO
+                        ELSE
+                           IF(DMP_LOG)WRITE (UNIT_LOG, 1260) BCV, M
+                           call mfix_exit(myPE)
+                        ENDIF
+                     ENDIF
+                  ENDIF
+
+               ENDIF
+            END DO
+         ENDIF
+      END DO
+
+100         FORMAT(1X,A,I8)
+110         FORMAT(1X,A,A)
+120         FORMAT(1X,A,F14.8,/)
+130         FORMAT(1X,A,I8,F14.8,/)
+
+ 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
+
+
+ 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
+
+
+ 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
+
+ 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
+         I1,' = 0.',/1X,70('*')/)
+ 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
+      RETURN
+
+      END SUBROUTINE CG_FLOW_TO_VEL
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CONVERT_CG_MI_TO_PS                                    C
+!  Purpose: Convert CG_MI BCs to Point sources                         C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 06-Jan-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CONVERT_CG_MI_TO_PS
+
+      USE bc
+      USE compar
+      USE constant
+      USE cutcell
+      USE eos, only: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE ps
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!     loop/variable indices
+      INTEGER :: IJK, M, NN, BCV
+!
+      INTEGER :: iproc
+      INTEGER :: NPS,PSV
+
+!-----------------------------------------------
+!
+
+!      print*,'Entering test',MyPE
+#ifdef MPI
+      CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif
+
+! Each procesor waits for its turn to find cells where to add a point source and updates the list of point sources
+
+      do iproc = 0,NumPEs-1
+         if (MyPE==iproc) Then
+
+! First, find how many point sources are already defined. This could be regular PS from mfix.dat or new ones
+! coming from the convertion of CG_MI to PS
+               NPS = 0
+
+               PS_LP: do PSV = 1, DIMENSION_PS
+                  if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+                  NPS = PSV
+               enddo PS_LP
+
+!               print *,'Last PS=',NPS
+
+! Next loop through all cells, and when a cut-cell with CG_MI is found, add a point source in this cell
+
+            DO IJK = ijkstart3, ijkend3
+               BCV = BC_ID(IJK)
+               IF(BCV>0) THEN
+                  IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
+
+                     NPS = NPS + 1
+
+!                     print*,MyPE,NPS
+
+                     PS_DEFINED(NPS) = .TRUE.
+
+                     POINT_SOURCE = .TRUE.
+
+                     PS_I_w(NPS) = I_OF(IJK)
+                     PS_I_e(NPS) = I_OF(IJK)
+                     PS_J_s(NPS) = J_OF(IJK)
+                     PS_J_n(NPS) = J_OF(IJK)
+                     PS_K_b(NPS) = K_OF(IJK)
+                     PS_K_t(NPS) = K_OF(IJK)
+
+                     PS_VOLUME(NPS) = VOL(IJK)
+
+                     PS_MASSFLOW_g(NPS) = BC_MASSFLOW_g(BCV) * VOL(IJK) / BC_VOL(BCV)
+
+                     PS_T_g(NPS)    = BC_T_g(BCV)
+
+                     IF(BC_U_g(BCV)==UNDEFINED) THEN
+                        PS_U_g(NPS)    = Normal_S(IJK,1)
+                     ELSE
+                        PS_U_g(NPS)    = BC_U_g(BCV)
+                     ENDIF
+
+                     IF(BC_V_g(BCV)==UNDEFINED) THEN
+                        PS_V_g(NPS)    = Normal_S(IJK,2)
+                     ELSE
+                        PS_V_g(NPS)    = BC_V_g(BCV)
+                     ENDIF
+
+                     IF(BC_W_g(BCV)==UNDEFINED) THEN
+                        PS_W_g(NPS)    = Normal_S(IJK,3)
+                     ELSE
+                        PS_W_g(NPS)    = BC_W_g(BCV)
+                     ENDIF
+
+                     DO NN=1,NMAX(0)
+                        PS_X_g(NPS,NN)    = BC_X_g(BCV,NN)
+                     ENDDO
+
+                     DO M=1, MMAX
+                        PS_MASSFLOW_s(NPS,M) = BC_MASSFLOW_s(BCV,M) * VOL(IJK) / BC_VOL(BCV)
+
+                        PS_T_s(NPS,1)  = BC_T_s(BCV,M)
+
+                        IF(BC_U_s(BCV,M)==UNDEFINED) THEN
+                           PS_U_s(NPS,M)    = Normal_S(IJK,1)
+                        ELSE
+                           PS_U_s(NPS,M)    = BC_U_s(BCV,M)
+                        ENDIF
+
+                        IF(BC_V_s(BCV,M)==UNDEFINED) THEN
+                           PS_V_s(NPS,M)    = Normal_S(IJK,2)
+                        ELSE
+                           PS_V_s(NPS,M)    = BC_V_s(BCV,M)
+                        ENDIF
+
+                        IF(BC_W_s(BCV,M)==UNDEFINED) THEN
+                           PS_W_s(NPS,M)    = Normal_S(IJK,3)
+                        ELSE
+                           PS_W_s(NPS,M)    = BC_W_s(BCV,M)
+                        ENDIF
+
+
+                        DO NN=1,NMAX(M)
+                           PS_X_s(NPS,M,NN)    = BC_X_s(BCV,M,NN)
+                        ENDDO
+
+                     ENDDO
+
+!                     print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),BC_VOL(BCV)
+                  ENDIF
+               ENDIF
+
+            ENDDO  ! IJK Loop
+
+         endif  ! Work done by each processor in same order as rank
+
+#ifdef MPI
+         CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif
+         call bcast(POINT_SOURCE,iproc)
+         call bcast(PS_DEFINED,iproc)
+         call bcast(PS_I_w,iproc)
+         call bcast(PS_I_e,iproc)
+         call bcast(PS_J_s,iproc)
+         call bcast(PS_J_n,iproc)
+         call bcast(PS_K_b,iproc)
+         call bcast(PS_K_t,iproc)
+         call bcast(PS_MASSFLOW_g,iproc)
+         call bcast(PS_U_g,iproc)
+         call bcast(PS_V_g,iproc)
+         call bcast(PS_W_g,iproc)
+         call bcast(PS_X_g,iproc)
+         call bcast(PS_T_g,iproc)
+         call bcast(PS_MASSFLOW_s,iproc)
+         call bcast(PS_U_s,iproc)
+         call bcast(PS_V_s,iproc)
+         call bcast(PS_W_s,iproc)
+         call bcast(PS_X_s,iproc)
+         call bcast(PS_T_s,iproc)
+         call bcast(PS_VOLUME,iproc)
+
+      enddo
+
+#ifdef MPI
+      CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
+#endif
+!      print*,'Leaving test',MyPE
+!      call mfix_exit(myPE)
+
+      RETURN
+
+      END SUBROUTINE CONVERT_CG_MI_TO_PS
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: CONVERT_CG_MI_TO_PS_PE                                 C
+!  Purpose: Convert CG_MI BCs to Point sources                         C
+!                                                                      C
+!                                                                      C
+!  Author: Jeff Dietiker                              Date: 06-Jan-14  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!  Revision Number #                                  Date: ##-###-##  C
+!  Author: #                                                           C
+!  Purpose: #                                                          C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+  SUBROUTINE CONVERT_CG_MI_TO_PS_PE
+
+      USE bc
+      USE compar
+      USE constant
+      USE cutcell
+      USE eos, ONLY: EOSG
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE ps
+      USE quadric
+      USE run
+      USE scales
+      USE sendrecv
+      USE toleranc
+      USE vtk
+
+      IMPLICIT NONE
+!-----------------------------------------------
+!   G l o b a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   P a r a m e t e r s
+!-----------------------------------------------
+!-----------------------------------------------
+!   L o c a l   V a r i a b l e s
+!-----------------------------------------------
+!
+!     loop/variable indices
+      INTEGER :: IJK, BCV
+!
+      INTEGER :: NPS,PSV
+!
+!-----------------------------------------------
+!
+
+! Find the last Point source that is defined. New point sources
+! will be added after that.
+
+!     print*,'setting bc_type to CG_NSW and exiting'
+!      DO BCV = 1, DIMENSION_BC
+!         IF (BC_TYPE_ENUM(BCV) == 'CG_MI') THEN
+!            BC_TYPE_ENUM(BCV) = 'CG_NSW'
+!            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+!         ENDIF
+!      ENDDO
+!      RETURN
+
+      NPS = 0
+
+      PS_LP: do PSV = 1, DIMENSION_PS
+         if(.NOT.PS_DEFINED(PSV)) cycle PS_LP
+         NPS = PSV
+      enddo PS_LP
+
+      print *,'Last PS=',NPS
+!      read(*,*)
+
+! Loop though each cell. When a CG_MI is found convert it to a single point source
+! and change the BC_TYPE to Free-slip
+
+      DO IJK = ijkstart3, ijkend3
+         BCV = BC_ID(IJK)
+         IF(BCV>0) THEN
+            IF(CG_MI_CONVERTED_TO_PS(BCV).AND.INTERIOR_CELL_AT(IJK).AND.VOL(IJK)>ZERO) THEN
+
+               NPS = NPS + 1
+
+               PS_DEFINED(NPS) = .TRUE.
+
+               POINT_SOURCE = .TRUE.
+
+               PS_I_w(NPS) = I_OF(IJK)
+               PS_I_e(NPS) = I_OF(IJK)
+               PS_J_s(NPS) = J_OF(IJK)
+               PS_J_n(NPS) = J_OF(IJK)
+               PS_K_b(NPS) = K_OF(IJK)
+               PS_K_t(NPS) = K_OF(IJK)
+
+               PS_MASSFLOW_g(NPS) = BC_MASSFLOW_g(BCV) * VOL(IJK) / BC_VOL(BCV)
+
+               PS_VOLUME(NPS) = VOL(IJK)
+
+               PS_T_g(NPS)    = BC_T_g(BCV)
+
+               IF(BC_U_g(NPS)==UNDEFINED) THEN
+                  PS_U_g(NPS)    = Normal_S(IJK,1)
+               ELSE
+                  PS_U_g(NPS)    = BC_U_g(NPS)
+               ENDIF
+
+               IF(BC_V_g(NPS)==UNDEFINED) THEN
+                  PS_V_g(NPS)    = Normal_S(IJK,2)
+               ELSE
+                  PS_V_g(NPS)    = BC_V_g(NPS)
+               ENDIF
+
+               IF(BC_W_g(NPS)==UNDEFINED) THEN
+                  PS_W_g(NPS)    = Normal_S(IJK,3)
+               ELSE
+                  PS_W_g(NPS)    = BC_W_g(NPS)
+               ENDIF
+
+! This is a temporary setting for the solids phase and will need to be generalalized
+               PS_MASSFLOW_s(NPS,1) = 0.0
+
+               PS_T_s(NPS,1)  = 298.0
+
+               PS_U_s(NPS,1)    = Normal_S(IJK,1)
+               PS_V_s(NPS,1)    = Normal_S(IJK,2)
+               PS_W_s(NPS,1)    = Normal_S(IJK,3)
+
+               PS_U_s(NPS,1)    = ZERO
+               PS_V_s(NPS,1)    = ZERO
+               PS_W_s(NPS,1)    = ZERO
+
+!               IF(Normal_S(IJK,2)/=ONE) print*,'Not vertical'
+!               IF(Normal_S(IJK,2)==ONE) print*,'    vertical'
+
+!               IF(Normal_S(IJK,2)/=ONE) PS_MASSFLOW_g(NPS) = ZERO
+
+!               IF(.NOT.CUT_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a scalar cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_U_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a u cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_V_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a v cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+!               IF(.NOT.CUT_W_CELL_AT(IJK)) THEN
+!                  print*,'turn off PS :not a w cut cell'
+!                  PS_MASSFLOW_g(NPS) = ZERO
+!               ENDIF
+
+
+!                  PS_MASSFLOW_g(NPS) = ZERO
+
+               print*,'PS created:',NPS,PS_MASSFLOW_g(NPS),PS_VOLUME(NPS),PS_I_w(NPS),PS_J_n(NPS),PS_K_b(NPS), &
+                    INTERIOR_CELL_AT(IJK),PS_U_g(NPS),PS_V_g(NPS),PS_W_g(NPS), &
+                    CUT_CELL_AT(IJK),Normal_S(IJK,1),Normal_S(IJK,2),Normal_S(IJK,3)
+!               ENDIF
+
+!               PS_DEFINED(NPS) = .FALSE.
+            ENDIF
+         ENDIF
+      ENDDO
+
+!      DO BCV = 1, DIMENSION_BC
+!         IF (BC_TYPE_ENUM(BCV) == 'CG_MI') THEN
+!            BC_TYPE_ENUM(BCV) = 'CG_NSW'
+!            print*,'Converted CG_MI to CG_FSW for BC#',BCV
+!         ENDIF
+!      ENDDO
+
+100         FORMAT(1X,A,I8)
+110         FORMAT(1X,A,A)
+120         FORMAT(1X,A,F14.8,/)
+130         FORMAT(1X,A,I8,F14.8,/)
+
+
+ 1000 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_g) = ',G14.7,/1X,70('*')/)
+
+
+ 1020 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,&
+         '  BC_P_g, BC_T_g, and BC_X_g',/' should be specified',/1X,70('*')/)
+
+
+ 1200 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Computed volumetric flow is not equal to specified value',/,&
+         ' Value computed from mass flow  = ',G14.7,/,&
+         ' Specified value (BC_VOLFLOW_s',I1,') = ',G14.7,/1X,70('*')/)
+
+ 1250 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' Non-zero vol. or mass flow specified with BC_ROP_s',&
+         I1,' = 0.',/1X,70('*')/)
+ 1260 FORMAT(/1X,70('*')//' From: FLOW_TO_VEL',/' Message: BC No:',I2,/,&
+         ' BC_ROP_s',I1,' not specified',/1X,70('*')/)
+      RETURN
+
+      END SUBROUTINE CONVERT_CG_MI_TO_PS_PE
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -206,8 +819,6 @@
             WRITE(*,10)'RE-INDEXING IS TURNED OFF.'
          ENDIF
 
-
-
       ENDIF
 
       CG_HEADER_WAS_PRINTED = .TRUE.
@@ -217,9 +828,6 @@
       RETURN
 
       END SUBROUTINE PRINT_CG_HEADER
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -252,7 +860,6 @@
       USE cutcell
 
       USE quadric
-
 
       IMPLICIT NONE
 
@@ -2301,14 +2908,11 @@
 
       END SELECT
 
-
-
       call send_recv(F_AT,2)
 
       RETURN
 
       END SUBROUTINE CAD_INTERSECT
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -2344,7 +2948,6 @@
       IMPLICIT NONE
       INTEGER :: IJK,NN
 
-
       BC_ID(IJK) = BC_ID_STL_FACE(NN)             ! Set tentative BC_ID
 
       IF(N_FACET_AT(IJK)<DIM_FACETS_PER_CELL) THEN
@@ -2359,8 +2962,5 @@
 
       ENDIF
 
-
-
       END SUBROUTINE ADD_FACET_AND_SET_BC_ID
-
-
+   END MODULE CUT_CELL_PREPROC

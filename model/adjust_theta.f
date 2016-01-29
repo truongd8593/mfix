@@ -41,9 +41,10 @@
       USE run, only: ghd_2007
 ! needed for function.inc
       USE compar
+      USE exit, only: mfix_exit
+      USE functions
       USE geometry
       USE indices
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------

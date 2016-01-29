@@ -13,6 +13,7 @@
 ! Modules
 !---------------------------------------------------------------------//
       use compar, only: mype
+      use exit, only: mfix_exit
       use functions, only: funlm
       use run, only: granular_energy, kt_type, kt_type_enum
       use run, only: lun_1984, simonin_1996, ahmadi_1995

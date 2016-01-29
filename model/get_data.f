@@ -16,6 +16,8 @@ MODULE read_input
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE check_data_cg, only: adjust_ijk_size, check_data_cartesian
+      USE cut_cell_preproc, only: cut_cell_preprocessing
       USE compar
       USE constant, only: L_SCALE0
       USE cutcell
@@ -23,21 +25,21 @@ MODULE read_input
       USE des_allocate
       USE des_rxns
       USE des_thermo
+      USE desgrid, only: DESGRID_INIT
       USE discretelement
       USE error_manager
       USE funits
       USE gridmap
       USE leqsol
       USE mfix_pic
+      USE mpi_init_des, only: DESMPI_INIT
       USE parallel
       USE param
       USE param1
       USE qmom_kinetic_equation
       USE run
+      USE stl_preproc_des, only: DES_STL_PREPROCESSING
       USE visc_g, only: L_SCALE
-      use desgrid, only: DESGRID_INIT
-      use mpi_init_des, only: DESMPI_INIT
-      use stl_preproc_des, only: DES_STL_PREPROCESSING
 
       IMPLICIT NONE
 !-----------------------------------------------

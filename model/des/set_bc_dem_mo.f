@@ -220,6 +220,7 @@
       SUBROUTINE CHECK_DES_LE_BC
 
       use discretelement
+      use exit, only: mfix_exit
       use mpi_utility
 
       IMPLICIT NONE

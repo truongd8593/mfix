@@ -9,6 +9,8 @@
 
 MODULE MAIN
 
+   use exit, only: mfix_exit
+
    !-----------------------------------------------
    ! Module variables
    !-----------------------------------------------
@@ -151,6 +153,7 @@ CONTAINS
    SUBROUTINE START
       USE cdist, only: bglobalnetcdf, bstart_with_one_res, bdist_io, bwrite_netcdf
       USE check, only: check_mass_balance
+      USE check_data_cg, only: check_bc_flags, report_best_processor_size
       USE compar, only: mpierr, mype, pe_io
       USE coeff, only: init_coeff
       USE cont, only: do_cont
@@ -679,6 +682,7 @@ CONTAINS
    SUBROUTINE END
       USE cutcell, only: cartesian_grid
       USE dashboard
+      USE cut_cell_preproc, only: close_cut_cell_files
       USE error_manager, only: finl_err_msg
       USE machine, only: wall_time
       USE parallel_mpi, only: parallel_fin
@@ -1163,6 +1167,11 @@ CONTAINS
 
    end function do_mpi_bcast
 
+   subroutine do_write_dbg_vtu_and_vtp_files
+      implicit none
+      call write_dbg_vtu_and_vtp_files
+   end subroutine do_write_dbg_vtu_and_vtp_files
+
    subroutine do_backupres
       use output_man, only: backup_res
       implicit none
@@ -1177,8 +1186,10 @@ CONTAINS
 
    subroutine do_exit
       use compar, only: mype
+      use output_man, only: output_manager
       implicit none
-      call mfix_exit(mype)
+      call output_manager(.true.,.true.)
+      call mfix_exit(mype,.true.)
    end subroutine do_exit
 
    subroutine do_abort

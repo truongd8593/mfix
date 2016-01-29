@@ -1,9 +1,10 @@
-      MODULE parse
+MODULE parse
 
-      Use param
-      Use param1
-      USE funits
-      USE compar
+   USE compar
+   USE exit, only: mfix_exit
+   USE funits
+   USE param
+   USE param1
 
       IMPLICIT NONE
 
@@ -1121,4 +1122,4 @@
 
       END FUNCTION setFlag
 
-      END MODULE parse
+END MODULE parse

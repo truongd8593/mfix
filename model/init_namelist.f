@@ -24,36 +24,37 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE run
-      USE output
-      USE physprop
+      USE bc
+      USE cdist
+      USE cg_init_namelist, ONLY: CARTESIAN_GRID_INIT_NAMELIST
+      USE compar
+      USE constant
+      USE fldvar
       USE geometry
       USE ic
-      USE bc
-      USE ps
-      USE fldvar
-      USE constant
       USE indices
       USE is
-      USE toleranc
-      USE scales
-      USE ur_facs
       USE leqsol
+      USE output
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE ps
       USE residual
+      USE run
       USE rxns
       USE scalars
-      USE compar
-      USE parallel
-      USE cdist
+      USE scales
       USE stiff_chem
+      USE toleranc
+      USE ur_facs
       use usr_src, only: call_usr_source
 ! user defined flags
       use usr_prop, only: usr_rog, usr_cpg, usr_kg, usr_mug, usr_difg
       use usr_prop, only: usr_ros, usr_cps, usr_ks, usr_mus, usr_difs
       use usr_prop, only: usr_gama, usr_fgs, usr_fss
-     
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Local variables

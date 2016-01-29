@@ -1,6 +1,7 @@
       SUBROUTINE XERBLA ( SRNAME, INFO )
 !     ..    Modules
       USE compar
+      USE exit, only: mfix_exit
 
 !     ..    Scalar Arguments ..
       INTEGER            INFO

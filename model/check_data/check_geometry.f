@@ -9,6 +9,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_GEOMETRY(SHIFT)
 
+         use check_data_cg, only: get_dxyz_from_control_points
 
 ! Global Variables:
 !---------------------------------------------------------------------//

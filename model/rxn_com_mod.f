@@ -1,9 +1,10 @@
-      MODULE RXN_COM
+MODULE RXN_COM
 
-      Use param
-      Use param1
-      USE compar
-      Use funits
+   USE compar
+   USE exit, only: mfix_exit
+   USE funits
+   USE param
+   USE param1
 
 ! The following data types are used to group chemical reaction data.
 !-----------------------------------------------------------------------
@@ -830,8 +831,6 @@
 
       END SUBROUTINE checkMassBalance
 
-
-
 !~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~!
 !  Subroutine: calcInterphaseTxfr                                      !
 !                                                                      !
@@ -847,6 +846,7 @@
       SUBROUTINE calcInterphaseTxfr(CALLER, RxN, lnMT, lEEq, lSEq, &
          lSAg, lMMx, lSAs)
 
+         USE exit, only: mfix_exit
          USE toleranc
 
       IMPLICIT NONE
@@ -1330,4 +1330,4 @@
       END SUBROUTINE calcInterphaseTxfr
 
 
-      END MODULE RXN_COM
+END MODULE RXN_COM

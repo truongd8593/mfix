@@ -46,7 +46,6 @@ MODULE output_man
 
       IMPLICIT NONE
 
-
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Flag that the the user specified batch time (plus buffer) is met.
@@ -68,7 +67,6 @@ MODULE output_man
       DOUBLE PRECISION :: WALL_START
 
 !......................................................................!
-
 
 ! Initialize the SPx file extension array.
       EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -166,7 +164,6 @@ MODULE output_man
 
       contains
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -183,7 +180,6 @@ MODULE output_man
       RETURN
       END FUNCTION CHECK_TIME
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -199,7 +195,6 @@ MODULE output_man
 
       RETURN
       END FUNCTION NEXT_TIME
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -343,13 +338,10 @@ MODULE output_man
 
  2000 FORMAT('Wall Time - ',2(A,1X,A,A,4X))
 
-
-
       RETURN
       END SUBROUTINE FLUSH_NOTIFY_USER
 
       END SUBROUTINE OUTPUT_MANAGER
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: INIT_OUTPUT_VARS                                         !
@@ -472,14 +464,11 @@ MODULE output_man
 ! Create a subdir for RES backup files.
       IF(RES_BACKUPS /= UNDEFINED_I) CALL CREATE_DIR('BACKUP_RES')
 
-
       WALL_START = WALL_TIME()
       TIME_START = TIME
 
       RETURN
       END SUBROUTINE INIT_OUTPUT_VARS
-
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: BACKUP_RES                                               !
@@ -525,7 +514,6 @@ MODULE output_man
          CALL SET_FNAME(FNAME1, '_DES.RES' ,1)
          CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
       ENDIF
-
 
       RETURN
 

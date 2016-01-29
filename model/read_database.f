@@ -196,15 +196,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE READ_DATABASE0()
 
+      USE compar
+      USE constant
+      USE des_rxns
+      USE discretelement
+      USE exit, only: mfix_exit
+      USE funits
       USE param
       USE param1
       USE physprop
-      USE constant
-      USE compar
       USE rxns
-      USE funits
-      USE discretelement
-      USE des_rxns
 
       IMPLICIT NONE
 
