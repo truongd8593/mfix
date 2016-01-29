@@ -20,8 +20,8 @@
       integer :: itotalneigh, itotalindx
 
       integer, allocatable :: itoproc(:)
-      integer, allocatable :: iprocsumindx(:)
-      integer, allocatable :: istartindx(:)
+      integer, allocatable :: istartsend(:)
+      integer, allocatable :: istartrecv(:)
 
 ! Following variables are used to exchange grid index values when
 ! des_interp_on is true
@@ -69,6 +69,8 @@
       integer :: lknode_start,lknode_end, lknode
       logical :: lpresent
 
+      integer, allocatable :: iprocsumindx(:)
+
 !-----------------------------------------------
 
 ! set flags for interprocessor boundaries
@@ -107,9 +109,10 @@
 ! allocate the variables
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
-      allocate (istartindx(itotalneigh+1))
-      allocate (irecvreqnode(itotalneigh))
+      allocate (istartsend(itotalneigh+1))
+      allocate (istartrecv(itotalneigh+1))
       allocate (isendreqnode(itotalneigh))
+      allocate (irecvreqnode(itotalneigh))
 
 ! First loop to count the total index for each processor and count the
 ! neighbour processor
@@ -144,18 +147,42 @@
 
          itoproc(lproc) = lijkproc
 
-         lci=(liproc-li);lcj=(ljproc-lj);lck=(lkproc-lk)
+         lci=(liproc-li)
+         if(lci == 1) then
+            linode_start = iStart2
+            linode_end = iStart2
+         elseif(lci == -1) then
+            linode_start = iEnd2
+            linode_end = iEnd2
+         else
+            linode_start = iStart1
+            linode_end = iEnd1
+         endif
 
-         linode_start = iStart2; linode_end=iEnd2
-         ljnode_start = jStart2; ljnode_end=jEnd2
-         lknode_start = kStart2; lknode_end=kEnd2
+         lcj=(ljproc-lj)
+         if(lcj == 1) then
+            ljnode_start = jStart2
+            ljnode_end = jStart2
+         elseif(lcj == -1) then
+            ljnode_start = jEnd2
+            ljnode_end = jEnd2
+         else
+            ljnode_start = jStart1
+            ljnode_end=jEnd1
+         endif
 
-         if(lci.eq. 1) linode_end = iStart2
-         if(lci.eq.-1) linode_start = iEnd2
-         if(lcj.eq. 1) ljnode_end = jStart2
-         if(lcj.eq.-1) ljnode_start = jEnd2
-         if(lck.eq. 1) lknode_end = kStart2
-         if(lck.eq.-1) lknode_start = kEnd2
+         lck=(lkproc-lk)
+         if(lck == 1) then
+            lknode_start = kStart2
+            lknode_end = kStart2
+         elseif(lck == -1) then
+            lknode_start = kEnd2
+            lknode_end = kEnd2
+         else
+            lknode_start = kStart1
+            lknode_end=kEnd1
+         endif
+
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
@@ -168,19 +195,19 @@
       end do
       end do
       end do
+
+
 !assign the start index
       do lproc =1,itotalneigh+1
-         istartindx(lproc)=sum(iprocsumindx(1:lproc-1))+1
+         istartsend(lproc)=sum(iprocsumindx(1:lproc-1))+1
       end do
-      itotalindx=istartindx(itotalneigh+1)-1
+      itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
       allocate(isendnodes(itotalindx))
-      allocate(irecvnodes(itotalindx))
       allocate(dsendnodebuf(itotalindx))
-      allocate(drecvnodebuf(itotalindx))
 
-! second loop to assign actual index
+! second loop to assign actual index for send map
       iprocsumindx(:)=0
       do lk = lkproc_start,lkproc_end
       do lj = ljproc_start,ljproc_end
@@ -197,41 +224,148 @@
             end if
          end do
 
-         lci=(liproc-li);lcj=(ljproc-lj);lck=(lkproc-lk)
+         lci=(liproc-li)
+         if(lci == 1) then
+            linode_start = iStart2
+            linode_end = iStart2
+         elseif(lci == -1) then
+            linode_start = iEnd2
+            linode_end = iEnd2
+         else
+            linode_start = iStart1
+            linode_end = iEnd1
+         endif
 
-         linode_start = iStart2; linode_end=iEnd2
-         ljnode_start = jStart2; ljnode_end=jEnd2
-         lknode_start = kStart2; lknode_end=kEnd2
-         if(lci.eq. 1) linode_end = iStart2
-         if(lci.eq.-1) linode_start = iEnd2
-         if(lcj.eq. 1) ljnode_end = jStart2
-         if(lcj.eq.-1) ljnode_start = jEnd2
-         if(lck.eq. 1) lknode_end = kStart2
-         if(lck.eq.-1) lknode_start = kEnd2
-         lcount = istartindx(lproc)+iprocsumindx(lproc)
+         lcj=(ljproc-lj)
+         if(lcj == 1) then
+            ljnode_start = jStart2
+            ljnode_end = jStart2
+         elseif(lcj == -1) then
+            ljnode_start = jEnd2
+            ljnode_end = jEnd2
+         else
+            ljnode_start = jStart1
+            ljnode_end=jEnd1
+         endif
+
+         lck=(lkproc-lk)
+         if(lck == 1) then
+            lknode_start = kStart2
+            lknode_end = kStart2
+         elseif(lck == -1) then
+            lknode_start = kEnd2
+            lknode_end = kEnd2
+         else
+            lknode_start = kStart1
+            lknode_end=kEnd1
+         endif
+
+         lcount = istartsend(lproc)+iprocsumindx(lproc)
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
             IF(DEAD_CELL_AT(linode,ljnode,lknode)) CYCLE
             IF(WALL_AT(FUNIJK(linode,ljnode,lknode))) CYCLE
             isendnodes(lcount)=funijk(linode,ljnode,lknode)
+            iprocsumindx(lproc)=iprocsumindx(lproc)+1
             lcount = lcount+1
          end do
          end do
          end do
 
+      end do
+      end do
+      end do
+
+! Build the recv schedule
+
+      iprocsumindx(:) =0
+      do lk = lkproc_start, lkproc_end
+      do lj = ljproc_start, ljproc_end
+      do li = liproc_start, liproc_end
+
+         li2 = mod(li,nodesi); if(li2 < 0) li2 = nodesi-1
+         lj2 = mod(lj,nodesj); if(lj2 < 0) lj2 = nodesj-1
+         lk2 = mod(lk,nodesk); if(lk2 < 0) lk2 = nodesk-1
+
+         lijkproc = procijk(li2,lj2,lk2)
+
+         if (lijkproc.eq.mype) cycle
+
+! check if the processor exits in the previous list
+         do lproc = 1,itotalneigh
+            if(lijkproc .eq. itoproc(lproc)) exit
+         end do
+
+         lci=(liproc-li);lcj=(ljproc-lj);lck=(lkproc-lk)
+
+         linode_start = istart1; linode_end=iend1
+         ljnode_start = jstart1; ljnode_end=jend1
+         lknode_start = kstart1; lknode_end=kend1
+         if(lci.eq. 1) linode_end = iStart1
+         if(lci.eq.-1) linode_start = iEnd1
+         if(lcj.eq. 1) ljnode_end = jStart1
+         if(lcj.eq.-1) ljnode_start = jEnd1
+         if(lck.eq. 1) lknode_end = kStart1
+         if(lck.eq.-1) lknode_start = kEnd1
+
+         do lknode = lknode_start,lknode_end
+         do linode = linode_start,linode_end
+         do ljnode = ljnode_start,ljnode_end
+            IF(DEAD_CELL_AT(linode,ljnode,lknode)) CYCLE
+            IF(WALL_AT(FUNIJK(linode,ljnode,lknode))) CYCLE
+            iprocsumindx(lproc) = iprocsumindx(lproc) + 1
+         end do
+         end do
+         end do
+      end do
+      end do
+      end do
+
+!assign the start index
+      do lproc =1,itotalneigh+1
+         istartrecv(lproc)=sum(iprocsumindx(1:lproc-1))+1
+      end do
+      itotalindx=istartrecv(itotalneigh+1)-1
+
+      allocate(irecvnodes(itotalindx))
+      allocate(drecvnodebuf(itotalindx))
+
+! second loop to assign actual index
+      iprocsumindx(:)=0
+      do lk = lkproc_start,lkproc_end
+      do lj = ljproc_start,ljproc_end
+      do li = liproc_start,liproc_end
+
+         li2 = mod(li,nodesi);if(li2.lt.0)li2=nodesi-1
+         lj2 = mod(lj,nodesj);if(lj2.lt.0)lj2=nodesj-1
+         lk2 = mod(lk,nodesk);if(lk2.lt.0)lk2=nodesk-1
+         lijkproc = procijk(li2,lj2,lk2)
+
+         if (lijkproc.eq.mype) cycle
+
+! find the index of the neighbour
+         do lproc =1,itotalneigh
+            if(lijkproc.eq.itoproc(lproc)) then
+               exit
+            end if
+         end do
+
+         lci=(liproc-li);lcj=(ljproc-lj);lck=(lkproc-lk)
+
 ! Set up the receive map
          linode_start = istart1; linode_end=iend1
          ljnode_start = jstart1; ljnode_end=jend1
          lknode_start = kstart1; lknode_end=kend1
-         if(lci.eq.-1) linode_end = iStart1
-         if(lci.eq. 1) linode_start = iEnd1
-         if(lcj.eq.-1) ljnode_end = jStart1
-         if(lcj.eq. 1) ljnode_start = jEnd1
-         if(lck.eq.-1) lknode_end = kStart1
-         if(lck.eq. 1) lknode_start = kEnd1
 
-         lcount = istartindx(lproc)+iprocsumindx(lproc)
+         if(lci.eq. 1) linode_end = iStart1
+         if(lci.eq.-1) linode_start = iEnd1
+         if(lcj.eq. 1) ljnode_end = jStart1
+         if(lcj.eq.-1) ljnode_start = jEnd1
+         if(lck.eq. 1) lknode_end = kStart1
+         if(lck.eq.-1) lknode_start = kEnd1
+
+         lcount = istartrecv(lproc)+iprocsumindx(lproc)
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
@@ -248,7 +382,7 @@
       end do
       end do
 
-      call des_dbgnodesr()
+!      call des_dbgnodesr()
 
       RETURN
       end subroutine INIT_DES_COLLECT_gDATA
@@ -287,16 +421,21 @@
 ! steps pack the buffer call isend and irecv
       do lcount = 1,itotalneigh
          lneigh = itoproc(lcount)
-         lstart = istartindx(lcount);lend=istartindx(lcount+1)-1
+         lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
          do lcount2 = lstart,lend
             dsendnodebuf(lcount2) = pvar(isendnodes(lcount2))
          end do
+
          ltag = message_tag(lneigh,mype)
+         lstart = istartrecv(lcount);lend=istartrecv(lcount+1)-1
          ltotal = lend-lstart+1
          call des_mpi_irecv(drecvnodebuf(lstart:lend),ltotal, &
                             lneigh,ltag,irecvreqnode(lcount),lerr)
          call mpi_check( name //':mpi_irecv ', lerr )
+
          ltag = message_tag(mype,lneigh)
+         lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
+         ltotal = lend-lstart+1
          call des_mpi_isend(dsendnodebuf(lstart:lend),ltotal, &
                             lneigh,ltag,isendreqnode(lcount),lerr)
          call mpi_check( name //':mpi_irecv ', lerr )
@@ -345,7 +484,7 @@
       integer :: lc
 
       do lc=lbound(pVAR,2), ubound(pVAR,2)
-         call des_collect_gDATA(pVAR(:,lc))
+         call des_collect_gDATA_db1(pVAR(:,lc))
       enddo
       return
       end subroutine des_collect_gdata_db2
@@ -382,6 +521,7 @@
       integer :: ljnode_start,ljnode_end, ljnode
       integer :: lknode_start,lknode_end, lknode
       logical :: lpresent
+      integer, allocatable :: iprocsumindx(:)
 !-----------------------------------------------
 
 ! set flags for interprocessor boundaries and set the corresponding to proc
@@ -417,7 +557,7 @@
 ! allocate the variables
       allocate (itoproc(itotalneigh))
       allocate (iprocsumindx(itotalneigh))
-      allocate (istartindx(itotalneigh+1))
+      allocate (istartsend(itotalneigh+1))
       allocate (irecvreqnode(itotalneigh))
       allocate (isendreqnode(itotalneigh))
 
@@ -470,9 +610,9 @@
       end do
 !assign the start index
       do lproc =1,itotalneigh+1
-         istartindx(lproc)=sum(iprocsumindx(1:lproc-1))+1
+         istartsend(lproc)=sum(iprocsumindx(1:lproc-1))+1
       end do
-      itotalindx=istartindx(itotalneigh+1)-1
+      itotalindx=istartsend(itotalneigh+1)-1
 
 ! allocate the variables
       allocate (isendnodes(itotalindx))
@@ -505,7 +645,7 @@
          if(lcj.eq.-1)  ljnode_start = jend1
          if(lck.eq.1) lknode_end = kstart2
          if(lck.eq.-1)  lknode_start = kend1
-         lcount = istartindx(lproc)+iprocsumindx(lproc)
+         lcount = istartsend(lproc)+iprocsumindx(lproc)
          do lknode = lknode_start,lknode_end
          do linode = linode_start,linode_end
          do ljnode = ljnode_start,ljnode_end
@@ -520,7 +660,7 @@
       end do
       end do
 
-      call  des_dbgnodesr()
+!     call  des_dbgnodesr()
       end subroutine des_setnodeindices
 
 !------------------------------------------------------------------------
@@ -558,7 +698,7 @@
 ! steps pack the buffer call isend and irecv
       do lcount = 1,itotalneigh
          lneigh = itoproc(lcount)
-         lstart = istartindx(lcount);lend=istartindx(lcount+1)-1
+         lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
          do lcount2 = lstart,lend
             dsendnodebuf(lcount2) = pvar(isendnodes(lcount2))
          end do
@@ -626,22 +766,22 @@
       write(filename,'("dbg_nodesr",I4.4,".dat")') mype
       open(44,file=filename,convert='big_endian')
       do lcount = 1,itotalneigh
-         lstart = istartindx(lcount);lend=istartindx(lcount+1)-1
+         lstart = istartsend(lcount);lend=istartsend(lcount+1)-1
          write(44,"(2/,72('*'))")
          write(44,1100) myPE, itoproc(lcount)
          write(44,"(/2x,'Start:',I6)") lstart
          write(44,"( 2x,'End:  ',I6)") lend
          write(44,"(72('-'))")
          do lcount2 = lstart,lend
-          ijk = isendnodes(lcount2)
-          write(44,1000)'SEND', i_of(ijk),j_of(ijk),k_of(ijk),ijk
+            ijk = isendnodes(lcount2)
+            write(44,1000)'SEND', i_of(ijk),j_of(ijk),k_of(ijk),ijk
          end do
          write(44,"(72('-'))")
       end do
 
       if(allocated(irecvnodes)) then
          do lcount = 1,itotalneigh
-            lstart = istartindx(lcount);lend=istartindx(lcount+1)-1
+            lstart = istartrecv(lcount);lend=istartrecv(lcount+1)-1
             write(44,"(2/,72('*'))")
             write(44,1100) itoproc(lcount), myPE
             write(44,"(/2x,'Start:',I6)") lstart
