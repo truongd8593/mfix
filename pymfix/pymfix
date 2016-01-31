@@ -29,6 +29,13 @@ mfix_stopped = True
 def run_mfix():
     global mfix_stopped
 
+    if (len(sys.argv) > 100):
+        print "TOO MANY COMMAND LINE ARGUMENTS"
+        return
+
+    for arg in sys.argv[1:]:
+        mfix.main.add_command_line_argument(arg)
+
     mfix.main.setup()
     mfix.main.start()
     while True:

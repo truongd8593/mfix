@@ -41,7 +41,7 @@ MODULE MAIN
    LOGICAL :: REALLY_FINISH
 
    ! Loop indices
-   INTEGER :: M
+   INTEGER :: M, II
    ! Error index
    INTEGER :: IER
    ! Number of iterations
@@ -54,7 +54,25 @@ MODULE MAIN
    ! Flag to save results and cleanly exit.
    LOGICAL :: EXIT_SIGNAL = .FALSE.
 
+   CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
+   INTEGER :: CMD_LINE_ARGS_COUNT = 0
+
 CONTAINS
+
+   SUBROUTINE ADD_COMMAND_LINE_ARGUMENT(ARG)
+      implicit none
+      CHARACTER(LEN=80), INTENT(IN) :: ARG
+
+      CMD_LINE_ARGS_COUNT = CMD_LINE_ARGS_COUNT + 1
+
+      if (CMD_LINE_ARGS_COUNT > 100) THEN
+         print *,"TOO MANY COMMAND LINE ARGUMENTS"
+         stop
+      ENDIF
+
+      CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
+
+   END SUBROUTINE ADD_COMMAND_LINE_ARGUMENT
 
    SUBROUTINE SETUP
       USE cdist, only: bdoing_postmfix

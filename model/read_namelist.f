@@ -49,9 +49,10 @@
       USE utilities
       USE vtk
       Use stl
+      use main, only: cmd_line_args, cmd_line_args_count
+      use usr_prop, only: usr_fgs, usr_fss, usr_gama
       use usr_prop, only: usr_rog, usr_cpg, usr_mug, usr_kg, usr_difg
       use usr_prop, only: usr_ros, usr_cps, usr_mus, usr_ks, usr_difs
-      use usr_prop, only: usr_fgs, usr_fss, usr_gama
       use usr_src, only: call_usr_source
       IMPLICIT NONE
 
@@ -179,8 +180,8 @@
 
       ENDDO READ_LP
 
-      DO II=1, COMMAND_ARGUMENT_COUNT()
-         CALL GET_COMMAND_ARGUMENT(ii,LINE_STRING)
+      DO II=1, CMD_LINE_ARGS_COUNT
+         LINE_STRING = CMD_LINE_ARGS(ii)
          LINE_LEN = len(line_string)
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN
