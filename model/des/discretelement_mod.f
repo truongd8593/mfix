@@ -332,6 +332,7 @@
 !     Coefficients for computing binary (Hertzian) collision time.  The actual
 !     collision time is TAU_C_Base_Actual * V^(-1/5).
       DOUBLE PRECISION :: TAU_C_Base_Actual(DIM_M, DIM_M), TAUW_C_Base_Actual(DIM_M)
+      DOUBLE PRECISION :: TAU_C_Base_Sim(DIM_M, DIM_M), TAUW_C_Base_Sim(DIM_M)
 
 ! End particle-particle and particle-wall collision model parameters
 !-----------------------------------------------------------------<<<

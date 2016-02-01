@@ -28,11 +28,12 @@
 !       no 4, pp 868-884, 2009.                                        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-MODULE DES_THERMO_COND
+      MODULE DES_THERMO_COND
  
 
-
-CONTAINS
+      IMPLICIT NONE
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_Qw_cond
+      CONTAINS
 
 
 
@@ -120,6 +121,8 @@ CONTAINS
             lK_eff = K_eff(K_s0(iM),K_s0(jM))
 ! Effective contact area's radius
             lRadius = RADIUS(MAX_RAD, MIN_RAD)
+! Compute time-correction term (not done yet)
+            ! CALL CALC_TIME_CORRECTION (.... )
 ! Inter-particle heat transfer
             Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
 
@@ -390,8 +393,8 @@ CONTAINS
          OLAP_ACTUAL = 0.001*OLAP
       ! Compute inner Rad
          Rin = sqrt(2.0D0*OLAP_ACTUAL*Rpart-OLAP_ACTUAL*OLAP_ACTUAL)
-      ! Compute time correction term
-         TAUC_CORRECTION = 1.0D0 !(PLACEHOLDER - ADD FUNCTION THAT COMPARES COLN TIME)
+      ! Compute time correction term (commented out for now)
+        ! CALL CALC_TIME_CORRECTION(TAUC_CORRECTION,M,-1)
       ! Compute heat transfer (particle-wall)
          Q_pw = 2.0D0*Rin*Keff*(TWall-TPart)
       ENDIF
@@ -484,6 +487,60 @@ CONTAINS
       ENDIF
       RETURN
       END FUNCTION EVAL_H_PFW
+
+
+      SUBROUTINE CALC_TIME_CORRECTION(time_corr, phaseI, phaseJ)
+      use discretelement, only: tau_c_base_actual, tauw_c_base_actual
+      use discretelement, only: tau_c_base_sim, tauw_c_base_sim
+      use discretelement, only: des_coll_model_enum, HERTZIAN
+      IMPLICIT NONE
+      INTEGER, intent (in) :: phaseI, phaseJ
+      DOUBLE PRECISION :: time_corr, tau_actual, tau_sim
+      DOUBLE PRECISION :: vimp ! impact veloctiy
+      INTEGER :: M, N
+      vimp = 1.0D0
+      time_corr = 1.0D0
+      if (phaseJ == -1) then
+         ! Wall contact
+         M = phaseI
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+            time_corr = tauw_c_base_actual(M) / tauw_c_base_sim(M)
+         ELSE
+            vimp = 1.0D0
+            if (vimp .le. 0.0D0)then
+               time_corr = 1.0D0
+            else
+               time_corr = tauw_c_base_actual(M)*vimp**(-0.2D0) / tauw_c_base_sim(M)
+            endif
+         ENDIF
+
+      ELSE
+         ! particle-particle contact
+         if (phaseI .le. phaseJ)then
+            M = phaseI
+            N = phaseJ
+         else
+            M = phaseJ
+            N = phaseI
+         endif
+         
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+            time_corr = tau_c_base_actual(M,N) / tau_c_base_sim(M,N)
+         ELSE
+            vimp = 1.0D0
+            if (vimp .le. 0.0D0)then
+               time_corr = 1.0D0
+            else
+               time_corr = tau_c_base_actual(M,N)*vimp**(-0.2D0) / tau_c_base_sim(M,N)
+            endif
+         ENDIF
+      ENDIF
+      time_corr = time_corr **(2.0D0/3.0D0)
+      ! TEMPORARY 
+      time_corr = 1.0D0
+      RETURN
+      END SUBROUTINE CALC_TIME_CORRECTION
+
 
       
   END MODULE DES_THERMO_COND

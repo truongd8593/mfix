@@ -572,6 +572,7 @@
       INTEGER :: count_Facets   ! counter for number of facets particle contacts
       DOUBLE PRECISION, DIMENSION(3,MAX_CONTACTS) :: NORM_FAC_CONTACT 
       LOGICAL :: USE_FACET
+      LOGICAL :: DOMAIN_BDRY
 
       INTEGER :: NF             ! Facet ID 
       INTEGER :: AXIS           ! Facet direction
@@ -696,6 +697,7 @@
                   ENDIF
                ENDIF
             ENDIF !(K)
+            IJK_FLUID = PIJK(LL,4)
          ENDIF ! (NOT CONTINUUM_COUPLED OR EXPLICIT)
     
          
@@ -750,6 +752,9 @@
 
             ! Initialize area for facet (for post-proc. flux)
             AREA = ZERO
+
+            ! Initialize BDRY FLAG
+            DOMAIN_BDRY = .FALSE.
             ! Get BC_ID
             BC_ID = BC_ID_STL_FACE(NF)
             
@@ -758,6 +763,7 @@
                I1=I_FLUID
                J1=J_FLUID
                K1=K_FLUID
+               DOMAIN_BDRY = .TRUE.
                
                ! Domain boundary, figure out real boundary ID
                IF(NORM_FACE(1,NF).ge.0.9999)THEN
@@ -807,6 +813,7 @@
                   call mfix_exit(1)
                   
                ENDIF
+              
             
                ! Loop through defined BCs to see which one particle neighbors
                DO IBC = 1, DIMENSION_BC
@@ -823,7 +830,7 @@
                   call mfix_exit(1)
                ENDIF
                 
-            ENDIF !Domain Boundary
+            ENDIF !Domain Boundary (facet ID was 0)
             
             IF (BC_TYPE_ENUM(BC_ID) == NO_SLIP_WALL .OR. &
                BC_TYPE_ENUM(BC_ID) == FREE_SLIP_WALL .OR. &
@@ -877,90 +884,96 @@
                ! point resides in so that wall flux can be
                ! output correctly.
 
-               ! FIND CELL THAT CONTACT POINT RESIDES IN
                I_FACET = I_FLUID
                J_FACET = J_FLUID
                K_FACET = K_FLUID
-  
-               IF(CLOSEST_PT(1) >= XE(I_FLUID))THEN
-                  I_FACET = MIN(IMAX1, I_FLUID+1)
-               ELSEIF(CLOSEST_PT(1) < XE(I_FLUID-1))THEN
-                  I_FACET = MAX(IMIN1, I_FLUID-1)
-               ENDIF
 
-               IF(CLOSEST_PT(2) >= YN(J_FLUID))THEN
-                  J_FACET = MIN(JMAX1, J_FLUID+1)
-               ELSEIF(CLOSEST_PT(2) < YN(J_FLUID-1))THEN
-                  J_FACET = MAX(JMIN1, J_FLUID-1)
-               ENDIF
-               IF(DO_K)THEN
-                  IF(CLOSEST_PT(3) >= ZT(K_FLUID))THEN
-                     K_FACET = MIN(KMAX1, K_FLUID+1)
-                  ELSEIF(CLOSEST_PT(3) < ZT(K_FLUID-1))THEN
-                     K_FACET = MAX(KMIN1, K_FLUID-1)
+               ! This checks to see if the contact point was NOT on a domain boundary
+
+               IF(.NOT.DOMAIN_BDRY)THEN 
+                  IF(CLOSEST_PT(1) >= XE(I_FLUID))THEN
+                     I_FACET = MIN(IMAX1, I_FLUID+1)
+                  ELSEIF(CLOSEST_PT(1) < XE(I_FLUID-1))THEN
+                     I_FACET = MAX(IMIN1, I_FLUID-1)
                   ENDIF
-               ENDIF
-               IJK_FACET=funijk(I_facet,J_facet,K_facet)
-               AREA=AREA_CUT(IJK_FACET)
-                  
+
+                  IF(CLOSEST_PT(2) >= YN(J_FLUID))THEN
+                     J_FACET = MIN(JMAX1, J_FLUID+1)
+                  ELSEIF(CLOSEST_PT(2) < YN(J_FLUID-1))THEN
+                     J_FACET = MAX(JMIN1, J_FLUID-1)
+                  ENDIF
+                  IF(DO_K)THEN
+                     IF(CLOSEST_PT(3) >= ZT(K_FLUID))THEN
+                        K_FACET = MIN(KMAX1, K_FLUID+1)
+                     ELSEIF(CLOSEST_PT(3) < ZT(K_FLUID-1))THEN
+                        K_FACET = MAX(KMIN1, K_FLUID-1)
+                     ENDIF
+                  ENDIF
+                  IJK_FACET=funijk(I_facet,J_facet,K_facet)
+                  AREA=AREA_CUT(IJK_FACET)
+        
                ! AREA is left undefined if contact was with cut-cell surface
-               IF (AREA.eq.ZERO.and.FLUID_AT(IJK_FACET))then
-                  I_FACET = I_FLUID
-                  J_FACET = J_FLUID
-                  K_FACET = K_FLUID
-                  IF(NORM_FACE(1,NF).ge.0.9999)THEN
+                  IF (AREA.eq.ZERO)then
+                     I_FACET = I_FLUID
+                     J_FACET = J_FLUID
+                     K_FACET = K_FLUID
+                     IJK_FACET=funijk(I_facet,J_facet,K_facet)
+                     IF(NORM_FACE(1,NF).ge.0.9999)THEN
                      ! WEST face
-                     IF(DO_K)THEN
-                        AREA = DY(J_FACET)*DZ(K_FACET)
-                     ELSE
-                        AREA = DY(J_FACET)*ZLENGTH
-                     ENDIF
-                  ELSEIF(NORM_FACE(1,NF).le.-0.9999)THEN
+                        IF(DO_K)THEN
+                           AREA = DY(J_FACET)*DZ(K_FACET)
+                        ELSE
+                           AREA = DY(J_FACET)*ZLENGTH
+                        ENDIF
+                     ELSEIF(NORM_FACE(1,NF).le.-0.9999)THEN
                      ! EAST FACE
-                     IF(DO_K)THEN
-                        AREA = DY(J_FACET)*DZ(K_FACET)
-                     ELSE
-                        AREA = DY(J_FACET)*ZLENGTH
-                     ENDIF
-                  ELSEIF(NORM_FACE(2,NF).ge.0.9999)THEN
+                        IF(DO_K)THEN
+                           AREA = DY(J_FACET)*DZ(K_FACET)
+                        ELSE
+                           AREA = DY(J_FACET)*ZLENGTH
+                        ENDIF
+                     ELSEIF(NORM_FACE(2,NF).ge.0.9999)THEN
                      ! SOUTH FACE 
-                     IF(DO_K)THEN
-                        AREA = DX(I_FACET)*DZ(K_FACET)
-                     ELSE
-                        AREA = DX(I_FACET)*ZLENGTH
-                     ENDIF
-                  ELSEIF(NORM_FACE(2,NF).le.-0.9999)THEN
+                        IF(DO_K)THEN
+                           AREA = DX(I_FACET)*DZ(K_FACET)
+                        ELSE
+                           AREA = DX(I_FACET)*ZLENGTH
+                        ENDIF
+                     ELSEIF(NORM_FACE(2,NF).le.-0.9999)THEN
                      ! NORTH FACE
-                     IF(DO_K)THEN
-                        AREA = DX(I_FACET)*DZ(K_FACET)
-                     ELSE
-                        AREA = DX(I_FACET)*ZLENGTH
-                     ENDIF
-                  ELSEIF(NORM_FACE(3,NF).ge.0.9999)THEN
+                        IF(DO_K)THEN
+                           AREA = DX(I_FACET)*DZ(K_FACET)
+                        ELSE
+                           AREA = DX(I_FACET)*ZLENGTH
+                        ENDIF
+                     ELSEIF(NORM_FACE(3,NF).ge.0.9999)THEN
                      ! BOTTOM FACE
-                     AREA = DX(I_FACET)*DY(J_FACET)
-                  ELSEIF(NORM_FACE(3,NF).le.-0.9999)THEN
+                        AREA = DX(I_FACET)*DY(J_FACET)
+                     ELSEIF(NORM_FACE(3,NF).le.-0.9999)THEN
                      ! TOP FACE
-                     AREA = DX(I_FACET)*DY(J_FACET)                 
-                  ENDIF
+                        AREA = DX(I_FACET)*DY(J_FACET)                 
+                     ENDIF
+                  ENDIF ! Area==0 (because cut-cell facet exists in non cut-cell) 
+               ENDIF ! NOT DOMAIN_BDRY
 
+               ! AM error check
+               IF(.NOT.FLUID_AT(IJK_FACET).AND. &
+               &  .NOT.BLOCKED_CELL_AT(IJK_FACET))THEN
+                  write(*,*)'ERROR: Cell containing facet is not a fluid &
+                  &  cell or a blocked cell'
+                  call mfix_exit(1)
                ENDIF
-               ! AM Todo: Need to figure out where to store output variables,
-               ! and then finish this section by storing flux to a variable
+
                IF(FLUID_AT(IJK_FACET))THEN
-                  ! DO STUFF
-               ENDIF
-
-               
+                  DES_QW_Cond(IJK_FACET,phase_LL) = &
+                     DES_QW_Cond(IJK_FACET, phase_LL) + QSWALL/AREA
+               ENDIF            
              
-            ENDIF
-         ENDDO                  ! CELL_COUNT (facets)
-            
+            ENDIF ! WALL BDRY
+         ENDDO                  ! CELL_COUNT (facets)        
       ENDDO  ! LL
       RETURN
 
- !     CONTAINS
- !     FUNCTION FLUID_CELL_INDEX
       END SUBROUTINE CALC_DEM_THERMO_WITH_WALL_STL
 
       end module CALC_COLLISION_WALL

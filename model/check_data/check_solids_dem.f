@@ -162,6 +162,14 @@
             TAU_C_BASE_ACTUAL(M,L)=3.21D0*(MASS_Eff/HERT_KN_ACTUAL(M,L))**0.4 
             ! Can compute actual collision time via:
             !    TAU_C_ACTUAL = TAU_C_BASE_ACTUAL * (1/ImpactVel)^0.2
+
+! Compute base for simulated collision time.  If Hertzian, only include base (without impact vel component).
+            IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+               TAU_C_BASE_SIM(M,L)=3.21D0*(MASS_Eff/HERT_KN(M,L))**0.4
+            ELSE
+               TAU_C_BASE_SIM(M,L)=PI/SQRT(KN/MASS_EFF - &
+               ((DES_ETAN(M,L)/MASS_EFF)**2)/4.d0)
+            ENDIF
          ENDDO
 
 ! Do particle-wall calculations
@@ -173,7 +181,14 @@
          
          HERT_KWN_ACTUAL(M) = (4.d0/3.d0)*SQRT(R_EFF)*E_EFF
          TAUW_C_BASE_ACTUAL(M) = 3.21D0 * (MASS_Eff/HERT_KWN_ACTUAL(M))**0.4 
-         
+
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            TAUW_C_BASE_SIM(M)=3.21D0*(MASS_Eff/HERT_KWN(M))**0.4
+         ELSE
+            TAUW_C_BASE_SIM(M)=PI/SQRT(KN_w/MASS_EFF - &
+            ((DES_ETAN_WALL(M)/MASS_EFF)**2)/4.d0)
+         ENDIF
+
       ENDDO
 
       CALL FINL_ERR_MSG

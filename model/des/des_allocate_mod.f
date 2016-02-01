@@ -40,6 +40,7 @@ CONTAINS
       Use des_rxns
       USE cutcell
       USE functions
+      USE des_thermo_cond, only: DES_Qw_cond 
 
       use run, only: ENERGY_EQ
       use run, only: ANY_SPECIES_EQ
@@ -272,6 +273,9 @@ CONTAINS
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) &
             Allocate( Q_Source0( MAX_PIP ) )
+! Allocate the array for storing particle-wall heat transfer per unit area
+         IF (ANY(CALC_COND_DES)) &
+            Allocate( DES_Qw_cond( DIMENSION_3, DIMENSION_M))
       ENDIF
 ! End Thermodynamic Allocation
 ! ----------------------------------------------------------------<<<

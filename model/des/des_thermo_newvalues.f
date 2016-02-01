@@ -24,6 +24,7 @@
       use functions
       use funits, only: dmp_log
       use run, only: ANY_SPECIES_EQ
+      USE des_thermo_cond, only: DES_QW_cond
       IMPLICIT NONE
 
 ! Passed variables
@@ -69,6 +70,8 @@
 
 
       Q_Source(:) = ZERO
+      IF(ALLOCATED(DES_QW_Cond)) &
+         DES_QW_Cond(:,:) = ZERO
 
 ! Update particle from reactive chemistry process.
       IF(ANY_SPECIES_EQ .AND. .NOT.DES_EXPLICITLY_COUPLED)&
