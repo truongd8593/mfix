@@ -992,25 +992,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
+      USE bc
+      USE calc_gr_boundary, ONLY: CALC_GRBDRY
+      USE compar
       USE constant
-      USE physprop
       USE fldvar
-      USE visc_s
-      USE rxns
-      USE run
-      USE toleranc
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE tau_s
-      USE bc
       USE output
-      USE compar
-      USE functions
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scales
+      USE tau_s
+      USE toleranc
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
