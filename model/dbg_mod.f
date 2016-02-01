@@ -17,10 +17,10 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       MODULE dbg
 
-      use param1, only: UNDEFINED_I
-      use param1, only: UNDEFINED_C
-
+      use exit, only: mfix_exit
       use mpi_utility
+      use param1, only: UNDEFINED_C
+      use param1, only: UNDEFINED_I
 
       IMPLICIT NONE
 
@@ -108,13 +108,11 @@
 !----------------------------------------------------------------------!
       SUBROUTINE initExtract(iLow, iHgh, jLow, jHgh, kLow, kHgh)
 
+      use compar
       use funits, only: DMP_LOG
-
       use geometry, only: iMin3, iMax3
       use geometry, only: jMin3, jMax3
       use geometry, only: kMin3, kMax3, do_K
-
-      use compar
 
       INTEGER, optional, intent(in) :: iLow, iHgh
       INTEGER, optional, intent(in) :: jLow, jHgh
