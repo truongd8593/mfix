@@ -839,7 +839,8 @@
                BC_TYPE_ENUM(BC_ID) == CG_FSW .OR. &
                BC_TYPE_ENUM(BC_ID) == CG_PSW) THEN
 
-
+               IF(BC_HW_T_s(BC_ID,PHASE_LL).eq.UNDEFINED)CYCLE
+               
                ! CHECK TO MAKE SURE FACET IS UNIQUE
                USE_FACET=.TRUE.
                DO IFACET=1,count_facets
@@ -955,12 +956,18 @@
                      ENDIF
                   ENDIF ! Area==0 (because cut-cell facet exists in non cut-cell) 
                ENDIF ! NOT DOMAIN_BDRY
-
+               IJK_FACET = FUNIJK(I_FACET,J_FACET,K_FACET)
                ! AM error check
                IF(.NOT.FLUID_AT(IJK_FACET).AND. &
                &  .NOT.BLOCKED_CELL_AT(IJK_FACET))THEN
                   write(*,*)'ERROR: Cell containing facet is not a fluid &
                   &  cell or a blocked cell'
+                  write(*,*)FLUID_AT(IJK_FACET), BLOCKED_CELL_AT(IJK_FACET)
+                  write(*,*)'PART POS',(DES_POS_NEW(LL,IBC),IBC=1,3)
+                  write(*,*)'FACET NORM',(NORM_FACE(IBC,NF),IBC=1,3)
+                  write(*,*)'BC_ID', BC_ID
+                  write(*,*)'I,J,K (Facet)', I_FACET,J_FACET,K_FACET
+            
                   call mfix_exit(1)
                ENDIF
 
