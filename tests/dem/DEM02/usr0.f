@@ -12,8 +12,9 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE USR0
 
-      use usr
       use discretelement
+      use exit, only: mfix_exit
+      use usr
 
       IMPLICIT NONE
 

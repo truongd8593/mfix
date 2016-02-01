@@ -31,6 +31,7 @@
       USE compar        !//d
       USE constant
       USE energy
+      USE exit, ONLY: mfix_exit
       USE fldvar
       USE functions
       USE funits

@@ -12,10 +12,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR0
 
-      use usr
+      use constant, only: PI
       use discretelement, only: PIP
       use discretelement, only: VEL => DES_VEL_NEW
-      use constant, only: PI
+      use exit, only: mfix_exit
+      use usr
 
       IMPLICIT NONE
 

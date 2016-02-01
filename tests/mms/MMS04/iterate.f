@@ -679,10 +679,11 @@
 ! Modules
 !-----------------------------------------------
       USE bc
-      USE geometry
-      USE constant
-      USE param1
       USE compar
+      USE constant
+      USE exit, ONLY: mfix_exit
+      USE geometry
+      USE param1
       USE run
       USE time_cpu
       USE utilities, ONLY: mfix_isnan

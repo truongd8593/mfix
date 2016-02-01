@@ -679,6 +679,7 @@
       USE bc
       USE compar
       USE constant
+      USE exit, ONLY: mfix_exit
       USE geometry
       USE param1
       USE run

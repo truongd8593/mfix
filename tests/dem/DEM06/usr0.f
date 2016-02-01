@@ -12,10 +12,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR0
 
-      use usr
-      use discretelement, only: PIP
       use discretelement, only: DES_POS_NEW
       use discretelement, only: DES_VEL_NEW
+      use discretelement, only: PIP
+      use exit, only: mfix_exit
+      use usr
 
       IMPLICIT NONE
 
