@@ -839,7 +839,7 @@
                BC_TYPE_ENUM(BC_ID) == CG_FSW .OR. &
                BC_TYPE_ENUM(BC_ID) == CG_PSW) THEN
 
-               IF(BC_HW_T_s(BC_ID,PHASE_LL).eq.UNDEFINED)CYCLE
+      
                
                ! CHECK TO MAKE SURE FACET IS UNIQUE
                USE_FACET=.TRUE.
@@ -872,7 +872,7 @@
                else
                   K_Gas=k_g0
                endif
-               
+               IF(TWALL.eq.UNDEFINED)CYCLE
                QSWALL = DES_CONDUCTION_WALL(OVERLAP,K_s0(phase_LL), &
                &        K_s0(phase_LL),K_Gas,TWALL, TPART, RPART, &
                &        RLENS, phase_LL)
