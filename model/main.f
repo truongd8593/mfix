@@ -1201,7 +1201,7 @@ CONTAINS
       use reinit, only: reinitialize
       implicit none
       ! filename of uploaded mfix.dat file
-      character(len=1000), intent(in) :: filename
+      character(len=*), intent(in) :: filename
       call reinitialize(filename)
    end subroutine do_reinit
 

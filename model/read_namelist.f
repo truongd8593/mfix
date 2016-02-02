@@ -61,7 +61,7 @@
 ! Specify how much of the input to process.
       INTEGER, INTENT(IN) :: READ_ACTION
 
-      CHARACTER(LEN=1000), INTENT(IN), OPTIONAL :: FILENAME_ARG
+      CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: FILENAME_ARG
 
 ! Local Variables:
 !------------------------------------------------------------------------//

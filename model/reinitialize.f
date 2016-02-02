@@ -17,7 +17,7 @@ MODULE REINIT
 
       IMPLICIT NONE
 
-      CHARACTER(LEN=1000), intent(in) :: filename
+      CHARACTER(LEN=*), intent(in) :: filename
 
       INTEGER :: IER
 
