@@ -1165,9 +1165,10 @@ CONTAINS
 #endif
       implicit none
 
-      character*500,intent(in) :: str
-      character :: aa(500)
-      character :: do_mpi_bcast(500)
+      ! TODO: return a dynamically allocated string, instead of fixed 100,000 size
+      character*100000,intent(in) :: str
+      character :: aa(100000)
+      character :: do_mpi_bcast(100000)
       integer :: ii
       integer :: ierr
 
@@ -1176,10 +1177,10 @@ CONTAINS
       end do
 
 #ifdef MPI
-      call mpi_bcast(aa,500,mpi_character,0,mpi_comm_world,ierr)
+      call mpi_bcast(aa,100000,mpi_character,0,mpi_comm_world,ierr)
 #endif
 
-      do ii = 1,500
+      do ii = 1,100000
          do_mpi_bcast(ii:ii) = aa(ii)
       end do
 
@@ -1196,10 +1197,12 @@ CONTAINS
       call backup_res
    end subroutine do_backupres
 
-   subroutine do_reinit
+   subroutine do_reinit(filename)
       use reinit, only: reinitialize
       implicit none
-      call reinitialize
+      ! filename of uploaded mfix.dat file
+      character*1000, intent(in) :: filename
+      call reinitialize(filename)
    end subroutine do_reinit
 
    subroutine do_exit

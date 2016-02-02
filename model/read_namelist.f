@@ -6,7 +6,7 @@
 !     Purpose: Read in the NAMELIST variables                          !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE READ_NAMELIST(READ_ACTION)
+      SUBROUTINE READ_NAMELIST(READ_ACTION, FILENAME_ARG)
 
       USE bc
       USE cdist
@@ -61,10 +61,14 @@
 ! Specify how much of the input to process.
       INTEGER, INTENT(IN) :: READ_ACTION
 
+      CHARACTER*1000, INTENT(IN), OPTIONAL :: FILENAME_ARG
+
 ! Local Variables:
 !------------------------------------------------------------------------//
 ! LINE_STRING(1:MAXCOL) has valid input data
       INTEGER, PARAMETER :: MAXCOL = 80
+! Filename of the input file
+      CHARACTER*1000 :: FILENAME
 ! Holds one line in the input file
       CHARACTER(LEN=512) :: LINE_STRING
 ! Length of noncomment string
@@ -121,9 +125,15 @@
          READ_FULL = .TRUE.
       END SELECT
 
+      IF (PRESENT(FILENAME_ARG)) THEN
+         FILENAME = FILENAME_ARG
+      ELSE
+         FILENAME = "mfix.dat"
+      ENDIF
+
 ! Open the mfix.dat file. Report errors if the file is not located or
 ! there is difficulties opening it.
-      inquire(file='mfix.dat',exist=lEXISTS)
+      inquire(file=filename,exist=lEXISTS)
       IF(.NOT.lEXISTS) THEN
          IF(myPE == PE_IO) WRITE(*,1000)
          CALL MFIX_EXIT(myPE)
@@ -133,7 +143,7 @@
          70('*'),2/)
 
       ELSE
-         OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', IOSTAT=IOS)
+         OPEN(UNIT=UNIT_DAT, FILE=filename, STATUS='OLD', IOSTAT=IOS)
          IF(IOS /= 0) THEN
             IF(myPE == PE_IO) WRITE (*,1001)
             CALL MFIX_EXIT(myPE)

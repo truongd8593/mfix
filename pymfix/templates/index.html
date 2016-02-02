@@ -32,7 +32,13 @@ pause at time
     <button id="backupres">BACKUP RES</button><p/>
     <pre style='clear:both'><code id="curlbackupres" onclick="selectText(this)">curl -X PUT http://localhost:5000/backupres</code></pre>
 
-    <button id="reinit">REINITIALIZE</button><p/>
+      <form action="upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="REINIT">
+      </form><br />
+{% if mfixdat_filename %}
+Uploaded {{ mfixdat_filename }}
+{% endif %}
     <pre style='clear:both'><code id="curlreinit" onclick="selectText(this)">curl -X PUT http://localhost:5000/reinit</code></pre>
 
     <button id="exit">EXIT</button>(writes RES files, then terminates)<p/>

@@ -8,7 +8,7 @@ import thread
 import time
 import traceback
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 path = os.path.dirname(os.path.realpath(__file__))
 app = Flask(__name__, static_folder=path+'/static', template_folder=path+'/templates')
 
@@ -110,7 +110,7 @@ def handle(req_id,command,var,args):
 
     elif cmd=='reinit':
         responses[req_id] = 200,'REINITIALIZING MFIX\n'
-        mfix.main.do_reinit()
+        mfix.main.do_reinit(args.get('filename',None))
 
     elif cmd=='exit':
         responses[req_id] = 200,'EXITING MFIX\n'
@@ -211,9 +211,28 @@ def funijk(i,j,k):
 def is_on_mype_owns(li, lj, lk):
       return li >= mfix.compar.istart and li <= mfix.compar.iend and lj >= mfix.compar.jstart and lj <= mfix.compar.jend and lk >= mfix.compar.kstart and lk <= mfix.compar.kend
 
+
+# Route that will process the file upload
+@app.route('/upload', methods=['POST'])
+def upload():
+    # Get the name of the uploaded file
+    ff = request.files['file']
+    if ff:
+        # filename = ff.filename
+        filename = 'mfix.dat.upload'
+        ff.save(os.path.join(os.getcwd(), filename))
+    else:
+        filename = None
+        data = None
+
+    status_code, data = do_command( "REINIT", args={'filename':filename} )
+
+    return redirect(url_for('index',
+                            filename=filename))
+
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', mfixdat_filename = request.args.get('filename',''))
 
 @app.route('/help',methods=['GET'])
 def help():
@@ -243,11 +262,6 @@ def write_dbg_vt():
 @app.route('/backupres',methods=['POST'])
 def backupres():
     status_code, data = do_command( "BACKUPRES" )
-    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
-
-@app.route('/reinit',methods=['POST'])
-def reinit():
-    status_code, data = do_command( "REINIT" )
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 @app.route('/exit',methods=['POST'])

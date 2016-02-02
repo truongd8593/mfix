@@ -127,7 +127,7 @@
             INTERACTING = .TRUE.
 
          CASE(REINITIALIZE_ENUM)
-            CALL REINITIALIZE
+            CALL REINITIALIZE('mfix.dat')
             INTERACTING = .TRUE.
 
          CASE DEFAULT
