@@ -95,25 +95,6 @@ $(document).ready(function(){
         });
     });
 
-    $('#pausetime').change(function(){
-        var pausetime = $("#pausetime").val();
-        $.ajax({
-            url: 'set/mfix.main.pausetime',
-            type: 'POST',
-            data: {'varvalue':pausetime},
-            success: function(response) {
-                $(".notice").hide();
-                $("div.success").text('Successfully set pausetime');
-                $("div.success").fadeIn();
-            },
-            error: function(response) {
-                $(".notice").hide();
-                $("div.error").text('Error setting pausetime');
-                $("div.error").fadeIn();
-            }
-        });
-    });
-
     $('#write_dbg_vt').click(function(){
         $.ajax({
             url: 'write_dbg_vt',
@@ -209,14 +190,6 @@ $(document).ready(function(){
             this.value = this.value.replace(/[^0-9]/g, '');
         }
     });
-
-    // TODO: better float validation
-    $('#pausetime').keyup(function () {
-        if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
-            this.value = this.value.replace(/[^0-9\.]/g, '');
-        }
-    });
-
 });
 
 function updateCurlCommands() {
@@ -225,7 +198,6 @@ function updateCurlCommands() {
     $("#curlreinit").text(req_common+'/reinit")');
     $("#curlexit").text(req_common+'/exit")');
     $("#curlabort").text(req_common+'/abort")');
-    $("#curlpausetime").text(req_common+'/set/mfix.main.pausetime", data={"varvalue":"'+$("#pausetime").val()+'"})');
     $("#curlstep").text(req_common+'/step'+'", data={"stepcount":"'+$("#stepcount").val()+'"})');
 
     var varname = ["mfix",

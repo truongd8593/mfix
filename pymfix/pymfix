@@ -26,6 +26,8 @@ mfix_stopped = True
 
 # response = 'the pressure is %s \n tstop is %s' % (str(mfix.fldvar.p_g[:100]),mfix.run.tstop)
 
+pymfix_running = True
+
 def run_mfix():
     global mfix_stopped
 
@@ -39,7 +41,7 @@ def run_mfix():
     mfix.main.setup()
     mfix.main.start()
     while True:
-        while not mfix.main.really_finish:
+        while pymfix_running:
             if requests:
                 # requests would only arrive at rank 0
                 req_id,cmd_var_args = requests.popitem()
@@ -58,7 +60,7 @@ def run_mfix():
             if command:
                 handle(req_id,command,varname,args)
 
-            if mfix_stopped or mfix.main.pausetime <= mfix.run.time:
+            if mfix_stopped or mfix.run.tstop <= mfix.run.time:
                 time.sleep(0.1)
             else:
                 mfix.main.step()
@@ -114,7 +116,8 @@ def handle(req_id,command,var,args):
 
     elif cmd=='exit':
         responses[req_id] = 200,'EXITING MFIX\n'
-        mfix.main.do_exit()
+        global pymfix_running
+        pymfix_running = False
 
     elif cmd=='abort':
         responses[req_id] = 200,'ABORTING MFIX\n'
