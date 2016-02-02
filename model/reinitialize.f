@@ -28,6 +28,7 @@ MODULE REINIT
       CALL REINIT_RXN_DATA
 
 ! Read in the namelist variables from the ascii input file.
+      print *,"FUCK you ",filename
       CALL READ_NAMELIST(2, filename)
 
       CALL REINITIALIZE0(IER)

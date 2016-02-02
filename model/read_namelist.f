@@ -6,7 +6,7 @@
 !     Purpose: Read in the NAMELIST variables                          !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE READ_NAMELIST(READ_ACTION, FILENAME_ARG)
+      SUBROUTINE READ_NAMELIST(READ_ACTION, FILENAME)
 
       USE bc
       USE cdist
@@ -61,14 +61,13 @@
 ! Specify how much of the input to process.
       INTEGER, INTENT(IN) :: READ_ACTION
 
-      CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: FILENAME_ARG
+! Filename of the input file
+      CHARACTER(LEN=*), INTENT(IN) :: FILENAME
 
 ! Local Variables:
 !------------------------------------------------------------------------//
 ! LINE_STRING(1:MAXCOL) has valid input data
       INTEGER, PARAMETER :: MAXCOL = 80
-! Filename of the input file
-      CHARACTER(LEN=1000) :: FILENAME
 ! Holds one line in the input file
       CHARACTER(LEN=512) :: LINE_STRING
 ! Length of noncomment string
@@ -124,12 +123,6 @@
          READ_LOCKED = .FALSE.
          READ_FULL = .TRUE.
       END SELECT
-
-      IF (PRESENT(FILENAME_ARG)) THEN
-         FILENAME = FILENAME_ARG
-      ELSE
-         FILENAME = "mfix.dat"
-      ENDIF
 
 ! Open the mfix.dat file. Report errors if the file is not located or
 ! there is difficulties opening it.

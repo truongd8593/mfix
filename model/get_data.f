@@ -51,7 +51,7 @@ MODULE read_input
 ! This module call routines to initialize the namelist variables.
       CALL INIT_NAMELIST
 ! Read in the namelist variables from the ascii input file.
-      CALL READ_NAMELIST(0)
+      CALL READ_NAMELIST(0,"mfix.dat")
 
 ! Initialize the error manager. This call occurs after the mfix.dat
 ! is read so that message verbosity can be set and the .LOG file
