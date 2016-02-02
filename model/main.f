@@ -1167,8 +1167,8 @@ CONTAINS
 
       ! TODO: return a dynamically allocated string, instead of fixed 100,000 size
       character(len=100000),intent(in) :: str
-      character(len=100000) :: aa
-      character(len=100000) :: do_mpi_bcast
+      character :: aa(100000)
+      character :: do_mpi_bcast(100000)
       integer :: ii
       integer :: ierr
 
