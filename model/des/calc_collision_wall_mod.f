@@ -827,6 +827,11 @@
                ENDDO
                IF(BC_ID.eq.0)then
                   write(*,*)'ERROR, Could not find BC'
+                  write(*,'(3(F12.5F, 3X))')(DES_POS_NEW(LL,IBC),IBC=1,3)
+                  write(*,*)I1,J1,K1
+                  write(*,'(3(F12.5F, 3X))')(CLOSEST_PT(IBC),IBC=1,3)
+                  write(*,'(3(F12.5F, 3X))')(NORM_FACE(IBC,NF),IBC=1,3)
+     
                   call mfix_exit(1)
                ENDIF
                 
