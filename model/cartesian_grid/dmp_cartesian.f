@@ -36,6 +36,7 @@
       call SEND_RECEIVE_1D_LOGICAL(WALL_V_AT,2)
       call SEND_RECEIVE_1D_LOGICAL(WALL_W_AT,2)
 
+      call send_recv(area_cut, 2)
       call send_recv(Area_U_CUT,2)
       call send_recv(Area_V_CUT,2)
       call send_recv(Area_W_CUT,2)
