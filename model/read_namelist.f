@@ -61,14 +61,14 @@
 ! Specify how much of the input to process.
       INTEGER, INTENT(IN) :: READ_ACTION
 
-      CHARACTER*1000, INTENT(IN), OPTIONAL :: FILENAME_ARG
+      CHARACTER(LEN=1000), INTENT(IN), OPTIONAL :: FILENAME_ARG
 
 ! Local Variables:
 !------------------------------------------------------------------------//
 ! LINE_STRING(1:MAXCOL) has valid input data
       INTEGER, PARAMETER :: MAXCOL = 80
 ! Filename of the input file
-      CHARACTER*1000 :: FILENAME
+      CHARACTER(LEN=1000) :: FILENAME
 ! Holds one line in the input file
       CHARACTER(LEN=512) :: LINE_STRING
 ! Length of noncomment string

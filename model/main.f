@@ -1166,9 +1166,9 @@ CONTAINS
       implicit none
 
       ! TODO: return a dynamically allocated string, instead of fixed 100,000 size
-      character*100000,intent(in) :: str
-      character :: aa(100000)
-      character :: do_mpi_bcast(100000)
+      character(len=100000),intent(in) :: str
+      character(len=100000) :: aa
+      character(len=100000) :: do_mpi_bcast
       integer :: ii
       integer :: ierr
 
@@ -1201,7 +1201,7 @@ CONTAINS
       use reinit, only: reinitialize
       implicit none
       ! filename of uploaded mfix.dat file
-      character*1000, intent(in) :: filename
+      character(len=1000), intent(in) :: filename
       call reinitialize(filename)
    end subroutine do_reinit
 
