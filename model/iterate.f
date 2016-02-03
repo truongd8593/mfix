@@ -351,106 +351,14 @@ MODULE STEP
 
    END SUBROUTINE PRE_ITERATE
 
-   SUBROUTINE ITERATE(IER, NIT)
-
-      !-----------------------------------------------
-      ! Modules
-      !-----------------------------------------------
-      USE compar
-      USE cont
-      USE cutcell
-      USE dashboard
-      USE discretelement
-      USE fldvar
-      USE funits
-      USE geometry
-      USE indices
-      USE leqsol
+   SUBROUTINE POST_ITERATE(NIT)
+      USE compar, only: mype, pe_io
+      USE funits, only: dmp_log, unit_log, unit_out
       USE machine, only: start_log, end_log
-      USE mms, only: USE_MMS
-      USE mpi_utility
-      USE output
-      USE param
-      USE param1
-      USE pgcor
-      USE physprop
-      USE pscor
-      USE qmom_kinetic_equation
-      USE residual
-      USE run
-      USE scalars
-      USE time_cpu
-      USE toleranc
-      USE visc_g
-      USE vtk
-      USE interactive, only: CHECK_INTERACT_ITER
-
-      use error_manager
-
+      USE run, only: dt, time
       IMPLICIT NONE
-      !-----------------------------------------------
-      ! Dummy arguments
-      !-----------------------------------------------
-      ! Error index
-      INTEGER, INTENT(INOUT) :: IER
-      ! Number of iterations
-      INTEGER, INTENT(OUT) :: NIT
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! current cpu time used
-      DOUBLE PRECISION :: CPU_NOW
-! flag indicating convergence status with MUSTIT = 0,1,2 implying
-! complete convergence, non-covergence and divergence respectively
-      INTEGER :: MUSTIT
-! Heat loss from the reactor
-      DOUBLE PRECISION :: HLOSS
-! phase index
-      INTEGER :: M
-! average velocity
-      DOUBLE PRECISION :: Vavg
-      CHARACTER(LEN=4) :: TUNIT
 
-      CALL PRE_ITERATE(NIT,MUSTIT)
-
-! Begin iterations
-!-----------------------------------------------------------------
-   50 CONTINUE
-      MUSTIT = 0
-      NIT = NIT + 1
-      CALL DO_ITERATION(NIT,MUSTIT)
-
-!  If not converged continue iterations; else exit subroutine.
- 1000 CONTINUE
-
-! Display residuals
-      CALL DISPLAY_RESID (NIT)
-
-! Determine course of simulation: converge, non-converge, diverge?
-      IF (MUSTIT == 0) THEN
-         IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged
-         CALL LOG_CONVERGED
-         IER = 0
-         RETURN   ! for if mustit =0 (converged)
-      ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
-         CALL LOG_DIVERGED
-         IER = 1
-         RETURN  ! for if mustit =2 (diverged)
-      ENDIF
-
-      ! not converged (mustit = 1, !=0,2 )
-      IF(INTERACTIVE_MODE .AND. INTERACTIVE_NITS/=UNDEFINED_I) THEN
-         CALL CHECK_INTERACT_ITER(MUSTIT)
-         IF(MUSTIT == 1) THEN
-            GOTO 50
-         ELSE
-            GOTO 1000
-         ENDIF
-      ELSEIF(NIT < MAX_NIT) THEN
-         MUSTIT = 0
-         GOTO 50
-      ENDIF ! continue iterate
-! ----------------------------------------------------------------<<<
+      INTEGER, INTENT(IN) :: NIT
 
       CALL GET_SMASS (SMASS)
       IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
@@ -458,17 +366,26 @@ MODULE STEP
       IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
       CALL END_LOG
 
-! SOF: MFIX will not go the next time step if MAX_NIT is reached,
-! instead it will decrease the time step. (IER changed from 0 to 1)
-      IER = 1
-      RETURN
+5100  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
+           'MbErr%=', G11.4)
 
- 5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
-             'MbErr%=', G11.4)
+   END SUBROUTINE POST_ITERATE
 
-   CONTAINS
-         SUBROUTINE LOG_DIVERGED
+         SUBROUTINE LOG_DIVERGED(NIT)
+            USE compar, only: mype, pe_io
+            USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
+            USE funits, only: dmp_log, unit_log
+            USE machine, only: start_log, end_log
+            USE output, only: full_log
+            USE run, only: dt, time, tstop, get_tunit
+            USE time_cpu, only: cpuos
+
             IMPLICIT NONE
+
+            INTEGER, INTENT(IN) :: NIT
+
+            CHARACTER(LEN=4) :: TUNIT
+
             IF (FULL_LOG) THEN
                CALL START_LOG
                CALL CALC_RESID_MB(1, errorpercent)
@@ -495,8 +412,24 @@ MODULE STEP
                  I3,'MbErr%=', G11.4, ': ',A,' :-(')
          END SUBROUTINE LOG_DIVERGED
 
-         SUBROUTINE LOG_CONVERGED
+         SUBROUTINE LOG_CONVERGED(NIT)
+            USE compar, only: mype, pe_io
+            USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
+            USE error_manager, only: err_msg
+            USE funits, only: dmp_log, unit_log
+            USE geometry, only: cyclic_x, cyclic_y, cyclic_z
+            USE geometry, only: do_i, do_j, do_k
+            USE machine, only: start_log, end_log
+            USE output, only: full_log, nlog
+            USE physprop, only: mmax, smax
+            USE run, only: dt, energy_eq, time, tstop, nstep, get_tunit
+            USE time_cpu, only: cpu0, cpu_nlog, cpuos, time_nlog
+
             IMPLICIT NONE
+
+            INTEGER, INTENT(IN) :: NIT
+
+            CHARACTER(LEN=4) :: TUNIT
             ! Perform checks and dump to screen every NLOG time steps
             IF (MOD(NSTEP,NLOG) == 0) THEN
                CALL DUMP_TO_SCREEN
@@ -513,10 +446,20 @@ MODULE STEP
                ENDIF
             ENDIF
 
-         END SUBROUTINE LOG_CONVERGED
+CONTAINS
 
       SUBROUTINE DUMP_TO_SCREEN
+         USE error_manager, only: flush_err_msg
          IMPLICIT NONE
+
+         ! phase index
+         INTEGER :: M
+         ! current cpu time used
+         DOUBLE PRECISION :: CPU_NOW
+         ! Heat loss from the reactor
+         DOUBLE PRECISION :: HLOSS
+         ! average velocity
+         DOUBLE PRECISION :: Vavg
 
          !-----------------------------------------------
          ! External functions
@@ -597,7 +540,7 @@ MODULE STEP
 
          END SUBROUTINE DUMP_TO_SCREEN
 
-   END SUBROUTINE ITERATE
+      END SUBROUTINE LOG_CONVERGED
 
    SUBROUTINE DO_ITERATION(NIT,MUSTIT)
 
