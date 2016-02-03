@@ -22,7 +22,7 @@ MODULE STEP
 
    CONTAINS
 
-   SUBROUTINE PRE_STEP
+   SUBROUTINE TIME_STEP_INIT
       !f2py threadsafe
       USE adjust_dt, only: adjustdt
       USE check, only: check_mass_balance
@@ -131,9 +131,9 @@ MODULE STEP
 ! Check for maximum velocity at inlet to avoid convergence problems
       MAX_INLET_VEL = MAX_VEL_INLET()
 
-   END SUBROUTINE PRE_STEP
+   END SUBROUTINE TIME_STEP_INIT
 
-   SUBROUTINE POST_STEP(NIT)
+   SUBROUTINE TIME_STEP_END(NIT)
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
@@ -227,7 +227,7 @@ MODULE STEP
 
       FLUSH (6)
 
-   END SUBROUTINE POST_STEP
+   END SUBROUTINE TIME_STEP_END
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
