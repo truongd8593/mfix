@@ -36,7 +36,7 @@
       use run
       use rxns
       use scalars
-      use step, only: errorpercent
+      use iterate, only: errorpercent
       use tau_g
       use tau_s
       use trace

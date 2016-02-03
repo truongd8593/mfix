@@ -670,6 +670,7 @@ libmfix_src = \
 	model/source_v_s.f \
 	model/source_w_g.f \
 	model/source_w_s.f \
+	model/time_step.f \
 	model/tau_g_mod.f \
 	model/tau_s_mod.f \
 	model/tau_u_g.f \

@@ -52,11 +52,7 @@
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
 
-      CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
-      INTEGER :: CMD_LINE_ARGS_COUNT = 0
-
       CONTAINS
-
 
       SUBROUTINE INITIALIZE
 
