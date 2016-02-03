@@ -4,6 +4,29 @@ MODULE utilities
 
 CONTAINS
 
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!  Subroutine: ADD_COMMAND_LINE_ARGUMENT                               !
+!  Author: M.Meredity                                 Date: 03-FEB-16  !
+!                                                                      !
+!  Purpose: Find maximum velocity at inlets.                           !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ADD_COMMAND_LINE_ARGUMENT(ARG)
+      implicit none
+      CHARACTER(LEN=80), INTENT(IN) :: ARG
+
+      CMD_LINE_ARGS_COUNT = CMD_LINE_ARGS_COUNT + 1
+
+      if (CMD_LINE_ARGS_COUNT > 100) THEN
+         print *,"TOO MANY COMMAND LINE ARGUMENTS"
+         stop
+      ENDIF
+
+      CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
+
+      END SUBROUTINE ADD_COMMAND_LINE_ARGUMENT
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  function: mfix_isnan                                                !
@@ -42,7 +65,6 @@ CONTAINS
 !  Purpose: Find maximum velocity at inlets.                           C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 26-AUG-05  C
-!                                                                      C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION MAX_VEL_INLET()

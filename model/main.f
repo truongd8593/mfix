@@ -7,72 +7,58 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
 
-MODULE MAIN
+      MODULE MAIN
 
-   use exit, only: mfix_exit
+      use exit, only: mfix_exit
 
-   !-----------------------------------------------
-   ! Module variables
-   !-----------------------------------------------
-   ! Final value of CPU time.
-   DOUBLE PRECISION :: CPU1
-   ! time used for computations.
-   DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
-   ! CPU time unit.
-   CHARACTER(LEN=4) :: TUNIT
-   ! Save TIME in input file for RESTART_2
-   DOUBLE PRECISION :: TIME_SAVE
-   ! Temporary storage for DT
-   DOUBLE PRECISION :: DT_tmp
-   ! loop counter
-   INTEGER :: L
-   ! DISTIO variable for specifying the mfix version
-   CHARACTER(LEN=512) :: version
-   ! environment variable
+!-----------------------------------------------
+! Module variables
+!-----------------------------------------------
+! Final value of CPU time.
+      DOUBLE PRECISION :: CPU1
+! time used for computations.
+      DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
+! CPU time unit.
+      CHARACTER(LEN=4) :: TUNIT
+! Save TIME in input file for RESTART_2
+      DOUBLE PRECISION :: TIME_SAVE
+! Temporary storage for DT
+      DOUBLE PRECISION :: DT_tmp
+! loop counter
+      INTEGER :: L
+! DISTIO variable for specifying the mfix version
+      CHARACTER(LEN=512) :: version
+! environment variable
 !$ CHARACTER(LEN=512) :: omp_num_threads
 !$ INTEGER :: length
 !$ INTEGER :: status
 
-   ! Flag to indicate one pass through iterate for steady
-   ! state conditions.
-   LOGICAL :: FINISH
-   LOGICAL :: REALLY_FINISH
+! Flag to indicate one pass through iterate for steady
+! state conditions.
+      LOGICAL :: FINISH
+      LOGICAL :: REALLY_FINISH
 
-   ! Loop indices
-   INTEGER :: M, II
-   ! Error index
-   INTEGER :: IER
-   ! Number of iterations
-   INTEGER :: NIT_TOTAL
-   ! used for activating check_data_30
-   INTEGER :: NCHECK, DNCHECK
-   ! dummy logical variable for initializing adjust_dt
-   LOGICAL :: dummy_adjust_dt
+! Loop indices
+      INTEGER :: M, II
+! Error index
+      INTEGER :: IER
+! Number of iterations
+      INTEGER :: NIT_TOTAL
+! used for activating check_data_30
+      INTEGER :: NCHECK, DNCHECK
+! dummy logical variable for initializing adjust_dt
+      LOGICAL :: dummy_adjust_dt
 
-   ! Flag to save results and cleanly exit.
-   LOGICAL :: EXIT_SIGNAL = .FALSE.
+! Flag to save results and cleanly exit.
+      LOGICAL :: EXIT_SIGNAL = .FALSE.
 
-   CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
-   INTEGER :: CMD_LINE_ARGS_COUNT = 0
+      CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
+      INTEGER :: CMD_LINE_ARGS_COUNT = 0
 
-CONTAINS
+      CONTAINS
 
-   SUBROUTINE ADD_COMMAND_LINE_ARGUMENT(ARG)
-      implicit none
-      CHARACTER(LEN=80), INTENT(IN) :: ARG
 
-      CMD_LINE_ARGS_COUNT = CMD_LINE_ARGS_COUNT + 1
-
-      if (CMD_LINE_ARGS_COUNT > 100) THEN
-         print *,"TOO MANY COMMAND LINE ARGUMENTS"
-         stop
-      ENDIF
-
-      CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
-
-   END SUBROUTINE ADD_COMMAND_LINE_ARGUMENT
-
-   SUBROUTINE INITIALIZE
+      SUBROUTINE INITIALIZE
 
 #ifdef MPI
       USE mpi, only: mpi_comm_world, mpi_barrier  ! ignore-depcomp
@@ -117,68 +103,67 @@ CONTAINS
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
 
-      ! DISTIO
-      ! If you change the value below in this subroutine, you must also
-      ! change it in write_res0.f and the value should also be consistent
-      ! with the check in read_res0
+! DISTIO
+! If you change the value below in this subroutine, you must also
+! change it in write_res0.f and the value should also be consistent
+! with the check in read_res0
       version = 'RES = 01.6'
 
       bDoing_postmfix = .false.
 
-      ! Invoke MPI initialization routines and get rank info.
+! Invoke MPI initialization routines and get rank info.
       CALL PARALLEL_INIT
       CALL GEN_LOG_BASENAME
 
-      ! we want only PE_IO to write out common error messages
+! we want only PE_IO to write out common error messages
       DMP_LOG = (myPE == PE_IO)
 
-      ! set the version.release of the software
+! set the version.release of the software
       ID_VERSION = '2015-2'
 
-      ! set automatic restart flag to false
-      !      AUTOMATIC_RESTART = .FALSE.
-      !      ITER_RESTART      = 1
+! set automatic restart flag to false
+!      AUTOMATIC_RESTART = .FALSE.
+!      ITER_RESTART      = 1
 
-      ! specify the number of processors to be used
-      !$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)
-      !$      if (status.eq.0 .and. length.ne.0) then
-      !$        read(omp_num_threads,*) threads_specified
-      !$      else
-      !$        WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
-      !$        READ(*,*) threads_specified
-      !$      endif
+! specify the number of processors to be used
+!$        call get_environment_variable("OMP_NUM_THREADS",omp_num_threads,length,status, .true.)
+!$      if (status.eq.0 .and. length.ne.0) then
+!$        read(omp_num_threads,*) threads_specified
+!$      else
+!$        WRITE(*,'(A,$)') 'Enter the number of threads to be used for SMP: '
+!$        READ(*,*) threads_specified
+!$      endif
 
-      !$      call omp_set_num_threads(threads_specified)
+!$      call omp_set_num_threads(threads_specified)
 
-      ! Find the number of processors used
-      !$omp  parallel
-      !$      num_threads = omp_get_num_threads()
-      !$      omp_id = omp_get_thread_num()
-      !$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
-      !$omp  end parallel
+! Find the number of processors used
+!$omp  parallel
+!$      num_threads = omp_get_num_threads()
+!$      omp_id = omp_get_thread_num()
+!$      if(omp_id.eq.0) Write(*,*)' Number of threads used for SMP = ',  num_threads
+!$omp  end parallel
 
-
-      ! Set machine dependent constants
+! Set machine dependent constants
       CALL MACHINE_CONS
 
-      ! Get the date and time. They give the unique run_id in binary output
-      ! files
+! Get the date and time. They give the unique run_id in binary output
+! files
       CALL GET_RUN_ID
 
-      ! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
-      ! queue terminates. timestep at the beginning of execution
+! AEOLUS: stop trigger mechanism to terminate MFIX normally before batch
+! queue terminates. timestep at the beginning of execution
       CALL CPU_TIME (CPU00)
       WALL0 = WALL_TIME()
 
-      ! Read input data, check data, do computations for IC and BC locations
-      ! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
+! Read input data, check data, do computations for IC and BC locations
+! and flows, and set geometry parameters such as X, X_E, DToDX, etc.
       CALL GET_DATA
 
-      ! Write the initial part of the standard output file
+! Write the initial part of the standard output file
       CALL WRITE_OUT0
       IF(.NOT.CARTESIAN_GRID)  CALL WRITE_FLAGS
 
-      ! Write the initial part of the special output file(s)
+! Write the initial part of the special output file(s)
       CALL WRITE_USR0
 
 !$    CALL START_LOG
@@ -187,53 +172,39 @@ CONTAINS
 !$    IF(DMP_LOG)WRITE (UNIT_LOG, *) ' '
 !$    CALL END_LOG
 
-      !  setup for PC quickwin application
+!  setup for PC quickwin application
       CALL PC_QUICKWIN
 
       CALL INIT_ERR_MSG('MFIX')
 
 
-      ! if not netcdf writes asked for ... globally turn off netcdf
-      if (MFIX_usingNETCDF()) then
+! if not netcdf writes asked for ... globally turn off netcdf
+      if(MFIX_usingNETCDF()) then
          bGlobalNetcdf = .false.
          do L = 1,20
             if (bWrite_netcdf(L)) bGlobalNetcdf = .true.
          enddo
       endif
 
-
-      IF(AUTOMATIC_RESTART) THEN
-         RUN_TYPE = 'RESTART_1'
-         AUTOMATIC_RESTART = .FALSE.
-         ITER_RESTART = ITER_RESTART + 1
-         CALL CHECK_INITIAL_CONDITIONS
-         CALL CHECK_BOUNDARY_CONDITIONS
-         CALL CHECK_INTERNAL_SURFACES
-         CALL CHECK_POINT_SOURCES
-         CALL CHECK_CHEMICAL_RXNS
-         CALL SET_FLAGS
-         CALL SET_CONSTPROP
-      ENDIF
-
       DT_TMP = DT
       SELECT CASE (TRIM(RUN_TYPE))
 
       CASE ('NEW')
-         ! Write the initial part of the restart files
+! Write the initial part of the restart files
          CALL WRITE_RES0
          DO L = 1, N_SPX
             CALL WRITE_SPX0 (L, 0)
          ENDDO
 
       CASE ('RESTART_1')
-         ! Read the time-dependent part of the restart file
+! Read the time-dependent part of the restart file
          CALL READ_RES1
          WRITE(ERR_MSG, 1010) TIME, NSTEP
          CALL FLUSH_ERR_MSG()
 
       CASE ('RESTART_2')
          TIME_SAVE = TIME
-         ! DISTIO
+! DISTIO
          if (myPE .ne. PE_IO .and. bDist_IO .and. bStart_with_one_res) then
             write (unit_res,rec=1) version
             write (unit_res,rec=2) 4
@@ -251,10 +222,10 @@ CONTAINS
 
          CALL WRITE_RES0
 
-         ! Writing the RES1 and SPX1 can only be done here when re-indexing is turned off
-         ! This will be done after the cell re-indexing is done later in this file.
-         ! This allows restarting independently of the re-indexing setting between
-         ! the previous and current run.
+! Writing the RES1 and SPX1 can only be done here when re-indexing is turned off
+! This will be done after the cell re-indexing is done later in this file.
+! This allows restarting independently of the re-indexing setting between
+! the previous and current run.
          IF(.NOT.RE_INDEXING) THEN
             CALL WRITE_RES1
             DO L = 1, N_SPX
@@ -284,75 +255,67 @@ CONTAINS
          DT = DT_TMP
       ENDIF
 
-      ! Set arrays for computing indices. A secondary call is made
-      ! after cut cell-preprocessing to update array indices.
+! Set arrays for computing indices. A secondary call is made
+! after cut cell-preprocessing to update array indices.
       IF(CARTESIAN_GRID) THEN
          CALL SET_INCREMENTS
          CALL SET_INCREMENTS3
       ENDIF
 
+!      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
 
-      !      IF(.NOT.RE_INDEXING) CALL WRITE_IJK_VALUES
-
-
-      ! Set the flags for wall surfaces impermeable and identify flow
-      ! boundaries using FLAG_E, FLAG_N, and FLAG_T
+! Set the flags for wall surfaces impermeable and identify flow
+! boundaries using FLAG_E, FLAG_N, and FLAG_T
       CALL SET_FLAGS1
 
-      !  Update flags for Cartesian_GRID.
+!  Update flags for Cartesian_GRID.
       IF(CARTESIAN_GRID) CALL CHECK_BC_FLAGS
 
-      ! Calculate cell volumes and face areas
-      IF(.NOT.CARTESIAN_GRID)  THEN
-         CALL SET_GEOMETRY1
-         !       ELSE
-         !         CALL SET_GEOMETRY
-      ENDIF
+! Calculate cell volumes and face areas
+      IF(.NOT.CARTESIAN_GRID) CALL SET_GEOMETRY1
 
-      ! Find corner cells and set their face areas to zero
+! Find corner cells and set their face areas to zero
       IF(.NOT.CARTESIAN_GRID)  THEN
          CALL GET_CORNER_CELLS()
       ELSE
          IF (SET_CORNER_CELLS)  CALL GET_CORNER_CELLS ()
       ENDIF
 
-      ! Set constant physical properties
+! Set constant physical properties
       CALL SET_CONSTPROP
 
-      ! Set initial conditions
+! Set initial conditions
       CALL SET_IC
 
-      ! Set point sources.
+! Set point sources.
       CALL SET_PS
 
-      ! Set boundary conditions
+! Set boundary conditions
       CALL ZERO_NORM_VEL
       CALL SET_BC0
-      !      IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
 
-      ! JFD: cartesian grid implementation
+! Cartesian grid implementation
       IF(CARTESIAN_GRID) CALL CG_SET_BC0
-      !      IF(DEM_SOLIDS) CALL SET_BC_DEM
 
-      ! Set gas mixture molecular weight
+! Set gas mixture molecular weight
       CALL SET_MW_MIX_G
 
-      ! Set the pressure field for a fluidized bed
+! Set the pressure field for a fluidized bed
       IF (RUN_TYPE == 'NEW') CALL SET_FLUIDBED_P
 
-      ! Initialize densities.
+! Initialize densities.
       IF (RUN_TYPE == 'NEW') CALL SET_RO_G
       IF (RUN_TYPE == 'NEW') CALL SET_RO_S
 
-      ! Initialize time dependent boundary conditions
+! Initialize time dependent boundary conditions
       CALL SET_BC1
 
-      ! Check the field variable data and report errors.
+! Check the field variable data and report errors.
       IF(.NOT.CARTESIAN_GRID)  CALL CHECK_DATA_20
 
-      !=======================================================================
-      ! JFD: START MODIFICATION FOR RE-INDEXING CELLS
-      !=======================================================================
+!=======================================================================
+! JFD: START MODIFICATION FOR RE-INDEXING CELLS
+!=======================================================================
       IF(CARTESIAN_GRID.AND.RE_INDEXING) THEN
 
          IF(myPE == PE_IO) THEN
@@ -362,16 +325,15 @@ CONTAINS
          CALL RE_INDEX_ARRAYS
 
 
-         !      IF(myPE == PE_IO)print*,'Calling REPORT_BEST_IJK_SIZE:'
-         !       CALL REPORT_BEST_IJK_SIZE
+         !IF(myPE == PE_IO)print*,'Calling REPORT_BEST_IJK_SIZE:'
+         !CALL REPORT_BEST_IJK_SIZE
          CALL REPORT_BEST_PROCESSOR_SIZE
-         !      IF(myPE == PE_IO)print*,'Exiting MFIX after REPORT_BEST_IJK_SIZE.'
-
+         !IF(myPE == PE_IO)print*,'Exiting MFIX after REPORT_BEST_IJK_SIZE.'
 
          IF(myPE == PE_IO) WRITE(*,"(72('='))")
 
-         ! In case of a RESTART_2, write the RES1 and SPX1 files here
-         ! This was commented out earlier in this file.
+! In case of a RESTART_2, write the RES1 and SPX1 files here
+! This was commented out earlier in this file.
          IF(RUN_TYPE == 'RESTART_2') THEN
             CALL WRITE_RES1
             DO L = 1, N_SPX
@@ -381,47 +343,44 @@ CONTAINS
             call write_netcdf(0,0,time)
          ENDIF
       ENDIF
+!=======================================================================
+! JFD: END MODIFICATION FOR RE-INDEXING CELLS
+!=======================================================================
 
-      !=======================================================================
-      ! JFD: END MODIFICATION FOR RE-INDEXING CELLS
-      !=======================================================================
-
-      ! Setup VTK data for regular (no cut cells) grid
+! Setup VTK data for regular (no cut cells) grid
       IF(.NOT.CARTESIAN_GRID.AND.WRITE_VTK_FILES) CALL SETUP_VTK_NO_CUTCELL
 
       IF(DISCRETE_ELEMENT) CALL MAKE_ARRAYS_DES
       IF(QMOMK) CALL QMOMK_MAKE_ARRAYS
 
-      ! Set the inflow/outflow BCs for DEM solids
+! Set the inflow/outflow BCs for DEM solids
       IF(DEM_SOLIDS) CALL SET_BC_DEM
-      ! Set the inflow/outflow BC for PIC solids
+! Set the inflow/outflow BC for PIC solids
       IF(PIC_SOLIDS) CALL SET_BC_PIC
 
-      ! Set the inital properties of each particle.
+! Set the inital properties of each particle.
       IF(DEM_SOLIDS) CALL SET_IC_DEM
 
-      ! AEOLUS: debug prints
+! AEOLUS: debug prints
       if (DBGPRN_LAYOUT .or. bdist_io) then
-         !     write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
+         !write (*,*) myPE , ' E.4 ... version = ' , version(1:33)
          call debug_write_layout()
          call write_parallel_info()
       endif
 
-      ! Initializations for CPU time calculations in iterate
+! Initializations for CPU time calculations in iterate
       CPUOS = 0.
       CALL CPU_TIME (CPU1)
       CPU_NLOG = CPU1
       TIME_NLOG = TIME - DT
 
-      ! Get the initial value of CPU time
+! Get the initial value of CPU time
       CALL CPU_TIME (CPU0)
 
-      ! Find the solution of the equations from TIME to TSTOP at
-      ! intervals of DT
+! Find the solution of the equations from TIME to TSTOP at
+! intervals of DT
 
-      !-----------------------------------------------
-
-      IF(AUTOMATIC_RESTART) RETURN
+!-----------------------------------------------
 
       FINISH  = .FALSE.
       NCHECK  = NSTEP
@@ -431,30 +390,28 @@ CONTAINS
 
       CALL INIT_OUTPUT_VARS
 
-      IF(INTERACTIVE_MODE) CALL INIT_INTERACTIVE_MODE
-
-      ! Parse residual strings
+! Parse residual strings
       CALL PARSE_RESID_STRING ()
 
-      ! Call user-defined subroutine to set constants, check data, etc.
+! Call user-defined subroutine to set constants, check data, etc.
       IF (CALL_USR) CALL USR0
 
       CALL RRATES_INIT()
 
-      ! Calculate all the coefficients once before entering the time loop
+! Calculate all the coefficients once before entering the time loop
       CALL INIT_COEFF(IER)
 
       DO M=1, MMAX
          F_gs(1,M) = ZERO
       ENDDO
 
-      ! Remove undefined values at wall cells for scalars
+! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G)
       DO M = 1, MMAX
          CALL UNDEF_2_0 (ROP_S(1,M))
       ENDDO
 
-      ! Initialize d's and e's to zero
+! Initialize d's and e's to zero
       DO M = 0, MMAX
          D_E(1,M) = ZERO
          D_N(1,M) = ZERO
@@ -464,23 +421,27 @@ CONTAINS
       E_N(:) = ZERO
       E_T(:) = ZERO
 
-      ! calculate shear velocities if periodic shear BCs are used
+! calculate shear velocities if periodic shear BCs are used
       IF(SHEAR) CALL CAL_D(V_sh)
 
-      ! Initialize check_mass_balance.  This routine is not active by default.
-      ! Specify a reporting interval (hard-wired in the routine) to activate
-      ! the routine.
+! Initialize check_mass_balance.  This routine is not active by default.
+! Specify a reporting interval (hard-wired in the routine) to activate
+! the routine.
       Call check_mass_balance (0)
 
-      ! sof modification: now it's only needed to do this once before time-loop
-      ! Mark the phase whose continuity will be solved and used to correct
-      ! void/volume fraction in calc_vol_fr (see subroutine for details)
+! sof modification: now it's only needed to do this once before time-loop
+! Mark the phase whose continuity will be solved and used to correct
+! void/volume fraction in calc_vol_fr (see subroutine for details)
       CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
            DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S)
 
-   END SUBROUTINE INITIALIZE
+      END SUBROUTINE INITIALIZE
 
-   SUBROUTINE END
+
+
+
+      SUBROUTINE END
+
       USE cutcell, only: cartesian_grid
       USE dashboard
       USE cut_cell_preproc, only: close_cut_cell_files
@@ -491,19 +452,19 @@ CONTAINS
       USE time_cpu
       IMPLICIT NONE
 
-      ! Call user-defined subroutine after time-loop.
+! Call user-defined subroutine after time-loop.
       IF (CALL_USR) CALL USR3
 
-      ! Get the final value of CPU time.  The difference gives the
-      ! CPU time used for the computations.
+! Get the final value of CPU time.  The difference gives the
+! CPU time used for the computations.
       CALL CPU_TIME (CPU1)
 
-      ! Compute the CPU time and write it out in the .OUT file.
+! Compute the CPU time and write it out in the .OUT file.
       CPUTIME_USED = CPU1 - CPU0 - CPU_IO
       WALLTIME_USED = WALL_TIME() - WALL0
       CALL WRITE_OUT3 (CPUTIME_USED, WALLTIME_USED, CPU_IO)
 
-      ! JFD: cartesian grid implementation
+! JFD: cartesian grid implementation
       IF(WRITE_DASHBOARD) THEN
          IF(DT>=DT_MIN) THEN
             RUN_STATUS = 'Complete.'
@@ -515,32 +476,32 @@ CONTAINS
       ENDIF
       IF(CARTESIAN_GRID)  CALL CLOSE_CUT_CELL_FILES
 
-      ! Finalize and terminate MPI
+! Finalize and terminate MPI
       call parallel_fin
 
       CALL FINL_ERR_MSG
 
-   END SUBROUTINE END
+      END SUBROUTINE END
 
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
-   !                                                                      !
-   !  Subroutine: GEN_LOG_BASENAME                                        !
-   !  Author: Aytekin Gel                                Date: 19-SEP-03  !
-   !                                                                      !
-   !  Purpose: Generate the file base for DMP logs.                       !
-   !                                                                      !
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-   SUBROUTINE GEN_LOG_BASENAME
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: GEN_LOG_BASENAME                                        !
+!  Author: Aytekin Gel                                Date: 19-SEP-03  !
+!                                                                      !
+!  Purpose: Generate the file base for DMP logs.                       !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE GEN_LOG_BASENAME
 
       use compar, only: myPE
       use compar, only: fbname
 
       implicit none
 
-      ! Variables for generating file basename with processor id
+! Variables for generating file basename with processor id
       INTEGER :: i1, i10, i100, i1000, i10000
 
-      ! PAR_I/O Generate file basename for LOG files
+! PAR_I/O Generate file basename for LOG files
       i10000 = int(myPE/10000)
       i1000  = int((myPE-i10000*10000)/1000)
       i100   = int((myPE-i10000*10000-i1000*1000)/100)
@@ -556,32 +517,32 @@ CONTAINS
       fbname=char(i10000)//char(i1000)//char(i100)//char(i10)//char(i1)
 
       RETURN
-   END SUBROUTINE GEN_LOG_BASENAME
+      END SUBROUTINE GEN_LOG_BASENAME
 
-   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-   !                                                                      C
-   !  Module name: debug_write()                                          C
-   !  Purpose: Write out full geometry index setup information for the
-   !  case
-   !                                                                      C
-   !  Author: Aytekin Gel                                Date: 19-SEP-03  C
-   !  Reviewer:                                          Date:            C
-   !                                                                      C
-   !                                                                      C
-   !  Literature/Document References:                                     C
-   !                                                                      C
-   !  Variables referenced:                                               C
-   !  Variables modified:                                                 C
-   !                                                                      C
-   !  Local variables:                                                    C
-   !                                                                      C
-   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Module name: debug_write()                                          C
+!  Purpose: Write out full geometry index setup information for the
+!  case
+!                                                                      C
+!  Author: Aytekin Gel                                Date: 19-SEP-03  C
+!  Reviewer:                                          Date:            C
+!                                                                      C
+!                                                                      C
+!  Literature/Document References:                                     C
+!                                                                      C
+!  Variables referenced:                                               C
+!  Variables modified:                                                 C
+!                                                                      C
+!  Local variables:                                                    C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
    SUBROUTINE debug_write_layout()
 
-      !-----------------------------------------------
-      ! Modules
-      !-----------------------------------------------
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
       USE cdist
       USE compar
       USE functions
@@ -598,25 +559,25 @@ CONTAINS
       USE sendrecv3
       USE time_cpu
       IMPLICIT NONE
-      !-----------------------------------------------
-      ! Local Variables
-      !-----------------------------------------------
-      ! phase index
+!-----------------------------------------------
+! Local Variables
+!-----------------------------------------------
+! phase index
       INTEGER :: M
-      ! indices
+! indices
       INTEGER :: i, j, k, ijk, ijk_GL, ijk_PROC, ijk_IO
-      !
+!
       integer :: indxA, indxA_gl, indxB, indxB_gl, indxC, indxC_gl
       integer :: indxD, indxD_gl, indxE, indxE_gl, indxF, indxF_gl
       integer :: indxG, indxG_gl, indxH, indxH_gl
-      !
+!
       logical :: amgdbg = .TRUE.
 
       character(LEN=80) :: fname
 
-      !DISTIO
-      !      fname = "layout_xxxx.txt"
-      !      write (fname(8:11),'(i4.4)') myPE
+!DISTIO
+!      fname = "layout_xxxx.txt"
+!      write (fname(8:11),'(i4.4)') myPE
       fname = "layout_xxxxx.txt"
       write (fname(8:12),'(i5.5)') myPE
       open (unit=11,file=fname,status='unknown')

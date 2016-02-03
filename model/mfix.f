@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: MFIX                                                    !
@@ -59,84 +60,82 @@
 !! state or reflect those of the United States Government or any
 !! agency thereof.
 
-PROGRAM MFIX
+      PROGRAM MFIX
 
-   !-----------------------------------------------
-   ! Modules
-   !-----------------------------------------------
-   USE ADJUST_DT, ONLY: ADJUSTDT
-   USE INTERACTIVE, ONLY: CHECK_INTERACT_ITER
-   USE LEQSOL, ONLY: SOLVER_STATISTICS, REPORT_SOLVER_STATS, MAX_NIT
-   USE MAIN, ONLY: INITIALIZE, END, NIT_TOTAL, REALLY_FINISH, CMD_LINE_ARGS_COUNT, CMD_LINE_ARGS, ADD_COMMAND_LINE_ARGUMENT, IER
-   USE PARAM1, ONLY: UNDEFINED, UNDEFINED_I
-   USE RUN, ONLY: NSTEP, AUTO_RESTART, AUTOMATIC_RESTART, ITER_RESTART, TIME, TSTOP, DT, INTERACTIVE_MODE, INTERACTIVE_NITS
-   USE STEP, ONLY: TIME_STEP_INIT, PRE_ITERATE, DO_ITERATION, POST_ITERATE, TIME_STEP_END, LOG_CONVERGED, LOG_DIVERGED
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE ADJUST_DT, ONLY: ADJUSTDT
+      USE LEQSOL, ONLY: MAX_NIT
+      USE MAIN, ONLY: INITIALIZE, END, REALLY_FINISH, IER
+      USE UTILITIES, ONLY: ADD_COMMAND_LINE_ARGUMENT
+      USE PARAM1, ONLY: UNDEFINED
+      USE RUN, ONLY:  DT
+      USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
+      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED
+      USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
 
-   IMPLICIT NONE
+      IMPLICIT NONE
 
-   !-----------------------------------------------
-   ! Local variables
-   !-----------------------------------------------
-   ! flag indicating convergence status with MUSTIT = 0,1,2 implying
-   ! complete convergence, non-covergence and divergence respectively
-   INTEGER :: MUSTIT
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! flag indicating convergence status with MUSTIT = 0,1,2 implying
+! complete convergence, non-covergence and divergence respectively
+      INTEGER :: MUSTIT
 
-   INTEGER :: II
-   CHARACTER(LEN=80) :: tmp
-   INTEGER :: NIT
-   LOGICAL :: CONVERGED, DIVERGED
+      INTEGER :: II
+      CHARACTER(LEN=80) :: tmp
+      INTEGER :: NIT
+      LOGICAL :: CONVERGED, DIVERGED
 
-   DO II=1, COMMAND_ARGUMENT_COUNT()
-      CALL GET_COMMAND_ARGUMENT(II,tmp)
-      CALL ADD_COMMAND_LINE_ARGUMENT(tmp)
-   ENDDO
+      DO II=1, COMMAND_ARGUMENT_COUNT()
+         CALL GET_COMMAND_ARGUMENT(II,tmp)
+         CALL ADD_COMMAND_LINE_ARGUMENT(tmp)
+      ENDDO
 
-   CALL INITIALIZE
+! Initialize the simulation
+      CALL INITIALIZE
 
-   REALLY_FINISH = .FALSE.
-   DO WHILE (.NOT.REALLY_FINISH)
-      CALL TIME_STEP_INIT
-      IF (REALLY_FINISH) EXIT
-      ! Advance the solution in time by iteratively solving the equations
-      DO
-         CALL PRE_ITERATE(NIT,MUSTIT)
-         ! Begin iterations
-         !-----------------------------------------------------------------
-         CONVERGED = .FALSE.
-         DIVERGED = .FALSE.
-         DO WHILE (NIT < MAX_NIT .AND. .NOT. (CONVERGED .OR. DIVERGED))
-            MUSTIT = 0
-            NIT = NIT + 1
-            CALL DO_ITERATION(NIT,MUSTIT)
+! Time march loop.
+      REALLY_FINISH = .FALSE.
+      DO WHILE (.NOT.REALLY_FINISH)
+         CALL TIME_STEP_INIT
+         IF (REALLY_FINISH) EXIT
+! Advance the solution in time by iteratively solving the equations
+         DO
+            CALL ITERATE_INIT(NIT,MUSTIT)
 
-            ! Display residuals
-            CALL DISPLAY_RESID (NIT)
+! Begin iterations
+!-----------------------------------------------------------------
+            CONVERGED = .FALSE.
+            DIVERGED = .FALSE.
+            DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
+               MUSTIT = 0
+               NIT = NIT + 1
+               CALL DO_ITERATION(NIT,MUSTIT)
+
 
             ! Determine course of simulation: converge, non-converge, diverge?
-            IF (MUSTIT == 0) THEN
-               IF (DT==UNDEFINED .AND. NIT==1) CYCLE   !Iterations converged
-               CALL LOG_CONVERGED(NIT)
-               CONVERGED = .TRUE.
-            ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
-               CALL LOG_DIVERGED(NIT)
-               DIVERGED = .TRUE.
-               ! not converged (mustit = 1, !=0,2 )
-            ELSEIF(INTERACTIVE_MODE .AND. INTERACTIVE_NITS/=UNDEFINED_I) THEN
-               CALL CHECK_INTERACT_ITER(MUSTIT)
-            ENDIF
+               IF (MUSTIT == 0) THEN
+                  IF (DT==UNDEFINED .AND. NIT==1) CYCLE   !Iterations converged
+                  CALL LOG_CONVERGED(NIT)
+                  CONVERGED = .TRUE.
+               ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
+                  CALL LOG_DIVERGED(NIT)
+                  DIVERGED = .TRUE.
+                  ! not converged (mustit = 1, !=0,2 )
+               ENDIF
+            ENDDO
+
+            IF(.NOT.(CONVERGED .OR. DIVERGED)) CALL POST_ITERATE(NIT)
+
+            IF(ADJUSTDT(IER,NIT)) EXIT
          ENDDO
-
-         IF (.NOT. (CONVERGED .OR. DIVERGED)) THEN
-            CALL POST_ITERATE(NIT)
-         ENDIF
-
-         IF (ADJUSTDT(IER,NIT)) EXIT
+         CALL TIME_STEP_END(NIT)
       ENDDO
-      CALL TIME_STEP_END(NIT)
-   ENDDO
 
-   CALL END
+      CALL END
 
-   STOP
-
-END PROGRAM MFIX
+      STOP
+      END PROGRAM MFIX

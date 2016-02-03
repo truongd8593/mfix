@@ -1,275 +1,45 @@
 ! -*- f90 -*-
-MODULE STEP
-   USE MAIN, ONLY: TUNIT, NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
-   USE EXIT, ONLY: MFIX_EXIT
+      MODULE ITERATE
 
-   !-----------------------------------------------
-   ! Module variables
-   !-----------------------------------------------
-   ! cpu time left
-   DOUBLE PRECISION :: TLEFT
-   ! Normalization factor for gas & solids pressure residual
-   DOUBLE PRECISION :: NORMg, NORMs
-   ! Set normalization factor for gas and solids pressure residual
-   LOGICAL :: SETg, SETs
-   ! gas & solids pressure residual
-   DOUBLE PRECISION :: RESg, RESs
-   ! Weight of solids in the reactor
-   DOUBLE PRECISION :: SMASS
-   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: errorpercent
-   ! Error Message
-   CHARACTER(LEN=32) :: lMsg
+      USE MAIN, ONLY: TUNIT, IER
+      USE EXIT, ONLY: MFIX_EXIT
 
-   CONTAINS
+! cpu time left
+      DOUBLE PRECISION :: TLEFT
+! Normalization factor for gas & solids pressure residual
+      DOUBLE PRECISION :: NORMg, NORMs
+! Set normalization factor for gas and solids pressure residual
+      LOGICAL :: SETg, SETs
+! gas & solids pressure residual
+      DOUBLE PRECISION :: RESg, RESs
+! Weight of solids in the reactor
+      DOUBLE PRECISION :: SMASS
+      DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: errorpercent
+! Error Message
+      CHARACTER(LEN=32) :: lMsg
 
-   SUBROUTINE TIME_STEP_INIT
-      !f2py threadsafe
-      USE adjust_dt, only: adjustdt
-      USE check, only: check_mass_balance
-      USE compar, only: mype
-      USE dashboard, only: run_status, write_dashboard
-      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
-      USE error_manager, only: err_msg
-      USE error_manager, only: flush_err_msg
-      USE leqsol, only: solver_statistics, report_solver_stats
-      USE output, only: res_dt
-      USE output_man, only: output_manager
-      USE param1, only: small_number, undefined
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
-      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      USE toleranc, only: max_inlet_vel
-      USE utilities, only: max_vel_inlet
-      IMPLICIT NONE
+      CONTAINS
 
-      ! Terminate MFIX normally before batch queue terminates.
-      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ITERATE                                                 !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+!  Purpose: This module controls the iterations for solving equations  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE ITERATE_INIT(NIT, MUSTIT)
 
-      IF (CALL_USR) CALL USR1
+      USE compar, only: mype, pe_io
+      USE cutcell, only: cartesian_grid
+      USE geometry, only: cyclic
+      USE leqsol, only: leq_adjust
+      USE output, only: full_log
+      USE param1, only: one, small_number, undefined, zero
+      USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit
+      USE time_cpu
+      USE toleranc, only: norm_g, norm_s
 
-      ! Remove solids from cells containing very small quantities of solids
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-           DES_CONTINUUM_HYBRID) THEN
-         IF(KT_TYPE_ENUM == GHD_2007) THEN
-            CALL ADJUST_EPS_GHD
-         ELSE
-            CALL ADJUST_EPS
-         ENDIF
-      ENDIF
-
-      ! sof modification: uncomment code below and modify MARK_PHASE_4_COR to
-      ! use previous MFIX algorithm. Nov 22 2010.
-      ! Mark the phase whose continuity will be solved and used to correct
-      ! void/volume fraction in calc_vol_fr (see subroutine for details)
-      !      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
-      !           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
-
-      ! Set wall boundary conditions and transient flow b.c.'s
-      CALL SET_BC1
-      ! include here so they are set before calculations rely on value
-      ! (e.g., calc_mu_g, calc_mu_s)
-      CALL SET_EP_FACTORS
-
-      ! Uncoupled discrete element simulations
-      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
-         REALLY_FINISH = .TRUE.
-         RETURN
-      ENDIF
-
-      CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
-
-      IF (DT == UNDEFINED) THEN
-         IF (FINISH) THEN
-            REALLY_FINISH = .TRUE.
-            RETURN
-         ELSE
-            FINISH = .TRUE.
-         ENDIF
-
-         ! Mechanism to terminate MFIX normally before batch queue terminates.
-      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. EXIT_SIGNAL) THEN
-         IF(SOLVER_STATISTICS) &
-              CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
-         REALLY_FINISH = .TRUE.
-         RETURN
-      ENDIF
-
-      ! Update previous-time-step values of field variables
-      CALL UPDATE_OLD
-
-      ! Calculate coefficients
-      CALL CALC_COEFF_ALL (0, IER)
-
-      ! Calculate the stress tensor trace and cross terms for all phases.
-      CALL CALC_TRD_AND_TAU()
-
-      ! Calculate additional solids phase momentum source terms
-      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-         CALL CALC_EXPLICIT_MOM_SOURCE_S
-      ENDIF
-
-      ! Check rates and sums of mass fractions every NLOG time steps
-      IF (NSTEP == NCHECK) THEN
-         IF (DNCHECK < 256) DNCHECK = DNCHECK*2
-         NCHECK = NCHECK + DNCHECK
-         ! Upate the reaction rates for checking
-         CALL CALC_RRATE(IER)
-         CALL CHECK_DATA_30
-      ENDIF
-
-      ! Double the timestep for 2nd order accurate time implementation
-      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
-         DT = 0.5d0*DT
-         ODT = ODT * 2.0d0
-      ENDIF
-
-! Check for maximum velocity at inlet to avoid convergence problems
-      MAX_INLET_VEL = MAX_VEL_INLET()
-
-   END SUBROUTINE TIME_STEP_INIT
-
-   SUBROUTINE TIME_STEP_END(NIT)
-      USE check, only: check_mass_balance
-      USE compar, only: mype
-      USE dashboard, only: run_status, write_dashboard
-      USE error_manager, only: err_msg
-      USE error_manager, only: flush_err_msg
-      USE output, only: res_dt
-      USE param1, only: small_number, undefined
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
-      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      IMPLICIT NONE
-
-      INTEGER, INTENT(IN) :: NIT
-
-      IF(DT < DT_MIN) THEN
-         AUTO_RESTART = .FALSE.
-         IF(AUTO_RESTART) THEN
-            IF(TIME <= RES_DT) THEN
-
-1234           FORMAT('Automatic restart not possible as Total Time < RES_DT')
-
-               WRITE(ERR_MSG,1234)
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-               AUTOMATIC_RESTART = .TRUE.
-            ENDIF
-            RETURN
-
-         ELSE
-
-1100        FORMAT('DT < DT_MIN.  Recovery not possible!')
-
-            WRITE(ERR_MSG,1100)
-            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-
-            IF(WRITE_DASHBOARD) THEN
-               RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
-               CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
-            ENDIF
-            CALL MFIX_EXIT(MyPE)
-         ENDIF
-      ENDIF
-
-      ! Stiff Chemistry Solver.
-      IF(STIFF_CHEMISTRY) THEN
-         CALL STIFF_CHEM_SOLVER(DT, IER)
-
-         ! FIXME: is this still needed? -mmeredith
-         ! IF(IER /= 0) THEN
-         !    dummy_adjust_dt = ADJUSTDT(IER, NIT)
-         !    GOTO 150
-         ! ENDIF
-
-      ENDIF
-
-      ! Check over mass and elemental balances.  This routine is not active by default.
-      ! Edit the routine and specify a reporting interval to activate it.
-      CALL CHECK_MASS_BALANCE (1)
-
-      ! Other solids model implementations
-      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
-      IF (QMOMK) CALL QMOMK_TIME_MARCH
-      IF (CALL_DQMOM) CALL USR_DQMOM
-
-      ! Advance the time step and continue
-      IF((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
-           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
-         ! Double the timestep for 2nd order accurate time implementation
-         DT = 2.d0*DT
-         ODT = ODT * 0.5d0
-         ! Perform the explicit extrapolation for CN implementation
-         CALL CN_EXTRAPOL
-      ENDIF
-
-      IF (DT /= UNDEFINED) THEN
-         IF(USE_DT_PREV) THEN
-            TIME = TIME + DT_PREV
-         ELSE
-            TIME = TIME + DT
-         ENDIF
-         USE_DT_PREV = .FALSE.
-         NSTEP = NSTEP + 1
-      ENDIF
-
-      NIT_TOTAL = NIT_TOTAL+NIT
-
-      ! write (*,"('Compute the Courant number')")
-      ! call get_stats(IER)
-
-      FLUSH (6)
-
-   END SUBROUTINE TIME_STEP_END
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: ITERATE                                                 C
-!  Purpose: This module controls the iterations for solving equations  C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 12-APR-96  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!  Revision Number: 1                                                  C
-!  Purpose: To incorporate DES flags so that the solids                C
-!  calculations are not done using Continuum when doing DES            C
-!  Author: Jay Boyalakuntla                           Date: 12-Jun-04  C
-!                                                                      C
-!  Revision Number: 2                                                  C
-!  Purpose: To incorporate Cartesian grid modifications                C
-!  and utilization of the dashboard                                    C
-!  Author: Jeff Dietiker                              Date: 01-Jul-09  C
-!
-!  Revision Number: 3                                                  C
-!  Purpose: Incorporation of QMOM for the solution of the particle     C
-!  kinetic equation                                                    C
-!  Author: Alberto Passalacqua - Fox Research Group   Date: 02-Dec-09  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
-      SUBROUTINE PRE_ITERATE(NIT,MUSTIT)
-         USE compar, only: mype, pe_io
-         USE cutcell, only: cartesian_grid
-         USE geometry, only: cyclic
-         USE leqsol, only: leq_adjust
-         USE output, only: full_log
-         USE param1, only: one, small_number, undefined, zero
-         USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit
-         USE time_cpu
-         USE toleranc, only: norm_g, norm_s
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: NIT
@@ -282,7 +52,7 @@ MODULE STEP
       RESG = ZERO
       RESS = ZERO
 
-      IF (NORM_G == UNDEFINED) THEN
+      IF(NORM_G == UNDEFINED) THEN
          NORMG = ONE
          SETG = .FALSE.
       ELSE
@@ -290,7 +60,7 @@ MODULE STEP
          SETG = .TRUE.
       ENDIF
 
-      IF (NORM_S == UNDEFINED) THEN
+      IF(NORM_S == UNDEFINED) THEN
          NORMS = ONE
          SETS = .FALSE.
       ELSE
@@ -300,10 +70,8 @@ MODULE STEP
 
       LEQ_ADJUST = .FALSE.
 
-
 ! Initialize residuals
       CALL INIT_RESID ()
-
 
 ! Initialize the routine for holding gas mass flux constant with cyclic bc
       IF(CYCLIC) CALL GoalSeekMassFlux(NIT, MUSTIT, .false.)
@@ -349,202 +117,21 @@ MODULE STEP
 ! Default/Generic Error message
       lMsg = 'Run diverged/stalled'
 
-   END SUBROUTINE PRE_ITERATE
+      RETURN
+      END SUBROUTINE ITERATE_INIT
 
-   SUBROUTINE POST_ITERATE(NIT)
-      USE compar, only: mype, pe_io
-      USE funits, only: dmp_log, unit_log, unit_out
-      USE machine, only: start_log, end_log
-      USE run, only: dt, time
-      IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: NIT
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ITERATE                                                 !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+!  Purpose: This module controls the iterations for solving equations  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DO_ITERATION(NIT,MUSTIT)
 
-      CALL GET_SMASS (SMASS)
-      IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
-      CALL START_LOG
-      IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
-      CALL END_LOG
-
-5100  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
-           'MbErr%=', G11.4)
-
-   END SUBROUTINE POST_ITERATE
-
-         SUBROUTINE LOG_DIVERGED(NIT)
-            USE compar, only: mype, pe_io
-            USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
-            USE funits, only: dmp_log, unit_log
-            USE machine, only: start_log, end_log
-            USE output, only: full_log
-            USE run, only: dt, time, tstop, get_tunit
-            USE time_cpu, only: cpuos
-
-            IMPLICIT NONE
-
-            INTEGER, INTENT(IN) :: NIT
-
-            CHARACTER(LEN=4) :: TUNIT
-
-            IF (FULL_LOG) THEN
-               CALL START_LOG
-               CALL CALC_RESID_MB(1, errorpercent)
-
-               IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
-                    errorpercent(0), trim(adjustl(lMsg))
-               CALL END_LOG
-
-               IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, &
-                    errorpercent(0), trim(adjustl(lMsg))
-            ENDIF
-
-            ! JFD: modification for cartesian grid implementation
-            IF(WRITE_DASHBOARD) THEN
-               RUN_STATUS = 'Diverged/stalled...'
-               N_DASHBOARD = N_DASHBOARD + 1
-               IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
-                  TLEFT = (TSTOP - TIME)*CPUOS
-                  CALL GET_TUNIT (TLEFT, TUNIT)
-                  CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
-               ENDIF
-            ENDIF
-5200        FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
-                 I3,'MbErr%=', G11.4, ': ',A,' :-(')
-         END SUBROUTINE LOG_DIVERGED
-
-         SUBROUTINE LOG_CONVERGED(NIT)
-            USE compar, only: mype, pe_io
-            USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
-            USE error_manager, only: err_msg
-            USE funits, only: dmp_log, unit_log
-            USE geometry, only: cyclic_x, cyclic_y, cyclic_z
-            USE geometry, only: do_i, do_j, do_k
-            USE machine, only: start_log, end_log
-            USE output, only: full_log, nlog
-            USE physprop, only: mmax, smax
-            USE run, only: dt, energy_eq, time, tstop, nstep, get_tunit
-            USE time_cpu, only: cpu0, cpu_nlog, cpuos, time_nlog
-
-            IMPLICIT NONE
-
-            INTEGER, INTENT(IN) :: NIT
-
-            CHARACTER(LEN=4) :: TUNIT
-            ! Perform checks and dump to screen every NLOG time steps
-            IF (MOD(NSTEP,NLOG) == 0) THEN
-               CALL DUMP_TO_SCREEN
-            ENDIF   ! end IF (MOD(NSTEP,NLOG) == 0)
-
-            ! JFD: modification for cartesian grid implementation
-            IF(WRITE_DASHBOARD) THEN
-               RUN_STATUS = 'In Progress...'
-               N_DASHBOARD = N_DASHBOARD + 1
-               IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
-                  TLEFT = (TSTOP - TIME)*CPUOS
-                  CALL GET_TUNIT (TLEFT, TUNIT)
-                  CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
-               ENDIF
-            ENDIF
-
-CONTAINS
-
-      SUBROUTINE DUMP_TO_SCREEN
-         USE error_manager, only: flush_err_msg
-         IMPLICIT NONE
-
-         ! phase index
-         INTEGER :: M
-         ! current cpu time used
-         DOUBLE PRECISION :: CPU_NOW
-         ! Heat loss from the reactor
-         DOUBLE PRECISION :: HLOSS
-         ! average velocity
-         DOUBLE PRECISION :: Vavg
-
-         !-----------------------------------------------
-         ! External functions
-         !-----------------------------------------------
-         DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
-              VAVG_U_S, VAVG_V_S, VAVG_W_S
-
-            CALL CPU_TIME (CPU_NOW)
-            CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG)
-            CPU_NLOG = CPU_NOW
-            TIME_NLOG = TIME
-            CPU_NOW = CPU_NOW - CPU0
-
-            CALL CALC_RESID_MB(1, errorpercent)
-            CALL GET_SMASS (SMASS)
-            IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS)
-
-            CALL START_LOG
-            IF (ENERGY_EQ) THEN
-               WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ELSE
-               WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ENDIF
-
- 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
-         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
-
- 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
-         T84,'CPU=',F8.0,' s')
-
-            IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
-            IF (FULL_LOG .and. myPE.eq.PE_IO) &
-               WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
-
- 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
-
-            IF (.NOT.FULL_LOG) THEN
-               TLEFT = (TSTOP - TIME)*CPUOS
-               CALL GET_TUNIT (TLEFT, TUNIT)
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)')
-            ENDIF
-
-            IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN
-               IF (DO_I) THEN
-                 Vavg = VAVG_U_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
-               ENDIF
-               IF (DO_J) THEN
-                 Vavg = VAVG_V_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
-               ENDIF
-               IF (DO_K) THEN
-                 Vavg = VAVG_W_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg
-               ENDIF
-               DO M = 1, SMAX
-                  IF (DO_I) Then
-                    Vavg = VAVG_U_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
-                  ENDIF
-                  IF (DO_J) Then
-                    Vavg = VAVG_V_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
-                  ENDIF
-                  IF (DO_K) Then
-                    Vavg = VAVG_W_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
-                  ENDIF
-               ENDDO
-            ENDIF   ! end if cyclic_x, cyclic_y or cyclic_z
-
-            CALL END_LOG
-
-5050        FORMAT(5X,'Average ',A,G12.5)
-5060        FORMAT(5X,'Average ',A,I2,A,G12.5)
-
-         END SUBROUTINE DUMP_TO_SCREEN
-
-      END SUBROUTINE LOG_CONVERGED
-
-   SUBROUTINE DO_ITERATION(NIT,MUSTIT)
-
-         USE cont, only: solve_continuity
+      USE cont, only: solve_continuity
          USE cutcell, only: cartesian_grid
          USE discretelement, only: discrete_element, des_continuum_hybrid
          USE fldvar, only: ep_g, ro_g, rop_g, rop_s, p_star
@@ -564,7 +151,7 @@ CONTAINS
       INTEGER, INTENT(INOUT) :: NIT
       INTEGER, INTENT(OUT) :: MUSTIT
 
-         INTEGER :: M
+      INTEGER :: M
 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
@@ -719,11 +306,9 @@ CONTAINS
 ! Solve K & Epsilon transport equations
       IF(K_Epsilon) CALL SOLVE_K_Epsilon_EQ (IER)
 
-
 ! User-defined linear equation solver parameters may be adjusted after
 ! the first iteration
       IF (.NOT.CYCLIC) LEQ_ADJUST = .TRUE.
-
 
 ! Check for convergence
       CALL ACCUM_RESID ! Accumulating residuals from all the processors
@@ -732,11 +317,11 @@ CONTAINS
       CALL CALC_RESID_MB(1, errorpercent)
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
 
-      IF(CYCLIC)THEN
-        IF(MUSTIT==0 .OR. NIT >= MAX_NIT) &
-           CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
-        IF(AUTOMATIC_RESTART) RETURN
-      ENDIF
+      IF(CYCLIC .AND. (MUSTIT==0 .OR. NIT >= MAX_NIT)) &
+         CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
+
+! Display residuals
+      CALL DISPLAY_RESID (NIT)
 
       contains
 
@@ -833,14 +418,233 @@ CONTAINS
 
       END SUBROUTINE DO_ITERATION
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-!  Purpose:  In the following subroutine the mass flux across a periodic
-!            domain with pressure drop is held constant at a
-!            user-specified value.  This module is activated only if
-!            the user specifies a value for the keyword flux_g in the
-!            mfix.dat file.
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ITERATE                                                 !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+!  Purpose: This module controls the iterations for solving equations  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE POST_ITERATE(NIT)
+
+      USE compar, only: mype, pe_io
+      USE funits, only: dmp_log, unit_log, unit_out
+      USE machine, only: start_log, end_log
+      USE run, only: dt, time
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NIT
+
+      CALL GET_SMASS (SMASS)
+      IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
+      CALL START_LOG
+      IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
+      CALL END_LOG
+
+5100  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
+           'MbErr%=', G11.4)
+
+      END SUBROUTINE POST_ITERATE
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ITERATE                                                 !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+!  Purpose: This module controls the iterations for solving equations  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE LOG_DIVERGED(NIT)
+      USE compar, only: mype, pe_io
+      USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
+      USE funits, only: dmp_log, unit_log
+      USE machine, only: start_log, end_log
+      USE output, only: full_log
+      USE run, only: dt, time, tstop, get_tunit
+      USE time_cpu, only: cpuos
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NIT
+
+      CHARACTER(LEN=4) :: TUNIT
+
+      IF (FULL_LOG) THEN
+         CALL START_LOG
+         CALL CALC_RESID_MB(1, errorpercent)
+
+         IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
+              errorpercent(0), trim(adjustl(lMsg))
+         CALL END_LOG
+
+         IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, &
+              errorpercent(0), trim(adjustl(lMsg))
+      ENDIF
+
+      ! JFD: modification for cartesian grid implementation
+      IF(WRITE_DASHBOARD) THEN
+         RUN_STATUS = 'Diverged/stalled...'
+         N_DASHBOARD = N_DASHBOARD + 1
+         IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+            TLEFT = (TSTOP - TIME)*CPUOS
+            CALL GET_TUNIT (TLEFT, TUNIT)
+            CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+         ENDIF
+      ENDIF
+5200  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
+                 I3,'MbErr%=', G11.4, ': ',A,' :-(')
+      END SUBROUTINE LOG_DIVERGED
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: ITERATE                                                 !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+!  Purpose: This module controls the iterations for solving equations  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE LOG_CONVERGED(NIT)
+
+      USE compar, only: mype, pe_io
+      USE dashboard, only: f_dashboard, n_dashboard, run_status, write_dashboard
+      USE error_manager, only: err_msg
+      USE funits, only: dmp_log, unit_log
+      USE geometry, only: cyclic_x, cyclic_y, cyclic_z
+      USE geometry, only: do_i, do_j, do_k
+      USE machine, only: start_log, end_log
+      USE output, only: full_log, nlog
+      USE physprop, only: mmax, smax
+      USE run, only: dt, energy_eq, time, tstop, nstep, get_tunit
+      USE time_cpu, only: cpu0, cpu_nlog, cpuos, time_nlog
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(IN) :: NIT
+
+      CHARACTER(LEN=4) :: TUNIT
+! Perform checks and dump to screen every NLOG time steps
+      IF (MOD(NSTEP,NLOG) == 0) CALL DUMP_TO_SCREEN
+
+! JFD: modification for cartesian grid implementation
+      IF(WRITE_DASHBOARD) THEN
+         RUN_STATUS = 'In Progress...'
+         N_DASHBOARD = N_DASHBOARD + 1
+         IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+            TLEFT = (TSTOP - TIME)*CPUOS
+            CALL GET_TUNIT (TLEFT, TUNIT)
+            CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+         ENDIF
+      ENDIF
+
+      CONTAINS
+
+      SUBROUTINE DUMP_TO_SCREEN
+      USE error_manager, only: flush_err_msg
+      IMPLICIT NONE
+
+      ! phase index
+      INTEGER :: M
+! current cpu time used
+      DOUBLE PRECISION :: CPU_NOW
+! Heat loss from the reactor
+      DOUBLE PRECISION :: HLOSS
+! average velocity
+      DOUBLE PRECISION :: Vavg
+
+!-----------------------------------------------
+! External functions
+!-----------------------------------------------
+      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
+         VAVG_U_S, VAVG_V_S, VAVG_W_S
+
+      CALL CPU_TIME (CPU_NOW)
+      CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG)
+      CPU_NLOG = CPU_NOW
+      TIME_NLOG = TIME
+      CPU_NOW = CPU_NOW - CPU0
+
+      CALL CALC_RESID_MB(1, errorpercent)
+      CALL GET_SMASS (SMASS)
+      IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS)
+
+      CALL START_LOG
+      IF (ENERGY_EQ) THEN
+         WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ELSE
+         WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
+         CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+      ENDIF
+
+ 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
+
+ 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         T84,'CPU=',F8.0,' s')
+
+      IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
+      IF (FULL_LOG .and. myPE.eq.PE_IO) &
+         WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
+
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
+
+      IF (.NOT.FULL_LOG) THEN
+         TLEFT = (TSTOP - TIME)*CPUOS
+         CALL GET_TUNIT (TLEFT, TUNIT)
+         IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)')
+      ENDIF
+
+      IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN
+         IF (DO_I) THEN
+           Vavg = VAVG_U_G()
+           IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
+         ENDIF
+         IF (DO_J) THEN
+           Vavg = VAVG_V_G()
+           IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
+         ENDIF
+         IF (DO_K) THEN
+           Vavg = VAVG_W_G()
+           IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg
+         ENDIF
+         DO M = 1, SMAX
+            IF (DO_I) Then
+              Vavg = VAVG_U_S(M)
+              IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
+            ENDIF
+            IF (DO_J) Then
+              Vavg = VAVG_V_S(M)
+              IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
+            ENDIF
+            IF (DO_K) Then
+              Vavg = VAVG_W_S(M)
+              IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
+            ENDIF
+         ENDDO
+      ENDIF   ! end if cyclic_x, cyclic_y or cyclic_z
+
+      CALL END_LOG
+
+5050  FORMAT(5X,'Average ',A,G12.5)
+5060  FORMAT(5X,'Average ',A,I2,A,G12.5)
+
+      END SUBROUTINE DUMP_TO_SCREEN
+
+      END SUBROUTINE LOG_CONVERGED
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: GoalSeekMassFlux                                        !
+!  Author: M. Syamlal                                 Date: 12-APR-96  !
+!                                                                      !
+! Purpose:  In the following subroutine the mass flux across a periodic!
+! domain with pressure drop is held constant at a user-specified value.!
+! This module is activated only if the user specifies a value for the  !
+! keyword flux_g in the mfix.dat file.                                 !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GoalSeekMassFlux(NIT, MUSTIT, doit)
 
 !-----------------------------------------------
@@ -968,4 +772,4 @@ CONTAINS
 
       END SUBROUTINE GoalSeekMassFlux
 
-END MODULE STEP
+      END MODULE ITERATE
