@@ -268,21 +268,18 @@ MODULE output_man
 !----------------------------------------------------------------------!
       SUBROUTINE FLUSH_NOTIFY_USER
 
-      use output, only: FULL_LOG
-      use funits, only: DMP_LOG
-      use funits, only: UNIT_LOG
-
-      use time_cpu, only: TIME_START
-      use time_cpu, only: WALL_START
-
-      use output, only: NLOG
-
-      use run, only: TIME, NSTEP
-
       use discretelement, only: DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED
       use discretelement, only: DTSOLID
       use error_manager
+      use funits, only: DMP_LOG
+      use funits, only: UNIT_LOG
       use machine, only: wall_time
+      use run, only: get_tunit
+      use output, only: FULL_LOG
+      use output, only: NLOG
+      use run, only: TIME, NSTEP
+      use time_cpu, only: TIME_START
+      use time_cpu, only: WALL_START
 
       DOUBLE PRECISION :: WALL_ELAP, WALL_LEFT, WALL_NOW
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT

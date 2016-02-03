@@ -1,3 +1,306 @@
+! -*- f90 -*-
+MODULE STEP
+   USE MAIN, ONLY: NIT, NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
+   USE EXIT, ONLY: MFIX_EXIT
+
+   !-----------------------------------------------
+   ! Module variables
+   !-----------------------------------------------
+   ! current cpu time used
+   DOUBLE PRECISION :: CPU_NOW
+   ! cpu time left
+   DOUBLE PRECISION :: TLEFT
+   ! Normalization factor for gas & solids pressure residual
+   DOUBLE PRECISION :: NORMg, NORMs
+   ! Set normalization factor for gas and solids pressure residual
+   LOGICAL :: SETg, SETs
+   ! gas & solids pressure residual
+   DOUBLE PRECISION :: RESg, RESs
+   ! Weight of solids in the reactor
+   DOUBLE PRECISION :: SMASS
+   ! Heat loss from the reactor
+   DOUBLE PRECISION :: HLOSS
+   ! phase index
+   INTEGER :: M
+   ! average velocity
+   DOUBLE PRECISION :: Vavg
+   DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: errorpercent
+   CHARACTER(LEN=4) :: TUNIT
+
+   ! flag indicating convergence status with MUSTIT = 0,1,2 implying
+   ! complete convergence, non-covergence and divergence respectively
+   INTEGER :: MUSTIT
+
+   ! Error Message
+   CHARACTER(LEN=32) :: lMsg
+
+   CONTAINS
+
+   SUBROUTINE PRE_STEP
+      !f2py threadsafe
+      USE adjust_dt, only: adjustdt
+      USE check, only: check_mass_balance
+      USE compar, only: mype
+      USE dashboard, only: run_status, write_dashboard
+      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
+      USE error_manager, only: err_msg
+      USE error_manager, only: flush_err_msg
+      USE leqsol, only: solver_statistics, report_solver_stats
+      USE output, only: res_dt
+      USE output_man, only: output_manager
+      USE param1, only: small_number, undefined
+      USE qmom_kinetic_equation, only: qmomk
+      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
+      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
+      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
+      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
+      USE toleranc, only: max_inlet_vel
+      USE utilities, only: max_vel_inlet
+      IMPLICIT NONE
+
+      !-----------------------------------------------
+      ! External functions
+      !-----------------------------------------------
+      ! use function vavg_v_g to catch NaN's
+      ! DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
+
+      ! Terminate MFIX normally before batch queue terminates.
+      IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
+
+      IF (CALL_USR) CALL USR1
+
+      ! Remove solids from cells containing very small quantities of solids
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+           DES_CONTINUUM_HYBRID) THEN
+         IF(KT_TYPE_ENUM == GHD_2007) THEN
+            CALL ADJUST_EPS_GHD
+         ELSE
+            CALL ADJUST_EPS
+         ENDIF
+      ENDIF
+
+      ! sof modification: uncomment code below and modify MARK_PHASE_4_COR to
+      ! use previous MFIX algorithm. Nov 22 2010.
+      ! Mark the phase whose continuity will be solved and used to correct
+      ! void/volume fraction in calc_vol_fr (see subroutine for details)
+      !      CALL MARK_PHASE_4_COR (PHASE_4_P_G, PHASE_4_P_S, DO_CONT, MCP,&
+      !           DO_P_S, SWITCH_4_P_G, SWITCH_4_P_S, IER)
+
+      ! Set wall boundary conditions and transient flow b.c.'s
+      CALL SET_BC1
+      ! include here so they are set before calculations rely on value
+      ! (e.g., calc_mu_g, calc_mu_s)
+      CALL SET_EP_FACTORS
+
+      ! Uncoupled discrete element simulations
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+         REALLY_FINISH = .TRUE.
+         RETURN
+      ENDIF
+
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
+
+      IF (DT == UNDEFINED) THEN
+         IF (FINISH) THEN
+            REALLY_FINISH = .TRUE.
+            RETURN
+         ELSE
+            FINISH = .TRUE.
+         ENDIF
+
+         ! Mechanism to terminate MFIX normally before batch queue terminates.
+      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. EXIT_SIGNAL) THEN
+         IF(SOLVER_STATISTICS) &
+              CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
+         REALLY_FINISH = .TRUE.
+         RETURN
+      ENDIF
+
+      ! Update previous-time-step values of field variables
+      CALL UPDATE_OLD
+
+      ! Calculate coefficients
+      CALL CALC_COEFF_ALL (0, IER)
+
+      ! Calculate the stress tensor trace and cross terms for all phases.
+      CALL CALC_TRD_AND_TAU()
+
+      ! Calculate additional solids phase momentum source terms
+      IF (.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+         CALL CALC_EXPLICIT_MOM_SOURCE_S
+      ENDIF
+
+      ! Check rates and sums of mass fractions every NLOG time steps
+      IF (NSTEP == NCHECK) THEN
+         IF (DNCHECK < 256) DNCHECK = DNCHECK*2
+         NCHECK = NCHECK + DNCHECK
+         ! Upate the reaction rates for checking
+         CALL CALC_RRATE(IER)
+         CALL CHECK_DATA_30
+      ENDIF
+
+      ! Double the timestep for 2nd order accurate time implementation
+      IF ((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
+           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+         DT = 0.5d0*DT
+         ODT = ODT * 2.0d0
+      ENDIF
+
+! Check for maximum velocity at inlet to avoid convergence problems
+      MAX_INLET_VEL = MAX_VEL_INLET()
+
+   END SUBROUTINE PRE_STEP
+
+   SUBROUTINE DO_STEP
+      !f2py threadsafe
+      USE adjust_dt, only: adjustdt
+      USE check, only: check_mass_balance
+      USE compar, only: mype
+      USE dashboard, only: run_status, write_dashboard
+      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
+      USE error_manager, only: err_msg
+      USE error_manager, only: flush_err_msg
+      USE leqsol, only: solver_statistics, report_solver_stats
+      USE output, only: res_dt
+      USE output_man, only: output_manager
+      USE param1, only: small_number, undefined
+      USE qmom_kinetic_equation, only: qmomk
+      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
+      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
+      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
+      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
+      USE toleranc, only: max_inlet_vel
+      USE utilities, only: max_vel_inlet
+      IMPLICIT NONE
+
+      CALL PRE_STEP
+
+      ! Advance the solution in time by iteratively solving the equations
+150   CALL ITERATE (IER, NIT)
+
+      IF(AUTOMATIC_RESTART) RETURN
+
+      ! Just to Check for NaN's, Uncomment the following lines and also lines
+      ! of code in  VAVG_U_G, VAVG_V_G, VAVG_W_G to use.
+      !      X_vavg = VAVG_U_G ()
+      !      X_vavg = VAVG_V_G ()
+      !      X_vavg = VAVG_W_G ()
+      !      IF(AUTOMATIC_RESTART) EXIT
+
+      DO WHILE (ADJUSTDT(IER,NIT))
+         CALL ITERATE (IER, NIT)
+      ENDDO
+
+      CALL POST_STEP
+
+   END SUBROUTINE DO_STEP
+
+   SUBROUTINE POST_STEP
+      !f2py threadsafe
+      USE adjust_dt, only: adjustdt
+      USE check, only: check_mass_balance
+      USE compar, only: mype
+      USE dashboard, only: run_status, write_dashboard
+      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
+      USE error_manager, only: err_msg
+      USE error_manager, only: flush_err_msg
+      USE leqsol, only: solver_statistics, report_solver_stats
+      USE output, only: res_dt
+      USE output_man, only: output_manager
+      USE param1, only: small_number, undefined
+      USE qmom_kinetic_equation, only: qmomk
+      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
+      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
+      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
+      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
+      USE toleranc, only: max_inlet_vel
+      USE utilities, only: max_vel_inlet
+      IMPLICIT NONE
+
+      ! A signal to interrupt the time step was sent for interactive mode.
+      IF(INTERUPT) RETURN
+
+      IF(DT < DT_MIN) THEN
+         AUTO_RESTART = .FALSE.
+         IF(AUTO_RESTART) THEN
+            IF(TIME <= RES_DT) THEN
+
+1234           FORMAT('Automatic restart not possible as Total Time < RES_DT')
+
+               WRITE(ERR_MSG,1234)
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+               AUTOMATIC_RESTART = .TRUE.
+            ENDIF
+            RETURN
+
+         ELSE
+
+1100        FORMAT('DT < DT_MIN.  Recovery not possible!')
+
+            WRITE(ERR_MSG,1100)
+            CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+
+            IF(WRITE_DASHBOARD) THEN
+               RUN_STATUS = 'DT < DT_MIN.  Recovery not possible!'
+               CALL UPDATE_DASHBOARD(NIT,0.0d0,'    ')
+            ENDIF
+            CALL MFIX_EXIT(MyPE)
+         ENDIF
+      ENDIF
+
+      ! Stiff Chemistry Solver.
+      IF(STIFF_CHEMISTRY) THEN
+         CALL STIFF_CHEM_SOLVER(DT, IER)
+
+         ! FIXME: is this still needed? -mmeredith
+         ! IF(IER /= 0) THEN
+         !    dummy_adjust_dt = ADJUSTDT(IER, NIT)
+         !    GOTO 150
+         ! ENDIF
+
+      ENDIF
+
+      ! Check over mass and elemental balances.  This routine is not active by default.
+      ! Edit the routine and specify a reporting interval to activate it.
+      CALL CHECK_MASS_BALANCE (1)
+
+      ! Other solids model implementations
+      IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+      IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+      IF (QMOMK) CALL QMOMK_TIME_MARCH
+      IF (CALL_DQMOM) CALL USR_DQMOM
+
+      ! Advance the time step and continue
+      IF((CN_ON.AND.NSTEP>1.AND.RUN_TYPE == 'NEW') .OR. &
+           (CN_ON.AND.RUN_TYPE /= 'NEW' .AND. NSTEP >= (NSTEPRST+1))) THEN
+         ! Double the timestep for 2nd order accurate time implementation
+         DT = 2.d0*DT
+         ODT = ODT * 0.5d0
+         ! Perform the explicit extrapolation for CN implementation
+         CALL CN_EXTRAPOL
+      ENDIF
+
+      IF (DT /= UNDEFINED) THEN
+         IF(USE_DT_PREV) THEN
+            TIME = TIME + DT_PREV
+         ELSE
+            TIME = TIME + DT
+         ENDIF
+         USE_DT_PREV = .FALSE.
+         NSTEP = NSTEP + 1
+      ENDIF
+
+      NIT_TOTAL = NIT_TOTAL+NIT
+
+      ! write (*,"('Compute the Courant number')")
+      ! call get_stats(IER)
+
+      FLUSH (6)
+
+   END SUBROUTINE POST_STEP
+
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: ITERATE                                                 C
@@ -29,7 +332,7 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE ITERATE(IER, NIT)
+      SUBROUTINE PRE_ITERATE
 
 !-----------------------------------------------
 ! Modules
@@ -66,42 +369,6 @@
       use error_manager
 
       IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-! Error index
-      INTEGER, INTENT(INOUT) :: IER
-! Number of iterations
-      INTEGER, INTENT(OUT) :: NIT
-!-----------------------------------------------
-! Local variables
-!-----------------------------------------------
-! current cpu time used
-      DOUBLE PRECISION :: CPU_NOW
-! cpu time left
-      DOUBLE PRECISION :: TLEFT
-! flag indicating convergence status with MUSTIT = 0,1,2 implying
-! complete convergence, non-covergence and divergence respectively
-      INTEGER :: MUSTIT
-! Normalization factor for gas & solids pressure residual
-      DOUBLE PRECISION :: NORMg, NORMs
-! Set normalization factor for gas and solids pressure residual
-      LOGICAL :: SETg, SETs
-! gas & solids pressure residual
-      DOUBLE PRECISION :: RESg, RESs
-! Weight of solids in the reactor
-      DOUBLE PRECISION :: SMASS
-! Heat loss from the reactor
-      DOUBLE PRECISION :: HLOSS
-! phase index
-      INTEGER :: M
-! average velocity
-      DOUBLE PRECISION :: Vavg
-      DOUBLE PRECISION :: errorpercent(0:MMAX)
-      CHARACTER(LEN=4) :: TUNIT
-
-! Error Message
-      CHARACTER(LEN=32) :: lMsg
 
 !-----------------------------------------------
 ! External functions
@@ -187,6 +454,62 @@
 
 ! Default/Generic Error message
       lMsg = 'Run diverged/stalled'
+
+   END SUBROUTINE PRE_ITERATE
+
+   SUBROUTINE ITERATE(IER, NIT)
+
+      !-----------------------------------------------
+      ! Modules
+      !-----------------------------------------------
+      USE compar
+      USE cont
+      USE cutcell
+      USE dashboard
+      USE discretelement
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
+      USE leqsol
+      USE machine, only: start_log, end_log
+      USE mms, only: USE_MMS
+      USE mpi_utility
+      USE output
+      USE param
+      USE param1
+      USE pgcor
+      USE physprop
+      USE pscor
+      USE qmom_kinetic_equation
+      USE residual
+      USE run
+      USE scalars
+      USE time_cpu
+      USE toleranc
+      USE visc_g
+      USE vtk
+      USE interactive, only: CHECK_INTERACT_ITER
+
+      use error_manager
+
+      IMPLICIT NONE
+
+      !-----------------------------------------------
+      ! External functions
+      !-----------------------------------------------
+      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
+           VAVG_U_S, VAVG_V_S, VAVG_W_S
+
+      !-----------------------------------------------
+      ! Dummy arguments
+      !-----------------------------------------------
+      ! Error index
+      INTEGER, INTENT(INOUT) :: IER
+      ! Number of iterations
+      INTEGER, INTENT(OUT) :: NIT
+
+      CALL PRE_ITERATE
 
 ! Begin iterations
 !-----------------------------------------------------------------
@@ -533,7 +856,7 @@
  5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
       I3,'MbErr%=', G11.4, ': ',A,' :-(')
 
-      contains
+   END SUBROUTINE ITERATE
 
 !----------------------------------------------------------------------!
 ! Function: IER_Manager                                                !
@@ -551,6 +874,38 @@
 !                                                                      !
 !----------------------------------------------------------------------!
       LOGICAL FUNCTION IER_MANAGER()
+
+         USE compar
+         USE cont
+         USE cutcell
+         USE dashboard
+         USE discretelement
+         USE fldvar
+         USE funits
+         USE geometry
+         USE indices
+         USE leqsol
+         USE machine, only: start_log, end_log
+         USE mms, only: USE_MMS
+         USE mpi_utility
+         USE output
+         USE param
+         USE param1
+         USE pgcor
+         USE physprop
+         USE pscor
+         USE qmom_kinetic_equation
+         USE residual
+         USE run
+         USE scalars
+         USE time_cpu
+         USE toleranc
+         USE visc_g
+         USE vtk
+         USE interactive, only: CHECK_INTERACT_ITER
+         USE error_manager
+
+         IMPLICIT NONE
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
@@ -625,43 +980,6 @@
 
       return
       END FUNCTION IER_MANAGER
-
-
-
-      END SUBROUTINE ITERATE
-
-
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!  Purpose:
-!
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE GET_TUNIT(TLEFT, TUNIT)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      IMPLICIT NONE
-!-----------------------------------------------
-! Dummy arguments
-!-----------------------------------------------
-      DOUBLE PRECISION, INTENT(INOUT) :: TLEFT
-      CHARACTER(LEN=4) :: TUNIT
-!-----------------------------------------------
-
-      IF (TLEFT < 3600.0d0) THEN
-         TUNIT = 's'
-      ELSE
-         TLEFT = TLEFT/3600.0d0
-         TUNIT = 'h'
-         IF (TLEFT >= 24.) THEN
-            TLEFT = TLEFT/24.0d0
-            TUNIT = 'days'
-         ENDIF
-      ENDIF
-
-      RETURN
-      END SUBROUTINE GET_TUNIT
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic
@@ -798,3 +1116,4 @@
 
       END SUBROUTINE GoalSeekMassFlux
 
+END MODULE STEP

@@ -267,4 +267,37 @@
       INTEGER :: DEM_COUNT = 0
       INTEGER :: PIC_COUNT = 0
 
+      CONTAINS
+
+         !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+         !  Purpose:  Given time in seconds, calculate time in days/hours/seconds
+         !
+         !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+         SUBROUTINE GET_TUNIT(TLEFT, TUNIT)
+
+            !-----------------------------------------------
+            ! Modules
+            !-----------------------------------------------
+            IMPLICIT NONE
+            !-----------------------------------------------
+            ! Dummy arguments
+            !-----------------------------------------------
+            DOUBLE PRECISION, INTENT(INOUT) :: TLEFT
+            CHARACTER(LEN=4) :: TUNIT
+            !-----------------------------------------------
+
+            IF (TLEFT < 3600.0d0) THEN
+               TUNIT = 's'
+            ELSE
+               TLEFT = TLEFT/3600.0d0
+               TUNIT = 'h'
+               IF (TLEFT >= 24.) THEN
+                  TLEFT = TLEFT/24.0d0
+                  TUNIT = 'days'
+               ENDIF
+            ENDIF
+
+            RETURN
+         END SUBROUTINE GET_TUNIT
+
       END MODULE RUN

@@ -63,7 +63,7 @@ def run_mfix():
             if mfix_stopped or mfix.run.tstop <= mfix.run.time:
                 time.sleep(0.1)
             else:
-                mfix.main.step()
+                mfix.step.do_step()
 
         # TODO: support automatic restart
         # if (mfix.leqsol.solver_statistics):
@@ -134,7 +134,7 @@ def handle(req_id,command,var,args):
     elif cmd=='step':
         stepcount = int(args.get('stepcount',None))
         for _ in range(stepcount):
-            mfix.main.step()
+            mfix.step.do_step()
         responses[req_id] = 200,'DOING %s TIMESTEP(S)\n' % stepcount
 
     elif cmd=='get':

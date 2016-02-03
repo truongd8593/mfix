@@ -30,6 +30,7 @@
       USE dashboard
       USE leqsol
       USE machine
+      USE run, ONLY: get_tunit
       USE parallel
       USE run
       USE sendrecv

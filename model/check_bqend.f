@@ -8,17 +8,14 @@
 !----------------------------------------------------------------------!
       SUBROUTINE CHECK_BATCH_QUEUE_END(pEXIT_SIGNAL)
 
+      use compar, only: PE_IO
+      use error_manager
+      use machine, only: WALL_TIME
+      use run, only: get_tunit
+      use mpi_utility, only: BCAST
       use run, only: BATCH_WALLCLOCK
       use run, only: TERM_BUFFER
-
-      use mpi_utility, only: BCAST
       use time_cpu, only: WALL_START
-
-      use machine, only: WALL_TIME
-      use compar, only: PE_IO
-
-      use error_manager
-
 
       IMPLICIT NONE
 
