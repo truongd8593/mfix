@@ -3,6 +3,35 @@ MODULE STEP
    USE MAIN, ONLY: NIT, NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
    USE EXIT, ONLY: MFIX_EXIT
 
+   USE compar
+   USE cont
+   USE cutcell
+   USE dashboard
+   USE discretelement
+   USE fldvar
+   USE funits
+   USE geometry
+   USE indices
+   USE leqsol
+   USE machine, only: start_log, end_log
+   USE mms, only: USE_MMS
+   USE mpi_utility
+   USE output
+   USE param
+   USE param1
+   USE pgcor
+   USE physprop
+   USE pscor
+   USE qmom_kinetic_equation
+   USE residual
+   USE run
+   USE scalars
+   USE time_cpu
+   USE toleranc
+   USE visc_g
+   USE vtk
+   USE interactive, only: CHECK_INTERACT_ITER
+
    !-----------------------------------------------
    ! Module variables
    !-----------------------------------------------
@@ -26,10 +55,6 @@ MODULE STEP
    DOUBLE PRECISION :: Vavg
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: errorpercent
    CHARACTER(LEN=4) :: TUNIT
-
-   ! flag indicating convergence status with MUSTIT = 0,1,2 implying
-   ! complete convergence, non-covergence and divergence respectively
-   INTEGER :: MUSTIT
 
    ! Error Message
    CHARACTER(LEN=32) :: lMsg
@@ -332,7 +357,7 @@ MODULE STEP
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PRE_ITERATE
+      SUBROUTINE PRE_ITERATE(MUSTIT)
 
 !-----------------------------------------------
 ! Modules
@@ -369,6 +394,8 @@ MODULE STEP
       use error_manager
 
       IMPLICIT NONE
+
+      INTEGER, INTENT(OUT) :: MUSTIT
 
 !-----------------------------------------------
 ! External functions
@@ -495,6 +522,10 @@ MODULE STEP
 
       IMPLICIT NONE
 
+      ! flag indicating convergence status with MUSTIT = 0,1,2 implying
+      ! complete convergence, non-covergence and divergence respectively
+      INTEGER :: MUSTIT
+
       !-----------------------------------------------
       ! External functions
       !-----------------------------------------------
@@ -509,185 +540,13 @@ MODULE STEP
       ! Number of iterations
       INTEGER, INTENT(OUT) :: NIT
 
-      CALL PRE_ITERATE
+      CALL PRE_ITERATE(MUSTIT)
 
 ! Begin iterations
 !-----------------------------------------------------------------
    50 CONTINUE
-      MUSTIT = 0
       NIT = NIT + 1
-      PHIP_OUT_ITER=NIT ! To record the output of phip
-! mechanism to set the normalization factor for the correction
-! after the first iteration to the corresponding residual found
-! in the first iteration
-      IF (.NOT.SETG) THEN
-         IF (RESG > SMALL_NUMBER) THEN
-            NORMG = RESG
-            SETG = .TRUE.
-         ENDIF
-      ENDIF
-      IF (.NOT.SETS) THEN
-         IF (RESS > SMALL_NUMBER) THEN
-            NORMS = RESS
-            SETS = .TRUE.
-         ENDIF
-      ENDIF
-
-! Call user-defined subroutine to set quantities that need to be updated
-! every iteration
-      IF (CALL_USR) CALL USR2
-
-! Calculate coefficients, excluding density and reactions.
-      CALL CALC_COEFF(IER, 1)
-      IF (IER_MANAGER()) goto 1000
-
-! Diffusion coefficient and source terms for user-defined scalars
-      IF(NScalar /= 0) CALL SCALAR_PROP()
-
-! Diffusion coefficient and source terms for K & Epsilon Eq.
-      IF(K_Epsilon) CALL K_Epsilon_PROP()
-
-! Update the stress tensor trace and cross terms each subiteration
-! for MMS cases.
-      IF(USE_MMS) CALL CALC_TRD_AND_TAU()
-
-! Solve starred velocity components
-      CALL SOLVE_VEL_STAR(IER)
-
-! Correct the centerline velocity for cylindrical simulations.
-      IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
-
-! Calculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER()) goto 1000
-
-! Calculate chemical reactions.
-      CALL CALC_RRATE(IER)
-
-! Solve solids volume fraction correction equation for close-packed
-! solids phases
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         IF (MMAX > 0) THEN
-! MMS:  Solve gas continuity only.
-            IF(USE_MMS) THEN
-               CALL SOLVE_CONTINUITY(0,IER)
-! Regular, non-MMS cases.
-            ELSE
-               IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
-! if second phase (m=1) can overpack (e.g., bubbles) then solve its
-! continuity equation
-                  CALL CALC_K_CP (K_CP)
-                  CALL SOLVE_EPP (NORMS, RESS, IER)
-                  CALL CORRECT_1 ()
-               ELSE
-
-! If one chooses to revert back to old mark_phase_4_cor wherein the
-! continuity of the gas phase can get marked to be solved then this
-! loop should start at 0.
-                  DO M=1,SMAX ! mmax -> smax for GHD theory
-! Volume fraction correction technique for one of the solids phase
-! is not implemented.  This will only slow down convergence.
-!                      IF (M .EQ. MCP) THEN
-!                       CALL CALC_K_CP (K_CP, IER)
-!                       CALL SOLVE_EPP (NORMS, RESS, IER)
-!                       CALL CORRECT_1 (IER)
-!                    ELSE
-                        CALL SOLVE_CONTINUITY(M,IER)
-!                    ENDIF
-                  ENDDO
-               ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
-            ENDIF ! end if/else (MMS)
-
-            IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
-
-            CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
-            IF (IER_MANAGER()) goto 1000
-
-         ENDIF  ! endif (mmax >0)
-
-      ENDIF  ! end if (.not.discrete_element)
-
-
-! Calculate P_star in cells where solids continuity equation is
-! solved
-      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
-         DES_CONTINUUM_HYBRID) THEN
-         IF (MMAX > 0 .AND. .NOT.FRICTION) &
-            CALL CALC_P_STAR (EP_G, P_STAR)
-      ENDIF
-
-! Calculate the face values of densities.
-      CALL CONV_ROP()
-
-      IF (RO_G0 /= ZERO) THEN
-! Solve fluid pressure correction equation
-         CALL SOLVE_PP_G (NORMG, RESG, IER)
-! Correct pressure, velocities, and density
-         CALL CORRECT_0 ()
-      ENDIF
-
-! Recalculate densities.
-      CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER()) goto 1000
-
-! Update wall velocities:
-! modified by sof to force wall functions so even when NSW or FSW are
-! declared, default wall BC will still be treated as NSW and no wall
-! functions will be used
-      IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
-
-! Calculate the face values of mass fluxes
-      CALL CALC_MFLUX ()
-      CALL SET_BC1
-      CALL SET_EP_FACTORS
-
-! JFD: modification for cartesian grid implementation
-      IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
-
-! Solve energy equations
-      IF (ENERGY_EQ) THEN
-         CALL SOLVE_ENERGY_EQ (IER)
-         IF (IER_MANAGER()) goto 1000
-      ENDIF
-
-! Solve granular energy equation
-      IF (GRANULAR_ENERGY) THEN
-         IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
-            CALL SOLVE_GRANULAR_ENERGY (IER)
-            IF (IER_MANAGER()) goto 1000
-         ENDIF
-      ENDIF
-
-! Solve species mass balance equations.
-      CALL SOLVE_SPECIES_EQ (IER)
-      IF (IER_MANAGER()) goto 1000
-
-! Solve other scalar transport equations
-      IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
-
-! Solve K & Epsilon transport equations
-      IF(K_Epsilon) CALL SOLVE_K_Epsilon_EQ (IER)
-
-
-! User-defined linear equation solver parameters may be adjusted after
-! the first iteration
-      IF (.NOT.CYCLIC) LEQ_ADJUST = .TRUE.
-
-
-! Check for convergence
-      CALL ACCUM_RESID ! Accumulating residuals from all the processors
-      RESG = RESID(RESID_P,0)
-      RESS = RESID(RESID_P,1)
-      CALL CALC_RESID_MB(1, errorpercent)
-      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
-
-      IF(CYCLIC)THEN
-        IF(MUSTIT==0 .OR. NIT >= MAX_NIT) &
-           CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
-        IF(AUTOMATIC_RESTART) RETURN
-      ENDIF
-
+      CALL DO_ITERATION(NIT,MUSTIT)
 
 !  If not converged continue iterations; else exit subroutine.
  1000 CONTINUE
@@ -703,75 +562,7 @@ MODULE STEP
 
 ! Perform checks and dump to screen every NLOG time steps
          IF (MOD(NSTEP,NLOG) == 0) THEN
-            CALL CPU_TIME (CPU_NOW)
-            CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG)
-            CPU_NLOG = CPU_NOW
-            TIME_NLOG = TIME
-            CPU_NOW = CPU_NOW - CPU0
-
-            CALL CALC_RESID_MB(1, errorpercent)
-            CALL GET_SMASS (SMASS)
-            IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS)
-
-            CALL START_LOG
-            IF (ENERGY_EQ) THEN
-               WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ELSE
-               WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
-               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
-            ENDIF
-
- 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
-         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
-
- 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
-         T84,'CPU=',F8.0,' s')
-
-            IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
-            IF (FULL_LOG .and. myPE.eq.PE_IO) &
-               WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
-
- 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
-
-
-
-            IF (.NOT.FULL_LOG) THEN
-               TLEFT = (TSTOP - TIME)*CPUOS
-               CALL GET_TUNIT (TLEFT, TUNIT)
-               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)')
-            ENDIF
-
-            IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN
-               IF (DO_I) THEN
-                 Vavg = VAVG_U_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
-               ENDIF
-               IF (DO_J) THEN
-                 Vavg = VAVG_V_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
-               ENDIF
-               IF (DO_K) THEN
-                 Vavg = VAVG_W_G()
-                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg
-               ENDIF
-               DO M = 1, SMAX
-                  IF (DO_I) Then
-                    Vavg = VAVG_U_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
-                  ENDIF
-                  IF (DO_J) Then
-                    Vavg = VAVG_V_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
-                  ENDIF
-                  IF (DO_K) Then
-                    Vavg = VAVG_W_S(M)
-                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
-                  ENDIF
-               ENDDO
-            ENDIF   ! end if cyclic_x, cyclic_y or cyclic_z
-
-            CALL END_LOG
+            CALL DUMP_TO_SCREEN
          ENDIF   ! end IF (MOD(NSTEP,NLOG) == 0)
 
 ! JFD: modification for cartesian grid implementation
@@ -856,7 +647,263 @@ MODULE STEP
  5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
       I3,'MbErr%=', G11.4, ': ',A,' :-(')
 
+   CONTAINS
+      SUBROUTINE DUMP_TO_SCREEN
+         IMPLICIT NONE
+            CALL CPU_TIME (CPU_NOW)
+            CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG)
+            CPU_NLOG = CPU_NOW
+            TIME_NLOG = TIME
+            CPU_NOW = CPU_NOW - CPU0
+
+            CALL CALC_RESID_MB(1, errorpercent)
+            CALL GET_SMASS (SMASS)
+            IF (ENERGY_EQ) CALL GET_HLOSS (HLOSS)
+
+            CALL START_LOG
+            IF (ENERGY_EQ) THEN
+               WRITE(ERR_MSG,5000)TIME, DT, NIT, SMASS, HLOSS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ELSE
+               WRITE(ERR_MSG,5001) TIME, DT, NIT, SMASS, CPU_NOW
+               CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
+            ENDIF
+
+ 5000 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         ' Hl=',G12.5,T84,'CPU=',F8.0,' s')
+
+ 5001 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',I3,' Sm=',G12.5, &
+         T84,'CPU=',F8.0,' s')
+
+            IF(DMP_LOG)WRITE (UNIT_LOG, 5002) (errorpercent(M), M=0,MMAX)
+            IF (FULL_LOG .and. myPE.eq.PE_IO) &
+               WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
+
+ 5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
+
+
+
+            IF (.NOT.FULL_LOG) THEN
+               TLEFT = (TSTOP - TIME)*CPUOS
+               CALL GET_TUNIT (TLEFT, TUNIT)
+               IF(DMP_LOG)WRITE (UNIT_LOG, '(46X,A,F9.3,1X,A)')
+            ENDIF
+
+            IF (CYCLIC_X .OR. CYCLIC_Y .OR. CYCLIC_Z) THEN
+               IF (DO_I) THEN
+                 Vavg = VAVG_U_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'U_g = ', Vavg
+               ENDIF
+               IF (DO_J) THEN
+                 Vavg = VAVG_V_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'V_g = ',  Vavg
+               ENDIF
+               IF (DO_K) THEN
+                 Vavg = VAVG_W_G()
+                 IF(DMP_LOG)WRITE (UNIT_LOG, 5050) 'W_g = ', Vavg
+               ENDIF
+               DO M = 1, SMAX
+                  IF (DO_I) Then
+                    Vavg = VAVG_U_S(M)
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'U_s(', M, ') = ', Vavg
+                  ENDIF
+                  IF (DO_J) Then
+                    Vavg = VAVG_V_S(M)
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'V_s(', M, ') = ', Vavg
+                  ENDIF
+                  IF (DO_K) Then
+                    Vavg = VAVG_W_S(M)
+                    IF(DMP_LOG)WRITE (UNIT_LOG, 5060) 'W_s(', M, ') = ', Vavg
+                  ENDIF
+               ENDDO
+            ENDIF   ! end if cyclic_x, cyclic_y or cyclic_z
+
+            CALL END_LOG
+         END SUBROUTINE DUMP_TO_SCREEN
+
    END SUBROUTINE ITERATE
+
+   SUBROUTINE DO_ITERATION(NIT,MUSTIT)
+
+      IMPLICIT NONE
+
+      INTEGER, INTENT(INOUT) :: NIT
+      INTEGER, INTENT(OUT) :: MUSTIT
+
+      MUSTIT = 0
+
+      PHIP_OUT_ITER=NIT ! To record the output of phip
+! mechanism to set the normalization factor for the correction
+! after the first iteration to the corresponding residual found
+! in the first iteration
+      IF (.NOT.SETG) THEN
+         IF (RESG > SMALL_NUMBER) THEN
+            NORMG = RESG
+            SETG = .TRUE.
+         ENDIF
+      ENDIF
+      IF (.NOT.SETS) THEN
+         IF (RESS > SMALL_NUMBER) THEN
+            NORMS = RESS
+            SETS = .TRUE.
+         ENDIF
+      ENDIF
+
+! Call user-defined subroutine to set quantities that need to be updated
+! every iteration
+      IF (CALL_USR) CALL USR2
+
+! Calculate coefficients, excluding density and reactions.
+      CALL CALC_COEFF(IER, 1)
+      IF (IER_MANAGER(MUSTIT)) RETURN
+
+! Diffusion coefficient and source terms for user-defined scalars
+      IF(NScalar /= 0) CALL SCALAR_PROP()
+
+! Diffusion coefficient and source terms for K & Epsilon Eq.
+      IF(K_Epsilon) CALL K_Epsilon_PROP()
+
+! Update the stress tensor trace and cross terms each subiteration
+! for MMS cases.
+      IF(USE_MMS) CALL CALC_TRD_AND_TAU()
+
+! Solve starred velocity components
+      CALL SOLVE_VEL_STAR(IER)
+
+! Correct the centerline velocity for cylindrical simulations.
+      IF(CYLINDRICAL) CALL RADIAL_VEL_CORRECTION
+
+! Calculate densities.
+      CALL PHYSICAL_PROP(IER, 0)
+      IF (IER_MANAGER(MUSTIT)) RETURN
+
+! Calculate chemical reactions.
+      CALL CALC_RRATE(IER)
+
+! Solve solids volume fraction correction equation for close-packed
+! solids phases
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID) THEN
+         IF (MMAX > 0) THEN
+! MMS:  Solve gas continuity only.
+            IF(USE_MMS) THEN
+               CALL SOLVE_CONTINUITY(0,IER)
+! Regular, non-MMS cases.
+            ELSE
+               IF(MMAX == 1 .AND. MCP /= UNDEFINED_I)THEN
+! if second phase (m=1) can overpack (e.g., bubbles) then solve its
+! continuity equation
+                  CALL CALC_K_CP (K_CP)
+                  CALL SOLVE_EPP (NORMS, RESS, IER)
+                  CALL CORRECT_1 ()
+               ELSE
+
+! If one chooses to revert back to old mark_phase_4_cor wherein the
+! continuity of the gas phase can get marked to be solved then this
+! loop should start at 0.
+                  DO M=1,SMAX ! mmax -> smax for GHD theory
+! Volume fraction correction technique for one of the solids phase
+! is not implemented.  This will only slow down convergence.
+!                      IF (M .EQ. MCP) THEN
+!                       CALL CALC_K_CP (K_CP, IER)
+!                       CALL SOLVE_EPP (NORMS, RESS, IER)
+!                       CALL CORRECT_1 (IER)
+!                    ELSE
+                        CALL SOLVE_CONTINUITY(M,IER)
+!                    ENDIF
+                  ENDDO
+               ENDIF   ! end if/else (mmax==1 .and. mcp /= undefined)
+            ENDIF ! end if/else (MMS)
+
+            IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
+
+            CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
+            IF (IER_MANAGER(MUSTIT)) RETURN
+
+         ENDIF  ! endif (mmax >0)
+
+      ENDIF  ! end if (.not.discrete_element)
+
+
+! Calculate P_star in cells where solids continuity equation is
+! solved
+      IF(.NOT.(DISCRETE_ELEMENT .OR. QMOMK) .OR. &
+         DES_CONTINUUM_HYBRID) THEN
+         IF (MMAX > 0 .AND. .NOT.FRICTION) &
+            CALL CALC_P_STAR (EP_G, P_STAR)
+      ENDIF
+
+! Calculate the face values of densities.
+      CALL CONV_ROP()
+
+      IF (RO_G0 /= ZERO) THEN
+! Solve fluid pressure correction equation
+         CALL SOLVE_PP_G (NORMG, RESG, IER)
+! Correct pressure, velocities, and density
+         CALL CORRECT_0 ()
+      ENDIF
+
+! Recalculate densities.
+      CALL PHYSICAL_PROP(IER, 0)
+      IF (IER_MANAGER(MUSTIT)) RETURN
+
+! Update wall velocities:
+! modified by sof to force wall functions so even when NSW or FSW are
+! declared, default wall BC will still be treated as NSW and no wall
+! functions will be used
+      IF(.NOT. K_EPSILON) CALL SET_WALL_BC ()
+
+! Calculate the face values of mass fluxes
+      CALL CALC_MFLUX ()
+      CALL SET_BC1
+      CALL SET_EP_FACTORS
+
+! JFD: modification for cartesian grid implementation
+      IF(CARTESIAN_GRID) CALL CG_SET_OUTFLOW
+
+! Solve energy equations
+      IF (ENERGY_EQ) THEN
+         CALL SOLVE_ENERGY_EQ (IER)
+         IF (IER_MANAGER(MUSTIT)) RETURN
+      ENDIF
+
+! Solve granular energy equation
+      IF (GRANULAR_ENERGY) THEN
+         IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
+            CALL SOLVE_GRANULAR_ENERGY (IER)
+            IF (IER_MANAGER(MUSTIT)) RETURN
+         ENDIF
+      ENDIF
+
+! Solve species mass balance equations.
+      CALL SOLVE_SPECIES_EQ (IER)
+      IF (IER_MANAGER(MUSTIT)) RETURN
+
+! Solve other scalar transport equations
+      IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
+
+! Solve K & Epsilon transport equations
+      IF(K_Epsilon) CALL SOLVE_K_Epsilon_EQ (IER)
+
+
+! User-defined linear equation solver parameters may be adjusted after
+! the first iteration
+      IF (.NOT.CYCLIC) LEQ_ADJUST = .TRUE.
+
+
+! Check for convergence
+      CALL ACCUM_RESID ! Accumulating residuals from all the processors
+      RESG = RESID(RESID_P,0)
+      RESS = RESID(RESID_P,1)
+      CALL CALC_RESID_MB(1, errorpercent)
+      CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
+
+      IF(CYCLIC)THEN
+        IF(MUSTIT==0 .OR. NIT >= MAX_NIT) &
+           CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
+        IF(AUTOMATIC_RESTART) RETURN
+      ENDIF
+   END SUBROUTINE DO_ITERATION
 
 !----------------------------------------------------------------------!
 ! Function: IER_Manager                                                !
@@ -873,7 +920,7 @@ MODULE STEP
 ! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
 !                                                                      !
 !----------------------------------------------------------------------!
-      LOGICAL FUNCTION IER_MANAGER()
+      LOGICAL FUNCTION IER_MANAGER(MUSTIT)
 
          USE compar
          USE cont
@@ -906,6 +953,8 @@ MODULE STEP
          USE error_manager
 
          IMPLICIT NONE
+
+         INTEGER, INTENT(OUT) :: MUSTIT
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
@@ -989,7 +1038,7 @@ MODULE STEP
 !            mfix.dat file.
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-      subroutine GoalSeekMassFlux(NIT, MUSTIT, doit)
+      SUBROUTINE GoalSeekMassFlux(NIT, MUSTIT, doit)
 
 !-----------------------------------------------
 ! Modules
