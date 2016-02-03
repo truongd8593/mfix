@@ -560,21 +560,7 @@ MODULE STEP
 ! ---------------------------------------------------------------->>>
          IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged
 
-! Perform checks and dump to screen every NLOG time steps
-         IF (MOD(NSTEP,NLOG) == 0) THEN
-            CALL DUMP_TO_SCREEN
-         ENDIF   ! end IF (MOD(NSTEP,NLOG) == 0)
-
-! JFD: modification for cartesian grid implementation
-         IF(WRITE_DASHBOARD) THEN
-            RUN_STATUS = 'In Progress...'
-            N_DASHBOARD = N_DASHBOARD + 1
-            IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
-               TLEFT = (TSTOP - TIME)*CPUOS
-               CALL GET_TUNIT (TLEFT, TUNIT)
-               CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
-            ENDIF
-         ENDIF
+         CALL LOG_CONVERGED
 
          IER = 0
          RETURN   ! for if mustit =0 (converged)
@@ -584,29 +570,7 @@ MODULE STEP
 ! diverged
       ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
 ! ---------------------------------------------------------------->>>
-         IF (FULL_LOG) THEN
-            CALL START_LOG
-            CALL CALC_RESID_MB(1, errorpercent)
-
-            IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
-               errorpercent(0), trim(adjustl(lMsg))
-            CALL END_LOG
-
-            IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, &
-               errorpercent(0), trim(adjustl(lMsg))
-         ENDIF
-
-
-! JFD: modification for cartesian grid implementation
-         IF(WRITE_DASHBOARD) THEN
-            RUN_STATUS = 'Diverged/stalled...'
-            N_DASHBOARD = N_DASHBOARD + 1
-            IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
-               TLEFT = (TSTOP - TIME)*CPUOS
-               CALL GET_TUNIT (TLEFT, TUNIT)
-               CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
-            ENDIF
-         ENDIF
+         CALL LOG_DIVERGED
 
          IER = 1
          RETURN  ! for if mustit =2 (diverged)
@@ -640,14 +604,58 @@ MODULE STEP
       IER = 1
       RETURN
 
- 5050 FORMAT(5X,'Average ',A,G12.5)
- 5060 FORMAT(5X,'Average ',A,I2,A,G12.5)
  5100 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
              'MbErr%=', G11.4)
- 5200 FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
-      I3,'MbErr%=', G11.4, ': ',A,' :-(')
 
    CONTAINS
+         SUBROUTINE LOG_DIVERGED
+            IMPLICIT NONE
+            IF (FULL_LOG) THEN
+               CALL START_LOG
+               CALL CALC_RESID_MB(1, errorpercent)
+
+               IF(DMP_LOG) WRITE(UNIT_LOG,5200) TIME, DT, NIT, &
+                    errorpercent(0), trim(adjustl(lMsg))
+               CALL END_LOG
+
+               IF (myPE.EQ.PE_IO) WRITE(*,5200) TIME, DT, NIT, &
+                    errorpercent(0), trim(adjustl(lMsg))
+            ENDIF
+
+            ! JFD: modification for cartesian grid implementation
+            IF(WRITE_DASHBOARD) THEN
+               RUN_STATUS = 'Diverged/stalled...'
+               N_DASHBOARD = N_DASHBOARD + 1
+               IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+                  TLEFT = (TSTOP - TIME)*CPUOS
+                  CALL GET_TUNIT (TLEFT, TUNIT)
+                  CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+               ENDIF
+            ENDIF
+5200        FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT=',&
+                 I3,'MbErr%=', G11.4, ': ',A,' :-(')
+         END SUBROUTINE LOG_DIVERGED
+
+         SUBROUTINE LOG_CONVERGED
+            IMPLICIT NONE
+            ! Perform checks and dump to screen every NLOG time steps
+            IF (MOD(NSTEP,NLOG) == 0) THEN
+               CALL DUMP_TO_SCREEN
+            ENDIF   ! end IF (MOD(NSTEP,NLOG) == 0)
+
+            ! JFD: modification for cartesian grid implementation
+            IF(WRITE_DASHBOARD) THEN
+               RUN_STATUS = 'In Progress...'
+               N_DASHBOARD = N_DASHBOARD + 1
+               IF(MOD(N_DASHBOARD,F_DASHBOARD)==0) THEN
+                  TLEFT = (TSTOP - TIME)*CPUOS
+                  CALL GET_TUNIT (TLEFT, TUNIT)
+                  CALL UPDATE_DASHBOARD(NIT,TLEFT,TUNIT)
+               ENDIF
+            ENDIF
+
+         END SUBROUTINE LOG_CONVERGED
+
       SUBROUTINE DUMP_TO_SCREEN
          IMPLICIT NONE
             CALL CPU_TIME (CPU_NOW)
@@ -680,8 +688,6 @@ MODULE STEP
                WRITE (*, 5002) (errorpercent(M), M=0,MMAX)
 
  5002 FORMAT(3X,'MbError%(0,MMAX):', 5(1X,G11.4))
-
-
 
             IF (.NOT.FULL_LOG) THEN
                TLEFT = (TSTOP - TIME)*CPUOS
@@ -719,6 +725,10 @@ MODULE STEP
             ENDIF   ! end if cyclic_x, cyclic_y or cyclic_z
 
             CALL END_LOG
+
+5050        FORMAT(5X,'Average ',A,G12.5)
+5060        FORMAT(5X,'Average ',A,I2,A,G12.5)
+
          END SUBROUTINE DUMP_TO_SCREEN
 
    END SUBROUTINE ITERATE
