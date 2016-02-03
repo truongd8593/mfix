@@ -64,10 +64,11 @@ PROGRAM MFIX
   !-----------------------------------------------
   ! Modules
   !-----------------------------------------------
+   USE ADJUST_DT, only: ADJUSTDT
    USE LEQSOL, ONLY: SOLVER_STATISTICS, REPORT_SOLVER_STATS
-   USE MAIN, ONLY: SETUP, START, END, NIT_TOTAL, REALLY_FINISH, CMD_LINE_ARGS_COUNT, CMD_LINE_ARGS, ADD_COMMAND_LINE_ARGUMENT
-   USE STEP, ONLY: DO_STEP
+   USE MAIN, ONLY: SETUP, START, END, NIT_TOTAL, REALLY_FINISH, CMD_LINE_ARGS_COUNT, CMD_LINE_ARGS, ADD_COMMAND_LINE_ARGUMENT, IER, NIT
    USE RUN, ONLY: NSTEP, AUTO_RESTART, AUTOMATIC_RESTART, ITER_RESTART, TIME, TSTOP
+   USE STEP, ONLY: PRE_STEP, ITERATE, POST_STEP
 
    IMPLICIT NONE
 
@@ -88,7 +89,26 @@ PROGRAM MFIX
 
       REALLY_FINISH = .FALSE.
       DO
-         CALL DO_STEP
+         CALL PRE_STEP
+
+         ! Advance the solution in time by iteratively solving the equations
+         CALL ITERATE (IER, NIT)
+
+         IF(AUTOMATIC_RESTART) RETURN
+
+         ! Just to Check for NaN's, Uncomment the following lines and also lines
+         ! of code in  VAVG_U_G, VAVG_V_G, VAVG_W_G to use.
+         !      X_vavg = VAVG_U_G ()
+         !      X_vavg = VAVG_V_G ()
+         !      X_vavg = VAVG_W_G ()
+         !      IF(AUTOMATIC_RESTART) EXIT
+
+         DO WHILE (ADJUSTDT(IER,NIT))
+            CALL ITERATE (IER, NIT)
+         ENDDO
+
+         CALL POST_STEP
+
          IF (REALLY_FINISH) EXIT
       ENDDO
 

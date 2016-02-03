@@ -83,12 +83,6 @@ MODULE STEP
       USE utilities, only: max_vel_inlet
       IMPLICIT NONE
 
-      !-----------------------------------------------
-      ! External functions
-      !-----------------------------------------------
-      ! use function vavg_v_g to catch NaN's
-      ! DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, X_vavg
-
       ! Terminate MFIX normally before batch queue terminates.
       IF (CHK_BATCHQ_END) CALL CHECK_BATCH_QUEUE_END(EXIT_SIGNAL)
 
@@ -177,50 +171,6 @@ MODULE STEP
       MAX_INLET_VEL = MAX_VEL_INLET()
 
    END SUBROUTINE PRE_STEP
-
-   SUBROUTINE DO_STEP
-      !f2py threadsafe
-      USE adjust_dt, only: adjustdt
-      USE check, only: check_mass_balance
-      USE compar, only: mype
-      USE dashboard, only: run_status, write_dashboard
-      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
-      USE error_manager, only: err_msg
-      USE error_manager, only: flush_err_msg
-      USE leqsol, only: solver_statistics, report_solver_stats
-      USE output, only: res_dt
-      USE output_man, only: output_manager
-      USE param1, only: small_number, undefined
-      USE qmom_kinetic_equation, only: qmomk
-      USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
-      USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      USE toleranc, only: max_inlet_vel
-      USE utilities, only: max_vel_inlet
-      IMPLICIT NONE
-
-      CALL PRE_STEP
-
-      ! Advance the solution in time by iteratively solving the equations
-150   CALL ITERATE (IER, NIT)
-
-      IF(AUTOMATIC_RESTART) RETURN
-
-      ! Just to Check for NaN's, Uncomment the following lines and also lines
-      ! of code in  VAVG_U_G, VAVG_V_G, VAVG_W_G to use.
-      !      X_vavg = VAVG_U_G ()
-      !      X_vavg = VAVG_V_G ()
-      !      X_vavg = VAVG_W_G ()
-      !      IF(AUTOMATIC_RESTART) EXIT
-
-      DO WHILE (ADJUSTDT(IER,NIT))
-         CALL ITERATE (IER, NIT)
-      ENDDO
-
-      CALL POST_STEP
-
-   END SUBROUTINE DO_STEP
 
    SUBROUTINE POST_STEP
       !f2py threadsafe
@@ -397,17 +347,6 @@ MODULE STEP
 
       INTEGER, INTENT(OUT) :: MUSTIT
 
-!-----------------------------------------------
-! External functions
-!-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
-                                    VAVG_U_S, VAVG_V_S, VAVG_W_S
-
-!-----------------------------------------------
-! Include statement functions
-!-----------------------------------------------
-!-----------------------------------------------
-
 ! initializations
       DT_prev = DT
       NIT = 0
@@ -527,12 +466,6 @@ MODULE STEP
       INTEGER :: MUSTIT
 
       !-----------------------------------------------
-      ! External functions
-      !-----------------------------------------------
-      DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
-           VAVG_U_S, VAVG_V_S, VAVG_W_S
-
-      !-----------------------------------------------
       ! Dummy arguments
       !-----------------------------------------------
       ! Error index
@@ -550,36 +483,23 @@ MODULE STEP
 
 !  If not converged continue iterations; else exit subroutine.
  1000 CONTINUE
-!-----------------------------------------------------------------
 
 ! Display residuals
       CALL DISPLAY_RESID (NIT)
 
 ! Determine course of simulation: converge, non-converge, diverge?
       IF (MUSTIT == 0) THEN
-! ---------------------------------------------------------------->>>
          IF (DT==UNDEFINED .AND. NIT==1) GOTO 50   !Iterations converged
-
          CALL LOG_CONVERGED
-
          IER = 0
          RETURN   ! for if mustit =0 (converged)
-! end converged: go back to time_march
-! ----------------------------------------------------------------<<<
-
-! diverged
       ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
-! ---------------------------------------------------------------->>>
          CALL LOG_DIVERGED
-
          IER = 1
          RETURN  ! for if mustit =2 (diverged)
       ENDIF
-! end diverged: go back to time_march, decrease time step, try again
-! ----------------------------------------------------------------<<<
 
-! not converged (mustit = 1, !=0,2 )
-! ---------------------------------------------------------------->>>
+      ! not converged (mustit = 1, !=0,2 )
       IF(INTERACTIVE_MODE .AND. INTERACTIVE_NITS/=UNDEFINED_I) THEN
          CALL CHECK_INTERACT_ITER(MUSTIT)
          IF(MUSTIT == 1) THEN
@@ -658,6 +578,13 @@ MODULE STEP
 
       SUBROUTINE DUMP_TO_SCREEN
          IMPLICIT NONE
+
+         !-----------------------------------------------
+         ! External functions
+         !-----------------------------------------------
+         DOUBLE PRECISION, EXTERNAL :: VAVG_U_G, VAVG_V_G, VAVG_W_G, &
+              VAVG_U_S, VAVG_V_S, VAVG_W_S
+
             CALL CPU_TIME (CPU_NOW)
             CPUOS = (CPU_NOW - CPU_NLOG)/(TIME - TIME_NLOG)
             CPU_NLOG = CPU_NOW
