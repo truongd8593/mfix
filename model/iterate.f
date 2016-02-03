@@ -1,42 +1,11 @@
 ! -*- f90 -*-
 MODULE STEP
-   USE MAIN, ONLY: NIT, NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
+   USE MAIN, ONLY: TUNIT, NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
    USE EXIT, ONLY: MFIX_EXIT
-
-   USE compar
-   USE cont
-   USE cutcell
-   USE dashboard
-   USE discretelement
-   USE fldvar
-   USE funits
-   USE geometry
-   USE indices
-   USE leqsol
-   USE machine, only: start_log, end_log
-   USE mms, only: USE_MMS
-   USE mpi_utility
-   USE output
-   USE param
-   USE param1
-   USE pgcor
-   USE physprop
-   USE pscor
-   USE qmom_kinetic_equation
-   USE residual
-   USE run
-   USE scalars
-   USE time_cpu
-   USE toleranc
-   USE visc_g
-   USE vtk
-   USE interactive, only: CHECK_INTERACT_ITER
 
    !-----------------------------------------------
    ! Module variables
    !-----------------------------------------------
-   ! current cpu time used
-   DOUBLE PRECISION :: CPU_NOW
    ! cpu time left
    DOUBLE PRECISION :: TLEFT
    ! Normalization factor for gas & solids pressure residual
@@ -47,15 +16,7 @@ MODULE STEP
    DOUBLE PRECISION :: RESg, RESs
    ! Weight of solids in the reactor
    DOUBLE PRECISION :: SMASS
-   ! Heat loss from the reactor
-   DOUBLE PRECISION :: HLOSS
-   ! phase index
-   INTEGER :: M
-   ! average velocity
-   DOUBLE PRECISION :: Vavg
    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: errorpercent
-   CHARACTER(LEN=4) :: TUNIT
-
    ! Error Message
    CHARACTER(LEN=32) :: lMsg
 
@@ -172,30 +133,22 @@ MODULE STEP
 
    END SUBROUTINE PRE_STEP
 
-   SUBROUTINE POST_STEP
-      !f2py threadsafe
-      USE adjust_dt, only: adjustdt
+   SUBROUTINE POST_STEP(NIT)
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
-      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
-      USE leqsol, only: solver_statistics, report_solver_stats
       USE output, only: res_dt
-      USE output_man, only: output_manager
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
       USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
-      USE toleranc, only: max_inlet_vel
-      USE utilities, only: max_vel_inlet
       IMPLICIT NONE
 
-      ! A signal to interrupt the time step was sent for interactive mode.
-      IF(INTERUPT) RETURN
+      INTEGER, INTENT(IN) :: NIT
 
       IF(DT < DT_MIN) THEN
          AUTO_RESTART = .FALSE.
@@ -307,44 +260,19 @@ MODULE STEP
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-      SUBROUTINE PRE_ITERATE(MUSTIT)
-
-!-----------------------------------------------
-! Modules
-!-----------------------------------------------
-      USE compar
-      USE cont
-      USE cutcell
-      USE dashboard
-      USE discretelement
-      USE fldvar
-      USE funits
-      USE geometry
-      USE indices
-      USE leqsol
-      USE machine, only: start_log, end_log
-      USE mms, only: USE_MMS
-      USE mpi_utility
-      USE output
-      USE param
-      USE param1
-      USE pgcor
-      USE physprop
-      USE pscor
-      USE qmom_kinetic_equation
-      USE residual
-      USE run
-      USE scalars
-      USE time_cpu
-      USE toleranc
-      USE visc_g
-      USE vtk
-      USE interactive, only: CHECK_INTERACT_ITER
-
-      use error_manager
-
+      SUBROUTINE PRE_ITERATE(NIT,MUSTIT)
+         USE compar, only: mype, pe_io
+         USE cutcell, only: cartesian_grid
+         USE geometry, only: cyclic
+         USE leqsol, only: leq_adjust
+         USE output, only: full_log
+         USE param1, only: one, small_number, undefined, zero
+         USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit
+         USE time_cpu
+         USE toleranc, only: norm_g, norm_s
       IMPLICIT NONE
 
+      INTEGER, INTENT(INOUT) :: NIT
       INTEGER, INTENT(OUT) :: MUSTIT
 
 ! initializations
@@ -460,11 +388,6 @@ MODULE STEP
       use error_manager
 
       IMPLICIT NONE
-
-      ! flag indicating convergence status with MUSTIT = 0,1,2 implying
-      ! complete convergence, non-covergence and divergence respectively
-      INTEGER :: MUSTIT
-
       !-----------------------------------------------
       ! Dummy arguments
       !-----------------------------------------------
@@ -472,12 +395,28 @@ MODULE STEP
       INTEGER, INTENT(INOUT) :: IER
       ! Number of iterations
       INTEGER, INTENT(OUT) :: NIT
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
+! current cpu time used
+      DOUBLE PRECISION :: CPU_NOW
+! flag indicating convergence status with MUSTIT = 0,1,2 implying
+! complete convergence, non-covergence and divergence respectively
+      INTEGER :: MUSTIT
+! Heat loss from the reactor
+      DOUBLE PRECISION :: HLOSS
+! phase index
+      INTEGER :: M
+! average velocity
+      DOUBLE PRECISION :: Vavg
+      CHARACTER(LEN=4) :: TUNIT
 
-      CALL PRE_ITERATE(MUSTIT)
+      CALL PRE_ITERATE(NIT,MUSTIT)
 
 ! Begin iterations
 !-----------------------------------------------------------------
    50 CONTINUE
+      MUSTIT = 0
       NIT = NIT + 1
       CALL DO_ITERATION(NIT,MUSTIT)
 
@@ -662,12 +601,27 @@ MODULE STEP
 
    SUBROUTINE DO_ITERATION(NIT,MUSTIT)
 
+         USE cont, only: solve_continuity
+         USE cutcell, only: cartesian_grid
+         USE discretelement, only: discrete_element, des_continuum_hybrid
+         USE fldvar, only: ep_g, ro_g, rop_g, rop_s, p_star
+         USE geometry, only: cyclic, cylindrical
+         USE leqsol, only: max_nit, leq_adjust
+         USE mms, only: USE_MMS
+         USE param1, only: small_number, zero, undefined, undefined_i
+         USE physprop, only: mmax, ro_g0, smax
+         USE pscor, only: k_cp, mcp
+         USE qmom_kinetic_equation, only: qmomk
+         USE residual, only: resid_p, resid
+         USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end, friction, ghd_2007, granular_energy, k_epsilon, kt_type_enum, phip_out_iter, energy_eq, dt
+         USE scalars, only: nscalar
+
       IMPLICIT NONE
 
       INTEGER, INTENT(INOUT) :: NIT
       INTEGER, INTENT(OUT) :: MUSTIT
 
-      MUSTIT = 0
+         INTEGER :: M
 
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
@@ -692,7 +646,7 @@ MODULE STEP
 
 ! Calculate coefficients, excluding density and reactions.
       CALL CALC_COEFF(IER, 1)
-      IF (IER_MANAGER(MUSTIT)) RETURN
+      IF (IER_MANAGER()) return
 
 ! Diffusion coefficient and source terms for user-defined scalars
       IF(NScalar /= 0) CALL SCALAR_PROP()
@@ -712,7 +666,7 @@ MODULE STEP
 
 ! Calculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(MUSTIT)) RETURN
+      IF (IER_MANAGER()) return
 
 ! Calculate chemical reactions.
       CALL CALC_RRATE(IER)
@@ -755,7 +709,7 @@ MODULE STEP
             IF(KT_TYPE_ENUM == GHD_2007) CALL ADJUST_EPS_GHD
 
             CALL CALC_VOL_FR (P_STAR, RO_G, ROP_G, EP_G, ROP_S, IER)
-            IF (IER_MANAGER(MUSTIT)) RETURN
+            IF (IER_MANAGER()) return
 
          ENDIF  ! endif (mmax >0)
 
@@ -782,7 +736,7 @@ MODULE STEP
 
 ! Recalculate densities.
       CALL PHYSICAL_PROP(IER, 0)
-      IF (IER_MANAGER(MUSTIT)) RETURN
+      IF (IER_MANAGER()) return
 
 ! Update wall velocities:
 ! modified by sof to force wall functions so even when NSW or FSW are
@@ -801,20 +755,20 @@ MODULE STEP
 ! Solve energy equations
       IF (ENERGY_EQ) THEN
          CALL SOLVE_ENERGY_EQ (IER)
-         IF (IER_MANAGER(MUSTIT)) RETURN
+         IF (IER_MANAGER()) return
       ENDIF
 
 ! Solve granular energy equation
       IF (GRANULAR_ENERGY) THEN
          IF(.NOT.DISCRETE_ELEMENT .OR. DES_CONTINUUM_HYBRID) THEN
             CALL SOLVE_GRANULAR_ENERGY (IER)
-            IF (IER_MANAGER(MUSTIT)) RETURN
+            IF (IER_MANAGER()) return
          ENDIF
       ENDIF
 
 ! Solve species mass balance equations.
       CALL SOLVE_SPECIES_EQ (IER)
-      IF (IER_MANAGER(MUSTIT)) RETURN
+      IF (IER_MANAGER()) return
 
 ! Solve other scalar transport equations
       IF(NScalar /= 0) CALL SOLVE_Scalar_EQ (IER)
@@ -840,7 +794,8 @@ MODULE STEP
            CALL GoalSeekMassFlux(NIT, MUSTIT, .true.)
         IF(AUTOMATIC_RESTART) RETURN
       ENDIF
-   END SUBROUTINE DO_ITERATION
+
+      contains
 
 !----------------------------------------------------------------------!
 ! Function: IER_Manager                                                !
@@ -857,41 +812,7 @@ MODULE STEP
 ! [ 140,  149]: SOLVE_GRANULAR_ENERGY                                  !
 !                                                                      !
 !----------------------------------------------------------------------!
-      LOGICAL FUNCTION IER_MANAGER(MUSTIT)
-
-         USE compar
-         USE cont
-         USE cutcell
-         USE dashboard
-         USE discretelement
-         USE fldvar
-         USE funits
-         USE geometry
-         USE indices
-         USE leqsol
-         USE machine, only: start_log, end_log
-         USE mms, only: USE_MMS
-         USE mpi_utility
-         USE output
-         USE param
-         USE param1
-         USE pgcor
-         USE physprop
-         USE pscor
-         USE qmom_kinetic_equation
-         USE residual
-         USE run
-         USE scalars
-         USE time_cpu
-         USE toleranc
-         USE visc_g
-         USE vtk
-         USE interactive, only: CHECK_INTERACT_ITER
-         USE error_manager
-
-         IMPLICIT NONE
-
-         INTEGER, INTENT(OUT) :: MUSTIT
+      LOGICAL FUNCTION IER_MANAGER()
 
 ! Default case: do nothing.
       IF(IER < 100) THEN
@@ -966,6 +887,8 @@ MODULE STEP
 
       return
       END FUNCTION IER_MANAGER
+
+      END SUBROUTINE DO_ITERATION
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 !  Purpose:  In the following subroutine the mass flux across a periodic

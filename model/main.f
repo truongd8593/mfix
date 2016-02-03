@@ -43,7 +43,7 @@ MODULE MAIN
    ! Error index
    INTEGER :: IER
    ! Number of iterations
-   INTEGER :: NIT, NIT_TOTAL
+   INTEGER :: NIT_TOTAL
    ! used for activating check_data_30
    INTEGER :: NCHECK, DNCHECK
    ! dummy logical variable for initializing adjust_dt
