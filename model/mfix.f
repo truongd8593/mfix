@@ -130,7 +130,7 @@
 
             IF(.NOT.(CONVERGED .OR. DIVERGED)) CALL POST_ITERATE(NIT)
 
-            IF(ADJUSTDT(IER,NIT)) EXIT
+            IF(.NOT.ADJUSTDT(IER,NIT)) EXIT
          ENDDO
          CALL TIME_STEP_END(NIT)
       ENDDO
