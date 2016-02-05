@@ -121,14 +121,19 @@
                   IF (DT==UNDEFINED .AND. NIT==1) CYCLE   !Iterations converged
                   CALL LOG_CONVERGED(NIT)
                   CONVERGED = .TRUE.
+                  IER = 0
                ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
                   CALL LOG_DIVERGED(NIT)
                   DIVERGED = .TRUE.
+                  IER = 1
                   ! not converged (mustit = 1, !=0,2 )
                ENDIF
             ENDDO
 
-            IF(.NOT.(CONVERGED .OR. DIVERGED)) CALL POST_ITERATE(NIT)
+            IF(.NOT.(CONVERGED .OR. DIVERGED)) THEN
+               CALL POST_ITERATE(NIT)
+               IER = 1
+            ENDIF
 
             IF(.NOT.ADJUSTDT(IER,NIT)) EXIT
          ENDDO
