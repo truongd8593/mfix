@@ -54,12 +54,12 @@
 
       IMPLICIT NONE
 
-      INTEGER :: NIT
-
 ! initializations
       DT_prev = DT
       NIT = 0
       MUSTIT = 0
+      CONVERGED = .FALSE.
+      DIVERGED  = .FALSE.
       RESG = ZERO
       RESS = ZERO
 

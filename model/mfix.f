@@ -65,7 +65,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE MAIN, ONLY: INITIALIZE, END, REALLY_FINISH
+      USE MAIN, ONLY: INITIALIZE, FINALIZE, REALLY_FINISH
       USE UTILITIES, ONLY: ADD_COMMAND_LINE_ARGUMENT
       USE PARAM1, ONLY: UNDEFINED
       USE RUN, ONLY:  DT, IER
@@ -98,10 +98,7 @@
          IF (REALLY_FINISH) EXIT
 ! Advance the solution in time by iteratively solving the equations
          DO
-            NIT = 0
             CALL ITERATE_INIT
-            CONVERGED = .FALSE.
-            DIVERGED = .FALSE.
             DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
                NIT = NIT + 1
                CALL DO_ITERATION
@@ -121,7 +118,7 @@
          CALL TIME_STEP_END
       ENDDO
 
-      CALL END
+      CALL FINALIZE
 
       STOP
       END PROGRAM MFIX

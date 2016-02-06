@@ -18,12 +18,6 @@
       DOUBLE PRECISION :: CPU1
 ! time used for computations.
       DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
-! Save TIME in input file for RESTART_2
-      DOUBLE PRECISION :: TIME_SAVE
-! Temporary storage for DT
-      DOUBLE PRECISION :: DT_tmp
-! loop counter
-      INTEGER :: L
 ! DISTIO variable for specifying the mfix version
       CHARACTER(LEN=512) :: version
 ! environment variable
@@ -36,14 +30,10 @@
       LOGICAL :: FINISH
       LOGICAL :: REALLY_FINISH
 
-! Loop indices
-      INTEGER :: M, II
 ! Number of iterations
       INTEGER :: NIT_TOTAL
 ! used for activating check_data_30
       INTEGER :: NCHECK, DNCHECK
-! dummy logical variable for initializing adjust_dt
-      LOGICAL :: dummy_adjust_dt
 
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
@@ -93,6 +83,13 @@
 !$    INTEGER num_threads, threads_specified, omp_id
 !$    INTEGER omp_get_num_threads
 !$    INTEGER omp_get_thread_num
+
+      ! Temporary storage for DT
+      DOUBLE PRECISION :: DT_tmp
+      ! Save TIME in input file for RESTART_2
+      DOUBLE PRECISION :: TIME_SAVE
+
+      INTEGER :: LL, MM
 
 ! DISTIO
 ! If you change the value below in this subroutine, you must also
@@ -172,8 +169,8 @@
 ! if not netcdf writes asked for ... globally turn off netcdf
       if(MFIX_usingNETCDF()) then
          bGlobalNetcdf = .false.
-         do L = 1,20
-            if (bWrite_netcdf(L)) bGlobalNetcdf = .true.
+         do LL = 1,20
+            if (bWrite_netcdf(LL)) bGlobalNetcdf = .true.
          enddo
       endif
 
@@ -183,8 +180,8 @@
       CASE ('NEW')
 ! Write the initial part of the restart files
          CALL WRITE_RES0
-         DO L = 1, N_SPX
-            CALL WRITE_SPX0 (L, 0)
+         DO LL = 1, N_SPX
+            CALL WRITE_SPX0 (LL, 0)
          ENDDO
 
       CASE ('RESTART_1')
@@ -219,9 +216,9 @@
 ! the previous and current run.
          IF(.NOT.RE_INDEXING) THEN
             CALL WRITE_RES1
-            DO L = 1, N_SPX
-               CALL WRITE_SPX0 (L, 0)
-               CALL WRITE_SPX1 (L, 0)
+            DO LL = 1, N_SPX
+               CALL WRITE_SPX0 (LL, 0)
+               CALL WRITE_SPX1 (LL, 0)
             END DO
             call write_netcdf(0,0,time)
          ENDIF
@@ -327,9 +324,9 @@
 ! This was commented out earlier in this file.
          IF(RUN_TYPE == 'RESTART_2') THEN
             CALL WRITE_RES1
-            DO L = 1, N_SPX
-               CALL WRITE_SPX0 (L, 0)
-               CALL WRITE_SPX1 (L, 0)
+            DO LL = 1, N_SPX
+               CALL WRITE_SPX0 (LL, 0)
+               CALL WRITE_SPX1 (LL, 0)
             END DO
             call write_netcdf(0,0,time)
          ENDIF
@@ -392,21 +389,21 @@
 ! Calculate all the coefficients once before entering the time loop
       CALL INIT_COEFF(IER)
 
-      DO M=1, MMAX
-         F_gs(1,M) = ZERO
+      DO MM=1, MMAX
+         F_gs(1,MM) = ZERO
       ENDDO
 
 ! Remove undefined values at wall cells for scalars
       CALL UNDEF_2_0 (ROP_G)
-      DO M = 1, MMAX
-         CALL UNDEF_2_0 (ROP_S(1,M))
+      DO MM = 1, MMAX
+         CALL UNDEF_2_0 (ROP_S(1,MM))
       ENDDO
 
 ! Initialize d's and e's to zero
-      DO M = 0, MMAX
-         D_E(1,M) = ZERO
-         D_N(1,M) = ZERO
-         D_T(1,M) = ZERO
+      DO MM = 0, MMAX
+         D_E(1,MM) = ZERO
+         D_N(1,MM) = ZERO
+         D_T(1,MM) = ZERO
       ENDDO
       E_E(:) = ZERO
       E_N(:) = ZERO
@@ -428,7 +425,7 @@
 
       END SUBROUTINE INITIALIZE
 
-      SUBROUTINE END
+      SUBROUTINE FINALIZE
 
       USE cutcell, only: cartesian_grid
       USE dashboard
@@ -469,7 +466,7 @@
 
       CALL FINL_ERR_MSG
 
-      END SUBROUTINE END
+      END SUBROUTINE FINALIZE
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
