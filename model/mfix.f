@@ -65,8 +65,7 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE MAIN, ONLY: INITIALIZE, FINALIZE, REALLY_FINISH
-      USE UTILITIES, ONLY: ADD_COMMAND_LINE_ARGUMENT
+      USE MAIN, ONLY: ADD_COMMAND_LINE_ARGUMENT, INITIALIZE, FINALIZE, REALLY_FINISH
       USE PARAM1, ONLY: UNDEFINED
       USE RUN, ONLY:  DT, IER
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END

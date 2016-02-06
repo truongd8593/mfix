@@ -38,6 +38,9 @@
 ! Flag to save results and cleanly exit.
       LOGICAL :: EXIT_SIGNAL = .FALSE.
 
+      CHARACTER(LEN=80), DIMENSION(100) :: CMD_LINE_ARGS
+      INTEGER :: CMD_LINE_ARGS_COUNT = 0
+
       CONTAINS
 
       SUBROUTINE INITIALIZE
@@ -894,7 +897,7 @@
 #endif
       implicit none
 
-      ! TODO: return a dynamically allocated string, instead of fixed 100,000 size
+      ! TODO: return a dynamically allocated string, instead of fixed size of 100,000 bytes
       character(len=100000),intent(in) :: str
       character :: aa(100000)
       character :: do_mpi_bcast(100000)
@@ -939,5 +942,28 @@
       implicit none
       call mfix_exit(mype)
    end subroutine do_abort
+
+   !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+   !  Subroutine: ADD_COMMAND_LINE_ARGUMENT                               !
+   !  Author: M.Meredith                                 Date: 03-FEB-16  !
+   !                                                                      !
+   !  Purpose: Save command line arguments in CMD_LINE_ARGS array.        !
+   !           Used by both mfix.f and pymfix.                            !
+   !                                                                      !
+   !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+   SUBROUTINE ADD_COMMAND_LINE_ARGUMENT(ARG)
+      implicit none
+      CHARACTER(LEN=80), INTENT(IN) :: ARG
+
+      CMD_LINE_ARGS_COUNT = CMD_LINE_ARGS_COUNT + 1
+
+      if (CMD_LINE_ARGS_COUNT > 100) THEN
+         print *,"TOO MANY COMMAND LINE ARGUMENTS"
+         stop
+      ENDIF
+
+      CMD_LINE_ARGS(CMD_LINE_ARGS_COUNT) = arg
+
+   END SUBROUTINE ADD_COMMAND_LINE_ARGUMENT
 
 END MODULE MAIN

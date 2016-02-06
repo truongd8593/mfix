@@ -84,12 +84,12 @@ $(document).ready(function(){
             data: {'stepcount':stepcount},
             success: function(response) {
                 $(".notice").hide();
-                $("div.success").text('Successfully did timesteps');
+                $("div.success").text('Successfully did timestep(s)');
                 $("div.success").fadeIn();
             },
             error: function(response) {
                 $(".notice").hide();
-                $("div.error").text('Error doing timesteps');
+                $("div.error").text('Error doing timestep(s)');
                 $("div.error").fadeIn();
             }
         });
@@ -209,7 +209,7 @@ function updateCurlCommands() {
     var varname = ["mfix",
                    $("#getmodname").val(),
                    $("#getvarname").val()].join('.');
-    $("#curlget").text(req_common+'/get/'+varname+'").text');
+    $("#curlget").text(req_common.replace("requests.post","requests.get")+'/get/'+varname+'").text');
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');
