@@ -29,6 +29,7 @@ MODULE CHECK_DATA_CG
       USE discretelement
       USE funits
       USE indices
+      USE iterate, ONLY: max_nit
       USE leqsol
       USE mpi_utility
       USE param

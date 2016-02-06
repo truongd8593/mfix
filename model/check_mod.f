@@ -56,7 +56,7 @@
       USE param
       USE param1
       USE physprop
-      USE run
+      USE run, only: time, dt_prev, species_eq, Added_Mass, m_am, discretize
       USE rxns
       USE toleranc
       IMPLICIT NONE

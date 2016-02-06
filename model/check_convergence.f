@@ -163,12 +163,6 @@
          IF(K_EPSILON) RESID_GRP(KE_GRP) = RESID(RESID_ke,0)
       ENDIF
 
-! Flag set in interactive mode to bypass time-step advancement.
-      IF(INTERACTIVE_NITS /= UNDEFINED_I) THEN
-         MUSTIT = 1
-         RETURN
-      ENDIF
-
 ! Every 5 iterations detect whether the run is stalled by checking
 ! that the total residual has decreased.
       IF(DETECT_STALL .AND. MOD(NIT,5) == 0) THEN

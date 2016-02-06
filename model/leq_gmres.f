@@ -20,14 +20,12 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE GEOMETRY
-      USE INDICES
-      USE PARAM
-      USE PARAM1
-      USE compar
-      USE debug
-      USE leqsol
-      USE mpi_utility
+
+      USE leqsol, only: leq_msolve, leq_matvec
+      USE mpi_utility, only: global_all_and
+      USE param, only: dimension_3
+      USE param1, only: zero
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments
@@ -100,17 +98,15 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE GEOMETRY
-      USE INDICES
-      USE PARALLEL
-      USE PARAM
-      USE PARAM1
-      USE debug
-      USE functions
-      USE funits
-      USE gridmap
-      USE leqsol
-      USE mpi_utility
+
+      USE debug, only: idebug, write_debug
+      USE functions, only: funijk
+      USE gridmap, only: istart3, iend3, jstart3, jend3, kstart3, kend3
+      USE leqsol, only: dot_product_par
+      USE mpi_utility, only: global_all_and, global_all_or
+      USE param, only: dimension_3
+      USE param1, only: one, zero
+
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy arguments/procedure

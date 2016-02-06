@@ -20,24 +20,24 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param
-      USE param1
-      USE parallel
-      USE run
+      USE compar
+      USE constant
+      USE discretelement
+      USE functions
       USE geometry
       USE indices
-      USE physprop
-      USE visc_s
-      USE constant
-      USE pgcor
-      USE pscor
-      USE compar
-      USE sendrecv
-      USE discretelement
       USE mpi_utility
-      use fldvar, only: RO_S, EP_S
+      USE parallel
+      USE param
+      USE param1
+      USE pgcor
+      USE physprop
+      USE pscor
+      USE run, only: ghd_2007, kt_type_enum
+      USE sendrecv
       USE solids_pressure
-      USE functions
+      USE visc_s
+      use fldvar, only: RO_S, EP_S
 
       IMPLICIT NONE
 

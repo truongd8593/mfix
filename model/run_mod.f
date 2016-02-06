@@ -201,15 +201,6 @@
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
 
-! If. .TRUE. code will respond during runtime
-      LOGICAL :: INTERACTIVE_MODE
-
-! Number of interactive iterations.
-      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
-
-! If .TRUE. code will halt at call to interact
-      LOGICAL :: INTERUPT = .FALSE.
-
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: REINITIALIZING = .FALSE.
 
@@ -266,6 +257,12 @@
       INTEGER :: TFM_COUNT = 0
       INTEGER :: DEM_COUNT = 0
       INTEGER :: PIC_COUNT = 0
+
+      ! Error index
+      INTEGER :: IER
+
+      ! CPU time unit.
+      CHARACTER(LEN=4) :: TUNIT
 
       CONTAINS
 

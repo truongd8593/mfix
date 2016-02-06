@@ -30,9 +30,8 @@
       USE dashboard
       USE leqsol
       USE machine
-      USE run, ONLY: get_tunit
       USE parallel
-      USE run
+      USE run, ONLY: get_tunit, description, dt, dt_dir, run_name, time, tstop
       USE sendrecv
       USE time_cpu
       USE vtk

@@ -1,9 +1,9 @@
 ! -*- f90 -*-
       MODULE STEP
 
-      USE MAIN, ONLY: NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH, IER
       USE EXIT, ONLY: MFIX_EXIT
-
+      USE MAIN, ONLY: NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH
+      USE RUN, ONLY: IER
 
       CONTAINS
 
@@ -18,7 +18,6 @@
       SUBROUTINE TIME_STEP_INIT
 
       !f2py threadsafe
-      USE adjust_dt, only: adjustdt
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
@@ -31,7 +30,7 @@
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
+      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       USE toleranc, only: max_inlet_vel
@@ -137,26 +136,25 @@
 !  Purpose: This module controls the iterations for solving equations  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE TIME_STEP_END(NIT)
+      SUBROUTINE TIME_STEP_END
 
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
+      USE iterate, only: nit
       USE output, only: res_dt
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
-      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, interupt, kt_type_enum
+      USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
       USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       IMPLICIT NONE
 
-      INTEGER, INTENT(IN) :: NIT
-
       IF(DT < DT_MIN) THEN
- 
+
          WRITE(ERR_MSG,1100)
          CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE.)
 1100 FORMAT('DT < DT_MIN.  Recovery not possible!')

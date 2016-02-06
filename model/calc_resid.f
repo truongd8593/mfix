@@ -565,7 +565,7 @@
       USE param1
       USE physprop
       USE residual
-      USE run
+      USE run, only: Added_Mass, dt, m_am
       USE rxns
       IMPLICIT NONE
 !-----------------------------------------------

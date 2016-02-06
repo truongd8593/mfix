@@ -65,14 +65,13 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE ADJUST_DT, ONLY: ADJUSTDT
-      USE LEQSOL, ONLY: MAX_NIT
-      USE MAIN, ONLY: INITIALIZE, END, REALLY_FINISH, IER
+      USE MAIN, ONLY: INITIALIZE, END, REALLY_FINISH
       USE UTILITIES, ONLY: ADD_COMMAND_LINE_ARGUMENT
       USE PARAM1, ONLY: UNDEFINED
-      USE RUN, ONLY:  DT
+      USE RUN, ONLY:  DT, IER
       USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
-      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED
+      USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
+      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
 
       IMPLICIT NONE
@@ -80,14 +79,9 @@
 !-----------------------------------------------
 ! Local variables
 !-----------------------------------------------
-! flag indicating convergence status with MUSTIT = 0,1,2 implying
-! complete convergence, non-covergence and divergence respectively
-      INTEGER :: MUSTIT
 
       INTEGER :: II
       CHARACTER(LEN=80) :: tmp
-      INTEGER :: NIT
-      LOGICAL :: CONVERGED, DIVERGED
 
       DO II=1, COMMAND_ARGUMENT_COUNT()
          CALL GET_COMMAND_ARGUMENT(II,tmp)
@@ -104,40 +98,27 @@
          IF (REALLY_FINISH) EXIT
 ! Advance the solution in time by iteratively solving the equations
          DO
-            CALL ITERATE_INIT(NIT,MUSTIT)
-
-! Begin iterations
-!-----------------------------------------------------------------
+            NIT = 0
+            CALL ITERATE_INIT
             CONVERGED = .FALSE.
             DIVERGED = .FALSE.
             DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
-               MUSTIT = 0
                NIT = NIT + 1
-               CALL DO_ITERATION(NIT,MUSTIT)
-
-
-            ! Determine course of simulation: converge, non-converge, diverge?
-               IF (MUSTIT == 0) THEN
-                  IF (DT==UNDEFINED .AND. NIT==1) CYCLE   !Iterations converged
-                  CALL LOG_CONVERGED(NIT)
-                  CONVERGED = .TRUE.
-                  IER = 0
-               ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
-                  CALL LOG_DIVERGED(NIT)
-                  DIVERGED = .TRUE.
-                  IER = 1
-                  ! not converged (mustit = 1, !=0,2 )
-               ENDIF
+               CALL DO_ITERATION
             ENDDO
 
-            IF(.NOT.(CONVERGED .OR. DIVERGED)) THEN
-               CALL POST_ITERATE(NIT)
-               IER = 1
+            IF (CONVERGED) THEN
+               IF (DT==UNDEFINED .AND. NIT==1) CYCLE
+               CALL LOG_CONVERGED
+            ELSEIF (DIVERGED) THEN
+               CALL LOG_DIVERGED
+            ELSE
+               CALL POST_ITERATE
             ENDIF
 
-            IF(.NOT.ADJUSTDT(IER,NIT)) EXIT
+            IF(.NOT.ADJUSTDT()) EXIT
          ENDDO
-         CALL TIME_STEP_END(NIT)
+         CALL TIME_STEP_END
       ENDDO
 
       CALL END

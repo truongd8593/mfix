@@ -30,6 +30,7 @@ MODULE read_input
       USE error_manager
       USE funits
       USE gridmap
+      USE iterate, only: max_nit
       USE leqsol
       USE mfix_pic
       USE mpi_init_des, only: DESMPI_INIT

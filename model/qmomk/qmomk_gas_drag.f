@@ -15,29 +15,17 @@
 !-----------------------------------------------
 !     M o d u l e s
 !-----------------------------------------------
+
+      USE compar, only: ijkstart3, ijkend3
+      USE discretelement, only: dimn
+      USE fun_avg, only: avg_x, avg_y, avg_z
+      USE functions, only: fluid_at, i_of, j_of, k_of, east_of, north_of, top_of
+      USE geometry, only: vol_u, vol_v, vol_w
       USE param
       USE param1
-      USE parallel
-      USE scales
-      USE constant
-      USE physprop
-      USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc
-      USE geometry
-      USE indices
-      USE is
-      USE tau_g
-      USE bc
-      USE compar
-      USE sendrecv
-      USE discretelement
+      USE physprop, only: mmax
+      USE qmom_kinetic_equation, only: qmomk_nn
       USE qmom_kinetic_equation
-      USE drag
-      USE fun_avg
-      USE functions
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -46,7 +34,6 @@
 !-----------------------------------------------
 !     D u m m y   A r g u m e n t s
 !-----------------------------------------------
-!
 !
 !     Error index
       INTEGER          IER
@@ -87,7 +74,6 @@
                END IF
             END DO
          END DO
-
 
       ELSE IF(VV.EQ.1) THEN
 

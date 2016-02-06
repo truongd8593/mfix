@@ -18,8 +18,6 @@
       DOUBLE PRECISION :: CPU1
 ! time used for computations.
       DOUBLE PRECISION :: CPUTIME_USED, WALLTIME_USED
-! CPU time unit.
-      CHARACTER(LEN=4) :: TUNIT
 ! Save TIME in input file for RESTART_2
       DOUBLE PRECISION :: TIME_SAVE
 ! Temporary storage for DT
@@ -40,8 +38,6 @@
 
 ! Loop indices
       INTEGER :: M, II
-! Error index
-      INTEGER :: IER
 ! Number of iterations
       INTEGER :: NIT_TOTAL
 ! used for activating check_data_30
@@ -73,7 +69,6 @@
       USE error_manager, only: init_err_msg, finl_err_msg
       USE fldvar, only: rop_g, rop_s
       USE funits, only: dmp_log, unit_log, unit_res
-      USE interactive, only: init_interactive_mode
       USE machine, only: start_log, end_log
       USE machine, only: wall_time, pc_quickwin, machine_cons, get_run_id, start_log, end_log
       USE mfix_netcdf, only: mfix_usingnetcdf
@@ -86,9 +81,9 @@
       USE pscor, only: e_e, e_n, e_t, do_p_s, phase_4_p_s, mcp, switch_4_p_s
       USE qmom_kinetic_equation, only: qmomk
       USE read_input, only: get_data
-      USE run ,only: id_version
+      USE run, only: id_version, ier
       USE run, only: automatic_restart, call_usr, dem_solids, dt_max, dt_min
-      USE run, only: interactive_mode, iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
+      USE run, only: iter_restart, nstep, pic_solids, run_type, dt, shear, time, v_sh
       USE time_cpu, only: CPU00, wall0
       USE time_cpu, only: cpu_io, cpu_nlog, cpu0, cpuos, time_nlog
       USE vtk, only: write_vtk_files
@@ -433,9 +428,6 @@
 
       END SUBROUTINE INITIALIZE
 
-
-
-
       SUBROUTINE END
 
       USE cutcell, only: cartesian_grid
@@ -444,7 +436,7 @@
       USE error_manager, only: finl_err_msg
       USE machine, only: wall_time
       USE parallel_mpi, only: parallel_fin
-      USE run, only: dt, call_usr, dt_min, get_tunit
+      USE run, only: dt, call_usr, dt_min, get_tunit, tunit
       USE time_cpu
       IMPLICIT NONE
 

@@ -224,7 +224,6 @@ libmfix_src = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_theta.f \
@@ -537,7 +536,6 @@ libmfix_src = \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
-	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
@@ -777,7 +775,6 @@ postmfix_SOURCES = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_theta.f \

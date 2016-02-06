@@ -38,42 +38,61 @@ def run_mfix():
     for arg in sys.argv[1:]:
         mfix.main.add_command_line_argument(arg)
 
-    mfix.main.setup()
-    mfix.main.start()
-    while True:
-        while pymfix_running:
-            if requests:
-                # requests would only arrive at rank 0
-                req_id,cmd_var_args = requests.popitem()
-            else:
-                # command is empty for rank>0
-                req_id = None
-                cmd_var_args = (None,None,None)
+    mfix.main.initialize()
+    while pymfix_running:
+        if requests:
+            # requests would only arrive at rank 0
+            req_id,cmd_var_args = requests.popitem()
+        else:
+            # command is empty for rank>0
+            req_id = None
+            cmd_var_args = (None,None,None)
 
-            json_cmd_var_args = json.dumps(cmd_var_args)
+        json_cmd_var_args = json.dumps(cmd_var_args)
 
-            # broadcast command from rank 0 to all ranks
-            json_cmd_var_args = mfix.main.do_mpi_bcast(json_cmd_var_args)
+        # broadcast command from rank 0 to all ranks
+        json_cmd_var_args = mfix.main.do_mpi_bcast(json_cmd_var_args)
 
-            command, varname, args = json.loads(json_cmd_var_args.tostring())
+        command, varname, args = json.loads(json_cmd_var_args.tostring())
 
-            if command:
-                handle(req_id,command,varname,args)
+        if command:
+            handle(req_id,command,varname,args)
 
-            if mfix_stopped or mfix.run.tstop <= mfix.run.time:
-                time.sleep(0.1)
-            else:
-                mfix.step.do_step()
-
-        # TODO: support automatic restart
-        # if (mfix.leqsol.solver_statistics):
-        #     mfix.leqsol.report_solver_stats(mfix.main.nit_total, mfix.run.nstep)
-        # if (mfix.run.auto_restart and mfix.run.automatic_restart and mfix.run.iter_restart < 10):
-        #     continue
-
-        break
+        if mfix_stopped or mfix.run.tstop <= mfix.run.time:
+            time.sleep(0.1)
+        else:
+            do_step()
 
     mfix.main.end()
+
+def do_step():
+    mfix.main.really_finish = False
+    while not mfix.main.really_finish:
+        mfix.step.time_step_init()
+        if (mfix.main.really_finish):
+            break
+        while True:
+            mustit = 0
+            mfix.iterate.iterate_init
+            mfix.iterate.converged = False
+            mfix.iterate.diverged = False
+            while (mfix.iterate.nit<mfix.iterate.max_nit and not (mfix.iterate.converged or mfix.iterate.diverged)):
+               mfix.iterate.nit = mfix.iterate.nit + 1
+               mfix.iterate.do_iteration()
+
+            if (mfix.iterate.converged):
+                if (mfix.run.dt==mfix.param1.undefined and mfix.iterate.nit==1):
+                    continue
+                mfix.iterate.log_converged()
+            elif (mfix.iterate.diverged):
+                mfix.iterate.log_diverged()
+            else:
+                mfix.iterate.post_iterate()
+
+            if(not mfix.iterate.adjustdt()):
+                break
+
+        mfix.step.time_step_end()
 
 def handle(req_id,command,var,args):
     global mfix_stopped
@@ -134,7 +153,7 @@ def handle(req_id,command,var,args):
     elif cmd=='step':
         stepcount = int(args.get('stepcount',None))
         for _ in range(stepcount):
-            mfix.step.do_step()
+            do_step()
         responses[req_id] = 200,'DOING %s TIMESTEP(S)\n' % stepcount
 
     elif cmd=='get':

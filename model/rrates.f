@@ -22,20 +22,6 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE rxns
-      USE energy
-      USE geometry
-      USE run
-      USE indices
-      USE physprop
-      USE constant
-      USE funits
-      USE compar        !//d
-      USE sendrecv      !// 400
 
       IMPLICIT NONE
 

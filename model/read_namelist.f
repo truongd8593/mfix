@@ -25,6 +25,7 @@
       USE ic
       USE indices
       USE is
+      USE iterate, only: max_nit
       USE leqsol
       USE mfix_pic
       USE output
