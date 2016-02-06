@@ -32,7 +32,7 @@
       USE param1
       USE physprop
       USE rdf
-      USE run
+      USE run, only: run_name, time
       USE visc_s
 
       IMPLICIT NONE
