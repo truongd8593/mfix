@@ -1086,7 +1086,6 @@ postmfix_SOURCES = \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
-	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
