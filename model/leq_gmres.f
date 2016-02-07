@@ -103,7 +103,7 @@
       USE functions, only: funijk
       USE gridmap, only: istart3, iend3, jstart3, jend3, kstart3, kend3
       USE leqsol, only: dot_product_par
-      USE mpi_utility, only: global_all_and, global_all_or
+      USE mpi_utility, only: global_all_and, global_all_or, global_all_max, global_all_min
       USE param, only: dimension_3
       USE param1, only: one, zero
 
