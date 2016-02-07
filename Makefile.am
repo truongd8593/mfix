@@ -84,7 +84,6 @@ EXTRA_DIST =  Bug_Fixes CHANGES DISCLAIMER NOTICE benchmarks build-aux config co
 EXTRA_DIST += legacy_tests mfix_user_guide.pdf readme regression_tests tests tools tutorials visualization_tools
 
 EXTRA_DIST += model/make_mfix
-EXTRA_DIST += model/make_mfix.old
 EXTRA_DIST += model/thermochemical/BURCAT.THR
 EXTRA_DIST += model/thermochemical/intro.pdf
 EXTRA_DIST += model/thermochemical/readme
