@@ -29,13 +29,11 @@ $(document).ready(function(){
     });
 
     $('#get').click(function(){
-        var varname = ["mfix",
-                           $("#getmodname").val(),
-                           $("#getvarname").val()].join('.');
-        var value = $("#getvalue").val();
+        var modname = $("#getmodname").val();
+        var varname = $("#getvarname").val();
 
         $.ajax({
-            url: 'get/'+varname,
+            url: 'get/'+modname+'/'+varname,
             type: 'GET',
             success: function(response) {
                 $("#getresponse").text(response);
@@ -53,13 +51,12 @@ $(document).ready(function(){
     });
 
     $('#set').click(function(){
-        var varname = ["mfix",
-                           $("#setmodname").val(),
-                           $("#setvarname").val()].join('.');
+        var modname = $("#setmodname").val();
+        var varname = $("#setvarname").val();
         var value = $("#setvalue").val();
 
         $.ajax({
-            url: 'set/'+varname,
+            url: 'set/'+modname+'/'+varname,
             type: 'POST',
             data: {'varvalue':value},
             success: function(response) {
@@ -200,16 +197,15 @@ function updateCurlCommands() {
     $("#curlabort").text(req_common+'/abort")');
     $("#curlstep").text(req_common+'/step'+'", data={"stepcount":"'+$("#stepcount").val()+'"})');
 
-    var varname = ["mfix",
-                   $("#setmodname").val(),
-                   $("#setvarname").val()].join('.');
+    var modname = $("#setmodname").val();
+    var varname = $("#setvarname").val();
     var value = $("#setvalue").val();
-    $("#curlset").text(req_common+'/set/'+varname+'", data={"varvalue":"'+value+'"})');
 
-    var varname = ["mfix",
-                   $("#getmodname").val(),
-                   $("#getvarname").val()].join('.');
-    $("#curlget").text(req_common.replace("requests.post","requests.get")+'/get/'+varname+'").text');
+    $("#curlset").text(req_common+'/set/'+modname+'/'+varname+'", data={"varvalue":"'+value+'"})');
+
+    modname = $("#getmodname").val();
+    varname = $("#getvarname").val();
+    $("#curlget").text(req_common.replace("requests.post","requests.get")+'/get/'+modname+'/'+varname+'").text');
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');
