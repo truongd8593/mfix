@@ -48,7 +48,7 @@
       USE param1
       USE physprop
       USE quadric
-      USE run
+      USE run, only: added_mass, drag_type_enum, hys, kt_type, m_am, model_b, odt, momentum_x_eq, ghd_2007, ia_2005, kt_type_enum
       USE rxns
       USE scales
       USE sendrecv
@@ -525,7 +525,6 @@
       USE fldvar
       USE visc_s
       USE rxns
-      USE run
       USE toleranc
       USE geometry
       USE indices
@@ -1185,7 +1184,6 @@
       use param
       use param1
       use ps
-      use run
       use functions
       IMPLICIT NONE
 !-----------------------------------------------

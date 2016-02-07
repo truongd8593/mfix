@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+"""The pymfix script starts mfix from Python, with a web server running for
+interactive control of the run."""
+
 import getopt
 import json
 import os
@@ -12,8 +15,6 @@ from flask import Flask, render_template, request, redirect, url_for
 
 sys.path.append(os.getcwd())
 
-import mfix
-
 # The usual convention is to only use UPPERCASE for constants,
 # However, Fortran modules are in uppercase since Fortran uses uppercase.
 from mfix import compar as COMPAR
@@ -23,201 +24,225 @@ from mfix import param1 as PARAM1
 from mfix import run as RUN
 from mfix import step as STEP
 
-path = os.path.dirname(os.path.realpath(__file__))
-app = Flask(__name__, static_folder=path+'/static', template_folder=path+'/templates')
+PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
+app = Flask(__name__, static_folder=PYMFIX_DIR+'/static', template_folder=PYMFIX_DIR+'/templates')
 
-requests = {}
-responses = {}
+class Mfix:
+    " Class to represent the running instance of MFIX "
 
-mfix_stopped = True
-pymfix_running = True
+    mfix_stopped = True
+    pymfix_running = True
+    requests = {}
+    responses = {}
 
-def run_mfix(keyword_args=[]):
+    def __init__(self, keyword_args):
+        self.keyword_args = keyword_args
 
-    for arg in keyword_args:
-        MAIN.add_command_line_argument(arg)
+    def start(self):
+        threading.Thread(target=self.run_mfix, kwargs={"keyword_args":self.keyword_args}).start()
+        # wait for the MFIX thread to initialize COMPAR.mype
+        time.sleep(0.1)
 
-    MAIN.initialize()
+    def run_mfix(self,keyword_args=[]):
+        "Main thread for running MFIX itself"
 
-    while pymfix_running:
-        check_requests()
+        for arg in keyword_args:
+            MAIN.add_command_line_argument(arg)
 
-        global mfix_stopped
-        if mfix_stopped or RUN.tstop <= RUN.time:
-            time.sleep(0.1)
-        else:
-            do_step()
+        MAIN.initialize()
 
-    MAIN.finalize()
+        while self.pymfix_running:
+            self.check_requests()
 
-def do_step():
-    STEP.time_step_init()
-
-    while True:
-        ITERATE.iterate_init()
-        while (ITERATE.nit<ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged)):
-            ITERATE.nit = ITERATE.nit + 1
-            ITERATE.do_iteration()
-            check_requests()
-
-        if (ITERATE.converged):
-            if (RUN.dt==PARAM1.undefined and ITERATE.nit==1):
-                continue
-            ITERATE.log_converged()
-        elif (ITERATE.diverged):
-            ITERATE.log_diverged()
-        else:
-            ITERATE.post_iterate()
-
-        if(not ITERATE.adjustdt()):
-            break
-
-    STEP.time_step_end()
-
-def check_requests():
-    if requests:
-        # requests would only arrive at rank 0
-        req_id,cmd_var_args = requests.popitem()
-    else:
-        # command is empty for rank>0
-        req_id = None
-        cmd_var_args = (None,None,None)
-
-    json_cmd_var_args = json.dumps(cmd_var_args)
-
-    # broadcast command from rank 0 to all ranks
-
-    json_cmd_var_args = MAIN.do_mpi_bcast(json_cmd_var_args)
-
-    command, varname, args = json.loads(json_cmd_var_args.tostring())
-
-    if command:
-        handle(req_id,command,varname,args)
-
-def handle(req_id,command,var,args):
-    global mfix_stopped
-
-    cmd = command.split(' ')[0].lower().strip()
-
-    print("THE COMMAND IS %s" % cmd)
-
-    # TODO: refactor with a Command class, instead of a big switch statement
-    if cmd=='write_dbg_vt':
-        responses[req_id] = 200,'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
-        MAIN.do_write_dbg_vtu_and_vtp_files()
-
-    elif cmd=='backupres':
-        responses[req_id] = 200,'BACKING UP RESOURCE FILES\n'
-        MAIN.do_backupres()
-
-    elif cmd=='reinit':
-        responses[req_id] = 200,'REINITIALIZING MFIX\n'
-        MAIN.do_reinit(args.get('filename',None))
-
-    elif cmd=='exit':
-        responses[req_id] = 200,'EXITING MFIX\n'
-        global pymfix_running
-        pymfix_running = False
-
-    elif cmd=='abort':
-        responses[req_id] = 200,'ABORTING MFIX\n'
-        MAIN.do_abort()
-
-    elif cmd=='stop':
-        responses[req_id] = 200,'STOPPING MFIX\n'
-        mfix_stopped = True
-
-    elif cmd=='start':
-        responses[req_id] = 200,'STARTING MFIX\n'
-        mfix_stopped = False
-
-    elif cmd=='step':
-        stepcount = int(args.get('stepcount',None))
-        for _ in range(stepcount):
-            do_step()
-        responses[req_id] = 200,'DOING %s TIMESTEP(S)\n' % stepcount
-
-    elif cmd=='get':
-
-        ids = args.get('ids',None)
-
-        # slow things down for development
-        time.sleep(COMPAR.mype)
-
-        if var:
-            if ids and len(ids.split(' ')) > 3:
-                print("GOING TO GET IDS %s" % var)
-                ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
-                for i in range(int(ii),int(i2)+1):
-                    for j in range(int(jj),int(j2)+1):
-                        for k in range(int(kk),int(k2)+1):
-                            if is_on_mype_owns(i,j,k):
-                                exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k)))
-                                print("GOING TO EXECUTE: %s" % exec_string)
-                                exec(exec_string)
-                                print("rank ",COMPAR.mype," set value for",i,j,k,funijk(i,j,k))
-                            else:
-                                print("rank ",COMPAR.mype,"does not own",i,j,k,funijk(i,j,k))
+            if self.mfix_stopped or RUN.tstop <= RUN.time:
+                time.sleep(0.1)
             else:
-                print("GOING TO EVALUATE %s" % var)
-                try:
-                    val = str(eval(var))
-                    responses[req_id] = 200,val
-                except:
-                    traceback.print_exc()
-                    # TODO: use error code for REST call
-                    val = "ERROR: could not evaluate "+var
-                    responses[req_id] = 400,val
+                self.do_step()
+
+        MAIN.finalize()
+
+    def do_step(self):
+        "Run one timestep"
+        STEP.time_step_init()
+
+        while True:
+            ITERATE.iterate_init()
+            while ITERATE.nit < ITERATE.max_nit and not (ITERATE.converged or ITERATE.diverged):
+                ITERATE.nit = ITERATE.nit + 1
+                ITERATE.do_iteration()
+                self.check_requests()
+
+                if ITERATE.converged:
+                    if RUN.dt == PARAM1.undefined and ITERATE.nit == 1:
+                        continue
+                    ITERATE.log_converged()
+                elif ITERATE.diverged:
+                    ITERATE.log_diverged()
+                else:
+                    ITERATE.post_iterate()
+
+            if not ITERATE.adjustdt():
+                break
+
+        STEP.time_step_end()
+
+    def check_requests(self):
+        "check for requests queued from the Flask thread"
+        if self.requests:
+            # requests would only arrive at rank 0
+            req_id, cmd_var_args = self.requests.popitem()
+        else:
+            # command is empty for rank>0
+            req_id = None
+            cmd_var_args = (None, None, None)
+
+        json_cmd_var_args = json.dumps(cmd_var_args)
+        # broadcast command from rank 0 to all ranks
+        json_cmd_var_args = MAIN.do_mpi_bcast(json_cmd_var_args)
+        command, varname, args = json.loads(json_cmd_var_args.tostring())
+
+        if command:
+            self.handle(req_id, command, varname, args)
+
+    def handle(self, req_id, command, var, args):
+        "Handle a command from the Flask thread"
+
+        cmd = command.split(' ')[0].lower().strip()
+
+        print("THE COMMAND IS %s" % cmd)
+
+        # TODO: refactor with a Command class, instead of a big switch statement
+        if cmd == 'write_dbg_vt':
+            self.responses[req_id] = 200, 'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
+            MAIN.do_write_dbg_vtu_and_vtp_files()
+
+        elif cmd == 'backupres':
+            self.responses[req_id] = 200, 'BACKING UP RESOURCE FILES\n'
+            MAIN.do_backupres()
+
+        elif cmd == 'reinit':
+            self.responses[req_id] = 200, 'REINITIALIZING MFIX\n'
+            MAIN.do_reinit(args.get('filename', None))
+
+        elif cmd == 'exit':
+            self.responses[req_id] = 200, 'EXITING MFIX\n'
+            self.pymfix_running = False
+
+        elif cmd == 'abort':
+            self.responses[req_id] = 200, 'ABORTING MFIX\n'
+            MAIN.do_abort()
+
+        elif cmd == 'stop':
+            self.responses[req_id] = 200, 'STOPPING MFIX\n'
+            self.mfix_stopped = True
+
+        elif cmd == 'start':
+            self.responses[req_id] = 200, 'STARTING MFIX\n'
+            self.mfix_stopped = False
+
+        elif cmd == 'step':
+            stepcount = int(args.get('stepcount', None))
+            for _ in range(stepcount):
+                self.do_step()
+            self.responses[req_id] = 200, 'DOING %s TIMESTEP(S)\n' % stepcount
+
+        elif cmd == 'get':
+
+            ids = args.get('ids', None)
+
+            # slow things down for development
+            time.sleep(COMPAR.mype)
+
+            if var:
+                if ids and len(ids.split(' ')) > 3:
+                    print("GOING TO GET IDS %s" % var)
+                    ii, jj, kk, i2, j2, k2 = command.split(' ')[3:9]
+                    for i in range(int(ii), int(i2)+1):
+                        for j in range(int(jj), int(j2)+1):
+                            for k in range(int(kk), int(k2)+1):
+                                if is_on_mype_owns(i, j, k):
+                                    eval_string = ('%s[%d]' % (var, funijk(i, j, k)))
+                                    print("GOING TO EXECUTE: %s" % eval_string)
+                                    eval(eval_string)
+                                    print("rank ", COMPAR.mype, " set value for", i, j, k, funijk(i, j, k))
+                                else:
+                                    print("rank ", COMPAR.mype, "does not own", i, j, k, funijk(i, j, k))
+                else:
+                    print("GOING TO EVALUATE %s" % var)
+                    try:
+                        val = str(eval(var))
+                        responses[req_id] = 200, val
+                    except:
+                        traceback.print_exc()
+                        # TODO: use error code for REST call
+                        val = "ERROR: could not evaluate "+var
+                        self.responses[req_id] = 400, val
 
                 print("GOING TO RETURN %s" % val)
 
-    elif cmd=='set':
+            elif cmd == 'set':
 
-        val = args.get('varvalue',None)
-        ids = args.get('ids',None)
+                val = args.get('varvalue', None)
+                ids = args.get('ids', None)
 
-        # slow things down for development
-        time.sleep(COMPAR.mype)
+                # slow things down for development
+                time.sleep(COMPAR.mype)
 
-        if var and val:
-            if ids and len(ids.split(' ')) > 3:
-                print("GOING TO SET IDS %s = %s" % (var,val))
-                ii,jj,kk,i2,j2,k2 = command.split(' ')[3:9]
-                for i in range(int(ii),int(i2)+1):
-                    for j in range(int(jj),int(j2)+1):
-                        for k in range(int(kk),int(k2)+1):
-                            if is_on_mype_owns(i,j,k):
-                                exec_string = ('%s[%d] = %s' % (var,funijk(i,j,k),val))
-                                print("GOING TO EXECUTE: %s" % exec_string)
-                                exec(exec_string)
-                                print("rank ",COMPAR.mype," set value for",i,j,k,funijk(i,j,k))
-                            else:
-                                print("rank ",COMPAR.mype,"does not own",i,j,k,funijk(i,j,k))
+                if var and val:
+                    if ids and len(ids.split(' ')) > 3:
+                        print("GOING TO SET IDS %s = %s" % (var, val))
+                        ii, jj, kk, i2, j2, k2 = command.split(' ')[3:9]
+                        for i in range(int(ii), int(i2)+1):
+                            for j in range(int(jj), int(j2)+1):
+                                for k in range(int(kk), int(k2)+1):
+                                    if is_on_mype_owns(i, j, k):
+                                        exec_string = ('%s[%d] = %s' % (var, funijk(i, j, k), val))
+                                        print("GOING TO EXECUTE: %s" % exec_string)
+                                        exec(exec_string)
+                                        print("rank ", COMPAR.mype, " set value for", i, j, k, funijk(i, j, k))
+                                    else:
+                                        print("rank ", COMPAR.mype, "does not own", i, j, k, funijk(i, j, k))
+                    else:
+                        print("GOING TO SET %s = %s" % (var, val))
+                        try:
+                            exec('%s = %s' % (var, val))
+                            self.responses[req_id] = 200, 'ok, I set %s to %s\n' % (var, val)
+                        except AttributeError:
+                            # TODO: better error code REST response
+                            self.responses[req_id] = 500, 'ERROR could not set: %s to %s\n' % (var, val)
+
+                    print('ok, I set %s to %s\n' % (var, val))
+                else:
+                    self.responses[req_id] = 500, 'could not set %s to %s\n' % (var, val)
             else:
-                print("GOING TO SET %s = %s" % (var,val))
-                try:
-                    exec('%s = %s' % (var,val))
-                    responses[req_id] = 200,'ok, I set %s to %s\n' % (var,val)
-                except AttributeError:
-                    # TODO: better error code REST response
-                    responses[req_id] = 500,'ERROR could not set: %s to %s\n' % (var,val)
+                self.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
 
-                print('ok, I set %s to %s\n' % (var,val))
-        else:
-            responses[req_id] = 500,'could not set %s to %s\n' % (var,val)
-    else:
-        responses[req_id] = 500,'UNRECOGNIZED COMMAND\n'
+    @classmethod
+    def funijk(cls, i, j, k):
+        "reimplement FUNIJK in Python"
+        return COMPAR.ijk_array_of[i, j, k]
 
-def funijk(i,j,k):
-    return COMPAR.ijk_array_of[i,j,k]
+    @classmethod
+    def is_on_mype_owns(cls, li, lj, lk):
+        "reimplement IS_ON_MYPE_OWNS in Python"
+        return li >= COMPAR.istart and li <= COMPAR.iend and lj >= COMPAR.jstart and lj <= COMPAR.jend and lk >= COMPAR.kstart and lk <= COMPAR.kend
 
-def is_on_mype_owns(li, lj, lk):
-      return li >= COMPAR.istart and li <= COMPAR.iend and lj >= COMPAR.jstart and lj <= COMPAR.jend and lk >= COMPAR.kstart and lk <= COMPAR.kend
+    @classmethod
+    def do_command(cls, cmd, varname=None, args=[]):
+        "Puts a command that was received over the web interface on the queue"
+        req_id = threading.current_thread().ident
+        cls.requests[req_id] = (cmd, varname, args)
+        while req_id not in cls.responses:
+            time.sleep(0.1)
+        resp = cls.responses[req_id]
+        del cls.responses[req_id]
 
+        return resp
 
 # Route that will process the file upload
 @app.route('/upload', methods=['POST'])
 def upload():
+    "upload a new mfix.dat file and then reinitialize"
     # Get the name of the uploaded file
     ff = request.files['file']
     if ff:
@@ -228,99 +253,104 @@ def upload():
         filename = None
         data = None
 
-    status_code, data = do_command( "REINIT", args={'filename':filename} )
+    status_code, data = Mfix.do_command("REINIT", args={'filename':filename})
+
+    if status_code != "200":
+        return "ERROR UPLOADING"
 
     return redirect(url_for('index',
                             filename=filename))
 
 @app.route('/')
 def index():
-    return render_template('index.html', mfixdat_filename = request.args.get('filename',''))
+    "renders pymfix web interface"
+    return render_template('index.html', mfixdat_filename=request.args.get('filename', ''))
 
-@app.route('/set/<varname>',methods=['POST'])
-def set(varname):
-    status_code, data = do_command( "SET", varname, args=request.form )
+@app.route('/set/<varname>', methods=['POST'])
+def set_variable(varname):
+    "sets a variable"
+    status_code, data = Mfix.do_command("SET", varname, args=request.form)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/get/<varname>',methods=['GET'])
-def get(varname):
-    status_code, data = do_command( "GET", varname, args=request.args )
+@app.route('/get/<varname>', methods=['GET'])
+def get_variable(varname):
+    "retrieves a variable"
+    status_code, data = Mfix.do_command("GET", varname, args=request.args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/write_dbg_vt',methods=['POST'])
+@app.route('/write_dbg_vt', methods=['POST'])
 def write_dbg_vt():
-    status_code, data = do_command( "WRITE_DBG_VT" )
+    "calls WRITE_DBG_VTU_AND_VTP_FILES"
+    status_code, data = Mfix.do_command("WRITE_DBG_VT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/backupres',methods=['POST'])
+@app.route('/backupres', methods=['POST'])
 def backupres():
-    status_code, data = do_command( "BACKUPRES" )
+    "calls BACKUP_RES"
+    status_code, data = Mfix.do_command("BACKUPRES")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/exit',methods=['POST'])
-def exit():
-    status_code, data = do_command( "EXIT" )
+@app.route('/exit', methods=['POST'])
+def exit_mfix():
+    "exits the main loop in run_mfix"
+    status_code, data = Mfix.do_command("EXIT")
     time.sleep(1) # wait for MFIX thread to end
     os._exit(0)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/abort',methods=['POST'])
+@app.route('/abort', methods=['POST'])
 def abort():
-    status_code, data = do_command( "ABORT" )
+    "calls MFIX_EXIT"
+    status_code, data = Mfix.do_command("ABORT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/step',methods=['POST'])
+@app.route('/step', methods=['POST'])
 def step():
-    status_code, data = do_command( "STEP", args=request.form )
+    "runs mfix for one timestep, regardless of TIME and TSTOP"
+    status_code, data = Mfix.do_command("STEP", args=request.form)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/start',methods=['PUT'])
+@app.route('/start', methods=['PUT'])
 def start():
-    status_code, data = do_command( "START" )
+    "starts MFIX if it's stopped"
+    status_code, data = Mfix.do_command("START")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@app.route('/stop',methods=['PUT'])
+@app.route('/stop', methods=['PUT'])
 def stop():
-    status_code, data = do_command( "STOP" )
+    "stops MFIX if it's running"
+    status_code, data = Mfix.do_command("STOP")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
-
-def do_command(cmd, varname=None, args = []):
-    req_id = threading.current_thread().ident
-    requests[req_id] = ( cmd, varname, args )
-    while req_id not in responses:
-        time.sleep(0.1)
-    resp = responses[req_id]
-    del responses[req_id]
-
-    return resp
 
 def parse_command_line_arguments():
+    "handle command line arguments"
     port = 5000 # Flask default
-    usage_string = "Usage: pymfix [-h,--help] [ -p,--port <port> ] [ -s,--start ] [<keyword>=<keywordvalue> ...]"
+    usage_string = "Usage: pymfix [-h, --help] [ -p, --port <port> ] [ -s, --start ] [<keyword>=<keywordvalue> ...]"
     try:
-        opts, keyword_args = getopt.getopt(sys.argv[1:],"hsp:",["port=",])
+        opts, keyword_args = getopt.getopt(sys.argv[1:], "hsp:", ["port=", ])
     except getopt.GetoptError:
-        print usage_string
+        print(usage_string)
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt in ("-h","--help"):
-            print usage_string
+        if opt in ("-h", "--help"):
+            print(usage_string)
             sys.exit(0)
-        elif opt in ("-s","--start"):
-            global mfix_stopped
-            mfix_stopped = False
-        elif opt in ("-p","--port"):
+        elif opt in ("-s", "--start"):
+            self.mfix_stopped = False
+        elif opt in ("-p", "--port"):
             port = arg
             try:
                 port = int(port)
-                if (port < 0 or 65536 < port): raise ValueError
+                if port < 0 or port > 65536:
+                    raise ValueError
             except ValueError:
-                print "Invalid port: ",port
+                print("Invalid port: %d" % port)
                 sys.exit(1)
 
-    if (len(keyword_args) > 100):
-        print("Too many command line arguments: %d.  Only 100 or fewer command line arguments are supported." % len(keyword_args))
+    if len(keyword_args) > 100:
+        print("Too many command line arguments: %d" % len(keyword_args))
+        print("Only 100 or fewer command line arguments are supported.")
         sys.exit(1)
 
     return port, keyword_args
@@ -330,17 +360,16 @@ def main():
 
     port, keyword_args = parse_command_line_arguments()
 
-    threading.Thread(target=run_mfix, kwargs={"keyword_args":keyword_args}).start()
-
-    # wait for the MFIX thread to initialize COMPAR.mype
-    time.sleep(0.1)
+    mfix_inst = Mfix(keyword_args)
+    mfix_inst.start()
 
     # start the Flask server on rank 0
-    if 0==COMPAR.mype:
-        app.run(host='0.0.0.0', port=port, debug=False)
+    if COMPAR.mype == 0:
+        app.run(host='0.0.0.0', port=port, debug=False, use_reloader=False)
     else:
         # nothing else for rank>0 to do
-        while True: time.sleep(10)
+        while True:
+            time.sleep(10)
 
 if __name__ == '__main__':
     main()

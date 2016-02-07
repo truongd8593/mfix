@@ -1353,6 +1353,7 @@ cases := $(shell find . -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
+	  echo "BUILDING: $$case"; \
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
 	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done

@@ -24,34 +24,34 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
+      USE bc
+      USE compar
+      USE des_thermo
+      USE discretelement
+      USE drag
+      USE energy
+      USE fldvar
+      USE functions
+      USE geometry
+      USE indices
+      USE leqsol
+      USE mflux
+      USE mms
+      USE mpi_utility
+      USE output
       USE param
       USE param1
-      USE toleranc
-      USE run
-      USE physprop
-      USE geometry
-      USE fldvar
-      USE output
-      USE indices
-      USE drag
-      USE residual
-      USE ur_facs
       USE pgcor
-      USE pscor
-      USE leqsol
-      USE bc
-      USE energy
-      USE rxns
-      Use ambm
-      USE compar
-      USE discretelement
-      USE des_thermo
-      USE mflux
-      USE mpi_utility
-      USE sendrecv
+      USE physprop
       USE ps
-      USE mms
-      USE functions
+      USE pscor
+      USE residual
+      USE run, only: added_mass, m_am, odt, discretize
+      USE rxns
+      USE sendrecv
+      USE toleranc
+      USE ur_facs
+      Use ambm
 
       use constant, only: C
 

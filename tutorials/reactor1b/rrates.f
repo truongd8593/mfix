@@ -42,7 +42,7 @@
       USE param
       USE param1
       USE physprop
-      USE run
+      USE run, only: energy_eq, units, species_eq
       USE rxns
       USE sendrecv      !// 400
       IMPLICIT NONE
