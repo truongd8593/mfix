@@ -103,14 +103,7 @@
                CALL DO_ITERATION
             ENDDO
 
-            IF (CONVERGED) THEN
-               IF (DT==UNDEFINED .AND. NIT==1) CYCLE
-               CALL LOG_CONVERGED
-            ELSEIF (DIVERGED) THEN
-               CALL LOG_DIVERGED
-            ELSE
-               CALL POST_ITERATE
-            ENDIF
+            CALL POST_ITERATE
 
             IF(.NOT.ADJUSTDT()) EXIT
          ENDDO

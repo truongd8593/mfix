@@ -333,16 +333,23 @@
 ! Display residuals
       CALL DISPLAY_RESID (NIT)
 
-      ! Determine course of simulation: converge, non-converge, diverge?
-      IF (MUSTIT == 0) THEN
-         CONVERGED = .TRUE.
-         IER = 0
-      ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
-         DIVERGED = .TRUE.
-         IER = 1
-      ENDIF
+      CALL END_ITERATION
 
       contains
+
+      SUBROUTINE END_ITERATION
+         IMPLICIT NONE
+
+         ! Determine course of simulation: converge, non-converge, diverge?
+         IF (MUSTIT == 0) THEN
+            CONVERGED = .TRUE.
+            IER = 0
+         ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
+            DIVERGED = .TRUE.
+            IER = 1
+         ENDIF
+
+      END SUBROUTINE END_ITERATION
 
 !----------------------------------------------------------------------!
 ! Function: IER_Manager                                                !
@@ -432,6 +439,8 @@
 
       IF(DT == UNDEFINED) IER_MANAGER = .FALSE.
 
+      CALL END_ITERATION
+
       return
       END FUNCTION IER_MANAGER
 
@@ -455,11 +464,17 @@
 
       IMPLICIT NONE
 
-      CALL GET_SMASS (SMASS)
-      IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
-      CALL START_LOG
-      IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
-      CALL END_LOG
+      IF (CONVERGED) THEN
+         CALL LOG_CONVERGED
+      ELSEIF (DIVERGED) THEN
+         CALL LOG_DIVERGED
+      ELSE
+         CALL GET_SMASS (SMASS)
+         IF (myPE.eq.PE_IO) WRITE(UNIT_OUT, 5100) TIME, DT, NIT, SMASS
+         CALL START_LOG
+         IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
+         CALL END_LOG
+      ENDIF
 
 5100  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
            'MbErr%=', G11.4)

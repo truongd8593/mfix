@@ -94,14 +94,7 @@ class Mfix:
                 ITERATE.do_iteration()
                 cls.check_requests()
 
-                if ITERATE.converged:
-                    if RUN.dt == PARAM1.undefined and ITERATE.nit == 1:
-                        continue
-                    ITERATE.log_converged()
-                elif ITERATE.diverged:
-                    ITERATE.log_diverged()
-                else:
-                    ITERATE.post_iterate()
+            ITERATE.post_iterate()
 
             step_incomplete = ITERATE.adjustdt()
 
