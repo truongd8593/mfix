@@ -1,5 +1,7 @@
 *.0f
 *.0inc
+*.RES
+*.SP?
 *.a
 *.d
 *.deps
@@ -9,10 +11,18 @@
 *.o
 *.vtp
 *~
+.build
 .dirstamp
 Makefile
 Makefile.in
+Makefile.usr.in
 OBJ*/
+aclocal.m4
+autom4te.cache
+build
+compile
+configure
+install-sh
 model/dmp_modules/mpif.h
 model/files.lis
 model/mpif.h
