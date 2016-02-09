@@ -60,13 +60,14 @@
          ENDDO
       ENDIF
 
-!$omp parallel default(none)                    &
-!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,do_nsearch,   &
-!$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
-!$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
-!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
-!$omp       particle_orientation,orientation,boxhandle,multisap,particle_state) &
-!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit,aabb)
+
+!!$omp parallel default(none)                    &
+!!$omp shared(MAX_PIP,INTG_EULER,INTG_ADAMS_BASHFORTH,fc,tow,do_nsearch,   &
+!!$omp       omega_new,omega_old,pmass,grav,des_vel_new,des_pos_new,       &
+!!$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
+!!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
+!!$omp       particle_orientation,orientation,boxhandle,multisap,particle_state) &
+!!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit,aabb)
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
@@ -75,49 +76,49 @@
 ! Advance particle position, velocity
 ! first-order method
       IF (INTG_EULER) THEN
-!$omp sections
-!$omp section
+!!$omp sections
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,1) =   &
             DES_VEL_NEW(:,1) + DTSOLID*(FC(:,1)/PMASS(:) + GRAV(1))
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,1) =       &
             DES_POS_NEW(:,1) + DES_VEL_NEW(:,1)*DTSOLID
          FC(:,1) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,2) =   &
             DES_VEL_NEW(:,2) + DTSOLID*(FC(:,2)/PMASS(:) + GRAV(2))
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,2) =       &
             DES_POS_NEW(:,2) + DES_VEL_NEW(:,2)*DTSOLID
          FC(:,2) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) DES_VEL_NEW(:,3) =   &
             DES_VEL_NEW(:,3) + DTSOLID*(FC(:,3)/PMASS(:) + GRAV(3))
          WHERE(PARTICLE_STATE < NORMAL_GHOST) DES_POS_NEW(:,3) =       &
             DES_POS_NEW(:,3) + DES_VEL_NEW(:,3)*DTSOLID
          FC(:,3) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) OMEGA_NEW(:,1) =     &
             OMEGA_NEW(:,1) + TOW(:,1)*OMOI(:)*DTSOLID
          TOW(:,1) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,2) =      &
             OMEGA_NEW(:,2) + TOW(:,2)*OMOI(:)*DTSOLID
          TOW(:,2) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE)OMEGA_NEW(:,3) =      &
             OMEGA_NEW(:,3) + TOW(:,3)*OMOI(:)*DTSOLID
          TOW(:,3) = ZERO
-!$omp end sections
+!!$omp end sections
 
 ! Second-order Adams-Bashforth/Trapezoidal scheme
       ELSEIF (INTG_ADAMS_BASHFORTH) THEN
 
-!$omp sections
-!$omp section
+!!$omp sections
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,1) = FC(:MAX_PIP,1)/PMASS(:MAX_PIP) + GRAV(1)
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
@@ -130,7 +131,7 @@
                (DES_VEL_OLD(:MAX_PIP,1)+DES_VEL_NEW(:MAX_PIP,1))*DTSOLID
          FC(:MAX_PIP,1) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,2) = FC(:MAX_PIP,2)/PMASS(:MAX_PIP) + GRAV(2)
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
@@ -143,7 +144,7 @@
                (DES_VEL_OLD(:MAX_PIP,2)+DES_VEL_NEW(:MAX_PIP,2))*DTSOLID
          FC(:MAX_PIP,2) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             FC(:MAX_PIP,3) = FC(:MAX_PIP,3)/PMASS(:MAX_PIP) + GRAV(3)
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
@@ -156,7 +157,7 @@
                (DES_VEL_OLD(:MAX_PIP,3)+DES_VEL_NEW(:MAX_PIP,3))*DTSOLID
          FC(:MAX_PIP,3) = ZERO
 
-!$omp section
+!!$omp section
         WHERE(PARTICLE_STATE(:MAX_PIP) == NORMAL_PARTICLE) &
            OMEGA_NEW(:MAX_PIP,1) = OMEGA_OLD(:MAX_PIP,1) + 0.5d0*     &
                (3.d0*TOW(:MAX_PIP,1)*OMOI(:MAX_PIP) -                  &
@@ -165,7 +166,7 @@
             ROT_ACC_OLD(:MAX_PIP,1) = TOW(:MAX_PIP,1)*OMOI(:MAX_PIP)
          TOW(:MAX_PIP,1) = ZERO
 
-!$omp section
+!!$omp section
          WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             OMEGA_NEW(:MAX_PIP,2) = OMEGA_OLD(:MAX_PIP,2) + 0.5d0*     &
                  (3.d0*TOW(:MAX_PIP,2)*OMOI(:MAX_PIP)-                 &
@@ -174,7 +175,7 @@
             ROT_ACC_OLD(:MAX_PIP,2) = TOW(:MAX_PIP,2)*OMOI(:MAX_PIP)
          TOW(:MAX_PIP,2) = ZERO
 
-!$omp section
+!!$omp section
         WHERE(PARTICLE_STATE == NORMAL_PARTICLE) &
             OMEGA_NEW(:MAX_PIP,3) = OMEGA_OLD(:MAX_PIP,3) + 0.5d0*     &
                (3.d0*TOW(:MAX_PIP,3)*OMOI(:MAX_PIP)-                   &
@@ -183,17 +184,17 @@
             ROT_ACC_OLD(:MAX_PIP,3) = TOW(:MAX_PIP,3)*OMOI(:MAX_PIP)
          TOW(:MAX_PIP,3) = ZERO
 
-!$omp end sections
+!!$omp end sections
       ENDIF
 
 #ifdef do_sap
-!$omp single
+!!$omp single
          DO L = 1, MAX_PIP
             aabb%minendpoint(:) = DES_POS_NEW(L,:)-DES_RADIUS(L)
             aabb%maxendpoint(:) = DES_POS_NEW(L,:)+DES_RADIUS(L)
             call multisap_update(multisap,aabb,boxhandle(L))
          ENDDO
-!$omp end single
+!!$omp end single
 #endif
 
 ! Update particle orientation - Always first order
@@ -221,7 +222,7 @@
 ! its radius since the last time a neighbor search was called. if so,
 ! make sure that neighbor is called in des_time_march
       IF(.NOT.DO_NSEARCH) THEN
-!$omp do reduction (.or.:do_nsearch)
+!!$omp do reduction (.or.:do_nsearch)
          DO L = 1, MAX_PIP
             DO_NSEARCH = DO_NSEARCH .or. &
                (DES_POS_NEW(L,1) - PPOS(L,1))**2+              &
@@ -231,7 +232,7 @@
          ENDDO
       ENDIF
 
-!$omp end parallel
+!!$omp end parallel
 
 #ifdef do_sap
             call multisap_sort(multisap)
