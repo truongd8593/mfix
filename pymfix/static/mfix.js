@@ -177,6 +177,12 @@ $(document).ready(function(){
         });
     });
 
+    // Connect websocket to stream back residuals
+    var socket = io.connect('http://' + document.domain + ':' + location.port + '/residuals');
+    socket.on('residual_msg', function(msg) {
+        $('#resid').append('<p>Received: ' + msg.data + '</p>');
+    });
+
     $("input, select").change(updateCurlCommands);
     $("input").keydown(updateCurlCommands);
     $("input").keyup(updateCurlCommands);

@@ -7,11 +7,13 @@ import getopt
 import json
 import os
 import sys
+import tempfile
 import threading
 import time
 import traceback
 
 from flask import Flask, render_template, request, redirect, url_for
+from flask.ext.socketio import SocketIO, emit
 
 sys.path.append(os.getcwd())
 
@@ -27,7 +29,12 @@ from mfix import step as STEP
 PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
+FLASK_APP.config['SECRET_KEY'] = 'secret!'
+socketio = SocketIO(FLASK_APP)
 
+# import logging
+# log = logging.getLogger('werkzeug')
+# log.setLevel(logging.ERROR)
 
 def main():
     """The main function starts MFIX on a separate thread, then start the Flask server. """
@@ -39,6 +46,7 @@ def main():
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
+        socketio.run(FLASK_APP)
         FLASK_APP.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
     else:
         # nothing else for rank>0 to do
@@ -93,12 +101,15 @@ class Mfix:
                 ITERATE.nit = ITERATE.nit + 1
                 ITERATE.do_iteration()
                 cls.check_requests()
+                socketio.emit('residual_msg', {'data': '   iteration: %s' % ITERATE.nit},namespace='/residuals')
 
             ITERATE.post_iterate()
 
             step_incomplete = ITERATE.adjustdt()
 
         STEP.time_step_end()
+
+        socketio.emit('residual_msg', {'data': 'finished step: %s' % RUN.nstep},namespace='/residuals')
 
     @classmethod
     def check_requests(cls):
@@ -292,16 +303,15 @@ def upload():
         return "Error, need to upload file when doing reinit.", \
             400, {'Content-Type': 'text/plain; charset=utf-8'}
 
-    filename = 'mfix.dat.upload'
-    request.files['file'].save(os.path.join(os.getcwd(), filename))
+    ff = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
+    request.files['file'].save(ff)
+    status_code, data = Mfix.do_command("REINIT", args={'filename':ff.name})
+    os.unlink(ff.name)
 
-    status_code, data = Mfix.do_command("REINIT", args={'filename':filename})
-
-    if status_code != "200":
+    if status_code != 200:
         return data
 
-    return redirect(url_for('index',
-                            filename=filename))
+    return redirect(url_for('index'))
 
 
 @FLASK_APP.route('/')
@@ -381,6 +391,21 @@ def stop():
     status_code, data = Mfix.do_command("HALT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
+@socketio.on('my event', namespace='/residuals')
+def test_message(message):
+    emit('residual_msg', {'data': message['data']})
+
+@socketio.on('my broadcast event', namespace='/residuals')
+def test_message(message):
+    emit('residual_msg', {'data': message['data']}, broadcast=True)
+
+@socketio.on('connect', namespace='/residuals')
+def test_connect():
+    emit('residual_msg', {'data': 'Connected'})
+
+@socketio.on('disconnect', namespace='/residuals')
+def test_disconnect():
+    print('Client disconnected')
 
 def parse_command_line_arguments():
     "handle command line arguments"

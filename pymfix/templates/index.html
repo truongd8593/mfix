@@ -2,6 +2,7 @@
 <html>
   <head>
     <title>Pymfix browser interface</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='socket.io-1.4.5.js') }}"/></script>
     <script type = "text/javascript"
             src="{{ url_for('static', filename='jquery-2.2.0.min.js') }}"
             ></script>
@@ -12,6 +13,7 @@
 
    <h1>Browser interface for controlling MFIX</h1>
 
+<div style="float:left;">
     <a href="#" class="toggler off">&nbsp;</a>
     <label id='running'>MFIX IS STOPPED</label><p/>
     <pre style='clear:both'><code id="curlstartstop" onclick="selectText(this)">curl -X PUT http://localhost:5000/stop</code></pre>
@@ -32,9 +34,6 @@
         <input type="file" name="file">
         <input type="submit" value="REINIT">
       </form><br />
-{% if mfixdat_filename %}
-Uploaded {{ mfixdat_filename }}
-{% endif %}
     <pre style='clear:both'><code id="curlreinit" onclick="selectText(this)">curl -X PUT http://localhost:5000/reinit</code></pre>
 
     <button id="exit">EXIT</button>(writes RES files, then terminates)<p/>
@@ -68,6 +67,11 @@ Uploaded {{ mfixdat_filename }}
     <input id="setvarname" type="text" value="dt" size="80"/><p/>
     <input id="setvalue" type="text" value="0.01" size="80"/><p/>
     <pre style='clear:both'><code id='curlset' onclick="selectText(this)">curl -X POST http://localhost:5000/set -d "varname=mfix.run.dt&varvalue=0.01"</code></pre>
+
+</div>
+<div id="resid" style="color: #fff; background-color:#000; width:40%;float:right;white-space:pre;font-size: 12px; line-height: 1.2">
+TODO: print residuals go here.....
+</div>
 
 <div class="notice info"><p>This is a an info notice, it provides feedback of a neutral nature to the user.</p></div>
 

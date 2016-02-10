@@ -24,7 +24,6 @@
       use fldvar, only: p_s
 
       USE visc_g, only: mu_gt, epmu_gt, lambda_gt, eplambda_gt
-      USE visc_g, only: recalc_visc_g
       USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s, lambda_s_c
       USE visc_s, only: ep_star_array
       USE visc_s, only: ep_g_blend_start, ep_g_blend_end
@@ -38,9 +37,9 @@
       USE physprop, only: cv
 
       USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
-      use constant, only: ep_star, l_scale0
+      use constant, only: ep_star
 
-      USE run, only: energy_eq, k_epsilon, call_dqmom
+      USE run, only: call_dqmom
       USE run, only: yu_standish, fedors_landel
       USE run, only: kt_type_enum, ia_2005, gd_1999, gtsh_2012
       USE run, only: blending_stress, sigm_blend, tanh_blend
@@ -275,7 +274,7 @@
          EP_S_MAX(:) = ZERO
          EP_S_MAX_RATIO(:,:) = ZERO
          D_P_RATIO(:,:) = ZERO
-         M_MAX(:) = ZERO
+         M_MAX(:) = 0
       ENDIF
 
       RETURN

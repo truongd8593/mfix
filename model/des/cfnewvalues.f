@@ -41,7 +41,6 @@
 ! Local Variables
 !-----------------------------------------------
       INTEGER :: L
-      DOUBLE PRECISION :: NEIGHBOR_SEARCH_DIST
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
       DOUBLE PRECISION :: OMEGA_MAG,OMEGA_UNIT(3),ROT_ANGLE
 
@@ -67,7 +66,7 @@
 !!$omp       des_vel_old,des_pos_old,dtsolid,omoi,des_acc_old,rot_acc_old, &
 !!$omp       ppos,neighbor_search_rad_ratio,des_radius,DO_OLD, iGlobal_ID, &
 !!$omp       particle_orientation,orientation,boxhandle,multisap,particle_state) &
-!!$omp private(l,neighbor_search_dist,rot_angle,omega_mag,omega_unit,aabb)
+!!$omp private(l,rot_angle,omega_mag,omega_unit,aabb)
 
 ! If a particle is classified as new, then forces are ignored.
 ! Classification from new to existing is performed in routine
