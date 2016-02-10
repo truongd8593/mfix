@@ -161,8 +161,6 @@
 
       INTEGER :: M
 
-      CONVERGED = .FALSE.
-      DIVERGED  = .FALSE.
       PHIP_OUT_ITER=NIT ! To record the output of phip
 ! mechanism to set the normalization factor for the correction
 ! after the first iteration to the corresponding residual found
@@ -325,6 +323,7 @@
       RESG = RESID(RESID_P,0)
       RESS = RESID(RESID_P,1)
       CALL CALC_RESID_MB(1, errorpercent)
+      MUSTIT = 0
       CALL CHECK_CONVERGENCE (NIT, errorpercent(0), MUSTIT)
 
       IF(CYCLIC .AND. (MUSTIT==0 .OR. NIT >= MAX_NIT)) &
@@ -342,6 +341,7 @@
 
          ! Determine course of simulation: converge, non-converge, diverge?
          IF (MUSTIT == 0) THEN
+            IF (DT==UNDEFINED .AND. NIT==1) RETURN   !Iterations converged
             CONVERGED = .TRUE.
             IER = 0
          ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
@@ -474,6 +474,10 @@
          CALL START_LOG
          IF(DMP_LOG) WRITE(UNIT_LOG, 5100) TIME, DT, NIT, SMASS
          CALL END_LOG
+      ENDIF
+
+      IF(.NOT.(CONVERGED .OR. DIVERGED)) THEN
+         IER = 1
       ENDIF
 
 5100  FORMAT(1X,'t=',F11.4,' Dt=',G11.4,' NIT>',I3,' Sm= ',G12.5, &
@@ -684,7 +688,7 @@
       USE exit, only: mfix_exit
       USE geometry
       USE param1, only: one
-      USE run, only: ier
+      USE run
       USE time_cpu
       USE utilities, ONLY: mfix_isnan
       IMPLICIT NONE
@@ -789,7 +793,6 @@
         delp_z = delp_xyz
       ENDIF
 
-      IER = 1
 
       RETURN
 
@@ -802,7 +805,7 @@
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
-!  Module name: ADJUST_DT(NIT)                                         !
+!  Module name: ADJUST_DT()                                            !
 !  Author: M. Syamlal                                 Date: FEB-10-97  !
 !                                                                      !
 !  Purpose: Automatically adjust time step.                            !
