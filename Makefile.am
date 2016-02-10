@@ -506,7 +506,6 @@ libmfix_src = \
 	model/energy_mod.f \
 	model/eos_mod.f \
 	model/error_manager_mod.f \
-	model/error_routine.f \
 	model/exchange.f \
 	model/exit.f \
 	model/fldvar_mod.f \
@@ -1057,7 +1056,6 @@ postmfix_SOURCES = \
 	model/energy_mod.f \
 	model/eos_mod.f \
 	model/error_manager_mod.f \
-	model/error_routine.f \
 	model/exchange.f \
 	model/exit.f \
 	model/fldvar_mod.f \
