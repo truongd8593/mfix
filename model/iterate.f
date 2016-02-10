@@ -923,6 +923,7 @@
          IF(CN_ADJUST_DT) DT = 2.0d0*DT
 
 ! Reset counters.
+         DT_DIR = -1
          STEPS_TOT = 0
          NITOS = 0.
          NIT_TOT = 0
