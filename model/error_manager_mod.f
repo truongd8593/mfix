@@ -89,7 +89,7 @@
 ! Integer error flag
       INTEGER :: IER(0:numPEs-1)
 
-! Initizilae the error flags.
+! Initialize the error flags.
       IER = 0
       IER_EM = 0
 ! Initialize the call tree depth.

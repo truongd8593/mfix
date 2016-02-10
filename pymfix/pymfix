@@ -23,6 +23,7 @@ from mfix import compar as COMPAR
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
 from mfix import param1 as PARAM1
+from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import step as STEP
 
@@ -100,7 +101,7 @@ class Mfix:
                 ITERATE.nit = ITERATE.nit + 1
                 ITERATE.do_iteration()
                 cls.check_requests()
-                socketio.emit('residual_msg', {'data': '   iteration: %s' % ITERATE.nit},namespace='/residuals')
+                cls.emit_residuals()
 
             ITERATE.post_iterate()
 
@@ -109,6 +110,24 @@ class Mfix:
         STEP.time_step_end()
 
         socketio.emit('residual_msg', {'data': 'finished step: %s' % RUN.nstep},namespace='/residuals')
+
+    @classmethod
+    def emit_residuals(cls):
+        """print residuals to socketio client"""
+
+        output = {}
+        output['nit'] = str(ITERATE.nit)
+        for index in range(len(RESIDUAL.resid_string)):
+            output['resid_string[%d]' % index] = str(RESIDUAL.get_resid_string(index))
+
+        for index in range(len(RESIDUAL.resid_grp_string)):
+            output['resid_string[%d]' % index] = str(RESIDUAL.get_resid_grp_string(index))
+
+        output = json.dumps(output)
+        print('output = ',output)
+
+        socketio.emit('residual_msg', {'data': output},namespace='/residuals')
+
 
     @classmethod
     def check_requests(cls):
