@@ -47,7 +47,14 @@ def main():
 
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
-        socketio.run(FLASK_APP, host='0.0.0.0', port=port, debug=True, use_reloader=False)
+        try:
+            socketio.run(FLASK_APP, host='0.0.0.0', port=port, debug=True, use_reloader=False)
+        except KeyboardInterrupt, ex:
+            import traceback
+            traceback.print_exc()
+            # If we get here, the user hit Ctrl-C to shutdown the server,
+            # so we call _exit() to kill the run_mfix thread.
+            os._exit(0)
     else:
         # nothing else for rank>0 to do
         while True:
@@ -117,11 +124,13 @@ class Mfix:
 
         output = {}
         output['nit'] = str(ITERATE.nit)
-        for index in range(len(RESIDUAL.resid_string)):
-            output['resid_string[%d]' % index] = str(RESIDUAL.get_resid_string(index))
-
-        for index in range(len(RESIDUAL.resid_grp_string)):
-            output['resid_string[%d]' % index] = str(RESIDUAL.get_resid_grp_string(index))
+        output['residuals'] = []
+        if RESIDUAL.group_resid:
+            for index in range(len(RESIDUAL.resid_grp_string)):
+                output['residuals'].append((str(RESIDUAL.get_resid_grp_string(index)),str(RESIDUAL.get_resid_grp(index))))
+        else:
+            for index in range(len(RESIDUAL.resid_string)):
+                output['residuals'].append((str(RESIDUAL.get_resid_string(index)),str(RESIDUAL.get_resid(index))))
 
         output = json.dumps(output)
         print('output = ',output)
@@ -320,6 +329,14 @@ def upload():
     if not request.files['file']:
         return "Error, need to upload file when doing reinit.", \
             400, {'Content-Type': 'text/plain; charset=utf-8'}
+
+    # mfix.dat.upload.* files are not used by pymfix, but are for the user's
+    # benefit to keep track of mfix.dat changes when doing multiple reinits
+    # during a run
+    if COMPAR.mype == 0:
+        upload = open('mfix.dat.upload.%s' % int(time.time()), 'w')
+        request.files['file'].save(upload)
+        upload.close()
 
     ff = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
     request.files['file'].save(ff)
