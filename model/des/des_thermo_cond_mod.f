@@ -45,7 +45,6 @@
       use funits
       use param1, only: zero
       use physprop
-
       IMPLICIT NONE
 
 ! Passed variables
@@ -88,9 +87,21 @@
       DOUBLE PRECISION OLAP_Sim, OLAP_actual
 ! Corrected center distance
       DOUBLE PRECISION CENTER_DIST_CORR
-
+! Overlap distance between each particle and contact plane
+      DOUBLE PRECISION :: OLAP_1, OLAP_2
+! Effective Lens for particles 1 and 2 (req'd for analytic calculation)
+      DOUBLE PRECISION :: RLENS_1, RLENS_2
+! Effective minimum conduction distance for particles 1 and 2
+      DOUBLE PRECISION :: S_1, S_2
+! Effective thermal conductance for particles 1 and 2
+      DOUBLE PRECISION :: H_1, H_2
+! Analytic thermal conductance between particles
+      DOUBLE PRECISION :: H
+! Dummy variable for calculations 
+      DOUBLE PRECISION :: RATIO
 ! Functions
 !---------------------------------------------------------------------//
+ !     DOUBLE PRECISION :: EVAL_H_PFP
 
 ! Identify the solid phases of the neighbor particle
          jM = PIJK(J,5)
@@ -129,39 +140,86 @@
 ! Assign the inter-particle heat transfer to both particles.
          ENDIF
 
+!!         IF(.TRUE.)THEN ! NEW WAY
+!---------------------------------------------------------------------//
+! Calculate the particle-fluid-particle conduction
+! REF: Rong and Horio, 1999 (MODIFIED)
+!---------------------------------------------------------------------//
+         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+         OLAP_Actual = MAX_RAD + MIN_RAD - CENTER_DIST_CORR
+! check to see if particles are within lens thickness from eachother
+! a negative overlap indicates particles are separated 
+         IF(OLAP_actual > (-MAX_RAD*FLPC))THEN
+            RD_OUT = RADIUS(LENS_RAD, MIN_RAD)
+            ! get overlap between each particle and contact plane
+            RATIO = OLAP_actual / MAX_RAD
+            OLAP_1 = MAX_RAD*MAX_RAD*(RATIO-0.5D0*RATIO*RATIO)/CENTER_DIST_CORR
+            OLAP_2 = OLAP_actual - OLAP_1
+            ! get effective minimum conduction distance for each particle
+            RATIO = (OLAP_actual + DES_MIN_COND_DIST) / MAX_RAD
+            S_1 = (MAX_RAD*MAX_RAD*(RATIO-0.5D0*RATIO*RATIO)/&
+            &(CENTER_DIST_CORR-DES_MIN_COND_DIST)) - OLAP_1
+            S_2 = DES_MIN_COND_DIST - S_1
+            ! get effective lens radius for particle-contact plane
+            RLENS_1 = sqrt(RD_OUT*RD_OUT+(MIN_RAD-OLAP_1)**2.0)
+            RLENS_2 = sqrt(RD_OUT*RD_OUT+(MAX_RAD-OLAP_2)**2.0)
+            
+            H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_g(iIJK)
+            H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_g(iIJK)
+            H = H_1*H_2/(H_1+H_2)
+            Q_pfp = H *DeltaTp
+! Particle-fluid-particle is analytically computed using conductance for each
+! particle to the contact plane.  The effective lens radius and minimum conduction
+! distance are first calculated for each particle-fluid-contact_plane conduction. 
+            
+         ELSE
+            Q_pfp = ZERO
+         ENDIF
+         DES_CONDUCTION = Q_pp + Q_pfp
+               
+            
+ !!        ENDIF ! NEW WAY
+!-------------------------------------------------------------------------------------
+! OLD WAY
+!-------------------------------------------------------------------------------------
+!!         IF(.FALSE.)THEN
 ! Calculate the particle-fluid-particle conduction
 ! REF: Rong and Horio, 1999 (MODIFIED)
 !---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
 ! Default FLPC = 0.2
-         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+!!            LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
 
 ! Calculate the outer radial distance of the region for particle-fluid-
 ! particle heat conduction.
-         RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
+!!            RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
 
 ! If the value returned is less than zero, then the fluid lens
 ! surrounding the larger particle does not intersect with the surface
 ! of the smaller particle. In this case, particle-fluild-particle
 ! conduction does not occur.
-         Q_pfp = 0.0
-         IF(RD_OUT .GT. ZERO)THEN
+!!            Q_pfp = 0.0
+!!            IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
 ! zero if the particles are not touching and is the radius of the
 ! shared contact area otherwise.
-            RD_IN = ZERO
-            IF(CENTER_DIST_CORR < (MAX_RAD + MIN_RAD) ) &
-               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
+!!               RD_IN = ZERO
+!!               IF(CENTER_DIST_CORR < (MAX_RAD + MIN_RAD) ) &
+!!               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
 ! Calculate the rate of heat transfer between the particles through the
 ! fluid using adaptive Simpson's rule to manage the integral.
-            Q_pfp = K_g(iIJK) * DeltaTp * &
-               ADPT_SIMPSON(RD_IN,RD_OUT)
+!!               Q_pfp = K_g(iIJK) * DeltaTp * &
+!!               ADPT_SIMPSON(RD_IN,RD_OUT)
 
-         ENDIF ! RD_OUT > ZERO
+!!            ENDIF               ! RD_OUT > ZERO
+!!         ENDIF ! OLD WAY
 
          ! Return total heat flux
-         DES_CONDUCTION = Q_pp + Q_pfp
+!!         DES_CONDUCTION = Q_pp + Q_pfp
+!! ------------------------------------------------------------------//
+!  END OLD WAY
+!! ------------------------------------------------------------------//
 
       RETURN
 
@@ -353,6 +411,57 @@
          /1X,70('*'))
 
       END FUNCTION ADPT_SIMPSON
+
+     DOUBLE PRECISION FUNCTION EVAL_H_PFP(RLENS_dim,S,OLAP_dim,RP)
+      USE CONSTANT
+      USE PARAM1
+     
+      IMPLICIT NONE
+      ! Note: Function inputs dimensional quantities
+      DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
+      ! BELOW VARIABLES ARE NONDIMENSIONALIZED BY RP
+      DOUBLE PRECISION :: RLENS, OLAP, KN
+      DOUBLE PRECISION :: TERM1,TERM2,TERM3
+      DOUBLE PRECISION :: Rout,Rkn
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
+      
+      RLENS = RLENS_dim/RP
+      KN = S/RP
+      OLAP = OLAP_dim/RP
+
+      IF(-OLAP.ge.(RLENS-ONE))THEN
+         Rout = ZERO
+      ELSEIF(OLAP.le.TWO)THEN
+         Rout = sqrt(RLENS**2-(ONE-OLAP)**2)
+      ELSE
+         WRITE(*,*)'ERROR: Extremeley excessive overlap (Olap > Diam)'
+         WRITE(*,*)'OLAP = ',OLAP_dim,OLAP, RP
+         WRITE(*,*)'RLENS_dim',RLENS_dim, RLENS
+         write(*,*)'S, Kn', S,KN
+         STOP
+      ENDIF
+      Rout=MIN(Rout,ONE)
+      
+      IF(OLAP.ge.ZERO)THEN
+     !     Particle in contact (below code verified)
+         TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
+         TERM2 = TWO*PI*(sqrt(ONE-Rout**2)-(ONE-OLAP-KN))
+         TERM3 = TWO*PI*(ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/Kn)
+         EVAL_H_PFP = TERM1+TERM2+TERM3
+      ELSE
+         IF(-OLAP.ge.KN)THEN
+            Rkn = ZERO
+         ELSE
+            Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
+         ENDIF
+    
+         TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
+         TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
+         EVAL_H_PFP = TWO*PI*(TERM1+TERM2)
+         
+      ENDIF
+      RETURN
+      END FUNCTION EVAL_H_PFP
 
       END FUNCTION DES_CONDUCTION
 
