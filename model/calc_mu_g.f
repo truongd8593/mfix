@@ -32,7 +32,7 @@
          CALL CALC_USR_PROP(Gas_Viscosity,lm=0)
       ELSEIF (MU_G0 == UNDEFINED) THEN
 ! this is a necessary check as calc_mu_g is called at least once for
-! initialization
+! initialization and for other possible reasons (turbulence, ishii, etc)
          CALL CALC_DEFAULT_MUg
       ENDIF
 
