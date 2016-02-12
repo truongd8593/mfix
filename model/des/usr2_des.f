@@ -25,7 +25,6 @@
 
       IMPLICIT NONE
 
-      INCLUDE 'usrnlst.inc'
 
       RETURN
       END SUBROUTINE USR2_DES
