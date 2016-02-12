@@ -43,8 +43,9 @@
       use des_thermo
       use discretelement
       use funits
-      use param1, only: zero
+      use param1, only: zero, UNDEFINED
       use physprop
+      use run, only: UNITS
       IMPLICIT NONE
 
 ! Passed variables
@@ -87,6 +88,8 @@
       DOUBLE PRECISION OLAP_Sim, OLAP_actual
 ! Corrected center distance
       DOUBLE PRECISION CENTER_DIST_CORR
+! Gas thermal conductivity
+      DOUBLE PRECISION :: K_gas
 ! Overlap distance between each particle and contact plane
       DOUBLE PRECISION :: OLAP_1, OLAP_2
 ! Effective Lens for particles 1 and 2 (req'd for analytic calculation)
@@ -164,9 +167,27 @@
             RLENS_1 = sqrt(RD_OUT*RD_OUT+(MIN_RAD-OLAP_1)**2.0)
             RLENS_2 = sqrt(RD_OUT*RD_OUT+(MAX_RAD-OLAP_2)**2.0)
             
-            H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_g(iIJK)
-            H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_g(iIJK)
+
+! GET GAS THERMAL CONDUCTIVITY (default calculation is done in calc_k_g and is for air)
+            if(k_g0.eq.UNDEFINED)then
+                  ! Compute gas conductivity as is done in calc_k_g
+                  ! But use average of particle and wall temperature to be gas temperature
+               K_Gas = 6.02D-5*SQRT(0.5d0*(DES_T_S(I)+DES_T_S(J))/300.D0) ! cal/(s.cm.K)
+                  ! 1 cal = 4.183925D0 J
+               IF (UNITS == 'SI') K_Gas = 418.3925D0*K_Gas !J/s.m.K
+            else
+               K_Gas=k_g0
+            endif
+   
+            H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_gas
+            H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_gas
             H = H_1*H_2/(H_1+H_2)
+            if(H.lt.ZERO)then
+               write(*,*)'This',H
+            else if(H.gt.1.0)then
+               write(*,*)'That',H
+            endif
+
             Q_pfp = H *DeltaTp
 ! Particle-fluid-particle is analytically computed using conductance for each
 ! particle to the contact plane.  The effective lens radius and minimum conduction
