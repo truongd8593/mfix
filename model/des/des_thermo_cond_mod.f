@@ -182,11 +182,6 @@
             H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_gas
             H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_gas
             H = H_1*H_2/(H_1+H_2)
-            if(H.lt.ZERO)then
-               write(*,*)'This',H
-            else if(H.gt.1.0)then
-               write(*,*)'That',H
-            endif
 
             Q_pfp = H *DeltaTp
 ! Particle-fluid-particle is analytically computed using conductance for each
