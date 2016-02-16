@@ -47,6 +47,25 @@ AC_OPENMP()
 AX_CHECK_COMPILE_FLAG([-assume byterecl], [
                         FCFLAGS="$FCFLAGS -assume byterecl"])
 
+
+AC_MSG_CHECKING(whether fPIC compiler option is accepted)
+SAVED_FCFLAGS="$FCFLAGS"
+FCFLAGS="$FCFLAGS -fPIC -Werror"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+[AC_MSG_RESULT(yes)
+FCFLAGS="$SAVED_FCFLAGS -fPIC"],
+[AC_MSG_RESULT(no)
+FCFLAGS="$SAVED_FCFLAGS"])
+
+AC_MSG_CHECKING(whether fPIC compiler option is accepted)
+SAVED_FFLAGS="$FFLAGS"
+FFLAGS="$FFLAGS -fPIC -Werror"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+[AC_MSG_RESULT(yes)
+FFLAGS="$SAVED_FFLAGS -fPIC"],
+[AC_MSG_RESULT(no)
+FFLAGS="$SAVED_FFLAGS"])
+
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
