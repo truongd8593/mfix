@@ -18,13 +18,6 @@
 #setenv CASE_DIR `pwd`
 export CASE_DIR=`pwd`
 
-# load modules
-module load autoconf/2.69
-module load gnu/4.6.4 
-module load openmpi/1.5.5_gnu4.6
-
-#module load intel/2013.5.192 intelmpi/4.1.1.036
-
 # copy common files
 cp ../usr_common/usr_mod.f ./usr_mod.f
 cp ../usr_common/usr3.f ./usr3.f
@@ -36,9 +29,6 @@ echo "******** Compiling MFIX..."
 cd $CASE_DIR
 ../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all"
 make -j
-
-#../../../model/make_mfix --dmp --opt=O3 --compiler=gcc --exe=mfix.exe -j
-#../../../../model/make_mfix --dmp --opt=O0 --compiler=intel --exe=mfix.exe -j
 
 # remove these files if exist:
 echo "******** Removing old files..."
@@ -52,7 +42,7 @@ cp $CASE_DIR/mfix.dat $CASE_DIR/mfix_backup.dat
 # Run mesh_8 (i.e., 8x8 for 2D, 8x8x8 for 3D)
 echo "******** Running mesh_8..."
 cat $CASE_DIR/mfix_backup.dat mesh_8.dat > mfix.dat
-./mfix imax=8 jmax=8 kmax=8 DISCRETIZE=9*2 UR_FAC=9*0.05 > out.log
+mpirun -np 1 ./mfix imax=8 jmax=8 kmax=8 DISCRETIZE=9*2 UR_FAC=9*0.05 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS05.*,de_norms.dat,out.log}
 rm -f $CASE_DIR/solution_*.dat
@@ -62,7 +52,7 @@ rm -f $CASE_DIR/solution_*.dat
 # Run mesh_16 (i.e., 16x16 for 2D, 16x16x16 for 3D)
 echo "******** Running mesh_16..."
 cat $CASE_DIR/mfix_backup.dat mesh_16.dat > mfix.dat
-./mfix imax=16 jmax=16 kmax=16 > out.log
+mpirun -np 1 ./mfix imax=16 jmax=16 kmax=16 > out.log
 cat $CASE_DIR/de_norms.dat >> $CASE_DIR/de_norms_collected.dat
 rm -f $CASE_DIR/{MMS05.*,de_norms.dat,out.log}
 rm -f $CASE_DIR/solution_*.dat
@@ -118,3 +108,27 @@ rm -f $CASE_DIR/mesh_*.dat
 mv mfix_backup.dat mfix.dat
 
 echo "******** Done."
+
+ndselect \
+  -b 1 -e 3 -s 1 AUTOTEST/de_l2.dat > tmp.dat
+numdiff \
+  -a 0.000001 -r 0.05 \
+  de_l2.dat tmp.dat
+
+ndselect \
+  -b 1 -e 3 -s 1 AUTOTEST/de_linf.dat > tmp.dat
+numdiff \
+  -a 0.000001 -r 0.05 \
+  de_linf.dat tmp.dat
+
+ndselect \
+  -b 1 -e 2 -s 1 AUTOTEST/ooa_l2.dat > tmp.dat
+numdiff \
+  -a 0.001 -r 0.05 \
+  ooa_l2.dat tmp.dat
+
+ndselect \
+  -b 1 -e 2 -s 1 AUTOTEST/ooa_linf.dat > tmp.dat
+numdiff \
+  -a 0.001 -r 0.05 \
+  ooa_linf.dat tmp.dat

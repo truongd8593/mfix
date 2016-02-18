@@ -364,6 +364,7 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
+      use constant, only: l_scale0
 ! Gas phase volume fraction, pressure, temperature, species.
       use ic, only: IC_EP_g, IC_P_g, IC_T_g, IC_X_g
 ! Gas phase velocity components.
@@ -372,6 +373,8 @@
       use ic, only: IC_GAMA_RG, IC_T_RG
 ! K-Epsilon model parameters.
       use ic, only: IC_K_TURB_G, IC_E_TURB_G
+! L-scale model parameters
+      use ic, only: IC_L_SCALE
 ! IC for user-defined scalar equation.
       use ic, only: IC_SCALAR
 ! IC Type: UNDEFINED or PATCH.
@@ -536,7 +539,7 @@
 
  1111 FORMAT('Error 1111: IC_X_g(',I3,',:) do NOT sum to ONE and the ',&
          'gas phase',/'is compressible and MW_AVG is UNDEFINED.',/     &
-         'Please correct the mfix.dat the mfix.dat file.')
+         'Please correct the mfix.dat file.')
 
          ELSEIF(.NOT.COMPARE(SUM,ZERO)) THEN
             WRITE(ERR_MSG, 1112) ICV
@@ -544,7 +547,7 @@
 
  1112 FORMAT('Error 1112: IC_X_g(',I3,',:) do not sum to ONE or ZERO ',&
          'and they',/'are not needed. Please correct the mfix.dat ',   &
-         'the mfix.dat file.')
+         'file.')
 
          ELSE
             IC_X_G(ICV,:) = ZERO
@@ -556,6 +559,28 @@
       DO N = 1, NScalar
          IF(IC_Scalar(ICV,N) == UNDEFINED) IC_Scalar(ICV,N) = ZERO
       ENDDO
+
+
+      IF(BASIC_IC) THEN
+         IF (L_SCALE0 == ZERO) THEN
+            IF (IC_L_SCALE(ICV) /= UNDEFINED) THEN
+               WRITE(ERR_MSG, 1113) ICV
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+ 1113 FORMAT('Error 1113: IC_L_SCALE(',I3,',:) is defined but L_SCALE0 ',&
+         'is equal',/,'to zero. A non-zero value must be specified to ',&
+         'activate this model.',/,'Please correct the mfix.dat file.')
+            ENDIF
+         ELSEIF (L_SCALE0 < ZERO) THEN
+            WRITE(ERR_MSG, 1001) 'L_SCALE0', iVal(L_scale0)
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ELSE   ! l_scale0 is defined at not zero
+            IF (IC_L_SCALE(ICV) < ZERO) THEN
+               WRITE(ERR_MSG, 1001) iVar('IC_L_SCALE',ICV), &
+                  iVal(IC_L_SCALE(ICV))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDIF
+      ENDIF
 
 
       IF(K_Epsilon .AND. BASIC_IC) THEN
@@ -617,8 +642,8 @@
       use run, only: GRANULAR_ENERGY
 ! Flag. Solve variable solids density
       use run, only: SOLVE_ROs
-! Baseline solids density, baseline mass fraction, index of intert
-      use physprop, only: BASE_ROs, X_S0, INERT_SPECIES
+! Baseline solids mass fraction, index of intert
+      use physprop, only: X_S0, INERT_SPECIES
 ! Specified constant solids density.
       use physprop, only: RO_S0
 ! Number of gas phase species
@@ -830,7 +855,7 @@
 
 ! Set the solids density for the IC region.
          IF(SKIP(M)) THEN
-            IC_ROs(M) = merge(BASE_ROs(M), RO_s0(M), SOLVE_ROs(M))
+            IC_ROs(M) = merge(RO_s0(M), RO_s0(M), SOLVE_ROs(M))
 
          ELSEIF(.NOT.SOLVE_ROs(M)) THEN
             IC_ROs(M) = RO_s0(M)
@@ -851,7 +876,7 @@
          'necessary corrections to the data file.')
 
 ! Calculate the solids density.
-            IC_ROs(M) = EOSS(BASE_ROs(M), X_s0(M,INERT),               &
+            IC_ROs(M) = EOSS(RO_s0(M), X_s0(M,INERT),                  &
                IC_X_S(ICV,M,INERT))
          ENDIF
 

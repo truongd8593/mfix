@@ -1,3 +1,4 @@
+! -*- f90 -*-
       MODULE param
 
 ! Parameters describing problem size: (set from user input)
@@ -94,5 +95,11 @@
 !  9) User-defined scalar
 ! 10) DES Diffusion
       INTEGER, PARAMETER :: DIM_EQS = 10
+
+   CONTAINS
+      SUBROUTINE FILLER
+         IMPLICIT NONE
+         ! empty subroutine so param is accessible from pymfix
+      END SUBROUTINE FILLER
 
       END MODULE param

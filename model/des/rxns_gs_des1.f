@@ -107,6 +107,9 @@
          ENDIF
       ENDDO
 
+! Note that MPI sync is managed at the end of des_time_march for
+! non-explicitly coupled cases that use interpolation.
+
       RETURN
       END SUBROUTINE RXNS_GS_DES1
 
@@ -141,14 +144,15 @@
 ! Gas phase mass, species, and energy equation sources
       use des_rxns, only: DES_R_gp, DES_R_gc, DES_SUM_R_g
       use des_rxns, only: DES_R_PHASE, DES_HOR_g
+! Number of species for each phase
       use physprop, only: NMAX
+! Funtion for identifying fluid cells and normal particles.
+      use functions, only: FLUID_AT
+      use functions, only: IS_NORMAL
+! MPI function for collecting interpolated data from ghost cells.
+      use sendrecvnode, only: DES_COLLECT_gDATA
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
-
-      use functions, only: FLUID_AT
-      use functions, only: IS_NONEXISTENT
-      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
-      use functions, only: IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -185,13 +189,11 @@
 
       DO NP=1,MAX_PIP
 
-         IF(IS_NONEXISTENT(NP)) CYCLE
+! Only calculate chemical reactions for normal particles that are inside
+! fluid cells. Ex: Skip ghost particles or particles that are in a cut-
+! cell dead space.
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
          IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
-
-! The drag force is not calculated on entering or exiting particles
-! as their velocities are fixed and may exist in 'non fluid' cells.
-         IF(IS_ENTERING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. &
-            IS_EXITING(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Calculate the rates of species formation/consumption.
          CALL CALC_RRATES_DES(NP, lRgp, lRgc, lRPhase, lHoRg, lSUMRg)
@@ -218,6 +220,16 @@
             DES_SUM_R_g(IJK) = DES_SUM_R_g(IJK) + lSUMRg
          ENDIF
       ENDDO
+
+! Add in data stored in ghost cells from interpolation. This call must
+! preceed the SEND_RECV to avoid overwriting ghost cell data.
+      IF(DES_INTERP_ON) THEN
+         CALL DES_COLLECT_gDATA(DES_R_gp)
+         CALL DES_COLLECT_gDATA(DES_R_gc)
+         CALL DES_COLLECT_gDATA(DES_R_PHASE)
+         CALL DES_COLLECT_gDATA(DES_HOR_g)
+         CALL DES_COLLECT_gDATA(DES_SUM_R_g)
+      ENDIF
 
 ! Update the species mass sources in ghost layers.
       CALL SEND_RECV(DES_R_gp, 2)

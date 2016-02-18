@@ -23,6 +23,7 @@
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
       USE sendrecv
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE vtk, ONLY: GLOBAL_VAR_ALLOCATED, GRID_INFO_PRINTED_ON_SCREEN
 
       IMPLICIT NONE
@@ -650,11 +651,12 @@
   SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: no_k, axy_u, ayz_u, vol_u, axz_u
-      USE quadric, ONLY: tol_f
-      USE polygon, ONLY: n_polygon
       USE param1, ONLY: half, one, zero
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -764,7 +766,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_U_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_U_CELL_AT(IJK) = .FALSE.
                   STANDARD_U_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
@@ -880,11 +882,12 @@
   SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: no_k, axy_v, axz_v, ayz_v, vol_v
+      USE param1, ONLY: half, one, zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
-      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -992,7 +995,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_V_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_V_CELL_AT(IJK) = .FALSE.
                   STANDARD_V_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
@@ -1107,11 +1110,12 @@
   SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: axy_w, axz_w, ayz_w, vol_w
+      USE param1, ONLY: half, one, zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
-      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1206,7 +1210,7 @@
                IF(TOTAL_NUMBER_OF_INTERSECTIONS==-1) F_NODE(0) = -ONE
                BC_W_ID(IJK) = 0
 
-               IF(F_NODE(0) < ZERO) THEN
+               IF(F_NODE(0) <= ZERO) THEN
                   BLOCKED_W_CELL_AT(IJK) = .FALSE.
                   STANDARD_W_CELL_AT(IJK) = .TRUE.          ! Regular fluid cell
 
@@ -1788,39 +1792,51 @@
 
             IF(CUT_CELL_AT(IMJK)) THEN
                BCID=BC_ID(IMJK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IMJK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IPJK)) THEN
                BCID=BC_ID(IPJK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IPJK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJMK)) THEN
                BCID=BC_ID(IJMK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJMK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJPK)) THEN
                BCID=BC_ID(IJPK)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJPK)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJKM)) THEN
                BCID=BC_ID(IJKM)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKM)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ELSEIF(CUT_CELL_AT(IJKP)) THEN
                BCID=BC_ID(IJKP)
-               IF(IS_NSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 100
-               IF(IS_FSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 101
-               IF(IS_PSW(BC_TYPE_ENUM(BC_ID(IJKP)))) FLAG(IJK) = 102
+               IF(BCID>0) THEN
+                  IF(IS_NSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 100
+                  IF(IS_FSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 101
+                  IF(IS_PSW(BC_TYPE_ENUM(BCID))) FLAG(IJK) = 102
+               ENDIF
 
             ENDIF
          ENDIF

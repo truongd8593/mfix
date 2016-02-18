@@ -31,6 +31,7 @@
       USE compar        !//d
       USE constant
       USE energy
+      USE exit, ONLY: mfix_exit
       USE fldvar
       USE functions
       USE funits
@@ -41,7 +42,7 @@
       USE param
       USE param1
       USE physprop
-      USE run
+      USE run, only: energy_eq, units, species_eq
       USE rxns
       USE sendrecv      !// 400
       IMPLICIT NONE

@@ -53,10 +53,19 @@
       ENDIF
 
 ! CHECK DIF_s0
-      IF (DIF_S0 < ZERO) THEN
-         WRITE(ERR_MSG, 1001) 'DIF_s0', DIF_s0
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ENDIF
+      DO M = 1, SMAX
+         IF (DIF_S0(M) < ZERO) THEN
+            WRITE(ERR_MSG, 1001) trim(iVar('Dif_s0',M)), &
+               iVal(Dif_s0(M)) 
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+      DO M = SMAX+1, DIM_M
+         IF(DIF_S0(M) /= UNDEFINED)THEN
+            WRITE(ERR_MSG,1002) trim(iVar('Dif_s0',M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
 
 ! CHECK MU_s0
       def_mus0 = 0

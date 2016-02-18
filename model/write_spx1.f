@@ -32,6 +32,7 @@
       USE cdist
       USE compar
       USE cutcell
+      USE exit, only: mfix_exit
       USE fldvar
       USE funits
       USE geometry
@@ -44,9 +45,9 @@
       USE run
       USE rxns
       USE scalars
-      use discretelement, only: PRINT_DES_DATA
-      use discretelement, only: DISCRETE_ELEMENT
       use discretelement, only: DES_CONTINUUM_COUPLED
+      use discretelement, only: DISCRETE_ELEMENT
+      use discretelement, only: PRINT_DES_DATA
 
 !//       USE tmp_array
       IMPLICIT NONE
@@ -126,7 +127,6 @@
             CALL COMP_MEAN_FIELDS
          ENDIF
 
-
          if (bDist_IO) then
             IF(RE_INDEXING) THEN
                CALL UNSHIFT_DP_ARRAY(EP_g,TMP_VAR)
@@ -144,7 +144,6 @@
             if(unit_add == 0) CALL FLUSH_bin (uspx + L)
          end if
 
-
 ! The call made in make_arrays captures the initial state of the system
 ! as the input and RES files for DES runs are read afte the the first
 ! call to this routine.
@@ -152,8 +151,6 @@
             IF(TIME /= ZERO .OR. TRIM(RUN_TYPE)=='RESTART_1') &
                CALL WRITE_DES_DATA
          ENDIF
-
-
 
 !        call MPI_Barrier(MPI_COMM_WORLD,mpierr)  !//PAR_I/O enforce barrier here
 !
@@ -681,9 +678,6 @@
 
     End subroutine gatherWriteSpx_netcdf_int
 
-
-
-
         subroutine copy_d_to_r(darr,rarr,nx,ny,nz)
         implicit none
 
@@ -706,8 +700,6 @@
 
         return
         end subroutine copy_d_to_r
-
-
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !
@@ -1227,15 +1219,12 @@
 
         end if
 
-
-
         ! Close the file. This frees up any internal netCDF resources
         ! associated with the file, and flushes any buffers.
 !       CALL MPI_BARRIER(MPI_COMM_WORLD,mpierr)
         if (myPE .eq. PE_IO) then
            call MFIX_check_netcdf( MFIX_nf90_close(ncid) )
         end if
-
 
         deallocate (arr1)
         deallocate (arr2)
@@ -1246,4 +1235,3 @@
 
         return
         end subroutine write_netcdf
-

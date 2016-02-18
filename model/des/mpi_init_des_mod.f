@@ -77,8 +77,6 @@
          iParticlePacketSize = iParticlePacketSize + 1
       IF(ANY_SPECIES_EQ) &
          iParticlePacketSize = iParticlePacketSize + DIMENSION_N_s
-      IF(DES_EXPLICITLY_COUPLED) &
-         iParticlePacketSize = iParticlePacketSize + 3
       IF(DO_OLD) &
          iParticlePacketSize = iParticlePacketSize + 15
       IF(DO_OLD .AND. ENERGY_EQ) &
@@ -87,6 +85,11 @@
          iParticlePacketSize = iParticlePacketSize + 1
       IF(PARTICLE_ORIENTATION) &
          iParticlePacketSize = iParticlePacketSize + 3
+      IF(DES_EXPLICITLY_COUPLED) THEN
+         iParticlePacketSize = iParticlePacketSize + 3
+         IF(ENERGY_EQ)iParticlePacketSize = iParticlePacketSize + 1
+         IF(ANY_SPECIES_EQ)iParticlePacketSize = iParticlePacketSize + 1
+      ENDIF
 
 ! Calculate the size of neighbor data
       iPairPacketSize = 11

@@ -77,8 +77,6 @@
             UGX = IC_U_G(L)
             VGX = IC_V_G(L)
             WGX = IC_W_G(L)
-            IF (IC_L_SCALE(L) /= UNDEFINED) RECALC_VISC_G = .TRUE.
-            IF(K_Epsilon) RECALC_VISC_G = .TRUE.
 
             M = 1
             IF (MMAX > 0) THEN

@@ -1,8 +1,107 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: CALC_MU_s                                               C
-!  Purpose: Calculate granular stress terms (granular viscosity        C
-!  bulk viscosity, solids pressure) & granular conductivity            C
+!  Purpose: Calculate the vicosity, second viscosity, and pressure     C
+!  associated with the Mth 'solids' phase. In the 'default' or         C
+!  undefined case closure for 'granular conductivity' is also          C
+!  calculated.                                                         C
+!                                                                      C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE CALC_MU_s(M)
+
+! Modules
+!---------------------------------------------------------------------//
+! some constants
+      USE param1, only: undefined
+! specified constant solids phase viscosity
+      USE physprop, only: mu_s0
+! invoke user defined quantity
+      USE usr_prop, only: usr_mus, calc_usr_prop
+      USE usr_prop, only: solids_viscosity
+      IMPLICIT NONE
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+
+!---------------------------------------------------------------------//
+
+      IF (USR_MUS(M)) THEN
+         CALL CALC_USR_PROP(Solids_Viscosity,lm=M)
+      ELSEIF (MU_S0(M) == UNDEFINED) THEN
+! this is a necessary check as one may have mu_s0 defined but still 
+! need to call this routine (for set_epmus)
+         CALL CALC_DEFAULT_MUs(M)
+      ENDIF
+
+      CALL SET_EPMUS_VALUES(M)
+      RETURN
+      END SUBROUTINE CALC_MU_s
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine: SET_EPMUS_VALUES                                        C
+!  Purpose: This routine sets the internal variables epmu_s and        C
+!  eplambda_s that are used in the stress calculations. If the         C
+!  keyword Ishii is invoked then these quantities represent the        C
+!  viscosity and second viscosity multiplied by the volume fraction    C
+!  otherwise they are simply viscosity/second viscosity (i.e. are      C
+!  multipled by one).                                                  C
+!                                                                      C
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+      SUBROUTINE SET_EPMUS_VALUES(M)
+
+! Modules
+!---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+      USE fldvar, only: eps_ifac
+      USE functions, only: fluid_at
+      USE param1, only: zero
+      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
+      USE mms, only: use_mms
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! solids phase index
+      INTEGER, INTENT(IN) :: M
+
+! Local variables
+!---------------------------------------------------------------------//
+! cell index
+      INTEGER :: IJK
+!---------------------------------------------------------------------//
+
+!      EPMU_S(:,M) = EPS_IFAC(:,M)*MU_s(:,M)
+!      EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*LAMBDA_S(:,M)
+
+      DO IJK=ijkstart3,ijkend3
+         IF(FLUID_AT(IJK) .OR. USE_MMS) THEN
+! if ishii then multiply by volume fraction otherwise multiply by 1
+            EPMU_S(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
+            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
+         ELSE
+            EPMU_S(IJK,M) = ZERO
+            EPLAMBDA_S(IJK,M) = ZERO
+         ENDIF
+      ENDDO
+      RETURN
+      END SUBROUTINE SET_EPMUS_VALUES
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+!                                                                      C
+!  Subroutine CALC_DEFAULT_MUS                                         C
+!  Purpose: By default MFIX assumes each Mth phase is a granular       C
+!  solids material. Accordingly, various theories are invoked to       C
+!  provide closures for the solids stress term. These include          C
+!  different kinetic theory and soil mechanic models, which may be     C
+!  specified by the user through various keyword selections.           C
+!  The granular stress terms (granular viscosity, second/bulk          C
+!  viscosity, solids pressure), and if required, a granular            C
+!  conductivity term are closed here.                                  C
 !                                                                      C
 !  Comments:                                                           C
 !     GRANULAR_ENERGY = .FALSE.                                        C
@@ -18,10 +117,29 @@
 !           EP_g >= EP_star -->  viscous (pde)                         C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_MU_s(M)
+      SUBROUTINE CALC_DEFAULT_MUS(M)
 
 ! Modules
 !---------------------------------------------------------------------//
+      USE compar, only: ijkstart3, ijkend3
+!
+      USE error_manager, only: err_msg, init_err_msg, finl_err_msg
+      USE error_manager, only: flush_err_msg
+! solids pressure
+      USE fldvar, only: p_s, p_s_c, p_s_v
+      USE fldvar, only: p_s_f
+! some constants
+      USE param1, only: one
+! runtime flag indicates whether the solids phase becomes close-packed
+! at ep_star
+      USE physprop, only: close_packed
+! number of solids phases
+      USE physprop, only: mmax
+      USE physprop, only: blend_function
+
+! runtime flag to use qmomk
+      USE qmom_kinetic_equation, only: qmomk
+
 ! runtime flag to solve partial differential granular energy eqn(s)
       USE run, only: granular_energy
 ! kinetic theories
@@ -41,37 +159,11 @@
       USE run, only: friction, schaeffer
 ! runtime flag for blending stress (only with schaeffer)
       USE run, only: blending_stress
-
 ! solids transport coefficients
       USE visc_s, only: mu_s, epmu_s, mu_s_c, mu_s_v
       USE visc_s, only: mu_s_p, mu_s_f
       USE visc_s, only: lambda_s, eplambda_s, lambda_s_c, lambda_s_v
       USE visc_s, only: lambda_s_p, lambda_s_f
-! solids pressure
-      USE fldvar, only: p_s, p_s_c, p_s_v
-      USE fldvar, only: p_s_f
-! factor of ep_s if ishii otherwise 1
-      USE fldvar, only: eps_ifac
-
-! some constants
-      USE param1, only: one, undefined
-
-! specified constant solids phase viscosity
-      USE physprop, only: mu_s0
-
-! runtime flag indicates whether the solids phase becomes close-packed
-! at ep_star
-      USE physprop, only: close_packed
-! number of solids phases
-      USE physprop, only: mmax
-      USE physprop, only: blend_function
-! runtime flag to use qmomk
-      USE qmom_kinetic_equation, only: qmomk
-
-      USE compar, only: ijkstart3, ijkend3
-
-      USE error_manager, only: err_msg, init_err_msg, finl_err_msg
-      USE error_manager, only: flush_err_msg
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -85,17 +177,6 @@
       INTEGER :: IJK
 ! blend factor
       DOUBLE PRECISION :: BLEND
-!---------------------------------------------------------------------//
-      IF (MU_S0(M) /= UNDEFINED) THEN
-          CALL CALC_MU_S0(M)
-! return as none of the subroutines below should be called for 
-! constant viscosity case
-          RETURN
-      ENDIF
-
-! GHD Theory is called only for the mixture granular energy,
-! i.e. for m == mmax
-      IF (KT_TYPE_ENUM == GHD_2007 .AND. M /= MMAX) RETURN
 
 ! General initializations
 !---------------------------------------------------------------------
@@ -178,92 +259,21 @@
             blend =  blend_function(IJK)
             Mu_s(IJK,M) = (ONE-blend)*Mu_s_p(IJK) &
                 + blend*Mu_s_v(IJK)
-! no point in blending lambda_s_p since it has no value
+! is there any point in blending P_s_p or lambda_s_p since neither are
+! assigned? the only thing this would effectively do is reduce P_s_v
+! and lambda_s_v by the blend value and therefore P_s and lambda_s.
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
-! if ishii then multiply by void fraction otherwise multiply by 1
-            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*Mu_s(IJK,M)
-            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*Lambda_s(IJK,M)
-! is there any point in blending P_s_p since it is never assigned?
-! the only thing it would effectively do is reduce P_s_v by the blend
-! value and therefore P_s.
          ENDDO
       ELSE
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
          LAMBDA_s(:,M) = Lambda_s_p(:) + Lambda_s_v(:) + Lambda_s_f(:)
          P_s(:,M) = P_s_v(:) + P_s_f(:)
-! if ishii then multiply by void fraction otherwise multiply by 1
-         EPMU_s(:,M) = EPS_IFAC(:,M)*Mu_s(:,M)
-         EPLAMBDA_S(:,M) = EPS_IFAC(:,M)*Lambda_s(:,M)
       ENDIF  ! end if/else (blending_stress)
 
       RETURN
-      END SUBROUTINE CALC_MU_s
+      END SUBROUTINE CALC_DEFAULT_MUs
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Subroutine: CALC_MU_s0                                              C
-!  Purpose: Calculate transport coefficients (viscosity,               C
-!  bulk viscosity) for a non-granular material                         C
-!                                                                      C
-!  Comments: Provide a mechanism for variable viscosity for 'solids'   C
-!  phases that is not based on granular model                          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-      SUBROUTINE CALC_MU_S0(M)
-
-! Modules
-!---------------------------------------------------------------------//
-      USE compar, only: ijkstart3, ijkend3
-      USE fldvar, only: eps_ifac
-      USE fldvar, only: P_s
-      USE functions, only: fluid_at
-      USE param1, only: zero
-      USE physprop, only: mu_s0
-      USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s
-      USE mms, only   : use_mms
-      IMPLICIT NONE
-
-! Dummy arguments
-!---------------------------------------------------------------------//
-! solids phase index
-      INTEGER, INTENT(IN) :: M
-
-! Local variables
-!---------------------------------------------------------------------//
-! cell index
-      INTEGER :: IJK
-
-!---------------------------------------------------------------------//
-      DO IJK = ijkstart3, ijkend3
-! MMS tests require physical properties to be defined at all cells
-! (including ghost cells)
-         IF (FLUID_AT(IJK) .OR. USE_MMS) THEN
-! 'pressure' of this phase.  At this point this quantity is simply 
-! set to zero.  Care must be taken in considering how MFIX's governing
-! equations have been posed (nominally for gas-solids). In particular,
-! the gradient in gas phase pressure is already present in the 'solids'
-! phase momentum balance (see source_*_s for details).  For a gas-
-! liquid system the quantity P_S could be considered to represent a 
-! capillary pressure type term. 
-            P_s(IJK,M) = ZERO  
-
-! viscosity of water in Poise
-! here is where a user would enter their function
-            MU_S(IJK,M) = MU_S0(M)
-            LAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
-! if ishii then multiply by void fraction otherwise multiply by 1
-            EPMU_s(IJK,M) = EPS_IFAC(IJK,M)*MU_S(IJK,M)
-            EPLAMBDA_S(IJK,M) = EPS_IFAC(IJK,M)*LAMBDA_S(IJK,M)
-         ELSE
-            MU_S(IJK,M) = ZERO
-            LAMBDA_S(IJK,M) = ZERO
-            EPMU_S(IJK,M) = ZERO
-            EPLAMBDA_S(IJK,M) = ZERO
-         ENDIF
-      ENDDO
-      RETURN
-      END SUBROUTINE CALC_MU_S0
 
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
@@ -2629,14 +2639,16 @@
       DO IJK = ijkstart3, ijkend3
          IF ( FLUID_AT(IJK) ) THEN
 
-! Velocity derivatives (gradient and rate of strain tensor) for Mth 
+! Velocity derivatives (gradient and rate of strain tensor) for Mth
 ! solids phase at i, j, k
             CALL CALC_DERIV_VEL_SOLIDS(IJK, M, DelV_sM, D_sM)
 
 ! Calculate the trace of D_s
+! friction/algebraic various kt
             trD_s_C(IJK,M) = D_sM(1,1) + D_sM(2,2) + D_sM(3,3)
 
 ! Calculate trace of the square of D_s
+! friction/algebraic various kt
             trD_s2(IJK,M) = ZERO ! initialize the totalizer
             DO I1 = 1,3
                DO I2 = 1,3
@@ -2648,6 +2660,7 @@
             IF (trD_s2(IJK,M) == zero) trD_s_C(IJK,M) = zero
 
 ! Frictional-flow stress tensor
+! Needed by schaeffer or friction
 ! Calculate the second invariant of the deviator of D_s
             I2_devD_s(IJK) = ( (D_sM(1,1)-D_sM(2,2))**2 + &
                                (D_sM(2,2)-D_sM(3,3))**2 + &

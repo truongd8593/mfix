@@ -9,6 +9,7 @@
       SUBROUTINE WRITE_OUT3(CPU, WALL, IO)
 
       use error_manager
+      use run, only: get_tunit
 
       IMPLICIT NONE
 

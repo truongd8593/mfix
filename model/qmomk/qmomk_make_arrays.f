@@ -10,13 +10,13 @@
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 
-
 SUBROUTINE qmomk_make_arrays
 
-  USE param1
-  USE geometry
-  USE funits
   USE compar
+  USE exit, only: mfix_exit
+  USE funits
+  USE geometry
+  USE param1
   USE qmom_kinetic_equation
   USE run
 

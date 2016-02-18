@@ -19,6 +19,7 @@
       use bc, only: bc_theta_m, bc_thetaw_m, bc_hw_theta_m, bc_c_theta_m
       use compar, only: ijkstart3, ijkend3, mype, numpes
       use constant, only: to_si, pi
+      use exit, only: mfix_exit
       use fldvar, only: ep_g, theta_m, theta_mo
       use fldvar, only: ep_s, u_s, v_s, w_s, rop_so
       use fldvar, only: ro_s, d_p

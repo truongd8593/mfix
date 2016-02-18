@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutinee: ALLOCATE_ARRAYS                                        C
@@ -35,6 +36,7 @@
       use run
       use rxns
       use scalars
+      use iterate, only: errorpercent
       use tau_g
       use tau_s
       use trace
@@ -394,10 +396,10 @@
          Allocate(  EDvel_sM_ip(DIMENSION_3p, DIMENSION_M, DIMENSION_M) )
       ENDIF
 
+      Allocate(errorpercent(0:MMAX))
 
       RETURN
       END SUBROUTINE ALLOCATE_ARRAYS
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -657,7 +659,6 @@
 
       Allocate( CELL_CLASS3 (DIMENSION_4), STAT=IER)
       IF(IER /= 0) goto 500
-
 
 ! Collect the error flags from all ranks. If all allocaitons were
 ! successfull, do nothing. Otherwise, flag the error and abort.

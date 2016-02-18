@@ -24,7 +24,6 @@
       use fldvar, only: p_s
 
       USE visc_g, only: mu_gt, epmu_gt, lambda_gt, eplambda_gt
-      USE visc_g, only: recalc_visc_g
       USE visc_s, only: mu_s, epmu_s, lambda_s, eplambda_s, lambda_s_c
       USE visc_s, only: ep_star_array
       USE visc_s, only: ep_g_blend_start, ep_g_blend_end
@@ -38,9 +37,9 @@
       USE physprop, only: cv
 
       USE constant, only: ep_s_max_ratio, d_p_ratio, ep_s_max, m_max
-      use constant, only: ep_star, l_scale0
+      use constant, only: ep_star
 
-      USE run, only: energy_eq, k_epsilon, call_dqmom
+      USE run, only: call_dqmom
       USE run, only: yu_standish, fedors_landel
       USE run, only: kt_type_enum, ia_2005, gd_1999, gtsh_2012
       USE run, only: blending_stress, sigm_blend, tanh_blend
@@ -102,7 +101,8 @@
       F_SS = ZERO
 
 ! Set the flag for recalculating gas viscosity.
-      RECALC_VISC_G = (ENERGY_EQ .OR. L_SCALE0/=ZERO .OR. K_EPSILON)
+!      RECALC_VISC_G = (MU_g0==UNDEFINED .OR. L_SCALE0/=ZERO .OR.&
+!                       K_EPSILON .OR. ISHII)
 
 ! Set default value for virtual mass coefficient
       Cv = HALF
@@ -177,7 +177,7 @@
 ! function ep_s works for discrete phases. might be able to move this
 ! to set_ic_dem and set_ic_mppic. also required d_p(ijk,m) for hybrid
 ! use.  note check_solids_common_all ensures d_p0 is set for all
-! solids defined also either ro_s0 must be set or base_ros
+! solids defined also either ro_s0 must be set or ro_s0
       DO M = 1, MMAX+DES_MMAX
          DO IJK = ijkstart3, ijkend3
             IF(.NOT.WALL_AT(IJK)) THEN
@@ -196,7 +196,7 @@
                   EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
-               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               IF (DIF_S0(M) /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0(M)
             ENDIF
 
             IF (USE_MMS) THEN
@@ -207,7 +207,7 @@
                   EPLAMBDA_S(IJK,M) = (-2./3.)*MU_S(IJK,M)
                ENDIF
                IF (K_S0(M) /= UNDEFINED) K_S(IJK,M) = K_S0(M)
-               IF (DIF_S0 /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0
+               IF (DIF_S0(M) /= UNDEFINED) DIF_S(IJK,M,:NMAX(M)) = DIF_S0(M)
             ENDIF
 
 ! set ep_star_array to user input ep_star in all cells.
@@ -274,7 +274,7 @@
          EP_S_MAX(:) = ZERO
          EP_S_MAX_RATIO(:,:) = ZERO
          D_P_RATIO(:,:) = ZERO
-         M_MAX(:) = ZERO
+         M_MAX(:) = 0
       ENDIF
 
       RETURN

@@ -10,15 +10,16 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE SET_PS
 
-      use param
-      use param1, only: zero, small_number, undefined
-      use run
-      use physprop
-      use ps
       use compar
+      use exit, only: mfix_exit
+      use functions
       use geometry
       use mpi_utility
-      use functions
+      use param
+      use param1, only: zero, small_number, undefined
+      use physprop
+      use ps
+      use run
 
       implicit none
 
@@ -116,7 +117,6 @@
 
          IF(dbg_PS) CALL DEBUG_PS(PSV, PS_SIZE)
 
-
       enddo L50
 
       return
@@ -127,17 +127,14 @@
 
       call mfix_exit(myPE)
 
-
   501 continue
       write(*,"('PointSource setup Error: ',I3,2x,A)") myPE, trim(eMsg)
 
       call mfix_exit(myPE)
 
-
       RETURN
 
       contains
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

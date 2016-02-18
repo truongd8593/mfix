@@ -16,16 +16,18 @@
 
       USE bc
       USE compar, ONLY: ijkend3, istart1, jstart1, kstart1, mype
+      USE cut_cell_preproc, only: eval_f
       USE cutcell
+      USE exit, only: mfix_exit
       USE functions, only: funijk
       USE geometry, ONLY: do_k, no_k, ayz, axz, axy, ayz_u, axy_u, axz_u, ayz_v, axz_v, axy_v, ayz_w, axz_w, axy_w, vol, vol_u, vol_v, vol_w, dx, dy, dz, zlength, flag, flag_n, flag_t
       USE indices, only: i_of, j_of, k_of
+      USE param, only: dimension_3
+      USE param1, only: undefined
       USE param1, only: zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: n_quadric, tol_f, bc_id_q, dim_quadric
       USE stl, ONLY: n_facet_at, list_facet_at, bc_id_stl_face
-      USE param, only: dimension_3
-      USE param1, only: undefined
 
       IMPLICIT NONE
       CHARACTER (LEN=*) :: TYPE_OF_CELL
@@ -302,7 +304,6 @@
             N_SOUTH_FACE_NODES = 0
          ENDIF
       ENDIF
-
 
       IF((NO_K).AND.(N_TOP_FACE_NODES <=2)) THEN
          IF(PRINT_WARNINGS) THEN
@@ -1055,6 +1056,7 @@
 
       USE compar, only: mype
       USE cutcell
+      USE exit, only: mfix_exit
       USE geometry, ONLY: no_k, zlength
       USE quadric, ONLY: cross_product
       USE param1, only: half, undefined, zero
@@ -1427,9 +1429,7 @@
 
       RETURN
 
-
       END SUBROUTINE SORT
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1449,6 +1449,7 @@
       USE bc
       USE compar, ONLY: mype
       USE cutcell
+      USE exit, only: mfix_exit
       USE param1, only: one, zero, undefined
 
       IMPLICIT NONE
@@ -1597,8 +1598,6 @@
 
       END SUBROUTINE GET_INTERPOLATION_TERMS_G
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: GET_INTERPOLATION_TERMS_S                              C
@@ -1618,6 +1617,7 @@
       USE bc
       USE compar, ONLY: mype
       USE cutcell
+      USE exit, only: mfix_exit
       USE param1, ONLY: one, zero, undefined
 
       IMPLICIT NONE

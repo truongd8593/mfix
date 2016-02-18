@@ -12,12 +12,13 @@ module sendrecv
   !-----------------------------------------------
   ! Modules
   !-----------------------------------------------
-  use parallel_mpi
-  use debug
-  use geometry
   use compar
-  use indices
+  use debug
+  use exit, only: mfix_exit
   use functions
+  use geometry
+  use indices
+  use parallel_mpi
   implicit none
   !-----------------------------------------------
 

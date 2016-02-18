@@ -29,11 +29,11 @@
 
 ! Module procedures
 !---------------------------------------------------------------------//
-      use mpi_utility, only: GLOBAL_ALL_SUM
-      use mpi_funs_des, only: DES_PAR_EXCHANGE
       use desgrid, only: DESGRID_PIC
-
       use error_manager
+      use mpi_funs_des, only: DES_PAR_EXCHANGE
+      use mpi_utility, only: GLOBAL_ALL_SUM
+      use output_man, only: output_manager
 
       IMPLICIT NONE
 

@@ -28,6 +28,7 @@
 
       USE compar
       USE constant
+      USE exit, only: mfix_exit
       USE funits
       USE param
       USE param1

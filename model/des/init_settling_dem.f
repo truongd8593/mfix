@@ -11,12 +11,13 @@
       SUBROUTINE INIT_SETTLING_DEM
 
       USE desgrid, ONLY: desgrid_pic
+      USE derived_types, only: multisap, boxhandle
       USE discretelement
       USE error_manager
       USE mpi_funs_des, ONLY: DES_PAR_EXCHANGE
       USE run
       use functions, only: is_nonexistent
-      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep, multisap, boxhandle
+      use multi_sweep_and_prune, only: aabb_t, init_multisap, multisap_add, multisap_quicksort, multisap_sweep
       use geometry
 
       IMPLICIT NONE

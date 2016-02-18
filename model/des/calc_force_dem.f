@@ -16,11 +16,11 @@
 !---------------------------------------------------------------------//
       USE calc_collision_wall
       USE constant, ONLY: Pi
+      USE derived_types, only: multisap, boxhandle
       USE des_thermo
       USE des_thermo_cond
       USE discretelement
       USE run
-      use multi_sweep_and_prune, only: multisap, boxhandle
       use pair_manager
       use param1, only: one, small_number, zero
 

@@ -98,6 +98,8 @@
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use mpi_utility, only: GLOBAL_ALL_MAX
+      use mpi_utility, only: GLOBAL_ALL_MIN
       use stl_functions_des, only: TRI_BOX_OVERLAP
       use functions, only: IS_ON_myPE_OWNS
 
@@ -139,6 +141,7 @@
       INTEGER, allocatable :: FULL_MAP(:,:)
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
+      INTEGER :: maxEXT(2), minEXT(2)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
 ! Number of occupied mesh cells
@@ -274,10 +277,12 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         HALFSIZE(2) = 3.0d0*MAX_DIA
+         HALFSIZE(2) = 1.10d0*MAX_DIA
          HALFSIZE(1) = HALF*(WINDOW * 1.10d0)
          HALFSIZE(3) = HALF*(WINDOW * 1.10d0)
 
+         minEXT(1) = HMAX+1; maxEXT(1) = 0
+         minEXT(2) = WMAX+1; maxEXT(2) = 0
          DO H=1,HMAX
          DO W=1,WMAX
 
@@ -310,10 +315,23 @@
                   ELSE
                      FULL_MAP(W,H:HMAX) = 0
                   ENDIF
+                  minEXT(1) = min(minEXT(1),H)
+                  minEXT(2) = min(minEXT(2),W)
+
+                  maxEXT(1) = max(maxEXT(1),H)
+                  maxEXT(2) = max(maxEXT(2),W)
                ENDIF
             ENDDO FACET_LP
          ENDDO
          ENDDO
+         CALL GLOBAL_ALL_MIN(minEXT)
+         CALL GLOBAL_ALL_MAX(maxEXT)
+
+         if(minEXT(1) < HMAX+1) FULL_MAP(:,:minEXT(1)) = 0
+         if(maxEXT(1) > 0) FULL_MAP(:,maxEXT(1):) = 0
+
+         if(minEXT(2) /= WMAX+1) FULL_MAP(:minEXT(2),:) = 0
+         if(maxEXT(2) > 0) FULL_MAP(maxEXT(2):,:) = 0
       ENDIF
 
 ! Add up the total number of available positions in the seeding map.
@@ -341,7 +359,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag .OR. showMAP) THEN
+      IF(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
@@ -420,10 +438,12 @@
  8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
 
-      if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
-      if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
-      if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
-      if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      if(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
+         write(*,"(2/,2x,'Inlet area sizes:')")
+         write(*,9000) 'mfix.dat: ', PLEN * QLEN
+         write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
+         write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      endif
  9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.
@@ -492,6 +512,8 @@
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use stl_functions_des, only: TRI_BOX_OVERLAP
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use mpi_utility, only: GLOBAL_ALL_MAX
+      use mpi_utility, only: GLOBAL_ALL_MIN
       use functions, only: IS_ON_myPE_OWNS
 
       use error_manager
@@ -532,6 +554,7 @@
       INTEGER, allocatable :: FULL_MAP(:,:)
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
+      INTEGER :: maxEXT(2), minEXT(2)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
 ! Number of occupied mesh cells
@@ -668,9 +691,12 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         HALFSIZE(1) = 3.0d0*MAX_DIA
+         HALFSIZE(1) = 1.10d0*MAX_DIA
          HALFSIZE(2) = HALF*(WINDOW * 1.10d0)
          HALFSIZE(3) = HALF*(WINDOW * 1.10d0)
+
+         minEXT(1) = HMAX+1; maxEXT(1) = 0
+         minEXT(2) = WMAX+1; maxEXT(2) = 0
 
          DO H=1,HMAX
          DO W=1,WMAX
@@ -704,10 +730,27 @@
                   ELSE
                      FULL_MAP(W,H:HMAX) = 0
                   ENDIF
+
+                  minEXT(1) = min(minEXT(1),H)
+                  minEXT(2) = min(minEXT(2),W)
+
+                  maxEXT(1) = max(maxEXT(1),H)
+                  maxEXT(2) = max(maxEXT(2),W)
+
                ENDIF
             ENDDO FACET_LP
          ENDDO
          ENDDO
+
+         CALL GLOBAL_ALL_MIN(minEXT)
+         CALL GLOBAL_ALL_MAX(maxEXT)
+
+         if(minEXT(1) < HMAX+1) FULL_MAP(:,:minEXT(1)) = 0
+         if(maxEXT(1) > 0) FULL_MAP(:,maxEXT(1):) = 0
+
+         if(minEXT(2) /= WMAX+1) FULL_MAP(:minEXT(2),:) = 0
+         if(maxEXT(2) > 0) FULL_MAP(maxEXT(2):,:) = 0
+
       ENDIF
 
 ! Add up the total number of available positions in the seeding map.
@@ -735,7 +778,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag .OR. showMAP) THEN
+      IF(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
@@ -813,11 +856,12 @@
          5X,'L',7X,'P',12X,'Q',12X,'R')
  8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
-
-      if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
-      if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
-      if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
-      if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      if(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
+         write(*,"(2/,2x,'Inlet area sizes:')")
+         write(*,9000) 'mfix.dat: ', PLEN * QLEN
+         write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
+         write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      endif
  9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.
@@ -886,6 +930,8 @@
 !---------------------------------------------------------------------//
       use des_bc, only: EXCLUDE_DEM_MI_CELL
       use mpi_utility, only: GLOBAL_ALL_SUM
+      use mpi_utility, only: GLOBAL_ALL_MAX
+      use mpi_utility, only: GLOBAL_ALL_MIN
       use stl_functions_des, only: TRI_BOX_OVERLAP
       use functions, only: IS_ON_myPE_OWNS
 
@@ -927,6 +973,7 @@
       INTEGER, allocatable :: FULL_MAP(:,:)
 ! max number of partitions along length of inlet
       INTEGER :: WMAX, HMAX
+      INTEGER :: maxEXT(2), minEXT(2)
 ! the length of each side of the inlet boundary
       DOUBLE PRECISION :: PLEN, QLEN
 ! Number of occupied mesh cells
@@ -1045,9 +1092,12 @@
 ! cell sizes are increased by 10% to provide a small buffer.
       IF(USE_STL) THEN
 
-         HALFSIZE(3) = 3.0d0*MAX_DIA
+         HALFSIZE(3) = 1.10d0*MAX_DIA
          HALFSIZE(1) = HALF*(WINDOW * 1.10d0)
          HALFSIZE(2) = HALF*(WINDOW * 1.10d0)
+
+         minEXT(1) = HMAX+1; maxEXT(1) = 0
+         minEXT(2) = WMAX+1; maxEXT(2) = 0
 
          DO H=1,HMAX
          DO W=1,WMAX
@@ -1081,10 +1131,27 @@
                   ELSE
                      FULL_MAP(W,H:HMAX) = 0
                   ENDIF
+
+                  minEXT(1) = min(minEXT(1),H)
+                  minEXT(2) = min(minEXT(2),W)
+
+                  maxEXT(1) = max(maxEXT(1),H)
+                  maxEXT(2) = max(maxEXT(2),W)
+
                ENDIF
             ENDDO FACET_LP
          ENDDO
          ENDDO
+
+         CALL GLOBAL_ALL_MIN(minEXT)
+         CALL GLOBAL_ALL_MAX(maxEXT)
+
+         if(minEXT(1) < HMAX+1) FULL_MAP(:,:minEXT(1)) = 0
+         if(maxEXT(1) > 0) FULL_MAP(:,maxEXT(1):) = 0
+
+         if(minEXT(2) /= WMAX+1) FULL_MAP(:minEXT(2),:) = 0
+         if(maxEXT(2) > 0) FULL_MAP(maxEXT(2):,:) = 0
+
       ENDIF
 
 ! Add up the total number of available positions in the seeding map.
@@ -1112,7 +1179,7 @@
       DEM_MI(BCV_I)%OCCUPANTS = OCCUPANTS
 
 ! Display the fill map if debugging
-      IF(dFlag .OR. showMAP) THEN
+      IF(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
          WRITE(*,"(2/,2x,'Displaying Fill Map:')")
          DO H=HMAX,1,-1
             WRITE(*,"(2x,'H =',I3)",advance='no')H
@@ -1190,11 +1257,12 @@
          5X,'L',7X,'P',12X,'Q',12X,'R')
  8011 FORMAT(4x,I5,3(2X,I4),3(2x,g12.5))
 
-
-      if(dFlag) write(*,"(2/,2x,'Inlet area sizes:')")
-      if(dFlag) write(*,9000) 'mfix.dat: ', PLEN * QLEN
-      if(dFlag) write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
-      if(dFlag) write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      if(dFlag .OR. (DMP_LOG .AND. showMAP)) THEN
+         write(*,"(2/,2x,'Inlet area sizes:')")
+         write(*,9000) 'mfix.dat: ', PLEN * QLEN
+         write(*,9000) 'BC_AREA:  ', BC_AREA(BCV)
+         write(*,9000) 'DEM_MI:   ', OCCUPANTS * (WINDOW**2)
+      endif
  9000 FORMAT(2x,A,g12.5)
 
 ! House keeping.

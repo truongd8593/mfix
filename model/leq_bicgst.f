@@ -22,13 +22,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE geometry
       USE compar
+      USE exit, only: mfix_exit
+      USE funits
+      USE geometry
       USE indices
       USE leqsol
-      USE funits
+      USE param
+      USE param1
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s
@@ -1199,13 +1200,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE exit, only: mfix_exit
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE funits
-      USE compar
-      USE indices
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s
@@ -1232,7 +1234,6 @@
 !   L o c a l   P a r a m e t e r s
 !-----------------------------------------------
 !
-
 
 !-----------------------------------------------
 !   L o c a l   V a r i a b l e s
@@ -1300,13 +1301,14 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE exit, only: mfix_exit
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
       USE param
       USE param1
-      USE geometry
-      USE funits
-      USE compar
-      USE indices
-      USE functions
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

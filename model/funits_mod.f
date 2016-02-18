@@ -94,12 +94,11 @@
       OPEN(FILE=trim(pDIR)//'/tmp',UNIT=tUNIT,STATUS='NEW',IOSTAT=IOS)
 
       IF(IOS == 0 )THEN
-         write(*,*) 'The directory already exists.'
          close(tUNIT)
          WRITE(CMD,"('rm ',A,'/tmp')")adjustl(trim(pDIR))
          CALL SYSTEM(trim(CMD))
       ELSE
-         write(*,*) 'Creating the directory.'
+         write(*,"('Creating directory ',A)") PDIR
          WRITE(CMD,"('mkdir ',A)")pDIR
          CALL SYSTEM(trim(CMD))
       ENDIF

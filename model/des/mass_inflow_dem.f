@@ -14,6 +14,7 @@
       use bc
       use des_allocate
       use des_bc
+      use derived_types, only: dg_pic
       use discretelement
       use functions
       use mpi_utility, only: BCAST
@@ -51,7 +52,10 @@
                CASE('B'); DIST = ZT(BC_K_b(BCV)-1) - DES_POS_NEW(NP,3)
                END SELECT
 ! The particle is still inside the domain
-               IF(DIST > DES_RADIUS(NP)) CALL SET_NORMAL(NP)
+               IF(DIST > DES_RADIUS(NP)) THEN
+                  IF(IS_ENTERING(NP)) CALL SET_NORMAL(NP)
+                  IF(IS_ENTERING_GHOST(NP)) CALL SET_GHOST(NP)
+               ENDIF
             ENDDO
          ENDDO
 
@@ -392,6 +396,7 @@
       USE compar
       USE constant
       USE des_bc
+      USE derived_types, only: pic
       USE discretelement
       USE functions
       USE funits

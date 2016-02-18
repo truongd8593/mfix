@@ -26,6 +26,7 @@
       USE bc
       USE compar
       USE sendrecv
+      USE derived_types, only: pic
       USE discretelement
       USE drag
       USE interpolation
@@ -188,7 +189,6 @@
       RETURN
       END SUBROUTINE DRAG_GS_DES0
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: DES_DRAG_GS                                             C
@@ -206,26 +206,27 @@
       SUBROUTINE DRAG_GS_GAS0
 
 ! Modules
-!---------------------------------------------------------------------//
-      USE param
-      USE param1
-      USE constant
-      USE physprop
-      USE fldvar
-      USE run
-      USE geometry
-      USE indices
       USE bc
       USE compar
-      USE sendrecv
+      USE constant
+      USE cutcell
+      USE derived_types, only: pic
       USE discretelement
       USE drag
-      USE interpolation
-      use desmpi
-      USE cutcell
-      USE mfix_pic
+      USE fldvar
       USE functions
+      USE geometry
+      USE indices
+      USE interpolation
+      USE mfix_pic
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE sendrecv
+      use desmpi
       use mpi_node_des, only: des_addnodevalues
+
       IMPLICIT NONE
 
 ! Local variables
@@ -410,7 +411,6 @@
 
       ENDDO   ! end do (ijk=ijkstart3,ijkend3)
 !!!$omp end parallel
-
 
 ! At the interface drag_am and drag_bm have to be added
 ! send recv will be called and the node values will be added

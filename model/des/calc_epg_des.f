@@ -15,8 +15,6 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
-! Flag: Coupled gas-solids DEM simulation
-      use discretelement, only: DES_CONTINUUM_HYBRID
 ! Flag: Discrete and continuum solids co-exist
       use discretelement, only: DES_CONTINUUM_COUPLED
 ! Number of discrete solids phases
@@ -30,7 +28,7 @@
 ! Number of particles in indexed fluid cell
       use discretelement, only: PINC
 ! List of particles in each cell.
-      use discretelement, only: PIC
+      use derived_types, only: PIC
 ! Gas phae volume fraction, density, and build density
       use fldvar, only: EP_G, RO_G, ROP_G
 ! Bulk density of continuum solids phases
@@ -53,7 +51,6 @@
       use mpi_utility, only: GLOBAL_ALL_SUM
 ! Flag for PIC simulation
       use mfix_pic, only: MPPIC
-      use constant, only: EP_STAR
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -88,7 +85,7 @@
 !---------------------------------------------------------------------//
 !$omp parallel do if(ijkend3 .ge. 2000) default(none) reduction(+:IER) &
 !$omp shared(IJKSTART3, IJKEND3, DES_CONTINUUM_COUPLED, DES_MMAX, MMAX,&
-!$omp        EP_G, RO_G, ROP_G, DES_CONTINUUM_HYBRID, MPPIC, PACKED_EPS) &
+!$omp        EP_G, RO_G, ROP_G, MPPIC, PACKED_EPS) &
 !$omp private(IJK, SUM_EPs, M)
       DO IJK = IJKSTART3, IJKEND3
 ! Skip wall cells.

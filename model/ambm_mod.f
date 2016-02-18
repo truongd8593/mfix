@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Module: ambm                                                        !
@@ -18,6 +19,7 @@
 ! Modules
 !-----------------------------------------------
       USE compar
+      USE exit, only: mfix_exit
       USE funits
 !-----------------------------------------------
 
@@ -33,6 +35,7 @@
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE lock_ambm
+         IMPLICIT NONE
       IF(ambm_locked) THEN
          IF (DMP_LOG) WRITE(*,*) &
             'Error:  Multiple use of ambm (ambm_mod.f)'
@@ -42,7 +45,6 @@
       ENDIF
       END SUBROUTINE lock_ambm
 
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
@@ -51,5 +53,3 @@
       END SUBROUTINE unlock_ambm
 
       END MODULE ambm
-
-

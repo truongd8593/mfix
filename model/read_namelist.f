@@ -6,7 +6,7 @@
 !     Purpose: Read in the NAMELIST variables                          !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE READ_NAMELIST(READ_ACTION)
+      SUBROUTINE READ_NAMELIST(READ_ACTION, FILENAME)
 
       USE bc
       USE cdist
@@ -25,7 +25,9 @@
       USE ic
       USE indices
       USE is
+      USE iterate, only: max_nit
       USE leqsol
+      USE main, only: cmd_line_args, cmd_line_args_count
       USE mfix_pic
       USE output
       USE parallel
@@ -49,13 +51,19 @@
       USE utilities
       USE vtk
       Use stl
-
+      use usr_prop, only: usr_fgs, usr_fss, usr_gama
+      use usr_prop, only: usr_rog, usr_cpg, usr_mug, usr_kg, usr_difg
+      use usr_prop, only: usr_ros, usr_cps, usr_mus, usr_ks, usr_difs
+      use usr_src, only: call_usr_source
       IMPLICIT NONE
 
 ! Dummy Arguments:
 !------------------------------------------------------------------------//
 ! Specify how much of the input to process.
       INTEGER, INTENT(IN) :: READ_ACTION
+
+! Filename of the input file
+      CHARACTER(LEN=*), INTENT(IN) :: FILENAME
 
 ! Local Variables:
 !------------------------------------------------------------------------//
@@ -119,7 +127,7 @@
 
 ! Open the mfix.dat file. Report errors if the file is not located or
 ! there is difficulties opening it.
-      inquire(file='mfix.dat',exist=lEXISTS)
+      inquire(file=filename,exist=lEXISTS)
       IF(.NOT.lEXISTS) THEN
          IF(myPE == PE_IO) WRITE(*,1000)
          CALL MFIX_EXIT(myPE)
@@ -129,7 +137,7 @@
          70('*'),2/)
 
       ELSE
-         OPEN(UNIT=UNIT_DAT, FILE='mfix.dat', STATUS='OLD', IOSTAT=IOS)
+         OPEN(UNIT=UNIT_DAT, FILE=filename, STATUS='OLD', IOSTAT=IOS)
          IF(IOS /= 0) THEN
             IF(myPE == PE_IO) WRITE (*,1001)
             CALL MFIX_EXIT(myPE)
@@ -176,8 +184,8 @@
 
       ENDDO READ_LP
 
-      DO II=1, COMMAND_ARGUMENT_COUNT()
-         CALL GET_COMMAND_ARGUMENT(ii,LINE_STRING)
+      DO II=1, CMD_LINE_ARGS_COUNT
+         LINE_STRING = CMD_LINE_ARGS(ii)
          LINE_LEN = len(line_string)
          CALL SET_KEYWORD(ERROR)
          IF (ERROR) THEN

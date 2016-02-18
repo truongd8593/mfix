@@ -120,14 +120,35 @@
 
 ! Check for min/max inlet velocity
             MAX_VEL = MAX(ABS(VEL_TMP(M)), MAX_VEL)
+
+! Calculate the number of particles of mass phase M are injected per
+! second for each solid phase present at the boundary.
+
+! Use the mass flow rate if defined.
+            IF(BC_MASSFLOW_s(BCV,M) == ZERO) THEN
+               NPMPSEC(M) = ZERO
+
+            ELSEIF(BC_MASSFLOW_s(BCV,M) /= UNDEFINED) THEN
+               NPMPSEC(M) = BC_MASSFLOW_s(BCV,M) / &
+                  (RO_s0(M)*(PI/6.d0*D_P0(M)**3))
+
+! Otherwise use the volumetric flow rate if defined.
+            ELSEIF(BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+               NPMPSEC(M) = ZERO
+
+            ELSEIF(BC_VOLFLOW_S(BCV,M) /= UNDEFINED) THEN
+               NPMpSEC(M) = BC_VOLFLOW_s(BCV,M) / (PI/6.d0*D_P0(M)**3)
+
 ! Calculate volumetric flow rate to convert to particle count. BC_AREA
 ! was already corrected for cut cells and velocity was recalculated
 ! to ensure user-specified mass or volumetric flow rates.
-            VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
+            ELSE
+               VOL_FLOW = VEL_TMP(M) * BC_AREA(BCV) * BC_EP_S(BCV,M)
 ! Calculate the number of particles of mass phase M are injected per
 ! second for each solid phase present at the boundary
-            NPMpSEC(M) = VOL_FLOW / (PI/6.d0*D_P0(M)**3)
+               NPMpSEC(M) = VOL_FLOW / (PI/6.d0*D_P0(M)**3)
 ! Write some debugging information if needed.
+            ENDIF
             if(dFlag) write(*,1100) M, VEL_TMP(M), NPMpSEC(M)
          ENDDO
 
@@ -144,7 +165,10 @@
          NPpDT = NPpSEC * DTSOLID
 
 ! Inject one particle every PI_FACTOR solids time steps.
-         IF(NPpDT .LT. 1)THEN
+         IF(NPpDT == ZERO)THEN
+            PI_COUNT(BCV_I) = 0
+            PI_FACTOR(BCV_I) = UNDEFINED_I
+         ELSEIF(NPpDT .LT. 1.0)THEN
             PI_COUNT(BCV_I) = 1
             PI_FACTOR(BCV_I) = FLOOR(real(1.d0/NPpDT))
 ! Inject PI_COUNT particles every soilds time step.
@@ -189,19 +213,31 @@
          EPs_TMP = ZERO
          DO MM = 1, PHASE_CNT
             M = PHASE_LIST(MM)
-            EPs_TMP(M) = BC_EP_s(BCV,M) * (VEL_TMP(M) / MAX_VEL)
-            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M) - EPs_TMP(M))
 
+            IF(BC_MASSFLOW_s(BCV,M) == ZERO .OR. &
+               BC_VOLFLOW_S(BCV,M) == ZERO) THEN
+! If no solids, set the tmp EPs to zero and clear solid velocity
+               EPs_TMP(M) = 0.0d0
+               SELECT CASE(BC_PLANE(BCV))
+               CASE('N','S'); BC_V_s(BCV,M) =  ZERO
+               CASE('E','W'); BC_U_s(BCV,M) =  ZERO
+               CASE('T','B'); BC_W_s(BCV,M) =  ZERO
+               END SELECT
+
+            ELSE
+               EPs_TMP(M) = BC_EP_s(BCV,M) * (VEL_TMP(M) / MAX_VEL)
 ! Over-write the current BC value.
-            SELECT CASE(BC_PLANE(BCV))
-            CASE('N'); BC_V_s(BCV,M) =  abs(MAX_VEL)
-            CASE('S'); BC_V_s(BCV,M) = -abs(MAX_VEL)
-            CASE('E'); BC_U_s(BCV,M) =  abs(MAX_VEL)
-            CASE('W'); BC_U_s(BCV,M) = -abs(MAX_VEL)
-            CASE('T'); BC_W_s(BCV,M) =  abs(MAX_VEL)
-            CASE('B'); BC_W_s(BCV,M) = -abs(MAX_VEL)
-            END SELECT
+               SELECT CASE(BC_PLANE(BCV))
+               CASE('N'); BC_V_s(BCV,M) =  abs(MAX_VEL)
+               CASE('S'); BC_V_s(BCV,M) = -abs(MAX_VEL)
+               CASE('E'); BC_U_s(BCV,M) =  abs(MAX_VEL)
+               CASE('W'); BC_U_s(BCV,M) = -abs(MAX_VEL)
+               CASE('T'); BC_W_s(BCV,M) =  abs(MAX_VEL)
+               CASE('B'); BC_W_s(BCV,M) = -abs(MAX_VEL)
+               END SELECT
 
+            ENDIF
+            EPs_ERR = EPs_ERR + (BC_EP_s(BCV,M) - EPs_TMP(M))
          ENDDO
 
 ! If the net change in solids volume fraction is greatere than 0.01,

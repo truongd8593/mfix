@@ -141,7 +141,7 @@
 ! Gas phase mixture molecular weight.
       use physprop, only : MW_MIX_g
 ! Baseline/Unreaced solids density.
-      use physprop, only: BASE_ROs
+      use physprop, only: RO_s0
 ! Initial mass fraction of inert solids species.
       use physprop, only: X_S0
 ! Index of inert solids phase species.
@@ -248,7 +248,7 @@
             ENDDO
 ! Update the solids density from speices composition. This update must
 ! come after the species data is mapped back into the MFIX variables.
-            IF(SOLVE_ROs(M)) RO_S(IJK,M) = EOSS(BASE_ROs(M), &
+            IF(SOLVE_ROs(M)) RO_S(IJK,M) = EOSS(RO_s0(M),              &
                X_s0(M,INERT_SPECIES(M)), X_s(IJK,M,INERT_SPECIES(M)))
          ENDIF
       ENDDO

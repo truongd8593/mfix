@@ -353,9 +353,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_VTU_FILE_BIN(MODE)
 
+      USE cdist
       USE compar
       USE constant
       USE cutcell
+      USE exit, only: mfix_exit
       USE fldvar
       USE functions
       USE geometry
@@ -370,7 +372,6 @@
       USE sendrecv
       USE toleranc
       USE vtk
-      use cdist
 
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS
@@ -1296,22 +1297,23 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE OPEN_PVD_FILE
 
-      USE param
-      USE param1
-      USE parallel
+      USE compar
       USE constant
-      USE run
-      USE toleranc
+      USE cutcell
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
-      USE compar
-      USE sendrecv
       USE output
+      USE parallel
+      USE param
+      USE param1
       USE quadric
-      USE cutcell
-      USE fldvar
+      USE run
+      USE sendrecv
+      USE toleranc
       USE vtk
-      USE functions
 
       IMPLICIT NONE
       LOGICAL :: PVD_EXISTS
@@ -1417,7 +1419,6 @@
          EXT = '.pvtp'
       ENDIF
 
-
       IF(.NOT.BDIST_IO) THEN
          FILENAME=VTU_FILENAME
       ELSE
@@ -1428,7 +1429,6 @@
          ENDIF
          IF(TRIM(VTU_DIR)/='.') FILENAME='./'//TRIM(VTU_DIR)//'/'//FILENAME
       ENDIF
-
 
 ! Write the data to the file
          WRITE(PVD_UNIT,100)&
@@ -1442,7 +1442,6 @@
 
          CLOSE(PVD_UNIT)
 
-
 ! 40    FORMAT(A,"_",I4.4,".pvtu")
 ! 45    FORMAT(A,".pvtu")
 40    FORMAT(A,"_",I4.4,A5)
@@ -1450,15 +1449,9 @@
 100   FORMAT(6X,A,E14.7,5A)
 110   FORMAT(A)
 
-
       RETURN
 
       END SUBROUTINE UPDATE_AND_CLOSE_PVD_FILE
-
-
-
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -1475,23 +1468,25 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
   SUBROUTINE WRITE_CUT_SURFACE_VTK
 
-      USE param
-      USE param1
-      USE parallel
+      USE compar
       USE constant
-      USE run
-      USE toleranc
+      USE cut_cell_preproc, only: eval_f
+      USE cutcell
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE functions
       USE geometry
       USE indices
-      USE compar
-      USE sendrecv
-      USE quadric
-      USE cutcell
-      USE fldvar
-      USE vtk
+      USE parallel
+      USE param
+      USE param1
       USE polygon
+      USE quadric
+      USE run
+      USE sendrecv
       USE stl
-      USE functions
+      USE toleranc
+      USE vtk
 
       IMPLICIT NONE
 
@@ -3139,6 +3134,19 @@
                   I = GLOBAL_I_OF(IJK)
                   J = GLOBAL_J_OF(IJK)
                   K = GLOBAL_K_OF(IJK)
+
+                  IF(VTK_CUTCELL_ONLY(VTK_REGION)) THEN
+                     IF(I==IMIN1.OR.I==IMAX1.OR. &
+                        J==JMIN1.OR.J==JMAX1.OR. &
+                        K==KMIN1.OR.K==KMAX1.OR. &
+                        GLOBAL_CUT_CELL_AT(IJK)) THEN
+
+                        BELONGS_TO_VTK_SUBDOMAIN(IJK) = .TRUE.
+                        NUMBER_OF_VTK_CELLS = NUMBER_OF_VTK_CELLS + 1
+                     ENDIF
+                     CYCLE
+                  ENDIF
+
 
 ! X-direction
                   KEEP_XDIR=.FALSE.

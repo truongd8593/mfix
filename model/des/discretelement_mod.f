@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !   Module name: DISCRETELEMENT                                        C
@@ -28,6 +29,7 @@
          END FUNCTION DES_GETINDEXFROMPOS
       END INTERFACE
 
+      INTEGER, PARAMETER :: DIM_M_TRI = 55 ! 10th triangular number
 
 ! Total number of particles in simulation: read from input or generated
       INTEGER PARTICLES
@@ -130,6 +132,7 @@
 ! Logic that controls whether to print data dem simulations (granular or
 ! coupled)
       LOGICAL PRINT_DES_DATA
+      CHARACTER(LEN=255) :: VTP_DIR
 
 ! logic that controls if des run time messages are printed on screen or not
       LOGICAL PRINT_DES_SCREEN
@@ -236,7 +239,6 @@
 ! End neighbor search related quantities
 !-----------------------------------------------------------------<<<
 
-
 ! User specified dimension of the system (by default 2D, but if 3D system is
 ! desired then it must be explicitly specified)
       INTEGER, PARAMETER :: DIMN = 3
@@ -309,8 +311,8 @@
 
 ! coeff of restituion input in one D array, solid solid
 ! Tangential rest. coef. are used for hertzian collision model but not linear
-      DOUBLE PRECISION DES_EN_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
-      DOUBLE PRECISION DES_ET_INPUT(DIM_M+DIM_M*(DIM_M-1)/2)
+      DOUBLE PRECISION DES_EN_INPUT(DIM_M_TRI)
+      DOUBLE PRECISION DES_ET_INPUT(DIM_M_TRI)
 
 ! coeff of restitution input in one D array, solid wall
       DOUBLE PRECISION DES_EN_WALL_INPUT(DIM_M)
@@ -376,14 +378,6 @@
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: FC    !(3,PARTICLES)
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: TOW   !(3,PARTICLES)
 
-! Dynamic information related to computational (eulerian) fluid grid
-!----------------------------------------------------------------->>>
-! Dynamic variable. for each ijk computational fluid cell store the
-! total number of particles and the id's of the particles in that cell
-      TYPE iap1
-         INTEGER, DIMENSION(:), POINTER:: p
-      END TYPE iap1
-
 !     particle can collide with at most COLLISION_ARRAY_MAX facets simultaneously
       INTEGER :: COLLISION_ARRAY_MAX = 8
 
@@ -391,11 +385,6 @@
 !     -1 value indicates no collision
       INTEGER, ALLOCATABLE :: wall_collision_facet_id(:,:)
       DOUBLE PRECISION, ALLOCATABLE :: wall_collision_PFT(:,:,:)
-
-! in order to facilitate the parallel processing the PIC is defined
-! as single array IJK
-      TYPE(iap1), DIMENSION(:), ALLOCATABLE:: pic  ! (DIMENSION_3)
-
 
 ! Store the number of particles in a computational fluid cell
       INTEGER, DIMENSION(:), ALLOCATABLE :: PINC  ! (DIMENSION_3)
@@ -552,13 +541,6 @@
 
       LOGICAL :: DES_EXPLICITLY_COUPLED
 
-! particle in cell related variable
-      type iap2
-         integer :: isize
-         integer, dimension(:), pointer:: p
-      end type iap2
-
-      type(iap2), dimension(:),allocatable:: dg_pic
       integer, dimension(:),allocatable :: dg_pijk,dg_pijkprv
 
 ! variable to clean the ghost cells

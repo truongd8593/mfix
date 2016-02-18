@@ -1,54 +1,34 @@
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Module name: CALC_H (IJK, M, N)                                       C
+!  Function name: CALC_H                                               C
 !  Purpose: Calculate specific enthalpy of species N in phase M        C
 !                                                                      C
-!  Author: M. Syamlal                                 Date: 27-DEC-2007C
-!  Reviewer:                                         Date:   C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:None                                           C
-!  Variables modified:None                                             C
-!                                                                      C
-!  Local variables:                                                    C
+!  Author: M. Syamlal                                Date: 27-DEC-2007 C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION CALC_H(refT, M, NN)
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE physprop
-      USE fldvar
 
+! Modules
+!---------------------------------------------------------------------//
+      USE physprop, only: mw_g, mw_s, HfrefoR
       USE constant, only: RGAS => GAS_CONST_cal
       USE read_thermochemical, only: calc_ICpoR
-
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!                      cell, phase and species indices
 
+! Dummy arguments
+!---------------------------------------------------------------------//
+! cell, phase and species indices
       DOUBLE PRECISION, INTENT(IN) :: refT   ! Temperature
-
       INTEGER, INTENT(IN) :: M ! Phase index
       INTEGER, INTENT(IN) :: NN ! Species index
 
-      DOUBLE PRECISION ICpoR
-      DOUBLE PRECISION lMW
-
+! Local variables
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION :: ICpoR
+      DOUBLE PRECISION :: lMW
       INTEGER :: IER
+!---------------------------------------------------------------------//
 
-!-----------------------------------------------
-!
       IER = 0
 
       if(M == 0)then
@@ -60,7 +40,7 @@
 ! Integrate the specific heat from zero to refT
       ICpoR = calc_ICpoR(refT, M, NN, IER)
 
-! Evaluate the enthalpy of speices N at refT
+! Evaluate the enthalpy of species N at refT
       CALC_H = (HfrefoR(M,NN)  + ICpoR) * (RGAS / lMW)
 
       RETURN

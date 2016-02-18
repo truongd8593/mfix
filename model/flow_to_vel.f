@@ -208,7 +208,6 @@
       USE bc, only: BC_VOLFLOW_s
       USE bc, only: BC_X_s
       USE param1, only: UNDEFINED, ZERO
-      USE physprop, only: BASE_ROs
       USE physprop, only: INERT_SPECIES
       USE physprop, only: RO_s0
       USE physprop, only: X_s0
@@ -249,7 +248,7 @@
 ! Set an alias for the inert species.
          INERT = INERT_SPECIES(M)
 ! Variable solids density.
-         VOLFLOW = BC_MASSFLOW_S(BCV,M)/EOSS(BASE_ROs(M),              &
+         VOLFLOW = BC_MASSFLOW_S(BCV,M)/EOSS(RO_s0(M),              &
             X_s0(M,INERT), BC_X_S(BCV,M,INERT))
       ENDIF
 
@@ -289,22 +288,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV)
 
-      USE param
-      USE param1
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE run
       USE bc
-      USE scales
-      USE indices
-      USE funits
       USE compar
       USE discretelement
+      USE error_manager
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
       USE mfix_pic
-
-      use error_manager
-      use toleranc
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE scales
+      USE toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -532,87 +531,6 @@
 
       END SUBROUTINE SOLIDS_VOLFLOW_TO_VELOCITY
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: FLOW_TO_VEL                                             C
@@ -645,6 +563,7 @@
       USE compar
       USE discretelement
       USE eos, ONLY: EOSG, EOSS
+      USE exit, only: mfix_exit
       USE fldvar
       USE funits
       USE geometry
@@ -980,11 +899,11 @@
                               CALL MFIX_EXIT(myPE)
                            ELSE
 ! If the solids isn't present, give it the baseline density.
-                              BC_ROs = BASE_ROs(M)
+                              BC_ROs = RO_s0(M)
                            ENDIF
                         ELSE
 ! Calculate the solids density.
-                           BC_ROs = EOSS(BASE_ROs(M),X_s0(M,INERT),    &
+                           BC_ROs = EOSS(RO_s0(M),X_s0(M,INERT),    &
                               BC_X_S(BCV,M,INERT))
                         ENDIF
                      ELSE

@@ -22,8 +22,10 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE funits
-      USE compar
+         USE compar
+         USE exit, only: mfix_exit
+         USE funits
+
       IMPLICIT NONE
 
 !-----------------------------------------------

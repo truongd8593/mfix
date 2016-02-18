@@ -1,3 +1,5 @@
+MODULE CG_INIT_NAMELIST
+   CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                         C
 !     Module name: CARTESIAN_GRID_INIT_NAMELIST                           C
@@ -1220,6 +1222,11 @@
       VTK_PART_COHESION= .FALSE.
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>Write cut-cell data only in VTK file.</description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTK_CUTCELL_ONLY= .FALSE.
+!</keyword>
 
 !<keyword category="Output Control" required="false">
 !  <description>Starting Index appended to VTU files</description>
@@ -1532,3 +1539,4 @@
 !</keyword>
       RETURN
       END SUBROUTINE CARTESIAN_GRID_INIT_NAMELIST
+END MODULE CG_INIT_NAMELIST

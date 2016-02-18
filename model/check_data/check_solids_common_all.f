@@ -21,6 +21,7 @@
 
 ! Global Variables:
 !---------------------------------------------------------------------//
+      use run, only: energy_eq, species_eq
 ! Flag: Use legacy rrates implementation.
       use rxns, only: USE_RRATES
 ! Number of continuum solids phases.
@@ -33,7 +34,8 @@
       use physprop, only: K_S0
 ! User specified: Initial solids diameter.
       use physprop, only: D_P0
-
+      use physprop, only: mu_s0, dif_s0
+      use mms, only: use_mms
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -120,6 +122,29 @@
       ELSE
          CALL CHECK_SOLIDS_SPECIES(MMAX_L)
       ENDIF
+
+! Currently MMS uses constant properties. These are in place simply
+! to give the developer a heads-up that the code/setup may not fully
+! encompass the use of non-constant properties
+      IF (USE_MMS) THEN
+         DO M = 1, MMAX_L
+            IF (MU_S0(M) == UNDEFINED) THEN
+               WRITE(ERR_MSG, 1200) trim(ivar('MU_s0',M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF (K_S0(M) == UNDEFINED .AND. ENERGY_EQ) THEN
+               WRITE(ERR_MSG, 1200) trim(ivar('K_s0',M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+            IF (DIF_S0(M) == UNDEFINED .AND. SPECIES_EQ(M)) THEN
+               WRITE(ERR_MSG, 1200) trim(ivar('DIF_S0',M))
+               CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            ENDIF
+         ENDDO
+ 1200 FORMAT('Error 1200: ',A,' must be defined when USE_MMS is T.',/,&
+         'Please correct the mfix.dat file.')
+      ENDIF
+
 
 ! Check solids drag model selection.
       CALL CHECK_SOLIDS_DRAG
@@ -703,8 +728,6 @@
       use run, only: SOLVE_ROs
 ! User specified: constant solids density
       use physprop, only: RO_s0
-! Calculated baseline variable solids density.
-      use physprop, only: BASE_ROs
 ! Baseline species densities
       use physprop, only: RO_Xs0
 ! Baseline species mass fractions.
@@ -864,7 +887,7 @@
 
 ! All of the information for variable solids density has been verified
 ! as of this point. Calculate and store the baseline density.
-            BASE_ROs(M) = EOSS0(M)
+            RO_s0(M) = EOSS0(M)
 
 ! Check physical restrictions on constant solids density input.
          ELSEIF(RO_S0(M) <= ZERO) THEN

@@ -11,7 +11,7 @@ PPFCCOMPILE = $(FC) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(PPFCCOMPILE) -c -o $@ $<
 
 FC_MODEXT=mod
-CLEANFILES=*.$(FC_MODEXT)
+CLEANFILES=*.$(FC_MODEXT) *.so
 MODDIR=$(top_builddir)/model
 
 # Current directory takes precedence over model/include/ and model/
@@ -43,9 +43,10 @@ mfix_LDADD += $(builddir)/.build/read_namelist.$(OBJEXT)
 mfix_LDADD += $(LIBMFIX)
 
 build:
+	rm -f $@
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: $(LIBMFIX) TAGS run test
+.PHONY: $(LIBMFIX) TAGS run test mfix.so
 
 # top level directory needs to be built first
 $(LIBMFIX):
@@ -113,6 +114,33 @@ postmfix$(EXEEXT): $(LIBMFIX)
 
 ################################################################
 #                                                              #
+#           pymfix Python module                               #
+#                                                              #
+################################################################
+
+pymfix_src = \
+	$(top_srcdir)/model/param_mod.f \
+	$(top_srcdir)/model/param1_mod.f \
+	$(top_srcdir)/model/dmp_modules/compar_mod.f \
+	$(top_srcdir)/model/fldvar_mod.f \
+	$(top_srcdir)/model/des/discretelement_mod.f \
+	$(top_srcdir)/model/iterate.f \
+	$(top_srcdir)/model/residual_mod.f \
+	$(top_srcdir)/model/time_step.f \
+	$(top_srcdir)/model/main.f \
+	$(top_srcdir)/model/run_mod.f
+
+pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
+
+pymfix: mfix.so
+	rm -f $@
+	$(LN_S) $(top_srcdir)/pymfix/$@ $@
+
+mfix.so: $(LIBMFIX) $(bin_PROGRAMS)
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+
+################################################################
+#                                                              #
 #      OpenMP and MPI support                                  #
 #                                                              #
 #      --enable-smp and --enable-dmp options in configure.ac   #
@@ -124,9 +152,12 @@ AM_FCFLAGS += $(OPENMP_FCFLAGS)
 AM_LDFLAGS += $(OPENMP_FCFLAGS)
 endif
 
+F2PY_FLAGS =
+
 if MPI
 AM_FCFLAGS += $(FC_DEFINE)MPI
 AM_LDFLAGS += $(FC_DEFINE)MPI
+F2PY_FLAGS += $(FC_DEFINE)MPI
 endif
 
 ################################################################
@@ -143,13 +174,6 @@ export TAU_MAKEFILE
 if USE_NETCDF
 AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
 mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
-endif
-
-################################################################
-#      Socket server
-################################################################
-if USE_SOCKET
-AM_FCFLAGS += $(FC_DEFINE)socket
 endif
 
 ################################################################

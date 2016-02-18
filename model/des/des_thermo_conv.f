@@ -93,8 +93,10 @@
          ENDIF
       ENDDO
 
-      RETURN
+! Note that MPI sync is managed at the end of des_time_march for
+! non-explicitly coupled cases that use interpolation.
 
+      RETURN
       END SUBROUTINE CONV_GS_DES1
 
 
@@ -132,15 +134,15 @@
 ! Gas phase energy equation sources
       use des_thermo, only: CONV_Sp, CONV_Sc
       Use discretelement, only: DES_RADIUS
+! Heat transfer coefficint (GAMMA) multiplied by sufrace area
+      use des_thermo, only: GAMMAxSA
+! Funtion for identifying fluid cells and normal particles.
+      use functions, only: FLUID_AT
+      use functions, only: IS_NORMAL
+! MPI function for collecting interpolated data from ghost cells.
+      use sendrecvnode, only: DES_COLLECT_gDATA
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
-
-      use des_thermo, only: GAMMAxSA
-
-      use functions, only: FLUID_AT
-      use functions, only: IS_NONEXISTENT
-      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
-      use functions, only: IS_EXITING, IS_EXITING_GHOST
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -166,13 +168,8 @@
 ! Calculate the gas phase forces acting on each particle.
       DO NP=1,MAX_PIP
 
-         IF(IS_NONEXISTENT(NP)) CYCLE
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
          IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
-
-! The drag force is not calculated on entering or exiting particles
-! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(IS_ENTERING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. &
-           IS_EXITING(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
 ! Calculate the heat transfer coefficient.
          CALL CALC_GAMMA_DES(NP, GAMMA)
@@ -198,6 +195,13 @@
          ENDIF
 
       ENDDO
+
+! Add in data stored in ghost cells from interpolation. This call must
+! preceed the SEND_RECV to avoid overwriting ghost cell data.
+      IF(DES_INTERP_ON) THEN
+         CALL DES_COLLECT_gDATA(CONV_SC)
+         CALL DES_COLLECT_gDATA(CONV_SP)
+      ENDIF
 
 ! Update the drag force and sources in ghost layers.
       CALL SEND_RECV(CONV_SC, 2)

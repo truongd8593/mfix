@@ -859,6 +859,7 @@
 !---------------------------------------------------------------------//
       USE compar
       USE discretization
+      USE exit, only: mfix_exit
       USE functions
       USE geometry
       USE indices

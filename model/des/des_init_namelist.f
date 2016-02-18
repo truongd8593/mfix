@@ -85,6 +85,15 @@
       PRINT_DES_DATA = .FALSE.
 !</keyword>
 
+!<keyword category="Output Control" required="false">
+!  <description>
+!    Directory where particle vtp files are stored. The files are
+!    written in the run directory by default.
+!  </description>
+!  <dependent keyword="CARTESIAN_GRID" value=".TRUE."/>
+      VTP_DIR = '.'
+!</keyword>
+
 !<keyword category="Output Control" required="false"
 !   dem="true" pic="true">
 !  <description> The output file format for DES data.</description>

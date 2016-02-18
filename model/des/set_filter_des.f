@@ -30,6 +30,7 @@
       use param1, only: ONE, UNDEFINED
 
       use sendrecvnode, only: DES_SETNODEINDICES
+      use sendrecvnode, only: INIT_DES_COLLECT_gDATA
       use mpi_utility, only: GLOBAL_ALL_MIN
 
       use error_manager
@@ -90,11 +91,12 @@
          CALL COMPUTE_VOLUME_OF_NODES
 ! Setup MPI exchange arrys for nodes
          CALL DES_SETNODEINDICES
-
       CASE(DES_INTERP_DPVM, DES_INTERP_GAUSS)
          OoFILTER_VOL = 0.25d0/(FILTER_WIDTH_INTERP**3)
          FILTER_WIDTH_INTERPx3 = FILTER_WIDTH_INTERP*3
+         CALL INIT_DES_COLLECT_gDATA
       END SELECT
+
 
       CALL FINL_ERR_MSG
 

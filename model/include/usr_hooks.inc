@@ -18,6 +18,6 @@
 
       CALL_USR, C, C_NAME, USR_DT, USR_TYPE, USR_VAR, USR_FORMAT,      &
       USR_EXT, USR_X_w, USR_X_e, USR_Y_s, USR_Y_n, USR_Z_b, USR_Z_t,   &
-      USR_ROG, USR_ROS, USR_CPG, USR_CPS
-
-
+      USR_ROG, USR_CPG, USR_KG, USR_MUG, USR_DIFG,                     &
+      USR_ROS, USR_CPS, USR_KS, USR_MUS, USR_DIFS,                     &
+      USR_FGS, USR_FSS, USR_GAMA, CALL_USR_SOURCE

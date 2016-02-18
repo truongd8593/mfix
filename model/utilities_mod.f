@@ -10,18 +10,16 @@ CONTAINS
 !  Purpose: check whether argument is NAN                              !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-
       LOGICAL FUNCTION mfix_isnan(x)
 
-!-----------------------------------------------
 ! Dummy arguments
-!-----------------------------------------------
-      double precision x
-!-----------------------------------------------
+!---------------------------------------------------------------------//
+      double precision, intent(in) :: x
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       CHARACTER(LEN=80) :: notnumber
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
       mfix_isnan = .False.
       WRITE(notnumber,*) x
@@ -36,7 +34,7 @@ CONTAINS
       ENDIF
 
       RETURN
-    END FUNCTION mfix_isnan
+      END FUNCTION mfix_isnan
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
@@ -44,113 +42,86 @@ CONTAINS
 !  Purpose: Find maximum velocity at inlets.                           C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 26-AUG-05  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       DOUBLE PRECISION FUNCTION MAX_VEL_INLET()
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE bc
-      USE fldvar
-      USE geometry
-      USE physprop
-      USE indices
-      USE constant
-      USE run
-      USE compar
-      USE discretelement
-      USE functions
-
+!---------------------------------------------------------------------//
+      use bc, only: bc_defined, bc_type_enum
+      use bc, only: mass_inflow, p_inflow
+      use bc, only: bc_plane
+      use bc, only: bc_k_b, bc_k_t, bc_j_s, bc_j_n, bc_i_w, bc_i_e
+      use compar, only: dead_cell_at
+      use fldvar, only: u_g, v_g, w_g, u_s, v_s, w_s
+      use functions, only: funijk, is_on_mype_owns
+      use functions, only: im_of, jm_of, km_of
+      use mpi_utility, only: global_all_max
+      use param, only: dimension_bc
+      use param1, only: zero, small_number
+      use physprop, only: mmax
+      use run, only: units
+      use toleranc, only: max_allowed_vel, max_inlet_vel, max_inlet_vel_fac
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
-      INTEGER :: L, I, J, K, IJK, IJK2, M
-!-----------------------------------------------
+!---------------------------------------------------------------------//
+      INTEGER :: L, I, J, K, IJK, M
+      DOUBLE PRECISION :: maxVEL
+!---------------------------------------------------------------------//
 
 ! initializing
-      MAX_VEL_INLET = ZERO
+      maxVEL = ZERO
 
       DO L = 1, DIMENSION_BC
-         IF (BC_DEFINED(L)) THEN
-            IF (BC_TYPE_ENUM(L) == MASS_INFLOW .OR. BC_TYPE_ENUM(L) == P_INFLOW) THEN
 
-               DO K = BC_K_B(L), BC_K_T(L)
-                  DO J = BC_J_S(L), BC_J_N(L)
-                     DO I = BC_I_W(L), BC_I_E(L)
-                        IF (.NOT.IS_ON_myPE_plus2layers(I,J,K)) CYCLE
-                        IF (DEAD_CELL_AT(I,J,K)) CYCLE  ! skip dead cells
-                        IJK = FUNIJK(I,J,K)
+         IF(.NOT.(BC_DEFINED(L).AND.(BC_TYPE_ENUM(L)==MASS_INFLOW .OR. &
+            BC_TYPE_ENUM(L) == P_INFLOW))) CYCLE
 
-                        SELECT CASE (BC_PLANE(L))
-                        CASE ('S')
-                           IJK2 = JM_OF(IJK)
-                           IF( ABS(V_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_G(IJK2))
-                        CASE ('N')
-                           IF( ABS(V_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_G(IJK))
-                        CASE ('W')
-                           IJK2 = IM_OF(IJK)
-                           IF( ABS(U_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_G(IJK2))
-                        CASE ('E')
-                           IF( ABS(U_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_G(IJK))
-                        CASE ('B')
-                           IJK2 = KM_OF(IJK)
-                           IF( ABS(W_G(IJK2)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_G(IJK2))
-                        CASE ('T')
-                           IF( ABS(W_G(IJK)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_G(IJK))
-                        END SELECT
+         DO K = BC_K_B(L), BC_K_T(L)
+         DO J = BC_J_S(L), BC_J_N(L)
+         DO I = BC_I_W(L), BC_I_E(L)
 
-                       IF (.NOT.DES_CONTINUUM_COUPLED .OR. DES_CONTINUUM_HYBRID) THEN
-                          SELECT CASE (BC_PLANE(L))
-                           CASE ('S')
-                              IJK2 = JM_OF(IJK)
-                              DO M = 1, MMAX
-                                 IF( ABS(V_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_s(IJK2, M))
-                              ENDDO
-                           CASE ('N')
-                              DO M = 1, MMAX
-                                IF( ABS(V_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(V_s(IJK, M))
-                              ENDDO
-                           CASE ('W')
-                              IJK2 = IM_OF(IJK)
-                              DO M = 1, MMAX
-                                IF( ABS(U_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_s(IJK2, M))
-                              ENDDO
-                           CASE ('E')
-                              DO M = 1, MMAX
-                                IF( ABS(U_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(U_s(IJK, M))
-                              ENDDO
-                           CASE ('B')
-                              IJK2 = KM_OF(IJK)
-                              DO M = 1, MMAX
-                                IF( ABS(W_s(IJK2, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_s(IJK2, M))
-                              ENDDO
-                           CASE ('T')
-                              DO M = 1, MMAX
-                                IF( ABS(W_s(IJK, M)) > MAX_VEL_INLET ) MAX_VEL_INLET = ABS(W_s(IJK, M))
-                              ENDDO
-                           END SELECT
-                        ENDIF   ! end if (.not.des_continuum_coupled .or. des_continuum_hybrid)
+            IF (.NOT.IS_ON_myPE_OWNS(I,J,K)) CYCLE
+            IF (DEAD_CELL_AT(I,J,K)) CYCLE
+            IJK = FUNIJK(I,J,K)
 
-                     ENDDO
-                  ENDDO
-               ENDDO
+            SELECT CASE (BC_PLANE(L))
+            CASE ('E'); maxVEL = max(maxVEL,abs(U_G(IJK)))
+            CASE ('N'); maxVEL = max(maxVEL,abs(V_G(IJK)))
+            CASE ('T'); maxVEL = max(maxVEL,abs(W_G(IJK)))
+            CASE ('W'); maxVEL = max(maxVEL,abs(U_G(IM_OF(IJK))))
+            CASE ('S'); maxVEL = max(maxVEL,ABS(V_G(JM_OF(IJK))))
+            CASE ('B'); maxVEL = max(maxVEL,abs(W_G(KM_OF(IJK))))
+            END SELECT
 
-           ENDIF
-         ENDIF
+            DO M=1,MMAX
+               SELECT CASE (BC_PLANE(L))
+               CASE ('E'); maxVEL = max(maxVEL,abs(U_s(IJK,M)))
+               CASE ('N'); maxVEL = max(maxVEL,abs(V_s(IJK,M)))
+               CASE ('T'); maxVEL = max(maxVEL,abs(W_s(IJK,M)))
+               CASE ('W'); maxVEL = max(maxVEL,abs(U_s(IM_OF(IJK),M)))
+               CASE ('S'); maxVEL = max(maxVEL,abs(V_s(JM_OF(IJK),M)))
+               CASE ('B'); maxVEL = max(maxVEL,abs(W_s(KM_OF(IJK),M)))
+               END SELECT
+            ENDDO
+
+         ENDDO
+         ENDDO
+         ENDDO
       ENDDO
+
+      CALL GLOBAL_ALL_MAX(maxVEL, MAX_VEL_INLET)
+
+! If no inlet velocity is specified, use an upper limit defined in
+! toleranc_mod.f
+      IF(MAX_VEL_INLET <= SMALL_NUMBER) THEN
+         MAX_VEL_INLET = MAX_ALLOWED_VEL
+         IF(UNITS == 'SI') MAX_INLET_VEL = 1D-2*MAX_ALLOWED_VEL
+      ELSE
+! Scale the value using a user defined scale factor
+         MAX_VEL_INLET = 100.0d0*MAX_INLET_VEL_FAC*MAX_VEL_INLET
+      ENDIF
 
       RETURN
       END FUNCTION MAX_VEL_INLET
@@ -163,46 +134,32 @@ CONTAINS
 !           sound                                                      C
 !                                                                      C
 !  Author: S. Benyahia                                Date: 25-AUG-05  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
 !                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!  Local variables:                                                    C
 !                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-
       LOGICAL FUNCTION CHECK_VEL_BOUND ()
 
-!-----------------------------------------------
 ! Modules
-!-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE fldvar
-      USE bc
-      USE geometry
-      USE physprop
-      USE indices
-      USE run
-      USE toleranc
-      USE compar
-      USE mpi_utility
-      USE discretelement
-      USE functions
+!---------------------------------------------------------------------//
+      use compar, only: ijkstart3, ijkend3
+      use discretelement, only: des_continuum_coupled, des_continuum_hybrid
+      use fldvar, only: ep_g, u_g, v_g, w_g
+      use fldvar, only: ep_s, u_s, v_s, w_s
+      use functions, only: fluid_at 
+      use indices, only: i_of, j_of, k_of
+      use mpi_utility, only: global_all_or
+      use physprop, only: mmax
+      use toleranc, only: max_inlet_vel
 
       IMPLICIT NONE
-!-----------------------------------------------
+
 ! Local variables
-!-----------------------------------------------
+!---------------------------------------------------------------------//
       INTEGER :: M
 ! Indices
       INTEGER :: IJK
       LOGICAL :: ALL_IS_ERROR
-!-----------------------------------------------
+!---------------------------------------------------------------------//
 
 !!$omp   parallel do private(IJK)
 ! initializing
@@ -255,68 +212,43 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
       END FUNCTION CHECK_VEL_BOUND
 
 
-
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Function name: SEEK_COMMENT (LINE_MAXCOL)                           C
-!  Purpose: determine if (and where) a comment character appears       C
-!           in a data input line                                       C
-!                                                                      C
-!  Author: P.Nicoletti                                Date: 25-NOV-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: SEEK_COMMENT                                    C
-!                                                                      C
-!  Local variables: DIM_COMMENT, COMMENT_CHAR, L, COMMENT, L2          C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Function: SEEK_COMMENT                                              !
+!  Purpose: determine if (and where) a comment character appears       !
+!           in a data input line                                       !
+!     The function SEEK_COMMENT returns the index to where a comment   !
+!     character was found in the input data line.  Equals MAXCOL + 1   !
+!     if no-comment characters in the line.                            !
+!                                                                      !
+!  Author: P.Nicoletti                                Date: 25-NOV-91  !
+!                                                                      !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       INTEGER FUNCTION SEEK_COMMENT (LINE, MAXCOL)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                   input data line
-      CHARACTER(len=*) LINE
-!
-!                   maximum column of input data line to search
-      INTEGER       MAXCOL
-!
-!-----------------------------------------------
-!   L o c a l   P a r a m e t e r s
-!-----------------------------------------------
-!
-!                   the number of designated comment characters
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! input data line
+      CHARACTER(len=*) :: LINE
+! maximum column of input data line to search
+      INTEGER :: MAXCOL
+
+! Local parameters
+!---------------------------------------------------------------------//
+! the number of designated comment characters
       INTEGER, PARAMETER :: DIM_COMMENT = 2
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!                   loop indicies
+
+! Local variables
+!---------------------------------------------------------------------//
+! loop indicies
       INTEGER :: L, L2
-!
-!                   the comment characters
+! the comment characters
       CHARACTER, DIMENSION(DIM_COMMENT) :: COMMENT_CHAR
-!-----------------------------------------------
-!
-!     The function SEEK_COMMENT returns the index to where a comment
-!     character was found in the input data line.  Equals MAXCOL + 1
-!     if no-comment characters in the line
-!
-!
+!---------------------------------------------------------------------//
       DATA COMMENT_CHAR/'#', '!'/
-!
+
       DO L = 1, MAXCOL
          DO L2 = 1, DIM_COMMENT
             IF (LINE(L:L) == COMMENT_CHAR(L2)) THEN
@@ -326,51 +258,35 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
          END DO
       END DO
       SEEK_COMMENT = MAXCOL + 1
-!
       RETURN
       END FUNCTION SEEK_COMMENT
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Function name: SEEK_END (LINE, MAXCOL)                              C
-!  Purpose: determine where trailing blanks begin in a line            C
-!                                                                      C
-!  Author: P.Nicoletti, M. Syamlal                    Date: 7-AUG-92   C
-!  Reviewer: M. Syamlal                               Date: 11-DEC-92  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: SEEK_END                                        C
-!                                                                      C
-!  Local variables: L                                                  C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Function: SEEK_END                                                  !
+!  Purpose: determine where trailing blanks begin in a line            !
+!     The function SEEK_END returns the index to where the last        !
+!     character was found in the input data line.  Equals MAXCOL       !
+!     if no trailing blank characters in the line.                     !
+!                                                                      !
+!  Author: P.Nicoletti, M. Syamlal                    Date: 7-AUG-92   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       INTEGER FUNCTION SEEK_END (LINE, MAXCOL)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                   maximum column of input data line to search
-      INTEGER MAXCOL
-!
-!                   input data line
-      CHARACTER LINE*(*)
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! maximum column of input data line to search
+      INTEGER :: MAXCOL
+! input data line
+      CHARACTER :: LINE*(*)
+
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: L
-!-----------------------------------------------
-!
-!     The function SEEK_END returns the index to where the last
-!     character was found in the input data line.  Equals MAXCOL
-!     if no trailing blank characters in the line
-!
-!
+!---------------------------------------------------------------------//
       SEEK_END = 0
       DO L = 1, MAXCOL
          IF (LINE(L:L) /= ' ') SEEK_END = L
@@ -378,68 +294,46 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
       RETURN
       END FUNCTION SEEK_END
 
-!
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Function name: LINE_TOO_BIG (LINE,LINE_LEN,MAXCOL)                  C
-!  Purpose: return an error condition if input data is located past    C
-!           column MAXCOL in the data input file                       C
-!                                                                      C
-!  Author: P.Nicoletti                                Date: 25-NOV-91  C
-!  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  C
-!                                                                      C
-!  Revision Number:                                                    C
-!  Purpose:                                                            C
-!  Author:                                            Date: dd-mmm-yy  C
-!  Reviewer:                                          Date: dd-mmm-yy  C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced: None                                          C
-!  Variables modified: LINE_TOO_BIG                                    C
-!                                                                      C
-!  Local variables: L                                                  C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
-!
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Function: LINE_TOO_BIG                                              !
+!  Purpose: return an error condition if input data is located past    !
+!           column MAXCOL in the data input file                       !
+!     The function LINE_TOO_BIG returns a value greater than 0 to      !
+!     indicate an error condition (data passed column MAXCOL in LINE)  !
+!                                                                      !
+!  Author: P.Nicoletti                                Date: 25-NOV-91  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       INTEGER FUNCTION LINE_TOO_BIG (LINE, LINE_LEN, MAXCOL)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
       IMPLICIT NONE
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                   input data line
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! input data line
       CHARACTER(LEN=*) :: LINE
-!
-!                   length of input data line
-      INTEGER       LINE_LEN
-!
-!                   maximum column that non-blank charcaters are
-!                   are in the input data line
-      INTEGER       MAXCOL
-!-----------------------------------------------
-!   L o c a l   V a r i a b l e s
-!-----------------------------------------------
-!
-!               loop index
+! length of input data line
+      INTEGER :: LINE_LEN
+! maximum column that non-blank charcaters are
+! are in the input data line
+      INTEGER :: MAXCOL
+
+! Local variables
+!---------------------------------------------------------------------//
+! Loop index
       INTEGER :: L
-!-----------------------------------------------
-!
-!     The function LINE_TOO_BIG returns a value greater than 0 to
-!     indicate an error condition (data passed column MAXCOL in LINE)
-!
-!
+!---------------------------------------------------------------------//
       DO L = MAXCOL + 1, LINE_LEN
          IF (LINE(L:L) /= ' ') THEN
             LINE_TOO_BIG = L
             RETURN
          ENDIF
-      END DO
+      ENDDO
       LINE_TOO_BIG = 0
       RETURN
       END FUNCTION LINE_TOO_BIG
+
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -450,66 +344,48 @@ LOOP_FLUID : DO IJK = IJKSTART3, IJKEND3
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       LOGICAL FUNCTION BLANK_LINE (line)
-
       IMPLICIT NONE
 
+! Dummy arguments
+!---------------------------------------------------------------------//
       CHARACTER :: LINE*(*)
 
+! Local variables
+!---------------------------------------------------------------------//
       INTEGER :: L
-
+!---------------------------------------------------------------------//
       BLANK_LINE = .FALSE.
       DO L=1, len(line)
          IF(line(L:L)/=' ' .and. line(L:L)/='    ')RETURN
       ENDDO
-
       BLANK_LINE = .TRUE.
       RETURN
       END FUNCTION BLANK_LINE
 
-!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
-!                                                                      C
-!  Module name: bound_x(Array, IJKMAX2, IER)                           C
-!
-!  Purpose: bound the values of x array                                C
-!                                                                      C
-!  Author: M. Syamlal                                 Date: 15-SEP-98  C
-!  Reviewer:                                          Date:            C
-!                                                                      C
-!                                                                      C
-!  Literature/Document References:                                     C
-!                                                                      C
-!  Variables referenced:                                               C
-!  Variables modified:                                                 C
-!                                                                      C
-!  Local variables:                                                    C
-!                                                                      C
-!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: bound_x                                                 !
+!  Purpose: bound the values of x array                                !
+!                                                                      !
+!  Author: M. Syamlal                                 Date: 15-SEP-98  !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE BOUND_X(ARRAY, IJKMAX2)
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
-!
-!  Include param.inc file to specify parameter values
-!
-!-----------------------------------------------
-!   M o d u l e s
-!-----------------------------------------------
-      USE param
-      USE param1
+
+! Modules
+!---------------------------------------------------------------------//
+      USE param, only: dimension_3
+      USE param1, only: one, zero
       IMPLICIT NONE
-!-----------------------------------------------
-!   G l o b a l   P a r a m e t e r s
-!-----------------------------------------------
-!-----------------------------------------------
-!   D u m m y   A r g u m e n t s
-!-----------------------------------------------
-!
-!                      Maximum dimension
-      INTEGER          IJKMAX2
-!
-!                      Array
-      DOUBLE PRECISION Array(DIMENSION_3)
-!-----------------------------------------------
-!
+
+! Dummy arguments
+!---------------------------------------------------------------------//
+! Maximum dimension
+      INTEGER :: IJKMAX2
+! Array
+      DOUBLE PRECISION :: Array(DIMENSION_3)
+!--------------------------------------------------------------------//
       IF (IJKMAX2 > 0) THEN
          ARRAY(:) = MIN(ONE,MAX(ZERO,ARRAY(:)))
       ENDIF

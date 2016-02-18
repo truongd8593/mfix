@@ -391,39 +391,31 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE indices
-      USE geometry
+      USE bc, only: IJK_P_G
+      USE cdist
       USE compar
-      USE physprop
-      USE fldvar
-      USE funits
-      USE scalars
-      USE run
-      USE visc_g
-      USE energy
-
-      USE pgcor, only :       PHASE_4_P_G
-      USE pscor, only :       PHASE_4_P_S
-
-
       USE cutcell
-
-      USE stl
-
-      USE sendrecv
-
+      USE discretelement, only: DISCRETE_ELEMENT
+      USE energy
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE functions
+      USE funits
+      USE geometry
+      USE indices
       USE mpi_utility
       USE parallel
-
-      use bc, only: IJK_P_G
-      use discretelement, only: DISCRETE_ELEMENT
-
-      USE cdist
-      USE functions
-
-      use stiff_chem, only: STIFF_CHEMISTRY,notOwner
+      USE param
+      USE param1
+      USE pgcor, only :       PHASE_4_P_G
+      USE physprop
+      USE pscor, only :       PHASE_4_P_S
+      USE run
+      USE scalars
+      USE sendrecv
+      USE stiff_chem, only: STIFF_CHEMISTRY,notOwner
+      USE stl
+      USE visc_g
 
       IMPLICIT NONE
 !-----------------------------------------------

@@ -3,34 +3,31 @@
       SUBROUTINE COMP_MEAN_FIELDS0
 
 ! Modules
-!---------------------------------------------------------------------//
-      USE param
-      USE param1
-      USE parallel
-      USE constant
-      USE physprop, only: MMAX
-      use run, only: solids_model
-      USE fldvar
-      USE run
-      USE geometry
-      USE indices
       USE bc
       USE compar
-      USE sendrecv
+      USE constant
+      USE cutcell
+      USE derived_types, only: pic
+      USE desmpi
       USE discretelement
       USE drag
+      USE fldvar
+      USE functions, only: FLUID_AT
+      USE functions, only: FUNIJK
+      USE functions, only: IS_ON_myPE_wobnd
+      USE geometry
+      USE indices
       USE interpolation
-      use desmpi
-      USE cutcell
       USE mfix_pic
+      USE mpi_node_des, only: des_addnodevalues_mean_fields
       USE mpi_utility
-
-      use mpi_node_des, only: des_addnodevalues_mean_fields
-      use particle_filter, only: DES_REPORT_MASS_INTERP
-
-      use functions, only: FLUID_AT
-      use functions, only: FUNIJK
-      use functions, only: IS_ON_myPE_wobnd
+      USE parallel
+      USE param
+      USE param1
+      USE particle_filter, only: DES_REPORT_MASS_INTERP
+      USE physprop, only: MMAX
+      USE run, only: solids_model
+      USE sendrecv
 
       IMPLICIT NONE
 ! Local variables

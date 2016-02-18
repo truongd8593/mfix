@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: run                                                    C
@@ -15,9 +16,8 @@
 !---------------------------------------------------------------------//
       use param, only: dim_M, dim_eqs
       use param1, only: UNDEFINED_I
-      USE, INTRINSIC :: ISO_C_BINDING
+      use derived_types
 !---------------------------------------------------------------------//
-
 
 ! Main filename to be used for output files  Name must
 ! still be legal after extensions are added to it.
@@ -48,7 +48,7 @@
       DOUBLE PRECISION :: TSTOP
 
 ! Time step.
-      REAL(C_DOUBLE), bind(C, name="simulation_time") :: DT
+      DOUBLE PRECISION :: DT
 
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
@@ -117,47 +117,11 @@
 ! If .TRUE. call user-defined subroutines
       LOGICAL :: CALL_USR
 
-! If .TRUE. call user-defined physical properties routines
-      LOGICAL :: USR_ROg, USR_ROs, USR_CPg, USR_CPs
-
 ! If .TRUE. force time-step when NIT=MAX_NIT and DT=DT_MIN
       LOGICAL :: PERSISTENT_MODE
 
 ! If .TRUE. solve population balance  equations
       LOGICAL :: Call_DQMOM
-
-! Drag model options (see drag_gs for full details)
-! default is syam_obrien (may enforce a corrected Umf by defining
-! drag_c1 and drag_d1 accordingly)
-      CHARACTER(64) :: DRAG_TYPE
-      INTEGER :: DRAG_TYPE_ENUM
-
-      ENUM, BIND(C)
-         ENUMERATOR :: SYAM_OBRIEN=0
-         ENUMERATOR :: GIDASPOW=1
-         ENUMERATOR :: GIDASPOW_PCF=2
-         ENUMERATOR :: GIDASPOW_BLEND=3
-         ENUMERATOR :: GIDASPOW_BLEND_PCF=4
-         ENUMERATOR :: WEN_YU=5
-         ENUMERATOR :: WEN_YU_PCF=6
-         ENUMERATOR :: KOCH_HILL=7
-         ENUMERATOR :: KOCH_HILL_PCF=8
-         ENUMERATOR :: BVK=9
-         ENUMERATOR :: HYS=10
-         ENUMERATOR :: USER_DRAG=11
-      END ENUM
-
-! filtered/subgrid corrections to the drag coefficient & granular
-! stress terms including granular viscosity and solids pressure
-! current options are 'igci' and 'milioli'
-      CHARACTER(64) :: SUBGRID_TYPE
-
-      INTEGER :: SUBGRID_TYPE_ENUM
-      ENUM, BIND(C)
-         ENUMERATOR :: UNDEFINED_SUBGRID_TYPE=0
-         ENUMERATOR :: IGCI=1
-         ENUMERATOR :: MILIOLI=2
-      END ENUM
 
 ! If .TRUE. incorporate the wall effects upon the calculation of the
 ! subgrid solids viscosity, solids pressure, and gas-solids drag
@@ -171,22 +135,6 @@
 ! Parameter used to calculate lubrication interactions between
 ! different particles in HYS drag model
       DOUBLE PRECISION :: LAM_HYS
-
-! Kinetic theory model options (see calc_mu_s for details)
-! for m > 1 : IA_nonep, GHD, LUN_1984
-! for m = 1 : LUN_1984, simonin, ahmadi, or
-!             GD_99 for granular flow or GTSH for gas-solids flow
-      CHARACTER(64) :: KT_TYPE
-      INTEGER :: KT_TYPE_ENUM
-      ENUM, BIND(C)
-         ENUMERATOR :: LUN_1984=0
-         ENUMERATOR :: SIMONIN_1996=1
-         ENUMERATOR :: AHMADI_1995=2
-         ENUMERATOR :: GD_1999=3
-         ENUMERATOR :: GTSH_2012=4
-         ENUMERATOR :: IA_2005=5
-         ENUMERATOR :: GHD_2007=6
-      END ENUM
 
 ! If .TRUE. use Simonin model (k_epsilon must also be true)
       LOGICAL :: SIMONIN
@@ -225,20 +173,6 @@
 ! Shear Vel
       DOUBLE PRECISION :: V_sh
 
-! Radial distribution function options (see g_0 for details)
-! for m > 1 options are lebowitz, modified_lebowitz,
-! mansoori, modified_mansoori.  default = lebowitz
-! for m = 1 then carnahan and starling rdf used
-      CHARACTER(64) :: RDF_TYPE
-      INTEGER :: RDF_TYPE_ENUM
-      ENUM, BIND(C)
-         ENUMERATOR :: LEBOWITZ=0
-         ENUMERATOR :: MODIFIED_LEBOWITZ=1
-         ENUMERATOR :: MANSOORI=2
-         ENUMERATOR :: MODIFIED_MANSOORI=3
-         ENUMERATOR :: CARNAHAN_STARLING=4
-      END ENUM
-
 ! If .TRUE. use Yu and Standish correlation to compute ep_star
       LOGICAL :: YU_STANDISH
 
@@ -266,15 +200,6 @@
 
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
-
-! If. .TRUE. code will respond during runtime
-      LOGICAL :: INTERACTIVE_MODE
-
-! Number of interactive iterations.
-      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
-
-! If .TRUE. code will halt at call to interact
-      LOGICAL :: INTERUPT = .FALSE.
 
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: REINITIALIZING = .FALSE.
@@ -315,9 +240,6 @@
 ! calculations
       LOGICAL :: DEBUG_RESID
 
-! Generate log files when negative gas density is detected.
-      LOGICAL :: REPORT_NEG_DENSITY
-
        common /run_dp/ time      !for Linux
 
 
@@ -335,5 +257,44 @@
       INTEGER :: TFM_COUNT = 0
       INTEGER :: DEM_COUNT = 0
       INTEGER :: PIC_COUNT = 0
+
+      ! Error index
+      INTEGER :: IER
+
+      ! CPU time unit.
+      CHARACTER(LEN=4) :: TUNIT
+
+      CONTAINS
+
+         !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+         !  Purpose:  Given time in seconds, calculate time in days/hours/seconds
+         !
+         !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+         SUBROUTINE GET_TUNIT(TLEFT, TUNIT)
+
+            !-----------------------------------------------
+            ! Modules
+            !-----------------------------------------------
+            IMPLICIT NONE
+            !-----------------------------------------------
+            ! Dummy arguments
+            !-----------------------------------------------
+            DOUBLE PRECISION, INTENT(INOUT) :: TLEFT
+            CHARACTER(LEN=4) :: TUNIT
+            !-----------------------------------------------
+
+            IF (TLEFT < 3600.0d0) THEN
+               TUNIT = 's'
+            ELSE
+               TLEFT = TLEFT/3600.0d0
+               TUNIT = 'h'
+               IF (TLEFT >= 24.) THEN
+                  TLEFT = TLEFT/24.0d0
+                  TUNIT = 'days'
+               ENDIF
+            ENDIF
+
+            RETURN
+         END SUBROUTINE GET_TUNIT
 
       END MODULE RUN

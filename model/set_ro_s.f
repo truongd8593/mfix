@@ -16,8 +16,6 @@
       use physprop, only: MMAX
 ! Solids density field variable.
       use fldvar, only: RO_s, ROP_s
-! Baseline/Unreaced solids density
-      use physprop, only: BASE_ROs
 ! Solid phase species mass fractions.
       use fldvar, only: X_s
 ! Initial mass fraction of inert species
@@ -67,8 +65,8 @@
 ! Set the index of the intert phase.
             IIS = INERT_SPECIES(M)
 ! Calculate the minimum solids denisty.
-!            minROPs = BASE_ROs(M)*DIL_EP_s
-            minROPs = BASE_ROs(M)*(DIL_FACTOR_VSD*DIL_EP_s)
+!            minROPs = RO_s0(M)*DIL_EP_s
+            minROPs = RO_s0(M)*(DIL_FACTOR_VSD*DIL_EP_s)
 ! Debug/Development option.
             IF(dbgMode) CALL CHECK_SET_ROs()
 
@@ -76,11 +74,11 @@
             DO IJK = ijkStart3, ijkEnd3
                IF(WALL_AT(IJK)) CYCLE
                IF(ROP_s(IJK,M) > minROPs) THEN
-                  RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),         &
+                  RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS),         &
                      X_s(IJK,M,IIS))
                ELSE
-!                  RO_s(IJK,M) = BASE_ROs(M)
-                  RO_S(IJK,M) = EOSS(BASE_ROs(M), X_s0(M,IIS),            &
+!                  RO_s(IJK,M) = RO_s0(M)
+                  RO_S(IJK,M) = EOSS(RO_s0(M), X_s0(M,IIS),            &
                      DIL_INERT_X_VSD(M))
                ENDIF
             ENDDO
@@ -110,6 +108,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE CHECK_SET_ROs()
 
+      use exit, only: mfix_exit
 ! Flag for who writes
       use funits, only: DMP_LOG
 ! Solids species mass fractions.

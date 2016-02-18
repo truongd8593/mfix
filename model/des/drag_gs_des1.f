@@ -206,9 +206,7 @@
       use fldvar, only: U_G, V_G, W_G
       use fldvar, only: U_GO, V_GO, W_GO
       use functions, only: FLUID_AT
-      use functions, only: IS_NONEXISTENT
-      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
-      use functions, only: IS_EXITING, IS_EXITING_GHOST
+      use functions, only: IS_NORMAL
 ! Volume of scalar cell.
       use geometry, only: VOL
 ! Flag for 3D simulatoins.
@@ -219,14 +217,16 @@
       use mfix_pic, only: DES_STAT_WT
 ! Double precision values.
       use param1, only: ZERO, ONE
-      use param, only: DIMENSION_3
 ! Flag to use interpolation
       use particle_filter, only: DES_INTERP_ON
 ! Interpolation cells and weights
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
+! Array size for fluid variables
+      use param, only: DIMENSION_3
+! MPI function for collecting interpolated data from ghost cells.
+      use sendrecvnode, only: DES_COLLECT_gDATA
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
-      use param, only: DIMENSION_3
 
       IMPLICIT NONE
 
@@ -268,13 +268,8 @@
 !$omp do
       DO NP=1,MAX_PIP
 
-         IF(IS_NONEXISTENT(NP)) CYCLE
+         IF(.NOT.IS_NORMAL(NP)) CYCLE
          IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
-
-! The drag force is not calculated on entering or exiting particles
-! as their velocities are fixed and may exist in 'non fluid' cells.
-        IF(IS_ENTERING(NP) .OR. IS_ENTERING_GHOST(NP) .OR. &
-           IS_EXITING(NP) .OR. IS_EXITING_GHOST(NP)) CYCLE
 
          lEPG = ZERO
          VELFP = ZERO
@@ -343,6 +338,14 @@
 
       ENDDO
 !$omp end parallel
+
+
+! Add in data stored in ghost cells from interpolation. This call must
+! preceed the SEND_RECV to avoid overwriting ghost cell data.
+      IF(DES_INTERP_ON) THEN
+         CALL DES_COLLECT_gDATA(F_GDS)
+         CALL DES_COLLECT_gDATA(DRAG_BM)
+      ENDIF
 
 ! Update the drag force and sources in ghost layers.
       CALL SEND_RECV(F_GDS, 2)

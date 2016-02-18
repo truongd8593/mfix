@@ -1,3 +1,5 @@
+MODULE output_man
+   CONTAINS
 !----------------------------------------------------------------------!
 !                                                                      !
 !  Subroutine: OUTPUT_MANAGER                                          !
@@ -44,7 +46,6 @@
 
       IMPLICIT NONE
 
-
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
 ! Flag that the the user specified batch time (plus buffer) is met.
@@ -66,7 +67,6 @@
       DOUBLE PRECISION :: WALL_START
 
 !......................................................................!
-
 
 ! Initialize the SPx file extension array.
       EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -164,7 +164,6 @@
 
       contains
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -181,7 +180,6 @@
       RETURN
       END FUNCTION CHECK_TIME
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -197,7 +195,6 @@
 
       RETURN
       END FUNCTION NEXT_TIME
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -271,21 +268,18 @@
 !----------------------------------------------------------------------!
       SUBROUTINE FLUSH_NOTIFY_USER
 
-      use output, only: FULL_LOG
-      use funits, only: DMP_LOG
-      use funits, only: UNIT_LOG
-
-      use time_cpu, only: TIME_START
-      use time_cpu, only: WALL_START
-
-      use output, only: NLOG
-
-      use run, only: TIME, NSTEP
-
       use discretelement, only: DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED
       use discretelement, only: DTSOLID
       use error_manager
+      use funits, only: DMP_LOG
+      use funits, only: UNIT_LOG
       use machine, only: wall_time
+      use run, only: get_tunit
+      use output, only: FULL_LOG
+      use output, only: NLOG
+      use run, only: TIME, NSTEP
+      use time_cpu, only: TIME_START
+      use time_cpu, only: WALL_START
 
       DOUBLE PRECISION :: WALL_ELAP, WALL_LEFT, WALL_NOW
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT
@@ -311,7 +305,7 @@
             WRITE(ERR_MSG, 1100) TIME, DTSOLID, trim(iVal(TNITs))
             CALL FLUSH_ERR_MSG(HEADER=.FALSE., FOOTER=.FALSE., LOG=.FALSE.)
          ENDIF
- 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'DEM NITs: ',A)
+ 1100 FORMAT(/'Time: ',g12.5,3x,'DT: ',g12.5,3x,'Remaining DEM NITs: ',A)
 
          WALL_NOW = WALL_TIME()
 ! Calculate the elapsed wall time.
@@ -341,13 +335,10 @@
 
  2000 FORMAT('Wall Time - ',2(A,1X,A,A,4X))
 
-
-
       RETURN
       END SUBROUTINE FLUSH_NOTIFY_USER
 
       END SUBROUTINE OUTPUT_MANAGER
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: INIT_OUTPUT_VARS                                         !
@@ -470,14 +461,11 @@
 ! Create a subdir for RES backup files.
       IF(RES_BACKUPS /= UNDEFINED_I) CALL CREATE_DIR('BACKUP_RES')
 
-
       WALL_START = WALL_TIME()
       TIME_START = TIME
 
       RETURN
       END SUBROUTINE INIT_OUTPUT_VARS
-
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: BACKUP_RES                                               !
@@ -489,6 +477,7 @@
       use compar, only: myPE, PE_IO
       use output, only: RES_BACKUPS
       use discretelement, only: DISCRETE_ELEMENT
+      use param1, only: UNDEFINED_I
 
       IMPLICIT NONE
 
@@ -497,6 +486,7 @@
       INTEGER :: LC
 
       IF(myPE /= PE_IO) RETURN
+      IF(RES_BACKUPS == UNDEFINED_I) RETURN
 
 ! Shift all the existing backups by one.
       DO LC=RES_BACKUPS,2,-1
@@ -521,7 +511,6 @@
          CALL SET_FNAME(FNAME1, '_DES.RES' ,1)
          CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
       ENDIF
-
 
       RETURN
 
@@ -596,3 +585,4 @@
       END SUBROUTINE SET_FNAME
 
       END SUBROUTINE BACKUP_RES
+END MODULE output_man

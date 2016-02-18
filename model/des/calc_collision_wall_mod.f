@@ -547,6 +547,7 @@
       USE desgrid
       USE des_thermo
       USE des_thermo_cond
+      USE exit, only: mfix_exit
       USE functions
       USE stl_functions_des
       USE stl

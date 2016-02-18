@@ -84,7 +84,6 @@ EXTRA_DIST =  Bug_Fixes CHANGES DISCLAIMER NOTICE benchmarks build-aux config co
 EXTRA_DIST += legacy_tests mfix_user_guide.pdf readme regression_tests tests tools tutorials visualization_tools
 
 EXTRA_DIST += model/make_mfix
-EXTRA_DIST += model/make_mfix.old
 EXTRA_DIST += model/thermochemical/BURCAT.THR
 EXTRA_DIST += model/thermochemical/intro.pdf
 EXTRA_DIST += model/thermochemical/readme
@@ -124,15 +123,6 @@ export TAU_MAKEFILE
 if USE_NETCDF
 AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
 mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
-endif
-
-################################################################
-#      Socket server
-################################################################
-if USE_SOCKET
-AM_FCFLAGS += $(FC_DEFINE)socket
-libmfix_a_SOURCES += model/handle_command.f
-libmfix_a_SOURCES += model/socket.c
 endif
 
 ################################################################
@@ -233,7 +223,6 @@ libmfix_src = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_theta.f \
@@ -252,7 +241,6 @@ libmfix_src = \
 	model/calc_d_t.f \
 	model/calc_dif_g.f \
 	model/calc_dif_s.f \
-	model/calc_drag.f \
 	model/calc_e.f \
 	model/calc_gama.f \
 	model/calc_grbdry.f \
@@ -397,6 +385,7 @@ libmfix_src = \
 	model/des/comp_mean_fields.f \
 	model/des/comp_mean_fields0.f \
 	model/des/comp_mean_fields1.f \
+	model/des/derived_types_mod.f \
 	model/des/des_allocate_mod.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_mod.f \
@@ -517,7 +506,6 @@ libmfix_src = \
 	model/energy_mod.f \
 	model/eos_mod.f \
 	model/error_manager_mod.f \
-	model/error_routine.f \
 	model/exchange.f \
 	model/exit.f \
 	model/fldvar_mod.f \
@@ -546,7 +534,6 @@ libmfix_src = \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
-	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
@@ -562,6 +549,7 @@ libmfix_src = \
 	model/leqsol_mod.f \
 	model/location_check.f \
 	model/machine_mod.f \
+	model/main.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
 	model/mfix.f \
@@ -678,6 +666,7 @@ libmfix_src = \
 	model/source_v_s.f \
 	model/source_w_g.f \
 	model/source_w_s.f \
+	model/time_step.f \
 	model/tau_g_mod.f \
 	model/tau_s_mod.f \
 	model/tau_u_g.f \
@@ -690,7 +679,6 @@ libmfix_src = \
 	model/thermochemical/get_values.f \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
-	model/time_march.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -706,10 +694,11 @@ libmfix_src = \
 	model/usr_drag.f \
 	model/usr_init_namelist.f \
 	model/usr_mod.f \
-	model/usr_physical_prop.f \
+	model/usr_prop_mod.f \
+	model/usr_properties.f \
 	model/usr_rates.f \
-        model/usr_sources.f\
-        model/usr_src_mod.f \
+	model/usr_sources.f\
+	model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/usr_write_out1.f \
 	model/utilities_mod.f \
@@ -784,7 +773,6 @@ postmfix_SOURCES = \
 	model/adjust_a_v_s.f \
 	model/adjust_a_w_g.f \
 	model/adjust_a_w_s.f \
-	model/adjust_dt_mod.f \
 	model/adjust_eps.f \
 	model/adjust_leq.f \
 	model/adjust_theta.f \
@@ -803,7 +791,6 @@ postmfix_SOURCES = \
 	model/calc_d_t.f \
 	model/calc_dif_g.f \
 	model/calc_dif_s.f \
-	model/calc_drag.f \
 	model/calc_e.f \
 	model/calc_gama.f \
 	model/calc_grbdry.f \
@@ -948,6 +935,7 @@ postmfix_SOURCES = \
 	model/des/comp_mean_fields.f \
 	model/des/comp_mean_fields0.f \
 	model/des/comp_mean_fields1.f \
+	model/des/derived_types_mod.f \
 	model/des/des_allocate_mod.f \
 	model/des/des_bc_mod.f \
 	model/des/des_cluster_mod.f \
@@ -1068,7 +1056,6 @@ postmfix_SOURCES = \
 	model/energy_mod.f \
 	model/eos_mod.f \
 	model/error_manager_mod.f \
-	model/error_routine.f \
 	model/exchange.f \
 	model/exit.f \
 	model/fldvar_mod.f \
@@ -1096,7 +1083,6 @@ postmfix_SOURCES = \
 	model/init_fvars.f \
 	model/init_namelist.f \
 	model/init_resid.f \
-	model/interactive_mod.f \
 	model/is_mod.f \
 	model/iterate.f \
 	model/k_epsilon_prop.f \
@@ -1112,6 +1098,7 @@ postmfix_SOURCES = \
 	model/leqsol_mod.f \
 	model/location_check.f \
 	model/machine_mod.f \
+	model/main.f \
 	model/make_upper_case.f \
 	model/mark_phase_4_cor.f \
 	model/mfix_netcdf_mod.f \
@@ -1231,7 +1218,6 @@ postmfix_SOURCES = \
 	model/thermochemical/get_values.f \
 	model/thermochemical/read_thermochemical_mod.f \
 	model/time_cpu_mod.f \
-	model/time_march.f \
 	model/toleranc_mod.f \
 	model/trace_mod.f \
 	model/transport_prop.f \
@@ -1246,10 +1232,11 @@ postmfix_SOURCES = \
 	model/usr3.f \
 	model/usr_drag.f \
 	model/usr_mod.f \
-	model/usr_physical_prop.f \
+	model/usr_prop_mod.f \
+	model/usr_properties.f \
 	model/usr_rates.f \
-        model/usr_sources.f \
-        model/usr_src_mod.f \
+	model/usr_sources.f \
+	model/usr_src_mod.f \
 	model/usr_write_out0.f \
 	model/utilities_mod.f \
 	model/vavg_u_g.f \
@@ -1363,6 +1350,7 @@ cases := $(shell find . -name mfix.dat)
 
 allcases:
 	for case in $(cases); do \
+	  echo "BUILDING: $$case"; \
 	  cp build-aux/Makefile.usr $$(dirname $$case)/Makefile || exit; \
 	  $(MAKE) -C $$(dirname $$case) mfix$(EXEEXT) || exit; \
 	done

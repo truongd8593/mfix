@@ -17,7 +17,8 @@
 ! Fudge factor for SS drag (c.f. Gera, 2004)
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC, PIJK
+      use discretelement, only: PINC, PIJK
+      use derived_types, only: PIC
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
@@ -40,7 +41,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 ! Number of continuum solids phases
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
 ! Flag that a continuum solids can pack
       use physprop, only: CLOSE_PACKED
 ! radial distribution function
@@ -70,12 +71,11 @@
 
 !......................................................................!
 
-
 ! Calculate the solid-solid drag for each particle.
 !---------------------------------------------------------------------//
 !!$omp parallel do schedule(guided, 50) default(none)              &
 !!$omp shared(IJKSTART3, IJKEND3, PINC, PIC, DES_VEL_NEW,          &
-!!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
+!!$omp   D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,           &
 !!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
 !!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
 !!$omp   VELCS, VSLP, VREL, lDss, L)
@@ -122,7 +122,7 @@
 ! Relative velocity magnitude.
                VREL = sqrt(dot_product(VSLP,VSLP))
 
-               CALL DRAG_SS_SYAM(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
+               CALL DRAG_SS_SYAM0(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),  &
                   RO_SOL(NP), G0_ML, VREL)
 
                lDss = lDss*ROP_S(IJK,M)*RO_Sol(NP)
@@ -135,7 +135,7 @@
 ! Calculating the accumulated solids-solids drag force.
                D_FORCE(:) = D_FORCE(:) - lDss*VSLP(:)
 
-            ENDDO ! end do loop (M=1,MMAX)
+            ENDDO ! end do loop (M=1,SMAX)
 
             FC(NP,:) = FC(NP,:) + D_FORCE(:)*PVOL(NP)
 
@@ -143,12 +143,8 @@
       ENDDO ! END DO LOOP (IJK=IJKSTART3, IJKEND3)
 !!$omp end parallel do
 
-
-
       RETURN
       END SUBROUTINE DRAG_SS_DEM_NONINTERP
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -168,7 +164,8 @@
 ! Fudge factor for SS drag (c.f. Gera, 2004)
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC, PIJK
+      use derived_types, only: PIC
+      use discretelement, only: PINC, PIJK
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
@@ -194,7 +191,7 @@
 ! Flag that a continuum solids can pack
       use physprop, only: CLOSE_PACKED
 ! Number of continuum solids phases
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
 ! radial distribution function
       use rdf, only: g_0
       IMPLICIT NONE
@@ -269,7 +266,7 @@
                L = PIJK(NP,5)
                G0_ML = G_0(IJK,L,M)
 
-               CALL DRAG_SS_SYAM(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
+               CALL DRAG_SS_SYAM0(lDss, D_P(IJK,M), lDP, RO_S(IJK,M),   &
                   RO_SOL(NP), G0_ML, VREL)
 
                lDss = lDss*ROP_S(IJK,M)*RO_Sol(NP)
@@ -286,7 +283,7 @@
               SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
                  lFORCE*DES_VEL_NEW(NP,:)
 
-            ENDDO ! end do loop (M=1,MMAX)
+            ENDDO ! end do loop (M=1,SMAX)
 
          ENDDO ! END DO LOOP (NP=1,MAX_PIP)
 
@@ -296,7 +293,6 @@
 
       RETURN
       END SUBROUTINE DRAG_SS_TFM_NONINTERP
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
@@ -330,7 +326,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 ! Number of solid phases.
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -395,7 +391,8 @@
 ! Global Variables:
 !---------------------------------------------------------------------//
 ! The count and a list of particles in IJK
-      use discretelement, only: PINC, PIC
+      use derived_types, only: PIC
+      use discretelement, only: PINC
 ! Particle volume and radius
       use discretelement, only: PVOL, DES_RADIUS
 ! Volume of scalar cell
@@ -405,7 +402,7 @@
 ! Function to calculate continuum solids volume fraction
       use fldvar, only: EP_s
 ! Number of continuum solids phases
-      use physprop, only: SMAX, MMAX
+      use physprop, only: SMAX
 
       use functions
 

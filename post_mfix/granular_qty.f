@@ -33,7 +33,7 @@
       USE param1
       USE physprop
       USE rdf
-      USE run
+      USE run, only: any_solve_ros, nstep, run_name, time
       USE visc_s
 
       IMPLICIT NONE

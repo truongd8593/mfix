@@ -43,7 +43,6 @@
 ! solids 'phase' diameters and densities
       USE physprop, only: MMAX, D_p0, RO_s0
 ! Calculated baseline variable solids density.
-      use physprop, only: BASE_ROs
       USE physprop, only: CLOSE_PACKED
 ! Runtime Flag: Solve energy equations
       USE run, only: ENERGY_EQ

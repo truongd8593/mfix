@@ -13,14 +13,14 @@
       SUBROUTINE SET_IC_DEM
 
       use run, only: ENERGY_EQ, SPECIES_EQ
-      use run, only: RUN_TYPE
 
       use ic
 
       use des_thermo, only: DES_T_s
 
+      use derived_types, only: PIC
       use discretelement, only: MAX_PIP
-      use discretelement, only: PINC, PIC
+      use discretelement, only: PINC
       use discretelement, only: PIJK
 
       USE des_rxns, only: DES_X_s
@@ -46,8 +46,6 @@
       INTEGER :: M, NN
       INTEGER :: NP
       INTEGER :: NINDX
-
-      IF(RUN_TYPE /= 'NEW') RETURN
 
       CALL INIT_ERR_MSG("SET_IC_DEM")
 

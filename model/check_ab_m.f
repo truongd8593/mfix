@@ -26,12 +26,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
+      USE compar
+      USE exit, ONLY: mfix_exit
+      USE functions
       USE geometry
       USE indices
-      USE compar
-      USE functions
+      USE param
+      USE param1
       IMPLICIT NONE
 !-----------------------------------------------
 !   G l o b a l   P a r a m e t e r s

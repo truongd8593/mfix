@@ -273,9 +273,8 @@
 
          WRITE (UNIT_OUT, 1405)
          DO M = 1, MMAX_TOT
-            TMP_DP = merge(BASE_ROs(M), RO_s0(M), SOLVE_ROs(M))
             WRITE (UNIT_OUT, 1406) M, SOLIDS_MODEL(M), D_P0(M),     &
-               TMP_DP, CLOSE_PACKED(M)
+               RO_S0(M), CLOSE_PACKED(M)
          END DO
 
 

@@ -24,20 +24,19 @@
       USE physprop, only: smax, mmax
 ! virtual (added) mass coefficient Cv
       USE physprop, only: cv
-      USE visc_s, only: mu_s
-      USE fldvar
-      USE run
 
-      USE toleranc, only: dil_ep_s
       USE bc
-
+      USE calc_gr_boundary
+      USE compar
+      USE cutcell
+      USE fldvar
+      USE fun_avg
       USE geometry
       USE indices
-      USE compar
-
-      USE cutcell
       USE quadric
-      USE fun_avg
+      USE run
+      USE toleranc, only: dil_ep_s
+      USE visc_s, only: mu_s
 
       IMPLICIT NONE
 !-----------------------------------------------

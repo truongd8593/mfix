@@ -33,6 +33,11 @@
       LOGICAL :: ENABLE_DMP_LOG
 ! Flag to print the index layout for  ijk<=>i,j,k  debugging tasks
       LOGICAL :: DBGPRN_LAYOUT
+! Generate log files when negative gas density is detected.
+      LOGICAL :: REPORT_NEG_DENSITY
+! Generate log files when negative specific heat is detected.
+      LOGICAL :: REPORT_NEG_SPECIFICHEAT
+
 
 ! Time at which special output is to be written
       DOUBLE PRECISION :: USR_TIME(DIMENSION_USR)

@@ -11,7 +11,7 @@
          ENUMERATOR :: Gas_Continuity, Solids_Continuity
          ENUMERATOR :: Gas_U_Mom, Solids_U_Mom, Gas_V_Mom, Solids_V_Mom
          ENUMERATOR :: Gas_W_Mom, Solids_W_Mom
-         ENUMERATOR :: Gas_Energy, Solids_Energy 
+         ENUMERATOR :: Gas_Energy, Solids_Energy
          ENUMERATOR :: Gas_Species, Solids_Species
          ENUMERATOR :: Gran_Energy
          ENUMERATOR :: Usr_Scalar, K_Epsilon_K, K_Epsilon_E
@@ -19,29 +19,10 @@
          ENUMERATOR :: DUMMY
       END ENUM
 
-!      INTERFACE
-!         SUBROUTINE CALC_USR_SOURCE(lEQ_NO, A_M, B_M, lB_MMAX, lM, lN)
-!         use param, only: dimension_3, dimension_m
-!         implicit none
-!! calling routine
-!         INTEGER, INTENT(IN) :: lEQ_NO
-!! Septadiagonal matrix A_m
-!         DOUBLE PRECISION, INTENT(INOUT) :: A_m(DIMENSION_3, -3:3, 0:DIMENSION_M)
-!! Vector b_m
-!         DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
-!! Vector b_mmax
-!         DOUBLE PRECISION, OPTIONAL, INTENT(INOUT) :: lB_mmax(DIMENSION_3, 0:DIMENSION_M)
-!! Phase index 
-!         INTEGER, OPTIONAL, INTENT(IN) :: lM
-!! Species index OR scalar equation number
-!         INTEGER, OPTIONAL, INTENT(IN) :: lN
-!         end subroutine calc_usr_source
-!      end interface
-
       CONTAINS
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
-!  Subroutine: CALC_USR_SOURCE                                         C 
+!  Subroutine: CALC_USR_SOURCE                                         C
 !  Purpose: Driver routine to calculate user defined source terms      C
 !  for each of the various equations                                   C
 !                                                                      C
@@ -61,7 +42,9 @@
       use indices, only: i_of, j_of, k_of
       use param, only: dimension_3, dimension_m
       use param1, only: undefined_i, zero
+      use pgcor, only: phase_4_p_g
       use physprop, only: smax, mmax
+      use pscor, only: phase_4_p_s
       use run, only: kt_type_enum, ghd_2007
       use run, only: momentum_x_eq, momentum_y_eq, momentum_z_eq
       use toleranc, only: dil_ep_s
@@ -98,14 +81,14 @@
       DOUBLE PRECISION, INTENT(INOUT) :: B_m(DIMENSION_3, 0:DIMENSION_M)
 ! Vector b_mmax
       DOUBLE PRECISION, OPTIONAL, INTENT(INOUT) :: lB_mmax(DIMENSION_3, 0:DIMENSION_M)
-! Phase index 
+! Phase index
       INTEGER, OPTIONAL, INTENT(IN) :: lM
 ! Species index OR scalar equation number
       INTEGER, OPTIONAL, INTENT(IN) :: lN
 
 ! Local variables
 !-----------------------------------------------
-! source terms which appear appear in the 
+! source terms which appear appear in the
 ! center coefficient (lhs) - part of a_m matrix
 ! source vector (rhs) - part of b_m vector
       DOUBLE PRECISION :: sourcelhs, sourcerhs
@@ -130,7 +113,7 @@
       ENDIF
 
       SELECT CASE(lEQ_NO)
-      
+
 ! gas pressure correction equation
       CASE(Pressure_Correction)
          DO IJK=IJKSTART3,IJKEND3
@@ -141,12 +124,12 @@
                lB_MMAX(IJK,M) = max(abs(lB_MMAX(IJK,M)), abs(B_M(IJK,M)))
             ENDIF
          ENDDO
- 
+
 ! solids correction currently only called when smax==1 and
 ! mcp/=undefined_i
       CASE(Solids_correction)
          DO IJK=IJKSTART3,IJKEND3
-            IF (.NOT.FLUID_AT(IJK)) THEN
+            IF (FLUID_AT(IJK)) THEN
                CALL USR_SOURCES(lEQ_NO, IJK, sourcelhs, sourcerhs, M, N)
                A_M(IJK,0,0) = A_M(IJK,0,0) - sourcelhs
                B_M(IJK,0) = B_M(IJK,0) - sourcerhs
@@ -158,6 +141,7 @@
       CASE(Gas_continuity)
          DO IJK=IJKSTART3,IJKEND3
             IF (FLUID_AT(IJK)) THEN
+!                            .AND. PHASE_4_P_G(IJK)/=M) THEN
 ! have not included phase_4_p_g logic...which would require unique
 ! structure here
                CALL USR_SOURCES(lEQ_NO, IJK, sourcelhs, sourcerhs, M, N)
@@ -168,10 +152,11 @@
 
 ! soldis continuity
       CASE(Solids_continuity)
-! have not included phase_4_p_s logic...which would require unique
+! have not included phase_4_p_g/p_s logic...which would require unique
 ! structure here
          DO IJK=IJKSTART3,IJKEND3
-            IF (.NOT.FLUID_AT(IJK)) THEN
+            IF (FLUID_AT(IJK)) THEN
+!               .AND. PHASE_4_P_G(IJK)/=M .AND. PHASE_4_P_S(IJK)/=M) THEN
                CALL USR_SOURCES(lEQ_NO, IJK, sourcelhs, sourcerhs, M, N)
                A_M(IJK,0,M) = A_M(IJK,0,M) - sourcelhs
                B_M(IJK,M) = B_M(IJK,M) - sourcerhs
@@ -335,7 +320,7 @@
                IF (KT_TYPE_ENUM == GHD_2007) THEN
                   eptmp = zero
                   DO lL=1,SMAX
-                     eptmp=eptmp+EP_S(IJK,lL)   
+                     eptmp=eptmp+EP_S(IJK,lL)
                   ENDDO
                ELSE
                   eptmp = ep_s(IJK,M)
@@ -357,8 +342,8 @@
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
  1001 FORMAT('Error 1101: Unknown Equation= ', A)
          CALL FINL_ERR_MSG
-      END SELECT   ! end selection of kt_type_enum
- 
+      END SELECT   ! end selection of usr_source equation
+
       RETURN
       END SUBROUTINE CALC_USR_SOURCE
 

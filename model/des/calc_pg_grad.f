@@ -41,9 +41,7 @@
 
       use functions, only: FLUID_AT
 
-      use functions, only: IS_NONEXISTENT
-      use functions, only: IS_ENTERING, IS_ENTERING_GHOST
-      use functions, only: IS_EXITING, IS_EXITING_GHOST
+      use functions, only: IS_NORMAL
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -91,25 +89,23 @@
 !$omp     filter_cell,filter_weight,pijk,pvol)
          DO NP=1,MAX_PIP
 
-            IF(IS_NONEXISTENT(NP) .or.                              &
-               IS_ENTERING(NP) .or. IS_ENTERING_GHOST(NP) .or.      &
-               IS_EXITING(NP)  .or. IS_EXITING_GHOST(NP)) CYCLE
+            IF(IS_NORMAL(NP)) THEN
+               IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
-            IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
-
-            IF(DES_INTERP_ON) THEN
-               lPF = ZERO
-               DO LC=1,LP_BND
-                  IJK = FILTER_CELL(LC,NP)
-                  WEIGHT = FILTER_WEIGHT(LC,NP)
-                  lPF = lPF + P_FORCE(:,IJK)*WEIGHT
-               ENDDO
-            ELSE
-               lPF = P_FORCE(:,PIJK(NP,4))
-            ENDIF
+               IF(DES_INTERP_ON) THEN
+                  lPF = ZERO
+                  DO LC=1,LP_BND
+                     IJK = FILTER_CELL(LC,NP)
+                     WEIGHT = FILTER_WEIGHT(LC,NP)
+                     lPF = lPF + P_FORCE(:,IJK)*WEIGHT
+                  ENDDO
+               ELSE
+                  lPF = P_FORCE(:,PIJK(NP,4))
+               ENDIF
 
 ! Include gas pressure and gas-solids drag
-            DRAG_FC(NP,:) = DRAG_FC(NP,:) + lPF*PVOL(NP)
+               DRAG_FC(NP,:) = DRAG_FC(NP,:) + lPF*PVOL(NP)
+            ENDIF
 
          ENDDO
       ENDIF

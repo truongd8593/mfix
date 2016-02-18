@@ -38,7 +38,7 @@
         FORCE_ORD_BC, &
 
 ! DES output control information
-        DEBUG_DES, FOCUS_PARTICLE,&
+        DEBUG_DES, FOCUS_PARTICLE, VTP_DIR, &
         PRINT_DES_DATA, DES_OUTPUT_TYPE,  &
 
 ! DES Cohesion Information: M.Weber

@@ -24,12 +24,8 @@
 ! Particle diameters
       DOUBLE PRECISION :: D_p0(DIM_M)
 
-! Constant solids phase densities.
+! Constant or baseline solids phase densities.
       DOUBLE PRECISION :: RO_s0(DIM_M)
-
-! Baseline/Unreacted solids phase phase density. This value is only used
-! for variable solids density simulations in EOSS.
-      DOUBLE PRECISION :: BASE_ROs(DIM_M)
 
 ! Constant solids phase species mass fractions. These values delinate
 ! the baseline/initial solids phase composition for ariable density
@@ -114,7 +110,7 @@
       DOUBLE PRECISION, DIMENSION(:, :), ALLOCATABLE ::  DIF_g
 
 ! Specified constant solids diffusivity
-      DOUBLE PRECISION DIF_s0
+      DOUBLE PRECISION DIF_s0(DIM_M)
 
 ! Diffusivity of solids species N
       DOUBLE PRECISION, DIMENSION(:, :, :), ALLOCATABLE ::  DIF_s

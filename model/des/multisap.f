@@ -64,11 +64,6 @@ module multi_sweep_and_prune
      type(boxhandle_t) :: list(MAX_SAPS)
   end type boxhandlelist_t
 
-  ! the global multisap
-  type(multisap_t) multisap
-
-  type(boxhandlelist_t), DIMENSION(:),  ALLOCATABLE :: boxhandle         !(PARTICLES)
-
  public :: init_multisap, multisap_add, multisap_del, multisap_update, multisap_sort, multisap_quicksort, multisap_sweep, boxhandle_grow
   private :: multisap_raster
 

@@ -1,9 +1,10 @@
 module sendrecv3
-  use parallel_mpi
-  use debug
-  use geometry
   use compar
+  use debug
+  use exit, only: mfix_exit
+  use geometry
   use indices
+  use parallel_mpi
   implicit none
 
   integer, pointer, dimension(:) :: &
@@ -2625,6 +2626,5 @@ contains
 
     return
   end subroutine send_recv3_1i
-
 
 end module sendrecv3

@@ -773,19 +773,16 @@
 ! Specified constant gas density.
       use physprop, only: RO_G0
 
+      use bc
+      use exit, only: mfix_exit
+      use funits, only: DMP_LOG
       use geometry, only: CYCLIC_X, CYCLIC_X_PD, CYCLIC_X_MF
       use geometry, only: CYCLIC_Y, CYCLIC_Y_PD, CYCLIC_Y_MF
       use geometry, only: CYCLIC_Z, CYCLIC_Z_PD, CYCLIC_Z_MF
+      use geometry, only: do_K
       use geometry, only: iMAX1, iMin1
       use geometry, only: jMAX1, jMin1
       use geometry, only: kMAX1, kMin1
-
-      use geometry, only: do_K
-
-      use funits, only: DMP_LOG
-
-      use bc, only: BC_DEFINED
-      use bc
 
 ! MFIX Runtime parameters:
       use param, only: DIMENSION_BC
@@ -956,11 +953,12 @@
 ! Modules
 !--------------------------------------------------------------------//
 ! IJK location where Ppg is fixed.
+      USE exit, only: mfix_exit
       use bc, only: IJK_P_g
-      use indices
-      use param1, only: undefined_i
-      use mpi_utility
       use functions
+      use indices
+      use mpi_utility
+      use param1, only: undefined_i
       implicit none
 
 ! Dummy arguments
