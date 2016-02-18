@@ -27,7 +27,7 @@ cp ../nonuniform_grids_3d/mesh_*.dat .
 # compile MFIX
 echo "******** Compiling MFIX..."
 cd $CASE_DIR
-../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all"
+../../../configure_mfix --enable-dmp FC=mpif90 FCFLAGS="-O0 -g -fcheck=all -DFLAG_MMS"
 make -j
 
 # remove these files if exist:
