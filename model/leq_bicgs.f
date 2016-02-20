@@ -249,9 +249,11 @@
                   do j = jstart2,jend2
                      IJK = funijk(i,j,k)
                      aijmax = maxval(abs(A_M(ijk,:)) )
-                     OAM = one/aijmax
-                     A_M(IJK,:) = A_M(IJK,:)*OAM
-                     B_M(IJK) = B_M(IJK)*OAM
+                     if (aijmax > 0) then
+                        OAM = one/aijmax
+                        A_M(IJK,:) = A_M(IJK,:)*OAM
+                        B_M(IJK) = B_M(IJK)*OAM
+                     endif
                   enddo
                enddo
             enddo
