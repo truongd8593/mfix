@@ -13,7 +13,7 @@ import time
 import traceback
 
 from flask import Flask, render_template, request, redirect, url_for
-from flask.ext.socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit
 
 sys.path.append(os.getcwd())
 
@@ -22,7 +22,7 @@ sys.path.append(os.getcwd())
 from mfix import compar as COMPAR
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
-from mfix import param1 as PARAM1
+# from mfix import param1 as PARAM1
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import step as STEP
@@ -31,7 +31,7 @@ PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
 FLASK_APP.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(FLASK_APP)
+SOCKETIO = SocketIO(FLASK_APP)
 
 # import logging
 # log = logging.getLogger('werkzeug')
@@ -48,9 +48,8 @@ def main():
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
         try:
-            socketio.run(FLASK_APP, host='0.0.0.0', port=port, debug=True, use_reloader=False)
-        except KeyboardInterrupt, ex:
-            import traceback
+            SOCKETIO.run(FLASK_APP, host='0.0.0.0', port=port, debug=True, use_reloader=False)
+        except KeyboardInterrupt:
             traceback.print_exc()
             # If we get here, the user hit Ctrl-C to shutdown the server,
             # so we call _exit() to kill the run_mfix thread.
@@ -80,7 +79,7 @@ class Mfix:
         time.sleep(0.1)
 
     @classmethod
-    def run_mfix(cls, keyword_args=[]):
+    def run_mfix(cls, keyword_args=None):
         "Main thread for running MFIX itself"
         for arg in keyword_args:
             MAIN.add_command_line_argument(arg)
@@ -116,7 +115,9 @@ class Mfix:
 
         STEP.time_step_end()
 
-        socketio.emit('residual_msg', {'data': 'finished step: %s' % RUN.nstep},namespace='/residuals')
+        SOCKETIO.emit('residual_msg',
+                      {'data': 'finished step: %s' % RUN.nstep},
+                      namespace='/residuals')
 
     @classmethod
     def emit_residuals(cls):
@@ -126,16 +127,18 @@ class Mfix:
         output['nit'] = str(ITERATE.nit)
         output['residuals'] = []
         if RESIDUAL.group_resid:
-            for index in range(len(RESIDUAL.resid_grp_string)):
-                output['residuals'].append((str(RESIDUAL.get_resid_grp_string(index)),str(RESIDUAL.get_resid_grp(index))))
+            for res_id in range(len(RESIDUAL.resid_grp_string)):
+                output['residuals'].append((str(RESIDUAL.get_resid_grp_string(res_id)),
+                                            str(RESIDUAL.get_resid_grp(res_id))))
         else:
-            for index in range(len(RESIDUAL.resid_string)):
-                output['residuals'].append((str(RESIDUAL.get_resid_string(index)),str(RESIDUAL.get_resid(index))))
+            for res_id in range(len(RESIDUAL.resid_string)):
+                output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
+                                            str(RESIDUAL.get_resid(res_id))))
 
-        output = json.dumps(output)
-        print('output = ',output)
+        outstr = json.dumps(output)
+        print('output = ', outstr)
 
-        socketio.emit('residual_msg', {'data': output},namespace='/residuals')
+        SOCKETIO.emit('residual_msg', {'data': outstr}, namespace='/residuals')
 
 
     @classmethod
@@ -166,43 +169,43 @@ class Mfix:
                 cls.responses[req_id] = 500, 'UNRECOGNIZED COMMAND\n'
 
     @classmethod
-    def begin(cls, args):
+    def begin(cls, _):
         " start "
         cls.mfix_stopped = False
         return 200, "STARTING MFIX"
 
     @classmethod
-    def halt(cls, args):
+    def halt(cls, _):
         " stop "
         cls.mfix_stopped = True
         return 200, "STOPPING MFIX"
 
     @classmethod
-    def write_dbg_vt(cls, args):
+    def write_dbg_vt(cls, _):
         " call write_dbg_vtu_and_vtp_files "
         MAIN.do_write_dbg_vtu_and_vtp_files()
         return 200, 'Calling WRITE_DBG_VTU_AND_VTP_FILES\n'
 
     @classmethod
-    def backupres(cls, args):
+    def backupres(cls, _):
         " backup resource files"
         MAIN.do_backupres()
         return 200, 'BACKING UP RESOURCE FILES\n'
 
     @classmethod
-    def reinit(cls, args):
+    def reinit(cls, _):
         " reinitialize "
-        MAIN.do_reinit(args.get('filename', None))
+        MAIN.do_reinit(_.get('filename', None))
         return 200, 'REINITIALIZING MFIX\n'
 
     @classmethod
-    def exit(cls, args):
+    def exit(cls, _):
         " run_mfix thread should exit cleanly "
         cls.pymfix_running = False
         return 200, 'EXITING MFIX\n'
 
     @classmethod
-    def abort(cls, args):
+    def abort(cls, _):
         " exit abruptly"
         MAIN.do_abort()
         # should never get here
@@ -308,7 +311,7 @@ class Mfix:
     #     return is_owner
 
     @classmethod
-    def do_command(cls, cmd, args=[]):
+    def do_command(cls, cmd, args=None):
         "Puts a command that was received over the web interface on the queue"
         req_id = threading.current_thread().ident
         cls.requests[req_id] = (cmd, args)
@@ -334,14 +337,14 @@ def upload():
     # benefit to keep track of mfix.dat changes when doing multiple reinits
     # during a run
     if COMPAR.mype == 0:
-        upload = open('mfix.dat.upload.%s' % int(time.time()), 'w')
-        request.files['file'].save(upload)
-        upload.close()
+        upload_file = open('mfix.dat.upload.%s' % int(time.time()), 'w')
+        request.files['file'].save(upload_file)
+        upload_file.close()
 
-    ff = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
-    request.files['file'].save(ff)
-    status_code, data = Mfix.do_command("REINIT", args={'filename':ff.name})
-    os.unlink(ff.name)
+    tmp = tempfile.NamedTemporaryFile(delete=False, dir=os.getcwd())
+    request.files['file'].save(tmp)
+    status_code, data = Mfix.do_command("REINIT", args={'filename':tmp.name})
+    os.unlink(tmp.name)
 
     if status_code != 200:
         return data
@@ -426,20 +429,19 @@ def stop():
     status_code, data = Mfix.do_command("HALT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@socketio.on('my event', namespace='/residuals')
+@SOCKETIO.on('my event', namespace='/residuals')
 def test_message(message):
+    "send message to web socket"
     emit('residual_msg', {'data': message['data']})
 
-@socketio.on('my broadcast event', namespace='/residuals')
-def test_message(message):
-    emit('residual_msg', {'data': message['data']}, broadcast=True)
-
-@socketio.on('connect', namespace='/residuals')
+@SOCKETIO.on('connect', namespace='/residuals')
 def test_connect():
+    "connect to web socket"
     emit('residual_msg', {'data': 'Connected'})
 
-@socketio.on('disconnect', namespace='/residuals')
+@SOCKETIO.on('disconnect', namespace='/residuals')
 def test_disconnect():
+    "disconnect from web socket"
     print('Client disconnected')
 
 def parse_command_line_arguments():
