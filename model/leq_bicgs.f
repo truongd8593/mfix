@@ -236,9 +236,14 @@
 !$omp parallel do default(shared) private(ijk,oam,aijmax)
             DO IJK = IJKSTART3,IJKEND3
                aijmax = maxval(abs(A_M(ijk,:)) )
-               OAM = one/aijmax
-               A_M(IJK,:) = A_M(IJK,:)*OAM
-               B_M(IJK) = B_M(IJK)*OAM
+               if (aijmax > 0.0)then
+                  OAM = one/aijmax
+                  A_M(IJK,:) = A_M(IJK,:)*OAM
+                  B_M(IJK) = B_M(IJK)*OAM
+               else
+                  ier = -2
+                  return
+               endif
             ENDDO
 
          ELSE
@@ -249,10 +254,13 @@
                   do j = jstart2,jend2
                      IJK = funijk(i,j,k)
                      aijmax = maxval(abs(A_M(ijk,:)) )
-                     if (aijmax > 0) then
+                     if (aijmax > 0.0) then
                         OAM = one/aijmax
                         A_M(IJK,:) = A_M(IJK,:)*OAM
                         B_M(IJK) = B_M(IJK)*OAM
+                     else
+                        ier = -2
+                        return
                      endif
                   enddo
                enddo
