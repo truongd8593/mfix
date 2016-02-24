@@ -35,7 +35,7 @@
 
       INTEGER :: LC
 
-      LOGICAL, parameter :: setDBG = .TRUE.
+      LOGICAL, parameter :: setDBG = .FALSE.
       LOGICAL :: dFlag
 
       INTEGER :: MAX_CELLS, BND1, BND2
