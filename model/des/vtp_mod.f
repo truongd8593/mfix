@@ -434,9 +434,6 @@
                   WRITE(PVD_UNIT,"(A)")'<VTKFile type="Collection" &
                      &version="0.1" byte_order="LittleEndian">'
                   WRITE(PVD_UNIT,"(3X,'<Collection>')")
-! write two generic lines that will be removed later
-                  WRITE(PVD_UNIT,"('SCRAP LINE 1')")
-                  WRITE(PVD_UNIT,"('SCRAP LINE 2')")
                ENDIF
 
 ! This is the first pass of a restart run. Extra care is needed to make
@@ -484,8 +481,6 @@
                   ENDDO
                ENDIF ! No errors
             ENDIF ! run_type new or restart
-! Identify that the files has been created and opened for next pass
-            FIRST_PASS = .FALSE.
 
          ELSE ! not FIRST_PASS
             OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
@@ -529,8 +524,10 @@
       IF(myPE == PE_IO .AND. .NOT.bDist_IO) THEN
 
 ! Remove the last two lines written so that additional data can be added
-         BACKSPACE(PVD_UNIT)
-         BACKSPACE(PVD_UNIT)
+         IF(.NOT.FIRST_PASS) THEN
+            BACKSPACE(PVD_UNIT)
+            BACKSPACE(PVD_UNIT)
+         ENDIF
 
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
@@ -544,6 +541,8 @@
 
          CLOSE(PVD_UNIT)
       ENDIF
+! Identify that the files has been created and opened for next pass
+      FIRST_PASS = .FALSE.
 
       CALL FINL_ERR_MSG
 
