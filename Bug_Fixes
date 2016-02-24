@@ -52,4 +52,7 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
   02/24/2016      | Fix DEM outflows for  | Minor    |  des/set_bc_dem_mo.f
                   | 2D simulatons         |          |  
 ==================================================================================================
+  02/24/2016      | Fix excessive rewinds | Minor    |  des/vtp_mod.f
+                  | after restart.        |          |  
+==================================================================================================
 
