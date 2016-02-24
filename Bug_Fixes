@@ -46,3 +46,6 @@ Date (MM/DD/YYYY) | Description           | Severity |  Modified File(s)
                   | FAC_DIM_MAX_CUT_CELL  |          |  
                   | to 5.0                |          |
 ==================================================================================================
+  02/24/2016      | Fix seg fault for DEM | Minor    |  des/calc_force_dem.f
+                  | Hertz collsion model. |          |  
+==================================================================================================

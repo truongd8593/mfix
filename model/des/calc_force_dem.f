@@ -147,7 +147,7 @@
                ENDIF
             ENDIF
 
-            IF(DIST_MAG > (R_LM + SMALL_NUMBER)**2) THEN
+            IF(DIST_MAG > (R_LM - SMALL_NUMBER)**2) THEN
                PFT_NEIGHBOR(:,CC) = 0.0
                CYCLE
             ENDIF
