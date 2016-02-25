@@ -6,6 +6,8 @@ AC_INIT(mfix, 2015.2, develop@mfix.netl.doe.gov)
 
 m4_include([build-aux/ax_check_compile_flag.m4])
 m4_include([build-aux/ax_prog_fc_mpi.m4])
+m4_include([build-aux/netcdf.m4])
+m4_include([build-aux/netcdff.m4])
 
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([])
@@ -20,7 +22,7 @@ AC_MSG_NOTICE([==============================================================])
 AC_LANG(Fortran)
 
 AC_ARG_ENABLE([dmp],
-[  --enable-dmp    Turn on MPI support],
+[  --enable-dmp    Enable MPI support],
 [case "${enableval}" in
   yes) dmp=true ;;
   no)  dmp=false ;;
@@ -70,7 +72,7 @@ AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
 AC_ARG_ENABLE([mkl],
-[  --enable-mkl    Turn on Math Kernel Library support],
+[  --enable-mkl    Enable Math Kernel Library support],
 [case "${enableval}" in
   yes) mkl=true ;;
   no)  mkl=false ;;
@@ -78,15 +80,27 @@ AC_ARG_ENABLE([mkl],
 esac],[mkl=false])
 AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
 
-AC_ARG_VAR([NETCDF_LIB],[ Path to NETCDF module ])
-AC_ARG_VAR([NETCDF_INCLUDE],[ Path to NETCDF include file ])
-AM_CONDITIONAL([USE_NETCDF], [test ! -z "$NETCDF_INCLUDE"])
+AC_ARG_ENABLE([netcdf],
+[  --enable-netcdf    Enable NetCDF support],
+[case "${enableval}" in
+  yes) netcdf=true ;;
+  no)  netcdf=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-netcdf]) ;;
+esac],[netcdf=false])
+AM_CONDITIONAL([NETCDF], [test x$netcdf = xtrue])
+
+AS_IF([test "x$enable_netcdf" = "xyes"], [
+AC_LANG(C)
+AC_PATH_NETCDF
+AC_LANG(Fortran)
+AC_PATH_NETCDFF
+])
 
 AC_ARG_VAR([TAU_MAKEFILE],[ Path to TAU Makefile ])
 AC_ARG_VAR([TAU_F90],[ Actual Fortran compiler used by TAU compiler wrapper ])
 
 AC_ARG_ENABLE([smp],
-[  --enable-smp    Turn on OpenMP support],
+[  --enable-smp    Enable OpenMP support],
 [case "${enableval}" in
   yes) smp=true ;;
   no)  smp=false ;;
