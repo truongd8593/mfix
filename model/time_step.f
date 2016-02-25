@@ -2,7 +2,7 @@
       MODULE STEP
 
       USE EXIT, ONLY: MFIX_EXIT
-      USE MAIN, ONLY: NIT_TOTAL, DNCHECK, EXIT_SIGNAL, FINISH, NCHECK, REALLY_FINISH
+      USE MAIN, ONLY: NIT_TOTAL, DNCHECK, EXIT_SIGNAL, NCHECK
       USE RUN, ONLY: IER
 
       CONTAINS
@@ -24,7 +24,6 @@
       USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
-      USE leqsol, only: solver_statistics, report_solver_stats
       USE output, only: res_dt
       USE output_man, only: output_manager
       USE param1, only: small_number, undefined
@@ -66,31 +65,8 @@
 ! (e.g., calc_mu_g, calc_mu_s)
       CALL SET_EP_FACTORS
 
-! Uncoupled discrete element simulations
-      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
-         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
-         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
-         REALLY_FINISH = .TRUE.
-         RETURN
-      ENDIF
 
-      CALL OUTPUT_MANAGER(EXIT_SIGNAL, FINISH)
-
-      IF (DT == UNDEFINED) THEN
-         IF (FINISH) THEN
-            REALLY_FINISH = .TRUE.
-            RETURN
-         ELSE
-            FINISH = .TRUE.
-         ENDIF
-
-! Mechanism to terminate MFIX normally before batch queue terminates.
-      ELSEIF (TIME + 0.1d0*DT >= TSTOP .OR. EXIT_SIGNAL) THEN
-         IF(SOLVER_STATISTICS) &
-              CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
-         REALLY_FINISH = .TRUE.
-         RETURN
-      ENDIF
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .FALSE.)
 
 ! Update previous-time-step values of field variables
       CALL UPDATE_OLD
@@ -144,6 +120,7 @@
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
       USE iterate, only: nit
+      USE leqsol, only: solver_statistics, report_solver_stats
       USE output, only: res_dt
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
@@ -200,6 +177,8 @@
       ENDIF
 
       NIT_TOTAL = NIT_TOTAL+NIT
+
+      IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
 
 ! write (*,"('Compute the Courant number')")
 ! call get_stats(IER)

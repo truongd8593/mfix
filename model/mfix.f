@@ -65,13 +65,15 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE MAIN, ONLY: ADD_COMMAND_LINE_ARGUMENT, INITIALIZE, FINALIZE, REALLY_FINISH
-      USE PARAM1, ONLY: UNDEFINED
-      USE RUN, ONLY:  DT, IER
-      USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
+      USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
       USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
-      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
       USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
+      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
+      USE MAIN, ONLY: ADD_COMMAND_LINE_ARGUMENT, INITIALIZE, FINALIZE, EXIT_SIGNAL
+      USE OUTPUT_MAN, ONLY: OUTPUT_MANAGER
+      USE PARAM1, ONLY: UNDEFINED
+      USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, TIME, TSTOP
+      USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
 
       IMPLICIT NONE
 
@@ -91,25 +93,45 @@
       CALL INITIALIZE
 
 ! Time march loop.
-      REALLY_FINISH = .FALSE.
-      DO WHILE (.NOT.REALLY_FINISH)
+
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+! Uncoupled discrete element simulations
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+      ELSE IF (DT == UNDEFINED) THEN
+! Steady State simulation
          CALL TIME_STEP_INIT
-         IF (REALLY_FINISH) EXIT
-! Advance the solution in time by iteratively solving the equations
-         DO
-            CALL ITERATE_INIT
-            DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
-               NIT = NIT + 1
-               CALL DO_ITERATION
-            ENDDO
-
-            CALL POST_ITERATE
-
-            IF(.NOT.ADJUSTDT()) EXIT
+         CALL ITERATE_INIT
+         DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
+            NIT = NIT + 1
+            CALL DO_ITERATION
          ENDDO
-         CALL TIME_STEP_END
-      ENDDO
 
+         CALL POST_ITERATE
+
+         CALL TIME_STEP_END
+      ELSE
+! Transient simulation
+
+         DO WHILE (TIME + 0.1d0*DT < TSTOP .AND. .NOT. EXIT_SIGNAL)
+            CALL TIME_STEP_INIT
+! Advance the solution in time by iteratively solving the equations
+            DO
+               CALL ITERATE_INIT
+               DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
+                  NIT = NIT + 1
+                  CALL DO_ITERATION
+               ENDDO
+
+               CALL POST_ITERATE
+
+               IF(.NOT.ADJUSTDT()) EXIT
+            ENDDO
+            CALL TIME_STEP_END
+         ENDDO
+
+      ENDIF
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .TRUE.)
       CALL FINALIZE
 
       STOP

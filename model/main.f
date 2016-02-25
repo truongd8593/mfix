@@ -25,11 +25,6 @@
 !$ INTEGER :: length
 !$ INTEGER :: status
 
-! Flag to indicate one pass through iterate for steady
-! state conditions.
-      LOGICAL :: FINISH
-      LOGICAL :: REALLY_FINISH
-
 ! Number of iterations
       INTEGER :: NIT_TOTAL
 ! used for activating check_data_30
@@ -373,7 +368,6 @@
 
 !-----------------------------------------------
 
-      FINISH  = .FALSE.
       NCHECK  = NSTEP
       DNCHECK = 1
       CPU_IO  = ZERO
