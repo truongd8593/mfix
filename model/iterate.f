@@ -267,7 +267,9 @@
 
       IF (RO_G0 /= ZERO) THEN
 ! Solve fluid pressure correction equation
+#ifndef FLAG_MMS
          CALL SOLVE_PP_G (NORMG, RESG, IER)
+#endif
 ! Correct pressure, velocities, and density
          CALL CORRECT_0 ()
       ENDIF
