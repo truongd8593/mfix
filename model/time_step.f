@@ -122,6 +122,7 @@
       USE iterate, only: nit
       USE leqsol, only: solver_statistics, report_solver_stats
       USE output, only: res_dt
+      USE output_man, only: output_manager
       USE param1, only: small_number, undefined
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
@@ -184,6 +185,8 @@
 ! call get_stats(IER)
 
       FLUSH (6)
+
+      CALL OUTPUT_MANAGER(EXIT_SIGNAL, .TRUE.)
 
       END SUBROUTINE TIME_STEP_END
 

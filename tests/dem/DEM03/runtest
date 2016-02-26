@@ -1,7 +1,5 @@
 #!/bin/bash -lex
 
-module load gnu/4.6.4
-
 ../../../configure_mfix  FC=gfortran FCFLAGS="-O0 -g"
 make
 
@@ -20,3 +18,14 @@ done
 
 
 #diff -q POST_posvel.dat AUTOTEST/POST_posvel.dat
+
+numdiff \
+    -a 0.000001 -r 0.05 \
+    --exclude=1:4 --exclude=2:4 \
+    AUTOTEST/POST_POS1.dat POST_POS1.dat
+
+
+numdiff \
+    -a 0.000001 -r 0.05 \
+    --exclude=1:4 --exclude=2:4 \
+    AUTOTEST/POST_POS2.dat POST_POS2.dat

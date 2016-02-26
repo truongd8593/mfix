@@ -29,11 +29,6 @@ AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
 AM_FCFLAGS += $(FC_MODOUT)$(MODOUTDIR)
 AM_LDFLAGS =
 
-NETCDF_LIB=@NETCDF_LIB@
-NETCDF_INCLUDE=@NETCDF_INCLUDE@
-export NETCDF_LIB
-export NETCDF_INCLUDE
-
 SUFFIXES = .d
 
 .DEFAULT_GOAL := mfix$(EXEEXT)
@@ -120,9 +115,11 @@ export TAU_MAKEFILE
 ################################################################
 #      NETCDF support
 ################################################################
-if USE_NETCDF
-AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCLUDE)
-mfix_LDADD += -L$(NETCDF_LIB) -lnetcdff
+
+if NETCDF
+AM_FCFLAGS += $(FC_MODINC)$(NETCDF_INCDIR) $(FC_DEFINE)NETCDF
+AM_FCFLAGS += $(FC_MODINC)$(NETCDFF_INCDIR) $(FC_DEFINE)NETCDFF
+AM_LDFLAGS += -L@NETCDF_LIBDIR@ -l@NETCDF_LIBNAME@ -L@NETCDFF_LIBDIR@ -l@NETCDFF_LIBNAME@
 endif
 
 ################################################################
