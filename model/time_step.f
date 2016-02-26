@@ -127,7 +127,7 @@
       USE qmom_kinetic_equation, only: qmomk
       USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end
       USE run, only: cn_on, dem_solids, dt, dt_min, dt_prev, ghd_2007, kt_type_enum
-      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev
+      USE run, only: nstep, nsteprst, odt, pic_solids, run_type, time, tstop, units, use_dt_prev, steady_state
       USE stiff_chem, only: stiff_chemistry, stiff_chem_solver
       IMPLICIT NONE
 
@@ -167,7 +167,7 @@
          CALL CN_EXTRAPOL
       ENDIF
 
-      IF (DT /= UNDEFINED) THEN
+      IF (.NOT. STEADY_STATE) THEN
          IF(USE_DT_PREV) THEN
             TIME = TIME + DT_PREV
          ELSE

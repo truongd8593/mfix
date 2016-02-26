@@ -53,6 +53,9 @@
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
 
+! Indicates whether simulation is steady-state
+      LOGICAL :: STEADY_STATE
+
 ! Number of times steps completed.
       INTEGER :: NSTEP
 

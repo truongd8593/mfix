@@ -48,7 +48,7 @@
       USE leqsol, only: leq_adjust
       USE output, only: full_log
       USE param1, only: one, small_number, undefined, zero
-      USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit
+      USE run, only: dt, dt_prev, run_type, time, tstop, nstep, nsteprst, cn_on, get_tunit, steady_state
       USE time_cpu
       USE toleranc, only: norm_g, norm_s
 
@@ -92,7 +92,7 @@
          TLEFT = (TSTOP - TIME)*CPUOS
          CALL GET_TUNIT (TLEFT, TUNIT)
 
-         IF (DT == UNDEFINED) THEN
+         IF (STEADY_STATE) THEN
             CALL GET_SMASS (SMASS)
             IF(myPE.eq.PE_IO) THEN
                WRITE (*, '(/A,G12.5, A,F9.3,1X,A)') &
@@ -110,7 +110,7 @@
                      ' Time = ', TIME, '  Dt = ', DT
                ENDIF
             ENDIF
-         ENDIF   ! if/else(dt==undefined)
+         ENDIF   ! if/else(steady_state)
       ENDIF   ! if(full_log)
 
       CALL CALC_RESID_MB(0, errorpercent)
@@ -154,7 +154,7 @@
          USE pscor, only: k_cp, mcp
          USE qmom_kinetic_equation, only: qmomk
          USE residual, only: resid_p, resid
-         USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end, friction, ghd_2007, granular_energy, k_epsilon, kt_type_enum, phip_out_iter, energy_eq, dt, ier
+         USE run, only: auto_restart, automatic_restart, call_dqmom, call_usr, chk_batchq_end, friction, ghd_2007, granular_energy, k_epsilon, kt_type_enum, phip_out_iter, energy_eq, dt, ier, steady_state
          USE scalars, only: nscalar
 
       IMPLICIT NONE
@@ -343,10 +343,10 @@
 
          ! Determine course of simulation: converge, non-converge, diverge?
          IF (MUSTIT == 0) THEN
-            IF (DT==UNDEFINED .AND. NIT==1) RETURN   !Iterations converged
+            IF (STEADY_STATE .AND. NIT==1) RETURN   !Iterations converged
             CONVERGED = .TRUE.
             IER = 0
-         ELSEIF (MUSTIT==2 .AND. DT/=UNDEFINED) THEN
+         ELSEIF (MUSTIT==2 .AND. .NOT.STEADY_STATE) THEN
             DIVERGED = .TRUE.
             IER = 1
          ENDIF
@@ -439,7 +439,7 @@
       ENDIF
 
 
-      IF(DT == UNDEFINED) IER_MANAGER = .FALSE.
+      IF(STEADY_STATE) IER_MANAGER = .FALSE.
 
       CALL END_ITERATION
 
@@ -832,7 +832,7 @@
 ! The current number of time steps (value at restart).
       use run, only: NSTEP, NSTEPRST
 ! Current DT (1/DT) and direction of last change (+/-)
-      use run, only: DT, oDT, DT_DIR
+      use run, only: DT, oDT, DT_DIR, STEADY_STATE
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -867,7 +867,7 @@
       USE_DT_PREV = .FALSE.
 
 ! Steady-state simulation.
-      IF (DT==UNDEFINED .OR. DT<ZERO) RETURN
+      IF (STEADY_STATE .OR. DT<ZERO) RETURN
 
 ! Local flag for adjusting the time step for CN implementation.
       CN_ADJUST_DT = CN_ON .AND. ((RUN_TYPE=='NEW' .AND. NSTEP>1) .OR. &

@@ -565,7 +565,7 @@
       USE param1
       USE physprop
       USE residual
-      USE run, only: Added_Mass, dt, m_am
+      USE run, only: Added_Mass, dt, m_am, steady_state
       USE rxns
       IMPLICIT NONE
 !-----------------------------------------------
@@ -591,7 +591,7 @@
       DOUBLE PRECISION :: err, accum_new, denom
 !-----------------------------------------------
 
-      if(dt == UNDEFINED)then
+      if(STEADY_STATE)then
         dt_local = ONE
       else
         dt_local = dt
@@ -602,13 +602,13 @@
 ! ---------------------------------------------------------------->>>
 
 ! Accumulation
-        if(dt == UNDEFINED)then
+        if(STEADY_STATE)then
           Accum_resid_g = ZERO
         else
           Accum_resid_g = Accumulation(ROP_g)
         endif
         DO M=1, MMAX
-          if(dt == UNDEFINED)then
+          if(STEADY_STATE)then
             Accum_resid_s(M) = ZERO
           else
             Accum_resid_s(M) = Accumulation(ROP_s(1,M))
@@ -622,7 +622,7 @@
 
 ! Calculate residual
 ! ---------------------------------------------------------------->>>
-        if(dt == UNDEFINED)then
+        if(STEADY_STATE)then
           Accum_new = - Accumulation(SUM_R_g) * dt_local
         else
           Accum_new = Accumulation(ROP_g) - Accumulation(SUM_R_g) * dt_local
@@ -658,7 +658,7 @@
         ENDIF
 
         DO M =1, MMAX
-          if(dt == UNDEFINED)then
+          if(STEADY_STATE)then
             Accum_new =  - Accumulation(SUM_R_s(1,M)) * dt_local
           else
             Accum_new = Accumulation(ROP_s(1,M)) - Accumulation(SUM_R_s(1,M)) * dt_local
@@ -1002,7 +1002,6 @@
 
 ! Skip walls where some values are undefined.
         IF(WALL_AT(IJK)) cycle
-
 
          if(m/=0) then
             EPSA = AVG_Y(EP_S(IJK,M),EP_S(NORTH_OF(IJK),M),J_OF(IJK))
