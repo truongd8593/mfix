@@ -33,6 +33,7 @@
 
       IMPLICIT NONE
       DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_Qw_cond
+      LOGICAL :: DO_AREA_CORRECTION
       CONTAINS
 
 
@@ -125,12 +126,14 @@
          IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
 ! Correct particle overlap to account for artificial softening
             OLAP_Sim = MAX_RAD + MIN_RAD - CENTER_DIST
-            IF(Im.ge.Jm)THEN
-               OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Jm,Im)
-            ELSE
-               OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Im,Jm)
+            IF(DO_AREA_CORRECTION)THEN
+               IF(Im.ge.Jm)THEN
+                  OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Jm,Im)
+               ELSE
+                  OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Im,Jm)
+               ENDIF
+               CENTER_DIST_CORR = MAX_RAD + MIN_RAD - OLAP_Actual
             ENDIF
-            CENTER_DIST_CORR = MAX_RAD + MIN_RAD - OLAP_Actual
 ! Effective thermal conductivity
             lK_eff = K_eff(K_s0(iM),K_s0(jM))
 ! Effective contact area's radius
@@ -181,8 +184,12 @@
    
             H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_gas
             H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_gas
-            H = H_1*H_2/(H_1+H_2)
-
+            IF(H_1.eq.ZERO.OR.H_2.eq.ZERO)THEN
+               H = ZERO
+            ELSE
+               H = H_1*H_2/(H_1+H_2)
+            ENDIF
+     
             Q_pfp = H *DeltaTp
 ! Particle-fluid-particle is analytically computed using conductance for each
 ! particle to the contact plane.  The effective lens radius and minimum conduction
@@ -514,8 +521,9 @@
       ! Compute effective solids conductivity
          KEff = 2.0D0*K_sol*K_wall/(K_sol+K_wall)
       ! Correct for overlap using "area" correction terms
-         OLAP_ACTUAL = CORRECT_OLAP(OLAP,M,-1) ! (-1 indicates wall)
-         OLAP_ACTUAL = 0.001*OLAP
+         IF(DO_AREA_CORRECTION)THEN
+            OLAP_ACTUAL = CORRECT_OLAP(OLAP,M,-1) ! (-1 indicates wall)
+         ENDIF
       ! Compute inner Rad
          Rin = sqrt(2.0D0*OLAP_ACTUAL*Rpart-OLAP_ACTUAL*OLAP_ACTUAL)
       ! Compute time correction term (commented out for now)

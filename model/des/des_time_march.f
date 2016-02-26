@@ -120,7 +120,7 @@
 ! Calculate or distribute fluid-particle drag force.
          CALL CALC_DRAG_DES
 ! Calculate heat conduction to/from wall
-         IF(ENERGY_EQ)CALL CALC_DEM_THERMO_WITH_WALL_STL
+       !  IF(ENERGY_EQ)CALL CALC_DEM_THERMO_WITH_WALL_STL
 
 ! Update the old values of particle position and velocity with the new
 ! values computed

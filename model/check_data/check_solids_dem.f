@@ -51,6 +51,7 @@
       use param1, only: UNDEFINED
       use error_manager
       use des_thermo, only : CALC_COND_DES
+      use des_thermo_cond, only: DO_AREA_CORRECTION
       use discretelement
       use param1, only : one
       use physprop, only : mmax, ro_s0, d_p0
@@ -97,20 +98,22 @@
       lent = MMAX_TOT+MMAX_TOT*(MMAX_TOT-1)/2
       lend = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
       lenc = lent-lend
- 
+      DO_AREA_CORRECTION = .TRUE.
       DO M=MMAX+1,MMAX_TOT
          IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
          IF (.NOT.CALC_COND_DES(M))CYCLE
          ANY_CONDUCTION = .TRUE.
          IF(E_YOUNG_ACTUAL(M) == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"('Phase ',I2,' Actual EYoungs')") M
-            WRITE(ERR_MSG,1002) 'E_YOUNG_ACTUAL', MSG
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            WRITE(ERR_MSG,2002) 'E_YOUNG_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
          ENDIF
          IF(V_POISSON_ACTUAL(M) == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"('Phase ',I2,' Actual poissons ratio')") M
-            WRITE(ERR_MSG,1002) 'V_POISSON_ACTUAL', MSG
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            WRITE(ERR_MSG,2002) 'V_POISSON_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
          ELSEIF(V_POISSON_ACTUAL(M) > 0.5d0 .OR. &
                 V_POISSON_ACTUAL(M) <= -ONE) THEN
             WRITE(ERR_MSG,1001) trim(iVar('V_POISSON_ACTUAL',M)),  &
@@ -122,13 +125,15 @@
       IF(ANY_CONDUCTION)THEN
          IF(EW_YOUNG_ACTUAL == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"('Actual EYoungs (wall)')")
-            WRITE(ERR_MSG,1002) 'EW_YOUNG_ACTUAL', MSG
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            WRITE(ERR_MSG,2002) 'EW_YOUNG_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
          ENDIF
          IF(VW_POISSON_ACTUAL == UNDEFINED) THEN
             MSG=''; WRITE(MSG,"(' Actual poisson ratio (wall)')")
-            WRITE(ERR_MSG,1002) 'VW_POISSON_ACTUAL', MSG
-            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+            WRITE(ERR_MSG,2002) 'VW_POISSON_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
          ENDIF
       ENDIF
 
@@ -136,6 +141,7 @@
       LC = LENC
       DO M=MMAX+1,MMAX_TOT
          IF(SOLIDS_MODEL(M) /='DEM') CYCLE
+         IF(.NOT.DO_AREA_CORRECTION)CYCLE
          IF(.NOT.CALC_COND_DES(M)) CYCLE
 ! Calculate the mass of a phase M particle.
          MASS_M = (PI/6.d0)*(D_P0(M)**3)*RO_S0(M)
@@ -195,10 +201,10 @@
 
       RETURN
 
- 1001 FORMAT('Error 1001: Illegal or unknown input: ',A,' = ',A,/      &
+ 1001 FORMAT('Warning 2001: Illegal or unknown input: ',A,' = ',A,/      &
       'Please correct the mfix.dat file.')
- 1002 FORMAT('Error 1002: Required input not specified: ',A,/          &
-      'Description:',A,/'Please correct the mfix.dat file.')
+ 2002 FORMAT('Warning 2002: Recommended input not specified: ',A,/          &
+      'Description:',A,/'Not correcting contact area.')
 
 
       END SUBROUTINE CHECK_SOLIDS_DEM_ENERGY

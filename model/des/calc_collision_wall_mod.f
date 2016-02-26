@@ -600,6 +600,8 @@
       DOUBLE PRECISION :: TPART
       DOUBLE PRECISION :: OVERLAP
       DOUBLE PRECISION :: QSWALL, AREA
+
+      LOGICAL, SAVE :: OUTPUT_WARNING = .TRUE.
      
 
   
@@ -827,13 +829,22 @@
                   ENDIF
                ENDDO
                IF(BC_ID.eq.0)then
-                  write(*,*)'ERROR, Could not find BC'
-                  write(*,'(3(F12.5, 3X))')(DES_POS_NEW(LL,IBC),IBC=1,3)
-                  write(*,*)I1,J1,K1
-                  write(*,'(3(F12.5, 3X))')(CLOSEST_PT(IBC),IBC=1,3)
-                  write(*,'(3(F12.5, 3X))')(NORM_FACE(IBC,NF),IBC=1,3)
-     
-                  call mfix_exit(1)
+                  IF(OUTPUT_WARNING)THEN
+                     write(*,*)'WARNING: Could not find BC'
+                     write(*,*)'Check input deck to make sure domain boundaries &
+                     are defined'
+                     write(*,*)'SUPPRESSING FUTURE OUTPUT'
+                     write(*,*)'DES_POS_NEW'
+                     write(*,'(3(F12.5, 3X))')(DES_POS_NEW(LL,IBC),IBC=1,3)
+                     write(*,*)'I,J,K'
+                     write(*,*)I1,J1,K1
+                     write(*,*)'CLOSEST PT'
+                     write(*,'(3(F12.5, 3X))')(CLOSEST_PT(IBC),IBC=1,3)
+                     write(*,*)'NORM_FACE'
+                     write(*,'(3(F12.5, 3X))')(NORM_FACE(IBC,NF),IBC=1,3) 
+                     OUTPUT_WARNING = .FALSE.
+                  ENDIF
+                  CYCLE  ! 
                ENDIF
                 
             ENDIF !Domain Boundary (facet ID was 0)
