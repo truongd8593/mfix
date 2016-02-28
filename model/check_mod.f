@@ -527,13 +527,14 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE  Calc_mass_flux_sp(I1, I2, J1, J2, K1, K2, Plane, U, V, W, ROP, Xn, flux_in, flux_out, IER)
-      USE param, only: dimension_3
-      USE geometry
-      USE physprop
-      USE indices
       USE compar
-      USE mpi_utility
       USE functions
+      USE geometry
+      USE indices
+      USE mpi_utility
+      USE param, only: dimension_3
+      USE param1, only: zero
+      USE physprop
       IMPLICIT NONE
 
 !

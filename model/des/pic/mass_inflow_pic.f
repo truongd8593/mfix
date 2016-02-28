@@ -18,6 +18,7 @@
       USE mfix_pic
       USE mpi_utility
       USE param, only: dimension_m
+      USE param1, only: half, zero
       use physprop, only: mmax, D_p0, ro_s0
       USE pic_bc
       USE randomno

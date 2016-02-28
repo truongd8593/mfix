@@ -853,13 +853,13 @@ MODULE CUT_CELL_PREPROC
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
         SUBROUTINE EVAL_F(METHOD,x1,x2,x3,Q,f,CLIP_FLAG)
 
-      USE parallel
       USE compar
-      USE sendrecv
-      USE quadric
       USE cutcell
-
+      USE parallel
+      USE param1, only: undefined
       USE quadric
+      USE quadric
+      USE sendrecv
 
       IMPLICIT NONE
 

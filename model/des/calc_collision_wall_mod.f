@@ -541,24 +541,29 @@
 !----------------------------------------------------------------//
 
       SUBROUTINE CALC_DEM_THERMO_WITH_WALL_STL
-      
-      USE cutcell, only: cut_cell_at, area_cut, blocked_cell_at, small_cell_at 
-      USE discretelement
-      USE desgrid
+
+      USE bc
+      USE compar, only: istart3, iend3, jstart3, jend3, kstart3, kend3
+      USE cutcell, only: cut_cell_at, area_cut, blocked_cell_at, small_cell_at
       USE des_thermo
       USE des_thermo_cond
+      USE desgrid
+      USE discretelement
       USE exit, only: mfix_exit
       USE functions
-      USE stl_functions_des
-      USE stl
-      USE bc
+      USE geometry, only: do_k, imax1, imax2, imin1, imin2
+      USE geometry, only: no_k, jmax1, jmax2, jmin1, jmin2
+      USE geometry, only: kmax1, kmax2, kmin1, kmin2, zlength
+      USE geometry, only: dx, dy, dz
       USE param, only: dimension_i, dimension_j, dimension_k
       USE param1
       USE physprop
       USE run, only: units, time
-     
+      USE stl
+      USE stl_functions_des
+
       IMPLICIT NONE
-      
+
       INTEGER :: LL             ! Loop index for particle
       INTEGER :: CELL_ID        ! Desgrid cell index
       INTEGER :: CELL_COUNT     ! Loop index for facets
@@ -571,26 +576,26 @@
       INTEGER, PARAMETER :: MAX_CONTACTS = 12
       INTEGER :: iFacet         ! loop index for facets
       INTEGER :: count_Facets   ! counter for number of facets particle contacts
-      DOUBLE PRECISION, DIMENSION(3,MAX_CONTACTS) :: NORM_FAC_CONTACT 
+      DOUBLE PRECISION, DIMENSION(3,MAX_CONTACTS) :: NORM_FAC_CONTACT
       LOGICAL :: USE_FACET
       LOGICAL :: DOMAIN_BDRY
 
-      INTEGER :: NF             ! Facet ID 
+      INTEGER :: NF             ! Facet ID
       INTEGER :: AXIS           ! Facet direction
       DOUBLE PRECISION :: RLENS_SQ ! lens radius squared
       DOUBLE PRECISION :: RLENS ! lens radius
       DOUBLE PRECISION :: RPART ! Particle radius
-      
+
       ! vectors for minimum / maximum possible particle contacts
       DOUBLE PRECISION, DIMENSION(3) :: PARTPOS_MIN, PARTPOS_MAX
       DOUBLE PRECISION, DIMENSION(3) :: POS_TMP ! Temp vector
       DOUBLE PRECISION, DIMENSION(3) :: DIST, NORMAL
 
-      DOUBLE PRECISION, DIMENSION(3) :: CLOSEST_PT 
+      DOUBLE PRECISION, DIMENSION(3) :: CLOSEST_PT
 
       DOUBLE PRECISION :: line_t  ! Normal projection for part/wall
       DOUBLE PRECISION :: DISTSQ ! Separation from particle and facet (squared)
-      DOUBLE PRECISION :: PROJ 
+      DOUBLE PRECISION :: PROJ
 
       INTEGER :: BC_ID ! BC ID
       INTEGER :: IBC   ! BC Loop Index
@@ -602,9 +607,9 @@
       DOUBLE PRECISION :: QSWALL, AREA
 
       LOGICAL, SAVE :: OUTPUT_WARNING = .TRUE.
-     
 
-  
+
+
     !  IF(.NOT.DES_CONTINUUM_COUPLED.or.DES_EXPLICITLY_COUPLED)THEN
     !     CALL PARTICLES_IN_CELL
     !  ENDIF
@@ -618,13 +623,13 @@
 
          ! Skip cells that do not have neighboring facet
          IF (facets_at_dg(CELL_ID)%COUNT <1) CYCLE
-         
+
          ! Store lens radius of particle
          RLENS = (ONE+FLPC)*DES_RADIUS(LL)
          RLENS_SQ = RLENS*RLENS
 
          RPART = DES_RADIUS(LL)
-         
+
          ! Compute max/min particle locations
          PARTPOS_MAX(:) = des_pos_new(LL,:) + RLENS
          PARTPOS_MIN(:) = des_pos_new(LL,:) - RLENS
@@ -636,8 +641,8 @@
          IJK_FLUID = PIJK(LL,4)
          TPART = DES_T_S(LL)
 
-         ! Sometimes PIJK is not updated every solids timestep and 
-         ! therefore doesn't give the correct fluid cell that 
+         ! Sometimes PIJK is not updated every solids timestep and
+         ! therefore doesn't give the correct fluid cell that
          ! contains the particles.  If so, determine actual fluid
          ! cell that contains the particle
          IF(.NOT.DES_CONTINUUM_COUPLED.or.DES_EXPLICITLY_COUPLED)THEN
@@ -702,8 +707,8 @@
             ENDIF !(K)
             IJK_FLUID = PIJK(LL,4)
          ENDIF ! (NOT CONTINUUM_COUPLED OR EXPLICIT)
-    
-         
+
+
 ! Initialize counter for number of facets
          COUNT_FACETS = 0
 
@@ -712,7 +717,7 @@
             ! Get direction (axis) and facet id (NF)
             axis = facets_at_dg(cell_id)%dir(cell_count)
             NF = facets_at_dg(cell_id)%id(cell_count)
-            
+
             ! Check to see if facet is out of reach of particle
             if (facets_at_dg(cell_id)%min(cell_count) >    &
                partpos_max(axis)) then
@@ -722,15 +727,15 @@
                partpos_min(axis)) then
                cycle
             endif
-           
+
             ! Compute projection (normal distance) from wall to particle
             line_t = DOT_PRODUCT(VERTEX(1,:,NF) - des_pos_new(LL,:),&
             &        NORM_FACE(:,NF))
-            
+
             ! If normal exceeds particle radius, particle is not in contact
             if((line_t.lt.-RLENS))CYCLE
-            
-            ! Compute closest point on facet 
+
+            ! Compute closest point on facet
             POS_TMP(:) = DES_POS_NEW(LL,:)
             CALL ClosestPtPointTriangle(POS_TMP, VERTEX(:,:,NF), &
             &    CLOSEST_PT(:))
@@ -740,11 +745,11 @@
 
             ! Skip particles that are more than lens radius from facet
             IF(DISTSQ .GE. (RLENS_SQ-SMALL_NUMBER))CYCLE
-           
+
             ! Only do heat transfer for particles that are directly above facet
             ! Heat transfer routines not generalized for edge contacts, but
             ! those should normally yield negligible heat transfer contributions
-            
+
             ! Normalize distance vector and compare to facet normal
             NORMAL(:)=-DIST(:)/sqrt(DISTSQ)
             PROJ = sqrt(abs(DOT_PRODUCT(NORMAL, NORM_FACE(:,NF))))
@@ -760,14 +765,14 @@
             DOMAIN_BDRY = .FALSE.
             ! Get BC_ID
             BC_ID = BC_ID_STL_FACE(NF)
-            
+
             ! BC_ID is set to 0 in pre-proc if stl is a domain boundary
             IF(BC_ID.eq.0)then
                I1=I_FLUID
                J1=J_FLUID
                K1=K_FLUID
                DOMAIN_BDRY = .TRUE.
-               
+
                ! Domain boundary, figure out real boundary ID
                IF(NORM_FACE(1,NF).ge.0.9999)THEN
                   ! WEST face
@@ -805,7 +810,7 @@
                   ! BOTTOM FACE
                   K1=KMIN2
                   AREA = DX(I_FLUID)*DY(J_FLUID)
-                  
+
                ELSEIF(NORM_FACE(3,NF).le.-0.9999)THEN
                   ! TOP FACE
                   K1=KMAX2
@@ -814,10 +819,10 @@
                   WRITE( *,*)'PROBLEM, COULD NOT FIND DOMAIN BOUNDARY'
                   WRITE(*,*)' In calc_thermo_des_wall_stl'
                   call mfix_exit(1)
-                  
+
                ENDIF
-              
-            
+
+
                ! Loop through defined BCs to see which one particle neighbors
                DO IBC = 1, DIMENSION_BC
                   IF(.NOT.BC_DEFINED(IBC))CYCLE
@@ -841,14 +846,14 @@
                      write(*,*)'CLOSEST PT'
                      write(*,'(3(F12.5, 3X))')(CLOSEST_PT(IBC),IBC=1,3)
                      write(*,*)'NORM_FACE'
-                     write(*,'(3(F12.5, 3X))')(NORM_FACE(IBC,NF),IBC=1,3) 
+                     write(*,'(3(F12.5, 3X))')(NORM_FACE(IBC,NF),IBC=1,3)
                      OUTPUT_WARNING = .FALSE.
                   ENDIF
-                  CYCLE  ! 
+                  CYCLE  !
                ENDIF
-                
+
             ENDIF !Domain Boundary (facet ID was 0)
-            
+
             IF (BC_TYPE_ENUM(BC_ID) == NO_SLIP_WALL .OR. &
                BC_TYPE_ENUM(BC_ID) == FREE_SLIP_WALL .OR. &
                BC_TYPE_ENUM(BC_ID) == PAR_SLIP_WALL .OR. &
@@ -856,8 +861,8 @@
                BC_TYPE_ENUM(BC_ID) == CG_FSW .OR. &
                BC_TYPE_ENUM(BC_ID) == CG_PSW) THEN
 
-      
-               
+
+
                ! CHECK TO MAKE SURE FACET IS UNIQUE
                USE_FACET=.TRUE.
                DO IFACET=1,count_facets
@@ -873,16 +878,16 @@
                ! FACET IS UNIQUE
                count_facets=count_facets+1
                NORM_FAC_CONTACT(:,count_facets)=NORMAL(:)
-               
+
 ! Do heat transfer
                ! GET WALL TEMPERATURE
                TWALL = BC_TW_S(BC_ID,phase_LL)
-          
+
                ! GET GAS THERMAL CONDUCTIVITY
                if(k_g0.eq.UNDEFINED)then
                   ! Compute gas conductivity as is done in calc_k_g
                   ! But use average of particle and wall temperature to be gas temperature
- 
+
                   K_Gas = 6.02D-5*SQRT(HALF*(TWALL+TPART)/300.D0) ! cal/(s.cm.K)
                   ! 1 cal = 4.183925D0 J
                   IF (UNITS == 'SI') K_Gas = 418.3925D0*K_Gas !J/s.m.K
@@ -908,7 +913,7 @@
 
                ! This checks to see if the contact point was NOT on a domain boundary
 
-               IF(.NOT.DOMAIN_BDRY)THEN 
+               IF(.NOT.DOMAIN_BDRY)THEN
                   IF(CLOSEST_PT(1) >= XE(I_FLUID))THEN
                      I_FACET = MIN(IMAX1, I_FLUID+1)
                   ELSEIF(CLOSEST_PT(1) < XE(I_FLUID-1))THEN
@@ -929,7 +934,7 @@
                   ENDIF
                   IJK_FACET=funijk(I_facet,J_facet,K_facet)
                   AREA=AREA_CUT(IJK_FACET)
-        
+
                ! AREA is left undefined if contact was with cut-cell surface
                   IF (AREA.eq.ZERO)then
                      I_FACET = I_FLUID
@@ -951,7 +956,7 @@
                            AREA = DY(J_FACET)*ZLENGTH
                         ENDIF
                      ELSEIF(NORM_FACE(2,NF).ge.0.9999)THEN
-                     ! SOUTH FACE 
+                     ! SOUTH FACE
                         IF(DO_K)THEN
                            AREA = DX(I_FACET)*DZ(K_FACET)
                         ELSE
@@ -969,9 +974,9 @@
                         AREA = DX(I_FACET)*DY(J_FACET)
                      ELSEIF(NORM_FACE(3,NF).le.-0.9999)THEN
                      ! TOP FACE
-                        AREA = DX(I_FACET)*DY(J_FACET)                 
+                        AREA = DX(I_FACET)*DY(J_FACET)
                      ENDIF
-                  ENDIF ! Area==0 (because cut-cell facet exists in non cut-cell) 
+                  ENDIF ! Area==0 (because cut-cell facet exists in non cut-cell)
                ENDIF ! NOT DOMAIN_BDRY
                IJK_FACET = FUNIJK(I_FACET,J_FACET,K_FACET)
                ! AM error check
@@ -984,21 +989,20 @@
                   write(*,*)'FACET NORM',(NORM_FACE(IBC,NF),IBC=1,3)
                   write(*,*)'BC_ID', BC_ID
                   write(*,*)'I,J,K (Facet)', I_FACET,J_FACET,K_FACET
-            
+
                   call mfix_exit(1)
                ENDIF
 
                IF(FLUID_AT(IJK_FACET))THEN
                   DES_QW_Cond(IJK_FACET,phase_LL) = &
                      DES_QW_Cond(IJK_FACET, phase_LL) + QSWALL/AREA
-               ENDIF            
-             
+               ENDIF
+
             ENDIF ! WALL BDRY
-         ENDDO                  ! CELL_COUNT (facets)        
+         ENDDO                  ! CELL_COUNT (facets)
       ENDDO  ! LL
       RETURN
 
       END SUBROUTINE CALC_DEM_THERMO_WITH_WALL_STL
 
       end module CALC_COLLISION_WALL
-

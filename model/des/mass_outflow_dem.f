@@ -14,6 +14,7 @@
       use des_bc
       use bc
       use functions
+      use param1, only: zero
 
       use mpi_utility, only: GLOBAL_ALL_OR
 

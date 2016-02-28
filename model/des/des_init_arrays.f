@@ -80,6 +80,7 @@
       use functions
       use mfix_pic, only: AVGSOLVEL_P, EPG_P
       use mfix_pic, only: MPPIC, DES_STAT_WT, PS_GRAD
+      use param1, only: zero
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
       use particle_filter, only: FILTER_SIZE
       use run, only: ANY_SPECIES_EQ

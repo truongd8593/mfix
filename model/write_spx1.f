@@ -559,6 +559,7 @@
         USE cutcell
         USE in_binary_512
         USE param, only: dimension_3
+        USE param1, only: undefined
         IMPLICIT NONE
         integer uspxL, NEXT_REC
         double precision, dimension(ijkmax2) :: array1

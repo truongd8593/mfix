@@ -2149,12 +2149,13 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE indices
-      USE geometry
       USE compar
       USE cutcell
       USE functions
+      USE geometry
+      USE indices
       USE param, only: dimension_3
+      USE param1, only: undefined
 
       IMPLICIT NONE
 
@@ -2340,6 +2341,7 @@
       USE cutcell
       USE functions
       USE param, only: dimension_3
+      USE param1, only: undefined
 
       IMPLICIT NONE
 

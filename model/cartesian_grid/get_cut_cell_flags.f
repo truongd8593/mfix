@@ -20,6 +20,7 @@
       USE geometry, ONLY: DO_I, DO_J, DO_K, IMIN1, IMAX3, JMIN1, JMAX3, KMIN1, KMAX3, no_k, vol, axy, axz, ayz, dx, dy, dz, flag
       USE indices, ONLY: i_of, j_of, k_of
       USE param, only: dimension_3
+      USE param1, only: zero, half, one, undefined
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
       USE sendrecv

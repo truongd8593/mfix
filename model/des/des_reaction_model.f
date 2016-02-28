@@ -13,18 +13,19 @@
       SUBROUTINE DES_REACTION_MODEL
 
       USE compar
-      Use constant
-      Use des_rxns
-      Use des_thermo
-      Use discretelement
+      USE constant
+      USE des_rxns
+      USE des_thermo
+      USE discretelement
       USE geometry
       USE indices
-      Use param, only: dimension_n_s
-      use run, only: ANY_SPECIES_EQ, SPECIES_EQ
-      use physprop, only: NMAX
-      use run, only: DT
-      use run, only: SOLVE_ROs
-      use functions
+      USE param, only: dimension_n_s
+      USE param1, only: zero
+      USE run, only: ANY_SPECIES_EQ, SPECIES_EQ
+      USE physprop, only: NMAX
+      USE run, only: DT
+      USE run, only: SOLVE_ROs
+      USE functions
 
       IMPLICIT NONE
 

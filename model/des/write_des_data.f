@@ -91,20 +91,20 @@
 
       SUBROUTINE WRITE_DES_VTP
 
-      use vtp
-      use run, only: ENERGY_EQ
-      use discretelement, only: S_TIME
-      use discretelement, only: DES_POS_NEW, DES_VEL_NEW, DES_USR_VAR
-      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
-      use des_thermo, only: DES_T_s
-      use discretelement, only: DES_RADIUS
-      use discretelement, only: USE_COHESION, PostCohesive
       use des_rxns, only: DES_X_s
-      use run, only: ANY_SPECIES_EQ
-      use param
-      USE mfix_pic, only: des_stat_wt, mppic
-
+      use des_thermo, only: DES_T_s
+      use discretelement, only: DES_POS_NEW, DES_VEL_NEW, DES_USR_VAR
+      use discretelement, only: DES_RADIUS
+      use discretelement, only: DES_USR_VAR, DES_USR_VAR_SIZE
+      use discretelement, only: S_TIME
+      use discretelement, only: USE_COHESION, PostCohesive
       use error_manager
+      use mfix_pic, only: des_stat_wt, mppic
+      use param
+      use param1, only: zero
+      use run, only: ANY_SPECIES_EQ
+      use run, only: ENERGY_EQ
+      use vtp
 
       IMPLICIT NONE
 

@@ -284,21 +284,20 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: zero, half
+
+      USE compar
       USE fldvar, only: u_s, v_s, w_s
+      USE fun_avg
+      USE functions
+      USE geometry
+      USE indices
+      USE param1, only: zero, half, undefined
       USE visc_s, only: epmu_s, eplambda_s
       USE visc_s, only: trd_s
 
-      USE compar
-      USE geometry
-      USE indices
-      USE functions
-      USE fun_avg
-
 ! for cutcell:
 ! wall velocity for slip conditions
-      USE bc, only: bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s
-      USE bc
+      USE bc, only: bc_hw_s, bc_uw_s, bc_vw_s, bc_ww_s, cg_nsw, cg_fsw, cg_psw, cg_mi, none, bc_type_enum
       USE quadric
       USE cutcell
 

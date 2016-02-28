@@ -247,7 +247,7 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param1, only: zero, half
+      USE param1, only: zero, half, undefined
       USE fldvar, only: u_s, v_s, w_s
       USE visc_s, only: epmu_s, eplambda_s
       USE visc_s, only: trd_s

@@ -19,7 +19,8 @@
       USE compar, only: ijkstart3, ijkend3
       USE discretelement, only: dimn
       USE fun_avg, only: avg_x, avg_y, avg_z
-      USE functions, only: fluid_at, i_of, j_of, k_of, east_of, north_of, top_of
+      USE functions, only: fluid_at, east_of, north_of, top_of
+      USE indices, only: i_of, j_of, k_of
       USE geometry, only: vol_u, vol_v, vol_w
       USE param
       USE param1

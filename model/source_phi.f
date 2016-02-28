@@ -165,6 +165,7 @@
       use usr
       use functions
       use param, only: dimension_3, dimension_m
+      use param1, only: one, small_number
 
       IMPLICIT NONE
 !-----------------------------------------------

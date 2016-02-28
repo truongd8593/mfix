@@ -42,7 +42,7 @@
       use compar, only: istart3, jstart3, kstart3
       use compar, only: iend3, jend3, kend3
       use functions, only: FLUID_AT
-      use functions, only: I_OF, J_OF, K_OF
+      use indices, only: I_OF, J_OF, K_OF
       use functions, only: IP_OF, JP_OF, KP_OF
       use functions, only: funijk
       use functions, only: is_on_mype_owns

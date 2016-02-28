@@ -214,8 +214,9 @@
 
       use cutcell
       use error_manager
-      use functions
+      use functions, only: funijk, fluid_at
       use mpi_utility
+      use discretelement, only: iglobal_id
 
       IMPLICIT NONE
 
