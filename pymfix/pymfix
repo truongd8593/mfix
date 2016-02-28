@@ -22,7 +22,7 @@ sys.path.append(os.getcwd())
 from mfix import compar as COMPAR
 from mfix import iterate as ITERATE
 from mfix import main as MAIN
-# from mfix import param1 as PARAM1
+from mfix import discretelement as DEM
 from mfix import residual as RESIDUAL
 from mfix import run as RUN
 from mfix import step as STEP
@@ -86,12 +86,22 @@ class Mfix:
 
         MAIN.initialize()
 
-        while cls.pymfix_running:
-            cls.check_requests()
-            if cls.mfix_stopped or RUN.tstop <= RUN.time:
-                time.sleep(0.1)
-            else:
-                cls.do_step()
+        if (DEM.discrete_element and not DEM.des_continuum_coupled):
+            if RUN.dem_solids:
+                DEM.des_time_march()
+            if RUN.pic_solids:
+                DEM.pic_time_march()
+        else:
+
+            while cls.pymfix_running:
+                cls.check_requests()
+                if cls.mfix_stopped or RUN.tstop <= RUN.time:
+                    time.sleep(0.1)
+                else:
+                    cls.do_step()
+
+                if RUN.steady_state:
+                    break
 
         MAIN.finalize()
 
@@ -111,7 +121,7 @@ class Mfix:
 
             ITERATE.post_iterate()
 
-            step_incomplete = ITERATE.adjustdt()
+            step_incomplete = ITERATE.adjustdt() and not RUN.steady_state
 
         STEP.time_step_end()
 
@@ -136,7 +146,7 @@ class Mfix:
                                             str(RESIDUAL.get_resid(res_id))))
 
         outstr = json.dumps(output)
-        print('output = ', outstr)
+        # print('output = ', outstr)
 
         SOCKETIO.emit('residual_msg', {'data': outstr}, namespace='/residuals')
 

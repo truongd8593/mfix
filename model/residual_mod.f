@@ -93,8 +93,26 @@ MODULE residual
          IMPLICIT NONE
          DOUBLE PRECISION :: GET_RESID
          INTEGER, INTENT(IN) :: INDEX
+         INTEGER :: RI, RI2
 
-         GET_RESID = RESID(RESID_INDEX(INDEX,1),RESID_INDEX(INDEX,2))
+         IF (INDEX > SIZE(RESID_INDEX,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR INDEX ",INDEX
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         RI = RESID_INDEX(INDEX,1)
+         RI2 = RESID_INDEX(INDEX,2)
+         IF (RI > SIZE(RESID,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR RESID_INDEX 1 ",RI
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         IF (RI2 > SIZE(RESID,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR RESID_INDEX 2 ",RI2
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         GET_RESID = RESID(RI,RI2)
 
       END FUNCTION GET_RESID
 
