@@ -1,0 +1,3681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1561</width>
+    <height>785</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <item>
+     <widget class="QFrame" name="frame">
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QSplitter" name="splitter">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="opaqueResize">
+          <bool>true</bool>
+         </property>
+         <widget class="QFrame" name="frame_3">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Plain</enum>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_2">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QFrame" name="frame_4">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <property name="spacing">
+               <number>0</number>
+              </property>
+              <property name="leftMargin">
+               <number>5</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <item>
+               <widget class="QToolButton" name="toolButtonNew">
+                <property name="toolTip">
+                 <string>New Project</string>
+                </property>
+                <property name="text">
+                 <string>New</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonOpen">
+                <property name="toolTip">
+                 <string>Open Project</string>
+                </property>
+                <property name="text">
+                 <string>Open</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="toolButtonSave">
+                <property name="toolTip">
+                 <string>Save Project</string>
+                </property>
+                <property name="text">
+                 <string>Save</string>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>122</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QStackedWidget" name="stackedWidgetMode">
+             <property name="frameShape">
+              <enum>QFrame::NoFrame</enum>
+             </property>
+             <property name="frameShadow">
+              <enum>QFrame::Plain</enum>
+             </property>
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="modeler">
+              <property name="styleSheet">
+               <string notr="true">QStackedWidget{
+background-color:white;
+}</string>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QTreeWidget" name="treeWidgetModelNavigation">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>130</width>
+                   <height>0</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>150</width>
+                   <height>16777215</height>
+                  </size>
+                 </property>
+                 <property name="styleSheet">
+                  <string notr="true">QTreeView{
+background-color: transparent;
+}
+</string>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="frameShadow">
+                  <enum>QFrame::Plain</enum>
+                 </property>
+                 <property name="lineWidth">
+                  <number>0</number>
+                 </property>
+                 <property name="midLineWidth">
+                  <number>0</number>
+                 </property>
+                 <property name="horizontalScrollBarPolicy">
+                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                 </property>
+                 <property name="showDropIndicator" stdset="0">
+                  <bool>false</bool>
+                 </property>
+                 <property name="alternatingRowColors">
+                  <bool>false</bool>
+                 </property>
+                 <property name="indentation">
+                  <number>10</number>
+                 </property>
+                 <property name="animated">
+                  <bool>true</bool>
+                 </property>
+                 <property name="headerHidden">
+                  <bool>true</bool>
+                 </property>
+                 <attribute name="headerVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <column>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </column>
+                 <item>
+                  <property name="text">
+                   <string>Geometry</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Mesh</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Regions</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Model Setup</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Fluid</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>TFM Solids</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Continuum Solids Model</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>DEM Solids</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Discrete Element Model</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>PIC Solids</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Particle in Cell Model</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Initial Conditions</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Boundary Conditions</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Point Sources</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Internal Surfaces</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Chemistry</string>
+                   </property>
+                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Numerics</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Time</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Output</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>VTK</string>
+                   </property>
+                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Monitors</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Points</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Planes</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Volumes</string>
+                   </property>
+                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Run</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Job</string>
+                   </property>
+                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Post Processing</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>Export</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Plugins</string>
+                   </property>
+                  </item>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <widget class="QStackedWidget" name="stackedWidgetTaskPane">
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="currentIndex">
+                  <number>2</number>
+                 </property>
+                 <widget class="QWidget" name="geometry">
+                  <layout class="QVBoxLayout" name="verticalLayout_3">
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_6">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_4">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonAddGeometry">
+                        <property name="text">
+                         <string>Add</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonRemoveGeometry">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="text">
+                         <string>Delete</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_2">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>148</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonGeometryUnion">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>Union</string>
+                        </property>
+                        <property name="text">
+                         <string>Union</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonGeometryIntersect">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>Intersection</string>
+                        </property>
+                        <property name="text">
+                         <string>Intersect</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonGeometryDifference">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
+                        <property name="toolTip">
+                         <string>Difference</string>
+                        </property>
+                        <property name="text">
+                         <string>Difference</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTreeWidget" name="treeWidgetGeometry">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="styleSheet">
+                      <string notr="true">QTreeView{
+background-color: transparent;
+}</string>
+                     </property>
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="lineWidth">
+                      <number>0</number>
+                     </property>
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::ExtendedSelection</enum>
+                     </property>
+                     <property name="selectionBehavior">
+                      <enum>QAbstractItemView::SelectRows</enum>
+                     </property>
+                     <property name="indentation">
+                      <number>10</number>
+                     </property>
+                     <attribute name="headerVisible">
+                      <bool>false</bool>
+                     </attribute>
+                     <column>
+                      <property name="text">
+                       <string notr="true">1</string>
+                      </property>
+                     </column>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="groupBoxGeometryParameters">
+                     <property name="font">
+                      <font>
+                       <pointsize>10</pointsize>
+                      </font>
+                     </property>
+                     <property name="title">
+                      <string>Parameters</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_8">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QStackedWidget" name="stackedWidgetGeometryDetails">
+                        <property name="currentIndex">
+                         <number>0</number>
+                        </property>
+                        <widget class="QWidget" name="sphere">
+                         <layout class="QGridLayout" name="gridLayout_3">
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>5</number>
+                          </property>
+                          <item row="3" column="1">
+                           <widget class="QLineEdit" name="lineEditSphereThetaResolution"/>
+                          </item>
+                          <item row="4" column="1">
+                           <widget class="QLineEdit" name="lineEditSpherePhiResolution"/>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QLineEdit" name="lineEditSphereRadius"/>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_9">
+                            <property name="text">
+                             <string>Center</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_11">
+                            <property name="text">
+                             <string>Theta Resolution</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QLabel" name="label_12">
+                            <property name="text">
+                             <string>Phi Resolution</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_10">
+                            <property name="text">
+                             <string>Radius</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="6" column="0">
+                           <spacer name="verticalSpacer_4">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QFrame" name="frame_10">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_7">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereCenterX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereCenterY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereCenterZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_51">
+                            <property name="text">
+                             <string>Rotation</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QFrame" name="frame_26">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <property name="lineWidth">
+                             <number>0</number>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_21">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereRotationX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereRotationY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditSphereRotationZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="box">
+                         <layout class="QGridLayout" name="gridLayout_6">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_22">
+                            <property name="text">
+                             <string>Center</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QFrame" name="frame_14">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_12">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditBoxCenterX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditBoxCenterY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditBoxCenterZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_23">
+                            <property name="text">
+                             <string>Length</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QFrame" name="frame_15">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_13">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditBoxLengthX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditlineEditBoxLengthY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditlineEditBoxLengthZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <spacer name="verticalSpacer_7">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="cone">
+                         <layout class="QGridLayout" name="gridLayout_5">
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>5</number>
+                          </property>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_17">
+                            <property name="text">
+                             <string>Center</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QFrame" name="frame_12">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_10">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeCenterX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeCenterY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeCenterZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_21">
+                            <property name="text">
+                             <string>Direction</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QFrame" name="frame_13">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_11">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeDirectionX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeDirectionY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditConeDirectionZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_20">
+                            <property name="text">
+                             <string>Height</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QLineEdit" name="lineEditConeHeight"/>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_18">
+                            <property name="text">
+                             <string>Radius</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="QLineEdit" name="lineEditConeRadius"/>
+                          </item>
+                          <item row="4" column="0">
+                           <widget class="QLabel" name="label_19">
+                            <property name="text">
+                             <string>Resolution</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="4" column="1">
+                           <widget class="QLineEdit" name="lineEditConeResolution"/>
+                          </item>
+                          <item row="5" column="1">
+                           <spacer name="verticalSpacer_6">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="cylinder">
+                         <layout class="QGridLayout" name="gridLayout_4">
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>5</number>
+                          </property>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_13">
+                            <property name="text">
+                             <string>Center</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="1">
+                           <widget class="QLineEdit" name="lineEditCylinderResolution"/>
+                          </item>
+                          <item row="3" column="0">
+                           <widget class="QLabel" name="label_16">
+                            <property name="text">
+                             <string>Resolution</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="1">
+                           <widget class="QLineEdit" name="lineEditCylinderRadius"/>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_14">
+                            <property name="text">
+                             <string>Height</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QFrame" name="frame_11">
+                            <property name="frameShape">
+                             <enum>QFrame::NoFrame</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_9">
+                             <property name="spacing">
+                              <number>5</number>
+                             </property>
+                             <property name="leftMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="topMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="rightMargin">
+                              <number>0</number>
+                             </property>
+                             <property name="bottomMargin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditCylinderCenterX"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditCylinderCenterY"/>
+                             </item>
+                             <item>
+                              <widget class="QLineEdit" name="lineEditCylinderCenterZ"/>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QLabel" name="label_15">
+                            <property name="text">
+                             <string>Radius</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="1">
+                           <widget class="QLineEdit" name="lineEditCylinderHeight"/>
+                          </item>
+                          <item row="4" column="1">
+                           <spacer name="verticalSpacer_5">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="stl">
+                         <layout class="QGridLayout" name="gridLayout_11">
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>5</number>
+                          </property>
+                          <item row="1" column="1">
+                           <widget class="QLineEdit" name="lineEditStlCenterX"/>
+                          </item>
+                          <item row="2" column="0">
+                           <spacer name="verticalSpacer">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QLabel" name="label_25">
+                            <property name="text">
+                             <string>Center</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QComboBox" name="comboBox">
+                            <item>
+                             <property name="text">
+                              <string>mm</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>cm</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>m</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>in</string>
+                             </property>
+                            </item>
+                            <item>
+                             <property name="text">
+                              <string>ft</string>
+                             </property>
+                            </item>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_24">
+                            <property name="text">
+                             <string>STL file units</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="2">
+                           <widget class="QLineEdit" name="lineEditStlCenterY"/>
+                          </item>
+                          <item row="1" column="3">
+                           <widget class="QLineEdit" name="lineEditStlCenterZ"/>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="boolean"/>
+                        <widget class="QWidget" name="none"/>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="run">
+                  <widget class="QPushButton" name="run_mfix_button">
+                   <property name="geometry">
+                    <rect>
+                     <x>0</x>
+                     <y>210</y>
+                     <width>113</width>
+                     <height>32</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Start MFIX Job</string>
+                   </property>
+                  </widget>
+                  <widget class="QPushButton" name="connect_mfix_button">
+                   <property name="geometry">
+                    <rect>
+                     <x>20</x>
+                     <y>430</y>
+                     <width>271</width>
+                     <height>32</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Connect to running MFIX Job</string>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="mfix_url">
+                   <property name="geometry">
+                    <rect>
+                     <x>20</x>
+                     <y>470</y>
+                     <width>351</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>http://localhost:5000</string>
+                   </property>
+                  </widget>
+                  <widget class="QPushButton" name="build_mfix_button">
+                   <property name="geometry">
+                    <rect>
+                     <x>10</x>
+                     <y>10</y>
+                     <width>113</width>
+                     <height>32</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Build MFIX</string>
+                   </property>
+                  </widget>
+                  <widget class="QTextBrowser" name="build_output">
+                   <property name="geometry">
+                    <rect>
+                     <x>10</x>
+                     <y>50</y>
+                     <width>601</width>
+                     <height>151</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QTextBrowser" name="run_output">
+                   <property name="geometry">
+                    <rect>
+                     <x>10</x>
+                     <y>240</y>
+                     <width>611</width>
+                     <height>181</height>
+                    </rect>
+                   </property>
+                  </widget>
+                 </widget>
+                 <widget class="QWidget" name="job">
+                  <widget class="QWebView" name="mfix_browser">
+                   <property name="geometry">
+                    <rect>
+                     <x>20</x>
+                     <y>30</y>
+                     <width>951</width>
+                     <height>691</height>
+                    </rect>
+                   </property>
+                   <property name="autoFillBackground">
+                    <bool>false</bool>
+                   </property>
+                   <property name="url">
+                    <url>
+                     <string>about:blank</string>
+                    </url>
+                   </property>
+                  </widget>
+                 </widget>
+                 <widget class="QWidget" name="mesh">
+                  <layout class="QGridLayout" name="gridLayout">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <item row="4" column="0">
+                    <spacer name="verticalSpacer_12">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0">
+                    <spacer name="verticalSpacer_8">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Maximum</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="0" column="0">
+                    <widget class="QGroupBox" name="groupBox_2">
+                     <property name="title">
+                      <string>Uniform</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_7">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="2" column="0" colspan="4">
+                       <widget class="QFrame" name="frame_8">
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_5">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <spacer name="horizontalSpacer_3">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>40</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                         <item>
+                          <widget class="QPushButton" name="pushButton">
+                           <property name="text">
+                            <string>Autosize</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_4">
+                        <property name="text">
+                         <string>Cells</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QLineEdit" name="lineEdit_4"/>
+                      </item>
+                      <item row="3" column="1">
+                       <widget class="QLineEdit" name="lineEdit_8"/>
+                      </item>
+                      <item row="3" column="2">
+                       <widget class="QLineEdit" name="lineEdit_7"/>
+                      </item>
+                      <item row="0" column="3">
+                       <widget class="QLineEdit" name="lineEdit_3"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_2">
+                        <property name="text">
+                         <string>Min</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="2">
+                       <widget class="QLineEdit" name="lineEdit_2"/>
+                      </item>
+                      <item row="3" column="3">
+                       <widget class="QLineEdit" name="lineEdit_9"/>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_3">
+                        <property name="text">
+                         <string>Max</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="3">
+                       <widget class="QLineEdit" name="lineEdit_6"/>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QLineEdit" name="lineEdit"/>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QLineEdit" name="lineEdit_5"/>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="QLabel" name="label_5">
+                        <property name="text">
+                         <string>Cell Size</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="1">
+                       <widget class="QLineEdit" name="lineEdit_10">
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="2">
+                       <widget class="QLineEdit" name="lineEdit_11">
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="3">
+                       <widget class="QLineEdit" name="lineEdit_12">
+                        <property name="readOnly">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QGroupBox" name="groupBox_3">
+                     <property name="title">
+                      <string>X Control Points</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_8">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QTableWidget" name="tableWidget">
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <column>
+                         <property name="text">
+                          <string>Position</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Cells</string>
+                         </property>
+                        </column>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="5" column="0">
+                    <widget class="QGroupBox" name="groupBox_4">
+                     <property name="title">
+                      <string>Y Control Points</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_9">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QTableWidget" name="tableWidget_2">
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <column>
+                         <property name="text">
+                          <string>Position</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Cells</string>
+                         </property>
+                        </column>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="7" column="0">
+                    <widget class="QGroupBox" name="groupBox_5">
+                     <property name="title">
+                      <string>Z Control Points</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_10">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QTableWidget" name="tableWidget_3">
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <column>
+                         <property name="text">
+                          <string>Position</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Cells</string>
+                         </property>
+                        </column>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <spacer name="verticalSpacer_11">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="6" column="0">
+                    <spacer name="verticalSpacer_13">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="regions">
+                  <layout class="QVBoxLayout" name="verticalLayout_5">
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_18">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_15">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonRegionAdd">
+                        <property name="text">
+                         <string>Add</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonRegionDelete">
+                        <property name="text">
+                         <string>Delete</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonRegionCopy">
+                        <property name="text">
+                         <string>Copy</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_5">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>342</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QTableWidget" name="tableWidget_6">
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <property name="editTriggers">
+                      <set>QAbstractItemView::NoEditTriggers</set>
+                     </property>
+                     <property name="selectionMode">
+                      <enum>QAbstractItemView::SingleSelection</enum>
+                     </property>
+                     <property name="selectionBehavior">
+                      <enum>QAbstractItemView::SelectRows</enum>
+                     </property>
+                     <attribute name="verticalHeaderVisible">
+                      <bool>false</bool>
+                     </attribute>
+                     <row>
+                      <property name="text">
+                       <string>0</string>
+                      </property>
+                     </row>
+                     <column>
+                      <property name="text">
+                       <string>Name</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>Shape</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>From</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>To</string>
+                      </property>
+                     </column>
+                     <item row="0" column="0">
+                      <property name="text">
+                       <string>IC_Bed</string>
+                      </property>
+                     </item>
+                     <item row="0" column="1">
+                      <property name="text">
+                       <string>Box</string>
+                      </property>
+                     </item>
+                     <item row="0" column="2">
+                      <property name="text">
+                       <string>0,0,0</string>
+                      </property>
+                     </item>
+                     <item row="0" column="3">
+                      <property name="text">
+                       <string>10,10,10</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_16">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="groupBox_9">
+                     <property name="title">
+                      <string>Parameters</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_16">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="3" column="1">
+                       <widget class="QLineEdit" name="lineEdit_20"/>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_32">
+                        <property name="text">
+                         <string>from</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QLineEdit" name="lineEdit_17"/>
+                      </item>
+                      <item row="3" column="2">
+                       <widget class="QLineEdit" name="lineEdit_21"/>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_33">
+                        <property name="text">
+                         <string>to</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="3">
+                       <widget class="QLineEdit" name="lineEdit_22"/>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_35">
+                        <property name="text">
+                         <string>Shape</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QLineEdit" name="lineEdit_18"/>
+                      </item>
+                      <item row="2" column="3">
+                       <widget class="QLineEdit" name="lineEdit_19"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_34">
+                        <property name="text">
+                         <string>Name</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1" colspan="3">
+                       <widget class="QComboBox" name="comboBox_10">
+                        <item>
+                         <property name="text">
+                          <string>box</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>sphere</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>point</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>plane</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="0" column="1" colspan="3">
+                       <widget class="QLineEdit" name="lineEdit_23"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_17">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="model_setup">
+                  <layout class="QGridLayout" name="gridLayout_15">
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <item row="4" column="1">
+                    <widget class="QComboBox" name="comboBox_6">
+                     <item>
+                      <property name="text">
+                       <string>k-e Model</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
+                   <item row="0" column="0">
+                    <spacer name="verticalSpacer_2">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeType">
+                      <enum>QSizePolicy::Minimum</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="9" column="0">
+                    <spacer name="verticalSpacer_3">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>120</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="5" column="0">
+                    <spacer name="verticalSpacer_9">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="4" column="0">
+                    <widget class="QCheckBox" name="checkBox_3">
+                     <property name="text">
+                      <string>Enable Fluid Phase Turbulence</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="7" column="0">
+                    <spacer name="verticalSpacer_10">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>20</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item row="2" column="0" colspan="2">
+                    <widget class="QCheckBox" name="checkBox">
+                     <property name="text">
+                      <string>Disable Fluid Solver (Pure Granular Flow)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0" colspan="2">
+                    <widget class="QCheckBox" name="checkBox_2">
+                     <property name="text">
+                      <string>Enable Energy Equations</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="6" column="0" colspan="2">
+                    <widget class="QGroupBox" name="groupBox">
+                     <property name="title">
+                      <string>Interphase Transfer</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_12">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="comboBox_3">
+                        <item>
+                         <property name="text">
+                          <string>Wen and Yu</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_7">
+                        <property name="text">
+                         <string>Drag Model</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_8">
+                        <property name="text">
+                         <string>Heat Transfer</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QComboBox" name="comboBox_4">
+                        <item>
+                         <property name="text">
+                          <string>Gunn, 1979</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="8" column="0" colspan="2">
+                    <widget class="QGroupBox" name="groupBox_6">
+                     <property name="title">
+                      <string>Advanced</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_13">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_26">
+                        <property name="layoutDirection">
+                         <enum>Qt::LeftToRight</enum>
+                        </property>
+                        <property name="text">
+                         <string>Momentun Formulation</string>
+                        </property>
+                        <property name="alignment">
+                         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="comboBox_5">
+                        <item>
+                         <property name="text">
+                          <string>Model A</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item row="1" column="0" colspan="2">
+                    <widget class="QFrame" name="frame_9">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_2">
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_6">
+                        <property name="sizePolicy">
+                         <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+                          <horstretch>0</horstretch>
+                          <verstretch>0</verstretch>
+                         </sizepolicy>
+                        </property>
+                        <property name="text">
+                         <string>Solver</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="comboBox_2">
+                        <item>
+                         <property name="text">
+                          <string>MFIX-TFM</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>MFIX-PIC</string>
+                         </property>
+                        </item>
+                        <item>
+                         <property name="text">
+                          <string>MFIX-DEM</string>
+                         </property>
+                        </item>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="fluid">
+                  <layout class="QVBoxLayout" name="verticalLayout_7">
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_19">
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_16">
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="label_27">
+                        <property name="text">
+                         <string>Name</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="lineEdit_13">
+                        <property name="text">
+                         <string>Fluid</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_4">
+                     <property name="text">
+                      <string>Solve U-Momentum Equation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_5">
+                     <property name="text">
+                      <string>Solve V-Momentum Equation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_6">
+                     <property name="text">
+                      <string>Solve W-Momentum Equation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="checkBox_7">
+                     <property name="text">
+                      <string>Enable Species Equations</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_14">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="groupBox_7">
+                     <property name="title">
+                      <string>Species</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <property name="checkable">
+                      <bool>false</bool>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_8">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QFrame" name="frame_20">
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_17">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QToolButton" name="toolButtonFluidSpeciesAdd">
+                           <property name="text">
+                            <string>Add</string>
+                           </property>
+                           <property name="autoRaise">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QToolButton" name="toolButtonFluidSpeciesDelete">
+                           <property name="text">
+                            <string>Delete</string>
+                           </property>
+                           <property name="autoRaise">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QToolButton" name="toolButtonFluidSpeciesCopy">
+                           <property name="text">
+                            <string>Copy</string>
+                           </property>
+                           <property name="autoRaise">
+                            <bool>true</bool>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <spacer name="horizontalSpacer_6">
+                           <property name="orientation">
+                            <enum>Qt::Horizontal</enum>
+                           </property>
+                           <property name="sizeHint" stdset="0">
+                            <size>
+                             <width>40</width>
+                             <height>20</height>
+                            </size>
+                           </property>
+                          </spacer>
+                         </item>
+                        </layout>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QTableWidget" name="tableWidget_5">
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <attribute name="verticalHeaderVisible">
+                         <bool>false</bool>
+                        </attribute>
+                        <column>
+                         <property name="text">
+                          <string>Name</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>MW</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Hf</string>
+                         </property>
+                        </column>
+                        <column>
+                         <property name="text">
+                          <string>Source</string>
+                         </property>
+                        </column>
+                       </widget>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_15">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                   <item>
+                    <widget class="QGroupBox" name="groupBox_8">
+                     <property name="title">
+                      <string>Properties</string>
+                     </property>
+                     <property name="flat">
+                      <bool>true</bool>
+                     </property>
+                     <layout class="QGridLayout" name="gridLayout_14">
+                      <property name="leftMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>5</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="spacing">
+                       <number>5</number>
+                      </property>
+                      <item row="0" column="2">
+                       <widget class="QLineEdit" name="lineEdit_14"/>
+                      </item>
+                      <item row="2" column="1">
+                       <widget class="QComboBox" name="comboBox_9"/>
+                      </item>
+                      <item row="3" column="0">
+                       <widget class="QLabel" name="label_31">
+                        <property name="text">
+                         <string>Specific Heat</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="0">
+                       <widget class="QLabel" name="label_30">
+                        <property name="text">
+                         <string>Molecular Weight</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="2" column="2">
+                       <widget class="QLineEdit" name="lineEdit_16"/>
+                      </item>
+                      <item row="0" column="1">
+                       <widget class="QComboBox" name="comboBox_7"/>
+                      </item>
+                      <item row="1" column="1">
+                       <widget class="QComboBox" name="comboBox_8"/>
+                      </item>
+                      <item row="0" column="0">
+                       <widget class="QLabel" name="label_28">
+                        <property name="text">
+                         <string>Density</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="1" column="2">
+                       <widget class="QLineEdit" name="lineEdit_15"/>
+                      </item>
+                      <item row="1" column="0">
+                       <widget class="QLabel" name="label_29">
+                        <property name="text">
+                         <string>Viscosity</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="4" column="0">
+                       <widget class="QLabel" name="label_36">
+                        <property name="text">
+                         <string>Conductivity</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="5" column="0">
+                       <widget class="QLabel" name="label_37">
+                        <property name="text">
+                         <string>Diffusion Coeff.</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item row="3" column="1">
+                       <widget class="QComboBox" name="comboBox_11"/>
+                      </item>
+                      <item row="4" column="1">
+                       <widget class="QComboBox" name="comboBox_12"/>
+                      </item>
+                      <item row="5" column="1">
+                       <widget class="QComboBox" name="comboBox_13"/>
+                      </item>
+                      <item row="3" column="2">
+                       <widget class="QLineEdit" name="lineEdit_24"/>
+                      </item>
+                      <item row="4" column="2">
+                       <widget class="QLineEdit" name="lineEdit_25"/>
+                      </item>
+                      <item row="5" column="2">
+                       <widget class="QLineEdit" name="lineEdit_26"/>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <spacer name="verticalSpacer_18">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="tfm_solids">
+                  <layout class="QVBoxLayout" name="verticalLayout_9">
+                   <property name="spacing">
+                    <number>5</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>5</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>5</number>
+                   </property>
+                   <item>
+                    <widget class="QFrame" name="frame_21">
+                     <property name="frameShape">
+                      <enum>QFrame::NoFrame</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <layout class="QHBoxLayout" name="horizontalLayout_18">
+                      <property name="spacing">
+                       <number>0</number>
+                      </property>
+                      <property name="leftMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="topMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="rightMargin">
+                       <number>0</number>
+                      </property>
+                      <property name="bottomMargin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonTFMSolidsAdd">
+                        <property name="text">
+                         <string>Add</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonTFMSolidsDelete">
+                        <property name="text">
+                         <string>Delete</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonTFMSolidsCopy">
+                        <property name="text">
+                         <string>Copy</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButtonTFMSolidsDatabase">
+                        <property name="text">
+                         <string>Database</string>
+                        </property>
+                        <property name="autoRaise">
+                         <bool>true</bool>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <spacer name="horizontalSpacer_7">
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                        <property name="sizeHint" stdset="0">
+                         <size>
+                          <width>283</width>
+                          <height>20</height>
+                         </size>
+                        </property>
+                       </spacer>
+                      </item>
+                     </layout>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSplitter" name="splitter_4">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <widget class="QTableWidget" name="tableWidget_7">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="frameShadow">
+                       <enum>QFrame::Plain</enum>
+                      </property>
+                      <column>
+                       <property name="text">
+                        <string>Name</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>Diameter</string>
+                       </property>
+                      </column>
+                      <column>
+                       <property name="text">
+                        <string>Density</string>
+                       </property>
+                      </column>
+                     </widget>
+                     <widget class="QScrollArea" name="scrollArea">
+                      <property name="sizePolicy">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                        <horstretch>0</horstretch>
+                        <verstretch>0</verstretch>
+                       </sizepolicy>
+                      </property>
+                      <property name="widgetResizable">
+                       <bool>true</bool>
+                      </property>
+                      <widget class="QWidget" name="scrollAreaWidgetContents">
+                       <property name="geometry">
+                        <rect>
+                         <x>0</x>
+                         <y>0</y>
+                         <width>88</width>
+                         <height>16</height>
+                        </rect>
+                       </property>
+                       <widget class="QCheckBox" name="checkBox_8">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>30</y>
+                          <width>160</width>
+                          <height>17</height>
+                         </rect>
+                        </property>
+                        <property name="text">
+                         <string>Solve U-Momentum Equation</string>
+                        </property>
+                       </widget>
+                       <widget class="QCheckBox" name="checkBox_9">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>52</y>
+                          <width>159</width>
+                          <height>17</height>
+                         </rect>
+                        </property>
+                        <property name="text">
+                         <string>Solve V-Momentum Equation</string>
+                        </property>
+                       </widget>
+                       <widget class="QCheckBox" name="checkBox_10">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>74</y>
+                          <width>167</width>
+                          <height>17</height>
+                         </rect>
+                        </property>
+                        <property name="text">
+                         <string>Solver W-Momentum Equation</string>
+                        </property>
+                       </widget>
+                       <widget class="QCheckBox" name="checkBox_11">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>96</y>
+                          <width>138</width>
+                          <height>17</height>
+                         </rect>
+                        </property>
+                        <property name="text">
+                         <string>Enable Spceis Equations</string>
+                        </property>
+                       </widget>
+                       <widget class="QCheckBox" name="checkBox_12">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>119</y>
+                          <width>137</width>
+                          <height>17</height>
+                         </rect>
+                        </property>
+                        <property name="text">
+                         <string>Enable Scalar Equations</string>
+                        </property>
+                       </widget>
+                       <widget class="QLineEdit" name="lineEdit_28">
+                        <property name="geometry">
+                         <rect>
+                          <x>147</x>
+                          <y>118</y>
+                          <width>133</width>
+                          <height>20</height>
+                         </rect>
+                        </property>
+                       </widget>
+                       <widget class="Line" name="line">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>143</y>
+                          <width>403</width>
+                          <height>16</height>
+                         </rect>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                       <widget class="QFrame" name="frame_22">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>5</y>
+                          <width>165</width>
+                          <height>20</height>
+                         </rect>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <layout class="QHBoxLayout" name="horizontalLayout_19">
+                         <property name="spacing">
+                          <number>5</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <widget class="QLabel" name="label_38">
+                           <property name="text">
+                            <string>Name</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLineEdit" name="lineEdit_27"/>
+                         </item>
+                        </layout>
+                       </widget>
+                       <widget class="QFrame" name="frame_23">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>151</y>
+                          <width>358</width>
+                          <height>55</height>
+                         </rect>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::NoFrame</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Plain</enum>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_18">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="spacing">
+                          <number>5</number>
+                         </property>
+                         <item row="0" column="1">
+                          <widget class="QLineEdit" name="lineEdit_29"/>
+                         </item>
+                         <item row="0" column="0">
+                          <widget class="QLabel" name="label_39">
+                           <property name="text">
+                            <string>Diameter</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QLabel" name="label_40">
+                           <property name="text">
+                            <string>Density</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="0" column="2">
+                          <widget class="QLabel" name="label_41">
+                           <property name="text">
+                            <string>m</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="2">
+                          <widget class="QLineEdit" name="lineEdit_30"/>
+                         </item>
+                         <item row="1" column="1">
+                          <widget class="QComboBox" name="comboBox_14"/>
+                         </item>
+                         <item row="1" column="3">
+                          <widget class="QLabel" name="label_42">
+                           <property name="text">
+                            <string>kg/m3</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                       <widget class="QGroupBox" name="groupBox_10">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>211</y>
+                          <width>403</width>
+                          <height>117</height>
+                         </rect>
+                        </property>
+                        <property name="title">
+                         <string>Species</string>
+                        </property>
+                        <property name="flat">
+                         <bool>true</bool>
+                        </property>
+                        <layout class="QVBoxLayout" name="verticalLayout_10">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <item>
+                          <widget class="QFrame" name="frame_24">
+                           <property name="frameShape">
+                            <enum>QFrame::NoFrame</enum>
+                           </property>
+                           <property name="frameShadow">
+                            <enum>QFrame::Plain</enum>
+                           </property>
+                           <layout class="QHBoxLayout" name="horizontalLayout_20">
+                            <property name="spacing">
+                             <number>0</number>
+                            </property>
+                            <property name="leftMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="topMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="rightMargin">
+                             <number>0</number>
+                            </property>
+                            <property name="bottomMargin">
+                             <number>0</number>
+                            </property>
+                            <item>
+                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesAdd">
+                              <property name="text">
+                               <string>Add</string>
+                              </property>
+                              <property name="autoRaise">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesDelete">
+                              <property name="text">
+                               <string>Delete</string>
+                              </property>
+                              <property name="autoRaise">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesCopy">
+                              <property name="text">
+                               <string>Copy</string>
+                              </property>
+                              <property name="autoRaise">
+                               <bool>true</bool>
+                              </property>
+                             </widget>
+                            </item>
+                            <item>
+                             <spacer name="horizontalSpacer_8">
+                              <property name="orientation">
+                               <enum>Qt::Horizontal</enum>
+                              </property>
+                              <property name="sizeHint" stdset="0">
+                               <size>
+                                <width>281</width>
+                                <height>20</height>
+                               </size>
+                              </property>
+                             </spacer>
+                            </item>
+                           </layout>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QTableWidget" name="tableWidget_8">
+                           <property name="frameShadow">
+                            <enum>QFrame::Plain</enum>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                       <widget class="Line" name="line_2">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>333</y>
+                          <width>403</width>
+                          <height>16</height>
+                         </rect>
+                        </property>
+                        <property name="orientation">
+                         <enum>Qt::Horizontal</enum>
+                        </property>
+                       </widget>
+                       <widget class="QFrame" name="frame_25">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>341</y>
+                          <width>348</width>
+                          <height>107</height>
+                         </rect>
+                        </property>
+                        <property name="frameShape">
+                         <enum>QFrame::StyledPanel</enum>
+                        </property>
+                        <property name="frameShadow">
+                         <enum>QFrame::Raised</enum>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_19">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="spacing">
+                          <number>5</number>
+                         </property>
+                         <item row="0" column="1">
+                          <widget class="QComboBox" name="comboBox_15"/>
+                         </item>
+                         <item row="1" column="1">
+                          <widget class="QComboBox" name="comboBox_16"/>
+                         </item>
+                         <item row="0" column="2">
+                          <widget class="QLineEdit" name="lineEdit_31"/>
+                         </item>
+                         <item row="0" column="3">
+                          <widget class="QLabel" name="label_44">
+                           <property name="text">
+                            <string>Pa</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="3">
+                          <widget class="QLabel" name="label_46">
+                           <property name="text">
+                            <string>kmol/kg</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QLabel" name="label_45">
+                           <property name="text">
+                            <string>Molecular Weight</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="2">
+                          <widget class="QLineEdit" name="lineEdit_32"/>
+                         </item>
+                         <item row="0" column="0">
+                          <widget class="QLabel" name="label_43">
+                           <property name="text">
+                            <string>Viscosity</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="0">
+                          <widget class="QLabel" name="label_47">
+                           <property name="text">
+                            <string>Specific Heat</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="3" column="0">
+                          <widget class="QLabel" name="label_48">
+                           <property name="text">
+                            <string>Conductivity</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="2" column="1">
+                          <widget class="QComboBox" name="comboBox_17"/>
+                         </item>
+                         <item row="3" column="1">
+                          <widget class="QComboBox" name="comboBox_18"/>
+                         </item>
+                         <item row="2" column="2">
+                          <widget class="QLineEdit" name="lineEdit_33"/>
+                         </item>
+                         <item row="3" column="2">
+                          <widget class="QLineEdit" name="lineEdit_34"/>
+                         </item>
+                         <item row="2" column="3">
+                          <widget class="QLabel" name="label_49">
+                           <property name="text">
+                            <string>kJ/(kg K)</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="3" column="3">
+                          <widget class="QLabel" name="label_50">
+                           <property name="text">
+                            <string>W/(m K)</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                       <widget class="QGroupBox" name="groupBox_11">
+                        <property name="geometry">
+                         <rect>
+                          <x>5</x>
+                          <y>453</y>
+                          <width>150</width>
+                          <height>64</height>
+                         </rect>
+                        </property>
+                        <property name="title">
+                         <string>Advanced</string>
+                        </property>
+                        <property name="flat">
+                         <bool>true</bool>
+                        </property>
+                        <layout class="QGridLayout" name="gridLayout_20">
+                         <property name="leftMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>5</number>
+                         </property>
+                         <property name="spacing">
+                          <number>5</number>
+                         </property>
+                         <item row="0" column="0">
+                          <widget class="QCheckBox" name="checkBox_13">
+                           <property name="text">
+                            <string>Disable close pack</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item row="1" column="0">
+                          <widget class="QCheckBox" name="checkBox_14">
+                           <property name="text">
+                            <string>Enable added mass force</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </widget>
+                      </widget>
+                     </widget>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                 <widget class="QWidget" name="continumm_solids_model"/>
+                 <widget class="QWidget" name="noModelParameters"/>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="workflow">
+              <layout class="QVBoxLayout" name="verticalLayoutWorkflowMode">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QSplitter" name="splitter_3">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <widget class="QFrame" name="frame_5">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayoutPyqtnode">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                  </layout>
+                 </widget>
+                 <widget class="QFrame" name="frame_7">
+                  <property name="frameShape">
+                   <enum>QFrame::NoFrame</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QVBoxLayout" name="verticalLayout_4">
+                   <property name="spacing">
+                    <number>0</number>
+                   </property>
+                   <property name="leftMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="topMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="rightMargin">
+                    <number>0</number>
+                   </property>
+                   <property name="bottomMargin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QTableWidget" name="tableWidget_4">
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
+                     </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Plain</enum>
+                     </property>
+                     <column>
+                      <property name="text">
+                       <string>Model</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>Status</string>
+                      </property>
+                     </column>
+                     <column>
+                      <property name="text">
+                       <string>Dt</string>
+                      </property>
+                     </column>
+                    </widget>
+                   </item>
+                  </layout>
+                 </widget>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+             <widget class="QWidget" name="developer">
+              <widget class="QTextBrowser" name="mfix_dat_source">
+               <property name="geometry">
+                <rect>
+                 <x>35</x>
+                 <y>41</y>
+                 <width>531</width>
+                 <height>441</height>
+                </rect>
+               </property>
+              </widget>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QFrame" name="frame_16">
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+          <property name="lineWidth">
+           <number>0</number>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_6">
+           <property name="spacing">
+            <number>0</number>
+           </property>
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QSplitter" name="splitter_2">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <widget class="QTabWidget" name="tabWidgetGraphics">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="tabPosition">
+               <enum>QTabWidget::North</enum>
+              </property>
+              <property name="tabShape">
+               <enum>QTabWidget::Rounded</enum>
+              </property>
+              <property name="currentIndex">
+               <number>0</number>
+              </property>
+              <property name="tabsClosable">
+               <bool>false</bool>
+              </property>
+              <widget class="QWidget" name="widgetModelGraphics">
+               <attribute name="title">
+                <string>Model</string>
+               </attribute>
+               <layout class="QHBoxLayout" name="horizontalLayoutModelGraphics">
+                <property name="spacing">
+                 <number>0</number>
+                </property>
+                <property name="leftMargin">
+                 <number>0</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
+               </layout>
+              </widget>
+              <widget class="QWidget" name="plot">
+               <attribute name="title">
+                <string>Plot</string>
+               </attribute>
+              </widget>
+             </widget>
+             <widget class="QFrame" name="frame_17">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="frameShadow">
+               <enum>QFrame::Plain</enum>
+              </property>
+              <layout class="QHBoxLayout" name="horizontalLayout_6">
+               <property name="spacing">
+                <number>0</number>
+               </property>
+               <property name="leftMargin">
+                <number>0</number>
+               </property>
+               <property name="topMargin">
+                <number>0</number>
+               </property>
+               <property name="rightMargin">
+                <number>0</number>
+               </property>
+               <property name="bottomMargin">
+                <number>0</number>
+               </property>
+               <item>
+                <widget class="QPlainTextEdit" name="plainTextEdit">
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="frameShape">
+                  <enum>QFrame::NoFrame</enum>
+                 </property>
+                 <property name="plainText">
+                  <string>&gt;&gt;&gt; </string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="frame_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="pushButtonModeler">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #1974f4;
+    background-color: transparent;
+	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
+}
+
+QPushButton:checked {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+</string>
+         </property>
+         <property name="text">
+          <string>Modeler</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonWorkflow">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #1974f4;
+    background-color: transparent;
+	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
+}
+
+QPushButton:checked {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+</string>
+         </property>
+         <property name="text">
+          <string>Workflow</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonDeveloper">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">QPushButton:hover {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #1974f4;
+    background-color: transparent;
+	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
+}
+
+QPushButton:checked {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+</string>
+         </property>
+         <property name="text">
+          <string>Developer</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>535</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Status&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKitWidgets/QWebView</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>
