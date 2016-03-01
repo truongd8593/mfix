@@ -21,8 +21,8 @@ except ImportError:
     from PyQt4 import uic
 
 # VTK imports
-# import vtk
-# from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+import vtk
+from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 logging.basicConfig(stream=sys.stdout,
                     filemode='w', level=logging.DEBUG,
@@ -96,49 +96,49 @@ def widget_iter(widget):
         yield child
 
 # --- vtk stuff ---
-# class CustomInteractorStyleTrackballCamera(vtk.vtkInteractorStyleTrackballCamera):
+class CustomInteractorStyleTrackballCamera(vtk.vtkInteractorStyleTrackballCamera):
 
-    # def __init__(self,parent=None):
-    #     self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
+    def __init__(self,parent=None):
+        self.AddObserver("LeftButtonPressEvent",self.leftButtonPressEvent)
 
-        # self.LastPickedActor = None
-        # self.LastPickedProperty = vtk.vtkProperty()
+        self.LastPickedActor = None
+        self.LastPickedProperty = vtk.vtkProperty()
 
-    # def leftButtonPressEvent(self,obj,event):
-    #     clickPos = self.GetInteractor().GetEventPosition()
+    def leftButtonPressEvent(self,obj,event):
+        clickPos = self.GetInteractor().GetEventPosition()
 
-        # picker = vtk.vtkPropPicker()
-        # picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
+        picker = vtk.vtkPropPicker()
+        picker.Pick(clickPos[0], clickPos[1], 0, self.GetDefaultRenderer())
 
         # get the new
-        # self.NewPickedActor = picker.GetActor()
+        self.NewPickedActor = picker.GetActor()
 
-        # # If something was selected
-        # if self.NewPickedActor:
-        #     # If we picked something before, reset its property
-        #     if self.LastPickedActor:
-        #         self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
-
-
-            # # Save the property of the picked actor so that we can
-            # # restore it next time
-            # self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
-            # # Highlight the picked actor by changing its properties
-            # self.NewPickedActor.GetProperty().SetColor(0.0, 0.0, 1.0)
-            # self.NewPickedActor.GetProperty().SetDiffuse(1.0)
-            # self.NewPickedActor.GetProperty().SetSpecular(0.0)
-
-            # # save the last picked actor
-            # self.LastPickedActor = self.NewPickedActor
-
-        # # clear selection
-        # elif self.LastPickedActor:
-        #     self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
-        #     self.LastPickedActor = None
+        # If something was selected
+        if self.NewPickedActor:
+            # If we picked something before, reset its property
+            if self.LastPickedActor:
+                self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
 
 
-        # self.OnLeftButtonDown()
-        # return
+            # Save the property of the picked actor so that we can
+            # restore it next time
+            self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
+            # Highlight the picked actor by changing its properties
+            self.NewPickedActor.GetProperty().SetColor(0.0, 0.0, 1.0)
+            self.NewPickedActor.GetProperty().SetDiffuse(1.0)
+            self.NewPickedActor.GetProperty().SetSpecular(0.0)
+
+            # save the last picked actor
+            self.LastPickedActor = self.NewPickedActor
+
+        # clear selection
+        elif self.LastPickedActor:
+            self.LastPickedActor.GetProperty().DeepCopy(self.LastPickedProperty)
+            self.LastPickedActor = None
+
+
+        self.OnLeftButtonDown()
+        return
 
 # --- Main Gui ---
 class MfixGui(QtGui.QMainWindow):
@@ -165,13 +165,12 @@ class MfixGui(QtGui.QMainWindow):
 
         self.geometrydict = {}
 
-        self.primitivedict = {}
-        # self.primitivedict = {
-        #     'sphere': vtk.vtkSphereSource,
-        #     'box':    vtk.vtkCubeSource,
-        #     'cylinder': vtk.vtkCylinderSource,
-        #     'cone': vtk.vtkConeSource,
-        #     }
+        self.primitivedict = {
+            'sphere': vtk.vtkSphereSource,
+            'box':    vtk.vtkCubeSource,
+            'cylinder': vtk.vtkCylinderSource,
+            'cone': vtk.vtkConeSource,
+            }
 
         self.booleanbtndict = {
             'union':      self.ui.toolButtonGeometryUnion,
@@ -265,41 +264,41 @@ class MfixGui(QtGui.QMainWindow):
             )
 
         # --- vtk setup ---
-        # self.vtkWidget = QVTKRenderWindowInteractor(self.ui.widgetModelGraphics)
-        # self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkWidget)
+        self.vtkWidget = QVTKRenderWindowInteractor(self.ui.widgetModelGraphics)
+        self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkWidget)
 
-        # self.vtkrenderer = vtk.vtkRenderer()
-        # self.vtkrenderer.GradientBackgroundOn()
-        # self.vtkrenderer.SetBackground(.4, .4, .4)
-        # self.vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
+        self.vtkrenderer = vtk.vtkRenderer()
+        self.vtkrenderer.GradientBackgroundOn()
+        self.vtkrenderer.SetBackground(.4, .4, .4)
+        self.vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
 
-        # self.vtkRenderWindow = self.vtkWidget.GetRenderWindow()
-        # self.vtkRenderWindow.AddRenderer(self.vtkrenderer)
-        # self.vtkiren = self.vtkWidget.GetRenderWindow().GetInteractor()
+        self.vtkRenderWindow = self.vtkWidget.GetRenderWindow()
+        self.vtkRenderWindow.AddRenderer(self.vtkrenderer)
+        self.vtkiren = self.vtkWidget.GetRenderWindow().GetInteractor()
 
-        # self.style = CustomInteractorStyleTrackballCamera()
-        # self.style.SetDefaultRenderer(self.vtkrenderer)
-        # self.vtkiren.SetInteractorStyle(self.style)
+        self.style = CustomInteractorStyleTrackballCamera()
+        self.style.SetDefaultRenderer(self.vtkrenderer)
+        self.vtkiren.SetInteractorStyle(self.style)
 
-        # # Orientation Marker Widget
-        # self.axes = vtk.vtkAxesActor()
-        # self.axes.AxisLabelsOn()
-        # self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1,0,0)
-        # self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-        # self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0,1,0)
-        # self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-        # self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0,0,1)
-        # self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        # Orientation Marker Widget
+        self.axes = vtk.vtkAxesActor()
+        self.axes.AxisLabelsOn()
+        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(1,0,0)
+        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0,1,0)
+        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(0,0,1)
+        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
 
-        # self.orientationWidget = vtk.vtkOrientationMarkerWidget()
-        # self.orientationWidget.SetOutlineColor( 0.9300, 0.5700, 0.1300 )
-        # self.orientationWidget.SetOrientationMarker(self.axes)
-        # self.orientationWidget.SetInteractor(self.vtkiren)
-        # self.orientationWidget.SetViewport( 0.0, 0.0, 0.2, 0.2 )
-        # self.orientationWidget.SetEnabled( 1 )
-        # self.orientationWidget.InteractiveOff()
+        self.orientationWidget = vtk.vtkOrientationMarkerWidget()
+        self.orientationWidget.SetOutlineColor( 0.9300, 0.5700, 0.1300 )
+        self.orientationWidget.SetOrientationMarker(self.axes)
+        self.orientationWidget.SetInteractor(self.vtkiren)
+        self.orientationWidget.SetViewport( 0.0, 0.0, 0.2, 0.2 )
+        self.orientationWidget.SetEnabled( 1 )
+        self.orientationWidget.InteractiveOff()
 
-        # self.vtkrenderer.ResetCamera()
+        self.vtkrenderer.ResetCamera()
 
         # --- workflow setup ---
         # self.nodeChart = NodeWidget(showtoolbar=False)
@@ -435,7 +434,7 @@ class MfixGui(QtGui.QMainWindow):
         else:
             self.geometrydict[name]['actor'].VisibilityOn()
 
-        # self.vtkRenderWindow.Render()
+        self.vtkRenderWindow.Render()
 
 
     def addStl(self):
@@ -450,20 +449,20 @@ class MfixGui(QtGui.QMainWindow):
             name = os.path.basename(filename).lower()
             name = get_unique_string(name, list(self.geometrydict.keys()))
 
-            # reader = vtk.vtkSTLReader()
-            # reader.SetFileName(filename)
+            reader = vtk.vtkSTLReader()
+            reader.SetFileName(filename)
 
-            # mapper = vtk.vtkPolyDataMapper()
-            # mapper.SetInputConnection(reader.GetOutputPort())
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(reader.GetOutputPort())
 
-            # actor = vtk.vtkActor()
-            # actor.SetMapper(mapper)
-            # actor.GetProperty().SetRepresentationToWireframe()
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            actor.GetProperty().SetRepresentationToWireframe()
 
-            # self.vtkrenderer.AddActor(actor)
+            self.vtkrenderer.AddActor(actor)
 
-            # self.vtkrenderer.ResetCamera()
-            # self.vtkRenderWindow.Render()
+            self.vtkrenderer.ResetCamera()
+            self.vtkRenderWindow.Render()
 
             # Add to dict
             self.geometrydict[name] = {
@@ -501,7 +500,7 @@ class MfixGui(QtGui.QMainWindow):
 
             self.update_primitive(name)
             self.update_transform(name)
-            # self.vtkRenderWindow.Render()
+            self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
         primtype = self.geometrydict[name]['type']
@@ -591,15 +590,15 @@ class MfixGui(QtGui.QMainWindow):
 
         source = self.update_primitive(name)
 
-        # # convert to triangles
-        # trianglefilter = vtk.vtkTriangleFilter()
-        # trianglefilter.SetInputData(source.GetOutput())
+        # convert to triangles
+        trianglefilter = vtk.vtkTriangleFilter()
+        trianglefilter.SetInputData(source.GetOutput())
 
-        # # Create transformer
-        # transform = vtk.vtkTransform()
-        # transformFilter = vtk.vtkTransformPolyDataFilter()
-        # transformFilter.SetTransform(transform)
-        # transformFilter.SetInputConnection(source.GetOutputPort())
+        # Create transformer
+        transform = vtk.vtkTransform()
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(source.GetOutputPort())
 
         self.geometrydict[name]['transform'] = transform
         self.geometrydict[name]['transformFilter'] = transformFilter
@@ -607,20 +606,20 @@ class MfixGui(QtGui.QMainWindow):
         self.update_transform(name)
 
 
-        # # Create a mapper
-        # mapper = vtk.vtkPolyDataMapper()
-        # mapper.SetInputConnection(transformFilter.GetOutputPort())
+        # Create a mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(transformFilter.GetOutputPort())
 
-#         # Create an actor
-#         actor = vtk.vtkActor()
-#         actor.SetMapper(mapper)
-# #        actor.GetProperty().SetOpacity(0.25)
-#         actor.GetProperty().SetRepresentationToWireframe()
+        # Create an actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+#        actor.GetProperty().SetOpacity(0.25)
+        actor.GetProperty().SetRepresentationToWireframe()
 
-        # self.vtkrenderer.AddActor(actor)
+        self.vtkrenderer.AddActor(actor)
 
-        # self.vtkrenderer.ResetCamera()
-        # self.vtkRenderWindow.Render()
+        self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()
 
         # add to dict
         self.geometrydict[name]['mapper'] = mapper
@@ -650,47 +649,47 @@ class MfixGui(QtGui.QMainWindow):
                 'children': [],
             }
 
-            # boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
+            boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
 
-            # if booltype == 'union':
-            #     boolean_operation.SetOperationToUnion()
-            # elif booltype == 'intersection':
-            #     boolean_operation.SetOperationToIntersection()
-            # else:
-            #     boolean_operation.SetOperationToDifference()
+            if booltype == 'union':
+                boolean_operation.SetOperationToUnion()
+            elif booltype == 'intersection':
+                boolean_operation.SetOperationToIntersection()
+            else:
+                boolean_operation.SetOperationToDifference()
 
-            # for i, selection in enumerate(current_selection):
-            #     name = str(selection.text(0)).lower()
-            #     self.geometrydict[boolname]['children'].append(name)
+            for i, selection in enumerate(current_selection):
+                name = str(selection.text(0)).lower()
+                self.geometrydict[boolname]['children'].append(name)
 
-                # if 'trianglefiler' in self.geometrydict[name]:
-                #     geometry = self.geometrydict[name]['trianglefiler']
-                # elif 'booleanoperation' in self.geometrydict[name]:
-                #     geometry = self.geometrydict[name]['booleanoperation']
-                # elif 'reader' in self.geometrydict[name]:
-                #     geometry = self.geometrydict[name]['reader']
+                if 'trianglefiler' in self.geometrydict[name]:
+                    geometry = self.geometrydict[name]['trianglefiler']
+                elif 'booleanoperation' in self.geometrydict[name]:
+                    geometry = self.geometrydict[name]['booleanoperation']
+                elif 'reader' in self.geometrydict[name]:
+                    geometry = self.geometrydict[name]['reader']
 
                 # hide the sources
-                # self.geometrydict[name]['actor'].VisibilityOff()
+                self.geometrydict[name]['actor'].VisibilityOff()
 
-#                if vtk.VTK_MAJOR_VERSION <= 5:
-                # boolean_operation.SetInputConnection(i, geometry.GetOutputPort())
-#                else:
-#                    boolean_operation.SetInputData(i, geometry.GetOutput())
+                if vtk.VTK_MAJOR_VERSION <= 5:
+                    boolean_operation.SetInputConnection(i, geometry.GetOutputPort())
+                else:
+                    boolean_operation.SetInputData(i, geometry.GetOutput())
 
-            # boolean_operation.Update()
+            boolean_operation.Update()
 
-            # mapper = vtk.vtkPolyDataMapper()
-            # mapper.SetInputConnection(boolean_operation.GetOutputPort())
-            # mapper.ScalarVisibilityOff()
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(boolean_operation.GetOutputPort())
+            mapper.ScalarVisibilityOff()
 
-            # actor = vtk.vtkActor()
-            # actor.SetMapper(mapper)
-            # actor.GetProperty().SetRepresentationToWireframe()
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            actor.GetProperty().SetRepresentationToWireframe()
 
-            # self.vtkrenderer.AddActor(actor)
+            self.vtkrenderer.AddActor(actor)
 
-            # self.vtkRenderWindow.Render()
+            self.vtkRenderWindow.Render()
 
             # save references
             self.geometrydict[boolname]['booleanoperation'] = boolean_operation
@@ -861,7 +860,7 @@ if __name__ == '__main__':
     mfix = MfixGui(qapp)
 
     mfix.show()
-    # mfix.vtkiren.Initialize()
+    mfix.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     timer = QTimer()
