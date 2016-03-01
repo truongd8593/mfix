@@ -1,31 +1,53 @@
+""" MFIX GUI """
+
+
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
+import logging
 import os
+import signal
 import sys
 import subprocess
 import re
 
-SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname( __file__ ),))
-sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
-print(SCRIPT_DIRECTORY)
-# Qt Imports
-from PyQt4 import QtCore, QtGui, uic
-from PyQt4.QtCore import QObject, QThread, pyqtSignal, QUrl
+from qtpy import QtCore, QtGui
+from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
+
+try:
+    from PyQt5 import uic
+except ImportError:
+    from PyQt4 import uic
 
 # VTK imports
 # import vtk
 # from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+logging.basicConfig(stream=sys.stdout,
+                    filemode='w', level=logging.DEBUG,
+                    format='%(name)s - %(levelname)s - %(message)s')
+
+SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
+sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
+LOG = logging.getLogger(__name__)
+LOG.debug(SCRIPT_DIRECTORY)
+
 # local imports
 # from pyqtnode import NodeWidget
 
-def get_image_path(name, default=None):
-    path = os.path.join(SCRIPT_DIRECTORY,'icons',name)
+def get_image_path(name):
+    " get path to images "
+    path = os.path.join(SCRIPT_DIRECTORY, 'icons', name)
 
     if os.name == 'nt':
         path = path.replace('\\', '//')
 
     return path
+
+def make_callback(func, param):
+    '''
+    Helper function to make sure lambda functions are cached and not lost.
+    '''
+    return lambda: func(param)
 
 def get_icon(name, default=None, resample=False):
     """Return image inside a QIcon object
@@ -37,7 +59,7 @@ def get_icon(name, default=None, resample=False):
     if default is None:
         icon = QtGui.QIcon(get_image_path(name))
     elif isinstance(default, QtGui.QIcon):
-        icon_path = get_image_path(name, default=None)
+        icon_path = get_image_path(name)
         icon = default if icon_path is None else QtGui.QIcon(icon_path)
     else:
         icon = QtGui.QIcon(get_image_path(name, default))
@@ -50,14 +72,15 @@ def get_icon(name, default=None, resample=False):
         return icon
 
 def get_unique_string(base, listofstrings):
+    " uniquify a string "
     if base in listofstrings:
         # look for number at end
-        nums = re.findall('[\d]+',base)
+        nums = re.findall('[\d]+', base)
         if nums:
             number = int(nums[-1]) + 1
             base = base.replace(nums[-1], '')
         else:
-            number=1
+            number = 1
 
         base = get_unique_string(''.join([base, str(number)]), listofstrings)
 
@@ -126,16 +149,17 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui = uic.loadUi('uifiles/gui.ui', self)
 
+        self.settings = QSettings('MFIX', 'MFIX')
+
         self.setWindowTitle('MFIX')
         self.setWindowIcon(get_icon('mfix.png'))
 
         # --- data ---
-        self.currentDirectory = './'
 
         self.modebuttondict = {'modeler':self.ui.pushButtonModeler,
                                'workflow':self.ui.pushButtonWorkflow,
                                'developer':  self.ui.pushButtonDeveloper,
-                               }
+                              }
 
         self.geometrydict = {}
 
@@ -165,13 +189,20 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.build_mfix_button.pressed.connect(self.build_mfix)
         self.ui.run_mfix_button.pressed.connect(self.run_mfix)
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
+        self.ui.clear_output_button.pressed.connect(self.clear_output)
 
         self.build_thread = BuildThread(self)
         self.run_thread = RunThread(self)
+        self.clear_thread = ClearThread(self)
 
         def make_handler(qtextbrowser):
+            " make a closure to read stdout from external process "
+
             def handle_line(line):
-                print(qtextbrowser.objectName()," : ",line)
+                " closure to read stdout from external process "
+
+                log = logging.getLogger(__name__)
+                log.debug(str(line).strip())
                 cursor = qtextbrowser.textCursor()
                 cursor.movePosition(cursor.End)
                 cursor.insertText(line)
@@ -180,8 +211,8 @@ class MfixGui(QtGui.QMainWindow):
             return handle_line
 
         self.build_thread.line_printed.connect(make_handler(self.ui.build_output))
-
         self.run_thread.line_printed.connect(make_handler(self.ui.run_output))
+        self.clear_thread.line_printed.connect(make_handler(self.ui.run_output))
 
         self.ui.toolButtonAddGeometry.setIcon(get_icon('add.png'))
         self.ui.toolButtonRemoveGeometry.setIcon(get_icon('remove.png'))
@@ -207,24 +238,25 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolButtonTFMSolidsSpeciesCopy.setIcon(get_icon('copy.png'))
 
         # --- geometry setup ---
-        self.addGeomatryMenu = QtGui.QMenu(self)
-        self.ui.toolButtonAddGeometry.setMenu(self.addGeomatryMenu)
+        self.add_geometry_menu = QtGui.QMenu(self)
+        self.ui.toolButtonAddGeometry.setMenu(self.add_geometry_menu)
         self.ui.toolButtonAddGeometry.setPopupMode(QtGui.QToolButton.InstantPopup)
 
-        action = QtGui.QAction('STL File',  self.addGeomatryMenu)
+        action = QtGui.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.addStl)
-        self.addGeomatryMenu.addAction(action)
+        self.add_geometry_menu.addAction(action)
 
-        self.addGeomatryMenu.addSeparator()
+        self.add_geometry_menu.addSeparator()
 
         for geo in self.primitivedict.keys():
-            action = QtGui.QAction(geo,  self.addGeomatryMenu)
-            action.triggered.connect(self._makeCallback(self.addPrimitive, geo))
-            self.addGeomatryMenu.addAction(action)
+            action = QtGui.QAction(geo,  self.add_geometry_menu)
+            action.triggered.connect(make_callback(self.add_primitive, geo))
+            self.add_geometry_menu.addAction(action)
 
         self.ui.treeWidgetGeometry.setStyleSheet(
-            "QTreeView::indicator:unchecked {image: url("+get_image_path('visibilityofftransparent.png')+");}"
-            "QTreeView::indicator:checked {image: url("+get_image_path('visibility.png')+");}"
+            "QTreeView::indicator:unchecked {image: url(%s);}"
+            "QTreeView::indicator:checked {image: url(%s);}"
+            % (get_image_path('visibilityofftransparent.png'), get_image_path('visibility.png'))
             )
 
         # --- vtk setup ---
@@ -278,83 +310,99 @@ class MfixGui(QtGui.QMainWindow):
 
         # --- signals ---
         for mode, btn in self.modebuttondict.items():
-            btn.pressed.connect(self._makeCallback(self.modeChanged, mode))
+            btn.pressed.connect(make_callback(self.mode_changed, mode))
 
         self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(self.navigationChanged)
 
-        self.ui.toolButtonRemoveGeometry.pressed.connect(self.removeGeometry)
+        self.ui.toolButtonRemoveGeometry.pressed.connect(self.remove_geometry)
         self.ui.treeWidgetGeometry.itemSelectionChanged.connect(self.treeWidgetGeometryChanged)
         self.ui.treeWidgetGeometry.itemClicked.connect(self.geometryClicked)
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
-            btn.pressed.connect(self._makeCallback(self.booleanOperation,key))
+            btn.pressed.connect(make_callback(self.boolean_operation, key))
 
         # connect primitive lineedits
         for widget in widget_iter(self.ui.stackedWidgetGeometryDetails):
             if isinstance(widget, QtGui.QLineEdit):
-                widget.editingFinished.connect(self._makeCallback(self.primitiveEdited, widget))
+                widget.editingFinished.connect(make_callback(self.primitive_edited, widget))
 
         # --- default ---
         self.ui.pushButtonModeler.setChecked(True)
-        self.modeChanged('modeler')
-        self.ui.treeWidgetModelNavigation.setCurrentItem(self.ui.treeWidgetModelNavigation.topLevelItem(0))
+        self.mode_changed('modeler')
+        top = self.ui.treeWidgetModelNavigation.topLevelItem(0)
+        self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
-    def _makeCallback(self, func, param):
-        '''
-        Helper function to make sure lambda functions are cached and not lost.
-        '''
-        return lambda: func(param)
 
-    def modeChanged(self, mode):
+        self.open_project(self.get_project_dir())
 
+    def get_project_dir(self):
+        " get the current project directory"
+
+        last_dir = self.settings.value('project_dir')
+        if last_dir:
+            return last_dir
+        else:
+            return None
+
+
+    def mode_changed(self, mode):
+        " change the Modeler, Workflow, Developer tab"
+
+        current_index = 0
         for i in range(self.ui.stackedWidgetMode.count()):
             widget = self.ui.stackedWidgetMode.widget(i)
             if mode == str(widget.objectName()):
+                current_index = i
                 break
 
-        self.ui.stackedWidgetMode.setCurrentIndex(i)
+        self.ui.stackedWidgetMode.setCurrentIndex(current_index)
 
         for key, btn in self.modebuttondict.items():
             btn.setChecked(mode == key)
 
     def navigationChanged(self):
-        currentSelection = self.ui.treeWidgetModelNavigation.selectedItems()
+        current_selection = self.ui.treeWidgetModelNavigation.selectedItems()
 
-        if currentSelection:
+        if current_selection:
 
-            text = str(currentSelection[-1].text(0))
+            text = str(current_selection[-1].text(0))
             text = '_'.join(text.lower().split(' '))
 
+            current_index = 0
             for i in range(self.ui.stackedWidgetTaskPane.count()):
                 widget = self.ui.stackedWidgetTaskPane.widget(i)
                 if text == str(widget.objectName()):
+                    current_index = i
                     break
 
-            self.ui.stackedWidgetTaskPane.setCurrentIndex(i)
+            self.ui.stackedWidgetTaskPane.setCurrentIndex(current_index)
 
     def treeWidgetGeometryChanged(self):
 
-        currentSelection = self.ui.treeWidgetGeometry.selectedItems()
+        current_selection = self.ui.treeWidgetGeometry.selectedItems()
 
 
         enableboolbtn = False
-        if len(currentSelection)==2 and all(
-                [self.ui.treeWidgetGeometry.indexOfTopLevelItem(select)>-1 for select in currentSelection]
-                ):
+        if len(current_selection) == 2 and all(
+                [self.ui.treeWidgetGeometry.indexOfTopLevelItem(select) > -1
+                 for select in current_selection]
+        ):
 
             enableboolbtn = True
 
         for btn in self.booleanbtndict.values():
             btn.setEnabled(enableboolbtn)
 
-        if currentSelection:
-            text = str(currentSelection[-1].text(0)).lower()
+        if current_selection:
+            text = str(current_selection[-1].text(0)).lower()
             self.ui.toolButtonRemoveGeometry.setEnabled(True)
 
+            current_index = 0
             for i in range(self.ui.stackedWidgetGeometryDetails.count()):
                 widget = self.ui.stackedWidgetGeometryDetails.widget(i)
                 if str(widget.objectName()) in text:
+                    current_index = i
                     break
 
             for child in widget_iter(widget):
@@ -365,7 +413,7 @@ class MfixGui(QtGui.QMainWindow):
 
             self.ui.groupBoxGeometryParameters.setTitle(text)
 
-            self.ui.stackedWidgetGeometryDetails.setCurrentIndex(i)
+            self.ui.stackedWidgetGeometryDetails.setCurrentIndex(current_index)
         else:
             self.ui.stackedWidgetGeometryDetails.setCurrentIndex(
                 self.ui.stackedWidgetGeometryDetails.count()-1
@@ -387,10 +435,10 @@ class MfixGui(QtGui.QMainWindow):
 
     def addStl(self):
 
-        filename = str(QtGui.QFileDialog.getOpenFileName(
-            self, 'Select an STL File',
-            self.currentDirectory,
-            'STL File (*.stl)',))
+        # filename = str(QtGui.QFileDialog.getOpenFileName(
+        #     self, 'Select an STL File',
+        #     self.currentDirectory,
+        #     'STL File (*.stl)',))
 
         if filename:
             # TODO: check to see if name is unique in self.geometrydict
@@ -413,7 +461,7 @@ class MfixGui(QtGui.QMainWindow):
             # self.vtkRenderWindow.Render()
 
             # Add to dict
-            self.geometrydict[name]={
+            self.geometrydict[name] = {
                 'reader': reader,
                 'mapper': mapper,
                 'actor':  actor,
@@ -430,13 +478,13 @@ class MfixGui(QtGui.QMainWindow):
             self.ui.treeWidgetGeometry.addTopLevelItem(item)
             self.ui.treeWidgetGeometry.setCurrentItem(item)
 
-    def primitiveEdited(self, widget):
+    def primitive_edited(self, widget):
 
-        currentSelection = self.ui.treeWidgetGeometry.selectedItems()
+        current_selection = self.ui.treeWidgetGeometry.selectedItems()
         parameter = str(widget.objectName()).lower()
 
-        if currentSelection:
-            name = str(currentSelection[-1].text(0)).lower()
+        if current_selection:
+            name = str(current_selection[-1].text(0)).lower()
 
             for key in self.geometrydict[name].keys():
                 if key in parameter:
@@ -446,15 +494,15 @@ class MfixGui(QtGui.QMainWindow):
                     else:
                         self.geometrydict[name][key] = float(string)
 
-            self.updatePrimitive(name)
-            self.updateTransform(name)
+            self.update_primitive(name)
+            self.update_transform(name)
             # self.vtkRenderWindow.Render()
 
-    def updatePrimitive(self, name):
+    def update_primitive(self, name):
         primtype = self.geometrydict[name]['type']
         source = self.geometrydict[name]['source']
 
-        if primtype =='sphere':
+        if primtype == 'sphere':
             # Create source
             source.SetRadius(self.geometrydict[name]['radius'])
             source.SetThetaResolution(self.geometrydict[name]['thetaresolution'])
@@ -491,20 +539,20 @@ class MfixGui(QtGui.QMainWindow):
 
         return source
 
-    def updateTransform(self, name):
+    def update_transform(self, name):
         transform = self.geometrydict[name]['transform']
-        transformFilter = self.geometrydict[name]['transformFilter']
+        transform_filter = self.geometrydict[name]['transformFilter']
 
         # rotation
-        transform.RotateWXYZ(self.geometrydict[name]['rotationx'],1,0,0)
-        transform.RotateWXYZ(self.geometrydict[name]['rotationy'],0,1,0)
-        transform.RotateWXYZ(self.geometrydict[name]['rotationz'],0,0,1)
+        transform.RotateWXYZ(self.geometrydict[name]['rotationx'], 1, 0, 0)
+        transform.RotateWXYZ(self.geometrydict[name]['rotationy'], 0, 1, 0)
+        transform.RotateWXYZ(self.geometrydict[name]['rotationz'], 0, 0, 1)
 #        transformFilter.SetTransform(transform)
-        transformFilter.Update()
+        transform_filter.Update()
 
-        return transformFilter
+        return transform_filter
 
-    def addPrimitive(self, primtype='sphere'):
+    def add_primitive(self, primtype='sphere'):
 
         name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
@@ -514,29 +562,29 @@ class MfixGui(QtGui.QMainWindow):
         else:
             return
 
-        self.geometrydict[name]={
-                'centerx':  0.0,
-                'centery':  0.0,
-                'centerz':  0.0,
-                'rotationx': 0.0,
-                'rotationy': 0.0,
-                'rotationz': 0.0,
-                'radius':  1.0,
-                'directionx': 1.0,
-                'directiony': 0.0,
-                'directionz': 0.0,
-                'lengthx': 1.0,
-                'lengthy': 1.0,
-                'lengthz': 1.0,
-                'height':  1.0,
-                'resolution': 10,
-                'thetaresolution':10,
-                'phiresolution':10,
-                'type':primtype,
-                'source': source,
-                }
+        self.geometrydict[name] = {
+            'centerx':  0.0,
+            'centery':  0.0,
+            'centerz':  0.0,
+            'rotationx': 0.0,
+            'rotationy': 0.0,
+            'rotationz': 0.0,
+            'radius':  1.0,
+            'directionx': 1.0,
+            'directiony': 0.0,
+            'directionz': 0.0,
+            'lengthx': 1.0,
+            'lengthy': 1.0,
+            'lengthz': 1.0,
+            'height':  1.0,
+            'resolution': 10,
+            'thetaresolution':10,
+            'phiresolution':10,
+            'type':primtype,
+            'source': source,
+        }
 
-        source = self.updatePrimitive(name)
+        source = self.update_primitive(name)
 
         # # convert to triangles
         # trianglefilter = vtk.vtkTriangleFilter()
@@ -551,7 +599,7 @@ class MfixGui(QtGui.QMainWindow):
         self.geometrydict[name]['transform'] = transform
         self.geometrydict[name]['transformFilter'] = transformFilter
 
-        self.updateTransform(name)
+        self.update_transform(name)
 
 
         # # Create a mapper
@@ -584,51 +632,51 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.treeWidgetGeometry.setCurrentItem(item)
 
 
-    def booleanOperation(self, booltype):
+    def boolean_operation(self, booltype):
 
-        currentSelection = self.ui.treeWidgetGeometry.selectedItems()
+        current_selection = self.ui.treeWidgetGeometry.selectedItems()
 
-        if len(currentSelection)==2:
+        if len(current_selection) == 2:
 
             # Save references
             boolname = get_unique_string(booltype, list(self.geometrydict.keys()))
-            self.geometrydict[boolname]={
+            self.geometrydict[boolname] = {
                 'type':     booltype,
                 'children': [],
             }
 
-            # booleanOperation = vtk.vtkBooleanOperationPolyDataFilter()
+            # boolean_operation = vtk.vtkBooleanOperationPolyDataFilter()
 
-            if booltype == 'union':
-                booleanOperation.SetOperationToUnion()
-            elif booltype == 'intersection':
-                booleanOperation.SetOperationToIntersection()
-            else:
-                booleanOperation.SetOperationToDifference()
+            # if booltype == 'union':
+            #     boolean_operation.SetOperationToUnion()
+            # elif booltype == 'intersection':
+            #     boolean_operation.SetOperationToIntersection()
+            # else:
+            #     boolean_operation.SetOperationToDifference()
 
-            for i, selection in enumerate(currentSelection):
-                name = str(selection.text(0)).lower()
-                self.geometrydict[boolname]['children'].append(name)
+            # for i, selection in enumerate(current_selection):
+            #     name = str(selection.text(0)).lower()
+            #     self.geometrydict[boolname]['children'].append(name)
 
-                if 'trianglefiler' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['trianglefiler']
-                elif 'booleanoperation' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['booleanoperation']
-                elif 'reader' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['reader']
+                # if 'trianglefiler' in self.geometrydict[name]:
+                #     geometry = self.geometrydict[name]['trianglefiler']
+                # elif 'booleanoperation' in self.geometrydict[name]:
+                #     geometry = self.geometrydict[name]['booleanoperation']
+                # elif 'reader' in self.geometrydict[name]:
+                #     geometry = self.geometrydict[name]['reader']
 
                 # hide the sources
-                self.geometrydict[name]['actor'].VisibilityOff()
+                # self.geometrydict[name]['actor'].VisibilityOff()
 
 #                if vtk.VTK_MAJOR_VERSION <= 5:
-                booleanOperation.SetInputConnection(i, geometry.GetOutputPort())
+                # boolean_operation.SetInputConnection(i, geometry.GetOutputPort())
 #                else:
-#                    booleanOperation.SetInputData(i, geometry.GetOutput())
+#                    boolean_operation.SetInputData(i, geometry.GetOutput())
 
-            booleanOperation.Update()
+            # boolean_operation.Update()
 
             # mapper = vtk.vtkPolyDataMapper()
-            # mapper.SetInputConnection(booleanOperation.GetOutputPort())
+            # mapper.SetInputConnection(boolean_operation.GetOutputPort())
             # mapper.ScalarVisibilityOff()
 
             # actor = vtk.vtkActor()
@@ -640,7 +688,7 @@ class MfixGui(QtGui.QMainWindow):
             # self.vtkRenderWindow.Render()
 
             # save references
-            self.geometrydict[boolname]['booleanoperation'] = booleanOperation
+            self.geometrydict[boolname]['booleanoperation'] = boolean_operation
             self.geometrydict[boolname]['mapper'] = mapper
             self.geometrydict[boolname]['actor'] = actor
 
@@ -650,7 +698,7 @@ class MfixGui(QtGui.QMainWindow):
             toplevel.setCheckState(0, QtCore.Qt.Checked)
 
             # remove children from tree
-            for select in currentSelection:
+            for select in current_selection:
                 toplevelindex = self.ui.treeWidgetGeometry.indexOfTopLevelItem(select)
                 item = self.ui.treeWidgetGeometry.takeTopLevelItem(toplevelindex)
                 item.setCheckState(0, QtCore.Qt.Unchecked)
@@ -659,22 +707,33 @@ class MfixGui(QtGui.QMainWindow):
             self.ui.treeWidgetGeometry.addTopLevelItem(toplevel)
             self.ui.treeWidgetGeometry.setCurrentItem(toplevel)
 
-    def removeGeometry(self):
+    def remove_geometry(self):
+        " unfinished "
+        pass
 
-        currentSelection = self.ui.treeWidgetGeometry.selectedItems()
-        if currentSelection:
-            text = str(currentSelection[-1].text(0)).lower()
+        # current_selection = self.ui.treeWidgetGeometry.selectedItems()
+        # if current_selection:
+        #     text = str(current_selection[-1].text(0)).lower()
 
     def build_mfix(self):
         """ build mfix """
         mfix_home = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-        build_cmd = os.path.join(mfix_home,'configure_mfix && make -j pymfix')
-        self.build_thread.start_command(build_cmd,self.project_dir)
+        dmp = '--dmp' if self.ui.dmp_button.isChecked() else ''
+        smp = '--smp' if self.ui.smp_button.isChecked() else ''
+        build_cmd = os.path.join(mfix_home, 'configure_mfix %s %s && make pymfix' % (smp, dmp))
+        self.build_thread.start_command(build_cmd, self.get_project_dir())
+
+    def clear_output(self):
+        """ build mfix """
+        self.run_thread.start_command('echo "Removing:";'
+                                      ' ls *.LOG *.OUT *.RES *.SP? *.pvd *vtp;'
+                                      ' rm -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
+                                      self.get_project_dir())
 
     def run_mfix(self):
         """ build mfix """
-        curr_dir = os.path.dirname(os.path.realpath(__file__))
-        self.run_thread.start_command(os.path.join(self.project_dir, 'pymfix'),self.project_dir)
+        pymfix_exe = os.path.join(self.get_project_dir(), 'pymfix')
+        self.run_thread.start_command(pymfix_exe, self.get_project_dir())
 
     def connect_mfix(self):
         """ build mfix """
@@ -686,11 +745,13 @@ class MfixGui(QtGui.QMainWindow):
         """
 
         if not project_dir:
-            project_dir = str(QtGui.QFileDialog.getExistingDirectory(self, 'Open Project Directory',
-                                                                       "",
-                                                                       QtGui.QFileDialog.ShowDirsOnly,
-                                                                       ))
-        if len(project_dir)<1:return
+            project_dir = str(
+                 QtGui.QFileDialog.getExistingDirectory(self, 'Open Project Directory',
+                                                        "",
+                                                        QtGui.QFileDialog.ShowDirsOnly))
+
+        if len(project_dir) < 1:
+            return
 
         writable = True
         try:
@@ -701,113 +762,53 @@ class MfixGui(QtGui.QMainWindow):
             writable = False
 
         if not writable:
-            self.message(title = 'Warning',
-                         icon = 'warning',
-                         text = ('You do not have write access to this '
-                                 'directory.\n'
-                                 'Please fix and try again.'),
-                         buttons = ['ok'],
-                         default = 'ok',
-                         )
-            mylogger.debug('User does not have write access: {}'.format(project_dir))
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('You do not have write access to this '
+                               'directory.\n'
+                               'Please fix and try again.'),
+                         buttons=['ok'],
+                         default='ok',
+                        )
             return
 
-        self.project_dir = project_dir
-
-        # if not self.projectDir == project_dir:
-        #     self.codeEditor.closeAll()
-
-        self.projectDir = project_dir
+        self.settings.setValue('project_dir', project_dir)
 
         # self.recentProjects.append(self.projectDir)
         # self.updateRecentProjectMenu()
 
-        self.setWindowTitle('MFIX - %s' % self.projectDir)
-
-        # # look for gui data file
-        # guidatafile = glob.glob(os.path.join(self.projectDir, self.guiDataFileName))
-        # if guidatafile:
-        #     mylogger.debug('Opening gui data file: {}'.format(guidatafile[0]))
-        #     with open(guidatafile[0], 'r') as f:
-        #         self.projectGuiData.update(json.load(f))
+        self.setWindowTitle('MFIX - %s' % project_dir)
 
         # Look for mfix.dat file
-        mfixDat = os.path.abspath(os.path.join(self.projectDir,'mfix.dat'))
+        mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
+        # mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
 
-        if os.path.exists(mfixDat):
-            # mylogger.debug('found mfix.dat: {}'.format(mfixDat))
+        if os.path.exists(mfix_dat):
+            # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
             #check to see if file is already open
-            # if not self.codeEditor.is_file_opened(mfixDat):
-                # self.codeEditor.load(mfixDat)
+            # if not self.codeEditor.is_file_opened(mfix_dat):
+                # self.codeEditor.load(mfix_dat)
             # parse and update widget values
             # self.setWidgetInit(False)
-            # self.projectManager.loadMfixDat(mfixDat)
+            # self.projectManager.loadMfixDat(mfix_dat)
             # self.setWidgetInit(True)
 
-            src = open(mfixDat).read()
+            src = open(mfix_dat).read()
             self.ui.mfix_dat_source.setPlainText(src)
-            self.modeChanged('developer')
+            self.mode_changed('developer')
             # self.ui.stackedWidgetMode.setCurrentIndex(2)
         else:
             print("mfix.dat doesn't exist")
             # self.newMfixDat()
 
-        return
-
-        # #Look for usr fortran files
-        # usrFiles = glob.glob(os.path.join(self.projectDir,'*.f'))
-        # if usrFiles:
-        #     for usrFile in usrFiles:
-        #         if not self.codeEditor.is_file_opened(usrFile):
-        #             self.codeEditor.load(usrFile)
-
-        # if mfixDat:
-        #     self.codeEditor.go_to_file(mfixDat, 0, None)
-
-        # self.editorWindow.showWindow()
-        # self.enableWidgets()
-
-        # Look for stl file
-        stlFileList = glob.glob(os.path.join(self.projectDir, 'geometry.stl'))
-        if stlFileList:
-            self.openStlFile(stlFileList[0])
-
-        # Look for log file
-        runlogPath = os.path.join(self.projectDir, self.CONF.get('run','logfilename'))
-        if os.path.exists(runlogPath):
-
-            if hasattr(self, 'logwatcher'):
-                self.logwatcher.cancel()
-
-            self.logwatcher = WatchRunDir(self.projectDir, logfname=self.CONF.get('run','logfilename'), updatetime = float(self.CONF.get('run','refreshrate')))
-            self.logwatcher.update.connect(self.logChanged)
-            self.logwatcher.finished.connect(self.runfinished)
-            self.logwatcher.start()
-
-            self.running = True
-            self.stalled = False
-
-            self.progressBar.setMaximum(100)
-            self.progressBar.setMinimum(0)
-            self.progressBar.setValue(0)
-            self.progressBar.setFormat('Running %p%')
-            self.progressBar.cancel.connect(lambda:self.cancelRun())
-            self.progressBar.show()
-
-            self.mfixprocesstimer.start(self.CONF.get('run', 'checkrunning'))
-
-        os.chdir(self.projectDir)
-        mylogger.debug('CWD: {}'.format(os.getcwd()))
-        self.gridInputChange()
-        self.updateDocs()
-
-class RunThread(QThread):
+class MfixThread(QThread):
 
     line_printed = pyqtSignal(str)
 
     def __init__(self, parent):
-        super(RunThread, self).__init__(parent)
+        super(MfixThread, self).__init__(parent)
         self.cmd = None
+        self.cwd = None
 
     def start_command(self, cmd, cwd):
         self.cmd = cmd
@@ -821,36 +822,31 @@ class RunThread(QThread):
             for line in lines_iterator:
                 self.line_printed.emit(line)
 
-class BuildThread(QThread):
 
+class RunThread(MfixThread):
     line_printed = pyqtSignal(str)
 
-    def __init__(self, parent):
-        super(BuildThread, self).__init__(parent)
-        self.cmd = None
+class BuildThread(MfixThread):
+    line_printed = pyqtSignal(str)
 
-    def start_command(self, cmd, cwd):
-        self.cmd = cmd
-        self.cwd = cwd
-        self.start()
-
-    def run(self):
-        if self.cmd:
-            popen = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True, cwd=self.cwd)
-            lines_iterator = iter(popen.stdout.readline, b"")
-            for line in lines_iterator:
-                self.line_printed.emit(line)
-
+class ClearThread(MfixThread):
+    line_printed = pyqtSignal(str)
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
+    qapp = QtGui.QApplication(sys.argv)
 
-    mfix = MfixGui(app)
+    mfix = MfixGui(qapp)
 
     mfix.show()
     # mfix.vtkiren.Initialize()
 
-    app.exec_()
+    # exit with Ctrl-C at the terminal
+    timer = QTimer()
+    timer.start(500)  # You may change this if you wish.
+    timer.timeout.connect(lambda: None)  # Let the interpreter run each 500 ms.
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-    app.deleteLater()
+    qapp.exec_()
+
+    qapp.deleteLater()
     sys.exit()
