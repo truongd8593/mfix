@@ -337,9 +337,9 @@
 ! this read statement needs to be consistent with the write_res from
 ! mfix in terms of the index start
       if (myPE == PE_IO) then
-         CALL IN_BIN_512 (UNIT_RES, DX(1), IMAX2, NEXT_RECA)
-         CALL IN_BIN_512 (UNIT_RES, DY(1), JMAX2, NEXT_RECA)
-         CALL IN_BIN_512 (UNIT_RES, DZ(1), KMAX2, NEXT_RECA)
+         CALL IN_BIN_512 (UNIT_RES, DX, IMAX2, NEXT_RECA)
+         CALL IN_BIN_512 (UNIT_RES, DY, JMAX2, NEXT_RECA)
+         CALL IN_BIN_512 (UNIT_RES, DZ, KMAX2, NEXT_RECA)
       endif
 
 
