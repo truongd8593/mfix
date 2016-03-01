@@ -192,7 +192,7 @@ class MfixGui(QtGui.QMainWindow):
         for mode, btn in self.modebuttondict.items():
             btn.pressed.connect(make_callback(self.mode_changed, mode))
 
-        self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(self.navigationChanged)
+        self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(self.navigation_changed)
 
         # --- default ---
         self.ui.pushButtonModeler.setChecked(True)
@@ -205,7 +205,8 @@ class MfixGui(QtGui.QMainWindow):
     def __setup_vtk_widget(self):
         " setup the vtk widget "
 
-        self.vtkwidget = VtkWidget()
+        self.vtkwidget = VtkWidget(self.ui.treeWidgetGeometry, parent=self)
+        self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
         # --- geometry buttons ---
         self.add_geometry_menu = QtGui.QMenu(self)
@@ -396,7 +397,6 @@ class MfixThread(QThread):
             for line in lines_iterator:
                 self.line_printed.emit(line)
 
-
 class RunThread(MfixThread):
     line_printed = pyqtSignal(str)
 
@@ -412,7 +412,8 @@ if __name__ == '__main__':
     mfix = MfixGui(qapp)
 
     mfix.show()
-    # mfix.vtkiren.Initialize()
+    # have to initialize vtk after the widget is visible!
+    mfix.vtkwidget.vtkiren.Initialize()
 
     # exit with Ctrl-C at the terminal
     timer = QTimer()

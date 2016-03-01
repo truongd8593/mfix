@@ -78,7 +78,7 @@ class VtkWidget(QtGui.QWidget):
         self.setLayout(self.hlayout)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
-        self.hlayout.addWidget(self.vtkWidget)
+        self.hlayout.addWidget(self.vtkWindowWidget)
 
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
@@ -86,9 +86,9 @@ class VtkWidget(QtGui.QWidget):
         self.vtkrenderer.SetBackground(.4, .4, .4)
         self.vtkrenderer.SetBackground2(1.0, 1.0, 1.0)
 
-        self.vtkRenderWindow = self.vtkWidget.GetRenderWindow()
+        self.vtkRenderWindow = self.vtkWindowWidget.GetRenderWindow()
         self.vtkRenderWindow.AddRenderer(self.vtkrenderer)
-        self.vtkiren = self.vtkWidget.GetRenderWindow().GetInteractor()
+        self.vtkiren = self.vtkWindowWidget.GetRenderWindow().GetInteractor()
 
         self.style = CustomInteractorStyle()
         self.style.SetDefaultRenderer(self.vtkrenderer)
@@ -172,7 +172,7 @@ class VtkWidget(QtGui.QWidget):
 
         self.vtkRenderWindow.Render()
 
-    def add_Stl(self):
+    def add_stl(self):
 
         filename = str(QtGui.QFileDialog.getOpenFileName(
             self, 'Select an STL File',
