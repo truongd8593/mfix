@@ -8,8 +8,9 @@ import os
 import signal
 import sys
 import subprocess
-import re
 
+
+# import qt
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
 
@@ -19,6 +20,17 @@ try:
 except ImportError:
     from PyQt4 import uic
 
+
+# local imports
+try:
+    from pyqtnode import NodeWidget
+except ImportError:
+    NodeWidget = None
+from widgets.vtkwidget import VtkWidget
+from tools.mfixproject import Project
+from tools.general import (get_image_path, make_callback, get_icon,
+                           widget_iter, set_script_directory)
+
 logging.basicConfig(stream=sys.stdout,
                     filemode='w', level=logging.DEBUG,
                     format='%(name)s - %(levelname)s - %(message)s')
@@ -27,69 +39,8 @@ SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 LOG = logging.getLogger(__name__)
 LOG.debug(SCRIPT_DIRECTORY)
+set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py
 
-# local imports
-# from pyqtnode import NodeWidget
-from widgets.vtkwidget import VtkWidget
-
-def get_image_path(name):
-    " get path to images "
-    path = os.path.join(SCRIPT_DIRECTORY, 'icons', name)
-
-    if os.name == 'nt':
-        path = path.replace('\\', '//')
-
-    return path
-
-def make_callback(func, param):
-    '''
-    Helper function to make sure lambda functions are cached and not lost.
-    '''
-    return lambda: func(param)
-
-def get_icon(name, default=None, resample=False):
-    """Return image inside a QIcon object
-    default: default image name or icon
-    resample: if True, manually resample icon pixmaps for usual sizes
-    (16, 24, 32, 48, 96, 128, 256). This is recommended for QMainWindow icons
-    created from SVG images on non-Windows platforms due to a Qt bug (see
-    http://code.google.com/p/spyderlib/issues/detail?id=1314)."""
-    if default is None:
-        icon = QtGui.QIcon(get_image_path(name))
-    elif isinstance(default, QtGui.QIcon):
-        icon_path = get_image_path(name)
-        icon = default if icon_path is None else QtGui.QIcon(icon_path)
-    else:
-        icon = QtGui.QIcon(get_image_path(name, default))
-    if resample:
-        icon0 = QtGui.QIcon()
-        for size in (16, 24, 32, 48, 96, 128, 256, 512):
-            icon0.addPixmap(icon.pixmap(size, size))
-        return icon0
-    else:
-        return icon
-
-def get_unique_string(base, listofstrings):
-    " uniquify a string "
-    if base in listofstrings:
-        # look for number at end
-        nums = re.findall('[\d]+', base)
-        if nums:
-            number = int(nums[-1]) + 1
-            base = base.replace(nums[-1], '')
-        else:
-            number = 1
-
-        base = get_unique_string(''.join([base, str(number)]), listofstrings)
-
-    return base
-
-def widget_iter(widget):
-    for child in widget.children():
-        if child.children():
-            for child2 in widget_iter(child):
-                yield child2
-        yield child
 
 # --- Main Gui ---
 class MfixGui(QtGui.QMainWindow):
@@ -98,20 +49,25 @@ class MfixGui(QtGui.QMainWindow):
     '''
     def __init__(self, app, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
+        
+        # reference to qapp instance
         self.app = app
 
-        self.ui = uic.loadUi('uifiles/gui.ui', self)
+        # load ui file
+        self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
+        # load settings
         self.settings = QSettings('MFIX', 'MFIX')
 
+        # set title and icon
         self.setWindowTitle('MFIX')
         self.setWindowIcon(get_icon('mfix.png'))
 
         # --- data ---
-        self.modebuttondict = {'modeler':self.ui.pushButtonModeler,
-                               'workflow':self.ui.pushButtonWorkflow,
-                               'developer':  self.ui.pushButtonDeveloper,
-                              }
+        self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
+                               'workflow':  self.ui.pushButtonWorkflow,
+                               'developer': self.ui.pushButtonDeveloper,
+                               }
 
         self.booleanbtndict = {
             'union':      self.ui.toolButtonGeometryUnion,
@@ -123,12 +79,13 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolButtonNew.setIcon(get_icon('newfolder.png'))
         self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
         self.ui.toolButtonSave.setIcon(get_icon('save.png'))
-        
+
         self.ui.toolButtonAddGeometry.setIcon(get_icon('add.png'))
         self.ui.toolButtonRemoveGeometry.setIcon(get_icon('remove.png'))
         self.ui.toolButtonGeometryUnion.setIcon(get_icon('union.png'))
         self.ui.toolButtonGeometryIntersect.setIcon(get_icon('intersect.png'))
-        self.ui.toolButtonGeometryDifference.setIcon(get_icon('difference.png'))
+        self.ui.toolButtonGeometryDifference.setIcon(
+            get_icon('difference.png'))
 
         self.ui.toolButtonRegionAdd.setIcon(get_icon('add.png'))
         self.ui.toolButtonRegionDelete.setIcon(get_icon('remove.png'))
@@ -144,17 +101,33 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolButtonTFMSolidsDatabase.setIcon(get_icon('download.png'))
 
         self.ui.toolButtonTFMSolidsSpeciesAdd.setIcon(get_icon('add.png'))
-        self.ui.toolButtonTFMSolidsSpeciesDelete.setIcon(get_icon('remove.png'))
+        self.ui.toolButtonTFMSolidsSpeciesDelete.setIcon(
+            get_icon('remove.png'))
         self.ui.toolButtonTFMSolidsSpeciesCopy.setIcon(get_icon('copy.png'))
-        
+
+        # --- Connect Signals to Slots---
+        # open/save/new project
         self.ui.toolButtonOpen.pressed.connect(self.open_project)
+        self.ui.toolButtonSave.pressed.connect(self.save_project)
 
+        # mode (modeler, workflow, developer)
+        for mode, btn in self.modebuttondict.items():
+            btn.pressed.connect(make_callback(self.mode_changed, mode))
 
+        # navigation tree
+        self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(
+            self.navigation_changed)
+
+        # build/run/connect MFIX
         self.ui.build_mfix_button.pressed.connect(self.build_mfix)
         self.ui.run_mfix_button.pressed.connect(self.run_mfix)
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
         self.ui.clear_output_button.pressed.connect(self.clear_output)
 
+        self.ui.run_name.textChanged.connect(self.unsaved)
+        self.ui.description.textChanged.connect(self.unsaved)
+
+        # --- Threads ---
         self.build_thread = BuildThread(self)
         self.run_thread = RunThread(self)
         self.clear_thread = ClearThread(self)
@@ -174,25 +147,18 @@ class MfixGui(QtGui.QMainWindow):
 
             return handle_line
 
-        self.build_thread.line_printed.connect(make_handler(self.ui.build_output))
+        self.build_thread.line_printed.connect(
+            make_handler(self.ui.build_output))
         self.run_thread.line_printed.connect(make_handler(self.ui.run_output))
-        self.clear_thread.line_printed.connect(make_handler(self.ui.run_output))
+        self.clear_thread.line_printed.connect(
+            make_handler(self.ui.run_output))
 
-        
         # --- vtk setup ---
         self.__setup_vtk_widget()
 
         # --- workflow setup ---
-        # self.nodeChart = NodeWidget(showtoolbar=False)
-        # Build defualt node library
-        # self.nodeChart.nodeLibrary.buildDefualtLibrary()
-        # self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
-
-        # --- signals ---
-        for mode, btn in self.modebuttondict.items():
-            btn.pressed.connect(make_callback(self.mode_changed, mode))
-
-        self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(self.navigation_changed)
+        if NodeWidget is not None:
+            self.__setup_workflow_widget()
 
         # --- default ---
         self.ui.pushButtonModeler.setChecked(True)
@@ -200,12 +166,14 @@ class MfixGui(QtGui.QMainWindow):
         top = self.ui.treeWidgetModelNavigation.topLevelItem(0)
         self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
-        self.open_project(self.get_project_dir())
+        # autoload last project
+        if self.get_project_dir():
+            self.open_project(self.get_project_dir())
 
     def __setup_vtk_widget(self):
         " setup the vtk widget "
 
-        self.vtkwidget = VtkWidget(self.ui.treeWidgetGeometry, parent=self)
+        self.vtkwidget = VtkWidget(parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
         # --- geometry buttons ---
@@ -246,6 +214,13 @@ class MfixGui(QtGui.QMainWindow):
                 widget.editingFinished.connect(
                     make_callback(self.vtkwidget.primitive_edited, widget))
 
+    def __setup_workflow_widget(self):
+
+        self.nodeChart = NodeWidget(showtoolbar=False)
+        # Build defualt node library
+        self.nodeChart.nodeLibrary.buildDefualtLibrary()
+        self.ui.horizontalLayoutPyqtnode.addWidget(self.nodeChart)
+
     def get_project_dir(self):
         " get the current project directory"
 
@@ -254,7 +229,6 @@ class MfixGui(QtGui.QMainWindow):
             return last_dir
         else:
             return None
-
 
     def mode_changed(self, mode):
         " change the Modeler, Workflow, Developer tab"
@@ -269,7 +243,8 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.stackedWidgetMode.setCurrentIndex(current_index)
 
         for key, btn in self.modebuttondict.items():
-            btn.setChecked(mode == key)
+            if mode != key:  # don't touch the pressed btn
+                btn.setChecked(False)
 
     def navigation_changed(self):
         current_selection = self.ui.treeWidgetModelNavigation.selectedItems()
@@ -288,22 +263,23 @@ class MfixGui(QtGui.QMainWindow):
 
             self.ui.stackedWidgetTaskPane.setCurrentIndex(current_index)
 
-
-
     def build_mfix(self):
         """ build mfix """
-        mfix_home = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+        mfix_home = os.path.dirname(
+            os.path.dirname(os.path.realpath(__file__)))
         dmp = '--dmp' if self.ui.dmp_button.isChecked() else ''
         smp = '--smp' if self.ui.smp_button.isChecked() else ''
-        build_cmd = os.path.join(mfix_home, 'configure_mfix %s %s && make pymfix' % (smp, dmp))
+        build_cmd = os.path.join(
+            mfix_home, 'configure_mfix %s %s && make pymfix' % (smp, dmp))
         self.build_thread.start_command(build_cmd, self.get_project_dir())
 
     def clear_output(self):
         """ build mfix """
-        self.run_thread.start_command('echo "Removing:";'
-                                      ' ls *.LOG *.OUT *.RES *.SP? *.pvd *vtp;'
-                                      ' rm -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
-                                      self.get_project_dir())
+        self.run_thread.start_command(
+            'echo "Removing:";'
+            ' ls *.LOG *.OUT *.RES *.SP? *.pvd *vtp;'
+            ' rm -f *.LOG *.OUT *.RES *.SP? *.pvd *vtp',
+            self.get_project_dir())
 
     def run_mfix(self):
         """ build mfix """
@@ -311,8 +287,21 @@ class MfixGui(QtGui.QMainWindow):
         self.run_thread.start_command(pymfix_exe, self.get_project_dir())
 
     def connect_mfix(self):
-        """ build mfix """
+        """ connect to running instance of mfix """
         self.ui.mfix_browser.load(QUrl("http://localhost:5000"))
+
+    def save_project(self):
+        project_dir = self.settings.value('project_dir')
+
+        self.project._keywordDict['run_name'] = self.ui.run_name.text()
+        self.project._keywordDict['description'] = self.ui.description.text()
+
+        self.setWindowTitle('MFIX - %s' % project_dir)
+        self.project.save(os.path.join(project_dir, 'mfix.dat'))
+
+    def unsaved(self):
+        project_dir = self.settings.value('project_dir')
+        self.setWindowTitle('MFIX - %s *' % project_dir)
 
     def open_project(self, project_dir=None):
         """
@@ -321,9 +310,10 @@ class MfixGui(QtGui.QMainWindow):
 
         if not project_dir:
             project_dir = str(
-                 QtGui.QFileDialog.getExistingDirectory(self, 'Open Project Directory',
-                                                        "",
-                                                        QtGui.QFileDialog.ShowDirsOnly))
+                 QtGui.QFileDialog.getExistingDirectory(
+                     self, 'Open Project Directory',
+                     "",
+                     QtGui.QFileDialog.ShowDirsOnly))
 
         if len(project_dir) < 1:
             return
@@ -344,7 +334,7 @@ class MfixGui(QtGui.QMainWindow):
                                'Please fix and try again.'),
                          buttons=['ok'],
                          default='ok',
-                        )
+                         )
             return
 
         self.settings.setValue('project_dir', project_dir)
@@ -360,7 +350,7 @@ class MfixGui(QtGui.QMainWindow):
 
         if os.path.exists(mfix_dat):
             # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
-            #check to see if file is already open
+            # check to see if file is already open
             # if not self.codeEditor.is_file_opened(mfix_dat):
                 # self.codeEditor.load(mfix_dat)
             # parse and update widget values
@@ -372,10 +362,17 @@ class MfixGui(QtGui.QMainWindow):
             self.ui.mfix_dat_source.setPlainText(src)
             self.mode_changed('developer')
             # self.ui.stackedWidgetMode.setCurrentIndex(2)
+
+            self.project = Project(mfix_dat)
+            self.ui.run_name.setText(str(self.project['run_name']))
+            self.ui.description.setText(str(self.project['description']))
+
         else:
             print("mfix.dat doesn't exist")
             # self.newMfixDat()
 
+
+# --- Threads ---
 class MfixThread(QThread):
 
     line_printed = pyqtSignal(str)
@@ -392,16 +389,20 @@ class MfixThread(QThread):
 
     def run(self):
         if self.cmd:
-            popen = subprocess.Popen(self.cmd, stdout=subprocess.PIPE, shell=True, cwd=self.cwd)
+            popen = subprocess.Popen(
+                self.cmd, stdout=subprocess.PIPE, shell=True, cwd=self.cwd)
             lines_iterator = iter(popen.stdout.readline, b"")
             for line in lines_iterator:
                 self.line_printed.emit(line)
 
+
 class RunThread(MfixThread):
     line_printed = pyqtSignal(str)
 
+
 class BuildThread(MfixThread):
     line_printed = pyqtSignal(str)
+
 
 class ClearThread(MfixThread):
     line_printed = pyqtSignal(str)
@@ -412,6 +413,7 @@ if __name__ == '__main__':
     mfix = MfixGui(qapp)
 
     mfix.show()
+
     # have to initialize vtk after the widget is visible!
     mfix.vtkwidget.vtkiren.Initialize()
 
