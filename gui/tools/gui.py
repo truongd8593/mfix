@@ -13,8 +13,6 @@ import re
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
 
-from tools.mfixproject import Project
-
 try:
     from PyQt5 import uic
 except ImportError:
@@ -186,15 +184,12 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
         self.ui.toolButtonSave.setIcon(get_icon('save.png'))
         self.ui.toolButtonOpen.pressed.connect(self.open_project)
-        self.ui.toolButtonSave.pressed.connect(self.save_project)
+
 
         self.ui.build_mfix_button.pressed.connect(self.build_mfix)
         self.ui.run_mfix_button.pressed.connect(self.run_mfix)
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
         self.ui.clear_output_button.pressed.connect(self.clear_output)
-
-        self.ui.run_name.textChanged.connect(self.unsaved)
-        self.ui.description.textChanged.connect(self.unsaved)
 
         self.build_thread = BuildThread(self)
         self.run_thread = RunThread(self)
@@ -741,21 +736,8 @@ class MfixGui(QtGui.QMainWindow):
         self.run_thread.start_command(pymfix_exe, self.get_project_dir())
 
     def connect_mfix(self):
-        """ connect to running instance of mfix """
+        """ build mfix """
         self.ui.mfix_browser.load(QUrl("http://localhost:5000"))
-
-    def save_project(self):
-        project_dir = self.settings.value('project_dir')
-
-        self.project._keywordDict['run_name'] = self.ui.run_name.text()
-        self.project._keywordDict['description'] = self.ui.description.text()
-
-        self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.save(os.path.join(project_dir, 'mfix.dat'))
-
-    def unsaved(self):
-        project_dir = self.settings.value('project_dir')
-        self.setWindowTitle('MFIX - %s *' % project_dir)
 
     def open_project(self, project_dir=None):
         """
@@ -815,11 +797,6 @@ class MfixGui(QtGui.QMainWindow):
             self.ui.mfix_dat_source.setPlainText(src)
             self.mode_changed('developer')
             # self.ui.stackedWidgetMode.setCurrentIndex(2)
-
-            self.project = Project(mfix_dat)
-            self.ui.run_name.setText(str(self.project['run_name']))
-            self.ui.description.setText(str(self.project['description']))
-
         else:
             print("mfix.dat doesn't exist")
             # self.newMfixDat()

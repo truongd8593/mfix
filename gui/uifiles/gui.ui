@@ -260,6 +260,11 @@ background-color: transparent;
                  </column>
                  <item>
                   <property name="text">
+                   <string>General</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
                    <string>Geometry</string>
                   </property>
                  </item>
@@ -411,7 +416,7 @@ background-color: transparent;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>1</number>
+                  <number>9</number>
                  </property>
                  <widget class="QWidget" name="geometry">
                   <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -3264,7 +3269,54 @@ background-color: transparent;
                   </layout>
                  </widget>
                  <widget class="QWidget" name="continumm_solids_model"/>
-                 <widget class="QWidget" name="noModelParameters"/>
+                 <widget class="QWidget" name="general">
+                  <widget class="QLineEdit" name="run_name">
+                   <property name="geometry">
+                    <rect>
+                     <x>290</x>
+                     <y>110</y>
+                     <width>271</width>
+                     <height>41</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QLineEdit" name="description">
+                   <property name="geometry">
+                    <rect>
+                     <x>300</x>
+                     <y>230</y>
+                     <width>401</width>
+                     <height>51</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_52">
+                   <property name="geometry">
+                    <rect>
+                     <x>180</x>
+                     <y>100</y>
+                     <width>71</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Run Name</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_53">
+                   <property name="geometry">
+                    <rect>
+                     <x>180</x>
+                     <y>220</y>
+                     <width>81</width>
+                     <height>41</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Description</string>
+                   </property>
+                  </widget>
+                 </widget>
                 </widget>
                </item>
               </layout>
