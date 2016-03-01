@@ -1,9 +1,6 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Apr 13 13:54:23 2015
+# Import from the future for Python 2 and 3 compatability!
+from __future__ import print_function, absolute_import, unicode_literals
 
-@author: Weberjm
-"""
 try:
     # Python 3
     from functools import reduce

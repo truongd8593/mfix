@@ -72,11 +72,20 @@ class VtkWidget(QtGui.QWidget):
 
         self.primitivedict = {}
         self.primitivedict = {
-            'sphere': vtk.vtkSphereSource,
-            'box':    vtk.vtkCubeSource,
+            'sphere':   vtk.vtkSphereSource,
+            'box':      vtk.vtkCubeSource,
             'cylinder': vtk.vtkCylinderSource,
-            'cone': vtk.vtkConeSource,
+            'cone':     vtk.vtkConeSource,
             }
+
+        self.filterdict = {
+            'clean':              vtk.vtkCleanPolyData,
+            'fill_holes':         vtk.vtkFillHolesFilter,
+            'triangle':           vtk.vtkTriangleFilter,
+            'decimate':           vtk.vtkDecimatePro,
+            'quadric_decimation': vtk.vtkQuadricDecimation,
+            'quadric_clustering': vtk.vtkQuadricClustering
+        }
 
         # --- layout ---
         self.hlayout = QtGui.QHBoxLayout(self)
@@ -148,8 +157,10 @@ class VtkWidget(QtGui.QWidget):
                 self.parent.ui.treeWidgetGeometry.indexOfTopLevelItem(
                 current_selection[0]) > -1:
             self.parent.ui.toolbutton_remove_geometry.setEnabled(True)
+            self.parent.ui.toolbutton_add_filter.setEnabled(True)
         else:
             self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
+            self.parent.ui.toolbutton_add_filter.setEnabled(False)
 
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
@@ -265,7 +276,8 @@ class VtkWidget(QtGui.QWidget):
                         self.geometrydict[name][key] = float(string)
 
             self.update_primitive(name)
-            self.update_transform(name)
+            if 'transform' in self.geometrydict[name]:
+                self.update_transform(name)
             self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
@@ -415,7 +427,7 @@ class VtkWidget(QtGui.QWidget):
         # add to dict
         self.geometrydict[name]['mapper'] = mapper
         self.geometrydict[name]['actor'] = actor
-        self.geometrydict[name]['trianglefiler'] = trianglefilter
+        self.geometrydict[name]['trianglefilter'] = trianglefilter
         self.geometrydict[name]['source'] = source
 
         # Add to tree
@@ -452,8 +464,8 @@ class VtkWidget(QtGui.QWidget):
                 name = str(selection.text(0)).lower()
                 self.geometrydict[boolname]['children'].append(name)
 
-                if 'trianglefiler' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['trianglefiler']
+                if 'trianglefilter' in self.geometrydict[name]:
+                    geometry = self.geometrydict[name]['trianglefilter']
                 elif 'booleanoperation' in self.geometrydict[name]:
                     geometry = self.geometrydict[name]['booleanoperation']
                 elif 'reader' in self.geometrydict[name]:
@@ -462,12 +474,8 @@ class VtkWidget(QtGui.QWidget):
                 # hide the sources
                 self.geometrydict[name]['actor'].VisibilityOff()
 
-#                if vtk.VTK_MAJOR_VERSION <= 5:
                 boolean_operation.SetInputConnection(i,
                                                      geometry.GetOutputPort())
-#                else:
-#                    boolean_operation.SetInputData(i, geometry.GetOutput())
-
             boolean_operation.Update()
 
             mapper = vtk.vtkPolyDataMapper()
@@ -524,3 +532,71 @@ class VtkWidget(QtGui.QWidget):
             self.vtkrenderer.RemoveActor(geo['actor'])
 
             self.vtkRenderWindow.Render()
+
+    def add_filter(self, filtertype):
+        print(filtertype)
+
+        current_selection = self.geometrytree.selectedItems()
+        if current_selection:
+            selection_text = str(current_selection[-1].text(0)).lower()
+
+            name = get_unique_string(filtertype,
+                                     list(self.geometrydict.keys()))
+
+            vtkfilter = self.filterdict[filtertype]()
+
+            if 'trianglefilter' in self.geometrydict[selection_text]:
+                inputdata = self.geometrydict[selection_text]['trianglefilter']
+            elif 'booleanoperation' in self.geometrydict[selection_text]:
+                inputdata = self.geometrydict[selection_text]['booleanoperation']
+            elif 'reader' in self.geometrydict[selection_text]:
+                inputdata = self.geometrydict[selection_text]['transformfilter']
+            elif 'filter' in self.geometrydict[selection_text]:
+                inputdata = self.geometrydict[selection_text]['filter']
+
+            # apply filter
+            vtkfilter.SetInputConnection(inputdata.GetOutputPort())
+            vtkfilter.Update()
+
+            # hide the sources
+            self.geometrydict[selection_text]['actor'].VisibilityOff()
+
+            # Create a mapper
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(vtkfilter.GetOutputPort())
+
+            # Create an actor
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+    #        actor.GetProperty().SetOpacity(0.25)
+            actor.GetProperty().SetRepresentationToWireframe()
+
+            # add actor to render
+            self.vtkrenderer.AddActor(actor)
+
+            # update
+            self.vtkrenderer.ResetCamera()
+            self.vtkRenderWindow.Render()
+
+            # save references
+            self.geometrydict[name] = {
+                'type':   filtertype,
+                'filter': vtkfilter,
+                'actor':  actor,
+                'mapper': mapper,
+                }
+
+            # Add to tree
+            toplevel = QtGui.QTreeWidgetItem([name])
+            toplevel.setFlags(toplevel.flags() | QtCore.Qt.ItemIsUserCheckable)
+            toplevel.setCheckState(0, QtCore.Qt.Checked)
+
+            # remove children from tree
+            for select in current_selection:
+                toplevelindex = self.geometrytree.indexOfTopLevelItem(select)
+                item = self.geometrytree.takeTopLevelItem(toplevelindex)
+                item.setCheckState(0, QtCore.Qt.Unchecked)
+                toplevel.addChild(item)
+
+            self.geometrytree.addTopLevelItem(toplevel)
+            self.geometrytree.setCurrentItem(toplevel)

@@ -178,7 +178,7 @@ class MfixGui(QtGui.QMainWindow):
         self.vtkwidget = VtkWidget(parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
 
-        # --- geometry buttons ---
+        # --- geometry button ---
         self.add_geometry_menu = QtGui.QMenu(self)
         self.ui.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
 
@@ -189,11 +189,23 @@ class MfixGui(QtGui.QMainWindow):
         self.add_geometry_menu.addSeparator()
 
         for geo in self.vtkwidget.primitivedict.keys():
-            action = QtGui.QAction(geo,  self.add_geometry_menu)
+            action = QtGui.QAction(geo, self.add_geometry_menu)
             action.triggered.connect(
                 make_callback(self.vtkwidget.add_primitive, geo))
             self.add_geometry_menu.addAction(action)
+            
+        # --- filter button ---
+        self.add_filter_menu = QtGui.QMenu(self)
+        self.ui.toolbutton_add_filter.setMenu(self.add_filter_menu)
 
+        for geo in self.vtkwidget.filterdict.keys():
+            action = QtGui.QAction(geo.replace('_', ' '),
+                                   self.add_filter_menu)
+            action.triggered.connect(
+                make_callback(self.vtkwidget.add_filter, geo))
+            self.add_filter_menu.addAction(action)
+
+        # tree widget icons
         self.ui.treeWidgetGeometry.setStyleSheet(
             "QTreeView::indicator:unchecked {image: url(%s);}"
             "QTreeView::indicator:checked {image: url(%s);}"
