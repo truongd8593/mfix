@@ -49,7 +49,7 @@ class MfixGui(QtGui.QMainWindow):
     '''
     def __init__(self, app, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        
+
         # reference to qapp instance
         self.app = app
 
@@ -70,21 +70,24 @@ class MfixGui(QtGui.QMainWindow):
                                }
 
         self.booleanbtndict = {
-            'union':      self.ui.toolButtonGeometryUnion,
-            'intersection':  self.ui.toolButtonGeometryIntersect,
-            'difference': self.ui.toolButtonGeometryDifference,
+            'union':      self.ui.toolbutton_geometry_union,
+            'intersection':  self.ui.toolbutton_geometry_intersect,
+            'difference': self.ui.toolbutton_geometry_difference,
             }
 
         # --- icons ---
-        self.ui.toolButtonNew.setIcon(get_icon('newfolder.png'))
-        self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
-        self.ui.toolButtonSave.setIcon(get_icon('save.png'))
+        self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
+        self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
+        self.ui.toolbutton_save.setIcon(get_icon('save.png'))
 
-        self.ui.toolButtonAddGeometry.setIcon(get_icon('add.png'))
-        self.ui.toolButtonRemoveGeometry.setIcon(get_icon('remove.png'))
-        self.ui.toolButtonGeometryUnion.setIcon(get_icon('union.png'))
-        self.ui.toolButtonGeometryIntersect.setIcon(get_icon('intersect.png'))
-        self.ui.toolButtonGeometryDifference.setIcon(
+        self.ui.toolbutton_add_geometry.setIcon(get_icon('add.png'))
+        self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
+        self.ui.toolbutton_remove_geometry.setIcon(get_icon('remove.png'))
+        self.ui.toolbutton_copy_geometry.setIcon(get_icon('copy.png'))
+        self.ui.toolbutton_geometry_union.setIcon(get_icon('union.png'))
+        self.ui.toolbutton_geometry_intersect.setIcon(
+            get_icon('intersect.png'))
+        self.ui.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
         self.ui.toolButtonRegionAdd.setIcon(get_icon('add.png'))
@@ -107,12 +110,12 @@ class MfixGui(QtGui.QMainWindow):
 
         # --- Connect Signals to Slots---
         # open/save/new project
-        self.ui.toolButtonOpen.pressed.connect(self.open_project)
-        self.ui.toolButtonSave.pressed.connect(self.save_project)
+        self.ui.toolbutton_open.pressed.connect(self.open_project)
+        self.ui.toolbutton_save.pressed.connect(self.save_project)
 
         # mode (modeler, workflow, developer)
         for mode, btn in self.modebuttondict.items():
-            btn.pressed.connect(make_callback(self.mode_changed, mode))
+            btn.released.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
         self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(
@@ -161,7 +164,6 @@ class MfixGui(QtGui.QMainWindow):
             self.__setup_workflow_widget()
 
         # --- default ---
-        self.ui.pushButtonModeler.setChecked(True)
         self.mode_changed('modeler')
         top = self.ui.treeWidgetModelNavigation.topLevelItem(0)
         self.ui.treeWidgetModelNavigation.setCurrentItem(top)
@@ -178,7 +180,7 @@ class MfixGui(QtGui.QMainWindow):
 
         # --- geometry buttons ---
         self.add_geometry_menu = QtGui.QMenu(self)
-        self.ui.toolButtonAddGeometry.setMenu(self.add_geometry_menu)
+        self.ui.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
 
         action = QtGui.QAction('STL File',  self.add_geometry_menu)
         action.triggered.connect(self.vtkwidget.add_stl)
@@ -200,7 +202,7 @@ class MfixGui(QtGui.QMainWindow):
             )
 
         # setup signals
-        self.ui.toolButtonRemoveGeometry.pressed.connect(
+        self.ui.toolbutton_remove_geometry.pressed.connect(
             self.vtkwidget.remove_geometry)
 
         # connect boolean
@@ -234,17 +236,16 @@ class MfixGui(QtGui.QMainWindow):
         " change the Modeler, Workflow, Developer tab"
 
         current_index = 0
-        for i in range(self.ui.stackedWidgetMode.count()):
-            widget = self.ui.stackedWidgetMode.widget(i)
+        for i in range(self.ui.stackedwidget_mode.count()):
+            widget = self.ui.stackedwidget_mode.widget(i)
             if mode == str(widget.objectName()):
                 current_index = i
                 break
 
-        self.ui.stackedWidgetMode.setCurrentIndex(current_index)
+        self.ui.stackedwidget_mode.setCurrentIndex(current_index)
 
         for key, btn in self.modebuttondict.items():
-            if mode != key:  # don't touch the pressed btn
-                btn.setChecked(False)
+            btn.setChecked(mode == key)
 
     def navigation_changed(self):
         current_selection = self.ui.treeWidgetModelNavigation.selectedItems()
@@ -361,7 +362,6 @@ class MfixGui(QtGui.QMainWindow):
             src = open(mfix_dat).read()
             self.ui.mfix_dat_source.setPlainText(src)
             self.mode_changed('developer')
-            # self.ui.stackedWidgetMode.setCurrentIndex(2)
 
             self.project = Project(mfix_dat)
             self.ui.run_name.setText(str(self.project['run_name']))

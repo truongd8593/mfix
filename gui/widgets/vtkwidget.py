@@ -42,7 +42,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
             # restore it next time
             self.LastPickedProperty.DeepCopy(self.NewPickedActor.GetProperty())
             # Highlight the picked actor by changing its properties
-            self.NewPickedActor.GetProperty().SetColor(0.0, 0.0, 1.0)
+            self.NewPickedActor.GetProperty().SetColor(255/255.0, 140/255.0, 0)
             self.NewPickedActor.GetProperty().SetDiffuse(1.0)
             self.NewPickedActor.GetProperty().SetSpecular(0.0)
 
@@ -60,7 +60,7 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
 
 class VtkWidget(QtGui.QWidget):
-    def __init__(self,parent=None):
+    def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
         self.parent = parent
@@ -80,6 +80,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- layout ---
         self.hlayout = QtGui.QHBoxLayout(self)
+        self.hlayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.hlayout)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
@@ -142,12 +143,20 @@ class VtkWidget(QtGui.QWidget):
         for btn in self.booleanbtndict.values():
             btn.setEnabled(enableboolbtn)
 
+        # enable/disable delete button
+        if len(current_selection) == 1 and \
+                self.parent.ui.treeWidgetGeometry.indexOfTopLevelItem(
+                current_selection[0]) > -1:
+            self.parent.ui.toolbutton_remove_geometry.setEnabled(True)
+        else:
+            self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
+
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
-            self.parent.ui.toolButtonRemoveGeometry.setEnabled(True)
 
             current_index = 0
-            for i in range(self.parent.ui.stackedWidgetGeometryDetails.count()):
+            for i in range(
+                    self.parent.ui.stackedWidgetGeometryDetails.count()):
                 widget = self.parent.ui.stackedWidgetGeometryDetails.widget(i)
                 if str(widget.objectName()) in text:
                     current_index = i
@@ -161,14 +170,15 @@ class VtkWidget(QtGui.QWidget):
 
             self.parent.ui.groupBoxGeometryParameters.setTitle(text)
 
-            self.parent.ui.stackedWidgetGeometryDetails.setCurrentIndex(current_index)
+            self.parent.ui.stackedWidgetGeometryDetails.setCurrentIndex(
+                current_index)
         else:
             self.parent.ui.stackedWidgetGeometryDetails.setCurrentIndex(
                 self.parent.ui.stackedWidgetGeometryDetails.count()-1
                 )
 
             self.parent.ui.groupBoxGeometryParameters.setTitle('Parameters')
-            self.parent.ui.toolButtonRemoveGeometry.setEnabled(False)
+            self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
 
     def geometry_clicked(self, item):
 
@@ -184,19 +194,28 @@ class VtkWidget(QtGui.QWidget):
 
         filename = str(QtGui.QFileDialog.getOpenFileName(
             self, 'Select an STL File',
-            self.currentDirectory,
+            self.parent.get_project_dir(),
             'STL File (*.stl)',))
 
         if filename:
             name = os.path.basename(filename).lower()
             name = get_unique_string(name, list(self.geometrydict.keys()))
 
+            # reader
             reader = vtk.vtkSTLReader()
             reader.SetFileName(filename)
 
-            mapper = vtk.vtkPolyDataMapper()
-            mapper.SetInputConnection(reader.GetOutputPort())
+            # Create transformer
+            transform = vtk.vtkTransform()
+            transform_filter = vtk.vtkTransformPolyDataFilter()
+            transform_filter.SetTransform(transform)
+            transform_filter.SetInputConnection(reader.GetOutputPort())
 
+            # mapper
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(transform_filter.GetOutputPort())
+
+            # actor
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.GetProperty().SetRepresentationToWireframe()
@@ -208,13 +227,18 @@ class VtkWidget(QtGui.QWidget):
 
             # Add to dict
             self.geometrydict[name] = {
-                'reader': reader,
-                'mapper': mapper,
-                'actor':  actor,
-                'type':   'stl',
-                'centerx': 0.0,
-                'centery': 0.0,
-                'centerz': 0.0,
+                'reader':          reader,
+                'transform':       transform,
+                'transformfilter': transform_filter,
+                'mapper':          mapper,
+                'actor':           actor,
+                'type':            'stl',
+                'centerx':         0.0,
+                'centery':         0.0,
+                'centerz':         0.0,
+                'rotationx':       0.0,
+                'rotationy':       0.0,
+                'rotationz':       0.0,
                 }
 
             # Add to tree
@@ -242,14 +266,18 @@ class VtkWidget(QtGui.QWidget):
 
             self.update_primitive(name)
             self.update_transform(name)
-            # self.vtkRenderWindow.Render()
+            self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
         primtype = self.geometrydict[name]['type']
-        source = self.geometrydict[name]['source']
 
+        if 'source' in self.geometrydict[name]:
+            source = self.geometrydict[name]['source']
+        else:
+            source = None
+
+        # update source
         if primtype == 'sphere':
-            # Create source
             source.SetRadius(self.geometrydict[name]['radius'])
             source.SetThetaResolution(
                 self.geometrydict[name]['thetaresolution'])
@@ -274,27 +302,47 @@ class VtkWidget(QtGui.QWidget):
             source.SetHeight(self.geometrydict[name]['height'])
             source.SetResolution(self.geometrydict[name]['resolution'])
 
+        elif primtype == 'stl':
+            pass
+
         else:
             return
 
         # common props
-        source.SetCenter(self.geometrydict[name]['centerx'],
-                         self.geometrydict[name]['centery'],
-                         self.geometrydict[name]['centerz'])
+        if source is not None:
+            source.SetCenter(self.geometrydict[name]['centerx'],
+                             self.geometrydict[name]['centery'],
+                             self.geometrydict[name]['centerz'])
 
-        source.Update()
+            source.Update()
 
         return source
 
     def update_transform(self, name):
         transform = self.geometrydict[name]['transform']
-        transform_filter = self.geometrydict[name]['transformFilter']
+        transform_filter = self.geometrydict[name]['transformfilter']
+
+        # reset to Identity
+        transform.Identity()
+
+        transform.PostMultiply()
+
+        # translate to center
+        transform.Translate(-self.geometrydict[name]['centerx'],
+                            -self.geometrydict[name]['centery'],
+                            -self.geometrydict[name]['centerz'])
 
         # rotation
         transform.RotateWXYZ(self.geometrydict[name]['rotationx'], 1, 0, 0)
         transform.RotateWXYZ(self.geometrydict[name]['rotationy'], 0, 1, 0)
         transform.RotateWXYZ(self.geometrydict[name]['rotationz'], 0, 0, 1)
-#        transformFilter.SetTransform(transform)
+
+        # back to position
+        transform.Translate(self.geometrydict[name]['centerx'],
+                            self.geometrydict[name]['centery'],
+                            self.geometrydict[name]['centerz'])
+
+        # update
         transform_filter.Update()
 
         return transform_filter
@@ -303,7 +351,7 @@ class VtkWidget(QtGui.QWidget):
 
         name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
-        # create primative
+        # create primitive
         if primtype in self.primitivedict:
             source = self.primitivedict[primtype]()
         else:
@@ -333,25 +381,25 @@ class VtkWidget(QtGui.QWidget):
 
         source = self.update_primitive(name)
 
-        # convert to triangles
-        trianglefilter = vtk.vtkTriangleFilter()
-        trianglefilter.SetInputData(source.GetOutput())
-
         # Create transformer
         transform = vtk.vtkTransform()
-        transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(transform)
-        transformFilter.SetInputConnection(source.GetOutputPort())
+        transform_filter = vtk.vtkTransformPolyDataFilter()
+        transform_filter.SetTransform(transform)
+        transform_filter.SetInputConnection(source.GetOutputPort())
 
         self.geometrydict[name]['transform'] = transform
-        self.geometrydict[name]['transformFilter'] = transformFilter
+        self.geometrydict[name]['transformfilter'] = transform_filter
 
+        # update transform
         self.update_transform(name)
 
+        # convert to triangles
+        trianglefilter = vtk.vtkTriangleFilter()
+        trianglefilter.SetInputData(transform_filter.GetOutput())
 
         # Create a mapper
         mapper = vtk.vtkPolyDataMapper()
-        mapper.SetInputConnection(transformFilter.GetOutputPort())
+        mapper.SetInputConnection(trianglefilter.GetOutputPort())
 
         # Create an actor
         actor = vtk.vtkActor()
@@ -409,7 +457,7 @@ class VtkWidget(QtGui.QWidget):
                 elif 'booleanoperation' in self.geometrydict[name]:
                     geometry = self.geometrydict[name]['booleanoperation']
                 elif 'reader' in self.geometrydict[name]:
-                    geometry = self.geometrydict[name]['reader']
+                    geometry = self.geometrydict[name]['transformfilter']
 
                 # hide the sources
                 self.geometrydict[name]['actor'].VisibilityOff()
