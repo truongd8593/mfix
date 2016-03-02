@@ -35,7 +35,9 @@
 #_______________________________________________________________________
 # NUMERICAL SECTION
 
-  DISCRETIZE = 7*2
+! superbee by itself (w/o Def_Cor) eventually shows issue in the matrix
+! for one of the species equations
+  DISCRETIZE = 7*0
   MAX_NIT = 50
 
 

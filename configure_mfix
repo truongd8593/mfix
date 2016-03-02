@@ -22,6 +22,7 @@ cd ${MFIX_HOME}
 [ -f configure ] || autoreconf -i
 args=("${@/--dmp/--enable-dmp}")
 args=("${args[@]/--smp/--enable-smp}")
+args=("${args[@]/--python/--enable-python}")
 
 if [ ${MFIX_HOME} == ${RUN_DIR} ]; then
     # building in MFIX_HOME, no need to copy Makefile.usr

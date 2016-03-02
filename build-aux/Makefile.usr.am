@@ -118,6 +118,7 @@ postmfix$(EXEEXT): $(LIBMFIX)
 #                                                              #
 ################################################################
 
+if PYTHON
 pymfix_src = \
 	$(top_srcdir)/model/param_mod.f \
 	$(top_srcdir)/model/param1_mod.f \
@@ -138,6 +139,7 @@ pymfix: mfix.so
 
 mfix.so: $(LIBMFIX) $(bin_PROGRAMS)
 	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+endif
 
 ################################################################
 #                                                              #
