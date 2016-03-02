@@ -342,7 +342,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
         last_project = self.get_project_dir()
-        if os.path.exists(os.path.join(last_project,'mfix.dat')):
+        if last_project and os.path.exists(os.path.join(last_project,'mfix.dat')):
             self.open_project(last_project)
 
     def get_project_dir(self):
