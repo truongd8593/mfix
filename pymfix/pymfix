@@ -235,6 +235,7 @@ class Mfix:
 
         mod = args.get('modname')
         var = args.get('varname')
+        elem = args.get('elem', None)
         ids = args.get('ids', None)
 
         # slow things down for development
@@ -259,8 +260,15 @@ class Mfix:
                 print("GOING TO EVALUATE %s" % var)
                 try:
                     import mfix
-                    val = str(getattr(getattr(mfix, mod), var))
-                    return 200, val
+                    val = getattr(getattr(mfix, mod), var)
+                    try:
+                        # if the client is asking for an array (not recommended), give it to them
+                        val = val.tolist()
+                    except:
+                        pass
+                    if elem:
+                        val = val[int(elem)]
+                    return 200, str(val)
                 except AttributeError:
                     traceback.print_exc()
                     # TODO: use error code for REST call
@@ -377,13 +385,22 @@ def set_variable(modname, varname):
     status_code, data = Mfix.do_command("SET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-
 @FLASK_APP.route('/get/<modname>/<varname>', methods=['GET'])
 def get_variable(modname, varname):
     "retrieves a variable"
     args = dict(request.args)
     args['modname'] = modname
     args['varname'] = varname
+    status_code, data = Mfix.do_command("GET", args=args)
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+
+@FLASK_APP.route('/get/<modname>/<varname>/<elem>', methods=['GET'])
+def get_variable_array(modname, varname, elem):
+    "retrieves a variable"
+    args = dict(request.args)
+    args['modname'] = modname
+    args['varname'] = varname
+    args['elem'] = elem
     status_code, data = Mfix.do_command("GET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
