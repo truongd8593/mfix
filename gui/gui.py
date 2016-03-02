@@ -5,6 +5,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 import logging
 import os
+import shutil
 import signal
 import sys
 import subprocess
@@ -184,6 +185,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolButtonNew.setIcon(get_icon('newfolder.png'))
         self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
         self.ui.toolButtonSave.setIcon(get_icon('save.png'))
+        self.ui.toolButtonNew.pressed.connect(self.new_project)
         self.ui.toolButtonOpen.pressed.connect(self.open_project)
         self.ui.toolButtonSave.pressed.connect(self.save_project)
 
@@ -337,8 +339,9 @@ class MfixGui(QtGui.QMainWindow):
         top = self.ui.treeWidgetModelNavigation.topLevelItem(0)
         self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
-
-        self.open_project(self.get_project_dir())
+        last_project = self.get_project_dir()
+        if os.path.exists(os.path.join(last_project,'mfix.dat')):
+            self.open_project(last_project)
 
     def get_project_dir(self):
         " get the current project directory"
@@ -719,6 +722,67 @@ class MfixGui(QtGui.QMainWindow):
         # if current_selection:
         #     text = str(current_selection[-1].text(0)).lower()
 
+    def message(self,
+                title = 'Warning',
+                icon = 'warning',
+                text = 'This is a warning.',
+                buttons = ['ok'],
+                default = 'ok',
+                infoText = None,
+                detailedtext = None,
+                ):
+        '''
+        Create a message box:
+        title = 'title'
+        icon = 'warning' or 'info'
+        text = 'test to show'
+        buttons = ['ok',...] where value is 'ok', 'yes', 'no', 'cancel', 'discard'
+        default = 'ok' the default selected button
+        infotext = 'extended information text'
+        detailedtext = 'Some details'
+        '''
+        msgBox = QtGui.QMessageBox(self)
+        msgBox.setWindowTitle(title)
+
+        # Icon
+        if icon == 'warning':
+            icon = QtGui.QMessageBox.Warning
+        else:
+            icon = QtGui.QMessageBox.Information
+
+        msgBox.setIcon(icon)
+
+        # Text
+        msgBox.setText(text)
+
+        if infoText:
+            msgBox.setInformativeText(infoText)
+
+        if detailedtext:
+            msgBox.setDetailedText(detailedtext)
+
+        # buttons
+        qbuttonDict = {'ok':      QtGui.QMessageBox.Ok,
+                       'yes':     QtGui.QMessageBox.Yes,
+                       'no':      QtGui.QMessageBox.No,
+                       'cancel':  QtGui.QMessageBox.Cancel,
+                       'discard': QtGui.QMessageBox.Discard,
+                       }
+        for button in buttons:
+            msgBox.addButton(qbuttonDict[button])
+
+            if button == default:
+                msgBox.setDefaultButton(qbuttonDict[button])
+
+        ret = msgBox.exec_()
+
+        for key, value in qbuttonDict.items():
+            if value == ret:
+                result = key
+                break
+
+        return result
+
     def build_mfix(self):
         """ build mfix """
         mfix_home = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
@@ -741,7 +805,20 @@ class MfixGui(QtGui.QMainWindow):
 
     def connect_mfix(self):
         """ connect to running instance of mfix """
-        self.ui.mfix_browser.load(QUrl("http://localhost:5000"))
+        url = self.ui.mfix_url.text()
+        qurl = QUrl(url)
+        self.ui.mfix_browser.load(qurl)
+
+        current_index = 0
+        for i in range(self.ui.stackedWidgetTaskPane.count()):
+            widget = self.ui.stackedWidgetTaskPane.widget(i)
+            if 'job' == str(widget.objectName()):
+                current_index = i
+                break
+
+        self.ui.stackedWidgetTaskPane.setCurrentIndex(current_index)
+        top = self.ui.treeWidgetModelNavigation.topLevelItem(9).child(0)
+        self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
     def save_project(self):
         project_dir = self.settings.value('project_dir')
@@ -755,6 +832,25 @@ class MfixGui(QtGui.QMainWindow):
     def unsaved(self):
         project_dir = self.settings.value('project_dir')
         self.setWindowTitle('MFIX - %s *' % project_dir)
+
+    def new_project(self, project_dir=None):
+        if not project_dir:
+            project_dir = str(
+                QtGui.QFileDialog.getExistingDirectory(self, 'Create Project in Directory',
+                                                       "",
+                                                       QtGui.QFileDialog.ShowDirsOnly))
+        try:
+            shutil.copyfile('mfix.dat.template', os.path.join(project_dir, 'mfix.dat'))
+        except IOError:
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('You do not have write access to this '
+                               'directory.\n'),
+                         buttons=['ok'],
+                         default='ok',
+                        )
+            return
+        self.open_project(project_dir)
 
     def open_project(self, project_dir=None):
         """
@@ -782,46 +878,44 @@ class MfixGui(QtGui.QMainWindow):
             self.message(title='Warning',
                          icon='warning',
                          text=('You do not have write access to this '
-                               'directory.\n'
-                               'Please fix and try again.'),
+                               'directory.\n'),
                          buttons=['ok'],
                          default='ok',
                         )
             return
 
+        mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
+
+        if not os.path.exists(mfix_dat):
+            self.message(title='Warning',
+                         icon='warning',
+                         text=('mfix.dat file does not exist in this directory.\n'),
+                         buttons=['ok'],
+                         default='ok',
+            )
+            return
+
         self.settings.setValue('project_dir', project_dir)
-
-        # self.recentProjects.append(self.projectDir)
-        # self.updateRecentProjectMenu()
-
         self.setWindowTitle('MFIX - %s' % project_dir)
 
-        # Look for mfix.dat file
-        mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
-        # mfix_dat = os.path.abspath(os.path.join(project_dir, 'mfix.dat'))
+        # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
+        #check to see if file is already open
+        # if not self.codeEditor.is_file_opened(mfix_dat):
+        # self.codeEditor.load(mfix_dat)
+        # parse and update widget values
+        # self.setWidgetInit(False)
+        # self.projectManager.loadMfixDat(mfix_dat)
+        # self.setWidgetInit(True)
 
-        if os.path.exists(mfix_dat):
-            # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
-            #check to see if file is already open
-            # if not self.codeEditor.is_file_opened(mfix_dat):
-                # self.codeEditor.load(mfix_dat)
-            # parse and update widget values
-            # self.setWidgetInit(False)
-            # self.projectManager.loadMfixDat(mfix_dat)
-            # self.setWidgetInit(True)
+        src = open(mfix_dat).read()
+        self.ui.mfix_dat_source.setPlainText(src)
+        self.mode_changed('developer')
+        # self.ui.stackedWidgetMode.setCurrentIndex(2)
 
-            src = open(mfix_dat).read()
-            self.ui.mfix_dat_source.setPlainText(src)
-            self.mode_changed('developer')
-            # self.ui.stackedWidgetMode.setCurrentIndex(2)
+        self.project = Project(mfix_dat)
+        self.ui.run_name.setText(str(self.project['run_name']))
+        self.ui.description.setText(str(self.project['description']))
 
-            self.project = Project(mfix_dat)
-            self.ui.run_name.setText(str(self.project['run_name']))
-            self.ui.description.setText(str(self.project['description']))
-
-        else:
-            print("mfix.dat doesn't exist")
-            # self.newMfixDat()
 
 class MfixThread(QThread):
 
