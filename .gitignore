@@ -11,6 +11,8 @@
 *.o
 *.vtp
 *~
+*.pyc
+*.db
 .build
 .dirstamp
 Makefile
