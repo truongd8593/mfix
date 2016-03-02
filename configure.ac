@@ -62,9 +62,11 @@ no)  python=false ;;
 *) AC_MSG_ERROR([bad value ${enableval} for --enable-python]) ;;
 esac],[python=false])
 
+AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
+
 if test "$python" = "true"; then
 
-AC_CHECK_PROG(F2PY,f2py)
+AC_CHECK_PROG(F2PY,f2py,true)
 
 if test x"$F2PY" = x; then
    AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])
