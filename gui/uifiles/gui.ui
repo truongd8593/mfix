@@ -387,11 +387,11 @@ background-color: transparent;
                   <property name="text">
                    <string>Run</string>
                   </property>
-                  <item>
-                   <property name="text">
-                    <string>Job</string>
-                   </property>
-                  </item>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Interact</string>
+                  </property>
                  </item>
                  <item>
                   <property name="text">
@@ -416,7 +416,7 @@ background-color: transparent;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>9</number>
+                  <number>2</number>
                  </property>
                  <widget class="QWidget" name="geometry">
                   <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1245,17 +1245,17 @@ background-color: transparent;
                     <string>Connect to running MFIX Job</string>
                    </property>
                   </widget>
-                  <widget class="QLineEdit" name="mfix_url">
+                  <widget class="QLineEdit" name="mfix_host">
                    <property name="geometry">
                     <rect>
-                     <x>20</x>
+                     <x>140</x>
                      <y>470</y>
                      <width>351</width>
                      <height>31</height>
                     </rect>
                    </property>
                    <property name="text">
-                    <string>http://localhost:5000</string>
+                    <string>localhost</string>
                    </property>
                   </widget>
                   <widget class="QPushButton" name="build_mfix_button">
@@ -1271,44 +1271,24 @@ background-color: transparent;
                     <string>Build MFIX</string>
                    </property>
                   </widget>
-                  <widget class="QTextBrowser" name="build_output">
-                   <property name="geometry">
-                    <rect>
-                     <x>10</x>
-                     <y>50</y>
-                     <width>601</width>
-                     <height>151</height>
-                    </rect>
-                   </property>
-                  </widget>
-                  <widget class="QTextBrowser" name="run_output">
-                   <property name="geometry">
-                    <rect>
-                     <x>10</x>
-                     <y>240</y>
-                     <width>611</width>
-                     <height>181</height>
-                    </rect>
-                   </property>
-                  </widget>
                   <widget class="QPushButton" name="clear_output_button">
                    <property name="geometry">
                     <rect>
-                     <x>220</x>
-                     <y>210</y>
-                     <width>113</width>
+                     <x>20</x>
+                     <y>150</y>
+                     <width>171</width>
                      <height>32</height>
                     </rect>
                    </property>
                    <property name="text">
-                    <string>Clear Output</string>
+                    <string>Delete Output Files</string>
                    </property>
                   </widget>
                   <widget class="QCheckBox" name="smp_button">
                    <property name="geometry">
                     <rect>
-                     <x>190</x>
-                     <y>10</y>
+                     <x>20</x>
+                     <y>50</y>
                      <width>191</width>
                      <height>20</height>
                     </rect>
@@ -1320,8 +1300,8 @@ background-color: transparent;
                   <widget class="QCheckBox" name="dmp_button">
                    <property name="geometry">
                     <rect>
-                     <x>450</x>
-                     <y>10</y>
+                     <x>30</x>
+                     <y>90</y>
                      <width>161</width>
                      <height>20</height>
                     </rect>
@@ -1330,8 +1310,131 @@ background-color: transparent;
                     <string>MPI Support (DMP)</string>
                    </property>
                   </widget>
+                  <widget class="QSpinBox" name="nodes_i">
+                   <property name="geometry">
+                    <rect>
+                     <x>340</x>
+                     <y>280</y>
+                     <width>48</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                  <widget class="QSpinBox" name="nodes_j">
+                   <property name="geometry">
+                    <rect>
+                     <x>340</x>
+                     <y>320</y>
+                     <width>48</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                  <widget class="QSpinBox" name="nodes_k">
+                   <property name="geometry">
+                    <rect>
+                     <x>340</x>
+                     <y>360</y>
+                     <width>48</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_54">
+                   <property name="geometry">
+                    <rect>
+                     <x>250</x>
+                     <y>280</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>NODESI</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_55">
+                   <property name="geometry">
+                    <rect>
+                     <x>250</x>
+                     <y>320</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>NODESJ</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_56">
+                   <property name="geometry">
+                    <rect>
+                     <x>260</x>
+                     <y>360</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>NODESK</string>
+                   </property>
+                  </widget>
+                  <widget class="QSpinBox" name="mfix_port">
+                   <property name="geometry">
+                    <rect>
+                     <x>140</x>
+                     <y>510</y>
+                     <width>71</width>
+                     <height>31</height>
+                    </rect>
+                   </property>
+                   <property name="minimum">
+                    <number>1024</number>
+                   </property>
+                   <property name="maximum">
+                    <number>65536</number>
+                   </property>
+                   <property name="value">
+                    <number>5000</number>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_57">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>510</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Port</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_58">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>480</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Host</string>
+                   </property>
+                  </widget>
                  </widget>
-                 <widget class="QWidget" name="job">
+                 <widget class="QWidget" name="interact">
                   <widget class="QWebView" name="mfix_browser">
                    <property name="geometry">
                     <rect>
@@ -3540,7 +3643,7 @@ background-color: transparent;
                 <number>0</number>
                </property>
                <item>
-                <widget class="QPlainTextEdit" name="plainTextEdit">
+                <widget class="QTextBrowser" name="command_output">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                    <horstretch>0</horstretch>
@@ -3549,9 +3652,6 @@ background-color: transparent;
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
-                 </property>
-                 <property name="plainText">
-                  <string>&gt;&gt;&gt; </string>
                  </property>
                 </widget>
                </item>

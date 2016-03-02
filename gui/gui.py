@@ -10,6 +10,8 @@ import signal
 import sys
 import subprocess
 import re
+import websocket
+
 
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
@@ -216,9 +218,9 @@ class MfixGui(QtGui.QMainWindow):
 
             return handle_line
 
-        self.build_thread.line_printed.connect(make_handler(self.ui.build_output))
-        self.run_thread.line_printed.connect(make_handler(self.ui.run_output))
-        self.clear_thread.line_printed.connect(make_handler(self.ui.run_output))
+        self.build_thread.line_printed.connect(make_handler(self.ui.command_output))
+        self.run_thread.line_printed.connect(make_handler(self.ui.command_output))
+        self.clear_thread.line_printed.connect(make_handler(self.ui.command_output))
 
         self.ui.toolButtonAddGeometry.setIcon(get_icon('add.png'))
         self.ui.toolButtonRemoveGeometry.setIcon(get_icon('remove.png'))
@@ -800,24 +802,50 @@ class MfixGui(QtGui.QMainWindow):
 
     def run_mfix(self):
         """ build mfix """
-        pymfix_exe = os.path.join(self.get_project_dir(), 'pymfix')
+        nodesi = int(self.ui.nodes_i.text())
+        nodesj = int(self.ui.nodes_j.text())
+        nodesk = int(self.ui.nodes_k.text())
+        if max(nodesi, nodesj, nodesk) == 1:
+            pymfix_exe = 'pymfix'
+        else:
+            total = nodesi*nodesj*nodesk
+            pymfix_exe = 'mpirun -np %s pymfix NODESI=%s NODESJ=%s NODESK=%s' % (total, nodesi, nodesj, nodesk)
+
         self.run_thread.start_command(pymfix_exe, self.get_project_dir())
 
     def connect_mfix(self):
         """ connect to running instance of mfix """
-        url = self.ui.mfix_url.text()
+        url = "http://%s:%s" % (self.ui.mfix_host.text(), self.ui.mfix_port.text())
+        log = logging.getLogger(__name__)
+        log.debug("trying to connect to %s" % url)
         qurl = QUrl(url)
         self.ui.mfix_browser.load(qurl)
+
+        # def on_open(ws):
+        #     def run(*args):
+        #         for i in range(3):
+        #             time.sleep(1)
+        #             ws.send("Hello %d" % i)
+        #         time.sleep(1)
+        #         ws.close()
+        #         print("thread terminating...")
+        #     thread.start_new_thread(run, ())
+
+        # websocket.enableTrace(True)
+        # wsurl = "ws://%s" % self.ui.mfix_host.text()
+        # ws = websocket.WebSocketApp(wsurl)
+        # ws.on_open = on_open
+        # ws.run_forever()
 
         current_index = 0
         for i in range(self.ui.stackedWidgetTaskPane.count()):
             widget = self.ui.stackedWidgetTaskPane.widget(i)
-            if 'job' == str(widget.objectName()):
+            if 'interact' == str(widget.objectName()):
                 current_index = i
                 break
 
         self.ui.stackedWidgetTaskPane.setCurrentIndex(current_index)
-        top = self.ui.treeWidgetModelNavigation.topLevelItem(9).child(0)
+        top = self.ui.treeWidgetModelNavigation.topLevelItem(10)
         self.ui.treeWidgetModelNavigation.setCurrentItem(top)
 
     def save_project(self):
@@ -839,6 +867,8 @@ class MfixGui(QtGui.QMainWindow):
                 QtGui.QFileDialog.getExistingDirectory(self, 'Create Project in Directory',
                                                        "",
                                                        QtGui.QFileDialog.ShowDirsOnly))
+        if len(project_dir) < 1:
+            return
         try:
             shutil.copyfile('mfix.dat.template', os.path.join(project_dir, 'mfix.dat'))
         except IOError:
@@ -927,6 +957,8 @@ class MfixThread(QThread):
         self.cwd = None
 
     def start_command(self, cmd, cwd):
+        log = logging.getLogger(__name__)
+        log.debug("Running in %s : %s", cwd, cmd)
         self.cmd = cmd
         self.cwd = cwd
         self.start()
