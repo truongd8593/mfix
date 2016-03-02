@@ -788,7 +788,7 @@ class MfixGui(QtGui.QMainWindow):
         mfix_home = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         dmp = '--dmp' if self.ui.dmp_button.isChecked() else ''
         smp = '--smp' if self.ui.smp_button.isChecked() else ''
-        build_cmd = os.path.join(mfix_home, 'configure_mfix %s %s && make pymfix' % (smp, dmp))
+        build_cmd = os.path.join(mfix_home, 'configure_mfix --python %s %s && make pymfix' % (smp, dmp))
         self.build_thread.start_command(build_cmd, self.get_project_dir())
 
     def clear_output(self):
