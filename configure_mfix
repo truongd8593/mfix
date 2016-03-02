@@ -16,7 +16,7 @@ rm -f config.log
 
 # Set some of the folder paths.
 RUN_DIR=$(pwd)
-MFIX_HOME=$(dirname "$0")
+MFIX_HOME=$(cd $(dirname $0); pwd)
 
 cd "${MFIX_HOME}"
 [ -f configure ] || autoreconf -i
