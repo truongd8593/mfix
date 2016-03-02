@@ -50,28 +50,6 @@ AX_CHECK_COMPILE_FLAG([-assume byterecl], [
                         FCFLAGS="$FCFLAGS -assume byterecl"])
 
 
-
-# If pymfix support is enabled, require f2py to be in PATH and add -fPIC to
-# FCFLAGS and FFLAGS.
-
-AC_ARG_ENABLE([python],
-[  --enable-python    Build Python-linked MFIX to support interactivity ],
-[case "${enableval}" in
-yes) python=true ;;
-no)  python=false ;;
-*) AC_MSG_ERROR([bad value ${enableval} for --enable-python]) ;;
-esac],[python=false])
-
-AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
-
-if test "$python" = "true"; then
-
-AC_CHECK_PROG(F2PY,f2py,true)
-
-if test x"$F2PY" = x; then
-   AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])
-fi
-
 AC_MSG_CHECKING(whether fPIC compiler option is accepted)
 SAVED_FCFLAGS="$FCFLAGS"
 FCFLAGS="$FCFLAGS -fPIC -Werror"
@@ -89,8 +67,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
 FFLAGS="$SAVED_FFLAGS -fPIC"],
 [AC_MSG_RESULT(no)
 FFLAGS="$SAVED_FFLAGS"])
-
-fi
 
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
