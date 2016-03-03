@@ -181,12 +181,16 @@ class MfixGui(QtGui.QMainWindow):
             'difference': self.ui.toolButtonGeometryDifference,
             }
 
-        self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
+        # self.ui.toolButtonNew.setIcon(self.style().standardIcon(QtGui.QStyle.SP_FileIcon))
+        # self.ui.toolButtonOpen.setIcon(self.style().standardIcon(QtGui.QStyle.SP_DialogOpenButton))
+        # self.ui.toolButtonSave.setIcon(self.style().standardIcon(QtGui.QStyle.SP_DialogSaveButton))
 
         # --- icons ---
+
         self.ui.toolButtonNew.setIcon(get_icon('newfolder.png'))
         self.ui.toolButtonOpen.setIcon(get_icon('openfolder.png'))
         self.ui.toolButtonSave.setIcon(get_icon('save.png'))
+
         self.ui.toolButtonNew.pressed.connect(self.new_project)
         self.ui.toolButtonOpen.pressed.connect(self.open_project)
         self.ui.toolButtonSave.pressed.connect(self.save_project)
@@ -195,6 +199,12 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.run_mfix_button.pressed.connect(self.run_mfix)
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
         self.ui.clear_output_button.pressed.connect(self.clear_output)
+
+        self.ui.nodes_i.valueChanged.connect(self.set_mpi)
+        self.ui.nodes_j.valueChanged.connect(self.set_mpi)
+        self.ui.nodes_k.valueChanged.connect(self.set_mpi)
+
+        self.ui.dmp_button.pressed.connect(self.set_nodes)
 
         self.ui.run_name.textChanged.connect(self.unsaved)
         self.ui.description.textChanged.connect(self.unsaved)
@@ -785,13 +795,31 @@ class MfixGui(QtGui.QMainWindow):
 
         return result
 
-    def build_mfix(self):
+    def set_mpi(self):
+        " set MPI checkbox if more than one node selected "
+        nodesi = int(self.ui.nodes_i.text())
+        nodesj = int(self.ui.nodes_j.text())
+        nodesk = int(self.ui.nodes_k.text())
+        if max(nodesi, nodesj, nodesk) > 1:
+            self.ui.dmp_button.setChecked(True)
+
+    def set_nodes(self):
+        " set all nodes to one if MPI checkbox is unchecked "
+        if self.ui.dmp_button.isChecked():
+            self.ui.nodes_i.setValue(1)
+            self.ui.nodes_j.setValue(1)
+            self.ui.nodes_k.setValue(1)
+
+    def make_build_cmd(self):
         """ build mfix """
         mfix_home = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
         dmp = '--dmp' if self.ui.dmp_button.isChecked() else ''
         smp = '--smp' if self.ui.smp_button.isChecked() else ''
-        build_cmd = os.path.join(mfix_home, 'configure_mfix --python %s %s && make pymfix' % (smp, dmp))
-        self.build_thread.start_command(build_cmd, self.get_project_dir())
+        return os.path.join(mfix_home, 'configure_mfix --python %s %s && make -j pymfix' % (smp, dmp))
+
+    def build_mfix(self):
+        """ build mfix """
+        self.build_thread.start_command(self.make_build_cmd(), self.get_project_dir())
 
     def clear_output(self):
         """ build mfix """
@@ -802,22 +830,23 @@ class MfixGui(QtGui.QMainWindow):
 
     def run_mfix(self):
         """ build mfix """
-        nodesi = int(self.ui.nodes_i.text())
-        nodesj = int(self.ui.nodes_j.text())
-        nodesk = int(self.ui.nodes_k.text())
-        if max(nodesi, nodesj, nodesk) == 1:
-            pymfix_exe = 'pymfix'
+        if self.ui.dmp_button.isChecked():
+            pymfix_exe = os.path.join(self.get_project_dir(),'pymfix')
         else:
+            nodesi = int(self.ui.nodes_i.text())
+            nodesj = int(self.ui.nodes_j.text())
+            nodesk = int(self.ui.nodes_k.text())
             total = nodesi*nodesj*nodesk
-            pymfix_exe = 'mpirun -np %s pymfix NODESI=%s NODESJ=%s NODESK=%s' % (total, nodesi, nodesj, nodesk)
+            pymfix_exe = 'mpirun -np {} pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
 
-        self.run_thread.start_command(pymfix_exe, self.get_project_dir())
+        build_and_run_cmd = '{} && {}'.format(self.make_build_cmd(), pymfix_exe)
+        self.run_thread.start_command(build_and_run_cmd, self.get_project_dir())
 
     def connect_mfix(self):
         """ connect to running instance of mfix """
-        url = "http://%s:%s" % (self.ui.mfix_host.text(), self.ui.mfix_port.text())
+        url = "http://{}:{}".format(self.ui.mfix_host.text(), self.ui.mfix_port.text())
         log = logging.getLogger(__name__)
-        log.debug("trying to connect to %s" % url)
+        log.debug("trying to connect to {}".format(url))
         qurl = QUrl(url)
         self.ui.mfix_browser.load(qurl)
 

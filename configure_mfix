@@ -38,7 +38,7 @@ else
     # configure in BUILD_DIR
     cd "${BUILD_DIR}"
     set +e
-    if [ -f config.status ]; then
+    if [[ -f config.status && -z ${RECONFIGURE} ]]; then
         "${BUILD_DIR}/config.status"
     else
         "${MFIX_HOME}/configure" "${args[@]}"
