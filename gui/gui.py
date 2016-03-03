@@ -80,7 +80,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
 
-        self.ui.toolbutton_add_geometry.setIcon(get_icon('add.png'))
+        self.ui.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
         self.ui.toolbutton_remove_geometry.setIcon(get_icon('remove.png'))
         self.ui.toolbutton_copy_geometry.setIcon(get_icon('copy.png'))
@@ -118,7 +118,7 @@ class MfixGui(QtGui.QMainWindow):
             btn.released.connect(make_callback(self.mode_changed, mode))
 
         # navigation tree
-        self.ui.treeWidgetModelNavigation.itemSelectionChanged.connect(
+        self.ui.treewidget_model_navigation.itemSelectionChanged.connect(
             self.navigation_changed)
 
         # build/run/connect MFIX
@@ -165,8 +165,8 @@ class MfixGui(QtGui.QMainWindow):
 
         # --- default ---
         self.mode_changed('modeler')
-        top = self.ui.treeWidgetModelNavigation.topLevelItem(0)
-        self.ui.treeWidgetModelNavigation.setCurrentItem(top)
+        top = self.ui.treewidget_model_navigation.topLevelItem(0)
+        self.ui.treewidget_model_navigation.setCurrentItem(top)
 
         # autoload last project
         if self.get_project_dir():
@@ -193,7 +193,7 @@ class MfixGui(QtGui.QMainWindow):
             action.triggered.connect(
                 make_callback(self.vtkwidget.add_primitive, geo))
             self.add_geometry_menu.addAction(action)
-            
+
         # --- filter button ---
         self.add_filter_menu = QtGui.QMenu(self)
         self.ui.toolbutton_add_filter.setMenu(self.add_filter_menu)
@@ -260,7 +260,7 @@ class MfixGui(QtGui.QMainWindow):
             btn.setChecked(mode == key)
 
     def navigation_changed(self):
-        current_selection = self.ui.treeWidgetModelNavigation.selectedItems()
+        current_selection = self.ui.treewidget_model_navigation.selectedItems()
 
         if current_selection:
 

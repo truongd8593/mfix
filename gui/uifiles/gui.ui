@@ -7,19 +7,36 @@
     <x>0</x>
     <y>0</y>
     <width>972</width>
-    <height>687</height>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
+  <widget class="QWidget" name="widget_main">
+   <property name="styleSheet">
+    <string notr="true">QWidget#widget_main{
+	background-color: #E0E0E0;
+}
+QFrame#frame_mode_bar{
+	background-color: #BDBDBD;
+}
+QTreeWidget#treewidget_model_navigation{
+	background-color: #EEEEEE;
+}
+QStackedWidget#stackedwidget_mode{
+	background-color: #FAFAFA;
+}</string>
+   </property>
    <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <property name="margin">
      <number>0</number>
     </property>
     <item>
-     <widget class="QFrame" name="frame">
+     <widget class="QFrame" name="frame_content">
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
       </property>
@@ -159,7 +176,7 @@ background-color:white;
                 <number>0</number>
                </property>
                <item>
-                <widget class="QTreeWidget" name="treeWidgetModelNavigation">
+                <widget class="QTreeWidget" name="treewidget_model_navigation">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="Maximum" vsizetype="Expanding">
                    <horstretch>0</horstretch>
@@ -179,10 +196,13 @@ background-color:white;
                   </size>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true">QTreeView{
-background-color: transparent;
+                  <string notr="true">QTreeView::item:hover {
+    background:#BBDEFB
 }
-</string>
+
+QTreeView::item:selected {
+   background: #64B5F6;
+}</string>
                  </property>
                  <property name="frameShape">
                   <enum>QFrame::NoFrame</enum>
@@ -380,7 +400,7 @@ background-color: transparent;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>6</number>
                  </property>
                  <widget class="QWidget" name="geometry">
                   <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -423,6 +443,9 @@ background-color: transparent;
                       </item>
                       <item>
                        <widget class="QToolButton" name="toolbutton_add_filter">
+                        <property name="enabled">
+                         <bool>false</bool>
+                        </property>
                         <property name="toolTip">
                          <string>Add Filter</string>
                         </property>
@@ -603,8 +626,9 @@ background-color: transparent;
                       <item>
                        <widget class="QStackedWidget" name="stackedWidgetGeometryDetails">
                         <property name="currentIndex">
-                         <number>6</number>
+                         <number>12</number>
                         </property>
+                        <widget class="QWidget" name="none"/>
                         <widget class="QWidget" name="sphere">
                          <layout class="QGridLayout" name="gridLayout_3">
                           <property name="margin">
@@ -1215,8 +1239,45 @@ background-color: transparent;
                           </item>
                          </layout>
                         </widget>
+                        <widget class="QWidget" name="clean"/>
+                        <widget class="QWidget" name="fill_holes">
+                         <layout class="QGridLayout" name="gridLayout_24">
+                          <property name="margin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>5</number>
+                          </property>
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_58">
+                            <property name="text">
+                             <string>maximum hole size</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QLineEdit" name="lineEdit_35"/>
+                          </item>
+                          <item row="1" column="1">
+                           <spacer name="verticalSpacer_21">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="triangle"/>
+                        <widget class="QWidget" name="decimate"/>
+                        <widget class="QWidget" name="quadric_decimation"/>
+                        <widget class="QWidget" name="quadric_clustering"/>
                         <widget class="QWidget" name="boolean"/>
-                        <widget class="QWidget" name="none"/>
                        </widget>
                       </item>
                      </layout>
@@ -3354,7 +3415,7 @@ background-color: transparent;
      </widget>
     </item>
     <item>
-     <widget class="QFrame" name="frame_2">
+     <widget class="QFrame" name="frame_mode_bar">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
         <horstretch>0</horstretch>
@@ -3366,6 +3427,27 @@ background-color: transparent;
         <width>0</width>
         <height>30</height>
        </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton:hover {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #1974f4;
+    background-color: transparent;
+	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
+}
+
+QPushButton:checked {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+</string>
       </property>
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
@@ -3393,27 +3475,6 @@ background-color: transparent;
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-QPushButton:pressed {
-    color: #1974f4;
-    background-color: transparent;
-	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
-}
-
-QPushButton:checked {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-</string>
-         </property>
          <property name="text">
           <string>Modeler</string>
          </property>
@@ -3435,27 +3496,6 @@ QPushButton:checked {
            <pointsize>12</pointsize>
           </font>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-QPushButton:pressed {
-    color: #1974f4;
-    background-color: transparent;
-	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
-}
-
-QPushButton:checked {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-</string>
-         </property>
          <property name="text">
           <string>Workflow</string>
          </property>
@@ -3476,27 +3516,6 @@ QPushButton:checked {
           <font>
            <pointsize>12</pointsize>
           </font>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:hover {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-QPushButton:pressed {
-    color: #1974f4;
-    background-color: transparent;
-	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
-}
-
-QPushButton:checked {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-</string>
          </property>
          <property name="text">
           <string>Developer</string>
