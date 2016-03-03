@@ -262,7 +262,7 @@ class Mfix:
                     import mfix
                     val = getattr(getattr(mfix, mod), var)
                     try:
-                        # if the client is asking for an array (not recommended), give it to them
+                        # give the full array if the client is asking for an array (not recommended)
                         val = val.tolist()
                     except:
                         pass

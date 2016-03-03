@@ -33,6 +33,13 @@ echo "# This file is generated from running
 #  $FILES
 "
 
+PRE_INCLUDE=
+if [ "$(basename ${FILES})" == "functions_mod.f" ]; then
+    PRE_INCLUDE=${SRCDIR}/model/include/functions.inc;
+elif [ "$(basename ${FILES})" == "fun_avg_mod.f" ]; then
+    PRE_INCLUDE=${SRCDIR}/model/include/fun_avg.inc;
+fi
+
 for f in ${FILES} ${UNIQSTR} ; do
 #  echo "#f: ${f}"
   if test "${f}" = "${UNIQSTR}" ; then

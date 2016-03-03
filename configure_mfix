@@ -31,14 +31,18 @@ else
     # Create BUILD_DIR
     args_dir_name=$( echo "${args[@]}" | tr -c '[[:alnum:]].-' '_' )
     trunc_args_dir_name=$( echo "${args_dir_name}" | cut -c 1-250 )
-    BUILD_DIR="${MFIX_HOME}/build/${args_dir_name}"
+    BUILD_DIR="${MFIX_HOME}/build/${trunc_args_dir_name}"
     [ "${args_dir_name}" != "${trunc_args_dir_name}" ] && rm -rf "${BUILD_DIR}"
     mkdir -p "${BUILD_DIR}"
 
     # configure in BUILD_DIR
     cd "${BUILD_DIR}"
     set +e
-    "${MFIX_HOME}/configure" "${args[@]}"
+    if [ -f config.status ]; then
+        "${BUILD_DIR}/config.status"
+    else
+        "${MFIX_HOME}/configure" "${args[@]}"
+    fi
     exit_code=$?
     set -e
     if [[ $exit_code != 0 ]]; then
