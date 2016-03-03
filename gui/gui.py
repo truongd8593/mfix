@@ -74,11 +74,18 @@ class MfixGui(QtGui.QMainWindow):
             'intersection':  self.ui.toolbutton_geometry_intersect,
             'difference': self.ui.toolbutton_geometry_difference,
             }
+        self.animation_speed = 500
+        self.animating = False
+        self.stack_animation = None
 
         # --- icons ---
         self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
+        
+        self.ui.toolbutton_compile.setIcon(get_icon('build.png'))
+        self.ui.toolbutton_run.setIcon(get_icon('play.png'))
+        self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
 
         self.ui.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -273,8 +280,95 @@ class MfixGui(QtGui.QMainWindow):
                 if text == str(widget.objectName()):
                     current_index = i
                     break
+                
+            self.animate_stacked_widget(self.ui.stackedWidgetTaskPane,
+                                        self.ui.stackedWidgetTaskPane.currentIndex(),
+                                        current_index)
 
-            self.ui.stackedWidgetTaskPane.setCurrentIndex(current_index)
+    def animate_stacked_widget(self, stackedwidget, from_, to,
+                               direction='vertical'):
+        """ animate changing of qstackedwidget """
+
+        # check to see if already animating
+        if self.animating and self.stack_animation is not None:
+            self.stack_animation.stop()
+
+        from_widget = stackedwidget.widget(from_)
+        to_widget = stackedwidget.widget(to)
+
+        # get from geometry
+        xpos = from_widget.frameGeometry().x()
+        ypos = from_widget.frameGeometry().y()
+        width = from_widget.frameGeometry().width()
+        height = from_widget.frameGeometry().height()
+
+        # set the geometry of the next widget
+        to_widget.setGeometry(0, 0, width, height)
+
+        # offset
+        # bottom to top
+        if direction == 'vertical' and from_ < to:
+            offsetx = 0
+            offsety = height
+        # top to bottom
+        elif direction == 'vertical' and from_ > to:
+            offsetx = 0
+            offsety = -height
+        else:
+            return
+
+        # move to widget and show
+        to_widget.move(xpos + offsetx,
+                       ypos + offsety)
+        to_widget.show()
+        to_widget.raise_()
+
+        # animate
+        # from widget
+        animnow = QtCore.QPropertyAnimation(from_widget, "pos")
+        animnow.setDuration(self.animation_speed)
+        animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        animnow.setStartValue(
+            QtCore.QPoint(xpos,
+                          ypos))
+        animnow.setEndValue(
+            QtCore.QPoint(xpos - offsetx,
+                          ypos - offsety))
+
+        # to widget
+        animnext = QtCore.QPropertyAnimation(to_widget, "pos")
+        animnext.setDuration(self.animation_speed)
+        animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+        animnext.setStartValue(
+            QtCore.QPoint(to_widget.x(),
+                          to_widget.y()))
+        animnext.setEndValue(
+            QtCore.QPoint(xpos,
+                          ypos))
+
+        # animateion group
+        self.stack_animation = QtCore.QParallelAnimationGroup()
+        self.stack_animation.addAnimation(animnow)
+        self.stack_animation.addAnimation(animnext)
+        self.stack_animation.finished.connect(
+            make_callback(self.animate_stacked_widget_finished,
+                          (stackedwidget, from_, to))
+            )
+        self.stack_animation.stateChanged.connect(
+            make_callback(self.animate_stacked_widget_finished,
+                          (stackedwidget, from_, to))
+            )
+
+        self.animating = True
+        self.stack_animation.start()
+
+    def animate_stacked_widget_finished(self, widget):
+        """ cleanup after animation """
+        widget[0].setCurrentIndex(widget[2])
+        from_widget = widget[0].widget(widget[1])
+        from_widget.hide()
+        from_widget.move(0, 0)
+        self.animating = False
 
     def build_mfix(self):
         """ build mfix """
