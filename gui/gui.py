@@ -86,6 +86,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolbutton_compile.setIcon(get_icon('build.png'))
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
         self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
+        self.ui.toolbutton_interact.setIcon(get_icon('flash.png'))
 
         self.ui.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
@@ -302,8 +303,7 @@ class MfixGui(QtGui.QMainWindow):
         width = from_widget.frameGeometry().width()
         height = from_widget.frameGeometry().height()
 
-        # set the geometry of the next widget
-        to_widget.setGeometry(0, 0, width, height)
+        
 
         # offset
         # bottom to top
@@ -314,13 +314,22 @@ class MfixGui(QtGui.QMainWindow):
         elif direction == 'vertical' and from_ > to:
             offsetx = 0
             offsety = -height
+        elif direction == 'horizontal' and from_ < to:
+            offsetx = width
+            offsety = 0
+        elif direction == 'horizontal' and from_ > to:
+            offsetx = -width
+            offsety = 0
         else:
             return
 
         # move to widget and show
-        to_widget.move(xpos + offsetx,
-                       ypos + offsety)
+        # set the geometry of the next widget
+        to_widget.setGeometry(0 + offsetx, 0 + offsety, width, height)
+
+                
         to_widget.show()
+        to_widget.lower()
         to_widget.raise_()
 
         # animate
@@ -329,24 +338,24 @@ class MfixGui(QtGui.QMainWindow):
         animnow.setDuration(self.animation_speed)
         animnow.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnow.setStartValue(
-            QtCore.QPoint(xpos,
-                          ypos))
+            QtCore.QPoint(0,
+                          0))
         animnow.setEndValue(
-            QtCore.QPoint(xpos - offsetx,
-                          ypos - offsety))
+            QtCore.QPoint(0 - offsetx,
+                          0 - offsety))
 
         # to widget
         animnext = QtCore.QPropertyAnimation(to_widget, "pos")
         animnext.setDuration(self.animation_speed)
         animnext.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
         animnext.setStartValue(
-            QtCore.QPoint(to_widget.x(),
-                          to_widget.y()))
+            QtCore.QPoint(0 + offsetx,
+                          0 + offsety))
         animnext.setEndValue(
-            QtCore.QPoint(xpos,
-                          ypos))
+            QtCore.QPoint(0,
+                          0))
 
-        # animateion group
+        # animation group
         self.stack_animation = QtCore.QParallelAnimationGroup()
         self.stack_animation.addAnimation(animnow)
         self.stack_animation.addAnimation(animnext)

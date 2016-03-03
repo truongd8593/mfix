@@ -181,15 +181,18 @@ class VtkWidget(QtGui.QWidget):
 
             self.parent.ui.groupBoxGeometryParameters.setTitle(text)
 
-            self.parent.ui.stackedWidgetGeometryDetails.setCurrentIndex(
-                current_index)
         else:
-            self.parent.ui.stackedWidgetGeometryDetails.setCurrentIndex(
-                self.parent.ui.stackedWidgetGeometryDetails.count()-1
-                )
+            current_index = self.parent.ui.stackedWidgetGeometryDetails.count()-1
 
             self.parent.ui.groupBoxGeometryParameters.setTitle('Parameters')
             self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
+
+        self.parent.animate_stacked_widget(
+            self.parent.ui.stackedWidgetGeometryDetails,
+            self.parent.ui.stackedWidgetGeometryDetails.currentIndex(),
+            current_index,
+            'horizontal',
+            )
 
     def geometry_clicked(self, item):
 

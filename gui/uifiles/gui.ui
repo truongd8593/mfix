@@ -103,7 +103,10 @@ QTreeView::item:selected {
               <property name="bottomMargin">
                <number>5</number>
               </property>
-              <property name="spacing">
+              <property name="horizontalSpacing">
+               <number>5</number>
+              </property>
+              <property name="verticalSpacing">
                <number>0</number>
               </property>
               <item row="0" column="0">
@@ -288,6 +291,32 @@ QTreeView::item:selected {
                 </property>
                 <property name="alignment">
                  <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="7">
+               <widget class="QLabel" name="label_65">
+                <property name="text">
+                 <string>Interact</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="7">
+               <widget class="QToolButton" name="toolbutton_interact">
+                <property name="text">
+                 <string>interact</string>
+                </property>
+                <property name="iconSize">
+                 <size>
+                  <width>24</width>
+                  <height>24</height>
+                 </size>
+                </property>
+                <property name="autoRaise">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>
