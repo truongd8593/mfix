@@ -394,6 +394,16 @@ def set_variable(modname, varname):
     status_code, data = Mfix.do_command("SET", args=args)
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
+@FLASK_APP.route('/set/<modname>/<varname>/<elem>', methods=['POST'])
+def set_variable_array(modname, varname, elem):
+    "sets a variable"
+    args = dict(request.form)
+    args['modname'] = modname
+    args['varname'] = varname
+    args['elem'] = elem
+    status_code, data = Mfix.do_command("SET", args=args)
+    return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
+
 @FLASK_APP.route('/get/<modname>/<varname>', methods=['GET'])
 def get_variable(modname, varname):
     "retrieves a variable"
