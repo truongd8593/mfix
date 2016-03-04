@@ -13,7 +13,6 @@ import time
 import traceback
 
 from flask import Flask, render_template, request, redirect, url_for
-from flask_socketio import SocketIO, emit
 
 sys.path.append(os.getcwd())
 
@@ -31,7 +30,8 @@ PYMFIX_DIR = os.path.dirname(os.path.realpath(__file__))
 FLASK_APP = Flask(__name__, static_folder=PYMFIX_DIR+'/static',
                   template_folder=PYMFIX_DIR+'/templates')
 FLASK_APP.config['SECRET_KEY'] = 'secret!'
-SOCKETIO = SocketIO(FLASK_APP)
+
+residuals = None
 
 # import logging
 # log = logging.getLogger('werkzeug')
@@ -48,7 +48,7 @@ def main():
     # start the Flask server on rank 0
     if COMPAR.mype == 0:
         try:
-            SOCKETIO.run(FLASK_APP, host='0.0.0.0', port=port, debug=True, use_reloader=False)
+            FLASK_APP.run(host='0.0.0.0', port=port, debug=True, use_reloader=False)
         except KeyboardInterrupt:
             traceback.print_exc()
             # If we get here, the user hit Ctrl-C to shutdown the server,
@@ -125,9 +125,6 @@ class Mfix:
 
         STEP.time_step_end()
 
-        SOCKETIO.emit('residual_msg',
-                      {'data': 'finished step: %s' % RUN.nstep},
-                      namespace='/residuals')
 
     @classmethod
     def emit_residuals(cls):
@@ -145,10 +142,8 @@ class Mfix:
                 output['residuals'].append((str(RESIDUAL.get_resid_string(res_id)),
                                             str(RESIDUAL.get_resid(res_id))))
 
-        outstr = json.dumps(output)
-        # print('output = ', outstr)
-
-        SOCKETIO.emit('residual_msg', {'data': outstr}, namespace='/residuals')
+        global residuals
+        residuals = json.dumps(output)
 
 
     @classmethod
@@ -475,20 +470,12 @@ def stop():
     status_code, data = Mfix.do_command("HALT")
     return data, status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
-@SOCKETIO.on('my event', namespace='/residuals')
-def test_message(message):
-    "send message to web socket"
-    emit('residual_msg', {'data': message['data']})
-
-@SOCKETIO.on('connect', namespace='/residuals')
-def test_connect():
-    "connect to web socket"
-    emit('residual_msg', {'data': 'Connected'})
-
-@SOCKETIO.on('disconnect', namespace='/residuals')
-def test_disconnect():
-    "disconnect from web socket"
-    print('Client disconnected')
+@FLASK_APP.route('/residuals', methods=['GET'])
+def get_residuals():
+    "returns current residuals"
+    status_code = 200
+    global residuals
+    return 'residuals are {}'.format(residuals), status_code, {'Content-Type': 'text/plain; charset=utf-8'}
 
 def parse_command_line_arguments():
     "handle command line arguments"

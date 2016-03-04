@@ -3630,14 +3630,20 @@ background-color: transparent;
                  <string>residuals:</string>
                 </property>
                </widget>
-               <widget class="QTextBrowser" name="textBrowser">
+               <widget class="QTextBrowser" name="residuals">
                 <property name="geometry">
                  <rect>
                   <x>130</x>
                   <y>10</y>
                   <width>256</width>
-                  <height>41</height>
+                  <height>400</height>
                  </rect>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>400</height>
+                 </size>
                 </property>
                 <property name="html">
                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;

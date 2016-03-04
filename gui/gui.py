@@ -10,8 +10,8 @@ import signal
 import sys
 import subprocess
 import re
-import websocket
-
+import time
+import urllib2
 
 from qtpy import QtCore, QtGui
 from qtpy.QtCore import QObject, QThread, pyqtSignal, QUrl, QTimer, QSettings
@@ -842,6 +842,9 @@ class MfixGui(QtGui.QMainWindow):
         build_and_run_cmd = '{} && {}'.format(self.make_build_cmd(), pymfix_exe)
         self.run_thread.start_command(build_and_run_cmd, self.get_project_dir())
 
+    def update_residuals(self):
+        self.ui.residuals.setText(self.updater.residuals)
+
     def connect_mfix(self):
         """ connect to running instance of mfix """
         url = "http://{}:{}".format(self.ui.mfix_host.text(), self.ui.mfix_port.text())
@@ -850,21 +853,9 @@ class MfixGui(QtGui.QMainWindow):
         qurl = QUrl(url)
         self.ui.mfix_browser.load(qurl)
 
-        # def on_open(ws):
-        #     def run(*args):
-        #         for i in range(3):
-        #             time.sleep(1)
-        #             ws.send("Hello %d" % i)
-        #         time.sleep(1)
-        #         ws.close()
-        #         print("thread terminating...")
-        #     thread.start_new_thread(run, ())
-
-        # websocket.enableTrace(True)
-        # wsurl = "ws://%s" % self.ui.mfix_host.text()
-        # ws = websocket.WebSocketApp(wsurl)
-        # ws.on_open = on_open
-        # ws.run_forever()
+        self.updater = UpdateResidualsThread()
+        self.updater.sig.connect(self.update_residuals)
+        self.updater.start()
 
         current_index = 0
         for i in range(self.ui.stackedWidgetTaskPane.count()):
@@ -1008,6 +999,16 @@ class BuildThread(MfixThread):
 
 class ClearThread(MfixThread):
     line_printed = pyqtSignal(str)
+
+class UpdateResidualsThread(QThread):
+
+    sig = QtCore.pyqtSignal(object)
+
+    def run(self):
+        while True:
+            self.residuals = urllib2.urlopen('http://localhost:5000/residuals').read()
+            time.sleep(1)
+            self.sig.emit('update')
 
 if __name__ == '__main__':
     qapp = QtGui.QApplication(sys.argv)
