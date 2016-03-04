@@ -267,7 +267,8 @@ class Mfix:
                     except:
                         pass
                     if elem:
-                        val = val[int(elem)]
+                        elem = int(elem)
+                        val = val[elem]
                     return 200, str(val)
                 except AttributeError:
                     traceback.print_exc()
@@ -281,6 +282,7 @@ class Mfix:
 
         mod = args.get('modname')
         var = args.get('varname')
+        elem = args.get('elem', None)
         val = args.get('varvalue', None)
         ids = args.get('ids', None)
 
@@ -306,7 +308,14 @@ class Mfix:
                 print("GOING TO SET %s.%s = %s" % (mod, var, val))
                 try:
                     import mfix
-                    setattr(getattr(mfix, mod), var, val)
+                    mfix_mod = getattr(mfix, mod)
+                    if elem:
+                        elem = int(elem)
+                        listvar = getattr(mfix_mod, var)
+                        val = float(val[0])
+                        listvar[elem] = val
+                    else:
+                        setattr(mfix_mod, var, val)
                     return 200, 'ok, I set %s to %s\n' % (var, val)
                 except AttributeError:
                     # TODO: better error code REST response
