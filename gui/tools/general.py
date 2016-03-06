@@ -71,11 +71,11 @@ def get_image_path(name):
     return path
 
 
-def make_callback(func, param):
+def make_callback(func, *args, **kwargs):
     '''
     Helper function to make sure lambda functions are cached and not lost.
     '''
-    return lambda: func(param)
+    return lambda: func(*args, **kwargs)
 
 
 def get_icon(name, default=None, resample=False):

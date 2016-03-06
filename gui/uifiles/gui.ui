@@ -123,18 +123,11 @@ QTreeView::item:selected {
                   <height>24</height>
                  </size>
                 </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
+                </property>
                 <property name="autoRaise">
                  <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="4">
-               <widget class="QLabel" name="label_63">
-                <property name="text">
-                 <string>Compile</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
@@ -165,6 +158,9 @@ QTreeView::item:selected {
                   <height>24</height>
                  </size>
                 </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
+                </property>
                 <property name="autoRaise">
                  <bool>true</bool>
                 </property>
@@ -173,13 +169,16 @@ QTreeView::item:selected {
               <item row="0" column="4">
                <widget class="QToolButton" name="toolbutton_compile">
                 <property name="text">
-                 <string>compile</string>
+                 <string>Compile</string>
                 </property>
                 <property name="iconSize">
                  <size>
                   <width>24</width>
                   <height>24</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
                 </property>
                 <property name="autoRaise">
                  <bool>true</bool>
@@ -189,13 +188,16 @@ QTreeView::item:selected {
               <item row="0" column="5">
                <widget class="QToolButton" name="toolbutton_run">
                 <property name="text">
-                 <string>run</string>
+                 <string>Run</string>
                 </property>
                 <property name="iconSize">
                  <size>
                   <width>24</width>
                   <height>24</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
                 </property>
                 <property name="autoRaise">
                  <bool>true</bool>
@@ -216,18 +218,11 @@ QTreeView::item:selected {
                   <height>24</height>
                  </size>
                 </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
+                </property>
                 <property name="autoRaise">
                  <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_59">
-                <property name="text">
-                 <string>New</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
@@ -238,82 +233,38 @@ QTreeView::item:selected {
                 </property>
                </widget>
               </item>
-              <item row="1" column="2">
-               <widget class="QLabel" name="label_61">
-                <property name="text">
-                 <string>Save</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLabel" name="label_60">
-                <property name="text">
-                 <string>Open</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="5">
-               <widget class="QLabel" name="label_62">
-                <property name="text">
-                 <string>Run</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="6">
                <widget class="QToolButton" name="toolbutton_restart">
                 <property name="text">
-                 <string>restart</string>
+                 <string>Restart</string>
                 </property>
                 <property name="iconSize">
                  <size>
                   <width>24</width>
                   <height>24</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
                 </property>
                 <property name="autoRaise">
                  <bool>true</bool>
                 </property>
                </widget>
               </item>
-              <item row="1" column="6">
-               <widget class="QLabel" name="label_64">
-                <property name="text">
-                 <string>Restart</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="7">
-               <widget class="QLabel" name="label_65">
-                <property name="text">
-                 <string>Interact</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignCenter</set>
-                </property>
-               </widget>
-              </item>
               <item row="0" column="7">
                <widget class="QToolButton" name="toolbutton_interact">
                 <property name="text">
-                 <string>interact</string>
+                 <string>Interact</string>
                 </property>
                 <property name="iconSize">
                  <size>
                   <width>24</width>
                   <height>24</height>
                  </size>
+                </property>
+                <property name="toolButtonStyle">
+                 <enum>Qt::ToolButtonTextUnderIcon</enum>
                 </property>
                 <property name="autoRaise">
                  <bool>true</bool>
@@ -566,7 +517,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>9</number>
+                  <number>1</number>
                  </property>
                  <widget class="QWidget" name="general">
                   <layout class="QGridLayout" name="gridLayout_23">
@@ -845,7 +796,7 @@ background-color: transparent;
                       <item>
                        <widget class="QStackedWidget" name="stackedWidgetGeometryDetails">
                         <property name="currentIndex">
-                         <number>12</number>
+                         <number>0</number>
                         </property>
                         <widget class="QWidget" name="none"/>
                         <widget class="QWidget" name="sphere">
@@ -857,13 +808,13 @@ background-color: transparent;
                            <number>5</number>
                           </property>
                           <item row="3" column="1">
-                           <widget class="QLineEdit" name="lineEditSphereThetaResolution"/>
+                           <widget class="QLineEdit" name="lineedit_sphere_theta_resolution"/>
                           </item>
                           <item row="4" column="1">
-                           <widget class="QLineEdit" name="lineEditSpherePhiResolution"/>
+                           <widget class="QLineEdit" name="lineedit_sphere_phi_resolution"/>
                           </item>
                           <item row="2" column="1">
-                           <widget class="QLineEdit" name="lineEditSphereRadius"/>
+                           <widget class="QLineEdit" name="lineedit_sphere_radius"/>
                           </item>
                           <item row="0" column="0">
                            <widget class="QLabel" name="label_9">
@@ -922,13 +873,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereCenterX"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_center_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereCenterY"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_center_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereCenterZ"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_center_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -959,13 +910,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereRotationX"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_rotation_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereRotationY"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_rotation_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditSphereRotationZ"/>
+                              <widget class="QLineEdit" name="lineedit_sphere_rotation_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -990,13 +941,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxLengthX"/>
+                              <widget class="QLineEdit" name="lineedit_box_length_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditlineEditBoxLengthY"/>
+                              <widget class="QLineEdit" name="lineedit_box_length_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditlineEditBoxLengthZ"/>
+                              <widget class="QLineEdit" name="lineedit_box_length_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1044,13 +995,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxCenterX"/>
+                              <widget class="QLineEdit" name="lineedit_box_center_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxCenterY"/>
+                              <widget class="QLineEdit" name="lineedit_box_center_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxCenterZ"/>
+                              <widget class="QLineEdit" name="lineedit_box_center_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1078,13 +1029,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxRotationX"/>
+                              <widget class="QLineEdit" name="lineedit_box_rotation_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxRotationY"/>
+                              <widget class="QLineEdit" name="lineedit_box_rotation_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditBoxRotationZ"/>
+                              <widget class="QLineEdit" name="lineedit_box_rotation_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1107,7 +1058,7 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="3" column="1">
-                           <widget class="QLineEdit" name="lineEditConeHeight"/>
+                           <widget class="QLineEdit" name="lineedit_cone_height"/>
                           </item>
                           <item row="2" column="0">
                            <widget class="QLabel" name="label_21">
@@ -1117,7 +1068,7 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="4" column="1">
-                           <widget class="QLineEdit" name="lineEditConeRadius"/>
+                           <widget class="QLineEdit" name="lineedit_cone_radius"/>
                           </item>
                           <item row="3" column="0">
                            <widget class="QLabel" name="label_20">
@@ -1140,7 +1091,7 @@ background-color: transparent;
                            </spacer>
                           </item>
                           <item row="5" column="1">
-                           <widget class="QLineEdit" name="lineEditConeResolution"/>
+                           <widget class="QLineEdit" name="linerdit_cone_resolution"/>
                           </item>
                           <item row="5" column="0">
                            <widget class="QLabel" name="label_19">
@@ -1172,13 +1123,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeCenterX"/>
+                              <widget class="QLineEdit" name="lineedit_cone_center_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeCenterY"/>
+                              <widget class="QLineEdit" name="lineedit_cone_center_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeCenterZ"/>
+                              <widget class="QLineEdit" name="lineedit_cone_center_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1199,13 +1150,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeDirectionX"/>
+                              <widget class="QLineEdit" name="lineedit_cone_direction_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeDirectionY"/>
+                              <widget class="QLineEdit" name="lineedit_cone_direction_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeDirectionZ"/>
+                              <widget class="QLineEdit" name="lineedit_cone_direction_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1233,13 +1184,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeRotationX"/>
+                              <widget class="QLineEdit" name="lineedit_cone_rotation_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeRotationY"/>
+                              <widget class="QLineEdit" name="lineedit_cone_rotation_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditConeRotationZ"/>
+                              <widget class="QLineEdit" name="lineedit_cone_rotation_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1255,7 +1206,7 @@ background-color: transparent;
                            <number>5</number>
                           </property>
                           <item row="2" column="1">
-                           <widget class="QLineEdit" name="lineEditCylinderHeight"/>
+                           <widget class="QLineEdit" name="lineedit_cylinder_height"/>
                           </item>
                           <item row="3" column="0">
                            <widget class="QLabel" name="label_15">
@@ -1272,7 +1223,7 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="3" column="1">
-                           <widget class="QLineEdit" name="lineEditCylinderRadius"/>
+                           <widget class="QLineEdit" name="lineedit_cylinder_radius"/>
                           </item>
                           <item row="2" column="0">
                            <widget class="QLabel" name="label_14">
@@ -1289,7 +1240,7 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="4" column="1">
-                           <widget class="QLineEdit" name="lineEditCylinderResolution"/>
+                           <widget class="QLineEdit" name="lineedit_cylinder_resolution"/>
                           </item>
                           <item row="5" column="1">
                            <spacer name="verticalSpacer_5">
@@ -1320,13 +1271,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderCenterX"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_center_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderCenterY"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_center_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderCenterZ"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_center_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1354,13 +1305,13 @@ background-color: transparent;
                               <number>0</number>
                              </property>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderRotationX"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_rotation_x"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderRotationY"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_rotation_y"/>
                              </item>
                              <item>
-                              <widget class="QLineEdit" name="lineEditCylinderRotationZ"/>
+                              <widget class="QLineEdit" name="lineedit_cylinder_rotation_z"/>
                              </item>
                             </layout>
                            </widget>
@@ -1376,10 +1327,10 @@ background-color: transparent;
                            <number>5</number>
                           </property>
                           <item row="1" column="2">
-                           <widget class="QLineEdit" name="lineEditStlCenterY"/>
+                           <widget class="QLineEdit" name="lineedit_stl_center_y"/>
                           </item>
                           <item row="1" column="3">
-                           <widget class="QLineEdit" name="lineEditStlCenterZ"/>
+                           <widget class="QLineEdit" name="lineedit_stl_center_z"/>
                           </item>
                           <item row="0" column="0">
                            <widget class="QLabel" name="label_24">
@@ -1389,10 +1340,10 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="1" column="1">
-                           <widget class="QLineEdit" name="lineEditStlCenterX"/>
+                           <widget class="QLineEdit" name="lineedit_stl_center_x"/>
                           </item>
                           <item row="0" column="1">
-                           <widget class="QComboBox" name="comboBox">
+                           <widget class="QComboBox" name="combobox_stl_units">
                             <item>
                              <property name="text">
                               <string>mm</string>
@@ -1448,17 +1399,54 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="2" column="1">
-                           <widget class="QLineEdit" name="lineEditStlRotationX"/>
+                           <widget class="QLineEdit" name="lineedit_stl_rotation_x"/>
                           </item>
                           <item row="2" column="2">
-                           <widget class="QLineEdit" name="lineEditStlRotationY"/>
+                           <widget class="QLineEdit" name="lineedit_stl_rotation_y"/>
                           </item>
                           <item row="2" column="3">
-                           <widget class="QLineEdit" name="lineEditStlRotationZ"/>
+                           <widget class="QLineEdit" name="lineedit_stl_rotation_z"/>
                           </item>
                          </layout>
                         </widget>
-                        <widget class="QWidget" name="clean"/>
+                        <widget class="QWidget" name="clean">
+                         <layout class="QGridLayout" name="gridLayout_26">
+                          <item row="0" column="0">
+                           <widget class="QCheckBox" name="checkbox_clean_lines_to_points">
+                            <property name="text">
+                             <string>Convert lines to points.</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QCheckBox" name="checkbox_clean_polys_to_lines">
+                            <property name="text">
+                             <string>Convert polys to lines.</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <widget class="QCheckBox" name="checkbox_clean_strips_to_polys">
+                            <property name="text">
+                             <string>Convert strips to polys.</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="3" column="0">
+                           <spacer name="verticalSpacer_22">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>196</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
                         <widget class="QWidget" name="fill_holes">
                          <layout class="QGridLayout" name="gridLayout_24">
                           <property name="margin">
@@ -1475,7 +1463,7 @@ background-color: transparent;
                            </widget>
                           </item>
                           <item row="0" column="1">
-                           <widget class="QLineEdit" name="lineEdit_35"/>
+                           <widget class="QLineEdit" name="lineedit_hole_fill_maximum_hole_size"/>
                           </item>
                           <item row="1" column="1">
                            <spacer name="verticalSpacer_21">
@@ -1492,11 +1480,182 @@ background-color: transparent;
                           </item>
                          </layout>
                         </widget>
-                        <widget class="QWidget" name="triangle"/>
-                        <widget class="QWidget" name="decimate"/>
-                        <widget class="QWidget" name="quadric_decimation"/>
-                        <widget class="QWidget" name="quadric_clustering"/>
-                        <widget class="QWidget" name="boolean"/>
+                        <widget class="QWidget" name="triangle">
+                         <layout class="QGridLayout" name="gridLayout_27">
+                          <item row="0" column="0">
+                           <widget class="QCheckBox" name="checkbox_traingle_process_vertices">
+                            <property name="text">
+                             <string>Process vertices.</string>
+                            </property>
+                            <property name="checked">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <widget class="QCheckBox" name="checkbox_triangle_process_lines">
+                            <property name="text">
+                             <string>Process lines.</string>
+                            </property>
+                            <property name="checked">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0">
+                           <spacer name="verticalSpacer_23">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>219</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="decimate">
+                         <layout class="QGridLayout" name="gridLayout_28">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_59">
+                            <property name="text">
+                             <string>Target reduction</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QLineEdit" name="lineedit_decimation_target_reduction"/>
+                          </item>
+                          <item row="5" column="0">
+                           <spacer name="verticalSpacer_24">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>170</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="3" column="0" colspan="2">
+                           <widget class="QCheckBox" name="checkbox_decimation_delete_vertices">
+                            <property name="text">
+                             <string>Allow deletion of vertices on boundary of mesh</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="2" column="0" colspan="2">
+                           <widget class="QCheckBox" name="checkbox_decimation_split_mesh">
+                            <property name="text">
+                             <string>Split mesh</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0" colspan="2">
+                           <widget class="QCheckBox" name="checkbox_decimation_preserve_topology">
+                            <property name="text">
+                             <string>Preserve topology</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="quadric_decimation">
+                         <layout class="QGridLayout" name="gridLayout_29">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_60">
+                            <property name="text">
+                             <string>Target reduction</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QLineEdit" name="lineedit_quadric_decimation_target_reduction"/>
+                          </item>
+                          <item row="1" column="0">
+                           <spacer name="verticalSpacer_25">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>239</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="quadric_clustering">
+                         <layout class="QGridLayout" name="gridLayout_30">
+                          <item row="0" column="0">
+                           <widget class="QLabel" name="label_61">
+                            <property name="text">
+                             <string>Divisions</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="0" column="2">
+                           <widget class="QLineEdit" name="lineedit_quadric_clustering_divisions_y"/>
+                          </item>
+                          <item row="0" column="1">
+                           <widget class="QLineEdit" name="lineedit_quadric_clustering_divisions_x"/>
+                          </item>
+                          <item row="2" column="0">
+                           <spacer name="verticalSpacer_26">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                          <item row="0" column="3">
+                           <widget class="QLineEdit" name="lineedit_quadric_clustering_divisions_z"/>
+                          </item>
+                          <item row="1" column="0" colspan="4">
+                           <widget class="QCheckBox" name="checkbox_quadric_clustering_auto_adjust_divisions">
+                            <property name="text">
+                             <string>Auto adjust number of divisions</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                        <widget class="QWidget" name="boolean">
+                         <layout class="QGridLayout" name="gridLayout_31">
+                          <item row="0" column="0">
+                           <widget class="QPushButton" name="pushbutton_boolean_flip_order">
+                            <property name="text">
+                             <string>Flip input order</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item row="1" column="0">
+                           <spacer name="verticalSpacer_27">
+                            <property name="orientation">
+                             <enum>Qt::Vertical</enum>
+                            </property>
+                            <property name="sizeHint" stdset="0">
+                             <size>
+                              <width>20</width>
+                              <height>40</height>
+                             </size>
+                            </property>
+                           </spacer>
+                          </item>
+                         </layout>
+                        </widget>
                        </widget>
                       </item>
                      </layout>
@@ -2774,8 +2933,8 @@ background-color: transparent;
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>534</width>
-                         <height>69</height>
+                         <width>71</width>
+                         <height>16</height>
                         </rect>
                        </property>
                        <widget class="QCheckBox" name="checkBox_8">

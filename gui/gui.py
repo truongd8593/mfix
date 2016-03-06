@@ -74,7 +74,7 @@ class MfixGui(QtGui.QMainWindow):
             'intersection':  self.ui.toolbutton_geometry_intersect,
             'difference': self.ui.toolbutton_geometry_difference,
             }
-        self.animation_speed = 500
+        self.animation_speed = 400
         self.animating = False
         self.stack_animation = None
 
@@ -230,11 +230,14 @@ class MfixGui(QtGui.QMainWindow):
             btn.pressed.connect(
                 make_callback(self.vtkwidget.boolean_operation, key))
 
-        # connect primitive lineedits
+        # connect parameter widgets
         for widget in widget_iter(self.ui.stackedWidgetGeometryDetails):
             if isinstance(widget, QtGui.QLineEdit):
                 widget.editingFinished.connect(
-                    make_callback(self.vtkwidget.primitive_edited, widget))
+                    make_callback(self.vtkwidget.parameter_edited, widget))
+            elif isinstance(widget, QtGui.QCheckBox):
+                widget.stateChanged.connect(
+                    make_callback(self.vtkwidget.parameter_edited, widget))
 
     def __setup_workflow_widget(self):
 
@@ -262,10 +265,13 @@ class MfixGui(QtGui.QMainWindow):
                 current_index = i
                 break
 
-        self.ui.stackedwidget_mode.setCurrentIndex(current_index)
-
         for key, btn in self.modebuttondict.items():
             btn.setChecked(mode == key)
+
+        self.animate_stacked_widget(self.ui.stackedwidget_mode,
+                                    self.ui.stackedwidget_mode.currentIndex(),
+                                    current_index,
+                                    'horizontal')
 
     def navigation_changed(self):
         current_selection = self.ui.treewidget_model_navigation.selectedItems()
@@ -298,8 +304,6 @@ class MfixGui(QtGui.QMainWindow):
         to_widget = stackedwidget.widget(to)
 
         # get from geometry
-        xpos = from_widget.frameGeometry().x()
-        ypos = from_widget.frameGeometry().y()
         width = from_widget.frameGeometry().width()
         height = from_widget.frameGeometry().height()
 
@@ -361,23 +365,24 @@ class MfixGui(QtGui.QMainWindow):
         self.stack_animation.addAnimation(animnext)
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          (stackedwidget, from_, to))
+                          stackedwidget, from_, to)
             )
         self.stack_animation.stateChanged.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          (stackedwidget, from_, to))
+                          stackedwidget, from_, to)
             )
 
         self.animating = True
         self.stack_animation.start()
 
-    def animate_stacked_widget_finished(self, widget):
+    def animate_stacked_widget_finished(self, widget, from_, to):
         """ cleanup after animation """
-        widget[0].setCurrentIndex(widget[2])
-        from_widget = widget[0].widget(widget[1])
-        from_widget.hide()
-        from_widget.move(0, 0)
-        self.animating = False
+        if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
+            widget.setCurrentIndex(to)
+            from_widget = widget.widget(from_)
+            from_widget.hide()
+            from_widget.move(0, 0)
+            self.animating = False
 
     def build_mfix(self):
         """ build mfix """

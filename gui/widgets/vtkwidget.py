@@ -173,16 +173,22 @@ class VtkWidget(QtGui.QWidget):
                     current_index = i
                     break
 
+            # set the widget parameters
             for child in widget_iter(widget):
+                name = str(child.objectName()).lower().replace('_','')
+                for key, value in self.geometrydict[text].items():
+                    if key in name:
+                        break
+
                 if isinstance(child, QtGui.QLineEdit):
-                    for key, value in self.geometrydict[text].items():
-                        if key in str(child.objectName()).lower():
-                            child.setText(str(value))
+                    child.setText(str(value))
+                elif isinstance(child, QtGui.QCheckBox):
+                    child.setChecked(value)
 
             self.parent.ui.groupBoxGeometryParameters.setTitle(text)
 
         else:
-            current_index = self.parent.ui.stackedWidgetGeometryDetails.count()-1
+            current_index = 0
 
             self.parent.ui.groupBoxGeometryParameters.setTitle('Parameters')
             self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
@@ -262,26 +268,40 @@ class VtkWidget(QtGui.QWidget):
             self.geometrytree.addTopLevelItem(item)
             self.geometrytree.setCurrentItem(item)
 
-    def primitive_edited(self, widget):
+    def parameter_edited(self, widget):
 
         current_selection = self.geometrytree.selectedItems()
-        parameter = str(widget.objectName()).lower()
 
         if current_selection:
             name = str(current_selection[-1].text(0)).lower()
+            value = None
+
+            parameters = str(widget.objectName()).lower().split('_')
+            parameter = ''.join(parameters[1:])
 
             for key in self.geometrydict[name].keys():
                 if key in parameter:
-                    string = str(widget.text())
-                    if 'resolution' in parameter:
-                        self.geometrydict[name][key] = int(string)
-                    else:
-                        self.geometrydict[name][key] = float(string)
+                    break
 
-            self.update_primitive(name)
-            if 'transform' in self.geometrydict[name]:
-                self.update_transform(name)
-            self.vtkRenderWindow.Render()
+            # if widget is a lineedit
+            if isinstance(widget, QtGui.QLineEdit):
+                string = str(widget.text())
+                if 'resolution' in parameter or 'divisions' in parameter:
+                    value = int(string)
+                else:
+                    value = float(string)
+
+            if value is not None:
+                self.geometrydict[name][key] = value
+
+                if self.geometrydict[name]['type'] in list(self.primitivedict.keys()):
+                    self.update_primitive(name)
+                elif self.geometrydict[name]['type'] in list(self.filterdict.keys()):
+                    self.update_filter(name)
+
+                if 'transform' in self.geometrydict[name]:
+                    self.update_transform(name)
+                self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
         primtype = self.geometrydict[name]['type']
@@ -536,8 +556,58 @@ class VtkWidget(QtGui.QWidget):
 
             self.vtkRenderWindow.Render()
 
+    def update_filter(self, name):
+
+        filtertype = self.geometrydict[name]['type']
+        vtkfilter = self.geometrydict[name]['filter']
+
+        if filtertype == 'clean':
+            if self.geometrydict[name]['linestopoints']:
+                vtkfilter.ConvertLinesToPointsOn()
+            else:
+                vtkfilter.ConvertLinesToPointsOff()
+
+            if self.geometrydict[name]['polystolines']:
+                vtkfilter.ConvertPolysToLinesOn()
+            else:
+                vtkfilter.ConvertPolysToLinesOff()
+
+            if self.geometrydict[name]['stripstopolys']:
+                vtkfilter.ConvertStripsToPolysOn()
+            else:
+                vtkfilter.ConvertStripsToPolysOff()
+
+        elif filtertype == 'fill_holes':
+            vtkfilter.SetHoleSize(self.geometrydict[name]['maximumholesize'])
+            
+        elif filtertype == 'triangle':
+            if self.geometrydict[name]['processvertices']:
+                vtkfilter.PassVertsOn()
+            else:
+                vtkfilter.PassVertsOff()
+                
+            if self.geometrydict[name]['processlines']:
+                vtkfilter.PassLinesOn()
+            else:
+                vtkfilter.PassLinesOff()
+                
+        elif filtertype == 'decimate':
+            vtkfilter.SetTargetReduction(self.geometrydict[name]['targetreduction'])
+            
+        elif filtertype == 'quadric_decimation':
+            vtkfilter.SetTargetReduction(self.geometrydict[name]['targetreduction'])
+            
+        elif filtertype == 'quadric_clustering':
+            vtkfilter.SetNumberOfXDivisions(self.geometrydict[name]['divisionsx'])
+            vtkfilter.SetNumberOfYDivisions(self.geometrydict[name]['divisionsy'])
+            vtkfilter.SetNumberOfZDivisions(self.geometrydict[name]['divisionsz'])
+            
+            if self.geometrydict[name]['autoadjustdivisions']:
+                vtkfilter.AutoAdjustNumberOfDivisionsOn()
+            else:
+                vtkfilter.AutoAdjustNumberOfDivisionsOff()
+
     def add_filter(self, filtertype):
-        print(filtertype)
 
         current_selection = self.geometrytree.selectedItems()
         if current_selection:
@@ -547,6 +617,27 @@ class VtkWidget(QtGui.QWidget):
                                      list(self.geometrydict.keys()))
 
             vtkfilter = self.filterdict[filtertype]()
+
+            self.geometrydict[name] = {
+                'type':   filtertype,
+                'filter': vtkfilter,
+                'linestopoints': True,
+                'polystolines': True,
+                'stripstopolys': True,
+                'maximumholesize': 1.0,
+                'processvertices': True,
+                'processlines': True,
+                'targetreduction': 0.2,
+                'preservetopology': True,
+                'splitmesh': True,
+                'deletevertices': False,
+                'divisionsx': 10,
+                'divisionsy': 10,
+                'divisionsz': 10,
+                'autoadjustdivisions': True,
+                }
+
+            self.update_filter(name)
 
             if 'trianglefilter' in self.geometrydict[selection_text]:
                 inputdata = self.geometrydict[selection_text]['trianglefilter']
@@ -582,12 +673,8 @@ class VtkWidget(QtGui.QWidget):
             self.vtkRenderWindow.Render()
 
             # save references
-            self.geometrydict[name] = {
-                'type':   filtertype,
-                'filter': vtkfilter,
-                'actor':  actor,
-                'mapper': mapper,
-                }
+            self.geometrydict[name]['actor'] = actor
+            self.geometrydict[name]['mapper'] = mapper
 
             # Add to tree
             toplevel = QtGui.QTreeWidgetItem([name])
