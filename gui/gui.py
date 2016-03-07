@@ -82,7 +82,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
-        
+
         self.ui.toolbutton_compile.setIcon(get_icon('build.png'))
         self.ui.toolbutton_run.setIcon(get_icon('play.png'))
         self.ui.toolbutton_restart.setIcon(get_icon('restart.png'))
@@ -224,6 +224,8 @@ class MfixGui(QtGui.QMainWindow):
         # setup signals
         self.ui.toolbutton_remove_geometry.pressed.connect(
             self.vtkwidget.remove_geometry)
+        self.ui.toolbutton_copy_geometry.pressed.connect(
+            self.vtkwidget.copy_geometry)
 
         # connect boolean
         for key, btn in self.booleanbtndict.items():
@@ -238,6 +240,14 @@ class MfixGui(QtGui.QMainWindow):
             elif isinstance(widget, QtGui.QCheckBox):
                 widget.stateChanged.connect(
                     make_callback(self.vtkwidget.parameter_edited, widget))
+
+        # connect mesh tab btns
+        for i, btn in enumerate([self.ui.pushbutton_mesh_uniform,
+                                 self.ui.pushbutton_mesh_controlpoints_x,
+                                 self.ui.pushbutton_mesh_controlpoints_y,
+                                 self.ui.pushbutton_mesh_controlpoints_z]):
+            btn.pressed.connect(
+                make_callback(self.vtkwidget.change_mesh_tab, i, btn))
 
     def __setup_workflow_widget(self):
 
@@ -287,13 +297,16 @@ class MfixGui(QtGui.QMainWindow):
                 if text == str(widget.objectName()):
                     current_index = i
                     break
-                
-            self.animate_stacked_widget(self.ui.stackedWidgetTaskPane,
-                                        self.ui.stackedWidgetTaskPane.currentIndex(),
-                                        current_index)
 
+            self.animate_stacked_widget(
+                self.ui.stackedWidgetTaskPane,
+                self.ui.stackedWidgetTaskPane.currentIndex(),
+                current_index)
+
+    # --- animation methods ---
     def animate_stacked_widget(self, stackedwidget, from_, to,
-                               direction='vertical'):
+                               direction='vertical', line=None, to_btn=None,
+                               btn_layout=None):
         """ animate changing of qstackedwidget """
 
         # check to see if already animating
@@ -306,8 +319,6 @@ class MfixGui(QtGui.QMainWindow):
         # get from geometry
         width = from_widget.frameGeometry().width()
         height = from_widget.frameGeometry().height()
-
-        
 
         # offset
         # bottom to top
@@ -330,10 +341,7 @@ class MfixGui(QtGui.QMainWindow):
         # move to widget and show
         # set the geometry of the next widget
         to_widget.setGeometry(0 + offsetx, 0 + offsety, width, height)
-
-                
         to_widget.show()
-        to_widget.lower()
         to_widget.raise_()
 
         # animate
@@ -359,31 +367,53 @@ class MfixGui(QtGui.QMainWindow):
             QtCore.QPoint(0,
                           0))
 
+        # line
+        animline = None
+        if line is not None and to_btn is not None:
+            animline = QtCore.QPropertyAnimation(line, "pos")
+            animline.setDuration(self.animation_speed)
+            animline.setEasingCurve(QtCore.QEasingCurve.InOutQuint)
+            animline.setStartValue(
+                QtCore.QPoint(line.geometry().x(),
+                              line.geometry().y()))
+            animline.setEndValue(
+                QtCore.QPoint(to_btn.geometry().x(),
+                              line.geometry().y()))
+
         # animation group
         self.stack_animation = QtCore.QParallelAnimationGroup()
         self.stack_animation.addAnimation(animnow)
         self.stack_animation.addAnimation(animnext)
+        if animline is not None:
+            self.stack_animation.addAnimation(animline)
         self.stack_animation.finished.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to)
+                          stackedwidget, from_, to, btn_layout, line)
             )
         self.stack_animation.stateChanged.connect(
             make_callback(self.animate_stacked_widget_finished,
-                          stackedwidget, from_, to)
+                          stackedwidget, from_, to, btn_layout, line)
             )
 
         self.animating = True
         self.stack_animation.start()
 
-    def animate_stacked_widget_finished(self, widget, from_, to):
+    def animate_stacked_widget_finished(self, widget, from_, to,
+                                        btn_layout=None, line=None):
         """ cleanup after animation """
         if self.stack_animation.state() == QtCore.QAbstractAnimation.Stopped:
             widget.setCurrentIndex(to)
             from_widget = widget.widget(from_)
             from_widget.hide()
             from_widget.move(0, 0)
+
+            if btn_layout is not None and line is not None:
+                btn_layout.addItem(btn_layout.takeAt(
+                    btn_layout.indexOf(line)), 1, to)
+
             self.animating = False
 
+    # --- mfix methods ---
     def build_mfix(self):
         """ build mfix """
         mfix_home = os.path.dirname(

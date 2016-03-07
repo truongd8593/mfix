@@ -2,6 +2,8 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 import os
+import copy
+from collections import OrderedDict
 
 # Qt imports
 from qtpy import QtCore, QtGui
@@ -78,14 +80,14 @@ class VtkWidget(QtGui.QWidget):
             'cone':     vtk.vtkConeSource,
             }
 
-        self.filterdict = {
-            'clean':              vtk.vtkCleanPolyData,
-            'fill_holes':         vtk.vtkFillHolesFilter,
-            'triangle':           vtk.vtkTriangleFilter,
-            'decimate':           vtk.vtkDecimatePro,
-            'quadric_decimation': vtk.vtkQuadricDecimation,
-            'quadric_clustering': vtk.vtkQuadricClustering
-        }
+        self.filterdict = OrderedDict([
+            ('clean',              vtk.vtkCleanPolyData),
+            ('fill_holes',         vtk.vtkFillHolesFilter),
+            ('triangle',           vtk.vtkTriangleFilter),
+            ('decimate',           vtk.vtkDecimatePro),
+            ('quadric_decimation', vtk.vtkQuadricDecimation),
+            ('quadric_clustering', vtk.vtkQuadricClustering)
+        ])
 
         # --- layout ---
         self.hlayout = QtGui.QHBoxLayout(self)
@@ -137,6 +139,7 @@ class VtkWidget(QtGui.QWidget):
             self.tree_widget_geometry_changed)
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
 
+    # --- geometry ---
     def tree_widget_geometry_changed(self):
 
         current_selection = self.geometrytree.selectedItems()
@@ -152,15 +155,17 @@ class VtkWidget(QtGui.QWidget):
         for btn in self.booleanbtndict.values():
             btn.setEnabled(enableboolbtn)
 
-        # enable/disable delete button
+        # enable/disable delete/copy/filter button
         if len(current_selection) == 1 and \
                 self.parent.ui.treeWidgetGeometry.indexOfTopLevelItem(
                 current_selection[0]) > -1:
             self.parent.ui.toolbutton_remove_geometry.setEnabled(True)
             self.parent.ui.toolbutton_add_filter.setEnabled(True)
+            self.parent.ui.toolbutton_copy_geometry.setEnabled(True)
         else:
             self.parent.ui.toolbutton_remove_geometry.setEnabled(False)
             self.parent.ui.toolbutton_add_filter.setEnabled(False)
+            self.parent.ui.toolbutton_copy_geometry.setEnabled(False)
 
         if current_selection:
             text = str(current_selection[-1].text(0)).lower()
@@ -175,7 +180,7 @@ class VtkWidget(QtGui.QWidget):
 
             # set the widget parameters
             for child in widget_iter(widget):
-                name = str(child.objectName()).lower().replace('_','')
+                name = str(child.objectName()).lower().replace('_', '')
                 for key, value in self.geometrydict[text].items():
                     if key in name:
                         break
@@ -245,20 +250,31 @@ class VtkWidget(QtGui.QWidget):
             self.vtkrenderer.ResetCamera()
             self.vtkRenderWindow.Render()
 
+            # find center of mass
+            center_filter = vtk.vtkCenterOfMass()
+            center_filter.SetInputConnection(transform_filter.GetOutputPort())
+            center_filter.SetUseScalarsAsWeights(False)
+            center_filter.Update()
+            center = center_filter.GetCenter()
+
             # Add to dict
             self.geometrydict[name] = {
                 'reader':          reader,
                 'transform':       transform,
                 'transformfilter': transform_filter,
+                'center_filter':   center_filter,
                 'mapper':          mapper,
                 'actor':           actor,
                 'type':            'stl',
-                'centerx':         0.0,
-                'centery':         0.0,
-                'centerz':         0.0,
+                'centerx':         center[0],
+                'centery':         center[1],
+                'centerz':         center[2],
                 'rotationx':       0.0,
                 'rotationy':       0.0,
                 'rotationz':       0.0,
+                'translationx':    0.0,
+                'translationy':    0.0,
+                'translationz':    0.0,
                 }
 
             # Add to tree
@@ -294,9 +310,11 @@ class VtkWidget(QtGui.QWidget):
             if value is not None:
                 self.geometrydict[name][key] = value
 
-                if self.geometrydict[name]['type'] in list(self.primitivedict.keys()):
+                if self.geometrydict[name]['type'] in \
+                        list(self.primitivedict.keys()):
                     self.update_primitive(name)
-                elif self.geometrydict[name]['type'] in list(self.filterdict.keys()):
+                elif self.geometrydict[name]['type'] in \
+                        list(self.filterdict.keys()):
                     self.update_filter(name)
 
                 if 'transform' in self.geometrydict[name]:
@@ -359,7 +377,6 @@ class VtkWidget(QtGui.QWidget):
 
         # reset to Identity
         transform.Identity()
-
         transform.PostMultiply()
 
         # translate to center
@@ -376,6 +393,14 @@ class VtkWidget(QtGui.QWidget):
         transform.Translate(self.geometrydict[name]['centerx'],
                             self.geometrydict[name]['centery'],
                             self.geometrydict[name]['centerz'])
+
+        # translate stl files
+        if self.geometrydict[name]['type'] == 'stl':
+            transform.Translate(
+                self.geometrydict[name]['translationx'],
+                self.geometrydict[name]['translationy'],
+                self.geometrydict[name]['translationz'],
+                )
 
         # update
         transform_filter.Update()
@@ -556,6 +581,28 @@ class VtkWidget(QtGui.QWidget):
 
             self.vtkRenderWindow.Render()
 
+    def copy_geometry(self):
+        """ duplicate the selected geometry """
+        raise NotImplementedError
+
+#        currentSelection = self.geometrytree.selectedItems()
+#        if currentSelection:
+#            text = str(currentSelection[-1].text(0)).lower()
+#
+#            new = get_unique_string(text, self.geometrydict.keys())
+#            
+#            # copy values
+#            self.geometrydict[new] = {}
+#            for key, value in self.geometrydict[text].items():
+#                if not isinstance(value, vtk.vtkObject):
+#                    self.geometrydict[new][key] = copy.deepcopy(value)
+#                    
+#
+#            self.geometrydict[new] = copy.deepcopy(self.geometrydict[text])
+#
+#            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
+
+
     def update_filter(self, name):
 
         filtertype = self.geometrydict[name]['type']
@@ -579,33 +626,40 @@ class VtkWidget(QtGui.QWidget):
 
         elif filtertype == 'fill_holes':
             vtkfilter.SetHoleSize(self.geometrydict[name]['maximumholesize'])
-            
+
         elif filtertype == 'triangle':
             if self.geometrydict[name]['processvertices']:
                 vtkfilter.PassVertsOn()
             else:
                 vtkfilter.PassVertsOff()
-                
+
             if self.geometrydict[name]['processlines']:
                 vtkfilter.PassLinesOn()
             else:
                 vtkfilter.PassLinesOff()
-                
+
         elif filtertype == 'decimate':
-            vtkfilter.SetTargetReduction(self.geometrydict[name]['targetreduction'])
-            
+            vtkfilter.SetTargetReduction(
+                self.geometrydict[name]['targetreduction'])
+
         elif filtertype == 'quadric_decimation':
-            vtkfilter.SetTargetReduction(self.geometrydict[name]['targetreduction'])
-            
+            vtkfilter.SetTargetReduction(
+                self.geometrydict[name]['targetreduction'])
+
         elif filtertype == 'quadric_clustering':
-            vtkfilter.SetNumberOfXDivisions(self.geometrydict[name]['divisionsx'])
-            vtkfilter.SetNumberOfYDivisions(self.geometrydict[name]['divisionsy'])
-            vtkfilter.SetNumberOfZDivisions(self.geometrydict[name]['divisionsz'])
-            
+            vtkfilter.SetNumberOfXDivisions(
+                self.geometrydict[name]['divisionsx'])
+            vtkfilter.SetNumberOfYDivisions(
+                self.geometrydict[name]['divisionsy'])
+            vtkfilter.SetNumberOfZDivisions(
+                self.geometrydict[name]['divisionsz'])
+
             if self.geometrydict[name]['autoadjustdivisions']:
                 vtkfilter.AutoAdjustNumberOfDivisionsOn()
             else:
                 vtkfilter.AutoAdjustNumberOfDivisionsOff()
+
+        vtkfilter.Update()
 
     def add_filter(self, filtertype):
 
@@ -637,22 +691,24 @@ class VtkWidget(QtGui.QWidget):
                 'autoadjustdivisions': True,
                 }
 
-            self.update_filter(name)
-
             if 'trianglefilter' in self.geometrydict[selection_text]:
                 inputdata = self.geometrydict[selection_text]['trianglefilter']
             elif 'booleanoperation' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text]['booleanoperation']
+                inputdata = self.geometrydict[selection_text][
+                    'booleanoperation']
             elif 'reader' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text]['transformfilter']
+                inputdata = self.geometrydict[selection_text][
+                    'transformfilter']
             elif 'filter' in self.geometrydict[selection_text]:
                 inputdata = self.geometrydict[selection_text]['filter']
 
-            # apply filter
+            # set input data
             vtkfilter.SetInputConnection(inputdata.GetOutputPort())
-            vtkfilter.Update()
 
-            # hide the sources
+            # update filter
+            self.update_filter(name)
+
+            # hide the source
             self.geometrydict[selection_text]['actor'].VisibilityOff()
 
             # Create a mapper
@@ -662,7 +718,6 @@ class VtkWidget(QtGui.QWidget):
             # Create an actor
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-    #        actor.GetProperty().SetOpacity(0.25)
             actor.GetProperty().SetRepresentationToWireframe()
 
             # add actor to render
@@ -690,3 +745,16 @@ class VtkWidget(QtGui.QWidget):
 
             self.geometrytree.addTopLevelItem(toplevel)
             self.geometrytree.setCurrentItem(toplevel)
+
+    # --- mesh ---
+    def change_mesh_tab(self, tabnum, btn):
+
+        self.parent.animate_stacked_widget(
+            self.parent.ui.stackedwidget_mesh,
+            self.parent.ui.stackedwidget_mesh.currentIndex(),
+            tabnum,
+            direction='horizontal',
+            line=self.parent.ui.line_mesh,
+            to_btn=btn,
+            btn_layout=self.parent.ui.gridlayout_mesh_tab_btns,
+            )

@@ -15,9 +15,11 @@ from qtpy import QtGui
 
 SCRIPT_DIRECTORY = './'
 
+
 def set_script_directory(script):
     global SCRIPT_DIRECTORY
     SCRIPT_DIRECTORY = script
+
 
 def num_to_time(time, unit='s', outunit='time'):
     '''
