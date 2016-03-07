@@ -1,10 +1,5 @@
 #!/bin/bash -lex
 
-../../../configure_mfix  FC=gfortran FCFLAGS="-O0 -g"
-make
-
-#rm POST_*.dat &> /dev/null
-
 RUN_NAME="DEM01"
 
 DES_IM=EULER

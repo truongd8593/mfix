@@ -1,13 +1,6 @@
 #!/bin/bash -lex
 
-module list
-
 MFIX=${MFIX_HOME-"../../../"}
-
-GCC_DBGFLAGS="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
-${MFIX}/configure_mfix FC=gfortran FCFLAGS="-O0 $GCC_DBGFLAGS" || exit $?
-make clean
-make || exit $?
 
 rm -f POST_*.dat &> /dev/null
 

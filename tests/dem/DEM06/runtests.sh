@@ -2,11 +2,6 @@
 
 MFIX=${MFIX_HOME-"../../../"}
 
-GCC_DBGFLAGS="-fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow"
-${MFIX}/configure_mfix FC=gfortran FCFLAGS="-O0 $GCC_DBGFLAGS" || exit $?
-make clean
-make || exit $?
-
 rm POST_*.dat &> /dev/null
 
 RUN_NAME="DEM06"

@@ -1,8 +1,5 @@
 #!/bin/bash -lex
 
-../../../configure_mfix  FC=gfortran FCFLAGS="-O0 -g"
-make
-
 RUN_NAME="DEM04"
 
 DES_IM=ADAMS_BASHFORTH
