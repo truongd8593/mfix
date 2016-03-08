@@ -46,18 +46,11 @@ build:
 	rm -f $@
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: TAGS test help
+.PHONY: TAGS test
 
 # top level directory needs to be built first
 $(LIBMFIX):
 	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
-
-help: ## Display this help
-	@$(GREP) -E '^[\$$\(\)a-zA-Z_0-9-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-mfix: mfix$(EXEEXT) ## Build mfix executable
-
-postmfix: postmfix$(EXEEXT) ## Build postmfix executable
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
@@ -140,7 +133,7 @@ pymfix_src = \
 
 pymfix_OBJECTS = $(pymfix_src:%.f=%.o)
 
-pymfix: mfix.so ## Build pymfix
+pymfix: mfix.so
 	rm -f $@
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
