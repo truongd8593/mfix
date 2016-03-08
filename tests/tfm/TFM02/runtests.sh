@@ -9,6 +9,10 @@ rm -f $CASE_DIR/mfix
 
 echo "******** Done."
 
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/de_norms.dat de_norms.dat
+
 # uncomment the following to generate plots:
 #echo "******** Generating plots..."
 #python plot_results.py &

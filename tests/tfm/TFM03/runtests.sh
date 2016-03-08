@@ -35,6 +35,22 @@ rm -f TFM03.* out.log
 
 echo "******** Done."
 
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/u_profile_Re100_S.dat u_profile_Re100_S.dat
+
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/v_profile_Re100_S.dat v_profile_Re100_S.dat
+
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/u_profile_Re400_S.dat u_profile_Re400_S.dat
+
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/v_profile_Re400_S.dat v_profile_Re400_S.dat
+
 # uncomment the following to generate plots:
 #echo "******** Generating plots..."
 #python plot_results.py &

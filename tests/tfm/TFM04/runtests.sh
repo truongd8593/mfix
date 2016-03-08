@@ -38,6 +38,10 @@ rm ./mfix
 
 echo "******** Done."
 
+numdiff \
+    -a 0.000001 -r 0.05 \
+    AUTOTEST/error_summary.dat error_summary.dat
+
 # uncomment the following to generate plots:
 #echo "******** Generating plots..."
 #python plot_results.py &
