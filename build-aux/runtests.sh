@@ -6,7 +6,11 @@ fi
 
 post_script=AUTOTEST/post.script.NEW
 
-./mfix${EXEEXT}
+if [ -n "${MPIRANKS}" ]; then
+    mpirun -np ${MPIRANKS} ./mfix${EXEEXT}
+else
+    ./mfix${EXEEXT}
+fi
 if [ -e ${post_script} ]; then
     OMP_NUM_THREADS=1 ./postmfix${EXEEXT} < ${post_script}
 fi
