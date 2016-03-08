@@ -187,6 +187,17 @@ AM_LDFLAGS += -L@NETCDF_LIBDIR@ -l@NETCDF_LIBNAME@ -L@NETCDFF_LIBDIR@ -l@NETCDFF
 endif
 
 ################################################################
+#                                                              #
+#      MKL support (only with Intel Fortran compiler)          #
+#                                                              #
+################################################################
+
+if MKL
+AM_FCFLAGS += -mkl
+AM_LDFLAGS += -mkl
+endif
+
+################################################################
 #      run this case
 ################################################################
 
