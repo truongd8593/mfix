@@ -138,7 +138,7 @@ pymfix: mfix.so
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
 mfix.so: $(pymfix_src) $(mfix_LDADD)
-	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) --f90flags="$(FCFLAGS) -cpp" --f77flags="$(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 endif
 
 ################################################################
