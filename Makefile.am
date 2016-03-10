@@ -739,6 +739,8 @@ libmfix_a_SOURCES += $(libmfix_src)
 ################################################################
 
 postmfix_SOURCES = \
+	model/read_database.f \
+	model/read_namelist.f \
 	post_mfix/any_more_data.f \
 	post_mfix/calc_cell2.f \
 	post_mfix/calc_corr_01.f \
