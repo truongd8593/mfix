@@ -50,7 +50,7 @@ build:
 
 # top level directory needs to be built first
 $(LIBMFIX):
-	$(MAKE) -C $(top_builddir) mfix$(EXEEXT)
+	$(MAKE) -C $(top_builddir) $(notdir $@)
 
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean

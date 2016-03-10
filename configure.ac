@@ -104,6 +104,16 @@ AC_ARG_ENABLE([mkl],
 esac],[mkl=false])
 AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
 
+
+if test "$mkl" = "true"; then
+
+AX_CHECK_COMPILE_FLAG(-mkl,mkl_support=yes,[])
+
+if test x"$mkl_support" = x; then
+AC_MSG_ERROR([MKL not supported (requires Intel compiler)])
+fi
+fi
+
 AC_ARG_ENABLE([netcdf],
 [  --enable-netcdf    Enable NetCDF support],
 [case "${enableval}" in
@@ -135,9 +145,10 @@ AM_CONDITIONAL([OPENMP], [test x$smp = xtrue])
 AM_CONDITIONAL([MPI], [test x$dmp = xtrue])
 
 AC_FC_PP_DEFINE
-AC_FC_PP_SRCEXT(f)
+AC_FC_PP_SRCEXT([f])
 AC_FC_FREEFORM()
 AC_FC_LINE_LENGTH([unlimited])
+AC_FC_LIBRARY_LDFLAGS
 AC_FC_IMPLICIT_NONE
 
 AC_FC_MODULE_FLAG
