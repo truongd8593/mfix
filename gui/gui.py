@@ -201,6 +201,15 @@ class MfixGui(QtGui.QMainWindow):
             action.triggered.connect(
                 make_callback(self.vtkwidget.add_primitive, geo))
             self.add_geometry_menu.addAction(action)
+            
+        self.add_geometry_menu.addSeparator()
+            
+        for geo in self.vtkwidget.parametricdict.keys():
+            action = QtGui.QAction(geo.replace('_', ' '),
+                                   self.add_geometry_menu)
+            action.triggered.connect(
+                make_callback(self.vtkwidget.add_parametric, geo))
+            self.add_geometry_menu.addAction(action)
 
         # --- filter button ---
         self.add_filter_menu = QtGui.QMenu(self)

@@ -73,12 +73,30 @@ class VtkWidget(QtGui.QWidget):
         self.geometrydict = {}
 
         self.primitivedict = {}
-        self.primitivedict = {
-            'sphere':   vtk.vtkSphereSource,
-            'box':      vtk.vtkCubeSource,
-            'cylinder': vtk.vtkCylinderSource,
-            'cone':     vtk.vtkConeSource,
-            }
+        self.primitivedict = OrderedDict([
+            ('sphere',   vtk.vtkSphereSource),
+            ('box',      vtk.vtkCubeSource),
+            ('cylinder', vtk.vtkCylinderSource),
+            ('cone',     vtk.vtkConeSource),
+            ])
+            
+        self.parametricdict = OrderedDict([
+            ('torus',    vtk.vtkParametricTorus),
+            ('boy', vtk.vtkParametricBoy),
+            ('conic_spiral', vtk.vtkParametricConicSpiral),
+            ('cross_cap', vtk.vtkParametricCrossCap),
+            ('dini', vtk.vtkParametricDini),
+            ('ellipsoid', vtk.vtkParametricEllipsoid),
+            ('enneper', vtk.vtkParametricEnneper),
+            ('figure_8_klein', vtk.vtkParametricFigure8Klein),
+            ('klein', vtk.vtkParametricKlein),
+            ('mobius', vtk.vtkParametricMobius),
+            ('random_hills', vtk.vtkParametricRandomHills),
+            ('roman', vtk.vtkParametricRoman),
+            ('super_ellipsoid', vtk.vtkParametricSuperEllipsoid),
+            ('super_toroid', vtk.vtkParametricSuperToroid),
+            ('torus', vtk.vtkParametricTorus),
+            ])
 
         self.filterdict = OrderedDict([
             ('clean',              vtk.vtkCleanPolyData),
@@ -455,7 +473,7 @@ class VtkWidget(QtGui.QWidget):
 
         # convert to triangles
         trianglefilter = vtk.vtkTriangleFilter()
-        trianglefilter.SetInputData(transform_filter.GetOutput())
+        trianglefilter.SetInputConnection(transform_filter.GetOutputPort())
 
         # Create a mapper
         mapper = vtk.vtkPolyDataMapper()
@@ -484,6 +502,88 @@ class VtkWidget(QtGui.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
+        
+    def update_parametric(self, name):
+        paratype = self.geometrydict[name]['type']
+
+        source = self.geometrydict[name]['source']
+        source.Update()
+        
+        return source
+        
+    def add_parametric(self, name):
+        
+        parametric_object = self.parametricdict[name]()
+        source = vtk.vtkParametricFunctionSource()
+        source.SetParametricFunction(parametric_object)
+        
+        self.geometrydict[name] = {
+            'centerx':         0.0,
+            'centery':         0.0,
+            'centerz':         0.0,
+            'rotationx':       0.0,
+            'rotationy':       0.0,
+            'rotationz':       0.0,
+            'radius':          1.0,
+            'directionx':      1.0,
+            'directiony':      0.0,
+            'directionz':      0.0,
+            'lengthx':         1.0,
+            'lengthy':         1.0,
+            'lengthz':         1.0,
+            'height':          1.0,
+            'resolution':      10,
+            'thetaresolution': 10,
+            'phiresolution':   10,
+            'type':            parametric_object,
+            'source':          source,
+        }
+        
+        source = self.update_parametric(name)
+        
+        # Create transformer
+        transform = vtk.vtkTransform()
+        transform_filter = vtk.vtkTransformPolyDataFilter()
+        transform_filter.SetTransform(transform)
+        transform_filter.SetInputConnection(source.GetOutputPort())
+
+        self.geometrydict[name]['transform'] = transform
+        self.geometrydict[name]['transformfilter'] = transform_filter
+
+        # update transform
+        self.update_transform(name)
+
+        # convert to triangles
+        trianglefilter = vtk.vtkTriangleFilter()
+        trianglefilter.SetInputConnection(transform_filter.GetOutputPort())
+        
+        # mapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(trianglefilter.GetOutputPort())
+        
+        # actor
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+        actor.GetProperty().SetRepresentationToWireframe()
+
+        self.vtkrenderer.AddActor(actor)
+
+        self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()
+        
+        # add to dict
+        self.geometrydict[name]['mapper'] = mapper
+        self.geometrydict[name]['actor'] = actor
+        self.geometrydict[name]['trianglefilter'] = trianglefilter
+        self.geometrydict[name]['source'] = source
+
+        # Add to tree
+        item = QtGui.QTreeWidgetItem([name])
+        item.setFlags(item.flags() | QtCore.Qt.ItemIsUserCheckable)
+        item.setCheckState(0, QtCore.Qt.Checked)
+        self.geometrytree.addTopLevelItem(item)
+        self.geometrytree.setCurrentItem(item)
+        
 
     def boolean_operation(self, booltype):
 
