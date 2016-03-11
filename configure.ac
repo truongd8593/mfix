@@ -3,6 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT(mfix, 2015.2, develop@mfix.netl.doe.gov)
+AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([build-aux/ax_check_compile_flag.m4])
 m4_include([build-aux/ax_prog_fc_mpi.m4])

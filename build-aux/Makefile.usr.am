@@ -46,22 +46,25 @@ build:
 	rm -f $@
 	$(LN_S) $(top_builddir) $@
 
-.PHONY: TAGS test
+.PHONY: TAGS test $(LIBMFIX)
 
 # top level directory needs to be built first
 $(LIBMFIX):
 	$(MAKE) -C $(top_builddir) $(notdir $@)
 
+$(LIBMFIX).md5: $(LIBMFIX)
+	@md5sum $< | cmp -s $@ -; if test $$? -ne 0; then md5sum $< > $@; fi
+
 clean-local:
 	-$(MAKE) -C $(top_builddir) clean
 
 # mfix.f needs to be built under $(builddir)
-$(builddir)/.build/mfix.f:  $(LIBMFIX)
+$(builddir)/.build/mfix.f:  $(LIBMFIX).md5
 	@mkdir -p .build
 	cp $(top_srcdir)/model/mfix.f $@
 
-$(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX)
-$(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX)
+$(builddir)/.build/read_database.$(OBJEXT):  $(LIBMFIX).md5
+$(builddir)/.build/read_namelist.$(OBJEXT):  $(LIBMFIX).md5
 
 # read_namelist needs rebuilt in case usrnlst.inc is overridden
 $(builddir)/.build/read_namelist.$(OBJEXT): $(top_srcdir)/model/read_namelist.f
@@ -107,7 +110,7 @@ DISTCLEANFILES = Makefile postmfix$(EXEEXT)
 #                                                              #
 ################################################################
 
-postmfix$(EXEEXT): $(LIBMFIX)
+postmfix$(EXEEXT): $(LIBMFIX).md5
 	$(MAKE) -C $(top_builddir) $@
 	rm -f $@
 	$(LN_S) $(top_builddir)/$@ $@
@@ -137,8 +140,8 @@ pymfix: mfix.so
 	rm -f $@
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
-mfix.so: $(pymfix_src) $(mfix_LDADD)
-	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT) $(LIBMFIX).md5
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(<:.md5=)  -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 endif
 
 ################################################################
