@@ -140,8 +140,9 @@ pymfix: mfix.so
 	rm -f $@
 	$(LN_S) $(top_srcdir)/pymfix/$@ $@
 
-mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT) $(LIBMFIX).md5
-	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(<:.md5=)  -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
+mfix.so: $(LIBMFIX).md5
+mfix.so: $(pymfix_src) $(obj_overrides) $(builddir)/.build/read_database.$(OBJEXT) $(builddir)/.build/read_namelist.$(OBJEXT)
+	f2py -c --f77exec=$(FC) --f90exec=$(FC) -m mfix -I$(top_builddir)/model $(pymfix_src) $(mfix_LDADD) -lgomp --f90flags="$(AM_FCFLAGS) $(FCFLAGS) -cpp" --f77flags="$(AM_FFLAGS) $(FFLAGS) -cpp" --noopt --noarch $(F2PY_FLAGS)
 endif
 
 ################################################################
