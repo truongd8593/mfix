@@ -79,7 +79,7 @@ class VtkWidget(QtGui.QWidget):
             ('cylinder', vtk.vtkCylinderSource),
             ('cone',     vtk.vtkConeSource),
             ])
-            
+
         self.parametricdict = OrderedDict([
             ('torus',    vtk.vtkParametricTorus),
             ('boy', vtk.vtkParametricBoy),
@@ -334,6 +334,9 @@ class VtkWidget(QtGui.QWidget):
                 elif self.geometrydict[name]['type'] in \
                         list(self.filterdict.keys()):
                     self.update_filter(name)
+                elif self.geometrydict[name]['type'] in \
+                        list(self.parametricdict.keys()):
+                    self.update_parametric(name)
 
                 if 'transform' in self.geometrydict[name]:
                     self.update_transform(name)
@@ -413,7 +416,8 @@ class VtkWidget(QtGui.QWidget):
                             self.geometrydict[name]['centerz'])
 
         # translate stl files
-        if self.geometrydict[name]['type'] == 'stl':
+        if self.geometrydict[name]['type'] in ['stl'] + \
+                list(self.parametricdict.keys()):
             transform.Translate(
                 self.geometrydict[name]['translationx'],
                 self.geometrydict[name]['translationy'],
@@ -502,45 +506,74 @@ class VtkWidget(QtGui.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
-        
+
     def update_parametric(self, name):
         paratype = self.geometrydict[name]['type']
-
+        para_object = self.geometrydict[name]['parametric_object']
         source = self.geometrydict[name]['source']
+
+        if paratype == 'torus':
+            para_object.SetRingRadius(self.geometrydict[name]['ringradius'])
+            para_object.SetCrossSectionRadius(
+                self.geometrydict[name]['crosssectionradius'])
+        elif paratype == 'boy':
+            para_object.SetZScale(self.geometrydict[name]['zscale'])
+        elif paratype == 'conic_spiral':
+            para_object.SetA(self.geometrydict[name]['ascale'])
+            para_object.SetB(self.geometrydict[name]['bfunc'])
+            para_object.SetC(self.geometrydict[name]['cfunc'])
+            para_object.SetN(self.geometrydict[name]['nfunc'])
+        elif paratype == 'dini':
+            para_object.SetA(self.geometrydict[name]['ascale'])
+            para_object.SetB(self.geometrydict[name]['bscale'])
+        elif paratype == 'ellipsoid':
+            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
+            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
+            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
+        elif paratype == 'figure_8_klein':
+            para_object.SetRadius(self.geometrydict[name]['radius'])
+        elif paratype == 'mobius':
+            para_object.SetRadius(self.geometrydict[name]['radius'])
+
         source.Update()
-        
+
         return source
-        
+
     def add_parametric(self, name):
-        
+
         parametric_object = self.parametricdict[name]()
         source = vtk.vtkParametricFunctionSource()
         source.SetParametricFunction(parametric_object)
-        
+
         self.geometrydict[name] = {
-            'centerx':         0.0,
-            'centery':         0.0,
-            'centerz':         0.0,
-            'rotationx':       0.0,
-            'rotationy':       0.0,
-            'rotationz':       0.0,
-            'radius':          1.0,
-            'directionx':      1.0,
-            'directiony':      0.0,
-            'directionz':      0.0,
-            'lengthx':         1.0,
-            'lengthy':         1.0,
-            'lengthz':         1.0,
-            'height':          1.0,
-            'resolution':      10,
-            'thetaresolution': 10,
-            'phiresolution':   10,
-            'type':            parametric_object,
-            'source':          source,
+            'translationx':       0.0,
+            'translationy':       0.0,
+            'translationz':       0.0,
+            'centerx':            0.0,
+            'centery':            0.0,
+            'centerz':            0.0,
+            'rotationx':          0.0,
+            'rotationy':          0.0,
+            'rotationz':          0.0,
+            'radius':             1.0,
+            'radiusx':            1.0,
+            'radiusy':            1.0,
+            'radiusz':            1.0,
+            'ringradius':         1.0,
+            'crosssectionradius': 0.5,
+            'zscale':             0.125,
+            'ascale':             0.8,
+            'bscale':             0.2,
+            'bfunc':              1.0,
+            'cfunc':              0.1,
+            'nfunc':              2.0,
+            'type':               name,
+            'parametric_object':  parametric_object,
+            'source':             source,
         }
-        
+
         source = self.update_parametric(name)
-        
+
         # Create transformer
         transform = vtk.vtkTransform()
         transform_filter = vtk.vtkTransformPolyDataFilter()
@@ -556,11 +589,11 @@ class VtkWidget(QtGui.QWidget):
         # convert to triangles
         trianglefilter = vtk.vtkTriangleFilter()
         trianglefilter.SetInputConnection(transform_filter.GetOutputPort())
-        
+
         # mapper
         mapper = vtk.vtkPolyDataMapper()
         mapper.SetInputConnection(trianglefilter.GetOutputPort())
-        
+
         # actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
@@ -570,7 +603,7 @@ class VtkWidget(QtGui.QWidget):
 
         self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()
-        
+
         # add to dict
         self.geometrydict[name]['mapper'] = mapper
         self.geometrydict[name]['actor'] = actor
@@ -583,7 +616,6 @@ class VtkWidget(QtGui.QWidget):
         item.setCheckState(0, QtCore.Qt.Checked)
         self.geometrytree.addTopLevelItem(item)
         self.geometrytree.setCurrentItem(item)
-        
 
     def boolean_operation(self, booltype):
 
@@ -690,18 +722,17 @@ class VtkWidget(QtGui.QWidget):
 #            text = str(currentSelection[-1].text(0)).lower()
 #
 #            new = get_unique_string(text, self.geometrydict.keys())
-#            
+#
 #            # copy values
 #            self.geometrydict[new] = {}
 #            for key, value in self.geometrydict[text].items():
 #                if not isinstance(value, vtk.vtkObject):
 #                    self.geometrydict[new][key] = copy.deepcopy(value)
-#                    
+#
 #
 #            self.geometrydict[new] = copy.deepcopy(self.geometrydict[text])
 #
 #            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
-
 
     def update_filter(self, name):
 
