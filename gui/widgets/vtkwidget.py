@@ -95,7 +95,6 @@ class VtkWidget(QtGui.QWidget):
             ('roman', vtk.vtkParametricRoman),
             ('super_ellipsoid', vtk.vtkParametricSuperEllipsoid),
             ('super_toroid', vtk.vtkParametricSuperToroid),
-            ('torus', vtk.vtkParametricTorus),
             ])
 
         self.filterdict = OrderedDict([
@@ -192,7 +191,7 @@ class VtkWidget(QtGui.QWidget):
             for i in range(
                     self.parent.ui.stackedWidgetGeometryDetails.count()):
                 widget = self.parent.ui.stackedWidgetGeometryDetails.widget(i)
-                if str(widget.objectName()) in text:
+                if str(widget.objectName()) == self.geometrydict[text]['type']:
                     current_index = i
                     break
 
@@ -320,10 +319,13 @@ class VtkWidget(QtGui.QWidget):
             # if widget is a lineedit
             if isinstance(widget, QtGui.QLineEdit):
                 string = str(widget.text())
-                if 'resolution' in parameter or 'divisions' in parameter:
+                if any([s in parameter for s in ['divisions', 'resolution',
+                                                 'nhills']]):
                     value = int(string)
                 else:
                     value = float(string)
+            elif isinstance(widget, QtGui.QCheckBox):
+                value = widget.isChecked()
 
             if value is not None:
                 self.geometrydict[name][key] = value
@@ -534,6 +536,39 @@ class VtkWidget(QtGui.QWidget):
             para_object.SetRadius(self.geometrydict[name]['radius'])
         elif paratype == 'mobius':
             para_object.SetRadius(self.geometrydict[name]['radius'])
+        elif paratype == 'random_hills':
+            para_object.SetHillXVariance(self.geometrydict[name]['variancex'])
+            para_object.SetXVarianceScaleFactor(
+                self.geometrydict[name]['scalex'])
+            para_object.SetHillYVariance(self.geometrydict[name]['variancey'])
+            para_object.SetYVarianceScaleFactor(
+                self.geometrydict[name]['scaley'])
+            para_object.SetHillAmplitude(self.geometrydict[name]['amplitude'])
+            para_object.SetAmplitudeScaleFactor(
+                self.geometrydict[name]['scaleamplitude'])
+            para_object.SetNumberOfHills(self.geometrydict[name]['nhills'])
+            if self.geometrydict[name]['allowrandom']:
+                para_object.AllowRandomGenerationOn()
+            else:
+                para_object.AllowRandomGenerationOff()
+        elif paratype == 'roman':
+            para_object.SetRadius(self.geometrydict[name]['radius'])
+        elif paratype == 'super_ellipsoid':
+            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
+            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
+            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
+            para_object.SetN1(self.geometrydict[name]['n1'])
+            para_object.SetN2(self.geometrydict[name]['n2'])
+        elif paratype == 'super_toroid':
+            para_object.SetXRadius(self.geometrydict[name]['radiusx'])
+            para_object.SetYRadius(self.geometrydict[name]['radiusy'])
+            para_object.SetZRadius(self.geometrydict[name]['radiusz'])
+            para_object.SetRingRadius(self.geometrydict[name]['ringradius'])
+            para_object.SetCrossSectionRadius(
+                self.geometrydict[name]['crosssectionradius'])
+            para_object.SetN1(self.geometrydict[name]['n1'])
+            para_object.SetN2(self.geometrydict[name]['n2'])
+            
 
         source.Update()
 
@@ -567,6 +602,16 @@ class VtkWidget(QtGui.QWidget):
             'bfunc':              1.0,
             'cfunc':              0.1,
             'nfunc':              2.0,
+            'nhills':             30,
+            'variancex':          2.5,
+            'scalex':             0.3,
+            'variancey':          2.5,
+            'scaley':             0.3,
+            'amplitude':          2.0,
+            'scaleamplitude':     0.3,
+            'allowrandom':        True,
+            'n1':                 1.0,
+            'n2':                 1.0,
             'type':               name,
             'parametric_object':  parametric_object,
             'source':             source,
