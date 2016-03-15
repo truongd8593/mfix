@@ -453,6 +453,8 @@ class MfixGui(QtGui.QMainWindow):
     def save_project(self):
         project_dir = self.settings.value('project_dir')
 
+        self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
+
         self.project._keywordDict['run_name'] = self.ui.run_name.text()
         self.project._keywordDict['description'] = self.ui.description.text()
 

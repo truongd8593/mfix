@@ -822,16 +822,7 @@ class VtkWidget(QtGui.QWidget):
                 'autoadjustdivisions': True,
                 }
 
-            if 'trianglefilter' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text]['trianglefilter']
-            elif 'booleanoperation' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text][
-                    'booleanoperation']
-            elif 'reader' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text][
-                    'transformfilter']
-            elif 'filter' in self.geometrydict[selection_text]:
-                inputdata = self.geometrydict[selection_text]['filter']
+            inputdata = self.get_input_data(selection_text)
 
             # set input data
             vtkfilter.SetInputConnection(inputdata.GetOutputPort())
@@ -876,6 +867,50 @@ class VtkWidget(QtGui.QWidget):
 
             self.geometrytree.addTopLevelItem(toplevel)
             self.geometrytree.setCurrentItem(toplevel)
+            
+    def get_input_data(self, name):
+        """ based on the type of geomtry, return the data """
+
+        if 'trianglefilter' in self.geometrydict[name]:
+            inputdata = self.geometrydict[name]['trianglefilter']
+        elif 'booleanoperation' in self.geometrydict[name]:
+            inputdata = self.geometrydict[name][
+                'booleanoperation']
+        elif 'reader' in self.geometrydict[name]:
+            inputdata = self.geometrydict[name][
+                'transformfilter']
+        elif 'filter' in self.geometrydict[name]:
+            inputdata = self.geometrydict[name]['filter']
+
+        return inputdata
+
+    def collect_toplevel_geometry(self):
+        """ collect and append visible toplevel polydata """
+
+        append_filter = vtk.vtkAppendPolyData()
+        for top_num in range(self.geometrytree.topLevelItemCount()):
+            item = self.geometrytree.topLevelItem(top_num)
+            if item.checkState(0) == QtCore.Qt.Checked:
+                append_filter.AddInputData(
+                    self.get_input_data(str(item.text(0))).GetOutput())
+
+        return append_filter
+
+    def export_stl(self, file_name):
+        """ expoort visivle toplevel geometry """
+
+        geometry = self.collect_toplevel_geometry()
+
+        # clean
+        clean_filter = vtk.vtkCleanPolyData()
+        clean_filter.SetInputConnection(geometry.GetOutputPort())
+        clean_filter.Update()
+
+        # write file
+        stl_writer = vtk.vtkSTLWriter()
+        stl_writer.SetFileName(file_name)
+        stl_writer.SetInputConnection(clean_filter.GetOutputPort())
+        stl_writer.Write()
 
     # --- mesh ---
     def change_mesh_tab(self, tabnum, btn):
