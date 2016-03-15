@@ -830,14 +830,14 @@ class MfixGui(QtGui.QMainWindow):
 
     def run_mfix(self):
         """ build mfix """
-        if self.ui.dmp_button.isChecked():
+        if not self.ui.dmp_button.isChecked():
             pymfix_exe = os.path.join(self.get_project_dir(),'pymfix')
         else:
             nodesi = int(self.ui.nodes_i.text())
             nodesj = int(self.ui.nodes_j.text())
             nodesk = int(self.ui.nodes_k.text())
             total = nodesi*nodesj*nodesk
-            pymfix_exe = 'mpirun -np {} pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
+            pymfix_exe = 'mpirun -np {} ./pymfix NODESI={} NODESJ={} NODESK={}'.format(total, nodesi, nodesj, nodesk)
 
         build_and_run_cmd = '{} && {}'.format(self.make_build_cmd(), pymfix_exe)
         self.run_thread.start_command(build_and_run_cmd, self.get_project_dir())
