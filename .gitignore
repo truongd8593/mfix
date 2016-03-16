@@ -10,6 +10,8 @@
 *.mod
 *.o
 *.vtp
+*.pyc
+*.db
 *~
 .build
 .dirstamp
