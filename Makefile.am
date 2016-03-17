@@ -21,8 +21,12 @@ FC_MODEXT=mod
 # directory with all the *.mod files
 MODDIR=$(top_builddir)/model
 MODOUTDIR=$(MODDIR)
-CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d)
+CLEANFILES=$(MODOUTDIR)/*.$(FC_MODEXT) $(libmfix_src:%.f=%.d) $(postmfix_SOURCES:%.f=%.d) libmfix.a.md5 model/mfix.d
 DISTCLEANFILES = build-aux/Makefile.usr
+DISTCLEANFILES += benchmarks
+DISTCLEANFILES += legacy_tests
+DISTCLEANFILES += tests
+DISTCLEANFILES += tutorials
 
 AM_FCFLAGS = $(FC_MODINC)$(top_srcdir)/model/include
 AM_FCFLAGS += $(FC_MODINC)$(MODDIR)
@@ -85,7 +89,7 @@ EXTRA_DIST += model/thermochemical/BURCAT.THR
 EXTRA_DIST += model/thermochemical/intro.pdf
 EXTRA_DIST += model/thermochemical/readme
 distclean-local:
-	-if [ "$(srcdir)" != "$(builddir)" ] ; then rm -rf benchmarks build-aux/test.sh legacy_tests tests tutorials; fi
+	-if [ "$(srcdir)" != "$(builddir)" ] ; then chmod -R u+w $(DISTCLEANFILES); rm -rf build-aux/test.sh $(DISTCLEANFILES); fi
 
 ################################################################
 #                                                              #
