@@ -96,6 +96,14 @@ fi
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
+# Uncomment the following line when doing "make dist" to create a release
+# tarball Otherwise, configure may failing for end users who don't have
+# autotools installed, if timestamps get changed somehow when extracting the
+# release tarball. Running "touch *" in MFIX_HOME is another workaround for this
+# issue.
+#
+# AM_MAINTAINER_MODE([disable])
+
 AC_ARG_ENABLE([mkl],
 [  --enable-mkl    Enable Math Kernel Library support],
 [case "${enableval}" in
