@@ -127,7 +127,9 @@
       DOUBLE PRECISION:: X2,Y2,Z2
 
 ! Allocate the data storage array.
-      ALLOCATE(FACETS_AT_DG(DG_IJKSIZE2))
+      IF(.not.allocated(FACETS_AT_DG)) &
+         allocate(FACETS_AT_DG(DG_IJKSIZE2))
+
       FACETS_AT_DG(:)%COUNT = 0
 
       DO NN = 1,N_FACETS_DES
@@ -306,10 +308,14 @@
 
       ELSE
          FACETS_AT_DG(IJK)%COUNT = 1
-         allocate(FACETS_AT_DG(IJK)%ID(4))
-         allocate(FACETS_AT_DG(IJK)%DIR(4))
-         allocate(FACETS_AT_DG(IJK)%MIN(4))
-         allocate(FACETS_AT_DG(IJK)%MAX(4))
+         IF(.not.allocated(FACETS_AT_DG(IJK)%ID)) &
+            allocate(FACETS_AT_DG(IJK)%ID(4))
+         IF(.not.allocated(FACETS_AT_DG(IJK)%DIR)) &
+            allocate(FACETS_AT_DG(IJK)%DIR(4))
+         IF(.not.allocated(FACETS_AT_DG(IJK)%MIN)) &
+            allocate(FACETS_AT_DG(IJK)%MIN(4))
+         IF(.not.allocated(FACETS_AT_DG(IJK)%MAX)) &
+            allocate(FACETS_AT_DG(IJK)%MAX(4))
       ENDIF
 
       FACETS_AT_DG(IJK)%ID(FACETS_AT_DG(IJK)%COUNT) = FACET_ID
