@@ -568,6 +568,9 @@ class MfixGui(QtGui.QMainWindow):
 
     def update_residuals(self):
         self.ui.residuals.setText(self.updater.residuals)
+        if self.updater.job_done:
+            self.ui.mfix_browser.setHTML('')
+
 
     def connect_mfix(self):
         """ connect to running instance of mfix """
@@ -689,7 +692,8 @@ class MfixGui(QtGui.QMainWindow):
         self.project = Project(mfix_dat)
         self.ui.run_name.setText(str(self.project['run_name']))
         self.ui.description.setText(str(self.project['description']))
-
+        self.ui.ro_g0.setText(str(self.project['ro_g0']))
+        self.ui.mu_g0.setText(str(self.project['mu_g0']))
 
 class MfixThread(QThread):
 
@@ -735,8 +739,14 @@ class UpdateResidualsThread(QThread):
 
     def run(self):
         while True:
-            self.residuals = urllib2.urlopen(
-                'http://localhost:5000/residuals').read()
+            self.job_done = False
+            try:
+                self.residuals = urllib2.urlopen('http://localhost:5000/residuals').read()
+            except Exception:
+                log = logging.getLogger(__name__)
+                log.debug("cannot retrieve residuals; pymfix process must have terminated.")
+                self.job_done = True
+                return
             time.sleep(1)
             self.sig.emit('update')
 
