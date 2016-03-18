@@ -82,6 +82,17 @@ class MfixGui(QtGui.QMainWindow):
         self.stack_animation = None
 
         # --- icons ---
+        # loop through all widgets, because I am lazy
+        for widget in widget_iter(self.ui):
+            if isinstance(widget, QtGui.QToolButton):
+                name = str(widget.objectName())
+                if 'add' in name:
+                    widget.setIcon(get_icon('add.png'))
+                elif 'delete' in name or 'remove' in name:
+                    widget.setIcon(get_icon('remove.png'))
+                elif 'copy' in name:
+                    widget.setIcon(get_icon('copy.png'))
+
         self.ui.toolbutton_new.setIcon(get_icon('newfolder.png'))
         self.ui.toolbutton_open.setIcon(get_icon('openfolder.png'))
         self.ui.toolbutton_save.setIcon(get_icon('save.png'))
@@ -93,31 +104,13 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui.toolbutton_add_geometry.setIcon(get_icon('geometry.png'))
         self.ui.toolbutton_add_filter.setIcon(get_icon('filter.png'))
-        self.ui.toolbutton_remove_geometry.setIcon(get_icon('remove.png'))
-        self.ui.toolbutton_copy_geometry.setIcon(get_icon('copy.png'))
         self.ui.toolbutton_geometry_union.setIcon(get_icon('union.png'))
         self.ui.toolbutton_geometry_intersect.setIcon(
             get_icon('intersect.png'))
         self.ui.toolbutton_geometry_difference.setIcon(
             get_icon('difference.png'))
 
-        self.ui.toolButtonRegionAdd.setIcon(get_icon('add.png'))
-        self.ui.toolButtonRegionDelete.setIcon(get_icon('remove.png'))
-        self.ui.toolButtonRegionCopy.setIcon(get_icon('copy.png'))
-
-        self.ui.toolButtonFluidSpeciesAdd.setIcon(get_icon('add.png'))
-        self.ui.toolButtonFluidSpeciesDelete.setIcon(get_icon('remove.png'))
-        self.ui.toolButtonFluidSpeciesCopy.setIcon(get_icon('copy.png'))
-
-        self.ui.toolButtonTFMSolidsAdd.setIcon(get_icon('add.png'))
-        self.ui.toolButtonTFMSolidsDelete.setIcon(get_icon('remove.png'))
-        self.ui.toolButtonTFMSolidsCopy.setIcon(get_icon('copy.png'))
         self.ui.toolButtonTFMSolidsDatabase.setIcon(get_icon('download.png'))
-
-        self.ui.toolButtonTFMSolidsSpeciesAdd.setIcon(get_icon('add.png'))
-        self.ui.toolButtonTFMSolidsSpeciesDelete.setIcon(
-            get_icon('remove.png'))
-        self.ui.toolButtonTFMSolidsSpeciesCopy.setIcon(get_icon('copy.png'))
 
         # --- Connect Signals to Slots---
         # open/save/new project
@@ -253,13 +246,29 @@ class MfixGui(QtGui.QMainWindow):
                 widget.stateChanged.connect(
                     make_callback(self.vtkwidget.parameter_edited, widget))
 
+        # --- mesh ---
         # connect mesh tab btns
         for i, btn in enumerate([self.ui.pushbutton_mesh_uniform,
-                                 self.ui.pushbutton_mesh_controlpoints_x,
-                                 self.ui.pushbutton_mesh_controlpoints_y,
-                                 self.ui.pushbutton_mesh_controlpoints_z]):
+                                 self.ui.pushbutton_mesh_controlpoints,
+                                 self.ui.pushbutton_mesh_mesher]):
             btn.pressed.connect(
                 make_callback(self.vtkwidget.change_mesh_tab, i, btn))
+
+        self.ui.pushbutton_mesh_autosize.pressed.connect(
+            self.vtkwidget.auto_size_mesh_extents)
+
+        # connect unifrom mesh
+        for widget in [self.ui.lineedit_mesh_min_x,
+                       self.ui.lineedit_mesh_max_x,
+                       self.ui.lineedit_mesh_min_y,
+                       self.ui.lineedit_mesh_max_y,
+                       self.ui.lineedit_mesh_min_z,
+                       self.ui.lineedit_mesh_max_z,
+                       self.ui.lineedit_mesh_cells_x,
+                       self.ui.lineedit_mesh_cells_y,
+                       self.ui.lineedit_mesh_cells_z
+                       ]:
+            widget.editingFinished.connect(self.vtkwidget.update_mesh)
 
     def __setup_workflow_widget(self):
 

@@ -4,6 +4,9 @@ from __future__ import print_function, absolute_import, unicode_literals
 import os
 from collections import OrderedDict
 
+# 3rd pary imports
+import numpy as np
+
 # Qt imports
 from qtpy import QtCore, QtGui
 
@@ -68,6 +71,18 @@ class VtkWidget(QtGui.QWidget):
         self.geometrytree = self.parent.ui.treeWidgetGeometry
         self.booleanbtndict = self.parent.booleanbtndict
 
+        self.extent_widgets = [self.parent.ui.lineedit_mesh_min_x,
+                               self.parent.ui.lineedit_mesh_max_x,
+                               self.parent.ui.lineedit_mesh_min_y,
+                               self.parent.ui.lineedit_mesh_max_y,
+                               self.parent.ui.lineedit_mesh_min_z,
+                               self.parent.ui.lineedit_mesh_max_z,
+                               ]
+        self.cell_widgets = [self.parent.ui.lineedit_mesh_cells_x,
+                             self.parent.ui.lineedit_mesh_cells_y,
+                             self.parent.ui.lineedit_mesh_cells_z,
+                             ]
+
         # --- data ---
         self.geometrydict = {}
 
@@ -104,6 +119,14 @@ class VtkWidget(QtGui.QWidget):
             ('quadric_decimation', vtk.vtkQuadricDecimation),
             ('quadric_clustering', vtk.vtkQuadricClustering)
         ])
+
+        self.rectilinear_grid = vtk.vtkRectilinearGrid()
+
+        self.grid_viewer_dict = {
+            'filters': [],
+            'mappers': [],
+            'actors':  [],
+            }
 
         # --- layout ---
         self.hlayout = QtGui.QHBoxLayout(self)
@@ -157,7 +180,9 @@ class VtkWidget(QtGui.QWidget):
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
-
+        """
+        The selected geometry changed, update UI
+        """
         current_selection = self.geometrytree.selectedItems()
 
         enableboolbtn = False
@@ -222,6 +247,9 @@ class VtkWidget(QtGui.QWidget):
             )
 
     def geometry_clicked(self, item):
+        """
+        Hide/Show the clicked geometry
+        """
 
         name = str(item.text(0)).lower()
         if item.checkState(0) == QtCore.Qt.Unchecked:
@@ -232,6 +260,9 @@ class VtkWidget(QtGui.QWidget):
         self.vtkRenderWindow.Render()
 
     def add_stl(self):
+        """
+        Open browse dialog and load selected stl file
+        """
 
         filename = str(QtGui.QFileDialog.getOpenFileName(
             self, 'Select an STL File',
@@ -301,7 +332,9 @@ class VtkWidget(QtGui.QWidget):
             self.geometrytree.setCurrentItem(item)
 
     def parameter_edited(self, widget):
-
+        """
+        Update the value of edited paraemter in the geometrydict
+        """
         current_selection = self.geometrytree.selectedItems()
 
         if current_selection:
@@ -344,6 +377,9 @@ class VtkWidget(QtGui.QWidget):
                 self.vtkRenderWindow.Render()
 
     def update_primitive(self, name):
+        """
+        Update the specified primitive
+        """
         primtype = self.geometrydict[name]['type']
 
         if 'source' in self.geometrydict[name]:
@@ -394,6 +430,9 @@ class VtkWidget(QtGui.QWidget):
         return source
 
     def update_transform(self, name):
+        """
+        Update the specified object's transform filter.
+        """
         transform = self.geometrydict[name]['transform']
         transform_filter = self.geometrydict[name]['transformfilter']
 
@@ -431,6 +470,9 @@ class VtkWidget(QtGui.QWidget):
         return transform_filter
 
     def add_primitive(self, primtype='sphere'):
+        """
+        Add the specified primitive
+        """
 
         name = get_unique_string(primtype, list(self.geometrydict.keys()))
 
@@ -509,6 +551,9 @@ class VtkWidget(QtGui.QWidget):
         self.geometrytree.setCurrentItem(item)
 
     def update_parametric(self, name):
+        """
+        Update the specified parameteric object.
+        """
         paratype = self.geometrydict[name]['type']
         para_object = self.geometrydict[name]['parametric_object']
         source = self.geometrydict[name]['source']
@@ -573,6 +618,9 @@ class VtkWidget(QtGui.QWidget):
         return source
 
     def add_parametric(self, name):
+        """
+        Add the specified parametric object
+        """
 
         parametric_object = self.parametricdict[name]()
         source = vtk.vtkParametricFunctionSource()
@@ -661,6 +709,9 @@ class VtkWidget(QtGui.QWidget):
         self.geometrytree.setCurrentItem(item)
 
     def boolean_operation(self, booltype):
+        """
+        Apply a boolean operation with the currently selected toplevel items.
+        """
 
         current_selection = self.geometrytree.selectedItems()
 
@@ -734,6 +785,9 @@ class VtkWidget(QtGui.QWidget):
             self.geometrytree.setCurrentItem(toplevel)
 
     def remove_geometry(self):
+        """
+        Remove the currently selected geometry, filter, or boolean operation
+        """
         currentSelection = self.geometrytree.selectedItems()
         if currentSelection:
             text = str(currentSelection[-1].text(0)).lower()
@@ -778,6 +832,9 @@ class VtkWidget(QtGui.QWidget):
 #            self.vtkrenderer.AddActor(self.geometrydict[new]['actor'])
 
     def update_filter(self, name):
+        """
+        Update the currently selected filter
+        """
 
         filtertype = self.geometrydict[name]['type']
         vtkfilter = self.geometrydict[name]['filter']
@@ -836,6 +893,10 @@ class VtkWidget(QtGui.QWidget):
         vtkfilter.Update()
 
     def add_filter(self, filtertype):
+        """
+        add the selected filter with the input being the currently selected
+        toplevel item
+        """
 
         current_selection = self.geometrytree.selectedItems()
         if current_selection:
@@ -936,8 +997,16 @@ class VtkWidget(QtGui.QWidget):
             if item.checkState(0) == QtCore.Qt.Checked:
                 append_filter.AddInputData(
                     self.get_input_data(str(item.text(0))).GetOutput())
+        append_filter.Update()
 
         return append_filter
+
+    def get_geometry_extents(self):
+        """ determine the extents of the visible geometry """
+
+        geometry = self.collect_toplevel_geometry()
+
+        return geometry.GetOutput().GetBounds()
 
     def export_stl(self, file_name):
         """ expoort visivle toplevel geometry """
@@ -957,7 +1026,7 @@ class VtkWidget(QtGui.QWidget):
 
     # --- mesh ---
     def change_mesh_tab(self, tabnum, btn):
-
+        """ switch mesh stacked widget based on selected """
         self.parent.animate_stacked_widget(
             self.parent.ui.stackedwidget_mesh,
             self.parent.ui.stackedwidget_mesh.currentIndex(),
@@ -967,3 +1036,79 @@ class VtkWidget(QtGui.QWidget):
             to_btn=btn,
             btn_layout=self.parent.ui.gridlayout_mesh_tab_btns,
             )
+
+    def auto_size_mesh_extents(self):
+        """ collect and set the extents of the visible geometry """
+        extents = self.get_geometry_extents()
+
+        for widget, extent in zip(self.extent_widgets, extents):
+            widget.setText(str(extent))
+
+        self.update_mesh()
+
+    def update_mesh(self):
+
+        extents = []
+        for widget in self.extent_widgets:
+            extents.append(float(widget.text()))
+
+        cells = []
+        for widget in self.cell_widgets:
+            cells.append(int(widget.text()))
+
+        self.rectilinear_grid.SetDimensions(*cells)
+
+        # determine cell spacing
+        x_coords = vtk.vtkFloatArray()
+        for i in np.linspace(extents[0], extents[1], cells[0]):
+            x_coords.InsertNextValue(i)
+
+        y_coords = vtk.vtkFloatArray()
+        for i in np.linspace(extents[2], extents[3], cells[1]):
+            y_coords.InsertNextValue(i)
+
+        z_coords = vtk.vtkFloatArray()
+        for i in np.linspace(extents[4], extents[5], cells[2]):
+            z_coords.InsertNextValue(i)
+
+        self.rectilinear_grid.SetXCoordinates(x_coords)
+        self.rectilinear_grid.SetYCoordinates(y_coords)
+        self.rectilinear_grid.SetZCoordinates(z_coords)
+
+        # update actors
+        # remove exsisting
+        for actor in self.grid_viewer_dict['actors']:
+            self.vtkrenderer.RemoveActor(actor)
+
+        self.grid_viewer_dict['filters'] = []
+        self.grid_viewer_dict['actors'] = []
+        self.grid_viewer_dict['mappers'] = []
+
+        # add new actors
+        for i in range(3):
+            filter_ = vtk.vtkRectilinearGridGeometryFilter()
+            filter_.SetInputData(self.rectilinear_grid)
+
+            if i == 0:
+                filter_.SetExtent(0, 0, 0, cells[1], 0, cells[2])
+            elif i == 1:
+                filter_.SetExtent(0, cells[0], 0, 0, 0, cells[2])
+            else:
+                filter_.SetExtent(0, cells[0], 0, cells[1], 0, 0)
+            filter_.Update()
+
+            self.grid_viewer_dict['filters'].append(filter_)
+            mapper = vtk.vtkPolyDataMapper()
+            mapper.SetInputConnection(filter_.GetOutputPort())
+            self.grid_viewer_dict['mappers'].append(mapper)
+
+            actor = vtk.vtkActor()
+            actor.SetMapper(mapper)
+            actor.GetProperty().SetRepresentationToWireframe()
+            actor.GetProperty().SetColor(.39, .71, .965)
+            self.grid_viewer_dict['actors'].append(actor)
+
+            self.vtkrenderer.AddActor(actor)
+
+        self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()

@@ -35,14 +35,151 @@ QTreeView::item:selected {
    color: white;
 }</string>
    </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="spacing">
-     <number>0</number>
-    </property>
+   <layout class="QGridLayout" name="gridLayout_52">
     <property name="margin">
      <number>0</number>
     </property>
-    <item>
+    <item row="1" column="0">
+     <widget class="QFrame" name="frame_mode_bar">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton:hover {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+QPushButton:pressed {
+    color: #1974f4;
+    background-color: transparent;
+	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
+}
+
+QPushButton:checked {
+    color:#1974f4;
+	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
+    background-color: transparent;
+}
+
+</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::NoFrame</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Plain</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_14">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="margin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QPushButton" name="pushButtonModeler">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Modeler</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonWorkflow">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Workflow</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButtonDeveloper">
+         <property name="font">
+          <font>
+           <pointsize>12</pointsize>
+          </font>
+         </property>
+         <property name="text">
+          <string>Developer</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="default">
+          <bool>false</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>535</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Status&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
      <widget class="QFrame" name="frame_content">
       <property name="frameShape">
        <enum>QFrame::NoFrame</enum>
@@ -3135,24 +3272,6 @@ QPushButton:checked {
                       <property name="spacing">
                        <number>0</number>
                       </property>
-                      <item row="0" column="3">
-                       <widget class="QPushButton" name="pushbutton_mesh_controlpoints_z">
-                        <property name="font">
-                         <font>
-                          <pointsize>10</pointsize>
-                         </font>
-                        </property>
-                        <property name="text">
-                         <string>Z Control</string>
-                        </property>
-                        <property name="checkable">
-                         <bool>false</bool>
-                        </property>
-                        <property name="flat">
-                         <bool>true</bool>
-                        </property>
-                       </widget>
-                      </item>
                       <item row="0" column="0">
                        <widget class="QPushButton" name="pushbutton_mesh_uniform">
                         <property name="font">
@@ -3175,14 +3294,14 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="0" column="1">
-                       <widget class="QPushButton" name="pushbutton_mesh_controlpoints_x">
+                       <widget class="QPushButton" name="pushbutton_mesh_controlpoints">
                         <property name="font">
                          <font>
                           <pointsize>10</pointsize>
                          </font>
                         </property>
                         <property name="text">
-                         <string>X Control</string>
+                         <string>Control Points</string>
                         </property>
                         <property name="checkable">
                          <bool>false</bool>
@@ -3193,14 +3312,14 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="0" column="2">
-                       <widget class="QPushButton" name="pushbutton_mesh_controlpoints_y">
+                       <widget class="QPushButton" name="pushbutton_mesh_mesher">
                         <property name="font">
                          <font>
                           <pointsize>10</pointsize>
                          </font>
                         </property>
                         <property name="text">
-                         <string>Y Control</string>
+                         <string>Mesher</string>
                         </property>
                         <property name="checkable">
                          <bool>false</bool>
@@ -3232,13 +3351,19 @@ QPushButton:checked {
                      </layout>
                     </widget>
                    </item>
-                   <item row="1" column="0">
+                   <item row="2" column="0">
                     <widget class="QStackedWidget" name="stackedwidget_mesh">
                      <property name="currentIndex">
                       <number>0</number>
                      </property>
-                     <widget class="QWidget" name="page">
+                     <widget class="QWidget" name="uniform">
                       <layout class="QGridLayout" name="gridLayout_34">
+                       <property name="margin">
+                        <number>0</number>
+                       </property>
+                       <property name="spacing">
+                        <number>5</number>
+                       </property>
                        <item row="3" column="0">
                         <widget class="QLabel" name="label_4">
                          <property name="text">
@@ -3324,10 +3449,18 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="3" column="1">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_x"/>
+                        <widget class="QLineEdit" name="lineedit_mesh_cells_x">
+                         <property name="text">
+                          <string>10</string>
+                         </property>
+                        </widget>
                        </item>
                        <item row="3" column="2">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_y"/>
+                        <widget class="QLineEdit" name="lineedit_mesh_cells_y">
+                         <property name="text">
+                          <string>10</string>
+                         </property>
+                        </widget>
                        </item>
                        <item row="4" column="0">
                         <widget class="QLabel" name="label_5">
@@ -3337,7 +3470,11 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="3" column="3">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_z"/>
+                        <widget class="QLineEdit" name="lineedit_mesh_cells_z">
+                         <property name="text">
+                          <string>10</string>
+                         </property>
+                        </widget>
                        </item>
                        <item row="4" column="3">
                         <widget class="QLineEdit" name="lineedit_mesh_cells_size_z">
@@ -3368,79 +3505,367 @@ QPushButton:checked {
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="page_2">
+                     <widget class="QWidget" name="control_points">
                       <layout class="QGridLayout" name="gridLayout_7">
+                       <property name="margin">
+                        <number>0</number>
+                       </property>
+                       <property name="spacing">
+                        <number>5</number>
+                       </property>
+                       <item row="2" column="0">
+                        <widget class="QGroupBox" name="groupBox_4">
+                         <property name="title">
+                          <string>Z Control Points</string>
+                         </property>
+                         <property name="flat">
+                          <bool>true</bool>
+                         </property>
+                         <layout class="QGridLayout" name="gridLayout_51">
+                          <property name="margin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <item row="1" column="0">
+                           <widget class="QTableWidget" name="tablewidget_mesh_control_points_z">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <column>
+                             <property name="text">
+                              <string>Position</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Cells</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Stretch</string>
+                             </property>
+                            </column>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QFrame" name="frame_33">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_3">
+                             <property name="spacing">
+                              <number>0</number>
+                             </property>
+                             <property name="margin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_add_z">
+                               <property name="text">
+                                <string>Add</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_remove_z">
+                               <property name="text">
+                                <string>Delete</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <spacer name="horizontalSpacer_11">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <widget class="QGroupBox" name="groupBox_3">
+                         <property name="title">
+                          <string>Y Control Points</string>
+                         </property>
+                         <property name="flat">
+                          <bool>true</bool>
+                         </property>
+                         <layout class="QGridLayout" name="gridLayout_50">
+                          <property name="margin">
+                           <number>0</number>
+                          </property>
+                          <property name="spacing">
+                           <number>0</number>
+                          </property>
+                          <item row="1" column="0">
+                           <widget class="QTableWidget" name="tablewidget_mesh_control_points_y">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <column>
+                             <property name="text">
+                              <string>Position</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Cells</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Stretch</string>
+                             </property>
+                            </column>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QFrame" name="frame_4">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_23">
+                             <property name="spacing">
+                              <number>0</number>
+                             </property>
+                             <property name="margin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_add_y">
+                               <property name="text">
+                                <string>Add</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_remove_y">
+                               <property name="text">
+                                <string>Delete</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <spacer name="horizontalSpacer_10">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
                        <item row="0" column="0">
-                        <widget class="QTableWidget" name="tableWidget">
-                         <property name="frameShape">
-                          <enum>QFrame::StyledPanel</enum>
+                        <widget class="QGroupBox" name="groupBox_2">
+                         <property name="title">
+                          <string>X Control Points</string>
                          </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Plain</enum>
+                         <property name="flat">
+                          <bool>true</bool>
                          </property>
-                         <column>
-                          <property name="text">
-                           <string>Position</string>
+                         <layout class="QGridLayout" name="gridLayout_49">
+                          <property name="horizontalSpacing">
+                           <number>5</number>
                           </property>
-                         </column>
-                         <column>
-                          <property name="text">
-                           <string>Cells</string>
+                          <property name="verticalSpacing">
+                           <number>0</number>
                           </property>
-                         </column>
+                          <property name="margin">
+                           <number>0</number>
+                          </property>
+                          <item row="1" column="0">
+                           <widget class="QTableWidget" name="tablewidget_mesh_control_points_x">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Plain</enum>
+                            </property>
+                            <column>
+                             <property name="text">
+                              <string>Position</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Cells</string>
+                             </property>
+                            </column>
+                            <column>
+                             <property name="text">
+                              <string>Stretch</string>
+                             </property>
+                            </column>
+                           </widget>
+                          </item>
+                          <item row="0" column="0">
+                           <widget class="QFrame" name="frame_2">
+                            <property name="frameShape">
+                             <enum>QFrame::StyledPanel</enum>
+                            </property>
+                            <property name="frameShadow">
+                             <enum>QFrame::Raised</enum>
+                            </property>
+                            <layout class="QHBoxLayout" name="horizontalLayout_27">
+                             <property name="spacing">
+                              <number>0</number>
+                             </property>
+                             <property name="margin">
+                              <number>0</number>
+                             </property>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_add_x">
+                               <property name="text">
+                                <string>Add</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <widget class="QToolButton" name="toolbutton_mesh_remove_x">
+                               <property name="text">
+                                <string>Delete</string>
+                               </property>
+                               <property name="autoRaise">
+                                <bool>true</bool>
+                               </property>
+                              </widget>
+                             </item>
+                             <item>
+                              <spacer name="horizontalSpacer_9">
+                               <property name="orientation">
+                                <enum>Qt::Horizontal</enum>
+                               </property>
+                               <property name="sizeHint" stdset="0">
+                                <size>
+                                 <width>40</width>
+                                 <height>20</height>
+                                </size>
+                               </property>
+                              </spacer>
+                             </item>
+                            </layout>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
                        </item>
                       </layout>
                      </widget>
-                     <widget class="QWidget" name="page_3">
+                     <widget class="QWidget" name="mesher">
                       <layout class="QGridLayout" name="gridLayout_35">
+                       <property name="margin">
+                        <number>0</number>
+                       </property>
+                       <property name="spacing">
+                        <number>5</number>
+                       </property>
+                       <item row="2" column="0">
+                        <spacer name="verticalSpacer_40">
+                         <property name="orientation">
+                          <enum>Qt::Vertical</enum>
+                         </property>
+                         <property name="sizeHint" stdset="0">
+                          <size>
+                           <width>20</width>
+                           <height>40</height>
+                          </size>
+                         </property>
+                        </spacer>
+                       </item>
                        <item row="0" column="0">
-                        <widget class="QTableWidget" name="tableWidget_2">
-                         <property name="frameShape">
-                          <enum>QFrame::StyledPanel</enum>
+                        <widget class="QLabel" name="label_127">
+                         <property name="text">
+                          <string>Mesher:</string>
                          </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Plain</enum>
+                         <property name="alignment">
+                          <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                          </property>
-                         <column>
+                        </widget>
+                       </item>
+                       <item row="0" column="1">
+                        <widget class="QComboBox" name="combobox_mesher">
+                         <item>
                           <property name="text">
-                           <string>Position</string>
+                           <string>vtkClipDataSet</string>
                           </property>
-                         </column>
-                         <column>
-                          <property name="text">
-                           <string>Cells</string>
-                          </property>
-                         </column>
+                         </item>
+                        </widget>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QPushButton" name="pushbutton_generate_mesh">
+                         <property name="text">
+                          <string>Generate Mesh</string>
+                         </property>
                         </widget>
                        </item>
                       </layout>
                      </widget>
                      <widget class="QWidget" name="page_4">
-                      <layout class="QGridLayout" name="gridLayout_36">
-                       <item row="0" column="0">
-                        <widget class="QTableWidget" name="tableWidget_3">
-                         <property name="frameShape">
-                          <enum>QFrame::StyledPanel</enum>
-                         </property>
-                         <property name="frameShadow">
-                          <enum>QFrame::Plain</enum>
-                         </property>
-                         <column>
-                          <property name="text">
-                           <string>Position</string>
-                          </property>
-                         </column>
-                         <column>
-                          <property name="text">
-                           <string>Cells</string>
-                          </property>
-                         </column>
-                        </widget>
-                       </item>
-                      </layout>
+                      <layout class="QGridLayout" name="gridLayout_36"/>
                      </widget>
                     </widget>
+                   </item>
+                   <item row="1" column="0">
+                    <spacer name="verticalSpacer_41">
+                     <property name="orientation">
+                      <enum>Qt::Vertical</enum>
+                     </property>
+                     <property name="sizeHint" stdset="0">
+                      <size>
+                       <width>20</width>
+                       <height>40</height>
+                      </size>
+                     </property>
+                    </spacer>
                    </item>
                   </layout>
                  </widget>
@@ -3468,7 +3893,7 @@ QPushButton:checked {
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QToolButton" name="toolButtonRegionAdd">
+                       <widget class="QToolButton" name="toolbutton_region_add">
                         <property name="text">
                          <string>Add</string>
                         </property>
@@ -3478,7 +3903,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolButtonRegionDelete">
+                       <widget class="QToolButton" name="toolbutton_region_delete">
                         <property name="text">
                          <string>Delete</string>
                         </property>
@@ -3488,7 +3913,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolButtonRegionCopy">
+                       <widget class="QToolButton" name="toolbutton_region_copy">
                         <property name="text">
                          <string>Copy</string>
                         </property>
@@ -4067,7 +4492,7 @@ QPushButton:checked {
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QToolButton" name="toolButtonFluidSpeciesAdd">
+                          <widget class="QToolButton" name="toolbutton_fluid_species_add">
                            <property name="text">
                             <string>Add</string>
                            </property>
@@ -4077,7 +4502,7 @@ QPushButton:checked {
                           </widget>
                          </item>
                          <item>
-                          <widget class="QToolButton" name="toolButtonFluidSpeciesDelete">
+                          <widget class="QToolButton" name="toolbutton_fluid_species_delete">
                            <property name="text">
                             <string>Delete</string>
                            </property>
@@ -4087,7 +4512,7 @@ QPushButton:checked {
                           </widget>
                          </item>
                          <item>
-                          <widget class="QToolButton" name="toolButtonFluidSpeciesCopy">
+                          <widget class="QToolButton" name="toolbutton_fluid_species_copy">
                            <property name="text">
                             <string>Copy</string>
                            </property>
@@ -4302,7 +4727,7 @@ QPushButton:checked {
                        <number>0</number>
                       </property>
                       <item>
-                       <widget class="QToolButton" name="toolButtonTFMSolidsAdd">
+                       <widget class="QToolButton" name="toolbutton_tfm_solids_add">
                         <property name="text">
                          <string>Add</string>
                         </property>
@@ -4312,7 +4737,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolButtonTFMSolidsDelete">
+                       <widget class="QToolButton" name="toolbutton_tfm_solids_delete">
                         <property name="text">
                          <string>Delete</string>
                         </property>
@@ -4322,7 +4747,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item>
-                       <widget class="QToolButton" name="toolButtonTFMSolidsCopy">
+                       <widget class="QToolButton" name="toolbutton_tfm_solids_copy">
                         <property name="text">
                          <string>Copy</string>
                         </property>
@@ -4359,15 +4784,33 @@ QPushButton:checked {
                    </item>
                    <item>
                     <widget class="QSplitter" name="splitter_4">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
                      </property>
                      <widget class="QTableWidget" name="tableWidget_7">
                       <property name="sizePolicy">
-                       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                       <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
                         <horstretch>0</horstretch>
                         <verstretch>0</verstretch>
                        </sizepolicy>
+                      </property>
+                      <property name="minimumSize">
+                       <size>
+                        <width>0</width>
+                        <height>100</height>
+                       </size>
+                      </property>
+                      <property name="baseSize">
+                       <size>
+                        <width>0</width>
+                        <height>300</height>
+                       </size>
                       </property>
                       <property name="frameShadow">
                        <enum>QFrame::Plain</enum>
@@ -4403,476 +4846,399 @@ QPushButton:checked {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>534</width>
-                         <height>69</height>
+                         <width>517</width>
+                         <height>534</height>
                         </rect>
                        </property>
-                       <widget class="QCheckBox" name="checkBox_8">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>30</y>
-                          <width>160</width>
-                          <height>17</height>
-                         </rect>
-                        </property>
-                        <property name="text">
-                         <string>Solve U-Momentum Equation</string>
-                        </property>
-                       </widget>
-                       <widget class="QCheckBox" name="checkBox_9">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>52</y>
-                          <width>159</width>
-                          <height>17</height>
-                         </rect>
-                        </property>
-                        <property name="text">
-                         <string>Solve V-Momentum Equation</string>
-                        </property>
-                       </widget>
-                       <widget class="QCheckBox" name="checkBox_10">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>74</y>
-                          <width>167</width>
-                          <height>17</height>
-                         </rect>
-                        </property>
-                        <property name="text">
-                         <string>Solver W-Momentum Equation</string>
-                        </property>
-                       </widget>
-                       <widget class="QCheckBox" name="checkBox_11">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>96</y>
-                          <width>138</width>
-                          <height>17</height>
-                         </rect>
-                        </property>
-                        <property name="text">
-                         <string>Enable Spceis Equations</string>
-                        </property>
-                       </widget>
-                       <widget class="QCheckBox" name="checkBox_12">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>119</y>
-                          <width>137</width>
-                          <height>17</height>
-                         </rect>
-                        </property>
-                        <property name="text">
-                         <string>Enable Scalar Equations</string>
-                        </property>
-                       </widget>
-                       <widget class="QLineEdit" name="lineEdit_28">
-                        <property name="geometry">
-                         <rect>
-                          <x>147</x>
-                          <y>118</y>
-                          <width>133</width>
-                          <height>20</height>
-                         </rect>
-                        </property>
-                       </widget>
-                       <widget class="Line" name="line">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>143</y>
-                          <width>403</width>
-                          <height>16</height>
-                         </rect>
-                        </property>
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                       </widget>
-                       <widget class="QFrame" name="frame_22">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>5</y>
-                          <width>165</width>
-                          <height>20</height>
-                         </rect>
-                        </property>
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                         <enum>QFrame::Plain</enum>
-                        </property>
-                        <layout class="QHBoxLayout" name="horizontalLayout_19">
-                         <property name="spacing">
-                          <number>5</number>
-                         </property>
-                         <property name="margin">
-                          <number>0</number>
-                         </property>
-                         <item>
-                          <widget class="QLabel" name="label_38">
-                           <property name="text">
-                            <string>Name</string>
+                       <layout class="QGridLayout" name="gridLayout_53">
+                        <item row="0" column="0" colspan="3">
+                         <widget class="QFrame" name="frame_22">
+                          <property name="frameShape">
+                           <enum>QFrame::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Plain</enum>
+                          </property>
+                          <layout class="QHBoxLayout" name="horizontalLayout_19">
+                           <property name="spacing">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLineEdit" name="lineEdit_27"/>
-                         </item>
-                        </layout>
-                       </widget>
-                       <widget class="QFrame" name="frame_23">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>151</y>
-                          <width>358</width>
-                          <height>55</height>
-                         </rect>
-                        </property>
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                         <enum>QFrame::Plain</enum>
-                        </property>
-                        <layout class="QGridLayout" name="gridLayout_18">
-                         <property name="leftMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="spacing">
-                          <number>5</number>
-                         </property>
-                         <item row="0" column="1">
-                          <widget class="QLineEdit" name="lineEdit_29"/>
-                         </item>
-                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_39">
-                           <property name="text">
-                            <string>Diameter</string>
+                           <property name="margin">
+                            <number>0</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="0">
-                          <widget class="QLabel" name="label_40">
-                           <property name="text">
-                            <string>Density</string>
+                           <item>
+                            <widget class="QLabel" name="label_38">
+                             <property name="text">
+                              <string>Name</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QLineEdit" name="lineEdit_27"/>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="2" column="0" colspan="3">
+                         <widget class="QCheckBox" name="checkBox_9">
+                          <property name="text">
+                           <string>Solve V-Momentum Equation</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="3" column="0" colspan="3">
+                         <widget class="QCheckBox" name="checkBox_10">
+                          <property name="text">
+                           <string>Solver W-Momentum Equation</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="4" column="0">
+                         <widget class="QCheckBox" name="checkBox_11">
+                          <property name="text">
+                           <string>Enable Spceis Equations</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="5" column="0">
+                         <widget class="QCheckBox" name="checkBox_12">
+                          <property name="text">
+                           <string>Enable Scalar Equations</string>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="5" column="1" colspan="2">
+                         <widget class="QLineEdit" name="lineEdit_28"/>
+                        </item>
+                        <item row="6" column="0" colspan="3">
+                         <widget class="Line" name="line">
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="7" column="0" colspan="3">
+                         <widget class="QFrame" name="frame_23">
+                          <property name="frameShape">
+                           <enum>QFrame::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Plain</enum>
+                          </property>
+                          <layout class="QGridLayout" name="gridLayout_18">
+                           <property name="leftMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="0" column="2">
-                          <widget class="QLabel" name="label_41">
-                           <property name="text">
-                            <string>m</string>
+                           <property name="topMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="2">
-                          <widget class="QLineEdit" name="lineEdit_30"/>
-                         </item>
-                         <item row="1" column="1">
-                          <widget class="QComboBox" name="comboBox_14"/>
-                         </item>
-                         <item row="1" column="3">
-                          <widget class="QLabel" name="label_42">
-                           <property name="text">
-                            <string>kg/m3</string>
+                           <property name="rightMargin">
+                            <number>0</number>
                            </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                       <widget class="QGroupBox" name="groupBox_10">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>211</y>
-                          <width>403</width>
-                          <height>117</height>
-                         </rect>
-                        </property>
-                        <property name="title">
-                         <string>Species</string>
-                        </property>
-                        <property name="flat">
-                         <bool>true</bool>
-                        </property>
-                        <layout class="QVBoxLayout" name="verticalLayout_10">
-                         <property name="spacing">
-                          <number>0</number>
-                         </property>
-                         <property name="leftMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>5</number>
-                         </property>
-                         <item>
-                          <widget class="QFrame" name="frame_24">
-                           <property name="frameShape">
-                            <enum>QFrame::NoFrame</enum>
+                           <property name="bottomMargin">
+                            <number>5</number>
                            </property>
-                           <property name="frameShadow">
-                            <enum>QFrame::Plain</enum>
+                           <property name="spacing">
+                            <number>5</number>
                            </property>
-                           <layout class="QHBoxLayout" name="horizontalLayout_20">
-                            <property name="spacing">
-                             <number>0</number>
-                            </property>
-                            <property name="margin">
-                             <number>0</number>
-                            </property>
-                            <item>
-                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesAdd">
-                              <property name="text">
-                               <string>Add</string>
+                           <item row="0" column="1">
+                            <widget class="QLineEdit" name="lineEdit_29"/>
+                           </item>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_39">
+                             <property name="text">
+                              <string>Diameter</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QLabel" name="label_40">
+                             <property name="text">
+                              <string>Density</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="0" column="2">
+                            <widget class="QLabel" name="label_41">
+                             <property name="text">
+                              <string>m</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="2">
+                            <widget class="QLineEdit" name="lineEdit_30"/>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="QComboBox" name="comboBox_14"/>
+                           </item>
+                           <item row="1" column="3">
+                            <widget class="QLabel" name="label_42">
+                             <property name="text">
+                              <string>kg/m3</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="8" column="0" colspan="3">
+                         <widget class="QGroupBox" name="groupBox_10">
+                          <property name="title">
+                           <string>Species</string>
+                          </property>
+                          <property name="flat">
+                           <bool>true</bool>
+                          </property>
+                          <layout class="QVBoxLayout" name="verticalLayout_10">
+                           <property name="spacing">
+                            <number>0</number>
+                           </property>
+                           <property name="leftMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>5</number>
+                           </property>
+                           <property name="rightMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="bottomMargin">
+                            <number>5</number>
+                           </property>
+                           <item>
+                            <widget class="QFrame" name="frame_24">
+                             <property name="frameShape">
+                              <enum>QFrame::NoFrame</enum>
+                             </property>
+                             <property name="frameShadow">
+                              <enum>QFrame::Plain</enum>
+                             </property>
+                             <layout class="QHBoxLayout" name="horizontalLayout_20">
+                              <property name="spacing">
+                               <number>0</number>
                               </property>
-                              <property name="autoRaise">
-                               <bool>true</bool>
+                              <property name="margin">
+                               <number>0</number>
                               </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesDelete">
-                              <property name="text">
-                               <string>Delete</string>
-                              </property>
-                              <property name="autoRaise">
-                               <bool>true</bool>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <widget class="QToolButton" name="toolButtonTFMSolidsSpeciesCopy">
-                              <property name="text">
-                               <string>Copy</string>
-                              </property>
-                              <property name="autoRaise">
-                               <bool>true</bool>
-                              </property>
-                             </widget>
-                            </item>
-                            <item>
-                             <spacer name="horizontalSpacer_8">
-                              <property name="orientation">
-                               <enum>Qt::Horizontal</enum>
-                              </property>
-                              <property name="sizeHint" stdset="0">
-                               <size>
-                                <width>281</width>
-                                <height>20</height>
-                               </size>
-                              </property>
-                             </spacer>
-                            </item>
-                           </layout>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QTableWidget" name="tableWidget_8">
-                           <property name="frameShadow">
-                            <enum>QFrame::Plain</enum>
+                              <item>
+                               <widget class="QToolButton" name="toolbutton_tfm_solids_species_add">
+                                <property name="text">
+                                 <string>Add</string>
+                                </property>
+                                <property name="autoRaise">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QToolButton" name="toolbutton_tfm_solids_species_delete">
+                                <property name="text">
+                                 <string>Delete</string>
+                                </property>
+                                <property name="autoRaise">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QToolButton" name="toolbutton_tfm_solids_species_copy">
+                                <property name="text">
+                                 <string>Copy</string>
+                                </property>
+                                <property name="autoRaise">
+                                 <bool>true</bool>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <spacer name="horizontalSpacer_8">
+                                <property name="orientation">
+                                 <enum>Qt::Horizontal</enum>
+                                </property>
+                                <property name="sizeHint" stdset="0">
+                                 <size>
+                                  <width>281</width>
+                                  <height>20</height>
+                                 </size>
+                                </property>
+                               </spacer>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item>
+                            <widget class="QTableWidget" name="tableWidget_8">
+                             <property name="frameShadow">
+                              <enum>QFrame::Plain</enum>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="9" column="0" colspan="3">
+                         <widget class="Line" name="line_2">
+                          <property name="orientation">
+                           <enum>Qt::Horizontal</enum>
+                          </property>
+                         </widget>
+                        </item>
+                        <item row="10" column="0" colspan="3">
+                         <widget class="QFrame" name="frame_25">
+                          <property name="frameShape">
+                           <enum>QFrame::NoFrame</enum>
+                          </property>
+                          <property name="frameShadow">
+                           <enum>QFrame::Plain</enum>
+                          </property>
+                          <layout class="QGridLayout" name="gridLayout_19">
+                           <property name="leftMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                       <widget class="Line" name="line_2">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>333</y>
-                          <width>403</width>
-                          <height>16</height>
-                         </rect>
-                        </property>
-                        <property name="orientation">
-                         <enum>Qt::Horizontal</enum>
-                        </property>
-                       </widget>
-                       <widget class="QFrame" name="frame_25">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>341</y>
-                          <width>348</width>
-                          <height>107</height>
-                         </rect>
-                        </property>
-                        <property name="frameShape">
-                         <enum>QFrame::NoFrame</enum>
-                        </property>
-                        <property name="frameShadow">
-                         <enum>QFrame::Plain</enum>
-                        </property>
-                        <layout class="QGridLayout" name="gridLayout_19">
-                         <property name="leftMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="spacing">
-                          <number>5</number>
-                         </property>
-                         <item row="0" column="1">
-                          <widget class="QComboBox" name="comboBox_15"/>
-                         </item>
-                         <item row="1" column="1">
-                          <widget class="QComboBox" name="comboBox_16"/>
-                         </item>
-                         <item row="0" column="2">
-                          <widget class="QLineEdit" name="lineEdit_31"/>
-                         </item>
-                         <item row="0" column="3">
-                          <widget class="QLabel" name="label_44">
-                           <property name="text">
-                            <string>Pa</string>
+                           <property name="topMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="3">
-                          <widget class="QLabel" name="label_46">
-                           <property name="text">
-                            <string>kmol/kg</string>
+                           <property name="rightMargin">
+                            <number>0</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="0">
-                          <widget class="QLabel" name="label_45">
-                           <property name="text">
-                            <string>Molecular Weight</string>
+                           <property name="bottomMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="2">
-                          <widget class="QLineEdit" name="lineEdit_32"/>
-                         </item>
-                         <item row="0" column="0">
-                          <widget class="QLabel" name="label_43">
-                           <property name="text">
-                            <string>Viscosity</string>
+                           <property name="spacing">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="2" column="0">
-                          <widget class="QLabel" name="label_47">
-                           <property name="text">
-                            <string>Specific Heat</string>
+                           <item row="0" column="1">
+                            <widget class="QComboBox" name="comboBox_15"/>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="QComboBox" name="comboBox_16"/>
+                           </item>
+                           <item row="0" column="2">
+                            <widget class="QLineEdit" name="lineEdit_31"/>
+                           </item>
+                           <item row="0" column="3">
+                            <widget class="QLabel" name="label_44">
+                             <property name="text">
+                              <string>Pa</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="3">
+                            <widget class="QLabel" name="label_46">
+                             <property name="text">
+                              <string>kmol/kg</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QLabel" name="label_45">
+                             <property name="text">
+                              <string>Molecular Weight</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="2">
+                            <widget class="QLineEdit" name="lineEdit_32"/>
+                           </item>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_43">
+                             <property name="text">
+                              <string>Viscosity</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="2" column="0">
+                            <widget class="QLabel" name="label_47">
+                             <property name="text">
+                              <string>Specific Heat</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="3" column="0">
+                            <widget class="QLabel" name="label_48">
+                             <property name="text">
+                              <string>Conductivity</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="2" column="1">
+                            <widget class="QComboBox" name="comboBox_17"/>
+                           </item>
+                           <item row="3" column="1">
+                            <widget class="QComboBox" name="comboBox_18"/>
+                           </item>
+                           <item row="2" column="2">
+                            <widget class="QLineEdit" name="lineEdit_33"/>
+                           </item>
+                           <item row="3" column="2">
+                            <widget class="QLineEdit" name="lineEdit_34"/>
+                           </item>
+                           <item row="2" column="3">
+                            <widget class="QLabel" name="label_49">
+                             <property name="text">
+                              <string>kJ/(kg K)</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="3" column="3">
+                            <widget class="QLabel" name="label_50">
+                             <property name="text">
+                              <string>W/(m K)</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="11" column="0" colspan="2">
+                         <widget class="QGroupBox" name="groupBox_11">
+                          <property name="title">
+                           <string>Advanced</string>
+                          </property>
+                          <property name="flat">
+                           <bool>true</bool>
+                          </property>
+                          <layout class="QGridLayout" name="gridLayout_20">
+                           <property name="leftMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="3" column="0">
-                          <widget class="QLabel" name="label_48">
-                           <property name="text">
-                            <string>Conductivity</string>
+                           <property name="topMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="2" column="1">
-                          <widget class="QComboBox" name="comboBox_17"/>
-                         </item>
-                         <item row="3" column="1">
-                          <widget class="QComboBox" name="comboBox_18"/>
-                         </item>
-                         <item row="2" column="2">
-                          <widget class="QLineEdit" name="lineEdit_33"/>
-                         </item>
-                         <item row="3" column="2">
-                          <widget class="QLineEdit" name="lineEdit_34"/>
-                         </item>
-                         <item row="2" column="3">
-                          <widget class="QLabel" name="label_49">
-                           <property name="text">
-                            <string>kJ/(kg K)</string>
+                           <property name="rightMargin">
+                            <number>0</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="3" column="3">
-                          <widget class="QLabel" name="label_50">
-                           <property name="text">
-                            <string>W/(m K)</string>
+                           <property name="bottomMargin">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
-                       <widget class="QGroupBox" name="groupBox_11">
-                        <property name="geometry">
-                         <rect>
-                          <x>5</x>
-                          <y>453</y>
-                          <width>150</width>
-                          <height>64</height>
-                         </rect>
-                        </property>
-                        <property name="title">
-                         <string>Advanced</string>
-                        </property>
-                        <property name="flat">
-                         <bool>true</bool>
-                        </property>
-                        <layout class="QGridLayout" name="gridLayout_20">
-                         <property name="leftMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>5</number>
-                         </property>
-                         <property name="spacing">
-                          <number>5</number>
-                         </property>
-                         <item row="0" column="0">
-                          <widget class="QCheckBox" name="checkBox_13">
-                           <property name="text">
-                            <string>Disable close pack</string>
+                           <property name="spacing">
+                            <number>5</number>
                            </property>
-                          </widget>
-                         </item>
-                         <item row="1" column="0">
-                          <widget class="QCheckBox" name="checkBox_14">
-                           <property name="text">
-                            <string>Enable added mass force</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </widget>
+                           <item row="0" column="0">
+                            <widget class="QCheckBox" name="checkBox_13">
+                             <property name="text">
+                              <string>Disable close pack</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QCheckBox" name="checkBox_14">
+                             <property name="text">
+                              <string>Enable added mass force</string>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </widget>
+                        </item>
+                        <item row="1" column="0">
+                         <widget class="QCheckBox" name="checkBox_8">
+                          <property name="text">
+                           <string>Solve U-Momentum Equation</string>
+                          </property>
+                         </widget>
+                        </item>
+                       </layout>
                       </widget>
                      </widget>
                     </widget>
@@ -5287,146 +5653,6 @@ p, li { white-space: pre-wrap; }
            </item>
           </layout>
          </widget>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QFrame" name="frame_mode_bar">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>30</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QPushButton:hover {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-QPushButton:pressed {
-    color: #1974f4;
-    background-color: transparent;
-	font: 75 11pt &quot;MS Shell Dlg 2&quot;;
-}
-
-QPushButton:checked {
-    color:#1974f4;
-	font: 75 12pt &quot;MS Shell Dlg 2&quot;;
-    background-color: transparent;
-}
-
-</string>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::NoFrame</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Plain</enum>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_14">
-       <property name="spacing">
-        <number>0</number>
-       </property>
-       <property name="margin">
-        <number>0</number>
-       </property>
-       <item>
-        <widget class="QPushButton" name="pushButtonModeler">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Modeler</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="default">
-          <bool>false</bool>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonWorkflow">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Workflow</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="default">
-          <bool>false</bool>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButtonDeveloper">
-         <property name="font">
-          <font>
-           <pointsize>12</pointsize>
-          </font>
-         </property>
-         <property name="text">
-          <string>Developer</string>
-         </property>
-         <property name="checkable">
-          <bool>true</bool>
-         </property>
-         <property name="default">
-          <bool>false</bool>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>535</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Status&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
         </widget>
        </item>
       </layout>
