@@ -42,7 +42,7 @@
       DOUBLE PRECISION :: PIx4o3
       DOUBLE PRECISION :: o3 = 1.0d0/3.0d0
 
-      DOUBLE PRECISION :: lDT
+      DOUBLE PRECISION :: lDT, lOoDT
 ! Logical for Adams-Bashfort integration.
       LOGICAL,SAVE:: FIRST_PASS = .TRUE.
 
@@ -53,6 +53,14 @@
       PIx4o3 = Pi*4.0d0/3.0d0
 
       lDT = merge(DT, DTSOLID, DES_EXPLICITLY_COUPLED)
+      lOoDT = -1.0d0/lDT
+
+! Bound the amount of mass loss.
+      FORALL(NN=1:DIMENSION_N_S)
+         WHERE(PARTICLE_STATE(:MAX_PIP) == NORMAL_PARTICLE)         &
+            DES_R_s(:MAX_PIP,NN) = max(DES_R_s(:MAX_PIP,NN),        &
+            DES_X_s(:MAX_PIP,NN)*PMASS(:MAX_PIP)*lOoDT)
+      END FORALL
 
 ! First-order method: Euler
       IF(INTG_EULER) THEN

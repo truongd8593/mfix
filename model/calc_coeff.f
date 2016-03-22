@@ -144,7 +144,7 @@
 ! Modules
 !-----------------------------------------------
       USE discretelement, only : DISCRETE_ELEMENT
-      USE rxns,           only : RRATE, USE_RRATES
+      USE rxns,only : RRATE, USE_RRATES
       use run, only: ANY_SPECIES_EQ
 
       use error_manager
@@ -174,6 +174,10 @@
          ELSE
             CALL RRATES0 (IER)
          ENDIF
+
+! DES Chemical reactions
+         IF(ANY_SPECIES_EQ .AND. DISCRETE_ELEMENT) &
+            CALL DES_2FLUID_RXNS
       ENDIF
 
       RETURN

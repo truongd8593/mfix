@@ -74,9 +74,7 @@
 ! Calculate the size of particle packets.
       iParticlePacketSize = 30 + DES_USR_VAR_SIZE
       IF(ENERGY_EQ) &
-         iParticlePacketSize = iParticlePacketSize + 1
-      IF(ANY_SPECIES_EQ) &
-         iParticlePacketSize = iParticlePacketSize + DIMENSION_N_s
+         iParticlePacketSize = iParticlePacketSize + 1 + DIMENSION_N_s
       IF(DO_OLD) &
          iParticlePacketSize = iParticlePacketSize + 15
       IF(DO_OLD .AND. ENERGY_EQ) &

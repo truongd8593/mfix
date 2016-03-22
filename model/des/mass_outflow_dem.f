@@ -169,8 +169,8 @@
       ENDIF
 
       DES_RADIUS(NP) = ZERO
-      PMASS(NP) = ZERO
-      PVOL(NP) = ZERO
+      PMASS(NP) = HUGE(0.0)
+      PVOL(NP) = HUGE(0.0)
       RO_Sol(NP) = ZERO
       OMOI(NP) = ZERO
 

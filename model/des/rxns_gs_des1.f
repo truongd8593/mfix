@@ -119,7 +119,6 @@
 !  Subroutine: RXNS_GS_GAS1                                            !
 !  Author: J.Musser                                   Date: 21-NOV-14  !
 !                                                                      !
-!                                                                      !
 !  Purpose: This routine is called from the CONTINUUM. It calculates   !
 !  the scalar cell center drag force acting on the fluid using         !
 !  interpolated values for the gas velocity and volume fraction. The   !
@@ -153,6 +152,12 @@
       use sendrecvnode, only: DES_COLLECT_gDATA
 ! MPI wrapper for halo exchange.
       use sendrecv, only: SEND_RECV
+! Fluid time step size.
+      use run, only: DT
+! Flag to use stiff chemistry solver
+      use stiff_chem, only: stiff_chemistry
+! Routine to sync stiff solver results
+      use stiff_chem, only: FINALIZE_STIFF_SOLVER
 
 ! Global Parameters:
 !---------------------------------------------------------------------//
@@ -195,11 +200,17 @@
          IF(.NOT.IS_NORMAL(NP)) CYCLE
          IF(.NOT.FLUID_AT(PIJK(NP,4))) CYCLE
 
+         IJK = PIJK(NP,4)
+
 ! Calculate the rates of species formation/consumption.
          CALL CALC_RRATES_DES(NP, lRgp, lRgc, lRPhase, lHoRg, lSUMRg)
 
+! Directly integrate fluid cell reaction sources
+         IF(STIFF_CHEMISTRY) THEN
+            CALL DES_STIFF_CHEM(IJK, DT, lRgp, lRgc, lHoRg, lSUMRg)
+
 ! Store the gas phase source terms.
-         IF(DES_INTERP_ON) THEN
+         ELSEIF(DES_INTERP_ON) THEN
             DO LC=1,FILTER_SIZE
                IJK = FILTER_CELL(LC,NP)
                WEIGHT = FILTER_WEIGHT(LC,NP)
@@ -211,8 +222,6 @@
                DES_SUM_R_g(IJK) = DES_SUM_R_g(IJK) + lSUMRg*WEIGHT
             ENDDO
          ELSE
-            IJK = PIJK(NP,4)
-
             DES_R_gp(IJK,:) = DES_R_gp(IJK,:) + lRgp
             DES_R_gc(IJK,:) = DES_R_gc(IJK,:) + lRgc
             DES_R_PHASE(IJK,:) = DES_R_PHASE(IJK,:) + lRPhase
@@ -221,22 +230,110 @@
          ENDIF
       ENDDO
 
+! Make the necessary send/recv calls for field vars
+      IF(STIFF_CHEMISTRY) THEN
+         CALL FINALIZE_STIFF_SOLVER
+      ELSE
 ! Add in data stored in ghost cells from interpolation. This call must
 ! preceed the SEND_RECV to avoid overwriting ghost cell data.
-      IF(DES_INTERP_ON) THEN
-         CALL DES_COLLECT_gDATA(DES_R_gp)
-         CALL DES_COLLECT_gDATA(DES_R_gc)
-         CALL DES_COLLECT_gDATA(DES_R_PHASE)
-         CALL DES_COLLECT_gDATA(DES_HOR_g)
-         CALL DES_COLLECT_gDATA(DES_SUM_R_g)
-      ENDIF
+         IF(DES_INTERP_ON) THEN
+            CALL DES_COLLECT_gDATA(DES_R_gp)
+            CALL DES_COLLECT_gDATA(DES_R_gc)
+            CALL DES_COLLECT_gDATA(DES_R_PHASE)
+            CALL DES_COLLECT_gDATA(DES_HOR_g)
+            CALL DES_COLLECT_gDATA(DES_SUM_R_g)
+         ENDIF
 
 ! Update the species mass sources in ghost layers.
-      CALL SEND_RECV(DES_R_gp, 2)
-      CALL SEND_RECV(DES_R_gc, 2)
-      CALL SEND_RECV(DES_R_PHASE, 2)
-      CALL SEND_RECV(DES_HOR_g, 2)
-      CALL SEND_RECV(DES_SUM_R_g, 2)
+         CALL SEND_RECV(DES_R_gp, 2)
+         CALL SEND_RECV(DES_R_gc, 2)
+         CALL SEND_RECV(DES_R_PHASE, 2)
+         CALL SEND_RECV(DES_HOR_g, 2)
+         CALL SEND_RECV(DES_SUM_R_g, 2)
+      ENDIF
 
       RETURN
       END SUBROUTINE RXNS_GS_GAS1
+
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Subroutine: DES_STIFF_CHEM                                          !
+!  Author: J.Musser                                   Date:  7-FEB-16  !
+!                                                                      !
+!  Purpose: This routine updates a fluid cell by directly integrating  !
+!  the source terms due to reaction. Note that this routine is called  !
+!  for each particle to prevent over consumption of reactants.         !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      SUBROUTINE DES_STIFF_CHEM(pIJK, pDT, pRgp, pRgc, pHoRg, pSUMRg)
+
+      USE constant, only: GAS_CONST
+      USE fldvar, only: EP_g, RO_g, ROP_g, T_g, X_g, P_g
+      USE geometry, only: VOL
+      USE param1, only: ZERO, SMALL_NUMBER, ONE
+      USE physprop, only: C_pg, MW_g, MW_MIX_g
+      use toleranc, only: ZERO_X_gs
+      use physprop, only: NMAX
+
+      use compar, only: myPE
+      IMPLICIT NONE
+
+! Passed variables
+!---------------------------------------------------------------------//
+      INTEGER, INTENT(IN) :: pIJK   ! fluid cell index
+      DOUBLE PRECISION, INTENT(IN) :: pDT           ! fluid time step
+      DOUBLE PRECISION, INTENT(IN) :: pRgp(NMAX(0)) ! Rate of production
+      DOUBLE PRECISION, INTENT(IN) :: pRgc(NMAX(0)) ! Rate of consumption
+      DOUBLE PRECISION, INTENT(IN) :: pHoRg         ! Heat of reaction
+      DOUBLE PRECISION, INTENT(IN) :: pSUMRg        ! Net mass change
+
+! Local variables
+!---------------------------------------------------------------------//
+      DOUBLE PRECISION :: lRg(NMAX(0)), sumXg
+      DOUBLE PRECISION :: lDToVOL
+      INTEGER :: N
+!......................................................................!
+
+! Time step divided by cell volume.
+      lDToVOL = pDT/VOL(pIJK)
+! Net change in species mass
+      lRg = pRgp - pRgc
+
+! Gas phase density: ROP_g
+      ROP_G(pIJK) = ROP_G(pIJK) + lDToVOL*pSUMRg
+
+! Temperature: T_g
+      T_g(pIJK) = T_g(pIJK) - lDToVOL*(pHORg/(ROP_g(pIJK)*C_pg(pIJK)))
+
+! Species mass fractions: X_g
+      DO N=1,NMAX(0)
+         X_g(pIJK,N) = X_g(pIJK,N) + lDToVOL * &
+            (lRg(N) - X_g(pIJK,N)*pSUMRg)/(ROP_g(pIJK))
+      ENDDO
+
+! Cleanup over/under shoots.
+      X_g(pIJK,:) = min(max(X_g(pIJK,:), ZERO), ONE)
+      sumXg = sum(X_g(pIJK,:))
+      X_g(pIJK,:) = X_g(pIJK,:)/sumXg
+
+! Gas phase bulk density is updated within the stiff solver (lVar(1)).
+! Now that the gas phase volume fraction is updated, the gas phase
+! density can be backed out. RO_g * EP_g = ROP_g
+      IF(EP_g(pIJK) > SMALL_NUMBER) THEN
+         RO_g(pIJK) = ROP_g(pIJK) / EP_g(pIJK)
+      ELSE
+! This case shouldn't happen, however HUGE is used to aid in tracking
+! errors should this somehow become and issue.
+         RO_g(pIJK) = huge(0.0)
+      ENDIF
+
+! Calculate the mixture molecular weight.
+      MW_MIX_G(pIJK) = sum(X_G(pIJK,1:NMAX(0))/MW_g(1:NMAX(0)))
+      MW_MIX_G(pIJK) = ONE/MW_MIX_G(pIJK)
+
+! Calculate the gas phase pressure.
+      P_G(pIJK) = (RO_G(pIJK)*GAS_CONST*T_G(pIJK))/MW_MIX_G(pIJK)
+
+      RETURN
+      END SUBROUTINE DES_STIFF_CHEM

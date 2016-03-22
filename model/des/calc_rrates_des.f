@@ -87,6 +87,9 @@
       pRgc(:) = ZERO
       pHoRg = ZERO
 
+      pRPhase = ZERO
+      pSUMRg = ZERO
+
 ! Set the species limiter:
       speciesLimiter = ZERO_X_gs
 

@@ -58,10 +58,6 @@
       use des_thermo, only: DES_T_s
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS, PVOL
-! Number of cells used in interpolation
-      use particle_filter, only: FILTER_SIZE
-! Cells and weights for interpolation
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Flag to send/recv old (previous) values
@@ -157,12 +153,6 @@
 ! 11) User Variables
             IF(DES_USR_VAR_SIZE > 0) &
                call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)
-! 12) Interpolation verights
-            IF(FILTER_SIZE > 0) THEN
-               call unpack_dbuf(lbuf,filter_cell(:,llocpar),pface)
-               call unpack_dbuf(lbuf,filter_weight(:,llocpar),pface)
-            ENDIF
-
 
 ! Calculate the volume of the ghost particle.
             PVOL(llocpar) = (4.0D0/3.0D0)*PI*DES_RADIUS(llocpar)**3
@@ -226,11 +216,6 @@
 ! 11) User varaible
             IF(DES_USR_VAR_SIZE > 0)&
                call unpack_dbuf(lbuf,des_usr_var(:,ispot),pface)
-! 12) Interpolation verights
-            IF(FILTER_SIZE > 0) THEN
-               call unpack_dbuf(lbuf,filter_cell(:,ispot),pface)
-               call unpack_dbuf(lbuf,filter_weight(:,ispot),pface)
-            ENDIF
 
             ighost_updated(ispot) = .true.
             lnewspot(lcurpar) = ispot
@@ -298,8 +283,6 @@
       use des_rxns, only: DES_X_s
 ! Particle tempertures.
       use des_thermo, only: DES_T_s
-! Cells and weights for interpolation
-      use particle_filter, only: FILTER_WEIGHT
 ! Force arrays acting on the particle
       use discretelement, only: FC, TOW
 ! One of the moment of inertia
@@ -437,12 +420,12 @@
          call unpack_dbuf(lbuf,fc(llocpar,:),pface)
 ! 20) Accumulated torque forces
          call unpack_dbuf(lbuf,tow(llocpar,:),pface)
+         IF(ENERGY_EQ) THEN
 ! 21) Temperature
-         IF(ENERGY_EQ) &
             call unpack_dbuf(lbuf,des_t_s(llocpar),pface)
 ! 22) Species composition
-         IF(ANY_SPECIES_EQ) &
             call unpack_dbuf(lbuf,des_x_s(llocpar,:),pface)
+          ENDIF
 ! 23) User defined variable
          IF(DES_USR_VAR_SIZE > 0) &
             call unpack_dbuf(lbuf,des_usr_var(:,llocpar),pface)

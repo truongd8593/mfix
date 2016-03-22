@@ -206,7 +206,7 @@ module desmpi_wrapper
       '*.LOG file may contain other error messages ',/,'*****************', &
       '********************************************',/)
 
-      call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
+!     call MPI_BARRIER(MPI_COMM_WORLD, mpierr)
       call MPI_ABORT(MPI_COMM_WORLD, ERRORCODE, mpierr)
       write(*,"('(PE ',I2,') : MPI_ABORT return = ',I2)") &
       mylid,mpierr

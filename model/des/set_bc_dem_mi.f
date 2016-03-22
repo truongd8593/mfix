@@ -179,15 +179,20 @@
 
          OCCUPANTS = DEM_MI(BCV_I)%OCCUPANTS
 
+         IF(PI_COUNT(BCV_I) > 0) THEN
 ! Calculate the minimum inlet velocity. The cutoff is associated with
 ! square packing of disks on a plane.
-         MINIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(     &
-            FLOOR( real(OCCUPANTS)/real(PI_COUNT(BCV_I)))))
+            MINIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(  &
+               FLOOR( real(OCCUPANTS)/real(PI_COUNT(BCV_I)))))
 ! Calculate the velocity needed to ensure that half the inlet is free.
 ! Inlets with velocities greater than this value can be randomly seeded,
 ! otherwise, particles are seeded in according to the grid.
-         MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(     &
-            FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I)))))
+            MAXIPV = MAX_DIA/( DTSOLID*dble(PI_FACTOR(BCV_I)) * dble(  &
+             FLOOR(CEILING(real(OCCUPANTS)/2.0)/real(PI_COUNT(BCV_I)))))
+         ELSE
+            MINIPV = -UNDEFINED
+            MAXIPV =  UNDEFINED
+         ENDIF
 
          if(dFlag) write(*,"(/2x,'MaxIPV:',3x,g12.5)") MAXIPV
          if(dFlag) write(*,"( 2x,'MinIPV:',3x,g12.5)") MINIPV

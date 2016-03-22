@@ -351,7 +351,7 @@
 ! Stiff chemistry solver is a TFM reaction model not for DES.
       IF(STIFF_CHEMISTRY) THEN
          WRITE(ERR_MSG,9003)
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         CALL FLUSH_ERR_MSG(ABORT=.FALSE.)
       ENDIF
 
  9003 FORMAT('Error 9003: The stiff chemistry solver is not ',         &

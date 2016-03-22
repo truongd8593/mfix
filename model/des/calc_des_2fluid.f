@@ -27,7 +27,7 @@
       use run, only: ANY_SPECIES_EQ
 
       use des_thermo, only: CALC_CONV_DES
-!     use rxns
+      use rxns, only: RRATE
 
       IMPLICIT NONE
 
@@ -44,7 +44,7 @@
 ! Calculate gas phase source terms: gas-solids heat transfer
          IF(CALC_CONV_DES) CALL CONV_GS_GAS1
 ! Calculate gas phase source terms: gas-solids mass transfer
-         IF(ANY_SPECIES_EQ) CALL RXNS_GS_GAS1
+         IF(RRATE) CALL RXNS_GS_GAS1
       ENDIF
 
 ! Calculate gas phase source terms: gas-solids drag force.
@@ -152,8 +152,11 @@
       use compar, only: IJKSTART3, IJKEND3
       use geometry, only: VOL
       use functions, only: FLUID_AT
+      use toleranc, only: ZERO_X_gs
 ! Flag: Gas sees the effect of particles in gas/solids flows.
       use discretelement, only: DES_ONEWAY_COUPLED
+! Flag to use stiff chemistry solver
+      use stiff_chem, only: stiff_chemistry
 
       IMPLICIT NONE
 
@@ -170,6 +173,7 @@
       DOUBLE PRECISION :: toTFM, lDT
 
       IF(DES_ONEWAY_COUPLED) RETURN
+      IF(STIFF_CHEMISTRY) RETURN
 
 ! For DEM simulations that do not have a homogeneous gas phase reaction,
 ! the gas phase arrays need to be cleared.
@@ -194,12 +198,8 @@
          R_PHASE(IJK,:) = R_PHASE(IJK,:) + DES_R_PHASE(IJK,:)*toTFM
          SUM_R_g(IJK) = SUM_R_g(IJK) + DES_SUM_R_g(IJK)*toTFM
          HOR_g(IJK) = HOR_g(IJK) + DES_HOR_g(IJK)*toTFM
-
-         WHERE(X_g(IJK,:) > SMALL_NUMBER)
-            RoX_gc(IJK,:)= RoX_gc(IJK,:)+DES_R_gc(IJK,:)*toTFM/X_g(IJK,:)
-         ELSEWHERE
-            RoX_gc(IJK,:) = RoX_gc(IJK,:) + 1.0d-9/toTFM
-         ENDWHERE
+         WHERE(X_g(IJK,:) > ZERO_X_gs) RoX_gc(IJK,:) = &
+            RoX_gc(IJK,:)+DES_R_gc(IJK,:)*toTFM/X_g(IJK,:)
       ENDDO
 
       RETURN

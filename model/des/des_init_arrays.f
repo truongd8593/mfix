@@ -103,6 +103,7 @@
       DES_POS_NEW(LB:UB,:) = ZERO
       DES_VEL_NEW(LB:UB,:) = ZERO
       OMEGA_NEW(LB:UB,:) = ZERO
+      PPOS(LB:UB,:) = ZERO
       IF(PARTICLE_ORIENTATION) THEN
          ORIENTATION(1,:) = INIT_ORIENTATION(1)
          ORIENTATION(2,:) = INIT_ORIENTATION(2)
@@ -168,6 +169,8 @@
          DES_C_PS(LB:UB) = ZERO
          DES_X_s(LB:UB,:) = ZERO
          Q_Source(LB:UB) = ZERO
+         CONV_Qs(LB:UB) = ZERO
+         GAMMAxSA(LB:UB) = ZERO
          IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(LB:UB) = ZERO
       ENDIF

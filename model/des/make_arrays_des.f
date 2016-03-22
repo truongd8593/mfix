@@ -175,8 +175,6 @@
 
       IF(RUN_TYPE == 'NEW') CALL SET_IC_DEM
 
-      IF(RUN_TYPE /= 'RESTART_1' .AND. PRINT_DES_DATA) &
-         CALL WRITE_DES_DATA
 
 ! Calculate interpolation weights
       CALL CALC_INTERP_WEIGHTS
@@ -184,6 +182,12 @@
       CALL COMP_MEAN_FIELDS
 
       IF(MPPIC) CALL CALC_DTPIC
+
+
+      IF(RUN_TYPE /= 'RESTART_1' .AND. PRINT_DES_DATA) THEN
+         S_TIME = TIME
+         CALL WRITE_DES_DATA
+      ENDIF
 
       CALL FINL_ERR_MSG
 

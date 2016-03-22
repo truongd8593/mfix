@@ -56,10 +56,6 @@
       use des_thermo, only: DES_T_s
 ! Particle radius, volume
       use discretelement, only: DES_RADIUS
-! Number of cells used in interpolation
-      use particle_filter, only: FILTER_SIZE
-! Cells and weights for interpolation
-      use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
 ! Map to fluid grid cells and solids phase (I,J,K,IJK,M)
       use discretelement, only: PIJK
 ! Number of particles on the process (max particle array size)
@@ -140,11 +136,6 @@
 ! 11) User Variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf,des_usr_var(:,lcurpar),pface)
-! 12) Interpolation weights
-            IF(FILTER_SIZE > 0) THEN
-               call pack_dbuf(lbuf,filter_cell(:,lcurpar),pface)
-               call pack_dbuf(lbuf,filter_weight(:,lcurpar),pface)
-            ENDIF
 
             lpar_cnt = lpar_cnt + 1
          end do
@@ -224,8 +215,6 @@
       use discretelement, only: DRAG_FC
 ! Explict convection and HOR
       use des_thermo, only: CONV_Qs, RXNS_Qs
-! Cells and weights for interpolation
-      use particle_filter, only: FILTER_WEIGHT
 
       use desgrid, only: dg_ijkconv, icycoffset
       use desmpi, only: dcycl_offset, isendcnt
@@ -325,12 +314,12 @@
             call pack_dbuf(lbuf,fc(lcurpar,:),pface)
 ! 20) Accumulated torque forces
             call pack_dbuf(lbuf,tow(lcurpar,:),pface)
+            IF(ENERGY_EQ) THEN
 ! 21) Temperature
-            IF(ENERGY_EQ) &
                call pack_dbuf(lbuf,des_t_s(lcurpar),pface)
 ! 22) Species composition
-            IF(ANY_SPECIES_EQ) &
                call pack_dbuf(lbuf,des_x_s(lcurpar,:),pface)
+            ENDIF
 ! 23) User defined variable
             IF(DES_USR_VAR_SIZE > 0) &
                call pack_dbuf(lbuf, des_usr_var(:,lcurpar),pface)
@@ -357,7 +346,7 @@
 ! 30) Explicit drag force
                call pack_dbuf(lbuf, drag_fc(lcurpar,:),pface)
 ! 31) Explicit convective heat transfer
-               IF(ENERGY_EQ) call pack_dbuf(lbuf, conv_qs(lcurpar),pface)
+               IF(ENERGY_EQ) call pack_dbuf(lbuf,conv_qs(lcurpar),pface)
 ! 32) Explicit heat of reaction
                IF(ANY_SPECIES_EQ) call pack_dbuf(lbuf, rxns_qs(lcurpar),pface)
             ENDIF

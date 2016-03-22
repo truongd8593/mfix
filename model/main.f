@@ -472,7 +472,7 @@ CONTAINS
       USE check, only: check_mass_balance
       USE compar, only: mype
       USE dashboard, only: run_status, write_dashboard
-      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element
+      USE discretelement, only: des_continuum_coupled, des_continuum_hybrid, discrete_element, des_explicitly_coupled
       USE error_manager, only: err_msg
       USE error_manager, only: flush_err_msg
       USE leqsol, only: solver_statistics, report_solver_stats
@@ -630,6 +630,7 @@ CONTAINS
 
       ! Stiff Chemistry Solver.
       IF(STIFF_CHEMISTRY) THEN
+         IF(DES_EXPLICITLY_COUPLED) CALL RXNS_GS_GAS1
          CALL STIFF_CHEM_SOLVER(DT, IER)
          IF(IER /= 0) THEN
             dummy_adjust_dt = ADJUSTDT(IER, NIT)

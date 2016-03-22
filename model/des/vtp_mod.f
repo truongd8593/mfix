@@ -393,6 +393,8 @@
 
 ! formatted file name
       CHARACTER(LEN=64) :: FNAME_PVD = ''
+! formatted time
+      CHARACTER(LEN=64) :: cTIME = ''
 
       LOGICAL, SAVE :: FIRST_PASS = .TRUE.
 
@@ -532,9 +534,10 @@
          BACKSPACE(PVD_UNIT)
          BACKSPACE(PVD_UNIT)
 
+         WRITE(cTIME,"(F12.6)") S_TIME
 ! Write the data to the file
          WRITE(PVD_UNIT,"(6X,A,A,A,A,A,A,A)")&
-         '<DataSet timestep="',TRIM(iVal(S_TIME)),'" ',&
+         '<DataSet timestep="',trim(adjustl(cTIME)),'" ',&
          'group="" part="0" ',& ! necessary file data
          'file="',TRIM(FNAME_VTP),'"/>' ! file name of vtp
 
