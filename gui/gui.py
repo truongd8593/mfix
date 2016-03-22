@@ -11,6 +11,7 @@ import sys
 import subprocess
 import time
 import urllib2
+import glob
 
 
 # import qt
@@ -133,6 +134,12 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui.run_name.textChanged.connect(self.unsaved)
         self.ui.description.textChanged.connect(self.unsaved)
+        self.ui.energy_eq.clicked.connect(self.unsaved)
+        self.ui.time.valueChanged.connect(self.unsaved)
+        self.ui.tstop.valueChanged.connect(self.unsaved)
+        self.ui.dt.valueChanged.connect(self.unsaved)
+        self.ui.dt_max.valueChanged.connect(self.unsaved)
+        self.ui.units.currentIndexChanged.connect(self.unsaved)
 
         # --- Threads ---
         self.build_thread = BuildThread(self)
@@ -596,6 +603,12 @@ class MfixGui(QtGui.QMainWindow):
 
         self.project._keywordDict['run_name'] = self.ui.run_name.text()
         self.project._keywordDict['description'] = self.ui.description.text()
+        self.project._keywordDict['energy_eq'] = self.ui.energy_eq.isChecked()
+        self.project._keywordDict['time'] = self.ui.time.value()
+        self.project._keywordDict['tstop'] = self.ui.tstop.value()
+        self.project._keywordDict['dt'] = self.ui.dt.value()
+        self.project._keywordDict['dt_max'] = self.ui.dt_max.value()
+        self.project._keywordDict['units'] = self.ui.units.currentText()
 
         self.setWindowTitle('MFIX - %s' % project_dir)
         self.project.save(os.path.join(project_dir, 'mfix.dat'))
@@ -692,8 +705,14 @@ class MfixGui(QtGui.QMainWindow):
         self.project = Project(mfix_dat)
         self.ui.run_name.setText(str(self.project['run_name']))
         self.ui.description.setText(str(self.project['description']))
-        self.ui.ro_g0.setText(str(self.project['ro_g0']))
-        self.ui.mu_g0.setText(str(self.project['mu_g0']))
+        self.ui.energy_eq.setChecked(self.project['energy_eq'])
+        self.ui.time.setValue(self.project['time'])
+        self.ui.tstop.setValue(self.project['tstop'])
+        self.ui.dt.setValue(self.project['dt'])
+        self.ui.dt_max.setValue(self.project['dt_max'])
+        self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
+        # self.ui.ro_g0.setText(str(self.project['ro_g0']))
+        # self.ui.mu_g0.setText(str(self.project['mu_g0']))
 
 class MfixThread(QThread):
 
@@ -732,6 +751,19 @@ class BuildThread(MfixThread):
 class ClearThread(MfixThread):
     line_printed = pyqtSignal(str)
 
+class MonitorOutputFilesThread(QThread):
+
+    sig = QtCore.pyqtSignal(object)
+
+    def run(self):
+        while True:
+            self.job_done = False
+            output = glob.glob(run_name+'*')
+            if output:
+                self.sig.emit('output')
+            else:
+                self.sig.emit('no_output')
+            time.sleep(1)
 
 class UpdateResidualsThread(QThread):
 

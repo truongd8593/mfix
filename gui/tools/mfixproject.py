@@ -607,7 +607,11 @@ class Project(object):
     def save(self, fname):
         for key, value in self._keywordDict.iteritems():
             if type(value) == type(''):
-                self.lines[self.line_numbers[key]] = '%s = %s\n' % (key.upper(), value)
+                self.lines[self.line_numbers[key]] = '{} = {}\n'.format(key.upper(), value)
+            elif type(value) == type(0.0):
+                self.lines[self.line_numbers[key]] = '{} = {:f}\n'.format(key.upper(), value)
+            elif type(value) == type(False):
+                self.lines[self.line_numbers[key]] = '{} = {}\n'.format(key.upper(), '.T.' if value else '.F.')
 
         save_file = open(fname, mode='w')
         for line in self.lines:
