@@ -285,6 +285,7 @@
 !
       subroutine ludcmp(a,n,np,indx,d,calledFrom)
       USE compar
+      USE exit, only: mfix_exit
 
       implicit none
 !-----------------------------------------------

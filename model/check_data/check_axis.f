@@ -198,7 +198,6 @@
       DO LC = NA + 1, DIMEN
          IF(SHIFT .AND. DA(LC)/=UNDEFINED) THEN
             WRITE(ERR_MSG, 1205) AXIS, AXIS_INDEX
-            CALL ERROR_ROUTINE ('check_one_axis', 'AXIS error', 0, 2)
             CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
          ENDIF
       ENDDO

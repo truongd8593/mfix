@@ -288,22 +288,22 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE GAS_VOLFLOW_TO_VELOCITY(DO_VEL_CHECK, BCV)
 
-      USE param
-      USE param1
-      USE geometry
-      USE fldvar
-      USE physprop
-      USE run
       USE bc
-      USE scales
-      USE indices
-      USE funits
       USE compar
       USE discretelement
+      USE error_manager
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE geometry
+      USE indices
       USE mfix_pic
-
-      use error_manager
-      use toleranc
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE scales
+      USE toleranc
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -531,87 +531,6 @@
 
       END SUBROUTINE SOLIDS_VOLFLOW_TO_VELOCITY
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Subroutine: FLOW_TO_VEL                                             C
@@ -644,6 +563,7 @@
       USE compar
       USE discretelement
       USE eos, ONLY: EOSG, EOSS
+      USE exit, only: mfix_exit
       USE fldvar
       USE funits
       USE geometry

@@ -29,12 +29,13 @@
       use compar
       use desmpi
       use discretelement
+      use exit, only: mfix_exit
+      use mpi_comm_des, only: des_gather
       use mpi_utility
       use parallel
       use run
       use sendrecv
       use usr
-      use mpi_comm_des, only: des_gather
 
       implicit none
 

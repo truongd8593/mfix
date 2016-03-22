@@ -45,11 +45,14 @@
 !----------------------------------------------------------------------!
       subroutine INIT_DES_COLLECT_gDATA
 
+      use compar, only: istart1, istart2, iend1, iend2
+      use compar, only: jstart1, jstart2, jend1, jend2
+      use compar, only: kstart1, kstart2, kend1, kend2
+      use compar, only: mype, nodesi, nodesj, nodesk, dead_cell_at
       use desgrid, only: IofPROC, JofPROC, KofPROC
       use desgrid, only: procIJK
-
-      use compar, only: myPE
-      use functions
+      use discretelement, only: des_periodic_walls_x, des_periodic_walls_y, des_periodic_walls_z
+      use functions, only: funijk, wall_at
 
       implicit none
 
@@ -502,9 +505,14 @@
 !                    to send and recv for grid node values
 !------------------------------------------------------------------------
       subroutine des_setnodeindices
+      use compar, only: mype, nodesi, nodesj, nodesk, dead_cell_at
       use desgrid, only: IofPROC, JofPROC, KofPROC
       use desgrid, only: procIJK
-      use functions
+      use discretelement, only: des_periodic_walls_x, des_periodic_walls_y, des_periodic_walls_z
+      use compar, only: istart2, iend1
+      use compar, only: jstart2, jend1
+      use compar, only: kstart2, kend1
+      use functions, only: funijk
 !-----------------------------------------------
       implicit none
 !-----------------------------------------------
@@ -751,7 +759,8 @@
       subroutine des_dbgnodesr()
 !-----------------------------------------------
 
-      use functions
+      use indices, only: i_of, j_of, k_of
+      use compar, only: mype
 
       implicit none
 !-----------------------------------------------

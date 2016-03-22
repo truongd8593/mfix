@@ -17,10 +17,11 @@
       SUBROUTINE CALC_GAMMA_DES(NP, pGAMMA)
 
       USE compar
-      Use constant
-      Use des_thermo
-      Use discretelement
-      Use fldvar
+      USE constant
+      USE des_thermo
+      USE discretelement
+      USE exit, only: mfix_exit
+      USE fldvar
       USE geometry
       USE indices
       USE param1

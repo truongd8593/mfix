@@ -436,9 +436,6 @@
                   WRITE(PVD_UNIT,"(A)")'<VTKFile type="Collection" &
                      &version="0.1" byte_order="LittleEndian">'
                   WRITE(PVD_UNIT,"(3X,'<Collection>')")
-! write two generic lines that will be removed later
-                  WRITE(PVD_UNIT,"('SCRAP LINE 1')")
-                  WRITE(PVD_UNIT,"('SCRAP LINE 2')")
                ENDIF
 
 ! This is the first pass of a restart run. Extra care is needed to make
@@ -486,8 +483,6 @@
                   ENDDO
                ENDIF ! No errors
             ENDIF ! run_type new or restart
-! Identify that the files has been created and opened for next pass
-            FIRST_PASS = .FALSE.
 
          ELSE ! not FIRST_PASS
             OPEN(UNIT=PVD_UNIT,FILE=FNAME_PVD,&
@@ -531,8 +526,10 @@
       IF(myPE == PE_IO .AND. .NOT.bDist_IO) THEN
 
 ! Remove the last two lines written so that additional data can be added
-         BACKSPACE(PVD_UNIT)
-         BACKSPACE(PVD_UNIT)
+         IF(.NOT.FIRST_PASS) THEN
+            BACKSPACE(PVD_UNIT)
+            BACKSPACE(PVD_UNIT)
+         ENDIF
 
          WRITE(cTIME,"(F12.6)") S_TIME
 ! Write the data to the file
@@ -547,6 +544,8 @@
 
          CLOSE(PVD_UNIT)
       ENDIF
+! Identify that the files has been created and opened for next pass
+      FIRST_PASS = .FALSE.
 
       CALL FINL_ERR_MSG
 
@@ -695,6 +694,7 @@
       USE vtk, only: RESET_FRAME_AT_TIME_ZERO,PVTU_FILENAME,PVTU_UNIT,BUFFER,END_REC
       USE vtk, only: DIMENSION_VTK, VTK_DEFINED,  FRAME,  VTK_REGION
       USE vtk, only: VTU_FILENAME, VTK_FILEBASE, VTU_DIR, VTU_UNIT
+      USE param1, only: ZERO
 
       IMPLICIT NONE
       LOGICAL :: VTU_FRAME_FILE_EXISTS, NEED_TO_WRITE_VTP

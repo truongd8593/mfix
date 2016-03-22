@@ -244,25 +244,26 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param, only: dimension_3
-      USE param1, only: zero, half
+
+      USE bc
+      USE compar
       USE constant
-      USE physprop
+      USE cutcell
       USE fldvar
-      USE visc_g
-      USE rxns
-      USE run
-      USE toleranc, only: dil_ep_s
+      USE fun_avg
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE compar
-      USE fun_avg
-      USE functions
-
-      USE bc
+      USE param, only: dimension_3
+      USE param1, only: zero, half, undefined
+      USE physprop
       USE quadric
-      USE cutcell
+      USE run
+      USE rxns
+      USE toleranc, only: dil_ep_s
+      USE visc_g
+
       IMPLICIT NONE
 ! Dummy arguments
 !---------------------------------------------------------------------//

@@ -430,17 +430,17 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE CHECK_IF_PARTICLE_OVERLAPS_STL(POS, fI, fJ, fK, REMOVE)
 
-      USE run
-      USE param1
-      USE discretelement, only: dimn, xe, yn, zt
-      USE geometry
+      USE compar
       USE constant
       USE cutcell
-      USE indices
-      USE stl
-      USE compar
-      use desgrid
+      USE desgrid
+      USE discretelement, ONLY: dimn, xe, yn, zt, max_radius
       USE functions
+      USE geometry
+      USE indices
+      USE param1
+      USE run
+      USE stl
 
       Implicit none
 

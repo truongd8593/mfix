@@ -20,9 +20,11 @@
       USE geometry, ONLY: DO_I, DO_J, DO_K, IMIN1, IMAX3, JMIN1, JMAX3, KMIN1, KMAX3, no_k, vol, axy, axz, ayz, dx, dy, dz, flag
       USE indices, ONLY: i_of, j_of, k_of
       USE param, only: dimension_3
+      USE param1, only: zero, half, one, undefined
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
       USE sendrecv
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE vtk, ONLY: GLOBAL_VAR_ALLOCATED, GRID_INFO_PRINTED_ON_SCREEN
 
       IMPLICIT NONE
@@ -650,11 +652,12 @@
   SUBROUTINE SET_3D_CUT_U_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: no_k, axy_u, ayz_u, vol_u, axz_u
-      USE quadric, ONLY: tol_f
-      USE polygon, ONLY: n_polygon
       USE param1, ONLY: half, one, zero
+      USE polygon, ONLY: n_polygon
+      USE quadric, ONLY: tol_f
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -880,11 +883,12 @@
   SUBROUTINE SET_3D_CUT_V_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: no_k, axy_v, axz_v, ayz_v, vol_v
+      USE param1, ONLY: half, one, zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
-      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK
@@ -1107,11 +1111,12 @@
   SUBROUTINE SET_3D_CUT_W_CELL_FLAGS
 
       USE compar, ONLY: mype, pe_io, ijkstart3, ijkend3
+      USE cut_cell_preproc, ONLY: cad_intersect, clean_intersect, clean_intersect_scalar, eval_f, intersect
       USE cutcell
       USE geometry, ONLY: axy_w, axz_w, ayz_w, vol_w
+      USE param1, ONLY: half, one, zero
       USE polygon, ONLY: n_polygon
       USE quadric, ONLY: tol_f
-      USE param1, ONLY: half, one, zero
 
       IMPLICIT NONE
       INTEGER :: IJK

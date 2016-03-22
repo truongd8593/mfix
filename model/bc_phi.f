@@ -530,7 +530,7 @@
          ENDIF
 
 
-         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER) THEN
+         IF(BLOCKED_CELL_AT(IJK).OR.ALONG_GLOBAL_GHOST_LAYER.AND.(.NOT.FLOW_AT(IJK))) THEN
             IM = IM1(I)
             JM = JM1(J)
             KM = KM1(K)

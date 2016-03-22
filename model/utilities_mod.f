@@ -43,7 +43,6 @@ CONTAINS
 !                                                                      C
 !  Author: S. Benyahia                                Date: 26-AUG-05  C
 !                                                                      C
-!                                                                      C
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       DOUBLE PRECISION FUNCTION MAX_VEL_INLET()
 

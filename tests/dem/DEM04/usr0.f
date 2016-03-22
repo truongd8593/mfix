@@ -12,10 +12,11 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
       SUBROUTINE USR0
 
+      use constant
+      use discretelement
+      use exit, only: mfix_exit
       use run, only: TSTOP
       use usr
-      use discretelement
-      use constant
 
       IMPLICIT NONE
 

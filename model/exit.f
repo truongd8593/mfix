@@ -1,5 +1,7 @@
 #include "version.inc"
-      SUBROUTINE MFIX_EXIT(myID)
+MODULE exit
+   CONTAINS
+      SUBROUTINE MFIX_EXIT(myID, normal_termination)
 
 ! File unit for .OUT file
       USE funits, only : UNIT_OUT
@@ -13,6 +15,8 @@
 
 ! Rank ID
       INTEGER, INTENT(IN) :: myID
+! if present, normal termination (won't print error message)
+      LOGICAL, INTENT(IN), OPTIONAL :: normal_termination
 ! Logical showing that a file unit is open.
       LOGICAL :: isOpen
 ! The value passed via the dummy argument or the process ID.
@@ -24,10 +28,12 @@
       myID_c=''; WRITE(myID_c,*) myID
 
 ! Write out that this routine was called.
-      IF(myPE == PE_IO) WRITE(*,1000)
-      IF(DMP_LOG) THEN
-         INQUIRE(UNIT=UNIT_LOG,OPENED=isOpen)
-         IF(isOPEN) WRITE(UNIT_LOG,1001) trim(adjustl(myID_c))
+      IF (.not. present(normal_termination)) THEN
+         IF(myPE == PE_IO) WRITE(*,1000)
+         IF(DMP_LOG) THEN
+            INQUIRE(UNIT=UNIT_LOG,OPENED=isOpen)
+            IF(isOPEN) WRITE(UNIT_LOG,1001) trim(adjustl(myID_c))
+         ENDIF
       ENDIF
 
 ! Terminate MPI.
@@ -54,8 +60,6 @@
  1002 FORMAT(2/,1x,'Program Terminated.',2/)
 
       END SUBROUTINE MFIX_EXIT
-
-
 
 !``````````````````````````````````````````````````````````````````````!
 ! Subroutine: CLOSE_FILE                                               !
@@ -89,6 +93,4 @@
       RETURN
       END SUBROUTINE CLOSE_FILE
 
-
-
-
+END MODULE exit

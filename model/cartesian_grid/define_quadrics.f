@@ -82,9 +82,10 @@
         SUBROUTINE GET_F_QUADRIC(x1,x2,x3,Q_ID,f,CLIP_FLAG)
 
       USE constant, only: pi
+      USE exit, only: mfix_exit
+      USE param1, only: half, one, undefined, zero
       USE quadric
       USE sendrecv, only: mype
-      USE param1, only: half, one, undefined, zero
 
       IMPLICIT NONE
 
@@ -619,6 +620,7 @@
       SUBROUTINE REASSSIGN_QUADRIC(x1,x2,x3,GROUP,Q_ID)
 
       USE compar
+      USE exit, only: mfix_exit
       USE quadric
 
       IMPLICIT NONE

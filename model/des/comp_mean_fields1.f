@@ -25,6 +25,7 @@
       use particle_filter, only: FILTER_SIZE
       use sendrecvnode, only: DES_COLLECT_gDATA
       use physprop, only: mmax
+      use param1, only: small_number
 
       IMPLICIT NONE
 !-----------------------------------------------
@@ -65,7 +66,7 @@
 !$omp private(NP, VOL_WT, M, LC, IJK, VOLXWEIGHT) &
 !$omp shared(MAX_PIP, PVOL, DES_STAT_WT, PIJK, LP_BND, MPPIC, &
 !$omp       FILTER_WEIGHT, SOLVOLINC, U_S, V_S, W_S, DO_K, &
-!$omp       FILTER_CELL, DES_VEL_NEW)
+!$omp       FILTER_CELL, FILTER_SIZE, DES_VEL_NEW)
 !$omp do
       do NP=1,MAX_PIP
          IF(.NOT.IS_NORMAL(NP)) CYCLE

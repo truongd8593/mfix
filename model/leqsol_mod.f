@@ -1,9 +1,7 @@
 MODULE leqsol
 
   use param, only: DIM_EQS
-
-! Maximum number of outer iterations
-  INTEGER :: MAX_NIT
+  use exit, only: mfix_exit
 
 ! Automatic adjustment of leq parameters possible (set in iterate after
 ! the completion of first iteration).

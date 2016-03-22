@@ -39,7 +39,7 @@
       USE is
       USE mms
       USE physprop
-      USE run
+      USE run, only: added_mass, drag_type_enum, hys, kt_type, m_am, model_b, odt, momentum_x_eq
       USE rxns
       USE scales
       USE tau_g
@@ -400,7 +400,7 @@
       USE fldvar
       USE visc_g
       USE rxns
-      USE run
+      USE run, only: k_epsilon
       USE toleranc
       USE geometry
       USE indices
@@ -1027,7 +1027,6 @@
       use param1
       use physprop
       use ps
-      use run
 
       IMPLICIT NONE
 !-----------------------------------------------

@@ -96,4 +96,10 @@
 ! 10) DES Diffusion
       INTEGER, PARAMETER :: DIM_EQS = 10
 
+   CONTAINS
+      SUBROUTINE FILLER
+         IMPLICIT NONE
+         ! empty subroutine so param is accessible from pymfix
+      END SUBROUTINE FILLER
+
       END MODULE param

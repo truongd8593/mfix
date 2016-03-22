@@ -227,7 +227,7 @@
       Use physprop
       Use fldvar
       Use indices
-      Use run
+      Use run, only: any_solve_ros, k_epsilon, time, run_name
       Use geometry
       Use post3d, only: xdist_vec, xdist_sc, ydist_vec, ydist_sc, zdist_vec, zdist_sc
       Use rxns

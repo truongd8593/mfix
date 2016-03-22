@@ -41,7 +41,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 ! Number of continuum solids phases
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
 ! Flag that a continuum solids can pack
       use physprop, only: CLOSE_PACKED
 ! radial distribution function
@@ -75,7 +75,7 @@
 !---------------------------------------------------------------------//
 !!$omp parallel do schedule(guided, 50) default(none)              &
 !!$omp shared(IJKSTART3, IJKEND3, PINC, PIC, DES_VEL_NEW,          &
-!!$omp   MMAX, D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,     &
+!!$omp   D_P, RO_s, ROP_s, EP_G, DES_RADIUS, RO_SOL, FC,           &
 !!$omp   PVOL, SEGREGATION_SLOPE_COEFFICIENT, CLOSE_PACKED, P_STAR)&
 !!$omp private(IJK, OoEPg, EPg_2, EPSoDP, NP, lDP, D_FORCE, G0_ML, &
 !!$omp   VELCS, VSLP, VREL, lDss, L)
@@ -135,7 +135,7 @@
 ! Calculating the accumulated solids-solids drag force.
                D_FORCE(:) = D_FORCE(:) - lDss*VSLP(:)
 
-            ENDDO ! end do loop (M=1,MMAX)
+            ENDDO ! end do loop (M=1,SMAX)
 
             FC(NP,:) = FC(NP,:) + D_FORCE(:)*PVOL(NP)
 
@@ -191,7 +191,7 @@
 ! Flag that a continuum solids can pack
       use physprop, only: CLOSE_PACKED
 ! Number of continuum solids phases
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
 ! radial distribution function
       use rdf, only: g_0
       IMPLICIT NONE
@@ -283,7 +283,7 @@
               SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
                  lFORCE*DES_VEL_NEW(NP,:)
 
-            ENDDO ! end do loop (M=1,MMAX)
+            ENDDO ! end do loop (M=1,SMAX)
 
          ENDDO ! END DO LOOP (NP=1,MAX_PIP)
 
@@ -326,7 +326,7 @@
 ! Array sizes for solids
       use param, only: DIMENSION_M
 ! Number of solid phases.
-      use physprop, only: MMAX, SMAX
+      use physprop, only: SMAX
       IMPLICIT NONE
 
 ! Dummy arguments
@@ -402,7 +402,7 @@
 ! Function to calculate continuum solids volume fraction
       use fldvar, only: EP_s
 ! Number of continuum solids phases
-      use physprop, only: SMAX, MMAX
+      use physprop, only: SMAX
 
       use functions
 

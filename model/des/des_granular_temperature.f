@@ -208,7 +208,8 @@
       USE functions
       USE geometry
       USE indices
-      use param, only: dimension_m
+      USE param, only: dimension_m
+      USE param1, only: zero
       USE physprop
       IMPLICIT NONE
 !-----------------------------------------------

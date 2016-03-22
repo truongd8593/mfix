@@ -33,6 +33,9 @@ CONTAINS
       USE des_thermo
       USE discretelement
       USE functions
+
+      USE des_thermo_cond, only: DES_Qw_cond 
+
       USE funits
       USE geometry
       USE indices
@@ -271,6 +274,9 @@ CONTAINS
 ! Allocate the history variables for Adams-Bashforth integration
          IF (INTG_ADAMS_BASHFORTH) &
             Allocate( Q_Source0( MAX_PIP ) )
+! Allocate the array for storing particle-wall heat transfer per unit area
+         IF (ANY(CALC_COND_DES)) &
+            Allocate( DES_Qw_cond( DIMENSION_3, DIMENSION_M))
       ENDIF
 ! End Thermodynamic Allocation
 ! ----------------------------------------------------------------<<<

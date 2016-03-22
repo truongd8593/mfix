@@ -50,11 +50,27 @@
 !---------------------------------------------------------------------//
       use param1, only: UNDEFINED
       use error_manager
+      use des_thermo, only : CALC_COND_DES
+      use des_thermo_cond, only: DO_AREA_CORRECTION
+      use discretelement
+      use param1, only : one
+      use physprop, only : mmax, ro_s0, d_p0
+      use run, only : solids_model
+      use constant, only : pi
 
       IMPLICIT NONE
 !......................................................................!
+      INTEGER :: M, L  ! Loop indices for DEM solids
+! Calculate phase index offset for certain inputs until it can be
+! addressed in other ways. should not matter unlesss hybrid
+      CHARACTER(len=64) :: MSG
+      INTEGER :: lent, lend, lenc, LC
+      INTEGER :: MMAX_TOT
+      LOGICAL :: ANY_CONDUCTION = .FALSE.
 
-
+      DOUBLE PRECISION :: MASS_L, MASS_M, MASS_EFF
+      DOUBLE PRECISION :: R_EFF, E_EFF
+      
 ! Initialize the error manager.
       CALL INIT_ERR_MSG("CHECK_SOLIDS_DEM_ENERGY")
 
@@ -69,9 +85,127 @@
             DES_MIN_COND_DIST/100.0  ! m
       ENDIF
 
+! Setup code for conduction correction terms for artificial softening
+      ! Calculate masses used for collision calculations.
+
+! Shift the phase index for certain inputs to match the global phase
+! index until this matter can be addressed otherwise (i.e., require
+! the user specify correct indexing in mfix.dat). This should have no
+! impact if not running a hybrid case
+      MMAX_TOT = DES_MMAX+MMAX
+      e_young_actual((MMAX+1):MMAX_TOT) = e_young_actual(1:DES_MMAX)
+      v_poisson_actual((MMAX+1):MMAX_TOT) = v_poisson_actual(1:DES_MMAX)
+      lent = MMAX_TOT+MMAX_TOT*(MMAX_TOT-1)/2
+      lend = DES_MMAX+DES_MMAX*(DES_MMAX-1)/2
+      lenc = lent-lend
+      DO_AREA_CORRECTION = .TRUE.
+      DO M=MMAX+1,MMAX_TOT
+         IF (SOLIDS_MODEL(M) /= 'DEM') CYCLE
+         IF (.NOT.CALC_COND_DES(M))CYCLE
+         ANY_CONDUCTION = .TRUE.
+         IF(E_YOUNG_ACTUAL(M) == UNDEFINED) THEN
+            MSG=''; WRITE(MSG,"('Phase ',I2,' Actual EYoungs')") M
+            WRITE(ERR_MSG,2002) 'E_YOUNG_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
+         ENDIF
+         IF(V_POISSON_ACTUAL(M) == UNDEFINED) THEN
+            MSG=''; WRITE(MSG,"('Phase ',I2,' Actual poissons ratio')") M
+            WRITE(ERR_MSG,2002) 'V_POISSON_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
+         ELSEIF(V_POISSON_ACTUAL(M) > 0.5d0 .OR. &
+                V_POISSON_ACTUAL(M) <= -ONE) THEN
+            WRITE(ERR_MSG,1001) trim(iVar('V_POISSON_ACTUAL',M)),  &
+               iVal(V_POISSON_ACTUAL(M))
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+      ENDDO
+      
+      IF(ANY_CONDUCTION)THEN
+         IF(EW_YOUNG_ACTUAL == UNDEFINED) THEN
+            MSG=''; WRITE(MSG,"('Actual EYoungs (wall)')")
+            WRITE(ERR_MSG,2002) 'EW_YOUNG_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
+         ENDIF
+         IF(VW_POISSON_ACTUAL == UNDEFINED) THEN
+            MSG=''; WRITE(MSG,"(' Actual poisson ratio (wall)')")
+            WRITE(ERR_MSG,2002) 'VW_POISSON_ACTUAL', MSG
+            DO_AREA_CORRECTION = .FALSE.
+            CALL FLUSH_ERR_MSG
+         ENDIF
+      ENDIF
+
+! see above index shift
+      LC = LENC
+      DO M=MMAX+1,MMAX_TOT
+         IF(SOLIDS_MODEL(M) /='DEM') CYCLE
+         IF(.NOT.DO_AREA_CORRECTION)CYCLE
+         IF(.NOT.CALC_COND_DES(M)) CYCLE
+! Calculate the mass of a phase M particle.
+         MASS_M = (PI/6.d0)*(D_P0(M)**3)*RO_S0(M)
+
+! Particle-Particle Collision Parameters ------------------------------>
+         DO L=M,MMAX_TOT
+            LC = LC + 1
+            IF(.NOT.CALC_COND_DES(L)) CYCLE
+
+            MASS_L = (PI/6.d0)*(D_P0(L)**3)*RO_S0(L)
+            MASS_EFF = (MASS_M*MASS_L)/(MASS_M+MASS_L)
+
+! Calculate the effective radius, Youngs modulus, and shear modulus.
+            R_EFF = 0.5d0*(D_P0(M)*D_P0(L)/(D_P0(M) + D_P0(L)))
+            E_EFF = E_YOUNG_ACTUAL(M)*E_YOUNG_ACTUAL(L) /  &
+            &  (E_YOUNG_ACTUAL(M)*(1.d0 - V_POISSON_ACTUAL(L)**2) + &
+            &   E_YOUNG_ACTUAL(L)*(1.d0 - V_POISSON_ACTUAL(M)**2))
+ 
+
+! Calculate the spring properties and store in symmetric matrix format.
+            HERT_KN_ACTUAL(M,L)=(4.d0/3.d0)*SQRT(R_EFF)*E_EFF
+
+! Compute baseline for Hertzian collision time
+            TAU_C_BASE_ACTUAL(M,L)=3.21D0*(MASS_Eff/HERT_KN_ACTUAL(M,L))**0.4 
+            ! Can compute actual collision time via:
+            !    TAU_C_ACTUAL = TAU_C_BASE_ACTUAL * (1/ImpactVel)^0.2
+
+! Compute base for simulated collision time.  If Hertzian, only include base (without impact vel component).
+            IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+               TAU_C_BASE_SIM(M,L)=3.21D0*(MASS_Eff/HERT_KN(M,L))**0.4
+            ELSE
+               TAU_C_BASE_SIM(M,L)=PI/SQRT(KN/MASS_EFF - &
+               ((DES_ETAN(M,L)/MASS_EFF)**2)/4.d0)
+            ENDIF
+         ENDDO
+
+! Do particle-wall calculations
+         MASS_EFF = MASS_M
+         R_EFF = 0.5d0*D_P0(M)
+         E_EFF = E_YOUNG_ACTUAL(M)*EW_YOUNG_ACTUAL /  &
+         &  (E_YOUNG_ACTUAL(M)*(1.d0 - VW_POISSON_ACTUAL**2) + &
+         &   EW_YOUNG_ACTUAL*(1.d0 - V_POISSON_ACTUAL(M)**2))
+         
+         HERT_KWN_ACTUAL(M) = (4.d0/3.d0)*SQRT(R_EFF)*E_EFF
+         TAUW_C_BASE_ACTUAL(M) = 3.21D0 * (MASS_Eff/HERT_KWN_ACTUAL(M))**0.4 
+
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            TAUW_C_BASE_SIM(M)=3.21D0*(MASS_Eff/HERT_KWN(M))**0.4
+         ELSE
+            TAUW_C_BASE_SIM(M)=PI/SQRT(KN_w/MASS_EFF - &
+            ((DES_ETAN_WALL(M)/MASS_EFF)**2)/4.d0)
+         ENDIF
+
+      ENDDO
+
       CALL FINL_ERR_MSG
 
       RETURN
+
+ 1001 FORMAT('Warning 2001: Illegal or unknown input: ',A,' = ',A,/      &
+      'Please correct the mfix.dat file.')
+ 2002 FORMAT('Warning 2002: Recommended input not specified: ',A,/          &
+      'Description:',A,/'Not correcting contact area.')
+
 
       END SUBROUTINE CHECK_SOLIDS_DEM_ENERGY
 

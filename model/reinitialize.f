@@ -9,13 +9,15 @@ MODULE REINIT
 !  Reviewer: M.SYAMLAL, W.ROGERS, P.NICOLETTI         Date: 24-JAN-92  !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-      SUBROUTINE REINITIALIZE
+      SUBROUTINE REINITIALIZE(filename)
 
       use run, only: REINITIALIZING
 
       use error_manager
 
       IMPLICIT NONE
+
+      CHARACTER(LEN=*), intent(in) :: filename
 
       INTEGER :: IER
 
@@ -26,7 +28,7 @@ MODULE REINIT
       CALL REINIT_RXN_DATA
 
 ! Read in the namelist variables from the ascii input file.
-      CALL READ_NAMELIST(2)
+      CALL READ_NAMELIST(2, filename)
 
       CALL REINITIALIZE0(IER)
 

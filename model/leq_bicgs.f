@@ -186,6 +186,55 @@
       DOUBLE PRECISION, DIMENSION(2) :: TxS_TxT
 !-----------------------------------------------
 
+! Initialize the error flag.
+      IER=0
+
+! Scale matrix to have unit diagonal
+! ---------------------------------------------------------------->>>
+      if (do_unit_scaling) then
+
+         IF(RE_INDEXING) THEN  ! Loop only over active cells
+!$omp parallel do default(shared) private(ijk,oam,aijmax)
+            DO IJK = IJKSTART3,IJKEND3
+               aijmax = maxval(abs(A_M(ijk,:)) )
+               if (aijmax > 0.0)then
+                  OAM = one/aijmax
+                  A_M(IJK,:) = A_M(IJK,:)*OAM
+                  B_M(IJK) = B_M(IJK)*OAM
+               else
+                  ier = -2
+               endif
+            ENDDO
+
+         ELSE
+
+!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
+            do k = kstart2,kend2
+               do i = istart2,iend2
+                  do j = jstart2,jend2
+                     IJK = funijk(i,j,k)
+                     aijmax = maxval(abs(A_M(ijk,:)) )
+                     if (aijmax > 0.0) then
+                        OAM = one/aijmax
+                        A_M(IJK,:) = A_M(IJK,:)*OAM
+                        B_M(IJK) = B_M(IJK)*OAM
+                     else
+                        ier = -2
+                     endif
+                  enddo
+               enddo
+            enddo
+
+         ENDIF
+
+      endif
+
+! A singlular matrix was detected.
+      if(IER /= 0) RETURN
+! ----------------------------------------------------------------<<<
+
+
+
       allocate(R(DIMENSION_3))
       allocate(Rtilde(DIMENSION_3))
       allocate(P(DIMENSION_3))
@@ -226,41 +275,6 @@
 !$omp end parallel sections
 
       TOLMIN = EPSILON( one )
-
-! Scale matrix to have unit diagonal
-! ---------------------------------------------------------------->>>
-      if (do_unit_scaling) then
-
-
-         IF(RE_INDEXING) THEN  ! Loop only over active cells
-!$omp parallel do default(shared) private(ijk,oam,aijmax)
-            DO IJK = IJKSTART3,IJKEND3
-               aijmax = maxval(abs(A_M(ijk,:)) )
-               OAM = one/aijmax
-               A_M(IJK,:) = A_M(IJK,:)*OAM
-               B_M(IJK) = B_M(IJK)*OAM
-            ENDDO
-
-         ELSE
-
-!$omp parallel do default(shared) private(ijk,i,j,k,oam,aijmax)
-            do k = kstart2,kend2
-               do i = istart2,iend2
-                  do j = jstart2,jend2
-                     IJK = funijk(i,j,k)
-                     aijmax = maxval(abs(A_M(ijk,:)) )
-                     OAM = one/aijmax
-                     A_M(IJK,:) = A_M(IJK,:)*OAM
-                     B_M(IJK) = B_M(IJK)*OAM
-                  enddo
-               enddo
-            enddo
-
-         ENDIF
-
-      endif
-! ----------------------------------------------------------------<<<
-
 
 ! Compute initial residual (R = b-A*x) for Ax=b
 !    assume initial guess in Var

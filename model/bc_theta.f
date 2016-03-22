@@ -749,6 +749,7 @@
       USE bc
       USE compar
       USE constant
+      USE exit, only: mfix_exit
       USE fldvar
       USE kintheory
       USE param
@@ -1279,8 +1280,6 @@
                   EPS(M)*g0(M)*DSQRT(TH(M)*M_PM)*VSLIPSQ
             ENDIF
 
-
-
          CASE DEFAULT
 ! should never hit this
             WRITE (*, '(A)') 'BC_THETA => THETA_HW_CW'
@@ -1288,11 +1287,8 @@
             call mfix_exit(myPE)
          END SELECT
 
-
       RETURN
       END SUBROUTINE THETA_HW_CW
-
-
 
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C

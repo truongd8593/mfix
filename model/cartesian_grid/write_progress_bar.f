@@ -27,17 +27,18 @@
 !   M o d u l e s
 !-----------------------------------------------
 
+      USE compar
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE param
       USE param1
       USE physprop
-      USE fldvar
-      USE run
-      USE scalars
-      USE funits
-      USE rxns
-      USE compar
-      USE mpi_utility
       USE progress_bar
+      USE run
+      USE rxns
+      USE scalars
       IMPLICIT NONE
 
       INTEGER :: I,I_MAX,ISKIP,PROGRESS
@@ -120,8 +121,6 @@
       RETURN
       END SUBROUTINE WRITE_PROGRESS_BAR
 
-
-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
 !                                                                      C
 !  Module name: ERASE_PROGRESS_BAR                                     C
@@ -150,18 +149,19 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE exit, only: mfix_exit
+      USE fldvar
+      USE funits
+      USE mpi_utility
       USE parallel
-      USE sendrecv
       USE param
       USE param1
       USE physprop
-      USE fldvar
       USE run
-      USE scalars
-      USE funits
       USE rxns
-      USE compar
-      USE mpi_utility
+      USE scalars
+      USE sendrecv
       IMPLICIT NONE
 
       INTEGER :: I,BAR_WIDTH,NERASE

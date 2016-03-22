@@ -20,24 +20,24 @@
 
 ! Modules
 !---------------------------------------------------------------------//
-      USE param
-      USE param1
-      USE parallel
-      USE run
+      USE compar
+      USE constant
+      USE discretelement
+      USE functions
       USE geometry
       USE indices
-      USE physprop
-      USE visc_s
-      USE constant
-      USE pgcor
-      USE pscor
-      USE compar
-      USE sendrecv
-      USE discretelement
       USE mpi_utility
-      use fldvar, only: RO_S, EP_S
+      USE parallel
+      USE param
+      USE param1
+      USE pgcor
+      USE physprop
+      USE pscor
+      USE run, only: ghd_2007, kt_type_enum
+      USE sendrecv
       USE solids_pressure
-      USE functions
+      USE visc_s
+      use fldvar, only: RO_S, EP_S
 
       IMPLICIT NONE
 
@@ -234,6 +234,7 @@
       use compar, only: ijkstart3, ijkend3
       use fldvar, only: ep_g, ep_s
       use fldvar, only: epg_ifac, eps_ifac, epg_jfac
+      use functions, only: wall_at
       use param1, only: one, undefined
       use physprop, only: mmax, mu_s0
       use run, only: jackson, ishii
@@ -249,11 +250,13 @@
 
       if (jackson) then
          do ijk = ijkstart3, ijkend3
+            if (wall_at(ijk)) cycle
             epg_jfac(ijk) = ep_g(ijk)
          enddo
       endif
       if (ishii) then
          do ijk = ijkstart3, ijkend3
+            if (wall_at(ijk)) cycle
             epg_ifac(ijk) = ep_g(ijk)
             do m = 1, mmax
 ! This seems more appropriate for non-granular systems

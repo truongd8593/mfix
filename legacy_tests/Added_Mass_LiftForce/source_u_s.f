@@ -48,7 +48,7 @@
       USE param1
       USE physprop
       USE quadric
-      USE run
+      USE run, only: added_mass, drag_type_enum, hys, kt_type, m_am, model_b, odt, momentum_x_eq, ghd_2007, ia_2005, kt_type_enum
       USE rxns
       USE scales
       USE sendrecv
@@ -525,7 +525,6 @@
       USE fldvar
       USE visc_s
       USE rxns
-      USE run
       USE toleranc
       USE geometry
       USE indices
@@ -992,25 +991,26 @@
 !-----------------------------------------------
 ! Modules
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
-      USE scales
+      USE bc
+      USE calc_gr_boundary, ONLY: CALC_GRBDRY
+      USE compar
       USE constant
-      USE physprop
       USE fldvar
-      USE visc_s
-      USE rxns
-      USE run
-      USE toleranc
+      USE functions
       USE geometry
       USE indices
       USE is
-      USE tau_s
-      USE bc
       USE output
-      USE compar
-      USE functions
+      USE parallel
+      USE param
+      USE param1
+      USE physprop
+      USE run
+      USE rxns
+      USE scales
+      USE tau_s
+      USE toleranc
+      USE visc_s
       IMPLICIT NONE
 !-----------------------------------------------
 ! Dummy Arguments
@@ -1184,7 +1184,6 @@
       use param
       use param1
       use ps
-      use run
       use functions
       IMPLICIT NONE
 !-----------------------------------------------

@@ -105,7 +105,11 @@
 
          I_w = IofPOS(BC_X_w(BCV)); I_e = IofPOS(BC_X_e(BCV))
          J_s = JofPOS(BC_Y_s(BCV)); J_n = JofPOS(BC_Y_n(BCV))
-         K_b = KofPOS(BC_Z_b(BCV)); K_t = KofPOS(BC_Z_t(BCV))
+         IF(DO_K) THEN
+            K_b = KofPOS(BC_Z_b(BCV)); K_t = KofPOS(BC_Z_t(BCV))
+         ELSE
+            K_b = 1; K_t = 1
+         ENDIF
 
 ! Depending on the flow plane, the 'common' index needs shifted to
 ! reference the fluid cell.
@@ -147,7 +151,7 @@
          IF(DO_K) THEN
             K_b = KofPOS(BC_Z_b(BCV))-1; K_t = KofPOS(BC_Z_t(BCV))+1
          ELSE
-            K_b = KofPOS(BC_Z_b(BCV));   K_t = KofPOS(BC_Z_t(BCV))
+            K_b = 1;   K_t = 1
          ENDIF
 
 ! Depending on the flow plane, the 'common' index needs shifted to
@@ -220,6 +224,7 @@
       SUBROUTINE CHECK_DES_LE_BC
 
       use discretelement
+      use exit, only: mfix_exit
       use mpi_utility
 
       IMPLICIT NONE

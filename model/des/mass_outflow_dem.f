@@ -9,11 +9,12 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
       SUBROUTINE MASS_OUTFLOW_DEM(FORCE_NSEARCH)
 
-      use derived_types, only: pic, dg_pic
+      use derived_types, only: dg_pic
       use discretelement
       use des_bc
       use bc
       use functions
+      use param1, only: zero
 
       use mpi_utility, only: GLOBAL_ALL_OR
 

@@ -28,9 +28,15 @@
 !       no 4, pp 868-884, 2009.                                        !
 !                                                                      !
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
-MODULE DES_THERMO_COND
+      MODULE DES_THERMO_COND
+ 
 
-CONTAINS
+      IMPLICIT NONE
+      DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: DES_Qw_cond
+      LOGICAL :: DO_AREA_CORRECTION
+      CONTAINS
+
+
 
       FUNCTION DES_CONDUCTION(I, J, CENTER_DIST, iM, iIJK)
 
@@ -38,9 +44,9 @@ CONTAINS
       use des_thermo
       use discretelement
       use funits
-      use param1, only: zero
+      use param1, only: zero, UNDEFINED
       use physprop
-
+      use run, only: UNITS
       IMPLICIT NONE
 
 ! Passed variables
@@ -79,9 +85,27 @@ CONTAINS
       DOUBLE PRECISION lK_eff
 ! Radius of contact area
       DOUBLE PRECISION lRadius
-
+! Particle overlap (simulated and corrected)
+      DOUBLE PRECISION OLAP_Sim, OLAP_actual
+! Corrected center distance
+      DOUBLE PRECISION CENTER_DIST_CORR
+! Gas thermal conductivity
+      DOUBLE PRECISION :: K_gas
+! Overlap distance between each particle and contact plane
+      DOUBLE PRECISION :: OLAP_1, OLAP_2
+! Effective Lens for particles 1 and 2 (req'd for analytic calculation)
+      DOUBLE PRECISION :: RLENS_1, RLENS_2
+! Effective minimum conduction distance for particles 1 and 2
+      DOUBLE PRECISION :: S_1, S_2
+! Effective thermal conductance for particles 1 and 2
+      DOUBLE PRECISION :: H_1, H_2
+! Analytic thermal conductance between particles
+      DOUBLE PRECISION :: H
+! Dummy variable for calculations 
+      DOUBLE PRECISION :: RATIO
 ! Functions
 !---------------------------------------------------------------------//
+ !     DOUBLE PRECISION :: EVAL_H_PFP
 
 ! Identify the solid phases of the neighbor particle
          jM = PIJK(J,5)
@@ -96,49 +120,129 @@ CONTAINS
 ! REF: Batchelor and O'Brien, 1977 (MODIFIED)
 !---------------------------------------------------------------------//
          Q_pp = 0.0
+
+! Initialize corrected center-center distance
+         CENTER_DIST_CORR = CENTER_DIST
          IF(CENTER_DIST < (MAX_RAD + MIN_RAD)) THEN
+! Correct particle overlap to account for artificial softening
+            OLAP_Sim = MAX_RAD + MIN_RAD - CENTER_DIST
+            IF(DO_AREA_CORRECTION)THEN
+               IF(Im.ge.Jm)THEN
+                  OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Jm,Im)
+               ELSE
+                  OLAP_Actual = CORRECT_OLAP(OLAP_Sim,Im,Jm)
+               ENDIF
+               CENTER_DIST_CORR = MAX_RAD + MIN_RAD - OLAP_Actual
+            ENDIF
 ! Effective thermal conductivity
             lK_eff = K_eff(K_s0(iM),K_s0(jM))
 ! Effective contact area's radius
             lRadius = RADIUS(MAX_RAD, MIN_RAD)
+! Compute time-correction term (not done yet)
+            ! CALL CALC_TIME_CORRECTION (.... )
 ! Inter-particle heat transfer
             Q_pp = 2.0d0 * lK_eff * lRadius * DeltaTp
+
 ! Assign the inter-particle heat transfer to both particles.
          ENDIF
 
+!!         IF(.TRUE.)THEN ! NEW WAY
+!---------------------------------------------------------------------//
+! Calculate the particle-fluid-particle conduction
+! REF: Rong and Horio, 1999 (MODIFIED)
+!---------------------------------------------------------------------//
+         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+         OLAP_Actual = MAX_RAD + MIN_RAD - CENTER_DIST_CORR
+! check to see if particles are within lens thickness from eachother
+! a negative overlap indicates particles are separated 
+         IF(OLAP_actual > (-MAX_RAD*FLPC))THEN
+            RD_OUT = RADIUS(LENS_RAD, MIN_RAD)
+            ! get overlap between each particle and contact plane
+            RATIO = OLAP_actual / MAX_RAD
+            OLAP_1 = MAX_RAD*MAX_RAD*(RATIO-0.5D0*RATIO*RATIO)/CENTER_DIST_CORR
+            OLAP_2 = OLAP_actual - OLAP_1
+            ! get effective minimum conduction distance for each particle
+            RATIO = (OLAP_actual + DES_MIN_COND_DIST) / MAX_RAD
+            S_1 = (MAX_RAD*MAX_RAD*(RATIO-0.5D0*RATIO*RATIO)/&
+            &(CENTER_DIST_CORR-DES_MIN_COND_DIST)) - OLAP_1
+            S_2 = DES_MIN_COND_DIST - S_1
+            ! get effective lens radius for particle-contact plane
+            RLENS_1 = sqrt(RD_OUT*RD_OUT+(MIN_RAD-OLAP_1)**2.0)
+            RLENS_2 = sqrt(RD_OUT*RD_OUT+(MAX_RAD-OLAP_2)**2.0)
+            
+
+! GET GAS THERMAL CONDUCTIVITY (default calculation is done in calc_k_g and is for air)
+            if(k_g0.eq.UNDEFINED)then
+                  ! Compute gas conductivity as is done in calc_k_g
+                  ! But use average of particle and wall temperature to be gas temperature
+               K_Gas = 6.02D-5*SQRT(0.5d0*(DES_T_S(I)+DES_T_S(J))/300.D0) ! cal/(s.cm.K)
+                  ! 1 cal = 4.183925D0 J
+               IF (UNITS == 'SI') K_Gas = 418.3925D0*K_Gas !J/s.m.K
+            else
+               K_Gas=k_g0
+            endif
+   
+            H_1 = EVAL_H_PFP(RLENS_1, S_1, OLAP_1,MIN_RAD)*MIN_RAD*k_gas
+            H_2 = EVAL_H_PFP(RLENS_2, S_2, OLAP_2,MAX_RAD)*MAX_RAD*k_gas
+            IF(H_1.eq.ZERO.OR.H_2.eq.ZERO)THEN
+               H = ZERO
+            ELSE
+               H = H_1*H_2/(H_1+H_2)
+            ENDIF
+     
+            Q_pfp = H *DeltaTp
+! Particle-fluid-particle is analytically computed using conductance for each
+! particle to the contact plane.  The effective lens radius and minimum conduction
+! distance are first calculated for each particle-fluid-contact_plane conduction. 
+            
+         ELSE
+            Q_pfp = ZERO
+         ENDIF
+         DES_CONDUCTION = Q_pp + Q_pfp
+               
+            
+ !!        ENDIF ! NEW WAY
+!-------------------------------------------------------------------------------------
+! OLD WAY
+!-------------------------------------------------------------------------------------
+!!         IF(.FALSE.)THEN
 ! Calculate the particle-fluid-particle conduction
 ! REF: Rong and Horio, 1999 (MODIFIED)
 !---------------------------------------------------------------------//
 ! Calculate the radius of the fluid lens surrounding the larger particle
 ! Default FLPC = 0.2
-         LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
+!!            LENS_RAD = MAX_RAD * (1.0D0 + FLPC)
 
 ! Calculate the outer radial distance of the region for particle-fluid-
 ! particle heat conduction.
-         RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
+!!            RD_OUT = RADIUS( LENS_RAD, MIN_RAD)
 
 ! If the value returned is less than zero, then the fluid lens
 ! surrounding the larger particle does not intersect with the surface
 ! of the smaller particle. In this case, particle-fluild-particle
 ! conduction does not occur.
-         Q_pfp = 0.0
-         IF(RD_OUT .GT. ZERO)THEN
+!!            Q_pfp = 0.0
+!!            IF(RD_OUT .GT. ZERO)THEN
 ! Calculate the distance from the line connecting the particles' centers
 ! to the point of contact between the two particles. This value is
 ! zero if the particles are not touching and is the radius of the
 ! shared contact area otherwise.
-            RD_IN = ZERO
-            IF(CENTER_DIST < (MAX_RAD + MIN_RAD) ) &
-               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
+!!               RD_IN = ZERO
+!!               IF(CENTER_DIST_CORR < (MAX_RAD + MIN_RAD) ) &
+!!               RD_IN = RADIUS(MAX_RAD, MIN_RAD)
 ! Calculate the rate of heat transfer between the particles through the
 ! fluid using adaptive Simpson's rule to manage the integral.
-            Q_pfp = K_g(iIJK) * DeltaTp * &
-               ADPT_SIMPSON(RD_IN,RD_OUT)
+!!               Q_pfp = K_g(iIJK) * DeltaTp * &
+!!               ADPT_SIMPSON(RD_IN,RD_OUT)
 
-         ENDIF ! RD_OUT > ZERO
+!!            ENDIF               ! RD_OUT > ZERO
+!!         ENDIF ! OLD WAY
 
          ! Return total heat flux
-         DES_CONDUCTION = Q_pp + Q_pfp
+!!         DES_CONDUCTION = Q_pp + Q_pfp
+!! ------------------------------------------------------------------//
+!  END OLD WAY
+!! ------------------------------------------------------------------//
 
       RETURN
 
@@ -164,7 +268,7 @@ CONTAINS
       DOUBLE PRECISION VALUE
 
 ! Calculate
-      VALUE = (R1**2 - R2**2 + CENTER_DIST**2)/(2.0d0 * R1 * CENTER_DIST)
+      VALUE = (R1**2 - R2**2 + CENTER_DIST_CORR**2)/(2.0d0 * R1 * CENTER_DIST_CORR)
 ! Check to ensure that VALUE is less than or equal to one. If VALUE is
 ! greater than one, the triangle inequality has been violated. Therefore
 ! there is no intersection between the fluid lens surrounding the larger
@@ -219,11 +323,12 @@ CONTAINS
 !......................................................................!
       DOUBLE PRECISION FUNCTION F(R)
         USE utilities
+        USE des_thermo
       IMPLICIT NONE
 
       DOUBLE PRECISION, INTENT(IN) :: R
 
-      F = (2.0d0*Pi*R)/MAX((CENTER_DIST - SQRT(MAX_RAD**2-R**2) - &
+      F = (2.0d0*Pi*R)/MAX((CENTER_DIST_CORR - SQRT(MAX_RAD**2-R**2) - &
          SQRT(MIN_RAD**2-R**2)), DES_MIN_COND_DIST)
 
       IF( mfix_isnan(F))PRINT*,'F IS NAN'
@@ -330,6 +435,245 @@ CONTAINS
 
       END FUNCTION ADPT_SIMPSON
 
-    END FUNCTION DES_CONDUCTION
+     DOUBLE PRECISION FUNCTION EVAL_H_PFP(RLENS_dim,S,OLAP_dim,RP)
+      USE CONSTANT
+      USE PARAM1
+     
+      IMPLICIT NONE
+      ! Note: Function inputs dimensional quantities
+      DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
+      ! BELOW VARIABLES ARE NONDIMENSIONALIZED BY RP
+      DOUBLE PRECISION :: RLENS, OLAP, KN
+      DOUBLE PRECISION :: TERM1,TERM2,TERM3
+      DOUBLE PRECISION :: Rout,Rkn
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
+      
+      RLENS = RLENS_dim/RP
+      KN = S/RP
+      OLAP = OLAP_dim/RP
 
+      IF(-OLAP.ge.(RLENS-ONE))THEN
+         Rout = ZERO
+      ELSEIF(OLAP.le.TWO)THEN
+         Rout = sqrt(RLENS**2-(ONE-OLAP)**2)
+      ELSE
+         WRITE(*,*)'ERROR: Extremeley excessive overlap (Olap > Diam)'
+         WRITE(*,*)'OLAP = ',OLAP_dim,OLAP, RP
+         WRITE(*,*)'RLENS_dim',RLENS_dim, RLENS
+         write(*,*)'S, Kn', S,KN
+         STOP
+      ENDIF
+      Rout=MIN(Rout,ONE)
+      
+      IF(OLAP.ge.ZERO)THEN
+     !     Particle in contact (below code verified)
+         TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
+         TERM2 = TWO*PI*(sqrt(ONE-Rout**2)-(ONE-OLAP-KN))
+         TERM3 = TWO*PI*(ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/Kn)
+         EVAL_H_PFP = TERM1+TERM2+TERM3
+      ELSE
+         IF(-OLAP.ge.KN)THEN
+            Rkn = ZERO
+         ELSE
+            Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
+         ENDIF
+    
+         TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
+         TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
+         EVAL_H_PFP = TWO*PI*(TERM1+TERM2)
+         
+      ENDIF
+      RETURN
+      END FUNCTION EVAL_H_PFP
+
+      END FUNCTION DES_CONDUCTION
+
+!vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
+!                                                                      !
+!  Module name: DES_CONDUCTION                                         !
+!                                                                      !
+!  Purpose: Compute conductive heat transfer with wall                 !
+!                                                                      !
+!  Author: A.Morris                                  Date: 07-Jan-16   !
+!                                                                      !
+!^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^!
+      FUNCTION DES_CONDUCTION_WALL(OLAP, K_sol, K_wall, K_gas, TWall, &
+      TPart, Rpart, RLens, M)
+      USE param1, only: zero
+      USE DES_THERMO, only: des_min_cond_dist
+
+      DOUBLE PRECISION :: DES_CONDUCTION_WALL 
+      DOUBLE PRECISION, intent(in) :: OLAP, K_sol, K_wall, K_gas, TWall&
+      &                               ,TPart,RPart, RLens
+      DOUBLE PRECISION :: Rin, Rout
+      DOUBLE PRECISION :: OLAP_ACTUAL, TAUC_CORRECTION
+      DOUBLE PRECISION :: KEff
+      DOUBLE PRECISION :: Q_pw, Q_pfw
+      INTEGER :: M ! Solids phase index
+
+      ! Initialize variables
+      Q_pw = ZERO
+      Q_pfw= ZERO
+      OLAP_ACTUAL = OLAP
+
+      ! Check to see if particle is in contact (P-W) conduction
+      IF(OLAP.gt.ZERO)THEN
+      ! Compute effective solids conductivity
+         KEff = 2.0D0*K_sol*K_wall/(K_sol+K_wall)
+      ! Correct for overlap using "area" correction terms
+         IF(DO_AREA_CORRECTION)THEN
+            OLAP_ACTUAL = CORRECT_OLAP(OLAP,M,-1) ! (-1 indicates wall)
+         ENDIF
+      ! Compute inner Rad
+         Rin = sqrt(2.0D0*OLAP_ACTUAL*Rpart-OLAP_ACTUAL*OLAP_ACTUAL)
+      ! Compute time correction term (commented out for now)
+        ! CALL CALC_TIME_CORRECTION(TAUC_CORRECTION,M,-1)
+      ! Compute heat transfer (particle-wall)
+         Q_pw = 2.0D0*Rin*Keff*(TWall-TPart)
+      ENDIF
+      ! Compute heat transfer (particle-fluid-wall)
+      Q_pfw=EVAL_H_PFW(RLens,DES_MIN_COND_DIST, OLAP_ACTUAL, RPart) * &
+      &     K_gas*RPart*(TWall-TPart)
+
+      DES_CONDUCTION_WALL=Q_pw+Q_pfw
+     
+      RETURN 
+      END FUNCTION DES_CONDUCTION_WALL
+
+
+!     THIS FUNCTION COMPUTES THE OVERLAP THAT WOULD OCCUR (for a given force)
+!     IF ACTUAL MATERIAL PROPERTIES WERE USED. 
+      FUNCTION CORRECT_OLAP(OLAP,M,L)
+      use discretelement
+      IMPLICIT NONE
+      DOUBLE PRECISION :: CORRECT_OLAP
+      DOUBLE PRECISION, INTENT (IN) :: OLAP
+      INTEGER, INTENT (IN) :: M, L
+      DOUBLE PRECISION :: KN_ACTUAL, KN_SIM
+      ! L=-1 corresponds to wall
+      IF(L.eq.-1)THEN
+         ! WALL CONTACT
+         IF(DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            CORRECT_OLAP = (HERT_KWN(M)/HERT_KWN_ACTUAL(M))**(2.0D0/3.0D0)*OLAP
+         ELSE
+            CORRECT_OLAP = (KN_W*OLAP/HERT_KWN_ACTUAL(M))**(2.0D0/3.0D0)
+         ENDIF
+      ELSE
+         ! PARTICLE-PARTICLE
+         IF(DES_COLL_MODEL_ENUM .EQ. HERTZIAN)THEN
+            CORRECT_OLAP = (HERT_KN(M,L)/HERT_KN_ACTUAL(M,L))**(2.0D0/3.0D0)*OLAP
+         ELSE
+            CORRECT_OLAP = (KN*OLAP/HERT_KN_ACTUAL(M,L))**(2.0D0/3.0D0)
+         ENDIF
+      ENDIF
+      RETURN
+      END FUNCTION CORRECT_OLAP
+
+
+      DOUBLE PRECISION FUNCTION EVAL_H_PFW(RLENS_dim,S,OLAP_dim,RP)
+      USE CONSTANT
+      USE PARAM1
+     
+      IMPLICIT NONE
+      ! Note: Function inputs dimensional quantities
+      DOUBLE PRECISION, intent(in) :: RLENS_dim, S, OLAP_dim, RP
+      ! BELOW VARIABLES ARE NONDIMENSIONALIZED BY RP
+      DOUBLE PRECISION :: RLENS, OLAP, KN
+      DOUBLE PRECISION :: TERM1,TERM2,TERM3
+      DOUBLE PRECISION :: Rout,Rkn
+      DOUBLE PRECISION, PARAMETER :: TWO = 2.0D0
+      
+      RLENS = RLENS_dim/RP
+      KN = S/RP
+      OLAP = OLAP_dim/RP
+
+      IF(-OLAP.ge.(RLENS-ONE))THEN
+         Rout = ZERO
+      ELSEIF(OLAP.le.TWO)THEN
+         Rout = sqrt(RLENS**2-(ONE-OLAP)**2)
+      ELSE
+         WRITE(*,*)'ERROR: Extremeley excessive overlap (Olap > Diam)'
+         WRITE(*,*)'OLAP = ',OLAP_dim,OLAP, RP
+         WRITE(*,*)'RLENS_dim',RLENS_dim, RLENS
+         write(*,*)'S, Kn', S,KN
+         STOP
+      ENDIF
+      Rout=MIN(Rout,ONE)
+      
+      IF(OLAP.ge.ZERO)THEN
+     !     Particle in contact (below code verified)
+         TERM1 = PI*((ONE-OLAP)**2-(ONE-OLAP-KN)**2)/KN
+         TERM2 = TWO*PI*(sqrt(ONE-Rout**2)-(ONE-OLAP-KN))
+         TERM3 = TWO*PI*(ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/Kn)
+         EVAL_H_PFW = TERM1+TERM2+TERM3
+      ELSE
+         IF(-OLAP.ge.KN)THEN
+            Rkn = ZERO
+         ELSE
+            Rkn=sqrt(ONE-(ONE-OLAP-Kn)**2)
+         ENDIF
+    
+         TERM1 = (Rkn**2/(TWO*KN))+sqrt(ONE-Rout**2)-sqrt(ONE-Rkn**2)
+         TERM2 = (ONE-OLAP)*log((ONE-OLAP-sqrt(ONE-Rout**2))/(ONE-OLAP-sqrt(ONE-Rkn**2)))
+         EVAL_H_PFW = TWO*PI*(TERM1+TERM2)
+         
+      ENDIF
+      RETURN
+      END FUNCTION EVAL_H_PFW
+
+
+      SUBROUTINE CALC_TIME_CORRECTION(time_corr, phaseI, phaseJ)
+      use discretelement, only: tau_c_base_actual, tauw_c_base_actual
+      use discretelement, only: tau_c_base_sim, tauw_c_base_sim
+      use discretelement, only: des_coll_model_enum, HERTZIAN
+      IMPLICIT NONE
+      INTEGER, intent (in) :: phaseI, phaseJ
+      DOUBLE PRECISION :: time_corr, tau_actual, tau_sim
+      DOUBLE PRECISION :: vimp ! impact veloctiy
+      INTEGER :: M, N
+      vimp = 1.0D0
+      time_corr = 1.0D0
+      if (phaseJ == -1) then
+         ! Wall contact
+         M = phaseI
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+            time_corr = tauw_c_base_actual(M) / tauw_c_base_sim(M)
+         ELSE
+            vimp = 1.0D0
+            if (vimp .le. 0.0D0)then
+               time_corr = 1.0D0
+            else
+               time_corr = tauw_c_base_actual(M)*vimp**(-0.2D0) / tauw_c_base_sim(M)
+            endif
+         ENDIF
+
+      ELSE
+         ! particle-particle contact
+         if (phaseI .le. phaseJ)then
+            M = phaseI
+            N = phaseJ
+         else
+            M = phaseJ
+            N = phaseI
+         endif
+         
+         IF (DES_COLL_MODEL_ENUM .EQ. HERTZIAN) THEN
+            time_corr = tau_c_base_actual(M,N) / tau_c_base_sim(M,N)
+         ELSE
+            vimp = 1.0D0
+            if (vimp .le. 0.0D0)then
+               time_corr = 1.0D0
+            else
+               time_corr = tau_c_base_actual(M,N)*vimp**(-0.2D0) / tau_c_base_sim(M,N)
+            endif
+         ENDIF
+      ENDIF
+      time_corr = time_corr **(2.0D0/3.0D0)
+      ! TEMPORARY 
+      time_corr = 1.0D0
+      RETURN
+      END SUBROUTINE CALC_TIME_CORRECTION
+
+
+      
   END MODULE DES_THERMO_COND

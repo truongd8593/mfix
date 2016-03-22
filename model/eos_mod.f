@@ -92,6 +92,7 @@
       use param1, only: ONE
       use param1, only: ZERO
       use param1, only: SMALL_NUMBER
+      use exit, only: mfix_exit
 
       implicit none
 

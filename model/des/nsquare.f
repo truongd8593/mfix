@@ -11,12 +11,13 @@
 
       SUBROUTINE NSQUARE
 
-      use discretelement
+      use des_allocate
       use des_bc
       use des_thermo
-      use des_allocate
-      use geometry, only: DO_K, xlength, ylength, zlength
+      use discretelement
       use functions
+      use geometry, only: DO_K, xlength, ylength, zlength
+      use param1, only: zero
 
       IMPLICIT NONE
 

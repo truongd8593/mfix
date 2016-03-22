@@ -53,6 +53,9 @@
 ! 1./Time step.
       DOUBLE PRECISION :: oDT
 
+! Indicates whether simulation is steady-state
+      LOGICAL :: STEADY_STATE
+
 ! Number of times steps completed.
       INTEGER :: NSTEP
 
@@ -201,15 +204,6 @@
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: AUTO_RESTART
 
-! If. .TRUE. code will respond during runtime
-      LOGICAL :: INTERACTIVE_MODE
-
-! Number of interactive iterations.
-      INTEGER :: INTERACTIVE_NITS=UNDEFINED_I
-
-! If .TRUE. code will halt at call to interact
-      LOGICAL :: INTERUPT = .FALSE.
-
 ! If .TRUE. code will automatically restart for DT < DT_MIN
       LOGICAL :: REINITIALIZING = .FALSE.
 
@@ -266,5 +260,44 @@
       INTEGER :: TFM_COUNT = 0
       INTEGER :: DEM_COUNT = 0
       INTEGER :: PIC_COUNT = 0
+
+      ! Error index
+      INTEGER :: IER
+
+      ! CPU time unit.
+      CHARACTER(LEN=4) :: TUNIT
+
+      CONTAINS
+
+         !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvC
+         !  Purpose:  Given time in seconds, calculate time in days/hours/seconds
+         !
+         !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
+         SUBROUTINE GET_TUNIT(TLEFT, TUNIT)
+
+            !-----------------------------------------------
+            ! Modules
+            !-----------------------------------------------
+            IMPLICIT NONE
+            !-----------------------------------------------
+            ! Dummy arguments
+            !-----------------------------------------------
+            DOUBLE PRECISION, INTENT(INOUT) :: TLEFT
+            CHARACTER(LEN=4) :: TUNIT
+            !-----------------------------------------------
+
+            IF (TLEFT < 3600.0d0) THEN
+               TUNIT = 's'
+            ELSE
+               TLEFT = TLEFT/3600.0d0
+               TUNIT = 'h'
+               IF (TLEFT >= 24.) THEN
+                  TLEFT = TLEFT/24.0d0
+                  TUNIT = 'days'
+               ENDIF
+            ENDIF
+
+            RETURN
+         END SUBROUTINE GET_TUNIT
 
       END MODULE RUN

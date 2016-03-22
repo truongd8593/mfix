@@ -1,3 +1,4 @@
+! -*- f90 -*-
 !vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv!
 !                                                                      !
 !  Subroutine: MFIX                                                    !
@@ -59,40 +60,67 @@
 !! state or reflect those of the United States Government or any
 !! agency thereof.
 
-PROGRAM MFIX
+      PROGRAM MFIX
 
-  !-----------------------------------------------
-  ! Modules
-  !-----------------------------------------------
-   USE LEQSOL, ONLY: SOLVER_STATISTICS, REPORT_SOLVER_STATS
-   USE MAIN, ONLY: SETUP, START, STEP, END, NIT_TOTAL, REALLY_FINISH
-   USE RUN, ONLY: NSTEP, AUTO_RESTART, AUTOMATIC_RESTART, ITER_RESTART, TIME, TSTOP
+!-----------------------------------------------
+! Modules
+!-----------------------------------------------
+      USE DISCRETELEMENT, ONLY: DES_CONTINUUM_COUPLED, DISCRETE_ELEMENT
+      USE ITERATE, ONLY: CONVERGED, DIVERGED, ADJUSTDT
+      USE ITERATE, ONLY: ITERATE_INIT, DO_ITERATION, POST_ITERATE
+      USE ITERATE, ONLY: LOG_CONVERGED, LOG_DIVERGED, NIT, MAX_NIT
+      USE MAIN, ONLY: ADD_COMMAND_LINE_ARGUMENT, INITIALIZE, FINALIZE, EXIT_SIGNAL
+      USE RUN, ONLY:  DT, IER, DEM_SOLIDS, PIC_SOLIDS, STEADY_STATE, TIME, TSTOP
+      USE STEP, ONLY: TIME_STEP_INIT, TIME_STEP_END
 
-   IMPLICIT NONE
+      IMPLICIT NONE
 
-   CALL SETUP
+!-----------------------------------------------
+! Local variables
+!-----------------------------------------------
 
-   ! AUTO RESTART LOOP
-   DO
+      INTEGER :: II
+      CHARACTER(LEN=80) :: tmp
 
-      CALL START
-
-      REALLY_FINISH = .FALSE.
-      DO
-         CALL STEP
-         IF (REALLY_FINISH) EXIT
+      DO II=1, COMMAND_ARGUMENT_COUNT()
+         CALL GET_COMMAND_ARGUMENT(II,tmp)
+         CALL ADD_COMMAND_LINE_ARGUMENT(tmp)
       ENDDO
 
-      IF(SOLVER_STATISTICS) CALL REPORT_SOLVER_STATS(NIT_TOTAL, NSTEP)
-      IF(AUTO_RESTART.AND.AUTOMATIC_RESTART.AND.ITER_RESTART.LE.10) THEN
-         CYCLE
+! Initialize the simulation
+      CALL INITIALIZE
+
+! Time march loop.
+
+      IF(DISCRETE_ELEMENT .AND. .NOT.DES_CONTINUUM_COUPLED) THEN
+
+! Uncoupled discrete element simulations
+         IF (DEM_SOLIDS) CALL DES_TIME_MARCH
+         IF (PIC_SOLIDS) CALL PIC_TIME_MARCH
+
       ELSE
-         EXIT
+
+! Transient or steady state simulation
+         DO WHILE (TIME + 0.1d0*DT < TSTOP .AND. .NOT. EXIT_SIGNAL)
+            CALL TIME_STEP_INIT
+            DO
+               CALL ITERATE_INIT
+               DO WHILE (NIT<MAX_NIT .AND. .NOT.(CONVERGED.OR.DIVERGED))
+                  NIT = NIT + 1
+                  CALL DO_ITERATION
+               ENDDO
+
+               CALL POST_ITERATE
+
+               IF(STEADY_STATE) EXIT
+               IF(.NOT.ADJUSTDT()) EXIT
+            ENDDO
+            CALL TIME_STEP_END
+            IF (STEADY_STATE) EXIT
+         ENDDO
+
       ENDIF
-   ENDDO
+      CALL FINALIZE
 
-   CALL END
-
-   STOP
-
-END PROGRAM MFIX
+      STOP
+      END PROGRAM MFIX

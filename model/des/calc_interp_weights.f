@@ -181,8 +181,6 @@
       INTEGER :: IC, JC, KC
       INTEGER :: Km, Kp
 
-      INTEGER :: lIJK
-
       DOUBLE PRECISION :: XC, YC, ZC
       DOUBLE PRECISION :: WEIGHT
       DOUBLE PRECISION :: WEIGHT_I(-1:1)

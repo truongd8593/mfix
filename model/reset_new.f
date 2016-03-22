@@ -25,16 +25,12 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
-      USE param
-      USE param1
-      USE parallel
+
       USE fldvar
-      USE geometry
-      USE indices
-      USE physprop
-      USE trace
-      USE run
-      USE scalars
+      USE physprop, only: mmax, nmax
+      USE run, only: energy_eq, call_dqmom, granular_energy, k_epsilon, species_eq
+      USE scalars, only: nscalar
+      USE trace, only: trd_s_c, trd_s_co
 
       IMPLICIT NONE
 !-----------------------------------------------

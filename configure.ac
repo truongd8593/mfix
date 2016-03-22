@@ -3,9 +3,12 @@
 
 AC_PREREQ([2.69])
 AC_INIT(mfix, 2015.2, develop@mfix.netl.doe.gov)
+AC_CONFIG_AUX_DIR([build-aux])
 
 m4_include([build-aux/ax_check_compile_flag.m4])
 m4_include([build-aux/ax_prog_fc_mpi.m4])
+m4_include([build-aux/netcdf.m4])
+m4_include([build-aux/netcdff.m4])
 
 AC_MSG_NOTICE([==============================================================])
 AC_MSG_NOTICE([])
@@ -20,7 +23,7 @@ AC_MSG_NOTICE([==============================================================])
 AC_LANG(Fortran)
 
 AC_ARG_ENABLE([dmp],
-[  --enable-dmp    Turn on MPI support],
+[  --enable-dmp    Enable MPI support],
 [case "${enableval}" in
   yes) dmp=true ;;
   no)  dmp=false ;;
@@ -47,11 +50,62 @@ AC_OPENMP()
 AX_CHECK_COMPILE_FLAG([-assume byterecl], [
                         FCFLAGS="$FCFLAGS -assume byterecl"])
 
+
+
+# If pymfix support is enabled, require f2py to be in PATH and add -fPIC to
+# FCFLAGS and FFLAGS.
+
+AC_ARG_ENABLE([python],
+[  --enable-python    Build Python-linked MFIX to support interactivity ],
+[case "${enableval}" in
+yes) python=true ;;
+no)  python=false ;;
+*) AC_MSG_ERROR([bad value ${enableval} for --enable-python]) ;;
+esac],[python=false])
+
+AM_CONDITIONAL([PYTHON], [test x$python = xtrue])
+
+if test "$python" = "true"; then
+
+AC_CHECK_PROG(F2PY,f2py,true)
+
+if test x"$F2PY" = x; then
+   AC_MSG_ERROR([Enabling python support requires f2py to be in PATH])
+fi
+
+AC_MSG_CHECKING(whether fPIC compiler option is accepted)
+SAVED_FCFLAGS="$FCFLAGS"
+FCFLAGS="$FCFLAGS -fPIC -Werror"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+[AC_MSG_RESULT(yes)
+FCFLAGS="$SAVED_FCFLAGS -fPIC"],
+[AC_MSG_RESULT(no)
+FCFLAGS="$SAVED_FCFLAGS"])
+
+AC_MSG_CHECKING(whether fPIC compiler option is accepted)
+SAVED_FFLAGS="$FFLAGS"
+FFLAGS="$FFLAGS -fPIC -Werror"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM()],
+[AC_MSG_RESULT(yes)
+FFLAGS="$SAVED_FFLAGS -fPIC"],
+[AC_MSG_RESULT(no)
+FFLAGS="$SAVED_FFLAGS"])
+
+fi
+
 AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
+# Uncomment the following line when doing "make dist" to create a release
+# tarball Otherwise, configure may failing for end users who don't have
+# autotools installed, if timestamps get changed somehow when extracting the
+# release tarball. Running "touch *" in MFIX_HOME is another workaround for this
+# issue.
+#
+# AM_MAINTAINER_MODE([disable])
+
 AC_ARG_ENABLE([mkl],
-[  --enable-mkl    Turn on Math Kernel Library support],
+[  --enable-mkl    Enable Math Kernel Library support],
 [case "${enableval}" in
   yes) mkl=true ;;
   no)  mkl=false ;;
@@ -59,15 +113,37 @@ AC_ARG_ENABLE([mkl],
 esac],[mkl=false])
 AM_CONDITIONAL([MKL], [test x$mkl = xtrue])
 
-AC_ARG_VAR([NETCDF_LIB],[ Path to NETCDF module ])
-AC_ARG_VAR([NETCDF_INCLUDE],[ Path to NETCDF include file ])
-AM_CONDITIONAL([USE_NETCDF], [test ! -z "$NETCDF_INCLUDE"])
+
+if test "$mkl" = "true"; then
+
+AX_CHECK_COMPILE_FLAG(-mkl,mkl_support=yes,[])
+
+if test x"$mkl_support" = x; then
+AC_MSG_ERROR([MKL not supported (requires Intel compiler)])
+fi
+fi
+
+AC_ARG_ENABLE([netcdf],
+[  --enable-netcdf    Enable NetCDF support],
+[case "${enableval}" in
+  yes) netcdf=true ;;
+  no)  netcdf=false ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-netcdf]) ;;
+esac],[netcdf=false])
+AM_CONDITIONAL([NETCDF], [test x$netcdf = xtrue])
+
+AS_IF([test "x$enable_netcdf" = "xyes"], [
+AC_LANG(C)
+AC_PATH_NETCDF
+AC_LANG(Fortran)
+AC_PATH_NETCDFF
+])
 
 AC_ARG_VAR([TAU_MAKEFILE],[ Path to TAU Makefile ])
 AC_ARG_VAR([TAU_F90],[ Actual Fortran compiler used by TAU compiler wrapper ])
 
 AC_ARG_ENABLE([smp],
-[  --enable-smp    Turn on OpenMP support],
+[  --enable-smp    Enable OpenMP support],
 [case "${enableval}" in
   yes) smp=true ;;
   no)  smp=false ;;
@@ -78,9 +154,10 @@ AM_CONDITIONAL([OPENMP], [test x$smp = xtrue])
 AM_CONDITIONAL([MPI], [test x$dmp = xtrue])
 
 AC_FC_PP_DEFINE
-AC_FC_PP_SRCEXT(f)
+AC_FC_PP_SRCEXT([f])
 AC_FC_FREEFORM()
 AC_FC_LINE_LENGTH([unlimited])
+AC_FC_LIBRARY_LDFLAGS
 AC_FC_IMPLICIT_NONE
 
 AC_FC_MODULE_FLAG

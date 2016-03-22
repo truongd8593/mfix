@@ -324,6 +324,18 @@
       DOUBLE PRECISION :: HERT_KN(DIM_M, DIM_M), HERT_KWN(DIM_M)
       DOUBLE PRECISION :: HERT_KT(DIM_M, DIM_M), HERT_KWT(DIM_M)
 
+! Realistic material properties for correcting contact areas:
+! Actual simulations will probably use LSD with softened spring
+! or hertzian with unrealistically small E_Young
+      DOUBLE PRECISION :: E_YOUNG_ACTUAL(DIM_M), Ew_YOUNG_ACTUAL
+      DOUBLE PRECISION :: V_POISSON_ACTUAL(DIM_M), Vw_POISSON_ACTUAL
+      DOUBLE PRECISION :: HERT_KN_ACTUAL(DIM_M, DIM_M), HERT_KWN_ACTUAL(DIM_M)
+
+!     Coefficients for computing binary (Hertzian) collision time.  The actual
+!     collision time is TAU_C_Base_Actual * V^(-1/5).
+      DOUBLE PRECISION :: TAU_C_Base_Actual(DIM_M, DIM_M), TAUW_C_Base_Actual(DIM_M)
+      DOUBLE PRECISION :: TAU_C_Base_Sim(DIM_M, DIM_M), TAUW_C_Base_Sim(DIM_M)
+
 ! End particle-particle and particle-wall collision model parameters
 !-----------------------------------------------------------------<<<
 

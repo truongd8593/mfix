@@ -21,6 +21,11 @@
 ! Additional properties for Hertzian model:
         DES_COLL_MODEL, EW_YOUNG, VW_POISSON, E_YOUNG, V_POISSON,&
 
+! Actual material properties for particles/wall.  Used for computing
+! conduction correction terms to account for artificial softening
+  	EW_YOUNG_ACTUAL, E_YOUNG_ACTUAL, V_POISSON_ACTUAL, &
+	VW_POISSON_ACTUAL, &
+
 ! Lees Edwards BC (for DEM only)
         DES_LE_BC, DES_LE_REL_VEL, DES_LE_SHEAR_DIR,&
 

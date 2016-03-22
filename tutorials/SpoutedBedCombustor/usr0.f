@@ -26,8 +26,7 @@
 !^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^C
 !
       SUBROUTINE USR0
-!...Translated by Pacific-Sierra Research VAST-90 2.06G5  12:17:31  12/09/98
-!...Switches: -xf
+
       USE constant
       USE funits
       USE param
@@ -35,42 +34,43 @@
       USE physprop
       USE toleranc
       USE usr
+      use error_manager
 
       IMPLICIT NONE
-      INCLUDE 'usrnlst.inc'
-!-----------------------------------------------
-!
-!  Include files defining common blocks here
-!
-!
-!  Define local variables here
-!
-      DOUBLE PRECISION SUM
-!
-!  Include files defining statement functions here
-!
-!
-!  Insert user-defined code here
-!
 
-!     allocate array declared in usrnlst.inc
+      INCLUDE 'usrnlst.inc'
+
+!-----------------------------------------------
+
+      DOUBLE PRECISION :: SUM
+
+      CALL INIT_ERR_MSG('USR0')
+
       Allocate(  N_Sh (DIMENSION_3, DIMENSION_M) )
 
-        IF(PAFC .EQ. UNDEFINED ) &
-          CALL ERROR_ROUTINE ('USR0', 'PAFC not specified', 1, 1)
-!
-        IF(PAA .NE. UNDEFINED)THEN
-          SUM = PAFC + PAA
-          IF( .NOT.COMPARE(ONE,SUM) )THEN
-            WRITE(UNIT_LOG,'(A,F10.5/A)') &
-              ' *** PAFC + PAA = ',SUM,' It should be equal to 1.0'
-            CALL EXIT
-          ENDIF
-        ELSE
+      IF(PAFC .EQ. UNDEFINED ) THEN
+         WRITE(ERR_MSG,1100)
+          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+      ENDIF
+ 1100 FORMAT('*** PAFC not specified')
+
+      IF(PAA .NE. UNDEFINED)THEN
+         SUM = PAFC + PAA
+         IF(.NOT.COMPARE(ONE,SUM) )THEN
+            WRITE(ERR_MSG, 1200) SUM
+            CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
+         ENDIF
+
+ 1200 FORMAT('*** PAFC + PAA = ',F10.5,/'It should equal 1.0')
+
+       ELSE
           PAA = 1.0 - PAFC
-        ENDIF
+       ENDIF
 !
 !  Function of the ash-layer void fraction
       f_EP_A = (0.25 + 0.75 * ( 1.0 - PAA )) ** 2.5
+
+      CALL FINL_ERR_MSG
+
       RETURN
       END SUBROUTINE USR0

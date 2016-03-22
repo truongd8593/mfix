@@ -286,9 +286,10 @@
 !-----------------------------------------------
 !   M o d u l e s
 !-----------------------------------------------
+      USE compar
+      USE exit, only: mfix_exit
       USE param
       USE param1
-      USE compar
       IMPLICIT NONE
 !-----------------------------------------------
 !   D u m m y   A r g u m e n t s

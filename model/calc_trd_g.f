@@ -83,18 +83,18 @@
 
 ! Modules
 !-----------------------------------------------
-      USE param, only: DIMENSION_3
-      USE param1, only: ZERO
-      USE parallel
-      USE geometry
-      USE fldvar
-      USE indices
-      USE compar
-      USE sendrecv
       USE bc
+      USE compar
       USE cutcell
-      USE quadric
+      USE fldvar
       USE functions
+      USE geometry
+      USE indices
+      USE parallel
+      USE param, only: DIMENSION_3
+      USE param1, only: ZERO, HALF, UNDEFINED
+      USE quadric
+      USE sendrecv
       IMPLICIT NONE
 
 ! Dummy arguments

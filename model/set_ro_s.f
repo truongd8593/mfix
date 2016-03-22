@@ -108,6 +108,7 @@
 !``````````````````````````````````````````````````````````````````````!
       SUBROUTINE CHECK_SET_ROs()
 
+      use exit, only: mfix_exit
 ! Flag for who writes
       use funits, only: DMP_LOG
 ! Solids species mass fractions.

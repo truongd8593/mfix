@@ -14,38 +14,26 @@ MODULE output_man
 ! Global Variables:
 !---------------------------------------------------------------------//
 
+      use compar, only: myPE, PE_IO
+      use discretelement, only: DISCRETE_ELEMENT
+      use machine, only: wall_time
+      use output, only: DISK, DISK_TOT
+      use output, only: OUT_TIME, OUT_DT
+      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
       use output, only: RES_TIME, RES_DT
       use output, only: SPX_TIME, SPX_DT
-      use output, only: OUT_TIME, OUT_DT
       use output, only: USR_TIME, USR_DT
-      use vtk, only:    VTK_TIME, VTK_DT
-
-      use output, only: RES_BACKUP_TIME, RES_BACKUP_DT
-
-      use output, only: DISK, DISK_TOT
-
-      use param1, only: N_SPX
       use param, only: DIMENSION_USR
-      use vtk, only: DIMENSION_VTK
-
-      use run, only: TIME, DT, TSTOP
-
-      use time_cpu, only: CPU_IO
-
-      use compar, only: myPE, PE_IO
-
-      use discretelement, only: DISCRETE_ELEMENT
-
-      use vtk, only: WRITE_VTK_FILES
+      use param1, only: N_SPX
       use qmom_kinetic_equation, only: QMOMK
-
-      use param1, only: UNDEFINED
-
+      use run, only: TIME, DT, TSTOP, STEADY_STATE
+      use time_cpu, only: CPU_IO
+      use vtk, only:    VTK_TIME, VTK_DT
+      use vtk, only: DIMENSION_VTK
+      use vtk, only: WRITE_VTK_FILES
       use vtp, only: write_vtp_file
-      use machine, only: wall_time
 
       IMPLICIT NONE
-
 
 ! Dummy Arguments:
 !---------------------------------------------------------------------//
@@ -68,7 +56,6 @@ MODULE output_man
       DOUBLE PRECISION :: WALL_START
 
 !......................................................................!
-
 
 ! Initialize the SPx file extension array.
       EXT_END = '123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
@@ -166,7 +153,6 @@ MODULE output_man
 
       contains
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -174,7 +160,7 @@ MODULE output_man
 
       DOUBLE PRECISION, INTENT(IN) :: lTIME
 
-      IF(DT == UNDEFINED) THEN
+      IF(STEADY_STATE) THEN
          CHECK_TIME = FINISHED
       ELSE
          CHECK_TIME = (TIME+0.1d0*DT>=lTIME).OR.(TIME+0.1d0*DT>=TSTOP)
@@ -183,7 +169,6 @@ MODULE output_man
       RETURN
       END FUNCTION CHECK_TIME
 
-
 !----------------------------------------------------------------------!
 !                                                                      !
 !----------------------------------------------------------------------!
@@ -191,7 +176,7 @@ MODULE output_man
 
       DOUBLE PRECISION, INTENT(IN) :: lWRITE_DT
 
-      IF (DT /= UNDEFINED) THEN
+      IF (.NOT.STEADY_STATE) THEN
          NEXT_TIME = (INT((TIME + 0.1d0*DT)/lWRITE_DT)+1)*lWRITE_DT
       ELSE
          NEXT_TIME = lWRITE_DT
@@ -199,7 +184,6 @@ MODULE output_man
 
       RETURN
       END FUNCTION NEXT_TIME
-
 
 !----------------------------------------------------------------------!
 !                                                                      !
@@ -273,21 +257,18 @@ MODULE output_man
 !----------------------------------------------------------------------!
       SUBROUTINE FLUSH_NOTIFY_USER
 
-      use output, only: FULL_LOG
-      use funits, only: DMP_LOG
-      use funits, only: UNIT_LOG
-
-      use time_cpu, only: TIME_START
-      use time_cpu, only: WALL_START
-
-      use output, only: NLOG
-
-      use run, only: TIME, NSTEP
-
       use discretelement, only: DISCRETE_ELEMENT, DES_CONTINUUM_COUPLED
       use discretelement, only: DTSOLID
       use error_manager
+      use funits, only: DMP_LOG
+      use funits, only: UNIT_LOG
       use machine, only: wall_time
+      use run, only: get_tunit
+      use output, only: FULL_LOG
+      use output, only: NLOG
+      use run, only: TIME, NSTEP, STEADY_STATE
+      use time_cpu, only: TIME_START
+      use time_cpu, only: WALL_START
 
       DOUBLE PRECISION :: WALL_ELAP, WALL_LEFT, WALL_NOW
       CHARACTER(LEN=9) :: CHAR_ELAP, CHAR_LEFT
@@ -326,7 +307,7 @@ MODULE output_man
             max(TIME-TIME_START,1.0d-6)
          CALL GET_TUNIT(WALL_LEFT, UNIT_LEFT)
 
-         IF (DT /= UNDEFINED) THEN
+         IF (.NOT.STEADY_STATE) THEN
             CHAR_LEFT=''; WRITE(CHAR_LEFT,"(F9.2)") WALL_LEFT
             CHAR_LEFT = trim(adjustl(CHAR_LEFT))
          ELSE
@@ -343,13 +324,10 @@ MODULE output_man
 
  2000 FORMAT('Wall Time - ',2(A,1X,A,A,4X))
 
-
-
       RETURN
       END SUBROUTINE FLUSH_NOTIFY_USER
 
       END SUBROUTINE OUTPUT_MANAGER
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: INIT_OUTPUT_VARS                                         !
@@ -375,7 +353,7 @@ MODULE output_man
       use physprop, only: MMAX, NMAX
       use run, only: K_EPSILON
       use run, only: RUN_TYPE
-      use run, only: TIME, DT
+      use run, only: TIME, DT, STEADY_STATE
       use rxns, only: nRR
       use scalars, only: NScalar
       use time_cpu, only: CPU_IO
@@ -427,7 +405,7 @@ MODULE output_man
          RES_TIME = TIME
          SPX_TIME(:N_SPX) = TIME
       ELSE
-         IF (DT /= UNDEFINED) THEN
+         IF (.NOT. STEADY_STATE) THEN
             RES_TIME = RES_DT *                                        &
                (INT((TIME + 0.1d0*DT)/RES_DT) + 1)
             SPX_TIME(:N_SPX) = SPX_DT(:N_SPX) *                        &
@@ -472,14 +450,11 @@ MODULE output_man
 ! Create a subdir for RES backup files.
       IF(RES_BACKUPS /= UNDEFINED_I) CALL CREATE_DIR('BACKUP_RES')
 
-
       WALL_START = WALL_TIME()
       TIME_START = TIME
 
       RETURN
       END SUBROUTINE INIT_OUTPUT_VARS
-
-
 
 !----------------------------------------------------------------------!
 ! Subroutine: BACKUP_RES                                               !
@@ -525,7 +500,6 @@ MODULE output_man
          CALL SET_FNAME(FNAME1, '_DES.RES' ,1)
          CALL SHIFT_RES(FNAME0, FNAME1, 'cp')
       ENDIF
-
 
       RETURN
 

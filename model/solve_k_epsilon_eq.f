@@ -23,7 +23,7 @@
       use fldvar, only: k_turb_g, k_turb_go
       use fldvar, only: e_turb_g, e_turb_go
       use functions, only: fluid_at, zmax
-      use functions, only: i_of, j_of, k_of
+      use indices, only: i_of, j_of, k_of
       use geometry, only: vol, ijkmax2
       use leqsol, only: leq_it, leq_method, leq_sweep, leq_pc, leq_tol
       use mflux, only: flux_ge, flux_gn, flux_gt

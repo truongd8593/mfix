@@ -274,7 +274,7 @@
 ! Solids-solids exchange: interphase drag
       CASE(SolidsSolids_Drag)
          DO IJK=IJKSTART3,IJKEND3
-            IF (.NOT.WALL_AT(IJK)) CYCLE
+            IF (WALL_AT(IJK)) CYCLE
 !            CALL USR_PROPERTIES(lprop, IJK, M, L)
             CALL USR_PROP_FSS(IJK,L,M)
          ENDDO

@@ -536,7 +536,7 @@
 ! Maximum number of possible species.
       use param, only: DIM_N_S
 ! Parameter constants.
-      use param1, only: UNDEFINED
+      use param1, only: UNDEFINED, ZERO
 
 ! Use the error manager for posting error messages.
 !---------------------------------------------------------------------//
@@ -562,19 +562,19 @@
       CALL INIT_ERR_MSG("CHECK_BC_WALLS_DISCRETE")
 
 ! DEM and PIC are restricted to adiabatic walls.
-      IF(BC_HW_T_S(BCV,M) /= UNDEFINED) THEN
+      IF((BC_HW_T_S(BCV,M) /= UNDEFINED) .and. &
+      &  (BC_HW_T_S(BCV,M) /= ZERO)) THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_HW_T_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(BC_TW_S(BCV,M) /= UNDEFINED) THEN
-         WRITE(ERR_MSG,1100) trim(iVar('BC_Tw_s',BCV,M))
-         CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
-      ELSEIF(BC_C_T_S(BCV,M) /= UNDEFINED) THEN
+      ELSEIF((BC_C_T_S(BCV,M) /= UNDEFINED) .and. &
+         &   (BC_C_T_S(BCV,M) /= ZERO))THEN
          WRITE(ERR_MSG,1100) trim(iVar('BC_C_T_s',BCV,M))
          CALL FLUSH_ERR_MSG(ABORT=.TRUE.)
       ENDIF
 
  1100 FORMAT('Error 1100: ',A,' should not specified for DEM/PIC',/    &
-         'simulations as they are currently limited to adiabatic BCs.',&
+         'to be non-zero as they are currently limited to constant',/  &
+         'constant temperature BCs.',&
          /'Please correct the mfix.dat file.')
 
 

@@ -80,10 +80,12 @@
       use functions
       use mfix_pic, only: AVGSOLVEL_P, EPG_P
       use mfix_pic, only: MPPIC, DES_STAT_WT, PS_GRAD
+      use param1, only: zero
       use particle_filter, only: FILTER_CELL, FILTER_WEIGHT
       use particle_filter, only: FILTER_SIZE
       use run, only: ANY_SPECIES_EQ
       use run, only: ENERGY_EQ
+      use des_thermo_cond, only: DES_QW_cond
 
       IMPLICIT NONE
 
@@ -173,6 +175,8 @@
          GAMMAxSA(LB:UB) = ZERO
          IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(LB:UB) = ZERO
+         IF (ALLOCATED(DES_QW_Cond)) &
+            DES_QW_Cond(:,:) = ZERO
       ENDIF
 
 ! Chemical reaction variables.

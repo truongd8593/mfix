@@ -29,13 +29,11 @@ $(document).ready(function(){
     });
 
     $('#get').click(function(){
-        var varname = ["mfix",
-                           $("#getmodname").val(),
-                           $("#getvarname").val()].join('.');
-        var value = $("#getvalue").val();
+        var modname = $("#getmodname").val();
+        var varname = $("#getvarname").val();
 
         $.ajax({
-            url: 'get/'+varname,
+            url: 'get/'+modname+'/'+varname,
             type: 'GET',
             success: function(response) {
                 $("#getresponse").text(response);
@@ -53,13 +51,12 @@ $(document).ready(function(){
     });
 
     $('#set').click(function(){
-        var varname = ["mfix",
-                           $("#setmodname").val(),
-                           $("#setvarname").val()].join('.');
+        var modname = $("#setmodname").val();
+        var varname = $("#setvarname").val();
         var value = $("#setvalue").val();
 
         $.ajax({
-            url: 'set/'+varname,
+            url: 'set/'+modname+'/'+varname,
             type: 'POST',
             data: {'varvalue':value},
             success: function(response) {
@@ -84,31 +81,29 @@ $(document).ready(function(){
             data: {'stepcount':stepcount},
             success: function(response) {
                 $(".notice").hide();
-                $("div.success").text('Successfully did timesteps');
+                $("div.success").text('Successfully did timestep(s)');
                 $("div.success").fadeIn();
             },
             error: function(response) {
                 $(".notice").hide();
-                $("div.error").text('Error doing timesteps');
+                $("div.error").text('Error doing timestep(s)');
                 $("div.error").fadeIn();
             }
         });
     });
 
-    $('#pausetime').change(function(){
-        var pausetime = $("#pausetime").val();
+    $('#write_dbg_vt').click(function(){
         $.ajax({
-            url: 'set/mfix.main.pausetime',
+            url: 'write_dbg_vt',
             type: 'POST',
-            data: {'varvalue':pausetime},
             success: function(response) {
                 $(".notice").hide();
-                $("div.success").text('Successfully set pausetime');
+                $("div.success").text('Successfully called WRITE_DBG_VTU_AND_VTP_FILES');
                 $("div.success").fadeIn();
             },
             error: function(response) {
                 $(".notice").hide();
-                $("div.error").text('Error setting pausetime');
+                $("div.error").text('Error while calling WRITE_DBG_VTU_AND_VTP_FILES');
                 $("div.error").fadeIn();
             }
         });
@@ -192,34 +187,25 @@ $(document).ready(function(){
             this.value = this.value.replace(/[^0-9]/g, '');
         }
     });
-
-    // TODO: better float validation
-    $('#pausetime').keyup(function () {
-        if (this.value != this.value.replace(/[^0-9\.]/g, '')) {
-            this.value = this.value.replace(/[^0-9\.]/g, '');
-        }
-    });
-
 });
 
 function updateCurlCommands() {
+    $("#curlwritedbgvt").text(req_common+'/write_dbg_vt")');
     $("#curlbackupres").text(req_common+'/backupres")');
     $("#curlreinit").text(req_common+'/reinit")');
     $("#curlexit").text(req_common+'/exit")');
     $("#curlabort").text(req_common+'/abort")');
-    $("#curlpausetime").text(req_common+'/set/mfix.main.pausetime", data={"varvalue":"'+$("#pausetime").val()+'"})');
     $("#curlstep").text(req_common+'/step'+'", data={"stepcount":"'+$("#stepcount").val()+'"})');
 
-    var varname = ["mfix",
-                   $("#setmodname").val(),
-                   $("#setvarname").val()].join('.');
+    var modname = $("#setmodname").val();
+    var varname = $("#setvarname").val();
     var value = $("#setvalue").val();
-    $("#curlset").text(req_common+'/set/'+varname+'", data={"varvalue":"'+value+'"})');
 
-    var varname = ["mfix",
-                   $("#getmodname").val(),
-                   $("#getvarname").val()].join('.');
-    $("#curlget").text(req_common+'/get/'+varname+'").text');
+    $("#curlset").text(req_common+'/set/'+modname+'/'+varname+'", data={"varvalue":"'+value+'"})');
+
+    modname = $("#getmodname").val();
+    varname = $("#getvarname").val();
+    $("#curlget").text(req_common.replace("requests.post","requests.get")+'/get/'+modname+'/'+varname+'").text');
 
     if (mfixrunning) {
         $("#running").text('MFIX IS RUNNING');

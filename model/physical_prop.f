@@ -23,6 +23,7 @@
 !---------------------------------------------------------------------//
       use compar, only: numPEs, myPe, pe_io
       use funits, only: unit_log
+      use exit, only: mfix_exit
       use mpi_utility, only: global_all_sum
       use physprop, only: smax
       use coeff, only: DENSITY

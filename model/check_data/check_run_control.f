@@ -21,7 +21,7 @@
 ! Simulation start/stop times.
       USE run, only: TIME, TSTOP
 ! Time step size, one over time step size.
-      USE run, only: DT, ODT
+      USE run, only: DT, ODT, STEADY_STATE
 ! Flag: Use K-Epsilon turbulence model.
       USE run, only: K_EPSILON
       USE run, only: ishii, jackson
@@ -70,12 +70,15 @@
 
 ! Steady-state simulation.
       ELSEIF(DT == UNDEFINED .OR. DT == ZERO) THEN
+         STEADY_STATE = .TRUE.
+         DT = ZERO
          ODT = ZERO
          TIME = ZERO
 
 ! Transient simulation.
       ELSE
-! Calculate one over the initial timestep.
+         STEADY_STATE = .FALSE.
+! Calculate reciprocal of initial timestep.
          ODT = ONE/DT
 ! Verify the remaining time settings.
          IF (TIME == UNDEFINED) THEN

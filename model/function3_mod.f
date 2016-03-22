@@ -128,6 +128,7 @@ contains
   END FUNCTION CYCLIC3_AT
 
   INTEGER FUNCTION BOUND_FUNIJK3(pLI, pLJ, pLK)
+    USE compar, only: istart4, iend4, jstart4, jend4, kstart4, kend4
     IMPLICIT NONE
     INTEGER          pLI, pLJ, pLK
     BOUND_FUNIJK3  = FUNIJK3 ( MIN( IEND4, MAX (ISTART4, pLI) ),&

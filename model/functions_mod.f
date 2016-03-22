@@ -1,11 +1,5 @@
 MODULE functions
 
-  USE compar
-  USE discretelement
-  USE geometry
-  USE indices
-  USE param1
-
 ! Functions for generating IJK indices for indicated basis:
 !---------------------------------------------------------------------//
 ! INTEGER :: FUNIJK, FUNIJK_0

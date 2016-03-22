@@ -313,10 +313,10 @@ fi
 
 # If there are no continuum phase reactions and there are no discrete
 # phase reactions, delete sfile.
-if test "$fnd_rxn" = "false" && test "$fnd_des_rxn" = "false" ; then
-  echo "Removing empty species.inc file."
-  rm "$sfile"
-fi
+#if test "$fnd_rxn" = "false" && test "$fnd_des_rxn" = "false" ; then
+#  echo "Removing empty species.inc file."
+#  rm "$sfile"
+#fi
 
 # Report any format errors
 if test "$rxn_fmt_err" = "true"; then

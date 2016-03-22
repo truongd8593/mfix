@@ -1,39 +1,32 @@
-      MODULE residual
+! -*- f90 -*-
+MODULE residual
 
       Use param, only: dim_n, dim_m
 
 !     residual.inc
-!
-      INTEGER          MAX_RESID_INDEX
-      PARAMETER        (MAX_RESID_INDEX = 8)    !for printing. do not change
-!
-      INTEGER          NRESID
-      INTEGER          NPREFIX
-      INTEGER          RESID_p, RESID_ro, RESID_u, RESID_v, RESID_w,&
-                       RESID_t, RESID_x, RESID_th, RESID_sc,RESID_ke
-      INTEGER          HYDRO_GRP,THETA_GRP,ENERGY_GRP,SPECIES_GRP,&
-                       SCALAR_GRP,KE_GRP
 
-      PARAMETER        (RESID_p  = 1)     !pressure
-      PARAMETER        (RESID_ro = 2)     !density, volume fraction
-      PARAMETER        (RESID_u  = 3)     !u-velocity
-      PARAMETER        (RESID_v  = 4)     !v-velocity
-      PARAMETER        (RESID_w  = 5)     !w-velocity
-      PARAMETER        (RESID_t  = 6)     !temperature
-      PARAMETER        (RESID_th = 7)     !granular temperature
-      PARAMETER        (RESID_sc = 8)     !user-defined scalar
-      PARAMETER        (NRESID   = 8 + DIM_N)
-      PARAMETER        (RESID_ke = 9)     !k-epsilon equations
-      PARAMETER        (RESID_x  = 10)     !mass fraction (keep this the last)
-      PARAMETER        (NPREFIX  = 10)
+      INTEGER, PARAMETER :: MAX_RESID_INDEX = 8    !for printing; don't change this
+
+      INTEGER, PARAMETER :: RESID_p  = 1     !pressure
+      INTEGER, PARAMETER :: RESID_ro = 2     !density, volume fraction
+      INTEGER, PARAMETER :: RESID_u  = 3     !u-velocity
+      INTEGER, PARAMETER :: RESID_v  = 4     !v-velocity
+      INTEGER, PARAMETER :: RESID_w  = 5     !w-velocity
+      INTEGER, PARAMETER :: RESID_t  = 6     !temperature
+      INTEGER, PARAMETER :: RESID_th = 7     !granular temperature
+      INTEGER, PARAMETER :: RESID_sc = 8     !user-defined scalar
+      INTEGER, PARAMETER :: NRESID   = 8 + DIM_N
+      INTEGER, PARAMETER :: RESID_ke = 9     !k-epsilon equations
+      INTEGER, PARAMETER :: RESID_x  = 10    !mass fraction (keep this the last)
+      INTEGER, PARAMETER :: NPREFIX  = 10
 !
 !    Group Resisuals by equation
-      PARAMETER        (HYDRO_GRP   = 1)     !hydrodynamics
-      PARAMETER        (THETA_GRP   = 2)     !Granular Energy
-      PARAMETER        (ENERGY_GRP  = 3)     !Energy
-      PARAMETER        (SPECIES_GRP = 4)     !Species
-      PARAMETER        (SCALAR_GRP  = 5)     !Scalars
-      PARAMETER        (KE_GRP      = 6)     !K-Epsilon
+      INTEGER, PARAMETER :: HYDRO_GRP   = 1     !hydrodynamics
+      INTEGER, PARAMETER :: THETA_GRP   = 2     !Granular Energy
+      INTEGER, PARAMETER :: ENERGY_GRP  = 3     !Energy
+      INTEGER, PARAMETER :: SPECIES_GRP = 4     !Species
+      INTEGER, PARAMETER :: SCALAR_GRP  = 5     !Scalars
+      INTEGER, PARAMETER :: KE_GRP      = 6     !K-Epsilon
 
 !                      prefix of Residuals string
       CHARACTER, PARAMETER, DIMENSION(NPREFIX) :: RESID_PREFIX = &
@@ -74,6 +67,62 @@
 !
 
 !                        fluid and solids accumulation, for checking the over-all fluid mass balance
-        DOUBLE PRECISION accum_resid_g, accum_resid_s(DIM_M)
+      DOUBLE PRECISION accum_resid_g, accum_resid_s(DIM_M)
+
+   CONTAINS
+
+      FUNCTION GET_RESID_STRING(INDEX)
+         IMPLICIT NONE
+         CHARACTER(LEN=4) :: GET_RESID_STRING
+         INTEGER, INTENT(IN) :: INDEX
+
+         GET_RESID_STRING = RESID_STRING(INDEX)
+
+      END FUNCTION GET_RESID_STRING
+
+      FUNCTION GET_RESID_GRP_STRING(INDEX)
+         IMPLICIT NONE
+         CHARACTER(LEN=8) :: GET_RESID_GRP_STRING
+         INTEGER, INTENT(IN) :: INDEX
+
+         GET_RESID_GRP_STRING = RESID_GRP_STRING(INDEX)
+
+      END FUNCTION GET_RESID_GRP_STRING
+
+      FUNCTION GET_RESID(INDEX)
+         IMPLICIT NONE
+         DOUBLE PRECISION :: GET_RESID
+         INTEGER, INTENT(IN) :: INDEX
+         INTEGER :: RI, RI2
+
+         IF (INDEX > SIZE(RESID_INDEX,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR INDEX ",INDEX
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         RI = RESID_INDEX(INDEX,1)
+         RI2 = RESID_INDEX(INDEX,2)
+         IF (RI > SIZE(RESID,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR RESID_INDEX 1 ",RI
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         IF (RI2 > SIZE(RESID,1)) THEN
+            ! PRINT *,__FILE__," INVALID VALUE FOR RESID_INDEX 2 ",RI2
+            GET_RESID = 0.0
+            RETURN
+         ENDIF
+         GET_RESID = RESID(RI,RI2)
+
+      END FUNCTION GET_RESID
+
+      FUNCTION GET_RESID_GRP(INDEX)
+         IMPLICIT NONE
+         DOUBLE PRECISION :: GET_RESID_GRP
+         INTEGER, INTENT(IN) :: INDEX
+
+          GET_RESID_GRP = RESID_GRP(INDEX)
+
+      END FUNCTION GET_RESID_GRP
 
       END MODULE residual

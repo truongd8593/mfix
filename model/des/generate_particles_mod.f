@@ -138,8 +138,10 @@
       use desgrid, only: dg_is_ON_myPE_OWNs
       use toleranc, only: compare
 
-      use functions
+      use discretelement, only: max_pip, max_radius, xe, yn, zt
       use error_manager
+      use functions
+      use param, only: dim_m
       use param, only: dimension_i, dimension_j, dimension_k
 
       IMPLICIT NONE
@@ -782,6 +784,7 @@
       use geometry, only: VOL
 
       use functions
+      use compar, only: dead_cell_at
 
       IMPLICIT NONE
 
