@@ -170,9 +170,10 @@
          DES_T_s(LB:UB) = ZERO
          DES_C_PS(LB:UB) = ZERO
          DES_X_s(LB:UB,:) = ZERO
-         Q_Source(LB:UB) = ZERO
-         CONV_Qs(LB:UB) = ZERO
-         GAMMAxSA(LB:UB) = ZERO
+
+         IF(ALLOCATED(Q_Source)) Q_Source(LB:UB) = ZERO
+         IF(ALLOCATED(CONV_Qs)) CONV_Qs(LB:UB) = ZERO
+         IF(ALLOCATED(GAMMAxSA)) GAMMAxSA(LB:UB) = ZERO
          IF (INTG_ADAMS_BASHFORTH) &
             Q_Source0(LB:UB) = ZERO
          IF (ALLOCATED(DES_QW_Cond)) &
