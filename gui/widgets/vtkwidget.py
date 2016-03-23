@@ -1060,7 +1060,8 @@ class VtkWidget(QtGui.QWidget):
         geometry = self.collect_toplevel_geometry()
 
         return geometry.GetOutput().GetBounds()
-
+        
+    # --- output files ---
     def export_stl(self, file_name):
         """ expoort visivle toplevel geometry """
 
@@ -1076,6 +1077,13 @@ class VtkWidget(QtGui.QWidget):
         stl_writer.SetFileName(file_name)
         stl_writer.SetInputConnection(clean_filter.GetOutputPort())
         stl_writer.Write()
+
+    def export_unstructured(self, fname, grid):
+        """ export an unstructured grid """
+        gw = vtk.vtkXMLUnstructuredGridWriter()
+        gw.SetFileName(fname)
+        gw.SetInputConnection(grid)
+        gw.Write()
 
     # --- mesh ---
     def change_mesh_tab(self, tabnum, btn):
@@ -1153,6 +1161,7 @@ class VtkWidget(QtGui.QWidget):
             self.grid_viewer_dict['filters'].append(filter_)
             mapper = vtk.vtkPolyDataMapper()
             mapper.SetInputConnection(filter_.GetOutputPort())
+            mapper.ScalarVisibilityOff()
             self.grid_viewer_dict['mappers'].append(mapper)
 
             actor = vtk.vtkActor()
@@ -1200,7 +1209,12 @@ class VtkWidget(QtGui.QWidget):
 
         self.vtkrenderer.AddActor(clipperActor)
         self.vtkRenderWindow.Render()
-
+        
+        # export geometry
+        project_dir = self.parent.settings.value('project_dir')
+        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
+                                 clipper.GetOutputPort())
+        
     def mesh(self):
 
         mesher = str(self.parent.ui.combobox_mesher.currentText())
