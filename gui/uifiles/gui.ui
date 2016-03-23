@@ -4780,7 +4780,7 @@ QPushButton:checked {
                          <enum>Qt::LeftToRight</enum>
                         </property>
                         <property name="text">
-                         <string>Momentun Formulation</string>
+                         <string>Momentum Formulation</string>
                         </property>
                         <property name="alignment">
                          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -5435,14 +5435,14 @@ QPushButton:checked {
                         <item row="3" column="0" colspan="3">
                          <widget class="QCheckBox" name="checkBox_10">
                           <property name="text">
-                           <string>Solver W-Momentum Equation</string>
+                           <string>Solve W-Momentum Equation</string>
                           </property>
                          </widget>
                         </item>
                         <item row="4" column="0">
                          <widget class="QCheckBox" name="checkBox_11">
                           <property name="text">
-                           <string>Enable Spceis Equations</string>
+                           <string>Enable Species Equations</string>
                           </property>
                          </widget>
                         </item>
@@ -5800,7 +5800,7 @@ QPushButton:checked {
                    </item>
                   </layout>
                  </widget>
-                 <widget class="QWidget" name="continumm_solids_model"/>
+                 <widget class="QWidget" name="continuum_solids_model"/>
                  <widget class="QWidget" name="run">
                   <layout class="QGridLayout" name="gridLayout_21">
                    <property name="leftMargin">
