@@ -15,7 +15,7 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # local imports
-from tools.general import get_unique_string, widget_iter
+from tools.general import get_unique_string, widget_iter, get_icon
 
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
@@ -129,12 +129,18 @@ class VtkWidget(QtGui.QWidget):
             }
 
         # --- layout ---
-        self.hlayout = QtGui.QHBoxLayout(self)
-        self.hlayout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.hlayout)
+        self.vlayout = QtGui.QVBoxLayout(self)
+        self.vlayout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(self.vlayout)
+
+        self.button_bar = QtGui.QWidget()
+        self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
+        self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
+#        self.button_bar.setLayout(self.button_bar_layout)
+        self.vlayout.addWidget(self.button_bar)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
-        self.hlayout.addWidget(self.vtkWindowWidget)
+        self.vlayout.addWidget(self.vtkWindowWidget)
 
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
@@ -150,18 +156,30 @@ class VtkWidget(QtGui.QWidget):
         self.style.SetDefaultRenderer(self.vtkrenderer)
         self.vtkiren.SetInteractorStyle(self.style)
 
-        # Orientation Marker Widget
-        self.axes = vtk.vtkAxesActor()
-        self.axes.AxisLabelsOn()
-        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-            1, 0, 0)
-        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-            0, 1, 0)
-        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
-        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
-            0, 0, 1)
-        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+        # Orientation Arrows Marker Widget
+#        self.axes = vtk.vtkAxesActor()
+#        self.axes.AxisLabelsOn()
+#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
+#            1, 0, 0)
+#        self.axes.GetXAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
+#            0, 1, 0)
+#        self.axes.GetYAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().SetColor(
+#            0, 0, 1)
+#        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
+
+        # Orientation Cube Marker Widget
+        self.axes = vtk.vtkAnnotatedCubeActor();
+        self.axes.SetXPlusFaceText('E')
+        self.axes.SetXMinusFaceText('W')
+        self.axes.SetYMinusFaceText('N')
+        self.axes.SetYPlusFaceText('S')
+        self.axes.SetZMinusFaceText('T')
+        self.axes.SetZPlusFaceText('B')
+        self.axes.GetTextEdgesProperty().SetColor(1,1,1)
+        self.axes.GetTextEdgesProperty().SetLineWidth(2)
+        self.axes.GetCubeProperty().SetColor(.39, .71, .965)
 
         self.orientationWidget = vtk.vtkOrientationMarkerWidget()
         self.orientationWidget.SetOutlineColor(0.9300, 0.5700, 0.1300)
@@ -177,6 +195,41 @@ class VtkWidget(QtGui.QWidget):
         self.geometrytree.itemSelectionChanged.connect(
             self.tree_widget_geometry_changed)
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
+
+        self.__add_buttons()
+
+    # --- setup ---
+    def __add_buttons(self):
+
+        self.toolbutton_reset = QtGui.QToolButton()
+        self.toolbutton_reset.pressed.connect(self.reset_view)
+        self.toolbutton_reset.setIcon(get_icon('overscan.png'))
+
+        self.toolbutton_perspective = QtGui.QToolButton()
+        self.toolbutton_perspective.pressed.connect(self.perspective)
+        self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
+
+        self.toolbutton_view_xy = QtGui.QToolButton()
+        self.toolbutton_view_xy.pressed.connect(lambda: self.set_view('xy'))
+        self.toolbutton_view_xy.setIcon(get_icon('-z.png'))
+
+        self.toolbutton_view_yz = QtGui.QToolButton()
+        self.toolbutton_view_yz.pressed.connect(lambda: self.set_view('yz'))
+        self.toolbutton_view_yz.setIcon(get_icon('-x.png'))
+
+        self.toolbutton_view_xz = QtGui.QToolButton()
+        self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
+        self.toolbutton_view_xz.setIcon(get_icon('-y.png'))
+
+        for btn in [self.toolbutton_reset,
+                    self.toolbutton_view_xy,
+                    self.toolbutton_view_yz,
+                    self.toolbutton_view_xz,
+                    self.toolbutton_perspective]:
+            self.button_bar_layout.addWidget(btn)
+            btn.setAutoRaise(True)
+
+        self.button_bar_layout.addStretch()
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
@@ -1110,5 +1163,80 @@ class VtkWidget(QtGui.QWidget):
 
             self.vtkrenderer.AddActor(actor)
 
+        self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()
+
+    def vtk_mesher(self):
+
+        signedDistances = vtk.vtkFloatArray()
+        signedDistances.SetNumberOfComponents(1)
+        signedDistances.SetName("SignedDistances")
+
+        implicitPolyDataDistance = vtk.vtkImplicitPolyDataDistance()
+        source = self.collect_toplevel_geometry()
+        implicitPolyDataDistance.SetInput(source.GetOutput())
+
+        # Evaluate the signed distance function at all of the grid points
+        for point_id in range(self.rectilinear_grid.GetNumberOfPoints()):
+            p = self.rectilinear_grid.GetPoint(point_id)
+            signedDistance = implicitPolyDataDistance.EvaluateFunction(p)
+            signedDistances.InsertNextValue(signedDistance)
+
+        self.rectilinear_grid.GetPointData().SetScalars(signedDistances)
+
+        clipper = vtk.vtkClipDataSet()
+        clipper.SetInputData(self.rectilinear_grid)
+        clipper.InsideOutOn()
+        clipper.SetValue(0.0)
+        clipper.Update()
+
+        clipperMapper = vtk.vtkDataSetMapper()
+        clipperMapper.SetInputConnection(clipper.GetOutputPort())
+
+        clipperActor = vtk.vtkActor()
+        clipperActor.SetMapper(clipperMapper)
+        clipperActor.GetProperty().SetRepresentationToWireframe()
+        clipperActor.GetProperty().SetColor(.1, .1, .1)
+
+        self.vtkrenderer.AddActor(clipperActor)
+        self.vtkRenderWindow.Render()
+
+    def mesh(self):
+
+        mesher = str(self.parent.ui.combobox_mesher.currentText())
+
+        if mesher == 'vtkClipDataSet':
+            self.vtk_mesher()
+
+    # --- view ---
+    def perspective(self):
+        camera = self.vtkrenderer.GetActiveCamera()
+
+        if camera.GetParallelProjection():
+            camera.ParallelProjectionOff()
+            self.toolbutton_perspective.setIcon(get_icon('perspective.png'))
+        else:
+            camera.ParallelProjectionOn()
+            self.toolbutton_perspective.setIcon(get_icon('parallel.png'))
+
+        self.vtkRenderWindow.Render()
+
+    def set_view(self, view='xy'):
+
+        camera = self.vtkrenderer.GetActiveCamera()
+
+        if view == 'xy':
+            camera.SetPosition(0, 0, 10000000)
+            camera.SetViewUp(0, 1, 0)
+        elif view == 'yz':
+            camera.SetPosition(0, 10000000, 0)
+            camera.SetViewUp(1, 0, 0)
+        elif view == 'xz':
+            camera.SetPosition(10000000, 0, 0)
+            camera.SetViewUp(0, 0, 1)
+        self.vtkrenderer.ResetCamera()
+        self.vtkRenderWindow.Render()
+
+    def reset_view(self):
         self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()

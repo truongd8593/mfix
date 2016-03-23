@@ -277,6 +277,9 @@ class MfixGui(QtGui.QMainWindow):
                        ]:
             widget.editingFinished.connect(self.vtkwidget.update_mesh)
 
+        # connect mesher
+        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesh)
+
     def __setup_workflow_widget(self):
 
         self.nodeChart = NodeWidget(showtoolbar=False)
@@ -699,7 +702,7 @@ class MfixGui(QtGui.QMainWindow):
 
         src = open(mfix_dat).read()
         self.ui.mfix_dat_source.setPlainText(src)
-        self.mode_changed('developer')
+#        self.mode_changed('developer')
         # self.ui.stackedWidgetMode.setCurrentIndex(2)
 
         self.project = Project(mfix_dat)
@@ -709,7 +712,7 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.time.setValue(self.project['time'])
         self.ui.tstop.setValue(self.project['tstop'])
         self.ui.dt.setValue(self.project['dt'])
-        self.ui.dt_max.setValue(self.project['dt_max'])
+        # self.ui.dt_max.setValue(self.project['dt_max'])
         self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
         # self.ui.ro_g0.setText(str(self.project['ro_g0']))
         # self.ui.mu_g0.setText(str(self.project['mu_g0']))
