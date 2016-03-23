@@ -165,7 +165,7 @@
       use constant, only: SEGREGATION_SLOPE_COEFFICIENT
 ! The count and a list of particles in IJK
       use derived_types, only: PIC
-      use discretelement, only: PINC, PIJK
+      use discretelement, only: PINC, PIJK, DES_VOL_NODE
 ! Particle velocity and density
       use discretelement, only: DES_VEL_NEW, RO_SOL
 ! Particle radius and volume.
@@ -216,8 +216,6 @@
       DOUBLE PRECISION :: OoEPg, EPg_2
 ! Drag force acting on each phase.
       DOUBLE PRECISION :: lFORCE
-! One divided by fluid cell volume
-      DOUBLE PRECISION :: OoVOL
 !......................................................................!
 
       DO IJK = IJKSTART3, IJKEND3
@@ -277,7 +275,7 @@
                   SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 
 ! Calculating the accumulated solids-solids drag force.
-               lFORCE = OoVOL*lDss
+               lFORCE = lDss/des_vol_node(L)
 
               SDRAG_AM(IJK,M) = SDRAG_AM(IJK,M) + lFORCE
               SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
