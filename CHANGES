@@ -12,7 +12,7 @@ New features added:
 * DEM particle-wall heat transfer - MFIX-DEM particles may exchange heat with
   the domain boundaries via specified constant wall temperature boundary 
   conditions. The rotating drum with particle-wall heat transfer tutorial 
-  illustrates this new feature (INSTERT LOCATION HERE)
+  illustrates this new feature (tutorials/DEM_Wall_HT)
 
 Changes in existing features:
 -----------------------------
@@ -33,6 +33,17 @@ Changes in existing features:
 
 Project Metrics:
 ----------------
+
+* Change from 2015-2 Release:
+  o 1 new file and about over 13,700 additional lines of code
+
+* 2016-1 Total count:
+  o Files: 541
+  o Lines: 245,389
+  o Blank Lines: 34,948
+  o Code Lines: 135,401
+  o Comment Lines: 78,216
+  o Statements: 95,400
 
 
 References:
