@@ -184,6 +184,7 @@
       use functions, only: FLUID_AT
       use functions, only: IS_NONEXISTENT, IS_GHOST
       use functions, only: IS_ENTERING_GHOST, IS_EXITING_GHOST
+      use geometry, only: vol
 ! Double precision values.
       use param1, only: ZERO, ONE
 ! Array sizes for solids
@@ -275,7 +276,7 @@
                   SEGREGATION_SLOPE_COEFFICIENT*P_star(IJK)
 
 ! Calculating the accumulated solids-solids drag force.
-               lFORCE = lDss/des_vol_node(L)
+               lFORCE = lDss/vol(L)
 
               SDRAG_AM(IJK,M) = SDRAG_AM(IJK,M) + lFORCE
               SDRAG_BM(IJK,:,M) = SDRAG_BM(IJK,:,M) +                  &
