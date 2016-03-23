@@ -27,6 +27,7 @@
       INTEGER :: LC1, LC2
       INTEGER :: lDIMN, lNEXT_REC
 
+      INTEGER :: lVAR_SIZE
       DOUBLE PRECISION :: VERSION
 
       lDIMN = merge(2,3,NO_K)
@@ -66,8 +67,9 @@
       ENDIF
 
       IF(VERSION >= 1.1) THEN
-         CALL READ_RES_DES(lNEXT_REC, DES_USR_VAR_SIZE)
-         DO LC1=1, DES_USR_VAR_SIZE
+         CALL READ_RES_DES(lNEXT_REC, lVAR_SIZE)
+         DO LC1=1, lVAR_SIZE
+            if(lVAR_SIZE <= DES_USR_VAR_SIZE) &
             CALL READ_RES_pARRAY(lNEXT_REC, DES_USR_VAR(LC1,:))
          ENDDO
       ENDIF
