@@ -6591,7 +6591,249 @@ QPushButton:checked {
                  </widget>
                  <widget class="QWidget" name="pic_solids"/>
                  <widget class="QWidget" name="dem_solids"/>
-                 <widget class="QWidget" name="discrete_element_model"/>
+                 <widget class="QWidget" name="discrete_element_model">
+                  <widget class="QLabel" name="label_149">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>80</y>
+                     <width>141</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Integration method</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_150">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>130</y>
+                     <width>121</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Collision Model</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_151">
+                   <property name="geometry">
+                    <rect>
+                     <x>80</x>
+                     <y>180</y>
+                     <width>111</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Coupling method</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="checkBox_2">
+                   <property name="geometry">
+                    <rect>
+                     <x>120</x>
+                     <y>220</y>
+                     <width>321</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Enable explicit coupling of interphase quantities</string>
+                   </property>
+                  </widget>
+                  <widget class="QComboBox" name="comboBox_20">
+                   <property name="geometry">
+                    <rect>
+                     <x>280</x>
+                     <y>240</y>
+                     <width>104</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_152">
+                   <property name="geometry">
+                    <rect>
+                     <x>100</x>
+                     <y>250</y>
+                     <width>101</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Interpolation</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_153">
+                   <property name="geometry">
+                    <rect>
+                     <x>40</x>
+                     <y>290</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Scheme:</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_154">
+                   <property name="geometry">
+                    <rect>
+                     <x>250</x>
+                     <y>290</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Width:</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="checkBox_4">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>320</y>
+                     <width>201</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Enable mean field diffusion</string>
+                   </property>
+                  </widget>
+                  <widget class="QWidget" name="gridLayoutWidget">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>360</y>
+                     <width>391</width>
+                     <height>222</height>
+                    </rect>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_54">
+                    <item row="4" column="0">
+                     <widget class="QLabel" name="label_158">
+                      <property name="text">
+                       <string>Damping norm/tan ratio</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <widget class="QLabel" name="label_155">
+                      <property name="text">
+                       <string>Friction coefficient:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="2">
+                     <widget class="QDoubleSpinBox" name="des_etat_w_fac"/>
+                    </item>
+                    <item row="6" column="0">
+                     <widget class="QLabel" name="label_160">
+                      <property name="text">
+                       <string>Poisson ratio</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QDoubleSpinBox" name="des_etat_fac"/>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="QDoubleSpinBox" name="kn"/>
+                    </item>
+                    <item row="3" column="2">
+                     <widget class="QDoubleSpinBox" name="kt_w_fac"/>
+                    </item>
+                    <item row="1" column="2">
+                     <widget class="QDoubleSpinBox" name="mew_w"/>
+                    </item>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="label_157">
+                      <property name="text">
+                       <string>Spring norm/tan ratio</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="2">
+                     <widget class="QDoubleSpinBox" name="ew_young"/>
+                    </item>
+                    <item row="6" column="2">
+                     <widget class="QDoubleSpinBox" name="vw_poisson"/>
+                    </item>
+                    <item row="2" column="2">
+                     <widget class="QDoubleSpinBox" name="kn_w"/>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="label_156">
+                      <property name="text">
+                       <string>Normal spring constant:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="6" column="1">
+                     <widget class="QDoubleSpinBox" name="v_poisson"/>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QDoubleSpinBox" name="kt_fac"/>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QLabel" name="label_159">
+                      <property name="text">
+                       <string>Young's modulus</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QDoubleSpinBox" name="e_young"/>
+                    </item>
+                    <item row="1" column="1">
+                     <widget class="QDoubleSpinBox" name="mew"/>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QLabel" name="label_161">
+                      <property name="text">
+                       <string>particle-particle</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="2">
+                     <widget class="QLabel" name="label_162">
+                      <property name="text">
+                       <string>particle-wall</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="des_diffuse_width">
+                   <property name="geometry">
+                    <rect>
+                     <x>350</x>
+                     <y>310</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_163">
+                   <property name="geometry">
+                    <rect>
+                     <x>270</x>
+                     <y>310</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Width</string>
+                   </property>
+                  </widget>
+                 </widget>
                  <widget class="QWidget" name="particle_in_cell_model"/>
                  <widget class="QWidget" name="initial_conditions"/>
                  <widget class="QWidget" name="boundary_conditions"/>
