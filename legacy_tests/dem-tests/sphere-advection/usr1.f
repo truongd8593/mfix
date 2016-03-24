@@ -58,6 +58,7 @@
 
          XX = XE(I)
          YY = YN(J)
+         ZZ = ZT(K)
          XM = XE(I) - 0.5d0*DX(I)
          YM = YN(J) - 0.5d0*DY(J)
          ZM = ZT(K) - 0.5d0*DZ(K)
