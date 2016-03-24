@@ -26,7 +26,6 @@
       do
          call rkck(y,dydx,n,x,h,ytemp,yerr)
          errmax=0.
-         print *," N IS ",n
          do i=1,n
           errmax=max(errmax,abs(yerr(i)/yscal(i)))
          end do
@@ -38,7 +37,6 @@
          if(xnew==x) write(*,*) 'WARNING: stepsize underflow in rkqs'
       enddo
 
-      print *,"ERRMAX ",errmax
       HNEXT = merge(SAFETY*h*(errmax**PGROW), 5.0*h, errmax>ERRCON)
 
       hdid=h

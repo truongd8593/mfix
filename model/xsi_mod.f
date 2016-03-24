@@ -1040,8 +1040,6 @@
 
       IMPLICIT NONE
       DOUBLE PRECISION, INTENT(IN) :: XXXv, XXXdwf
-      ! print *,"XXXv = ",XXXv
-      ! print *,"XXXdwf = ",XXXdwf
       XSI_func = (sign(1d0,(-XXXv))+1d0)/(2d0) + &
          sign(1d0,XXXv)*XXXdwf
       END FUNCTION XSI_func
