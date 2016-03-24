@@ -122,12 +122,18 @@
                CALL GET_INTERPOLATION_TERMS_G(IJK,'U_MOMENTUM',&
                   ALPHA_Ut_c(IJK), AW, HW, VELW)
                WW(IJK) = WW(IJK) * AW
+            ELSE
+               WW(IJK) = 0.0d0
             ENDIF
 
          ELSE
             U(IJK) = AVG_X_E(U_G(IJK),U_G(IPJK),IP)
             V(IJK) = AVG_X(V_G(IJK),V_G(IPJK),I)
-            IF (DO_K) WW(IJK) = AVG_X(W_G(IJK),W_G(IPJK),I)
+            IF (DO_K) THEN
+               WW(IJK) = AVG_X(W_G(IJK),W_G(IPJK),I)
+            ELSE
+               WW(IJK) = 0.0d0
+            ENDIF
          ENDIF
       ENDDO   ! end do ijk
 
