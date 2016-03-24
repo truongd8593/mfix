@@ -37,7 +37,11 @@
          if(xnew==x) write(*,*) 'WARNING: stepsize underflow in rkqs'
       enddo
 
-      HNEXT = merge(SAFETY*h*(errmax**PGROW), 5.0*h, errmax>ERRCON)
+      IF(errmax>ERRCON) THEN
+         HNEXT = SAFETY*h*(errmax**PGROW)
+      ELSE
+         HNEXT = 5.0*h
+      ENDIF
 
       hdid=h
       x=x+h
