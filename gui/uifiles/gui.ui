@@ -633,11 +633,6 @@ background-color:white;
                  </item>
                  <item>
                   <property name="text">
-                   <string>Time</string>
-                  </property>
-                 </item>
-                 <item>
-                  <property name="text">
                    <string>Output</string>
                   </property>
                   <item>
@@ -699,7 +694,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>8</number>
+                  <number>22</number>
                  </property>
                  <widget class="QWidget" name="general">
                   <layout class="QGridLayout" name="gridLayout_23">
@@ -4589,6 +4584,57 @@ QPushButton:checked {
                    </item>
                   </layout>
                  </widget>
+                 <widget class="QWidget" name="numerics">
+                  <widget class="QDoubleSpinBox" name="tol_resid">
+                   <property name="geometry">
+                    <rect>
+                     <x>170</x>
+                     <y>110</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                   <property name="decimals">
+                    <number>4</number>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_134">
+                   <property name="geometry">
+                    <rect>
+                     <x>70</x>
+                     <y>70</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>MAX_NIT</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_135">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>110</y>
+                     <width>91</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>TOL_RESID</string>
+                   </property>
+                  </widget>
+                  <widget class="QSpinBox" name="max_nit">
+                   <property name="geometry">
+                    <rect>
+                     <x>170</x>
+                     <y>70</y>
+                     <width>48</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                 </widget>
                  <widget class="QWidget" name="model_setup">
                   <layout class="QGridLayout" name="gridLayout_15">
                    <property name="leftMargin">
@@ -5800,7 +5846,469 @@ QPushButton:checked {
                    </item>
                   </layout>
                  </widget>
-                 <widget class="QWidget" name="continuum_solids_model"/>
+                 <widget class="QWidget" name="continuum_solids_model">
+                  <widget class="QLabel" name="label_138">
+                   <property name="geometry">
+                    <rect>
+                     <x>40</x>
+                     <y>40</y>
+                     <width>171</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Packed Bed Void Fraction</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_139">
+                   <property name="geometry">
+                    <rect>
+                     <x>30</x>
+                     <y>80</y>
+                     <width>151</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Viscous Stress Model</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_140">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>120</y>
+                     <width>161</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Frictional Stress Model</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_141">
+                   <property name="geometry">
+                    <rect>
+                     <x>80</x>
+                     <y>180</y>
+                     <width>211</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Particle-particle restitution coeff.</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_142">
+                   <property name="geometry">
+                    <rect>
+                     <x>80</x>
+                     <y>230</y>
+                     <width>201</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Interphase friction coefficient</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_143">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>270</y>
+                     <width>231</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Angle of internal friction (degrees)</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_144">
+                   <property name="geometry">
+                    <rect>
+                     <x>60</x>
+                     <y>310</y>
+                     <width>191</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Radial Distribution Function</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_145">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>340</y>
+                     <width>131</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Stress Blending</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_146">
+                   <property name="geometry">
+                    <rect>
+                     <x>40</x>
+                     <y>360</y>
+                     <width>191</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Segregation Slope coefficient</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_147">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>400</y>
+                     <width>151</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Max packing correlation</string>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_148">
+                   <property name="geometry">
+                    <rect>
+                     <x>70</x>
+                     <y>430</y>
+                     <width>271</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>Excluded volume in Boyle-Massoudi stress</string>
+                   </property>
+                  </widget>
+                  <widget class="QComboBox" name="comboBox">
+                   <property name="geometry">
+                    <rect>
+                     <x>330</x>
+                     <y>60</y>
+                     <width>171</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>Algebraic Formulation</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lun et al, 1984</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Iddir &amp; Arastoopour, 2005</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Simonin, 1996</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Cao &amp; Ahmadi, 1995</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Garzo and Dufty, 1999</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Garzo, Tenneti, Subramaniam, Hrenya, 2012</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Garzo, Hrenya and Dufty, 2007</string>
+                    </property>
+                   </item>
+                  </widget>
+                  <widget class="QComboBox" name="comboBox_19">
+                   <property name="geometry">
+                    <rect>
+                     <x>310</x>
+                     <y>110</y>
+                     <width>104</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>Schaeffer</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Srivastava and Sundaresan, 2003</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Only Solids Pressure</string>
+                    </property>
+                   </item>
+                  </widget>
+                  <widget class="QComboBox" name="rdf_type">
+                   <property name="geometry">
+                    <rect>
+                     <x>300</x>
+                     <y>300</y>
+                     <width>181</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>Carnahan Starling</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Lebowitz</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Mansoori</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Modified Lebowitz</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Modified Mansoori</string>
+                    </property>
+                   </item>
+                  </widget>
+                  <widget class="QComboBox" name="comboBox_21">
+                   <property name="geometry">
+                    <rect>
+                     <x>270</x>
+                     <y>330</y>
+                     <width>104</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>None</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Hyperbolic Tangent</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Sigmoidal</string>
+                    </property>
+                   </item>
+                  </widget>
+                  <widget class="QComboBox" name="comboBox_22">
+                   <property name="geometry">
+                    <rect>
+                     <x>240</x>
+                     <y>390</y>
+                     <width>104</width>
+                     <height>26</height>
+                    </rect>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>None</string>
+                    </property>
+                   </item>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="v_ex">
+                   <property name="geometry">
+                    <rect>
+                     <x>370</x>
+                     <y>420</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="segregation_slope_coefficient">
+                   <property name="geometry">
+                    <rect>
+                     <x>390</x>
+                     <y>360</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="phi">
+                   <property name="geometry">
+                    <rect>
+                     <x>330</x>
+                     <y>260</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="c_f">
+                   <property name="geometry">
+                    <rect>
+                     <x>380</x>
+                     <y>230</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="c_e">
+                   <property name="geometry">
+                    <rect>
+                     <x>330</x>
+                     <y>180</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="ep_star">
+                   <property name="geometry">
+                    <rect>
+                     <x>330</x>
+                     <y>30</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                 </widget>
+                 <widget class="QWidget" name="vtk"/>
+                 <widget class="QWidget" name="monitors"/>
+                 <widget class="QWidget" name="points"/>
+                 <widget class="QWidget" name="planes"/>
+                 <widget class="QWidget" name="volumes"/>
+                 <widget class="QWidget" name="post_processing"/>
+                 <widget class="QWidget" name="export_2"/>
+                 <widget class="QWidget" name="plugins"/>
+                 <widget class="QWidget" name="output">
+                  <widget class="QLabel" name="label_136">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>50</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>RES_DT</string>
+                   </property>
+                  </widget>
+                  <widget class="QDoubleSpinBox" name="res_dt">
+                   <property name="geometry">
+                    <rect>
+                     <x>160</x>
+                     <y>40</y>
+                     <width>67</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QLabel" name="label_137">
+                   <property name="geometry">
+                    <rect>
+                     <x>50</x>
+                     <y>90</y>
+                     <width>59</width>
+                     <height>16</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>NLOG</string>
+                   </property>
+                  </widget>
+                  <widget class="QSpinBox" name="nlog">
+                   <property name="geometry">
+                    <rect>
+                     <x>160</x>
+                     <y>80</y>
+                     <width>48</width>
+                     <height>24</height>
+                    </rect>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="full_log">
+                   <property name="geometry">
+                    <rect>
+                     <x>150</x>
+                     <y>130</y>
+                     <width>86</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>FULL_LOG</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="group_resid">
+                   <property name="geometry">
+                    <rect>
+                     <x>120</x>
+                     <y>190</y>
+                     <width>131</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>GROUP_RESID</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="print_des_data">
+                   <property name="geometry">
+                    <rect>
+                     <x>110</x>
+                     <y>240</y>
+                     <width>141</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>PRINT_DES_DATA</string>
+                   </property>
+                  </widget>
+                  <widget class="QCheckBox" name="write_vtk_files">
+                   <property name="geometry">
+                    <rect>
+                     <x>100</x>
+                     <y>280</y>
+                     <width>151</width>
+                     <height>20</height>
+                    </rect>
+                   </property>
+                   <property name="text">
+                    <string>WRITE_VTK_FILES</string>
+                   </property>
+                  </widget>
+                 </widget>
                  <widget class="QWidget" name="run">
                   <layout class="QGridLayout" name="gridLayout_21">
                    <property name="leftMargin">
@@ -6081,6 +6589,15 @@ QPushButton:checked {
                    </property>
                   </widget>
                  </widget>
+                 <widget class="QWidget" name="pic_solids"/>
+                 <widget class="QWidget" name="dem_solids"/>
+                 <widget class="QWidget" name="discrete_element_model"/>
+                 <widget class="QWidget" name="particle_in_cell_model"/>
+                 <widget class="QWidget" name="initial_conditions"/>
+                 <widget class="QWidget" name="boundary_conditions"/>
+                 <widget class="QWidget" name="point_sources"/>
+                 <widget class="QWidget" name="internal_surfaces"/>
+                 <widget class="QWidget" name="chemistry"/>
                 </widget>
                </item>
               </layout>
