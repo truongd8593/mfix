@@ -134,12 +134,12 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui.run_name.textChanged.connect(self.unsaved)
         self.ui.description.textChanged.connect(self.unsaved)
-        self.ui.energy_eq.clicked.connect(self.unsaved)
-        self.ui.time.valueChanged.connect(self.unsaved)
-        self.ui.tstop.valueChanged.connect(self.unsaved)
-        self.ui.dt.valueChanged.connect(self.unsaved)
-        self.ui.dt_max.valueChanged.connect(self.unsaved)
-        self.ui.units.currentIndexChanged.connect(self.unsaved)
+#        self.ui.energy_eq.clicked.connect(self.unsaved)
+#        self.ui.time.valueChanged.connect(self.unsaved)
+#        self.ui.tstop.valueChanged.connect(self.unsaved)
+#        self.ui.dt.valueChanged.connect(self.unsaved)
+#        self.ui.dt_max.valueChanged.connect(self.unsaved)
+#        self.ui.units.currentIndexChanged.connect(self.unsaved)
 
         # --- Threads ---
         self.build_thread = BuildThread(self)
@@ -278,7 +278,7 @@ class MfixGui(QtGui.QMainWindow):
             widget.editingFinished.connect(self.vtkwidget.update_mesh)
 
         # connect mesher
-        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesh)
+        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesher)
 
     def __setup_workflow_widget(self):
 
@@ -708,12 +708,12 @@ class MfixGui(QtGui.QMainWindow):
         self.project = Project(mfix_dat)
         self.ui.run_name.setText(str(self.project['run_name']))
         self.ui.description.setText(str(self.project['description']))
-        self.ui.energy_eq.setChecked(self.project['energy_eq'])
-        self.ui.time.setValue(self.project['time'])
-        self.ui.tstop.setValue(self.project['tstop'])
-        self.ui.dt.setValue(self.project['dt'])
+#        self.ui.energy_eq.setChecked(self.project['energy_eq'])
+#        self.ui.time.setValue(self.project['time'])
+#        self.ui.tstop.setValue(self.project['tstop'])
+#        self.ui.dt.setValue(self.project['dt'])
         # self.ui.dt_max.setValue(self.project['dt_max'])
-        self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
+#        self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
         # self.ui.ro_g0.setText(str(self.project['ro_g0']))
         # self.ui.mu_g0.setText(str(self.project['mu_g0']))
 

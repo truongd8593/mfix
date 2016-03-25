@@ -6,8 +6,8 @@
                            
 ! Run-control section                                                           
                                                                                
-  RUN_NAME = 'BUB01'
-  DESCRIPTION = 'fluid bed with jet'
+  RUN_NAME              = 'BUB01'
+  DESCRIPTION           = 'fluid bed with jet'
   RUN_TYPE              = 'new'             
   UNITS                 = 'cgs'
   TIME                  = 0.0                           !start time

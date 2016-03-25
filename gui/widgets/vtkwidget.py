@@ -17,6 +17,42 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 # local imports
 from tools.general import get_unique_string, widget_iter, get_icon
 
+CELL_TYPE_ENUM = {
+    0:  'empty_cell',
+    1:  'vertex',
+    2:  'poly_vertex',
+    3:  'line',
+    4:  'poly_line',
+    5:  'triangle',
+    6:  'triangle_strip',
+    7:  'polygon',
+    8:  'pixel',
+    9:  'quad',
+    10: 'tetra',
+    11: 'voxel',
+    12: 'hexahedron',
+    13: 'wedge',
+    14: 'pyramid',
+    15: 'pentagonal_prism',
+    16: 'hexagonal_prism',
+    21: 'quadratic_edge',
+    22: 'quadratic_triangle',
+    23: 'quadratic_quad',
+    24: 'quadratic_tetra',
+    25: 'quadratic_hexahedron',
+    26: 'quadratic_wedge',
+    27: 'quadratic_pyramid',
+    28: 'biquadratic_quad',
+    29: 'triquadratic_hexahedron',
+    30: 'quadratic_linear_quad',
+    31: 'quadratic_linear_wedge',
+    32: 'biquadratic_quadratic_wedge',
+    33: 'biquadratic_quadratic_hexahedron',
+    34: 'biquadratic_traingle',
+    35: 'cubic_line',
+    36: 'quadratic_polygon',
+    }
+
 
 class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
@@ -61,6 +97,15 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 
         self.OnLeftButtonDown()
         return
+
+
+class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
+
+    def __init__(self, parent=None):
+        self.AddObserver("OnLeftButtonPressEvent", self.left_button_press_event)
+
+    def left_button_press_event(self, obj, event):
+        print('pressed')
 
 
 class VtkWidget(QtGui.QWidget):
@@ -133,11 +178,11 @@ class VtkWidget(QtGui.QWidget):
         self.vlayout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(self.vlayout)
 
-        self.button_bar = QtGui.QWidget()
+        self.button_bar = QtGui.QWidget(self)
         self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
         self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
-#        self.button_bar.setLayout(self.button_bar_layout)
-        self.vlayout.addWidget(self.button_bar)
+        self.button_bar.setLayout(self.button_bar_layout)
+#        self.vlayout.addWidget(self.button_bar)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
         self.vlayout.addWidget(self.vtkWindowWidget)
@@ -170,26 +215,37 @@ class VtkWidget(QtGui.QWidget):
 #        self.axes.GetZAxisCaptionActor2D().GetCaptionTextProperty().ShadowOff()
 
         # Orientation Cube Marker Widget
-        self.axes = vtk.vtkAnnotatedCubeActor();
+        self.axes = vtk.vtkAnnotatedCubeActor()
         self.axes.SetXPlusFaceText('E')
         self.axes.SetXMinusFaceText('W')
         self.axes.SetYMinusFaceText('N')
         self.axes.SetYPlusFaceText('S')
         self.axes.SetZMinusFaceText('T')
         self.axes.SetZPlusFaceText('B')
-        self.axes.GetTextEdgesProperty().SetColor(1,1,1)
+        self.axes.GetTextEdgesProperty().SetColor(1, 1, 1)
         self.axes.GetTextEdgesProperty().SetLineWidth(2)
         self.axes.GetCubeProperty().SetColor(.39, .71, .965)
 
-        self.orientationWidget = vtk.vtkOrientationMarkerWidget()
-        self.orientationWidget.SetOutlineColor(0.9300, 0.5700, 0.1300)
-        self.orientationWidget.SetOrientationMarker(self.axes)
-        self.orientationWidget.SetInteractor(self.vtkiren)
-        self.orientationWidget.SetViewport(0.0, 0.0, 0.2, 0.2)
-        self.orientationWidget.SetEnabled(1)
-        self.orientationWidget.InteractiveOff()
+        self.orientation_widget = CustomOrientationMarkerWidget()
+        self.orientation_widget.SetOutlineColor(0.9300, 0.5700, 0.1300)
+        self.orientation_widget.SetOrientationMarker(self.axes)
+        self.orientation_widget.SetInteractor(self.vtkiren)
+        self.orientation_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
+        self.orientation_widget.SetEnabled(1)
+        self.orientation_widget.InteractiveOn()
 
         self.vtkrenderer.ResetCamera()
+
+        # --- setup vtk mappers/actors ---
+        self.mesh = None
+        self.mesh_mapper = vtk.vtkDataSetMapper()
+
+        self.mesh_actor = vtk.vtkActor()
+        self.mesh_actor.SetMapper(self.mesh_mapper)
+        self.mesh_actor.GetProperty().SetRepresentationToWireframe()
+        self.mesh_actor.GetProperty().SetColor(.1, .1, .1)
+
+        self.vtkrenderer.AddActor(self.mesh_actor)
 
         # connect events
         self.geometrytree.itemSelectionChanged.connect(
@@ -221,11 +277,16 @@ class VtkWidget(QtGui.QWidget):
         self.toolbutton_view_xz.pressed.connect(lambda: self.set_view('xz'))
         self.toolbutton_view_xz.setIcon(get_icon('-y.png'))
 
+        self.toolbutton_screenshot = QtGui.QToolButton()
+        self.toolbutton_screenshot.pressed.connect(self.screenshot)
+        self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
+
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
                     self.toolbutton_view_yz,
                     self.toolbutton_view_xz,
-                    self.toolbutton_perspective]:
+                    self.toolbutton_perspective,
+                    self.toolbutton_screenshot]:
             self.button_bar_layout.addWidget(btn)
             btn.setAutoRaise(True)
 
@@ -1060,7 +1121,7 @@ class VtkWidget(QtGui.QWidget):
         geometry = self.collect_toplevel_geometry()
 
         return geometry.GetOutput().GetBounds()
-        
+
     # --- output files ---
     def export_stl(self, file_name):
         """ expoort visivle toplevel geometry """
@@ -1084,6 +1145,40 @@ class VtkWidget(QtGui.QWidget):
         gw.SetFileName(fname)
         gw.SetInputConnection(grid)
         gw.Write()
+
+    def screenshot(self, fname=None):
+
+        self.toolbutton_screenshot.setDown(False)
+
+        if fname is None:
+            fname = str(QtGui.QFileDialog.getSaveFileName(
+                self.parent,
+                "Save screenshot",
+                self.parent.settings.value('project_dir'),
+                ';;'.join(["PNG (*.png)",
+                           "JPEG (*.jpg)",
+                           "PostScript (*.ps)",
+                           "All Files (*.*)",
+                           ]),
+                ))
+
+        # screenshot code:
+        window_image = vtk.vtkWindowToImageFilter()
+        window_image.SetInput(self.vtkRenderWindow)
+        window_image.Update()
+
+        if fname.endswith('.png'):
+            writer = vtk.vtkPNGWriter()
+        elif fname.endswith('.jpg'):
+            writer = vtk.vtkJPEGWriter()
+        elif fname.endswith('.ps'):
+            writer = vtk.vtkPostScriptWriter()
+        else:
+            raise TypeError('No available writer')
+
+        writer.SetFileName(fname)
+        writer.SetInputConnection(window_image.GetOutputPort())
+        writer.Write()
 
     # --- mesh ---
     def change_mesh_tab(self, tabnum, btn):
@@ -1115,7 +1210,7 @@ class VtkWidget(QtGui.QWidget):
 
         cells = []
         for widget in self.cell_widgets:
-            cells.append(int(widget.text()))
+            cells.append(int(widget.text())+1)
 
         self.rectilinear_grid.SetDimensions(*cells)
 
@@ -1177,49 +1272,75 @@ class VtkWidget(QtGui.QWidget):
 
     def vtk_mesher(self):
 
-        signedDistances = vtk.vtkFloatArray()
-        signedDistances.SetNumberOfComponents(1)
-        signedDistances.SetName("SignedDistances")
+        signed_distances = vtk.vtkFloatArray()
+        signed_distances.SetNumberOfComponents(1)
+        signed_distances.SetName("SignedDistances")
 
-        implicitPolyDataDistance = vtk.vtkImplicitPolyDataDistance()
+        implicit_poly_data_distance = vtk.vtkImplicitPolyDataDistance()
         source = self.collect_toplevel_geometry()
-        implicitPolyDataDistance.SetInput(source.GetOutput())
+        implicit_poly_data_distance.SetInput(source.GetOutput())
 
         # Evaluate the signed distance function at all of the grid points
         for point_id in range(self.rectilinear_grid.GetNumberOfPoints()):
             p = self.rectilinear_grid.GetPoint(point_id)
-            signedDistance = implicitPolyDataDistance.EvaluateFunction(p)
-            signedDistances.InsertNextValue(signedDistance)
+            signed_distance = implicit_poly_data_distance.EvaluateFunction(p)
+            signed_distances.InsertNextValue(signed_distance)
 
-        self.rectilinear_grid.GetPointData().SetScalars(signedDistances)
+        self.rectilinear_grid.GetPointData().SetScalars(signed_distances)
 
-        clipper = vtk.vtkClipDataSet()
+        clipper = vtk.vtkTableBasedClipDataSet()
         clipper.SetInputData(self.rectilinear_grid)
-        clipper.InsideOutOn()
+        if self.parent.ui.checkbox_mesh_inside.isChecked():
+            clipper.InsideOutOn()
+        else:
+            clipper.InsideOutOff()
+            
+        clipper.SetMergeTolerance(
+            float(self.parent.ui.lineedit_vtk_mesh_merge.text())
+            )
         clipper.SetValue(0.0)
         clipper.Update()
+        self.mesh = clipper.GetOutput()
 
-        clipperMapper = vtk.vtkDataSetMapper()
-        clipperMapper.SetInputConnection(clipper.GetOutputPort())
+        self.mesh_mapper.SetInputData(self.mesh)
 
-        clipperActor = vtk.vtkActor()
-        clipperActor.SetMapper(clipperMapper)
-        clipperActor.GetProperty().SetRepresentationToWireframe()
-        clipperActor.GetProperty().SetColor(.1, .1, .1)
-
-        self.vtkrenderer.AddActor(clipperActor)
         self.vtkRenderWindow.Render()
-        
+
+        self.mesh_stats()
+
         # export geometry
         project_dir = self.parent.settings.value('project_dir')
         self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
                                  clipper.GetOutputPort())
-        
-    def mesh(self):
+
+    def mesh_stats(self):
+
+        cell_count = self.mesh.GetNumberOfCells()
+        cell_types = self.mesh.GetCellTypesArray()
+
+        cell_list = []
+        for i in range(cell_types.GetNumberOfTuples()):
+            cell_list.append(cell_types.GetTuple(i))
+
+        cell_type_counts = []
+        for cell in set(cell_list):
+            cell_type_counts.append([
+                CELL_TYPE_ENUM[int(cell[0])],
+                cell_list.count(cell)
+                ])
+
+        self.parent.ui.lineedit_mesh_cells.setText(str(cell_count))
+
+        self.parent.ui.plaintextedit_mesh_cell_types.setPlainText(
+            '\n'.join([':\t'.join([str(cell_type), str(cells)])
+                      for cell_type, cells in cell_type_counts])
+            )
+
+    def mesher(self):
 
         mesher = str(self.parent.ui.combobox_mesher.currentText())
 
-        if mesher == 'vtkClipDataSet':
+        if mesher == 'vtkTableBasedClipDataSet':
             self.vtk_mesher()
 
     # --- view ---
