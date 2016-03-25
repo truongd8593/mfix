@@ -182,7 +182,7 @@ class VtkWidget(QtGui.QWidget):
         self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
         self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
         self.button_bar.setLayout(self.button_bar_layout)
-#        self.vlayout.addWidget(self.button_bar)
+        self.vlayout.addWidget(self.button_bar)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
         self.vlayout.addWidget(self.vtkWindowWidget)
