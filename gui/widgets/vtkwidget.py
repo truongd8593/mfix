@@ -1106,11 +1106,26 @@ class VtkWidget(QtGui.QWidget):
         """ collect and append visible toplevel polydata """
 
         append_filter = vtk.vtkAppendPolyData()
-        for top_num in range(self.geometrytree.topLevelItemCount()):
+        item_count = self.geometrytree.topLevelItemCount()
+
+        for top_num in range(item_count):
             item = self.geometrytree.topLevelItem(top_num)
             if item.checkState(0) == QtCore.Qt.Checked:
                 append_filter.AddInputData(
                     self.get_input_data(str(item.text(0))).GetOutput())
+
+        # check to make sure there is geometry
+        if append_filter.GetTotalNumberOfInputConnections() <= 0:
+            self.parent.message(title='Warning',
+                                icon='warning',
+                                text='There is no visible geometry. Aborting',
+                                buttons=['ok'],
+                                default='ok',
+                                infoText=None,
+                                detailedtext=None,
+                                )
+            raise ValueError('There is no visible geometry. Aborting')
+
         append_filter.Update()
 
         return append_filter
@@ -1294,7 +1309,7 @@ class VtkWidget(QtGui.QWidget):
             clipper.InsideOutOn()
         else:
             clipper.InsideOutOff()
-            
+
         clipper.SetMergeTolerance(
             float(self.parent.ui.lineedit_vtk_mesh_merge.text())
             )
