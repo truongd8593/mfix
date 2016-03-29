@@ -31,7 +31,7 @@ try:
 except ImportError:
     NodeWidget = None
 from widgets.vtkwidget import VtkWidget
-from widgets.base import LineEdit, CheckBox, ComboBox, DoubleSpinBox
+from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox)
 from tools.mfixproject import Project, KeyWord
 from tools.general import (get_image_path, make_callback, get_icon,
                            widget_iter, set_script_directory)
@@ -58,12 +58,13 @@ class MfixGui(QtGui.QMainWindow):
 
         # reference to qapp instance
         self.app = app
-        
+
         # load ui file
         self.customWidgets={'LineEdit':      LineEdit,
                             'CheckBox':      CheckBox,
                             'ComboBox':      ComboBox,
                             'DoubleSpinBox': DoubleSpinBox,
+                            'SpinBox':       SpinBox,
                             }
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
@@ -141,23 +142,6 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
         self.ui.clear_output_button.pressed.connect(self.clear_output)
 
-#        self.ui.run_name.textChanged.connect(self.unsaved)
-#        self.ui.description.textChanged.connect(self.unsaved)
-        self.ui.energy_eq.clicked.connect(self.unsaved)
-        self.ui.time.valueChanged.connect(self.unsaved)
-        self.ui.tstop.valueChanged.connect(self.unsaved)
-        self.ui.dt.valueChanged.connect(self.unsaved)
-        self.ui.dt_max.valueChanged.connect(self.unsaved)
-#        self.ui.units.currentIndexChanged.connect(self.unsaved)
-        self.ui.max_nit.valueChanged.connect(self.unsaved)
-        self.ui.tol_resid.valueChanged.connect(self.unsaved)
-        self.ui.res_dt.valueChanged.connect(self.unsaved)
-        self.ui.nlog.valueChanged.connect(self.unsaved)
-        self.ui.full_log.clicked.connect(self.unsaved)
-        self.ui.group_resid.clicked.connect(self.unsaved)
-        self.ui.print_des_data.clicked.connect(self.unsaved)
-        self.ui.write_vtk_files.clicked.connect(self.unsaved)
-
         # --- Threads ---
         self.build_thread = BuildThread(self)
         self.run_thread = RunThread(self)
@@ -204,18 +188,55 @@ class MfixGui(QtGui.QMainWindow):
             self.open_project(self.get_project_dir())
 
     def __setup_simple_keyword_widgets(self):
-        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
-                                                         os.pardir, 'model'))
+        """
+        Look for and connect simple keyword widgets to the project manager.
+        Keyword informtation from the namelist doc strings is added to each
+        keyword widget. The widget must be named: *_keyword_<keyword> where
+        <keyword> is the actual keyword. For example:
+        lineedit_keyword_run_name
+        """
 
-        # loop through all widgets looking for *_keyword_name
+        # build keyword documentation from namelist docstrings
+        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
+                                                        os.pardir, 'model'))
+
+        # loop through all widgets looking for *_keyword_<keyword>
         for widget in widget_iter(self.ui):
             name_list = str(widget.objectName()).lower().split('_')
+
             if 'keyword' in name_list:
                 keyword = '_'.join(name_list[name_list.index('keyword')+1:])
+
+                # set the key attribute to the keyword
                 widget.key = keyword
-                self.project.register_widget(widget, [keyword])
+
+                # add info from keyword documentation
                 if keyword in self.keyword_doc:
                     widget.setdtype(self.keyword_doc[keyword]['dtype'])
+
+                    if 'required' in self.keyword_doc[keyword]:
+                        widget.setValInfo(
+                            req=self.keyword_doc[keyword]['required'] == 'true')
+                    if 'validrange' in self.keyword_doc[keyword]:
+                        if 'max' in self.keyword_doc[keyword]['validrange']:
+                            widget.setValInfo(
+                                _max = self.keyword_doc[keyword]['validrange']['max'])
+                        if 'min' in self.keyword_doc[keyword]['validrange']:
+                            widget.setValInfo(
+                                _min = self.keyword_doc[keyword]['validrange']['min'])
+
+                    if 'initpython' in self.keyword_doc[keyword]:
+                        widget.default(
+                            self.keyword_doc[keyword]['initpython'])
+
+                    if isinstance(widget, QtGui.QComboBox) and widget.count() < 1:
+                            widget.addItems(list(self.mfixKeyWordDoc[key]['valids'].keys()))
+
+                # register the widget with the project manager
+                self.project.register_widget(widget, [keyword])
+                
+                # connect to unsaved method
+                widget.value_updated.connect(self.unsaved)
 
     def __setup_vtk_widget(self):
         " setup the vtk widget "
@@ -647,7 +668,7 @@ class MfixGui(QtGui.QMainWindow):
 
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
-        
+
         # save project
         self.setWindowTitle('MFIX - %s' % project_dir)
         self.project.writeDatFile(os.path.join(project_dir, 'mfix.dat'))
@@ -727,39 +748,15 @@ class MfixGui(QtGui.QMainWindow):
         self.settings.setValue('project_dir', project_dir)
         self.setWindowTitle('MFIX - %s' % project_dir)
 
-        # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
-        # check to see if file is already open
-        # if not self.codeEditor.is_file_opened(mfix_dat):
-        # self.codeEditor.load(mfix_dat)
-        # parse and update widget values
-        # self.setWidgetInit(False)
-        # self.projectManager.loadMfixDat(mfix_dat)
-        # self.setWidgetInit(True)
-
-        src = open(mfix_dat).read()
+        # read the file
+        with open(mfix_dat, 'r') as mfix_dat_file:
+            src = mfix_dat_file.read()
         self.ui.mfix_dat_source.setPlainText(src)
-#        self.mode_changed('developer')
-        # self.ui.stackedWidgetMode.setCurrentIndex(2)
+        # self.mode_changed('developer')
 
         self.project.load_mfix_dat(mfix_dat)
-#        self.ui.run_name.setText(str(self.project['run_name']))
-#        self.ui.description.setText(str(self.project['description']))
+
         self.ui.energy_eq.setChecked(self.project['energy_eq'])
-        self.ui.time.setValue(self.project['time'])
-        self.ui.tstop.setValue(self.project['tstop'])
-        self.ui.dt.setValue(self.project['dt'])
-        # self.ui.dt_max.setValue(self.project['dt_max'])
-#        self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
-        # self.ui.max_nit.setValue(self.project['max_nit'])
-        # self.ui.tol_resid.setValue(self.project['tol_resid'])
-        self.ui.res_dt.setValue(self.project['res_dt'])
-        self.ui.nlog.setValue(self.project['nlog'])
-        self.ui.full_log.setChecked(self.project['full_log'])
-        # self.ui.group_resid.setChecked(self.project['group_resid'])
-        # self.ui.print_des_data.setChecked(self.project['print_des_data'])
-        # self.ui.write_vtk_files.setChecked(self.project['write_vtk_files'])
-        # self.ui.ro_g0.setText(str(self.project['ro_g0']))
-        # self.ui.mu_g0.setText(str(self.project['mu_g0']))
 
 
 # --- Threads ---

@@ -32,6 +32,22 @@ class CommonBase(QtCore.QObject):
     def value(self):
         return None
 
+    def setdtype(self, dtype=None):
+        dtype = to_text_string(dtype).lower().strip()
+        if dtype == to_text_string('i'):
+            self.dtype = int
+        elif dtype == to_text_string('dp'):
+            self.dtype = float
+        elif dtype == to_text_string('bool'):
+            self.dtype = bool
+        else:
+            self.dtype = str
+
+    def setValInfo(self, _max=None, _min=None, req=False):
+        self._max = _max
+        self._min = _min
+        self.required = req
+
     def default(self, val=None):
         if val is not None:
             self.defualtValue = val
@@ -82,15 +98,6 @@ class LineEdit(QtGui.QLineEdit, CommonBase):
         else:
             self.setText('')
 
-    def setdtype(self, dtype=None):
-        dtype = to_text_string(dtype).lower().strip()
-        if dtype == to_text_string('i'):
-            self.dtype = int
-        elif dtype == to_text_string('dp'):
-            self.dtype = float
-        else:
-            self.dtype = str
-
     def textEditedEvent(self, event):
         self.timer.stop()
         self.timer.start(100)
@@ -125,12 +132,6 @@ class CheckBox(QtGui.QCheckBox, CommonBase):
             self.setChecked(newValue)
         else:
             self.setChecked(False)
-
-    def setValInfo(self, _max=None, _min=None, req=False):
-        if self.validator():
-            self.validator()._max = _max
-            self.validator()._min = _min
-            self.validator().req = req
 
 
 class ComboBox(QtGui.QComboBox, CommonBase):
@@ -170,22 +171,32 @@ class ComboBox(QtGui.QComboBox, CommonBase):
                 self.setCurrentIndex(itm)
                 break
 
-    def setdtype(self, valType=None):
-        valType = to_text_string(valType).lower().strip()
-        if valType == to_text_string('i'):
-            self.dtype = int
-        elif valType == to_text_string('dp'):
-            self.dtype = float
-        elif valType == to_text_string('bool'):
-            self.dtype = bool
-        else:
-            self.dtype = str
+
+class SpinBox(QtGui.QSpinBox, CommonBase):
+    value_updated = QtCore.Signal(object, object, object)
+
+    def __init__(self, parent=None):
+        QtGui.QDoubleSpinBox.__init__(self, parent)
+        CommonBase.__init__(self)
+
+        self.valueChanged.connect(self.emitUpdatedValue)
+
+        self.dtype = int
+
+    def emitUpdatedValue(self):
+        self.value_updated.emit(self, {self.key: self.value()}, None)
+
+    def updateValue(self, key, newValue, args=None):
+        if isinstance(newValue, KeyWord):
+            newValue = newValue.value
+
+        self.setValue(int(newValue))
 
     def setValInfo(self, _max=None, _min=None, req=False):
-        if self.validator():
-            self.validator()._max = _max
-            self.validator()._min = _min
-            self.validator().req = req
+        if _max:
+            self.setMaximum(int(_max))
+        if _min:
+            self.setMinimum(int(_min))
 
 
 class DoubleSpinBox(QtGui.QDoubleSpinBox, CommonBase):
@@ -207,15 +218,6 @@ class DoubleSpinBox(QtGui.QDoubleSpinBox, CommonBase):
             newValue = newValue.value
 
         self.setValue(float(newValue))
-
-    def setdtype(self, valType=None):
-        valType = to_text_string(valType).lower().strip()
-        if valType == to_text_string('i'):
-            self.dtype = int
-        elif valType == to_text_string('dp'):
-            self.dtype = float
-        else:
-            self.dtype = str
 
     def setValInfo(self, _max=None, _min=None, req=False):
         if _max:

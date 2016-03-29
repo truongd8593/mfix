@@ -649,7 +649,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>0</number>
+                  <number>4</number>
                  </property>
                  <widget class="QWidget" name="general">
                   <layout class="QGridLayout" name="gridLayout_23">
@@ -4257,7 +4257,7 @@ QPushButton:checked {
                   </layout>
                  </widget>
                  <widget class="QWidget" name="numerics">
-                  <widget class="QDoubleSpinBox" name="tol_resid">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_tol_resid">
                    <property name="geometry">
                     <rect>
                      <x>170</x>
@@ -4296,7 +4296,7 @@ QPushButton:checked {
                     <string>TOL_RESID</string>
                    </property>
                   </widget>
-                  <widget class="QSpinBox" name="max_nit">
+                  <widget class="SpinBox" name="spinbox_keyword_max_nit">
                    <property name="geometry">
                     <rect>
                      <x>170</x>
@@ -5638,7 +5638,7 @@ QPushButton:checked {
                     </property>
                    </item>
                   </widget>
-                  <widget class="QComboBox" name="rdf_type">
+                  <widget class="ComboBox" name="combobox_keyword_rdf_type">
                    <property name="geometry">
                     <rect>
                      <x>300</x>
@@ -5713,7 +5713,7 @@ QPushButton:checked {
                     </property>
                    </item>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="v_ex">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_v_ex">
                    <property name="geometry">
                     <rect>
                      <x>370</x>
@@ -5723,7 +5723,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="segregation_slope_coefficient">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_segregation_slope_coefficient">
                    <property name="geometry">
                     <rect>
                      <x>390</x>
@@ -5733,7 +5733,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="phi">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_phi">
                    <property name="geometry">
                     <rect>
                      <x>330</x>
@@ -5743,7 +5743,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="c_f">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_c_f">
                    <property name="geometry">
                     <rect>
                      <x>380</x>
@@ -5753,7 +5753,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="c_e">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_c_e">
                    <property name="geometry">
                     <rect>
                      <x>330</x>
@@ -5763,7 +5763,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="ep_star">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_ep_star">
                    <property name="geometry">
                     <rect>
                      <x>330</x>
@@ -5796,7 +5796,7 @@ QPushButton:checked {
                     <string>RES_DT</string>
                    </property>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="res_dt">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_res_dt">
                    <property name="geometry">
                     <rect>
                      <x>160</x>
@@ -5819,7 +5819,7 @@ QPushButton:checked {
                     <string>NLOG</string>
                    </property>
                   </widget>
-                  <widget class="QSpinBox" name="nlog">
+                  <widget class="SpinBox" name="doublespinbox_keyword_nlog">
                    <property name="geometry">
                     <rect>
                      <x>160</x>
@@ -5829,7 +5829,7 @@ QPushButton:checked {
                     </rect>
                    </property>
                   </widget>
-                  <widget class="QCheckBox" name="full_log">
+                  <widget class="CheckBox" name="checkbox_keyword_full_log">
                    <property name="geometry">
                     <rect>
                      <x>150</x>
@@ -5842,7 +5842,7 @@ QPushButton:checked {
                     <string>FULL_LOG</string>
                    </property>
                   </widget>
-                  <widget class="QCheckBox" name="group_resid">
+                  <widget class="CheckBox" name="checkbox_keyword_group_resid">
                    <property name="geometry">
                     <rect>
                      <x>120</x>
@@ -5855,7 +5855,7 @@ QPushButton:checked {
                     <string>GROUP_RESID</string>
                    </property>
                   </widget>
-                  <widget class="QCheckBox" name="print_des_data">
+                  <widget class="CheckBox" name="checkbox_keyword_print_des_data">
                    <property name="geometry">
                     <rect>
                      <x>110</x>
@@ -5868,7 +5868,7 @@ QPushButton:checked {
                     <string>PRINT_DES_DATA</string>
                    </property>
                   </widget>
-                  <widget class="QCheckBox" name="write_vtk_files">
+                  <widget class="CheckBox" name="checkbox_keyword_write_vtk_files">
                    <property name="geometry">
                     <rect>
                      <x>100</x>
@@ -6001,7 +6001,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="3" column="1">
-                       <widget class="QSpinBox" name="nodes_j">
+                       <widget class="SpinBox" name="spinbox_keyword_nodesj">
                         <property name="minimum">
                          <number>1</number>
                         </property>
@@ -6015,21 +6015,21 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="4" column="1">
-                       <widget class="QSpinBox" name="nodes_k">
+                       <widget class="SpinBox" name="spinbox_keyword_nodesk">
                         <property name="minimum">
                          <number>1</number>
                         </property>
                        </widget>
                       </item>
                       <item row="2" column="1">
-                       <widget class="QSpinBox" name="nodes_i">
+                       <widget class="SpinBox" name="spinbox_keyword_nodesi">
                         <property name="minimum">
                          <number>1</number>
                         </property>
                        </widget>
                       </item>
                       <item row="11" column="1">
-                       <widget class="QDoubleSpinBox" name="tstop">
+                       <widget class="DoubleSpinBox" name="doublespinbox_keyword_tstop">
                         <property name="decimals">
                          <number>10</number>
                         </property>
@@ -6050,7 +6050,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="12" column="1">
-                       <widget class="QDoubleSpinBox" name="dt">
+                       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
                         <property name="decimals">
                          <number>10</number>
                         </property>
@@ -6064,7 +6064,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="10" column="1">
-                       <widget class="QDoubleSpinBox" name="time">
+                       <widget class="DoubleSpinBox" name="doublespinbox_keyword_time">
                         <property name="decimals">
                          <number>10</number>
                         </property>
@@ -6078,7 +6078,7 @@ QPushButton:checked {
                        </widget>
                       </item>
                       <item row="13" column="1">
-                       <widget class="QDoubleSpinBox" name="dt_max">
+                       <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
                         <property name="decimals">
                          <number>10</number>
                         </property>
@@ -6286,7 +6286,7 @@ QPushButton:checked {
                      </widget>
                     </item>
                     <item row="4" column="2">
-                     <widget class="QDoubleSpinBox" name="des_etat_w_fac"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_etat_w_fac"/>
                     </item>
                     <item row="6" column="0">
                      <widget class="QLabel" name="label_160">
@@ -6296,16 +6296,16 @@ QPushButton:checked {
                      </widget>
                     </item>
                     <item row="4" column="1">
-                     <widget class="QDoubleSpinBox" name="des_etat_fac"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_etat_fac"/>
                     </item>
                     <item row="2" column="1">
-                     <widget class="QDoubleSpinBox" name="kn"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_kn"/>
                     </item>
                     <item row="3" column="2">
-                     <widget class="QDoubleSpinBox" name="kt_w_fac"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_kt_w_fac"/>
                     </item>
                     <item row="1" column="2">
-                     <widget class="QDoubleSpinBox" name="mew_w"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_mew_w"/>
                     </item>
                     <item row="3" column="0">
                      <widget class="QLabel" name="label_157">
@@ -6315,13 +6315,13 @@ QPushButton:checked {
                      </widget>
                     </item>
                     <item row="5" column="2">
-                     <widget class="QDoubleSpinBox" name="ew_young"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_ew_young"/>
                     </item>
                     <item row="6" column="2">
-                     <widget class="QDoubleSpinBox" name="vw_poisson"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_vw_poisson"/>
                     </item>
                     <item row="2" column="2">
-                     <widget class="QDoubleSpinBox" name="kn_w"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_kn_w"/>
                     </item>
                     <item row="2" column="0">
                      <widget class="QLabel" name="label_156">
@@ -6331,10 +6331,10 @@ QPushButton:checked {
                      </widget>
                     </item>
                     <item row="6" column="1">
-                     <widget class="QDoubleSpinBox" name="v_poisson"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_v_poisson"/>
                     </item>
                     <item row="3" column="1">
-                     <widget class="QDoubleSpinBox" name="kt_fac"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_kt_fac"/>
                     </item>
                     <item row="5" column="0">
                      <widget class="QLabel" name="label_159">
@@ -6344,10 +6344,10 @@ QPushButton:checked {
                      </widget>
                     </item>
                     <item row="5" column="1">
-                     <widget class="QDoubleSpinBox" name="e_young"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_e_young"/>
                     </item>
                     <item row="1" column="1">
-                     <widget class="QDoubleSpinBox" name="mew"/>
+                     <widget class="DoubleSpinBox" name="doublespinbox_keyword_mew"/>
                     </item>
                     <item row="0" column="1">
                      <widget class="QLabel" name="label_161">
@@ -6365,7 +6365,7 @@ QPushButton:checked {
                     </item>
                    </layout>
                   </widget>
-                  <widget class="QDoubleSpinBox" name="des_diffuse_width">
+                  <widget class="DoubleSpinBox" name="doublespinbox_keyword_des_diffuse_width">
                    <property name="geometry">
                     <rect>
                      <x>350</x>
@@ -6628,6 +6628,21 @@ p, li { white-space: pre-wrap; }
   <customwidget>
    <class>ComboBox</class>
    <extends>QComboBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>SpinBox</class>
+   <extends>QSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleSpinBox</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>widgets/base</header>
+  </customwidget>
+  <customwidget>
+   <class>CheckBox</class>
+   <extends>QCheckBox</extends>
    <header>widgets/base</header>
   </customwidget>
  </customwidgets>
