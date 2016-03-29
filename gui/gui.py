@@ -234,15 +234,21 @@ class MfixGui(QtGui.QMainWindow):
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, [keyword])
-                
+
                 # connect to unsaved method
                 widget.value_updated.connect(self.unsaved)
 
     def __setup_vtk_widget(self):
         " setup the vtk widget "
 
-        self.vtkwidget = VtkWidget(parent=self)
+        self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
+
+        # register with project manager
+        self.project.register_widget(self.vtkwidget,
+                                     ['xmin', 'xlength', 'ymin', 'ylength',
+                                      'zmin', 'zlength', 'imax', 'jmax',
+                                      'kmax'])
 
         # --- geometry button ---
         self.add_geometry_menu = QtGui.QMenu(self)
@@ -318,19 +324,6 @@ class MfixGui(QtGui.QMainWindow):
 
         self.ui.pushbutton_mesh_autosize.pressed.connect(
             self.vtkwidget.auto_size_mesh_extents)
-
-        # connect unifrom mesh
-        for widget in [self.ui.lineedit_mesh_min_x,
-                       self.ui.lineedit_mesh_max_x,
-                       self.ui.lineedit_mesh_min_y,
-                       self.ui.lineedit_mesh_max_y,
-                       self.ui.lineedit_mesh_min_z,
-                       self.ui.lineedit_mesh_max_z,
-                       self.ui.lineedit_mesh_cells_x,
-                       self.ui.lineedit_mesh_cells_y,
-                       self.ui.lineedit_mesh_cells_z
-                       ]:
-            widget.editingFinished.connect(self.vtkwidget.update_mesh)
 
         # connect mesher
         self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesher)
@@ -587,6 +580,8 @@ class MfixGui(QtGui.QMainWindow):
         cursor.movePosition(cursor.End)
         cursor.insertText(text)
         cursor.movePosition(cursor.End)
+        vbar = self.ui.command_output.verticalScrollBar()
+        vbar.triggerAction(QtGui.QAbstractSlider.SliderToMaximum)
         self.ui.command_output.ensureCursorVisible()
 
     # --- mfix methods ---

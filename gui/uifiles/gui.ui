@@ -649,7 +649,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>4</number>
+                  <number>2</number>
                  </property>
                  <widget class="QWidget" name="general">
                   <layout class="QGridLayout" name="gridLayout_23">
@@ -3391,10 +3391,10 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="0" column="1">
-                        <widget class="QLineEdit" name="lineedit_mesh_min_x"/>
+                        <widget class="LineEdit" name="lineedit_keyword_xmin"/>
                        </item>
                        <item row="0" column="2">
-                        <widget class="QLineEdit" name="lineedit_mesh_min_y"/>
+                        <widget class="LineEdit" name="lineedit_keyword_ymin"/>
                        </item>
                        <item row="0" column="0">
                         <widget class="QLabel" name="label_2">
@@ -3418,16 +3418,16 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="0" column="3">
-                        <widget class="QLineEdit" name="lineedit_mesh_min_z"/>
+                        <widget class="LineEdit" name="lineedit_keyword_zmin"/>
                        </item>
                        <item row="1" column="3">
-                        <widget class="QLineEdit" name="lineedit_mesh_max_z"/>
+                        <widget class="LineEdit" name="lineedit_keyword_zlength"/>
                        </item>
                        <item row="1" column="2">
-                        <widget class="QLineEdit" name="lineedit_mesh_max_y"/>
+                        <widget class="LineEdit" name="lineedit_keyword_ylength"/>
                        </item>
                        <item row="1" column="1">
-                        <widget class="QLineEdit" name="lineedit_mesh_max_x"/>
+                        <widget class="LineEdit" name="lineedit_keyword_xlength"/>
                        </item>
                        <item row="2" column="0" colspan="4">
                         <widget class="QFrame" name="frame_8">
@@ -3468,14 +3468,14 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="3" column="1">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_x">
+                        <widget class="LineEdit" name="lineedit_keyword_imax">
                          <property name="text">
                           <string>10</string>
                          </property>
                         </widget>
                        </item>
                        <item row="3" column="2">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_y">
+                        <widget class="LineEdit" name="lineedit_keyword_jmax">
                          <property name="text">
                           <string>10</string>
                          </property>
@@ -3489,7 +3489,7 @@ QPushButton:checked {
                         </widget>
                        </item>
                        <item row="3" column="3">
-                        <widget class="QLineEdit" name="lineedit_mesh_cells_z">
+                        <widget class="LineEdit" name="lineedit_keyword_kmax">
                          <property name="text">
                           <string>10</string>
                          </property>

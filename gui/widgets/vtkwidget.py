@@ -109,24 +109,15 @@ class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
 
 
 class VtkWidget(QtGui.QWidget):
-    def __init__(self, parent=None):
+    value_updated = QtCore.Signal(object, object, object)
+    
+    def __init__(self, project, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
+        self.project = project
         self.parent = parent
         self.geometrytree = self.parent.ui.treeWidgetGeometry
         self.booleanbtndict = self.parent.booleanbtndict
-
-        self.extent_widgets = [self.parent.ui.lineedit_mesh_min_x,
-                               self.parent.ui.lineedit_mesh_max_x,
-                               self.parent.ui.lineedit_mesh_min_y,
-                               self.parent.ui.lineedit_mesh_max_y,
-                               self.parent.ui.lineedit_mesh_min_z,
-                               self.parent.ui.lineedit_mesh_max_z,
-                               ]
-        self.cell_widgets = [self.parent.ui.lineedit_mesh_cells_x,
-                             self.parent.ui.lineedit_mesh_cells_y,
-                             self.parent.ui.lineedit_mesh_cells_z,
-                             ]
 
         # --- data ---
         self.geometrydict = {}
@@ -291,6 +282,18 @@ class VtkWidget(QtGui.QWidget):
             btn.setAutoRaise(True)
 
         self.button_bar_layout.addStretch()
+
+    def emitUpdatedValue(self, key, value, args=None):
+        self.value_updated.emit(self, {key: value}, args)
+
+    def updateValue(self, key, newValue, args=None):
+
+        if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
+                   'imax', 'jmax', 'kmax']:
+            self.update_mesh()
+            
+    def objectName(self):
+        return 'VTK Widget'
 
     # --- geometry ---
     def tree_widget_geometry_changed(self):
@@ -1212,20 +1215,28 @@ class VtkWidget(QtGui.QWidget):
         """ collect and set the extents of the visible geometry """
         extents = self.get_geometry_extents()
 
-        for widget, extent in zip(self.extent_widgets, extents):
-            widget.setText(str(extent))
+        for key, extent in zip(['xmin', 'xlength', 'ymin', 'ylength',
+                                'zmin', 'zlength'],
+                               extents):
+            self.emitUpdatedValue(key, extent)
 
         self.update_mesh()
 
     def update_mesh(self):
 
         extents = []
-        for widget in self.extent_widgets:
-            extents.append(float(widget.text()))
+        for key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength']:
+            if key in self.project:
+                extents.append(float(self.project[key]))
+            else:
+                extents.append(0.0)
 
         cells = []
-        for widget in self.cell_widgets:
-            cells.append(int(widget.text())+1)
+        for key in ['imax', 'jmax', 'kmax']:
+            if key in self.project:
+                cells.append(int(self.project[key])+1)
+            else:
+                cells.append(1)
 
         self.rectilinear_grid.SetDimensions(*cells)
 
