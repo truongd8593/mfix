@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
 """
-MFIX [Multiphase Flow with Interphase eXchanges] is a general-purpose
-computer code developed at the National Energy Technology Laboratory
-[NETL] for describing the hydrodynamics, heat transfer and chemical
-reactions in fluid-solid systems.
+This file is part of the pymfix library
 
-Please visit: https://mfix.netl.doe.gov/
+Licence
+-------
+As a work of the United States Government, this project is in the public domain
+within the United States. As such, this code is licensed under
+CC0 1.0 Universal public domain.
 
-This python file contains code to manage a mfix project.
-
-Last update: 07/03/2014
-
-@author: Justin Weber
+Please see the LICENSE.md for more information.
 """
+
 # Import from the future for Python 2 and 3 compatability!
 from __future__ import print_function, absolute_import, unicode_literals
 
@@ -22,6 +19,7 @@ import shlex
 import re
 import math
 import copy
+import warnings
 try:
     # Python 2.X
     from StringIO import StringIO
@@ -29,20 +27,18 @@ except ImportError:
     # Python 3.X
     from io import StringIO
 
-if __name__ == '__main__' and __package__ is None:
-    import os, sys
-    SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname( __file__ ), os.pardir, os.pardir))
-    sys.path.append(SCRIPT_DIRECTORY)
-
 # local imports
-from .simpleeval import simple_eval
-# from mfixgui.guilib.spydereditor.sourcecode.encoding import to_unicode_from_fs
-# from mfixgui.guilib.spydereditor.sourcecode.p3compat import is_string, is_unicode, to_text_string
+from tools.simpleeval import simple_eval
+from tools.general import (recurse_dict, recurse_dict_empty, get_from_dict,
+                           to_unicode_from_fs, is_string, is_unicode)
+
 
 class FloatExp(float):
     fmt = '4'
+
     def __repr__(self):
-      return '{:.{}e}'.format(self, self.fmt)
+        return '{:.{}e}'.format(self, self.fmt)
+
 
 class Equation(object):
     def __init__(self, eq):
@@ -54,26 +50,27 @@ class Equation(object):
             self.eq = str(eq)
 
     def _eval(self):
-        if len(self.eq)==0:
+        if len(self.eq) == 0:
             return 0
         elif self.eq is None or self.eq == 'None':
             return float('nan')
         else:
             try:
-                return simple_eval(self.eq.lower(), names={"pi": math.pi, "e": math.e, "p": 1})
+                return simple_eval(self.eq.lower(),
+                                   names={"pi": math.pi, "e": math.e, "p": 1})
             except SyntaxError:
                 return 0
 
     def __nonzero__(self):
         # Python 2
-        if float(self)==float('nan'):
+        if float(self) == float('nan'):
             return False
         else:
             return True
 
     def __bool__(self):
         # Python 3
-        if float(self)==float('nan'):
+        if float(self) == float('nan'):
             return False
         else:
             return True
@@ -87,8 +84,9 @@ class Equation(object):
     def __repr__(self):
         return ''.join(['@(', str(self.eq), ')'])
 
+
 class KeyWord(object):
-    def __init__(self, key, val, comment=None, row=None, col=None, dtype=None):
+    def __init__(self, key, val, comment='', dtype=None, args=[]):
 
         self.key = key
         self.value = val
@@ -97,9 +95,8 @@ class KeyWord(object):
         self.max = None
         self.valids = None
         self.fmt = None
-        self.col = col
-        self.row = row
         self.comment = comment
+        self.args = args
 
         self.regX_expression = re.compile('([eEpiPI\+\-/*\^\(\)]+)')
 
@@ -110,10 +107,9 @@ class KeyWord(object):
         return KeyWord(copy.copy(self.key),
                        copy.copy(self.value),
                        comment=copy.copy(self.comment),
-                       row=copy.copy(self.row),
-                       col=copy.copy(self.col),
                        dtype=copy.copy(self.dtype),
-                      )
+                       args=copy.copy(self.args),
+                       )
 
     def __float__(self):
         try:
@@ -171,7 +167,7 @@ class KeyWord(object):
             return str(self.value)
         elif self.dtype == str and self.value is not None:
             if isinstance(self.value, str):
-                self.value = self.value.replace('"','').replace("'",'')
+                self.value = self.value.replace('"', '').replace("'", '')
             else:
                 self.value = str(self.value)
             return ''.join(["'", str(self.value), "'"])
@@ -189,6 +185,19 @@ class KeyWord(object):
         # If still None, assume string
         if self.dtype is None:
             self.dtype = str
+
+    def line(self):
+        if len(self.args) == 0:
+            line = '  {} = {}'.format(self.key, str(self))
+        else:
+            line = '  {}({}) = {}'.format(self.key,
+                                          ','.join([str(x) for x in self.args]),
+                                          str(self))
+
+        if len(self.comment) > 0:
+            line = '    !'.join([line, self.comment])
+
+        return line
 
     def updateValue(self, value):
 
@@ -211,6 +220,7 @@ class KeyWord(object):
         else:
             raise TypeError('Keyword is not a str')
 
+
 class Base(object):
     def __init__(self, ind):
         self.ind = ind
@@ -228,13 +238,23 @@ class Base(object):
         return self._keywordDict[name]
 
     def __setitem__(self, name, value):
-        self._keywordDict[name] = value
+        if name in self._keywordDict and isinstance(self._keywordDict[name],
+                                                    KeyWord):
+            if isinstance(value, KeyWord):
+                self._keywordDict[name].updateValue(value.value)
+            else:
+                self._keywordDict[name].updateValue(value)
+        else:
+            self._keywordDict[name] = value
 
     def __contains__(self, item):
         return item in self._keywordDict
 
-    def addKeyword(self, key, value):
-        self._keywordDict[key] = KeyWord(key, value)
+    def __len__(self):
+        return len(self._keywordDict)
+
+#    def addKeyword(self, key, value, args=[]):
+#        self._keywordDict[key] = KeyWord(key, value, args=args)
 
     def deleteDict(self):
         self.delete = True
@@ -247,6 +267,7 @@ class CondBase(Base):
 
         self.gasSpecies = SpeciesCollection()
         self.solids = SolidsCollection()
+
 
 class BC(CondBase):
     def __init__(self, ind):
@@ -273,7 +294,7 @@ class BC(CondBase):
         return '\n'.join(["Boundary Condition {}: {}".format(self.ind, bctype)]
                          + [''.join(['  ', str(key), ': ', str(value)]) for key, value in
                             self._keywordDict.items()] +
-                            gasSpec + solids
+                         gasSpec + solids
                          )
 
 
@@ -421,16 +442,16 @@ class Collection(list):
             if len(currentSet) < 1:
                 ind = 1
             else:
-                full_set = set(xrange(1, max(currentSet) + 1))
+                full_set = set(range(1, max(currentSet) + 1))
                 ind = sorted(full_set - currentSet)[0]
 
         return ind
 
     def clean(self):
         for itm in self:
-            if hasattr(itm, '_keywordDict') and len(itm._keywordDict.keys())<1:
+            if hasattr(itm, '_keywordDict') and \
+                    len(itm._keywordDict.keys()) < 1:
                 self.pop(self.index(itm))
-
 
     def delete(self, itm):
         self.pop(self.index(itm))
@@ -461,9 +482,11 @@ class SpeciesCollection(Collection):
     def __str__(self):
         return '\n'.join(self._prettyPrintList())
 
+
 class SpeciesEq(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
+
 
 class SpeciesEqCollection(Collection):
     def __init__(self):
@@ -474,6 +497,7 @@ class SpeciesEqCollection(Collection):
         ind = self._checkind(ind)
         self.append(SpeciesEq(ind))
         return self[ind]
+
 
 class SolidsCollection(Collection):
     def __init__(self):
@@ -494,9 +518,11 @@ class SolidsCollection(Collection):
     def __str__(self):
         return '\n'.join(self._prettyPrintList())
 
+
 class LinearEquationSolver(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
+
 
 class LinearEquationSolverCollection(Collection):
     def __init__(self):
@@ -507,9 +533,11 @@ class LinearEquationSolverCollection(Collection):
         self.append(LinearEquationSolver(ind))
         return self[ind]
 
+
 class SPX(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
+
 
 class SPXCollection(Collection):
     def __init__(self):
@@ -520,9 +548,11 @@ class SPXCollection(Collection):
         self.append(SPX(ind))
         return self[ind]
 
+
 class VtkVar(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
+
 
 class VtkVarCollection(Collection):
     def __init__(self):
@@ -533,9 +563,11 @@ class VtkVarCollection(Collection):
         self.append(VtkVar(ind))
         return self[ind]
 
+
 class VariableGridVar(Base):
     def __init__(self, ind):
         Base.__init__(self, ind)
+
 
 class  VariableGridCollection(Collection):
     def __init__(self):
@@ -547,6 +579,7 @@ class  VariableGridCollection(Collection):
         self.append(VariableGridVar(ind))
         return self[ind]
 
+
 class Project(object):
     '''
     Class for managing a mfix project
@@ -555,8 +588,8 @@ class Project(object):
 
         self.mfixDatFile = mfixDatFile
         self._keywordDict = {}
-        self.lines = []
-        self.line_numbers = {}
+        self.datfile = []
+        self.thermoindex = None
 
         # Regular Expressions
         self.regX_keyValue = re.compile(r'(\w+)(?:\(([\d, ]+)\))?\s*=\s*(.*?)(?=(!|$|\w+(\([\d, ]+\))?\s*=))')
@@ -599,26 +632,22 @@ class Project(object):
         return self._keywordDict[name]
 
     def __getitem__(self, key):
-        return self._keywordDict.get(key, None)
+        if not isinstance(key, list) and not isinstance(key, tuple):
+            key = [key]
+        return get_from_dict(self._keywordDict, key)
 
     def __contains__(self, item):
-        return item in self._keywordDict
+        try:
+            if not isinstance(item, list) and not isinstance(item, tuple):
+                item = [item]
+            get_from_dict(self._keywordDict, item)
+            return True
+        except KeyError:
+            return False
 
-    def save(self, fname):
-        for key, value in self._keywordDict.iteritems():
-            if type(value) == type(''):
-                self.lines[self.line_numbers[key]] = '  {} = {}\n'.format(key.upper(), value)
-            elif type(value) == type(0):
-                self.lines[self.line_numbers[key]] = '  {} = {:f}\n'.format(key.upper(), value)
-            elif type(value) == type(0.0):
-                self.lines[self.line_numbers[key]] = '  {} = {:f}\n'.format(key.upper(), value)
-            elif type(value) == type(False):
-                self.lines[self.line_numbers[key]] = '  {} = {}\n'.format(key.upper(), '.T.' if value else '.F.')
-
-        save_file = open(fname, mode='w')
-        for line in self.lines:
-            save_file.write(line)
-        save_file.close()
+    def __deepcopy__(self, memo):
+        # TODO: this is not efficient
+        return Project(''.join(self.convertToString()))
 
     def parsemfixdat(self, fname=None):
         """
@@ -650,6 +679,91 @@ class Project(object):
             self._parsemfixdat(StringIO(self.mfixDatFile))
             return
 
+    def parseKeywordLine(self, text):
+
+        matchs = self.regX_keyValue.findall(text)
+        if matchs:
+            for match in matchs:
+                # match chould be: [keyword, args, value,
+                #                   nextKeywordInLine, something]
+
+                # keyword
+                key = match[0].lower().strip()
+
+                # values
+                valString = match[2].strip()
+
+                # look for shorthand [count]*[value] and expand.
+                # Replace short hand string
+                shortHandList = self.regX_stringShortHand.findall(valString)
+                if shortHandList:
+                    for shortHand in shortHandList:
+                        # check for expression
+                        if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
+                            valString = valString.replace(shortHand[0],
+                                                          self.expandshorthand(
+                                                          shortHand[0])
+                                                          )
+
+                # split values using shlex, it will keep quoted strings
+                # together.
+                try:
+                    vals = shlex.split(valString.strip())
+                except ValueError:
+                    if 'description' in key:
+                        vals = [shlex.split(text.strip())[-1]]
+                    else:
+                        vals = []
+
+                # clean the values converting to python types
+                cleanVals = []
+                for val in vals:
+                    val = self.cleanstring(val)
+                    if val is not None:
+                        cleanVals.append(val)
+
+                # add args to legacy keys if no keys
+                if not match[1] and len(cleanVals) == 1 and \
+                        key in ['d_p0', 'ro_s0']:
+                    match = list(match)
+                    match[1] = '1'
+
+                # clean up arguemnts
+                if match[1]:
+                    args = [int(arg) for arg in match[1].split(',')]
+                else:
+                    args = []
+
+                # If multiple values, split apart into multiple key, args, values
+                if len(cleanVals) > 1:
+                    keyWordArgList = []
+
+                    numVals = len(cleanVals)
+
+                    if numVals > 1:
+                        if args:
+                            for val in range(0, numVals):
+                                keyWordArgList.append([val+args[0]]+args[1:])
+                        else:
+                            # hack for species eq
+                            if key == 'species_eq':
+                                start = 0
+                            else:
+                                start = 1
+
+                            for val in range(start, numVals+1):
+                                keyWordArgList.append([val]+args[1:])
+                    else:
+                        keyWordArgList.append(args)
+
+                    for keyWordArgs, cleanVal in zip(keyWordArgList, cleanVals):
+                        yield (key, keyWordArgs, cleanVal)
+
+                else:
+                    yield (key, args, cleanVals[0])
+        else:
+            yield (None, None, None)
+
     def _parsemfixdat(self, fobject):
         """
         This does the actual parsing.
@@ -658,270 +772,273 @@ class Project(object):
         self.comments = {}
         self._keywordDict = {}
         self.__initDataStructure__()
+        self.datfile = []
 
         for i, line in enumerate(fobject):
-            self.lines.append(line)
-            line = line.strip()
-#            line = to_text_string(line, 'utf8').strip()
+            line = to_unicode_from_fs(line).strip('\n')
 
             if '@(RXNS)' in line:
                 reactionSection = True
             elif '@(END)' in line and reactionSection:
                 reactionSection = False
+            elif 'thermo data' in line.lower():
+                self.thermoindex = i
+                self.datfile.append(line)
             elif not reactionSection:
                 # remove comments
+                commentedline = ''
                 if line.startswith('#') or line.startswith('!'):
-                    self.comments[i] = line
+                    commentedline = line
                     line = ''
                 elif '#' in line or '!' in line:
                     line, keywordComment = re.split('[#!]', line)[:2]
+                else:
+                    keywordComment = ''
 
-                for match in self.regX_keyValue.findall(line):
-                    # match chould be: [keyword, args, value,
-                    #                   nextKeywordInLine, something]
-
-                    # keyword
-                    key = match[0].lower().strip()
-                    self.line_numbers[key] = i
-
-                    # values
-                    valString = match[2].strip()
-
-                    # look for shorthand [count]*[value] and expand.
-                    # Replace short hand string
-                    shortHandList = self.regX_stringShortHand.findall(valString)
-                    if shortHandList:
-                        for shortHand in shortHandList:
-                            # check for expression
-                            if not re.findall('@\('+shortHand[0].replace('*','\*')+'\)',valString):
-                                valString = valString.replace(shortHand[0],
-                                                              self.expandshorthand(
-                                                              shortHand[0])
-                                                              )
-
-                    # split values using shlex, it will keep quoted strings
-                    # together.
-                    try:
-                        vals = shlex.split(valString.strip())
-                    except ValueError:
-                        if 'description' in key:
-                            vals = [shlex.split(line.strip())[-1]]
-                        else:
-                            vals = []
-
-                    # A bug with shlex and unicode adds \x00?
-                    for i, val in enumerate(vals):
-                        if '\x00' in val:
-                            vals[i] = val.replace('\x00','')
-
-
-                    # clean the values converting to python types
-                    cleanVals = []
-                    for val in vals:
-                        val = self.cleanstring(val)
-                        if val is not None:
-                            cleanVals.append(val)
-
-                    # I don't know if this is needed?
-                    if not cleanVals:
-                        cleanVals = [None]
-
-                    # add args to legacy keys if no keys
-                    if not match[1] and len(cleanVals) == 1 and \
-                            key in ['d_p0', 'ro_s0']:
-                        match = list(match)
-                        match[1] = '1'
-
-                    # If args or multiple values
-                    if match[1] or len(cleanVals) > 1:
-
-                        keyWordArgList = []
-                        if match[1]:
-                            args = [int(arg) for arg in match[1].split(',')]
-                        else:
-                            args = []
-
-                        numVals = len(cleanVals)
-
-                        if numVals > 1:
-                            if args:
-                                for i in range(0, numVals):
-                                    keyWordArgList.append([i+args[0]]+args[1:])
-                            else:
-                                for i in range(1, numVals+1):
-                                    keyWordArgList.append([i]+args[1:])
-                        else:
-                            keyWordArgList.append(args)
-
-                        # Find condition keywords and separate
-                        if key.startswith('ic_'):
-                            cond = self.ics
-                        elif key.startswith('bc_') and not key.endswith('_q'):
-                            cond = self.bcs
-                        elif key.startswith('ps_'):
-                            cond = self.pss
-                        elif key.startswith('is_'):
-                            cond = self.iss
-                        else:
-                            cond = None
-
-                        for keyWordArgs, cleanVal in zip(keyWordArgList, cleanVals):
-
-                            # Save conditions
-                            if cond is not None:
-                                if len(keyWordArgs) == 1:
-                                    cond[keyWordArgs[0]][key] = \
-                                        KeyWord(key, cleanVal)
-
-                                # Gas Keys
-                                elif len(keyWordArgs) == 2 and\
-                                        key.endswith('_g'):
-
-                                    condItm = cond[keyWordArgs[0]]
-
-                                    if keyWordArgs[1] not in \
-                                            condItm.gasSpecies:
-                                        spec = condItm.gasSpecies.new(
-                                            keyWordArgs[1])
-                                    else:
-                                        spec = condItm.gasSpecies[
-                                            keyWordArgs[1]]
-
-                                    spec[key] = KeyWord(key, cleanVal)
-
-                                # Solid Keys
-                                elif key.endswith('_s') or key in ['ic_theta_m']:
-
-                                    condItm = cond[keyWordArgs[0]]
-
-                                    if keyWordArgs[1] not in condItm.solids:
-                                        solid = condItm.solids.new(
-                                            keyWordArgs[1])
-                                    else:
-                                        solid = condItm.solids[keyWordArgs[1]]
-
-
-                                    if len(keyWordArgs) == 2:
-                                        solid[key] = KeyWord(key, cleanVal)
-                                    elif len(keyWordArgs) == 3:
-                                        if keyWordArgs[2] not in solid.species:
-                                            spec = solid.addSpecies(
-                                                keyWordArgs[2])
-                                        else:
-                                            spec = solid.species[
-                                                keyWordArgs[2]]
-
-                                        spec[key] = KeyWord(key, cleanVal)
-#                                    else:
-#                                        print(key, keyWordArgs, cleanVals)
-#
-#                                else:
-#                                    print(key, keyWordArgs, cleanVals)
-
-                            # Solid Species
-                            elif key in ['species_s', 'species_alias_s',
-                                         'mw_s', 'd_p0', 'ro_s', 'nmax_s',
-                                         'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
-                                         'solids_model', 'close_packed',]:
-
-                                if keyWordArgs[0] not in self.solids:
-                                    solid = self.solids.new(keyWordArgs[0])
-                                else:
-                                    solid = self.solids[keyWordArgs[0]]
-
-                                if len(keyWordArgs) == 1:
-                                    solid[key] = KeyWord(key, cleanVal)
-                                else:
-                                    if keyWordArgs[1] not in solid.species:
-                                        spec = solid.addSpecies(keyWordArgs[1])
-                                    else:
-                                        spec = solid.species[keyWordArgs[1]]
-                                    spec[key] = KeyWord(key, cleanVal)
-
-                            # Gas Species
-                            elif key in ['species_g', 'species_alias_g',
-                                         'mw_g']:
-                                if keyWordArgs[0] not in self.gasSpecies:
-                                    spec = self.gasSpecies.new(keyWordArgs[0])
-                                else:
-                                    spec = self.gasSpecies[keyWordArgs[0]]
-
-                                spec[key] = KeyWord(key, cleanVal)
-
-                            # Species_eq
-                            elif key in ['species_eq']:
-                                if keyWordArgs[0] not in self.speciesEq:
-                                    leq = self.speciesEq.new(keyWordArgs[0])
-                                else:
-                                    leq = self.speciesEq[keyWordArgs[0]]
-
-                                leq[key] = KeyWord(key, cleanVal)
-
-                            # LEQ
-                            elif key in ['leq_method', 'leq_tol', 'leq_it',
-                                         'leq_sweep', 'leq_pc', 'ur_fac',
-                                         ]:
-                                if keyWordArgs[0] not in self.linearEq:
-                                    leq = self.linearEq.new(keyWordArgs[0])
-                                else:
-                                    leq = self.linearEq[keyWordArgs[0]]
-
-                                leq[key] = KeyWord(key, cleanVal)
-
-                            # SPX
-                            elif key in ['spx_dt']:
-                                if keyWordArgs[0] not in self.spx:
-                                    spx = self.spx.new(keyWordArgs[0])
-                                else:
-                                    spx = self.spx[keyWordArgs[0]]
-
-                                spx[key] = KeyWord(key, cleanVal)
-
-                            # VTK
-                            elif key in ['vtk_var']:
-                                if keyWordArgs[0] not in self.vtkvar:
-                                    vtkvar = self.vtkvar.new(keyWordArgs[0])
-                                else:
-                                    vtkvar = self.vtkvar[keyWordArgs[0]]
-
-                                vtkvar[key] = KeyWord(key, cleanVal)
-
-                            # variable grid
-                            elif key in ['cpx', 'ncx', 'erx', 'first_dx',
-                                         'last_dx', 'cpy', 'ncy', 'ery',
-                                         'first_dy', 'last_dy', 'cpz', 'ncz',
-                                         'erz', 'first_dz', 'last_dz']:
-
-                                if keyWordArgs[0] not in self.variablegrid:
-                                    variablegrid = self.variablegrid.new(keyWordArgs[0])
-                                else:
-                                    variablegrid = self.variablegrid[keyWordArgs[0]]
-
-                                variablegrid[key] = KeyWord(key, cleanVal)
-
-                            # Save other keywords with one arg to dict
-                            # {arg:value}
-                            elif len(keyWordArgs) == 1:
-
-                                if key not in self._keywordDict:
-                                    self._keywordDict[key] = {}
-
-                                if keyWordArgs[0] not in self._keywordDict[key]:
-                                    self._keywordDict[key][keyWordArgs[0]] = \
-                                        KeyWord(key, cleanVal)
-
-                                elif isinstance(self._keywordDict[key][keyWordArgs[0]], KeyWord):
-                                    self._keywordDict[key][keyWordArgs[0]].updateValue(cleanVal)
-                                else:
-                                    self._keywordDict[key][keyWordArgs[0]] = \
-                                        KeyWord(key, cleanVal)
-                            else:
-                                print(key, keyWordArgs, cleanVals)
+                # loop through all keywords in the line
+                for key, args, value in self.parseKeywordLine(line):
+                    if key is None:
+                        self.datfile.append(line+commentedline)
                     else:
-                        self._keywordDict[key] = KeyWord(key, cleanVals[0])
+                        self.addKeyword(key, value, args, keywordComment)
 
-    def addKeyword(self, key, value, dtype = None):
-        self._keywordDict[key] = KeyWord(key, value, dtype=dtype)
+    def addKeyword(self, key, value, args=[],  keywordComment=''):
+        '''
+        Add a keyword to the project.
+
+        Note: If the keyword already exists, the keywords value will be
+        updated.
+
+        Parameters
+        ----------
+        key (str):
+            the keyword to be added
+        value (int, float, bool, str):
+            the value of the keyword
+        args (list):
+            list of arguments for the keyword (default: [])
+        keywordComment (str):
+            a comment to be included with the keyword (default: '')
+        '''
+
+        # check to see if the keyword already exists
+        if [key]+args in self:
+            self[[key]+args].updateValue(value)
+            if keywordComment:
+                self[[key]+args].comment = keywordComment
+
+            return self[[key]+args]
+
+        keywordobject = None
+
+        # If args
+        if args:
+
+            # Find condition keywords and separate
+            if key.startswith('ic_'):
+                cond = self.ics
+            elif key.startswith('bc_') and not key.endswith('_q'):
+                cond = self.bcs
+            elif key.startswith('ps_'):
+                cond = self.pss
+            elif key.startswith('is_'):
+                cond = self.iss
+            else:
+                cond = None
+
+            # Save conditions
+            if cond is not None:
+                if len(args) == 1:
+                    keywordobject = KeyWord(key, value, args=args,
+                                            comment=keywordComment)
+                    cond[args[0]][key] = keywordobject
+
+                # Gas Keys
+                elif len(args) == 2 and key.endswith('_g'):
+
+                    condItm = cond[args[0]]
+
+                    if args[1] not in condItm.gasSpecies:
+                        spec = condItm.gasSpecies.new(args[1])
+                    else:
+                        spec = condItm.gasSpecies[args[1]]
+
+                    keywordobject = KeyWord(key, value, args=args,
+                                            comment=keywordComment)
+
+                    spec[key] = keywordobject
+
+                # Solid Keys
+                elif key.endswith('_s'):
+
+                    condItm = cond[args[0]]
+
+                    if args[1] not in condItm.solids:
+                        solid = condItm.solids.new(
+                            args[1])
+                    else:
+                        solid = condItm.solids[args[1]]
+
+                    if len(args) == 2:
+                        keywordobject = KeyWord(key, value, args=args,
+                                                comment=keywordComment)
+                        solid[key] = keywordobject
+
+                    elif len(args) == 3:
+                        if args[2] not in solid.species:
+                            spec = solid.addSpecies(args[2])
+                        else:
+                            spec = solid.species[args[2]]
+
+                        keywordobject = KeyWord(key, value, args=args,
+                                                comment=keywordComment)
+
+                        spec[key] = keywordobject
+
+            # Solid Species
+            elif key in ['species_s', 'species_alias_s', 'mw_s', 'd_p0',
+                         'ro_s', 'nmax_s', 'c_ps0', 'k_s0', 'x_s0', 'ro_xs0',
+                         'solids_model', 'close_packed', ]:
+
+                if args[0] not in self.solids:
+                    solid = self.solids.new(args[0])
+                else:
+                    solid = self.solids[args[0]]
+
+                if len(args) == 1:
+                    keywordobject = KeyWord(key, value, args=args,
+                                            comment=keywordComment)
+                    solid[key] = keywordobject
+                else:
+                    if args[1] not in solid.species:
+                        spec = solid.addSpecies(args[1])
+                    else:
+                        spec = solid.species[args[1]]
+
+                    keywordobject = KeyWord(key, value, args=args,
+                                            comment=keywordComment)
+                    spec[key] = keywordobject
+
+            # Gas Species
+            elif key in ['species_g', 'species_alias_g', 'mw_g']:
+                if args[0] not in self.gasSpecies:
+                    spec = self.gasSpecies.new(args[0])
+                else:
+                    spec = self.gasSpecies[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+                spec[key] = keywordobject
+
+            # Species_eq
+            elif key in ['species_eq']:
+                if args[0] not in self.speciesEq:
+                    leq = self.speciesEq.new(args[0])
+                else:
+                    leq = self.speciesEq[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+                leq[key] = keywordobject
+
+            # LEQ
+            elif key in ['leq_method', 'leq_tol', 'leq_it', 'leq_sweep',
+                         'leq_pc', 'ur_fac', ]:
+                if args[0] not in self.linearEq:
+                    leq = self.linearEq.new(args[0])
+                else:
+                    leq = self.linearEq[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+                leq[key] = keywordobject
+
+            # SPX
+            elif key in ['spx_dt']:
+                if args[0] not in self.spx:
+                    spx = self.spx.new(args[0])
+                else:
+                    spx = self.spx[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+                spx[key] = keywordobject
+
+            # VTK
+            elif key in ['vtk_var']:
+                if args[0] not in self.vtkvar:
+                    vtkvar = self.vtkvar.new(args[0])
+                else:
+                    vtkvar = self.vtkvar[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+                vtkvar[key] = keywordobject
+
+            # variable grid
+            elif key in ['cpx', 'ncx', 'erx', 'first_dx', 'last_dx', 'cpy',
+                         'ncy', 'ery', 'first_dy', 'last_dy', 'cpz', 'ncz',
+                         'erz', 'first_dz', 'last_dz']:
+
+                if args[0] not in self.variablegrid:
+                    variablegrid = self.variablegrid.new(args[0])
+                else:
+                    variablegrid = self.variablegrid[args[0]]
+
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+
+                variablegrid[key] = keywordobject
+
+            # Save everything else
+            else:
+                keywordobject = KeyWord(key, value, args=args,
+                                        comment=keywordComment)
+
+        # no args
+        else:
+            keywordobject = KeyWord(key, value, args=[],
+                                    comment=keywordComment)
+
+        # add keyword to other data structures
+        if keywordobject is not None:
+            if self.thermoindex is not None:
+                self.datfile.insert(self.thermoindex, keywordobject)
+                self.thermoindex += 1
+            else:
+                self.datfile.append(keywordobject)
+            self._recursiveAddKeyToKeywordDict(keywordobject,
+                                               [key]+args)
+        else:
+            warnings.warn('Could not parse {}, {}, {}'.format(
+                key, args, value))
+
+        return keywordobject
+
+    def _recursiveAddKeyToKeywordDict(self, keyword, keys=()):
+        keywordDict = self._keywordDict
+        for key in keys[:-1]:
+            keywordDict = keywordDict.setdefault(key, {})
+        keywordDict[keys[-1]] = keyword
+
+    def _recursiveRemoveKeyToKeywordDict(self, keys=()):
+        keywordDict = self._keywordDict
+        for key in keys[:-1]:
+            keywordDict = keywordDict[key]
+        keywordDict.pop(keys[-1])
+
+    def _purgeemptydicts(self):
+        for keys, value in list(recurse_dict_empty(self._keywordDict)):
+            if isinstance(value, dict) and not value:
+                keywordDict = self._keywordDict
+                for key in keys[:-1]:
+                    keywordDict = keywordDict[key]
+                keywordDict.pop(keys[-1])
+
+    def keywordItems(self):
+
+        for keys, value in recurse_dict_empty(self._keywordDict):
+            yield value
 
     def cleanstring(self, string):
         """
@@ -966,7 +1083,28 @@ class Project(object):
                     splitString[1]))]
         return ' '.join(expandList)
 
-    def cleanDeletedItems(self):
+    def removeKeyword(self, key, args):
+        '''
+        Remove a keyword from the project
+        '''
+
+        keyword = self.keywordLookup(key, args)
+
+        # pop from datfile
+        self.datfile.remove(keyword)
+        if self.thermoindex is not None:
+            self.thermoindex -= 1
+
+        # remove from dict
+        self._recursiveRemoveKeyToKeywordDict([key]+args)
+        for i in range(len(args)):
+            self._purgeemptydicts()
+
+        # purge
+        keyword.delete = True
+        self._cleanDeletedItems()
+
+    def _cleanDeletedItems(self):
         '''
         Purge objects marked with self.delete==True.
         '''
@@ -976,6 +1114,7 @@ class Project(object):
                 for gas in cond.gasSpecies:
                     if gas.delete:
                         cond.gasSpecies.delete(gas)
+                        self.datfile.pop(gas)
                 for solid in cond.solids:
                     for species in solid.species:
                         if species.delete:
@@ -1022,102 +1161,80 @@ class Project(object):
             if vargrid.delete:
                 self.variablegrid.delete(vargrid)
 
+    def keywordLookup(self, keyword, args=[]):
+        '''
+        Search the project for a keyword and return the KeyWord object, else
+        raise an exception.
 
-def readMfixDat():
-    mfixproj = Project('./mfixJordan.dat')
+        Parameters
+        ----------
+        keyword (str):
+            a keyword to search for
+        args (list):
+            a list of args to search for
 
-    print(mfixproj._keywordDict.keys())
-    print(mfixproj.run_name)
-    print(mfixproj['run_name'])
+        Returns
+        -------
+        keyword (pymfix.KeyWord):
+            the KeyWord object
+        '''
 
-    print('coordinates' in mfixproj)
+        keyword = keyword.lower()
+        keywordobject = None
 
-    for bc in mfixproj.bcs:
-        print(bc)
+        for key, value in recurse_dict(self._keywordDict):
+            if key[0] == keyword:
+                if args and value.args == args:
+                    keywordobject = value
+                    break
+                elif not args:
+                    keywordobject = value
+                    break
+                else:
+                    continue
 
-    for ic in mfixproj.ics:
-        print(ic)
+        if keywordobject is None:
+            raise ValueError('{} does not exist in the project'.format(keyword))
 
-    for ps in mfixproj.pss:
-        print(ps)
+        return keywordobject
 
-    for solid in mfixproj.solids:
-        print(solid)
+    def changekeywordvalue(self, key, value, args=[]):
+        '''
+        Change a value of a keyword.
 
-    for species in mfixproj.gasSpecies:
-        print(species)
+        Parameters
+        ----------
+        key (str):
+            keyword to change
+        value (int, float, bool, str):
+            the value to set the keyword to
+        args (list):
+            a list of arguments for that keyword
+        '''
 
+        keywordobject = self.keywordLookup(key, args)
 
-def readStringAsFile():
+        keywordobject.updateValue(value)
 
-    strFile = StringIO("""
-                       key = 6*'value'
-                       run_name = "test"
-                       coordinates = 'cartesian'
-                       """
-                       )
+        return keywordobject
 
-    mfixproj = Project(strFile)
-    print(mfixproj._keywordDict.keys())
-    print(mfixproj.run_name)
-    print(mfixproj['run_name'])
-    print(mfixproj['coordinates'] == 'cylindrical')
-    mfixproj.run_name = 10
-    print(mfixproj.run_name)
+    def convertToString(self):
+        for line in self.datfile:
+            if hasattr(line, 'line'):
+                yield line.line()+'\n'
+            else:
+                yield str(line)+'\n'
 
-def testEmpty():
-    mfixproj = Project()
+    def writeDatFile(self, fname):
+        '''
+        Write the project to a text file.
 
-    'test' in mfixproj
+        Parameters
+        ----------
+        fname (str):
+            the file name to write the project to
+        '''
 
-def test_keyword():
-    keyword = KeyWord('cool', True)
-
-    if keyword:
-        print(True)
-
-
-if __name__ == '__main__':
-    #readMfixDat()
-    #readStringAsFile()
-    #testEmpty()
-    #test_keyword()
-
-    test = """
-           ic_ep_g = .4      1.0
-           ic_x_w		=  2*1.0  @(10*2)
-           IC_ROP_s(1,1)	=  @(0.6*2484.0)	0.0
-#           ic_x_s(1,1,1) = 0.3
-#           ic_t_s(2,1) = 300
-#           ic_x_g(2,1) = 0.7
-#           ic_x_g(2,2) = 0.3
-#           species_eq(0) = .True.
-#           species_eq(1) = .False.
-#           spx_dt = 10*.01
-           """
-
-    proj = Project(test)
-
-    keyB = KeyWord('test', True)
-    keyS = KeyWord('test', 'test')
-    keyF = KeyWord('test', 0.0)
-
-    keyCopy = copy.deepcopy(keyF)
-
-    if keyF:
-        print('keyF has a value')
-
-
-    keyEq = KeyWord('test', None, dtype = Equation)
-
-    if keyEq:
-        print('keyEq has a value')
-
-    for ic in proj.ics:
-#        if 'ic_ep_g' in ic:
-#            print(ic.ind, ic['ic_ep_g'])
-        if 'ic_x_w' in ic:
-            print(ic.ind, ic['ic_x_w'])
-
-    print(Equation('5*2'))
-    print(float(Equation('2*5')))
+        with open(fname, 'w') as datfile:
+            for line in self.convertToString():
+                datfile.write(line)

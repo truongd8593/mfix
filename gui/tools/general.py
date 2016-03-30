@@ -9,11 +9,15 @@ except:
 
 import re
 import os
+import sys
+import locale
 
 # import qt
 from qtpy import QtGui
 
 SCRIPT_DIRECTORY = './'
+PY2 = sys.version[0] == '2'
+PY3 = sys.version[0] == '3'
 
 
 def set_script_directory(script):
@@ -125,3 +129,155 @@ def widget_iter(widget):
             for child2 in widget_iter(child):
                 yield child2
         yield child
+
+
+def get_from_dict(data_dict, map_list):
+    return reduce(lambda d, k: d[k], map_list, data_dict)
+
+
+def set_in_dict(data_dict, map_list, value):
+    get_from_dict(data_dict, map_list[:-1])[map_list[-1]] = value
+
+
+def recurse_dict(d, keys=()):
+    '''
+    Recursively loop through a dictionary of dictionaries.
+
+    Parameters
+    ----------
+    d (dict):
+        a dictionary to loop over
+
+    Returns
+    -------
+    (keys (tuple), value):
+        a tuple of keys (tuple) and the value.
+    '''
+    if type(d) == dict:
+        for k in d:
+            for rv in recurse_dict(d[k], keys + (k, )):
+                yield rv
+    else:
+        yield (keys, d)
+
+
+def recurse_dict_empty(d, keys=()):
+    '''
+    Recursively loop through a dictionary of dictionaries.
+
+    Parameters
+    ----------
+    d (dict):
+        a dictionary to loop over
+
+    Returns
+    -------
+    (keys (tuple), value):
+        a tuple of keys (tuple) and the value.
+    '''
+    if type(d) == dict and d:
+        for k in d:
+            for rv in recurse_dict_empty(d[k], keys + (k, )):
+                yield rv
+    else:
+        yield (keys, d)
+
+
+# These functions were extracted from spyder's p3compat.py code.
+def is_text_string(obj):
+    """Return True if `obj` is a text string, False if it is anything else,
+    like binary data (Python 3) or QString (Python 2, PyQt API #1)"""
+    if PY2:
+        # Python 2
+        return isinstance(obj, basestring)
+    else:
+        # Python 3
+        return isinstance(obj, str)
+
+
+def is_binary_string(obj):
+    """Return True if `obj` is a binary string, False if it is anything else"""
+    if PY2:
+        # Python 2
+        return isinstance(obj, str)
+    else:
+        # Python 3
+        return isinstance(obj, bytes)
+
+
+def is_string(obj):
+    """Return True if `obj` is a text or binary Python string object,
+    False if it is anything else, like a QString (Python 2, PyQt API #1)"""
+    return is_text_string(obj) or is_binary_string(obj)
+
+
+def is_unicode(obj):
+    """Return True if `obj` is unicode"""
+    if PY2:
+        # Python 2
+        return isinstance(obj, unicode)
+    else:
+        # Python 3
+        return isinstance(obj, str)
+
+
+def to_text_string(obj, encoding=None, errors=None):
+    """Convert `obj` to (unicode) text string"""
+    if PY2:
+        # Python 2
+        if encoding is None and errors is None:
+            return unicode(obj)
+        elif encoding is None and errors:
+            return unicode(obj, errors=errors)
+        elif encoding and errors is None:
+            return unicode(obj, encoding)
+        else:
+            return unicode(obj, encoding, errors=errors)
+    else:
+        # Python 3
+        if isinstance(obj, str):
+            # In case this function is not used properly, this could happen
+            return obj
+        elif encoding is None and errors is None:
+            return str(obj)
+        elif encoding is None and errors:
+            return str(obj, errors=errors)
+        elif encoding and errors is None:
+            return str(obj, encoding)
+        else:
+            return str(obj, encoding, errors=errors)
+
+
+# These functions were extracted from spyder's econding.py code.
+PREFERRED_ENCODING = locale.getpreferredencoding()
+
+
+def getfilesystemencoding():
+    """
+    Query the filesystem for the encoding used to encode filenames
+    and environment variables.
+    """
+    encoding = sys.getfilesystemencoding()
+    if encoding is None:
+        # Must be Linux or Unix and nl_langinfo(CODESET) failed.
+        encoding = PREFERRED_ENCODING
+    return encoding
+
+FS_ENCODING = getfilesystemencoding()
+
+
+def to_unicode_from_fs(string):
+    """
+    Return a unicode version of string decoded using the file system encoding.
+    """
+    if not is_string(string):  # string is a QString
+        string = to_text_string(string.toUtf8(), 'utf-8')
+    else:
+        if is_binary_string(string):
+            try:
+                unic = string.decode(FS_ENCODING)
+            except (UnicodeError, TypeError):
+                pass
+            else:
+                return unic
+    return string

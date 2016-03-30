@@ -26,14 +26,18 @@ except ImportError:
 
 
 # local imports
+from widgets.vtkwidget import VtkWidget
+from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox)
+from tools.mfixproject import Project, KeyWord
+from tools.general import (get_image_path, make_callback, get_icon,
+                           widget_iter, set_script_directory)
+from tools.namelistparser import buildKeywordDoc
+
+# look for pyqtnode
 try:
     from pyqtnode import NodeWidget
 except ImportError:
     NodeWidget = None
-from widgets.vtkwidget import VtkWidget
-from tools.mfixproject import Project
-from tools.general import (get_image_path, make_callback, get_icon,
-                           widget_iter, set_script_directory)
 
 logging.basicConfig(stream=sys.stdout,
                     filemode='w', level=logging.DEBUG,
@@ -43,7 +47,7 @@ SCRIPT_DIRECTORY = os.path.abspath(os.path.join(os.path.dirname(__file__), ))
 sys.path.append(os.path.join(SCRIPT_DIRECTORY, 'pyqtnode'))
 LOG = logging.getLogger(__name__)
 LOG.debug(SCRIPT_DIRECTORY)
-set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py
+set_script_directory(SCRIPT_DIRECTORY)  # should this be in an __init__.py?
 
 
 # --- Main Gui ---
@@ -58,6 +62,12 @@ class MfixGui(QtGui.QMainWindow):
         self.app = app
 
         # load ui file
+        self.customWidgets = {'LineEdit':      LineEdit,
+                              'CheckBox':      CheckBox,
+                              'ComboBox':      ComboBox,
+                              'DoubleSpinBox': DoubleSpinBox,
+                              'SpinBox':       SpinBox,
+                              }
         self.ui = uic.loadUi(os.path.join('uifiles', 'gui.ui'), self)
 
         # load settings
@@ -66,6 +76,8 @@ class MfixGui(QtGui.QMainWindow):
         # set title and icon
         self.setWindowTitle('MFIX')
         self.setWindowIcon(get_icon('mfix.png'))
+
+        self.project = ProjectManager(self)
 
         # --- data ---
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -132,22 +144,6 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.connect_mfix_button.pressed.connect(self.connect_mfix)
         self.ui.clear_output_button.pressed.connect(self.clear_output)
 
-        self.ui.run_name.textChanged.connect(self.unsaved)
-        self.ui.description.textChanged.connect(self.unsaved)
-        self.ui.energy_eq.clicked.connect(self.unsaved)
-        self.ui.time.valueChanged.connect(self.unsaved)
-        self.ui.tstop.valueChanged.connect(self.unsaved)
-        self.ui.dt.valueChanged.connect(self.unsaved)
-        self.ui.dt_max.valueChanged.connect(self.unsaved)
-        self.ui.units.currentIndexChanged.connect(self.unsaved)
-        self.ui.max_nit.valueChanged.connect(self.unsaved)
-        self.ui.tol_resid.valueChanged.connect(self.unsaved)
-        self.ui.res_dt.valueChanged.connect(self.unsaved)
-        self.ui.nlog.valueChanged.connect(self.unsaved)
-        self.ui.full_log.clicked.connect(self.unsaved)
-        self.ui.group_resid.clicked.connect(self.unsaved)
-        self.ui.print_des_data.clicked.connect(self.unsaved)
-        self.ui.write_vtk_files.clicked.connect(self.unsaved)
 
         # --- Threads ---
         self.build_thread = BuildThread(self)
@@ -176,6 +172,9 @@ class MfixGui(QtGui.QMainWindow):
         self.clear_thread.line_printed.connect(
             make_handler(self.ui.command_output))
 
+        # --- setup simple widgets ---
+        self.__setup_simple_keyword_widgets()
+
         # --- vtk setup ---
         self.__setup_vtk_widget()
 
@@ -191,11 +190,68 @@ class MfixGui(QtGui.QMainWindow):
         if self.get_project_dir():
             self.open_project(self.get_project_dir())
 
+    def __setup_simple_keyword_widgets(self):
+        """
+        Look for and connect simple keyword widgets to the project manager.
+        Keyword informtation from the namelist doc strings is added to each
+        keyword widget. The widget must be named: *_keyword_<keyword> where
+        <keyword> is the actual keyword. For example:
+        lineedit_keyword_run_name
+        """
+
+        # build keyword documentation from namelist docstrings
+        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
+                                                        os.pardir, 'model'))
+
+        # loop through all widgets looking for *_keyword_<keyword>
+        for widget in widget_iter(self.ui):
+            name_list = str(widget.objectName()).lower().split('_')
+
+            if 'keyword' in name_list:
+                keyword = '_'.join(name_list[name_list.index('keyword')+1:])
+
+                # set the key attribute to the keyword
+                widget.key = keyword
+
+                # add info from keyword documentation
+                if keyword in self.keyword_doc:
+                    widget.setdtype(self.keyword_doc[keyword]['dtype'])
+
+                    if 'required' in self.keyword_doc[keyword]:
+                        widget.setValInfo(
+                            req=self.keyword_doc[keyword]['required'] == 'true')
+                    if 'validrange' in self.keyword_doc[keyword]:
+                        if 'max' in self.keyword_doc[keyword]['validrange']:
+                            widget.setValInfo(
+                                _max = self.keyword_doc[keyword]['validrange']['max'])
+                        if 'min' in self.keyword_doc[keyword]['validrange']:
+                            widget.setValInfo(
+                                _min = self.keyword_doc[keyword]['validrange']['min'])
+
+                    if 'initpython' in self.keyword_doc[keyword]:
+                        widget.default(
+                            self.keyword_doc[keyword]['initpython'])
+
+                    if isinstance(widget, QtGui.QComboBox) and widget.count() < 1:
+                            widget.addItems(list(self.mfixKeyWordDoc[key]['valids'].keys()))
+
+                # register the widget with the project manager
+                self.project.register_widget(widget, [keyword])
+
+                # connect to unsaved method
+                widget.value_updated.connect(self.unsaved)
+
     def __setup_vtk_widget(self):
         " setup the vtk widget "
 
-        self.vtkwidget = VtkWidget(parent=self)
+        self.vtkwidget = VtkWidget(self.project, parent=self)
         self.ui.horizontalLayoutModelGraphics.addWidget(self.vtkwidget)
+
+        # register with project manager
+        self.project.register_widget(self.vtkwidget,
+                                     ['xmin', 'xlength', 'ymin', 'ylength',
+                                      'zmin', 'zlength', 'imax', 'jmax',
+                                      'kmax'])
 
         # --- geometry button ---
         self.add_geometry_menu = QtGui.QMenu(self)
@@ -272,21 +328,8 @@ class MfixGui(QtGui.QMainWindow):
         self.ui.pushbutton_mesh_autosize.pressed.connect(
             self.vtkwidget.auto_size_mesh_extents)
 
-        # connect unifrom mesh
-        for widget in [self.ui.lineedit_mesh_min_x,
-                       self.ui.lineedit_mesh_max_x,
-                       self.ui.lineedit_mesh_min_y,
-                       self.ui.lineedit_mesh_max_y,
-                       self.ui.lineedit_mesh_min_z,
-                       self.ui.lineedit_mesh_max_z,
-                       self.ui.lineedit_mesh_cells_x,
-                       self.ui.lineedit_mesh_cells_y,
-                       self.ui.lineedit_mesh_cells_z
-                       ]:
-            widget.editingFinished.connect(self.vtkwidget.update_mesh)
-
         # connect mesher
-        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesh)
+        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesher)
 
     def __setup_workflow_widget(self):
 
@@ -532,6 +575,18 @@ class MfixGui(QtGui.QMainWindow):
 
         return result
 
+    def print_internal(self, text):
+        if not text.endswith('\n'):
+            text += '\n'
+        LOG.debug(str(text).strip())
+        cursor = self.ui.command_output.textCursor()
+        cursor.movePosition(cursor.End)
+        cursor.insertText(text)
+        cursor.movePosition(cursor.End)
+        vbar = self.ui.command_output.verticalScrollBar()
+        vbar.triggerAction(QtGui.QAbstractSlider.SliderToMaximum)
+        self.ui.command_output.ensureCursorVisible()
+
     # --- mfix methods ---
     def set_mpi(self):
         " set MPI checkbox if more than one node selected "
@@ -589,7 +644,6 @@ class MfixGui(QtGui.QMainWindow):
         if self.updater.job_done:
             self.ui.mfix_browser.setHTML('')
 
-
     def connect_mfix(self):
         """ connect to running instance of mfix """
         url = "http://{}:{}".format(self.ui.mfix_host.text(),
@@ -607,30 +661,16 @@ class MfixGui(QtGui.QMainWindow):
 
     # --- open/save/new ---
     def save_project(self):
+        # make sure the button is not down
+        self.ui.toolbutton_save.setDown(False)
+
         project_dir = self.settings.value('project_dir')
 
         # export geometry
         self.vtkwidget.export_stl(os.path.join(project_dir, 'geometry.stl'))
 
-        self.project._keywordDict['run_name'] = self.ui.run_name.text()
-        self.project._keywordDict['description'] = self.ui.description.text()
-        self.project._keywordDict['energy_eq'] = self.ui.energy_eq.isChecked()
-        self.project._keywordDict['time'] = self.ui.time.value()
-        self.project._keywordDict['tstop'] = self.ui.tstop.value()
-        self.project._keywordDict['dt'] = self.ui.dt.value()
-        self.project._keywordDict['dt_max'] = self.ui.dt_max.value()
-        self.project._keywordDict['units'] = self.ui.units.currentText()
-        self.project._keywordDict['max_nit'] = self.ui.max_nit.value()
-        self.project._keywordDict['tol_resid'] = self.ui.tol_resid.value()
-        self.project._keywordDict['res_dt'] = self.ui.res_dt.value()
-        self.project._keywordDict['nlog'] = self.ui.nlog.value()
-        self.project._keywordDict['full_log'] = self.ui.full_log.isChecked()
-        self.project._keywordDict['group_resid'] = self.ui.group_resid.isChecked()
-        self.project._keywordDict['print_des_data'] = self.ui.print_des_data.isChecked()
-        self.project._keywordDict['write_vtk_files'] = self.ui.write_vtk_files.isChecked()
-
         self.setWindowTitle('MFIX - %s' % project_dir)
-        self.project.save(os.path.join(project_dir, 'mfix.dat'))
+        self.project.writeDatFile(os.path.join(project_dir, 'mfix.dat'))
 
     def unsaved(self):
         project_dir = self.settings.value('project_dir')
@@ -663,6 +703,8 @@ class MfixGui(QtGui.QMainWindow):
         """
         Open MFiX Project
         """
+        # make sure the button is not left down
+        self.ui.toolbutton_open.setDown(False)
 
         if not project_dir:
             project_dir = str(
@@ -707,40 +749,18 @@ class MfixGui(QtGui.QMainWindow):
         self.settings.setValue('project_dir', project_dir)
         self.setWindowTitle('MFIX - %s' % project_dir)
 
-        # mylogger.debug('found mfix.dat: {}'.format(mfix_dat))
-        # check to see if file is already open
-        # if not self.codeEditor.is_file_opened(mfix_dat):
-        # self.codeEditor.load(mfix_dat)
-        # parse and update widget values
-        # self.setWidgetInit(False)
-        # self.projectManager.loadMfixDat(mfix_dat)
-        # self.setWidgetInit(True)
-
-        src = open(mfix_dat).read()
+        # read the file
+        with open(mfix_dat, 'r') as mfix_dat_file:
+            src = mfix_dat_file.read()
         self.ui.mfix_dat_source.setPlainText(src)
-#        self.mode_changed('developer')
-        # self.ui.stackedWidgetMode.setCurrentIndex(2)
+        # self.mode_changed('developer')
 
-        self.project = Project(mfix_dat)
-        self.ui.run_name.setText(str(self.project['run_name']))
-        self.ui.description.setText(str(self.project['description']))
+        self.project.load_mfix_dat(mfix_dat)
+
         self.ui.energy_eq.setChecked(self.project['energy_eq'])
-        self.ui.time.setValue(self.project['time'])
-        self.ui.tstop.setValue(self.project['tstop'])
-        self.ui.dt.setValue(self.project['dt'])
-        # self.ui.dt_max.setValue(self.project['dt_max'])
-        self.ui.units.setCurrentIndex(self.ui.units.findText(str(self.project['units']).replace("'","")))
-        self.ui.max_nit.setValue(self.project['max_nit'])
-        self.ui.tol_resid.setValue(self.project['tol_resid'])
-        self.ui.res_dt.setValue(self.project['res_dt'])
-        self.ui.nlog.setValue(self.project['nlog'])
-        self.ui.full_log.setChecked(self.project['full_log'])
-        self.ui.group_resid.setChecked(self.project['group_resid'])
-        self.ui.print_des_data.setChecked(self.project['print_des_data'])
-        self.ui.write_vtk_files.setChecked(self.project['write_vtk_files'])
-        # self.ui.ro_g0.setText(str(self.project['ro_g0']))
-        # self.ui.mu_g0.setText(str(self.project['mu_g0']))
 
+
+# --- Threads ---
 class MfixThread(QThread):
 
     line_printed = pyqtSignal(str)
@@ -778,6 +798,7 @@ class BuildThread(MfixThread):
 class ClearThread(MfixThread):
     line_printed = pyqtSignal(str)
 
+
 class MonitorOutputFilesThread(QThread):
 
     sig = QtCore.pyqtSignal(object)
@@ -791,6 +812,7 @@ class MonitorOutputFilesThread(QThread):
             else:
                 self.sig.emit('no_output')
             time.sleep(1)
+
 
 class UpdateResidualsThread(QThread):
 
@@ -808,6 +830,107 @@ class UpdateResidualsThread(QThread):
                 return
             time.sleep(1)
             self.sig.emit('update')
+
+
+# --- Project Manager ---
+class ProjectManager(Project):
+    '''
+    Manages the editing of the MFiX.dat file
+    '''
+    def __init__(self, parent=None):
+        Project.__init__(self)
+
+        self.parent = parent
+        self.widgetList = []
+
+    def submit_change(self, widget, newValueDict, args=None,
+                      forceUpdate=False):
+        '''
+        Submit a value change
+
+        Examples:
+        submitChange(lineEdit, {'run_name':'new run name'}, args)
+        '''
+
+        if isinstance(args, int):
+            args = [args]
+
+        for key, newValue in newValueDict.items():
+
+            if isinstance(newValue, dict):
+                if args:
+                    for ind, value in newValue.items():
+                        self._change(widget, key, value, args=args+[ind],
+                                     forceUpdate=forceUpdate)
+                else:
+                    for ind, value in newValue.items():
+                        self._change(widget, key, value, args=[ind],
+                                     forceUpdate=forceUpdate)
+            else:
+                self._change(widget, key, newValue, args=args,
+                             forceUpdate=forceUpdate)
+
+        self._cleanDeletedItems()
+
+    def _change(self, widget, key, newValue, args=None, forceUpdate=False):
+
+        key = key.lower()
+        updatedValue = None
+
+        if isinstance(newValue, KeyWord):
+            keyword = newValue
+            newValue = keyword.value
+        else:
+            keyword = None
+
+        if args is None:
+            args = []
+
+        updatedValue = self.addKeyword(key, newValue, args)
+
+        if args:
+            keystring = '{}({}) = {}'.format(
+                key,
+                ','.join([str(arg) for arg in args]),
+                str(updatedValue))
+        else:
+            keystring = '{} = {}'.format(key, str(updatedValue))
+        self.parent.print_internal(keystring)
+
+        if updatedValue is not None:
+            for wid, keys in self.widgetList:
+                if not wid == widget:
+                    if key in keys or 'all' in keys:
+                        wid.updateValue(key, updatedValue, args)
+
+    def load_mfix_dat(self, mfixDat):
+
+        self.parsemfixdat(fname=mfixDat)
+
+        # emit loaded keys
+        for keyword in self.keywordItems():
+            self.submit_change('Loading', {keyword.key: keyword.value},
+                               args=keyword.args, forceUpdate=True)
+
+    def register_widget(self, widget, keys=None):
+        '''
+        Register a widget with the project manager. The widget must have a
+        valueUpdated signal to connect to.
+
+        Example:
+        registerWidget(widget, ['list', 'of', 'keys'])
+        '''
+
+        LOG.debug(
+            'ProjectManager: Registering {} with keys {}'.format(
+                widget.objectName(),
+                keys)
+            )
+        self.widgetList.append([widget, keys])
+        widget.value_updated.connect(self.submit_change)
+
+    def objectName(self):
+        return 'Project Manager'
 
 
 if __name__ == '__main__':
