@@ -110,7 +110,7 @@ class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
 
 class VtkWidget(QtGui.QWidget):
     value_updated = QtCore.Signal(object, object, object)
-    
+
     def __init__(self, project, parent=None):
         QtGui.QWidget.__init__(self, parent)
 
@@ -238,10 +238,13 @@ class VtkWidget(QtGui.QWidget):
 
         self.vtkrenderer.AddActor(self.mesh_actor)
 
-        # connect events
+        # --- connect events ---
         self.geometrytree.itemSelectionChanged.connect(
             self.tree_widget_geometry_changed)
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
+
+        self.parent.ui.combobox_mesher.currentIndexChanged.connect(
+            self.change_mesher_options)
 
         self.__add_buttons()
 
@@ -291,7 +294,7 @@ class VtkWidget(QtGui.QWidget):
         if key in ['xmin', 'xlength', 'ymin', 'ylength', 'zmin', 'zlength',
                    'imax', 'jmax', 'kmax']:
             self.update_mesh()
-            
+
     def objectName(self):
         return 'VTK Widget'
 
@@ -1211,6 +1214,26 @@ class VtkWidget(QtGui.QWidget):
             btn_layout=self.parent.ui.gridlayout_mesh_tab_btns,
             )
 
+    def change_mesher_options(self):
+        """ switch the mesh options stacked widget """
+
+        mesher = str(self.parent.ui.combobox_mesher.currentText()).lower()
+
+        current_index = 0
+        for i in range(self.parent.ui.stackedwidget_mesher_options.count()):
+            widget = self.parent.ui.stackedwidget_mesher_options.widget(i)
+            if mesher == str(widget.objectName()).lower():
+                current_index = i
+                break
+
+        self.parent.animate_stacked_widget(
+            self.parent.ui.stackedwidget_mesher_options,
+            self.parent.ui.stackedwidget_mesher_options.currentIndex(),
+            current_index,
+            direction='horizontal',
+            )
+
+
     def auto_size_mesh_extents(self):
         """ collect and set the extents of the visible geometry """
         extents = self.get_geometry_extents()
@@ -1296,7 +1319,7 @@ class VtkWidget(QtGui.QWidget):
         self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()
 
-    def vtk_mesher(self):
+    def vtk_calc_distance_from_geometry(self):
 
         signed_distances = vtk.vtkFloatArray()
         signed_distances.SetNumberOfComponents(1)
@@ -1313,6 +1336,10 @@ class VtkWidget(QtGui.QWidget):
             signed_distances.InsertNextValue(signed_distance)
 
         self.rectilinear_grid.GetPointData().SetScalars(signed_distances)
+
+    def vtk_mesher_table_based(self):
+
+        self.vtk_calc_distance_from_geometry()
 
         clipper = vtk.vtkTableBasedClipDataSet()
         clipper.SetInputData(self.rectilinear_grid)
@@ -1338,6 +1365,70 @@ class VtkWidget(QtGui.QWidget):
         project_dir = self.parent.settings.value('project_dir')
         self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
                                  clipper.GetOutputPort())
+
+    def vtk_mesher_extract_selection(self):
+
+        self.vtk_calc_distance_from_geometry()
+
+        inside = []
+        outside = []
+        interface = []
+        for cellId in range(self.rectilinear_grid.GetNumberOfCells()):
+            cell = self.rectilinear_grid.GetCell(cellId)
+
+            pointIds = cell.GetPointIds()
+            pointList = []
+            for point in range(pointIds.GetNumberOfIds()):
+                pointId = pointIds.GetId(point)
+                pointList.append(self.rectilinear_grid.GetPointData().GetScalars().GetTuple(pointId)[0]<0.0)
+
+            if all(pointList):
+                inside.append(cellId)
+            elif not any(pointList):
+                outside.append(cellId)
+            else:
+                interface.append(cellId)
+
+        ids = vtk.vtkIdTypeArray()
+        ids.SetNumberOfComponents(1)
+
+        if self.parent.ui.checkbox_extract_selection_inside.isChecked():
+            selection_cells = inside
+        else:
+            selection_cells = outside
+
+        if self.parent.ui.checkbox_extract_selection_interface.isChecked():
+            selection_cells += interface
+
+        for point in selection_cells:
+            ids.InsertNextValue(point)
+
+        selectionNode = vtk.vtkSelectionNode()
+        selectionNode.SetFieldType(vtk.vtkSelectionNode.CELL)
+        selectionNode.SetContentType(vtk.vtkSelectionNode.INDICES)
+        selectionNode.SetSelectionList(ids)
+
+        selection = vtk.vtkSelection()
+        selection.AddNode(selectionNode)
+
+        extractCells = vtk.vtkExtractSelection()
+        extractCells.SetInputData(0, self.rectilinear_grid)
+        extractCells.SetInputData(1, selection)
+        extractCells.Update()
+
+        self.mesh = vtk.vtkUnstructuredGrid()
+        self.mesh.ShallowCopy(extractCells.GetOutput())
+
+        self.mesh_mapper.SetInputData(self.mesh)
+
+        self.vtkRenderWindow.Render()
+
+        self.mesh_stats()
+
+        # export geometry
+        project_dir = self.parent.settings.value('project_dir')
+        self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
+                                 extractCells.GetOutputPort())
 
     def mesh_stats(self):
 
@@ -1367,7 +1458,9 @@ class VtkWidget(QtGui.QWidget):
         mesher = str(self.parent.ui.combobox_mesher.currentText())
 
         if mesher == 'vtkTableBasedClipDataSet':
-            self.vtk_mesher()
+            self.vtk_mesher_table_based()
+        elif mesher == 'vtkExtractSelection':
+            self.vtk_mesher_extract_selection()
 
     # --- view ---
     def perspective(self):
