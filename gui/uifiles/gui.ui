@@ -3782,17 +3782,17 @@ background-color: transparent;
                               </item>
                              </layout>
                             </widget>
-                            <widget class="QWidget" name="vtkExtractSelection">
+                            <widget class="QWidget" name="vtkThreshold">
                              <layout class="QGridLayout" name="gridLayout_58">
                               <item row="1" column="0">
-                               <widget class="QCheckBox" name="checkbox_extract_selection_interface">
+                               <widget class="QCheckBox" name="checkbox_threshold_interface">
                                 <property name="text">
                                  <string>Include interface cells</string>
                                 </property>
                                </widget>
                               </item>
                               <item row="0" column="0">
-                               <widget class="QCheckBox" name="checkbox_extract_selection_inside">
+                               <widget class="QCheckBox" name="checkbox_threshold_inside">
                                 <property name="text">
                                  <string>Mesh Inside</string>
                                 </property>
@@ -3883,7 +3883,7 @@ background-color: transparent;
                          </item>
                          <item>
                           <property name="text">
-                           <string>vtkExtractSelection</string>
+                           <string>vtkThreshold</string>
                           </property>
                          </item>
                         </widget>

@@ -1366,58 +1366,26 @@ class VtkWidget(QtGui.QWidget):
         self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
                                  clipper.GetOutputPort())
 
-    def vtk_mesher_extract_selection(self):
+    def vtk_mesher_threshold(self):
 
         self.vtk_calc_distance_from_geometry()
 
-        inside = []
-        outside = []
-        interface = []
-        for cellId in range(self.rectilinear_grid.GetNumberOfCells()):
-            cell = self.rectilinear_grid.GetCell(cellId)
-
-            pointIds = cell.GetPointIds()
-            pointList = []
-            for point in range(pointIds.GetNumberOfIds()):
-                pointId = pointIds.GetId(point)
-                pointList.append(self.rectilinear_grid.GetPointData().GetScalars().GetTuple(pointId)[0]<0.0)
-
-            if all(pointList):
-                inside.append(cellId)
-            elif not any(pointList):
-                outside.append(cellId)
-            else:
-                interface.append(cellId)
-
-        ids = vtk.vtkIdTypeArray()
-        ids.SetNumberOfComponents(1)
-
-        if self.parent.ui.checkbox_extract_selection_inside.isChecked():
-            selection_cells = inside
+        thresh = vtk.vtkThreshold()
+        thresh.SetInputData(self.rectilinear_grid)
+        #thresh.ThresholdBetween(0.25, 0.75)
+        if self.parent.ui.checkbox_threshold_inside.isChecked():
+            thresh.ThresholdByLower(0)
         else:
-            selection_cells = outside
+            thresh.ThresholdByUpper(0)
+            
+        if self.parent.ui.checkbox_threshold_interface.isChecked():
+            thresh.AllScalarsOff()
+        else:
+            thresh.AllScalarsOn()
 
-        if self.parent.ui.checkbox_extract_selection_interface.isChecked():
-            selection_cells += interface
+        thresh.Update()
 
-        for point in selection_cells:
-            ids.InsertNextValue(point)
-
-        selectionNode = vtk.vtkSelectionNode()
-        selectionNode.SetFieldType(vtk.vtkSelectionNode.CELL)
-        selectionNode.SetContentType(vtk.vtkSelectionNode.INDICES)
-        selectionNode.SetSelectionList(ids)
-
-        selection = vtk.vtkSelection()
-        selection.AddNode(selectionNode)
-
-        extractCells = vtk.vtkExtractSelection()
-        extractCells.SetInputData(0, self.rectilinear_grid)
-        extractCells.SetInputData(1, selection)
-        extractCells.Update()
-
-        self.mesh = vtk.vtkUnstructuredGrid()
-        self.mesh.ShallowCopy(extractCells.GetOutput())
+        self.mesh = thresh.GetOutput()
 
         self.mesh_mapper.SetInputData(self.mesh)
 
@@ -1428,7 +1396,7 @@ class VtkWidget(QtGui.QWidget):
         # export geometry
         project_dir = self.parent.settings.value('project_dir')
         self.export_unstructured(os.path.join(project_dir, 'mesh.vtu'),
-                                 extractCells.GetOutputPort())
+                                 thresh.GetOutputPort())
 
     def mesh_stats(self):
 
@@ -1459,8 +1427,8 @@ class VtkWidget(QtGui.QWidget):
 
         if mesher == 'vtkTableBasedClipDataSet':
             self.vtk_mesher_table_based()
-        elif mesher == 'vtkExtractSelection':
-            self.vtk_mesher_extract_selection()
+        elif mesher == 'vtkThreshold':
+            self.vtk_mesher_threshold()
 
     # --- view ---
     def perspective(self):
