@@ -29,7 +29,7 @@ except ImportError:
 from widgets.vtkwidget import VtkWidget
 from widgets.base import (LineEdit, CheckBox, ComboBox, SpinBox, DoubleSpinBox)
 from tools.mfixproject import Project, KeyWord
-from tools.general import (get_image_path, make_callback, get_icon,
+from tools.general import (make_callback, get_icon,
                            widget_iter, set_script_directory)
 from tools.namelistparser import buildKeywordDoc
 
@@ -233,7 +233,7 @@ class MfixGui(QtGui.QMainWindow):
                             self.keyword_doc[keyword]['initpython'])
 
                     if isinstance(widget, QtGui.QComboBox) and widget.count() < 1:
-                            widget.addItems(list(self.mfixKeyWordDoc[key]['valids'].keys()))
+                            widget.addItems(list(self.keyword_doc[keyword]['valids'].keys()))
 
                 # register the widget with the project manager
                 self.project.register_widget(widget, [keyword])
@@ -252,84 +252,6 @@ class MfixGui(QtGui.QMainWindow):
                                      ['xmin', 'xlength', 'ymin', 'ylength',
                                       'zmin', 'zlength', 'imax', 'jmax',
                                       'kmax'])
-
-        # --- geometry button ---
-        self.add_geometry_menu = QtGui.QMenu(self)
-        self.ui.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
-
-        action = QtGui.QAction('STL File',  self.add_geometry_menu)
-        action.triggered.connect(self.vtkwidget.add_stl)
-        self.add_geometry_menu.addAction(action)
-
-        self.add_geometry_menu.addSeparator()
-
-        for geo in self.vtkwidget.primitivedict.keys():
-            action = QtGui.QAction(geo, self.add_geometry_menu)
-            action.triggered.connect(
-                make_callback(self.vtkwidget.add_primitive, geo))
-            self.add_geometry_menu.addAction(action)
-
-        self.add_geometry_menu.addSeparator()
-
-        for geo in self.vtkwidget.parametricdict.keys():
-            action = QtGui.QAction(geo.replace('_', ' '),
-                                   self.add_geometry_menu)
-            action.triggered.connect(
-                make_callback(self.vtkwidget.add_parametric, geo))
-            self.add_geometry_menu.addAction(action)
-
-        # --- filter button ---
-        self.add_filter_menu = QtGui.QMenu(self)
-        self.ui.toolbutton_add_filter.setMenu(self.add_filter_menu)
-
-        for geo in self.vtkwidget.filterdict.keys():
-            action = QtGui.QAction(geo.replace('_', ' '),
-                                   self.add_filter_menu)
-            action.triggered.connect(
-                make_callback(self.vtkwidget.add_filter, geo))
-            self.add_filter_menu.addAction(action)
-
-        # tree widget icons
-        self.ui.treeWidgetGeometry.setStyleSheet(
-            "QTreeView::indicator:unchecked {image: url(%s);}"
-            "QTreeView::indicator:checked {image: url(%s);}"
-            % (get_image_path('visibilityofftransparent.png'),
-               get_image_path('visibility.png'))
-            )
-
-        # setup signals
-        self.ui.toolbutton_remove_geometry.pressed.connect(
-            self.vtkwidget.remove_geometry)
-        self.ui.toolbutton_copy_geometry.pressed.connect(
-            self.vtkwidget.copy_geometry)
-
-        # connect boolean
-        for key, btn in self.booleanbtndict.items():
-            btn.pressed.connect(
-                make_callback(self.vtkwidget.boolean_operation, key))
-
-        # connect parameter widgets
-        for widget in widget_iter(self.ui.stackedWidgetGeometryDetails):
-            if isinstance(widget, QtGui.QLineEdit):
-                widget.editingFinished.connect(
-                    make_callback(self.vtkwidget.parameter_edited, widget))
-            elif isinstance(widget, QtGui.QCheckBox):
-                widget.stateChanged.connect(
-                    make_callback(self.vtkwidget.parameter_edited, widget))
-
-        # --- mesh ---
-        # connect mesh tab btns
-        for i, btn in enumerate([self.ui.pushbutton_mesh_uniform,
-                                 self.ui.pushbutton_mesh_controlpoints,
-                                 self.ui.pushbutton_mesh_mesher]):
-            btn.pressed.connect(
-                make_callback(self.vtkwidget.change_mesh_tab, i, btn))
-
-        self.ui.pushbutton_mesh_autosize.pressed.connect(
-            self.vtkwidget.auto_size_mesh_extents)
-
-        # connect mesher
-        self.ui.pushbutton_generate_mesh.pressed.connect(self.vtkwidget.mesher)
 
     def __setup_workflow_widget(self):
 

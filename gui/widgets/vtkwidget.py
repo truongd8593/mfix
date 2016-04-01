@@ -2,6 +2,7 @@
 from __future__ import print_function, absolute_import, unicode_literals
 
 import os
+import sys
 from collections import OrderedDict
 
 # 3rd pary imports
@@ -15,7 +16,8 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # local imports
-from tools.general import get_unique_string, widget_iter, get_icon
+from tools.general import (get_unique_string, widget_iter, get_icon,
+                           get_image_path, make_callback,)
 
 CELL_TYPE_ENUM = {
     0:  'empty_cell',
@@ -102,7 +104,9 @@ class CustomInteractorStyle(vtk.vtkInteractorStyleTrackballCamera):
 class CustomOrientationMarkerWidget(vtk.vtkOrientationMarkerWidget):
 
     def __init__(self, parent=None):
-        self.AddObserver("OnLeftButtonPressEvent", self.left_button_press_event)
+        self.RemoveAllObservers()
+        self.AddObserver("OnLeftButtonPressEvent",
+                         self.left_button_press_event)
 
     def left_button_press_event(self, obj, event):
         print('pressed')
@@ -165,18 +169,18 @@ class VtkWidget(QtGui.QWidget):
             }
 
         # --- layout ---
-        self.vlayout = QtGui.QVBoxLayout(self)
-        self.vlayout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(self.vlayout)
+        self.grid_layout = QtGui.QGridLayout(self)
+        self.grid_layout.setContentsMargins(0, 0, 0, 0)
 
         self.button_bar = QtGui.QWidget(self)
         self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
         self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
         self.button_bar.setLayout(self.button_bar_layout)
-        self.vlayout.addWidget(self.button_bar)
+        self.button_bar.setGeometry(QtCore.QRect(0,0,300,300))
+        self.grid_layout.addWidget(self.button_bar,0,0)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
-        self.vlayout.addWidget(self.vtkWindowWidget)
+        self.grid_layout.addWidget(self.vtkWindowWidget,1,0)
 
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
@@ -216,6 +220,7 @@ class VtkWidget(QtGui.QWidget):
         self.axes.GetTextEdgesProperty().SetColor(1, 1, 1)
         self.axes.GetTextEdgesProperty().SetLineWidth(2)
         self.axes.GetCubeProperty().SetColor(.39, .71, .965)
+        self.axes.PickableOn()
 
         self.orientation_widget = CustomOrientationMarkerWidget()
         self.orientation_widget.SetOutlineColor(0.9300, 0.5700, 0.1300)
@@ -223,7 +228,8 @@ class VtkWidget(QtGui.QWidget):
         self.orientation_widget.SetInteractor(self.vtkiren)
         self.orientation_widget.SetViewport(0.0, 0.0, 0.2, 0.2)
         self.orientation_widget.SetEnabled(1)
-        self.orientation_widget.InteractiveOn()
+        self.orientation_widget.InteractiveOff()
+        self.orientation_widget.PickingManagedOn()
 
         self.vtkrenderer.ResetCamera()
 
@@ -238,18 +244,97 @@ class VtkWidget(QtGui.QWidget):
 
         self.vtkrenderer.AddActor(self.mesh_actor)
 
-        # --- connect events ---
+        self.__connect_events()
+        self.__add_tool_buttons()
+
+    # --- setup ---
+    def __connect_events(self):
+
+        # -- Geometry Tree ---
+        self.geometrytree.setStyleSheet(
+            "QTreeView::indicator:unchecked {image: url(%s);}"
+            "QTreeView::indicator:checked {image: url(%s);}"
+            % (get_image_path('visibilityofftransparent.png'),
+               get_image_path('visibility.png'))
+            )
         self.geometrytree.itemSelectionChanged.connect(
             self.tree_widget_geometry_changed)
         self.geometrytree.itemClicked.connect(self.geometry_clicked)
 
+        # --- geometry button ---
+        self.add_geometry_menu = QtGui.QMenu(self)
+        self.parent.ui.toolbutton_add_geometry.setMenu(self.add_geometry_menu)
+
+        action = QtGui.QAction('STL File',  self.add_geometry_menu)
+        action.triggered.connect(self.add_stl)
+        self.add_geometry_menu.addAction(action)
+
+        self.add_geometry_menu.addSeparator()
+
+        for geo in self.primitivedict.keys():
+            action = QtGui.QAction(geo, self.add_geometry_menu)
+            action.triggered.connect(
+                make_callback(self.add_primitive, geo))
+            self.add_geometry_menu.addAction(action)
+
+        self.add_geometry_menu.addSeparator()
+
+        for geo in self.parametricdict.keys():
+            action = QtGui.QAction(geo.replace('_', ' '),
+                                   self.add_geometry_menu)
+            action.triggered.connect(
+                make_callback(self.add_parametric, geo))
+            self.add_geometry_menu.addAction(action)
+
+        # --- filter button ---
+        self.add_filter_menu = QtGui.QMenu(self)
+        self.parent.ui.toolbutton_add_filter.setMenu(self.add_filter_menu)
+
+        for geo in self.filterdict.keys():
+            action = QtGui.QAction(geo.replace('_', ' '),
+                                   self.add_filter_menu)
+            action.triggered.connect(
+                make_callback(self.add_filter, geo))
+            self.add_filter_menu.addAction(action)
+
+        # setup signals
+        self.parent.ui.toolbutton_remove_geometry.pressed.connect(
+            self.remove_geometry)
+        self.parent.ui.toolbutton_copy_geometry.pressed.connect(
+            self.copy_geometry)
+
+        # connect boolean
+        for key, btn in self.booleanbtndict.items():
+            btn.pressed.connect(
+                make_callback(self.boolean_operation, key))
+
+        # connect parameter widgets
+        for widget in widget_iter(self.parent.ui.stackedWidgetGeometryDetails):
+            if isinstance(widget, QtGui.QLineEdit):
+                widget.editingFinished.connect(
+                    make_callback(self.parameter_edited, widget))
+            elif isinstance(widget, QtGui.QCheckBox):
+                widget.stateChanged.connect(
+                    make_callback(self.parameter_edited, widget))
+
+        # --- mesh ---
+        # connect mesh tab btns
+        for i, btn in enumerate([self.parent.ui.pushbutton_mesh_uniform,
+                                 self.parent.ui.pushbutton_mesh_controlpoints,
+                                 self.parent.ui.pushbutton_mesh_mesher]):
+            btn.pressed.connect(
+                make_callback(self.change_mesh_tab, i, btn))
+
+        self.parent.ui.pushbutton_mesh_autosize.pressed.connect(
+            self.auto_size_mesh_extents)
+
+        # connect mesher
         self.parent.ui.combobox_mesher.currentIndexChanged.connect(
-            self.change_mesher_options)
+                    self.change_mesher_options)
 
-        self.__add_buttons()
+        self.parent.ui.pushbutton_generate_mesh.pressed.connect(self.mesher)
 
-    # --- setup ---
-    def __add_buttons(self):
+    def __add_tool_buttons(self):
 
         self.toolbutton_reset = QtGui.QToolButton()
         self.toolbutton_reset.pressed.connect(self.reset_view)
@@ -275,12 +360,34 @@ class VtkWidget(QtGui.QWidget):
         self.toolbutton_screenshot.pressed.connect(self.screenshot)
         self.toolbutton_screenshot.setIcon(get_icon('camera.png'))
 
+        self.toolbutton_visible = QtGui.QToolButton()
+        self.toolbutton_visible.setIcon(get_icon('visibility.png'))
+
+        self.visible_menu = QtGui.QMenu(self)
+        self.toolbutton_visible.setMenu(self.visible_menu)
+        self.toolbutton_visible.setPopupMode(QtGui.QToolButton.InstantPopup)
+
+        for actor in ['Background Mesh', 'Mesh', 'Geometry']:
+            action = QtGui.QAction(actor, self.visible_menu)
+            action.setCheckable(True)
+            action.setChecked(True)
+            action.setStyleSheet(
+                "QAction::unchecked {image: url(%s);}"
+                "QAction::checked {image: url(%s);}"
+                % (get_image_path('visibilityofftransparent.png'),
+                   get_image_path('visibility.png'))
+                )
+            action.triggered.connect(
+                make_callback(self.change_visibility, action))
+            self.visible_menu.addAction(action)
+
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
                     self.toolbutton_view_yz,
                     self.toolbutton_view_xz,
                     self.toolbutton_perspective,
-                    self.toolbutton_screenshot]:
+                    self.toolbutton_screenshot,
+                    self.toolbutton_visible]:
             self.button_bar_layout.addWidget(btn)
             btn.setAutoRaise(True)
 
@@ -453,7 +560,7 @@ class VtkWidget(QtGui.QWidget):
 
     def parameter_edited(self, widget):
         """
-        Update the value of edited paraemter in the geometrydict
+        Update the value of edited parameter in the geometrydict
         """
         current_selection = self.geometrytree.selectedItems()
 
@@ -1134,7 +1241,12 @@ class VtkWidget(QtGui.QWidget):
 
         append_filter.Update()
 
-        return append_filter
+        # clean
+        clean_filter = vtk.vtkCleanPolyData()
+        clean_filter.SetInputConnection(append_filter.GetOutputPort())
+        clean_filter.Update()
+
+        return clean_filter
 
     def get_geometry_extents(self):
         """ determine the extents of the visible geometry """
@@ -1149,15 +1261,10 @@ class VtkWidget(QtGui.QWidget):
 
         geometry = self.collect_toplevel_geometry()
 
-        # clean
-        clean_filter = vtk.vtkCleanPolyData()
-        clean_filter.SetInputConnection(geometry.GetOutputPort())
-        clean_filter.Update()
-
         # write file
         stl_writer = vtk.vtkSTLWriter()
         stl_writer.SetFileName(file_name)
-        stl_writer.SetInputConnection(clean_filter.GetOutputPort())
+        stl_writer.SetInputConnection(geometry.GetOutputPort())
         stl_writer.Write()
 
     def export_unstructured(self, fname, grid):
@@ -1232,7 +1339,6 @@ class VtkWidget(QtGui.QWidget):
             current_index,
             direction='horizontal',
             )
-
 
     def auto_size_mesh_extents(self):
         """ collect and set the extents of the visible geometry """
@@ -1372,12 +1478,12 @@ class VtkWidget(QtGui.QWidget):
 
         thresh = vtk.vtkThreshold()
         thresh.SetInputData(self.rectilinear_grid)
-        #thresh.ThresholdBetween(0.25, 0.75)
+
         if self.parent.ui.checkbox_threshold_inside.isChecked():
             thresh.ThresholdByLower(0)
         else:
             thresh.ThresholdByUpper(0)
-            
+
         if self.parent.ui.checkbox_threshold_interface.isChecked():
             thresh.AllScalarsOff()
         else:
@@ -1462,3 +1568,24 @@ class VtkWidget(QtGui.QWidget):
     def reset_view(self):
         self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()
+
+    def change_visibility(self, item):
+
+        name = str(item.text()).lower()
+
+        actors = None
+        if name == 'mesh':
+            actors = [self.mesh_actor]
+        elif name == 'background mesh':
+            actors = self.grid_viewer_dict['actors']
+
+
+        if actors is not None:
+            for actor in actors:
+                if not item.isChecked():
+                    actor.VisibilityOff()
+                else:
+                    actor.VisibilityOn()
+
+            self.vtkRenderWindow.Render()
+

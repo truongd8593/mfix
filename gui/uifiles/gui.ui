@@ -649,7 +649,7 @@ background-color:white;
                   <bool>false</bool>
                  </property>
                  <property name="currentIndex">
-                  <number>2</number>
+                  <number>18</number>
                  </property>
                  <widget class="QWidget" name="general">
                   <layout class="QGridLayout" name="gridLayout_23">
@@ -6073,84 +6073,63 @@ QPushButton:checked {
                         </property>
                        </widget>
                       </item>
-                      <item row="11" column="1">
+                      <item row="9" column="1">
                        <widget class="DoubleSpinBox" name="doublespinbox_keyword_tstop">
                         <property name="decimals">
                          <number>10</number>
                         </property>
                        </widget>
                       </item>
-                      <item row="11" column="0">
+                      <item row="9" column="0">
                        <widget class="QLabel" name="label_128">
                         <property name="text">
                          <string>Tstop</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="12" column="0">
+                      <item row="10" column="0">
                        <widget class="QLabel" name="label_130">
                         <property name="text">
                          <string>DT</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="12" column="1">
+                      <item row="10" column="1">
                        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt">
                         <property name="decimals">
                          <number>10</number>
                         </property>
                        </widget>
                       </item>
-                      <item row="10" column="0">
+                      <item row="8" column="0">
                        <widget class="QLabel" name="label_129">
                         <property name="text">
                          <string>Time</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="10" column="1">
+                      <item row="8" column="1">
                        <widget class="DoubleSpinBox" name="doublespinbox_keyword_time">
                         <property name="decimals">
                          <number>10</number>
                         </property>
                        </widget>
                       </item>
-                      <item row="13" column="0">
+                      <item row="11" column="0">
                        <widget class="QLabel" name="label_131">
                         <property name="text">
                          <string>DT_MAX</string>
                         </property>
                        </widget>
                       </item>
-                      <item row="13" column="1">
+                      <item row="11" column="1">
                        <widget class="DoubleSpinBox" name="doublespinbox_keyword_dt_max">
                         <property name="decimals">
                          <number>10</number>
                         </property>
                        </widget>
                       </item>
-                      <item row="8" column="1">
-                       <widget class="QRadioButton" name="radioButton">
-                        <property name="text">
-                         <string>Restart_2</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="6" column="1">
-                       <widget class="QRadioButton" name="radioButton_2">
-                        <property name="text">
-                         <string>New</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="7" column="1">
-                       <widget class="QRadioButton" name="radioButton_3">
-                        <property name="text">
-                         <string>Restart_1</string>
-                        </property>
-                       </widget>
-                      </item>
-                      <item row="9" column="0">
+                      <item row="7" column="0">
                        <widget class="QPushButton" name="clear_output_button">
                         <property name="text">
                          <string>Delete Output Files</string>
@@ -6163,6 +6142,9 @@ QPushButton:checked {
                          <string>RUN_TYPE</string>
                         </property>
                        </widget>
+                      </item>
+                      <item row="6" column="1">
+                       <widget class="ComboBox" name="combobox_keyword_run_type"/>
                       </item>
                      </layout>
                     </widget>
