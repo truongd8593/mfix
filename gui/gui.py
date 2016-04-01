@@ -76,8 +76,12 @@ class MfixGui(QtGui.QMainWindow):
         # set title and icon
         self.setWindowTitle('MFIX')
         self.setWindowIcon(get_icon('mfix.png'))
+        
+        # build keyword documentation from namelist docstrings
+        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
+                                                        os.pardir, 'model'))
 
-        self.project = ProjectManager(self)
+        self.project = ProjectManager(self, self.keyword_doc)
 
         # --- data ---
         self.modebuttondict = {'modeler':   self.ui.pushButtonModeler,
@@ -198,10 +202,6 @@ class MfixGui(QtGui.QMainWindow):
         <keyword> is the actual keyword. For example:
         lineedit_keyword_run_name
         """
-
-        # build keyword documentation from namelist docstrings
-        self.keyword_doc = buildKeywordDoc(os.path.join(SCRIPT_DIRECTORY,
-                                                        os.pardir, 'model'))
 
         # loop through all widgets looking for *_keyword_<keyword>
         for widget in widget_iter(self.ui):
@@ -837,8 +837,8 @@ class ProjectManager(Project):
     '''
     Manages the editing of the MFiX.dat file
     '''
-    def __init__(self, parent=None):
-        Project.__init__(self)
+    def __init__(self, parent=None, keyword_doc=None):
+        Project.__init__(self, keyword_doc=keyword_doc)
 
         self.parent = parent
         self.widgetList = []

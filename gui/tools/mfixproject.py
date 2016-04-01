@@ -224,41 +224,41 @@ class KeyWord(object):
 class Base(object):
     def __init__(self, ind):
         self.ind = ind
-        self._keywordDict = {}
+        self._keyword_dict = {}
         self.delete = False
 
     def __getattr__(self, name):
-        if name in self._keywordDict:
-            return self._keywordDict[name].value
+        if name in self._keyword_dict:
+            return self._keyword_dict[name].value
         else:
             # Default behaviour
             raise AttributeError(name)
 
     def __getitem__(self, name):
-        return self._keywordDict[name]
+        return self._keyword_dict[name]
 
     def __setitem__(self, name, value):
-        if name in self._keywordDict and isinstance(self._keywordDict[name],
+        if name in self._keyword_dict and isinstance(self._keyword_dict[name],
                                                     KeyWord):
             if isinstance(value, KeyWord):
-                self._keywordDict[name].updateValue(value.value)
+                self._keyword_dict[name].updateValue(value.value)
             else:
-                self._keywordDict[name].updateValue(value)
+                self._keyword_dict[name].updateValue(value)
         else:
-            self._keywordDict[name] = value
+            self._keyword_dict[name] = value
 
     def __contains__(self, item):
-        return item in self._keywordDict
+        return item in self._keyword_dict
 
     def __len__(self):
-        return len(self._keywordDict)
+        return len(self._keyword_dict)
 
 #    def addKeyword(self, key, value, args=[]):
-#        self._keywordDict[key] = KeyWord(key, value, args=args)
+#        self._keyword_dict[key] = KeyWord(key, value, args=args)
 
     def deleteDict(self):
         self.delete = True
-        return dict([(key, None) for key, val in self._keywordDict.items()])
+        return dict([(key, None) for key, val in self._keyword_dict.items()])
 
 
 class CondBase(Base):
@@ -293,7 +293,7 @@ class BC(CondBase):
 
         return '\n'.join(["Boundary Condition {}: {}".format(self.ind, bctype)]
                          + [''.join(['  ', str(key), ': ', str(value)]) for key, value in
-                            self._keywordDict.items()] +
+                            self._keyword_dict.items()] +
                          gasSpec + solids
                          )
 
@@ -378,7 +378,7 @@ class Species(Base):
             p = "Solid"
         return '\n'.join(["{} Species: {}".format(p, self.ind), ] +
                          [''.join(['  ', str(key), ': ', str(value)])
-                         for key, value in self._keywordDict.items()])
+                         for key, value in self._keyword_dict.items()])
 
 
 class Solid(Base):
@@ -393,7 +393,7 @@ class Solid(Base):
 
     def _prettyPrintList(self):
         solidAttr = [''.join(['  ', str(key), ': ', str(value)])
-                     for key, value in self._keywordDict.items()]
+                     for key, value in self._keyword_dict.items()]
 
         lst = [self.name] + solidAttr +\
               ['  Species:'] + [''.join(['    ', val]) for val in
@@ -449,8 +449,8 @@ class Collection(list):
 
     def clean(self):
         for itm in self:
-            if hasattr(itm, '_keywordDict') and \
-                    len(itm._keywordDict.keys()) < 1:
+            if hasattr(itm, '_keyword_dict') and \
+                    len(itm._keyword_dict.keys()) < 1:
                 self.pop(self.index(itm))
 
     def delete(self, itm):
@@ -584,11 +584,12 @@ class Project(object):
     '''
     Class for managing a mfix project
     '''
-    def __init__(self, mfixDatFile=None):
+    def __init__(self, dat_file=None, keyword_doc=None):
 
-        self.mfixDatFile = mfixDatFile
-        self._keywordDict = {}
-        self.datfile = []
+        self.dat_file = dat_file
+        self.keyword_doc = keyword_doc
+        self._keyword_dict = {}
+        self.dat_file_list = []
         self.thermoindex = None
 
         # Regular Expressions
@@ -601,7 +602,7 @@ class Project(object):
 
         self.__initDataStructure__()
 
-        if self.mfixDatFile is not None:
+        if self.dat_file is not None:
             self.parsemfixdat()
 
     def __initDataStructure__(self):
@@ -629,18 +630,18 @@ class Project(object):
         self.variablegrid = VariableGridCollection()
 
     def __getattr__(self, name):
-        return self._keywordDict[name]
+        return self._keyword_dict[name]
 
     def __getitem__(self, key):
         if not isinstance(key, list) and not isinstance(key, tuple):
             key = [key]
-        return get_from_dict(self._keywordDict, key)
+        return get_from_dict(self._keyword_dict, key)
 
     def __contains__(self, item):
         try:
             if not isinstance(item, list) and not isinstance(item, tuple):
                 item = [item]
-            get_from_dict(self._keywordDict, item)
+            get_from_dict(self._keyword_dict, item)
             return True
         except KeyError:
             return False
@@ -658,25 +659,25 @@ class Project(object):
         Saves the results in self.mfixDatKeyDict dictionary.
         """
         if fname:
-            self.mfixDatFile = fname
+            self.dat_file = fname
 
-        assert self.mfixDatFile is not None
+        assert self.dat_file is not None
 
         # check to see if the file is a StringIO object
-        if isinstance(self.mfixDatFile, StringIO):
-            self._parsemfixdat(self.mfixDatFile)
+        if isinstance(self.dat_file, StringIO):
+            self._parsemfixdat(self.dat_file)
             return
 
         # Try to open the file
         try:
-            with open(self.mfixDatFile) as mfixDatFile:
-                self._parsemfixdat(mfixDatFile)
+            with open(self.dat_file) as dat_file:
+                self._parsemfixdat(dat_file)
             return
         except (IOError, OSError):
             pass
         # maybe it is just a string?
-        if is_string(self.mfixDatFile) or is_unicode(self.mfixDatFile):
-            self._parsemfixdat(StringIO(self.mfixDatFile))
+        if is_string(self.dat_file) or is_unicode(self.dat_file):
+            self._parsemfixdat(StringIO(self.dat_file))
             return
 
     def parseKeywordLine(self, text):
@@ -686,6 +687,9 @@ class Project(object):
             for match in matchs:
                 # match chould be: [keyword, args, value,
                 #                   nextKeywordInLine, something]
+
+                # convert to list
+                match = list(match)
 
                 # keyword
                 key = match[0].lower().strip()
@@ -722,11 +726,12 @@ class Project(object):
                     if val is not None:
                         cleanVals.append(val)
 
-                # add args to legacy keys if no keys
-                if not match[1] and len(cleanVals) == 1 and \
-                        key in ['d_p0', 'ro_s0']:
-                    match = list(match)
-                    match[1] = '1'
+                # check keyword_doc to see if the keyword is an array
+                if self.keyword_doc is not None and key in self.keyword_doc \
+                        and not match[1] and self.keyword_doc[key]['args']:
+                    match[1] = ','.join(
+                        [str(arg['min']) for arg in
+                         self.keyword_doc[key]['args'].values()])
 
                 # clean up arguemnts
                 if match[1]:
@@ -770,9 +775,9 @@ class Project(object):
         """
         reactionSection = False
         self.comments = {}
-        self._keywordDict = {}
+        self._keyword_dict = {}
         self.__initDataStructure__()
-        self.datfile = []
+        self.dat_file_list = []
 
         for i, line in enumerate(fobject):
             line = to_unicode_from_fs(line).strip('\n')
@@ -783,7 +788,7 @@ class Project(object):
                 reactionSection = False
             elif 'thermo data' in line.lower():
                 self.thermoindex = i
-                self.datfile.append(line)
+                self.dat_file_list.append(line)
             elif not reactionSection:
                 # remove comments
                 commentedline = ''
@@ -798,7 +803,7 @@ class Project(object):
                 # loop through all keywords in the line
                 for key, args, value in self.parseKeywordLine(line):
                     if key is None:
-                        self.datfile.append(line+commentedline)
+                        self.dat_file_list.append(line+commentedline)
                     else:
                         self.addKeyword(key, value, args, keywordComment)
 
@@ -1003,10 +1008,10 @@ class Project(object):
         # add keyword to other data structures
         if keywordobject is not None:
             if self.thermoindex is not None:
-                self.datfile.insert(self.thermoindex, keywordobject)
+                self.dat_file_list.insert(self.thermoindex, keywordobject)
                 self.thermoindex += 1
             else:
-                self.datfile.append(keywordobject)
+                self.dat_file_list.append(keywordobject)
             self._recursiveAddKeyToKeywordDict(keywordobject,
                                                [key]+args)
         else:
@@ -1016,28 +1021,28 @@ class Project(object):
         return keywordobject
 
     def _recursiveAddKeyToKeywordDict(self, keyword, keys=()):
-        keywordDict = self._keywordDict
+        keywordDict = self._keyword_dict
         for key in keys[:-1]:
             keywordDict = keywordDict.setdefault(key, {})
         keywordDict[keys[-1]] = keyword
 
     def _recursiveRemoveKeyToKeywordDict(self, keys=()):
-        keywordDict = self._keywordDict
+        keywordDict = self._keyword_dict
         for key in keys[:-1]:
             keywordDict = keywordDict[key]
         keywordDict.pop(keys[-1])
 
     def _purgeemptydicts(self):
-        for keys, value in list(recurse_dict_empty(self._keywordDict)):
+        for keys, value in list(recurse_dict_empty(self._keyword_dict)):
             if isinstance(value, dict) and not value:
-                keywordDict = self._keywordDict
+                keywordDict = self._keyword_dict
                 for key in keys[:-1]:
                     keywordDict = keywordDict[key]
                 keywordDict.pop(keys[-1])
 
     def keywordItems(self):
 
-        for keys, value in recurse_dict_empty(self._keywordDict):
+        for keys, value in recurse_dict_empty(self._keyword_dict):
             yield value
 
     def cleanstring(self, string):
@@ -1090,8 +1095,8 @@ class Project(object):
 
         keyword = self.keywordLookup(key, args)
 
-        # pop from datfile
-        self.datfile.remove(keyword)
+        # pop from dat_file_list
+        self.dat_file_list.remove(keyword)
         if self.thermoindex is not None:
             self.thermoindex -= 1
 
@@ -1114,7 +1119,7 @@ class Project(object):
                 for gas in cond.gasSpecies:
                     if gas.delete:
                         cond.gasSpecies.delete(gas)
-                        self.datfile.pop(gas)
+                        self.dat_file_list.pop(gas)
                 for solid in cond.solids:
                     for species in solid.species:
                         if species.delete:
@@ -1182,7 +1187,7 @@ class Project(object):
         keyword = keyword.lower()
         keywordobject = None
 
-        for key, value in recurse_dict(self._keywordDict):
+        for key, value in recurse_dict(self._keyword_dict):
             if key[0] == keyword:
                 if args and value.args == args:
                     keywordobject = value
@@ -1219,7 +1224,7 @@ class Project(object):
         return keywordobject
 
     def convertToString(self):
-        for line in self.datfile:
+        for line in self.dat_file_list:
             if hasattr(line, 'line'):
                 yield line.line()+'\n'
             else:
@@ -1235,6 +1240,6 @@ class Project(object):
             the file name to write the project to
         '''
 
-        with open(fname, 'w') as datfile:
+        with open(fname, 'w') as dat_file:
             for line in self.convertToString():
-                datfile.write(line)
+                dat_file.write(line)
