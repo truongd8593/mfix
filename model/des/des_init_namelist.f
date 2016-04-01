@@ -175,16 +175,6 @@
 
 !<keyword category="Discrete Element Simulation" required="false"
 !  dem="true" pic="true">
-!  <description>
-!    To switch between pure granular or coupled simulations of carried
-!    and dispersed phase flows.
-!  </description>
-!  <valid value=".true." note="Performs coupled simulations. "/>
-      DES_CONTINUUM_COUPLED = .FALSE.
-!</keyword>
-
-!<keyword category="Discrete Element Simulation" required="false"
-!  dem="true" pic="true">
 !  <description>Run one-way coupled simulations. The fluid does not
 ! see the particles in terms of drag force. The effect of particle volume
 ! is still felt by the fluid through non-unity voidage values.
@@ -611,42 +601,6 @@
 !</keyword>
 
 
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Actual Youngs modulus for the particle [barye in CGS]. Used for
-!    computing correction terms for DEM conduction.
-!  </description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-      E_YOUNG_ACTUAL(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Actual Youngs modulus for the walls [barye in CGS]. Used for
-!    computing correction terms for DEM conduction.
-!  </description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
-      EW_YOUNG_ACTUAL = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Poissons ratio for the particle. Required when using the Hertzian
-!    spring-dashpot model.
-!  </description>
-!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
-      V_POISSON_ACTUAL(:DIM_M) = UNDEFINED
-!</keyword>
-
-!<keyword category="Discrete Element Model" required="false">
-!  <description>
-!    Poisson ratio for the wall. Required when using the Hertzian
-!    spring-dashpot model.
-!  </description>
-      VW_POISSON_ACTUAL = UNDEFINED
-!</keyword>
-
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
@@ -735,6 +689,7 @@
       Asperities = ZERO
 !</keyword>
 
+
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
 !    Specify the Nusselt number correlation used for particle-gas
@@ -744,6 +699,7 @@
 !    Chemical Engineering Progress, 48: 141-146 and 173-180"/>
       DES_CONV_CORR = 'RANZ_1952'
 !</keyword>
+
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
@@ -767,6 +723,43 @@
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
       DES_Em(:DIM_M) = UNDEFINED
 !</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Actual Youngs modulus for the particle [barye in CGS]. Used for
+!    computing correction terms for DEM conduction.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+      E_YOUNG_ACTUAL(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Actual Youngs modulus for the walls [barye in CGS]. Used for
+!    computing correction terms for DEM conduction.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+!  <dependent keyword="DES_COLL_MODEL" value="HERTZIAN"/>
+      EW_YOUNG_ACTUAL = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Poissons ratio for the particle. Required when using the Hertzian
+!    spring-dashpot model.
+!  </description>
+!  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
+      V_POISSON_ACTUAL(:DIM_M) = UNDEFINED
+!</keyword>
+
+!<keyword category="Discrete Element Model" required="false">
+!  <description>
+!    Poisson ratio for the wall. Required when using the Hertzian
+!    spring-dashpot model.
+!  </description>
+      VW_POISSON_ACTUAL = UNDEFINED
+!</keyword>
+
 
 
 !<keyword category="Discrete Element Model" required="false">

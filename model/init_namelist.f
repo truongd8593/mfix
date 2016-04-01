@@ -216,7 +216,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>
 !    Flag to enable Jackson form of momentum equations.
-!    note="Anderson and Jackson, (1967), IECF, 6(4), p.527."/>
+!    See Anderson and Jackson, (1967), IECF, 6(4), p.527.
 !  </description>
 !  <valid value=".TRUE." note="Solve Jackson form of momentum equations."/>
 !  <valid value=".FALSE." note="Default form."/>
@@ -225,7 +225,7 @@
 !<keyword category="Run Control" required="false">
 !  <description>
 !    Flag to enable Ishii form of momentum equations.
-!    note="Ishii, (1975), Thermo-fluid dynamic theory of two-phase flow."/>
+!    See Ishii, (1975), Thermo-fluid dynamic theory of two-phase flow.
 !  </description>
 !  <valid value=".TRUE." note="Solve Ishii form of momentum equations."/>
 !  <valid value=".FALSE." note="Default form."/>
@@ -3202,6 +3202,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       USR_Ks(:DIM_M) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
@@ -3213,6 +3214,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       USR_Difs(:DIM_M) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
@@ -3225,6 +3227,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       USR_Mus(:DIM_M) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
@@ -3236,6 +3239,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       USR_Gama(:DIM_M) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
@@ -3248,6 +3252,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_M"/>
       USR_Fgs(:DIM_M) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false" tfm="true">
 !  <description>
@@ -3260,6 +3265,7 @@
 !  <valid value=".FALSE." note="Use MFIX default calculation."/>
 !  <arg index="1" id="Phase" min="1" max="DIM_LM"/>
       USR_Fss( :((DIM_M*(DIM_M-1)/2)+1) ) = .FALSE.
+!</keyword>
 
 !<keyword category="UDF Control" required="false">
 !  <description>User defined constants.</description>
