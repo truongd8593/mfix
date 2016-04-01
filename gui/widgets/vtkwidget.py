@@ -371,12 +371,6 @@ class VtkWidget(QtGui.QWidget):
             action = QtGui.QAction(actor, self.visible_menu)
             action.setCheckable(True)
             action.setChecked(True)
-            action.setStyleSheet(
-                "QAction::unchecked {image: url(%s);}"
-                "QAction::checked {image: url(%s);}"
-                % (get_image_path('visibilityofftransparent.png'),
-                   get_image_path('visibility.png'))
-                )
             action.triggered.connect(
                 make_callback(self.change_visibility, action))
             self.visible_menu.addAction(action)
