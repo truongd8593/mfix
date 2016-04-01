@@ -745,8 +745,8 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Poissons ratio for the particle. Required when using the Hertzian
-!    spring-dashpot model.
+!    Poissons ratio for the particle. Used for
+!    computing correction terms for DEM conduction.
 !  </description>
 !  <arg index="1" id="Phase" min="1" max="DES_MMAX"/>
       V_POISSON_ACTUAL(:DIM_M) = UNDEFINED
@@ -754,8 +754,8 @@
 
 !<keyword category="Discrete Element Model" required="false">
 !  <description>
-!    Poisson ratio for the wall. Required when using the Hertzian
-!    spring-dashpot model.
+!    Poissons ratio for the wall. Used for
+!    computing correction terms for DEM conduction.
 !  </description>
       VW_POISSON_ACTUAL = UNDEFINED
 !</keyword>
