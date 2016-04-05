@@ -259,11 +259,16 @@
             blend =  blend_function(IJK)
             Mu_s(IJK,M) = (ONE-blend)*Mu_s_p(IJK) &
                 + blend*Mu_s_v(IJK)
-! is there any point in blending P_s_p or lambda_s_p since neither are
-! assigned? the only thing this would effectively do is reduce P_s_v
-! and lambda_s_v by the blend value and therefore P_s and lambda_s.
+! is there any point in blending lambda_s_p since it is never
+! assigned? the only thing this would effectively do is reduce
+! lambda_s_v by the blend value
             LAMBDA_s(IJK,M) = (ONE-blend)*Lambda_s_p(IJK) + &
                blend*Lambda_s_v(IJK)
+! note that p_star is the plastic pressure term. p_star is calculated
+! and blended in its own routine to accomodate slightly different
+! timing of the calculation to coincide with updated volume fractions.
+! however, we must factor P_s_v by the blend value here.
+           P_s(IJK,M) = blend*P_s_v(IJK)
          ENDDO
       ELSE
          Mu_s(:,M) = Mu_s_p(:) + Mu_s_v(:) + Mu_s_f(:)
