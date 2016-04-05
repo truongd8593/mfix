@@ -125,6 +125,7 @@ class VtkWidget(QtGui.QWidget):
 
         # --- data ---
         self.geometrydict = {}
+        self.geometry_visible = True
 
         self.primitivedict = {}
         self.primitivedict = OrderedDict([
@@ -168,6 +169,22 @@ class VtkWidget(QtGui.QWidget):
             'actors':  [],
             }
 
+        # set default colors
+        self.color_dict = {
+            'mesh':                QtGui.QColor(244,  67,  54),
+            'background_mesh':     QtGui.QColor(100, 182, 247),
+            'geometry':            QtGui.QColor(224, 224, 224),
+            'regions':             QtGui.QColor(224, 224, 224),
+            'initial_conditions':  QtGui.QColor(224, 224, 224),
+            'boundary_conditions': QtGui.QColor(224, 224, 224),
+            'point_sources':       QtGui.QColor(224, 224, 224),
+            }
+
+        # add edge color
+        for color in list(self.color_dict.keys()):
+            self.color_dict['_'.join([color, 'edge'])] = \
+                self.color_dict[color].darker()
+
         # --- layout ---
         self.grid_layout = QtGui.QGridLayout(self)
         self.grid_layout.setContentsMargins(0, 0, 0, 0)
@@ -176,11 +193,11 @@ class VtkWidget(QtGui.QWidget):
         self.button_bar_layout = QtGui.QHBoxLayout(self.button_bar)
         self.button_bar_layout.setContentsMargins(0, 0, 0, 0)
         self.button_bar.setLayout(self.button_bar_layout)
-        self.button_bar.setGeometry(QtCore.QRect(0,0,300,300))
-        self.grid_layout.addWidget(self.button_bar,0,0)
+        self.button_bar.setGeometry(QtCore.QRect(0, 0, 300, 300))
+        self.grid_layout.addWidget(self.button_bar, 0, 0)
 
         self.vtkWindowWidget = QVTKRenderWindowInteractor(self)
-        self.grid_layout.addWidget(self.vtkWindowWidget,1,0)
+        self.grid_layout.addWidget(self.vtkWindowWidget, 1, 0)
 
         # --- setup vtk stuff ---
         self.vtkrenderer = vtk.vtkRenderer()
@@ -236,11 +253,15 @@ class VtkWidget(QtGui.QWidget):
         # --- setup vtk mappers/actors ---
         self.mesh = None
         self.mesh_mapper = vtk.vtkDataSetMapper()
+        self.mesh_mapper.ScalarVisibilityOff()
 
         self.mesh_actor = vtk.vtkActor()
         self.mesh_actor.SetMapper(self.mesh_mapper)
         self.mesh_actor.GetProperty().SetRepresentationToWireframe()
-        self.mesh_actor.GetProperty().SetColor(.1, .1, .1)
+        self.mesh_actor.GetProperty().SetColor(
+            self.color_dict['mesh'].getRgbF()[:3])
+        self.mesh_actor.GetProperty().SetEdgeColor(
+            self.color_dict['mesh_edge'].getRgbF()[:3])
 
         self.vtkrenderer.AddActor(self.mesh_actor)
 
@@ -367,13 +388,45 @@ class VtkWidget(QtGui.QWidget):
         self.toolbutton_visible.setMenu(self.visible_menu)
         self.toolbutton_visible.setPopupMode(QtGui.QToolButton.InstantPopup)
 
-        for actor in ['Background Mesh', 'Mesh', 'Geometry']:
-            action = QtGui.QAction(actor, self.visible_menu)
-            action.setCheckable(True)
-            action.setChecked(True)
-            action.triggered.connect(
-                make_callback(self.change_visibility, action))
-            self.visible_menu.addAction(action)
+        # --- visual representation menu ---
+        layout = QtGui.QGridLayout(self.visible_menu)
+        layout.setContentsMargins(5, 5, 5, 5)
+        for i, geo in enumerate(['Background Mesh', 'Mesh', 'Geometry',
+                                 'Regions', 'Initial Conditions',
+                                 'Boundary Conditions', 'Point Sources']):
+
+            # tool button
+            toolbutton = QtGui.QToolButton()
+            toolbutton.pressed.connect(make_callback(self.change_visibility,
+                                                     geo.lower(), toolbutton))
+            toolbutton.setCheckable(True)
+            toolbutton.setChecked(True)
+            toolbutton.setAutoRaise(True)
+            toolbutton.setIcon(get_icon('visibility.png'))
+            layout.addWidget(toolbutton, i, 0)
+
+            # style
+            combobox = QtGui.QComboBox()
+            combobox.addItems(['wire', 'solid', 'solid with edges', 'points'])
+            combobox.currentIndexChanged.connect(
+                make_callback(self.change_representation,
+                              geo.lower(), combobox))
+            layout.addWidget(combobox, i, 1)
+
+            # color
+            toolbutton = QtGui.QToolButton()
+            toolbutton.pressed.connect(make_callback(self.change_color,
+                                                     geo.lower(), toolbutton))
+            toolbutton.setAutoRaise(True)
+            toolbutton.setStyleSheet("QToolButton{{ background: {};}}".format(
+                self.color_dict[
+                    '_'.join(geo.lower().split(' '))].name())
+                )
+            layout.addWidget(toolbutton, i, 2)
+
+            # label
+            label = QtGui.QLabel(geo)
+            layout.addWidget(label, i, 3)
 
         for btn in [self.toolbutton_reset,
                     self.toolbutton_view_xy,
@@ -473,10 +526,13 @@ class VtkWidget(QtGui.QWidget):
         """
 
         name = str(item.text(0)).lower()
-        if item.checkState(0) == QtCore.Qt.Unchecked:
-            self.geometrydict[name]['actor'].VisibilityOff()
+        if item.checkState(0) == QtCore.Qt.Checked:
+            if self.geometry_visible:
+                self.geometrydict[name]['actor'].VisibilityOn()
+            self.geometrydict[name]['visible'] = True
         else:
-            self.geometrydict[name]['actor'].VisibilityOn()
+            self.geometrydict[name]['actor'].VisibilityOff()
+            self.geometrydict[name]['visible'] = False
 
         self.vtkRenderWindow.Render()
 
@@ -512,6 +568,10 @@ class VtkWidget(QtGui.QWidget):
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.GetProperty().SetRepresentationToWireframe()
+            actor.GetProperty().SetColor(
+                self.color_dict['geometry'].getRgbF()[:3])
+            actor.GetProperty().SetEdgeColor(
+                self.color_dict['geometry_edge'].getRgbF()[:3])
 
             self.vtkrenderer.AddActor(actor)
 
@@ -543,6 +603,7 @@ class VtkWidget(QtGui.QWidget):
                 'translationx':    0.0,
                 'translationy':    0.0,
                 'translationz':    0.0,
+                'visible':         True,
                 }
 
             # Add to tree
@@ -723,6 +784,7 @@ class VtkWidget(QtGui.QWidget):
             'phiresolution':   10,
             'type':            primtype,
             'source':          source,
+            'visible':         True,
         }
 
         source = self.update_primitive(name)
@@ -750,8 +812,21 @@ class VtkWidget(QtGui.QWidget):
         # Create an actor
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
-#        actor.GetProperty().SetOpacity(0.25)
-        actor.GetProperty().SetRepresentationToWireframe()
+
+        # copy properties from an exsiting actor
+        if len(self.geometrydict) > 1:
+            other_actor = list(self.geometrydict.keys())
+            other_actor.remove(name)
+            other_actor = self.geometrydict[other_actor[0]]['actor']
+            actor.GetProperty().DeepCopy(other_actor.GetProperty())
+        else:
+            actor.GetProperty().SetRepresentationToWireframe()
+
+        # make sure the colors are correct
+        actor.GetProperty().SetColor(
+            self.color_dict['geometry'].getRgbF()[:3])
+        actor.GetProperty().SetEdgeColor(
+            self.color_dict['geometry_edge'].getRgbF()[:3])
 
         self.vtkrenderer.AddActor(actor)
 
@@ -882,6 +957,7 @@ class VtkWidget(QtGui.QWidget):
             'type':               name,
             'parametric_object':  parametric_object,
             'source':             source,
+            'visible':            True
         }
 
         source = self.update_parametric(name)
@@ -910,6 +986,10 @@ class VtkWidget(QtGui.QWidget):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
         actor.GetProperty().SetRepresentationToWireframe()
+        actor.GetProperty().SetColor(
+            self.color_dict['geometry'].getRgbF()[:3])
+        actor.GetProperty().SetEdgeColor(
+                self.color_dict['geometry_edge'].getRgbF()[:3])
 
         self.vtkrenderer.AddActor(actor)
 
@@ -980,6 +1060,10 @@ class VtkWidget(QtGui.QWidget):
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.GetProperty().SetRepresentationToWireframe()
+            actor.GetProperty().SetColor(
+                self.color_dict['geometry'].getRgbF()[:3])
+            actor.GetProperty().SetEdgeColor(
+                self.color_dict['geometry_edge'].getRgbF()[:3])
 
             self.vtkrenderer.AddActor(actor)
 
@@ -1129,22 +1213,23 @@ class VtkWidget(QtGui.QWidget):
             vtkfilter = self.filterdict[filtertype]()
 
             self.geometrydict[name] = {
-                'type':   filtertype,
-                'filter': vtkfilter,
-                'linestopoints': True,
-                'polystolines': True,
-                'stripstopolys': True,
-                'maximumholesize': 1.0,
-                'processvertices': True,
-                'processlines': True,
-                'targetreduction': 0.2,
-                'preservetopology': True,
-                'splitmesh': True,
-                'deletevertices': False,
-                'divisionsx': 10,
-                'divisionsy': 10,
-                'divisionsz': 10,
+                'type':                filtertype,
+                'filter':              vtkfilter,
+                'linestopoints':       True,
+                'polystolines':        True,
+                'stripstopolys':       True,
+                'maximumholesize':     1.0,
+                'processvertices':     True,
+                'processlines':        True,
+                'targetreduction':     0.2,
+                'preservetopology':    True,
+                'splitmesh':           True,
+                'deletevertices':      False,
+                'divisionsx':          10,
+                'divisionsy':          10,
+                'divisionsz':          10,
                 'autoadjustdivisions': True,
+                'visible':             True,
                 }
 
             inputdata = self.get_input_data(selection_text)
@@ -1166,6 +1251,10 @@ class VtkWidget(QtGui.QWidget):
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
             actor.GetProperty().SetRepresentationToWireframe()
+            actor.GetProperty().SetColor(
+                self.color_dict['geometry'].getRgbF()[:3])
+            actor.GetProperty().SetEdgeColor(
+                self.color_dict['geometry_edge'].getRgbF()[:3])
 
             # add actor to render
             self.vtkrenderer.AddActor(actor)
@@ -1381,6 +1470,23 @@ class VtkWidget(QtGui.QWidget):
         self.rectilinear_grid.SetZCoordinates(z_coords)
 
         # update actors
+
+        # copy properties of one of the actors
+        mesh_is_visible = 1
+        actor_property = None
+        if self.grid_viewer_dict['actors']:
+            actor_property = vtk.vtkProperty()
+            actor_property.DeepCopy(
+                self.grid_viewer_dict['actors'][0].GetProperty())
+
+            # reset the colors
+            actor_property.SetColor(
+                    self.color_dict['background_mesh'].getRgbF()[:3])
+            actor_property.SetEdgeColor(
+                 self.color_dict['background_mesh_edge'].getRgbF()[:3])
+                 
+            mesh_is_visible = self.grid_viewer_dict['actors'][0].GetVisibility()
+
         # remove exsisting
         for actor in self.grid_viewer_dict['actors']:
             self.vtkrenderer.RemoveActor(actor)
@@ -1410,8 +1516,15 @@ class VtkWidget(QtGui.QWidget):
 
             actor = vtk.vtkActor()
             actor.SetMapper(mapper)
-            actor.GetProperty().SetRepresentationToWireframe()
-            actor.GetProperty().SetColor(.39, .71, .965)
+            actor.SetVisibility(mesh_is_visible)
+            if actor_property is not None:
+                actor.GetProperty().DeepCopy(actor_property)
+            else:
+                actor.GetProperty().SetRepresentationToWireframe()
+                actor.GetProperty().SetColor(
+                    self.color_dict['background_mesh'].getRgbF()[:3])
+                actor.GetProperty().SetEdgeColor(
+                 self.color_dict['background_mesh_edge'].getRgbF()[:3])
             self.grid_viewer_dict['actors'].append(actor)
 
             self.vtkrenderer.AddActor(actor)
@@ -1563,23 +1676,88 @@ class VtkWidget(QtGui.QWidget):
         self.vtkrenderer.ResetCamera()
         self.vtkRenderWindow.Render()
 
-    def change_visibility(self, item):
-
-        name = str(item.text()).lower()
+    def change_visibility(self, name, toolbutton):
 
         actors = None
         if name == 'mesh':
             actors = [self.mesh_actor]
         elif name == 'background mesh':
             actors = self.grid_viewer_dict['actors']
+        elif name == 'geometry':
+            actors = [geo['actor'] for geo in self.geometrydict.values()
+                      if geo['visible']]
 
+            if toolbutton.isChecked():
+                self.geometry_visible = False
+            else:
+                self.geometry_visible = True
 
         if actors is not None:
             for actor in actors:
-                if not item.isChecked():
+                if toolbutton.isChecked():
                     actor.VisibilityOff()
+                    toolbutton.setIcon(
+                        get_icon('visibilityofftransparent.png'))
                 else:
                     actor.VisibilityOn()
+                    toolbutton.setIcon(get_icon('visibility.png'))
 
             self.vtkRenderWindow.Render()
 
+    def change_representation(self, name, combobox):
+
+        representation = str(combobox.currentText())
+        actors = None
+        if name == 'mesh':
+            actors = [self.mesh_actor]
+        elif name == 'background mesh':
+            actors = self.grid_viewer_dict['actors']
+        elif name == 'geometry':
+            actors = [geo['actor'] for geo in self.geometrydict.values()]
+
+        if actors is not None:
+            for actor in actors:
+                if representation == 'wire':
+                    actor.GetProperty().SetRepresentationToWireframe()
+                elif representation == 'solid':
+                    actor.GetProperty().SetRepresentationToSurface()
+                    actor.GetProperty().EdgeVisibilityOff()
+                elif representation == 'solid with edges':
+                    actor.GetProperty().SetRepresentationToSurface()
+                    actor.GetProperty().EdgeVisibilityOn()
+                elif representation == 'points':
+                    actor.GetProperty().SetRepresentationToPoints()
+
+            self.vtkRenderWindow.Render()
+
+    def change_color(self, name, button):
+
+        col = QtGui.QColorDialog.getColor()
+
+        if col.isValid():
+
+            button.setStyleSheet("QToolButton{{ background: {};}}".format(
+                col.name()))
+
+            name = '_'.join(name.lower().split(' '))
+            name_edge = '_'.join([name, 'edge'])
+
+            self.color_dict[name] = col
+            self.color_dict[name_edge] = col.darker()
+
+            actors = None
+            if name == 'mesh':
+                actors = [self.mesh_actor]
+            elif name == 'background_mesh':
+                actors = self.grid_viewer_dict['actors']
+            elif name == 'geometry':
+                actors = [geo['actor'] for geo in self.geometrydict.values()]
+
+            if actors is not None:
+                for actor in actors:
+                    actor.GetProperty().SetColor(
+                        self.color_dict[name].getRgbF()[:3])
+                    actor.GetProperty().SetEdgeColor(
+                     self.color_dict[name_edge].getRgbF()[:3])
+
+                self.vtkRenderWindow.Render()
