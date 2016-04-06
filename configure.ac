@@ -16,7 +16,7 @@ AC_MSG_NOTICE([       MFIX: Multiphase Flow with Interphase eXchanges])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([                      mfix.netl.doe.gov])
 AC_MSG_NOTICE([])
-AC_MSG_NOTICE([                        Version ${MFIX_VERSION}])
+AC_MSG_NOTICE([                        Version ${PACKAGE_VERSION}])
 AC_MSG_NOTICE([])
 AC_MSG_NOTICE([==============================================================])
 
@@ -97,7 +97,7 @@ AC_CONFIG_SRCDIR([model/mfix.f])
 AM_INIT_AUTOMAKE([subdir-objects foreign -Wall -Wno-portability no-dependencies])
 
 # Uncomment the following line when doing "make dist" to create a release
-# tarball Otherwise, configure may failing for end users who don't have
+# tarball. Otherwise, configure may failing for end users who don't have
 # autotools installed, if timestamps get changed somehow when extracting the
 # release tarball. Running "touch *" in MFIX_HOME is another workaround for this
 # issue.
